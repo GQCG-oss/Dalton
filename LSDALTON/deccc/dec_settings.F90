@@ -103,6 +103,7 @@ contains
     DECinfo%fragadapt=.false.
     ! for ccsd(t) calculations, option to use MP2 optimized fragments
     DECinfo%use_mp2_frag=.true.
+    DECinfo%OnlyOccPart=.false.
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
@@ -389,7 +390,7 @@ contains
        case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
        case('.NOTUSEMP2FRAG') 
           DECinfo%use_mp2_frag=.false.
-          !
+       case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.F12'); DECinfo%F12=.true.
        case('.F12DEBUG'); DECinfo%F12DEBUG=.true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.

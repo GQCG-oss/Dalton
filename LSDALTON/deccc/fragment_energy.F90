@@ -3024,14 +3024,21 @@ contains
        ! Test convergence for both Lagrangian, occupied, and virtual energies
        ! ********************************************************************
 
-       ! Lagrangian
-       TEST_CONVERGENCE_LAG: if  (LagEnergyDiff < FOT) then
-          write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Lagrangian energy converged, energydiff =', LagEnergyDiff
+       TEST_CONVERGENCE_LAG: if(DECinfo%OnlyOccPart) then 
+          ! do not consider Lagrangian error if we are only interested in occupied partitioning scheme
+          ! --> just set Lagrangian to be converged always
           lag_converged=.true.
        else
-          write(DECinfo%output,*) 'FOP: Lagrangian energy NOT converged'
-          lag_converged=.false.
+          if  (LagEnergyDiff < FOT) then
+             write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Lagrangian energy converged, energydiff =', &
+                  & LagEnergyDiff
+             lag_converged=.true.
+          else
+             write(DECinfo%output,*) 'FOP: Lagrangian energy NOT converged'
+             lag_converged=.false.
+          end if
        end if TEST_CONVERGENCE_LAG
+
 
        ! Occupied
        TEST_CONVERGENCE_OCC: if  (OccEnergyDiff < FOT) then
@@ -3043,12 +3050,17 @@ contains
        end if TEST_CONVERGENCE_OCC
 
        ! Virtual
-       TEST_CONVERGENCE_VIRT: if  (VirtEnergyDiff < FOT) then
-          write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Virtual energy converged, energydiff    =', VirtEnergyDiff
+       TEST_CONVERGENCE_VIRT: if(DECinfo%OnlyOccPart) then
           virt_converged=.true.
        else
-          write(DECinfo%output,*) 'FOP: Virtual energy NOT converged'
-          virt_converged=.false.
+          if  (VirtEnergyDiff < FOT) then
+             write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Virtual energy converged, energydiff    =', &
+                  & VirtEnergyDiff
+             virt_converged=.true.
+          else
+             write(DECinfo%output,*) 'FOP: Virtual energy NOT converged'
+             virt_converged=.false.
+          end if
        end if TEST_CONVERGENCE_VIRT
 
        ! We are converged only if ALL three energies are converged
@@ -3224,12 +3236,19 @@ contains
        ! ********************************************************************
 
        ! Lagrangian
-       TEST_REDUCTION_LAG: if  (LagEnergyDiff < FOT) then
-          write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Lagrangian reduction converged, energydiff =', LagEnergyDiff
+       TEST_REDUCTION_LAG: if(DECinfo%OnlyOccPart) then 
+          ! do not consider Lagrangian error if we are only interested in occupied partitioning scheme
+          ! --> just set Lagrangian to be converged always
           lag_converged=.true.
        else
-          write(DECinfo%output,*) 'FOP: Lagrangian reduction NOT converged'
-          lag_converged=.false.
+          if  (LagEnergyDiff < FOT) then
+             write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Lagrangian energy converged, energydiff =', &
+                  & LagEnergyDiff
+             lag_converged=.true.
+          else
+             write(DECinfo%output,*) 'FOP: Lagrangian energy NOT converged'
+             lag_converged=.false.
+          end if
        end if TEST_REDUCTION_LAG
 
        ! Occupied
@@ -3242,13 +3261,20 @@ contains
        end if TEST_REDUCTION_OCC
 
        ! Virtual
-       TEST_REDUCTION_VIRT: if  (VirtEnergyDiff < FOT) then
-          write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Virtual reduction converged, energydiff    =', VirtEnergyDiff
+       TEST_REDUCTION_VIRT: if(DECinfo%OnlyOccPart) then
           virt_converged=.true.
        else
-          write(DECinfo%output,*) 'FOP: Virtual reduction NOT converged'
-          virt_converged=.false.
+          if  (VirtEnergyDiff < FOT) then
+             write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Virtual energy converged, energydiff    =', &
+                  & VirtEnergyDiff
+             virt_converged=.true.
+          else
+             write(DECinfo%output,*) 'FOP: Virtual energy NOT converged'
+             virt_converged=.false.
+          end if
        end if TEST_REDUCTION_VIRT
+
+       ! All converged?
        if (lag_converged .and. occ_converged .and. virt_converged) converged=.true.
 
 
@@ -3560,12 +3586,20 @@ contains
        ! ********************************************************************
 
        ! Lagrangian
-       TEST_CONVERGENCE_LAG: if  (LagEnergyDiff < FOT) then
-          write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Lagrangian energy converged, energydiff =', LagEnergyDiff
+
+       TEST_CONVERGENCE_LAG: if(DECinfo%OnlyOccPart) then 
+          ! do not consider Lagrangian error if we are only interested in occupied partitioning scheme
+          ! --> just set Lagrangian to be converged always
           lag_converged=.true.
        else
-          write(DECinfo%output,*) 'FOP: Lagrangian energy NOT converged'
-          lag_converged=.false.
+          if  (LagEnergyDiff < FOT) then
+             write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Lagrangian energy converged, energydiff =', &
+                  & LagEnergyDiff
+             lag_converged=.true.
+          else
+             write(DECinfo%output,*) 'FOP: Lagrangian energy NOT converged'
+             lag_converged=.false.
+          end if
        end if TEST_CONVERGENCE_LAG
 
        ! Occupied
@@ -3578,12 +3612,16 @@ contains
        end if TEST_CONVERGENCE_OCC
 
        ! Virtual
-       TEST_CONVERGENCE_VIRT: if  (VirtEnergyDiff < FOT) then
-          write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Virtual energy converged, energydiff    =', VirtEnergyDiff
+       TEST_CONVERGENCE_VIRT: if(DECinfo%OnlyOccPart) then
           virt_converged=.true.
        else
-          write(DECinfo%output,*) 'FOP: Virtual energy NOT converged'
-          virt_converged=.false.
+          if  (VirtEnergyDiff < FOT) then
+             write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Virtual energy converged, energydiff    =', VirtEnergyDiff
+             virt_converged=.true.
+          else
+             write(DECinfo%output,*) 'FOP: Virtual energy NOT converged'
+             virt_converged=.false.
+          end if
        end if TEST_CONVERGENCE_VIRT
 
        ! We are converged only if ALL three energies are converged
@@ -3663,6 +3701,11 @@ contains
        call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
        ! Check for convergence
+       ! For only occ partitioning, set Lagrangian and virtual errors to zero
+       if(DECinfo%OnlyOccPart) then
+          LagEnergyDiff=0.0_realk
+          VirtEnergyDiff=0.0_realk
+       end if
        if( (LagEnergyDiff < FOT) .and. (OccEnergyDiff< FOT) .and. (VirtEnergyDiff< FOT) ) then
           write(DECinfo%output,'(a,i6)') 'FOP fine-tuning converged in iter ', iter
           finetuning_converged=.true.
@@ -3810,22 +3853,28 @@ contains
           ! ********************************************************************
 
           ! Lagrangian
-          TEST_REDUCTION_LAG: if  (LagEnergyDiff < FOT) then
-             if(ov==1) then
-                write(DECinfo%output,'(1X,a,F14.9)') &
-                     & 'FOP: Lagrangian energy converged (occ reduction), diff =', LagEnergyDiff
-             else
-                write(DECinfo%output,'(1X,a,F14.9)') &
-                     & 'FOP: Lagrangian energy converged (virt reduction), diff =', LagEnergyDiff
-             end if
+          TEST_REDUCTION_LAG: if(DECinfo%OnlyOccPart) then
+             ! do not consider Lagrangian error if we are only interested in occ partitioning scheme
+             ! --> just set Lagrangian to be converged always
              lag_converged=.true.
           else
-             if(ov==1) then
-                write(DECinfo%output,*) 'FOP: Lagrangian energy (occ reduction) NOT converged'
+             if  (LagEnergyDiff < FOT) then
+                if(ov==1) then
+                   write(DECinfo%output,'(1X,a,F14.9)') &
+                        & 'FOP: Lagrangian energy converged (occ reduction), diff =', LagEnergyDiff
+                else
+                   write(DECinfo%output,'(1X,a,F14.9)') &
+                        & 'FOP: Lagrangian energy converged (virt reduction), diff =', LagEnergyDiff
+                end if
+                lag_converged=.true.
              else
-                write(DECinfo%output,*) 'FOP: Lagrangian energy (virt reduction) NOT converged'
+                if(ov==1) then
+                   write(DECinfo%output,*) 'FOP: Lagrangian energy (occ reduction) NOT converged'
+                else
+                   write(DECinfo%output,*) 'FOP: Lagrangian energy (virt reduction) NOT converged'
+                end if
+                lag_converged=.false.
              end if
-             lag_converged=.false.
           end if TEST_REDUCTION_LAG
 
           ! Occupied
@@ -3848,22 +3897,26 @@ contains
           end if TEST_REDUCTION_OCC
 
           ! Virtual
-          TEST_REDUCTION_VIRT: if  (VirtEnergyDiff < FOT) then
-             if(ov==1) then
-                write(DECinfo%output,'(1X,a,F14.9)') &
-                     & 'FOP: Virtual energy converged (occ reduction), diff =', VirtEnergyDiff
-             else
-                write(DECinfo%output,'(1X,a,F14.9)') &
-                     & 'FOP: Virtual energy converged (virt reduction), diff =', VirtEnergyDiff
-             end if
+          TEST_REDUCTION_VIRT: if(DECinfo%OnlyOccPart) then
              virt_converged=.true.
           else
-             if(ov==1) then
-                write(DECinfo%output,*) 'FOP: Virtual energy (occ reduction) NOT converged'
+             if  (VirtEnergyDiff < FOT) then
+                if(ov==1) then
+                   write(DECinfo%output,'(1X,a,F14.9)') &
+                        & 'FOP: Virtual energy converged (occ reduction), diff =', VirtEnergyDiff
+                else
+                   write(DECinfo%output,'(1X,a,F14.9)') &
+                        & 'FOP: Virtual energy converged (virt reduction), diff =', VirtEnergyDiff
+                end if
+                virt_converged=.true.
              else
-                write(DECinfo%output,*) 'FOP: Virtual energy (virt reduction) NOT converged'
+                if(ov==1) then
+                   write(DECinfo%output,*) 'FOP: Virtual energy (occ reduction) NOT converged'
+                else
+                   write(DECinfo%output,*) 'FOP: Virtual energy (virt reduction) NOT converged'
+                end if
+                virt_converged=.false.
              end if
-             virt_converged=.false.
           end if TEST_REDUCTION_VIRT
           if (lag_converged .and. occ_converged .and. virt_converged) then
              converged=.true.

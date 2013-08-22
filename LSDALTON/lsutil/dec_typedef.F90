@@ -258,6 +258,8 @@ module dec_typedef_module
      integer :: FragmentExpansionSize
      !> Use MP2 optimized fragments (default)
      logical :: use_mp2_frag
+     !> Only consider occupied partitioning
+     logical :: OnlyOccPart
      ! --  
 
      !> Pair fragments
