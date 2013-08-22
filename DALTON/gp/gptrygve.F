@@ -260,6 +260,30 @@ C
       STOP 100
 #endif
       END
+C  /* Deck parquit */
+      SUBROUTINE PARQUIT(TEXT)
+C Purpose:
+C   Error message if code is not implemented for parallel calculations.
+
+      IMPLICIT NONE
+
+#include "priunit.h"
+      CHARACTER TEXT*(*)
+      INTEGER LUPRIN
+C
+C
+      IF (LUPRI .GE. 0) THEN
+         LUPRIN = LUPRI
+      ELSE IF (LUERR .GE. 0) THEN
+         LUPRIN = LUERR
+      ELSE
+         LUPRIN = 6
+      END IF
+      WRITE (LUPRIN,*) 'ERROR: ',TEXT,
+     & ' not implemented for parallel calculations!'
+      CALL QUIT(TEXT)
+      RETURN
+      END
 C  /* Deck opendx */
       SUBROUTINE OPENDX (LUDX,NAME,NELEM,STATUS,OLDDX)
 C
