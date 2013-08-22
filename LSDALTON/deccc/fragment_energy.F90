@@ -3446,18 +3446,18 @@ contains
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
     real(realk)                    :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
-    real(realk)                    :: LagEnergyOld, OccEnergyOld, VirtEnergyOld
-    real(realk)                    :: FOT, LagEnergyExp, OccEnergyExp, VirtEnergyExp
+    real(realk)                    :: LagEnergyOld, OccEnergyOld, VirtEnergyOld, FOT
     logical, dimension(natoms)     :: Occ_atoms,Virt_atoms,OccOld,VirtOld
     real(realk),dimension(natoms)  :: DistMyAtom,SortedDistMyAtom
-    integer,dimension(natoms)      :: DistTrackMyAtom
-    integer,dimension(natoms)      :: nocc_per_atom,nunocc_per_atom
+    integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
     type(ccatom) :: FOfragment
-    integer      :: iter,i,ov,natomsAOS,idx
+    integer      :: iter,i,ov,idx
     integer      :: Nnew,Nold, max_iter_red,nocc_exp,nvirt_exp
-    logical      :: converged,ReductionPossible(2),finetuning_converged
+    logical      :: converged,ReductionPossible(2)
     logical :: expansion_converged, lag_converged, occ_converged, virt_converged
     real(realk) :: slavetime, flops_slaves
+    real(realk),pointer :: OccMat(:,:), VirtMat(:,:)
+    
 
     write(DECinfo%output,'(a)')    ' FOP'
     write(DECinfo%output,'(a)')    ' FOP ==============================================='
@@ -3559,22 +3559,28 @@ contains
     lag_converged=.false.
     occ_converged=.false.
     virt_converged=.false.
-    LagEnergyExp = 0.0_realk
-    OccEnergyExp = 0.0_realk
-    VirtEnergyExp = 0.0_realk
-    call atomic_fragment_free(AtomicFragment)
 
     EXPANSION_LOOP: do iter = 1,DECinfo%MaxIter
+
+       ! Save information for current fragment (in case current fragment is the final one)
        OccOld=Occ_atoms;VirtOld=Virt_atoms
        LagEnergyOld = AtomicFragment%LagFOP
        OccEnergyOld = AtomicFragment%EoccFOP
        VirtEnergyOld = AtomicFragment%EvirtFOP
+       ! correlation density matrices                                                                  
+       call mem_alloc(OccMat,AtomicFragment%noccAOS,AtomicFragment%noccAOS)
+       call mem_alloc(VirtMat,AtomicFragment%nunoccAOS,AtomicFragment%nunoccAOS)
+       OccMat = AtomicFragment%OccMat
+       VirtMat = AtomicFragment%VirtMat
 
+       ! Expand fragment and get new energy
        call Expandfragment(Occ_atoms,Virt_atoms,DistTrackMyAtom,natoms,&
             & nocc_per_atom,nunocc_per_atom)
+       call atomic_fragment_free(AtomicFragment)
        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
             & AtomicFragment)
+
        ! MPI fragment statistics
        slavetime = slavetime +  AtomicFragment%slavetime
        flops_slaves = flops_slaves + AtomicFragment%flops_slaves
@@ -3628,11 +3634,13 @@ contains
        ! We are converged only if ALL three energies are converged
        ExpansionConvergence: if(lag_converged .and. occ_converged .and. virt_converged) then
           expansion_converged=.true.
+          Occ_atoms = OccOld;Virt_atoms = VirtOld
           write(DECinfo%output,*) 'FOP Fragment expansion converged in iteration ', iter
           exit EXPANSION_LOOP
        end if ExpansionConvergence
 
-       call atomic_fragment_free(AtomicFragment)
+       call mem_dealloc(OccMat)
+       call mem_dealloc(VirtMat)
 
     end do EXPANSION_LOOP
 
@@ -3644,10 +3652,28 @@ contains
             & Try to increase the number of expansion steps using the .MaxIter keyword',DECinfo%output)
     end if
 
-    ! Save energies for converged fragment from expansion
-    LagEnergyOld = AtomicFragment%LagFOP
-    OccEnergyOld = AtomicFragment%EoccFOP 
-    VirtEnergyOld =  AtomicFragment%EvirtFOP
+    ! Set AtomicFragment to be the converged fragment                                        
+    ! ***********************************************
+    ! Delete current fragment (which was too large)
+    call atomic_fragment_free(AtomicFragment)
+    ! New fragment using dimensions for converged fragment
+    call atomic_fragment_init_atom_specific(MyAtom,natoms,Virt_Atoms, &
+         & Occ_Atoms,nocc,nunocc,OccOrbitals,UnoccOrbitals, &
+         & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+
+    ! Set energies and correlation densities correctly without having to do a new calculation
+    AtomicFragment%LagFOP = LagEnergyOld
+    AtomicFragment%EoccFOP = OccEnergyOld
+    AtomicFragment%EvirtFOP = VirtEnergyOld
+
+    ! correlation density matrices
+    call mem_alloc(AtomicFragment%OccMat,AtomicFragment%noccAOS,AtomicFragment%noccAOS)
+    call mem_alloc(AtomicFragment%VirtMat,AtomicFragment%nunoccAOS,AtomicFragment%nunoccAOS)
+    AtomicFragment%CDSet=.true. ! correlation density matrices have been set                           
+    AtomicFragment%OccMat = OccMat
+    AtomicFragment%VirtMat = VirtMat
+    call mem_dealloc(OccMat)
+    call mem_dealloc(VirtMat)
 
     ! Save dimensions for statistics
     nocc_exp = AtomicFragment%noccAOS

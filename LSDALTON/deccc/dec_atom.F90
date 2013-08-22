@@ -2257,12 +2257,14 @@ contains
     end if FitOrbitalsForFragment
 
 
-    ! Purify fragment MO coefficients 
-    ! (not for fragment-adapted orbitals since these are automatically orthogonal
-    !  by virtue of the purification of the local orbitals).
-    if(DECinfo%PurifyMOs .and. (.not. fragment%fragmentadapted) ) then
-       call fragment_purify(fragment)
-    end if
+! KK: Purification can be problematic for local orbitals in the context of fragment optimization, 
+! so currently it is only used in combination with fragment-adapted orbitals.
+!!$    ! Purify fragment MO coefficients 
+!!$    ! (not for fragment-adapted orbitals since these are automatically orthogonal
+!!$    !  by virtue of the purification of the local orbitals).
+!!$    if(DECinfo%PurifyMOs) then
+!!$       call fragment_purify(fragment)
+!!$    end if
  
 
  ! adjust fock matrix in ao basis
