@@ -39,36 +39,26 @@ detects the use of a Dunning basis set like (cc-pVXZ) but the calculation will f
 This input module defines the way the integrals should be calculated.
 \begin{description}
 
-\item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
-When using this keyword, an auxiliary basis set has to be 
-specified in the \mol\ file.
 
-\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM) to approximate 
-the exact-exchange energy and gradient contributions \cite{ADMM:2010}.
-When using this keyword, an auxiliary basis set has to be 
+%{\bf Test cases} in LSint: LSDALTON\_ethane\_pari\_b3lyp, 
+%LSDALTON\_ethane\_pari\_b3lyp\_ChgConst, 
+%LSDALTON\_ethane\_pari\_b3lyp\_ChgDipConst, 
+%LSDALTON\_ethane\_pari\_b3lyp\_unconstrained
+
+
+\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM)~\cite{ADMM:2010} to approximate 
+the exact-exchange contribution. When using this keyword, an auxiliary basis set has to be 
 specified in the \mol\ file such as:
 \begin{verbatim}
 1     BASIS
 2     6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21G
       ...
 \end{verbatim} 
-where the "JK" basis is used as ADMM auxiliary basis set, and the choice of "CABS" basis isn't used here even though it needs to be assigned an existing basis set.
-Beware that ADMM accuracy and robustness haven't been thoroughly tested yet.\newline
-{\bf Test case example}: linsca/linsca\_admm\_df
+where the "JK" basis is used as ADMM auxiliary basis set. You also have to provide a valid 
+"CABS" basis from the library (which is needed for technical reasons, but will not actually 
+be used in the calculation). \emph{Note of caution: we do not recommend to use ADMM in combination 
+with geometry optimization.}
 
-\item[\Key{PARI}] Use the very local Pair-Atomic Resolution-of-the-Identity (PARI) 
-approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
-When using this keyword, an auxiliary basis set has to be 
-specified in the \mol\ file.\newline
-{\bf Use at your own risk}: note that this method contains inherent deficiencies (discussed in~\cite{PARI:2013}) 
-which may result in the non-convergence of the SCF scheme for HF or KS-DFT. \newline
-{\bf Test cases} in LSint: LSDALTON\_ethane\_pari\_b3lyp, 
-LSDALTON\_ethane\_pari\_b3lyp\_ChgConst, 
-LSDALTON\_ethane\_pari\_b3lyp\_ChgDipConst, 
-LSDALTON\_ethane\_pari\_b3lyp\_unconstrained
-
-
-\item[\Key{RUNMM}] Use the (Fast) Multipole Method.
 
 \item[\Key{AOPRINT}] 
 \verb| | \newline
@@ -89,6 +79,12 @@ Calculate the cartesian multipole moment integrals to the order requested.
 \item[\Key{CART-E}] Use cartesian E-coefficients instead of hermite E-coefficients for the McMurchie-Davidson
 integral-evaluation scheme \cite{McMurchie1978} used in \lsdalton. The use of Cartesian E-coefficients is 
 default in most integral programs. We however use hermite E-coefficients according to ref.~\cite{reine:4771}.
+
+\item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
+When using this keyword, an auxiliary basis set has to be 
+specified in the \mol\ file. For the Poples basis sets we recommend df-def2 and for
+Dunnings basis sets use the corresponding cc-pV$X$Zdenfit basis sets, with $X=$T$,$Q$,5$.
+
 \item[\Key{ETUVIL}] Build E-coefficients inside the integral loop, in order to reduced memory requirements. 
 This will increase the workload! 
 %\item[\Key{FRAGMENT}] Calculate integrals in fragments, in order to reduced memory requirements 
@@ -124,7 +120,15 @@ Print information about the molecule. The higher the print level, the more infor
 \item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals.
 \item[\Key{NSETUV}] Use non-spherical E-coefficients.
 \item[\Key{OVERLAP-DF-J}] Use the Overlap density fitting algorithm for the calculation of the Coulomb matrix.
-%\item[\Key{PARI}] Use pair-atomic-resolution-of-the-identity algorithm for the calculation of the Fock matrix
+\item[\Key{PARI}] Use the Pair-Atomic Resolution-of-the-Identity
+approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
+When using this keyword, an auxiliary basis set has to be 
+specified in the \mol\ file.\newline
+\emph{We do not recommend to use this method for any production runs, and have included it 
+in case other method developers would like to explore it (see the reference for details).}
+
+\item[\Key{RUNMM}] Use the (Fast) Multipole Method.
+
 \item[\Key{SPHMOM}] 
 \verb| | \newline
 \verb|<Order of multipole moment>|\newline
