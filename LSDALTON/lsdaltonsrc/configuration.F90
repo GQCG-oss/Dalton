@@ -3207,7 +3207,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    endif
    if(config%integral%ADMM_DFBASIS .AND. (.NOT. config%integral%auxbasis))then
       WRITE(config%LUPRI,'(/A)') &
-           &     'You have specified an ADMM-DF calculation in the dalton input but not supplied an aux fitting basis set as required'
+           & 'You have specified an ADMM-DF calculation in the dalton input but not supplied an aux fitting basis set as required'
       WRITE(config%LUPRI,'(/A)') &
            &     'Please read the ADMM part in the manual and supply aux basis set'
       CALL lsQUIT('ADMM fitting input inconsitensy: add aux fitting basis set',config%lupri)
