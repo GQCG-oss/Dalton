@@ -842,6 +842,11 @@ subroutine DEC_meaningful_input(config)
      if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=1) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .SCALAPACK!',-1)
      end if
+     ! CCSD does not work for CSR, Thomas/Hubi please fix - make not matrix type
+     ! subroutines
+     if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=1) ) then
+        call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .CSR!',-1)
+     end if
 
      ! DEC and response do not go together right now...
      if(config%response%tasks%doResponse) then
@@ -1075,8 +1080,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.DEBUG4CENTERERI');  INTEGRAL%DEBUG4CENTER_ERI = .TRUE.
         CASE ('.DEBUGCCFRAGMENT');  INTEGRAL%DEBUGCCFRAGMENT = .TRUE.
         CASE ('.DEBUGDECPACKED'); INTEGRAL%DEBUGDECPACKED = .TRUE.
-        CASE ('.CARMOM');  READ(LUCMD,*) INTEGRAL%CARMOM
-        CASE ('.SPHMOM');  READ(LUCMD,*) INTEGRAL%SPHMOM
         CASE ('.CART-E'); INTEGRAL%HermiteEcoeff = .FALSE.
         CASE ('.INTPRINT');  READ(LUCMD,*) INTEGRAL%INTPRINT
         CASE ('.NOJENGINE'); INTEGRAL%JENGINE = .FALSE.
@@ -3172,6 +3175,33 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       WRITE(config%LUPRI,'(/A)') &
            &     'You have specified .DENSFIT in the dalton input but not supplied a fitting basis set'
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
+   endif
+!ADMM basis input
+   if(config%integral%ADMM_JKBASIS .AND. (.NOT. config%integral%JKbasis))then
+      WRITE(config%LUPRI,'(/A)') &
+           &     'You have specified an ADMM-JK calculation in the dalton input but not supplied a JK fitting basis set as required'
+      WRITE(config%LUPRI,'(/A)') &
+           &     'Please read the ADMM part in the manual and supply JK basis set'
+      CALL lsQUIT('ADMM fitting input inconsitensy: add JK fitting basis set',config%lupri)
+   endif
+   if(config%integral%ADMM_DFBASIS .AND. (.NOT. config%integral%auxbasis))then
+      WRITE(config%LUPRI,'(/A)') &
+           &     'You have specified an ADMM-DF calculation in the dalton input but not supplied an aux fitting basis set as required'
+      WRITE(config%LUPRI,'(/A)') &
+           &     'Please read the ADMM part in the manual and supply aux basis set'
+      CALL lsQUIT('ADMM fitting input inconsitensy: add aux fitting basis set',config%lupri)
+   endif
+
+   if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K))then
+      WRITE(config%LUPRI,'(/A)') 'The Pari keywords do not currently work with response'
+      WRITE(config%LUPRI,'(/A)') 'Please remove the Pari keywords'
+      CALL lsQUIT('The Pari keywords do not currently work with response',config%lupri)
+   endif
+
+   if(config%response%tasks%doResponse.AND.config%integral%FMM)then
+      WRITE(config%LUPRI,'(/A)') 'The .RUNMM keyword do not currently work with response'
+      WRITE(config%LUPRI,'(/A)') 'Please remove the .RUNMM keyword'
+      CALL lsQUIT('The .RUNMM keyword do not currently work with response',config%lupri)
    endif
 
    if(config%integral%DALINK .AND. config%opt%cfg_incremental)THEN

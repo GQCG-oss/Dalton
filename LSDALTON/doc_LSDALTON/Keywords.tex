@@ -34,7 +34,7 @@ NB: Requires linking to the scalapack lib (provided by MKL).
 detects the use of a Dunning basis set like (cc-pVXZ) but the calculation will force the use of the Grand Canonical basis using this keyword.
 
 \end{description}
-\section{**INTEGRAL}\label{sec:integral}
+\section{**INTEGRAL basic keywords}\label{sec:integral}
 
 This input module defines the way the integrals should be calculated.
 \begin{description}
@@ -73,91 +73,110 @@ LSDALTON\_ethane\_pari\_b3lyp\_unconstrained
 \item[\Key{AOPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
-Print the Atomic Orbital information. The higher the print level, the more information will be printed.
+Print the Atomic Orbital information. The higher the print level, the more information will be printed. Default value is 0.
 \item[\Key{BASPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
 Print the basis set information. The higher the print level, the more information will be printed.
-Using a print level of 6 will print the input exponents and contraction coefficients read from file as well as the normalized basis used in LSDALTON.  
-\item[\Key{CARMOM}] 
-\verb| | \newline
-\verb|<Order of multipole moment>|\newline
-Calculate the cartesian multipole moment integrals to the order requested. 
-\begin{eqnarray}
-\int \chi_{\mu}(r_{1}) x^{i}y^{j}z^{k} \chi_{\rho}(r_{2}) dr_{1}dr_{2}
-\end{eqnarray}
-\item[\Key{CART-E}] Use cartesian E-coefficients instead of hermite E-coefficients for the McMurchie-Davidson
-integral-evaluation scheme \cite{McMurchie1978} used in \lsdalton. The use of Cartesian E-coefficients is 
-default in most integral programs. We however use hermite E-coefficients according to ref.~\cite{reine:4771}.
-\item[\Key{ETUVIL}] Build E-coefficients inside the integral loop, in order to reduced memory requirements. 
-This will increase the workload! 
-%\item[\Key{FRAGMENT}] Calculate integrals in fragments, in order to reduced memory requirements 
-\item[\Key{FTUVMAXPRIM}] 
-\verb| | \newline
-\verb|<Maxprim>|\newline
-Sets the maximum number of primitives used in the FTUV batches in the J-engine algorithm.
+Using a print level of 6 will print the input exponents and contraction coefficients read from file as well as the normalized basis used in LSDALTON. Default value is 0. 
 \item[\Key{INTPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
-Print information about the actual integral evaluation. The higher the print level, the more information will be printed. 
+Print information about the actual integral evaluation. The higher the print level, the more information will be printed. Default value is 0.
 \item[\Key{NOJENGINE}] Turn off J-engine algorithm (which is default) for the calculation of the Coulomb matrix 
 (see Refs. \cite{shao:425} and \cite{shao:6572}). Compute instead Coulomb-like contributions from the explicitly calculated integrals.
 \item[\Key{NOLINK}] Turn off the LinK algorithm (which is default) for the calculation of the exchange matrix (see Ref. \cite{ochsenfeld:1663}).
 \item[\Key{LINSCAPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
-Print level in the integral code. The higher the print level, the more information will be printed.
+Print level in the integral code. The higher the print level, the more information will be printed. This keyword corresponds to 
+\begin{verbatim}
+.AOPRINT
+<Print level>
+.BASPRINT
+<Print level>
+.MOLPRINT
+<Print level>
+.INTPRINT
+<Print level>
+\end{verbatim} 
+See the individual keywords for more details. Default value is 0.
+\item[\Key{MOLPRINT}] 
+\verb| | \newline
+\verb|<Print level>|\newline
+Print information about the molecule. The higher the print level, the more information will be printed. Default value is 0.
+\item[\Key{NO SCREEN}] Deactivate the use of all screening methods.
+\item[\Key{NOFAMILY}] Deactivate the exploitation of family type basis set, basis set sharing exponents for different angular momentums.  
+\item[\Key{THRESH}]
+\verb| | \newline
+\verb|<Threshold>|\newline
+An overall screening threshold for integral evaluation. The default value is $10^{-8}$
+
+The various integral-evaluation thresholds (below) are set according to this Threshold. 
+\begin{itemize}
+\item The Cauchy-Schwarz screening threshold is set equal to Threshold (can be set separately by \Key{THR\_CS})
+\begin{itemize}
+  \item The Screening threshold used for Coulomb is Threshold $\cdot 10^{-2}$ (Default: $10^{-10}$) 
+  \item The Screening threshold used for Exchange is Threshold $\cdot 10^{-0}$ (Default: $10^{-8}$)
+  \item The Screening threshold used for One-electron operators is Threshold $\cdot 10^{-7}$ (Default: $10^{-15}$)
+\end{itemize}
+\item The Primitve Cauchy-Schwarz screening threshold is set equal to Threshold$\cdot 10^{-1}$  (can be set separately by \Key{THR\_PS})
+\item The Overlap-distribution distance-screening threshold is set equal to 
+      Threshold $\cdot 10^{-1}$.
+      When calculating overlap integrals, this threshold 
+      is used for setting up AO extents. Overlap distributions (ODs) for which the 
+      distance between the two AOs are larger than the sum of the extents are 
+      screened away. %(OD screening)
+\item The Overlap-distribution extent-screeing threshold is set equal to 
+      Threshold $\cdot 10^{-1}$. When calculating overlap integrals, this threshold 
+      is used for setting up OD extents. Overlap integrals between two ODs separated
+      by more than the sum of the extents are screened away. %(OE screening)
+\item The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on
+      the non-classical extent of the contineous charge distribution (orbitals or orbital products). By default this threshold 
+      is set equal to Threshold $\cdot 10^{-1}$ (can be set separately by \Key{SCREEN} under *FMM)
+\end{itemize}
+\end{description}
+
+\section{**INTEGRAL advanced keywords}\label{sec:integral}
+
+This input module defines the way the integrals should be calculated. 
+This section contains some advanced keywords which is mostly usefull 
+for debugging or comparisons with other codes. 
+\begin{description}
+
+\item[\Key{NO CS}] Deactivate the use of Cauchy-Schwarz screening. 
+Note that this does not deactivate the Primitive Cauchy-Schwarz screening. 
+\item[\Key{NO PS}] Deactivate the use of primitive Cauchy-Schwarz screening.
+\item[\Key{THR\_CS}] 
+\verb| | \newline
+\verb|<CS_Threshold>|\newline
+Cauchy-Schwarz screening threshold. The default value is $10^{-8}$. Note that 
+\begin{itemize}
+  \item The Screening threshold used for Coulomb is CS\_Threshold $\cdot 10^{-2}$ (Default: $10^{-10}$) 
+  \item The Screening threshold used for Exchange is CS\_Threshold $\cdot 10^{-0}$ (Default: $10^{-8}$)
+  \item The Screening threshold used for One-electron operators is CS\_Threshold $\cdot 10^{-7}$ (Default: $10^{-15}$)
+\end{itemize}
+\item[\Key{THR\_PS}] 
+\verb| | \newline
+\verb|<PS_Threshold>|\newline
+Primitive Cauchy-Schwarz screening threshold. The default value is $10^{-9}$
+\item[\Key{CART-E}] Use cartesian E-coefficients instead of hermite E-coefficients for the McMurchie-Davidson
+integral-evaluation scheme \cite{McMurchie1978} used in \lsdalton. The use of Cartesian E-coefficients is 
+default in most integral programs. We however use hermite E-coefficients according to ref.~\cite{reine:4771}.
+\item[\Key{FTUVMAXPRIM}] 
+\verb| | \newline
+\verb|<Maxprim>|\newline
+Sets the maximum number of primitives used in the FTUV batches in the J-engine algorithm.
 \item[\Key{LOW RJ000 ACCURACY}] Use a decreased accuracy for the calculation of the Boys function.
 \item[\Key{MAXPASSES}] 
 \verb| | \newline
 \verb|<maxpass>|\newline
-Change the maximum number of collected overlaps (default is 40).
-\item[\Key{MOLPRINT}] 
-\verb| | \newline
-\verb|<Print level>|\newline
-Print information about the molecule. The higher the print level, the more information will be printed. 
-\item[\Key{NO CS}] Deactivate the use of Cauchy-Schwarz screening.
-\item[\Key{NO PASS}] Deactivate the use of Passes, the collection of overlaps which is used as default in order to increase efficiency. 
-\item[\Key{NO PS}] Deactivate the use of primitive Cauchy-Schwarz screening.
-\item[\Key{NO SCREEN}] Deactivate the use of all screening methods.
-\item[\Key{NOFAMILY}] Deactivate the exploitation of family type basis set, basis set sharing exponents for different angular momentums.  
-\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals.
+Change the maximum number of collected overlap distributions (default is 40).
+\item[\Key{NO PASS}] Deactivate the use of Passes, the collection of overlap distributions which is used as default in order to increase efficiency. 
+\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals. The basis is considered to be a general contracted basis where all primitives contribute to all contracted functions. 
 \item[\Key{NSETUV}] Use non-spherical E-coefficients.
 \item[\Key{OVERLAP-DF-J}] Use the Overlap density fitting algorithm for the calculation of the Coulomb matrix.
 %\item[\Key{PARI}] Use pair-atomic-resolution-of-the-identity algorithm for the calculation of the Fock matrix
-\item[\Key{SPHMOM}] 
-\verb| | \newline
-\verb|<Order of multipole moment>|\newline
-Calculate spherical multipole moment integrals to the requested order.
-\item[\Key{THR\_CS}] 
-\verb| | \newline
-\verb|<CS_Threshold>|\newline
-Cauchy-Schwarz screening threshold.
-\item[\Key{THR\_PS}] 
-\verb| | \newline
-\verb|<PS_Threshold>|\newline
-Primitive Cauchy-Schwarz screening threshold.
-\item[\Key{THRESH}]
-\verb| | \newline
-\verb|<Threshold>|\newline
-An overall screening threshold for integral evaluation. The various integral-evaluation thresholds (below) are set according to
-\begin{itemize}
-\item The Cauchy-Schwarz screening threshold is set equal to Threshold (can be set separately by \Key{THR\_CS})
-\item The Primitve Cauchy-Schwarz screening threshold is set equal to Threshold$\cdot 10^{-1}$  (can be set separately by \Key{THR\_PS})
-\item The Overlap-distribution distance-screening threshold is set equal to 
-      Threshold$\cdot 10^{-1}$.
-      When calculating overlap integrals, this threshold 
-      is used for setting up AO extents. Overlap distributions (ODs) for which the 
-      distance between the two AOs are larger than the sum of the extents are 
-      screened away.
-\item The Overlap-distribution extent-screeing threshold is set equal to 
-      Threshold$\cdot 10^{-1}$. When calculating overlap integrals, this threshold 
-      is used for setting up OD extents. Overlap integrals between two ODs separated
-      by more than the sum of the extents are screened away. 
-\item The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on
-      the non-classical extent of the contineous charge distribution (orbitals or orbital products). By default this threshold 
-      is set equal to Threshold$\cdot 10^{-1}$ (can be set separately by \Key{SCREEN} under *FMM)
-\end{itemize}
 \item[\Key{UNCONT}] Treat the basis functions (given by input) as fully uncontracted basis fuctions (i.e. ignore
 any contraction coefficients given in the basis and treat instead all the primitives as separate basis functions).
 \end{description}
@@ -187,13 +206,15 @@ It has however not been tested for speed and efficiency.
 \begin{description}
 \item[\Key{LMAX}] \verb| |\newline
 \verb|<Lmax>|\newline
-The maximum multipole-moment expansion order of a given orbital product.
+The maximum multipole-moment expansion order of a given orbital product. Default Value is 8.
 \item[\Key{TLMAX}] \verb| |\newline
 \verb|<TLmax>|\newline
-The maximum order used for translated multipole-moments.
+The maximum order used for translated multipole-moments. Default Value is 20.
 \item[\Key{SCREEN}] \verb| |\newline
 \verb|<Threshold>|\newline
-Defines the threshold used to determine if a contribution can be calculated classically on non-classically.
+The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on the non-classical extent of the contineous charge distribution (orbitals or orbital products). 
+By default this threshold is set equal to $\cdot 10^{-9}$ 
+Defines the threshold used to determine if a contribution can be calculated classically or non-classically.
 \item[\Key{NOONE}] Do not use FMM for the nuclear-electron attraction.
 \item[\Key{NOMMBU}] Do not use io-buffers for interfacing multipole-moments to the FMM driver.
 \end{description}
