@@ -848,6 +848,12 @@ subroutine DEC_meaningful_input(config)
         call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
      end if
 
+     ! It is meaningless to run a DFT calculation and then build DEC (or full CC) on top of it...
+     if(config%opt%calctype == config%opt%dftcalc) then
+        call lsquit('Error in input: DFT and DEC (or full molecular CC) calculation cannot &
+             & be combined!',-1)
+     end if
+
      ! DEC geometry optimization 
      ! *************************
      GeoOptCheck: if(config%optinfo%optimize .or. config%dynamics%do_dynamics) then
@@ -890,6 +896,15 @@ subroutine DEC_meaningful_input(config)
            config%decomp%cfg_mlo_m(2) = 2
 
         end if NotFullCalc
+
+        ! For the release we only include DEC-MP2
+#ifndef MOD_UNRELEASED
+        if(DECinfo%ccmodel/=1 .and. (.not. DECinfo%full_molecular_cc) ) then
+           print *, 'Note that you may run a full molecular CC calculation (not linear-scaling)'
+           print *, 'using the **CC section rather than the **DEC section.'
+           call lsquit('DEC is currently only available for the MP2 model!',-1)
+        end if
+#endif
 
      end if OrbLocCheck
 
