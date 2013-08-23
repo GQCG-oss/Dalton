@@ -61,37 +61,14 @@ Print the Atomic Orbital information. The higher the print level, the more infor
 \verb|<Print level>|\newline
 Print the basis set information. The higher the print level, the more information will be printed.
 Using a print level of 6 will print the input exponents and contraction coefficients read from file as well as the normalized basis used in LSDALTON.  
-\item[\Key{CARMOM}] 
-\verb| | \newline
-\verb|<Order of multipole moment>|\newline
-Calculate the cartesian multipole moment integrals to the order requested. 
-\begin{eqnarray}
-\int \chi_{\mu}(r_{1}) x^{i}y^{j}z^{k} \chi_{\rho}(r_{2}) dr_{1}dr_{2}
-\end{eqnarray}
-\item[\Key{CART-E}] Use cartesian E-coefficients instead of hermite E-coefficients for the McMurchie-Davidson
-integral-evaluation scheme \cite{McMurchie1978} used in \lsdalton. The use of Cartesian E-coefficients is 
-default in most integral programs. We however use hermite E-coefficients according to ref.~\cite{reine:4771}.
-
 \item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
 When using this keyword, an auxiliary basis set has to be 
 specified in the \mol\ file. For the Poples basis sets we recommend df-def2 and for
 Dunnings basis sets use the corresponding cc-pV$X$Zdenfit basis sets, with $X=$T$,$Q$,5$.
-
-\item[\Key{ETUVIL}] Build E-coefficients inside the integral loop, in order to reduced memory requirements. 
-This will increase the workload! 
-%\item[\Key{FRAGMENT}] Calculate integrals in fragments, in order to reduced memory requirements 
-\item[\Key{FTUVMAXPRIM}] 
-\verb| | \newline
-\verb|<Maxprim>|\newline
-Sets the maximum number of primitives used in the FTUV batches in the J-engine algorithm.
-Using a print level of 6 will print the input exponents and contraction coefficients read from file as well as the normalized basis used in LSDALTON. Default value is 0. 
 \item[\Key{INTPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
 Print information about the actual integral evaluation. The higher the print level, the more information will be printed. Default value is 0.
-\item[\Key{NOJENGINE}] Turn off J-engine algorithm (which is default) for the calculation of the Coulomb matrix 
-(see Refs. \cite{shao:425} and \cite{shao:6572}). Compute instead Coulomb-like contributions from the explicitly calculated integrals.
-\item[\Key{NOLINK}] Turn off the LinK algorithm (which is default) for the calculation of the exchange matrix (see Ref. \cite{ochsenfeld:1663}).
 \item[\Key{LINSCAPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
@@ -111,33 +88,18 @@ See the individual keywords for more details. Default value is 0.
 \verb| | \newline
 \verb|<Print level>|\newline
 Print information about the molecule. The higher the print level, the more information will be printed. Default value is 0.
+\item[\Key{NOJENGINE}] Turn off J-engine algorithm (which is default) for the calculation of the Coulomb matrix 
+(see Refs. \cite{shao:425} and \cite{shao:6572}). Compute instead Coulomb-like contributions from the explicitly calculated integrals.
+\item[\Key{NOLINK}] Turn off the LinK algorithm (which is default) for the calculation of the exchange matrix (see Ref. \cite{ochsenfeld:1663}).
 \item[\Key{NO SCREEN}] Deactivate the use of all screening methods.
 \item[\Key{NOFAMILY}] Deactivate the exploitation of family type basis set, basis set sharing exponents for different angular momentums.  
-<<<<<<< HEAD
-\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals.
-\item[\Key{NSETUV}] Use non-spherical E-coefficients.
-\item[\Key{OVERLAP-DF-J}] Use the Overlap density fitting algorithm for the calculation of the Coulomb matrix.
 \item[\Key{PARI}] Use the Pair-Atomic Resolution-of-the-Identity
 approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
 When using this keyword, an auxiliary basis set has to be 
 specified in the \mol\ file.\newline
 \emph{We do not recommend to use this method for any production runs, and have included it 
 in case other method developers would like to explore it (see the reference for details).}
-
 \item[\Key{RUNMM}] Use the (Fast) Multipole Method.
-
-\item[\Key{SPHMOM}] 
-\verb| | \newline
-\verb|<Order of multipole moment>|\newline
-Calculate spherical multipole moment integrals to the requested order.
-\item[\Key{THR\_CS}] 
-\verb| | \newline
-\verb|<CS_Threshold>|\newline
-Cauchy-Schwarz screening threshold.
-\item[\Key{THR\_PS}] 
-\verb| | \newline
-\verb|<PS_Threshold>|\newline
-Primitive Cauchy-Schwarz screening threshold.
 \item[\Key{THRESH}]
 \verb| | \newline
 \verb|<Threshold>|\newline
