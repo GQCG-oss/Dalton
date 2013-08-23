@@ -908,6 +908,12 @@ subroutine DEC_meaningful_input(config)
 
      end if OrbLocCheck
 
+     !Check in the case of a DEC calculation that the cc-restart-files are not
+     !written
+     if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
+       DECinfo%CCSDnosaferun = .true.
+     endif
+
   end if DECcalculation
 
 
