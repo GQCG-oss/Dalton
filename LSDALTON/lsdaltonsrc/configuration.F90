@@ -3410,7 +3410,12 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors.'
          call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag',config%lupri)
 #else
-         WRITE(lupri,'(4X,A)')'This is a Standard Serial calculation using.'
+         !no VAR_SCALAPACK and no MPI         
+         WRITE(lupri,'(4X,A)')'This is a Standard Serial compilation.'
+         WRITE(lupri,'(4X,A)')'.SCALAPACK requires -DVAR_SCALAPACK precompiler flag and compilation using MPI.'
+         print*,'This is a Standard Serial compilation.'
+         print*,'.SCALAPACK requires -DVAR_SCALAPACK precompiler flag and compilation using MPI.'
+         call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag and compilation using MPI',config%lupri)
 #endif
 #endif
       endif
