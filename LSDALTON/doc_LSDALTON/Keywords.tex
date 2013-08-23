@@ -1636,7 +1636,7 @@ The **DEC and **CC implementations employ massive parallelism and will be highly
 \textbf{Special note}: It is highly recommended that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
 
 The **DEC section uses local orbitals by default, while the **CC section uses canonical orbitals by default.
-Below keywords for the **DEC section and **CC sections and relevant test cases are given. 
+Below keywords for the **DEC section and **CC section and relevant test cases are given. 
 
 \vspace{1 cm}
 \noindent
@@ -1692,14 +1692,16 @@ Calculate DEC-MP2 density matrix~\cite{dec5} (stored in MP2.dens). The MP2 elect
 Calculate MP2 molecular gradient~\cite{dec5} at input geometry (for geometry optimization, see test case examples below). The MP2 density and electric dipole moment is also calculated if this keyword is invoked.
 
 \item[\Key{KAPPATHR}] \verb| | \newline
-Threshold for $\bar{kappa}$ multiplier equations solved when DEC-MP2 molecular gradiient is calculation. Default value is 10$^{-4}$.
+\verb|<THR>|\newline
+Threshold for $\bar{kappa}$ multiplier equations solved when DEC-MP2 molecular gradient is calculation. Default value is 10$^{-4}$.
 
 
 \item[\Key{CANONICAL}] \verb| | \newline
 Use canonical orbitals. This is only recommended for advanced users for testing purposes. In general, the DEC scheme is only meaningful for local orbitals.
 
 \item[\Key{MPIGROUPSIZE}] \verb| | \newline
-Size of local MPI groups in massively parallel DEC scheme~\cite{dec6}. The default settings should suffice for most purposes, and use of the keyword is only recommended for advanced users.
+\verb|<Size>|\newline
+Size of local MPI groups (integer) in massively parallel DEC scheme~\cite{dec6}. The default settings should suffice for most purposes, and use of the keyword is only recommended for advanced users.
 
 
 \end{description}
@@ -1717,7 +1719,7 @@ These test cases illustrate the main features of the DEC scheme. The test cases 
 \item
 \textit{decmp2\_gradient}: Calculate DEC-MP2 molecular gradient.
 \item
-\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT will be increased to get a more accurate energy and gradient in the next iteration.
+\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT level will be increased to get a more accurate energy and gradient in the next iteration.
 \end{itemize}
 
 

@@ -569,12 +569,17 @@ end subroutine ls_dcopy
 !
       if (lupri > 0) then
          luprin = lupri
+
+         CALL ls_TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---', LUPRIN)
+         WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
+         CALL ls_TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---', 6)
+         WRITE (6,'(/2A/)') ' Reason: ',TEXT
       else
          luprin = 6
+         CALL ls_TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---', LUPRIN)
+         WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
       endif
 
-      CALL ls_TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---', LUPRIN)
-      WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
 
 #if  defined (SYS_AIX) || defined (SYS_LINUX)
 !     Write to stderr

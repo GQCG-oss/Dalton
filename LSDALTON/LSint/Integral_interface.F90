@@ -244,12 +244,12 @@ TYPE(MATRIX),target :: tmp
 Real(realk)         :: OLDTHRESH
 
 CALL II_get_nucel_mat(LUPRI,LUERR,SETTING,h)
-write(lupri,*) 'QQQ New  h:',mat_dotproduct(h,h)
+!write(lupri,*) 'QQQ New  h:',mat_dotproduct(h,h)
 
 nbast = h%nrow
 CALL mat_init(tmp,nbast,nbast)
 CALL II_get_kinetic(LUPRI,LUERR,SETTING,tmp)
-write(lupri,*) 'QQQ New  K:',mat_dotproduct(tmp,tmp)
+!write(lupri,*) 'QQQ New  K:',mat_dotproduct(tmp,tmp)
 
 call mat_daxpy(1E0_realk,tmp,h)
 CALL mat_free(tmp)
