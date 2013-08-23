@@ -1637,7 +1637,7 @@ The **DEC and **CC implementations employ massive parallelism and will be highly
 \textbf{Special note}: It is highly recommended that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
 
 The **DEC section uses local orbitals by default, while the **CC section uses canonical orbitals by default.
-Below keywords for the **DEC section and **CC sections and relevant test cases are given. 
+Below keywords for the **DEC section and **CC section and relevant test cases are given. 
 
 \vspace{1 cm}
 \noindent
@@ -1693,14 +1693,16 @@ Calculate DEC-MP2 density matrix~\cite{dec5} (stored in MP2.dens). The MP2 elect
 Calculate MP2 molecular gradient~\cite{dec5} at input geometry (for geometry optimization, see test case examples below). The MP2 density and electric dipole moment is also calculated if this keyword is invoked.
 
 \item[\Key{KAPPATHR}] \verb| | \newline
-Threshold for $\bar{kappa}$ multiplier equations solved when DEC-MP2 molecular gradiient is calculation. Default value is 10$^{-4}$.
+\verb|<THR>|\newline
+Threshold for $\bar{kappa}$ multiplier equations solved when DEC-MP2 molecular gradient is calculation. Default value is 10$^{-4}$.
 
 
 \item[\Key{CANONICAL}] \verb| | \newline
 Use canonical orbitals. This is only recommended for advanced users for testing purposes. In general, the DEC scheme is only meaningful for local orbitals.
 
 \item[\Key{MPIGROUPSIZE}] \verb| | \newline
-Size of local MPI groups in massively parallel DEC scheme~\cite{dec6}. The default settings should suffice for most purposes, and use of the keyword is only recommended for advanced users.
+\verb|<Size>|\newline
+Size of local MPI groups (integer) in massively parallel DEC scheme~\cite{dec6}. The default settings should suffice for most purposes, and use of the keyword is only recommended for advanced users.
 
 
 \end{description}
@@ -1718,7 +1720,7 @@ These test cases illustrate the main features of the DEC scheme. The test cases 
 \item
 \textit{decmp2\_gradient}: Calculate DEC-MP2 molecular gradient.
 \item
-\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT will be increased to get a more accurate energy and gradient in the next iteration.
+\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT level will be increased to get a more accurate energy and gradient in the next iteration.
 \end{itemize}
 
 
@@ -1735,7 +1737,7 @@ Use MP2 model. This gives the canonical MP2 energy and is not optimized for para
 Use CC2 model which is not an optimized code, but rather uses the CCSD optimized code with some contributions removed. See CCSD documentation for details.
 
 \item[\Key{CCSD}]\verb| | \newline
-Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). 
+Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). Using this keyword automatically triggers checkpointing after each iteration. The calculation can be restarted with the usual \Key{.RESTART} keyword.
 
 \item[\Key{FROZENCORE}]  \verb| | \newline
 Use the frozen core approximation (can also be used in **DEC section).
@@ -1756,8 +1758,9 @@ Convergence threshold for residual norm in CC solver.
 \item[\Key{SUBSIZE}]  \verb| | \newline
 Number of previous vectors to store in CROP scheme~\cite{crop} for CC solver.
 
-\item[\Key{CCSDSAFE}]  \verb| | \newline
-Save CCSD amplitudes to be able to restart full CCSD calculation. The files are named t11.restart and t12.restart for the singles amplitudes and t21.restart and t22.restart for the doubles amplitudes. These files are written in in an alternate fashion and the latest amplitudes are read automatically if a CCSD calculation is started in the same folder.
+\item[\Key{CCSDNOSAFE}]  \verb| | \newline
+Prevent saving of CCSD amplitudes as checkpoint files. 
+
 
 \end{description}
 

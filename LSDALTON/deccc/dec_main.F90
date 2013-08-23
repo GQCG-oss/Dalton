@@ -59,7 +59,7 @@ contains
     type(matrix),intent(inout) :: C
     type(fullmolecule) :: Molecule
 
-    print *, 'DEC gets Hartree-Fock info directly from HF calculation...'
+    print *, 'Hartree-Fock info comes directly from HF calculation...'
 
     ! Get informations about full molecule
     ! ************************************
@@ -98,7 +98,7 @@ contains
     type(matrix) :: D
     type(fullmolecule) :: Molecule
 
-    print *, 'DEC will read Hartree-Fock info from file...'
+    print *, 'Hartree-Fock info is read from file...'
 
     ! Minor tests
     ! ***********
@@ -162,18 +162,28 @@ contains
 
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-    write(program_version,'("v:",i2,".",i2.2)') version,subversion
-    ! =============================================================
-    ! Main program 
-    ! =============================================================
-    write(DECinfo%output,*) 
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(a)') '============================================================================='
-    write(DECinfo%output,'(a,a)') &
-         '             -- Divide, Expand & Consolidate Coupled-Cluster -- ',program_version
-    write(DECinfo%output,'(a)') '============================================================================='
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
+    if(.not. DECinfo%full_molecular_cc) then
+       write(program_version,'("v:",i2,".",i2.2)') version,subversion
+       ! =============================================================
+       ! Main program 
+       ! =============================================================
+       write(DECinfo%output,*) 
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(a)') '============================================================================='
+       write(DECinfo%output,'(a,a)') &
+            '             -- Divide, Expand & Consolidate Coupled-Cluster -- ',program_version
+       write(DECinfo%output,'(a)') '============================================================================='
+       write(DECinfo%output,*)
+    end if
+
+    if(DECinfo%use_canonical) then
+       write(DECinfo%output,*) 'Using canonical orbitals as requested in input!'
+       if(.not. DECinfo%full_molecular_cc) then
+          write(DECinfo%output,*) 'Warning: This may cause meaningless results for the DEC scheme'
+       end if
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+    end if
 
     ! Set DEC memory
     call get_memory_for_dec_calculation()
@@ -198,16 +208,21 @@ contains
 
     ! Print memory summary
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'DEC memory summary'
-    write(DECinfo%output,*) '------------------'
+    write(DECinfo%output,*) 'CC Memory summary'
+    write(DECinfo%output,*) '-----------------'
     call print_memory_currents4(DECinfo%output)
     write(DECinfo%output,*) '------------------'
     call print_memory_currents_3d(DECinfo%output)
     write(DECinfo%output,*) '------------------'
     write(DECinfo%output,*)
     write(DECinfo%output,'(/,a)') '------------------------------------------------------'
-    write(DECinfo%output,'(a,g20.6,a)') 'Total CPU  time used in DEC           :',tcpu2-tcpu1,' s'
-    write(DECinfo%output,'(a,g20.6,a)') 'Total Wall time used in DEC           :',twall2-twall1,' s'
+    if(DECinfo%full_molecular_cc) then
+       write(DECinfo%output,'(a,g20.6,a)') 'Total CPU  time used in CC           :',tcpu2-tcpu1,' s'
+       write(DECinfo%output,'(a,g20.6,a)') 'Total Wall time used in CC           :',twall2-twall1,' s'
+    else
+       write(DECinfo%output,'(a,g20.6,a)') 'Total CPU  time used in DEC          :',tcpu2-tcpu1,' s'
+       write(DECinfo%output,'(a,g20.6,a)') 'Total Wall time used in DEC          :',twall2-twall1,' s'
+    end if
     write(DECinfo%output,'(a,/)') '------------------------------------------------------'
     write(DECinfo%output,*)
 
@@ -223,7 +238,11 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,'(/,a)') '============================================================================='
-    write(DECinfo%output,'(a)')   '                          -- end of DEC program --                           '
+    if(DECinfo%full_molecular_cc) then
+       write(DECinfo%output,'(a)')   '                          -- end of CC program --'
+    else
+       write(DECinfo%output,'(a)')   '                          -- end of DEC program --'
+    end if
     write(DECinfo%output,'(a,/)') '============================================================================='
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -476,14 +495,17 @@ contains
     implicit none
     integer :: i
 
-    write(DECinfo%output,*) 
-    write(DECinfo%output,*) 'DEC CALCULATION BOOK KEEPING'
-    write(DECinfo%output,*) '============================'
-    write(DECinfo%output,*) 
-    do i=1,7
-       write(DECinfo%output,'(1X,a,i6,a,i6)') '# calculations done for FOTlevel ',i, ' is ', DECinfo%ncalc(i)
-    end do
-    write(DECinfo%output,*) 
+    ! This only be done for geometry optimization and DEC scheme
+    if( (.not. DECinfo%full_molecular_cc) .and. DECinfo%gradient) then
+       write(DECinfo%output,*) 
+       write(DECinfo%output,*) 'DEC CALCULATION BOOK KEEPING'
+       write(DECinfo%output,*) '============================'
+       write(DECinfo%output,*) 
+       do i=1,7
+          write(DECinfo%output,'(1X,a,i6,a,i6)') '# calculations done for FOTlevel ',i, ' is ', DECinfo%ncalc(i)
+       end do
+       write(DECinfo%output,*) 
+    end if
 
   end subroutine print_calculation_bookkeeping
 

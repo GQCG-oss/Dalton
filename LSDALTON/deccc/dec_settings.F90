@@ -63,7 +63,7 @@ contains
     DECinfo%array_test=.false.
     DECinfo%reorder_test=.false.
     DECinfo%CCSDno_restart=.false.
-    DECinfo%CCSDsaferun=.false.
+    DECinfo%CCSDnosaferun=.false.
     DECinfo%solver_par=.false.
     DECinfo%CCSDpreventcanonical=.false.
     DECinfo%CCSD_MPICH=.false.
@@ -264,7 +264,7 @@ contains
           ! ==============
 
           ! Save CCSD amplitudes to be able to restart full CCSD calculation
-       case('.CCSDSAFE'); DECinfo%CCSDsaferun=.true.
+       case('.CCSDNOSAFE'); DECinfo%CCSDnosaferun=.true.
 
           ! Maximum number of CC iterations
        case('.CCMAXITER'); read(input,*) DECinfo%ccMaxIter 
@@ -369,7 +369,13 @@ contains
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
        case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
           ! Size of local groups in MPI scheme
-       case('.MPIGROUPSIZE'); read(input,*) DECinfo%MPIgroupsize
+       case('.MPIGROUPSIZE') 
+          read(input,*) DECinfo%MPIgroupsize
+#ifndef VAR_MPI
+          print *, 'WARNING: You have specified MPI groupsize - but this is a serial run!'
+          print *, '--> Hence, this keyword has no effect.'
+          print *
+#endif
 
 #ifdef MOD_UNRELEASED
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
@@ -624,7 +630,7 @@ end if
     write(lupri,*) 'singlesthr ', DECitem%singlesthr
     write(lupri,*) 'convert64to32 ', DECitem%convert64to32
     write(lupri,*) 'convert32to64 ', DECitem%convert32to64
-    write(lupri,*) 'CCSDsaferun ', DECitem%CCSDsaferun
+    write(lupri,*) 'CCSDnosaferun ', DECitem%CCSDnosaferun
     write(lupri,*) 'solver_par ', DECitem%solver_par
     write(lupri,*) 'force_scheme ', DECitem%force_scheme
     write(lupri,*) 'dyn_load ', DECitem%dyn_load
