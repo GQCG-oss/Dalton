@@ -52,15 +52,16 @@ specified in the \mol\ file such as:
 2     6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21G
       ...
 \end{verbatim} 
-where the "JK" basis is used as ADMM auxiliary basis set, and the choice of "CABS" basis isn't used here even though it needs to be assigned an existing basis set.
-Beware that ADMM accuracy and robustness haven't been thoroughly tested yet.\newline
+where the "JK" basis is used as ADMM auxiliary basis set. The choice of "CABS" basis isn't used here even though it needs to be assigned an existing basis set.
+Beware that ADMM accuracy and robustness haven't been thoroughly benchmarked yet.\newline
 {\bf Test case example}: linsca/linsca\_admm\_df
 
 \item[\Key{PARI}] Use the very local Pair-Atomic Resolution-of-the-Identity (PARI) 
 approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
 When using this keyword, an auxiliary basis set has to be 
 specified in the \mol\ file.\newline
-{\bf Use at your own risk}: note that this method contains inherent deficiencies (discussed in~\cite{PARI:2013}) 
+{\bf Use at your own risk}: despite its attractive scaling, note that this 
+approximation contains inherent deficiencies (discussed in~\cite{PARI:2013}) 
 which may result in the non-convergence of the SCF scheme for HF or KS-DFT. \newline
 {\bf Test cases} in LSint: LSDALTON\_ethane\_pari\_b3lyp, 
 LSDALTON\_ethane\_pari\_b3lyp\_ChgConst, 
@@ -1054,7 +1055,7 @@ do NOT start with a dot!
 \end{description}\end{description}
 
 \section{**OPTIMIZE}\label{sec:optimize}
-This input module describes keywords needed to optimize molecular geometry.
+This input module describes the keywords needed to optimize a molecular geometry.
 In the current release a number of quasi-Newton trust-radius level-shifted techniques for finding 
 equilibrium geometries are available. The methods differ in the way approximate Hessians are 
 built and updated. Geometric structure can be optimized in redundant internal or 
