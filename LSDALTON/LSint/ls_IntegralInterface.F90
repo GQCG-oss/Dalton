@@ -491,7 +491,7 @@ Setting%sameFrag = sameMolSave
 ! ***************************************************************************
 call lsmpi_barrier(setting%comm)
 
-IF(Setting%scheme%cs_int)THEN
+IF(Setting%scheme%cs_int.or.Setting%scheme%ps_int)THEN
    call set_lst_maxgabelms(result_tensor_full)
    call set_lst_maxprimgabelms(result_tensor_full)
    call lsmpi_barrier(setting%comm)
@@ -515,7 +515,7 @@ IF (setting%node.NE.infpar%master) THEN
    !put slave to sleep
    call ls_free_lstensors(dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created)
    if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
-   IF(Setting%scheme%cs_int)THEN
+   IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)THEN
       call lstensor_free(setting%output%screenTensor)
       deallocate(setting%output%screenTensor)
       nullify(setting%output%screenTensor)
@@ -543,7 +543,7 @@ setting%output%ndim = ndim_full
 !write(6,*) 'debug-timing:timer results for ',setting%node
 !CALL LSTIMER('gi-mpi-permute',TS,TE,6)
 #else
-IF(Setting%scheme%cs_int)THEN
+IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)THEN
    call lstensor_free(result_tensor_full)
    deallocate(result_tensor_full)
    nullify(result_tensor_full)
@@ -6453,7 +6453,7 @@ ENDIF
 call set_atomspointers(lhs,rhs,natom1,natom2,natom3,natom4,atoms1,atoms2,atoms3,atoms4,&
      &                    Dummyatomlist1,Dummyatomlist2,full,grad)
 
-IF(Setting%scheme%cs_int)then
+IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)then
    call add_sublstensor_to_full_lstensor(setting%output%ScreenTensor,result_full,nAtom1,nAtom2,nAtom3,nAtom4,&
         & atoms1,atoms2,atoms3,atoms4,n1,n2,n3,n4,sameAllFrag)
    call lstensor_free(setting%output%ScreenTensor)
