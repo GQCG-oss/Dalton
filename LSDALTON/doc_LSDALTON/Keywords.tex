@@ -974,7 +974,7 @@ Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANG
 %\item[\Key{PURIFY}] \verb| | \newline
 %\verb|<Purification method>|\newline
 %Use purification scheme for density optimization 
-\item[\Key{Restart}] The code automaticly saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
+\item[\Key{RESTART}] The code automaticly saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
 \item[\Key{RH}] Use standard Roothaan-Hall scheme (diagonalization) for density optimization.
 %\item[\Key{SCALVIR}]
 %\item[\Key{SOEO}]
@@ -1071,13 +1071,14 @@ The geometry optimization generates a sequence of geometry steps. The coordinate
 accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX} 
 is the geometry step number, and the final converged geometry in MOLECULE.OUT.
 By default, the atoms-in-molecule approach is used to set up the initial density-matrix at each new
-geometry (each step). However, it is possible to take as starting guess McWeeny-purified converged
+geometry step (equivalent to the use of the .ATOMS keyword under *DENSOPT).
+However, it is possible to take as starting guess McWeeny-purified converged
 density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
 the *DENSOPT subsection.
 \newline
 \vspace{1 cm}
 \noindent
-\textbf{Example test cases for **OPTIMIZE calculations}: \newline
+\textbf{Example of test cases for geometry optimization calculations}: \newline
 These test cases illustrate the main features of the geometry optimization. The test cases are located in LSDALTON/test/geomopt.
 \begin{itemize}
 \item
