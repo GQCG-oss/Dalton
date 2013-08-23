@@ -369,7 +369,13 @@ contains
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
        case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
           ! Size of local groups in MPI scheme
-       case('.MPIGROUPSIZE'); read(input,*) DECinfo%MPIgroupsize
+       case('.MPIGROUPSIZE') 
+          read(input,*) DECinfo%MPIgroupsize
+#ifndef VAR_MPI
+          print *, 'WARNING: You have specified MPI groupsize - but this is a serial run!'
+          print *, '--> Hence, this keyword has no effect.'
+          print *
+#endif
 
 #ifdef MOD_UNRELEASED
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
