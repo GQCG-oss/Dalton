@@ -34,17 +34,10 @@ NB: Requires linking to the scalapack lib (provided by MKL).
 detects the use of a Dunning basis set like (cc-pVXZ) but the calculation will force the use of the Grand Canonical basis using this keyword.
 
 \end{description}
-\section{**INTEGRAL}\label{sec:integral}
+\section{**INTEGRAL basic keywords}\label{sec:integral}
 
 This input module defines the way the integrals should be calculated.
 \begin{description}
-
-
-%{\bf Test cases} in LSint: LSDALTON\_ethane\_pari\_b3lyp, 
-%LSDALTON\_ethane\_pari\_b3lyp\_ChgConst, 
-%LSDALTON\_ethane\_pari\_b3lyp\_ChgDipConst, 
-%LSDALTON\_ethane\_pari\_b3lyp\_unconstrained
-
 
 \item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM)~\cite{ADMM:2010} to approximate 
 the exact-exchange contribution. When using this keyword, an auxiliary basis set has to be 
@@ -59,11 +52,10 @@ where the "JK" basis is used as ADMM auxiliary basis set. You also have to provi
 be used in the calculation). \emph{Note of caution: we do not recommend to use ADMM in combination 
 with geometry optimization.}
 
-
 \item[\Key{AOPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
-Print the Atomic Orbital information. The higher the print level, the more information will be printed.
+Print the Atomic Orbital information. The higher the print level, the more information will be printed. Default value is 0.
 \item[\Key{BASPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
@@ -92,31 +84,36 @@ This will increase the workload!
 \verb| | \newline
 \verb|<Maxprim>|\newline
 Sets the maximum number of primitives used in the FTUV batches in the J-engine algorithm.
+Using a print level of 6 will print the input exponents and contraction coefficients read from file as well as the normalized basis used in LSDALTON. Default value is 0. 
 \item[\Key{INTPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
-Print information about the actual integral evaluation. The higher the print level, the more information will be printed. 
+Print information about the actual integral evaluation. The higher the print level, the more information will be printed. Default value is 0.
 \item[\Key{NOJENGINE}] Turn off J-engine algorithm (which is default) for the calculation of the Coulomb matrix 
 (see Refs. \cite{shao:425} and \cite{shao:6572}). Compute instead Coulomb-like contributions from the explicitly calculated integrals.
 \item[\Key{NOLINK}] Turn off the LinK algorithm (which is default) for the calculation of the exchange matrix (see Ref. \cite{ochsenfeld:1663}).
 \item[\Key{LINSCAPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
-Print level in the integral code. The higher the print level, the more information will be printed.
-\item[\Key{LOW RJ000 ACCURACY}] Use a decreased accuracy for the calculation of the Boys function.
-\item[\Key{MAXPASSES}] 
-\verb| | \newline
-\verb|<maxpass>|\newline
-Change the maximum number of collected overlaps (default is 40).
+Print level in the integral code. The higher the print level, the more information will be printed. This keyword corresponds to 
+\begin{verbatim}
+.AOPRINT
+<Print level>
+.BASPRINT
+<Print level>
+.MOLPRINT
+<Print level>
+.INTPRINT
+<Print level>
+\end{verbatim} 
+See the individual keywords for more details. Default value is 0.
 \item[\Key{MOLPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
-Print information about the molecule. The higher the print level, the more information will be printed. 
-\item[\Key{NO CS}] Deactivate the use of Cauchy-Schwarz screening.
-\item[\Key{NO PASS}] Deactivate the use of Passes, the collection of overlaps which is used as default in order to increase efficiency. 
-\item[\Key{NO PS}] Deactivate the use of primitive Cauchy-Schwarz screening.
+Print information about the molecule. The higher the print level, the more information will be printed. Default value is 0.
 \item[\Key{NO SCREEN}] Deactivate the use of all screening methods.
 \item[\Key{NOFAMILY}] Deactivate the exploitation of family type basis set, basis set sharing exponents for different angular momentums.  
+<<<<<<< HEAD
 \item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals.
 \item[\Key{NSETUV}] Use non-spherical E-coefficients.
 \item[\Key{OVERLAP-DF-J}] Use the Overlap density fitting algorithm for the calculation of the Coulomb matrix.
@@ -144,24 +141,73 @@ Primitive Cauchy-Schwarz screening threshold.
 \item[\Key{THRESH}]
 \verb| | \newline
 \verb|<Threshold>|\newline
-An overall screening threshold for integral evaluation. The various integral-evaluation thresholds (below) are set according to
+An overall screening threshold for integral evaluation. The default value is $10^{-8}$
+
+The various integral-evaluation thresholds (below) are set according to this Threshold. 
 \begin{itemize}
 \item The Cauchy-Schwarz screening threshold is set equal to Threshold (can be set separately by \Key{THR\_CS})
+\begin{itemize}
+  \item The Screening threshold used for Coulomb is Threshold $\cdot 10^{-2}$ (Default: $10^{-10}$) 
+  \item The Screening threshold used for Exchange is Threshold $\cdot 10^{-0}$ (Default: $10^{-8}$)
+  \item The Screening threshold used for One-electron operators is Threshold $\cdot 10^{-7}$ (Default: $10^{-15}$)
+\end{itemize}
 \item The Primitve Cauchy-Schwarz screening threshold is set equal to Threshold$\cdot 10^{-1}$  (can be set separately by \Key{THR\_PS})
 \item The Overlap-distribution distance-screening threshold is set equal to 
-      Threshold$\cdot 10^{-1}$.
+      Threshold $\cdot 10^{-1}$.
       When calculating overlap integrals, this threshold 
       is used for setting up AO extents. Overlap distributions (ODs) for which the 
       distance between the two AOs are larger than the sum of the extents are 
-      screened away.
+      screened away. %(OD screening)
 \item The Overlap-distribution extent-screeing threshold is set equal to 
-      Threshold$\cdot 10^{-1}$. When calculating overlap integrals, this threshold 
+      Threshold $\cdot 10^{-1}$. When calculating overlap integrals, this threshold 
       is used for setting up OD extents. Overlap integrals between two ODs separated
-      by more than the sum of the extents are screened away. 
+      by more than the sum of the extents are screened away. %(OE screening)
 \item The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on
       the non-classical extent of the contineous charge distribution (orbitals or orbital products). By default this threshold 
-      is set equal to Threshold$\cdot 10^{-1}$ (can be set separately by \Key{SCREEN} under *FMM)
+      is set equal to Threshold $\cdot 10^{-1}$ (can be set separately by \Key{SCREEN} under *FMM)
 \end{itemize}
+\end{description}
+
+\section{**INTEGRAL advanced keywords}\label{sec:integral}
+
+This input module defines the way the integrals should be calculated. 
+This section contains some advanced keywords which is mostly usefull 
+for debugging or comparisons with other codes. 
+\begin{description}
+
+\item[\Key{NO CS}] Deactivate the use of Cauchy-Schwarz screening. 
+Note that this does not deactivate the Primitive Cauchy-Schwarz screening. 
+\item[\Key{NO PS}] Deactivate the use of primitive Cauchy-Schwarz screening.
+\item[\Key{THR\_CS}] 
+\verb| | \newline
+\verb|<CS_Threshold>|\newline
+Cauchy-Schwarz screening threshold. The default value is $10^{-8}$. Note that 
+\begin{itemize}
+  \item The Screening threshold used for Coulomb is CS\_Threshold $\cdot 10^{-2}$ (Default: $10^{-10}$) 
+  \item The Screening threshold used for Exchange is CS\_Threshold $\cdot 10^{-0}$ (Default: $10^{-8}$)
+  \item The Screening threshold used for One-electron operators is CS\_Threshold $\cdot 10^{-7}$ (Default: $10^{-15}$)
+\end{itemize}
+\item[\Key{THR\_PS}] 
+\verb| | \newline
+\verb|<PS_Threshold>|\newline
+Primitive Cauchy-Schwarz screening threshold. The default value is $10^{-9}$
+\item[\Key{CART-E}] Use cartesian E-coefficients instead of hermite E-coefficients for the McMurchie-Davidson
+integral-evaluation scheme \cite{McMurchie1978} used in \lsdalton. The use of Cartesian E-coefficients is 
+default in most integral programs. We however use hermite E-coefficients according to ref.~\cite{reine:4771}.
+\item[\Key{FTUVMAXPRIM}] 
+\verb| | \newline
+\verb|<Maxprim>|\newline
+Sets the maximum number of primitives used in the FTUV batches in the J-engine algorithm.
+\item[\Key{LOW RJ000 ACCURACY}] Use a decreased accuracy for the calculation of the Boys function.
+\item[\Key{MAXPASSES}] 
+\verb| | \newline
+\verb|<maxpass>|\newline
+Change the maximum number of collected overlap distributions (default is 40).
+\item[\Key{NO PASS}] Deactivate the use of Passes, the collection of overlap distributions which is used as default in order to increase efficiency. 
+\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals. The basis is considered to be a general contracted basis where all primitives contribute to all contracted functions. 
+\item[\Key{NSETUV}] Use non-spherical E-coefficients.
+\item[\Key{OVERLAP-DF-J}] Use the Overlap density fitting algorithm for the calculation of the Coulomb matrix.
+%\item[\Key{PARI}] Use pair-atomic-resolution-of-the-identity algorithm for the calculation of the Fock matrix
 \item[\Key{UNCONT}] Treat the basis functions (given by input) as fully uncontracted basis fuctions (i.e. ignore
 any contraction coefficients given in the basis and treat instead all the primitives as separate basis functions).
 \end{description}
@@ -191,13 +237,15 @@ It has however not been tested for speed and efficiency.
 \begin{description}
 \item[\Key{LMAX}] \verb| |\newline
 \verb|<Lmax>|\newline
-The maximum multipole-moment expansion order of a given orbital product.
+The maximum multipole-moment expansion order of a given orbital product. Default Value is 8.
 \item[\Key{TLMAX}] \verb| |\newline
 \verb|<TLmax>|\newline
-The maximum order used for translated multipole-moments.
+The maximum order used for translated multipole-moments. Default Value is 20.
 \item[\Key{SCREEN}] \verb| |\newline
 \verb|<Threshold>|\newline
-Defines the threshold used to determine if a contribution can be calculated classically on non-classically.
+The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on the non-classical extent of the contineous charge distribution (orbitals or orbital products). 
+By default this threshold is set equal to $\cdot 10^{-9}$ 
+Defines the threshold used to determine if a contribution can be calculated classically or non-classically.
 \item[\Key{NOONE}] Do not use FMM for the nuclear-electron attraction.
 \item[\Key{NOMMBU}] Do not use io-buffers for interfacing multipole-moments to the FMM driver.
 \end{description}
@@ -977,7 +1025,7 @@ Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANG
 %\item[\Key{PURIFY}] \verb| | \newline
 %\verb|<Purification method>|\newline
 %Use purification scheme for density optimization 
-\item[\Key{Restart}] The code automaticly saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
+\item[\Key{RESTART}] The code automaticly saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
 \item[\Key{RH}] Use standard Roothaan-Hall scheme (diagonalization) for density optimization.
 %\item[\Key{SCALVIR}]
 %\item[\Key{SOEO}]
@@ -1058,7 +1106,7 @@ do NOT start with a dot!
 \end{description}\end{description}
 
 \section{**OPTIMIZE}\label{sec:optimize}
-This input module describes keywords needed to optimize molecular geometry.
+This input module describes the keywords needed to optimize a molecular geometry.
 In the current release a number of quasi-Newton trust-radius level-shifted techniques for finding 
 equilibrium geometries are available. The methods differ in the way approximate Hessians are 
 built and updated. Geometric structure can be optimized in redundant internal or 
@@ -1074,13 +1122,14 @@ The geometry optimization generates a sequence of geometry steps. The coordinate
 accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX} 
 is the geometry step number, and the final converged geometry in MOLECULE.OUT.
 By default, the atoms-in-molecule approach is used to set up the initial density-matrix at each new
-geometry (each step). However, it is possible to take as starting guess McWeeny-purified converged
+geometry step (equivalent to the use of the .ATOMS keyword under *DENSOPT).
+However, it is possible to take as starting guess McWeeny-purified converged
 density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
 the *DENSOPT subsection.
 \newline
 \vspace{1 cm}
 \noindent
-\textbf{Example test cases for **OPTIMIZE calculations}: \newline
+\textbf{Example of test cases for geometry optimization calculations}: \newline
 These test cases illustrate the main features of the geometry optimization. The test cases are located in LSDALTON/test/geomopt.
 \begin{itemize}
 \item
@@ -1740,7 +1789,7 @@ Use MP2 model. This gives the canonical MP2 energy and is not optimized for para
 Use CC2 model which is not an optimized code, but rather uses the CCSD optimized code with some contributions removed. See CCSD documentation for details.
 
 \item[\Key{CCSD}]\verb| | \newline
-Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). 
+Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). Using this keyword automatically triggers checkpointing after each iteration. The calculation can be restarted with the usual \Key{.RESTART} keyword.
 
 \item[\Key{FROZENCORE}]  \verb| | \newline
 Use the frozen core approximation (can also be used in **DEC section).
@@ -1761,8 +1810,9 @@ Convergence threshold for residual norm in CC solver.
 \item[\Key{SUBSIZE}]  \verb| | \newline
 Number of previous vectors to store in CROP scheme~\cite{crop} for CC solver.
 
-\item[\Key{CCSDSAFE}]  \verb| | \newline
-Save CCSD amplitudes to be able to restart full CCSD calculation. The files are named t11.restart and t12.restart for the singles amplitudes and t21.restart and t22.restart for the doubles amplitudes. These files are written in in an alternate fashion and the latest amplitudes are read automatically if a CCSD calculation is started in the same folder.
+\item[\Key{CCSDNOSAFE}]  \verb| | \newline
+Prevent saving of CCSD amplitudes as checkpoint files. 
+
 
 \end{description}
 
