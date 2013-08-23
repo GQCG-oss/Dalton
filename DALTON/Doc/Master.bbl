@@ -1,0 +1,1778 @@
+\begin{thebibliography}{100}
+
+\bibitem{hjajhajomotecc}
+H.~J.~Aa. Jensen, H.~{\AA}gren, and J.~Olsen.
+\newblock \sir : a general-purpose direct second-order {MCSCF} program.
+\newblock In E.~Clementi, editor, {\em Modern Techniques in Computational
+  Chemistry}. ESCOM, Leiden, 1991.
+
+\bibitem{prttca69}
+P.~R. Taylor.
+\newblock Symmetry-adapted integral derivatives.
+\newblock {\em Theor.~Chim.~Acta}, 69:447, 1986.
+
+\bibitem{jcp_chopt}
+H.~Koch and A.~S{\'a}nchez {de Mer{\'a}s}.
+\newblock {\em J.~Chem.~Phys.}, 113:508, 2000.
+
+\bibitem{choint}
+H.~Koch, A.~S{\'a}nchez {de Mer{\'a}s}, and T.~B. Pedersen.
+\newblock Reduced scaling in electronic structure calculations using cholesky
+  decompositions.
+\newblock {\em J.~Chem.~Phys.}, 118:9481, 2003.
+
+\bibitem{knecht08}
+S.~Knecht, H.~J.~Aa. Jensen, and T.~Fleig.
+\newblock Large-scale parallel configuration interaction. {I}. non-relativistic
+  and scalar-relativistic general active space implementation with application
+  to ({R}b-{B}a)$^+$.
+\newblock {\em J.~Chem.~Phys.}, 128:014108, 2008.
+
+\bibitem{mjgppbthdjtjcp128}
+M.~J.~G. Peach, P.~Benfield, T.~Helgaker, and D.~J. Tozer.
+\newblock Excitation energies in density functional theory: An evaluation and a
+  diagnostic test.
+\newblock {\em J.~Chem.~Phys.}, 128:044118, 2008.
+
+\bibitem{tydptnchcpl393}
+T.~Yanai, D.~P. Tew, and N.~C. handy.
+\newblock {\em Chem.~Phys.~Lett.}, 393:51, 2004.
+
+\bibitem{ytttsytykhjcp120}
+Y.~Tawada, T.~Tsuneda, S.~Yanagisawa, T.~Yanai, and K.~Hirao.
+\newblock {\em J.~Chem.~Phys.}, 120:8425, 2004.
+
+\bibitem{spas037}
+K.~L. Bak, H.~Koch, J.~Oddershede, O.~Christiansen, and S.~P.~A. Sauer.
+\newblock {Atomic integral driven second order polarization propagator
+  calculations of the excitation spectra of naphthalene and anthracene}.
+\newblock {\em J. Chem. Phys.}, 112:4173--4185, 2000.
+
+\bibitem{spas089}
+H.~H. Falden, K.~R. Falster-Hansen, K.~L. Bak, S.~Rettrup, and S.~P.~A. Sauer.
+\newblock {Benchmarking second order methods for the calculation of vertical
+  electronic excitation energies: Valence and Rydberg states in polycyclic
+  aromatic hydrocarbons}.
+\newblock {\em J. Phys. Chem. A}, 113:11995--12012, 2009.
+
+\bibitem{spas025}
+O.~Christiansen, K.~L. Bak, H.~Koch, and S.~P.~A. Sauer.
+\newblock {A Second-order doubles correction to excitation energies in the
+  random phase approximation}.
+\newblock {\em Chem. Phys. Lett.}, 284:47--62, 1998.
+
+\bibitem{spas097}
+H.~Kj{\ae}r, S.~P.~A. Sauer, and J.~Kongsted.
+\newblock {Benchmarking NMR indirect nuclear spin-spin coupling constants:
+  SOPPA, SOPPA(CC2) and SOPPA(CCSD) versus CCSD}.
+\newblock {\em J.~Chem.~Phys.}, 133:144106, 2010.
+
+\bibitem{pndmbhjajjojcp123}
+Patrick Norman, David~M. Bishop, Hans J{\o}rgen~Aa. Jensen, and Jens
+  Oddershede.
+\newblock Nonlinear response theory with relaxation: The first-order
+  hyperpolarizability.
+\newblock {\em J.~Chem.~Phys.}, 123(19):194103, 2005.
+
+\bibitem{carcsetljpmjcp114}
+C.~Angeli, R.~Cimiraglia, S.~Evangelisti, T.~Leininger, and J.-P. Malrieu.
+\newblock {\em J.~Chem.~Phys.}, 114:10252, 2001.
+
+\bibitem{carcjpmcpl350}
+C.~Angeli, R.~Cimiraglia, and J.-P. Malrieu.
+\newblock {\em Chem.~Phys.~Lett.}, 350:297, 2001.
+
+\bibitem{carcjpmjcp117}
+C.~Angeli, R.~Cimiraglia, and J.-P. Malrieu.
+\newblock {\em J.~Chem.~Phys.}, 117:9138, 2002.
+
+\bibitem{kapamborjcp96}
+K.~Andersson, P.-{\AA}. Malmqvist, and B.~O. Roos.
+\newblock {\em J.~Chem.~Phys.}, 96:1218, 1992.
+
+\bibitem{kgdjcp102}
+K.~G. Dyall.
+\newblock {\em J.~Chem.~Phys.}, 102:4909, 1995.
+
+\bibitem{wkccmsjcp116}
+W.~Klopper and C.~C.~M. Samson.
+\newblock {\em J.~Chem.~Phys.}, 116:6397, 2002.
+
+\bibitem{ccmswkthcpc149}
+C.~C.~M. Samson, W.~Klopper, and T.~Helgaker.
+\newblock {\em Comp.~Phys.~Commun.}, 149:1, 2002.
+
+\bibitem{pndmbhjajjojcp115}
+Patrick Norman, David~M. Bishop, Hans~J\o rgen Aa.~Jensen, and Jens Oddershede.
+\newblock Near-resonant absorption in the time-dependent self-consistent field
+  and multiconfigurational self-consistent field approximations.
+\newblock {\em The Journal of Chemical Physics}, 115(22):10323--10334, 2001.
+
+\bibitem{fjthjcp121}
+F.~Jensen and T.~Helgaker.
+\newblock {\em J.~Chem.~Phys.}, 121:3463, 2004.
+
+\bibitem{poakrprtjcp112}
+{\mbox{P.-O.}}~{\AA}strand, K.~Ruud, and P.~R. Taylor.
+\newblock Calculation of the vibrational wave function of polyatomic molecules.
+\newblock {\em J.~Chem.~Phys.}, 112:2655, 2000.
+
+\bibitem{krpoaprtjcp112}
+K.~Ruud, {\mbox{P.-O.}}~{\AA}strand, and P.~R. Taylor.
+\newblock An efficient approach for calculating vibrational wave functions and
+  zero-point vibrational corrections to molecular properites of polyatomic
+  molecules.
+\newblock {\em J.~Chem.~Phys.}, 112:2668, 2000.
+
+\bibitem{krjljv}
+K.~Ruud, J.~Lounila, and J.~Vaara.
+\newblock Temperature- and isotope-effects on nuclear magnetic shielding
+  constants in polyatomic molecules.
+\newblock To be submitted.
+
+\bibitem{Coriani:MCDRSP}
+S.~Coriani, P.~J{\o}rgensen, A.~Rizzo, K.~Ruud, and J.~Olsen.
+\newblock {\it{Ab initio}} determinations of {M}agnetic {C}ircular {D}ichroism.
+\newblock {\em Chem.~Phys.~Lett.}, 300:61, 1999.
+
+\bibitem{powpambortca77}
+{\mbox{P.-O}}.~Widmark, {\mbox{P.-{\AA}}}.~Malmqvist, and B.~O. Roos.
+\newblock Density matrix averaged atomic natural orbital ({ANO}) basis sets for
+  correlated molecular wave functions.
+\newblock {\em Theor.~Chim.~Acta}, 77:291, 1990.
+
+\bibitem{powbjpbortca79}
+{\mbox{P.-O}}.~Widmark, B.~J. Persson, and B.~O. Roos.
+\newblock {\em Theor.~Chim.~Acta}, 79:419, 1991.
+
+\bibitem{hjajpjhajojcp88}
+H.~J.~Aa. Jensen, P.~J{\o}rgensen, H.~{\AA}gren, and J.~Olsen.
+\newblock Second-order {M}{\o}ller--{P}lesset perturbation theory as a
+  configuration and orbital generator in multiconfiguration self-consistent
+  field calculations.
+\newblock {\em J.~Chem.~Phys.}, 88:3834, 1988.
+\newblock Erratum {\bf 89}, 5354 (1988).
+
+\bibitem{hjajpjhajcp87}
+H.~J.~Aa. Jensen, P.~J{\o}rgensen, and H.~{\AA}gren.
+\newblock Efficient optimization of large-scale {MCSCF} wave-functions with a
+  restricted step algorithm.
+\newblock {\em J.~Chem.~Phys.}, 87:451, 1987.
+
+\bibitem{tuhjahjajpjjcp84}
+T.~U. Helgaker, J.~Alml\"{o}f, H.~J.~Aa. Jensen, and P.~J{\o}rgensen.
+\newblock Molecular {H}essians for large-scale {MCSCF} wave functions.
+\newblock {\em J.~Chem.~Phys.}, 84:6266, 1986.
+
+\bibitem{Fletcher}
+R.~Fletcher.
+\newblock {\em Practical Methods of Optimization Vol.1 - Unconstrained
+  Optimization}.
+\newblock J.~Wiley \& Sons Ltd., New York, 1981.
+
+\bibitem{thcpl182}
+T.~Helgaker.
+\newblock Transition-state optimizations by trust-region image minimization.
+\newblock {\em Chem.~Phys.~Lett.}, 182:503, 1991.
+
+\bibitem{pjhjajthtca73}
+P.~J{\o}rgensen, H.~J.~Aa. Jensen, and T.~Helgaker.
+\newblock A gradient extremal walking algorithm.
+\newblock {\em Theor.~Chim.~Acta}, 73:55, 1988.
+
+\bibitem{hjajpjthjcp85}
+H.~J.~Aa. Jensen, P.~J{\o}rgensen, and T.~Helgaker.
+\newblock Systematic determination of {MCSCF} equilibrium and transition
+  structures and reaction paths.
+\newblock {\em J.~Chem.~Phys.}, 85:3917, 1986.
+
+\bibitem{abnajsrsjpc89}
+A.~Banerjee, N.~Adams, J.~Simons, and R.~Shephard.
+\newblock {\em J.~Phys.~Chem.}, 89:52, 1985.
+
+\bibitem{theuhjajcpl173}
+T.~Helgaker, E.~Uggerud, and H.~J.~Aa. Jensen.
+\newblock Integration of the classical equations of motion on {\it{ab initio}}
+  molecular potential energy surfaces using gradients and {H}essians:
+  application to translational energy release upon fragmentation.
+\newblock {\em Chem.~Phys.~Lett.}, 173:145, 1990.
+
+\bibitem{rsgmtjdwrjbjcp106}
+R.~Steckler, G.~M. Thurman, J.~D. Watts, and R.~J. Bartlett.
+\newblock {\it{Ab initio}} direct dynamics study of {OH + HCL $\rightarrow$ Cl
+  + H$_{2}$O}.
+\newblock {\em J.~Chem.~Phys.}, 106:3926, 1997.
+
+\bibitem{vbthjcp117}
+V.~Bakken and T.~Helgaker.
+\newblock {\em J.~Chem.~Phys.}, 117:9160, 2002.
+
+\bibitem{gfxfzpwtppjacs114}
+G.~Fogarasi, X.~F. Zhou, P.~W. Taylor, and P.~Pulay.
+\newblock The calculation of {\it{ab initio}} molecular geometries -- efficient
+  optimization by natural internal coordinates and empirical correction by
+  offset forces.
+\newblock {\em J.~Am.~Chem.~Soc.}, 114:8191, 1992.
+
+\bibitem{ppgfjcp96}
+P.~Pulay and G.~Fogarasi.
+\newblock Geometry optimization in redundant internal coordinates.
+\newblock {\em J.~Chem.~Phys.}, 96:2856, 1992.
+
+\bibitem{rlabgkpamcpl241}
+R.~Lindh, A.~Bernhardsson, G.~Karlstr\"{o}m, and {\mbox{P.-{\AA}}}.~Malmqvist.
+\newblock On the use of a {H}essian model function in molecular geometry
+  optimizations.
+\newblock {\em Chem.~Phys.~Lett.}, 241:423, 1995.
+
+\bibitem{Baker}
+J.~Baker.
+\newblock Techniques for geometry optimization: A comparison of {C}artesian and
+  natural internal coordinates.
+\newblock {\em J.~Comput.~Chem.}, 14:1085, 1993.
+
+\bibitem{jmbjcc15}
+J.~M. Bofill.
+\newblock Updated {H}essian matrix and the restricted step method for locating
+  transition structures.
+\newblock {\em J.~Comput.~Chem.}, 15:1, 1994.
+
+\bibitem{cjcwhmjcp75}
+C.~J. Cerjan and W.~H. Miller.
+\newblock On finding transition states.
+\newblock {\em J.~Chem.~Phys.}, 75:2800, 1981.
+
+\bibitem{kfacr14}
+K.~Fukui.
+\newblock {\em Acc.~Chem.~Res.}, 14:363, 1981.
+
+\bibitem{krtheujms393}
+K.~Ruud, T.~Helgaker, and E.~Uggerud.
+\newblock {\em J.~Mol.~Struct. (THEOCHEM)}, 393:59, 1997.
+
+\bibitem{jcjacs111}
+J.~Cioslowski.
+\newblock A new population analysis based on atomic polar tensors.
+\newblock {\em J.~Am.~Chem.~Soc.}, 111:8333, 1989.
+
+\bibitem{poakrkvmthjpca102}
+{\mbox{P.-O.}}~{\AA}strand, K.~Ruud, K.~V. Mikkelsen, and T.~Helgaker.
+\newblock Atomic charges of the water molecule and the water dimer.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 102:7686, 1998.
+
+\bibitem{placzek}
+G.~Placzek.
+\newblock {\em Handbuch der Radiologie}, 6(2):205, 1934.
+
+\bibitem{thkrklbpjjofd99}
+T.~Helgaker, K.~Ruud, K.~L. Bak, P.~J{\o}rgensen, and J.~Olsen.
+\newblock Vibrational raman optical activity calculations using {L}ondon atomic
+  orbitals.
+\newblock {\em Faraday Discuss.}, 99:165, 1994.
+
+\bibitem{rv66ha}
+R.~M. Herman and A.~Asgharian.
+\newblock {Theory of Energy Shifts Associated with Deviations from
+  Born-Oppenheimer Behavior in $^1\Sigma$-State Diatomic Molecules}.
+\newblock {\em J. Mol. Spectrosc.}, 19:305--324, 1966.
+
+\bibitem{jfo98ho}
+R.~M. Herman and J.~F. Ogilvie.
+\newblock {An effective Hamiltonian to treat adiabatic and nonadiabatic effects
+  in the rotational and vibrational spectra of diatomic molecules}.
+\newblock {\em Adv. Chem. Phys.}, 103:187--215, 1998.
+
+\bibitem{spas063}
+K.~L. Bak, S.~P.~A. Sauer, J.~Oddershede, and J.~F. Ogilvie.
+\newblock {The vibrational g factor of dihydrogen from theoretical calculation
+  and analysis of vibration-rotational spectra}.
+\newblock {\em Phys. Chem. Chem. Phys.}, 7:1747--1758, 2005.
+
+\bibitem{spas084}
+H.~Kj{\ae}r and S.~P.~A. Sauer.
+\newblock {On the Relation between the Non-adiabatic Vibrational Reduced Mass
+  and the Electric Dipole Moment Gradient of a Diatomic Molecule}.
+\newblock {\em Theo. Chem. Acc.}, 122:137--143, 2009.
+
+\bibitem{adbacp12}
+A.~D. Buckingham.
+\newblock Permanent and induced molecular moments and long-range intermolecular
+  forces.
+\newblock {\em Adv.~Chem.~Phys.}, 12:107, 1967.
+
+\bibitem{whmklwhfjcp48}
+W.~H\"{u}ttner, M.~K. Lo, and W.~H. Flygare.
+\newblock Molecular g-value tensor, the molecular susceptibility tensor, and
+  the sign of the electric dipole moment in formaldehyde.
+\newblock {\em J.~Chem.~Phys.}, 48:1206, 1968.
+
+\bibitem{jsdhszna46}
+J.~Spiekermann and D.~H. Sutter.
+\newblock Molecular g-values, magnetic susceptibility anisotropies, second
+  moments of the electronic charge distribution , molecular electric quadrupole
+  moment, and {$^{14}$N} nuclear quadrupole coupling of nitroethylene,
+  {CH$_{2}$CHNO$_{2}$}.
+\newblock {\em Z.~Naturforsch. {\bf A}}, 46:715, 1991.
+
+\bibitem{krthcpl264}
+K.~Ruud and T.~Helgaker.
+\newblock The magnetizability, rotational g tensor, and quadrupole moment of
+  {PF$_{3}$} revisited.
+\newblock {\em Chem.~Phys.~Lett.}, 264:17, 1997.
+
+\bibitem{mjssocpjthkrcpl243}
+M.~Jaszu\'{n}ski, S.~Szym\'{a}nski, O.~Christiansen, P.~J{\o}rgensen,
+  T.~Helgaker, and K.~Ruud.
+\newblock {NMR} properties of {N$_{3}^{-}$} -- a comparison of theory and
+  experiment.
+\newblock {\em Chem.~Phys.~Lett.}, 243:144, 1995.
+
+\bibitem{jopjjcp82}
+J.~Olsen and P.~J{\o}rgensen.
+\newblock Linear and nonlinear response functions for an exact state and for an
+  {MCSCF} state.
+\newblock {\em J.~Chem.~Phys.}, 82:3235, 1985.
+
+\bibitem{esnpjjodjcp73}
+E.~S. Nielsen, P.~J{\o}rgensen, and J.~Oddershede.
+\newblock {\em J.~Chem.~Phys.}, 73:6238, 1980.
+
+\bibitem{jopjdycpr2}
+J.~Oddershede, P.~J{\o}rgensen, and D.~Yeager.
+\newblock {\em Comput.~Phys.~Rep.}, 2:33, 1984.
+
+\bibitem{mjpekdtehjajjojcp}
+Martin~J. Packer, Erik~K. Dalskov, Thomas Enevoldsen, Hans J{\o}rgen~Aa.
+  Jensen, and Jens Oddershede.
+\newblock A new implementation of the second-order polarization propagator
+  approximation (soppa): The excitation spectra of benzene and naphthalene.
+\newblock {\em The Journal of Chemical Physics}, 105(14):5886--5900, 1996.
+
+\bibitem{ekdspasjpca102}
+E.~K. Dalskov and S.~P. A.Sauer.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 102:5269, 1998.
+
+\bibitem{soppaccsd}
+S.~P.~A. Sauer.
+\newblock Second order polarization propagator approximation with cupled
+  cluster singles and doubles amplitudes - soppa(ccsd): The polariability and
+  hyperpolarizability of li$$.
+\newblock {\em J.~Phys.\ B: At.~Mol.~Phys.}, 30:3773--3780, 1997.
+
+\bibitem{kwjfhppjacs112}
+K.~Wolinski, J.~F. Hinton, and P.~Pulay.
+\newblock Efficient implementation of the gauge-independent atomic orbital
+  method for {NMR} chemical shift calculations.
+\newblock {\em J.~Am.~Chem.~Soc.}, 112:8251, 1990.
+
+\bibitem{krthrkpjklbhjajjcp100}
+K.~Ruud, T.~Helgaker, R.~Kobayashi, P.~J{\o}rgensen, K.~L. Bak, and H.~J.~Aa.
+  Jensen.
+\newblock Multiconfigurational self consistent field ({MCSCF}) calculations of
+  nuclear shieldings using {L}ondon atomic orbitals.
+\newblock {\em J.~Chem.~Phys.}, 100:8178, 1994.
+
+\bibitem{krthklbpjhjajjcp99}
+K.~Ruud, T.~Helgaker, K.~L. Bak, P.~J{\o}rgensen, and H.~J.~Aa. Jensen.
+\newblock {H}artree--{F}ock limit magnetizabilities from {L}ondon orbitals.
+\newblock {\em J.~Chem.~Phys.}, 99:3847, 1993.
+
+\bibitem{krthklbpjjocp195}
+K.~Ruud, T.~Helgaker, K.~L. Bak, P.~J{\o}rgensen, and J.~Olsen.
+\newblock Accurate magnetizabilities of the isoelectronic series {BeH$^{-}$},
+  {BH} and {CH$^{+}$}. the {MCSCF-GIAO} approach.
+\newblock {\em Chem.~Phys.}, 195:157, 1995.
+
+\bibitem{paololazz1}
+P.~Lazzeretti, M.~Malagoli, and R.~Zanasi.
+\newblock Computational approach to molecular magnetic properties by continuous
+  transformation of the origin of the current density.
+\newblock {\em Chem.~Phys.~Lett.}, 220:299, 1994.
+
+\bibitem{paololazz2}
+P.~Lazzeretti.
+\newblock Ring currents.
+\newblock {\em Prog.~Nuc.~Magn.~Prop.~Spectr}, 36:1--88, 2000.
+
+\bibitem{ctocd}
+A.~Ligabue, S.~P.~A. Sauer, and P.~Lazzeretti.
+\newblock Correlated and gauge inveariant calculations of nuclear magnetic
+  shieldings constants using the {CTOCD-DZ} approach.
+\newblock {\em J.~Chem.~Phys.}, 118:6830--6845, 2003.
+
+\bibitem{ovhapjhjajsbpthjcp96}
+O.~Vahtras, H.~{\AA}gren, P.~J{\o}rgensen, H.~J.~Aa. Jensen, S.~B. Padkj{\ae}r,
+  and T.~Helgaker.
+\newblock Indirect nuclear spin-spin coupling constants from
+  multiconfigurational linear response theory.
+\newblock {\em J.~Chem.~Phys.}, 96:6120, 1992.
+
+\bibitem{spascpl260}
+S.~P.~A. Sauer.
+\newblock Theoretical estimates of the rotational g-factor, magnetizability and
+  electric dipole moment of {GaH}.
+\newblock {\em Chem.~Phys.~Lett.}, 260:271, 1996.
+
+\bibitem{tejospastcan100}
+T.~Enevoldsen, J.~Oddershede, and S.~P.~A. Sauer.
+\newblock Correlated calculations of indirect nuclear spin-spin coupling
+  constants using second-order polarization propagator approxiamtions: {SOPPA}
+  and {SOPPA(CCSD)}.
+\newblock {\em Theor.~Chem.~Acc.}, 100:275, 1998.
+
+\bibitem{joklbkrthpjtca90}
+J.~Olsen, K.~L. Bak, K.~Ruud, T.~Helgaker, and P.~J{\o}rgensen.
+\newblock Orbital connections for perturbation dependent basis sets.
+\newblock {\em Theor.~Chim.~Acta}, 90:421, 1995.
+
+\bibitem{thdjcp90}
+T.~H. {\mbox{Dunning Jr.}}
+\newblock {G}aussian basis sets for use in correlated molecular calculations.
+  {I.} {T}he atoms boron through neon and hydrogen.
+\newblock {\em J.~Chem.~Phys.}, 90:1007, 1989.
+
+\bibitem{rakthdrjhjcp96}
+R.~A. Kendall, T.~H. {\mbox{Dunning Jr.}}, and R.~J. Harrison.
+\newblock Electron-affinities of the 1st-row atoms revisited -- systematic
+  basis-sets and wave-functions.
+\newblock {\em J.~Chem.~Phys.}, 96:6796, 1992.
+
+\bibitem{dewthdjcp98}
+D.~E. Woon and T.~H. {\mbox{Dunning Jr.}}
+\newblock {G}aussian basis sets for use in correlated molecular calculations.
+  {III.} {T}he atoms aluminium through argon.
+\newblock {\em J.~Chem.~Phys.}, 98:1358, 1993.
+
+\bibitem{dewthdjcp100}
+D.~E. Woon and T.~H. {\mbox{Dunning Jr.}}
+\newblock {G}aussian basis sets for use in correlated molecular calculations.
+  {IV.} {C}alculation of static electrical response properties.
+\newblock {\em J.~Chem.~Phys.}, 100:2975, 1994.
+
+\bibitem{krthpjklbcpl223}
+K.~Ruud, T.~Helgaker, P.~J{\o}rgensen, and K.~L. Bak.
+\newblock Theoretical calculations of the magnetizability of some small
+  fluorine-containing molecules using {L}ondon atomic orbitals.
+\newblock {\em Chem.~Phys.~Lett.}, 223:12, 1994.
+
+\bibitem{krhsthklbpjjacs116}
+K.~Ruud, H.~Skaane, T.~Helgaker, K.~L. Bak, and P.~J{\o}rgensen.
+\newblock Magnetizability of hydrocarbons.
+\newblock {\em J.~Am.~Chem.~Soc.}, 116:10135, 1994.
+
+\bibitem{ashhrajcp97}
+A.~Sch\"{a}fer, H.~Horn, and R.~Ahlrichs.
+\newblock Fully optimized contracted {G}aussian basis sets for atoms {Li} to
+  {Kr}.
+\newblock {\em J.~Chem.~Phys.}, 97:2571, 1992.
+
+\bibitem{aschrajcp100}
+A.~Sch\"{a}fer, C.~Huber, and R.~Ahlrichs.
+\newblock {\em J.~Chem.~Phys.}, 100:5829, 1994.
+
+\bibitem{thmjkrcr99}
+T.~Helgaker, M.~Jaszu\'{n}ski, and K.~Ruud.
+\newblock {\it{Ab Initio}} methods for the calculation of {NMR} shielding
+  constants and indirect spin-spin coupling constants.
+\newblock {\em Chem.~Rev.}, 99:293, 1999.
+
+\bibitem{bs08-jctc4-719}
+F.~Jensen.
+\newblock {Basis set convergence of nuclear magnetic shielding constants
+  calculated by density functional methods}.
+\newblock {\em J. Chem. Theory Comput.}, 4:719--727, 2008.
+
+\bibitem{melomaldojcp12}
+J.I. {\mbox Melo}, A.~F. {\mbox Maldonado}, and G.A. {\mbox Aucar}.
+\newblock {\em J.~Chem.~Phys.}, 137:214319, 2012.
+
+\bibitem{melomaldotca11}
+J.I. {\mbox Melo}, A.~F. {\mbox Maldonado}, and G.A. {\mbox Aucar}.
+\newblock {\em Theo.~Chem.~Acc.}, 129:3, 483-494, 2011.
+
+\bibitem{melo2jcp03}
+J.I. {\mbox Melo}, M.C. {\mbox Ruiz de Azua}, C.G. {\mbox Giribet}, G.A. {\mbox Aucar}, and R.H. {\mbox Romero}.
+\newblock {\em J.~Chem.~Phys.}, 118:2,471-486. 2003.
+
+
+
+\bibitem{jgkrthjcp105}
+J.~Gauss, K.~Ruud, and T.~Helgaker.
+\newblock Perturbation-dependent atomic orbitals for the calculation of
+  spin-rotation constants and rotational {\it g} tensors.
+\newblock {\em J.~Chem.~Phys.}, 105:2804, 1996.
+
+\bibitem{krthklbpjcpl226}
+K.~Ruud, T.~Helgaker, P.~J{\o}rgensen, and K.~L. Bak.
+\newblock An {\it{ab initio}} nuclear magnetic resonance spectrum of
+  vinyllithium.
+\newblock {\em Chem.~Phys.~Lett.}, 226:1, 1994.
+
+\bibitem{nmr06-jctc2-1360}
+F.~Jensen.
+\newblock {The Basis Set Convergence of Spin-Spin Coupling Constants Calculated
+  by Density Functional Methods}.
+\newblock {\em J. Chem. Theory Comput.}, 2:1360--1369, 2006.
+
+\bibitem{bs10-tca126-371}
+F.~Jensen.
+\newblock {The optimum contraction of basis sets for calculating spin-spin
+  coupling constants}.
+\newblock {\em Theo. Chem. Acc.}, 126:371--382, 2010.
+
+\bibitem{nmr08-jcp129-064111}
+U.~Benedikt, A.~A. Auer, and F.~Jensen.
+\newblock {Optimization of augmentation functions for correlated calculations
+  of spin-spin coupling constants and related properties}.
+\newblock {\em J. Chem. Phys.}, 129:64111, 2008.
+
+\bibitem{pfpgaaspasjcp115}
+P.~F. Provasi, G.~A. Aucar, and S.~P.~A. Sauer.
+\newblock {\em J.~Chem.~Phys.}, 115:1324, 2001.
+
+\bibitem{spas058}
+V.~Barone, P.~F. Provasi, J.~E. Peralta, J.~P. Snyder, S.~P.~A. Sauer, and
+  R.~H. Contreras.
+\newblock {Substituent Effects on Scalar $^2$J($^{19}$F, $^{19}$F) and
+  $^3$J($^{19}$F, $^{19}$F) NMR Couplings: A Comparison of SOPPA and DFT
+  Methods}.
+\newblock {\em J. Phys. Chem. A}, 107:4748--4754, 2003.
+
+\bibitem{spas091}
+Y.~Yu. Rusakov, L.~B. Krivdin, S.~P.~A. Sauer, E.~P. Levanova, and G.~G.
+  Levkovskaya.
+\newblock {Structural trends of $^{77}$Se-$^1$H spin-spin coupling constants
+  and conformational behavior of 2-substituted selenophenes}.
+\newblock {\em Magn. Reson. Chem.}, 48:633--637, 2010.
+
+\bibitem{spas096}
+P.~F. Provasi and S.~P.~A. Sauer.
+\newblock {Optimized basis sets for the calculation of indirect nuclear
+  spin-spin coupling constants involving the atoms B, Al, Si, P, and Cl}.
+\newblock {\em J. Chem. Phys.}, 133:54308, 2010.
+
+\bibitem{bfpjjbjothhjajjcp97}
+B.~Fernandez, P.~J{\o}rgensen, J.~Byberg, J.~Olsen, T.~Helgaker, and H.~J.~Aa.
+  Jensen.
+\newblock Spin polarization in restricted electronic-structure theory --
+  multiconfiguration self-consistent-field calculations of hyperfine
+  coupling-constants.
+\newblock {\em J.~Chem.~Phys.}, 97:3412, 1992.
+
+\bibitem{bfpjcpl232}
+B.~Fernandez and P.~J{\o}rgensen.
+\newblock Evaluation of hyperfine coupling tensors of the {BeH} and {BeF}
+  radicals.
+\newblock {\em Chem.~Phys.~Lett.}, 232:463, 1995.
+
+\bibitem{pccpcctocd}
+I.~G. Cuesta, J.~S{\'a}nchez, A.~M.~J.~S{\'a}nchez de~Mer{\'a}s,
+  F.~Paw{\l}owski, and P.~Lazzeretti.
+\newblock {\em Phys.~Chem.~Chem.~Phys.}, 12:6163, 2010.
+
+\bibitem{spas073}
+A.~Ligabue, S.~P.~A. Sauer, and P.~Lazzeretti.
+\newblock {Gauge invariant calculations of nuclear magnetic shielding constants
+  using the continuous transformation of the origin of the current density
+  approach. II. Density functional and coupled cluster theory}.
+\newblock {\em J. Chem. Phys.}, 126:154111, 2007.
+
+\bibitem{klbpjthkrhjajjcp98}
+K.~L. Bak, P.~J{\o}rgensen, T.~Helgaker, K.~Ruud, and H.~J.~Aa. Jensen.
+\newblock Gauge-origin independent multiconfigurational self-consistent-field
+  theory for vibrational circular dichroism.
+\newblock {\em J.~Chem.~Phys.}, 98:8873, 1993.
+
+\bibitem{klbaehkrthjopjtca90}
+K.~L. Bak, Aa.~E. Hansen, K.~Ruud, T.~Helgaker, J.~Olsen, and P.~J{\o}rgensen.
+\newblock {\it Ab initio} calculation of electronic circular dichroism for
+  trans-cyclooctene using {L}ondon atomic orbitals.
+\newblock {\em Theor.~Chim.~Acta}, 90:441, 1995.
+
+\bibitem{tbpaehcpl246}
+T.~B. Pedersen and Aa.~E. Hansen.
+\newblock {\it Ab initio} calculation and display of the rotatory strength
+  tensor in the random phase approximation: Method and model studies.
+\newblock {\em Chem.~Phys.~Lett.}, 246:1--8, 1995.
+
+\bibitem{plpmp91}
+P.~L. Polavarapu.
+\newblock {\it{Ab initio}} molecular optical rotations and absolute
+  configurations.
+\newblock {\em Mol.~Phys.}, 91:551, 1997.
+
+\bibitem{plpdkckrcpl319}
+P.~L. Polavarapu, D.~K.Chakraborty, and K.~Ruud.
+\newblock Molecular optical rotations: an evaluation of semiempirical models.
+\newblock {\em Chem.~Phys.~Lett.}, 319:595, 2000.
+
+\bibitem{krthjopjklbcpl235}
+K.~Ruud, T.~Helgaker, J.~Olsen, P.~J{\o}rgensen, and K.~L. Bak.
+\newblock A numerically stable orbital connection for the calculation of
+  analytical {H}essians using perturbation dependent basis sets.
+\newblock {\em Chem.~Phys.~Lett.}, 235:47, 1995.
+
+\bibitem{klbpjthkrhjajjcp100}
+K.~L. Bak, P.~J{\o}rgensen, T.~Helgaker, K.~Ruud, and H.~J.~Aa. Jensen.
+\newblock Basis set convergence of atomic axial tensors obtained from
+  self-consistent field calculations using {L}ondon atomic orbitals.
+\newblock {\em J.~Chem.~Phys.}, 100:6620, 1994.
+
+\bibitem{klbpjthkrfd99}
+K.~L. Bak, P.~J\o rgensen, T.~Helgaker, and K.~Ruud.
+\newblock Basis set convergence and correlation effects in vibrational circular
+  dichroism calculations using {L}ondon atomic orbitals.
+\newblock {\em Faraday Discuss.}, 99:121, 1994.
+
+\bibitem{mpkrthcpl388}
+M.~Pecul, K.~Ruud, and T.~Helgaker.
+\newblock {\em Chem.~Phys.~Lett.}, 388:110, 2004.
+
+\bibitem{jrcmjffjdpjsjpca104}
+J.~R. Cheeseman, M.~J. Frisch, F.~J. Devlin, and P.~J. Stephens.
+\newblock {H}artree--{F}ock and density functional theory {\it{ab initio}}
+  calculation of optical rotation using {GIAO}s: Basis set dependence.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 104:1039, 2000.
+
+\bibitem{rdacpl87}
+R.~D. Amos.
+\newblock Electric and magnetic properties of {CO}, {HF}, and {HCl}, and
+  {CH$_{3}$F}.
+\newblock {\em Chem.~Phys.~Lett.}, 87:23, 1982.
+
+\bibitem{Pedersen:ORMVE}
+T.~B. Pedersen, H.~Koch, L.~Boman, and {A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s}.
+\newblock Origin invariant calculation of optical rotation without recourse to
+  {L}ondon orbitals.
+\newblock {\em Chem.~Phys.~Lett.}, 393:319, 2004.
+
+\bibitem{gzwhjpca108}
+G.~Zuber and W.~Hug.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 108:2108, 2004.
+
+\bibitem{krdjpnhatshjajpdthjcp108}
+K.~Ruud, D.~Jonsson, P.~Norman, H.~{\AA}gren, T.~Saue, H.~J.~Aa. Jensen,
+  P.~Dahle, and T.~Helgaker.
+\newblock Generalized integral-screening for efficient calculations of
+  nonlinear optical properties of large molecules.
+\newblock {\em J.~Chem.~Phys.}, 108:7973, 1998.
+
+\bibitem{pndjhapdkrthhkcpl253}
+P.~Norman, D.~Jonsson, H.~{\AA}gren, P.~Dahle, K.~Ruud, T.~Helgaker, and
+  H.~Koch.
+\newblock Efficient parallel implementation of response theory: {C}alculations
+  of the second hyperpolarizability of polyacenes.
+\newblock {\em Chem.~Phys.~Lett.}, 253:1, 1996.
+
+\bibitem{mptskrarjcp121}
+M.~Pecul, T.~Saue, K.~Ruud, and A.~Rizzo.
+\newblock Electric field effects on the shielding constants of noble gases: A
+  four-component relativistic hartree-fock study.
+\newblock {\em J.~Chem.~Phys.}, 121:3051, 2004.
+
+\bibitem{arthkrabmjpjjcp102}
+A.~Rizzo, T.~Helgaker, K.~Ruud, A.~Barszczewicz, M.~Jaszu\'{n}ski, and
+  P.~J{\o}rgensen.
+\newblock Electric field dependence of magnetic properties:
+  {M}ulticonfigurational self-consistent field calculations of
+  hypermagnetizabilities and shielding polarizabilities.
+\newblock {\em J.~Chem.~Phys.}, 102:8953, 1995.
+
+\bibitem{kvmedpsjpc91}
+K.~V. Mikkelsen, E.~Dalgaard, and P.~Swanstr{\o}m.
+\newblock Electron-transfer reactions in solution -- {A}n {\it ab initio}
+  approach.
+\newblock {\em J.~Phys.~Chem.}, 91:3081, 1987.
+
+\bibitem{kvmhahjajthjcp89}
+K.~V. Mikkelsen, H.~{\AA}gren, H.~J.~Aa. Jensen, and T.~Helgaker.
+\newblock A multiconfigurational self-consistent reaction-field method.
+\newblock {\em J.~Chem.~Phys.}, 89:3086, 1988.
+
+\bibitem{kvmpjhjajjcp100}
+K.~V. Mikkelsen, P.~J{\o}rgensen, and H.~J.~Aa. Jensen.
+\newblock A multiconfigurational self-consistent reaction field response
+  method.
+\newblock {\em J.~Chem.~Phys.}, 100:6597, 1994.
+
+\bibitem{kvmylhapjjcp100}
+K.~V. Mikkelsen, Y.~Luo, H.~{\AA}gren, and P.~J{\o}rgensen.
+\newblock Solvent induced polarizabilities and hyperpolarizabilities of
+  para-nitroaniline studied by reaction field linear response theory.
+\newblock {\em J.~Chem.~Phys.}, 100:8240, 1994.
+
+\bibitem{bfocobpjkvmjcp104}
+B.~Fernandez, O.~Christiansen, O.~Bludsky, P.~J{\o}rgensen, and K.~V.
+  Mikkelsen.
+\newblock Theory of hyperfine coupling constants of solvated molecules:
+  Applications involving methyl and {ClO$_{2}$} radicals in different solvents.
+\newblock {\em J.~Chem.~Phys.}, 104:629, 1996.
+
+\bibitem{kvmachahjajjcp103}
+K.~V. Mikkelsen, A.~Cesar, H.~{\AA}gren, and H.~J.~Aa. Jensen.
+\newblock Multiconfigurational self-consistent reaction field-theory for
+  nonequilibrium solvation.
+\newblock {\em J.~Chem.~Phys.}, 103:9010, 1995.
+
+\bibitem{kvmpjkrthjcp106}
+K.~V. Mikkelsen, P.~J{\o}rgensen, K.~Ruud, and T.~Helgaker.
+\newblock A multipole reaction field model for gauge origin independent
+  magnetic properties of solvated molecules.
+\newblock {\em J.~Chem.~Phys.}, 106:1170, 1997.
+
+\bibitem{poakvmkrthjpc100}
+{\mbox{P.-O.}}~{\AA}strand, K.~V. Mikkelsen, K.~Ruud, and T.~Helgaker.
+\newblock Magnetizabilities and nuclear shielding constants of the
+  fluoromethanes in gas phase and solution.
+\newblock {\em J.~Phys.~Chem.}, 100:19771, 1996.
+
+\bibitem{krpoaprtjacs123}
+K.~Ruud, {\mbox{P.-O.}}~{\AA}strand, and P.~R. Taylor.
+\newblock Zero-point vibrational effects on proton shieldings: Functional-group
+  contributions from {\it{ab initio}} calculations.
+\newblock {\em J.~Am.~Chem.~Soc.}, 123:4826, 2001.
+
+\bibitem{tarkr}
+T.~A. Ruden and K.~Ruud.
+\newblock {\em Quantum Chemical Calculation of NMR and EPR Parameters}, chapter
+  Ro-vibrational corrections to NMR parameters, page 153.
+\newblock Wiley, Weinheim, 2004.
+
+\bibitem{rmpnmwijqc40}
+R.~M. Pitzer and N.~M. Pitzer.
+\newblock {\em Int.~J.~Quantum Chem.}, 40:773, 1991.
+
+\bibitem{bahcmmuwogcpl251}
+B.~A. Hess, C.~M. Marian, U.~Wahlgren, and O.~Gropen.
+\newblock {\em Chem.~Phys.~Lett.}, 251:365, 1996.
+
+\bibitem{Christiansen:PERTURBATIVE_TRIPLES}
+O.~Christiansen, H.~Koch, and P.~J{\o}rgensen.
+\newblock Perturbative triple excitation corrections to coupled cluster singles
+  and doubles excitation energies.
+\newblock {\em J.~Chem.~Phys.}, 105:1451, 1996.
+
+\bibitem{Head-Gordon:94}
+M.~Head-Gordon, R.~J. Rico, M.~Oumi, and T.~J. Lee.
+\newblock A doubles correction to electronic excited-states from
+  configuration-interaction in the space of single substitutions.
+\newblock {\em Chem.~Phys.~Lett.}, 219:21, 1994.
+
+\bibitem{nevpt1}
+C.~Angeli, R.~Cimiraglia, S.~Evangelisti, T.~Leininger, and J.~P. Malrieu.
+\newblock Introduction of n--electron valence states for multireference
+  perturbation theory.
+\newblock {\em J.~Chem.~Phys.}, 114:10252, 2001.
+
+\bibitem{nevpt2}
+C.~Angeli, R.~Cimiraglia, and J.~P. Malrieu.
+\newblock n--electron valence state perturbation theory: a fast implementation
+  of the strongly contracted variant.
+\newblock {\em Chem.~Phys.~Lett.}, 350:297, 2001.
+
+\bibitem{nevpt3}
+C.~Angeli, R.~Cimiraglia, and J.~P. Malrieu.
+\newblock n--electron valence state perturbation theory: a spinless formulation
+  and an efficient implementation of the strongly contracted and of the
+  partially contracted variants.
+\newblock {\em J.~Chem.~Phys.}, 117:9138, 2002.
+
+\bibitem{nevpt4}
+C.~Angeli, S.~Borini, and R.~Cimiraglia.
+\newblock An application of second-order n-electron valence state perturbation
+  theory (nevpt2) to the calculation of excited states.
+\newblock 2004.
+
+\bibitem{chorsp}
+T.~B. Pedersen, A.~M.~J.~S{\'a}nchez de~Mer{\'a}s, and H.~Koch.
+\newblock Polarizability and optical rotation calculated from the approximate
+  coupled cluster singles and doubles cc2 linear response theory using cholesky
+  decompositions.
+\newblock {\em J.~Chem.~Phys.}, 120:8887, 2004.
+
+\bibitem{ijqc_chopt}
+J.~L. Cacheiro, T.~B. Pedersen, B.~Fern{\'a}ndez, A.~M.~J.~S{\'a}nchez
+  de~Mer{\'a}s, and H.~Koch.
+\newblock {\em Int.~J.~Quantum Chem.}, 111:349, 2011.
+
+\bibitem{directCC}
+H.~Koch, A.~S{\'a}nchez {de Mer{\'a}s}, T.~Helgaker, and O.~Christiansen.
+\newblock The integral-direct coupled cluster singles and doubles model.
+\newblock {\em J.~Chem.~Phys.}, 104:4157, 1996.
+
+\bibitem{thkrprt95}
+K.~Ruud T.~Helgaker and P.~R. Taylor.
+\newblock Second-order methods for the optimization of molecular potential
+  energy surfaces.
+\newblock In D.~Heidrich, editor, {\em The reaction path in Chemistry: Current
+  Approaches and Perspectives}. Kluwer, Netherlands, 1995.
+
+\bibitem{cppyahbsmjfjcc17}
+C.~Peng, P.~Y. Ayala, H.~B. Schlegel, and M.~J. Frisch.
+\newblock Using redundant internal coordinates to optimize equilibrium
+  geometries and transition states.
+\newblock {\em J.~Comput.~Chem.}, 17:49, 1996.
+
+\bibitem{VRML}
+A.~J. Robinson.
+\newblock Vrml, chemistry and the web -- a new reality.
+\newblock {\em Chem.~Design Automat.~News}, 10:50, 1995.
+
+\bibitem{pcppjms114}
+P.~Cs\`asz\`ar and P.~Pulay.
+\newblock Geometry optimization by direct inversion in the iterative subspace.
+\newblock {\em J.~Mol.~Struct.}, 114:31, 1984.
+
+\bibitem{Schlegel}
+H.~B. Schlegel.
+\newblock Optimization of equilibrium geometries and transition structures.
+\newblock {\em J.~Comput.~Chem.}, 3:214, 1982.
+
+\bibitem{kkwbmjjpbamop22}
+K.~Kaufman, W.~Baumeister, and M.~Jungen.
+\newblock {\em J.~Phys.~{\bf B}, Mol.~Opt.~Phys}, 22:2223, 1989.
+
+\bibitem{numder}
+T.~A. Ruden, P.~R. Taylor, and T.~Helgaker.
+\newblock Automated calculation of fundamental frequencies: application to
+  {AlH$_3$} using the {CCSD(T)} method.
+\newblock {\em J.~Chem.~Phys.}, 119:1951--1960, 2003.
+
+\bibitem{spectroref}
+J.~F. Gaw, A.~Willetts, W.~H. Greeen, and N.~C. Handy.
+\newblock Spectro.
+\newblock In J.~M. Bowman, editor, {\em Molecular Vibrations and Collision
+  Dynamics}. JAI Press, Greenwich, CT, 1990.
+
+\bibitem{pemsjaahborjcp74}
+P.~E.~M. Siegbahn, J.~Alml\"{o}f, A.~Heiberg, and B.~O. Roos.
+\newblock The complete active space {SCF} ({CASSCF}) method in a
+  {N}ewton-{R}aphson formulation with application to the {HNO} molecule.
+\newblock {\em J.~Chem.~Phys.}, 74:2384, 1981.
+
+\bibitem{thpjjcp95}
+T.~Helgaker and P.~J{\o}rgensen.
+\newblock An electronic {H}amiltonian for origin independent calculations of
+  magnetic properties.
+\newblock {\em J.~Chem.~Phys.}, 95:2595, 1991.
+
+\bibitem{skjohjajjcp103}
+S.~Kirpekar, J.~Oddershede, and H.~J.~Aa. Jensen.
+\newblock Relativistic corrections to molecular dynamic dipole
+  polarizabilities.
+\newblock {\em J.~Chem.~Phys.}, 103:2983, 1995.
+
+\bibitem{pmpljvkrjcp119}
+P.~Manninen, P.~Lantto, J.~Vaara, and K.~Ruud.
+\newblock Perturbational ab initio calculations of relativistic contributions
+  to nuclear magnetic resonance shielding tensors.
+\newblock {\em J.~Chem.~Phys.}, 119:2623, 2003.
+
+\bibitem{dmtajcp73}
+D.~Matsuoka and T.~Aoyama.
+\newblock Molecular integral of diamagnetic contribution to nuclear spin--spin
+  coupling constant.
+\newblock {\em J.~Chem.~Phys.}, 73:5718, 1980.
+
+\bibitem{klbpjhjajjothjcp97}
+K.~L. Bak, P.~J{\o}rgensen, H.~J.~Aa. Jensen, J.~Olsen, and T.~Helgaker.
+\newblock First-order nonadiabatic coupling matrix elements from
+  multiconfigurational self-consistent-field response theory.
+\newblock {\em J.~Chem.~Phys.}, 97:7573, 1992.
+
+\bibitem{bahpra33}
+B.~A. Hess.
+\newblock {\em Phys.Rev.~{\bf A}}, 33:3742, 1986.
+
+\bibitem{tbphkkrjcp110}
+T.~B. Pedersen, H.~Koch, and K.~Ruud.
+\newblock Coupled cluster response calculation of natural chiroptical spectra.
+\newblock {\em J.~Chem.~Phys.}, 110:2883, 1999.
+
+\bibitem{jvkrovjcp111}
+J.~Vaara, K.~Ruud, and O.~Vahtras.
+\newblock Second- and third-order spin-orbit contributions to nuclear shielding
+  tensors.
+\newblock {\em J.~Chem.~Phys.}, 111:2900, 1999.
+
+\bibitem{jvkrovjcc20}
+J.~Vaara, K.~Ruud, and O.~Vahtras.
+\newblock Correlated response calculations of the spin-orbit interaction
+  contribution to nuclear spin-spin couplings.
+\newblock {\em J.~Comput.~Chem.}, 20:1314, 1999.
+
+\bibitem{ovhapjhjajthjojcp96}
+O.~Vahtras, H.~{\AA}gren, P.~J{\o}rgensen, H.~J.~Aa. Jensen, T.~Helgaker, and
+  J.~Olsen.
+\newblock Spin-orbit coupling constants in a multiconfigurational linear
+  response approach.
+\newblock {\em J.~Chem.~Phys.}, 96:2118, 1992.
+
+\bibitem{ipcpl245}
+I.~Panas.
+\newblock Aspects of density functional theory in {\it{ab initio}} quantum
+  chemistry: external correlation for free.
+\newblock {\em Chem.~Phys.~Lett.}, 245:171, 1995.
+
+\bibitem{moleculeref}
+J.~Alml\"{o}f.
+\newblock A vectorized {G}aussian integral program.
+
+\bibitem{emslref}
+Basis sets were obtained from the Extensible Computational Chemistry
+  Environment Basis Set Database, Version 1.0, as developed and distributed by
+  the Molecular Science Computing Facility, Environmental and Molecular
+  Sciences Laboratory which is part of the Pacific Northwest Laboratory, P.O.
+  Box 999, Richland, Washington 99352, USA, and funded by the U.S. Department
+  of Energy. The Pacific Northwest Laboratory is a multi-program laboratory
+  operated by Battelle Memorial Institue for the U.S. Department of Energy
+  under contract DE-AC06-76RLO 1830. Contact David Feller, Karen Schuchardt, or
+  Don Jones for further information.
+
+\bibitem{nqvdref}
+K.~F{\ae}gri.
+\newblock {NQvD} basis sets.
+\newblock Technical report, Department of Chemistry, University of Oslo, 1994.
+
+\bibitem{dbcberkdmdaejcc14}
+D.~B. Chesnut, B.~E. Rusiloski, K.~D. Moore, and D.~A. Egolf.
+\newblock Use of locally dense basis sets for nuclear magnetic resonance
+  shielding calculations.
+\newblock {\em J.~Comput.~Chem.}, 14:1364, 1993.
+
+\bibitem{fbvdibmrap}
+F.~B. van Duijneveldt.
+\newblock {\mbox{IBM Res.~ Rep.~ RJ945}}.
+\newblock Technical report, IBM, 1971.
+
+\bibitem{wjhrfsjapjcp51}
+W.~J. Hehre, R.~F. Stewart, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 51:2657, 1969.
+
+\bibitem{wjhrdrfsjapjcp52}
+W.~J. Hehre, R.~Ditchfield, R.~F. Stewart, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 52:2769, 1970.
+
+\bibitem{wjpbalwjhrfsic19}
+W.~J. Pietro, B.~A. Levy, W.~J. Hehre, and R.~F. Stewart.
+\newblock {\em Inorg.~Chem.}, 19:2225, 1980.
+
+\bibitem{wjpwjhjcc4}
+W.~J. Pietro and W.~J. Hehre.
+\newblock {\em J.~Comput.~Chem.}, 4:241, 1983.
+
+\bibitem{jsbjapwjhjacs102}
+J.~S. Binkley, J.~A. Pople, and W.~J. Hehre.
+\newblock {\em J.~Am.~Chem.~Soc.}, 102:939, 1980.
+
+\bibitem{msgjsbjapwjpwjhjacs104}
+M.~S. Gordon, J.~S. Binkley, J.~A. Pople, W.~J. Pietro, and W.~J. Hehre.
+\newblock {\em J.~Am.~Chem.~Soc.}, 104:2797, 1983.
+
+\bibitem{kddwjhjcc7}
+K.~D. Dobbs and W.~J. Hehre.
+\newblock {\em J.~Comput.~Chem.}, 7:359, 1986.
+
+\bibitem{kddwjhjcc8-1}
+K.~D. Dobbs and W.~J. Hehre.
+\newblock {\em J.~Comput.~Chem.}, 8:861, 1987.
+
+\bibitem{kddwjhjcc8-2}
+K.~D. Dobbs and W.~J. Hehre.
+\newblock {\em J.~Comput.~Chem.}, 8:880, 1987.
+
+\bibitem{edgdfjpc99}
+E.~D. Glendening and D.~Feller.
+\newblock {\em J.~Phys.~Chem.}, 99:3060, 1995.
+
+\bibitem{wjpmmfwjhdjdjapjsbjacs104}
+W.~J. Pietro, M.~M. Francl, W.~J. Hehre, D.~J. Defrees, J.~A. Pople, and J.~S.
+  Binkley.
+\newblock {\em J.~Am.~Chem.~Soc.}, 104:5039, 1982.
+
+\bibitem{tcjcgwsprsjcc4}
+T.~Clark, J.~Chandrasekhar, G.~W. Spitznagel, and P.~v.~R.~Schleyer.
+\newblock {\em J.~Comput.~Chem.}, 4:294, 1983.
+
+\bibitem{rdwjhjapjcp54}
+R.~Ditchfield, W.~J. Hehre, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 54:724, 1971.
+
+\bibitem{wjhrdjapjcp56}
+W.~J. Hehre, R.~Ditchfield, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 56:2257, 1972.
+
+\bibitem{jddjapjcp62}
+J.~D. Dill and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 62:2921, 1975.
+
+\bibitem{mmfwjpwjhjsbmsgdjdjapjcp77}
+M.~M. Francl, W.~J. Pietro, W.~J. Hehre, J.~S. Binkley, M.~S. Gordon, D.~J.
+  Defrees, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 77:3654, 1982.
+
+\bibitem{vrjapmrtlwjcp109}
+V.~Rassolov, J.~A. Pople, M.~Ratner, and T.~L. Windus.
+\newblock {\em J.~Chem.~Phys.}, 109:1223, 1998.
+
+\bibitem{pchjaptca28}
+P.~C. Hariharan and J.~A. Pople.
+\newblock {\em Theor.~Chim.~Acta}, 28:213, 1973.
+
+\bibitem{mjfjapjsbjcp80}
+M.~J. Frisch, J.~A. Pople, and J.~S. Binkley.
+\newblock {\em J.~Chem.~Phys.}, 80:3265, 1984.
+
+\bibitem{rkjsbrsjapjcp72}
+R.~Krishnan, J.~S. Binkley, R.~Seeger, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 72:650, 1980.
+
+\bibitem{admgscjcp72}
+A.~D. McLean and G.~S. Chandler.
+\newblock {\em J.~Chem.~Phys.}, 72:5639, 1980.
+
+\bibitem{lacmpmjpbnedrcblrjcp103}
+L.~A. Curtiss, M.~P. McGrath, J-P. Blandeau, N.~E. Davis, Jr. R.~C.~Binning,
+  and L.~Radom.
+\newblock {\em J.~Chem.~Phys.}, 103:6104, 1995.
+
+\bibitem{mngapmpmlrjcp103}
+M.~N. Glukhovstev, A.~Pross, M.~P. McGrath, and L.~Radom.
+\newblock {\em J.~Chem.~Phys.}, 103:1878, 1995.
+
+\bibitem{huzinagabasis}
+S.~Huzinaga.
+\newblock In J.~Andzelm, M.~Klobukowski, E.~Radzio-Andzelm, Y.~Sakai, and
+  H.~Tatewaki, editors, {\em Gaussian Basis Sets for Molecular Calculations}.
+  Elsevier, Amsterdam, 1984.
+
+\bibitem{htshjcc1}
+H.~Tatewaki and S.~Huzinaga.
+\newblock {\em J.~Comput.~Chem.}, 1:205, 1980.
+
+\bibitem{thdpjhhfs1977}
+T.~H. {\mbox Dunning Jr.} and P.~J. Hay.
+\newblock In H.~F. Schaefer, editor, {\em Methods of Electronic Structure
+  Theory}, volume~2. Plenum Press, New York, 1977.
+
+\bibitem{emhfsjcp83}
+E.~Magnusson and H.~F. Schaefer.
+\newblock {\em J.~Chem.~Phys.}, 83:5721, 1985.
+
+\bibitem{thdpjhhfs1977-2}
+T.~H. {\mbox Dunning Jr.} and P.~J. Harrison.
+\newblock In H.~F. Schaefer, editor, {\em Modern Theoretical Chemistry},
+  volume~2. Plenum Press, New York, 1977.
+
+\bibitem{thdjcp53}
+T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Chem.~Phys.}, 53:2823, 1970.
+
+\bibitem{thdjcp55}
+T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Chem.~Phys.}, 55:716, 1971.
+
+\bibitem{jkkapjpca106}
+J.~Koput and K.~A. Peterson.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 106:9595, 2002.
+
+\bibitem{akwdewkapthdjcp110}
+A.~K. Wilson, D.~E. Woon, K.~A. Peterson, and T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Chem.~Phys.}, 110:7667, 1999.
+
+\bibitem{dewthdjcp103}
+D.~E. Woon and T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Chem.~Phys.}, 103:4572, 1995.
+
+\bibitem{kapthdjcp117}
+K.~A. Peterson and T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Chem.~Phys.}, 117:10548, 2002.
+
+\bibitem{akwtvmthdjsm388}
+A.~K. Wilson, T.~{\mbox van Mourik}, and T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Mol.~Struct.~(THEOCHEM)}, 388:339, 1997.
+
+\bibitem{tmakwtdhmp96}
+T.~{\mbox van Mourik}, A.~K. Wilson, and T.~H. {\mbox Dunning Jr.}
+\newblock {\em Mol.~Phys.}, 96:529, 1999.
+
+\bibitem{tmthdijqc76}
+T.~{\mbox van Mourik} and T.~H. {\mbox Dunning Jr.}
+\newblock {\em Int.~J.~Quantum Chem.}, 76:205, 2000.
+
+\bibitem{fjjcp115}
+F.~Jensen.
+\newblock {\em J.~Chem.~Phys.}, 115:9113, 2001.
+
+\bibitem{fjjcp116}
+F.~Jensen.
+\newblock {\em J.~Chem.~Phys.}, 116:3502, 2002.
+
+\bibitem{fjjcp117}
+F.~Jensen.
+\newblock {\em J.~Chem.~Phys.}, 117:9234, 2002.
+
+\bibitem{wkijc19}
+W.~Kutzelnigg.
+\newblock {\em Isr.~J.~Chem.}, 19:193, 1980.
+
+\bibitem{mswkjcp76}
+M.~Schindler and W.~Kutzelnigg.
+\newblock {\em J.~Chem.~Phys.}, 76:1919, 1982.
+
+\bibitem{huzinagaintern}
+S.~Huzinaga.
+\newblock Approximate atomic functions.
+\newblock Technical report, University of Alberta, Edmonton, 1971.
+
+\bibitem{ajhwjcp52}
+A.~J.~H. Wachters.
+\newblock {\em J.~Chem.~Phys.}, 52:1033, 1970.
+
+\bibitem{wachterintern1969}
+A.~J.~H. Wachters.
+\newblock Rj584.
+\newblock Technical report, IBM Technical Report, 1971.
+
+\bibitem{cwbsrllabjcp91}
+C.~W. {\mbox Bauschlicher Jr.}, S.~R. Langhoff, and L.~A. Barnes.
+\newblock {\em J.~Chem.~Phys.}, 91:2399, 1989.
+
+\bibitem{ajstca79}
+A.~J. Sadlej.
+\newblock {\em Theor.~Chim.~Acta}, 79:123, 1991.
+
+\bibitem{ajsmujmst234}
+A.~J. Sadlej and M.~Urban.
+\newblock {\em J.~Mol.~Struct.~(THEOCHEM)}, 234:147, 1991.
+
+\bibitem{ajstca81}
+A.~J. Sadlej.
+\newblock {\em Theor.~Chim.~Acta}, 81:45, 1992.
+
+\bibitem{ajstca81-2}
+A.~J. Sadlej.
+\newblock {\em Theor.~Chim.~Acta}, 81:339, 1992.
+
+\bibitem{japrtjcp86}
+J.~Alml\"{o}f and P.~R. Taylor.
+\newblock {\em J.~Chem.~Phys.}, 86:4070, 1987.
+
+\bibitem{cwbsrlaktca77}
+C.~W. {\mbox Bauschlicher Jr.}, S.~R. Langhoff, and A.~Kormornicki.
+\newblock {\em Theor.~Chim.~Acta}, 77:263, 1990.
+
+\bibitem{rpamminpowbortca92}
+R.~Pou Amerigo, M.~Merchan, I.~Nebot-Gil, P.~O. Widmark, and B.~O. Roos.
+\newblock {\em Theor.~Chim.~Acta}, 92:149, 1995.
+
+\bibitem{kpbdpowbortca90}
+K.~Pierloot, B.~Dumez, P.~O. Widmark, and B.~O. Roos.
+\newblock {\em Theor.~Chim.~Acta}, 90:87, 1995.
+
+\bibitem{dft:lb94}
+R.~van Leeuwen and E.~J. Baerends.
+\newblock Exchange-correlation potential with correct asymptotic behavior.
+\newblock {\em Phys. Rev. A}, 1994.
+
+\bibitem{dft:th}
+D.~J. Tozer and N.~C. Handy.
+\newblock Improving virtual kohn–sham orbitals and eigenvalues: Application
+  to excitation energies and static polarizabilities.
+\newblock {\em J. Chem. Phys.}, 109:10180, 1998.
+
+\bibitem{dft:tanh}
+D.~J. Tozer.
+\newblock The asymptotic exchange potential in kohn--sham theory.
+\newblock {\em J. Chem. Phys.}, 112:3507, 2000.
+
+\bibitem{dft:grac}
+M.~Gr\"uning, O.~V. Gritsenko, S.~J.~A. van Gisbergen, and E.~J. Baerends.
+\newblock Shape corrections to exchange-correlation potentials by
+  gradient-regulated seamless connection of model potentials for inner and
+  outer region.
+\newblock {\em J. Chem. Phys.}, 114:652, 2001.
+
+\bibitem{dft:dftd2}
+S.~Grimme.
+\newblock {\em J.~Comput.~Chem.}, 27:1787, 2006.
+
+\bibitem{dft:dftd3}
+S.~Grimme, J.~Antony, S.~Ehrlich, and H.~Krieg.
+\newblock {\em J. Chem. Phys.}, 132:154104, 2010.
+
+\bibitem{dft:dftd3bj}
+S.~Grimme, S.~Ehrlich, and L.~Goerigk.
+\newblock {\em J.~Comput.~Chem.}, 32:1456, 2011.
+
+\bibitem{dft:hohenberg}
+P.~Hohenberg and W.~Kohn.
+\newblock {\em Phys. Rev.}, 136:B864, 1964.
+
+\bibitem{dft:kohn}
+W.~Kohn and L.~J. Sham.
+\newblock {\em Phys. Rev.}, 140:A1133, 1965.
+
+\bibitem{dft:slater}
+J.~C. Slater.
+\newblock {\em Quantum Theory of Molecular and Solids}, volume~4, chapter The
+  Self-Consistend Field for Molecular and Solids.
+\newblock McGraw-Hill, New York, 1974.
+
+\bibitem{dft:becke88}
+A.~D. Becke.
+\newblock {\em Phys. Rev. A}, 38:3098, 1988.
+
+\bibitem{dft:edf1}
+R.~D. Adamson, P.~M.~W. Gill, and J.~A. Pople.
+\newblock {\em Chem. Phys. Lett.}, 284:6, 1998.
+
+\bibitem{dft:b86}
+A.~D. Becke.
+\newblock {\em J. Chem. Phys.}, 84:4524, 1986.
+
+\bibitem{dft:b86r}
+A.~D. Becke.
+\newblock {\em J. Chem. Phys.}, 107:8554, 1997.
+
+\bibitem{dft:b86mgc}
+A.~D. Becke.
+\newblock {\em J. Chem. Phys.}, 85:7184, 1986.
+
+\bibitem{dft:edf2}
+C.~Y. Lin, M.~W. George, and P.~M.~W. Gill.
+\newblock {\em Aust. J. Chem}, 57:365, 2004.
+
+\bibitem{dft:dk87}
+A.~DePristo and J.~D. Kress.
+\newblock {\em J. Chem. Phys.}, 86:1425, 1987.
+
+\bibitem{dft:g96}
+P.~M.~W. Gill.
+\newblock {\em Mol. Phys.}, 89:433, 1996.
+
+\bibitem{dft:lg93}
+D.~J. Lacks and R.~G. Gordon.
+\newblock {\em Phys. Rev. A}, 47:4681, 1993.
+
+\bibitem{dft:g961lyp}
+C.~Adamo and V.~Barone.
+\newblock Implementation and validation of the lacks-gordon exchange functional
+  in conventional density functional and adiabatic connection methods.
+\newblock {\em J. Comp. Chem.}, 19:418, 1998.
+
+\bibitem{dft:lrc95}
+A.~Lembarki, F.~Rogemond, and H.~Chermette.
+\newblock {\em Phys. Rev. A}, 52:3704, 1995.
+
+\bibitem{dft:kt12}
+T.~W. Keal and D.~J. Tozer.
+\newblock The exchange-correlation potential in kohn-sham nuclear magnetic
+  resonance shielding calculations.
+\newblock {\em J. Chem. Phys.}, 119:3015, 2003.
+
+\bibitem{dft:optx}
+N.~C. Handy and A.~J Cohen.
+\newblock {\em Mol. Phys.}, 99:403, 2001.
+
+\bibitem{dft:pbe}
+J.~P. Perdew, K.~Burke, and M.~Ernzerhof.
+\newblock {\em Phys. Rev. Lett.}, 77(3865), 1996.
+
+\bibitem{dft:revpbe}
+Y.~Zhang and W.~Yang.
+\newblock {\em Phys. Rev. Lett.}, 80:890, 1998.
+
+\bibitem{dft:mpbe}
+C.~Adamo and V.~Barone.
+\newblock {\em J. Chem. Phys.}, 116:5933, 2002.
+
+\bibitem{dft:pw86x}
+J.~P. Perdew and Y.~Wang.
+\newblock {\em Phys. Rev. B}, 33:8800, 1986.
+
+\bibitem{dft:pw91}
+J.~P. Perdew, J.~A. Chevary, S.~H. Vosko, K.~A. Jackson, M.~R. Pederson, and
+  C.~Fiolhais.
+\newblock {\em Phys. Rev. B}, 46:6671, 1992.
+
+\bibitem{dft:mpw}
+C.~Adamo and V.~Barone.
+\newblock {\em J. Chem. Phys.}, 108:664, 1998.
+
+\bibitem{dft:vwn}
+S.~H. Vosko, L.~Wilk, and M.~Nusair.
+\newblock {\em Can. J. Phys}, 58:1200, 1980.
+
+\bibitem{dft:lyp1}
+C.~Lee, W.~Yang, and R.~G. Parr.
+\newblock {\em Phys. Rev. B}, 57:785, 1988.
+
+\bibitem{dft:lyp2}
+B.~Miehlich, A.~Savin, H.~Stoll, and H.~Preuss.
+\newblock {\em Chem. Phys. Lett.}, 157:200, 1989.
+
+\bibitem{dft:p86}
+J.~P. Perdew.
+\newblock {\em Phys. Rev. B}, 33:8822, 1986.
+
+\bibitem{dft:pw92}
+J.~P. Perdew and Y.~Wang.
+\newblock {\em Phys. Rev. B}, 45:13244, 1992.
+
+\bibitem{dft:pz81}
+J.~P. Perdew and A.~Zunger.
+\newblock {\em Phys. Rev. B}, 23:5048, 1981.
+
+\bibitem{dft:wigner}
+E.~P. Wigner.
+\newblock {\em Trans. Faraday Soc.}, 34:678, 1938.
+
+\bibitem{dft:wl90}
+L.~C. Wilson and M.~Levy.
+\newblock {\em Phys. Rev. B}, 41:12930, 1990.
+
+\bibitem{dft:b97}
+A.~D. Becke.
+\newblock {\em J. Chem. Phys.}, 107:8554, 1997.
+
+\bibitem{dft:b97-1}
+F.~A. Hamprecht, A.~J. Cohen, D.~J. Tozer, and N.~C. Handy.
+\newblock {\em J. Chem. Phys.}, 109:6264, 1998.
+
+\bibitem{dft:b97-2}
+P.~J. Wilson, T.~J. Bradley, and D.~J. Tozer.
+\newblock {\em J. Chem. Phys.}, 115:9233, 2001.
+
+\bibitem{dft:b97-d}
+S.~Grimme.
+\newblock {\em J.~Comput.~Chem.}, 27:1787, 2006.
+
+\bibitem{dft:hcth407}
+A.~D. Boese and N.~C. Handy.
+\newblock {\em J. Chem. Phys.}, 114:5497, 2001.
+
+\bibitem{dft:14}
+G.~Menconi, P.~J. Wilson, and D.~J. Tozer.
+\newblock {\em J. Chem. Phys.}, 114:3958, 2001.
+
+\bibitem{dft:hcth93}
+F.~A. Hamprecht, A.~J. Cohen, D.~J. Tozer, and N.~C. Handy.
+\newblock {\em J. Chem. Phys.}, 109:6264, 1998.
+
+\bibitem{dft:hcth120}
+A.~D. Boese, N.~L. Doltsinis, N.~C. Handy, and M.~Sprik.
+\newblock {\em J. Chem. Phys.}, 112:1670, 2000.
+
+\bibitem{dft:hcth407p}
+A.~D. Boese, A.~Chandra, J.~M.~L. Martin, and D.~Marx.
+\newblock {\em J. Chem. Phys.}, 119:5965, 2003.
+
+\bibitem{dft:b3lyp}
+A.~D. Becke.
+\newblock {\em J. Chem. Phys.}, 98:5648, 1993.
+
+\bibitem{dft:b1lyp}
+C.~Adamo and V.~Barone.
+\newblock {\em Chem. Phys. Lett.}, 274:242, 1996.
+
+\bibitem{dft:bw}
+P.~A. Stewart and P.~M.~W. Gill.
+\newblock {\em J. Chem. Faraday Trans.}, 273:183, 1995.
+
+\bibitem{dft:camb3lyp}
+T.~Yanai, D.~P. Tew, and N.~C. Handy.
+\newblock A new hybrid exchange-correlation functional using the
+  \mbox{Coulomb}-attenuating method (cam-b3lyp).
+\newblock {\em Chem. Phys. Lett.}, 393:51, 2004.
+
+\bibitem{dft:rcamb3lyp}
+A.~J. Cohen, P.~Mori-S\'anchez, and W.~Yang.
+\newblock Development of exchange--correlation functionals with minimal
+  many-electron self-interaction error.
+\newblock {\em J. Chem. Phys.}, 126:191109, 2007.
+
+\bibitem{dft:kmlyp}
+J.~K. Kang and C.~B. Musgrave.
+\newblock {\em J. Chem. Phys.}, 115:11040, 2001.
+
+\bibitem{dft:kt12a}
+T.~W. Keal D.~J. Tozer and T.~Helgaker.
+\newblock Giao shielding constants and indirect spin-spin coupling constants:
+  performance of density functional methods.
+\newblock {\em Chem. Phys. Lett.}, 391:374, 2004.
+
+\bibitem{dft:kt3}
+T.~W. Keal and D.~J. Tozer.
+\newblock A semi-empirical generalised gradient approximation
+  exchange-correlation functional.
+\newblock {\em J. Chem. Phys.}, 121:5654, 2004.
+
+\bibitem{dft:mpw1k}
+B.~J. Lynch, P.~L. Fast, M.~Harris, and D.~G. Truhlar.
+\newblock {\em J. Phys. Chem. A}, 104:4811, 2000.
+
+\bibitem{dft:mpw1n}
+B.~L. Kormos and C.~J. Cramer.
+\newblock {\em J. Phys. Org. Chem.}, 15:712, 2002.
+
+\bibitem{dft:mpw1s}
+B.~J. Lynch, Y.~Zhao, and D.~G. Truhlar.
+\newblock {\em J. Phys. Chem. A}, 107:1384, 2003.
+
+\bibitem{dft:pbe0}
+C.~Adamo and V.~Barone.
+\newblock {\em J. Chem. Phys.}, 110:6158, 1999.
+
+\bibitem{dft:pw86}
+J.~P. Perdew and Y.~Wang.
+\newblock {\em Phys. Rev. B}, 33:8800, 1986.
+
+\bibitem{dft:xlyp}
+X.~Xu and W.~A.~Goddard III.
+\newblock {\em Proc. Natl. Acad. Sci. (USA)}, 101:2673, 2004.
+
+\bibitem{dft:x3lyp}
+X.~Xu and W.~A.~Goddard III.
+\newblock {\em J. Phys. Chem. A}, 108:2305, 2004.
+
+\bibitem{dft:b2plyp}
+S.~Grimme.
+\newblock Semiempirical hybrid density functional with perturbative
+  second-order correlation.
+\newblock {\em J. Chem. Phys.}, 124:034108, 2006.
+
+\bibitem{dft:b2tplyp}
+Amir Karton, Alex Tarnopolsky, Jean-François Lam\'ere, George~C. Schatz, and
+  Jan M.~L. Martin.
+\newblock Highly accurate first-principles benchmark data sets for the
+  parametrization and validation of density functional and other approximate
+  methods. derivation of a robust, generally applicable, double-hybrid
+  functional for thermochemistry and thermochemical kinetics.
+\newblock {\em J. Phys. Chem. A}, 112:12868, 2008.
+
+\bibitem{dft:mpw2plyp}
+T.~Schwabe and S.~Grimme.
+\newblock Towards chemical accuracy for the thermodynamics of large molecules:
+  new hybrid density functionals including non-local correlation effects.
+\newblock {\em Phys.~Chem.~Chem.~Phys.}, 8:4398, 2006.
+
+\bibitem{dft:b2piplyp}
+J.~C. Sancho-Garcia and A.~J. P\'erez-Jim\'enez.
+\newblock Assessment of double-hybrid energy functionals for $\pi$-conjugated
+  systems.
+\newblock {\em J. Chem. Phys.}, 131:084108, 2009.
+
+\bibitem{dft:pbe0dh}
+Eric Br\'emond and Carlo Adamo.
+\newblock Seeking for parameter-free double-hybrid functionals: The pbe0-dh
+  model.
+\newblock {\em J. Chem. Phys.}, 135:024106, 2011.
+
+\bibitem{Boyloc}
+S.~F. Boys.
+\newblock Construction of some molecular orbitals to be approximately invariant
+  for changes from one molecule to another.
+\newblock {\em Rev.~Mod.~Phys.}, 32:296, 1960.
+
+\bibitem{cwbjcp72}
+C.~W. {\mbox Bauschlicher Jr.}
+\newblock The construction of modified virtual orbitals ({MVO}'s) which are
+  suited for configuration interaction calculations.
+\newblock {\em J.~Chem.~Phys.}, 72:880, 1980.
+
+\bibitem{tuhhjajpjjcp84}
+T.~U. Helgaker, H.~J.~Aa. Jensen, and P.~J{\o}rgensen.
+\newblock Analytical calcultion of {MCSCF} dipole-moment derivatives.
+\newblock {\em J.~Chem.~Phys.}, 182:6280, 1986.
+
+\bibitem{hhbook}
+H.~Hellmann.
+\newblock {\em Einf\"{u}hrung in die Quantenchemie}.
+\newblock Deuticke, Leipzig, 1937.
+
+\bibitem{rpfpr56}
+R.~P. Feynman.
+\newblock {\em Phys.~Rev.}, 56:340, 1939.
+
+\bibitem{vbthwkkrmp96}
+V.~Bakken, T.~Helgaker, W.~Klopper, and K.~Ruud.
+\newblock The calculation of molecular geometrical properties in the
+  {H}ellmann-{F}eynman approximation.
+\newblock {\em Mol.~Phys.}, 96:653, 1999.
+
+\bibitem{optphavckrcp260}
+O.~Plashkevych, T.~Privalov, H.~{\AA}gren, V.~Carravetta, and K.~Ruud.
+\newblock On the validity of the equivalent cores approximation for computing
+  x-ray photoemission and photoabsorption spectral bands.
+\newblock {\em Chem.~Phys.}, 260:11, 2000.
+
+\bibitem{hskrpoajcp120}
+H.~Solheim, K.~Ruud, and P.-O. {\AA}strand.
+\newblock {\em J.~Chem.~Phys.}, 120:10368, 2004.
+
+\bibitem{pnkrthjcp120}
+P.~Norman, K.~Ruud, and T.~Helgaker.
+\newblock {\em J.~Chem.~Phys.}, 120:5027, 2004.
+
+\bibitem{kauczor:2011}
+J.~Kauczor, P.~J{\o}rgensen, and P.~Norman.
+\newblock On the efficiency of algorithms for solving hartreefock and
+  kohnsham response equations.
+\newblock {\em J. Chem. Theory Comput.}, 7:1610--1630, 2011.
+
+\bibitem{hsijqc30}
+H.~Sellers.
+\newblock {\em Int.~J.~Quantum Chem.}, 30:433, 1986.
+
+\bibitem{spas079}
+S.~P.~A. Sauer and P.~F. Provasi.
+\newblock The anomalous deuterium isotope effect in the nmr spectrum of
+  methane: An analysis in localized molecular orbitals.
+\newblock {\em ChemPhysChem}, 9:1259--1261, 2008.
+
+\bibitem{spas086}
+P.~F. Provasi and S.~P.~A. Sauer.
+\newblock Analysis of isotope effects in nmr one-bond indirect nuclear
+  spin-spin coupling constants in terms of localized molecular orbitals.
+\newblock {\em Phys. Chem. Chem. Phys.}, 11:3987--3995, 2009.
+
+\bibitem{trarot}
+T.~Helgaker.
+\newblock Translational and rotational symmetries of molecular geometrical
+  derivatives.
+\newblock {\em Acta Chem. Scand.}, A42:515--518, 1988.
+
+\bibitem{jrtsvmjcp58}
+J.~Rose, T.~Shibuya, and V.~McKoy.
+\newblock {\em J.~Chem.~Phys.}, 58:74, 1973.
+
+\bibitem{tsjrvmjcp58}
+T.~Shibuya, J.~Rose, and V.~McKoy.
+\newblock {\em J.~Chem.~Phys.}, 58:500, 1973.
+
+\bibitem{erdjcp17}
+E.~R. Davidson.
+\newblock {\em J.~Chem.~Phys.}, 17:87, 1975.
+
+\bibitem{ovhahjajjcc15}
+O.~Vahtras, H.~{\AA}gren, and H.~J.~Aa. Jensen.
+\newblock Direct one-index transformations in multiconfiguration response
+  calculations.
+\newblock {\em J.~Comput.~Chem.}, 15:573, 1994.
+
+\bibitem{jodlypjjcp91}
+J.~Olsen, D.~L. Yeager, and P.~J{\o}rgensen.
+\newblock Triplet excitation properties in large scale multiconfigurational
+  linear response calculations.
+\newblock {\em J.~Chem.~Phys.}, 91:381, 1989.
+
+\bibitem{ovhapjhjajthjojcp97}
+O.~Vahtras, H.~{\AA}gren, P.~J{\o}rgensen, H.~J.~Aa. Jensen, T.~Helgaker, and
+  J.~Olsen.
+\newblock Multiconfigurational quadratic response functions for singlet and
+  triplet perturbations: the phosphoresence lifetime of formaldehyde.
+\newblock {\em J.~Chem.~Phys.}, 97:9178, 1992.
+
+\bibitem{pjhjajjojcp89}
+P.~J{\o}rgensen, H.~J.~Aa. Jensen, and J.~Olsen.
+\newblock Linear response for large scale multiconfigurational self-consistent
+  field wave functions.
+\newblock {\em J.~Chem.~Phys.}, 89:3654, 1988.
+
+\bibitem{hhhjajpjjojcp97}
+H.~Hettema, H.~J.~Aa. Jensen, P.~J{\o}rgensen, and J.~Olsen.
+\newblock Quadratic response functions for a multiconfigurational
+  self-consistent field wave-function.
+\newblock {\em J.~Chem.~Phys.}, 97:1174, 1992.
+
+\bibitem{haovhkpjthjcp98}
+H.~{\AA}gren, O.~Vahtras, H.~Koch, P.~J{\o}rgensen, and T.~Helgaker.
+\newblock Direct atomic orbital based self-consistent-field calculations of
+  nonlinear molecular properties - application to the frequency-dependent
+  hyperpolarizability of para-nitroaniline.
+\newblock {\em J.~Chem.~Phys.}, 98:6417, 1993.
+
+\bibitem{skmsgmwsnm99}
+S.~Koseki, M.~S. Gordon, M.~W. Schmidt, and N.~Matsunaga.
+\newblock {\em J.~Phys.~Chem.}, 99:12764, 1995.
+
+\bibitem{skmwsmsgjpca102}
+S.~Koseki, M.~W. Schmidt, and M.~S. Gordon.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 102:10430, 1998.
+
+\bibitem{skmwsmsgjpc96}
+S.~Koseki, M.~W. Schmidt, and M.~S. Gordon.
+\newblock {\em J.~Phys.~Chem.}, 96:10768, 1992.
+
+\bibitem{haovbmaqc27}
+H.~{\AA}gren, O.~Vahtras, and B.~Minaev.
+\newblock Response theory and calculations of spin-orbit coupling phenomena in
+  molecules.
+\newblock {\em Adv.~Quantum Chem.}, 27:71, 1996.
+
+\bibitem{Rizzo:TPACD}
+Antonio Rizzo, Branislav Jans\'ik, Thomas \mbox{Bondo Pedersen}, and Hans
+  {\AA}gren.
+\newblock Origin independent approaches to the calculation of two-photon
+  circular dichroism.
+\newblock {\em J. Chem. Phys.}, 125:064113, 2006.
+
+\bibitem{pndjovhacpl242}
+P.~Norman, D.~Jonsson, O.~Vahtras, and H.~{\AA}gren.
+\newblock Cubic response functions in the random phase approximation.
+\newblock {\em Chem.~Phys.~Lett.}, 242:7, 1995.
+
+\bibitem{djpnhajcp105}
+D.~Jonsson, P.~Norman, and H.~{\AA}gren.
+\newblock Cubic response functions in the multiconfigurational self-consistent
+  field approximation.
+\newblock {\em J.~Chem.~Phys.}, 105:6401, 1996.
+
+\bibitem{djpnylhajcp105}
+D.~Jonsson, P.~Norman, Y.~Liu, and H.~{\AA}gren.
+\newblock Response theory for static and dynamic polarizabilities of excited
+  states.
+\newblock {\em J.~Chem.~Phys.}, 105:581, 1996.
+
+\bibitem{olsen90}
+J.~Olsen, P.~J{\o}rgensen, and J.~Simons.
+\newblock {Passing the one-billion limit in full configuration-interaction
+  (FCI) calculations}.
+\newblock {\em Chem.~Phys.~Lett.}, 169:463, 1990.
+
+\bibitem{fleig_gasci2}
+T.~Fleig, J.~Olsen, and L.~Visscher.
+\newblock The generalized active space concept for the relativistic treatment
+  of electron correlation. {II}: {L}arge-scale configuration interaction
+  implementation based on relativistic 2- and 4-spinors and its application.
+\newblock {\em J.~Chem.~Phys.}, 119:2963, 2003.
+
+\bibitem{Christiansen:CPL243}
+O.~Christiansen, H.~Koch, and P.~J{\o}rgensen.
+\newblock The second-order approximate coupled cluster singles and doubles
+  model {CC2}.
+\newblock {\em Chem.~Phys.~Lett.}, 243:409, 1995.
+
+\bibitem{Moller34}
+C.~M{\o}ller and M.~S. Plesset.
+\newblock {\em Phys.~Rev.}, 46:618, 1934.
+
+\bibitem{Purvis82}
+G.~D. Purvis and R.~J. Bartlett.
+\newblock {\em J.~Chem.~Phys.}, 76:1910, 1982.
+
+\bibitem{Raghavachari89}
+K.~Raghavachari, G.~W. Trucks, J.~A. Pople, and M.~Head-Gordon.
+\newblock A 5th-order perturbation comparison of electron correlation theories.
+\newblock {\em Chem.~Phys.~Lett.}, 157:479, 1989.
+
+\bibitem{Christiansen:JCP103}
+O.~Christiansen, H.~Koch, and P.~J{\o}rgensen.
+\newblock Response functions in the {CC3} iterative triple excitation model.
+\newblock {\em J.~Chem.~Phys.}, 103:7429, 1995.
+
+\bibitem{Koch:JCP106}
+H.~Koch, O.~Christiansen, P.~J{\o}rgensen, A.~S{\'a}nchez {de Mer{\'a}s}, , and
+  T.~Helgaker.
+\newblock The {CC3} model: {A}n iterative coupled cluster approach including
+  connected triples.
+\newblock {\em J.~Chem.~Phys.}, 106:1808, 1997.
+
+\bibitem{Halkier:CCFOP}
+A.~Halkier, H.~Koch, O.~Christiansen, P.~J{\o}rgensen, and T.~Helgaker.
+\newblock First-order one-electron properties in the integral-direct coupled
+  cluster singles and doubles model.
+\newblock {\em J.~Chem.~Phys.}, 107:849, 1997.
+
+\bibitem{Halkier:CC2RLXFOP}
+A.~Halkier and S.~Coriani.
+\newblock Relaxed {CC2} first-order properties.
+\newblock (Technical notes), 2000.
+
+\bibitem{Hald:CCPTFOP}
+K.~Hald, A.~Halkier, P.~J{\o}rgensen, S.~Coriani, and T.~Helgaker.
+\newblock A {L}agrangian, integral-density direct formulation and
+  implementation of the analytic {CCSD} and {CCSD(T)} gradients.
+\newblock {\em J.~Chem.~Phys.}, 118:2985, 2003.
+
+\bibitem{Christiansen:CCLR}
+O.~Christiansen, A.~Halkier, H.~Koch, P.~J{\o}rgensen, and T.~Helgaker.
+\newblock Integral-direct coupled cluster calculations of frequency-dependent
+  polarizabilities, transition probailities and excited-state properties.
+\newblock {\em J.~Chem.~Phys.}, 108:2801, 1998.
+
+\bibitem{Christiansen:QEL}
+O.~Christiansen, P.~J{\o}rgensen, and C.~H\"attig.
+\newblock Response functions from {F}ourier component variational perturbation
+  theory applied to a time-averaged quasienergy.
+\newblock {\em Int.~J.~Quantum Chem.}, 68:1, 1998.
+
+\bibitem{Haettig:CAUCHY}
+C.~H{\"attig}, O.~Christiansen, and P.~J{\o}rgensen.
+\newblock Cauchy moments and dispersion coefficients using coupled cluster
+  linear response theory.
+\newblock {\em J.~Chem.~Phys.}, 107:10592, 1997.
+
+\bibitem{Haettig:DIPGRA}
+C.~H\"attig, T.~B. Pedersen, K.~V. Mikkelsen, and T.~Helgaker.
+\newblock Coupled-cluster singles-and-doubles calculations of atomic charges
+  from {Atomic Polar Tensors}.
+\newblock 2005.
+\newblock Unpublished.
+
+\bibitem{Christiansen:JCP105}
+O.~Christiansen, H.~Koch, A.~Halkier, P.~J{\o}rgensen, T.~Helgaker, and A.~M.
+  {Sanchez de Meras}.
+\newblock Large-scale calculations of excitation energies in coupled cluster
+  theory: The singlet excited states of benzene.
+\newblock {\em J.~Chem.~Phys.}, 105:6921, 1996.
+
+\bibitem{Hald:JCP113}
+C.~H\"{a}ttig K.~Hald and P.~J{\o}rgensen.
+\newblock Triplet excitation energies in the coupled cluster singles and
+  doubles model using an explicit triplet spin coupled excitation space.
+\newblock {\em J.~Chem.~Phys.}, 113:7765, 2000.
+
+\bibitem{Hald:JCP115}
+J.~Olsen K.~Hald, C.~H\"{a}ttig and P.~J{\o}rgensen.
+\newblock Cc3 triplet excitation energies using an explicit excitation space.
+\newblock {\em J.~Chem.~Phys.}, 115:3545, 2001.
+
+\bibitem{Coriani:MOACC}
+S.~Coriani, C.~H\"attig, P.~J{\o}rgensen, and T.~Helgaker.
+\newblock Gauge-origin independent magneto-optical activity within coupled
+  cluster response theory.
+\newblock {\em J.~Chem.~Phys.}, 113:3561, 2000.
+
+\bibitem{Coriani:PHD}
+S.~Coriani.
+\newblock {\em {\it{Ab initio}} determination of molecular properties}.
+\newblock PhD thesis, Aarhus University, {\AA}rhus, Denmark, July 2000.
+
+\bibitem{Haettig:EXCITED}
+C.~H{\"attig} and P.~J{\o}rgensen.
+\newblock Derivation of coupled cluster excited states response functions and
+  multiphoton transition moments between two excited states as derivatives of
+  variational functionals.
+\newblock {\em J.~Chem.~Phys.}, 109:4745, 1998.
+
+\bibitem{Haettig:EXLR}
+C.~H{\"a}ttig, O.~Christiansen, S.~Coriani, and P.~J{\o}rgensen.
+\newblock Frequency-dependent polarizabilities of excited states using coupled
+  cluster response theory.
+\newblock {\em J.~Chem.~Phys.}, 109:9237, 1998.
+
+\bibitem{ziolkowski2009}
+M.~Zi{\'o}{\l}kowski, B.~Jansik, P.~J{\o}rgensen, and J.~Olsen.
+\newblock Maximum locality in occupied and virtual orbital spaces using a
+  least-change strategy.
+
+\bibitem{aquilante2006}
+F.~Aquilante, T.~B. Pedersen, A.~M.~J.~S{\'a}nchez de~Mer{\'a}s, and H.~Koch.
+
+\bibitem{wtrrrmp37}
+W.~T. Raynes and R.~Ratcliffe.
+\newblock {\em Mol.~Phys.}, 37:571, 1979.
+
+\end{thebibliography}
