@@ -3,6 +3,7 @@
 \usepackage{makeidx}
 \usepackage{supertabular}
 \usepackage{color}
+\usepackage{amsmath}
 
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
@@ -23,6 +24,7 @@
 % apsrev entries in the text need definitions of these commands
 \newcommand{\bibfnamefont}[1]{#1}
 \newcommand{\bibnamefont}[1]{#1}
+
 
 \typeout{***               }
 \typeout{***   Modification history: }
@@ -123,6 +125,7 @@ escapeinside={\%*}{*}           % if you want to add a comment within your code
 %
 %           
 %\renewcommand{\thetable}{\Roman{table}}
+\newcommand{\insertref}{{\sc Insert reference here!!! }}
 \newcommand{\lsdalton}{{\sc lsdalton}}
 \newcommand{\dalton}{{\sc dalton}}
 \newcommand{\resp}{{\sc response}\index{\sc response}}
@@ -147,6 +150,7 @@ escapeinside={\%*}{*}           % if you want to add a comment within your code
 \newcommand{\OP}{\mbox{one-particle}}
 \newcommand{\COP}{\mbox{One-particle}}
 \newcommand{\OEL}{\mbox{one-electron}}
+\newcommand{\eqtext}[1]{\text{#1}}
 \newcommand{\usp}[2]{(#1$s$~#2$p$)}
 \newcommand{\uspd}[3]{(#1$s$~#2$p$~#3$d$)}
 \newcommand{\uspdf}[4]{(#1$s$~#2$p$~#3$d$~#4$f$)}
@@ -213,7 +217,11 @@ and M.~Ziolkowski}
 %\mbox{ }\newline
 %\end{titlepage}
 
+\pagenumbering{roman}
+\tableofcontents
+
 \include{Preface}
+\pagenumbering{arabic}
 \part{\lsdalton\ Installation Guide}
 \include{Install}
 \include{Maintain}

@@ -5,14 +5,14 @@ In this chapter, we describe all keywords for the different sections
 of the LSDALTON.INP file. In general, LSDALTON.INP is divided into the following sections under
 the headlines:
 \begin{itemize}
-\item **GENERAL contain general settings (optional)
-\item **INTEGRAL contain settings for the calculation of integrals (optional)
-\item **WAVE FUNCTION contains info about the wave function (e.g. HF/DFT) and settings
-for optimization of the wave function (mandatory)
+\item **GENERAL contains general settings (optional)
+\item **INTEGRAL contains settings for the calculation of integrals (optional)
+\item **WAVE FUNCTION contains information about the wave function (e.g. HF/DFT) and settings
+for the optimization of the wave function (mandatory)
 \item **OPTIMIZE contains settings for geometry optimization (optional)
 \item **DYNAMI contains settings for Born-Oppenheimer molecular dynamics (optional)
 \item **LOCALIZE ORBITALS contains settings for orbital localization procedure (optional)
-\item **RESPONS contains info about requested molecular properties for HF and DFT (optional)
+\item **RESPONS contains information about requested molecular properties for HF and DFT (optional)
 \item **DEC \emph{or} **CC contains info about MP2 and coupled-cluster calculations (optional)
 \item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera}.
 \item **PLTGRID contains information about grid used for construction of *.plt files.
@@ -25,7 +25,8 @@ should always end with *END OF INPUT.
 This input module defines the way the integrals should be calculated.
 \begin{description}
 
-\item[\Key{SCALAPACK}] Use SCALAPACK matrices. NB: Requires linking to the scalapack lib (provided by MKL).
+\item[\Key{SCALAPACK}] Use SCALAPACK matrices. \newline
+NB: Requires linking to the scalapack lib (provided by MKL).
 \item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices
 \item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library!
 \item[\Key{TIME}] Activate the printout of timings.
@@ -41,19 +42,32 @@ This input module defines the way the integrals should be calculated.
 
 \item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
 When using this keyword, an auxiliary basis set has to be 
-specified in \mol\ file.
+specified in the \mol\ file.
+
+\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM) to approximate 
+the exact-exchange energy and gradient contributions \cite{ADMM:2010}.
+When using this keyword, an auxiliary basis set has to be 
+specified in the \mol\ file such as:
+\begin{verbatim}
+1     BASIS
+2     6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21G
+      ...
+\end{verbatim} 
+where the "JK" basis is used as ADMM auxiliary basis set, and the choice of "CABS" basis isn't used here even though it needs to be assigned an existing basis set.
+Beware that ADMM accuracy and robustness haven't been thoroughly tested yet.\newline
+{\bf Test case example}: linsca/linsca\_admm\_df
 
 \item[\Key{PARI}] Use the very local Pair-Atomic Resolution-of-the-Identity (PARI) 
 approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
 When using this keyword, an auxiliary basis set has to be 
-specified in \mol\ file.\newline
-{\bf Use at your own risk!}. \newline
-Note that this method contains inherent deficiencies (discussed in~\cite{PARI:2013}) 
+specified in the \mol\ file.\newline
+{\bf Use at your own risk}: note that this method contains inherent deficiencies (discussed in~\cite{PARI:2013}) 
 which may result in the non-convergence of the SCF scheme for HF or KS-DFT. \newline
 {\bf Test cases} in LSint: LSDALTON\_ethane\_pari\_b3lyp, 
 LSDALTON\_ethane\_pari\_b3lyp\_ChgConst, 
 LSDALTON\_ethane\_pari\_b3lyp\_ChgDipConst, 
 LSDALTON\_ethane\_pari\_b3lyp\_unconstrained
+
 
 \item[\Key{RUNMM}] Use the (Fast) Multipole Method.
 

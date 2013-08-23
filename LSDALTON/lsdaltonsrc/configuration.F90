@@ -1145,10 +1145,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
            INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_GCBASIS    = .TRUE.
+           INTEGRAL%ADMM_GCBASIS    = .FALSE.
            INTEGRAL%ADMM_DFBASIS    = .FALSE.
-           INTEGRAL%ADMM_JKBASIS    = .FALSE.
-        CASE ('.ADMM-JK'); 
+           INTEGRAL%ADMM_JKBASIS    = .TRUE.
+        CASE ('.ADMM-JK'); ! DEFAULT
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
@@ -1156,7 +1156,15 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_GCBASIS    = .FALSE.
            INTEGRAL%ADMM_DFBASIS    = .FALSE.
            INTEGRAL%ADMM_JKBASIS    = .TRUE.
-        CASE ('.ADMM-DF'); 
+        CASE ('.ADMM-GC'); ! EXPERIMENTAL
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE = .TRUE.
+           INTEGRAL%ADMM_GCBASIS    = .TRUE.
+           INTEGRAL%ADMM_DFBASIS    = .FALSE.
+           INTEGRAL%ADMM_JKBASIS    = .FALSE.
+        CASE ('.ADMM-DF'); ! EXPERIMENTAL
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
@@ -1164,7 +1172,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_GCBASIS    = .FALSE.
            INTEGRAL%ADMM_DFBASIS    = .TRUE.
            INTEGRAL%ADMM_JKBASIS    = .FALSE.
-        CASE ('.ADMM-McWeeeny');
+        CASE ('.ADMM-McWeeny'); ! EXPERIMENTAL
            INTEGRAL%ADMM_MCWEENY    = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
