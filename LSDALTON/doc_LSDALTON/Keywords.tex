@@ -1736,7 +1736,7 @@ Use MP2 model. This gives the canonical MP2 energy and is not optimized for para
 Use CC2 model which is not an optimized code, but rather uses the CCSD optimized code with some contributions removed. See CCSD documentation for details.
 
 \item[\Key{CCSD}]\verb| | \newline
-Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). 
+Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). Using this keyword automatically triggers checkpointing after each iteration. The calculation can be restarted with the usual \Key{.RESTART} keyword.
 
 \item[\Key{FROZENCORE}]  \verb| | \newline
 Use the frozen core approximation (can also be used in **DEC section).
@@ -1757,8 +1757,9 @@ Convergence threshold for residual norm in CC solver.
 \item[\Key{SUBSIZE}]  \verb| | \newline
 Number of previous vectors to store in CROP scheme~\cite{crop} for CC solver.
 
-\item[\Key{CCSDSAFE}]  \verb| | \newline
-Save CCSD amplitudes to be able to restart full CCSD calculation. The files are named t11.restart and t12.restart for the singles amplitudes and t21.restart and t22.restart for the doubles amplitudes. These files are written in in an alternate fashion and the latest amplitudes are read automatically if a CCSD calculation is started in the same folder.
+\item[\Key{CCSDNOSAFE}]  \verb| | \newline
+Prevent saving of CCSD amplitudes as checkpoint files. 
+
 
 \end{description}
 
