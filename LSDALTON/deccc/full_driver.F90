@@ -1686,10 +1686,9 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> Canonical MP2 correlation energy
     real(realk),intent(inout) :: Ecorr
-    type(array2) :: Cocc, Cunocc
+    real(realk),pointer :: Cocc(:,:), Cunocc(:,:)
     type(array4) :: g
     integer :: nbasis,i,j,a,b,ncore,offset,nocc,nunocc
-    integer, dimension(2) :: occ_dims,unocc_dims
     real(realk) :: eps
     real(realk), pointer :: ppfock(:,:)
 
@@ -1711,14 +1710,12 @@ contains
     nunocc = MyMolecule%numvirt
     ncore = MyMolecule%ncore
     nbasis=MyMolecule%nbasis
-    occ_dims = [nbasis,nocc]
-    unocc_dims = [nbasis,nunocc]
     call mem_alloc(ppfock,nocc,nocc)
     if(DECinfo%frozencore) then
        ! Only copy valence orbitals into array2 structure
-       Cocc=array2_init(occ_dims)
+       call mem_alloc(Cocc,nbasis,nocc)
        do i=1,nocc
-          Cocc%val(:,i) = MyMolecule%ypo(:,i+Ncore)
+          Cocc(:,i) = MyMolecule%ypo(:,i+Ncore)
        end do
 
        ! Fock valence
@@ -1730,17 +1727,18 @@ contains
        offset = ncore
     else
        ! No frozen core, simply copy elements for all occupied orbitals
-       Cocc=array2_init(occ_dims,MyMolecule%ypo)
+       call mem_alloc(Cocc,nbasis,nocc)
+       Cocc=MyMolecule%ypo
        ppfock = MyMolecule%ppfock
        offset=0
     end if
-    Cunocc=array2_init(unocc_dims,MyMolecule%ypv)
+    call mem_alloc(Cunocc,nbasis,nunocc)
 
     ! Get (AI|BJ) integrals stored in the order (A,I,B,J)
     ! ***************************************************
     call get_VOVO_integrals(mylsitem,nbasis,nocc,nunocc,Cunocc,Cocc,g)
-    call array2_free(Cocc)
-    call array2_free(Cunocc)
+    call mem_dealloc(Cocc)
+    call mem_dealloc(Cunocc)
 
     ! Calculate canonical MP2 energy
     ! ******************************

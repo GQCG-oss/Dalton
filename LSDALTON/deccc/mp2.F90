@@ -1658,15 +1658,15 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     !> Number of virtual orbitals
     integer, intent(in) :: nvirt
     !> Occupied orbital coefficients
-    type(array2), intent(in) :: Cocc
+    real(realk), intent(in) :: Cocc(nbasis,nocc)
     !> Virtual orbital coefficients
-    type(array2), intent(in) :: Cvirt
+    real(realk), intent(in) :: Cvirt(nbasis,nvirt)
     !> (a i | b j) integrals stored in the order (a,i,b,j)
     type(array4),intent(inout) :: VOVO
 
     ! Get integrals (a i | b j) stored as (i,j,b,a)
     VOVO = array4_init([nocc,nocc,nvirt,nvirt])
-    call get_ijba_integrals(mylsitem%setting,nbasis,nocc,nvirt,Cocc%val,Cvirt%val,VOVO%val)
+    call get_ijba_integrals(mylsitem%setting,nbasis,nocc,nvirt,Cocc,Cvirt,VOVO%val)
     
     ! Reorder: (i,j,b,a) --> (a,i,b,j)
     call array4_reorder(VOVO,[4,1,3,2])
