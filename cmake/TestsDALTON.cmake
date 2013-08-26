@@ -447,7 +447,6 @@ add_dalton_test(dft_disp_d2                   "dalton;dft")
 add_dalton_test(dft_disp_d3                   "dalton;dft")
 add_dalton_test(dft_disp_d3bj                 "dalton;dft")
 add_dalton_test(dft_ac_grac                   "dalton;dft")
-add_dalton_test(dft_ac_th                     "dalton;dft")
 add_dalton_test(dcpt2                         "dalton")
 
 #if(ENABLE_MPI)
