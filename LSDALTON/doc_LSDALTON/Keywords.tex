@@ -1070,64 +1070,71 @@ do NOT start with a dot!
 \section{**OPTIMIZE}\label{sec:optimize}
 This input module describes the keywords needed to optimize a molecular geometry.
 In the current release a number of quasi-Newton trust-radius level-shifted techniques for finding 
-equilibrium geometries are available. The methods differ in the way approximate Hessians are 
-built and updated. Geometric structure can be optimized in redundant internal or 
-Cartesian coordinates with two sets of convergence criteria. The default setting is minimization 
-in internal coordinates \cite{DaltonOpt}, with model Hessian \cite{ModelHess} updated with BFGS formula. 
-By default, new convergence criteria are used, i.e. convergence is declared if  the four quantities - 
-the root-mean-square of the gradient, its maximum absolute value, the root-mean square of the step
-vector, and its maximum absolute element (in internal or Cartesian coordinates) - 
-are smaller than $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$ respectively \cite{NewConv}.
-The default value of $\epsilon$ is $1.0\cdot 10^{-5}$.
-
+equilibrium geometries are available (\Key{BFGS}, \Key{PSB}, \Key{DFP}).
+The methods differ in the way approximate Hessians are built and updated.
+\Key{INIMOD}, \Key{INIRED} and \Key{INITEV} provide different approximations for the initial Hessian, 
+while \Key{MODHES} recomputes the approximated Hessian at every geometry.
 The geometry optimization generates a sequence of geometry steps. The coordinates of each 
 accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX} 
 is the geometry step number, and the final converged geometry in MOLECULE.OUT.
-By default, the atoms-in-molecule approach is used to set up the initial density-matrix at each new
+
+Geometric structure can be optimized in redundant internal (\Key{REDINT}) or 
+Cartesian  (\Key{CARTES}) coordinates with two sets of convergence criteria (two for the gradient and two for the step).
+Convergence is obtained when the following four quantities are respectively smaller than the four convergence criteria $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$  \cite{NewConv}.:
+\begin{itemize}
+\item the root-mean-square of the gradient, 
+\item the maximum absolute value of the gradient, 
+\item the root-mean square of the step vector,
+\item and the maximum absolute element (in internal or Cartesian coordinates) of the step vector.
+\end{itemize}
+
+
+The default setting specifies the minimization in internal coordinates \cite{DaltonOpt}, with model Hessian \cite{ModelHess} updated with BFGS formula. 
+The atoms-in-molecule approach is used to set up the initial density-matrix at each new
 geometry step (equivalent to the use of the .ATOMS keyword under *DENSOPT).
 However, it is possible to take as starting guess McWeeny-purified converged
 density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
 the *DENSOPT subsection.
+The default value of $\epsilon$ is $10^{-5}$ (\Key{VLOOSE}, \Key{LOOSE}, 
+\Key{TIGHT} and \Key{VTIGHT} correspond to other predefined values for the convergence criteria).
 \newline
+
 \vspace{1 cm}
 \noindent
-\textbf{Example of test cases for geometry optimization calculations}: \newline
-These test cases illustrate the main features of the geometry optimization. The test cases are located in LSDALTON/test/geomopt.
+\textbf{Example of test cases for geometry optimization calculations} \newline
+The test cases are located in LSDALTON/test/geomopt.
+These test cases illustrate the main features of the geometry optimization:
 \begin{itemize}
 \item
 \textit{geomopt/cartes\_bfgs\_min}:
+performs a geometry optimization in Cartesian coordinates,
+with BFGS update of initially unit Hessian.
 \item
-\textit{geomopt/Excited\_state\_opt}: Performs a geometry optimization of an excited state. 
+\textit{geomopt/Excited\_state\_opt}:
+performs a geometry optimization of an excited state in redundant internal coordinates 
+with B3LYP.
 \item
 \textit{geomopt/redint\_bfgs}:
+performs a geometry optimization in redundant internal coordinates
+with a model Hessian updated with BFGS formula.
 \item
 \textit{geomopt/cartes\_psb\_min}:
+performs a geometry optimization in Cartesian coordinates
+with a diagonal initial Hessian updated by PSB formula,
+and McWeenie's purification used for constructing initial guess.
 \item
 \textit{geomopt/geoopt\_constrain}:
+shows a constrained optimization of ethane,
+keeping the C-C bond distance fixed
+(coordinate \#1 as determined from geoopt\_constrain).
 \item
-\textit{geomopt/cartes\_trilevel\_newconv}: 
+\textit{geomopt/cartes\_trilevel\_newconv}:
+performs a geometry optimization in Cartesian coordinates
+with ``trilevel'' starting guess and a default convergence criteria,
+which is set to *loose* DFP Hessian update.
 \end{itemize}
 
 \begin{description}
-\item[\Key{PRINT}]\verb| | \newline
-\verb|<Print level>|\newline
-Print level for the output. The higher the print level, the more information
-is printed to the output file.
-
-\item[\Key{VLOOSE}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-3}$.
-
-\item[\Key{LOOSE}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-4}$.
-
-\item[\Key{TIGHT}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-6}$.
-
-\item[\Key{VTIGHT}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-7}$.
-
-\item[\Key{.MAX IT}]
-Maximum number of iterations in geometry optimization scheme.
 
 \item[\Key{BAKER}]
 Activates the convergence criteria of Baker \cite{Baker}. The minimum
@@ -1144,10 +1151,9 @@ update formula for optimization. This is the
 preferred first-order method for minimizations, as this update is able
 to maintain a positive definite Hessian. 
 
-\item[\Key{PSB}]
-Specifies that a first-order method with the
-Powell-Symmetric-Broyden (PSB) 
-update formula should be used for optimization.
+\item[\Key{CARTES}]
+Specifies that Cartesian coordinates\index{Cartesian coordinates}\index{coordinate system!Cartesian coordinates}
+should be used in the optimization.
 
 \item[\Key{DFP}]
 Specifies that a first-order\index{first-order optimization} method with the
@@ -1170,12 +1176,6 @@ dihedral angles, unless \Key{INITEV} has been specified. If the
 optimization is run in Cartesian coordinates, the diagonal internal
 Hessian is transformed to Cartesians.
 
-\item[\Key{MODHES}]
-Determine a new model Hessian (see \Key{INIMOD})
-at every geometry without doing any updating. The model is thus used
-in much the same manner as an exact Hessian, though it is obviously
-only a relatively crude approximation to the analytical Hessian.
-
 \item[\Key{INITEV}]\verb| | \newline
 \verb|<Read EVLINI, the eigenvalues>|\newline
 The default initial Hessian for first-order
@@ -1184,13 +1184,41 @@ matrix when redundant internal coordinates are used. If \Key{INITEV}
 is used, all the diagonal elements (and therefore the eigenvalues) are
 set equal to the value EVLINI. 
 
+\item[\Key{LOOSE}]
+For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-4}$.
+
+\item[\Key{MAX IT}]
+Maximum number of iterations in geometry optimization scheme
+(By default set to 100).
+
+\item[\Key{MODHES}]
+Determine a new model Hessian (see \Key{INIMOD})
+at every geometry without doing any updating. The model is thus used
+in much the same manner as an exact Hessian, though it is obviously
+only a relatively crude approximation to the analytical Hessian.
+
+\item[\Key{PRINT}]\verb| | \newline
+\verb|<Print level>|\newline
+Print level for the output. The higher the print level, the more information
+is printed to the output file.
+
 \item[\Key{REDINT}]
-Specifies that redundant internal coordinates coordinates
+Specifies that redundant internal coordinates\index{Redundant internal coordinates}\index{coordinate system!Redundant internal coordinates}
 should be used in the optimization. This is the default.
 
-\item[\Key{CARTES}]
-Indicates that Cartesian coordinates\index{Cartesian coordinates}\index{coordinate system!Cartesian coordinates}
-should be used in the optimization.
+\item[\Key{PSB}]
+Specifies that a first-order method with the
+Powell-Symmetric-Broyden (PSB) 
+update formula should be used for optimization.
+
+\item[\Key{TIGHT}]
+For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-6}$.
+
+\item[\Key{VLOOSE}]
+For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-3}$.
+
+\item[\Key{VTIGHT}]
+For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-7}$.
 
 \end{description}
 
