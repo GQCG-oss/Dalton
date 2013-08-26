@@ -47,7 +47,8 @@ module pcm_interface
 
    real(c_double), allocatable :: tess_cent(:, :)
    real(c_double)              :: pcm_energy
-   integer(c_int)              :: nr_points = -1
+   integer(c_int)              :: nr_points
+
 ! A (maybe clumsy) way of passing LUPRI without using common blocks   
    integer                     :: global_print_unit
 
@@ -75,6 +76,11 @@ module pcm_interface
       end subroutine
                                                                     
       subroutine pcm_interface_finalize()
+
+      if (.not. is_initialized) then
+         print *, 'Error: pcm_interface was never initialized.'
+         stop 1
+      end if
 ! Free the memory taken from the free store both in Fortran and in C++
       deallocate(tess_cent)
 
@@ -87,12 +93,116 @@ module pcm_interface
       subroutine check_if_interface_is_initialized()
 
       if (.not. is_initialized) then
-         print *, 'error: you try to access pcm_interface'
-         print *, '       but this interface is not initialized'
+         print *, 'Error: pcm_interface is not initialized.'
          stop 1
       end if
 
       end subroutine
+
+      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot_')
+
+#include "mxcent.h"
+#include "nuclei.h"
+
+      integer(c_int), intent(out) :: nr_nuclei
+
+      nr_nuclei = nucdep
+
+      end subroutine collect_nctot
+      
+      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms_')
+  
+      use pcm_utils, only: getacord
+
+#include "mxcent.h"
+#include "nuclei.h"
+      
+      real(c_double), intent(out) :: atomic_charges(*)
+      real(c_double), intent(out) :: atomic_centers(3,*)
+      
+      integer :: i, j, k 
+
+! Get coordinates
+      call getacord(atomic_centers)
+! Get charges      
+      i = 0
+      do j = 1, nucind
+         do k = 1, nucdeg(j)
+            i = i + 1
+            atomic_charges(i) = charge(j)
+         enddo
+      enddo
+      
+      end subroutine collect_atoms
+
+      subroutine pcm_energy_driver(density_matrix, pol_ene, work, lfree)
+
+      use pcm_integrals, only: nuc_pot_pcm, ele_pot_pcm
+      use pcm_write, only: pcm_write_file_separate
+      use pcmmod_cfg
+
+      real(8)      :: density_matrix(*)
+      real(8)      :: pol_ene
+      real(8)      :: work(*)
+      integer      :: lfree
+
+! Make sure that the interface is initialized first
+      call check_if_interface_is_initialized
+! OK, now compute MEP and ASC
+      call compute_mep_asc(density_matrix, work, lfree)
+
+! pcm_energy is the polarization energy:
+! U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
+      if (.not.pcmmod_separate) then
+         call comp_pol_ene_pcm(pol_ene, 1)
+      else 
+         call comp_pol_ene_pcm(pol_ene,0)
+      end if
+
+! Now make the value of the polarization energy known throughout the module
+      pcm_energy = pol_ene
+
+      end subroutine pcm_energy_driver
+      
+      subroutine pcm_oper_ao_driver(oper, charge_name, work, lwork)
+!
+! Calculate exp values of potentials on tesserae
+! Input: symmetry packed Density matrix in AO basis
+!        cavity points
+! Output: expectation values of electrostatic potential on tesserae
+!
+      use pcm_integrals, only: j1int_pcm
+
+      real(8), intent(out)        :: oper(*)
+      real(8)                     :: work(*)
+      character(*), intent(in)    :: charge_name
+      integer                     :: lwork
+
+      real(c_double), allocatable :: asc(:)
+      integer                     :: kfree, lfree
+
+      call check_if_interface_is_initialized
+
+      kfree = 1
+      lfree = lwork - kfree
+                                                                                  
+      if(lfree .le. 0) then 
+              call quit('Not enough mem in pcm_oper_ao_driver')
+      end if
+       
+! Here we need the ASC, we can either get it from C++ (as it 
+! has been saved as a surface function) or from Fortran asking
+! for the mep and asc to be recomputed.
+! RDR, 220813 !WARNING! what happens in the second case if we use this
+! subroutine as a driver also for the linear response part??
+      allocate(asc(nr_points))
+      asc = 0.0d0
+      call get_surface_function(nr_points, asc, charge_name)
+      call j1int_pcm(asc, nr_points, tess_cent, .false.,    & 
+                     oper, 1, .false., 'NPETES ', 1, work(kfree), lfree)
+      deallocate(asc)
+
+      end subroutine pcm_oper_ao_driver
 
       subroutine compute_mep_asc(density_matrix, work, lfree)
 !
@@ -115,32 +225,20 @@ module pcm_interface
 
 ! Local variables
       real(c_double), allocatable :: mep(:)
-      logical                     :: mep_is_done
       real(c_double), allocatable :: asc(:)
-      logical                     :: asc_is_done
       real(c_double), allocatable :: nuc_pot(:), nuc_pol_chg(:)
       real(c_double), allocatable :: ele_pot(:), ele_pol_chg(:)
       character(7)                :: potName, chgName
       character(7)                :: potName1, chgName1, potName2, chgName2
-      integer, save               :: counter = 0
-      logical, save               :: first_call = .true.
       integer                     :: kfree, i
-      real(8)                     :: factor = 1.0d0
+
       
       kfree   = 1
-                                                                                    
-      counter = counter + 1
-
-      if (first_call) then
-         first_call = .false.
-      end if
-
+      
       allocate(mep(nr_points))
       mep = 0.0d0
-      mep_is_done = .false.
       allocate(asc(nr_points))
       asc = 0.0d0
-      asc_is_done = .false.
 
       if (.not.(pcmmod_separate)) then
          allocate(nuc_pot(nr_points))
@@ -157,12 +255,10 @@ module pcm_interface
 !         call get_mep(nr_points, tess_cent, potentials, dmat, work, lwork, 0)
 ! Set a cavity surface function with the MEP
          call set_surface_function(nr_points, mep, potName)
-         mep_is_done = .true.
 ! Compute polarization charges and set the proper surface function
          call comp_chg_pcm(potName, chgName)
 ! Get polarization charges @tesserae centers
          call get_surface_function(nr_points, asc, chgName)
-         asc_is_done = .true.
 
 ! Print some information
          if (pcmmod_print > 5) then
@@ -217,13 +313,11 @@ module pcm_interface
         potName  = 'TotMEP'//char(0)
         mep(:) = nuc_pot(:) + ele_pot(:)
         call set_surface_function(nr_points, mep, potName)
-        mep_is_done = .true.
 
 ! Obtain vector of total polarization charges 
         chgName  = 'TotASC'//char(0)
         asc(:) = nuc_pol_chg(:) + ele_pol_chg(:)
         call set_surface_function(nr_points, asc, chgName)
-        asc_is_done = .true.
 
 ! Write to file MEP and ASC
         call pcm_write_file_separate(nr_points, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
@@ -236,105 +330,6 @@ module pcm_interface
       deallocate(mep)
       deallocate(asc)
 
-      end subroutine 
+      end subroutine compute_mep_asc
                                                                     
-      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot_')
-
-#include "mxcent.h"
-#include "nuclei.h"
-
-      integer(c_int), intent(out) :: nr_nuclei
-      
-      nr_nuclei = nucdep
-
-      end subroutine collect_nctot
-      
-      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms_')
-  
-      use pcm_utils, only: getacord
-
-#include "mxcent.h"
-#include "nuclei.h"
-      
-      real(c_double), intent(out) :: atomic_charges(*)
-      real(c_double), intent(out) :: atomic_centers(3,*)
-      
-      integer :: i, j, k 
-
-! Get coordinates
-      call getacord(atomic_centers)
-! Get charges      
-      i = 0
-      do j = 1, nucind
-         do k = 1, nucdeg(j)
-            i = i + 1
-            atomic_charges(i) = charge(j)
-         enddo
-      enddo
-      
-      end subroutine collect_atoms
-
-      subroutine pcm_energy_driver(density_matrix, pol_ene, work, lfree)
-
-      use pcm_integrals, only: nuc_pot_pcm, ele_pot_pcm
-      use pcm_write, only: pcm_write_file_separate
-      use pcmmod_cfg
-
-      real(8)      :: density_matrix(*)
-      real(8)      :: pol_ene
-      real(8)      :: work(*)
-      integer      :: lfree
-
-      call compute_mep_asc(density_matrix, work, lfree)
-
-! pcm_energy is the polarization energy:
-! U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
-      if (.not.pcmmod_separate) then
-         call comp_pol_ene_pcm(pol_ene, 1)
-      else 
-         call comp_pol_ene_pcm(pol_ene,0)
-      end if
-
-      pcm_energy = pol_ene
-
-      end subroutine pcm_energy_driver
-      
-      subroutine pcm_oper_ao_driver(oper, charge_name, work, lwork)
-!
-! Calculate exp values of potentials on tesserae
-! Input: symmetry packed Density matrix in AO basis
-!        cavity points
-! Output: expectation values of electrostatic potential on tesserae
-!
-      use pcm_integrals, only: j1int_pcm
-
-      real(8), intent(out)        :: oper(*)
-      real(8)                     :: work(*)
-      character(*), intent(in)    :: charge_name
-      integer                     :: lwork
-
-      real(c_double), allocatable :: asc(:)
-      integer                     :: kfree, lfree
-
-      kfree = 1
-      lfree = lwork - kfree
-                                                                                  
-      if(lfree .le. 0) then 
-              call quit('Not enough mem in pcm_oper_ao_driver')
-      end if
-       
-! Here we need the ASC, we can either get it from C++ (as it 
-! has been saved as a surface function) or from Fortran asking
-! for the mep and asc to be recomputed.
-! RDR, 220813 !WARNING! what happens in the second case if we use this
-! subroutine as a driver also for the linear response part??
-      allocate(asc(nr_points))
-      asc = 0.0d0
-      call get_surface_function(nr_points, asc, charge_name)
-      call j1int_pcm(asc, nr_points, tess_cent, .false.,    & 
-                     oper, 1, .false., 'NPETES ', 1, work(kfree), lfree)
-      deallocate(asc)
-
-      end subroutine pcm_oper_ao_driver
-
 end module
