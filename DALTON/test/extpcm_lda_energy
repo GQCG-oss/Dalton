@@ -103,13 +103,13 @@ CTRL[1]=1
 ERROR[1]="NUCLEAR REPULSION ENERGY NOT CORRECT"
 
 # Electronic energy:
-CRIT1=`$GREP "Electronic energy: * \-62\.468011323[0-9]" $log | wc -l`
+CRIT1=`$GREP "Electronic energy: * \-62\.468011322[0-9]" $log | wc -l`
 TEST[2]=`expr $CRIT1`
 CTRL[2]=1
 ERROR[2]="ELECTRONIC ENERGY NOT CORRECT"
 
 # Solvation energy:
-CRIT1=`$GREP "Solvation energy: * \-0\.000223995[0-9]" $log | wc -l`
+CRIT1=`$GREP "Solvation energy: * \-0\.000223996[0-9]" $log | wc -l`
 TEST[3]=`expr $CRIT1`
 CTRL[3]=1
 ERROR[3]="SOLVATION ENERGY NOT CORRECT"

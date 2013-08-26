@@ -215,24 +215,14 @@ module pcm_interface
 
 ! Obtain vector of total MEP
         potName  = 'TotMEP'//char(0)
-        !call append_surf_func(potName)
-        !call clear_surf_func(potName)
         mep(:) = nuc_pot(:) + ele_pot(:)
         call set_surface_function(nr_points, mep, potName)
-        !call add_surface_function(potName, factor, potName1)
-        !call add_surface_function(potName, factor, potName2)
-        !call get_surface_function(nr_points, mep, potName)
         mep_is_done = .true.
 
 ! Obtain vector of total polarization charges 
         chgName  = 'TotASC'//char(0)
         asc(:) = nuc_pol_chg(:) + ele_pol_chg(:)
         call set_surface_function(nr_points, asc, chgName)
-        !call append_surf_func(chgName)
-        !call clear_surf_func(chgName)
-        !call add_surface_function(chgName, factor, chgName1)
-        !call add_surface_function(chgName, factor, chgName2)
-        !call get_surface_function(nr_points, asc, chgName)
         asc_is_done = .true.
 
 ! Write to file MEP and ASC
