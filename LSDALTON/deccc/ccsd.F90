@@ -2039,10 +2039,10 @@ contains
 
 #ifdef VAR_OMP
     nthreads=OMP_GET_MAX_THREADS()
-    if(master)write(DECinfo%output,*) 'Starting DEC-CCSD residuals - OMP. Number of threads: ', OMP_GET_MAX_THREADS()
+    if(master)write(DECinfo%output,*) 'Starting CCSD residuals - OMP. Number of threads: ', OMP_GET_MAX_THREADS()
 #else
     nthreads=1
-    if(master)write(DECinfo%output,*) 'Starting DEC-CCSD integral/amplitudes - NO OMP!'
+    if(master)write(DECinfo%output,*) 'Starting CCSD integral/amplitudes - NO OMP!'
 #endif
 
 #ifdef VAR_MPI

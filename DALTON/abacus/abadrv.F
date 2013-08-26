@@ -388,7 +388,7 @@ C     ***************************************
 C
        CALL GETTIM(TIMSTR,TMDUM)
        IF (SOSSPN) THEN
-           KLST2   = KFONA2S +  3*NATOMS*NSYM*MXNEXI
+           KLST2   = KLST1 + 3*NATOMS*NSYM*MXNEXI
            LWRK2   = LWORK - KLST2 + 1
 C
            CALL SOSDRV(WORK(KLST1),LWRK1,PASSOS)
