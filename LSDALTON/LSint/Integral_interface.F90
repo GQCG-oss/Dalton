@@ -1136,8 +1136,8 @@ call time_II_operations1()
 ADMMexchange = setting%scheme%ADMM_EXCHANGE
 IF (setting%scheme%ADMM_GCBASIS) ADMMexchange = .FALSE.
 IF (ADMMexchange) THEN
-   WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-   WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+   WRITE(*,*)     "The ADMM approximation isn't implemented for unrestricted cases yet."
+   WRITE(LUPRI,*) "The ADMM approximation isn't implemented for unrestricted cases yet."
    call lsquit('ADMM exchange not implemented for full Dmat.',-1)
 ELSE
    CALL II_get_regular_K_gradientfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,lupri,luerr)
@@ -4991,8 +4991,8 @@ ELSE
 ENDIF
 
 IF(ndmat.GT.1) THEN
-   WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-   WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+   WRITE(*,*)     "The ADMM approximation isn't implemented for unrestricted cases yet."
+   WRITE(LUPRI,*) "The ADMM approximation isn't implemented for unrestricted cases yet."
    call lsquit('II_get_admm_exchange_mat ndmat.GT.1',-1)
 ENDIF
 nbast = F%nrow
