@@ -55,8 +55,6 @@ MODULE ls_Integral_Interface
   use io, only: io_get_filename, io_get_csidentifier
   use screen_mod, only: determine_lst_in_screenlist, screen_associate,&
        & screen_add_associate_item
-  use Fragment_module, only: buildfragmentinfoandblocks, setdaltonfragments, &
-       & freedaltonfragments, freefragmentinfoandblocks
   use molecule_module, only: build_fragment, freeMolecularOrbitalInfo
   use files,only: lsclose, lsopen
   use SphCart_Matrices, only: spherical_transformation
@@ -538,7 +536,7 @@ IF(PermuteResultTensor)THEN
    call lstensor_full_symMat_from_triangularMat(setting%output%resultTensor)
 ENDIF
 
-Call freeDaltonFragments(SETTING)
+!Call freeDaltonFragments(SETTING)
 setting%output%ndim = ndim_full
 !write(6,*) 'debug-timing:timer results for ',setting%node
 !CALL LSTIMER('gi-mpi-permute',TS,TE,6)
@@ -1911,7 +1909,7 @@ IF(PermuteResultTensor)THEN
    call lstensor_full_symMat_from_triangularMat(setting%output%resultTensor)
 ENDIF
 
-Call freeDaltonFragments(SETTING)
+!Call freeDaltonFragments(SETTING)
 setting%output%ndim = ndim_full
 #endif
 
@@ -2504,7 +2502,7 @@ ELSE
       setting%output%memdistResultTensor = .TRUE.
    ENDIF
 
-   Call freeDaltonFragments(SETTING)
+!  Call freeDaltonFragments(SETTING)
    setting%output%ndim = ndim_full
    
    if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
@@ -4072,26 +4070,8 @@ Integer               :: start1,start2,MMunique_ID1,MMunique_ID2
 Integer               :: s1,s2,I,J,inode
 logical               :: samefragment,Ldummy
 
-IF(SETTING%SCHEME%FRAGMENT) THEN
-   CALL buildFragmentInfoAndBlocks(SETTING,AO1,AO2,AOEmpty,AOEmpty,LUPRI,LUERR)
-   SETTING%FRAGMENTS%iRHSblock = 1
-   DO I=1,SETTING%FRAGMENTS%LHSblock%numBlocks
-      iNode = SETTING%FRAGMENTS%LHSblock%blocks(I)%node
-      CALL SetDaltonFragments(SETTING,I,1,sameFragment,Ldummy,lupri)
-      SETTING%FRAGMENTS%iLHSblock = I
-      s1 = SETTING%FRAGMENTS%LHSblock%blocks(I)%startOrb1-1
-      s2 = SETTING%FRAGMENTS%LHSblock%blocks(I)%startOrb2-1
-      if((s2 .GE. s1).OR.(AO1.EQ.AOEmpty).OR.(AO2.EQ.AOEmpty))THEN
-         Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1+s1,start2+s2,&
-     &                  MMunique_ID1,MMunique_ID2,INT_OUTPUT)
-      endif
-      CALL FreeDaltonFragments(SETTING)
-   ENDDO
-   CALL freeFragmentInfoAndBlocks(SETTING)
-ELSE
-   Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1,start2,&
-     &            MMunique_ID1,MMunique_ID2,INT_OUTPUT)
-ENDIF
+Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1,start2,&
+  &            MMunique_ID1,MMunique_ID2,INT_OUTPUT)
 SETTING%SCHEME%MMunique_ID1 = MMunique_ID1
 
 end subroutine MM_calculation
