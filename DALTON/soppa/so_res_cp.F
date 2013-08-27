@@ -101,8 +101,12 @@ C     Calculate the lamda matrices which contain the MO coefficients.
 C--------------------------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL LAMMAT(WORK(KCMO),WORK(KLAMDH),WORK(KT1AM),WORK(KEND1),
-     &            LWORK1)
+CSPAS:27/8-13: LAMMAT is no longer used in soppa module. It has been
+C              replaced by SO_GETMO a long time ago
+C     CALL LAMMAT(WORK(KCMO),WORK(KLAMDH),WORK(KT1AM),WORK(KEND1),
+C    &            LWORK1)
+      CALL SO_GETMO(WORK(KCMO),LCMO,WORK(KEND1),LWORK1)
+CKeinSPASmehr
       DTIME      = SECOND()   - DTIME
       SOTIME(1)  = SOTIME(1) + DTIME
 C
