@@ -1,7 +1,8 @@
       LOGICAL TESTZY, DOSO1, DOSO2, X2MAT, A2MAT, X2GRAD, PHOSPH,
-     &        MNFPHO, ECPHOS
+     &        MNFPHO, ECPHOS, PHOSPV, CPPHOL, CPPHOV                    !MK
       PARAMETER (MXPHOS = 10)
-      COMMON /INFHSO/PHOSMAT(3,3,MXPHOS), PHOSMN(3,3,MXPHOS), 
-     &               PHOSEC(3,3,MXPHOS),
+      COMMON /INFHSO/PHOSMAT(3,3,MXPHOS), PHOSMN(3,3,MXPHOS),
+     &               PHOSEC(3,3,MXPHOS), PHOTHRD(3,3,MXPHOS),           !MK
+     &               PHOFOUR(3,3,MXPHOS),			        !MK
      &               IPRHSO, TESTZY, DOSO1, DOSO2, X2MAT, A2MAT, X2GRAD,
-     &               PHOSPH, MNFPHO, ECPHOS
+     &               PHOSPH, MNFPHO, ECPHOS, PHOSPV, CPPHOL, CPPHOV     !MK
