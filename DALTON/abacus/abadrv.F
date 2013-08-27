@@ -1474,6 +1474,9 @@ cs
          IF (DIPDER) POLAR = .TRUE.
       END IF
       IF (ABASOP) THEN
+CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
+         IF (PARCAL) CALL PARQUIT('ABAINP')
+CKeinSPASmehr
          IF (CCPPA) THEN
             WRITE(LUPRI,'(A,A,/,18X,A,/,A,A)')
      &          ' SOPPA(CCSD) :    ',
