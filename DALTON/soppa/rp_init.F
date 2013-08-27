@@ -228,7 +228,8 @@ C
       CCSLV  = .FALSE.
       NCCSLV = 0
 
-      HERDIR = .FALSE. !I've commented this out, put it back in TODO
+C TODO  fix herdir! No matter how it's set in the .dal file it'll only affect the coupled cluster calculation right now.
+      HERDIR = .FALSE.
 
       ANAAOD   = .FALSE.
       MAXRED   = 200

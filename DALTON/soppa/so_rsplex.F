@@ -13,6 +13,7 @@ C              SOPPA(CCSD) excitation energies and vectors.
 C
 #include "implicit.h"
 #include "priunit.h"
+#include "mpif.h"
 C
       DIMENSION EXVAL(LEXVAL)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)

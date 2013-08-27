@@ -952,6 +952,56 @@ C  /* Deck nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE NODEDRIVER(WORK,MWORK,WRKDLM)
 C
+C F.Beyer added documentation on Aug. 27th 2013.
+C Slaves are sent to this nodedriver from abacus/dalton.F where they 
+C idle until the keyword IPRTYP is set with an MPI_BCAST (this is 
+C mediated via the subroutine MPIXBCAST from /gp/mpimacro.F)
+
+C IPRTYP is set in iprtyp.h. This file associates every parallel 
+C computation in Dalton with an specific integer and a character string.
+C This file has to be imported in every subroutine that wants to 
+C communicate with this nodedriver.
+C 
+C If you add a parallel routine to Dalton it needs to be added to 
+C iprtyp.h
+C 
+C  This idling works because MPIXBCAST in a collective and blocking 
+C communication. Every slave will be blocked by the broadcast at label 
+C 100 until the master participates in the broadcast. As soon as an 
+C IPRTYP broadcast is made, every slave executes the computation 
+C associated with the broadcast once, exits the if-statement and is 
+C blocked/idles once again by the MPI_COMM_WORLD broadcast at label 100.
+C 
+C If IPRTYP is set to 0 the nodes exit the loop.
+C 
+C As on Aug 2013, you have to broadcast the IPRTYP from the master node 
+C using MPIXBCAST or MPI_BCAST, to communicate with the nodedriver. 
+C This mean you can change IPRTYP locally if you need it for whatever 
+C reason. To start a parallel calculation the master HAS to broadcast 
+C the IPRTYP and the needed parameters for the calculation.
+C 
+C IMPORTANT: The communication is always via the communicator 
+C MPI_COMM_WORLD, so if another communicator is made, only those nodes 
+C included in the new communicator will receive the broadcast IPRTYP. 
+C This is because Dalton uses the MPIXBCAST subroutine to communicate 
+C and this is hardcoded to MPI_COMM_WORLD.
+C 
+C Questions regarding MPI, communicators and collective communication 
+C are answered in:
+C 
+C "Using MPI, second edition"
+C - Gropp, Lusk and Skjellum
+C ISBN-10:     026257134X
+C ISBN-13: 978-0262571340
+C 
+C 
+C "Using MPI-2"
+C Gropp, Lusk and Thakur
+C ISBN-10:     0262571331
+C ISBN-13: 978-0262571333
+C
+
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
@@ -966,7 +1016,6 @@ C
       CALL QENTER('NODEDRIVER')
 C
 C     Get calculation type (IPRTYP)
-C
   100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN

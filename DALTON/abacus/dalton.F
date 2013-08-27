@@ -202,7 +202,8 @@ C         "DALTON.OUT.n<slave no>" in GPOPEN
 C
       CALL MEMINI(LUPRI,LUERR)
 C
-      IF (MYNUM .EQ. MASTER) THEN
+C Beyer Added masterif name to this big if statement. Makes tracking thend of it easier.
+      masterif: IF (MYNUM .EQ. MASTER) THEN
 C         
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
@@ -458,7 +459,7 @@ C
          CALL DALTON_GNRLINP
 
 #if !defined (VAR_MPI)
-      END IF
+      END IF masterif
 #else /* VAR_MPI */
          CALL RECVNAMES
 !
@@ -549,10 +550,15 @@ C
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
 
-!           call main co-workers driver routine
+
+!           call main slave/co-worker driver routine.
+!           Slaves are suspended, looping continuously, waiting for 
+!           IPRTYP to be set. Once set the slaves are redirected to 
+!           the appropriate subroutine.
             call nodedriver(work,lmwork,wrkdlm)
+
          END IF
-      END IF
+      END IF masterif
 
 !     release dynamically allocated memory
       deallocate(work)
