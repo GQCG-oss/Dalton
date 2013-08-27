@@ -1069,16 +1069,17 @@ do NOT start with a dot!
 
 \section{**OPTIMIZE}\label{sec:optimize}
 This input module describes the keywords needed to optimize a molecular geometry.
-In the current release a number of quasi-Newton trust-radius level-shifted techniques for finding 
-equilibrium geometries are available (\Key{BFGS}, \Key{PSB}, \Key{DFP}). No second-order algorithms are available since the molecular Hessian is not implemented.
+In the current release no second-order algorithms are available since the molecular Hessian is not implemented, but
+a number of quasi-Newton trust-radius level-shifted techniques for finding
+equilibrium geometries are available (\Key{BFGS}, \Key{PSB}, \Key{DFP}).
 The methods differ in the way approximate Hessians are built and updated: \Key{INIMOD}, \Key{INIRED} and \Key{INITEV} provide different approximations for the initial Hessian, 
 while \Key{MODHES} recomputes the approximated Hessian at every geometry.
 
 The geometry optimization generates a sequence of geometry steps. The coordinates of each 
-accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX} 
+accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX}
 is the geometry step number, and the final converged geometry in MOLECULE.OUT.
 
-Geometric structure can be optimized in redundant internal (\Key{REDINT}) or 
+Geometric structure can be optimized in redundant internal (\Key{REDINT}) or
 Cartesian  (\Key{CARTES}) coordinates with two sets of convergence criteria (two for the gradient and two for the step).
 Convergence is obtained when the following four quantities are respectively smaller than the four convergence criteria $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$  \cite{NewConv}:
 \begin{itemize}
@@ -1130,7 +1131,7 @@ and Baker convergence criteria.
 \textit{geomopt/geoopt\_constrain}:
 shows a constrained geometry optimization of ethane,
 keeping the C-C bond distance fixed
-(coordinate \#1 as determined from geoopt\_constrain).
+(coordinate \#1 as determined from the use of \Key{FINDRE}).
 \item
 \textit{geomopt/cartes\_trilevel\_newconv}:
 performs a geometry optimization in Cartesian coordinates
@@ -1153,15 +1154,37 @@ Specifies the use of a first-order method\index{first-order optimization}
 with the Broyden-Fletcher-Goldfarb-Shanno (BFGS)
 update formula for optimization. This is the
 preferred first-order method for minimizations, as this update is able
-to maintain a positive definite Hessian. 
+to maintain a positive definite Hessian.
 
 \item[\Key{CARTES}]
 Specifies that Cartesian coordinates\index{Cartesian coordinates}\index{coordinate system!Cartesian coordinates}
 should be used in the optimization.
 
+\item[\Key{CONSTR}]\verb| | \newline
+\verb|<Number of contrained redundant internal coordinates>|\newline
+\verb|<Indices of each contrained redundant internal coordinate, one per line>|\newline
+Specifies a contrained geometry optimization. You will need to give
+the total number of redundant internal coordinates to constrain and their
+indices as defined using the \Key{FINDRE} keyword.
+For example fixing redundant internal coordinates 4 and 9 would read like:
+\begin{verbatim}
+...
+**OPTIMIZE
+.CONSTR
+2
+4
+9
+...
+**END OF INPUT
+\end{verbatim}
+
+
 \item[\Key{DFP}]
 Specifies that a first-order\index{first-order optimization} method with the
-Davidon-Fletcher-Powell (DFP) update formula should be used for optimization. 
+Davidon-Fletcher-Powell (DFP) update formula should be used for optimization.
+
+\item[\Key{FINDRE}]
+Using this keyword no geometry optimization is carried out, but only the redundant internals coordinates are found.
 
 \item[\Key{INIMOD}]
 Use a simple model Hessian~\cite{ModelHess} diagonal in redundant
