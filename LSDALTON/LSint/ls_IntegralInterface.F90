@@ -4072,26 +4072,8 @@ Integer               :: start1,start2,MMunique_ID1,MMunique_ID2
 Integer               :: s1,s2,I,J,inode
 logical               :: samefragment,Ldummy
 
-IF(SETTING%SCHEME%FRAGMENT) THEN
-   CALL buildFragmentInfoAndBlocks(SETTING,AO1,AO2,AOEmpty,AOEmpty,LUPRI,LUERR)
-   SETTING%FRAGMENTS%iRHSblock = 1
-   DO I=1,SETTING%FRAGMENTS%LHSblock%numBlocks
-      iNode = SETTING%FRAGMENTS%LHSblock%blocks(I)%node
-      CALL SetDaltonFragments(SETTING,I,1,sameFragment,Ldummy,lupri)
-      SETTING%FRAGMENTS%iLHSblock = I
-      s1 = SETTING%FRAGMENTS%LHSblock%blocks(I)%startOrb1-1
-      s2 = SETTING%FRAGMENTS%LHSblock%blocks(I)%startOrb2-1
-      if((s2 .GE. s1).OR.(AO1.EQ.AOEmpty).OR.(AO2.EQ.AOEmpty))THEN
-         Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1+s1,start2+s2,&
-     &                  MMunique_ID1,MMunique_ID2,INT_OUTPUT)
-      endif
-      CALL FreeDaltonFragments(SETTING)
-   ENDDO
-   CALL freeFragmentInfoAndBlocks(SETTING)
-ELSE
-   Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1,start2,&
-     &            MMunique_ID1,MMunique_ID2,INT_OUTPUT)
-ENDIF
+Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1,start2,&
+  &            MMunique_ID1,MMunique_ID2,INT_OUTPUT)
 SETTING%SCHEME%MMunique_ID1 = MMunique_ID1
 
 end subroutine MM_calculation
