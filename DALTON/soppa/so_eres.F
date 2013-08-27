@@ -310,12 +310,11 @@ C
                   KEND2  = KENDSV
                   LWORK2 = LWORKSV
 C
-                  DTIME  = SECOND()
+                  DTIME = SECOND()
                   IF (HERDIR) THEN
-                    CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
-     &                             IPRERI)
+C                    CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
+C     &                             IPRERI)
                   ELSE
-
                      CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
      &                           WORK(KODCL1),WORK(KODCL2),
      &                           WORK(KODBC1),WORK(KODBC2),
@@ -324,7 +323,6 @@ C
      &                           WORK(KRDPP1),WORK(KRDPP2),
      &                           WORK(KCCFB1),WORK(KINDXB), 
      &                           WORK(KEND2),LWORK2,IPRINT)
-
                      DTIME     = SECOND()  - DTIME
                      SOTIME(9) = SOTIME(9) + DTIME
                   ENDIF
