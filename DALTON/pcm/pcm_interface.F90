@@ -48,9 +48,10 @@ module pcm_interface
    real(c_double), allocatable :: tess_cent(:, :)
    real(c_double)              :: pcm_energy
    integer(c_int)              :: nr_points
-
 ! A (maybe clumsy) way of passing LUPRI without using common blocks   
    integer                     :: global_print_unit
+! A counter for the number of SCF iterations
+   integer, save               :: scf_iteration_counter = 1
 
    contains 
       
@@ -147,6 +148,7 @@ module pcm_interface
 
 ! Make sure that the interface is initialized first
       call check_if_interface_is_initialized
+
 ! OK, now compute MEP and ASC
       call compute_mep_asc(density_matrix, work, lfree)
 
@@ -196,6 +198,8 @@ module pcm_interface
       call get_electronic_mep(nr_points, tess_cent, asc, oper, work(kfree), lfree, .true.)
       deallocate(asc)
 
+      scf_iteration_counter = scf_iteration_counter + 1
+
       end subroutine pcm_oper_ao_driver
 
       subroutine compute_mep_asc(density_matrix, work, lfree)
@@ -225,7 +229,6 @@ module pcm_interface
       character(7)                :: potName, chgName
       character(7)                :: potName1, chgName1, potName2, chgName2
       integer                     :: kfree, i
-
       
       kfree   = 1
       
@@ -248,11 +251,10 @@ module pcm_interface
 
 ! Print some information
          if (pcmmod_print > 5) then
+            write(global_print_unit, '(20X, A, 6X, I6)') "MEP and ASC at iteration", scf_iteration_counter
+            write(global_print_unit, '(A, T27, A, T62, A)') "Finite element #", "Total MEP", "Total ASC"
             do i = 1, nr_points
-              write(global_print_unit, *) "MEP @point", i, mep(i)
-              if (pcmmod_print > 10) then
-                 write(global_print_unit, *) "ASC @point", i, asc(i)
-              end if
+              write(global_print_unit, '(I6, 2(20X, F15.12))') i, mep(i), asc(i)
             end do
          end if
 
@@ -285,13 +287,11 @@ module pcm_interface
 
 ! Print some information
         if (pcmmod_print > 5) then
+           write(global_print_unit, '(60X, A, 6X, I6)') "MEP and ASC at iteration", scf_iteration_counter
+           write(global_print_unit, '(A, T27, A, T62, A, T97, A, T132, A)') "Finite element #", &
+           "Nuclear MEP", "Nuclear ASC", "Electronic MEP", "Electronic ASC"
            do i = 1, nr_points
-             write(global_print_unit, *) "NMEP @point", i, nuc_pot(i)
-             write(global_print_unit, *) "EMEP @point", i, ele_pot(i)
-             if (pcmmod_print > 10) then
-                write(global_print_unit, *) "NASC @point", i, nuc_pol_chg(i)
-                write(global_print_unit, *) "EASC @point", i, ele_pol_chg(i)
-             end if
+             write(global_print_unit, '(I6, 4(20X, F15.12))') i, nuc_pot(i), nuc_pol_chg(i), ele_pot(i), ele_pol_chg(i)
            end do
         end if
 
