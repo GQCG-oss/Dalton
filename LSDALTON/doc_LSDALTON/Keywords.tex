@@ -1069,89 +1069,122 @@ do NOT start with a dot!
 
 \section{**OPTIMIZE}\label{sec:optimize}
 This input module describes the keywords needed to optimize a molecular geometry.
-In the current release a number of quasi-Newton trust-radius level-shifted techniques for finding 
-equilibrium geometries are available. The methods differ in the way approximate Hessians are 
-built and updated. Geometric structure can be optimized in redundant internal or 
-Cartesian coordinates with two sets of convergence criteria. The default setting is minimization 
-in internal coordinates \cite{DaltonOpt}, with model Hessian \cite{ModelHess} updated with BFGS formula. 
-By default, new convergence criteria are used, i.e. convergence is declared if  the four quantities - 
-the root-mean-square of the gradient, its maximum absolute value, the root-mean square of the step
-vector, and its maximum absolute element (in internal or Cartesian coordinates) - 
-are smaller than $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$ respectively \cite{NewConv}.
-The default value of $\epsilon$ is $1.0\cdot 10^{-5}$.
+In the current release no second-order algorithms are available since the molecular Hessian is not implemented, but
+a number of quasi-Newton trust-radius level-shifted techniques for finding
+equilibrium geometries are available (\Key{BFGS}, \Key{PSB}, \Key{DFP}).
+The methods differ in the way approximate Hessians are built and updated: \Key{INIMOD}, \Key{INIRED} and \Key{INITEV} provide different approximations for the initial Hessian, 
+while \Key{MODHES} recomputes the approximated Hessian at every geometry.
 
 The geometry optimization generates a sequence of geometry steps. The coordinates of each 
-accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX} 
+accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX}
 is the geometry step number, and the final converged geometry in MOLECULE.OUT.
-By default, the atoms-in-molecule approach is used to set up the initial density-matrix at each new
-geometry step (equivalent to the use of the .ATOMS keyword under *DENSOPT).
+
+Geometric structure can be optimized in redundant internal (\Key{REDINT}) or
+Cartesian  (\Key{CARTES}) coordinates with two sets of convergence criteria (two for the gradient and two for the step).
+Convergence is obtained when the following four quantities are respectively smaller than the four convergence criteria $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$  \cite{NewConv}:
+\begin{itemize}
+\item the root-mean-square of the gradient, 
+\item the maximum absolute value of the gradient, 
+\item the root-mean square of the step vector,
+\item and the maximum absolute element (in internal or Cartesian coordinates) of the step vector.
+\end{itemize}
+
+
+The default setting specifies the minimization in internal coordinates \cite{DaltonOpt}, with a model Hessian \cite{ModelHess} updated with BFGS formula. 
+The atoms-in-molecule approach is used to set up the initial density-matrix at each new
+geometry step.
 However, it is possible to take as starting guess McWeeny-purified converged
-density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
+density-matrix at the previous geometry. This is achieved by setting the \Key{RESTART} option under
 the *DENSOPT subsection.
-\newline
+The default value of $\epsilon$ is $10^{-5}$
+(Other predefined values for the convergence criteria can be set using the keywords \Key{VLOOSE}, \Key{LOOSE}, \Key{TIGHT} and \Key{VTIGHT}).
+Alternatively the convergence criteria of Baker~\cite{Baker} can be set using \Key{BAKER}.
+
+
 \vspace{1 cm}
 \noindent
-\textbf{Example of test cases for geometry optimization calculations}: \newline
-These test cases illustrate the main features of the geometry optimization. The test cases are located in LSDALTON/test/geomopt.
+\textbf{Example of test cases for geometry optimization calculations} \newline
+The test cases are located in LSDALTON/test/geomopt.
+These test cases illustrate the main features of the geometry optimization:
 \begin{itemize}
 \item
 \textit{geomopt/cartes\_bfgs\_min}:
-\item
-\textit{geomopt/Excited\_state\_opt}: Performs a geometry optimization of an excited state. 
+performs a DFT/LDA geometry optimization in Cartesian coordinates,
+with BFGS update of an initial Hessian equal to a unit matrix
+and Baker convergence criteria.
 \item
 \textit{geomopt/redint\_bfgs}:
+performs a DFT/BLYP geometry optimization in redundant internal coordinates
+with a model Hessian updated with BFGS formula
+and Baker convergence criteria.
+\item
+\textit{geomopt/Excited\_state\_opt}:
+performs a DFT/B3LYP geometry optimization of an excited state in redundant internal coordinates
+and Baker convergence criteria.
 \item
 \textit{geomopt/cartes\_psb\_min}:
+performs a DFT/BLYP geometry optimization in Cartesian coordinates
+with a diagonal initial Hessian updated by PSB formula,
+McWeenie's purification used for constructing the initial guess
+and Baker convergence criteria.
 \item
 \textit{geomopt/geoopt\_constrain}:
+shows a constrained geometry optimization of ethane,
+keeping the C-C bond distance fixed
+(Internal coordinate \#1 as determined from the use of \Key{FINDRE}).
 \item
-\textit{geomopt/cartes\_trilevel\_newconv}: 
+\textit{geomopt/cartes\_trilevel\_newconv}:
+performs a geometry optimization in Cartesian coordinates
+with \Key{TRILEVEL} starting guess and a default convergence criteria,
+ a diagonal initial Hessian updated by a loose DFP formula.
 \end{itemize}
 
 \begin{description}
-\item[\Key{PRINT}]\verb| | \newline
-\verb|<Print level>|\newline
-Print level for the output. The higher the print level, the more information
-is printed to the output file.
-
-\item[\Key{VLOOSE}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-3}$.
-
-\item[\Key{LOOSE}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-4}$.
-
-\item[\Key{TIGHT}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-6}$.
-
-\item[\Key{VTIGHT}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-7}$.
-
-\item[\Key{.MAX IT}]
-Maximum number of iterations in geometry optimization scheme.
 
 \item[\Key{BAKER}]
 Activates the convergence criteria of Baker \cite{Baker}. The minimum
 is then said to be found when the largest element of the gradient
 vector (in Cartesian or redundant internal coordinates) falls below
-$3.0\cdot 10^{-4}$ and either the energy change from the last
-iteration is less than $1.0\cdot 10^{-6}$ or the largest element of
-the predicted step vector is less $3.0\cdot 10^{-4}$.
+$3\cdot 10^{-4}$ and either the energy change from the last
+iteration is less than $10^{-6}$ or the largest element of
+the predicted step vector is less than $3\cdot 10^{-4}$.
 
 \item[\Key{BFGS}]
 Specifies the use of a first-order method\index{first-order optimization}
 with the Broyden-Fletcher-Goldfarb-Shanno (BFGS)
 update formula for optimization. This is the
 preferred first-order method for minimizations, as this update is able
-to maintain a positive definite Hessian. 
+to maintain a positive definite Hessian.
 
-\item[\Key{PSB}]
-Specifies that a first-order method with the
-Powell-Symmetric-Broyden (PSB) 
-update formula should be used for optimization.
+\item[\Key{CARTES}]
+Specifies that Cartesian coordinates\index{Cartesian coordinates}\index{coordinate system!Cartesian coordinates}
+should be used in the optimization.
+
+\item[\Key{CONSTR}]\verb| | \newline
+\verb|<Number of contrained redundant internal coordinates>|\newline
+\verb|<Indices of each contrained redundant internal coordinate, one per line>|\newline
+Specifies a contrained geometry optimization. You will need to give
+the total number of redundant internal coordinates to constrain and their
+indices as defined using the \Key{FINDRE} keyword.
+For example fixing redundant internal coordinates 4 and 9 would read like:
+\begin{verbatim}
+...
+**OPTIMIZE
+.CONSTR
+2
+4
+9
+...
+**END OF INPUT
+\end{verbatim}
+
 
 \item[\Key{DFP}]
 Specifies that a first-order\index{first-order optimization} method with the
-Davidon-Fletcher-Powell (DFP) update formula should be used for optimization. 
+Davidon-Fletcher-Powell (DFP) update formula should be used for optimization.
+
+\item[\Key{FINDRE}]
+Using this keyword no geometry optimization is carried out, but only the redundant internals coordinates are found.
 
 \item[\Key{INIMOD}]
 Use a simple model Hessian~\cite{ModelHess} diagonal in redundant
@@ -1170,12 +1203,6 @@ dihedral angles, unless \Key{INITEV} has been specified. If the
 optimization is run in Cartesian coordinates, the diagonal internal
 Hessian is transformed to Cartesians.
 
-\item[\Key{MODHES}]
-Determine a new model Hessian (see \Key{INIMOD})
-at every geometry without doing any updating. The model is thus used
-in much the same manner as an exact Hessian, though it is obviously
-only a relatively crude approximation to the analytical Hessian.
-
 \item[\Key{INITEV}]\verb| | \newline
 \verb|<Read EVLINI, the eigenvalues>|\newline
 The default initial Hessian for first-order
@@ -1184,13 +1211,41 @@ matrix when redundant internal coordinates are used. If \Key{INITEV}
 is used, all the diagonal elements (and therefore the eigenvalues) are
 set equal to the value EVLINI. 
 
+\item[\Key{LOOSE}]
+Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-4}$.
+
+\item[\Key{MAX IT}]
+Maximum number of iterations in geometry optimization scheme
+(default set to 100).
+
+\item[\Key{MODHES}]
+Determine a new model Hessian (see \Key{INIMOD})
+at every geometry without doing any updating. The model is thus used
+in much the same manner as an exact Hessian, though it is obviously
+only a relatively crude approximation to the analytical Hessian.
+
+\item[\Key{PRINT}]\verb| | \newline
+\verb|<Print level>|\newline
+Print level for the output. The higher the print level, the more information
+is printed to the output file.
+
 \item[\Key{REDINT}]
-Specifies that redundant internal coordinates coordinates
+Specifies that redundant internal coordinates\index{Redundant internal coordinates}\index{coordinate system!Redundant internal coordinates}
 should be used in the optimization. This is the default.
 
-\item[\Key{CARTES}]
-Indicates that Cartesian coordinates\index{Cartesian coordinates}\index{coordinate system!Cartesian coordinates}
-should be used in the optimization.
+\item[\Key{PSB}]
+Specifies that a first-order method with the
+Powell-Symmetric-Broyden (PSB) 
+update formula should be used for optimization.
+
+\item[\Key{TIGHT}]
+Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-6}$.
+
+\item[\Key{VLOOSE}]
+Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-3}$.
+
+\item[\Key{VTIGHT}]
+Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-7}$.
 
 \end{description}
 
@@ -1200,9 +1255,9 @@ should be used in the optimization.
 This section describes keywords needed to perform localization of Hartree--Fock orbitals. The optimization of the
 chosen localization function will be performed using a trust-region algorithm \cite{hoyvik:TRM}, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
 
-After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The coefficient matrix row index refer to the atomic orbital basis index, while the column index refer to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
+After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; \textit{cmo\_orbitals.u} and \textit{lcm\_orbitals.u}. \textit{cmo\_orbitals.u} contains coefficients for the canonical molecular orbitals (CMO) and \textit{lcm\_orbitals.u} contains coefficients for the localized molecular orbitals (LMO). The coefficient matrix row index refers to the atomic orbital basis index, while the column index refers to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
 
-For the most effcient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
+For the most efficient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
 
 \begin{description}
 
@@ -1212,7 +1267,7 @@ Use powers m of the second moment (PSM) localization function \cite{jansik:2011}
 
 \item[\Key{PFM}]\verb| | \newline
 \verb|<m m>|\newline
-Use powers m of the fourth moment (PFM) localization function \cite{hoyvik:PFM}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen is basis sets augmented with diffuse functions are used.
+Use powers m of the fourth moment (PFM) localization function \cite{hoyvik:PFM}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen if basis sets augmented with diffuse functions are used.
 
 \item[\Key{PipekMezey}]\verb| | \newline
 Use Pipek-Mezey localization function using an implementation based on L{\"o}wdin population analysis 
@@ -1240,7 +1295,7 @@ Pipek-Mezey localization (using Mulliken population analysis) of virtual space.
 Should only be used in combination with the .START/TRILEVEL and  .LCM options for the *DENSOPT section. The keyword is used to skip orbital localization after the second level in the three level procedure. Not recommended for general use, but can be used to save  computational time if only the virtual space is to be localized.  
 
 \item[\Key{Only Loc}]\verb| | \newline
-Provided the file with the molecular orbital coefficients (e.g., cmo\_orbitals.u or lcm\_orbitals.u) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to orbitals\_in.u, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to orbitals\_out.u. Thus, for this keyword to be used, orbitals\_in.u must exist and a localization function must be chosen.
+Provided the file with the molecular orbital coefficients (e.g., \textit{cmo\_orbitals.u} or \textit{lcm\_orbitals.u}) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to \textit{orbitals\_in.u}, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to \textit{orbitals\_out.u}. Thus, for this keyword to be used, \textit{orbitals\_in.u} must exist and a localization function must be chosen.
 
 
 \item[\Key{Orbital Locality}]\verb| | \newline
@@ -1249,7 +1304,7 @@ This keyword will make sure second and fourth moment orbital spreads are printed
 
 \item[\Key{Orbital Plot}]\verb| | \newline
 \verb|<orbital specification>|\newline	
-Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plottinge other orbitals, use the **PLT option described in section \ref{sec:plt}. Also note that the grid dimensions may be modified as described in Section~\ref{sec:pltgrid}.
+Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plotting other orbitals, use the **PLT option described in section \ref{sec:plt}. Also note that the grid dimensions may be modified as described in Section~\ref{sec:pltgrid}.
 \end{description}
 
 
