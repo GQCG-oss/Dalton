@@ -56,6 +56,9 @@ C
 #if defined (BUILD_PELIB)
       use pe_variables, only: peqm
 #endif
+#if defined (PCM_MODULE)
+      use pcmmod_cfg
+#endif
 
 #include "implicit.h"
 C
@@ -344,6 +347,11 @@ C
 #if defined (BUILD_PELIB)
             if (peqm) call quit('ERROR: DIIS failed to converge'//
      &                 'and QC-SCF is not implemented with PE library')
+#endif
+#if defined (PCM_MODULE)
+            if (pcmmod_is_pcm_calculation) call quit('ERROR: DIIS '//
+     &      'failed to converge and QC-SCF is not implemented with '//
+     &      'PCMSolver')
 #endif
             IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
      &         ' and QC-SCF is not implemented for QMMM')

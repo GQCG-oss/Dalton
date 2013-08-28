@@ -915,8 +915,8 @@ C
              call pcm_oper_ao_driver(wrk(kfcsol), 'TotASC'//char(0), 
      &                               wrk(kfree), lfree)
            end if
-! Copy the PCM Fock matrix contribution on top of the AO basis Fock matrix            
-           call daxpy(nnbast,dm1,wrk(kfcsol),1,faosav(1,indevc,1),1)
+! Copy the PCM Fock matrix contribution on top of the AO basis Fock matrix
+           call daxpy(nnbast,-1.0d0,wrk(kfcsol),1,faosav(1,indevc,1),1)
 ! We can print it here, if needed.
 !lf            write(lupri,*) 'extpcm fock matrix'
 !lf            call outpak(wrk(kfcsol), nbast, 1, lupri)
