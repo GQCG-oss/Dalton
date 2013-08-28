@@ -92,8 +92,11 @@ module pcm_write
       real(8), intent(in) :: charges(nr_points)
  
 ! Local variables
-      real(8) :: tot_chg
-      integer :: ipoint
+      real(8)       :: tot_chg
+      integer       :: ipoint
+      character(8)  :: for_title  = '(20X, A)'
+      character(19) :: for_header = '(A, T27, A, T62, A)'
+      character(20) :: for_data   = '(I6, 2(20X, F15.12))'
 
       inquire(file = pcm_file_name, exist = pcm_file_exists)
       if (pcm_file_exists) then
@@ -111,12 +114,14 @@ module pcm_write
            access = 'sequential')
       rewind(pcm_file_unit)
 
+      write(pcm_file_unit, for_title) "Converged MEP and ASC"
+      write(pcm_file_unit, for_header) "Finite element #", "Total MEP", "Total ASC" 
       tot_chg = 0.0d0
       do ipoint = 1, nr_points
          tot_chg = tot_chg + charges(ipoint)
-         write(pcm_file_unit, *) '@point', ipoint, "MEP =", potentials(ipoint), "ASC =", charges(ipoint)
+         write(pcm_file_unit, for_data) ipoint, potentials(ipoint), charges(ipoint)
       end do
-      write(pcm_file_unit, *) 'Number of tesserae', nr_points, 'Sum of apparent charges', tot_chg
+      write(pcm_file_unit, '(A, F15.12)') 'Sum of apparent surface charges ', tot_chg
     
    end subroutine 
    
@@ -130,6 +135,9 @@ module pcm_write
 ! Local variables
       real(8) :: tot_nuc_chg, tot_ele_chg
       integer :: ipoint
+      character(8)  :: for_title  = '(60X, A)'
+      character(36) :: for_header = '(A, T27, A, T62, A, T97, A, T132, A)'
+      character(20) :: for_data   = '(I6, 4(20X, F15.12))'
 
       inquire(file = pcm_file_name, exist = pcm_file_exists)
       if (pcm_file_exists) then
@@ -147,18 +155,18 @@ module pcm_write
            access = 'sequential')
       rewind(pcm_file_unit)
 
+      write(pcm_file_unit, for_title) "Converged MEP and ASC"
+      write(pcm_file_unit, for_header) "Finite element #", "Nuclear MEP", "Nuclear ASC", "Electronic MEP", "Electronic ASC"
       tot_nuc_chg = 0.0d0
-      tot_ele_chg = 0.0d0
+      tot_ele_chg = 0.0d0      
       do ipoint = 1, nr_points
          tot_nuc_chg = tot_nuc_chg + nuc_chg(ipoint)
          tot_ele_chg = tot_ele_chg + ele_chg(ipoint)
-         write(pcm_file_unit, *) '@point', ipoint
-         write(pcm_file_unit, *) "NUC_MEP =", nuc_pot(ipoint), "NUC_ASC =", nuc_chg(ipoint)
-         write(pcm_file_unit, *) "ELE_MEP =", ele_pot(ipoint), "ELE_ASC =", ele_chg(ipoint)
+         write(pcm_file_unit, for_data) ipoint, nuc_pot(ipoint), nuc_chg(ipoint), ele_pot(ipoint), ele_chg(ipoint)
       end do
-      write(pcm_file_unit, *) 'Number of tesserae', nr_points 
-      write(pcm_file_unit, *) 'Sum of nuclear apparent charges', tot_nuc_chg, 'Sum of electronic apparent charges', tot_ele_chg
-      write(pcm_file_unit, *) 'Sum of apparent charges', tot_nuc_chg + tot_ele_chg
+      write(pcm_file_unit, '(A, F15.12)') 'Sum of nuclear apparent charges ', tot_nuc_chg
+      write(pcm_file_unit, '(A, F15.12)') 'Sum of electronic apparent charges ', tot_ele_chg
+      write(pcm_file_unit, '(A, F15.12)') 'Sum of apparent surface charges ', tot_nuc_chg + tot_ele_chg
     
    end subroutine 
    

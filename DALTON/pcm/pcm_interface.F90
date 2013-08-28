@@ -137,7 +137,6 @@ module pcm_interface
 
       subroutine pcm_energy_driver(density_matrix, pol_ene, work, lfree)
 
-      use pcm_integrals, only: nuc_pot_pcm, ele_pot_pcm
       use pcm_write, only: pcm_write_file_separate
       use pcmmod_cfg
 
@@ -153,11 +152,7 @@ module pcm_interface
 
 ! pcm_energy is the polarization energy:
 ! U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
-      if (.not.pcmmod_separate) then
-         call comp_pol_ene_pcm(pol_ene, 1)
-      else 
-         call comp_pol_ene_pcm(pol_ene,0)
-      end if
+      call comp_pol_ene_pcm(pol_ene)
 
 ! Now make the value of the polarization energy known throughout the module
       pcm_energy = pol_ene
@@ -171,7 +166,7 @@ module pcm_interface
 !        cavity points
 ! Output: expectation values of electrostatic potential on tesserae
 !
-      use pcm_integrals, only: j1int_pcm
+      use pcm_integrals, only: get_electronic_mep
 
       real(8), intent(out)        :: oper(*)
       real(8)                     :: work(*)
@@ -198,8 +193,7 @@ module pcm_interface
       allocate(asc(nr_points))
       asc = 0.0d0
       call get_surface_function(nr_points, asc, charge_name)
-      call j1int_pcm(asc, nr_points, tess_cent, .false.,    & 
-                     oper, 1, .false., 'NPETES ', 1, work(kfree), lfree)
+      call get_electronic_mep(nr_points, tess_cent, asc, oper, work(kfree), lfree, .true.)
       deallocate(asc)
 
       end subroutine pcm_oper_ao_driver
@@ -215,7 +209,7 @@ module pcm_interface
 !    * switch between point-by-point and vectorized
 !      charge attraction integrals evaluation subroutines.
 !
-      use pcm_integrals, only: nuc_pot_pcm, ele_pot_pcm
+      use pcm_integrals, only: get_nuclear_mep, get_electronic_mep, get_mep
       use pcm_write, only: pcm_write_file, pcm_write_file_separate
       use pcmmod_cfg
 
@@ -241,18 +235,10 @@ module pcm_interface
       asc = 0.0d0
 
       if (.not.(pcmmod_separate)) then
-         allocate(nuc_pot(nr_points))
-         nuc_pot = 0.0d0
-         call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
-         allocate(ele_pot(nr_points))
-         ele_pot = 0.0d0
-         call ele_pot_pcm(nr_points, tess_cent, ele_pot, density_matrix, work(kfree), lfree)
-         mep(:) = nuc_pot(:) + ele_pot(:)
-
          potName = 'TotMEP'//char(0) 
          chgName = 'TotASC'//char(0)
 ! Calculate the (total) Molecular Electrostatic Potential
-!         call get_mep(nr_points, tess_cent, potentials, dmat, work, lwork, 0)
+         call get_mep(nr_points, tess_cent, mep, density_matrix, work(kfree), lfree)
 ! Set a cavity surface function with the MEP
          call set_surface_function(nr_points, mep, potName)
 ! Compute polarization charges and set the proper surface function
@@ -285,14 +271,14 @@ module pcm_interface
       
          potName1 = 'NucMEP'//char(0)
          chgName1 = 'NucASC'//char(0)
-         call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
+         call get_nuclear_mep(nr_points, tess_cent, nuc_pot)
          call set_surface_function(nr_points, nuc_pot, potName1)
          call comp_chg_pcm(potName1, chgName1)
          call get_surface_function(nr_points, nuc_pol_chg, chgName1)
 
          potName2 = 'EleMEP'//char(0)
          chgName2 = 'EleASC'//char(0)
-         call ele_pot_pcm(nr_points, tess_cent, ele_pot, density_matrix, work(kfree), lfree)
+         call get_electronic_mep(nr_points, tess_cent, ele_pot, density_matrix, work(kfree), lfree, .false.)
          call set_surface_function(nr_points, ele_pot, potName2)
          call comp_chg_pcm(potName2, chgName2)
          call get_surface_function(nr_points, ele_pol_chg, chgName2)
