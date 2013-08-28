@@ -1,10 +1,10 @@
-C 
+C
 C------------------------------------------------------------
 C information for the packing of the AO integrals on the
 C presorted CCAOIN_* files
 C------------------------------------------------------------
 C
-      LOGICAL LPACKINT 
+      LOGICAL LPACKINT
       INTEGER IPCKTABINT(0:255)
       INTEGER IOFFINT(MXCORB)
       INTEGER NPCKINT(MXCORB)
@@ -16,6 +16,6 @@ C
       DOUBLE PRECISION THRPCKINT, PCKRATIO, PCKTIME
 #endif
       COMMON /CCPACK/ THRPCKINT, PCKRATIO, PCKTIME,
-     &                IPCKTABINT, IOFFINT, NPCKINT, 
+     &                IPCKTABINT, IOFFINT, NPCKINT,
      &                NTOTINT, NTOTPCK, LPACKINT
 

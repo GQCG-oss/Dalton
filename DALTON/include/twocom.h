@@ -3,7 +3,7 @@ CTSAUE Modififed 240996
      &                DIAGAB,DIAGCD,DIACAB,DIACCD,
      &                SHAEQB,SHCEQD,SHABAB,GENAB, GENCD,
      &                RPRIAB, RPRICD, RCNTAB, RCNTCD,
-     &                SPHRA, SPHRB, SPHRC, SPHRD, 
+     &                SPHRA, SPHRB, SPHRC, SPHRD,
      &                SPHRAB, SPHRCD, DIRAC, DOSCRN
       COMMON /TWOCOM/ CORAX0,CORAY0,CORAZ0,
      &                CORBX0,CORBY0,CORBZ0,

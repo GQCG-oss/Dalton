@@ -1,4 +1,4 @@
-!> @file
+!> @fileddd
 !> Contains property wrappers to the response_driver_module in response_driver.f90
 
 !> \author Thomas Kjaergaard and Kasper Kristensen
@@ -17,7 +17,7 @@ module response_wrapper_module
   !warning matrix_operations and matrix_defop do not mix
   use matrix_operations,only: mat_write_to_disk
   use matrix_defop
-  use rspsolver, only: prop_molcfg
+  use rspsolver, only: rsp_molcfg
   use rsp_equations, only: rsp_eq_sol, pert_dens, pert_fock, rsp_eq_sol_empty
   use response_wrapper_type_module, only: ALPHAinputItem, &
        & BETAinputItem, GAMMAinputItem, TPAinputItem, ESGinputItem, &
@@ -44,7 +44,7 @@ Contains
   subroutine Get_dipole_moment(molcfg,F,D,S,doPrint,DipoleMoment)
     implicit none
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),intent(inout)   :: molcfg
+    type(rsp_molcfg),intent(inout)    :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -70,7 +70,7 @@ Contains
     call Get_first_order_property(molcfg,F,D,S,DipoleMoment_complex,3,'EL  ')
 
     ! By convention the dipole moment equals MINUS the energy derivative.
-    ! Get_first_order_property calls prop_oneave, where the sign convention
+    ! Get_first_order_property calls rsp_oneave, where the sign convention
     ! is always based on energy derivatives.
     normDipole=0E0_realk
     do i=1,3
@@ -118,7 +118,7 @@ Contains
   subroutine ALPHAresponse_driver(molcfg,F,D,S,alphainput)
     implicit none
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),intent(inout)   :: molcfg
+    type(rsp_molcfg),intent(inout)    :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -333,7 +333,7 @@ Contains
   subroutine BETAresponse_driver(molcfg,F,D,S,betainput,DipoleMoment)
     implicit none
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),intent(inout)   :: molcfg
+    type(rsp_molcfg),intent(inout)    :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -735,7 +735,7 @@ Contains
   subroutine GAMMAresponse_driver(molcfg,F,D,S,gammainput)
     implicit none
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),intent(inout)   :: molcfg
+    type(rsp_molcfg),intent(inout)    :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -1163,7 +1163,7 @@ Contains
     use decompMod, only: decompItem
     implicit none
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),intent(inout)      :: molcfg
+    type(rsp_molcfg),intent(inout)    :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -1209,7 +1209,7 @@ Contains
   !> \date 2010-08
   subroutine free_transition_density_matrices(molcfg)
     implicit none
-    type(prop_molcfg),target,intent(in) :: molcfg
+    type(rsp_molcfg),target,intent(in) :: molcfg
     integer :: i
 
     if (allocated(rsp_eq_sol)) then
@@ -1250,7 +1250,7 @@ Contains
     use decompMod, only: decompItem
     implicit none
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),intent(inout)   :: molcfg
+    type(rsp_molcfg),intent(inout)    :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -1451,7 +1451,7 @@ Contains
     use decompMod, only: decompItem
     implicit none
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),intent(inout)   :: molcfg
+    type(rsp_molcfg),intent(inout)    :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -1885,7 +1885,7 @@ Contains
 
     implicit none
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),intent(inout)   :: molcfg
+    type(rsp_molcfg),intent(inout)    :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -2160,7 +2160,7 @@ Contains
 
     implicit none
     !> structure containing the molecule, integral and solver settings
-    type(prop_molcfg), intent(inout)          :: molcfg
+    type(rsp_molcfg), intent(inout)        :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)               :: F
     !> Unperturbed density matrix
@@ -2269,7 +2269,7 @@ Contains
 
     implicit none
     !> structure containing the molecule, integral and solver settings
-    type(prop_molcfg), intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Unperturbed density matrix
     type(matrix), intent(in)      :: D
     !> Unperturbed overlap matrix
@@ -2339,11 +2339,11 @@ Contains
   !> \author Kasper Kristensen                                                                
   !> \date 2010-09
   subroutine calculate_one_photon_absorption(molcfg,D,D1,one_photon)
-    use prop_contribs
+    use rsp_contribs
 
     implicit none
     !> structure containing the molecule, integral and solver settings
-    type(prop_molcfg), intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Unperturbed density matrix
     type(matrix), intent(in)   :: D
     !> First-order perturbed density matrices for electric field perturbation
@@ -2359,9 +2359,9 @@ Contains
     one_photon(:) = 0E0_realk
 
     do J=1,3
-       ! Zero before prop_oneint call, otherwise the components are added
+       ! Zero before rsp_oneint call, otherwise the components are added
        linear_response_func(1) = (0E0_realk,0E0_realk)
-       call prop_oneave(molcfg, D, (/'EL'/), (/D1(J)/), (/1/), &
+       call rsp_oneave(molcfg, D, (/'EL'/), (/D1(J)/), (/1/), &
             & linear_response_func(1:1), comp=(/J/))
        one_photon(J) = -imag(linear_response_func(1))
     enddo
@@ -2691,7 +2691,7 @@ Contains
 !    use molecule_typetype, only: molecule_PT, moleculeinfo, atomitem
     implicit none
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),intent(inout)   :: molcfg
+    type(rsp_molcfg), intent(inout)   :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -3008,7 +3008,7 @@ Contains
     use decompMod, only: decompItem
     implicit none
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),intent(inout)   :: molcfg
+    type(rsp_molcfg), intent(inout)   :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -3507,8 +3507,8 @@ Contains
   integer                           :: i,j,k,l,maxdim,start,MCDnexci,dim
   integer                           :: nAterms,oldAterm,oldbterm
   complex(realk), allocatable       :: rsp_results(:,:)
-  type(prop_molcfg) :: molcfg
-  integer, target   :: natoms
+  type(rsp_molcfg) :: molcfg
+  integer, target  :: natoms
   !    complex(realk), allocatable, target, save           :: rsp_results(:,:)
   complex(realk) :: freqold,freq
   integer,pointer :: MCDexci1(:),MCDexci2(:)
@@ -3564,9 +3564,9 @@ Contains
   nexci_max = MCDinput%nexci
   degenerateStates = MCDinput%degenerateStates !same as solver%degenerateState
   DTHR = solver%degenerateTHR
-  !create config struct to be passed to prop_contribs / rsp_equations
+  !create config struct to be passed to rsp_contribs / rsp_equations
 !/*point to natoms within structure*/
-  molcfg = prop_molcfg(S,setting%MOLECULE(1)%p%Natoms, &
+  molcfg = rsp_molcfg(S,setting%MOLECULE(1)%p%Natoms, &
   & decomp%lupri,decomp%luerr,setting,decomp,solver)
   molcfg%zeromat = 0*S
   LORENTZ = .TRUE.
@@ -4261,10 +4261,10 @@ END SUBROUTINE INSERTION_increasing
   !> Questions regarding this driver, the input structure etc. may be addressed to tkjaergaard@chem.au.dk.
   !> The result is placed in the tensor NMST which has dimensions (3*natoms)*3
 subroutine NMRshieldresponse_driver(molcfg,F,D,S)
-use prop_contribs
+use rsp_contribs
 use lstiming
 implicit none
-type(prop_molcfg),intent(inout) :: molcfg
+type(rsp_molcfg), intent(inout) :: molcfg
 type(Matrix),intent(in) :: F,D,S
 !
 complex(8),allocatable       :: NMST(:,:)
@@ -4289,8 +4289,8 @@ call pert_dens(molcfg,S,(/'MAG '/),(/3/),(/D/),(/F/),Dx,Fx,freq=(/(0d0,0d0)/))
 Fx=0
 Factor=53.2513535188477d0!53.2513539566280 !1e6*alpha^2 
 NMST=(0.d0,0.d0)
-call prop_oneave(molcfg, S,(/'NUCM'/),(/Dx/),(/3*natoms,3/), NMST)
-call prop_oneave(molcfg, S,(/'NUCM','MAG '/),(/D/),(/3*natoms,3/), NMST)
+call rsp_oneave(molcfg, S,(/'NUCM'/),(/Dx/),(/3*natoms,3/), NMST)
+call rsp_oneave(molcfg, S,(/'NUCM','MAG '/),(/D/),(/3*natoms,3/), NMST)
 Dx=0
 do icoor=1,3
    do jcoor=1,3*natoms  

@@ -70,6 +70,8 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccsd.F90
     LSDALTON/deccc/rpa.F90
     LSDALTON/deccc/f12_integrals.F90
+    LSDALTON/deccc/f12_routines.F90
+    LSDALTON/deccc/wangy_playground.F90 
     LSDALTON/deccc/cc_driver.F90
     LSDALTON/deccc/cc_integrals.F90
     LSDALTON/deccc/ccarray2_simple.F90
@@ -98,6 +100,8 @@ set(GEOOPT_SOURCES
     )
 set(LINEARS_SOURCES	
     LSDALTON/linears/configurationType.F90
+    LSDALTON/linears/LocTypes.F90
+    LSDALTON/linears/ChargePrec.F90
     LSDALTON/linears/ChargeLoc.F90
     LSDALTON/linears/SCFLOOP.F90
     LSDALTON/linears/trustradius.F90
@@ -122,15 +126,16 @@ set(LINEARS_SOURCES
     LSDALTON/linears/leastchange.F90
     LSDALTON/linears/levelshift.F90
     LSDALTON/linears/minimize.F90
-    LSDALTON/linears/optimlocNONMOD.F90
+    LSDALTON/linears/optimlocModf.F90
+    LSDALTON/linears/orbspread_hess_prec.F90
+    LSDALTON/linears/localityMeasure.F90
     LSDALTON/linears/OrbLoc_input.F90
     LSDALTON/linears/localization_util.F90
     LSDALTON/linears/localization_orbspread.F90
+    LSDALTON/linears/orbspread_util.F90
     LSDALTON/linears/localization_charge.F90
-    LSDALTON/linears/prop_contribs.F90
     LSDALTON/linears/response_driver.F90
     LSDALTON/linears/response_prop.F90
-    LSDALTON/linears/rsp_equations.F90
     LSDALTON/linears/scfopt-typedef.F90
     LSDALTON/linears/soeo-redspace.F90
     LSDALTON/linears/soeo-loop.F90
@@ -320,9 +325,6 @@ set(LSUTIL_MATRIXU_SOURCES
     LSDALTON/lsutil/mat-operations-aux.F90
     LSDALTON/lsutil/mat-operations-essential.F90
     LSDALTON/lsutil/matrix_utilities.F90
-    LSDALTON/lsutil/matrix_defop_backend.F90
-    LSDALTON/lsutil/matrix_defop_lowlevel.F90
-    LSDALTON/lsutil/matrix_defop.F90
     )
 set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/AO_operations.F90
@@ -338,6 +340,7 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/Basisinfo_operations.F90
     LSDALTON/lsutil/IntegralOutput_operations.F90 
     LSDALTON/lsutil/TYPE-OP.F90
+    LSDALTON/lsutil/GCtrans.F90
     LSDALTON/lsutil/pbc_lattice_type.F90
     LSDALTON/lsutil/Build_AOBATCH.F90
     LSDALTON/lsutil/lspdm_basic.F90

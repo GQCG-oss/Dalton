@@ -25,6 +25,9 @@ use davidson_settings, only: RedSpaceItem
 use arhDensity, only: solveritem
 use precision
 
+private
+public :: responseitem,ConfigItem,LowAccuracyStartType,&
+     & Set_Low_accuracy_start_settings, Revert_Low_accuracy_start_settings
 !> \brief Contains info, settings and data for response part (defaults or read from input file).
 !> \author T. Kjaergaard
 !> \date April 2010

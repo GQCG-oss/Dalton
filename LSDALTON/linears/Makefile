@@ -2,7 +2,8 @@ all: liblinears.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../SolverUtilities -I../responsesolver
+INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../SolverUtilities -I../responsesolver \
+	-I../../external/matrix-defop/src -I../../external/openrsp/src
 
 # Keep the file lists sorted for easier modification.
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
@@ -16,6 +17,8 @@ F90_OBJS = \
         arh_debug.o \
         arh_driver.o \
         average_util.o \
+	LocTypes.o \
+	ChargePrec.o\
 	ChargeLoc.o \
 	configurationType.o \
 	davidson_settings.o \
@@ -38,15 +41,16 @@ F90_OBJS = \
         LSDALTON_RESPONSE.o        \
         LSDALTON_RESPONSE_type.o        \
 	minimize.o \
-	optimlocNONMOD.o \
+	optimlocModf.o \
+	orbspread_hess_prec.o \
+	localityMeasure.o \
 	OrbLoc_input.o  \
 	localization_charge.o \
 	localization_orbspread.o \
+	orbspread_util.o \
 	localization_util.o \
-        prop_contribs.o \
         response_driver.o \
         response_prop.o \
-        rsp_equations.o \
         scfopt-typedef.o \
 	soeo-loop.o \
 	soeo-util.o \

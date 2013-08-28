@@ -9,6 +9,7 @@
 module matrix_operations_csr
   use matrix_module
   use memory_handling
+  use precision
 ! HACK
   use matrix_operations_dense
 ! HACK
@@ -568,6 +569,74 @@ contains
        enddo
     endif
   end subroutine mat_csr_to_full
+
+!> \brief See mat_to_full in mat-operations.f90
+  subroutine mat_csr_to_full3D(a, alpha, afull,n1,n2,n3,i3)
+     implicit none
+     integer, INTENT(IN)           :: n1,n2,n3,i3
+     TYPE(Matrix), intent(in) :: a
+     real(realk), intent(in) :: alpha
+     real(realk), intent(inout):: afull(n1,n2,n3)  
+     INTEGER      ::  job(8)
+     INTEGER      ::  m, n, lda, info,j,i,offset,mp1
+     real(realk),pointer  :: Afulltmp(:)
+     call mem_alloc(Afulltmp,n1*n2)
+     job(1) = 1
+     job(2) = 1
+     job(3) = 1
+     job(4) = 2
+     job(5) = a%nnz
+     job(6) = 2
+     lda = a%nrow
+     m = a%nrow
+     n = a%ncol
+     !RA: hack to handle zero matrix
+     if (a%nnz .eq. 0) then
+        return
+     endif
+#ifdef VAR_MKL
+     call mkl_ddnscsr(job, m, n, afulltmp, lda, a%val, a%col, a%row, info)
+#endif
+     N = a%nrow    !change diff
+     M = MOD(N,7)  !change diff
+     IF (M.NE.0) THEN
+        do j = 1,a%ncol
+           offset = (j-1)*N
+           DO I = 1,M
+              afull(i,j,i3) = alpha*afulltmp(i+offset)              
+           ENDDO
+        enddo
+        MP1 = M + 1
+        IF (N.GE.7)THEN
+           do j = 1,a%ncol
+              offset = (j-1)*N
+              DO I = MP1,N,7
+                 afull(i,j,i3) = alpha*afulltmp(i+offset)
+                 afull(i+1,j,i3) = alpha*afulltmp(i+1+offset)
+                 afull(i+2,j,i3) = alpha*afulltmp(i+2+offset)
+                 afull(i+3,j,i3) = alpha*afulltmp(i+3+offset)
+                 afull(i+4,j,i3) = alpha*afulltmp(i+4+offset)
+                 afull(i+5,j,i3) = alpha*afulltmp(i+5+offset)
+                 afull(i+6,j,i3) = alpha*afulltmp(i+6+offset)
+              END DO
+           enddo
+        ENDIF
+     ELSE
+        do j = 1,a%ncol
+           offset = (j-1)*N
+           DO I = 1,N,7
+              afull(i,j,i3) = alpha*afulltmp(i+offset)
+              afull(i+1,j,i3) = alpha*afulltmp(i+1+offset)
+              afull(i+2,j,i3) = alpha*afulltmp(i+2+offset)
+              afull(i+3,j,i3) = alpha*afulltmp(i+3+offset)
+              afull(i+4,j,i3) = alpha*afulltmp(i+4+offset)
+              afull(i+5,j,i3) = alpha*afulltmp(i+5+offset)
+              afull(i+6,j,i3) = alpha*afulltmp(i+6+offset)
+           END DO
+        ENDDO
+     ENDIF
+     call mem_dealloc(Afulltmp)
+  end subroutine mat_csr_to_full3D
 
   subroutine mat_csr_retrieve_block_full(A,fullmat,fullrow,fullcol,insertrow,insertcol)
     implicit none

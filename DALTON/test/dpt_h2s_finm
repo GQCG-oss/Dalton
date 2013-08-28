@@ -83,6 +83,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #             Total CCSD  energy:                  -398.7571185794
 #             Total energy CCSD(T):                -398.7606591499
 

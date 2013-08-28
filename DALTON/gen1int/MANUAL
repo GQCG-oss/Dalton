@@ -36,8 +36,7 @@
        integer ierr
 
        ! creates the operator using Gen1Int library subroutine, you could also set
-       ! various derivatives uisng \fn(OnePropSetPartialGeom), \fn(OnePropSetMag),
-       ! and \fn(OnePropSetRAM)
+       ! various derivatives uisng \fn(OnePropSetMag) and \fn(OnePropSetRAM)
        call OnePropCreate(..., info_prop=ierr)
        if (ierr/=0) stop "failed to create operator"
 

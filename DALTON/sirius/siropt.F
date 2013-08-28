@@ -1345,7 +1345,10 @@ C                     because the Fock matrix is not zero for these
             WRITE (LUPRI,1750) ISYM,(SCRA(IORBI+I),I=1,NLAST)
          END IF
   200 CONTINUE
-      IF (MOLDEN) CALL MOMOS(2,SCRA,DUMMY,DUMMY,DUMMY,DUMMY)
+
+!     save orbital energies for MOLDEN
+      IF (MOLDEN) CALL MOLDEN_MOS(2,SCRA,DUMMY,DUMMY,DUMMY,DUMMY)
+
 C     take care of 1-electron case and no virtuals case
       IF (EHOMO .EQ. -DBIG) EHOMO = D0
       IF (ELUMO .EQ.  DBIG) ELUMO = D0
@@ -1375,12 +1378,12 @@ C     take care of 1-electron case and no virtuals case
      *   ' MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS',
      *   ' Largest off-diagonal Fock matrix element is',VALCON
          IF (IPRINT .GT. 10) THEN
-            WRITE(LUPRI,'(/A)') ' THE TOTAL FOCK MATRIX :'
+            WRITE(LUPRI,'(/A)') ' The total Fock matrix :'
             CALL OUTPKB(FD,NORB,NSYM,1,LUPRI)
          END IF
       ELSE IF (IPRINT .GT. 10) THEN
          WRITE(LUPRI,'(/A/A,1P,D10.2)')
-     *      ' Deviation from canonical HARTREE-FOCK orbitals :',
+     *      ' Deviation from canonical Hartree-Fock orbitals :',
      *      ' Largest off-diagonal Fock matrix element is',VALCON
       END IF
 CVW Catch orbital energies
@@ -1469,6 +1472,7 @@ C
 C Used from common blocks:
 C   INFINP: ISTATE,LROOTS,FLAG(*),MAXCIT,THRGRD,ITRLVL,?
 C   INFVAR: NCONF (p.t. only NCONF)
+C   INFIND: ISX()
 C   INFORB: NCMOT,?
 C   INFOPT: EMCOLD,BETA,RTRUST (read from LUIT1 when restart, ICI0=5)
 C   INFDIM: IVEX4,INTOT
@@ -1476,9 +1480,11 @@ C   INFTAP: LUIT1,?
 C   INFPRI: ?
 C
 #include "maxorb.h"
+#include "maxash.h"
 #include "priunit.h"
 #include "infinp.h"
 #include "infvar.h"
+#include "infind.h"
 #include "inforb.h"
 #include "infopt.h"
 #include "infdim.h"
@@ -1501,7 +1507,7 @@ C
 C *** data:
 C
       DATA TABLE/'EODATA  ', 'OLDORB  ', 'STARTVEC', 'CIDIAG2 ',
-     *           'RESTART ', 'NEWORB  ', 'GEOWALK ', 'NATOCCAC'/
+     *           'RESTART ', 'NEWORB  ', 'GEOWALK ', 'NATOCC  '/
       DATA STAR8/'********'/
 C
       CALL QENTER('OPTST ')
@@ -1570,7 +1576,7 @@ C
 C        Read NEWORB and write as OLDORB
 C
          REWIND LUIT1
-         CALL MOLLB2(TABLE(6),LBLINF,LUIT1,LUERR)
+         CALL MOLLB2(TABLE(6),LBLINF,LUIT1,LUPRI)
          CALL READT(LUIT1,NCMOT,WRK(KCMO))
          CALL NEWIT1
          WRITE (LUIT1) STAR8,LBLINF,TABLE(2)
@@ -1646,7 +1652,7 @@ C
 C        Read NEWORB and write as OLDORB
 C
          REWIND LUIT1
-         CALL MOLLB2(TABLE(6),LBLINF,LUIT1,LUERR)
+         CALL MOLLB2(TABLE(6),LBLINF,LUIT1,LUPRI)
          CALL READT(LUIT1,NCMOT,WRK(KCMO))
          CALL NEWIT1
          WRITE (LUIT1) STAR8,LBLINF,TABLE(2)
@@ -1931,7 +1937,7 @@ C
          ELSE
             REWIND (LUIT1)
 C           ... search for "STARTVEC"
-            CALL MOLLB2(TABLE(3),LBLINF,LUIT1,LUERR)
+            CALL MOLLB2(TABLE(3),LBLINF,LUIT1,LUPRI)
             READ (LBLINF(1),'(2I4)',ERR=405) LROIT1,JSTA
             IF (JSTA .LT. 0) THEN
                ICREF  = 1
@@ -1963,7 +1969,7 @@ C        CALL SIRCNO(KEYCNO,NCVECS,ICREF,CREF,CMO,AOCC,
 C    *               INDXCI,WRK,KFRSAV,LFRSAV)
 C
          REWIND (LUIT1)
-         CALL MOLLAB(TABLE(3),LUIT1,lupri)
+         CALL MOLLAB(TABLE(3),LUIT1,LUPRI)
 C        search for "STARTVEC"
          WRITE (LBLINF(1),'(2I4)') NCVECS,JSTA
          LBLINF(2) = 'CNOSAVE '
@@ -1981,9 +1987,19 @@ C        write the natural orbitals to LUIT1 label NEWORB
          CALL WRITT(LUIT1,NCMOT4,WRK(KCMO))
          IF (NASHT .EQ. 1 .OR.
      &      (CNOLBL .NE. 'ONLYFD' .AND. NASHT .GT. 1)) THEN
+            IF (NASHT.EQ.1) WRK(KAOCC) = NACTEL
             WRITE (LUIT1) STAR8,LBLDAT(1),LBLINF(2),TABLE(8)
-            NAT4 = MAX(NASHT,4)
-            CALL WRITT(LUIT1,NAT4,WRK(KAOCC))
+            KOCCUP = KW31
+            DO, I = 1, NISHT
+               IX  = ISX(I)
+               WRK(KOCCUP-1+IX) = 2.0D0
+            END DO
+            DO, I = 1, NASHT
+               IX = ISX(NISHT+I)
+               WRK(KOCCUP-1+IX) = WRK(KAOCC-1+I)
+            END DO
+            NORBT4 = MAX(NORBT,4)
+            CALL WRITT(LUIT1,NORBT4,WRK(KOCCUP))
          END IF
          IF (.NOT.FLAG(34)) FLAG(14) = .FALSE.
 C        if (int.transf. needed in optimization)
@@ -2222,9 +2238,9 @@ C
 C     Recover old orbitals, IBNDX and REDL from previous macro iteration
 C
       REWIND LUIT1
-      CALL MOLLAB(TABLE(1),LUIT1,lupri)
+      CALL MOLLAB(TABLE(1),LUIT1,LUPRI)
       CALL READT(LUIT1,NCMOT,CMO)
-      CALL MOLLB2 (TABLE(2),RTNLBL,LUIT1,LUERR)
+      CALL MOLLB2(TABLE(2),RTNLBL,LUIT1,LUPRI)
       IF (RTNLBL(2) .NE. 'NEOSAVE ') THEN
          WRITE (LUW4,'(/A/2A/A)')
      *   ' Sorry, backstep only implemented for NEO',
@@ -2243,7 +2259,7 @@ C        this should never occur ...
          CALL QTRACE(LUERR)
          CALL QUIT('ERROR (SIRSTP) unexpected value of NREDL on LUIT1')
       END IF
-      CALL MOLLAB(TABLE(3),LUIT1,lupri)
+      CALL MOLLAB(TABLE(3),LUIT1,LUPRI)
       CALL READT(LUIT1,NNREDL,WRK(KREDL))
 C
 C
@@ -2705,7 +2721,7 @@ C        ... CIDIAG1 is only used if CASGUGA
             REWIND LUIT2
          END IF
 C
-         CALL MOLLAB(TABLE(2),LUIT2,lupri)
+         CALL MOLLAB(TABLE(2),LUIT2,LUPRI)
          CALL READT (LUIT2,NCONF,WRK(KWRK1))
          WRITE (LUSIFC) LAB123,TABLE(2)
          CALL WRITT (LUSIFC,NC4,WRK(KWRK1))
@@ -2713,7 +2729,7 @@ C
 C
       IF (NWOPT .GT. 0 .AND. ORBHES) THEN
          REWIND LUIT2
-         CALL MOLLAB(TABLE(3),LUIT2,lupri)
+         CALL MOLLAB(TABLE(3),LUIT2,LUPRI)
          CALL READT (LUIT2,NWOPT,WRK(KWRK1))
          WRITE (LUSIFC) LAB123,TABLE(3)
          CALL WRITT (LUSIFC,NW4,WRK(KWRK1))

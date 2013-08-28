@@ -18,7 +18,11 @@ module plt_driver_module
   use grid_utilities_module
   use davidson_settings
   use IntegralInterfaceMOD,only:II_Get_overlap
-
+  private
+  public :: plt_wrapper, pltinfo_set_default_config, config_plt_input, &
+       & config_pltgrid_input, construct_plt_file_driver, &
+       & plt_test_suite, calculate_charge, calculate_pplt, calculate_ep,&
+       & calculate_density, make_orbitalplot_file
 contains
 
   !> \brief Wrapper for creating PLT files of orbitals, densities, electrostatic potentials etc.

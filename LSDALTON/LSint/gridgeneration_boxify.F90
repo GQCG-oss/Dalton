@@ -10,6 +10,7 @@ use grid_memory_handling
 use precision
 use files
 use dft_typetype
+use lstiming
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_mod
@@ -51,11 +52,11 @@ type(bunchpoints),pointer :: keypointer(:)
 real(realk) :: minR(3),maxR(3),Lengthinv,center1(3),center2(3),length(3),split
 integer :: maxDim,nBox1,nBox2,I,ix,NactBast,ip
 real(realk),parameter :: D05=0.5E0_realk,D8=8E0_realk
-real(realk) :: CPUTIME,CPU2,CPU1,WALLTIME,WALL2,WALL1,Volumen1
+real(realk) :: TS,TE,Volumen1
 real(realk) :: gridLengthX,gridLengthY,gridLengthZ
 type(gridboxtype),pointer :: TMPBOX
 
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 
 minR(1) = +1E+20_realk 
 minR(2) = +1E+20_realk 
@@ -177,18 +178,13 @@ call build_keypointer(keypointer,nBoxes,GridBox,lupri)
 
 call free_box(Gridbox)
 
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
 #ifdef VAR_MPI
 IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
-CALL LS_TIMTXT('>>>  CPU  Time used in Boxify is  ',CPUTIME,LUPRI)
-CALL LS_TIMTXT('>>>  WALL Time used in Boxify is  ',WALLTIME,LUPRI)
+CALL LSTIMER('Boxify',TS,TE,LUPRI)
 #ifdef VAR_MPI
 ENDIF
 #endif
-!call lsquit('test done',lupri)
 
 end Subroutine BuildBoxes
 

@@ -5,7 +5,7 @@ module RSPsolver
   use matrix_util
   use rspPrecond
   use rsp_util, only: util_scriptPx, get_rsp_trials_from_MO, MO_precond
-  use TYPEDEFTYPE, only: LSSETTING !due to prop_molcfg type def.
+  use TYPEDEFTYPE, only: LSSETTING !due to rsp_molcfg type def.
   use response_wrapper_type_module, only: RSPSOLVERinputitem
   use lstiming
   use matrix_operations_aux, only: mat_zerohalf
@@ -20,8 +20,8 @@ module RSPsolver
        &get_1st_orth_trial_lineq, transform_vectors, expand_on_basis, &
        &expand_on_basis_minus, precond_residual, verify_conv_prop,&
        & remove_initial_lindep, rsp_normalize, symm_orthonormalize, get_rho,&
-       & make_rhos, prop_molcfg, get_1st_rsp_trials_unres, get_1st_rsp_trials,&
-       & init_prop_molcfg
+       & make_rhos, rsp_molcfg, get_1st_rsp_trials_unres, get_1st_rsp_trials,&
+       & init_rsp_molcfg
 
   logical, save :: LINEQ
   logical, save :: RSPOnMaster
@@ -35,7 +35,7 @@ module RSPsolver
    !> to be passed to solver and integral routines.
    !> Should eventually be moved to separate program-specific
    !> interface modules
-   type prop_molcfg
+   type rsp_molcfg
       !> basic/prototype zero matrix, such as overlap or diplen
       !> Must have shape set, but may (should) not be allocated.
       !> Used to create/initialize other matrices, and thus hide
@@ -59,13 +59,13 @@ module RSPsolver
 
 contains
 
-  !> \brief Initializations of prop_molcfg
+  !> \brief Initializations of rsp_molcfg
   !> \author T. Kjaergaard
   !> \date 2011
   !> 
-  subroutine init_prop_molcfg(molcfg,inputmatrix,natoms,lupri,luerr,setting,decomp,solver)
+  subroutine init_rsp_molcfg(molcfg,inputmatrix,natoms,lupri,luerr,setting,decomp,solver)
     implicit none
-    type(prop_molcfg) :: molcfg
+    type(rsp_molcfg) :: molcfg
     !> number of atoms
     type(matrix)             :: inputmatrix
     integer,          target :: natoms
@@ -89,7 +89,7 @@ contains
     molcfg%decomp => decomp
     molcfg%solver => solver
 
-  end subroutine init_prop_molcfg
+  end subroutine init_rsp_molcfg
 
   !> \brief Initializations for solver
   !> \author S. Host, S. Coriani
@@ -128,7 +128,7 @@ contains
   subroutine rsp_solver(molcfg,D,S,F,LINEQ_x,n_gd_or_exci,GD,EIVAL,eivecs,Xproject)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Density matrix
     type(Matrix), intent(in)    :: D
     !> Overlap matrix
@@ -404,7 +404,7 @@ contains
   subroutine get_1st_orth_trials(molcfg,D,S,n_gd_or_exci,gd,eival,Nb_new,bvecs)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Density matrix
     type(Matrix), intent(in)   :: D
     !> Overlap matrix
@@ -446,7 +446,7 @@ contains
   subroutine get_1st_orth_trial_lineq(molcfg,D,S,ngd,gd,eival,bvecs,Nb_new)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Density matrix
     type(Matrix),intent(in)    :: D
     !> Overlap matrix
@@ -596,7 +596,7 @@ contains
   subroutine get_1st_orth_trial_eigen(molcfg,D,S,nexcit,bvecs,Nb_new)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Density matrix
     type(Matrix),intent(in)    :: D
     !> Overlap matrix
@@ -722,7 +722,7 @@ contains
   subroutine orthonormalize(molcfg,D,S,Bvec_tmp,Nb_new,Nb_prev,bvecs)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Density matrix
     type(Matrix),intent(in) :: D
     !> Overlap matrix
@@ -938,7 +938,7 @@ contains
   subroutine remove_initial_lindep(molcfg,Nb_new,Bvec_tmp,B_scr)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Number of trial vectors in Bvec_tmp
     integer, intent(in) :: Nb_new
     !> The trial vectors
@@ -1014,7 +1014,7 @@ contains
   subroutine symm_orthonormalize(molcfg,bvec_tmp_i,i,lin_depend_i)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Input: The i'th bvector to be symmetrically orthonormalized. Output: The i'th bvector, now symmetrically orthonormalized
     type(Matrix), intent(inout) :: Bvec_tmp_i
     !> Index of Bvec_temp_i among the new bvectors (used only for printout if linearly dependent)
@@ -1070,7 +1070,7 @@ contains
   subroutine rsp_normalize(molcfg,iturn,i,run_ortho_again,lin_depend_i,Bvec_tmp_i)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Which time we are running through rsp_orthonormalize, which calls normalize
     integer, intent(in) :: iturn
     !> Index of Bvec_temp_i among the new trial vectors (used for printout)
@@ -1129,7 +1129,7 @@ contains
   subroutine transform_vectors(molcfg,D,S,F,nnew,bvecs,sigmas,rhos,make_rhos)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Density matrix
     type(Matrix), intent(in) :: D
     !> Overlap matrix
@@ -1190,7 +1190,7 @@ contains
   subroutine make_lintran_vecs(molcfg,D,S,F,Bvecs_i,sigma_i,rho_i,make_rhos)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Density matrix
     type(Matrix), intent(in) :: D
     !> Overlap matrix
@@ -1263,7 +1263,7 @@ contains
   subroutine make_lintran_vecsArray(molcfg,D,S,F,Bvecs,sigma,rho,make_rhos,nnew)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Density matrix
     type(Matrix), intent(in) :: D
     !> Overlap matrix
@@ -1372,7 +1372,7 @@ contains
                                           & eival,red_eivec)
     implicit none 
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Input: Number of vectors on disk and current half size of reduced space. \n
     !> Output: Updated number of vectors on disk and new half size of reduced space (updated in extend_red_matrices2)
     integer, intent(inout) :: ndim_red
@@ -1442,7 +1442,7 @@ contains
   subroutine extend_red_matrices(molcfg,ndim_red,nb_new,ngd,gd,sigmas,rhos,bvecs)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Input: Number of vectors on disk and current half size of reduced space \n
     !> Output: Updated number of vectors on disk and new half size of reduced space
     integer, intent(inout) :: ndim_red
@@ -1627,7 +1627,7 @@ contains
   subroutine extend_gradients(molcfg,ndim_red,nb_new,ngd,gd,bvecs)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Number of vectors on disk and current half size of reduced space
     integer,intent(in) :: ndim_red
     !> Number of new trial vectors
@@ -1674,7 +1674,7 @@ contains
   subroutine solve_red_lineq(molcfg,ndim_red,ngd,freq,red_X)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Half size of reduced space
     integer, intent(in) :: ndim_red
     !> Number of right hand sides
@@ -1753,7 +1753,7 @@ contains
           &red_eivec,eival,Nb_new,bvecs,conv,exit_loop)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg),intent(inout) :: molcfg
     !> Density matrix
     type(Matrix),intent(in) :: D
     !> Overlap matrix
@@ -2072,7 +2072,7 @@ contains
   subroutine precond_residual(molcfg,S,omega,Pres_jr)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Overlap matrix
     type(matrix), intent(in) :: S
     !> Frequency/excitation energy
@@ -2105,7 +2105,7 @@ contains
   subroutine verify_conv_prop(molcfg,ngd,n_not_conv,Nb_new,itmic,ndim_red,conv,exit_loop)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg) :: molcfg
+    type(rsp_molcfg)    :: molcfg
     !> Number of requested solution vectors
     integer, intent(in) :: ngd
     !> Number of not converged vectors
@@ -2209,7 +2209,7 @@ end subroutine verify_conv_prop
   subroutine expand_on_basis(molcfg,ndim_red,red_eivec_i,lu_basis,expanded_vec)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg), intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Number of vectors on disk
     integer, intent(in) :: ndim_red
     !> Contains the expansion coefficients 
@@ -2266,7 +2266,7 @@ end subroutine verify_conv_prop
   subroutine expand_on_basis_minus(molcfg,ndim_red,red_eivec_i,lu_basis,expanded_vec)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg), intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Number of vectors on disk
     integer, intent(in) :: ndim_red
     !> Contains the expansion coefficients 
@@ -2314,7 +2314,7 @@ end subroutine verify_conv_prop
   subroutine solve_red_eigen(molcfg,ndim_red,nexci,eival,red_eivec)
     implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Half size of reduced space
     integer, intent(in) :: ndim_red
     !> Requested number of excitation energies
@@ -2425,7 +2425,7 @@ end subroutine verify_conv_prop
   subroutine ReorderEigenvalues(molcfg,NDIM,SRED,EIVEC,ALFAR,ALFAI,BETA,WRK1,WRK2,ISNDX)
   implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg)   :: molcfg
+    type(rsp_molcfg) :: molcfg
     !> Number of eigenvalues/size of reduced space
     integer, intent(in) :: NDIM
     !> Reduced S(2) matrix
@@ -2665,7 +2665,7 @@ end subroutine verify_conv_prop
 !*******************************************************
     implicit none
 !    type(decompItem),intent(in) :: decomp
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer,intent(in)         :: ngd,nBvec_tmp   !number of gradients
     type(Matrix),intent(in)    :: F,D,S
     real(realk), intent(in)    :: freq(rsp_number_of_omegas)
@@ -2723,7 +2723,7 @@ end subroutine verify_conv_prop
 ! MCD modification Thomas
 !*******************************************************
     implicit none
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer,intent(in)         :: ngd   !number of gradients
     type(Matrix),intent(in)    :: F,D,S
     real(realk), intent(inout) :: freq(rsp_number_of_omegas)
@@ -2835,7 +2835,7 @@ end subroutine verify_conv_prop
 ! MCD modification Thomas
 !**************************************************************************
     implicit none
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg),intent(inout) :: molcfg
     type(Matrix),intent(in) :: D,S
     integer, intent(in)     :: Nb_prev
     integer, intent(inout)  :: Nb_new
@@ -2992,7 +2992,7 @@ end subroutine verify_conv_prop
 ! MCD modification Thomas
 ! Generalization to equations with negative frequency AndreasJT
     implicit none
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg),intent(inout) :: molcfg
     integer, intent(in) :: ndim_red, ngd
     real(realk),intent(in) :: freq(:)
     real(realk),intent(inout) :: red_X(:,:)
@@ -3093,7 +3093,7 @@ subroutine get_rho(molcfg,D,S,nnew,bvecs,rhos)
 !   RHOS(I) = S[2]*N(I) (rho) > check omega
 !******************************************************
     implicit none
-    type(prop_molcfg)  :: molcfg 
+    type(rsp_molcfg) :: molcfg 
     
 !    type(decompItem),intent(in) :: decomp
     type(Matrix), intent(in) :: D,S,Bvecs(:)
@@ -3118,7 +3118,7 @@ subroutine get_rho(molcfg,D,S,nnew,bvecs,rhos)
 !************************************************************
 
     implicit none
-    type(prop_molcfg)  :: molcfg 
+    type(rsp_molcfg) :: molcfg 
     type(Matrix), intent(in) :: D,S,Bvecs_i
     type(Matrix), intent(inout) :: rho_i  !output
     type(matrix) :: prod,prod1,prod2
@@ -3147,7 +3147,7 @@ subroutine real_solver_check(molcfg,F,D,S,gd,XR,omega)
 !checking if real equation solved to the right solution
 !***************************************************************
 implicit none
-     type(prop_molcfg),intent(inout) :: molcfg
+     type(rsp_molcfg), intent(inout) :: molcfg
 !    type(decompItem),intent(in) :: decomp
     type(Matrix), intent(in) :: F,D,S,gd
     type(Matrix)   :: XR
@@ -3183,7 +3183,7 @@ end subroutine real_solver_check
 subroutine rsp_AB_precond(molcfg,Gn,S,omega,Gnt)
   implicit none
     !> Contains settings for response solver 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     !> Matrix to be preconditioned
     type(Matrix), intent(in) :: Gn
     !> Overlap matrix
@@ -3233,7 +3233,7 @@ end subroutine rsp_AB_precond
     subroutine get_1st_rsp_trials(molcfg,nroots,bvec_ao)
       implicit none
       !> Contains settings for response solver 
-      type(prop_molcfg),intent(inout) :: molcfg
+      type(rsp_molcfg), intent(inout) :: molcfg
       !> Requested number of excitation energies
       integer, intent(in) :: nroots
       !> The nroots starting guesses (output)
@@ -3261,7 +3261,7 @@ end subroutine rsp_AB_precond
     subroutine get_1st_rsp_trials_unres(molcfg,nroots,bvec_ao)
       implicit none
       !> Contains settings for response solver 
-      type(prop_molcfg),intent(inout) :: molcfg
+      type(rsp_molcfg), intent(inout) :: molcfg
       !> Requested number of excitation energies
       integer, intent(in) :: nroots
       !> The nroots starting guesses (output)
@@ -3284,7 +3284,7 @@ end subroutine rsp_AB_precond
 
 subroutine orthogonalizeDegenerate(molcfg,D,S,F,eivecs,eival,nexci)
   implicit none
-  type(prop_molcfg),intent(inout) :: molcfg
+  type(rsp_molcfg), intent(inout) :: molcfg
 !  type(decompItem),intent(inout) :: decomp
   type(Matrix), intent(in)    :: D,S,F
   integer, intent(in)      :: nexci

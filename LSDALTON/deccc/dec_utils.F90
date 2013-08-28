@@ -2076,7 +2076,12 @@ retval=0
     if(associated(fragment%ypv)) then
        call mem_dealloc(fragment%ypv)
     end if
-
+    
+    ! Free CABS MOs !
+    if(associated(fragment%cabsMOs)) then
+       call mem_dealloc(fragment%cabsMOs)
+    end if
+    
     if(associated(fragment%coreMO)) then
        call mem_dealloc(fragment%coreMO)
     end if

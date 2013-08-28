@@ -8,13 +8,13 @@ C     EMBEDDING : QM part is embedded in environment (solvent or e.g. protein)
 C                 May 2011/hjaaj: EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
 C                 (For now, EMBEDDING is defined in sirius/sirinp.F because this is
 C                 the first instance where all of FLAG(16), PCM, QM3, QMMM are set)
-C                            
+C
       LOGICAL TESTIN, OPTWLK, RNHERM, RNSIRI, RNABAC, GEOCNV,
      &        HRINPC, SRINPC, RDINPC, RDMLIN, PARCAL, DIRCAL,
      &        WRINDX, WLKREJ, WALKIN, RNRESP, USRIPR, SEGBAS,
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,
-     &        ERFEXP, DOSRIN, SRINTS, CHI1ST,
+     &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,
      &        EMBEDDING, QM3, QMMM, QMNPMM
 #if defined (SYS_CRAY)
       REAL GRADML, PANAS,  CHIVAL, THR_REDFAC
@@ -23,7 +23,7 @@ C
 #endif
       INTEGER KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS
 C
-      COMMON /GNRINF/ 
+      COMMON /GNRINF/
      &        ! double:
      &        GRADML, PANAS,  CHIVAL, THR_REDFAC,
      &        ! integer:
@@ -34,11 +34,12 @@ C
      &        WRINDX, WLKREJ, WALKIN, RNRESP, USRIPR, SEGBAS,
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,
-     &        ERFEXP, DOSRIN, SRINTS, CHI1ST,
+     &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,
      &        EMBEDDING, QM3, QMMM, QMNPMM
 
       INTEGER LBASDIR
       PARAMETER (LBASDIR = 600)
       CHARACTER*(LBASDIR) BASDIR
-      COMMON /GNRCHR/ BASDIR
+      CHARACTER*12        WFTYPE
+      COMMON /GNRCHR/ BASDIR, WFTYPE
 C --- end of gnrinf.h ---

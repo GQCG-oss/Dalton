@@ -30,7 +30,7 @@ C951009-kenneth : Changed name from PSISTAR to DALTON
 C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
-      PROGRAM DALTON2011_DALTON
+      PROGRAM DALTON2013_DALTON
 C
       use parallel_models_mpi
 C
@@ -44,9 +44,7 @@ C
 #include "gnrinf.h"
 #include "inftap.h"
 #include "prpc.h"
-Cef begin
 #include "incore.h"
-Cef end
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       LOGICAL FINISH
@@ -140,10 +138,7 @@ C integer (we used IEIR=3000000).
       INDX_SHL2 = 0
       INDX_SHL3 = 0
       INDX_SHL4 = 0
-#if defined (VAR_MPI)
       CALL IZERO(INDX_SHL,MXTSK)
-#endif
-C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
       IF (MMWORK .NE. MMCORE) THEN
          CALL QUIT('MMCORE must equal MMWORK.')
       END IF
@@ -296,7 +291,7 @@ C
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
      *'Jogvan Magnus H. Olsen,','Univ. of Southern Denmark,', 'Denmark',
-     &  '(Polarizable embedding (PE) module)',
+     &  '(Polarizable embedding (PE) library)',
      *'Anders Osted,','Copenhagen University,','Denmark','(QM/MM code)',
      *'Martin J. Packer,','University of Sheffield,','UK',
      &  '(SOPPA)',
@@ -449,12 +444,16 @@ C
          CALL DALTON_GNRLINP
 
 #if !defined (VAR_MPI)
-      END IF
+      END IF ! mynum .eq. master
 #else /* VAR_MPI */
          CALL RECVNAMES
+
+         CALL MOLDEN_HEAD
 !
 !        call main driver routine
          call dalton_exedrv(lmwork,wrkdlm)
+
+         CALL MOLDEN_TAIL
 
          CALL FLSHFO(LUPRI)
 
@@ -468,15 +467,16 @@ C
 C        IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
          IF (IPRLOC .GT. 2) CALL PRPRPC(LUNMPF,1,DUMMY,NPRMI)
 C
+C
 C     Send ending signal to slaves
 C
          IPRTYP = ENDING_SIGNAL
          CALL MPIXBCAST(IPRTYP,1,'INTEGER',MYNUM)
          CALL GPCLOSE(LUCME,'KEEP')
-         CALL GPCLOSE(LUSTAT,'KEEP')
-         CALL GPCLOSE(LUMOLDEN,'KEEP')
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUNMPF,'KEEP')
+         CALL GPCLOSE(LUSTAT,'KEEP')
+         LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
@@ -516,8 +516,12 @@ C ahs only print if number of cores are less than 20
          IF (PARIO) THEN
             CALL DALTON_GNRLINP
 
+            CALL MOLDEN_HEAD
+
 !           call main driver routine (co-workers do it as well if PARIO == .true.)
             call dalton_exedrv(lmwork,wrkdlm)
+
+            CALL MOLDEN_TAIL
 
             LABEL1 = 'ALL_DONE'
             STHELP = 'THE_END   '
@@ -535,10 +539,10 @@ C
             CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
      &           MPI_COMM_WORLD,IERR)
             CALL GPCLOSE(LUCME,'KEEP')
-            CALL GPCLOSE(LUSTAT,'KEEP')
-            CALL GPCLOSE(LUMOLDEN,'KEEP')
             CALL GPCLOSE(LUNDPF,'KEEP')
             CALL GPCLOSE(LUNMPF,'KEEP')
+            CALL GPCLOSE(LUSTAT,'KEEP')
+            LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
             CALL GPCLOSE(LUPRI,'KEEP')
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
@@ -554,7 +558,7 @@ C...  terminates Gen1Int interface
       call gen1int_host_finalize()
 #endif
 
-      call parallel_models_finalize_mpi()
+      call parallel_models_finalize_mpi(nodtot+1)
 
       CALL MPIXFINALIZE
 C
@@ -575,8 +579,12 @@ C
 #endif
 #if !defined (VAR_MPI)
 
+      CALL MOLDEN_HEAD
+
 !     call main co-workers driver routine
       call dalton_exedrv(lmwork,wrkdlm)
+
+      CALL MOLDEN_TAIL
 
       LABEL1 = 'ALL_DONE'
       STHELP = 'THE_END   '
@@ -587,11 +595,11 @@ C
       IPRLOC = MAX(IPRUSR,IPRRHF)
 C     IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
       IF (IPRLOC .GT. 2) CALL PRPRPC(LUNMPF,1,DUMMY,NPRMI)
-      CALL GPCLOSE(LUSTAT,'KEEP')
       CALL GPCLOSE(LUCME,'KEEP')
-      CALL GPCLOSE(LUMOLDEN,'KEEP')
       CALL GPCLOSE(LUNDPF,'KEEP')
       CALL GPCLOSE(LUNMPF,'KEEP')
+      CALL GPCLOSE(LUSTAT,'KEEP')
+      LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
       CALL GPCLOSE(LUPRI,'KEEP')
 #if defined(BUILD_GEN1INT)
 C...  added by Bin Gao, Oct. 2, 2011
@@ -826,7 +834,6 @@ C
       LUNR3  = -9029
       LUNR5  = -9030
       LUINTR = -9032
-      LUMOLDEN=-9033
       LUPMOM = -9034
       LUMOM  = -9035
       LUEIND = -9036
@@ -843,6 +850,8 @@ C
       LUNDPF = -9047
       LUSRINT =-9048
       LUNMPF = -9049
+      LUMOLDEN    =-9050
+      LUMOLDEN_MOS=-9051
 C
 C     /R12INT/ (WK/UniKA/26-11-2002).
 C

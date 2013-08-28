@@ -2995,7 +2995,7 @@ C define dimensions/offsets
 C-----------------------------------------------------------------------
       if (.not. CCR12) THEN
         do isym = 1, nsym
-          mbas1(isym) = nbas(i)
+          mbas1(isym) = nbas(isym)
           mbas2(isym) = 0
           norb1(isym) = norb(isym)
           norb2(isym) = 0

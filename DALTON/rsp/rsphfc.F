@@ -524,7 +524,7 @@ C
                   DO IDX = 1,NUCIND 
                      DO ICOORX = 1,3
                         ISCORX = IPTCNT(3*(IDX-1)+ICOORX,KSYMOP-1,2)
-                        IF (ISCORX .GT. O) THEN
+                        IF (ISCORX .GT. 0) THEN
                            IFIRST = ISCORX/100
                            ISECND = MOD(ISCORX,100)/10
                            ITHIRD = MOD(MOD(ISCORX,100),10) 

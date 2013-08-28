@@ -16,7 +16,7 @@ C
      &                NUMCHO(8), LENCHO(MXCHVC,8),IDNTCH(MXCHVC,8),
      &                NDIAG,IDIAG(8),MAXDIA,MAXDI1,
      &                IATPRI(MXCORB),NUMCEN,
-     &                IALBET(MXCORB*(MXCORB+1)/2,2), 
+     &                IALBET(MXCORB*(MXCORB+1)/2,2),
      &                CHOINT,COMP,RSTDIA,RSTCHO,SCDIAG,REDUCE,DIACAL,
      &                NEWSCF
 C
@@ -32,7 +32,7 @@ C    *                IDIAG(8),IIBST(8),
 C    *                NDIAG,INAOSH(MXCORB),
 C    *                MAXDIA,MAXDI1,NUMFIL(8),
 C    *                IATPRI(MXCORB),NUMCEN,
-C    *                IALBET(MXCORB*(MXCORB+1)/2,2), 
+C    *                IALBET(MXCORB*(MXCORB+1)/2,2),
 C    *                CHOINT,COMP,RSTDIA,RSTCHO,SCDIAG
 C
 !  -- end of ccdeco.h --

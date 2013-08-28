@@ -260,6 +260,30 @@ C
       STOP 100
 #endif
       END
+C  /* Deck parquit */
+      SUBROUTINE PARQUIT(TEXT)
+C Purpose:
+C   Error message if code is not implemented for parallel calculations.
+
+      IMPLICIT NONE
+
+#include "priunit.h"
+      CHARACTER TEXT*(*)
+      INTEGER LUPRIN
+C
+C
+      IF (LUPRI .GE. 0) THEN
+         LUPRIN = LUPRI
+      ELSE IF (LUERR .GE. 0) THEN
+         LUPRIN = LUERR
+      ELSE
+         LUPRIN = 6
+      END IF
+      WRITE (LUPRIN,*) 'ERROR: ',TEXT,
+     & ' not implemented for parallel calculations!'
+      CALL QUIT(TEXT)
+      RETURN
+      END
 C  /* Deck opendx */
       SUBROUTINE OPENDX (LUDX,NAME,NELEM,STATUS,OLDDX)
 C
@@ -857,7 +881,7 @@ c43         CONTINUE
             if (LENWRK .EQ. max_filename_length) then
                write (lupri,*) 'max_filename_length is too short'
                write (lupri,*) WRKDIR
-               call quit('work directory name too long')
+               call quit('GPOPEN: work directory name too long')
             end if
 c           LENWRK = 0
 c           DO I = 1, max_filename_length
@@ -870,7 +894,7 @@ c44         CONTINUE
                write (lupri,*) 'max_filename_length is too short'
                write (lupri,*) WRKDIR(1:LENWRK)//'/'//
      &                         OUTFIL(1:LENOUT)
-               call quit('file name too long')
+               call quit('GPOPEN: file name too long')
             end if
             FILENM(1:FILELN) = WRKDIR(1:LENWRK)//'/'//
      &                         OUTFIL(1:LENOUT)
@@ -1160,7 +1184,10 @@ C
          LUNIT = -30000-LUNIT
          GOTO 30
       ELSE
-#if defined (VAR_SPLITFILES)
+#if !defined (VAR_SPLITFILES)
+         IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE keep',LUNIT
+         CLOSE (LUNIT,STATUS='DELETE',ERR=20)
+#else
          INQUIRE(UNIT=LUNIT,DIRECT=IODIR)
          INQUIRE(UNIT=LUNIT,NAME=FNNAME)
          IF (IODIR .EQ. 'YES') THEN
@@ -1203,8 +1230,6 @@ C
             IUNIT = IUNIT + 1
             GOTO 16
          END IF
-#else
-         CLOSE (LUNIT,STATUS='DELETE',ERR=20)
 #endif
          IUNTAB(LUNIT) = 0
          LUNIT = -20000-LUNIT

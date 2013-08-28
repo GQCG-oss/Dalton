@@ -2121,7 +2121,8 @@ C
       END
 C#######################################################################
       SUBROUTINE MATFUN(FUNC,N,A,FA,WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C  Matrix functions
 C  On input: FUNC (implemented 'SQRT')
@@ -2149,7 +2150,7 @@ C  I/O  :
          CALL DCOPY(N*N,A,1,FA,1)
          DO I=1,N
             EIG = WORK(KEIG+I-1)
-            print *,'eig ',eig
+C            print *,'eig ',eig
             IF (EIG.LT.0D0) THEN
                WRITE(0,*)
      &            '***WARNING***   MATFUN(SQRT):NEGATIVE EIGENVALUES ',
@@ -2489,9 +2490,11 @@ cvc stampa ridotta alle prime 10 colonne
                CALL OUTFUL(WORK(KVWMO),NORBT,10,STREXC//'(MO)')
             END IF
          ELSE
-      write(LUPRI,*) ' scrive matrice exch1 (ij|**) base AO su unita',luaug
+      write(LUPRI,*) ' scrive matrice exch1 (ij|**) base AO su unita',
+     &   luaug
             CALL WRITT(LUAUG,N2BASX,WORK(KVWMAT+ICOFF))
-      write(LUPRI,*) ' scrive matrice exch2 (i*|*j)base AO su unita',luaug
+      write(LUPRI,*) ' scrive matrice exch2 (i*|*j)base AO su unita',
+     &   luaug
             CALL WRITT(LUAUG,N2BASX,WORK(KVWMAT+IXOFF))
          END IF
          ICOFF = ICOFF + 2*N2BASX

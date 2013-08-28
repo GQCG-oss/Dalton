@@ -932,21 +932,35 @@ ENDIF
 call free_aoitem(lupri,AOfull)
 END SUBROUTINE BUILD_SHELLBATCH_AO
 
-subroutine build_batchesOfAOs(lupri,setting,maxallowedorbitals,nbast,MaxOrbitals,batchsize,batchdim,batchindex,nbatches,orbTobatch)
+subroutine build_batchesOfAOs(lupri,setting,maxallowedorbitals,nbast,&
+     &MaxOrbitals,batchsize,batchdim,batchindex,nbatches,orbTobatch,AOspec)
 implicit none
 integer,intent(in)         :: lupri,maxallowedorbitals,nbast
 type(lssetting) :: setting
 integer,pointer :: batchsize(:),batchdim(:),batchindex(:)
 integer :: orbtoBatch(nbast)
 integer,intent(inout) :: nbatches,MaxOrbitals
+character(len=1),intent(in) :: AOspec
 !
 integer :: I,A,norbitals,nbatLoc,iOrb,tmporb,allocnbatches
 logical :: uncont,intnrm
 type(AOITEM) :: AO
+TYPE(BASISSETINFO),pointer :: AObasis
 uncont=.FALSE.
 intnrm = .false.
+IF(AOspec.EQ.'R')THEN
+   !   The regular AO-basis
+   AObasis => setting%basis(1)%p%regular
+ELSEIF(AOspec.EQ.'C')THEN
+   !   The CABS AO-type basis
+   AObasis => setting%basis(1)%p%CABS   
+ELSE
+   call lsquit('Unknown specification in build_batchesOfAOs',-1)
+ENDIF
+
 call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
-     & setting%molecule(1)%p,setting%basis(1)%p%regular,AO,uncont,intnrm)
+     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+
 nbatches = 0
 norbitals = 0
 do I=1,AO%nbatches
@@ -1025,20 +1039,33 @@ enddo
 
 end subroutine build_batchesOfAOs
 
-subroutine determine_MaxOrbitals(lupri,setting,maxallowedorbitals,MaxOrbitals)
+subroutine determine_MaxOrbitals(lupri,setting,maxallowedorbitals,MaxOrbitals,AOspec)
 implicit none
 integer,intent(in)    :: lupri,maxallowedorbitals
 type(lssetting)       :: setting
 integer,intent(inout) :: MaxOrbitals
+character(len=1),intent(in) :: AOspec
 !
 integer :: I,A,norbitals,tmporb
 logical :: uncont,intnrm
 type(AOITEM) :: AO
+TYPE(BASISSETINFO),pointer :: AObasis
 uncont=.FALSE.
 intnrm = .false.
+IF(AOspec.EQ.'R')THEN
+   !   The regular AO-basis
+   AObasis => setting%basis(1)%p%regular
+ELSEIF(AOspec.EQ.'C')THEN
+   !   The CABS AO-type basis
+   AObasis => setting%basis(1)%p%CABS   
+ELSE
+   call lsquit('Unknown specification in build_batchesOfAOs',-1)
+ENDIF
+
 MaxOrbitals=0
 call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
-     & setting%molecule(1)%p,setting%basis(1)%p%regular,AO,uncont,intnrm)
+     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+
 norbitals = 0
 do I=1,AO%nbatches
    tmporb = 0
@@ -1057,19 +1084,31 @@ MaxOrbitals = MAX(MaxOrbitals,norbitals)
 call free_aoitem(lupri,AO)
 end subroutine determine_MaxOrbitals
 
-subroutine determine_maxBatchOrbitalsize(lupri,setting,maxBatchOrbitalsize)
+subroutine determine_maxBatchOrbitalsize(lupri,setting,maxBatchOrbitalsize,AOspec)
 implicit none
 integer,intent(in)         :: lupri
 integer,intent(inout)      :: maxBatchOrbitalsize
 type(lssetting) :: setting
+character(len=1),intent(in) :: AOspec
 !
 integer :: I,A,tmporb
 logical :: uncont,intnrm
 type(AOITEM) :: AO
+TYPE(BASISSETINFO),pointer :: AObasis
 uncont=.FALSE.
 intnrm = .false.
+IF(AOspec.EQ.'R')THEN
+   !   The regular AO-basis
+   AObasis => setting%basis(1)%p%regular
+ELSEIF(AOspec.EQ.'C')THEN
+   !   The CABS AO-type basis
+   AObasis => setting%basis(1)%p%CABS   
+ELSE
+   call lsquit('Unknown specification in build_batchesOfAOs',-1)
+ENDIF
 call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
-     & setting%molecule(1)%p,setting%basis(1)%p%regular,AO,uncont,intnrm)
+     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+
 maxBatchOrbitalsize = 0
 do I=1,AO%nbatches
    tmporb = 0

@@ -1,5 +1,5 @@
 C --- FILE: qm3.h ---
-      LOGICAL QM3LO1, QM3LO2, LOCLAS 
+      LOGICAL QM3LO1, QM3LO2, LOCLAS
       LOGICAL CCMM, FIXMOM, OLDTG, ONLYOV
       LOGICAL LONUPO, LOELFD, LOSPC, LOEC3
       LOGICAL LOSHAW,REPTST,RELMOM,SLOTH
@@ -8,13 +8,13 @@ C --- FILE: qm3.h ---
       LOGICAL PRFQM3, INTDIR, FORQM3, REDCNT, LGSPOL, RUNQM3
       LOGICAL QMDAMP, NYQMMM, HFFLD, CCFIXF, FFIRST
       LOGICAL MMPCM, LADDMM, FIRST1
-C 
+C
 C ---------------------------------------------------------
-C In the present implementation the MXQM3 parameter follows 
+C In the present implementation the MXQM3 parameter follows
 C the MXCENT_QM parameter in the mxcent.h include file. This is
 C crucial for this implementation to work properly!!
 C ---------------------------------------------------------
-C 
+C
       INTEGER ISUBSY,ISUBSI,MXTYP1,NSYSBG,NSYSED
       INTEGER NSISY, ISYTP, NTOTQM3, IQM3PR, ICHRGS
       INTEGER MXDIIT, NUSITE, MXQM3, MXTYPE, NCOMS
@@ -45,7 +45,7 @@ C
       REAL THDISC,ENUQM3,CHAOLD
       REAL EMMPOL,EMMVDW,EMMELC,EMM_MM,EVDWSH,PEDIP1
       REAL XMMQ, YMMQ, ZMMQ, MMQ
-      REAL XMMMY, YMMMY, ZMMMY, MMMYX, MMMYY, MMMYZ 
+      REAL XMMMY, YMMMY, ZMMMY, MMMYX, MMMYY, MMMYZ
       REAL THRSMP, DMMSAVE
       REAL QMCOM, ADAMP
 #else
@@ -73,7 +73,7 @@ C
      *                SHAWFC,LOSHAW,REPTST,RELMOM,SLOTH,HFFLD,CCFIXF,
      *                LONEPAR,LTWOPAR,LEPSADD,LSIGADD,LOCLAS,
      *                SKIPNC,VDWSKP,MYITE,MYMAT,EXPON,PRFQM3,FFIRST,
-     *                INTDIR, FORQM3, REDCNT, LGSPOL, MMPCM, 
+     *                INTDIR, FORQM3, REDCNT, LGSPOL, MMPCM,
      *                LADDMM, FIRST1, RUNQM3, QMDAMP
 
 
@@ -96,7 +96,7 @@ C
      *                ALTXX(0:MXTYPE),ALTXY(0:MXTYPE),
      *                ALTXZ(0:MXTYPE),ALTYY(0:MXTYPE),
      *                ALTYZ(0:MXTYPE),ALTZZ(0:MXTYPE),
-     *                XMMQ(MXQ),YMMQ(MXQ),ZMMQ(MXQ),MMQ(MXQ), 
+     *                XMMQ(MXQ),YMMQ(MXQ),ZMMQ(MXQ),MMQ(MXQ),
      *                XMMMY(MXQ),YMMMY(MXQ),ZMMMY(MXQ),
      *                MMMYX(MXQ),MMMYY(MXQ),MMMYZ(MXQ)
 C --- end of qm3.h ---

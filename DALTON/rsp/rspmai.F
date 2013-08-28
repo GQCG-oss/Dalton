@@ -887,6 +887,19 @@ C
                GO TO 100
     3          CONTINUE
                   SOPPA = .TRUE.
+                  IF (SOPPA .AND. EMBEDDING) THEN
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' This is a solvent-SOPPA calculation w/ dynamic'
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' solvent response at RPA level only,'
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' cf. JCC, 2012-2022, 33, (2012) for reference.'
+cjje: change this if full solvent soppa is ever implemented
+                    SOPRPA = .TRUE.
+                  END IF
                GO TO 100
     4          CONTINUE
                GO TO 100
@@ -968,8 +981,22 @@ C              .PROP2Average
                   CISRPA = .TRUE.
                GO TO 100
  24            CONTINUE
-                  SOPRPA = .TRUE.
-                  SOPPA = .TRUE.
+                 SOPRPA = .TRUE.
+                 SOPPA = .TRUE.
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' This is a solvent-SOPPA calculation w/ dynamic'
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' solvent response at RPA level only,'
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'
+                 IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
+                  WRITE (LUPRI,'(/A)')
+     &             'Vacuum calc. - use .SOPPA instead'
+                  CALL QUIT('RSPINP: Vacuum calc. - use .SOPPA instead')
+                 END IF
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1253,7 +1280,9 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1679,25 +1708,14 @@ C
 
          IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-            IF (.NOT. SOPRPA .AND. SOPPA) THEN
-               WRITE (LUPRI,*)
-     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
-               WRITE (LUPRI,*)
-     *     'Full solvent model SOPPA not implemented.'
-               WRITE (LUPRI,*)
-     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
-               WRITE (LUPRI,*)
-     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-               CALL QUIT(
-     *     'Full solvent-SOPPA is not implemented, see output')
-            END IF
          ENDIF
 
+#if defined (BUILD_PELIB)
          if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
-            if (soppa) stop 'Not sure if SOPPA works with PE module yet'
+           write(lupri,'(a)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
          end if
+#endif
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
@@ -1718,6 +1736,7 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
          END IF
+C
          IF (DOESA) THEN
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Excited state absorption calculattion requested: DOESA  ='
@@ -1807,7 +1826,9 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -2256,10 +2277,12 @@ C
              WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
          END IF    
 
+#if defined (BUILD_PELIB)
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
+     &                  ' the polarizable embedding scheme (PE library)'
          end if
+#endif
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -4320,7 +4343,9 @@ C
         DO 20 I = 1,NNORBT
            FC(I) = FC(I) - WRK(I)
  20     CONTINUE
-      ELSEIF(PCM) THEN
+Cjje
+      ELSE IF(PCM .and. (.not. SOPRPA)) then
+!      ELSEIF(PCM) THEN
         CALL MOLLAB('PCMJXMAT',LUSIFC,LUPRI)
         CALL READT (LUSIFC,NNORBT,WRK)
         DO I = 1,NNORBT
@@ -4331,6 +4356,7 @@ C
             FC(I) = FC(I) + WAVFCK(I)
          ENDDO
       END IF
+Cjje
 C
       IF (SOPPA) THEN
 C
@@ -4700,7 +4726,9 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
@@ -4849,10 +4877,12 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
+#if defined (BUILD_PELIB)
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
+     &                  ' the polarizable embedding scheme (PE library)'
          end if
+#endif
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='

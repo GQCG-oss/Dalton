@@ -134,15 +134,15 @@ contains
     davidCFG%arh_gradnorm=arh%OAO_gradnrm
 
     if (arh%cfg_nodamp) then
-       call arh_PCG(arh, decomp, wrk, x, 0.0E0_realk, antisymmetric,fifoqueue)
+       call arh_PCG(arh, decomp, wrk, x, 0.0E0_realk, arh_antisymmetric,fifoqueue)
     else if (arh%cfg_arh_truncate .or. arh%cfg_arh_crop) then
        if (davidCFG%arh_davidson) then
-            davidCFG%symm=antisymmetric
+            davidCFG%symm=arh_antisymmetric
             CALL LSTIMER('START ',t1,t2,decomp%lupri)
 	    call arh_davidson_solver(davidCFG,arh,decomp,wrk,X,SCF_iteration,H1,wrk2,ls) 
             CALL LSTIMER('ARH DAVIDS. ',t1,t2,arh%lupri)
        else
-            call arh_crop_solver(decomp, arh, debug, wrk, antisymmetric, x, fifoqueue)
+            call arh_crop_solver(decomp, arh, debug, wrk, arh_antisymmetric, x, fifoqueue)
        end if
     else
        call lsquit('Something wrong, no ARH solver chosen',decomp%lupri)
