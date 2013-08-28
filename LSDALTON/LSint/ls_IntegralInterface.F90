@@ -55,7 +55,8 @@ MODULE ls_Integral_Interface
   use io, only: io_get_filename, io_get_csidentifier
   use screen_mod, only: determine_lst_in_screenlist, screen_associate,&
        & screen_add_associate_item
-  use molecule_module, only: build_fragment, freeMolecularOrbitalInfo
+  use molecule_module, only: build_fragment, freeMolecularOrbitalInfo,&
+       & freeDaltonFragments
   use files,only: lsclose, lsopen
   use SphCart_Matrices, only: spherical_transformation
   use Thermite_OD, only: getTotalGeoComp
@@ -536,7 +537,7 @@ IF(PermuteResultTensor)THEN
    call lstensor_full_symMat_from_triangularMat(setting%output%resultTensor)
 ENDIF
 
-!Call freeDaltonFragments(SETTING)
+Call freeDaltonFragments(SETTING)
 setting%output%ndim = ndim_full
 !write(6,*) 'debug-timing:timer results for ',setting%node
 !CALL LSTIMER('gi-mpi-permute',TS,TE,6)
@@ -1909,7 +1910,7 @@ IF(PermuteResultTensor)THEN
    call lstensor_full_symMat_from_triangularMat(setting%output%resultTensor)
 ENDIF
 
-!Call freeDaltonFragments(SETTING)
+Call freeDaltonFragments(SETTING)
 setting%output%ndim = ndim_full
 #endif
 
@@ -2502,7 +2503,7 @@ ELSE
       setting%output%memdistResultTensor = .TRUE.
    ENDIF
 
-!  Call freeDaltonFragments(SETTING)
+   Call freeDaltonFragments(SETTING)
    setting%output%ndim = ndim_full
    
    if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
