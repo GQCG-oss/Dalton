@@ -106,7 +106,7 @@ configure_script(
 
 # if BLAS and/or LAPACK not found, add own sources to the list of
 # sources to compile
-if(USE_OWN_BLAS)
+if(USE_BUILTIN_BLAS)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_OWN_BLAS_SOURCES}
@@ -116,7 +116,7 @@ if(USE_OWN_BLAS)
         ${LSDALTON_OWN_BLAS_SOURCES}
         )
 endif()
-if(USE_OWN_LAPACK)
+if(USE_BUILTIN_LAPACK)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_OWN_LAPACK_SOURCES}

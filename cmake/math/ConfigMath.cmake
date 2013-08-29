@@ -2,8 +2,8 @@ include(MathLibsFunctions)
 
 set(MATH_LANG "Fortran")
 
-set(USE_OWN_BLAS   FALSE)
-set(USE_OWN_LAPACK FALSE)
+set(USE_BUILTIN_BLAS   FALSE)
+set(USE_BUILTIN_LAPACK FALSE)
 
 set(EXPLICIT_LIBS
     "${EXPLICIT_LIBS}"
