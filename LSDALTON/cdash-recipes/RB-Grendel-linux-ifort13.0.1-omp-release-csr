@@ -17,7 +17,7 @@ source /home/com/intel/composer_xe_2013.1.117/mkl/bin/mklvars.sh intel64
 export MATH_ROOT=/home/com/intel/composer_xe_2013.1.117/mkl
 cd $TMP_DIR
 export DALTON_TMPDIR=$SCRATCH_DIR
-export DALTON_NR_MPI_PROCS=1
+export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 ./setup --fc=ifort --cc=icc --csr --omp --explicit-libs="-L$MATH_ROOT/lib/intel64/libmkl_solver_lp64.a -Wl,--start-group  $MATH_ROOT/lib/intel64/libmkl_intel_lp64.a $MATH_ROOT/lib/intel64/libmkl_intel_thread.a $MATH_ROOT/lib/intel64/libmkl_core.a -Wl,--end-group -openmp -lpthread" -D BUILDNAME="RB-Grendel-linux-ifort13.0.1-omp-release-csr"
 #--scratch=$SCRATCH_DIR 

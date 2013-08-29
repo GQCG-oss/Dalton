@@ -82,7 +82,7 @@ usage (){
 	  echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
 	  echo ' -m mem    set scratch memory to mem Mwords'
 	  echo ' -M mem    set scratch memory to mem Mb'
-	  echo ' -N num    use num MPI procs (defaults to DALTON_NR_MPI_PROCS)'
+	  echo ' -N num    use num MPI procs (defaults to DALTON_NUM_MPI_PROCS)'
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
 	  echo ' -t dir    change DALTON_TMPDIR from default to dir'
 	  echo ' -w dir    change WRKDIR from default to dir'
@@ -245,11 +245,11 @@ else
    exit 1
 fi
 
-if [ -n "$DALTON_NR_MPI_PROCS" ]; then
+if [ -n "$DALTON_NUM_MPI_PROCS" ]; then
     if [ $optn -eq 0 ] ; then
-        # DALTON_NR_MPI_PROCS is set but -N is not
-        # in this case default -N to DALTON_NR_MPI_PROCS
-        optn=$DALTON_NR_MPI_PROCS
+        # DALTON_NUM_MPI_PROCS is set but -N is not
+        # in this case default -N to DALTON_NUM_MPI_PROCS
+        optn=$DALTON_NUM_MPI_PROCS
     fi
 fi
 
