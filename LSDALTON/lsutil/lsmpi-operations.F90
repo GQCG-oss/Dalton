@@ -1211,8 +1211,6 @@ call LS_MPI_BUFFER(dalton%NOSEGMENT,Master)
 !* JOB REQUESTS
 call LS_MPI_BUFFER(dalton%DO3CENTEROVL,Master)
 call LS_MPI_BUFFER(dalton%DO2CENTERERI,Master)
-call LS_MPI_BUFFER(dalton%CARMOM,Master)
-call LS_MPI_BUFFER(dalton%SPHMOM,Master)
 call LS_MPI_BUFFER(dalton%MIXEDOVERLAP,Master)
 
 !*CAUCHY-SCHWARZ INTEGRAL PARAMETERS
@@ -1346,8 +1344,6 @@ call LS_MPI_BUFFER(scheme%CONTANG,Master) !Used contracted-angular AO ordering r
 !* JOB REQUESTS
 call LS_MPI_BUFFER(scheme%DO3CENTEROVL,Master)
 call LS_MPI_BUFFER(scheme%DO2CENTERERI,Master)
-call LS_MPI_BUFFER(scheme%CARMOM,Master)
-call LS_MPI_BUFFER(scheme%SPHMOM,Master)
 call LS_MPI_BUFFER(scheme%CMORDER,Master)
 call LS_MPI_BUFFER(scheme%CMIMAT,Master)
 call LS_MPI_BUFFER(scheme%MIXEDOVERLAP,Master)

@@ -408,6 +408,56 @@ FRAGMENT%nAtoms = nAtoms
 !
 END SUBROUTINE buildFragmentFromFragmentIndex
 
+
+!> \brief Free the dalton-fragments
+!> \autor S. Reine
+!> \param Setting Contains the integral settings
+SUBROUTINE freeDaltonFragments(SETTING)
+implicit none
+Type(LSSETTING),intent(inout) :: SETTING
+!
+Integer :: indAO
+
+CALL freeFragments(SETTING%FRAGMENT,SETTING%fragBuild,setting%nAO)
+
+! Restore to defaul settings
+DO indAO=1,setting%nAO
+ setting%fragment(indAO)%p => setting%molecule(indAO)%p
+ IF (associated(setting%fragment(indAO)%p)) THEN
+   call DETERMINE_NBAST(setting%MOLECULE(indAO)%p,setting%BASIS(indAO)%p%REGULAR,&
+        & setting%scheme%DoSpherical,setting%scheme%uncont)
+   IF(setting%BASIS(indAO)%p%AUXILIARY%nAtomtypes.GT.0)THEN
+    call DETERMINE_NBAST(setting%MOLECULE(indAO)%p,&
+         & setting%BASIS(indAO)%p%AUXILIARY,setting%scheme%DoSpherical,&
+         & setting%scheme%uncont)
+   ENDIF
+ ENDIF
+ENDDO
+!Set up fragments
+END SUBROUTINE FreeDaltonFragments
+
+!> \brief free the molecule fragments 
+!> \author S. Reine
+!> \date 2010
+SUBROUTINE freeFragments(FRAGMENT,fragBuild,nAO)
+implicit none
+INTEGER, intent(in)             :: nAO
+TYPE(MOLECULE_PT),intent(inout) :: FRAGMENT(nAO)
+LOGICAL,intent(inout)           :: fragBuild(nAO)
+!
+integer :: indAO
+
+DO indAO = 1,nAO
+  IF (fragBuild(indAO)) THEN
+    CALL free_MoleculeInfo(FRAGMENT(indAO)%p)
+    DEALLOCATE(FRAGMENT(indAO)%p)
+    NULLIFY(FRAGMENT(indAO)%p)
+   fragBuild(indAO) = .FALSE.
+  ENDIF
+ENDDO
+END SUBROUTINE freeFragments
+
+
 !> \brief 
 !> \author
 !> \date

@@ -143,10 +143,10 @@ if(ENABLE_XCFUN)
     add_external(xcfun)
     add_dependencies(xcfun_interface xcfun)
     add_definitions(-DVAR_XCFUN)
-    set(LIBS
+    set(EXTERNAL_LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
-        ${LIBS}
+        ${EXTERNAL_LIBS}
         )
 endif()
 
@@ -365,7 +365,7 @@ MERGE_STATIC_LIBS(
 target_link_libraries(
     lsdalton
     lsdaltonmain
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
 target_link_libraries(

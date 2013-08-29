@@ -35,130 +35,142 @@ NB: Requires linking to the scalapack lib (provided by MKL).
 detects the use of a Dunning basis set like (cc-pVXZ) but the calculation will force the use of the Grand Canonical basis using this keyword.
 
 \end{description}
-\section{**INTEGRAL}\label{sec:integral}
+\section{**INTEGRAL basic keywords}\label{sec:integral}
 
 This input module defines the way the integrals should be calculated.
 \begin{description}
 
-\item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
-When using this keyword, an auxiliary basis set has to be 
-specified in the \mol\ file.
-
-\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM) to approximate 
-the exact-exchange energy and gradient contributions \cite{ADMM:2010}.
-When using this keyword, an auxiliary basis set has to be 
+\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM)~\cite{ADMM:2010} to approximate 
+the exact-exchange contribution. When using this keyword, an auxiliary basis set has to be 
 specified in the \mol\ file such as:
 \begin{verbatim}
 1     BASIS
 2     6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21G
       ...
 \end{verbatim} 
-where the "JK" basis is used as ADMM auxiliary basis set, and the choice of "CABS" basis isn't used here even though it needs to be assigned an existing basis set.
-Beware that ADMM accuracy and robustness haven't been thoroughly tested yet.\newline
-{\bf Test case example}: linsca/linsca\_admm\_df
-
-\item[\Key{PARI}] Use the very local Pair-Atomic Resolution-of-the-Identity (PARI) 
-approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
-When using this keyword, an auxiliary basis set has to be 
-specified in the \mol\ file.\newline
-{\bf Use at your own risk}: note that this method contains inherent deficiencies (discussed in~\cite{PARI:2013}) 
-which may result in the non-convergence of the SCF scheme for HF or KS-DFT. \newline
-{\bf Test cases} in LSint: LSDALTON\_ethane\_pari\_b3lyp, 
-LSDALTON\_ethane\_pari\_b3lyp\_ChgConst, 
-LSDALTON\_ethane\_pari\_b3lyp\_ChgDipConst, 
-LSDALTON\_ethane\_pari\_b3lyp\_unconstrained
-
-
-\item[\Key{RUNMM}] Use the (Fast) Multipole Method.
+where the "JK" basis is used as ADMM auxiliary basis set. You also have to provide a valid 
+"CABS" basis from the library (which is needed for technical reasons, but will not actually 
+be used in the calculation). \emph{Note of caution: we do not recommend to use ADMM in combination 
+with geometry optimization.}
 
 \item[\Key{AOPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
-Print the Atomic Orbital information. The higher the print level, the more information will be printed.
+Print the Atomic Orbital information. The higher the print level, the more information will be printed. Default value is 0.
 \item[\Key{BASPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
 Print the basis set information. The higher the print level, the more information will be printed.
 Using a print level of 6 will print the input exponents and contraction coefficients read from file as well as the normalized basis used in LSDALTON.  
-\item[\Key{CARMOM}] 
+\item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
+When using this keyword, an auxiliary basis set has to be 
+specified in the \mol\ file. For the Poples basis sets we recommend df-def2 and for
+Dunnings basis sets use the corresponding cc-pV$X$Zdenfit basis sets, with $X=$T$,$Q$,5$.
+\item[\Key{INTPRINT}] 
 \verb| | \newline
-\verb|<Order of multipole moment>|\newline
-Calculate the cartesian multipole moment integrals to the order requested. 
-\begin{eqnarray}
-\int \chi_{\mu}(r_{1}) x^{i}y^{j}z^{k} \chi_{\rho}(r_{2}) dr_{1}dr_{2}
-\end{eqnarray}
+\verb|<Print level>|\newline
+Print information about the actual integral evaluation. The higher the print level, the more information will be printed. Default value is 0.
+\item[\Key{LINSCAPRINT}] 
+\verb| | \newline
+\verb|<Print level>|\newline
+Print level in the integral code. The higher the print level, the more information will be printed. This keyword corresponds to 
+\begin{verbatim}
+.AOPRINT
+<Print level>
+.BASPRINT
+<Print level>
+.MOLPRINT
+<Print level>
+.INTPRINT
+<Print level>
+\end{verbatim} 
+See the individual keywords for more details. Default value is 0.
+\item[\Key{MOLPRINT}] 
+\verb| | \newline
+\verb|<Print level>|\newline
+Print information about the molecule. The higher the print level, the more information will be printed. Default value is 0.
+\item[\Key{NOJENGINE}] Turn off J-engine algorithm (which is default) for the calculation of the Coulomb matrix 
+(see Refs. \cite{shao:425} and \cite{shao:6572}). Compute instead Coulomb-like contributions from the explicitly calculated integrals.
+\item[\Key{NOLINK}] Turn off the LinK algorithm (which is default) for the calculation of the exchange matrix (see Ref. \cite{ochsenfeld:1663}).
+\item[\Key{NO SCREEN}] Deactivate the use of all screening methods.
+\item[\Key{NOFAMILY}] Deactivate the exploitation of family type basis set, basis set sharing exponents for different angular momentums.  
+\item[\Key{PARI}] Use the Pair-Atomic Resolution-of-the-Identity
+approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
+When using this keyword, an auxiliary basis set has to be 
+specified in the \mol\ file.\newline
+\emph{We do not recommend to use this method for any production runs, and have included it 
+in case other method developers would like to explore it (see the reference for details).}
+\item[\Key{RUNMM}] Use the (Fast) Multipole Method.
+\item[\Key{THRESH}]
+\verb| | \newline
+\verb|<Threshold>|\newline
+An overall screening threshold for integral evaluation. The default value is $10^{-8}$
+
+The various integral-evaluation thresholds (below) are set according to this Threshold. 
+\begin{itemize}
+\item The Cauchy-Schwarz screening threshold is set equal to Threshold (can be set separately by \Key{THR\_CS})
+\begin{itemize}
+  \item The Screening threshold used for Coulomb is Threshold $\cdot 10^{-2}$ (Default: $10^{-10}$) 
+  \item The Screening threshold used for Exchange is Threshold $\cdot 10^{-0}$ (Default: $10^{-8}$)
+  \item The Screening threshold used for One-electron operators is Threshold $\cdot 10^{-7}$ (Default: $10^{-15}$)
+\end{itemize}
+\item The Primitve Cauchy-Schwarz screening threshold is set equal to Threshold$\cdot 10^{-1}$  (can be set separately by \Key{THR\_PS})
+\item The Overlap-distribution distance-screening threshold is set equal to 
+      Threshold $\cdot 10^{-1}$.
+      When calculating overlap integrals, this threshold 
+      is used for setting up AO extents. Overlap distributions (ODs) for which the 
+      distance between the two AOs are larger than the sum of the extents are 
+      screened away. %(OD screening)
+\item The Overlap-distribution extent-screeing threshold is set equal to 
+      Threshold $\cdot 10^{-1}$. When calculating overlap integrals, this threshold 
+      is used for setting up OD extents. Overlap integrals between two ODs separated
+      by more than the sum of the extents are screened away. %(OE screening)
+\item The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on
+      the non-classical extent of the contineous charge distribution (orbitals or orbital products). By default this threshold 
+      is set equal to Threshold $\cdot 10^{-1}$ (can be set separately by \Key{SCREEN} under *FMM)
+\end{itemize}
+\end{description}
+
+\section{**INTEGRAL advanced keywords}\label{sec:integral}
+
+This input module defines the way the integrals should be calculated. 
+This section contains some advanced keywords which is mostly usefull 
+for debugging or comparisons with other codes. 
+\begin{description}
+
+\item[\Key{NO CS}] Deactivate the use of Cauchy-Schwarz screening. 
+Note that this does not deactivate the Primitive Cauchy-Schwarz screening. 
+\item[\Key{NO PS}] Deactivate the use of primitive Cauchy-Schwarz screening.
+\item[\Key{THR\_CS}] 
+\verb| | \newline
+\verb|<CS_Threshold>|\newline
+Cauchy-Schwarz screening threshold. The default value is $10^{-8}$. Note that 
+\begin{itemize}
+  \item The Screening threshold used for Coulomb is CS\_Threshold $\cdot 10^{-2}$ (Default: $10^{-10}$) 
+  \item The Screening threshold used for Exchange is CS\_Threshold $\cdot 10^{-0}$ (Default: $10^{-8}$)
+  \item The Screening threshold used for One-electron operators is CS\_Threshold $\cdot 10^{-7}$ (Default: $10^{-15}$)
+\end{itemize}
+\item[\Key{THR\_PS}] 
+\verb| | \newline
+\verb|<PS_Threshold>|\newline
+Primitive Cauchy-Schwarz screening threshold. The default value is $10^{-9}$
 \item[\Key{CART-E}] Use cartesian E-coefficients instead of hermite E-coefficients for the McMurchie-Davidson
 integral-evaluation scheme \cite{McMurchie1978} used in \lsdalton. The use of Cartesian E-coefficients is 
 default in most integral programs. We however use hermite E-coefficients according to ref.~\cite{reine:4771}.
-\item[\Key{ETUVIL}] Build E-coefficients inside the integral loop, in order to reduced memory requirements. 
-This will increase the workload! 
-%\item[\Key{FRAGMENT}] Calculate integrals in fragments, in order to reduced memory requirements 
 \item[\Key{FTUVMAXPRIM}] 
 \verb| | \newline
 \verb|<Maxprim>|\newline
 Sets the maximum number of primitives used in the FTUV batches in the J-engine algorithm.
-\item[\Key{INTPRINT}] 
-\verb| | \newline
-\verb|<Print level>|\newline
-Print information about the actual integral evaluation. The higher the print level, the more information will be printed. 
-\item[\Key{NOJENGINE}] Turn off J-engine algorithm (which is default) for the calculation of the Coulomb matrix 
-(see Refs. \cite{shao:425} and \cite{shao:6572}). Compute instead Coulomb-like contributions from the explicitly calculated integrals.
-\item[\Key{NOLINK}] Turn off the LinK algorithm (which is default) for the calculation of the exchange matrix (see Ref. \cite{ochsenfeld:1663}).
-\item[\Key{LINSCAPRINT}] 
-\verb| | \newline
-\verb|<Print level>|\newline
-Print level in the integral code. The higher the print level, the more information will be printed.
 \item[\Key{LOW RJ000 ACCURACY}] Use a decreased accuracy for the calculation of the Boys function.
 \item[\Key{MAXPASSES}] 
 \verb| | \newline
 \verb|<maxpass>|\newline
-Change the maximum number of collected overlaps (default is 40).
-\item[\Key{MOLPRINT}] 
-\verb| | \newline
-\verb|<Print level>|\newline
-Print information about the molecule. The higher the print level, the more information will be printed. 
-\item[\Key{NO CS}] Deactivate the use of Cauchy-Schwarz screening.
-\item[\Key{NO PASS}] Deactivate the use of Passes, the collection of overlaps which is used as default in order to increase efficiency. 
-\item[\Key{NO PS}] Deactivate the use of primitive Cauchy-Schwarz screening.
-\item[\Key{NO SCREEN}] Deactivate the use of all screening methods.
-\item[\Key{NOFAMILY}] Deactivate the exploitation of family type basis set, basis set sharing exponents for different angular momentums.  
-\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals.
+Change the maximum number of collected overlap distributions (default is 40).
+\item[\Key{NO PASS}] Deactivate the use of Passes, the collection of overlap distributions which is used as default in order to increase efficiency. 
+\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals. The basis is considered to be a general contracted basis where all primitives contribute to all contracted functions. 
 \item[\Key{NSETUV}] Use non-spherical E-coefficients.
 \item[\Key{OVERLAP-DF-J}] Use the Overlap density fitting algorithm for the calculation of the Coulomb matrix.
 %\item[\Key{PARI}] Use pair-atomic-resolution-of-the-identity algorithm for the calculation of the Fock matrix
-\item[\Key{SPHMOM}] 
-\verb| | \newline
-\verb|<Order of multipole moment>|\newline
-Calculate spherical multipole moment integrals to the requested order.
-\item[\Key{THR\_CS}] 
-\verb| | \newline
-\verb|<CS_Threshold>|\newline
-Cauchy-Schwarz screening threshold.
-\item[\Key{THR\_PS}] 
-\verb| | \newline
-\verb|<PS_Threshold>|\newline
-Primitive Cauchy-Schwarz screening threshold.
-\item[\Key{THRESH}]
-\verb| | \newline
-\verb|<Threshold>|\newline
-An overall screening threshold for integral evaluation. The various integral-evaluation thresholds (below) are set according to
-\begin{itemize}
-\item The Cauchy-Schwarz screening threshold is set equal to Threshold (can be set separately by \Key{THR\_CS})
-\item The Primitve Cauchy-Schwarz screening threshold is set equal to Threshold$\cdot 10^{-1}$  (can be set separately by \Key{THR\_PS})
-\item The Overlap-distribution distance-screening threshold is set equal to 
-      Threshold$\cdot 10^{-1}$.
-      When calculating overlap integrals, this threshold 
-      is used for setting up AO extents. Overlap distributions (ODs) for which the 
-      distance between the two AOs are larger than the sum of the extents are 
-      screened away.
-\item The Overlap-distribution extent-screeing threshold is set equal to 
-      Threshold$\cdot 10^{-1}$. When calculating overlap integrals, this threshold 
-      is used for setting up OD extents. Overlap integrals between two ODs separated
-      by more than the sum of the extents are screened away. 
-\item The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on
-      the non-classical extent of the contineous charge distribution (orbitals or orbital products). By default this threshold 
-      is set equal to Threshold$\cdot 10^{-1}$ (can be set separately by \Key{SCREEN} under *FMM)
-\end{itemize}
 \item[\Key{UNCONT}] Treat the basis functions (given by input) as fully uncontracted basis fuctions (i.e. ignore
 any contraction coefficients given in the basis and treat instead all the primitives as separate basis functions).
 \end{description}
@@ -188,13 +200,15 @@ It has however not been tested for speed and efficiency.
 \begin{description}
 \item[\Key{LMAX}] \verb| |\newline
 \verb|<Lmax>|\newline
-The maximum multipole-moment expansion order of a given orbital product.
+The maximum multipole-moment expansion order of a given orbital product. Default Value is 8.
 \item[\Key{TLMAX}] \verb| |\newline
 \verb|<TLmax>|\newline
-The maximum order used for translated multipole-moments.
+The maximum order used for translated multipole-moments. Default Value is 20.
 \item[\Key{SCREEN}] \verb| |\newline
 \verb|<Threshold>|\newline
-Defines the threshold used to determine if a contribution can be calculated classically on non-classically.
+The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on the non-classical extent of the contineous charge distribution (orbitals or orbital products). 
+By default this threshold is set equal to $\cdot 10^{-9}$ 
+Defines the threshold used to determine if a contribution can be calculated classically or non-classically.
 \item[\Key{NOONE}] Do not use FMM for the nuclear-electron attraction.
 \item[\Key{NOMMBU}] Do not use io-buffers for interfacing multipole-moments to the FMM driver.
 \end{description}
@@ -974,7 +988,7 @@ Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANG
 %\item[\Key{PURIFY}] \verb| | \newline
 %\verb|<Purification method>|\newline
 %Use purification scheme for density optimization 
-\item[\Key{Restart}] The code automaticly saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
+\item[\Key{RESTART}] The code automaticly saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
 \item[\Key{RH}] Use standard Roothaan-Hall scheme (diagonalization) for density optimization.
 %\item[\Key{SCALVIR}]
 %\item[\Key{SOEO}]
@@ -1055,89 +1069,123 @@ do NOT start with a dot!
 \end{description}\end{description}
 
 \section{**OPTIMIZE}\label{sec:optimize}
-This input module describes keywords needed to optimize molecular geometry.
-In the current release a number of quasi-Newton trust-radius level-shifted techniques for finding 
-equilibrium geometries are available. The methods differ in the way approximate Hessians are 
-built and updated. Geometric structure can be optimized in redundant internal or 
-Cartesian coordinates with two sets of convergence criteria. The default setting is minimization 
-in internal coordinates \cite{DaltonOpt}, with model Hessian \cite{ModelHess} updated with BFGS formula. 
-By default, new convergence criteria are used, i.e. convergence is declared if  the four quantities - 
-the root-mean-square of the gradient, its maximum absolute value, the root-mean square of the step
-vector, and its maximum absolute element (in internal or Cartesian coordinates) - 
-are smaller than $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$ respectively \cite{NewConv}.
-The default value of $\epsilon$ is $1.0\cdot 10^{-5}$.
+This input module describes the keywords needed to optimize a molecular geometry.
+In the current release no second-order algorithms are available since the molecular Hessian is not implemented, but
+a number of quasi-Newton trust-radius level-shifted techniques for finding
+equilibrium geometries are available (\Key{BFGS}, \Key{PSB}, \Key{DFP}).
+The methods differ in the way approximate Hessians are built and updated: \Key{INIMOD}, \Key{INIRED} and \Key{INITEV} provide different approximations for the initial Hessian, 
+while \Key{MODHES} recomputes the approximated Hessian at every geometry.
 
 The geometry optimization generates a sequence of geometry steps. The coordinates of each 
-accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX} 
+accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX}
 is the geometry step number, and the final converged geometry in MOLECULE.OUT.
-By default, the atoms-in-molecule approach is used to set up the initial density-matrix at each new
-geometry (each step). However, it is possible to take as starting guess McWeeny-purified converged
-density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
+
+Geometric structure can be optimized in redundant internal (\Key{REDINT}) or
+Cartesian  (\Key{CARTES}) coordinates with two sets of convergence criteria (two for the gradient and two for the step).
+Convergence is obtained when the following four quantities are respectively smaller than the four convergence criteria $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$  \cite{NewConv}:
+\begin{itemize}
+\item the root-mean-square of the gradient, 
+\item the maximum absolute value of the gradient, 
+\item the root-mean square of the step vector,
+\item and the maximum absolute element (in internal or Cartesian coordinates) of the step vector.
+\end{itemize}
+
+
+The default setting specifies the minimization in internal coordinates \cite{DaltonOpt}, with a model Hessian \cite{ModelHess} updated with BFGS formula. 
+The atoms-in-molecule approach is used to set up the initial density-matrix at each new
+geometry step.
+However, it is possible to take as starting guess McWeeny-purified converged
+density-matrix at the previous geometry. This is achieved by setting the \Key{RESTART} option under
 the *DENSOPT subsection.
-\newline
+The default value of $\epsilon$ is $10^{-5}$
+(Other predefined values for the convergence criteria can be set using the keywords \Key{VLOOSE}, \Key{LOOSE}, \Key{TIGHT} and \Key{VTIGHT}).
+Alternatively the convergence criteria of Baker~\cite{Baker} can be set using \Key{BAKER}.
+
+
 \vspace{1 cm}
 \noindent
-\textbf{Example test cases for **OPTIMIZE calculations}: \newline
-These test cases illustrate the main features of the geometry optimization. The test cases are located in LSDALTON/test/geomopt.
+\textbf{Example of test cases for geometry optimization calculations} \newline
+The test cases are located in LSDALTON/test/geomopt.
+These test cases illustrate the main features of the geometry optimization:
 \begin{itemize}
 \item
 \textit{geomopt/cartes\_bfgs\_min}:
-\item
-\textit{geomopt/Excited\_state\_opt}: Performs a geometry optimization of an excited state. 
+performs a DFT/LDA geometry optimization in Cartesian coordinates,
+with BFGS update of an initial Hessian equal to a unit matrix
+and Baker convergence criteria.
 \item
 \textit{geomopt/redint\_bfgs}:
+performs a DFT/BLYP geometry optimization in redundant internal coordinates
+with a model Hessian updated with BFGS formula
+and Baker convergence criteria.
+\item
+\textit{geomopt/Excited\_state\_opt}:
+performs a DFT/B3LYP geometry optimization of an excited state in redundant internal coordinates
+and Baker convergence criteria.
 \item
 \textit{geomopt/cartes\_psb\_min}:
+performs a DFT/BLYP geometry optimization in Cartesian coordinates
+with a diagonal initial Hessian updated by PSB formula,
+McWeenie's purification used for constructing the initial guess
+and Baker convergence criteria.
 \item
 \textit{geomopt/geoopt\_constrain}:
+shows a constrained geometry optimization of ethane,
+keeping the C-C bond distance fixed
+(Internal coordinate \#1 as determined from the use of \Key{FINDRE}).
 \item
-\textit{geomopt/cartes\_trilevel\_newconv}: 
+\textit{geomopt/cartes\_trilevel\_newconv}:
+performs a geometry optimization in Cartesian coordinates
+with \Key{TRILEVEL} starting guess and a default convergence criteria,
+ a diagonal initial Hessian updated by a loose DFP formula.
 \end{itemize}
 
 \begin{description}
-\item[\Key{PRINT}]\verb| | \newline
-\verb|<Print level>|\newline
-Print level for the output. The higher the print level, the more information
-is printed to the output file.
-
-\item[\Key{VLOOSE}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-3}$.
-
-\item[\Key{LOOSE}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-4}$.
-
-\item[\Key{TIGHT}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-6}$.
-
-\item[\Key{VTIGHT}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-7}$.
-
-\item[\Key{.MAX IT}]
-Maximum number of iterations in geometry optimization scheme.
 
 \item[\Key{BAKER}]
 Activates the convergence criteria of Baker \cite{Baker}. The minimum
 is then said to be found when the largest element of the gradient
 vector (in Cartesian or redundant internal coordinates) falls below
-$3.0\cdot 10^{-4}$ and either the energy change from the last
-iteration is less than $1.0\cdot 10^{-6}$ or the largest element of
-the predicted step vector is less $3.0\cdot 10^{-4}$.
+$3\cdot 10^{-4}$ and either the energy change from the last
+iteration is less than $10^{-6}$ or the largest element of
+the predicted step vector is less than $3\cdot 10^{-4}$.
 
 \item[\Key{BFGS}]
 Specifies the use of a first-order method\index{first-order optimization}
 with the Broyden-Fletcher-Goldfarb-Shanno (BFGS)
 update formula for optimization. This is the
 preferred first-order method for minimizations, as this update is able
-to maintain a positive definite Hessian. 
+to maintain a positive definite Hessian.
 
-\item[\Key{PSB}]
-Specifies that a first-order method with the
-Powell-Symmetric-Broyden (PSB) 
-update formula should be used for optimization.
+\item[\Key{CARTES}]
+Specifies that Cartesian coordinates\index{Cartesian coordinates}\index{coordinate system!Cartesian coordinates}
+should be used in the optimization.
+
+\item[\Key{CONSTR}]\verb| | \newline
+\verb|<Number of contrained redundant internal coordinates>|\newline
+\verb|<Indices of each contrained redundant internal coordinate, one per line>|\newline
+Specifies a contrained geometry optimization. You will need to give
+the total number of redundant internal coordinates to constrain and their
+indices as defined using the \Key{FINDRE} keyword.
+For example fixing redundant internal coordinates 4 and 9 would read like:
+\begin{verbatim}
+...
+**OPTIMIZE
+.CONSTR
+2
+4
+9
+...
+**END OF INPUT
+\end{verbatim}
+
 
 \item[\Key{DFP}]
 Specifies that a first-order\index{first-order optimization} method with the
-Davidon-Fletcher-Powell (DFP) update formula should be used for optimization. 
+Davidon-Fletcher-Powell (DFP) update formula should be used for optimization.
+
+\item[\Key{FINDRE}]
+Using this keyword no geometry optimization is carried out, but only the redundant internals coordinates are found.
 
 \item[\Key{INIMOD}]
 Use a simple model Hessian~\cite{ModelHess} diagonal in redundant
@@ -1156,12 +1204,6 @@ dihedral angles, unless \Key{INITEV} has been specified. If the
 optimization is run in Cartesian coordinates, the diagonal internal
 Hessian is transformed to Cartesians.
 
-\item[\Key{MODHES}]
-Determine a new model Hessian (see \Key{INIMOD})
-at every geometry without doing any updating. The model is thus used
-in much the same manner as an exact Hessian, though it is obviously
-only a relatively crude approximation to the analytical Hessian.
-
 \item[\Key{INITEV}]\verb| | \newline
 \verb|<Read EVLINI, the eigenvalues>|\newline
 The default initial Hessian for first-order
@@ -1170,13 +1212,41 @@ matrix when redundant internal coordinates are used. If \Key{INITEV}
 is used, all the diagonal elements (and therefore the eigenvalues) are
 set equal to the value EVLINI. 
 
+\item[\Key{LOOSE}]
+Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-4}$.
+
+\item[\Key{MAX IT}]
+Maximum number of iterations in geometry optimization scheme
+(default set to 100).
+
+\item[\Key{MODHES}]
+Determine a new model Hessian (see \Key{INIMOD})
+at every geometry without doing any updating. The model is thus used
+in much the same manner as an exact Hessian, though it is obviously
+only a relatively crude approximation to the analytical Hessian.
+
+\item[\Key{PRINT}]\verb| | \newline
+\verb|<Print level>|\newline
+Print level for the output. The higher the print level, the more information
+is printed to the output file.
+
 \item[\Key{REDINT}]
-Specifies that redundant internal coordinates coordinates
+Specifies that redundant internal coordinates\index{Redundant internal coordinates}\index{coordinate system!Redundant internal coordinates}
 should be used in the optimization. This is the default.
 
-\item[\Key{CARTES}]
-Indicates that Cartesian coordinates\index{Cartesian coordinates}\index{coordinate system!Cartesian coordinates}
-should be used in the optimization.
+\item[\Key{PSB}]
+Specifies that a first-order method with the
+Powell-Symmetric-Broyden (PSB) 
+update formula should be used for optimization.
+
+\item[\Key{TIGHT}]
+Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-6}$.
+
+\item[\Key{VLOOSE}]
+Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-3}$.
+
+\item[\Key{VTIGHT}]
+Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-7}$.
 
 \end{description}
 
@@ -1241,9 +1311,9 @@ The only thoroughly tested option is $N=2$.
 This section describes keywords needed to perform localization of Hartree--Fock orbitals. The optimization of the
 chosen localization function will be performed using a trust-region algorithm \cite{hoyvik:TRM}, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
 
-After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The coefficient matrix row index refer to the atomic orbital basis index, while the column index refer to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
+After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; \textit{cmo\_orbitals.u} and \textit{lcm\_orbitals.u}. \textit{cmo\_orbitals.u} contains coefficients for the canonical molecular orbitals (CMO) and \textit{lcm\_orbitals.u} contains coefficients for the localized molecular orbitals (LMO). The coefficient matrix row index refers to the atomic orbital basis index, while the column index refers to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
 
-For the most effcient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
+For the most efficient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
 
 \begin{description}
 
@@ -1253,7 +1323,7 @@ Use powers m of the second moment (PSM) localization function \cite{jansik:2011}
 
 \item[\Key{PFM}]\verb| | \newline
 \verb|<m m>|\newline
-Use powers m of the fourth moment (PFM) localization function \cite{hoyvik:PFM}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen is basis sets augmented with diffuse functions are used.
+Use powers m of the fourth moment (PFM) localization function \cite{hoyvik:PFM}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen if basis sets augmented with diffuse functions are used.
 
 \item[\Key{PipekMezey}]\verb| | \newline
 Use Pipek-Mezey localization function using an implementation based on L{\"o}wdin population analysis 
@@ -1281,7 +1351,7 @@ Pipek-Mezey localization (using Mulliken population analysis) of virtual space.
 Should only be used in combination with the .START/TRILEVEL and  .LCM options for the *DENSOPT section. The keyword is used to skip orbital localization after the second level in the three level procedure. Not recommended for general use, but can be used to save  computational time if only the virtual space is to be localized.  
 
 \item[\Key{Only Loc}]\verb| | \newline
-Provided the file with the molecular orbital coefficients (e.g., cmo\_orbitals.u or lcm\_orbitals.u) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to orbitals\_in.u, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to orbitals\_out.u. Thus, for this keyword to be used, orbitals\_in.u must exist and a localization function must be chosen.
+Provided the file with the molecular orbital coefficients (e.g., \textit{cmo\_orbitals.u} or \textit{lcm\_orbitals.u}) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to \textit{orbitals\_in.u}, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to \textit{orbitals\_out.u}. Thus, for this keyword to be used, \textit{orbitals\_in.u} must exist and a localization function must be chosen.
 
 
 \item[\Key{Orbital Locality}]\verb| | \newline
@@ -1290,7 +1360,7 @@ This keyword will make sure second and fourth moment orbital spreads are printed
 
 \item[\Key{Orbital Plot}]\verb| | \newline
 \verb|<orbital specification>|\newline	
-Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plottinge other orbitals, use the **PLT option described in section \ref{sec:plt}. Also note that the grid dimensions may be modified as described in Section~\ref{sec:pltgrid}.
+Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plotting other orbitals, use the **PLT option described in section \ref{sec:plt}. Also note that the grid dimensions may be modified as described in Section~\ref{sec:pltgrid}.
 \end{description}
 
 
@@ -1692,7 +1762,7 @@ The **DEC and **CC implementations employ massive parallelism and will be highly
 \textbf{Special note}: It is highly recommended that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
 
 The **DEC section uses local orbitals by default, while the **CC section uses canonical orbitals by default.
-Below keywords for the **DEC section and **CC sections and relevant test cases are given. 
+Below keywords for the **DEC section and **CC section and relevant test cases are given. 
 
 \vspace{1 cm}
 \noindent
@@ -1748,14 +1818,16 @@ Calculate DEC-MP2 density matrix~\cite{dec5} (stored in MP2.dens). The MP2 elect
 Calculate MP2 molecular gradient~\cite{dec5} at input geometry (for geometry optimization, see test case examples below). The MP2 density and electric dipole moment is also calculated if this keyword is invoked.
 
 \item[\Key{KAPPATHR}] \verb| | \newline
-Threshold for $\bar{kappa}$ multiplier equations solved when DEC-MP2 molecular gradiient is calculation. Default value is 10$^{-4}$.
+\verb|<THR>|\newline
+Threshold for $\bar{kappa}$ multiplier equations solved when DEC-MP2 molecular gradient is calculation. Default value is 10$^{-4}$.
 
 
 \item[\Key{CANONICAL}] \verb| | \newline
 Use canonical orbitals. This is only recommended for advanced users for testing purposes. In general, the DEC scheme is only meaningful for local orbitals.
 
 \item[\Key{MPIGROUPSIZE}] \verb| | \newline
-Size of local MPI groups in massively parallel DEC scheme~\cite{dec6}. The default settings should suffice for most purposes, and use of the keyword is only recommended for advanced users.
+\verb|<Size>|\newline
+Size of local MPI groups (integer) in massively parallel DEC scheme~\cite{dec6}. The default settings should suffice for most purposes, and use of the keyword is only recommended for advanced users.
 
 
 \end{description}
@@ -1773,7 +1845,7 @@ These test cases illustrate the main features of the DEC scheme. The test cases 
 \item
 \textit{decmp2\_gradient}: Calculate DEC-MP2 molecular gradient.
 \item
-\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT will be increased to get a more accurate energy and gradient in the next iteration.
+\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT level will be increased to get a more accurate energy and gradient in the next iteration.
 \end{itemize}
 
 
@@ -1790,7 +1862,7 @@ Use MP2 model. This gives the canonical MP2 energy and is not optimized for para
 Use CC2 model which is not an optimized code, but rather uses the CCSD optimized code with some contributions removed. See CCSD documentation for details.
 
 \item[\Key{CCSD}]\verb| | \newline
-Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). 
+Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). Using this keyword automatically triggers checkpointing after each iteration. The calculation can be restarted with the usual \Key{.RESTART} keyword.
 
 \item[\Key{FROZENCORE}]  \verb| | \newline
 Use the frozen core approximation (can also be used in **DEC section).
@@ -1811,8 +1883,9 @@ Convergence threshold for residual norm in CC solver.
 \item[\Key{SUBSIZE}]  \verb| | \newline
 Number of previous vectors to store in CROP scheme~\cite{crop} for CC solver.
 
-\item[\Key{CCSDSAFE}]  \verb| | \newline
-Save CCSD amplitudes to be able to restart full CCSD calculation. The files are named t11.restart and t12.restart for the singles amplitudes and t21.restart and t22.restart for the doubles amplitudes. These files are written in in an alternate fashion and the latest amplitudes are read automatically if a CCSD calculation is started in the same folder.
+\item[\Key{CCSDNOSAFE}]  \verb| | \newline
+Prevent saving of CCSD amplitudes as checkpoint files. 
+
 
 \end{description}
 
