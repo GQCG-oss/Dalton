@@ -60,9 +60,9 @@ extern struct common_infpar {
 
 #if defined (VAR_INT64)
 !     integer array my_STATUS contains MPI_SOURCE information.
-!     Proper use of my_STATUS on 64-bit machines in 
-!     combination with VAR_INT64 requires explicit declaration 
-!     as INTEGER*4 /March-2007 sk - This is only true for 
+!     Proper use of my_STATUS on 64-bit machines in
+!     combination with VAR_INT64 requires explicit declaration
+!     as INTEGER*4 /March-2007 sk - This is only true for
 !     32-bit MPI libraries.
 !     64-bit MPI libraries require INTEGER my_STATUS (which will then be INTEGER*8)
 !

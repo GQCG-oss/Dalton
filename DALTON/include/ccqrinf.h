@@ -20,7 +20,7 @@
      *                 LAQLRX(MXQROP), LBQLRX(MXQROP), LCQLRX(MXQROP),
      *             IQCAUA(MXQRDISP),IQCAUB(MXQRDISP),IQCAUC(MXQRDISP),
      *                 NQRFREQ, NQROPER, NQRDISP, NQRDSPE, NQRDSPO,
-     *                 IPRQHYP, BETA_AVERAGE, XY_DEGENERAT, 
+     *                 IPRQHYP, BETA_AVERAGE, XY_DEGENERAT,
      *                 USEBTRAN, USE_R2, ALLDSPCF, USE_AAMAT,DIPSAVE(3),
      *                 LAVANEW
 

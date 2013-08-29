@@ -2,7 +2,8 @@ all: liblinears.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../SolverUtilities -I../responsesolver
+INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../SolverUtilities -I../responsesolver \
+	-I../../external/matrix-defop/src -I../../external/openrsp/src
 
 # Keep the file lists sorted for easier modification.
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
@@ -48,10 +49,8 @@ F90_OBJS = \
 	localization_orbspread.o \
 	orbspread_util.o \
 	localization_util.o \
-        prop_contribs.o \
         response_driver.o \
         response_prop.o \
-        rsp_equations.o \
         scfopt-typedef.o \
 	soeo-loop.o \
 	soeo-util.o \

@@ -10,13 +10,13 @@
       INTEGER IBEXLROP(MXEXLROP)   ! response operator B
 
 #if defined (SYS_CRAY)
-      REAL BEXLRFR(MXEXLRFR) 
+      REAL BEXLRFR(MXEXLRFR)
 #else
       DOUBLE PRECISION BEXLRFR(MXEXLRFR)
 #endif
-      COMMON /INFEXLRCC/ BEXLRFR, IAEXLROP, IBEXLROP, 
+      COMMON /INFEXLRCC/ BEXLRFR, IAEXLROP, IBEXLROP,
      *                   IELRSYM,  IELRSTA, NEXLRST,
-     *                   NEXLRFREQ, IPREXLR, NEXLROPER, 
+     *                   NEXLRFREQ, IPREXLR, NEXLROPER,
      *                   ALLSTATES, HALFFR, USE_EL1,
      *                   USE_O2, NOPROJ
 

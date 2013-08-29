@@ -40,7 +40,7 @@
       EQUIVALENCE ( DCRFR(1), CRFR(1,4) )
 
       COMMON /INFCHYP/ CRFR, ICROP, ICCAU,
-     *                 NCRFREQ, IPRCHYP, NCROPER, 
+     *                 NCRFREQ, IPRCHYP, NCROPER,
      *                 NCRDISP, NCRDSPE, NCRDSPO,
      *                 L_USE_CHI2, L_USE_XKS3, NO_2NP1_RULE,
      *                 USE_LBCD, USE_L2BC,

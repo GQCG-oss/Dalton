@@ -15,9 +15,7 @@ module rpa_module
   use BUILDAOBATCH!,only:build_batchesofaos,determine_maxbatchorbitalsize,&
 !       & determine_MaxOrbitals
   use screen_mod!,only: free_decscreen, DECSCREENITEM
-  use integralinterfaceDEC!,only: ii_precalc_decscreenmat, &
-!       & ii_getbatchorbitalscreen, ii_get_decpacked4center_j_eri, &
-!       & ii_getbatchorbitalscreenk, ii_get_decpacked4center_k_eri
+  use integralinterfaceDEC
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
 !       & ii_get_fock_mat_full
 #ifdef VAR_MPI

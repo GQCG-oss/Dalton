@@ -3000,12 +3000,12 @@ CONTAINS
       nullify(batchsize)
       nullify(batchindex)
       
-      call determine_maxBatchOrbitalsize(lupri,ls%setting,MinAObatch)
+      call determine_maxBatchOrbitalsize(lupri,ls%setting,MinAObatch,'R')
       print*,'MinAObatch',MinAObatch
       MaxAllowedDim = MinAObatch
       call mem_alloc(orb2batch,nbast)
       call build_batchesofAOS(lupri,ls%setting,MaxAllowedDim,&
-           & nbast,MaxActualDim,batchsize,batchdim,batchindex,nbatchesXY,orb2Batch)
+           & nbast,MaxActualDim,batchsize,batchdim,batchindex,nbatchesXY,orb2Batch,'R')
       print*,'nbatchesXY',nbatchesXY
       call mem_alloc(batch2orb,nbatchesXY)
       do idx=1,nbatchesXY
@@ -3029,7 +3029,7 @@ CONTAINS
       IF(doscreen)then
          call II_getBatchOrbitalScreenK(DecScreen,ls%setting,&
               & nbast,nbatchesXY,nbatchesXY,batchsize,batchsize,batchindex,batchindex,&
-              & batchdim,batchdim,lupri,luerr)
+              & batchdim,batchdim,INTSPEC,lupri,luerr)
       endif
       FullRHS = .FALSE.
 

@@ -5476,29 +5476,29 @@ C
      &   '@    QM part is embedded in an environment :'
        IF (FLAG(16)) THEN
         IF (RSOL(1) .EQ. RSOL(2) .AND. RSOL(1) .EQ. RSOL(3)) THEN
-         WRITE (IWUNIT,'(/10X,A,2(/16X,A,F12.6),/16X,A,I12)')
-     *      'SOLVATION MODEL: molecule is in a spherical'//
-     *        ' cavity in a dielectric medium,',
-     *      'dielectric constant =',EPSOL,
-     *      '      cavity radius =',RSOL(1),
-     *      '        max l value =',LSOLMX
+         WRITE (IWUNIT,'(/A,9X,A,2(/A,15X,A,F12.6),/A,15X,A,I12)')
+     &      '@','SOLVATION MODEL: molecule is in a spherical'//
+     &        ' cavity in a dielectric medium,',
+     &      '@',' dielectric constant =',EPSOL,
+     &      '@','cavity radius (bohr) =',RSOL(1),
+     &      '@','         max l value =',LSOLMX
         ELSE
-         WRITE (IWUNIT,'(/10X,A,2(/16X,A,3F12.6),/16X,A,I12)')
-     *      'SOLVATION MODEL: molecule is in a ellipsoidal'//
-     *        ' cavity in a dielectric medium,',
-     *      'dielectric constant =',EPSOL,
-     *      '  cavity dimensions =',RSOL(1),RSOL(2),RSOL(3),
-     *      '        max l value =',LSOLMX
+         WRITE (IWUNIT,'(/A,9X,A,2(/A,15X,A,3F12.6),/A,15X,A,I12)')
+     &      '@','SOLVATION MODEL: molecule is in a ellipsoidal'//
+     &        ' cavity in a dielectric medium,',
+     &      '@','     dielectric constant =',EPSOL,
+     &      '@','cavity dimensions (bohr) =',RSOL(1),RSOL(2),RSOL(3),
+     &      '@','             max l value =',LSOLMX
         END IF
-        IF (INERSI) WRITE (IWUNIT,'(2(/10X,A))')
-     *      'This is the initial state in a calculation with'//
-     *      ' inertial polarization.',
-     *      'Converged T(lm) values are saved on the Sirius'//
-     *      ' interface file.'
-        IF (INERSF) WRITE (IWUNIT,'(/10X,A/15X,A,F12.6)')
-     *      'This is the final state in a calculation with'//
-     *      ' inertial polarization.',
-     *      'static dielectric constant =',EPSTAT
+        IF (INERSI) WRITE (IWUNIT,'(2(/A,9X,A))')
+     &      '@','This is the initial state in a calculation with'//
+     &      ' inertial polarization.',
+     &      ' ','Converged T(lm) values are saved on the Sirius'//
+     &      ' interface file.'
+        IF (INERSF) WRITE (IWUNIT,'(/A,9X,A/A,14X,A,F12.6)')
+     &      '@','This is the final state in a calculation with'//
+     &      ' inertial polarization.',
+     &      '@','static dielectric constant =',EPSTAT
        END IF
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
@@ -5536,13 +5536,13 @@ C     ... get total charge
      &   TRIM(WFTYPE),NINEL,NACTEL,ICHARG,ISPIN,MS2,NSYM,LSYM
  1000 FORMAT(/5X,'Wave function specification'
      *       /5X,'============================')
- 1002 FORMAT( 5X,'For the wave function of type :      >>> ',A,' <<<',
-     *       /5X,'Number of closed shell electrons',I12,
-     *       /5X,'Number of electrons in active shells',I8,
-     *       /5X,'Total charge of the molecule',I16,
-     *      //5X,'Spin multiplicity and 2 M_S',I17,I10,
-     *       /5X,'Total number of symmetries',I18,
-     *       /5X,'Reference state symmetry',I20)
+ 1002 FORMAT( '@    For the wave function of type :      >>> ',A,' <<<',
+     *       /'@    Number of closed shell electrons',I12,
+     *       /'@    Number of electrons in active shells',I8,
+     *       /'@    Total charge of the molecule',I16,
+     *      //'@    Spin multiplicity and 2 M_S',I17,I10,
+     *       /'     Total number of symmetries',I18,
+     *       /'@    Reference state symmetry',I20)
 C
       IF (MCTYPE .EQ. 2) THEN
          WRITE (IWUNIT,1075) NAS1T, NAS2T, NAS3T
@@ -5553,13 +5553,13 @@ C
          END IF
          IF (NAS3T .GT. 0) WRITE (IWUNIT,1073) NELMN3, NELMX3
       END IF
- 1071 FORMAT(/5X,'Minimum number of electrons in RAS1 :',I4,
-     &           ' (maximum',I4,' holes)',
-     &       /5X,'Maximum number of electrons in RAS1 :',I4,
-     &           ' (minimum',I4,' holes)')
- 1073 FORMAT(/5X,'Minimum number of electrons in RAS3 :',I4,
-     &       /5X,'Maximum number of electrons in RAS3 :',I4)
- 1075 FORMAT(/5X,'Number of active orbitals in RAS1, RAS2, and RAS3 :',
+ 1071 FORMAT(/'@    Minimum number of electrons in RAS1 :',I4,
+     &        ' (maximum',I4,' holes)',
+     &       /'@    Maximum number of electrons in RAS1 :',I4,
+     &        ' (minimum',I4,' holes)')
+ 1073 FORMAT(/'@    Minimum number of electrons in RAS3 :',I4,
+     &       /'@    Maximum number of electrons in RAS3 :',I4)
+ 1075 FORMAT(/'Number of active orbitals in RAS1, RAS2, and RAS3 :',
      &       3I4)
 C
 C     DFT run (standard Kohn-Sham -- not short range)
@@ -5571,17 +5571,17 @@ C
       IF (DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT) THEN
 C        ... Check for inconsistencies :
 
-         WRITE (IWUNIT,'(/5X,A,2(/7X,2A))')
-     &        'This is a lrWFT-srDFT calculation using the ',
-     &        SRXFUN,' short range exchange functional',
-     &        SRCFUN,' short range correlation functional'
-         IF (SRLOCALSPIN .NE. ' ') WRITE (IWUNIT,'(7X,2A)')
-     &        SRLOCALSPIN, ' local spin model'
+         WRITE (IWUNIT,'(/A,2(/A,6X,2A))')
+     &        '@    This is a lrWFT-srDFT calculation using the ',
+     &        '@',SRXFUN,' short range exchange functional',
+     &        '@',SRCFUN,' short range correlation functional'
+         IF (SRLOCALSPIN .NE. ' ') WRITE (IWUNIT,'(A,6X,2A)')
+     &        '@',SRLOCALSPIN, ' local spin model'
 
          IF (IWINT.NE.0) WRITE(IWUNIT,'(/5X,A,F10.6)')
      &        'Weighted short range interpolation, COPFAC = ',COPFAC
-         WRITE (IWUNIT,'(/5X,A,2F12.6)')
-     &        'sr-DFT and exact sr-HF exchange weights:',
+         WRITE (IWUNIT,'(/A,2F12.6)')
+     &        '@    sr-DFT and exact sr-HF exchange weights:',
      &         (1.0D0-HFXFAC),HFXFAC
 
          IF (DOSRBCK.AND.DOMCSRDFT) 
@@ -5661,9 +5661,9 @@ C
  1400 FORMAT(5X,'Secondary orbitals',T38,I5,' |',8I5)
  1450 FORMAT(5X,'Total number of orbitals',T38,I5,' |',8I5)
  1500 FORMAT(5X,'Number of basis functions',T38,I5,' |',8I5)
- 1550 FORMAT(5X,'Occupied SCF orbitals',T38,I5,' |',8I5)
- 1555 FORMAT(5X,'Open shell SCF orbitals',T38,I5,' |',8I5)
- 1560 FORMAT(/5X,'plus one open shell SCF orbital of symmetry',I4)
+ 1550 FORMAT('@    Occupied SCF orbitals',T38,I5,' |',8I5)
+ 1555 FORMAT('@    Open shell SCF orbitals',T38,I5,' |',8I5)
+ 1560 FORMAT(/'@    plus one open shell SCF orbital of symmetry',I4)
 C
 C ***** Optimization information *****
 C       FLAG(27) : use determinants
@@ -5692,24 +5692,24 @@ C
 C
       IF (DOMC) THEN
          WRITE(IWUNIT,1600) MAXMAC,MAXMIC,THRMC,
-     *                      LROOTS,MAXCIT,NROOTS
+     &                      LROOTS,MAXCIT,NROOTS
          IF (ISTATE .GT. 1) THEN
             IF (NMCAVER .EQ. 1) THEN
-               WRITE(IWUNIT,'(/5X,A,I4/5X,A)')
-     &         'This calculation converges to state no.',ISTATE,
-     &         'for the specified symmetry and spin species.'
+               WRITE(IWUNIT,'(/A,I4,A)')
+     &         '@    This calculation converges to state no.',ISTATE,
+     &         ' for the specified symmetry and spin species.'
             ELSE
-               WRITE(IWUNIT,'(/5X,A,I4,A/5X,A//5X,A)')
-     &         'State-average MCSCF of',NMCAVER,' states',
-     &         'for the specified symmetry and spin species.',
-     &         '  State no.        Weight'
-               WRITE(IWUNIT,'(I13,F12.5)')
-     &         (IROOT(I),WEIGHT_MCAVER(I), I=1,NMCAVER)
+               WRITE(IWUNIT,'(/A,I4,A//A)')
+     &         '@    State-average MCSCF of',NMCAVER,' states'//
+     &         ' for the specified symmetry and spin species.',
+     &         '@      State no.        Weight'
+               WRITE(IWUNIT,'(A,I12,F12.5)')
+     &         ('@',IROOT(I),WEIGHT_MCAVER(I), I=1,NMCAVER)
             END IF
          ELSE
-            WRITE(IWUNIT,'(/5X,A/5X,A)')
-     *         'This calculation converges to the lowest state',
-     *         'for the specified symmetry and spin species.'
+            WRITE(IWUNIT,'(/A)')
+     &         '@    This calculation converges to the lowest state'//
+     &         ' for the specified symmetry and spin species.'
          END IF
          WRITE(IWUNIT,2500) MAXJT
          IF (JOLSEN) WRITE(IWUNIT,2550)
@@ -5738,24 +5738,24 @@ C
       END IF
       IF (DOCCSD) CALL CC_PRTINP(IWUNIT)
  1600 FORMAT(/5X,'Maximum number of macro iterations',I8,
-     *       /5X,'Maximum number of micro iterations',I8,
-     *       /5X,'Threshold for gradient',10X,1P,D10.2,
-     *       /5X,'Number of initial trial vectors   ',I8,
-     *       /5X,'Number of initial CI iterations   ',I8,
-     *       /5X,'Number of simultaneous trial vectors',I6)
+     &       /5X,'Maximum number of micro iterations',I8,
+     &       /5X,'Threshold for MCSCF gradient    ',1P,D10.2,
+     &       /5X,'Number of initial trial vectors   ',I8,
+     &       /5X,'Number of initial CI iterations   ',I8,
+     &       /5X,'Number of simultaneous trial vectors',I6)
  1800 FORMAT(/5X,'Maximum number of CI iterations ',I10,
-     *       /5X,'Threshold for CI convergence    ',1P,D10.2,
-     *       /5X,'Number of CI roots to converge  ',I10)
+     &       /5X,'Threshold for CI convergence    ',1P,D10.2,
+     &       /5X,'Number of CI roots to converge  ',I10)
  1900 FORMAT(/5X,'Maximum number of Fock   iterations',I7,
      &       /5X,'Maximum number of DIIS   iterations',I7,
      &       /5X,'Maximum number of QC-SCF iterations',I7,
-     *       /5X,'Threshold for SCF convergence ',1P,D12.2)
+     &       /5X,'Threshold for SCF convergence ',1P,D12.2)
  2500 FORMAT(/5X,'Maximum number of NEO/NR iterations',I4)
  2550 FORMAT(/5X,'CI trial vectors are generated with the Olsen',
-     *       ' algorithm.')
+     &       ' algorithm.')
  2560 FORMAT(/5X,'Dimension of CI PHP subspace' :,I6)
  2570 FORMAT(/5X,
-     *   ' CI PHP subspace selected from size of residual elements.')
+     &   ' CI PHP subspace selected from size of residual elements.')
  2600 FORMAT(/5X,'Reference state in CI response calculation :',I8)
 C
 C ***
@@ -5776,10 +5776,10 @@ C
       IF (DOMC .AND. NFROT.GT.0) THEN
          WRITE (IWUNIT,6100) NFROT,(NFRO(I),I=1,NSYM)
       END IF
- 6110 FORMAT(//,5X,'Number of frozen SCF orbitals',T38,I5,' |',8I5)
- 6111 FORMAT(//,5X,'Number of frozen KS orbitals',T38,I5,' |',8I5)
- 6120 FORMAT(//,5X,'Number of frozen MP2 orbitals',T38,I5,' |',8I5)
- 6100 FORMAT(//,5X,'Number of frozen MCSCF orbitals',T38,I5,' |',8I5)
+ 6110 FORMAT(//'@    Number of frozen SCF orbitals',T38,I5,' |',8I5)
+ 6111 FORMAT(//'@    Number of frozen KS orbitals',T38,I5,' |',8I5)
+ 6120 FORMAT(//'@    Number of frozen MP2 orbitals',T38,I5,' |',8I5)
+ 6100 FORMAT(//'@    Number of frozen MCSCF orbitals',T38,I5,' |',8I5)
 C
       NNOROT = 0
       DO 6200 I = 1,NORBT
@@ -5796,7 +5796,7 @@ C
          END IF
  6250    CONTINUE
       END IF
- 6300 FORMAT(/5X,'Number of orbitals frozen with ".FREEZE"',I3,
+ 6300 FORMAT(/'@    Number of orbitals frozen with ".FREEZE"',I3,
      &      //'     Orbital  Symmetry   No. in   Type',
      &       /'       no.              symmetry')
  6350 FORMAT(3I10,3X,A9)

@@ -14,7 +14,7 @@ C by the calling routine.
       COMMON / CIARCC / NTOVEC(8),ISYCH1,ISYCH2,ITYP1,ITYP2
       COMMON / CIARCP / IPRCIA
       COMMON / CIARCL / LIDEN, SYMTRZ,CIAMIO,GETMNM,INXINT
-C The following 3 common blocks are internal to CC_CIA 
+C The following 3 common blocks are internal to CC_CIA
       COMMON / CIATIM / TIMCIA(NTMCIA)
       COMMON / CIABAT / NCHBAT(8)
       COMMON / CIAIDI / CIAROU

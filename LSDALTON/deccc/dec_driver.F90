@@ -321,7 +321,7 @@ contains
     ! Number of workers (slaves) = Number of nodes minus master itself
     nworkers = infpar%nodtot -1
     if(nworkers<1) then
-       call lsquit('DEC MPI requires at least two nodes!',-1)
+       call lsquit('DEC calculations using MPI require at least two nodes!',-1)
     end if
 
     ! MPI local group size

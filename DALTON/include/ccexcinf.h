@@ -45,7 +45,7 @@ C     INTEGER NCC(8,3)
 
       COMMON /CCEXCIT/ EOMINP, TOLSC,
      &                 NCCEXCI, NOMINP, IOMINP, ISTVEC,
-     &                 FDEXCI, FDJAC, JACTST, STVEC, 
+     &                 FDEXCI, FDJAC, JACTST, STVEC,
      &                 OMEINP, STSD, OMESC,
      &                 CCSPIC,CC2PIC,CCSDPI,MARGIN,SQROVLP,CCSDTRENRM,
      &                 EXCI_CONT

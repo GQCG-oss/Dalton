@@ -103,6 +103,7 @@ contains
     DECinfo%fragadapt=.false.
     ! for ccsd(t) calculations, option to use MP2 optimized fragments
     DECinfo%use_mp2_frag=.true.
+    DECinfo%OnlyOccPart=.false.
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
@@ -124,6 +125,7 @@ contains
     DECinfo%ccMaxDIIS=3
     DECinfo%ccModel=1 ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
     DECinfo%F12=.false.
+    DECinfo%F12debug=.false.
     DECinfo%ccConvergenceThreshold=1e-5
     DECinfo%CCthrSpecified=.false.
     DECinfo%use_singles=.false.
@@ -388,8 +390,9 @@ contains
        case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
        case('.NOTUSEMP2FRAG') 
           DECinfo%use_mp2_frag=.false.
-          !
+       case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.F12'); DECinfo%F12=.true.
+       case('.F12DEBUG'); DECinfo%F12DEBUG=.true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -647,6 +650,7 @@ end if
     write(lupri,*) 'simulate_eri ', DECitem%simulate_eri
     write(lupri,*) 'fock_with_ri ', DECitem%fock_with_ri
     write(lupri,*) 'F12 ', DECitem%F12
+    write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
     write(lupri,*) 'manual_batchsizes ', DECitem%manual_batchsizes

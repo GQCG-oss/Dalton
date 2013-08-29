@@ -6,7 +6,7 @@
 !     - SCF specific input is in scbrhf.h
 !     - orbital specifications are in inforb.h
 !
-      INTEGER         NFLAG, MAXRTS, MXFELT 
+      INTEGER         NFLAG, MAXRTS, MXFELT
       PARAMETER (NFLAG = 80, MAXRTS = 150, MXFELT = 20) ! MAXRTS ==> max. number of roots; has to be equal to MAXRTS_LU in lucita/cstate.inc
 !
       INTEGER         NFIELD, ISPIN,NMCAVER,ISTATE,LSYM,NACTEL, MCTYPE, &
@@ -31,8 +31,8 @@
      &                JOLSEN,ABAIPH,INERSI,INERSF,DODFT,DONEVPT,HSROHF, &
      &                BOYORB,PIPORB,ADDMP2,DOFCI,DOCISD,DOLUCITA,DOMEP, &
      &                DO_CUBE
-!     variables for srDFT /hjaaj                                         
-      LOGICAL         DOCISRDFT,DOHFSRDFT,DOMCSRDFT,ADDSRI,SRHYBR        
+!     variables for srDFT /hjaaj
+      LOGICAL         DOCISRDFT,DOHFSRDFT,DOMCSRDFT,ADDSRI,SRHYBR
       COMMON /LOGINP/ FLAG(NFLAG), DOSCF,DOMP2,DOCINO,DOCI,DOMC,DORSP,  &
      &                FCVORB,LNOROT,LMOORD,DIRFCK,CORHOL,CORRLX,RESPHP, &
      &                JOLSEN,ABAIPH,INERSI,INERSF,DODFT,DONEVPT,HSROHF, &

@@ -65,6 +65,9 @@ contains
     fragment%ypo => null()
     fragment%ypv => null()
 
+    !Free CABS MO F12
+    fragment%cabsMOs => null()
+
     fragment%fock => null()
     fragment%ppfock => null()
     fragment%ccfock => null()
@@ -2084,7 +2087,8 @@ contains
          full_orb_idx
     integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
-
+  
+    integer :: ncabsAO,ncabsMO
 
     if(.not. fragment%fragmentadapted) then
        ! allocate C^o(nbasis,occ) C^v(nbasis,unocc)
@@ -2097,6 +2101,14 @@ contains
 
     call mem_alloc(fragment%CoreMO, fragment%number_basis, fragment%ncore)
     fragment%CoreMO=0.0E0_realk
+
+    !F12-calculation CABS MO and CABS AO
+    if(DECinfo%F12) then
+       ncabsAO = size(Mymolecule%cabsMOs,1)
+       ncabsMO = size(Mymolecule%cabsMOs,2) 
+       call mem_alloc(fragment%cabsMOs,ncabsAO,ncabsMO)
+       call dcopy(ncabsAO*ncabsMO,Mymolecule%cabsMOs,1,fragment%cabsMOs,1)
+    endif
 
     ! truncate basis to this set of atoms
     nocc = MyMolecule%numocc
@@ -2245,12 +2257,14 @@ contains
     end if FitOrbitalsForFragment
 
 
-    ! Purify fragment MO coefficients 
-    ! (not for fragment-adapted orbitals since these are automatically orthogonal
-    !  by virtue of the purification of the local orbitals).
-    if(DECinfo%PurifyMOs .and. (.not. fragment%fragmentadapted) ) then
-       call fragment_purify(fragment)
-    end if
+! KK: Purification can be problematic for local orbitals in the context of fragment optimization, 
+! so currently it is only used in combination with fragment-adapted orbitals.
+!!$    ! Purify fragment MO coefficients 
+!!$    ! (not for fragment-adapted orbitals since these are automatically orthogonal
+!!$    !  by virtue of the purification of the local orbitals).
+!!$    if(DECinfo%PurifyMOs) then
+!!$       call fragment_purify(fragment)
+!!$    end if
  
 
  ! adjust fock matrix in ao basis
