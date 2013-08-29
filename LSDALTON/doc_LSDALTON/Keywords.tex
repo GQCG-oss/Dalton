@@ -1131,7 +1131,7 @@ and Baker convergence criteria.
 \textit{geomopt/geoopt\_constrain}:
 shows a constrained geometry optimization of ethane,
 keeping the C-C bond distance fixed
-(coordinate \#1 as determined from the use of \Key{FINDRE}).
+(Internal coordinate \#1 as determined from the use of \Key{FINDRE}).
 \item
 \textit{geomopt/cartes\_trilevel\_newconv}:
 performs a geometry optimization in Cartesian coordinates
@@ -1255,9 +1255,9 @@ Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-7}$.
 This section describes keywords needed to perform localization of Hartree--Fock orbitals. The optimization of the
 chosen localization function will be performed using a trust-region algorithm \cite{hoyvik:TRM}, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
 
-After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The coefficient matrix row index refer to the atomic orbital basis index, while the column index refer to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
+After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; \textit{cmo\_orbitals.u} and \textit{lcm\_orbitals.u}. \textit{cmo\_orbitals.u} contains coefficients for the canonical molecular orbitals (CMO) and \textit{lcm\_orbitals.u} contains coefficients for the localized molecular orbitals (LMO). The coefficient matrix row index refers to the atomic orbital basis index, while the column index refers to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
 
-For the most effcient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
+For the most efficient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
 
 \begin{description}
 
@@ -1267,7 +1267,7 @@ Use powers m of the second moment (PSM) localization function \cite{jansik:2011}
 
 \item[\Key{PFM}]\verb| | \newline
 \verb|<m m>|\newline
-Use powers m of the fourth moment (PFM) localization function \cite{hoyvik:PFM}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen is basis sets augmented with diffuse functions are used.
+Use powers m of the fourth moment (PFM) localization function \cite{hoyvik:PFM}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen if basis sets augmented with diffuse functions are used.
 
 \item[\Key{PipekMezey}]\verb| | \newline
 Use Pipek-Mezey localization function using an implementation based on L{\"o}wdin population analysis 
@@ -1295,7 +1295,7 @@ Pipek-Mezey localization (using Mulliken population analysis) of virtual space.
 Should only be used in combination with the .START/TRILEVEL and  .LCM options for the *DENSOPT section. The keyword is used to skip orbital localization after the second level in the three level procedure. Not recommended for general use, but can be used to save  computational time if only the virtual space is to be localized.  
 
 \item[\Key{Only Loc}]\verb| | \newline
-Provided the file with the molecular orbital coefficients (e.g., cmo\_orbitals.u or lcm\_orbitals.u) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to orbitals\_in.u, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to orbitals\_out.u. Thus, for this keyword to be used, orbitals\_in.u must exist and a localization function must be chosen.
+Provided the file with the molecular orbital coefficients (e.g., \textit{cmo\_orbitals.u} or \textit{lcm\_orbitals.u}) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to \textit{orbitals\_in.u}, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to \textit{orbitals\_out.u}. Thus, for this keyword to be used, \textit{orbitals\_in.u} must exist and a localization function must be chosen.
 
 
 \item[\Key{Orbital Locality}]\verb| | \newline
@@ -1304,7 +1304,7 @@ This keyword will make sure second and fourth moment orbital spreads are printed
 
 \item[\Key{Orbital Plot}]\verb| | \newline
 \verb|<orbital specification>|\newline	
-Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plottinge other orbitals, use the **PLT option described in section \ref{sec:plt}. Also note that the grid dimensions may be modified as described in Section~\ref{sec:pltgrid}.
+Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plotting other orbitals, use the **PLT option described in section \ref{sec:plt}. Also note that the grid dimensions may be modified as described in Section~\ref{sec:pltgrid}.
 \end{description}
 
 

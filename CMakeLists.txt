@@ -45,7 +45,12 @@ option(ENABLE_LSEEK          "Enable lseek"                                     
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"               OFF)
 
-set(LIBS)
+option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
+option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
+option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
+option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
+
+set(EXTERNAL_LIBS)
 
 include(ConfigVersion)
 include(SourcesDALTON)
@@ -65,7 +70,7 @@ include(mergestaticlibs)
 
 # set code coverage
 if(ENABLE_CODE_COVERAGE)
-    set(LIBS ${LIBS} gcov)
+    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} gcov)
 endif()
 
 include_directories(
@@ -106,7 +111,7 @@ configure_script(
 
 # if BLAS and/or LAPACK not found, add own sources to the list of
 # sources to compile
-if(USE_OWN_BLAS)
+if(USE_BUILTIN_BLAS)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_OWN_BLAS_SOURCES}
@@ -116,7 +121,7 @@ if(USE_OWN_BLAS)
         ${LSDALTON_OWN_BLAS_SOURCES}
         )
 endif()
-if(USE_OWN_LAPACK)
+if(USE_BUILTIN_LAPACK)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_OWN_LAPACK_SOURCES}
