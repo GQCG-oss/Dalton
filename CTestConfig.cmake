@@ -12,8 +12,8 @@ else()
     set(CTEST_DROP_LOCATION "/CDash/submit.php?project=DALTON")
 endif()
 
-if(DEFINED ENV{CTEST_MAKE_NR_PROC})
-    set(MAKECOMMAND "make -j$ENV{CTEST_MAKE_NR_PROC}" CACHE STRING "Custom make command")
+if(DEFINED ENV{CTEST_MAKE_NUM_PROCS})
+    set(MAKECOMMAND "make -j$ENV{CTEST_MAKE_NUM_PROCS}" CACHE STRING "Custom make command")
 endif()
 
 # total allowed time for all tests in seconds

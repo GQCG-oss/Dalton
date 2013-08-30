@@ -7,10 +7,11 @@ Before starting testing ("make test" or nightly), you should export the
 following environment variables::
 
   $ export DALTON_TMPDIR=/scratch        # scratch space for Dalton (adapt the path of course)
-  $ export CTEST_MAKE_NR_PROC=16         # in this case the code will be compiled with 16 cores (make -j16)
-  $ export DALTON_NR_MPI_PROCS=4         # in this case 4 cores, only relevant if you compile with MPI
+  $ export CTEST_MAKE_NUM_PROCS=16       # in this case the code will be compiled with 16 processes (make -j16)
+  $ export DALTON_NUM_MPI_PROCS=4        # in this case 4 processes, only relevant if you compile with MPI
 
-Note that if you set the DALTON_NR_MPI_PROCS to something different from 1 it will assume you have compiled using MPI and run the mpirun command!
+Note that if you set the DALTON_NUM_MPI_PROCS to something different from 1 it will assume you have compiled using MPI and run the mpirun command!
+
 
 Testing
 -------

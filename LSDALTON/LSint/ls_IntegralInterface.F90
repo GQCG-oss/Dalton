@@ -55,9 +55,8 @@ MODULE ls_Integral_Interface
   use io, only: io_get_filename, io_get_csidentifier
   use screen_mod, only: determine_lst_in_screenlist, screen_associate,&
        & screen_add_associate_item
-  use Fragment_module, only: buildfragmentinfoandblocks, setdaltonfragments, &
-       & freedaltonfragments, freefragmentinfoandblocks
-  use molecule_module, only: build_fragment, freeMolecularOrbitalInfo
+  use molecule_module, only: build_fragment, freeMolecularOrbitalInfo,&
+       & freeDaltonFragments
   use files,only: lsclose, lsopen
   use SphCart_Matrices, only: spherical_transformation
   use Thermite_OD, only: getTotalGeoComp

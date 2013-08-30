@@ -17,7 +17,7 @@ cd $TMP_DIR/build
 export OMP_NUM_THREADS=1
 export MATH_ROOT=/com/intel/Compiler/11.1/064/mkl
 export DALTON_TMPDIR=$SCRATCH_DIR
-export DALTON_NR_MPI_PROCS=1
+export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 FC=gfortran CC=gcc cmake -DENABLE_BOUNDS_CHECK=1 -DCMAKE_BUILD_TYPE=Debug -DENABLE_CODE_COVERAGE=1 -DENABLE_RELEASE=1 -DENABLE_TIMINGS=1 -DENABLE_BLAS=ON -DENABLE_LAPACK=ON -DBUILDNAME=RB-Grendel-linux-gfortran443-debug /home/tkjaer/NightlyTestingCdash/tmp/DaltonGfortranDebug
 #make depend
