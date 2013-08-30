@@ -104,6 +104,8 @@ contains
     ! for ccsd(t) calculations, option to use MP2 optimized fragments
     DECinfo%use_mp2_frag=.true.
     DECinfo%OnlyOccPart=.false.
+    ! Repeat atomic fragment calcs after fragment optimization
+    DECinfo%RepeatAF=.true.
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
@@ -583,7 +585,7 @@ contains
 
     ! FOs do not work with reduced pairs, set reduction distance to 1000000 to
     ! avoid it from being used in practice
-    ! Also use purification of MOs.
+    ! Also use purification of FOs.
     if(DECinfo%fragadapt) then
        DECinfo%PairReductionDistance = 1.0e6_realk
        DECinfo%purifyMOs=.true.

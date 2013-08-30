@@ -3955,13 +3955,13 @@ if(DECinfo%PL>0) then
 
     ! Set job list for fragments
     ! --------------------------
-    if(DECinfo%first_order .or. nsingle==1 .or. &
-         & (DECinfo%ccmodel/=1 .and. (.not. DECinfo%fragadapt) ) ) then
-       ! KKFIXME
-          njobs = nsingle+npair
-       else
-          njobs = npair
-       end if
+    if(DECinfo%RepeatAF) then
+       ! Repeat atomic fragments: Both atomic and pair frags
+       njobs = nsingle+npair
+    else
+       ! Atomic fragments are already done - only do pairs
+       njobs = npair
+    end if
 
     call init_joblist(njobs,jobs)
 
@@ -4135,12 +4135,8 @@ if(DECinfo%PL>0) then
 
        if(.not. which_fragments(i)) cycle  ! No fragment for atom i
 
-       ! KKFIXME
-       if(DECinfo%first_order .or. nsingle==1 .or. &
-            & (DECinfo%ccmodel/=1 .and. (.not. DECinfo%fragadapt) ) ) then
-          ! first order properties - need to recalculate atomic fragments
-          ! just one fragment - need to recalculate atomic fragments to avoid empty joblist
-          ! local orbital fragment optimization and not MP2 - recalculate atomic frags
+       ! Repeat atomic fragments if requested
+       if(DECinfo%RepeatAF) then
 
           ! Set atom indices for single fragment job
           k=k+1

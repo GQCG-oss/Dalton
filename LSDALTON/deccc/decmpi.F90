@@ -1726,6 +1726,7 @@ contains
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
     call ls_mpi_buffer(DECitem%use_mp2_frag,Master)
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
+    call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%paircut_set,Master)
     call ls_mpi_buffer(DECitem%PairReductionDistance,Master)

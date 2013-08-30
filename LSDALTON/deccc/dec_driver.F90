@@ -515,11 +515,8 @@ contains
     njobs = jobs%njobs
 
 
-    ! Zero fragment energies because they are recalculated
-    ! (except for simple DEC-MP2 with only energies)
-    ! KKFIXME
-    if(DECinfo%first_order .or. count(dofrag)==1 .or. &
-         & (DECinfo%ccmodel/=1 .and. (.not. DECinfo%fragadapt) ) ) then
+    ! Zero fragment energies if they are recalculated
+    if(DECinfo%RepeatAF) then
        FragEnergies = 0.0E0_realk
     end if
 

@@ -2212,11 +2212,16 @@ contains
   !> orbitals are assigned - or if nonzero occupied AND nonzero virtual orbitals are assigned.
   !> If this is not the case, the system under consideration is presumably a debug molecule
   !> and we quit here, rather than encountering uninitialized pointers later on...
-  !> all atoms in the molecule.
+  !> We also check whether it is necessary to repeat the atomic fragment calcs
+  !> after the fragment optimization and set DECinfo%RepeatAF accordingly.
   !> \author Kasper Kristensen
   !> \date December 2011
   subroutine dec_orbital_sanity_check(natoms,nocc,nunocc,OccOrbitals,&
        & UnoccOrbitals,MyMolecule)
+
+    ! NOTE!!! 
+    ! DECinfo%RepeatAF is also intent(inout) here, although it is part of a global structure.
+    ! I know this is not pretty but this solution will have to do for now...
 
     implicit none
     !> Number of atoms
@@ -2232,7 +2237,7 @@ contains
     !> Full molecule info
     type(fullmolecule),intent(in) :: MyMolecule
     integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms)
-    integer :: i
+    integer :: i,nfrags
     logical :: something_wrong
 
 
@@ -2248,6 +2253,7 @@ contains
 
 
     something_wrong=.false.
+    nfrags=0
     do i=1,natoms
        if( (nocc_per_atom(i) == 0) .and. (nunocc_per_atom(i)/=0) ) something_wrong=.true.
        if( (nocc_per_atom(i) /= 0) .and. (nunocc_per_atom(i)==0) ) something_wrong=.true.
@@ -2258,7 +2264,27 @@ contains
           call lsquit('Orbital assigment is inconsistent &
                & with DEC scheme',DECinfo%output)
        end if
+
+       ! Count number of atomic fragments
+       if( (nocc_per_atom(i) /= 0) .and. (nunocc_per_atom(i)/=0) ) then
+          nfrags=nfrags+1
+       end if
     end do
+
+
+    ! Repeat atomic fragment calcs after fragment optimization???
+    ! -----------------------------------------------------------
+    ! Cases where it is necessary to repeat atomic fragment calcs:
+    ! - first order properties are requested
+    ! - only one fragment (debug case: avoid empty job list)
+    ! - fragment opt using local orbs using MP2 calculations but
+    !   where the CC model of interest is not MP2.
+    if(DECinfo%first_order .or. nfrags==1 .or. &
+         & (DECinfo%ccmodel/=1 .and. (.not. DECinfo%fragadapt) ) ) then
+       DECinfo%RepeatAF=.true.
+    else
+       DECinfo%RepeatAF=.false.
+    end if
 
 
   end subroutine dec_orbital_sanity_check
