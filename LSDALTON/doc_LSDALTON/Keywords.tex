@@ -130,7 +130,7 @@ The various integral-evaluation thresholds (below) are set according to this Thr
 \end{itemize}
 \end{description}
 
-\section{**INTEGRAL advanced keywords}\label{sec:integral}
+\section{**INTEGRAL advanced keywords}\label{sec:integral:adv}
 
 This input module defines the way the integrals should be calculated. 
 This section contains some advanced keywords which is mostly usefull 
@@ -1367,7 +1367,7 @@ By default, standard and eigenvalue response equations are solved using the
 algorithm with paired trial vectors~\cite{coriani:2007}, whereas damped
 (complex) response equations are solved using the algorithm with
 symmetrized trial vectors~\cite{kauczor:2011}.\newline
-This choice can be modified activating the \Key{SYM\_SOLVER} and \Key{PAIR\_SOLVER}, as described below.
+This choice can be modified using the \Key{SYM\_SOLVER} and \Key{PAIR\_SOLVER} keywords, see below.
 \begin{description}
 \item[\Key{SYM\_SOLVER}] \verb| | \newline
 The solver with symmetrized trial vectors is used for solving standard
@@ -1583,7 +1583,7 @@ Note that the keyword {\bf .DTHR} under {\bf *SOLVER} (see section \ref{subsec:r
 Nuclear magnetic shielding tensors and chemical shift can be calculated with this keyword
 {\bf Test case}: LSresponse/LSresponse\_NMR\_SHIELD
 
-\subsection{*ESDIPOLE}\label{subsec:esd}
+\subsection*{ESDIPOLE}\label{subsec:esd}
 Permanent dipole moment for excited states. 
 {\bf Always requires specification of .NEXCIT!}\newline
 If .EXSTATES is not specified, the excited state dipole moments
