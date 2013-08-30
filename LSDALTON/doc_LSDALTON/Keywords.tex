@@ -1524,9 +1524,10 @@ The calculation of Damped MCD spectra according to Ref.~\cite{KjaergaardDampedMC
 
 If {\bf .MCDEXCIT} is specified, the default is to proceed in the following way: 
 \begin{enumerate}
-\item Determine the number of excited states as specified. 
+\item Determine the excited states requested under .MCDEXCIT 
 \item Determine $\mathcal{B}$ terms for all allowed transitions. Both London atomic orbitals LAO (also called Gauge including atomic orbitals GIAO) and non-LAOs are used to determine the $\mathcal{B}$ terms. LAOs are superior to standards AOs, but the difference can give an indication of how close the result is to the basis set limit. 
-\item Simulate the MCD spectrum based on the calculated $\mathcal{B}$ terms by associating a Lorentzian lineshape function (with lineshape parameter of 0.005 a.u.) to each $\mathcal{B}$ term (See Ref. \cite{KjaergaardMCD}). 
+\item Simulate the MCD spectrum based on the calculated $\mathcal{B}$ terms 
+(sticks) by associating a Lorentzian lineshape function (with lineshape parameter of 0.005 a.u.) to each $\mathcal{B}$ term (See Ref. \cite{KjaergaardMCD}). 
 The simulated spectrum is written to a file MCDspectraAU.dat (in atomic units). The first number is the frequency, the second the LAO ellipticity and the third is the non-LAO ellipticity. A corresponding file is generated called MCDspectra.dat using standard units ($cm^{-1}$ for frequencies and molar ellipticity for the ellipticity).
 The individual $\mathcal{B}$ term contribution to the MCD spectra is written to the files BtermAU.dat and Bterm.dat. Per default 5000 points are used for the simulated spectrum. 
 The standard units for the $\mathcal{B}$ term are given as $\frac{D^{2} \mu_{B}}{cm^{-1}}$, where $D$ is the unit Debye and $\mu_{B}$ is the Bohr magneton. The conversion factor between atomic units and the standard units is $5.88764 \dot 10^{-5}$.
@@ -1569,13 +1570,14 @@ Deactivates the execution of damped MCD spectra
 Uses Gaussian lineshape functions (with a lineshape parameter of 0.0070851079363103793) instead of the default Lorentzian lineshape functions.
 \item[\Key{LINESHAPEPARAM}] \verb| | \newline
 \verb|<lineshape parameter>|\newline
-Changes the lineshape parameter (default value is 0.005 a.u. for Lorentzian, and 0.0070851079363103793 a.u. for Gaussian) used to simulate the spectrum
-\item[\Key{NVECFORPEAK}] \verb| | \newline
-\verb|<number of frequencies used around each MCD peak>|\newline
-Changes the number of frequencies used around each MCD peak (default 10).
+Changes the lineshape parameter (default value is 0.005~a.u. for Lorentzian, 
+and 0.0070851079363103793~a.u. for Gaussian) used to simulate the spectrum
 \item[\Key{NSTEPS}] \verb| | \newline
 \verb|<number of frequencies used for the simulated MCD spectra>|\newline
 Changes the number of frequencies used for the simulated MCD spectra (default 5000).
+\item[\Key{NVECFORPEAK}] \verb| | \newline
+\verb|<number of frequencies used around each MCD peak>|\newline
+Changes the number of frequencies used around each MCD peak (default 10).
 \end{description}
 Note that the keyword {\bf .DTHR} under {\bf *SOLVER} (see section \ref{subsec:responsesolver} ) can be used to define the threshold below which an excited state is considered degenerate
 

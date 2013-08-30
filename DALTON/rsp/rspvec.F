@@ -3328,7 +3328,7 @@ C
      &               AQRLB(ISYM,IAOP),ISYM,-FRQ,
      &               '@ B operator, symmetry, frequency: ',
      &               BQRLB(ISYM,IBOP),ISYM, FRQ,
-     &               '@ Value of linear response -<<A;B>(omega): ',VAL
+     &               '@ Value of linear response -<<A;B>>(omega): ',VAL
                END DO
             END DO
             END DO
