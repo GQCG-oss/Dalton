@@ -1212,7 +1212,7 @@ is used, all the diagonal elements (and therefore the eigenvalues) are
 set equal to the value EVLINI. 
 
 \item[\Key{LOOSE}]
-Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-4}$.
+Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-4}$.
 
 \item[\Key{MAX IT}]
 Maximum number of iterations in geometry optimization scheme
@@ -1239,13 +1239,13 @@ Powell-Symmetric-Broyden (PSB)
 update formula should be used for optimization.
 
 \item[\Key{TIGHT}]
-Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-6}$.
+Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-6}$.
 
 \item[\Key{VLOOSE}]
-Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-3}$.
+Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-3}$.
 
 \item[\Key{VTIGHT}]
-Default convergence criteria $\epsilon$ set to $1.0\cdot 10^{-7}$.
+Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-7}$.
 
 \end{description}
 
@@ -1349,22 +1349,25 @@ Below, the list of general response input keywords follows.
 \item[\Key{NEXCIT}] \verb| | \newline
 \verb|<Number of excitation energies>|\newline
 Determines the number of excitation energies to be calculated.
-If this keyword is set the excitation energies 
+If this keyword is set, the excitation energies 
 and the corresponding one-photon dipole absorption strengths
-for excited states 1 to NEXCIT are always calculated.
+for the lowext NEXCIT excited states (i.e. excited states 1 to NEXCIT) 
+are always calculated.
 \emph{\bf Important:} If properties involving excited states
-are requested (e.g. two-photon absorption or the excited state gradient)
+are to be requested (e.g. two-photon absorption or the excited state gradient),
 this keyword must be listed \emph{before}
 any of these properties. \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_opa
 \end{description}
 
 \subsection{*SOLVER}\label{subsec:responsesolver}
-General information related to the way response equations are solved to obtained property.
-By default standard and eigenvalue response equations are solved using the
-algorithm with paired trial vectors\cite{coriani:2007} and damped
+General information related to the way response equations are solved to 
+obtain a given property.
+By default, standard and eigenvalue response equations are solved using the
+algorithm with paired trial vectors~\cite{coriani:2007}, whereas damped
 (complex) response equations are solved using the algorithm with
-symmetrized trial vectors\cite{kauczor:2011}.\newline
+symmetrized trial vectors~\cite{kauczor:2011}.\newline
+This choice can be modified activating the \Key{SYM\_SOLVER} and \Key{PAIR\_SOLVER}, as described below.
 \begin{description}
 \item[\Key{SYM\_SOLVER}] \verb| | \newline
 The solver with symmetrized trial vectors is used for solving standard
@@ -1377,11 +1380,11 @@ response equations.\newline
 \item[\Key{CONVTHR}] \verb| | \newline
 \verb|<Convergence threshold>|\newline
 Convergence threshold to which response equations are solved.
-Default value is set equal to $10^{-4}$.
+Default value is set to $10^{-4}$.
 \item[\Key{MAXIT}] \verb| | \newline
 \verb|<Maximum number of iterations>|\newline
 Maximum number of iterations in the iterative procedure.
-Default value set equal to 100.
+Default value is set to 100.
 \item[\Key{MAXRED}] \verb| | \newline
 \verb|<Maximum size of the reduced space>|\newline
 Maximum size of the reduced space.
@@ -1390,7 +1393,7 @@ Default value set equal to 200.
 AO preconditioning is used (MO preconditioning by default).
 AO preconditioning may only be used within the algorithm with paired trial vectors.
 \item[\Key{NOPREC}] \verb| | \newline
-No precondtioning is used.
+No preconditioning is used.
 \item[\Key{CONVDYN}] \verb| | \newline
 \verb|<Option>|\newline 
 Dynamic convergence threshold suitable for large calculations.
@@ -1399,29 +1402,29 @@ Options are TIGHT, STANDARD, and SLOPPY.
 \verb|<Number Of excitation Vectors on file>|\newline 
 This is a restart option, that allows the user to restart the calculation. 
 
-Assume that you have already done one calculation where you requested 6 excitation 
-energies but realize that you need 10, you can provide the file rsp\_eigenvecs and use
+Assume for instance that you have already done one calculation where you requested 6 excitation 
+energies but realize that you need 10. You can provide the file rsp\_eigenvecs and use
 
 .RESTEXC\\
 6 
 
 option to restart the calculation from the previous. 
-Naturally this option can also be used to bypass the excitation vector step if the previous calculation failed for some property evaluation which needed the excitation vectors.  
+This option can also be used to bypass the excitation vector step if the previous calculation failed for some property evaluation which needed the excitation vectors.  
 \item[\Key{DTHR}] \verb| | \newline
 \verb|<Threshold>|\newline 
-Threshold for when excited states is considered degenerate
+Threshold for when excited states are to be considered degenerate
 \end{description}
 Now follows a list of input keywords for the specific properties
 available in \lsdalton.
 
 \subsection{*ALPHA}\label{subsec:alpha}
 Calculation of the (possibly complex) 
-polarizability tensor $\alpha$ and its isotropic average.
+electric dipole polarizability tensor $\alpha_{AB}$ and its isotropic average.
 The polarizability equals minus the linear response function
-$<< \mu_A; \mu_B >>_{\omega_B}$, where
-$\omega_B$ is in general allowed to be complex --
-i.e. $\omega_B = \omega_B^R + i \omega_B^I$.
-Frequencies not specified are set to zero by default,
+$\langle\langle \mu_A; \mu_B \rangle\rangle_{\omega_B}$, where
+$\omega_B$ is in general allowed to be complex -- that is,
+$\omega_B = \omega_B^R + i \omega_B^I$.
+Unspecified frequencies are set to zero by default,
 i.e. if no frequencies are specified, the static polarizability is calculated.
 \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_alpha 
@@ -1430,8 +1433,8 @@ i.e. if no frequencies are specified, the static polarizability is calculated.
 \verb|<Number of real frequencies for B operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
 Real frequencies $\omega_B^R$ in the corresponding linear response function.
-First line after .BFREQ contains the number of frequencies
-and the second line contains all frequencies on one line.
+The first line after .BFREQ contains the number of frequencies
+and the second line contains all frequency values (on one single line).
 \item[\Key{IMBFREQ}] \verb| | \newline
 \verb|<Number of imaginary frequencies for B operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
@@ -1459,29 +1462,30 @@ for the frequencies $\omega_B = 0.1 + 0.05i$ and $\omega_B = 0.2$
 
 
 \subsection{*BETA}\label{subsec:beta}
-Calculation of the (possibly complex) first hyperpolarizability tensor $\beta$ and 
+Calculation of the (possibly complex) first electric dipole 
+hyperpolarizability tensor $\beta_{ABC}$ and 
 the corresponding averages $\beta_{\parallel}$ and
 $\beta_{\perp}$. 
 The first hyperpolarizability tensor equals minus the quadratic response function
-$<< \mu_A; \mu_B, \mu_C >>_{\omega_B, \omega_C}$, where
+$\langle\langle \mu_A; \mu_B, \mu_C \rangle\rangle_{\omega_B, \omega_C}$, where
 the frequencies are in general allowed to be complex --
 i.e. $\omega_B = \omega_B^R + i \omega_B^I$ and
 $\omega_C = \omega_C^R + i \omega_C^I$.
 The input is analogous to the *ALPHA input.
-Frequencies not specified are set to zero by default,
+Unspecified frequencies are set to zero by default,
 i.e. if no frequencies are specified, the static first hyperpolarizability is calculated. \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_beta 
 \begin{description}
-\item[\Key{BFREQ}] \verb| | \newline
-\verb|<Number of real frequencies for B operator>|\newline
-\verb|<Freq1, freq2, ... , freqN>|\newline
+\item[\Key{BFREQ}] \verb| | %\newline
+\verb|<Number of real frequencies for B operator>|%\newline
+\verb|<Freq1, freq2, ... , freqN>|%\newline
 Real frequencies $\omega_B^R$ in the corresponding quadratic response function.
 Input as for .BFREQ under *ALPHA.
 \item[\Key{IMBFREQ}] \verb| | \newline
 \verb|<Number of imaginary frequencies for B operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
 Imaginary frequencies $\omega_B^I$ in the corresponding quadratic response function.
-Input as for .BFREQ under *ALPHA.
+Input as for .IMBFREQ under *ALPHA.
 \item[\Key{CFREQ}] \verb| | \newline
 \verb|<Number of real frequencies for C operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
@@ -1491,7 +1495,7 @@ Input as for .BFREQ under *ALPHA.
 \verb|<Number of imaginary frequencies for C operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
 Imaginary frequencies $\omega_C^I$ in the corresponding quadratic response function.
-Input as for .BFREQ under *ALPHA.
+Input as for .IMBFREQ under *ALPHA.
 \end{description}
 
 \subsection{*DAMPED\_TPA}\label{subsec:dtpa}
