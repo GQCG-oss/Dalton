@@ -13,7 +13,7 @@ and to some extent Mac/Darwin (using gfortran/gcc), but is
 expected to work on other architectures as well. 
 The program is written mainly in Fortran~90\index{Fortran~90}.
 The exception is the DFT grid generation and functional evaluation in the 
-exchange-correlation part, which is written in C.
+exchange-correlation part, which are written in C.
 
 \section{Source files}\label{sec:source}
 
@@ -85,22 +85,22 @@ aix \hspace{2cm} & linux \hspace{2cm}    & darwin\\
 
 \bigskip
 
-Although this script in most cases is capable of making a correct
+Although this script is in most cases  capable of making a correct
 \verb|Makefile.config|, we always recommend users to check the created
 \verb|Makefile.config| against local system set-up. 
 In particular, check that \verb|Makefile.config| contains the path(s)
 to the proper mathematical libraries. The program runs many times slower
 if not linked to any mathematical libraries (i.e. using {\lsdalton}'s own 
-"hand coded" matrix multiplications etc.)
+``hand coded'' matrix multiplications etc.)
 %This applies in
 %particular in case of 64-bit integer and 
 %MKL or ACML installations, where the user manually
 %{\em has} to specify the path for the proper libraries\index.
 
 During the execution of the \verb|configure| script, you will be
-asked to decide which compile you would like to use. 
+asked to decide which compiler you would like to use. 
 
-The configure script searches for compilers in a orded fashion, and in each instance you can chose to accept the compiler. 
+The configure script searches for compilers in a ordered fashion, and in each instance you can choose to accept the compiler. 
 
 {\bf For linux}
 \begin{description}
@@ -123,13 +123,13 @@ The configure script searches for compilers in a orded fashion, and in each inst
 \item{C} (xlc,cc)
 \end{description}
 
-When a suitable compiler have been found, you will be asked a few questions:
+When a suitable compiler has been found, you will be asked a few questions:
 
 \begin{enumerate}
 
 \item {\bf Do you want to install the program with OpenMP parallelization?}
 
-Specifies wether or not you would like to compile the code using openMP (utilizing
+Specifies whether or not you would like to compile the code using openMP (utilizing
 several cores (or processors) on a single node.
 Note that MPI parallelization
 is not (yet) supported by {\lsdalton}.

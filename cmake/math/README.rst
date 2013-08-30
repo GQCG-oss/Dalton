@@ -1,7 +1,7 @@
 
 
-Where does CMake search math libraries?
----------------------------------------
+Where does CMake search math libraries if you specify --blas/lapack=auto?
+-------------------------------------------------------------------------
 
 CMake will look in the environment variable MATH_ROOT.
 
