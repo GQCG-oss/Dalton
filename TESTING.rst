@@ -12,6 +12,7 @@ following environment variables::
 
 Note that if you set the DALTON_NUM_MPI_PROCS to something different from 1 it will assume you have compiled using MPI and run the mpirun command!
 
+
 Testing
 -------
 
