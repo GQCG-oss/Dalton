@@ -1830,13 +1830,18 @@ C
       WRITE (LUPRI,'(//A,I5/A/A,I5/A)')
      &      'ERROR reading .mol line',NNMLINE,
      &      MLINE(NMLINE),
-     &      'Cannot determine the charge of atom type', I,
-     &      'Correct input format is: Charge=???'
-      IF (MYNUM .NE. 0) WRITE (LUERR,'(//A,I5,A,I5/A/A,I5/A)')
-     &      'ERROR slave no.',MYNUM,' reading .mol line',NNMLINE,
-     &      MLINE(NMLINE),
      &      ' Cannot determine the charge of atom type', I,
      &      ' Correct input format is: Charge=???'
+      IF (MYNUM .NE. 0) THEN
+         WRITE (LUERR,'(//A,I5,A,I5/A,I5/A/A)')
+     &      'ERROR slave no.',MYNUM,' reading .mol line',NMLINE,
+     &      ' Cannot determine the charge of atom type', I,
+     &      ' Correct input format is: Charge=???',
+     &      ' Dump of slave version of .mol file:'
+         WRITE (LUERR,'(/80A1 )') ('-',I = 1, 80)
+         WRITE (LUERR,'(A)') (MLINE(I), I = 1, NMLINE)
+         WRITE (LUERR,'(80A1/)') ('-',I = 1, 80)
+      END IF
       CALL QUIT('Cannot determine the charge of an atom type')
       END ! SUBROUTINE BASINP
 C  /* Deck cntinp */
