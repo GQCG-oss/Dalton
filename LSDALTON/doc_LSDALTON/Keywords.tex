@@ -1567,17 +1567,19 @@ Deactivates the calculation of $\mathcal{B}$ terms
 \item[\Key{NO DAMPED}] \verb| | \newline
 Deactivates the execution of damped MCD spectra
 \item[\Key{GAUSSIAN}] \verb| | \newline
-Uses Gaussian lineshape functions (with a lineshape parameter of 0.0070851079363103793) instead of the default Lorentzian lineshape functions.
+Uses Gaussian lineshape functions (with a lineshape parameter of 0.0070851079363103793) 
+instead of the default Lorentzian lineshape functions.
 \item[\Key{LINESHAPEPARAM}] \verb| | \newline
 \verb|<lineshape parameter>|\newline
 Changes the lineshape parameter (default value is 0.005~a.u. for Lorentzian, 
 and 0.0070851079363103793~a.u. for Gaussian) used to simulate the spectrum
 \item[\Key{NSTEPS}] \verb| | \newline
 \verb|<number of frequencies used for the simulated MCD spectra>|\newline
-Changes the number of frequencies used for the simulated MCD spectra (default 5000).
+Changes the number of frequencies used for the simulation of the MCD spectra from the individual A and B terms' sticks 
+(default 5000).
 \item[\Key{NVECFORPEAK}] \verb| | \newline
 \verb|<number of frequencies used around each MCD peak>|\newline
-Changes the number of frequencies used around each MCD peak (default 10).
+Changes the number of frequencies used around each MCD peak (default 10) in the damped response calculation.
 \end{description}
 Note that the keyword {\bf .DTHR} under {\bf *SOLVER} (see section \ref{subsec:responsesolver} ) can be used to define the threshold below which an excited state is considered degenerate
 
