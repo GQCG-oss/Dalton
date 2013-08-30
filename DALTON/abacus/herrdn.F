@@ -4570,8 +4570,7 @@ C            small molecules, otherwise just a lot of lines.
       END IF
 
 C
-C        MIDAS Interface, write out input coordinates for midas.sym
-C        analysis
+C     MIDAS Interface, write out input coordinates for midas.sym analysis
 C
       IF (.TRUE.) THEN
          LUCOOR = -1
@@ -6866,9 +6865,7 @@ C
 C     Arnfinn, nov -08: Changed all letters to upper case
 C     (ie Atomtypes -> ATOMTYPES).
 C
-      DO I = 1, 71, 10
-         WRITE (TMPLN(I:),'(A10)') '          '
-      END DO
+      TMPLN = ' '
       IF (NONTYP .LT. 10) THEN
          WRITE (TMPLN,'(A10,I1)') 'ATOMTYPES=', NONTYP
          ISTART = 13
