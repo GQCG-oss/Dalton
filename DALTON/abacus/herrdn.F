@@ -207,7 +207,7 @@ C                 '.SYMTHR'
                   ENDIF
                GO TO 100
 C              '.CM FUN'
-    7          CONTINUE 
+    7          CONTINUE
                   READ (LUCMD,*,IOSTAT=IOS) LCMMAX, CMSTR, CMEND
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .CM FUN')
@@ -216,7 +216,7 @@ C              '.CM FUN'
                   NCMEND = NINT(2*CMEND + 0.01D0)
                GO TO 100
 C              '.ZCMVAL'
-    8          CONTINUE 
+    8          CONTINUE
                   READ (LUCMD,*,IOSTAT=IOS) ZCMVAL
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .ZCMVAL')
@@ -484,7 +484,7 @@ C           ... must close LUCMD again before RETURN, when opened here
          REWIND(LUCMD)
          READ (LUCMD,'(A6)') KEYWRD
          CALL UPCASE(KEYWRD)
-         IF (KEYWRD .EQ. 'INTGRL' .OR. KEYWRD(1:5) .EQ. 'BASIS' .OR. 
+         IF (KEYWRD .EQ. 'INTGRL' .OR. KEYWRD(1:5) .EQ. 'BASIS' .OR.
      &       KEYWRD .EQ. 'ATOMBA') LUMLCL = LUCMD
          IF (ITERNR .EQ. 0 .AND. ITRNMR .EQ. 0 .AND. IPRE .EQ. 0) THEN
             LUINFO = LUMLCL
@@ -528,8 +528,8 @@ C
       READ (MLINE(NMLINE),'(A6)',IOSTAT=IOS) KEYWRD
       IF (IOS.NE.0) THEN
          WRITE (LUPRI,'(/A,I5/A/A)') 'Error in input line no. ',NMLINE,
-     &   MLINE(NMLINE),'Error in reading ... KEYWRD'
-         CALL QUIT('Error in reading...KEYWRD')
+     &   MLINE(NMLINE),'Error in reading basis keyword'
+         CALL QUIT('Error in reading basis keyword in .mol file')
       ENDIF
 
 #ifdef PRG_DIRAC
@@ -824,7 +824,7 @@ C
       ELSE IF (NONTYP.GT.KATOM) THEN
         WRITE (LUPRI,'(/A,I6/A,I6//I3,1X,A)')
      &   ' >>> READ_MOL error, no. of atomic types    ',NONTYP,
-     &   '   is greater than current maximum number ',KATOM,
+     &   '     is greater than current maximum number ',KATOM,
      &    NMLINE,MLINE(NMLINE)
         CALL QUIT('Too many atomic types in .mol input')
       END IF
@@ -884,7 +884,7 @@ C
       SYMGROUP = 'N/A'
       IF (ADDSYM) THEN
          IF (IPREAD .GE. 3) THEN
-            CALL HEADER('Copy of input to READIN before ADDSYM',0)
+            CALL HEADER('Copy of input in .mol file before ADDSYM',0)
             WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
             WRITE (LUPRI,'(/)')
          END IF
@@ -966,10 +966,12 @@ C
      &            KSETS,KBLOCK,KPRIM,KASYM,NSYMOP,HERMIT)
 C
       IF (IPREAD .GE. 2) THEN
-         CALL HEADER('Copy of input to READIN',0)
-         IF (ADDSYM) WRITE(LUPRI,'(A/)')
-     &   ' - as modified by symmetry addition module:'
-         WRITE (LUPRI,'(80A1 )') ('-',I = 1, 80)
+         CALL HEADER('Copy of .mol input',0)
+         IF (ZMAT  ) WRITE(LUPRI,'(A)')
+     &   ' - as produced by Z matrix module'
+         IF (ADDSYM) WRITE(LUPRI,'(A)')
+     &   ' - as modified by symmetry addition module'
+         WRITE (LUPRI,'(/80A1 )') ('-',I = 1, 80)
          WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
          WRITE (LUPRI,'(80A1/)') ('-',I = 1, 80)
       END IF
@@ -1238,15 +1240,15 @@ C               thus always use isotope no. 1 /hjaaj feb 2003
 C           Read basis-set identifier from MLINE(NMLINE)
 C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
             IF (LMULBS) THEN
-               READ (MLINE(NMLINE),'(BN,I3,F7.0,I5)',ERR=299) 
+               READ (MLINE(NMLINE),'(BN,I3,F7.0,I5)',ERR=299)
      &               MBSI,Q,NONT(I)
             ELSE
                READ (MLINE(NMLINE),'(BN,F10.0,I5)',ERR=299) Q,NONT(I)
                MBSI = 1
             END IF
          ELSE
-C ach 
-            IF (WRTLIN) THEN 
+C ach
+            IF (WRTLIN) THEN
                WRITE(LUPRI,*) MLINE(NMLINE)
                CALL FLSHFO(LUPRI)
             ENDIF
@@ -1275,7 +1277,7 @@ C              Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
          END IF
 C
 C        End of processing of old input format for line "5"
-C         
+C
          END IF
 C
 C        Check Multiple Basis Set Identifier, MBSI (WK/UniKA/04-11-2002).
@@ -1303,8 +1305,8 @@ C            where we know the 5 d's have same norm.
             MXQHUCK = 20
          ELSE
 Chj - apr00: this has been fixed with normalized spherical GTO's from SPHCOM
-C Manu MXQHUCK set to 103 instead of 86 
-            MXQHUCK = 103 
+C Manu MXQHUCK set to 103 instead of 86
+            MXQHUCK = 103
          ENDIF
          IF (DOHUCKEL .AND. NINT(Q) .GT. MXQHUCK) THEN
             NSETS = 1
@@ -1315,7 +1317,7 @@ C Manu MXQHUCK set to 103 instead of 86
      &           '  INFO: No Huckel start guess due'//
      &           ' to nuclear charge larger than',MXQHUCK
 C
-C     Just in case we have already processed some Huckel-orbitals for 
+C     Just in case we have already processed some Huckel-orbitals for
 C     some centers, we zero out IQM in order to prevent errors when sorting
 C     integral shells
 C
@@ -1363,8 +1365,8 @@ C
             END IF
          END IF
          DO 300 J = 1,NSETS_NOW
-          IF (J.EQ.1 .OR. (J.EQ.ISETHUCKEL) 
-     &               .OR. (J.EQ.2 .AND. DIRAC) 
+          IF (J.EQ.1 .OR. (J.EQ.ISETHUCKEL)
+     &               .OR. (J.EQ.2 .AND. DIRAC)
      &               .OR. (J.EQ.3 .AND. ATOMDF) ) THEN
 C
 C         Construct Rydberg/continuum basis set for X center, if requested
@@ -1404,9 +1406,9 @@ C
 C         Get basis set from basis set library
 C         ===================================
 C
-            ELSE IF ((BASIS .OR. ATOMBA 
+            ELSE IF ((BASIS .OR. ATOMBA
      &               .OR. (J .EQ. ISETHUCKEL )
-     &               .OR. (ATOMDF .AND. J .EQ. 3 )) 
+     &               .OR. (ATOMDF .AND. J .EQ. 3 ))
      &               .AND. .NOT. DIRAC) THEN
               IF (J.EQ.ISETHUCKEL) THEN
 C
@@ -1433,7 +1435,7 @@ C...             added by Bin Gao, for effective core potentials, Dec. 6, 2010
 C...             sets the ECP
                  IPOS = index(BKPLIN, 'ECP=')
                  if (IPOS.ne.0 .and. J.eq.1) then
-C     Read effective core potential information from file for atom. 
+C     Read effective core potential information from file for atom.
 C     The charge of atom type will be set to the effective charge below
 C     after J=2: reading Huckel basis (if DOHUCKEL)
                    if(ADDSYM) call QUIT('ECP not implemented '//
@@ -1486,7 +1488,7 @@ C...
                        IF (ATOMDF) THEN
                          IPOS3 = INDEX(BKPLIN,'AUX')
                          IF (IPOS3 .NE. 0) THEN
-                           IPOS4 = INDEX(MLINE(NMLINE-NONT(I))(IPOS3:), 
+                           IPOS4 = INDEX(MLINE(NMLINE-NONT(I))(IPOS3:),
      &                                                             '=')
                            IF (IPOS4 .EQ. 0 .OR. (IPOS4 .GT. 11)) THEN
                               WRITE (LUPRI,'(A/A//A)')
@@ -1583,7 +1585,7 @@ C                Use DIRAC style format for specifying IQM and JCO.
               ELSE
 C...  removed by Bin Gao, Dec. 29, 2010
 C...                 IF (INDEX(BASNAM,'ecp') .NE. 0 .AND. J.EQ.1) THEN
-C...C     Read effective core potential information from file for atom. 
+C...C     Read effective core potential information from file for atom.
 C...C     The charge of atom type will be set to the effective charge below
 C...C     after J=2: reading Huckel basis (if DOHUCKEL)
 C...                    IF(ADDSYM) CALL QUIT('ECP not implemented '//
@@ -1592,7 +1594,7 @@ C...                    CALL ECPINP(Q,QEFF,I,IPREAD)
 C...                    INDECP(NTYECP) = NCTOT+1 - NONT(I)
 C...                    NECP(NTYECP)   = NONT(I)
 C...                    IF (NECP(NTYECP).GT.MXNONT) THEN
-C...                       WRITE(LUPRI,*) ' NUMBER OF ECP ATOMS OF TYPE ', 
+C...                       WRITE(LUPRI,*) ' NUMBER OF ECP ATOMS OF TYPE ',
 C...     &                      NTYECP, ' EXCEEDS MXNONT=',MXNONT
 C...                       CALL QUIT('Too many ECP atoms of this type')
 C...                    END IF
@@ -1687,10 +1689,10 @@ C
             END IF
  400     CONTINUE
 C
-C     Currently the program cannot handle symmetry if there is a chance 
+C     Currently the program cannot handle symmetry if there is a chance
 C     that the atoms in the input may be different due to different basis
 C     sets
-C     
+C
          IF (ADDSYM .AND. .NOT. BASIS .AND. IZATOM(INUC+1).ge.0) THEN
 C
 C           Check if same nucleus was in prior "type" because
@@ -1772,11 +1774,11 @@ C
           IF (LONEPAR) THEN
             DO 777 LVDW = 0, ISYTP
               IF (NSISY(LVDW) .NE. ISIGEPS(LVDW)) THEN
-                WRITE(LUPRI,'(//1X,A,I3,A,I3)')
-     *          'Number of atoms in system No.',
+                WRITE(LUPRI,'(//A,I3,A,I3)')
+     *          ' Number of atoms in system No.',
      *          LVDW,' is: ',NSISY(LVDW)
-                WRITE(LUPRI,'(1X,A,I3,A,I3//)')
-     *          'Number of sigma and epsilon parameters for sys.',
+                WRITE(LUPRI,'(A,I3,A,I3//)')
+     *          ' Number of sigma and epsilon parameters for sys.',
      *          LVDW,' is: ',ISIGEPS(LVDW)
                 CALL QUIT('Number of sigma parameters '//
      *          'and atoms differ')
@@ -1802,8 +1804,8 @@ C
  889          CONTINUE
  888        CONTINUE
             IF (INT_TEMP .NE. NSIGEPS) THEN
-              WRITE(LUPRI,'(1X,A,I3,A)')
-     *                    'Needs ',INT_TEMP, 'sigma/epsilon parameters!'
+              WRITE(LUPRI,'(A,I3,A)')
+     &           ' Needs ',INT_TEMP, 'sigma/epsilon parameters!'
               CALL QUIT('Number of diatomic sigma/epsilon parameters '//
      *                  'incorrect!')
             END IF
@@ -1825,10 +1827,17 @@ C
      &      ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
          CALL QUIT('Too high angular quantum no. specified in input.')
  299  CONTINUE
-      WRITE (LUPRI,'(A,1X,I4)') 'Cannot determine the charge of atom '//
-     &     'type', I
-      WRITE (LUPRI,'(A)') "Correct input format is: Charge=???"
-      CALL QUIT('Cannot determine the charge of one atom')
+      WRITE (LUPRI,'(//A,I5/A/A,I5/A)')
+     &      'ERROR reading .mol line',NNMLINE,
+     &      MLINE(NMLINE),
+     &      'Cannot determine the charge of atom type', I,
+     &      'Correct input format is: Charge=???'
+      IF (MYNUM .NE. 0) WRITE (LUERR,'(//A,I5,A,I5/A/A,I5/A)')
+     &      'ERROR slave no.',MYNUM,' reading .mol line',NNMLINE,
+     &      MLINE(NMLINE),
+     &      ' Cannot determine the charge of atom type', I,
+     &      ' Correct input format is: Charge=???'
+      CALL QUIT('Cannot determine the charge of an atom type')
       END ! SUBROUTINE BASINP
 C  /* Deck cntinp */
       SUBROUTINE CNTINP(LUINFO,NONT,Q,Q_EXPONENT,NSYMOP,ANG,MBSI,
@@ -1880,7 +1889,7 @@ C
          GEXP = D0
       END IF
       NUCSTR = NUCIND + 1
-      IF (IPREAD .GT. 3) 
+      IF (IPREAD .GT. 3)
      &   WRITE(LUPRI,'(A)') '   Symmetry independent centers:'
       DO 100 N = 1,NONT
         NCTOT = NCTOT + 1
@@ -1964,7 +1973,7 @@ C
           CALL FREFRM(MLINE(NMLINE),ISTART,ISUBSI(NCTOT),DUMMY,
      &                'INT',IERR)
         END IF
-              
+
 #endif
         IF (PCM .AND. (RADIUS_PCM * ALPHA_PCM .GT. 0.1)) THEN
            IDXSPH(NCTOT) = 1
@@ -2010,16 +2019,16 @@ c     allegedly fixed in 4.1.x series.
 #endif
         ELSE
           IF (MASSNM .LT. 10) THEN
-            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I1,A5)') 
-     &             NAMN(NCTOT),(CORD(J,NCTOT),J = 1, 3), 
+            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I1,A5)')
+     &             NAMN(NCTOT),(CORD(J,NCTOT),J = 1, 3),
      &             '  Isotope=', MASSNM, '     '
           ELSE IF (MASSNM .LT. 100) THEN
-            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I2,A4)') 
-     &             NAMN(NCTOT),(CORD(J,NCTOT),J = 1, 3), 
+            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I2,A4)')
+     &             NAMN(NCTOT),(CORD(J,NCTOT),J = 1, 3),
      &             '  Isotope=', MASSNM, '    '
           ELSE
-            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I3,A3)') 
-     &             NAMN(NCTOT),(CORD(J,NCTOT),J = 1, 3), 
+            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I3,A3)')
+     &             NAMN(NCTOT),(CORD(J,NCTOT),J = 1, 3),
      &             '  Isotope=', MASSNM, '   '
           END IF
         END IF
@@ -2238,13 +2247,13 @@ C*****************************************************************************
          KMAXTOT   = ISHELL
       ELSE
          NAUXSH    = 0
-         NAUX      = 0 
+         NAUX      = 0
          NORBAUX   = 0
-         NPAUX     = 0 
-         KMAXAUX   = 0 
-         NBASISAUX = 0 
-         NPBASAUX  = 0 
-         KMAXTOT   = KMAX  
+         NPAUX     = 0
+         KMAXAUX   = 0
+         NBASISAUX = 0
+         NPBASAUX  = 0
+         KMAXTOT   = KMAX
       END IF
 
       NPSHEL = IPRIM ! total number of primitive shells
@@ -2399,7 +2408,7 @@ C           Output for multiple basis sets (WK/UniKA/04-11-2002).
      &      MULNAM(1)(1:ILEN),'" from the basis set library.'
           END IF
          END IF
- 
+
          IF (LMULBS) THEN
 C         Output for multiple basis sets (WK/UniKA/04-11-2002).
           WRITE (LUPRI,'(A)')
@@ -2470,7 +2479,7 @@ C
 C
          IF (IPREAD .GT. 0) THEN
             IF(DIRAC) THEN
-               WRITE (LUPRI,'(2X,A2,3X,4I8,6X,2A)') 
+               WRITE (LUPRI,'(2X,A2,3X,4I8,6X,2A)')
      &            NAMN(ICENT)(1:2),NUCTYP,NCHARG,
      &            NPRIM(1),NCONT(1),'L - ',TSTRING(1)
                WRITE (LUPRI,'(23X,2I8,6X,2A)')
@@ -2478,20 +2487,20 @@ C
             ELSE
                IF (LMULBS) THEN
 C               Output for multiple basis sets (WK/UniKA/04-11-2002).
-                  WRITE (LUPRI,'(2X,A2,3X,I5,I8,F10.4,2I6,6X,A)') 
+                  WRITE (LUPRI,'(2X,A2,2I8,F10.4,2I6,6X,A)')
      &                 NAMN(ICENT)(1:2),MULBSI(ICENT),NUCTYP,
      &                 CHTTYP,NPRIM(1),NCONT(1),TSTRING(1)
                   IF (LUCME.GT.0)
-     &            WRITE (LUCME,'(2X,A2,3X,I5,I8,F10.4,2I6,6X,A)')
+     &            WRITE (LUCME,'(2X,A2,2I8,F10.4,2I6,6X,A)')
      &                 NAMN(ICENT)(1:2),MULBSI(ICENT),NUCTYP,
      &                 CHTTYP,NPRIM(1),NCONT(1),TSTRING(1)
 
                ELSE
-                  WRITE (LUPRI,'(2X,A2,3X,I8,F10.4,2I6,6X,A)') 
+                  WRITE (LUPRI,'(2X,A2,I11,F10.4,2I6,6X,A)')
      &                 NAMN(ICENT)(1:2),NUCTYP,CHTTYP,
      &                 NPRIM(1),NCONT(1),TSTRING(1)
                   IF (LUCME.GT.0)
-     &            WRITE (LUCME,'(2X,A2,3X,I8,F10.4,2I6,6X,A)')
+     &            WRITE (LUCME,'(2X,A2,I11,F10.4,2I6,6X,A)')
      &                 NAMN(ICENT)(1:2),NUCTYP,CHTTYP,
      &                 NPRIM(1),NCONT(1),TSTRING(1)
                END IF
@@ -2512,7 +2521,7 @@ C     Output for multiple basis sets (WK/UniKA/04-11-2002).
             WRITE (LUPRI,'(2X,78A1)') ('-',I=1,78)
             WRITE (LUPRI,'(2X,A,I12,F10.4,2I6)')
      &           'total:',NUCDEP,TSYSCH,NPBAS,NBASIS
-            IF (LUCME.GT.0) 
+            IF (LUCME.GT.0)
      &           WRITE (LUCME,'(2X,A,I12,F10.4,2I6/)')
      &           'total:',NUCDEP,TSYSCH,NPBAS,NBASIS
             WRITE (LUPRI,'(2X,78A1)') ('-',I=1,78)
@@ -2520,7 +2529,7 @@ C     Output for multiple basis sets (WK/UniKA/04-11-2002).
             WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
             WRITE (LUPRI,'(2X,A,I7,F10.4,2I6)')
      &           'total:',NUCDEP,TSYSCH,NPBAS,NBASIS
-            IF (LUCME.GT.0) 
+            IF (LUCME.GT.0)
      &           WRITE (LUCME,'(2X,A,I7,F10.4,2I6/)')
      &           'total:',NUCDEP,TSYSCH,NPBAS,NBASIS
             WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
@@ -2991,7 +3000,7 @@ C
             NRCI = NRCI + 1
             IF (NUCI.GT.KPRIM) GOTO 5010
             IF (NRCI.GT.KPRIM) GOTO 5020
-!            write(lupri,*) 'BASA(I-1), BASB(I-1)', 
+!            write(lupri,*) 'BASA(I-1), BASB(I-1)',
 !     &      BASA(I-1), BASB(I-1)
             ALPHA(NUCI,NBLOCK) = 0.25D0/(BASA(I-1)*J+BASB(I-1))**2
 !            write(lupri,*) 'ALPHA(nuci,nblock)', ALPHA(NUCI,NBLOCK)
@@ -3079,7 +3088,7 @@ C
      &                       CPRIMU(L,M),'REA',IERR)
               END DO
 #else
-              IF (WRTLIN) THEN 
+              IF (WRTLIN) THEN
                  WRITE(LUPRI,*) MLINE(NMLINE)
                  CALL FLSHFO(LUPRI)
               ENDIF
@@ -3160,7 +3169,7 @@ C     Test print
 C
       IF (IPREAD .GT. 3) THEN
          WRITE(LUPRI,'(A,I4,A,I4,A)')
-     &   'Contraction matrix (',NUCIJ,'x',NRCIJ,') :' 
+     &   'Contraction matrix (',NUCIJ,'x',NRCIJ,') :'
          DO 400 L = 1, NUCIJ
             WRITE (LUPRI,'(1P,G20.10)') ALPHA(L)
             WRITE (LUPRI,'(10F12.8)') (CPRIMU(L,M),M=1,NRCIJ)
@@ -3198,9 +3207,9 @@ C  /* Deck nrmorb */
 C
       PIPPI = (DP5/PI)**DP75
       IF (NUCIJ.EQ.1 .AND. ABS(ALPHA(1)).LE.EXPMIN) THEN
-         CPRIM (1,1) = D1 
-         CPRIMU(1,1) = D1 
-      ELSE 
+         CPRIM (1,1) = D1
+         CPRIMU(1,1) = D1
+      ELSE
          DO N = 1, NRCIJ
             SUM = D0
             DO L = 1, NUCIJ
@@ -3328,7 +3337,7 @@ C                    Basis-set identifier (WK/UniKa/04-11-2002).
 
                      IORB  = IORB  + NCOMP
                      IORBD = IORBD + NCOMP*NDEG
-                     
+
                      IF (.NOT. SEGM(ISHELL) .AND. LCOMP .EQ. 1)
      &                         SEGBAS = .FALSE.
                      IF (.NOT. SEGM(ISHELL) .AND. LCOMP .EQ. 3)
@@ -3991,7 +4000,7 @@ C              ... Density fitting basis
 C           IC .eq. 1 .and. LMULBS, and
 C           JC is then basis-set identifier for multiple basis sets (WK/UniKA/04-11-2002).
                JC = MBSID(IA)
-            ELSE 
+            ELSE
                JC = 1
             END IF
             IF (JC .GT. MXBSETS .OR. JC .LT. -MXBSETS) THEN
@@ -4157,7 +4166,7 @@ C*****************************************************************************
      &        (NCOS(I,2),I=1,MAXREP+1)
         END IF
       ELSE IF (LMULBS) THEN
-C       Output for multiple basis sets. Determine total numbers of orbital-basis 
+C       Output for multiple basis sets. Determine total numbers of orbital-basis
 C       (MBAS1) and auxiliary-basis (MBAS2) functions (WK/UniKA/04-11-2002).
         COMP(1) = 'M'
         COMP(2) = 'A'
@@ -4198,7 +4207,7 @@ Chjaaj Nov 07 - end.
       DO 10 LA=1,MAXREP+1
         NBI=NAOS(LA)
         IF (NBI.GT.0) THEN
-           IF (MAXREP.GT.0.AND.IPREAD.GT.0) 
+           IF (MAXREP.GT.0.AND.IPREAD.GT.0)
      &          WRITE (LUPRI,'(//2X,A,2X,A3,A1,I2,A1/)')
      &          'Symmetry',REP(LA-1),'(',LA,')'
           IPLMAX = 0
@@ -4370,7 +4379,7 @@ C
       WRITE(LUPRI,'(/,A,20X,A)') 'Nucleus','Number of basis'
       WRITE(LUPRI,'(10X,A,8I5)') 'Sym.',(I,I=1,MAXREP+1)
       DO ICENT = 1,NUCIND
-         WRITE(LUPRI,'(3X,I3,8X,8I5)') ICENT,
+         WRITE(LUPRI,'(I6,8X,8I5)') ICENT,
      &                        (NBCENT(ICENT,ISYM),ISYM=1,MAXREP+1)
       END DO
 C
@@ -4559,13 +4568,13 @@ C
 C        MIDAS Interface, write out input coordinates for midas.sym
 C        analysis
 C
-      IF (.TRUE.) THEN 
+      IF (.TRUE.) THEN
          LUCOOR = -1
-         CALL GPOPEN(LUCOOR,'midasifc.cartrot','NEW', 
+         CALL GPOPEN(LUCOOR,'midasifc.cartrot','NEW',
      &               ' ','FORMATTED',IDUMMY,.FALSE.)
          CALL PRIGEOLU(LUCOOR,CORD)
          CALL GPCLOSE(LUCOOR,'KEEP')
-      ENDIF 
+      ENDIF
 C
 C
       IPCMN  = 0
@@ -4597,7 +4606,7 @@ C
                IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                   IPCMN = IPCMN + 1
                   JATOM  = JATOM + 1
-                  WORK(KMASS + NCENTS) = 
+                  WORK(KMASS + NCENTS) =
      &                 DISOTP(IZATOM(ICENT),ISOTOP(ICENT),'MASS')
                   NCENTS = NCENTS + 1
                   WORK(ICRX  ) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
@@ -4678,7 +4687,7 @@ C
 C     Print internuclear distances (if not an atom)
 C
          LUIP = -100
-         IF ((IPREAD .GT. 0) .OR. (GEOALL)) 
+         IF ((IPREAD .GT. 0) .OR. (GEOALL))
      &   CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,LUIP,WORK(ISTRT),LWORK)
 C
 C        As a new default, we (almost) always print a rotational analysis, kr-02
@@ -4947,8 +4956,8 @@ Clf 0,+1,-1,+2,-2,+3,-3 etc...
 Clf therefore we provide the following index to reorder
 Clf the coefficients in the molden.inp file.
 Clf The shift index is ISHIFT and it has to be placed in KAO=IAO-ISHIFT
-Clf WARNING: this only works for spherical functions 
-Clf and not for cartesians. 
+Clf WARNING: this only works for spherical functions
+Clf and not for cartesians.
 !
 !   Example - f-orbital, LMAX=3
 !      index               :  1,  2,  3,  4,  5,  6,  7
@@ -5005,7 +5014,7 @@ C
       END
 C/* Deck cntao */
       SUBROUTINE CNTAO(IPRINT)
-C 
+C
 C     tuh
 C     ICNTAO is used in eri.
 C     ICNTAO contains index for sym. indep. center of this symmetry
@@ -5109,7 +5118,7 @@ C
  230                 CONTINUE
                      IF (IPREAD .GT. 0) THEN
                         WRITE (LUPRI,
-     &                  '(2X,A,I3,3X,A,2X,A,3X,I2,7(2X,A,I3))')
+     &                  '(2X,A,I3,3X,A,2X,A,I5,7(2X,A,I3))')
      &                  'I',ISCOOR, NAMEX(3*ICENT)(1:4), CHRXYZ(-ICOOR),
      &                  NBASE(1), (CHRSGN(NSIGN(I)),NBASE(I),I=2,NB)
                      END IF
@@ -5329,10 +5338,10 @@ C=======================================================================
       DIMENSION WORK(LWORK)
 C
       IF (DOOWN) THEN
-         WRITE(LUPRI,'(/A)') 
+         WRITE(LUPRI,'(/A)')
      &   '  Reading user specified transformation matrices for GTOs.'
       ELSE IF (IPREAD .GT. 4) THEN
-         WRITE(LUPRI,'(/A)') 
+         WRITE(LUPRI,'(/A)')
      &   '  Calculation of transformation matrices for spherical GTOs.'
       END IF
 C
@@ -5527,7 +5536,7 @@ C
          IF (I_COMMENT .GT. 0) len_NOT_COMMENT = I_COMMENT-1
          I_COMMENT = INDEX(NEXT_INPUT_LINE(1:len_NOT_COMMENT),'$')
          IF (I_COMMENT .GT. 0) len_NOT_COMMENT = I_COMMENT-1
-      
+
       IF (len_NOT_COMMENT .eq. 0) GO TO 10 ! this was a comment line with one of #!$ in column 1
 
       IF (LNBLNK( NEXT_INPUT_LINE(1:len_NOT_COMMENT) ) .GT. len_MLINE)
@@ -5555,7 +5564,7 @@ C
       ELSE
         WRITE(LUPRI,*) 'Line=', NMLINE
       END IF
-      
+
    12 CONTINUE
       RETURN
       END
@@ -5904,7 +5913,7 @@ C
          NAMN(NUCIND)(1:2) = ASYMB(ICHRG)
       END IF
       IF (NAMN(NUCIND)(1:2) .EQ. '  ') THEN
-         NAMN(NUCIND)(1:3) = NAMN(NUCIND)(2:4) 
+         NAMN(NUCIND)(1:3) = NAMN(NUCIND)(2:4)
          NAMN(NUCIND)(4:4) = ' '
          GO TO 204
       END IF
@@ -6209,14 +6218,15 @@ C     TODO : define multiple basis sets and point charges
          NMLINE = NMLINE + 1
          DO 606 J = 1, NONT(I)
             NCLINE(IATOM) = NMLINE
+            MLINE(NMLINE) = ' '
             WRITE(MLINE(NMLINE)(1:4),'(A4)') NAMN(IATOM)
             IF (ABS(CORD(1,IATOM)).ge.100.0D0 .OR.
      &          ABS(CORD(2,IATOM)).ge.100.0D0 .OR.
      &          ABS(CORD(3,IATOM)).ge.100.0D0) THEN
-               WRITE(MLINE(NMLINE)(5:76),'(3F20.10,12X)')
+               WRITE(MLINE(NMLINE)(5:64),'(3F20.10)')
      &            CORD(1,IATOM),CORD(2,IATOM),CORD(3,IATOM)
             ELSE
-               WRITE(MLINE(NMLINE)(5:76),'(3F20.15,12X)')
+               WRITE(MLINE(NMLINE)(5:64),'(3F20.15)')
      &            CORD(1,IATOM),CORD(2,IATOM),CORD(3,IATOM)
             END IF
             NMLINE = NMLINE + 1
@@ -6311,7 +6321,7 @@ C     internal file, K.Ruud-Feb.97
 C
 #include "implicit.h"
 #include "priunit.h"
-C      
+C
       CHARACTER*(*) STRING
       CHARACTER TYPE*3, FRMT*7
 C
@@ -6341,7 +6351,7 @@ C
          IF (ILEN .GT. 9) THEN
             WRITE (FRMT,'(A2,I2,A3)') '(F',ILEN,'.0)'
          ELSE
-            WRITE (FRMT,'(1X,A2,I1,A3)') '(F',ILEN,'.0)'
+            WRITE (FRMT,'(A3,I1,A3)') ' (F',ILEN,'.0)'
          END IF
          READ (STRING(ISTART:len_STRING),FRMT,ERR=9000) RVAL
       ELSE
@@ -6363,7 +6373,7 @@ C
 C     This routine based on TECORBOUT dumps a MOLECULE.INP file suitable
 C     for direct processing by DALTON
 C     Now also dumps a file MNF.INP for use for SO mean-field approximation
-C     Written by K.Ruud 160297 
+C     Written by K.Ruud 160297
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -6374,7 +6384,7 @@ C
 #include "aovec.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
-C    
+C
 #include "ccom.h"
 #include "cbirea.h"
 #include "nuclei.h"
@@ -6399,7 +6409,7 @@ C
       CALL GPOPEN(LUTMP2, 'MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LUSHB, 'LUSH.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSHB)
-C    
+C
       IPRIMD = 0
       IPRIM =  0
       ICENT  = 0
@@ -6695,7 +6705,7 @@ C
          END IF
 C
 C     Charge of molecule
-C     
+C
          IPOS = INDEX(LINE,'CHA')
          IF (IPOS .NE. 0) THEN
             IPOS2 = INDEX(LINE(IPOS:80),'=')
@@ -6710,15 +6720,15 @@ C
          ELSE
             KCHARG = 0
          END IF
-C     
+C
 C     Angstrom?
 C
          ID3 = ' '
-         IPOS = INDEX(LINE,'ANG') 
+         IPOS = INDEX(LINE,'ANG')
          IF (IPOS .NE. 0) ID3 = 'X'
-C     
+C
 C     Symmetry generators
-C     
+C
          DO J = 1, 3
             DO I = 1, 3
                KASYM(I,J) = ' '
@@ -6742,7 +6752,7 @@ C
                READ (LINE((IPOS+IPOS2):),*) NSYMOP
             END IF
             IF (NSYMOP .GT. 0 .AND. NSYMOP .LT. 4) THEN
-C     
+C
 C     For each generator, determine number of axis changing sign
 C
                ISTART = IPOS + IPOS2 + 1
@@ -6795,7 +6805,7 @@ C           ... tell READIN that user hasn't specified THRS
       ELSE
 C
 C***********************************************************************
-C     
+C
 C     Since the number of atom types have not been specified,
 C     assume old input format
 C
@@ -6891,7 +6901,7 @@ C
                   ISTART = ISTART + 1
                END DO
             END DO
-         END IF 
+         END IF
       END IF
 C
       IF (DOCART) THEN
@@ -6950,9 +6960,9 @@ C
                READ (BKPLIN((IPOS+IPOS2):),*) NONT
             END IF
          END IF
-C     
+C
 C     Multiple basis sets used
-C         
+C
          IPOS = INDEX(BKPLIN,'SET')
          IF (LMULBS) THEN
             IF (IPOS .NE. 0) THEN
@@ -6974,9 +6984,9 @@ C
             WRITE(LUPRI,*) TMPLN
             CALL QUIT('Error when reading .mol file')
          END IF
-C     
+C
 C     Read in basis set information
-C     
+C
          IF (.NOT. (BASIS .OR. ATOMBA)) THEN
             IPOS = INDEX(BKPLIN,'BLO')
             IF (IPOS .NE. 0) THEN
@@ -7080,7 +7090,7 @@ C
      &                  BASNAM,IQM,JCO,KANG,RADIUS_PCM,ALPHA_PCM)
 C
 C     Write out atom-specific input line in new format
-C     
+C
 #include "implicit.h"
 #include "pcmlog.h"
       CHARACTER LINE*80, BASNAM*80
@@ -7130,7 +7140,7 @@ C
          END DO
       END IF
 C
-      IF (PCM.AND.(RADIUS_PCM * ALPHA_PCM .GT. 0.1)) THEN  
+      IF (PCM.AND.(RADIUS_PCM * ALPHA_PCM .GT. 0.1)) THEN
          WRITE (LINE(ISTART:),'(A7,F6.2)') 'Radius=',RADIUS_PCM
          WRITE (LINE(ISTART:),'(A7,F6.2)') 'Alpha=',ALPHA_PCM
          ISTART = ISTART + 30
