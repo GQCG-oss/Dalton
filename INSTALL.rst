@@ -1,5 +1,6 @@
 
 
+====================
 Installation (basic)
 ====================
 
@@ -42,29 +43,6 @@ You can compile the code on several cores::
   $ make -j4
 
 
-What to do if CMake is not available or too old?
-------------------------------------------------
-
-If it is your machine and you have an Ubuntu or Debian-based distribution::
-
-  $ sudo apt-get install cmake
-
-On Fedora::
-
-  $ sudo yum install cmake
-
-Similar mechanisms exist for other distributions or
-operating systems. Please consult Google.
-
-If it is a cluster, please ask the Administrator to install/upgrade CMake.
-
-If it is a cluster, but you prefer to install it yourself (it's easy):
-
-1. Download the latest precompiled tarball from http://www.cmake.org/cmake/resources/software.html
-2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
-3. Set correct PATH variable
-
-
 Most typical examples
 ---------------------
 
@@ -92,6 +70,30 @@ You get the idea. The configuration is normally good at detecting math libraries
 automatically, provided you export the proper environment variable ``MATH_ROOT``.
 
 
+What to do if CMake is not available or too old?
+------------------------------------------------
+
+If it is your machine and you have an Ubuntu or Debian-based distribution::
+
+  $ sudo apt-get install cmake
+
+On Fedora::
+
+  $ sudo yum install cmake
+
+Similar mechanisms exist for other distributions or
+operating systems. Please consult Google.
+
+If it is a cluster, please ask the Administrator to install/upgrade CMake.
+
+If it is a cluster, but you prefer to install it yourself (it's easy):
+
+1. Download the latest precompiled tarball from http://www.cmake.org/cmake/resources/software.html
+2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
+3. Set correct PATH variable
+
+
+=========================
 Linking to math libraries
 =========================
 
@@ -99,6 +101,7 @@ write me ...
 
 
 
+=============================
 Installation (expert options)
 =============================
 
@@ -128,6 +131,7 @@ Alternatively you can edit compiler flags through ccmake::
   $ ccmake ..
 
 
+========================
 Testing the installation
 ========================
 
