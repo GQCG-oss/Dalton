@@ -1,5 +1,5 @@
 !
-!     file: mxcent.h
+!     File: mxcent.h
 !
 !     MXCENT_QM = max number of QM nuclei + point charges + ghost orbital centers
 !     MXCENT = MXCENT_QM + max number of MM nuclei in QM3 model
@@ -13,5 +13,5 @@
 !     around 2000 - 3000!!! Remember to set MXQM3 = MXCENT_QM in qm3.h!!!
 !
       INTEGER MXCENT_QM, MXCENT, MXCOOR
-      PARAMETER (MXCENT_QM =120, MXCENT = 120, MXCOOR = 3*MXCENT)
+      PARAMETER (MXCENT_QM = 200, MXCENT = 200, MXCOOR = 3*MXCENT)
 ! -- end of mxcent.h --

@@ -10,6 +10,7 @@
 !     IF you change any of these parameters you should do a "make depend"
 !     and then rebuild the program using the command "make".
 !
-      INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT, MAXOCC
-      PARAMETER (MXSHEL = 1000, MXPRIM = 8000, MXCORB = 1200,           &
-     &           MAXOCC = 400, MXORBT = MXCORB*(MXCORB + 1)/2)
+      INTEGER    MXSHEL, MXPRIM, MXCORB, MXORBT, MAXOCC
+      PARAMETER (MXSHEL = 1000, MXPRIM = 8000, MXCORB = 2400,           &
+     &           MAXOCC = 800, MXORBT = MXCORB*(MXCORB + 1)/2)
+! -- end of maxorb.h --
