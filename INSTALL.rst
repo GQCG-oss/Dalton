@@ -1,7 +1,7 @@
 
 
-Installation on Linux, Unix, and Mac
-====================================
+Installation (basic)
+====================
 
 Dalton is configured using CMake, typically via the setup script,
 and subsequently compiled using make or gmake.
@@ -37,11 +37,15 @@ like this::
   $ make dalton.x
   $ make lsdalton.x
 
+You can compile the code on several cores::
+
+  $ make -j4
+
 
 What to do if CMake is not available or too old?
 ------------------------------------------------
 
-It is your machine and you have an Ubuntu or Debian-based distribution::
+If it is your machine and you have an Ubuntu or Debian-based distribution::
 
   $ sudo apt-get install cmake
 
@@ -84,8 +88,19 @@ Configure for sequential compilation using gfortran/gcc/g++::
 
   $ ./setup --fc=gfortran --cc=gcc --cxx=g++
 
-You get the idea. The configuration is normally pretty good at detecting math libraries
+You get the idea. The configuration is normally good at detecting math libraries
 automatically, provided you export the proper environment variable ``MATH_ROOT``.
+
+
+Linking to math libraries
+=========================
+
+write me ...
+
+
+
+Installation (expert options)
+=============================
 
 
 Compiling in verbose mode
@@ -96,17 +111,6 @@ Sometimes you want to see the actual compiler flags and definitions::
   $ make VERBOSE=1
 
 
-Compiling on many cores
------------------------
-
-Yes, it works. Try::
-
-  $ make -j4
-
-We have successfully compiled Dalton on 64 cores. With the new configuration
-based on CMake, compilation race condition errors do not appear.
-
-
 How can I change optimization flags?
 ------------------------------------
 
@@ -115,3 +119,80 @@ You can turn optimization off (debug mode) like this::
   $ ./setup --type=debug [other flags]
   $ cd build
   $ make
+
+You can edit compiler flags in cmake/compilers/{FortranFlags.cmake, CFlags.cmake, CXXFlags.cmake}.
+
+Alternatively you can edit compiler flags through ccmake::
+
+  $ cd build
+  $ ccmake ..
+
+
+Testing the installation
+========================
+
+It is very important that you verify that your Dalton installation correctly
+reproduces the reference test set before running any production calculations.
+
+The test set driver is CTest which can be invoked with "make test".
+
+
+Environment variables for testing
+---------------------------------
+
+Before testing with "make test" you should export the
+following environment variables::
+
+  $ export DALTON_TMPDIR=/scratch        # scratch space for Dalton (adapt the path of course)
+  $ export CTEST_MAKE_NUM_PROCS=16       # in this case the code will be compiled with 16 processes (make -j16)
+  $ export DALTON_NUM_MPI_PROCS=4        # in this case 4 processes, only relevant if you compile with MPI
+
+Note that if you set the DALTON_NUM_MPI_PROCS to something different from 1,
+the dalton script will assume you have compiled using MPI and run the mpirun
+command!
+
+
+Running the test set
+--------------------
+
+You can run the whole test set either using::
+
+  $ make test
+
+or directly through CTest::
+
+  $ ctest
+
+Both are equivalent ("make test" runs CTest) but running
+CTest directly makes it easier to run sequential tests on several
+cores::
+
+  $ ctest -j4
+
+You can select the subset of tests by matching test names to a regular expression::
+
+  $ ctest -R dft
+
+Alternatively you can select the tests with a label matching a regular expression::
+
+  $ ctest -L rsp
+
+The following command will give you all available labels::
+
+  $ ctest --print-labels
+
+
+Running only DALTON or only LSDALTON tests
+------------------------------------------
+
+Only DALTON tests::
+
+  $ ctest -L dalton
+
+Only LSDALTON tests::
+
+  $ ctest -L linsca
+
+All tests::
+
+  $ ctest

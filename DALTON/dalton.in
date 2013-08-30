@@ -10,7 +10,7 @@
 # Version 2011 May 2011 by H.J.Aa.Jensen, with help from others                #
 #                                                                              #
 ################################################################################
-raboooff
+
 # radovan: this is to figure out the location of this script
 # http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
 SOURCE="${BASH_SOURCE[0]}"
