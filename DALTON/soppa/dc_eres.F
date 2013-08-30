@@ -660,6 +660,7 @@ C              calculated already
 C     IF ( NIT .EQ. 1 ) THEN      
 C        CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
 C     END IF
+CKeinSPASmehr
       DTIME      = SECOND()   - DTIME
       SOTIME(41) = SOTIME(41) + DTIME
 C
