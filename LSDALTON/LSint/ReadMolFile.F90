@@ -1404,6 +1404,12 @@ IF (ATOMBASIS) THEN
          READ (TEMPLINE((IPOS + IPOS2):),StringFormat) JKBasisset
       ENDIF
    ENDIF
+
+   !ECP 
+   IPOS = INDEX(TEMPLINE,'ecp=')
+   IF (IPOS .NE. 0) THEN
+      call lsquit('LSDALTON do not support effective core potentials (ECP)',lupri)
+   ENDIF
 ENDIF
 END SUBROUTINE READ_LINE5
 

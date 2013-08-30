@@ -110,7 +110,7 @@ module dec_typedef_module
      !> CCSD residual/solver settings
      !> *****************************
      !> save next guess amplitudes of CCSD in each iteration on disk
-     logical :: CCSDsaferun
+     logical :: CCSDnosaferun
      !> Use parallel CCSD solver
      logical :: solver_par
      !> forcing one or the other scheme in get_coubles residual integral_driven

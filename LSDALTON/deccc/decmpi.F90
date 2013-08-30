@@ -1667,7 +1667,7 @@ contains
     call ls_mpi_buffer(DECitem%singlesthr,Master)
     call ls_mpi_buffer(DECitem%convert64to32,Master)
     call ls_mpi_buffer(DECitem%convert32to64,Master)
-    call ls_mpi_buffer(DECitem%CCSDsaferun,Master)
+    call ls_mpi_buffer(DECitem%CCSDnosaferun,Master)
     call ls_mpi_buffer(DECitem%solver_par,Master)
     call ls_mpi_buffer(DECitem%force_scheme,Master)
     call ls_mpi_buffer(DECitem%dyn_load,Master)

@@ -62,7 +62,7 @@ target_link_libraries(
     dalton.x
     dalton
     ${DALTON_LIBS}
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
 # compile Peter's utilities

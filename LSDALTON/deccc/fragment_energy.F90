@@ -1962,6 +1962,8 @@ contains
     real(realk) :: Lnewpaircut, Onewpaircut, Vnewpaircut, Etarget,dist
     real(realk),pointer :: FragEnergiesModel(:,:,:)
 
+    morepairsneeded=.false.
+
     ! Extract fragment energies for model under consideration
     call mem_alloc(FragEnergiesModel,natoms,natoms,3)
     call extract_fragenergies_for_model(natoms,FragEnergiesAll,FragEnergiesModel)
@@ -2039,6 +2041,8 @@ contains
           morepairsneeded=.true.
        end if
        call mem_dealloc(FragEnergiesModel)
+       ! Do not include extra pairs if the checkpairs keyword is not set (see below)
+       if( (.not. DECinfo%checkpairs) ) morepairsneeded=.false.
        return
     end if
 
@@ -2049,6 +2053,8 @@ contains
        write(DECinfo%output,*) 'Pair cut off smaller than 3 Angstrom, skipping pair regression.'
        morepairsneeded=.true.
        call mem_dealloc(FragEnergiesModel)
+       ! Do not include extra pairs if the checkpairs keyword is not set (see below)
+       if( (.not. DECinfo%checkpairs) ) morepairsneeded=.false.
        return
     end if
 
@@ -2083,7 +2089,6 @@ contains
           morepairsneeded=.false.
        end if
     end if
-
 
     ! If more pairs are needed, determine new pair cutoff
     ! ***************************************************
