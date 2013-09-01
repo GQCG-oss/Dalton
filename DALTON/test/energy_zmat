@@ -104,7 +104,7 @@ CTRL[3]=1
 ERROR[3]="INPUT GEOMETRY NOT READ CORRECTLY"
 
 # Energy
-TEST[4]=`$GREP "Final * HF energy\: * \-520\.2705215610.." $log | wc -l`
+TEST[4]=`$GREP "Final * HF energy\: * \-520\.270521561[0|1].." $log | wc -l`
 CTRL[4]=1
 ERROR[4]="SCF ENERGY NOT CORRECT"
 
