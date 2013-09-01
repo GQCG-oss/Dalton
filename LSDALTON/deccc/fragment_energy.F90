@@ -2859,13 +2859,6 @@ contains
     integer :: savemodel
     logical :: hybridsave
 
-    ! Save existing model and do fragment optimization with MP2
-    if(DECinfo%use_mp2_frag) then
-       savemodel = DECinfo%ccmodel
-       DECinfo%ccmodel = 1
-       hybridsave = DECinfo%HybridScheme
-       DECinfo%HybridScheme=.false.
-    end if
 
     write(DECinfo%output,'(a)')    ' FOP'
     write(DECinfo%output,'(a)')    ' FOP ==============================================='
@@ -2906,6 +2899,15 @@ contains
        return
     end if
 
+    ! Save existing model and do fragment optimization with MP2
+    if(DECinfo%use_mp2_frag) then
+       savemodel = DECinfo%ccmodel
+       DECinfo%ccmodel = 1
+       hybridsave = DECinfo%HybridScheme
+       DECinfo%HybridScheme=.false.
+    end if
+
+
     ! ******************************************
     ! **  Starting computation of fragment    **
     ! ******************************************
@@ -2917,6 +2919,11 @@ contains
        call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
        if(freebasisinfo) then
           call atomic_fragment_free_basis_info(AtomicFragment)
+       end if
+       ! Restore CC model
+       if(DECinfo%use_mp2_frag) then
+          DECinfo%ccmodel = savemodel
+          DECinfo%HybridScheme=hybridsave
        end if
        return
     else
@@ -3425,17 +3432,7 @@ contains
     real(realk) :: slavetime, flops_slaves
     type(array4) :: t2,g
     integer :: savemodel
-    logical :: hybridsave
-
-
-    ! Save existing model and do fragment optimization with MP2
-    if(DECinfo%use_mp2_frag) then
-       savemodel = DECinfo%ccmodel
-       DECinfo%ccmodel = 1
-       hybridsave = DECinfo%HybridScheme
-       DECinfo%HybridScheme=.false.
-    end if
-    
+    logical :: hybridsave    
 
     write(DECinfo%output,'(a)')    ' FOP'
     write(DECinfo%output,'(a)')    ' FOP ==============================================='
@@ -3476,6 +3473,16 @@ contains
        return
     end if
 
+
+    ! Save existing model and do fragment optimization with MP2
+    if(DECinfo%use_mp2_frag) then
+       savemodel = DECinfo%ccmodel
+       DECinfo%ccmodel = 1
+       hybridsave = DECinfo%HybridScheme
+       DECinfo%HybridScheme=.false.
+    end if
+
+
     ! ******************************************
     ! **  Starting computation of fragment    **
     ! ******************************************
@@ -3494,6 +3501,11 @@ contains
        call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
        if(freebasisinfo) then
           call atomic_fragment_free_basis_info(AtomicFragment)
+       end if
+       ! Now we restore the original CC model
+       if(DECinfo%use_mp2_frag) then
+          DECinfo%ccmodel = savemodel
+          DECinfo%HybridScheme=hybridsave
        end if
        return
     else

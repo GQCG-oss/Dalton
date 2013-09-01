@@ -1733,6 +1733,7 @@ contains
        offset=0
     end if
     call mem_alloc(Cunocc,nbasis,nunocc)
+    Cunocc = MyMolecule%ypv
 
     ! Get (AI|BJ) integrals stored in the order (A,I,B,J)
     ! ***************************************************
