@@ -73,15 +73,15 @@ if(ENABLE_CODE_COVERAGE)
     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} gcov)
 endif()
 
+set(CMAKE_Fortran_MODULE_DIRECTORY
+    ${PROJECT_BINARY_DIR}/modules
+    )
+
 include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/include
     ${CMAKE_SOURCE_DIR}/DALTON/dft
     ${CMAKE_SOURCE_DIR}/LSDALTON/dft
     ${CMAKE_Fortran_MODULE_DIRECTORY}
-    )
-
-set(CMAKE_Fortran_MODULE_DIRECTORY
-    ${PROJECT_BINARY_DIR}/modules
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
