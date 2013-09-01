@@ -180,6 +180,20 @@ performace. This should be the last resort if nothing else is available::
   $ ./setup --blas=builtin --lapack=lapack
 
 
+=================
+Scratch directory
+=================
+
+TODO: radovan will write this ...
+
+
+===================
+Basis set directory
+===================
+
+TODO: radovan will write this ...
+
+
 ==============
 Expert options
 ==============
