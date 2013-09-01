@@ -2089,7 +2089,7 @@ C
 C
          WRITE(LUPRI,*)
          DO I = 1,NSYM
-            WRITE(LUPRI,1) 'IAODPK :',(IAODIS(I,J), J=1,NSYM)
+            WRITE(LUPRI,1) 'IAODPK :',(IAODPK(I,J), J=1,NSYM)
          END DO
 C
          WRITE(LUPRI,*)
