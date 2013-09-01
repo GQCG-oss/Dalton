@@ -1830,13 +1830,18 @@ C
       WRITE (LUPRI,'(//A,I5/A/A,I5/A)')
      &      'ERROR reading .mol line',NNMLINE,
      &      MLINE(NMLINE),
-     &      'Cannot determine the charge of atom type', I,
-     &      'Correct input format is: Charge=???'
-      IF (MYNUM .NE. 0) WRITE (LUERR,'(//A,I5,A,I5/A/A,I5/A)')
-     &      'ERROR slave no.',MYNUM,' reading .mol line',NNMLINE,
-     &      MLINE(NMLINE),
      &      ' Cannot determine the charge of atom type', I,
      &      ' Correct input format is: Charge=???'
+      IF (MYNUM .NE. 0) THEN
+         WRITE (LUERR,'(//A,I5,A,I5/A,I5/A/A)')
+     &      'ERROR slave no.',MYNUM,' reading .mol line',NMLINE,
+     &      ' Cannot determine the charge of atom type', I,
+     &      ' Correct input format is: Charge=???',
+     &      ' Dump of slave version of .mol file:'
+         WRITE (LUERR,'(/80A1 )') ('-',I = 1, 80)
+         WRITE (LUERR,'(A)') (MLINE(I), I = 1, NMLINE)
+         WRITE (LUERR,'(80A1/)') ('-',I = 1, 80)
+      END IF
       CALL QUIT('Cannot determine the charge of an atom type')
       END ! SUBROUTINE BASINP
 C  /* Deck cntinp */
@@ -1902,7 +1907,14 @@ C          CORR - coordinates of symmetry independent center
 C*****************************************************************************
 C
         CALL RDLINE(LUINFO)
-        IPOS = INDEX(MLINE(NMLINE)(2:80),' ') + 1
+        ! if sequence number included as in 'C 12 1.34 2.11 0.00' then do not read
+        ! this sequence number as the X coordinate.
+        ! But still read e.g. 'C 1.34 2.11 0.00' correctly. /hjaaj Aug 2013
+        IF (MLINE(NMLINE)(5:5) .EQ. ' ') THEN
+           IPOS = 5
+        ELSE
+           IPOS = INDEX(MLINE(NMLINE)(2:80),' ') + 1
+        END IF
 C       sep05-hjaaj: allow both e.g. 'H ' and ' H' as names
         IF (IPOS .LE. 2 .AND. MLINE(NMLINE)(1:1) .EQ. ' ') THEN
           WRITE (LUPRI,'(/A,I5/A/A)') 'Error in input line no. ',NMLINE,
@@ -1922,6 +1934,7 @@ C       sep05-hjaaj: allow both e.g. 'H ' and ' H' as names
      &      NQ .GE. 0 .AND. NQ .LE.NSYMB) THEN
            WRITE(NAMN(NCTOT),'(A2,I2)') ASYMB(NQ), N
         END IF
+
 C
 C       951115-hjaaj: NAMN() must never be read with free format
 C        (otherwise it will on e.g. AIX be filled with nulls:
@@ -2003,33 +2016,27 @@ C     name of the atom
 C
 C     Arnfinn, nov. -08: ISUBSY and ISUBSI included in MLINE if QM3
 C
+        MLINE(NMLINE) = ' '
         IF (QM3) THEN
-           WRITE (MLINE(NMLINE),'(A4,3F20.10,2X,2I4,A3)') NAMN(NCTOT),
-     &        (CORD(J,NCTOT),J = 1, 3),ISUBSY(NCTOT),ISUBSI(NCTOT),'   '
+           WRITE (MLINE(NMLINE),'(A4,3F20.10,2X,2I4)') NAMN(NCTOT),
+     &        (CORD(J,NCTOT),J = 1, 3),ISUBSY(NCTOT),ISUBSI(NCTOT)
 C
         ELSEIF (IPOS .EQ. 0) THEN
-#if (defined(GFORTRAN) && GFORTRAN <= 402)
-c     a bug in the compiler (seen with gfortran-4.0.2 20051125)
-c     allegedly fixed in 4.1.x series.
-          WRITE (MLINE(NMLINE),'(A4,3F20.10,2X,A11)') NAMN(NCTOT),
-     &          (CORD(J,NCTOT),J = 1, 3), '             '
-#else
-          WRITE (MLINE(NMLINE),'(A4,3F20.10,2X,A14)') NAMN(NCTOT),
-     &          (CORD(J,NCTOT),J = 1, 3), '                '
-#endif
+          WRITE (MLINE(NMLINE),'(A4,3F20.10)') NAMN(NCTOT),
+     &          (CORD(J,NCTOT),J = 1, 3)
         ELSE
           IF (MASSNM .LT. 10) THEN
-            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I1,A5)')
+            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I1)')
      &             NAMN(NCTOT),(CORD(J,NCTOT),J = 1, 3),
-     &             '  Isotope=', MASSNM, '     '
+     &             '  Isotope=', MASSNM
           ELSE IF (MASSNM .LT. 100) THEN
-            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I2,A4)')
+            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I2)')
      &             NAMN(NCTOT),(CORD(J,NCTOT),J = 1, 3),
-     &             '  Isotope=', MASSNM, '    '
+     &             '  Isotope=', MASSNM
           ELSE
-            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I3,A3)')
+            WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I3)')
      &             NAMN(NCTOT),(CORD(J,NCTOT),J = 1, 3),
-     &             '  Isotope=', MASSNM, '   '
+     &             '  Isotope=', MASSNM
           END IF
         END IF
 C
@@ -4361,9 +4368,9 @@ C
                ICOUN1 = ICOUN1 + 1
                IF (ICOUN1 .GT. MXBSCE) THEN
                   WRITE(LUPRI,*) 'Maximum number of basis functions ',
-     &                  'on a sigle independent center is ', MXBSCE
+     &                  'on a single independent center is ', MXBSCE
                   WRITE(LUPRI,*) 'Fix it in center.h'
-                  STOP 'Too many basis on one center'
+                  CALL QUIT('Too many basis functions on one center')
                END IF
                ICOUN2 = ICOUN2 + 1
                KBSCEN(ICOUN1,ICENT) = ICOUN2
@@ -4374,9 +4381,9 @@ C
       END DO
       NCHKBS = ICOUN0
 C
-      WRITE(LUPRI,'(//,A,/,A,/)') 'Center information',
-     &                            '------------------'
-      WRITE(LUPRI,'(/,A,20X,A)') 'Nucleus','Number of basis'
+      WRITE(LUPRI,'(//A/A/)') 'Center information',
+     &                        '------------------'
+      WRITE(LUPRI,'(/A,20X,A)') 'Nucleus','Number of basis'
       WRITE(LUPRI,'(10X,A,8I5)') 'Sym.',(I,I=1,MAXREP+1)
       DO ICENT = 1,NUCIND
          WRITE(LUPRI,'(I6,8X,8I5)') ICENT,
@@ -4565,8 +4572,7 @@ C            small molecules, otherwise just a lot of lines.
       END IF
 
 C
-C        MIDAS Interface, write out input coordinates for midas.sym
-C        analysis
+C     MIDAS Interface, write out input coordinates for midas.sym analysis
 C
       IF (.TRUE.) THEN
          LUCOOR = -1
@@ -6193,6 +6199,7 @@ C     TODO : define multiple basis sets and point charges
          IZATOM(I) = NINT(CHARGE(I))
       END DO
       IF (ITYP.NE.NONTYP) CALL QUIT('Problem ITYP.ne.NONTYP in BUILDZ')
+      NONTYP_QM = NONTYP
       IF (DOCART) THEN
          CRT = 'C'
       ELSE IF (DOOWN) THEN
@@ -6861,9 +6868,7 @@ C
 C     Arnfinn, nov -08: Changed all letters to upper case
 C     (ie Atomtypes -> ATOMTYPES).
 C
-      DO I = 1, 71, 10
-         WRITE (TMPLN(I:),'(A10)') '          '
-      END DO
+      TMPLN = ' '
       IF (NONTYP .LT. 10) THEN
          WRITE (TMPLN,'(A10,I1)') 'ATOMTYPES=', NONTYP
          ISTART = 13

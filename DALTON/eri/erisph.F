@@ -315,14 +315,14 @@ C  /* Deck sphadr */
       INTEGER FUNCTION KSQADR(L,X,Y,Z,C)
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxdr.h"
-      LOGICAL FIRST
+      PARAMETER (MXDR=4)
       INTEGER A, B, C, D, X, Y, Z
-      INTEGER ACOEF(0:MXQN-1,0:MXDR), BCOEF(0:MXQN-1,0:MXDR)
 #include "ccom.h"
 C
+      LOGICAL FIRST
+      INTEGER ACOEF(0:MXQN-1,0:MXDR), BCOEF(0:MXQN-1,0:MXDR)
       SAVE FIRST, ACOEF, BCOEF, NHOLD
-      DATA FIRST,NHOLD /.TRUE.,0/
+      DATA FIRST, NHOLD /.TRUE.,0/
 C
       IF (FIRST .OR. NHTYP.NE.NHOLD) THEN
          DO J = 0, MXQN - 1
@@ -336,6 +336,9 @@ C
          NHOLD = NHTYP
       END IF 
       D = X + Y + Z
+      IF (D .GT. MXDR) THEN
+         CALL QUIT('ERROR: increase MXDR in erisph.F')
+      END IF
       IXYZ = Y + Y**2 + 2*Y*Z + Z*(3 + Z)
       KSQADR = (ACOEF(L,D) + BCOEF(L,D)*IXYZ)/24 + NSPHAD(L,C,D)
       RETURN
