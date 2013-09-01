@@ -89,9 +89,9 @@ set(ExternalProjectCMakeArgs
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     )
 add_external(matrix-defop)
-set(LIBS
+set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libmatrix-defop.a
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
 add_dependencies(matrix-defop matrixmlib)
@@ -242,9 +242,9 @@ set(ExternalProjectCMakeArgs
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     )
 add_external(openrsp)
-set(LIBS
+set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libopenrsp.a
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
 add_dependencies(openrsp matrix-defop)
