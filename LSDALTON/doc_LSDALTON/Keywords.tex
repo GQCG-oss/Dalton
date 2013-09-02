@@ -25,9 +25,9 @@ This input module defines the way the integrals should be calculated.
 \begin{description}
 
 \item[\Key{SCALAPACK}] Use SCALAPACK matrices. \newline
-NB: Requires linking to the scalapack lib (provided by MKL).
+NB: Requires linking to the scalapack lib (provided by MKL) and the use of the --scalapack keyword during installation.
 \item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices
-\item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library!
+\item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library and the use of the --csr keyword during installation!
 \item[\Key{TIME}] Activate the printout of timings.
 \item[\Key{NOGCBASIS}] Deactivate the use of the Grand Canonical basis \cite{trilevel1, trilevel2}
 \item[\Key{FORCEGCBASIS}] The Grand Canonical basis \cite{trilevel1, trilevel2} is deactivated when the program
@@ -796,6 +796,25 @@ Note that the value of \verb|RADINT| is changed by the following keywords:
 The \verb|GRIDX| keywords also imply specific \verb|RADINT| values.
 \item[\Key{ULTRAF}]
 Shortcut keyword for radial integration accuracy $10^{-15}$ and angular expansion order equal to $64$.
+\item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. This correction can be combined with all GGA type functionals
+\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{CasidaSalahub} 
+\begin{eqnarray}
+V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + V_{LB94,correction}\right),  
+\end{eqnarray}
+with a Zhan-Nichols-Dixon shift \cite{dixon,ZND}
+\begin{eqnarray}
+\Delta = NZD_{1} \cdot \epsilon_{HOMO} - NZD_{2}
+\end{eqnarray}
+Where $NZD_{1} = 0.2332$ and $NZD_{2} = 0.315$. Note that NWCHEM have introduced the same correction but uses a $NZD_{2} = 0.0116$. The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords. Note that this keyword only works with GGA type functionals. The CS00 keyword only work with a method which calculates the HOMO energy.
+\item[\Key{CS00 NZD1}] \verb| | \newline
+\verb|<NZD1>|\newline
+Changes the parameter $NZD_{1}$ (default $NZD_{1} = 0.2332$) see .CS00
+\item[\Key{CS00 NZD1}] \verb| | \newline
+\verb|<NZD2>|\newline
+Changes the parameter $NZD_{2}$ (default $NZD_{1} = 0.315$) see .CS00
+\item[\Key{CS00}] \verb| | \newline
+\verb|<Delta>|\newline
+Using the Casida-Salahub correction with a shift of Delta see .CS00
 \end{description}
 
 \subsection{*DENSOPT}\label{subsec:densopt}
@@ -847,35 +866,6 @@ Options are TIGHT, STANDARD, and SLOPPY.
 SCF convergence threshold - Frobenius norm of SCF gradient (default is 1.0d-4). 
 Note that this convergence criterion
 is not size-extensive. For large molecules, it is recommended to use .CONVDYN instead.
-\item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. Note that the LB94 functional is the same as using the follwing input. 
-\begin{verbatim}
-**WAVE FUNCTIONS
-.DFT
-GGAKey SLATER=1.0 VWN=1.0
-*DENSOPT
-.LB94
-**END OF INPUT
-\end{verbatim}
-However this correction can be combined with all functionals
-\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{CasidaSalahub} 
-\begin{eqnarray}
-V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + V_{LB94,correction}\right),  
-\end{eqnarray}
-with a Zhan-Nichols-Dixon shift \cite{dixon,ZND}
-\begin{eqnarray}
-\Delta = NZD_{1} \cdot \epsilon_{HOMO} - NZD_{2}
-\end{eqnarray}
-Where $NZD_{1} = 0.2332$ and $NZD_{2} = 0.315$. Note that NWCHEM have introduced the same correction but uses a $NZD_{2} = 0.0116$. The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD1>|\newline
-Changes the parameter $NZD_{1}$ (default $NZD_{1} = 0.2332$) see .CS00
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD2>|\newline
-Changes the parameter $NZD_{2}$ (default $NZD_{1} = 0.315$) see .CS00
-\item[\Key{CS00}] \verb| | \newline
-\verb|<Delta>|\newline
-Using the Casida-Salahub correction with a shift of Delta see .CS00
-
 %\item[\Key{DIAGHESONLY}] Calculate only one SCF energy (i.e., no optimization) 
 %and the lowest Hessian eigenvalue for a density constructed by weighted
 %average of two input densities. Needs files D1 and D2 (densities). Lowest Hessian

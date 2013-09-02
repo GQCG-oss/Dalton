@@ -252,7 +252,9 @@ contains
     endif
     call mat_csr_allocate(b, a%nnz)
 #ifdef VAR_MKL
+#ifdef VAR_CSR
     call mkl_dcsrcsc(job, a%nrow, a%val, a%col, a%row, b%val, b%col,b%row, info)
+#endif
 #endif
 !RA: Currently (mkl v. 10.2.1.017), info is not used in csrcsc as result status!
 !RA: When it comes, check it for the exit status
