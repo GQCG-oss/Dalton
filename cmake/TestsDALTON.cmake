@@ -33,6 +33,7 @@ add_dalton_test(dft_qr_sym        "dalton;dft;short;parallel")
 add_dalton_test(dft_rspexci_sym   "dalton;dft;short;parallel")
 add_dalton_test(dft_rspexci_nosym "dalton;dft;short;parallel")
 add_dalton_test(tddft_tda         "dalton;dft;short;parallel")
+add_dalton_test(dft_stex          "dalton;energy;short;parallel")
 
 add_dalton_test(geoopt_cartsad     "dalton;geo;short;parallel")
 add_dalton_test(geoopt_cartsad2    "dalton;geo;short;parallel")
