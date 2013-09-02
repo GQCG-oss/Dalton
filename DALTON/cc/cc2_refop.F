@@ -59,7 +59,7 @@ C
 #include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
-      DIMENSION INDEXA(MXCORB) 
+      DIMENSION INDEXA(MXCORB_CC) 
 #include "ccorb.h"
 CCN !#include <infind.h> not compatible with R12!
 #include "ccisao.h"

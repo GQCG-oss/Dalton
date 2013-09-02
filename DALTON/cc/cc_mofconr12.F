@@ -72,7 +72,7 @@ c-----------------------------------------------------------------------
 #endif
       parameter (zero = 0.0d0, one = 1.0d0, two = 2.0d0)
 
-      integer indexa(mxcorb)
+      integer indexa(MXCORB_CC)
       integer isymhcs,iglmrhs(8,8),nglmds(8),imaijm(8,8),nmaijm(8),
      &        lwork,index,kend1,lwrk1,ioff,isym,isymgk,icount2,
      &        icount5,isymk,isymg,icount6
