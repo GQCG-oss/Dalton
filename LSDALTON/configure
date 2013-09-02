@@ -922,6 +922,7 @@ fi
 # If CSR matrices should be enabled (needs more work - libraries!)
 if [ $csr = "true" ]; then
    cpp="${cppsep} -DVAR_MKL"
+   cpp="${cppsep} -DVAR_CSR"
 fi
 
 #if [ $useBSM = "true" ]; then

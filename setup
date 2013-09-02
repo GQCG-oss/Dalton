@@ -257,7 +257,8 @@ def gen_cmake_command(args):
         command += ' -DENABLE_BUILTIN_BLAS=ON'
         command += ' -DENABLE_AUTO_BLAS=OFF'
     elif args.blas == 'auto':
-        command += ' -DENABLE_AUTO_BLAS=ON'
+        if (args.mkl != 'none') and not args.cray:
+            command += ' -DENABLE_AUTO_BLAS=ON'
     elif args.blas == 'none':
         command += ' -DENABLE_AUTO_BLAS=OFF'
     else:
@@ -271,7 +272,8 @@ def gen_cmake_command(args):
         command += ' -DENABLE_BUILTIN_LAPACK=ON'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
     elif args.lapack == 'auto':
-        command += ' -DENABLE_AUTO_LAPACK=ON'
+        if (args.mkl != 'none') and not args.cray:
+            command += ' -DENABLE_AUTO_LAPACK=ON'
     elif args.lapack == 'none':
         command += ' -DENABLE_AUTO_LAPACK=OFF'
     else:
@@ -284,7 +286,7 @@ def gen_cmake_command(args):
     if args.explicit_libs:
         # remove leading and trailing whitespace
         # otherwise CMake complains
-        command += ' -DEXPLICIT_LIBS="%s"' % explicit_libs.strip()
+        command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs.strip()
 
     if args.extra_fc_flags:
         command += ' -DEXTRA_Fortran_FLAGS="%s"' % args.extra_fc_flags

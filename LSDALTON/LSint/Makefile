@@ -37,7 +37,6 @@ F90_OBJS = \
         lsmpi.o     \
         ReadMolFile.o  \
 	ls_IntegralInterface.o\
-	II_Fragment.o\
 	linsolv_df.o 
 F_CPPS = $(F_OBJS:.o=.i)
 

@@ -2291,7 +2291,7 @@ C
          WRITE(LUPRI,'(3(/A64))')
      & ' All results are presented in atomic units, except the        ',
      & ' excitation energy which is given in eV and two-photon cross  ',
-     & ' section which is given in GM.                                '
+     & ' section which is given in GM. A FWHM of 0.1 eV is assumed.   '
          WRITE(LUPRI,'(3(/A))')
      &        '   Conversion factors:',
      &        '      1 a.u. = 1.896788 10^{-50} cm^4 s/photon',
@@ -2331,7 +2331,7 @@ C
          WRITE(LUPRI,'(3(/A60))') 
      &        '          Two-photon cross sections                ',
      &        '---------------------------------------------------',
-     &        ' sigma  =  8*pi^3*alpha^2*hbar/e^4 * E^2*D   (a.u.)'
+     &        ' sigma  =  8*pi^3*alpha^2*hbar/e^4 * E^2*D   (a.u.)' 
          WRITE(LUPRI,'(3(/A53))') 
      &        '       Polarization ratio      ',
      &        '-------------------------------',
@@ -2362,11 +2362,11 @@ C
                DG = DG/D30
                R = (-DF+3*DG)/(DF+2*DG)
                D = 2*DF+4*DG
-               s = D * RESFRE(IC,ISYMC)**2 * AU_TO_GM
+               s = D * (RESFRE(IC,ISYMC)*0.5D0)**2 * AU_TO_GM
                WRITE(LUPRI,'(A2,2I4,F8.2,A14,4E11.3,F8.2)')' ',ISYMC,IC,
      &              RESFRE(IC,ISYMC)*XTEV,'Linear     ',DF,DG,D,s,R
                D=-2*DF+6*DG
-               s = D * RESFRE(IC,ISYMC)**2 * AU_TO_GM
+               s = D * (RESFRE(IC,ISYMC)*0.5D0)**2 * AU_TO_GM
                WRITE(LUPRI,'(A2,2I4,F8.2,A14,4E11.3,F8.2)')' ',ISYMC,IC,
      &              RESFRE(IC,ISYMC)*XTEV,'Circular   ',DF,DG,D,s,R
                IF (IPRRSP.GT.2) THEN
@@ -3328,7 +3328,7 @@ C
      &               AQRLB(ISYM,IAOP),ISYM,-FRQ,
      &               '@ B operator, symmetry, frequency: ',
      &               BQRLB(ISYM,IBOP),ISYM, FRQ,
-     &               '@ Value of linear response -<<A;B>(omega): ',VAL
+     &               '@ Value of linear response -<<A;B>>(omega): ',VAL
                END DO
             END DO
             END DO

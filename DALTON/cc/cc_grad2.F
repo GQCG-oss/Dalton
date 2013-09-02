@@ -89,7 +89,7 @@ CCN #include <infind.h> not compatible with R12!
 C
       LOGICAL LOCDBG 
       PARAMETER( LOCDBG = .FALSE. )
-      INTEGER INDEXA(MXCORB)
+      INTEGER INDEXA(MXCORB_CC)
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
