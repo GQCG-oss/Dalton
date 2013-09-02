@@ -70,6 +70,8 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccsd.F90
     LSDALTON/deccc/rpa.F90
     LSDALTON/deccc/f12_integrals.F90
+    LSDALTON/deccc/f12_routines.F90
+    LSDALTON/deccc/wangy_playground.F90 
     LSDALTON/deccc/cc_driver.F90
     LSDALTON/deccc/cc_integrals.F90
     LSDALTON/deccc/ccarray2_simple.F90
@@ -221,7 +223,6 @@ set(LSINT_SOURCES
     LSDALTON/LSint/dft_gridLL.F90
     LSDALTON/LSint/BuildBasis.F90
     LSDALTON/LSint/BuildMolFile.F90
-    LSDALTON/LSint/II_Fragment.F90
     LSDALTON/LSint/gridgeneration.F90
     LSDALTON/LSint/gridgeneration_boxify.F90
     LSDALTON/LSint/II_XC_interface.F90

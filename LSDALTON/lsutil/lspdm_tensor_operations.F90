@@ -146,13 +146,14 @@ module lspdm_tensor_operations_module
   integer(kind=long) :: bytes_transferred_get = 0
   integer(kind=long) :: nmsg_get = 0
 
+#ifdef VAR_MPI
   procedure(array_acct4),pointer :: acc_ti4 
   procedure(array_acct8),pointer :: acc_ti8 
   procedure(array_gett4),pointer :: get_ti4 
   procedure(array_gett8),pointer :: get_ti8 
   procedure(array_putt4),pointer :: put_ti4 
   procedure(array_putt8),pointer :: put_ti8 
-
+#endif
 
   !procedure(lsmpi_put_realkV_w8),pointer :: put_rk8 
   !procedure(lsmpi_get_realkV_w8),pointer :: get_rk8 
@@ -1395,9 +1396,9 @@ module lspdm_tensor_operations_module
     integer               :: tmps 
     logical               :: internal_alloc,lock_outside
     integer               :: maxintmp,b,e,minstart
+#ifdef VAR_MPI
     procedure(put_acc_tile), pointer :: put_acc => null()
 
-#ifdef VAR_MPI
     acc_ti8 => array_acct8
     acc_ti4 => array_acct4
     put_ti8 => array_putt8
@@ -1649,9 +1650,9 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: cons_el_rd
     integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
     logical :: deb
+#ifdef VAR_MPI
     procedure(put_acc_el), pointer :: pga => null()
     procedure(put_acc_vec), pointer :: pgav => null()
-#ifdef VAR_MPI
     integer(kind=ls_mpik) :: source
 
     deb = .false.
@@ -2234,9 +2235,9 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: cons_el_rd
     integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
     logical :: goto_default
+#ifdef VAR_MPI
     procedure(put_acc_el), pointer :: pga => null()
     procedure(put_acc_vec), pointer :: pgav => null()
-#ifdef VAR_MPI
     integer(kind=ls_mpik) :: source
 
     goto_default = .false.

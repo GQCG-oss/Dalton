@@ -100,9 +100,7 @@ F90_OBJS = \
 	matop_dense_unrest.o\
 	mat-operations-aux.o\
 	mat-operations-essential.o\
-	matrix_defop.o\
-	matrix_defop_backend.o\
-        matrix_utilities.o \
+	matrix_utilities.o\
 	matrix_module.o\
 	MoleculeType.o\
 	Molecule_operations.o\

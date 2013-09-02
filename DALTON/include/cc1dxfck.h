@@ -1,5 +1,5 @@
 *======================================================================*
-*    
+*
 *     Purpose: store information about effective Fock matrices
 *              calculated from (single) one-index transformed
 *              integrals:
@@ -9,7 +9,7 @@
 *         L1DXFCKOPN    --  flag to allow/disallow extension for Fock m.
 *         MAX1DXFCKLBL  --  maximum dimension of the list
 *         N1DXFCKLBL    --  list length
-*         LBL1DXFCK(*)  --  labels of the operators 
+*         LBL1DXFCK(*)  --  labels of the operators
 *         LSTRLX1DX(*)  --  list type of relaxation vector
 *         IRELAX1DX(*)  --  list index of relaxation vector
 *         LBLRLX(*)     --  label for relaxation vector

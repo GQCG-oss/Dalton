@@ -842,10 +842,21 @@ subroutine DEC_meaningful_input(config)
      if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=1) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .SCALAPACK!',-1)
      end if
+     ! CCSD does not work for CSR, Thomas/Hubi please fix - make not matrix type
+     ! subroutines
+     if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=1) ) then
+        call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .CSR!',-1)
+     end if
 
      ! DEC and response do not go together right now...
      if(config%response%tasks%doResponse) then
         call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
+     end if
+
+     ! It is meaningless to run a DFT calculation and then build DEC (or full CC) on top of it...
+     if(config%opt%calctype == config%opt%dftcalc) then
+        call lsquit('Error in input: DFT and DEC (or full molecular CC) calculation cannot &
+             & be combined!',-1)
      end if
 
      ! DEC geometry optimization 
@@ -891,7 +902,22 @@ subroutine DEC_meaningful_input(config)
 
         end if NotFullCalc
 
+        ! For the release we only include DEC-MP2
+#ifndef MOD_UNRELEASED
+        if(DECinfo%ccmodel/=1 .and. (.not. DECinfo%full_molecular_cc) ) then
+           print *, 'Note that you may run a full molecular CC calculation (not linear-scaling)'
+           print *, 'using the **CC section rather than the **DEC section.'
+           call lsquit('DEC is currently only available for the MP2 model!',-1)
+        end if
+#endif
+
      end if OrbLocCheck
+
+     !Check in the case of a DEC calculation that the cc-restart-files are not
+     !written
+     if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
+       DECinfo%CCSDnosaferun = .true.
+     endif
 
   end if DECcalculation
 
@@ -1075,8 +1101,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.DEBUG4CENTERERI');  INTEGRAL%DEBUG4CENTER_ERI = .TRUE.
         CASE ('.DEBUGCCFRAGMENT');  INTEGRAL%DEBUGCCFRAGMENT = .TRUE.
         CASE ('.DEBUGDECPACKED'); INTEGRAL%DEBUGDECPACKED = .TRUE.
-        CASE ('.CARMOM');  READ(LUCMD,*) INTEGRAL%CARMOM
-        CASE ('.SPHMOM');  READ(LUCMD,*) INTEGRAL%SPHMOM
         CASE ('.CART-E'); INTEGRAL%HermiteEcoeff = .FALSE.
         CASE ('.INTPRINT');  READ(LUCMD,*) INTEGRAL%INTPRINT
         CASE ('.NOJENGINE'); INTEGRAL%JENGINE = .FALSE.
@@ -1145,10 +1169,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
            INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_GCBASIS    = .TRUE.
+           INTEGRAL%ADMM_GCBASIS    = .FALSE.
            INTEGRAL%ADMM_DFBASIS    = .FALSE.
-           INTEGRAL%ADMM_JKBASIS    = .FALSE.
-        CASE ('.ADMM-JK'); 
+           INTEGRAL%ADMM_JKBASIS    = .TRUE.
+        CASE ('.ADMM-JK'); ! DEFAULT
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
@@ -1156,7 +1180,15 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_GCBASIS    = .FALSE.
            INTEGRAL%ADMM_DFBASIS    = .FALSE.
            INTEGRAL%ADMM_JKBASIS    = .TRUE.
-        CASE ('.ADMM-DF'); 
+        CASE ('.ADMM-GC'); ! EXPERIMENTAL
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE = .TRUE.
+           INTEGRAL%ADMM_GCBASIS    = .TRUE.
+           INTEGRAL%ADMM_DFBASIS    = .FALSE.
+           INTEGRAL%ADMM_JKBASIS    = .FALSE.
+        CASE ('.ADMM-DF'); ! EXPERIMENTAL
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
@@ -1164,7 +1196,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_GCBASIS    = .FALSE.
            INTEGRAL%ADMM_DFBASIS    = .TRUE.
            INTEGRAL%ADMM_JKBASIS    = .FALSE.
-        CASE ('.ADMM-McWeeeny');
+        CASE ('.ADMM-McWeeny'); ! EXPERIMENTAL
            INTEGRAL%ADMM_MCWEENY    = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
@@ -2696,6 +2728,7 @@ implicit none
         & 'Level shifting by ||Dorth|| ratio  ',&
         & 'No level shifting                  ',&
         & 'Van Lenthe fixed level shifts      '/)
+   integer :: nocc,nvirt
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 integer, external :: OMP_GET_NESTED
@@ -3131,6 +3164,17 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    if (config%decomp%cfg_check_converged_solution .or. config%decomp%cfg_rsp_nexcit > 0) then
       config%decomp%cfg_hlgap_needed = .true.
    endif
+   !Check if (# unoccupied)*(# occupied) is less then the number of excitations asked for
+   nocc = config%decomp%nocc
+   nvirt = (nbast-nocc)
+   if (nocc*nvirt .LT. MAX(config%decomp%cfg_rsp_nexcit,config%response%MCDinput%nexci)) then
+      write(lupri,*)'The number of Occupied Orbitals  :',nocc
+      write(lupri,*)'The number of Unoccupied Orbitals:',nvirt
+      write(lupri,*)'The Maximum number of allowed excitation energies:',nvirt*nocc
+      print*,'The Maximum number of allowed excitation energies:',nvirt*nocc,'you asked for',&
+           & MAX(config%decomp%cfg_rsp_nexcit,config%response%MCDinput%nexci)
+      Call lsquit("Error in Input. The maximim number of excitation energies exceed.",-1)
+   endif
 
 ! Check for Cartesian basis functions 
 !===============================================
@@ -3152,6 +3196,33 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       WRITE(config%LUPRI,'(/A)') &
            &     'You have specified .DENSFIT in the dalton input but not supplied a fitting basis set'
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
+   endif
+!ADMM basis input
+   if(config%integral%ADMM_JKBASIS .AND. (.NOT. config%integral%JKbasis))then
+      WRITE(config%LUPRI,'(/A)') &
+           &     'You have specified an ADMM-JK calculation in the dalton input but not supplied a JK fitting basis set as required'
+      WRITE(config%LUPRI,'(/A)') &
+           &     'Please read the ADMM part in the manual and supply JK basis set'
+      CALL lsQUIT('ADMM fitting input inconsitensy: add JK fitting basis set',config%lupri)
+   endif
+   if(config%integral%ADMM_DFBASIS .AND. (.NOT. config%integral%auxbasis))then
+      WRITE(config%LUPRI,'(/A)') &
+           & 'You have specified an ADMM-DF calculation in the dalton input but not supplied an aux fitting basis set as required'
+      WRITE(config%LUPRI,'(/A)') &
+           &     'Please read the ADMM part in the manual and supply aux basis set'
+      CALL lsQUIT('ADMM fitting input inconsitensy: add aux fitting basis set',config%lupri)
+   endif
+
+   if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K))then
+      WRITE(config%LUPRI,'(/A)') 'The Pari keywords do not currently work with response'
+      WRITE(config%LUPRI,'(/A)') 'Please remove the Pari keywords'
+      CALL lsQUIT('The Pari keywords do not currently work with response',config%lupri)
+   endif
+
+   if(config%response%tasks%doResponse.AND.config%integral%FMM)then
+      WRITE(config%LUPRI,'(/A)') 'The .RUNMM keyword do not currently work with response'
+      WRITE(config%LUPRI,'(/A)') 'Please remove the .RUNMM keyword'
+      CALL lsQUIT('The .RUNMM keyword do not currently work with response',config%lupri)
    endif
 
    if(config%integral%DALINK .AND. config%opt%cfg_incremental)THEN
@@ -3390,7 +3461,12 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors.'
          call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag',config%lupri)
 #else
-         WRITE(lupri,'(4X,A)')'This is a Standard Serial calculation using.'
+         !no VAR_SCALAPACK and no MPI         
+         WRITE(lupri,'(4X,A)')'This is a Standard Serial compilation.'
+         WRITE(lupri,'(4X,A)')'.SCALAPACK requires -DVAR_SCALAPACK precompiler flag and compilation using MPI.'
+         print*,'This is a Standard Serial compilation.'
+         print*,'.SCALAPACK requires -DVAR_SCALAPACK precompiler flag and compilation using MPI.'
+         call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag and compilation using MPI',config%lupri)
 #endif
 #endif
       endif

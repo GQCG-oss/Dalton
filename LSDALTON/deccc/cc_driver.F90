@@ -304,7 +304,7 @@ contains
        write(DECinfo%output,*) 'This will work fine but it is recommended to use the non-iterative'
        write(DECinfo%output,*) 'MP2_integrals_and_amplitudes_workhorse to use get the MP2 amplitudes'
        write(DECinfo%output,*)
-       call get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,ypv,ypo,gmo)
+       call get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,ypv%val,ypo%val,gmo)
 
        ! Construct L: L_{bjai} = 2*g_{bjai} - g_{ajbi}
        Lmo = getL_simple_from_gmo(gmo)
@@ -2390,6 +2390,7 @@ contains
     logical :: restart
 
     restart = .false.
+    saferun = (.not.DECinfo%CCSDnosaferun)
     
     safefilet11='t11'
     safefilet12='t12'
@@ -2889,8 +2890,8 @@ contains
              call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
           end if
 
-          !if DECinfo%CCSDsaferun option is set, make sure data is in dense
-          if(DECinfo%CCSDsaferun)then
+          !if .not.DECinfo%CCSDnosaferun option is set, make sure data is in dense
+          if(saferun)then
             if(DECinfo%use_singles)then
               call save_current_guess(iter,t2(iter+1),safefilet21,safefilet22,&
               &t1(iter+1),safefilet11,safefilet12)
@@ -3165,7 +3166,7 @@ contains
     readfile2=.false.
     
     !this can be skipped by input, but restart is default
-    if(.not.DECinfo%CCSDno_restart)then
+    if(DECinfo%restart)then
       if(DECinfo%use_singles.and.all_singles)then
         fullname11=safefilet11//'.restart'
         fullname12=safefilet12//'.restart'

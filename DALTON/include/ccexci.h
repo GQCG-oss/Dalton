@@ -17,7 +17,7 @@
 *     XNORM   : overlap between left and right vector
 *               (why is this stored on a common block? should be
 *                1.00 after convergence of the left vectors...)
-*       
+*
 *     ISYOFE  : offsets for the symmetry classes (singlett states)
 *     ITROFE  : offsets for the triplett states for each symmetry
 *

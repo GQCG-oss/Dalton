@@ -3,10 +3,10 @@
 
       INTEGER AB, AC, AD, AE, BC, BD, BE, CD, CE, DE
       PARAMETER (AB=1, AC=2, AD=4, AE=7,
-     &                 BC=3, BD=5, BE=8, 
+     &                 BC=3, BD=5, BE=8,
      &                       CD=6, CE=9,
      &                             DE=10 )
- 
+
       INTEGER ABC, ABD, ACD, BCD, ABE, ACE, ADE, BCE, BDE, CDE
       PARAMETER (ABC=1, ABD=2, ABE=5,
      &                  ACD=3, ACE=6,

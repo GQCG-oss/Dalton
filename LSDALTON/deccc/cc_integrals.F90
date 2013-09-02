@@ -524,8 +524,8 @@ contains
     dummy=0
     doscreen = mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,dummy,1,1,intspecConvert)
-    IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabLHS
-    IF(doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabRHS
+    IF(doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+    IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabRHS
 
     ! Get AO integrals
     call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output,Mylsitem%SETTING,&

@@ -4,22 +4,22 @@
       INTEGER AB, AC, AD, AE, AF, BC, BD, BE, BF, CD, CE, CF, DE, DF,EF
       PARAMETER (AB=1, AC=2, AD=4, AE=7,  AF=11,
      &                 BC=3, BD=5, BE=8,  BF=12,
-     &                       CD=6, CE=9,  CF=13, 
+     &                       CD=6, CE=9,  CF=13,
      &                             DE=10, DF=14,
      &                                    EF=15 )
 
       INTEGER ABC, ABD, ABE, ABF, ACD, ACE, ACF, ADE, ADF, AEF,
      &                            BCD, BCE, BCF, BDE, BDF, BEF,
      &                                           CDE, CDF, CEF,
-     &                                                     DEF   
-      PARAMETER (ABC=1, ABD=2, ABE=5,  ABF=11, 
-     &                  ACD=3, ACE=6,  ACF=12, 
-     &                         BCE=7,  BCF=13, 
+     &                                                     DEF
+      PARAMETER (ABC=1, ABD=2, ABE=5,  ABF=11,
+     &                  ACD=3, ACE=6,  ACF=12,
+     &                         BCE=7,  BCF=13,
      &                                 ADF=14,
-     &                  BCD=4, ADE=8,  BDF=15, 
-     &                         BDE=9,  CDF=16, 
+     &                  BCD=4, ADE=8,  BDF=15,
+     &                         BDE=9,  CDF=16,
      &                                 AEF=17,
-     &                         CDE=10, BEF=18, 
+     &                         CDE=10, BEF=18,
      &                                 CEF=19,
      &                                 DEF=20  )
 

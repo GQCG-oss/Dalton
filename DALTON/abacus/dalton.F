@@ -44,9 +44,7 @@ C
 #include "gnrinf.h"
 #include "inftap.h"
 #include "prpc.h"
-Cef begin
 #include "incore.h"
-Cef end
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       LOGICAL FINISH
@@ -140,10 +138,7 @@ C integer (we used IEIR=3000000).
       INDX_SHL2 = 0
       INDX_SHL3 = 0
       INDX_SHL4 = 0
-#if defined (VAR_MPI)
       CALL IZERO(INDX_SHL,MXTSK)
-#endif
-C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
       IF (MMWORK .NE. MMCORE) THEN
          CALL QUIT('MMCORE must equal MMWORK.')
       END IF
@@ -478,9 +473,10 @@ C
          IPRTYP = ENDING_SIGNAL
          CALL MPIXBCAST(IPRTYP,1,'INTEGER',MYNUM)
          CALL GPCLOSE(LUCME,'KEEP')
-         CALL GPCLOSE(LUSTAT,'KEEP')
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUNMPF,'KEEP')
+         CALL GPCLOSE(LUSTAT,'KEEP')
+         LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
@@ -543,9 +539,10 @@ C
             CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
      &           MPI_COMM_WORLD,IERR)
             CALL GPCLOSE(LUCME,'KEEP')
-            CALL GPCLOSE(LUSTAT,'KEEP')
             CALL GPCLOSE(LUNDPF,'KEEP')
             CALL GPCLOSE(LUNMPF,'KEEP')
+            CALL GPCLOSE(LUSTAT,'KEEP')
+            LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
             CALL GPCLOSE(LUPRI,'KEEP')
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
@@ -598,10 +595,11 @@ C
       IPRLOC = MAX(IPRUSR,IPRRHF)
 C     IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
       IF (IPRLOC .GT. 2) CALL PRPRPC(LUNMPF,1,DUMMY,NPRMI)
-      CALL GPCLOSE(LUSTAT,'KEEP')
       CALL GPCLOSE(LUCME,'KEEP')
       CALL GPCLOSE(LUNDPF,'KEEP')
       CALL GPCLOSE(LUNMPF,'KEEP')
+      CALL GPCLOSE(LUSTAT,'KEEP')
+      LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
       CALL GPCLOSE(LUPRI,'KEEP')
 #if defined(BUILD_GEN1INT)
 C...  added by Bin Gao, Oct. 2, 2011

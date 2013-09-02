@@ -65,6 +65,9 @@ contains
     fragment%ypo => null()
     fragment%ypv => null()
 
+    !Free CABS MO F12
+    fragment%cabsMOs => null()
+
     fragment%fock => null()
     fragment%ppfock => null()
     fragment%ccfock => null()
@@ -2084,7 +2087,8 @@ contains
          full_orb_idx
     integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
-
+  
+    integer :: ncabsAO,ncabsMO
 
     if(.not. fragment%fragmentadapted) then
        ! allocate C^o(nbasis,occ) C^v(nbasis,unocc)
@@ -2097,6 +2101,14 @@ contains
 
     call mem_alloc(fragment%CoreMO, fragment%number_basis, fragment%ncore)
     fragment%CoreMO=0.0E0_realk
+
+    !F12-calculation CABS MO and CABS AO
+    if(DECinfo%F12) then
+       ncabsAO = size(Mymolecule%cabsMOs,1)
+       ncabsMO = size(Mymolecule%cabsMOs,2) 
+       call mem_alloc(fragment%cabsMOs,ncabsAO,ncabsMO)
+       call dcopy(ncabsAO*ncabsMO,Mymolecule%cabsMOs,1,fragment%cabsMOs,1)
+    endif
 
     ! truncate basis to this set of atoms
     nocc = MyMolecule%numocc
@@ -2245,12 +2257,14 @@ contains
     end if FitOrbitalsForFragment
 
 
-    ! Purify fragment MO coefficients 
-    ! (not for fragment-adapted orbitals since these are automatically orthogonal
-    !  by virtue of the purification of the local orbitals).
-    if(DECinfo%PurifyMOs .and. (.not. fragment%fragmentadapted) ) then
-       call fragment_purify(fragment)
-    end if
+! KK: Purification can be problematic for local orbitals in the context of fragment optimization, 
+! so currently it is only used in combination with fragment-adapted orbitals.
+!!$    ! Purify fragment MO coefficients 
+!!$    ! (not for fragment-adapted orbitals since these are automatically orthogonal
+!!$    !  by virtue of the purification of the local orbitals).
+!!$    if(DECinfo%PurifyMOs) then
+!!$       call fragment_purify(fragment)
+!!$    end if
  
 
  ! adjust fock matrix in ao basis
@@ -3941,14 +3955,11 @@ if(DECinfo%PL>0) then
 
     ! Set job list for fragments
     ! --------------------------
-    if(DECinfo%first_order .or. DECinfo%InclFullMolecule .or. &
-         &  nsingle==1 .or. DECinfo%ccmodel/=1) then
-       ! First order calculation, non-MP2, or other cases require
-       ! atomic fragment calculations to be repeated
+    if(DECinfo%RepeatAF) then
+       ! Repeat atomic fragments: Both atomic and pair frags
        njobs = nsingle+npair
     else
-       ! For simple MP2 energy calculation with no fragments it is not necessary to repeat atomic
-       ! fragment calculations so we only do the pairs
+       ! Atomic fragments are already done - only do pairs
        njobs = npair
     end if
 
@@ -4124,10 +4135,8 @@ if(DECinfo%PL>0) then
 
        if(.not. which_fragments(i)) cycle  ! No fragment for atom i
 
-       ! First order calculation, non-MP2, and other other cases require
-       ! atomic fragment calculations to be repeated
-       if(DECinfo%first_order .or. DECinfo%InclFullMolecule .or. &
-            &  nsingle==1 .or. DECinfo%ccmodel/=1) then
+       ! Repeat atomic fragments if requested
+       if(DECinfo%RepeatAF) then
 
           ! Set atom indices for single fragment job
           k=k+1
@@ -5299,6 +5308,266 @@ if(DECinfo%PL>0) then
 
   end subroutine copy_fragment_info_job
 
+
+  !> \brief Calculate occ-occ and virt-virt blocks of correlation density matrix
+  !> for atomic fragment from AOS amplitude input.
+  !> Different definitions for the density matrices are given depending on the model
+  !> and on whether we use both occupied and virtual partitioning schemes (details inside subroutine).
+  !> \author Kasper Kristensen
+  !> \date August 2013
+  subroutine calculate_corrdens(t2,MyFragment)
+    implicit none
+    !> Doubles amplitudes in AOS (probably MP2)
+    type(array4),intent(in) :: t2
+    !> MyFragment - output occ and virt density matrices are stored in 
+    !> MyFragment%occmat and MyFragment%virtmat, respectively.
+    type(ccatom),intent(inout) :: MyFragment
+
+    ! Delete existing correlation density matrix (if present)
+    if(MyFragment%CDset) then
+       call mem_dealloc(MyFragment%occmat)
+       call mem_dealloc(MyFragment%virtmat)
+    end if
+    call mem_alloc(MyFragment%occmat,MyFragment%noccAOS,MyFragment%noccAOS)
+    call mem_alloc(MyFragment%virtmat,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
+
+    ! Different density matrix definitions depending on scheme
+    ! - this is work in progress and will probably be modified.
+    if(DECinfo%ccmodel==1) then
+       ! MP2 model: Construct density matrix based only on EOS amplitudes
+       call calculate_corrdens_EOS(t2,MyFragment)
+    else
+       ! Beyond MP2: Work in progress (will be documented better when optimal solution has been found)
+       if(DECinfo%OnlyOccPart) then ! only use occupied partitioning scheme
+          ! Use AOS ampltiudes but with special emphasis on EOS.
+          call calculate_corrdens_semiEOS(t2,MyFragment)
+       else
+          ! Use AOS amplitudes with equal weight on all amplitudes.
+          call calculate_corrdens_AOS(t2,MyFragment)
+       end if
+    end if
+    
+    MyFragment%CDset=.true.
+
+  end subroutine calculate_corrdens
+
+
+  !> \brief Calculate occ-occ and virt-virt blocks of correlation density matrix
+  !> for atomic fragment using EOS subset of AOS amplitudes (see inside subroutine).
+  !> Different definitions for the density matrices are given depending on the model
+  !> and on whether we use both occupied and virtual partitioning schemes (details inside subroutine).
+  !> \author Kasper Kristensen
+  !> \date August 2013
+  subroutine calculate_corrdens_EOS(t2,MyFragment)
+    implicit none
+    !> Doubles amplitudes in AOS (probably MP2)
+    type(array4),intent(in) :: t2
+    !> MyFragment - output occ and virt density matrices are stored in 
+    !> MyFragment%occmat and MyFragment%virtmat, respectively.
+    type(ccatom),intent(inout) :: MyFragment
+    integer :: i,j,k,a,b,c,ax,bx,ix,jx
+    real(realk) :: i2,i4
+
+    i2 = 2.0_realk
+    i4 = 4.0_realk
+print *, 'EOS'
+    ! Occ-occ block of density matrix
+    ! *******************************
+    ! OccMat(i,j) = sum_{abk} t_{ik}^{ab}  tbar_{jk}^{ab}
+    ! where ab are assigned to central atom in fragment, and ijk are in occupied AOS
+    ! tbar_{ij}^{ab} = 4t_{ij}^{ab} - 2t_{ij}^{ba}
+    MyFragment%OccMat = 0.0_realk
+    do b=1,MyFragment%nunoccEOS
+       bx = MyFragment%idxu(b)  ! index for EOS orbital b in AOS list of orbitals
+       do a=1,MyFragment%nunoccEOS
+          ax = MyFragment%idxu(a)  
+          do k=1,MyFragment%noccAOS
+             do i=1,MyFragment%noccAOS
+                do j=1,MyFragment%noccAOS
+                   MyFragment%OccMat(i,j) = MyFragment%OccMat(i,j) + &
+                        & t2%val(ax,i,bx,k)*(i4*t2%val(ax,j,bx,k) - i2*t2%val(bx,j,ax,k))
+                end do
+             end do
+          end do
+       end do
+    end do
+
+
+    ! Virt-virt block of density matrix
+    ! *********************************
+
+    ! VirtMat(a,b) = sum_{ijc} t_{ij}^{ac}  tbar_{ij}^{bc}
+    ! where ij are assigned to central atom in fragment, and abc are in virtual AOS
+    MyFragment%VirtMat = 0.0_realk
+    do i=1,MyFragment%noccEOS
+       ix = MyFragment%idxo(i)
+       do j=1,MyFragment%noccEOS
+          jx = MyFragment%idxo(j)
+          do a=1,MyFragment%nunoccAOS
+             do b=1,MyFragment%nunoccAOS
+                do c=1,MyFragment%nunoccAOS
+                   MyFragment%VirtMat(a,b) = MyFragment%VirtMat(a,b) + &
+                        & t2%val(a,ix,c,jx)*(i4*t2%val(b,ix,c,jx) - i2*t2%val(c,ix,b,jx))
+                end do
+             end do
+          end do
+       end do
+    end do
+
+  end subroutine calculate_corrdens_EOS
+
+
+  !> \brief Calculate occ-occ and virt-virt blocks of correlation density matrix
+  !> for atomic fragment using AOS amplitudes - but where the EOS amplitudes are given more weight
+  !> (see details inside subroutine).
+  !> Different definitions for the density matrices are given depending on the model
+  !> and on whether we use both occupied and virtual partitioning schemes (details inside subroutine).
+  !> \author Kasper Kristensen
+  !> \date August 2013
+  subroutine calculate_corrdens_semiEOS(t2,MyFragment)
+    implicit none
+    !> Doubles amplitudes in AOS (probably MP2)
+    type(array4),intent(in) :: t2
+    !> MyFragment - output occ and virt density matrices are stored in 
+    !> MyFragment%occmat and MyFragment%virtmat, respectively.
+    type(ccatom),intent(inout) :: MyFragment
+    integer :: i,j,k,a,b,c
+    real(realk) :: i2,i4
+    logical,pointer :: OccEOS(:)
+print *, 'semiEOS'
+    i2 = 2.0_realk
+    i4 = 4.0_realk
+
+    ! Occ-occ block of density matrix
+    ! *******************************
+
+    ! OccMat(i,j) = sum_{abk} t_{ik}^{ab}  tbar_{jk}^{ab}
+    ! tbar_{ij}^{ab} = 4t_{ij}^{ab} - 2t_{ij}^{ba}
+    ! - for now we let all indices be AOS indices here 
+    ! (meaning that we do not give the virtual orbitals assigned to P
+    ! special weight, and thus that we do not consider the virtual part. scheme).
+    MyFragment%OccMat = 0.0_realk
+    do b=1,MyFragment%nunoccAOS
+       do a=1,MyFragment%nunoccAOS
+          do k=1,MyFragment%noccAOS
+             do i=1,MyFragment%noccAOS
+                do j=1,MyFragment%noccAOS
+                   MyFragment%OccMat(i,j) = MyFragment%OccMat(i,j) + &
+                        & t2%val(a,i,b,k)*(i4*t2%val(a,j,b,k) - i2*t2%val(b,j,a,k))
+                end do
+             end do
+          end do
+       end do
+    end do
+
+
+    ! Virt-virt block of density matrix
+    ! *********************************
+
+    ! VirtMat(a,b) = sum_{ijc} t_{ij}^{ac}  tbar_{ij}^{bc}
+    ! where EITHER i OR j is assigned to central atom in fragment,
+    ! and the other occupied index is in the AOS (including the EOS).
+    ! The virtual abc indices are in the AOS.
+    ! In this way we put emphasis on the EOS amplitudes and the remaining AOS
+    ! amplitudes which couple most strongly to the EOS.
+
+    ! Logical vector for occ EOS
+    call mem_alloc(OccEOS,MyFragment%noccAOS)
+    OccEOS=.false.
+    do i=1,MyFragment%noccEOS
+       OccEOS(MyFragment%idxo(i)) =.true.
+    end do
+
+
+    MyFragment%VirtMat = 0.0_realk
+    do i=1,MyFragment%noccAOS
+       do j=1,MyFragment%noccAOS
+          ! Only consider contribution if either orbital "i" or "j"
+          ! is an EOS orbital (assigned to central atom)
+          AddContribution: if(OccEOS(i) .or. OccEOS(j)) then
+             do a=1,MyFragment%nunoccAOS
+                do b=1,MyFragment%nunoccAOS
+                   do c=1,MyFragment%nunoccAOS
+                      MyFragment%VirtMat(a,b) = MyFragment%VirtMat(a,b) + &
+                           & t2%val(a,i,c,j)*(i4*t2%val(b,i,c,j) - i2*t2%val(c,i,b,j))
+                   end do
+                end do
+             end do
+          end if AddContribution
+       end do
+    end do
+
+    call mem_dealloc(OccEOS)
+
+  end subroutine calculate_corrdens_semiEOS
+
+
+
+
+
+  !> \brief Calculate occ-occ and virt-virt blocks of correlation density matrix
+  !> for atomic fragment using all AOS amplitudes (see details inside subroutine).
+  !> Different definitions for the density matrices are given depending on the model
+  !> and on whether we use both occupied and virtual partitioning schemes (details inside subroutine).
+  !> \author Kasper Kristensen
+  !> \date August 2013
+  subroutine calculate_corrdens_AOS(t2,MyFragment)
+    implicit none
+    !> Doubles amplitudes in AOS (probably MP2)
+    type(array4),intent(in) :: t2
+    !> MyFragment - output occ and virt density matrices are stored in 
+    !> MyFragment%occmat and MyFragment%virtmat, respectively.
+    type(ccatom),intent(inout) :: MyFragment
+    integer :: i,j,k,a,b,c
+    real(realk) :: i2,i4
+print *, 'AOS'
+    i2 = 2.0_realk
+    i4 = 4.0_realk
+
+    ! Occ-occ block of density matrix
+    ! *******************************
+
+    ! OccMat(i,j) = sum_{abk} t_{ik}^{ab}  tbar_{jk}^{ab}
+    ! where all indices are in AOS
+    ! tbar_{ij}^{ab} = 4t_{ij}^{ab} - 2t_{ij}^{ba}
+    MyFragment%OccMat = 0.0_realk
+    do b=1,MyFragment%nunoccAOS
+       do a=1,MyFragment%nunoccAOS
+          do k=1,MyFragment%noccAOS
+             do i=1,MyFragment%noccAOS
+                do j=1,MyFragment%noccAOS
+                   MyFragment%OccMat(i,j) = MyFragment%OccMat(i,j) + &
+                        & t2%val(a,i,b,k)*(i4*t2%val(a,j,b,k) - i2*t2%val(b,j,a,k))
+                end do
+             end do
+          end do
+       end do
+    end do
+
+
+
+    ! Virt-virt block of density matrix
+    ! *********************************
+
+    ! VirtMat(a,b) = sum_{ijc} t_{ij}^{ac}  tbar_{ij}^{bc}
+    ! where all indices are in AOS.
+    MyFragment%VirtMat = 0.0_realk
+    do i=1,MyFragment%noccAOS
+       do j=1,MyFragment%noccAOS
+          do a=1,MyFragment%nunoccAOS
+             do b=1,MyFragment%nunoccAOS
+                do c=1,MyFragment%nunoccAOS
+                   MyFragment%VirtMat(a,b) = MyFragment%VirtMat(a,b) + &
+                        & t2%val(a,i,c,j)*(i4*t2%val(b,i,c,j) - i2*t2%val(c,i,b,j))
+                end do
+             end do
+          end do
+       end do
+    end do
+
+
+
+  end subroutine calculate_corrdens_AOS
 
 
 end module atomic_fragment_operations

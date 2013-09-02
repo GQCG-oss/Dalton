@@ -245,12 +245,12 @@ TYPE(MATRIX),target :: tmp
 Real(realk)         :: OLDTHRESH
 
 CALL II_get_nucel_mat(LUPRI,LUERR,SETTING,h)
-write(lupri,*) 'QQQ New  h:',mat_dotproduct(h,h)
+!write(lupri,*) 'QQQ New  h:',mat_dotproduct(h,h)
 
 nbast = h%nrow
 CALL mat_init(tmp,nbast,nbast)
 CALL II_get_kinetic(LUPRI,LUERR,SETTING,tmp)
-write(lupri,*) 'QQQ New  K:',mat_dotproduct(tmp,tmp)
+!write(lupri,*) 'QQQ New  K:',mat_dotproduct(tmp,tmp)
 
 call mat_daxpy(1E0_realk,tmp,h)
 CALL mat_free(tmp)
@@ -1137,6 +1137,8 @@ call time_II_operations1()
 ADMMexchange = setting%scheme%ADMM_EXCHANGE
 IF (setting%scheme%ADMM_GCBASIS) ADMMexchange = .FALSE.
 IF (ADMMexchange) THEN
+   WRITE(*,*)     "The ADMM approximation isn't implemented for unrestricted cases yet."
+   WRITE(LUPRI,*) "The ADMM approximation isn't implemented for unrestricted cases yet."
    call lsquit('ADMM exchange not implemented for full Dmat.',-1)
 ELSE
    CALL II_get_regular_K_gradientfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,lupri,luerr)
@@ -5173,7 +5175,11 @@ ELSE
   GGAXfactor = setting%scheme%exchangeFactor
 ENDIF
 
-IF(ndmat.GT.1)call lsquit('II_get_admm_exchange_mat ndmat.GT.1',-1)
+IF(ndmat.GT.1) THEN
+   WRITE(*,*)     "The ADMM approximation isn't implemented for unrestricted cases yet."
+   WRITE(LUPRI,*) "The ADMM approximation isn't implemented for unrestricted cases yet."
+   call lsquit('II_get_admm_exchange_mat ndmat.GT.1',-1)
+ENDIF
 nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
 
@@ -5185,7 +5191,20 @@ ELSE IF (setting%scheme%ADMM_JKBASIS) THEN
 ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
   AO2 = AOVAL
 ELSE 
-  call lsquit('II_get_admm_exchange_mat:Auxiliary Density Matrix Calculation requested, but no basis given',-1)
+   WRITE(*,*)     "The ADMM auxiliary basis hasn't been properly defined. &
+                   &Check the manual."
+   WRITE(*,*)     "ADMM basis set usage in the MOLECULE INPUT example:"
+   WRITE(*,*)     "BASIS"
+   WRITE(*,*)     "6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21G"
+   WRITE(*,*)     "..."
+   WRITE(LUPRI,*)     "The ADMM auxiliary basis hasn't been properly defined. &
+                      &Check the manual."
+   WRITE(LUPRI,*)     "ADMM basis set usage in the MOLECULE INPUT:"
+   WRITE(LUPRI,*)     "BASIS"
+   WRITE(LUPRI,*)     "6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21G"
+   WRITE(LUPRI,*)     "..."
+  call lsquit('II_get_admm_exchange_mat:Auxiliary Density Matrix &
+               &Calculation requested, but no basis given',-1)
 ENDIF
 
 nbast2 = getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
@@ -5195,6 +5214,7 @@ IF (nbast .EQ. nbast2) THEN
    ! content of the ADMM basis with the regular basis and vice versa.
    ! this should be fixed by using the actual name of the basis set into the 
    ! filename storing the grid infos. 
+
       call lsquit('II_get_admm_exchange_mat: special forbidden case where the &
              &regular and ADMM auxiliary basis function &
              &have the same number of basis function',-1)

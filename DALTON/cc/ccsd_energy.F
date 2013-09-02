@@ -1478,6 +1478,7 @@ C       IF (WDFTMP.NE.0.0d0) THEN
 C         ECRTCCD=WDFTMP*ECRTCCD
 C       ELSE
 C         ECRTCCD=XRTCCD_CORR
+        ECRTCCD=XRTCCD
 C       ENDIF
 C       WRITE(LUPRI,*)'AMT: Scaled ? RTCCD E',
 C     &   ECRTCCD
