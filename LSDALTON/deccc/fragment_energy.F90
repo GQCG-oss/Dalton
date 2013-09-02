@@ -2938,26 +2938,10 @@ contains
 
 
     ! Print initial fragment information
-    write(DECinfo%output,*)'FOP'
-    write(DECinfo%output,'(1X,a)') 'FOP========================================================='
-    write(DECinfo%output,'(1X,a)') 'FOP               Initial fragment information'
-    write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Init: Fragment number                  :', MyAtom
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Init: Number of orbitals in virt total :', &
-         & AtomicFragment%nunoccAOS
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Init: Number of orbitals in occ total  :', &
-         & AtomicFragment%noccAOS
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Init: Lagrangian Fragment energy       :', &
-         & AtomicFragment%LagFOP
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Init: Occupied Fragment energy         :', &
-         & AtomicFragment%EoccFOP
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Init: Virtual Fragment energy          :', &
-         & AtomicFragment%EvirtFOP
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Init: Number of basis functions        :', &
-         & AtomicFragment%number_basis
-    write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
-    write(DECinfo%output,*) 'FOP'
-
+    LagEnergyDiff=0.0_realk
+    OccEnergyDiff=0.0_realk
+    VirtEnergyDiff=0.0_realk
+    call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
 
     ! ======================================================================
@@ -3338,14 +3322,16 @@ contains
             & AtomicFragment%nunoccAOS
        write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in occ total  :', &
             & AtomicFragment%noccAOS
-       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
-            & AtomicFragment%LagFOP
-       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
-            & AtomicFragment%EoccFOP
-       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :', &
-            & AtomicFragment%EvirtFOP
        write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of basis functions        :', &
             & AtomicFragment%number_basis
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
+            & AtomicFragment%EoccFOP
+       if(.not. DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :', &
+               & AtomicFragment%EvirtFOP
+          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
+               & AtomicFragment%LagFOP
+       end if
        write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
        write(DECinfo%output,*) 'FOP'
     else
@@ -3518,26 +3504,12 @@ contains
        flops_slaves = flops_slaves + AtomicFragment%flops_slaves
     end if
 
+
     ! Print initial fragment information
-    write(DECinfo%output,*)'FOP'
-    write(DECinfo%output,'(1X,a)') 'FOP========================================================='
-    write(DECinfo%output,'(1X,a)') 'FOP               Initial fragment information'
-    write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Init: Fragment number                  :', MyAtom
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Init: Number of orbitals in virt total :', &
-         & AtomicFragment%nunoccAOS
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Init: Number of orbitals in occ total  :', &
-         & AtomicFragment%noccAOS
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Init: Lagrangian Fragment energy       :', &
-         & AtomicFragment%LagFOP
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Init: Occupied Fragment energy         :', &
-         & AtomicFragment%EoccFOP
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Init: Virtual Fragment energy          :', &
-         & AtomicFragment%EvirtFOP
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Init: Number of basis functions        :', &
-         & AtomicFragment%number_basis
-    write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
-    write(DECinfo%output,*) 'FOP'
+    LagEnergyDiff=0.0_realk
+    OccEnergyDiff=0.0_realk
+    VirtEnergyDiff=0.0_realk
+    call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
 
 
@@ -3679,7 +3651,17 @@ contains
        AtomicFragment%EoccFOP = OccEnergyOld
        AtomicFragment%EvirtFOP = VirtEnergyOld
     else
+       ! Higher order CC model (e.g. CCSD): Calculate new reference energy
        call atomic_fragment_energy_and_prop(AtomicFragment)
+       LagEnergyDiff=0.0_realk
+       OccEnergyDiff=0.0_realk
+       VirtEnergyDiff=0.0_realk
+       iter=0
+       write(DECinfo%output,*) 'FOP Calculated atomic fragment energy for higher-order CC model'
+       call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+       LagEnergyOld = AtomicFragment%LagFOP
+       OccEnergyOld= AtomicFragment%EoccFOP
+       VirtEnergyOld = AtomicFragment%EvirtFOP
     end if
 
     ! Save dimensions for statistics
@@ -3738,7 +3720,7 @@ contains
                 Nold = FOfragment%nunoccAOS
              end if
              ! decrease rejection threshold by a factor 10 in each step
-             AtomicFragment%RejectThr(ov) = AtomicFragment%RejectThr(ov)/10.0_realk
+             AtomicFragment%RejectThr(ov) = AtomicFragment%RejectThr(ov)/2.0_realk
              call atomic_fragment_free(FOfragment)
           end if
           if(ov==1) then
@@ -3905,14 +3887,16 @@ contains
          & AtomicFragment%nunoccFA
     write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in occ total  :', &
          & AtomicFragment%noccFA
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
-         & AtomicFragment%LagFOP
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
-         & AtomicFragment%EoccFOP
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :', &
-         & AtomicFragment%EvirtFOP
     write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
          & AtomicFragment%number_basis
+    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
+         & AtomicFragment%EoccFOP
+    if(.not. DECinfo%onlyoccpart) then
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
+            & AtomicFragment%LagFOP
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :', &
+            & AtomicFragment%EvirtFOP
+    end if
     write(DECinfo%output,'(1X,a,g14.2)')  'FOP Done: Occupied reduction threshold     :', &
          & AtomicFragment%RejectThr(1)
     write(DECinfo%output,'(1X,a,g14.2)')  'FOP Done: Virtual  reduction threshold     :', &
@@ -3962,22 +3946,41 @@ contains
     integer,intent(in) :: iter
 
 
-   write(DECinfo%output,*)'FOP'
-   write(DECinfo%output,'(1X,a)') 'FOP========================================================='
+    write(DECinfo%output,*)'FOP'
+    write(DECinfo%output,'(1X,a)') 'FOP========================================================='
     write(DECinfo%output,'(1X,a,i4)') 'FOP              Fragment information, loop', iter
-   write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
-   write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Fragment number                  :', fragment%atomic_number
-   write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in virt total :', Fragment%nunoccAOS
-   write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in occ total  :', Fragment%noccAOS
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian Fragment energy       :', Fragment%LagFOP
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied Fragment energy         :', Fragment%EoccFOP
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual Fragment energy          :', Fragment%EvirtFOP
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian energy diff           :', LagEnergyDiff
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied energy diff             :', OccEnergyDiff
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual energy diff              :', VirtEnergyDiff
-   write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of basis functions        :', Fragment%number_basis
-   write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
-   write(DECinfo%output,*) 'FOP'
+    write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
+    write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Fragment number                  :', &
+         & fragment%atomic_number
+    write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in virt total :', &
+         & Fragment%nunoccAOS
+    write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in occ total  :', &
+         & Fragment%noccAOS
+    write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of basis functions        :', &
+         & Fragment%number_basis
+    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied Fragment energy         :', &
+         & Fragment%EoccFOP
+    if(.not. DECinfo%OnlyOccPart) then
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual Fragment energy          :', &
+            & Fragment%EvirtFOP
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian Fragment energy       :', &
+            & Fragment%LagFOP
+    end if
+
+    PrintDiff: if(iter/=0) then ! no point in printing energy differences for initial energy
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied energy diff             :', &
+            & OccEnergyDiff
+       if(.not. DECinfo%OnlyOccPart) then
+          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual energy diff              :', &
+               & VirtEnergyDiff
+          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian energy diff           :', &
+               & LagEnergyDiff
+       end if
+
+    end if PrintDiff
+
+    write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
+    write(DECinfo%output,*) 'FOP'
 
 
   end subroutine fragopt_print_info

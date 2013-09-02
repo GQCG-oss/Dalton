@@ -573,7 +573,11 @@ contains
     nocc = LocalFragment%noccAOS
     nvirt = LocalFragment%nunoccAOS
     noccEOS = LocalFragment%noccEOS
-    nvirtEOS = LocalFragment%nunoccEOS
+    if(DECinfo%OnlyOccPart) then
+       nvirtEOS = 0
+    else
+       nvirtEOS = LocalFragment%nunoccEOS
+    end if
     call mem_alloc(OU,nocc,nocc)
     call mem_alloc(VU,nvirt,nvirt)
     call mem_alloc(Oeival,nocc)
@@ -640,7 +644,6 @@ contains
 
     ! Diagonalize virtual correlation density matrix to define fragment-adapted virtual AOS orbitals
     call solve_eigenvalue_problem_unitoverlap(nvirtTRANS,VirtMat,tmpeival,tmpU)
-
 
     ! Now the fragment-adapted orbitals (psi) are given from local orbitals (phi) as:
     ! psi(c) = sum_a tmpU(a,c) phi(a)
@@ -785,10 +788,11 @@ contains
     call mem_alloc(VirtOrbs,nvirt)
     call mem_alloc(OccOrbs,nocc)
     call which_fragment_adapted_orbitals(LocalFragment,nocc,nvirt,Oeival,Veival,OccOrbs,VirtOrbs)
+    print *, 'virtorbs', virtorbs
     write(DECinfo%output,'(1X,a,i6,a,i6,a)') 'FOP Removed ', nvirt-count(VirtOrbs), ' of ', &
-         & nvirt-LocalFragment%nunoccEOS, ' fragment-adapted virtual orbitals'
+         & nvirtTRANS, ' fragment-adapted virtual orbitals'
     write(DECinfo%output,'(1X,a,i6,a,i6,a)') 'FOP Removed ', nocc-count(OccOrbs), ' of ', &
-         & nocc-LocalFragment%noccEOS, ' fragment-adapted occupied orbitals'
+         & noccTRANS, ' fragment-adapted occupied orbitals'
 
 
     ! Set fragment-adapted MO coefficients
@@ -1053,8 +1057,17 @@ contains
     logical,intent(inout) :: OccOrbs(nocc)
     !> Logical vector describing which fragment-adapted virt orbitals to include
     logical,intent(inout) :: VirtOrbs(nvirt)
-    integer :: i,ix,maxvirtidx,maxoccidx
+    integer :: i,ix,maxvirtidx,maxoccidx,noccEOS,nvirtEOS
     real(realk) :: maxvirt,maxocc
+
+    ! EOS dimensions
+    noccEOS = LocalFragment%noccEOS
+    if(DECinfo%OnlyOccPart) then
+       ! When only occupied partitioning is considered --> no virtual EOS orbitals
+       nvirtEOS = 0
+    else
+       nvirtEOS = LocalFragment%nunoccEOS
+    end if
    
 
     ! ================================================
@@ -1063,7 +1076,7 @@ contains
     VirtOrbs=.false.
     ! Always include all EOS orbitals 
     ! (listed before remaining orbitals, see example in fragment_adapted_transformation_matrices)
-    do i=1,LocalFragment%nunoccEOS
+    do i=1,nvirtEOS
        VirtOrbs(i) = .true.
     end do
 
@@ -1087,7 +1100,7 @@ contains
     end do
     ! Sanity precaution: Always include at least one orbital outside EOS,
     !                    even if it falls below the threshold.
-    if(LocalFragment%nunoccEOS/=LocalFragment%nunoccAOS) VirtOrbs(maxvirtidx) = .true.
+    if(nvirtEOS/=LocalFragment%nunoccAOS) VirtOrbs(maxvirtidx) = .true.
 
 
     ! =================================================
@@ -1095,7 +1108,7 @@ contains
     ! =================================================
     ! Same strategy as for virtual orbitals above
     OccOrbs=.false.
-    do i=1,LocalFragment%noccEOS
+    do i=1,noccEOS
        OccOrbs(i) = .true.
     end do
 
@@ -1103,7 +1116,7 @@ contains
     maxoccidx=0
     do i=1,nocc  
 
-       if(.not. OccOrbs(i) .and. LocalFragment%noccEOS/=LocalFragment%noccAOS) then 
+       if(.not. OccOrbs(i) .and. noccEOS/=LocalFragment%noccAOS) then 
           if( abs(Oeival(i)) > LocalFragment%RejectThr(1) ) then
              OccOrbs(i)=.true.
           end if
@@ -1115,7 +1128,7 @@ contains
     end do
     ! Sanity precaution: Always include at least one orbital outside EOS,
     !                    even if it falls below the threshold.
-    if(LocalFragment%noccEOS/=LocalFragment%noccAOS) OccOrbs(maxoccidx) = .true.
+    if(noccEOS/=LocalFragment%noccAOS) OccOrbs(maxoccidx) = .true.
 
 
   end subroutine which_fragment_adapted_orbitals
@@ -5333,6 +5346,7 @@ if(DECinfo%PL>0) then
 
     ! Different density matrix definitions depending on scheme
     ! - this is work in progress and will probably be modified.
+
     if(DECinfo%ccmodel==1) then
        ! MP2 model: Construct density matrix based only on EOS amplitudes
        call calculate_corrdens_EOS(t2,MyFragment)
@@ -5370,7 +5384,7 @@ if(DECinfo%PL>0) then
 
     i2 = 2.0_realk
     i4 = 4.0_realk
-print *, 'EOS'
+    print *, 'CORRDENS: Use EOS'  
     ! Occ-occ block of density matrix
     ! *******************************
     ! OccMat(i,j) = sum_{abk} t_{ik}^{ab}  tbar_{jk}^{ab}
@@ -5434,7 +5448,8 @@ print *, 'EOS'
     integer :: i,j,k,a,b,c
     real(realk) :: i2,i4
     logical,pointer :: OccEOS(:)
-print *, 'semiEOS'
+
+    print *, 'CORRDENS: Use semiEOS'  
     i2 = 2.0_realk
     i4 = 4.0_realk
 
@@ -5520,7 +5535,8 @@ print *, 'semiEOS'
     type(ccatom),intent(inout) :: MyFragment
     integer :: i,j,k,a,b,c
     real(realk) :: i2,i4
-print *, 'AOS'
+
+    print *, 'CORRDENS: Use AOS'  
     i2 = 2.0_realk
     i4 = 4.0_realk
 
