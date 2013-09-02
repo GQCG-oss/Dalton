@@ -111,9 +111,14 @@ EXECUTE_PROCESS(COMMAND ls .
 		list(APPEND extrafiles "${objlistfile}")
 		# relative path is needed by ar under MSYS
 		file(RELATIVE_PATH objlistfilerpath ${objdir} ${objlistfile})
+	#add_custom_command(TARGET ${outlib} POST_BUILD
+	#	COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}"
+	#	COMMAND ${CMAKE_AR} ru "${outfile}" @"${objlistfilerpath}"
+	#	WORKING_DIRECTORY ${objdir})
+		# radovan: the above is not portable to AIX, workaround:
 		add_custom_command(TARGET ${outlib} POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}"
-			COMMAND ${CMAKE_AR} ru "${outfile}" @"${objlistfilerpath}"
+		 	COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}"
+			COMMAND ${CMAKE_AR} ru "${outfile}" `cat "${objlistfilerpath}" | tr '\\n' ' '`
 			WORKING_DIRECTORY ${objdir})
 	endforeach()
 	add_custom_command(TARGET ${outlib} POST_BUILD
