@@ -13,7 +13,7 @@ perturbations handled simultaneously (see
 Sec.~\ref{sec:abares}).  Otherwise, some redimensioning will be
 necessary.
 
-The program use approximately 6.5 Mw of memory allocated as common
+The program uses approximately 155 MB of static memory allocated as common
 blocks and similar data structures. Most of the memory used during the
 calculation is taken from a large work array. The size of this work
 array\index{memory!scratch} is supplied to the program as a shell
@@ -22,7 +22,8 @@ How this is done is exemplified in the chapter on how to get started
 (Chapter~\ref{ch:starting}). This makes it easy
 to give the program the memory needed for a given calculation. If no
 value to the shell 
-variable is supplied, the program will use the default value which is
+variable is supplied, the program will use the default value
+(64000000 words) which is
 determined at installation time from the variable
 \verb|INSTALL_WRKMEM|\index{INSTALL\_WRKMEM} in the preprocessor
 directives\index{memory!scratch}.
@@ -32,8 +33,8 @@ directives\index{memory!scratch}.
 Most of the \dalton\ program has in principle no limitations on
 the size of the problem one can handle, apart from
 physical memory requirements and available disc space. The default
-version of the program can handle 1200 basis functions, 120 nuclei and
-400 occupied orbitals and up to $i$ functions in the basis
+version of the program can handle 8000 basis functions, 200 nuclei and
+800 occupied orbitals and up to $i$ functions in the basis
 set. However, most such settings are adjustable to suit your own
 needs, at the expense of larger (or smaller of course) static memory
 requirements. The following list contains the parameters it is
@@ -76,28 +77,18 @@ set.\index{limits!max l-quantum number in basis functions}\\
 a given nuclear center.\index{limits!number of basis function blocks}
 \end{tabular}
 
-%\begin{quote}
-%SPECIAL NOTE: Even after adjusting \verb|MXAOVC|\index{MXAOVC}, it will be
-%necessary to explicitly reset \verb|.MAXPRI|\index{MAXPRI} in the
-%\her\ input modules as well, in order to increase the contraction depth
-%in the input processing.  See Sec.~\ref{sec:herrdn}.
-%\end{quote}
-
 \section{New versions, patches}
 
 New versions will be announced on the \dalton\
-homepage\\
-(\verb|http://www.daltonprogram.org| 
-and the \dalton\ mailing-list
-(\verb|dalton-users@kjemi.uio.no|)\index{mailing list}.
+homepage \verb|http://www.daltonprogram.org|.
 
 Between releases, bug fixes will be distributed as
 patches\index{patches} to an
 existing version. Although not frequently used in the past, we believe
 this to be a more common approach in the future. New patches will be
 freely available from the 
-\dalton\ homepage, and will be announced on the \dalton\ mailing
-list. Patches will normally be distributed in order to correct
+\dalton\ homepage, and will be announced on the \dalton\ forum.
+Patches will normally be distributed in order to correct
 significant errors. In case of minor changes, explicit
 instructions on modifying the source file(s) may be given.
 
@@ -133,21 +124,13 @@ results. This distribution
 policy gives the authors no responsibility for problems experienced by
 the users when using the \dalton\ program.
 
-A mailing-list\index{mailing list} ---
-\verb|dalton-users@kjemi.uio.no| --- has been created for
+A forum\index{forum} ---
+\verb|http://daltonprogram.org/forum| --- has been created for
 the purpose of communication among the authors and the users about
 new patches and releases, and communication between users of the
-program. The authors hope that the
-users will be able to help each others out when problems
-arise. All authors of the \dalton\ program also receive mail from the
-mailing-list, but we do not guarantee that any author will reply to
-requests posted to the mailing-list. By default, all users signing a
-license agreement form will be added to this mailing list. If more
-people use the same licensed version, these users may send mail to
-\verb|dalton-admin@kjemi.uio.no| asking to be added to this list as
-well as indicating whose licensed version of the program they are using.
+program.
 
-Bug reports\index{bugs} are to be reported to \verb|dalton-admin@kjemi.uio.no| and
+Bug reports\index{bugs} are to be reported via the forum \verb|http://daltonprogram.org/forum| and
 will be dealt with by one of the authors, although no responsibility
 on the promptness of this response is given. In general, serious bugs
 that have been
@@ -157,9 +140,7 @@ reported and fixed will lead to a new patch\index{patches} of the program, distr
 The \dalton\ program is developed in an anarchistic fashion, that is,
 future releases of the \dalton\ program will contain code related to
 areas where the authors have had their greatest interest
-lately. Although user feedback on weak points of the code is welcomed, the
-likelihood that the authors will comply with these are relatively
-minor.
+lately. User feedback on weak points of the code is welcomed.
 
 We encourage users to supply their own
 modifications\index{modifications} to the extent that

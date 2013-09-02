@@ -1,7 +1,10 @@
 !  FILE : ccdeco.h
+!
+!  Info for Cholesky decomposition
+!
       INTEGER MXCHVC, LRDTOT, LREDU, NREDUC, ISYSCR, INAOSH, NUMCHO,
-     &        LENCHO, IDNTCH, NDIAG, IDIAG, MAXDIA, MAXDI1, IATPRI,
-     &        NUMCEN, IALBET, CHOVER, IPRCHO
+     &        LENCHO, IDNTCH, NDIAG, IDIAG,  MAXDIA, MAXDI1,
+     &        CHOVER, IPRCHO
       REAL*8  DIASCR, THRCOM, THRDEF, THINDI, THSUDI, SPAN
 
       PARAMETER (MXCHVC = 80 000)
@@ -15,10 +18,17 @@ C
      &                ISYSCR(MXSHEL,MXSHEL),INAOSH(MXCORB),
      &                NUMCHO(8), LENCHO(MXCHVC,8),IDNTCH(MXCHVC,8),
      &                NDIAG,IDIAG(8),MAXDIA,MAXDI1,
-     &                IATPRI(MXCORB),NUMCEN,
-     &                IALBET(MXCORB*(MXCORB+1)/2,2),
      &                CHOINT,COMP,RSTDIA,RSTCHO,SCDIAG,REDUCE,DIACAL,
      &                NEWSCF
+
+#ifdef NOT_USED
+! hjaaj Sep 2013: these are not used, but IALBET uses a lot of static memory
+!                 IF used in the future, PLEASE do not put IALBET in a common block.
+      INTEGER         NUMCEN, IATPRI, IALBET
+      COMMON /CHOINT_1/
+     &                NUMCEN, IATPRI(MXCORB),
+     &                IALBET(MXCORB*(MXCORB+1)/2,2)
+#endif
 C
 C     Old common with some stuff to have several files.
 C
