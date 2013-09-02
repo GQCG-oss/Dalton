@@ -427,7 +427,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/choles/nocc_util.F
     DALTON/densfit/denfit_noddy.F
     DALTON/densfit/df_dirac.F
-    DALTON/densfit/dposv.F
     DALTON/dft/dft_aos.F
     DALTON/dft/dft_ac.F 
     DALTON/dft/dft_aux.F
@@ -733,6 +732,13 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_writeset.F
     DALTON/soppa/so_wrtve.F
     )
+if(NOT ENABLE_CRAY_WRAPPERS)
+    # radovan: CRAY provides these functions
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        ${DALTON_FIXED_FORTRAN_SOURCES}
+        DALTON/densfit/dposv.F
+        )
+endif()
 set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/input/input_reader_sections.F90
     DALTON/input/input_reader.F90
