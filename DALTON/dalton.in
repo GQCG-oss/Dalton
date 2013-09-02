@@ -91,7 +91,7 @@ usage (){
         echo ' -o file          : redirect output from program to this file in WRKDIR'
         echo ' -ext log         : change output extension from ".out" to ".log"'
         echo ' -nobackup        : do not backup files, simply overwrite outputs'
-        echo ' -f dalmol        : extract dalmol.tar.gz archive from WRKDIR into'
+        echo ' -f dal_mol[_pot] : extract dal_mol[_pot].tar.gz archive from WRKDIR into'
         echo '                    DALTON_TMPDIR before calculation starts'
         echo ' -noarch          : do not create tar.gz archive'
         echo " -t dir           : set scratch directory; this script will append"
@@ -220,19 +220,19 @@ fi
 dalfil=`echo $1 | sed "s/\.$DALEXT//"`
 if [ -z "$2" ]; then
 #  only one input file, check if molfil exist with same base name;
-   if [ -r ${dalfil}.mol ]; then
-      molfil=$dalfil
-    if [ -s ${dalfil}.pot ]; then
-      potfil=$dalfil
-      input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
+    if [ -r ${dalfil}.mol ]; then
+        molfil=$dalfil
+        if [ -r ${dalfil}.pot ]; then
+            potfil=$dalfil
+            input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
+        else
+            input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
+        fi
     else
-      input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
+        molfil=
+        input_files="input file: $dalfil.$DALEXT"
     fi
-   else
-      molfil=
-      input_files="input file: $dalfil.$DALEXT"
-   fi
-   outnam=$dalfil
+    outnam=$dalfil
 else
 #  two input files;
 #  remove .mol, if added by user
@@ -244,7 +244,7 @@ else
    fi
    input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
 fi
-#  Added option for including a potential.inp file for QM3 calculations
+#  Added option for including a potential.inp file for embedding calculations
 if [ -n "$3" ]; then
 #  remove .pot, if added by user
    potfil=`echo $3 | sed "s/\.$POTEXT//"`
