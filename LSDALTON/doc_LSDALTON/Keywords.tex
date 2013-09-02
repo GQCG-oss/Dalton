@@ -65,10 +65,10 @@ Using a print level of 6 will print the input exponents and contraction coeffici
 When using this keyword, an auxiliary basis set has to be 
 specified in the \mol\ file. For the Poples basis sets we recommend df-def2 and for
 Dunnings basis sets use the corresponding cc-pV$X$Zdenfit basis sets, with $X=$T$,$Q$,5$.
-\item[\Key{INTPRINT}] 
-\verb| | \newline
-\verb|<Print level>|\newline
-Print information about the actual integral evaluation. The higher the print level, the more information will be printed. Default value is 0.
+%\item[\Key{INTPRINT}] 
+%\verb| | \newline
+%\verb|<Print level>|\newline
+%Print information about the actual integral evaluation. The higher the print level, the more information will be printed. Default value is 0.
 \item[\Key{LINSCAPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
@@ -80,9 +80,9 @@ Print level in the integral code. The higher the print level, the more informati
 <Print level>
 .MOLPRINT
 <Print level>
-.INTPRINT
-<Print level>
 \end{verbatim} 
+%.INTPRINT
+%<Print level>
 See the individual keywords for more details. Default value is 0.
 \item[\Key{MOLPRINT}] 
 \verb| | \newline
@@ -819,30 +819,28 @@ Using the Casida-Salahub correction with a shift of Delta see .CS00
 
 \subsection{*DENSOPT}\label{subsec:densopt}
 This section contains the different options for obtaining the SCF wave function
-and energy. The default is diagonalization combined with the DIIS scheme for acceleration
-of SCF convergence (no damping/level shifting). 
-Should have a different name. DENSOPT?
+and energy. The default is augmented Roothaan--Hall density optimization  in combination with
+a conjugate residual optimal trialvectors (CROP) scheme for solving the (level-shifted) Newton equations ((see ref.~\cite{crop})) and using an
+atom-in-a-molecule  starting guess. 
+
 \begin{description}
 \item[\Key{2ND\_ALL}] Use second order optimization in all SCF iterations.
 \item[\Key{2ND\_LOC}] Use second order optimization in local SCF iterations.
 \item[\Key{ARH}] Use Augmented Roothaan-Hall scheme for density optimization 
 (default)~\cite{ARH1,ARH2} where the CROP solver (\cite{crop}) is used for 
-solving the (level-shifted) Newton equationw.\index{Augmented Roothaan-Hall}\index{ARH} 
+solving the (level-shifted) Newton equation.\index{Augmented Roothaan-Hall}\index{ARH} 
 \item[\Key{ARH FULL}] Use Augmented Roothaan-Hall for density optimization -
-no truncation of the reduced space, keep all micro vectors for the CROP algorithm 
-(see ref.~\cite{crop}).
+no truncation of the reduced space, keep all micro vectors for the CROP algorithm. 
 \item[\Key{ARH DAVID}] Use Augmented Roothan-Hall for density optimization where
 the (level-shifted) Newton equations are solved using a reduced space solver based 
-Davidson's algorithm \cite{davidson:1975}. This option
-is recommended for complicated optimizations, especially for large molecular systems
- with charges separated in space. This setting should be used if \Key{ARH} 
+Davidson's algorithm \cite{davidson:1975}. This setting may be used if default settings  
 converges to a saddle point. 
  \item[\Key{ARH(LS) DAVID}] The same procedure as described for \Key{ARH DAVID} 
 augmented with a line search to accelerate convergence for very large molecular 
 systems, but is less efficient than \Key{ARH DAVID} for smaller molecular systems. 
 \item[\Key{STABILITY}] Check stability of the optimized wave function by calculation
 of the lowest Hessian eigenvalue. 
-\item[\Key{STAB\_MAXIT}] \verb| | \newline
+\item[\Key{STAB MAXIT}] \verb| | \newline
 \verb|<Max. number of stability iterations>|\newline
 Max. number of iterations in calculation of lowest Hessian eigenvalue (default is 40).
 \item[\Key{CHOLESKY}] Do Cholesky decomposition of overlap matrix (for density optimization
@@ -858,7 +856,7 @@ For update of trust-radius (used in ARH and second order optimization). Contract
 if trust-radius ratio is smaller than this criterion (default is 0.25).
 \item[\Key{CONVDYN}] \verb| | \newline
 \verb|<Option>|\newline 
-Dynamic SCF convergence threshold. This is suitable for large calculations, since the standard SCF
+Dynamic SCF convergence threshold. This is suitable for calculations on large molecules, since the standard SCF
 convergence threshold is based on the Frobenius norm of the SCF gradient, which is not size-extensive.
 Options are TIGHT, STANDARD, and SLOPPY.
 \item[\Key{CONVTHR}] \verb| | \newline
@@ -874,16 +872,14 @@ is not size-extensive. For large molecules, it is recommended to use .CONVDYN in
 \item[\Key{DISK}] Store densities and Fock/KS matrices from previous 
 iterations on disk instead of in core when constructing the new Fock/KS matrix ({\it memory-saving option}).
 \item[\Key{DISKSOLVER}] Store trial and sigma vectors on disk instead of in core
-when solving linear equations ({\it memory-saving option}). Only referenced is density 
-optimization method is ARH, Direct Density optimization or second order optimization.
-\item[\Key{DORTH}] Do level shift by using the ratio $\vert\vert$Dorth$\vert\vert$/$\vert\vert$D$\vert\vert$ 
-(for diagonalization only).
+when solving linear equations ({\it memory-saving option}). Only referenced using ARH
+, Direct Density optimization or second order optimization.
 %\item[\Key{DSM}] The Density Subspace Minimization scheme is used to speed up SCF convergence~\cite{TOKJ,TOYJ}.
 %\item[\Key{DSMONE}] The Density Subspace Minimization scheme is used to speed up SCF convergence, 
 %but only one DSM step is taken in each SCF iteration.
 %\item[\Key{DSMXTRA}] The Density Subspace Minimization scheme is used to speed up SCF convergence,
 %including extra (more expensive) term.
-\item[\Key{DUMPMAT}] Dump Fock/KS and density matrices from all iterations to disk for later investigation.
+%\item[\Key{DUMPMAT}] Dump Fock/KS and density matrices from all iterations to disk for later investigation.
 \item[\Key{EDIIS}] The energy-DIIS scheme is used to speed up SCF convergence~\cite{ediis}.
 \item[\Key{EXPAND}] \verb| | \newline
 \verb|<Expansion criterion>|\newline 
@@ -932,26 +928,26 @@ Used in ARH and second order optimization.
 \item[\Key{MAXIT}] \verb| | \newline
 \verb|<Max. number of iterations> |\newline
 Max. number of SCF iterations (default is 100).
-\item[\Key{MAXRATIO}] \verb| | \newline
-\verb|<Max. ratio for DORTH> |\newline
-Largest accepted ratio when using level shift .DORTH.
+%\item[\Key{MAXRATIO}] \verb| | \newline
+%\verb|<Max. ratio for DORTH> |\newline
+%Largest accepted ratio when using level shift .DORTH.
 \item[\Key{MAXSTEP}] \verb| | \newline
 \verb|<Trust radius (Frobenius norm)>|\newline
 Absolute max. Frobenius norm of step allowed (default is 0.6).
 Used in ARH and second order optimization.
 \item[\Key{MICTHRS}] \verb| | \newline
 \verb|<Threshold for micro iterations>|\newline
-The micro iterations are converged to gradient norm times this factor (default is 1.0d-2).
+The micro iterations of the CROP algorithm are converged to gradient norm times this factor (default is 1.0d-2).
 Only referenced if ARH, Direct Density optimization or second order optimization.
 \item[\Key{MICROVECS}] \verb| | \newline
 \verb|<Max. number of microvectors>|\newline
-Max. number of microvectors to be kept in Conjugate Residual Optimal Vectors (CROP) scheme
+Max. number of microvectors to be kept in the CROP scheme
 (default is 2). 
 Only referenced if ARH, Direct Density optimization or second order optimization.
 \item[\Key{MINDAMP}] \verb| | \newline
 \verb|<Minimum damping>|\newline
 Never allow level shift to be smaller than this.
-\item[\Key{MOCHANGE}] Level shifting is done by use of MO overlaps (diagonalization only).
+%\item[\Key{MOCHANGE}] Level shifting is done by use of MO overlaps (diagonalization only).
 \item[\Key{MUOPT}] Optimal level shift is chosen by doing a line search in the SCF energy - very expensive! For diagonalization only.
 %\item[\Key{NALPHA}] \verb| | \newline
 %\verb|<Number of alpha electrons>|\newline
@@ -968,12 +964,12 @@ Maximum number of previous Fock and density matrices to be stored and used for A
 %\verb|<Max. no of vectors for DSM>|\newline
 %\item[\Key{NVECDII}] \verb| | \newline
 %\verb|<Max. no of vectors for DIIS>|\newline
-\item[\Key{NOINCREM}] Turn off incremental scheme for Fock/KS matrix build.
+%\item[\Key{NOINCREM}] Turn off incremental scheme for Fock/KS matrix build.
 \item[\Key{NOPREC}] Turn off preconditioning of linear equations (ARH, TrFD, and second order optimization).
 \item[\Key{NOSHIFT}] Do no level shifting.
-\item[\Key{OVERLAP}] \verb| | \newline
-\verb|<Overlap>|\newline
-Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANGE).
+%\item[\Key{OVERLAP}] \verb| | \newline
+%\verb|<Overlap>|\newline
+%Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANGE).
 %\item[\Key{PURIFY}] \verb| | \newline
 %\verb|<Purification method>|\newline
 %Use purification scheme for density optimization 
@@ -1039,7 +1035,7 @@ Note that Huckel guess is not supported by \lsdalton.
 For the different parts of the wave function optimization, it is possible
 to get very detailed information.
 This section describes these keywords. They must be put
-under *LINSCA in a section beginning with
+under *DENSOPT in a section beginning with
 \$INFO and ending with \$END INFO. Note that these keywords
 do NOT start with a dot!
 \begin{description}
