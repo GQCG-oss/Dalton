@@ -934,7 +934,11 @@ IF((ELEMENT .EQ. 0) .OR. (ELEMENT.NE.CHARGE))THEN
     IF(ios /= 0)THEN
       WRITE (LUPRI,'(/I3,2A)') CHARGE&
       & ,' is an unsupported element for basis ',BASISSETNAME
-      CALL LSQUIT('Unsupported element in linsca',lupri)
+      WRITE (LUPRI,'(A)') 'You need to choose a basis set that support this element'
+      WRITE (LUPRI,'(A)') 'You can look at EMSL to find a suitable basis set that support this element'
+      WRITE (LUPRI,'(A)') 'If you download a new basis set from EMSL please read the EMSL section in the manual!'
+      WRITE (LUPRI,'(A)') 'Note that LSDALTON do NOT support Effective Core Potentials (ECP)'
+      CALL LSQUIT('Unsupported element in basis set, choose a proper basis set',lupri)
     ELSE
       READ (STRING, '(A1)') SIGN
       IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
@@ -1145,7 +1149,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                  WRITE(lupri,*)'We will try to this basis set, but this code is not very well testet. TK'
               ENDIF
               IF(nNUMBERS-1.LT.nOrbital)THEN
-                 CALL LINES_OF_CONTRACTION(nOrbital, NUMBER_OF_LINES,segmentedFormat)
+                 CALL LINES_OF_CONTRACTION(nOrbital,nNUMBERS-1,NUMBER_OF_LINES,segmentedFormat)
               ELSEIF(nNUMBERS-1.EQ.nOrbital)THEN
                  NUMBER_OF_LINES=1
               ELSE
@@ -1188,8 +1192,8 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                  !          &(ContractionMatrix%elms(J+(I-1)*(nprim+IAUG)),I = 1, KNTORB)
                  !         If there are more lines with contraction-coeffecients
                  !         they will be read here.
-                 NUMNUM = 6
-                 NUMNUMOLD = 6
+                 NUMNUM = nNUMBERS-1
+                 NUMNUMOLD = nNUMBERS-1
                  DO I=2, NUMBER_OF_LINES
                     CALL determine_nNumbers_in_string(STRING,nNUMBERS)
                     IF(nNUMBERS.GT.7)THEN
@@ -1317,13 +1321,17 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
   CHARACTER(len=200)    :: STRING
   integer :: nNUMBERS
   !
-  logical :: INSIDENUMBER
+  logical :: INSIDENUMBER,SCIENTIFIC
   integer :: I
   nNUMBERS=0
   INSIDENUMBER=.FALSE.      
+  SCIENTIFIC = .FALSE.
   DO I=1,LEN(STRING)
-     IF(STRING(I:I).EQ.' '.AND.INSIDENUMBER)THEN
-        INSIDENUMBER=.FALSE.
+!    The '-' allows fixed format type numbers with no space separation
+     IF((STRING(I:I).EQ.' ').OR.(STRING(I:I).EQ.'-').AND.INSIDENUMBER)THEN
+!       In case of scientific number representation 1.2345678D-09 we do not 
+!       accept '-' to separate two nnumbers
+        INSIDENUMBER=SCIENTIFIC
      ELSEIF(STRING(I:I).EQ.' '.AND..NOT.INSIDENUMBER)THEN
         !still outside number but not yet inside new number
 !     ELSEIF(STRING(I:I).EQ.'H'.AND..NOT.INSIDENUMBER)THEN
@@ -1334,19 +1342,20 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
            INSIDENUMBER=.TRUE.
         ENDIF
      ENDIF
+     SCIENTIFIC = STRING(I:I).EQ.'D'
   ENDDO
 END subroutine DETERMINE_NNUMBERS_IN_STRING
 
 !> \brief determine how many lines the contraction matrix is distributed over
 !> \author T. Kjaergaard
 !> \date 2010
-SUBROUTINE LINES_OF_CONTRACTION(nOrbital, NUMBER_OF_LINES,segmentedFormat)
+SUBROUTINE LINES_OF_CONTRACTION(nOrbital,nCont,NUMBER_OF_LINES,segmentedFormat)
 !*********************************************************************
 !* CALCULATE ON HOW MANY LINES THE CONTRACTION COEFFICIENTS ARE 
 !* WRITTEN ON
 !*********************************************************************
 implicit none
-INTEGER     :: NUMBER_OF_LINES,nOrbital
+INTEGER     :: NUMBER_OF_LINES,nOrbital,nCont
 REAL(realk) :: B,C
 LOGICAL     :: segmentedFormat
 !The intrisic functions DBLE makes a souble precision reak number of an integer.
@@ -1354,16 +1363,11 @@ IF (segmentedFormat) THEN
   NUMBER_OF_LINES = 1
   RETURN
 ENDIF
-B = DBLE(7)
-C = DBLE(nOrbital) - DBLE(6) 
-! This finds out how many lines we have, and puts it into NUMBER_OF_LINES.
-      IF ((nOrbital - 6) .LE. 0) THEN
-         NUMBER_OF_LINES = 1
-      ELSE IF (DMOD(C,B) .LT. 1.0E-30_realk) THEN
-         NUMBER_OF_LINES = (nOrbital - 6)/7 + 1
-      ELSE
-         NUMBER_OF_LINES = (nOrbital - 6)/7 + 2
-      END IF
+IF (MOD(nOrbital,nCont).EQ.0) THEN
+  NUMBER_OF_LINES = nOrbital/nCont
+ELSE
+  NUMBER_OF_LINES = nOrbital/nCont + 1
+ENDIF
 END SUBROUTINE LINES_OF_CONTRACTION
 
 !> \brief analyze the contraction matrix
@@ -1544,17 +1548,20 @@ DO I=1,Nsegments
        SEGMENTcol(I)=SEGMENTcol(I)+1
        SEGMENTrow(I)=ELEMENTS-(SEGMENTcol(I)-1)*nprim
        DO K=1,SEGMENTrow(I)
-!          WRITE(LUPRI,*)'CC(',Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1,')=',Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)
           IF(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1.LE.nprim*norbital)THEN
-             IF(ABS(Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)) .GT. 1.0E-30_realk)&
-                  & CALL LSQUIT('something is wrong in ANALYSE_CONTRACTIONMATRIX',lupri)
+             IF(ABS(Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)) .GT. 1.0E-30_realk)THEN
+                WRITE(LUPRI,*)'CC(',Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1,')=',&
+                     &Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)
+                CALL LSQUIT('something is wrong in ANALYSE_CONTRACTIONMATRIX',lupri)
+             ENDIF
           ENDIF
        ENDDO
        EXTRAROWS=0
        DO L=1,SEGMENTcol(I)
+          IF(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim.LE.nprim*norbital)THEN
 !          WRITE(LUPRI,*)'CC(',Nstart(I)+SEGMENTrow(I)+(L-1)*nprim,')=',Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)
-          
-          IF(ABS(Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)) .GT. 1.0E-30_realk)EXTRAROWS=EXTRAROWS+1          
+             IF(ABS(Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)) .GT. 1.0E-30_realk)EXTRAROWS=EXTRAROWS+1          
+          ENDIF
        ENDDO
        IF(EXTRAROWS .GT. 0) SEGMENTrow(I)=SEGMENTrow(I)+1
     ELSE

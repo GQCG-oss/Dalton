@@ -6,7 +6,7 @@ if(DEVELOPMENT_CODE)
             git_update
             COMMAND ${GIT_EXECUTABLE} submodule init
             COMMAND ${GIT_EXECUTABLE} submodule update
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/..
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         )
     else()
         message("-- Git not found. You need Git for the Git submodule mechanism to work.")
@@ -25,8 +25,8 @@ macro(add_external _project)
 
     ExternalProject_Add(${_project}
         DOWNLOAD_COMMAND ${UPDATE_COMMAND}
-        DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/..
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/../external/${_project}
+        DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
         BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
         STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
         TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp

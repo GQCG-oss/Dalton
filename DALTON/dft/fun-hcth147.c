@@ -135,14 +135,15 @@ K(rhoa,grada,rhob,gradb,gradab):=
 #endif
 #include <math.h>
 #include <stddef.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
  
 /* INTERFACE PART */
-static int hcth147_isgga(void) { return 1; } /* FIXME: detect! */
-static int hcth147_read(const char *conf_line);
+static integer hcth147_isgga(void) { return 1; } /* FIXME: detect! */
+static integer hcth147_read(const char *conf_line);
 static real hcth147_energy(const FunDensProp* dp);
 static void hcth147_first(FunFirstFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
@@ -167,7 +168,7 @@ Functional HCTH147Functional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 hcth147_read(const char *conf_line)
 {
     fun_set_hf_weight(0);

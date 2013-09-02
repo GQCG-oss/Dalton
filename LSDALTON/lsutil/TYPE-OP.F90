@@ -311,8 +311,6 @@ WRITE(LUN) DALTON%maxpasses
 WRITE(LUN) DALTON%MM_LMAX
 WRITE(LUN) DALTON%MM_TLMAX
 WRITE(LUN) DALTON%MMunique_ID1
-WRITE(LUN) DALTON%CARMOM
-WRITE(LUN) DALTON%SPHMOM
 WRITE(LUN) DALTON%numAtomsPerFragment
 WRITE(LUN) DALTON%LU_LUINTM
 WRITE(LUN) DALTON%LU_LUINTR
@@ -431,7 +429,7 @@ READ(LUN) DALTON%Hermiteecoeff
 READ(LUN) DALTON%DoSpherical
 READ(LUN) DALTON%UNCONT
 READ(LUN) DALTON%NOSEGMENT
-READ(LUN) DALTON%DO3CENTEROVL
+Read(LUN) DALTON%DO3CENTEROVL
 READ(LUN) DALTON%DO2CENTERERI
 READ(LUN) DALTON%MIXEDOVERLAP
 READ(LUN) DALTON%CS_SCREEN
@@ -464,8 +462,6 @@ READ(LUN) DALTON%maxpasses
 READ(LUN) DALTON%MM_LMAX
 READ(LUN) DALTON%MM_TLMAX
 READ(LUN) DALTON%MMunique_ID1
-READ(LUN) DALTON%CARMOM
-READ(LUN) DALTON%SPHMOM
 READ(LUN) DALTON%numAtomsPerFragment
 READ(LUN) DALTON%LU_LUINTM
 READ(LUN) DALTON%LU_LUINTR
@@ -644,8 +640,6 @@ DALTON%OD_SCREEN = .TRUE.
 DALTON%MBIE_SCREEN = .FALSE.!.TRUE. For now it is turned off, until fully testet
 DALTON%PS_DEBUG = .FALSE.
 DALTON%DEBUGKINETIC = .FALSE.
-DALTON%CARMOM = 0
-DALTON%SPHMOM = 0
 !DALTON%FRAGMENT = .TRUE.
 DALTON%FRAGMENT = .FALSE.
 !Default is to make the number of atoms so large fragmentation is not used
@@ -1202,7 +1196,6 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'NOSEGMENT',DALTON%NOSEGMENT
 
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DO3CENTEROVL',DALTON%DO3CENTEROVL
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DO2CENTERERI',DALTON%DO2CENTERERI
-WRITE(LUPRI,'(2X,A35,I8)')'CARMOM',DALTON%CARMOM
 WRITE(LUPRI,'(2X,A35,7X,L1)')'MIXEDOVERLAP',DALTON%MIXEDOVERLAP
 
 !*CAUCHY-SCHWARZ INTEGRAL PARAMETERS
@@ -2870,25 +2863,25 @@ IF(ASSOCIATED(setting%DsymRHS))THEN
 ENDIF
 
 IF(associated(setting%LST_GAB_LHS))THEN
-   DEALLOCATE(SETTING%LST_GAB_LHS)
-   NULLIFY(SETTING%LST_GAB_LHS)
-#ifdef VAR_MPI
-! FIXME THIS IS UGLY
-   IF(setting%node.NE.infpar%master)then
-      call lstensor_free(setting%LST_GAB_LHS) 
-   ENDIF
-#endif
+  DEALLOCATE(SETTING%LST_GAB_LHS)
+  NULLIFY(SETTING%LST_GAB_LHS)
+!#ifdef VAR_MPI
+!! FIXME THIS IS UGLY
+!   IF(setting%node.NE.infpar%master)then
+!      call lstensor_free(setting%LST_GAB_LHS) 
+!   ENDIF
+!#endif
 ENDIF
 
 IF(associated(setting%LST_GAB_RHS))THEN
    DEALLOCATE(SETTING%LST_GAB_RHS)
    NULLIFY(SETTING%LST_GAB_RHS)
-#ifdef VAR_MPI 
-! FIXME THIS IS UGLY
-   IF(setting%node.NE.infpar%master)then
-      call lstensor_free(setting%LST_GAB_RHS) 
-   ENDIF
-#endif
+!#ifdef VAR_MPI 
+!! FIXME THIS IS UGLY
+!   IF(setting%node.NE.infpar%master)then
+!      call lstensor_free(setting%LST_GAB_RHS) 
+!   ENDIF
+!#endif
 ENDIF
 
 IF(SETTING%LHSdfull.AND.SETTING%LHSdalloc)THEN
@@ -2972,8 +2965,6 @@ scheme%NOSEGMENT             = dalton_inp%NOSEGMENT
 scheme%contAng               = dalton_inp%contAng
 scheme%DO3CENTEROVL          = dalton_inp%DO3CENTEROVL
 scheme%DO2CENTERERI          = dalton_inp%DO2CENTERERI
-scheme%CARMOM                = dalton_inp%CARMOM
-scheme%SPHMOM                = dalton_inp%SPHMOM
 scheme%CMORDER               = 0
 scheme%CMiMat                = 0
 scheme%MIXEDOVERLAP          = dalton_inp%MIXEDOVERLAP
@@ -3099,8 +3090,6 @@ WRITE(IUNIT,'(3X,A22,L7)') 'NOSEGMENT             ', scheme%NOSEGMENT
 WRITE(IUNIT,'(3X,A22,L7)') 'ContAng               ', scheme%ContAng               
 WRITE(IUNIT,'(3X,A22,L7)') 'DO3CENTEROVL          ', scheme%DO3CENTEROVL          
 WRITE(IUNIT,'(3X,A22,L7)') 'DO2CENTERERI          ', scheme%DO2CENTERERI          
-WRITE(IUNIT,'(3X,A22,I7)') 'CARMOM                ', scheme%CARMOM                
-WRITE(IUNIT,'(3X,A22,I7)') 'SPHMOM                ', scheme%SPHMOM             
 WRITE(IUNIT,'(3X,A22,L7)') 'CMORDER               ', scheme%CMORDER
 WRITE(IUNIT,'(3X,A22,I7)') 'CMIMAT                ', scheme%CMIMAT
 WRITE(IUNIT,'(3X,A22,L7)') 'MIXEDOVERLAP          ', scheme%MIXEDOVERLAP

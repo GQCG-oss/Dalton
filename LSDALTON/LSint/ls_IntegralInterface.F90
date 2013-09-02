@@ -33,7 +33,8 @@ MODULE ls_Integral_Interface
        & memdist_lstensor_setupfullinfo, lstensor_zero_lowertriangular,&
        & lstensor_force_symmat_to_triangularmat, lstensor_local_free,&
        & memdist_lstensor_buildfromscalapack, &
-       & Build_lst_from_matarray
+       & Build_lst_from_matarray, build_empty_sublstensor,&
+       & alloc_build_empty_sublstensor
   use integraloutput_type, only: initintegraloutputdims1
   use TYPEDEF, only: getNbasis, set_sameallfrag, LS_FREEMMBUF, ls_emptyibuf,&
        & ls_emptyrbuf, ls_emptynucbuf, ls_fillnucbuf, ls_initmmbuf,&
@@ -54,9 +55,8 @@ MODULE ls_Integral_Interface
   use io, only: io_get_filename, io_get_csidentifier
   use screen_mod, only: determine_lst_in_screenlist, screen_associate,&
        & screen_add_associate_item
-  use Fragment_module, only: buildfragmentinfoandblocks, setdaltonfragments, &
-       & freedaltonfragments, freefragmentinfoandblocks
-  use molecule_module, only: build_fragment, freeMolecularOrbitalInfo
+  use molecule_module, only: build_fragment, freeMolecularOrbitalInfo,&
+       & freeDaltonFragments
   use files,only: lsclose, lsopen
   use SphCart_Matrices, only: spherical_transformation
   use Thermite_OD, only: getTotalGeoComp
@@ -323,6 +323,7 @@ type(lstensor),pointer  :: dmat_lhs,dmat_rhs,result_tensor
 type(lstensor),pointer  :: dmat_lhs_full,dmat_rhs_full,result_tensor_full
 type(lstensor),pointer  :: gabCS_rhs,gabCS_lhs
 type(lstensor),pointer  :: gabCS_rhs_full,gabCS_lhs_full
+character(len=7)           :: LSTYPE
 !
 #ifdef VAR_MPI
 Integer                    :: itask,nAtoms(4),ntasks_lhs,ntasks_rhs,iAO,atomDim
@@ -358,8 +359,11 @@ ENDIF
 ndim2 = setting%output%ndim
 IntegralTransformGC = .FALSE.
 CALL ls_setDefaultFragments(setting)
-
-CALL ls_create_lstensor_full(setting,'FULLINT',AO1,AO2,AO3,AO4,Oper,Spec,intType,&
+LSTYPE = 'FULLINT'
+IF(Spec.EQ.GeoDerivCoulombSpec)THEN
+   LSTYPE = 'AB_TYPE'
+ENDIF
+CALL ls_create_lstensor_full(setting,LSTYPE,AO1,AO2,AO3,AO4,Oper,Spec,intType,&
      & result_tensor_full,dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created,&
      & gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created,&
      & PermuteResultTensor,doscreen,lupri,luerr,.FALSE.,.TRUE.)
@@ -418,7 +422,7 @@ DO itask=1,task_list%numMPItasks
   CALL getTaskDimension(tasks%orbInfo,rhs_current,AO3,AO4,'RHS',Spec,nbast3,nbast4,lupri)
   call SET_SAMEALLFRAG(sameAllFrag,setting%sameFrag,setting%nAO)
 ! CALL LSTIMER('gi-set-tf',TS,TE,6)
-  CALL ls_create_lstensor_task(setting,result_tensor,'FULLINT',dmat_lhs,dmat_rhs,&
+  CALL ls_create_lstensor_task(setting,result_tensor,LSTYPE,dmat_lhs,dmat_rhs,&
        & result_tensor_full,dmat_lhs_full,dmat_rhs_full,&
        & gabCS_rhs_full,gabCS_lhs_full,gabCS_rhs,gabCS_lhs,&
        & rhsCS_created,lhsCS_created,&
@@ -462,7 +466,7 @@ DO itask=1,task_list%numMPItasks
   ! ***************************************************************************
   ! *                                MPI Specific                             *
   ! ***************************************************************************
-  call ls_extract_and_annihilate_lstensor_task(setting,result_tensor,'FULLINT',dmat_lhs,dmat_rhs,result_tensor_full,&
+  call ls_extract_and_annihilate_lstensor_task(setting,result_tensor,LSTYPE,dmat_lhs,dmat_rhs,result_tensor_full,&
        & dmat_lhs_full,dmat_rhs_full,nbast1,nbast2,nbast3,nbast4,lhs_created,&
        & rhs_created,gabCS_rhs,gabCS_lhs,rhsCS_created,&
        & lhsCS_created,lhs_current,rhs_current,&
@@ -486,7 +490,7 @@ Setting%sameFrag = sameMolSave
 ! ***************************************************************************
 call lsmpi_barrier(setting%comm)
 
-IF(Setting%scheme%cs_int)THEN
+IF(Setting%scheme%cs_int.or.Setting%scheme%ps_int)THEN
    call set_lst_maxgabelms(result_tensor_full)
    call set_lst_maxprimgabelms(result_tensor_full)
    call lsmpi_barrier(setting%comm)
@@ -510,7 +514,7 @@ IF (setting%node.NE.infpar%master) THEN
    !put slave to sleep
    call ls_free_lstensors(dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created)
    if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
-   IF(Setting%scheme%cs_int)THEN
+   IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)THEN
       call lstensor_free(setting%output%screenTensor)
       deallocate(setting%output%screenTensor)
       nullify(setting%output%screenTensor)
@@ -538,7 +542,7 @@ setting%output%ndim = ndim_full
 !write(6,*) 'debug-timing:timer results for ',setting%node
 !CALL LSTIMER('gi-mpi-permute',TS,TE,6)
 #else
-IF(Setting%scheme%cs_int)THEN
+IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)THEN
    call lstensor_free(result_tensor_full)
    deallocate(result_tensor_full)
    nullify(result_tensor_full)
@@ -708,6 +712,7 @@ IF (Spec.EQ.EcontribSpec) THEN
 ENDIF
 
 CALL ls_setDensityDimensions(INT_INPUT,SETTING,lupri)
+
 call MAIN_INTEGRAL_DRIVER(LUPRI,SETTING%SCHEME%INTPRINT,INT_INPUT,setting%OUTPUT)
 CALL FreeInputAO(AObuild,nAObuilds,LUPRI)
 IF(doscreen) CALL free_screening_matrices(INT_INPUT,SETTING,LUPRI,LUERR)
@@ -1974,7 +1979,7 @@ Logical                    :: PermuteResultTensor,doscreen
 Integer                    :: itask,nAtoms(4),ntasks_lhs,ntasks_rhs,iAO,atomDim
 Logical                    :: sameAOsLHS,sameAOsRHS,sameODs,sameAllMOL,sameAllFRAG
 Logical                    :: lhs_aux,rhs_aux,noA,noB,LHSpartioning,RHSpartioning
-logical                    :: sameMolSave(4,4),ForceRHSsymDMAT,ForceLHSsymDMAT
+logical                    :: sameMolSave(4,4),ForceRHSsymDMAT,ForceLHSsymDMAT,LOCALINFOSETUP
 Logical                    :: saveCSscreen,savePSscreen,CS_screen,PS_screen,BOTHpartioning
 integer                    :: ndim_full(5),iatom,jatom,ilsao,iatom2,jatom2,node
 type(ls_task_manager)      :: tasks
@@ -2108,6 +2113,7 @@ IF(RHSpartioning)THEN
    ! THE INFO ABOUT WHICH NODE HAVE WHICH ATOMS IS A LITTLE MORE EASILY AVALIBLE 
    !STEP 1 : Determine which nodes own which part of the lstensor 
    rhs_current => tasks%rhs%first
+   IF(tasks%rhs%ntasks.GT.setting%numnodes)call lsquit('MPI MEMDIST RHS error',-1)
    DO J=1,tasks%rhs%ntasks
       ! I always set the mynum in the global info of the lstensor
       call set_single_atomspointers(rhs_current,natom1,natom2,atoms1,atoms2)
@@ -2126,8 +2132,10 @@ IF(RHSpartioning)THEN
    IF(rhs_created)Dmat_rhs%LowerDiagZero = ForceRHSsymDMAT
    !STEP 2 : setup node local info for the memory distributed lstensor
    rhs_current => tasks%rhs%first
+   LOCALINFOSETUP = .FALSE.
    DO J=1,tasks%rhs%ntasks
       IF(J-1.EQ.setting%node)THEN
+         LOCALINFOSETUP = .TRUE.
          CALL SetTaskFragments(SETTING,rhs_current,'RHS',tasks%rhs_aux,.FALSE.,.FALSE.,.FALSE.,lupri)
          CALL getTaskDimension(tasks%orbInfo,rhs_current,AO3,AO4,'RHS',Spec,nbast3,nbast4,lupri)
          ! I always set the mynum in the global info of the lstensor
@@ -2147,6 +2155,17 @@ IF(RHSpartioning)THEN
       ENDIF
       rhs_current => rhs_current%next
    ENDDO !J
+   IF(.NOT.LOCALINFOSETUP)THEN
+      print*,'WARNING: no RHS tasks for mynum',setting%node
+      IF(rhs_created)THEN
+         call build_empty_sublstensor(dmat_rhs)
+      ENDIF
+      IF(rhsCS_created)THEN
+         nullify(gabCS_rhs)
+         allocate(gabCS_rhs)
+         call alloc_build_empty_sublstensor(gabCS_rhs)
+      ENDIF
+   ENDIF
    if(dmat_rhs%ndim5.GT.1) call lsquit('error',-1)
    !STEP 3 : build memory distributed lstensor from scalapack formattet Density matrix
    IF(rhs_created)THEN
@@ -2170,6 +2189,7 @@ IF(LHSpartioning)THEN
    ! THE INFO ABOUT WHICH NODE HAVE WHICH ATOMS IS A LITTLE MORE EASILY AVALIBLE 
    !STEP 1 : Determine which nodes own which part of the lstensor 
    lhs_current => tasks%lhs%first
+   IF(tasks%lhs%ntasks.GT.setting%numnodes)call lsquit('MPI MEMDIST LHS error',-1)
    DO I=1,tasks%lhs%ntasks
       ! I always set the mynum in the global info of the lstensor
       call set_single_atomspointers(lhs_current,natom1,natom2,atoms1,atoms2)
@@ -2188,8 +2208,10 @@ IF(LHSpartioning)THEN
    IF(lhs_created)Dmat_lhs%LowerDiagZero = ForceLHSsymDMAT
    !STEP 2 : setup node local info for the memory distributed lstensor
    lhs_current => tasks%lhs%first
+   LOCALINFOSETUP = .FALSE.
    DO I=1,tasks%lhs%ntasks
       IF(I-1.EQ.setting%node)THEN
+         LOCALINFOSETUP = .TRUE.
          CALL SetTaskFragments(SETTING,lhs_current,'LHS',tasks%lhs_aux,.FALSE.,.FALSE.,.FALSE.,lupri)
          CALL getTaskDimension(tasks%orbInfo,lhs_current,AO3,AO4,'LHS',Spec,nbast3,nbast4,lupri)
          ! I always set the mynum in the global info of the lstensor
@@ -2212,6 +2234,18 @@ IF(LHSpartioning)THEN
       ENDIF
       lhs_current => lhs_current%next
    ENDDO !I
+   IF(.NOT.LOCALINFOSETUP)THEN
+      print*,'WARNING: no LHS tasks for mynum',setting%node
+      call build_empty_sublstensor(jmat)
+      IF(lhs_created)THEN
+         call build_empty_sublstensor(dmat_lhs)
+      ENDIF
+      IF(lhsCS_created)THEN
+         nullify(gabCS_lhs)
+         allocate(gabCS_lhs)
+         call alloc_build_empty_sublstensor(gabCS_lhs)
+      ENDIF
+   ENDIF
    if(jmat%ndim5.GT.1) call lsquit('error',-1)
    !STEP 3 : build memory distributed lstensor from scalapack formattet Density matrix
    IF(lhs_created)THEN
@@ -4037,26 +4071,8 @@ Integer               :: start1,start2,MMunique_ID1,MMunique_ID2
 Integer               :: s1,s2,I,J,inode
 logical               :: samefragment,Ldummy
 
-IF(SETTING%SCHEME%FRAGMENT) THEN
-   CALL buildFragmentInfoAndBlocks(SETTING,AO1,AO2,AOEmpty,AOEmpty,LUPRI,LUERR)
-   SETTING%FRAGMENTS%iRHSblock = 1
-   DO I=1,SETTING%FRAGMENTS%LHSblock%numBlocks
-      iNode = SETTING%FRAGMENTS%LHSblock%blocks(I)%node
-      CALL SetDaltonFragments(SETTING,I,1,sameFragment,Ldummy,lupri)
-      SETTING%FRAGMENTS%iLHSblock = I
-      s1 = SETTING%FRAGMENTS%LHSblock%blocks(I)%startOrb1-1
-      s2 = SETTING%FRAGMENTS%LHSblock%blocks(I)%startOrb2-1
-      if((s2 .GE. s1).OR.(AO1.EQ.AOEmpty).OR.(AO2.EQ.AOEmpty))THEN
-         Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1+s1,start2+s2,&
-     &                  MMunique_ID1,MMunique_ID2,INT_OUTPUT)
-      endif
-      CALL FreeDaltonFragments(SETTING)
-   ENDDO
-   CALL freeFragmentInfoAndBlocks(SETTING)
-ELSE
-   Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1,start2,&
-     &            MMunique_ID1,MMunique_ID2,INT_OUTPUT)
-ENDIF
+Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1,start2,&
+  &            MMunique_ID1,MMunique_ID2,INT_OUTPUT)
 SETTING%SCHEME%MMunique_ID1 = MMunique_ID1
 
 end subroutine MM_calculation
@@ -6418,7 +6434,7 @@ ENDIF
 call set_atomspointers(lhs,rhs,natom1,natom2,natom3,natom4,atoms1,atoms2,atoms3,atoms4,&
      &                    Dummyatomlist1,Dummyatomlist2,full,grad)
 
-IF(Setting%scheme%cs_int)then
+IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)then
    call add_sublstensor_to_full_lstensor(setting%output%ScreenTensor,result_full,nAtom1,nAtom2,nAtom3,nAtom4,&
         & atoms1,atoms2,atoms3,atoms4,n1,n2,n3,n4,sameAllFrag)
    call lstensor_free(setting%output%ScreenTensor)

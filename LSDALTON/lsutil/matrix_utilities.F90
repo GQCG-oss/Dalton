@@ -11,10 +11,12 @@
 !> that it belongs somewhere else than here.
 !> 
 module matrix_util
+use precision
+use matrix_module
 use matrix_operations
 use matrix_operations_aux, only: mat_to_full2, mat_set_from_full2,mat_density_from_orbs
 use files
-
+use memory_handling
 contains 
   subroutine VerifyMatrices(MAT1,MAT2,STRING,THR,lu)
     implicit none
@@ -485,6 +487,35 @@ contains
        call mat_free(AT)
  
     end subroutine util_get_antisymm_part
+
+   !> \brief Returns the symmetric part of a matrix, [M]^S = 1/2(M+MT)
+   !> \author T. Kjaergaard
+   !> \date 2013
+    subroutine util_get_symm_And_antisymm_part_full(A,Asym,AntiSym,nbast)
+      implicit none
+      !> Input: Matrix from which we want symmetric part. Output: Symmetric part of input matrix.
+      real(realk),intent(in) :: A(nbast,nbast)
+      real(realk),intent(inout) :: Asym(nbast,nbast)
+      real(realk),intent(inout) :: AntiSym(nbast,nbast)
+      real(realk),pointer :: AT(:,:)
+      integer,intent(in) :: nbast
+      integer :: i,j
+      call mem_alloc(AT,nbast,nbast)
+      !call mat_trans(A,AT)
+      do j = 1,nbast
+         do i = 1,nbast
+            AT(i,j)= A(j,i)
+         enddo
+      enddo
+      call dcopy(nbast*nbast,A,1,Asym,1)
+      call dscal(nbast*nbast,0.5E0_realk,Asym,1)
+      call daxpy(nbast*nbast,0.5E0_realk,AT,1,Asym,1)
+
+      call dcopy(nbast*nbast,A,1,AntiSym,1)
+      call dscal(nbast*nbast,0.5E0_realk,AntiSym,1)
+      call daxpy(nbast*nbast,-0.5E0_realk,AT,1,AntiSym,1)
+      call mem_dealloc(AT)
+    end subroutine util_get_symm_And_antisymm_part_full
 
     !> \brief Convert type(matrix) from MO to AO basis
     !> \author C. Nygaard

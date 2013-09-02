@@ -30,6 +30,40 @@ MODULE matrix_operations
    use matrix_operations_csr
    use matrix_operations_unres_dense
 
+   private
+   public ::  matrixfiletype2, matrixfiletype, matrixmembuf, matmembuf,&
+        & mtype_symm_dense, mtype_dense, mtype_unres_dense, mtype_csr,&
+        & mtype_scalapack, matrix_type, &
+        & SET_MATRIX_DEFAULT, mat_select_type, mat_finalize, mat_pass_info,&
+        & mat_timings, mat_no_of_matmuls,&
+        & mat_init, mat_free, allocated_memory,&
+        & stat_deallocated_memory,mat_set_from_full,mat_to_full,mat_print,&
+        & mat_trans,mat_chol,mat_dpotrf,mat_dpotrs,mat_dpotri,mat_inv,&
+        & mat_clone,mat_assign,mat_mpicopy,mat_copy,mat_mul,mat_add,mat_daxpy,&
+        & mat_dposv,mat_abs_max_elm,mat_max_elm,mat_min_elm,mat_max_diag_elm,&
+        & mat_diag_f,mat_dsyev,mat_dsyevx,mat_section,mat_insert_section,&
+        & mat_identity,mat_add_identity,mat_create_block,mat_add_block,&
+        & mat_retrieve_block,mat_scal,mat_scal_dia,mat_scal_dia_vec,mat_zero,&
+        & mat_setlowertriangular_zero,set_lowertriangular_zero,&
+        & mat_write_to_disk,mat_write_info_to_disk,mat_read_from_disk,&
+        & mat_read_info_from_disk,mat_extract_diagonal,&
+        & no_of_matmuls, mat_tr, mat_trab, mat_dotproduct, mat_sqnorm2, &
+        & mat_outdia_sqnorm2, info_memory, max_no_of_matrices, no_of_matrices,&
+        & MatrixmemBuf_init, MatrixmemBuf_free,matrixmembuf_print,&
+        & matrixmembuf_open, matrixmembuf_close, matrixmembuf_overwrite
+
+!        matrixmembuf_new_iunit
+!FindIunit,FindIunitFileUnit,matrixmembuf_FindFile
+!FindIunit2,FindIunitFileUnit2,Matrixmembuf_setmatrixcurrent
+!Setmatrixcurrent1
+!Free_fileUnit,Free_fileMatrix
+!print_fileUnit,print_fileMatrix,matrixmembuf_Open
+!Matrixmembuf_Overwrite,OverwriteIunitFileUnit2,matrixmembuf_Close
+!FindIunitAndFree,matrixmembuf_write_to_mem,FindIunitAnd_write_to_mem
+!matrixmembuf_write_to_mem1,matrixmembuf_read_from_mem,FindIunitAnd_read_from_mem
+!matrixmembuf_read_from_mem1,free_matlist,matrixmembuf_FreeFile,FreeIunit2
+!FreeIunitFileUnit2,lsmpi_set_matrix_type_master,lsmpi_set_matrix_type_slave
+
 !FrameWork to write to memory - usefull for scalapack 
 !and when disk space is limited
 type matrixfiletype2
@@ -1627,6 +1661,7 @@ end type matrixmembuf
       integer, intent(in) :: from_row, to_row, from_col, to_col
       type(Matrix), intent(inout) :: Asec  !output
       type(Matrix) :: B,Bsec
+      real(realk),pointer :: Afull(:,:),Bsecfull(:,:)
       
       !Check if Asec is inside A
       if (to_row > A%nrow .or. from_row < 1 .or. from_col < 1 .or. A%ncol < to_col) then
@@ -1645,20 +1680,31 @@ end type matrixmembuf
       select case(matrix_type)
       case(mtype_dense)
          call mat_dense_section(A,from_row,to_row,from_col,to_col,Asec)
-#ifndef UNITTEST
-#endif
       case(mtype_unres_dense)
          call mat_unres_dense_section(A,from_row,to_row,from_col,to_col,Asec)
       case(mtype_scalapack)
+#ifdef VAR_SCALAPACK
          write(*,'(A)') 'Fallback mat_section for mtype_scalapack'
+         call mem_alloc(Afull,A%nrow,A%ncol)
          call mat_dense_init(B,A%nrow,A%ncol)
+         !transform from type to dense type
+         call mat_to_full(A,1E0_realk,Afull)
+         call mat_dense_set_from_full(Afull,1E0_realk,B)
+         call mem_dealloc(Afull)
+         !build section from dense mat
          call mat_dense_init(Bsec,Asec%nrow,Asec%ncol)
-         call mat_to_full(A,1E0_realk,B%elms)
          call mat_dense_section(B,from_row,to_row,from_col,to_col,Bsec)
-         call mat_set_from_full(Bsec%elms,1E0_realk,Asec)
          call mat_dense_free(B)
+         !build full from dense section mat
+         call mem_alloc(Bsecfull,Asec%nrow,Asec%ncol)
+         call mat_dense_to_full(Bsec, 1E0_realk, Bsecfull)
          call mat_dense_free(Bsec)
+         call mat_set_from_full(Bsecfull,1E0_realk,Asec)
+         call mem_dealloc(Bsecfull)
          write(*,'(A)') 'debug: fallback mat_section finished'
+#else
+         call lsquit('matrix type scalapack requires VAR_SCALAPACK',-1)
+#endif
       case default
          call lsquit("mat_section not implemented for this type of matrix",-1)
       end select

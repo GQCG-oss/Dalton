@@ -46,14 +46,15 @@
 #endif
 #include <math.h>
 #include <stdio.h>
+#include "general.h"
 
 #define __CVERSION__
 
 #include "functionals.h"
 
 /* INTERFACE PART */
-static int slater_isgga(void) { return 0; }
-static int slater_read(const char* conf_line);
+static integer slater_isgga(void) { return 0; }
+static integer slater_read(const char* conf_line);
 static real slater_energy(const FunDensProp* dp);
 static void slater_first(FunFirstFuncDrv *ds,   real fac, const FunDensProp*);
 static void slater_second(FunSecondFuncDrv *ds, real fac, const FunDensProp*);
@@ -74,7 +75,7 @@ Functional SlaterFunctional = {
 };
 
 /* IMPLEMENTATION PART */
-static int
+static integer
 slater_read(const char* conf_line)
 {
     fun_set_hf_weight(0);

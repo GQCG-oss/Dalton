@@ -36,6 +36,7 @@ endif()
 
 if(ENABLE_CSR)
     add_definitions(-DVAR_MKL)
+    add_definitions(-DVAR_CSR)
 endif()
 
 if(ENABLE_SCALAPACK)

@@ -321,7 +321,7 @@ contains
     ! Number of workers (slaves) = Number of nodes minus master itself
     nworkers = infpar%nodtot -1
     if(nworkers<1) then
-       call lsquit('DEC MPI requires at least two nodes!',-1)
+       call lsquit('DEC calculations using MPI require at least two nodes!',-1)
     end if
 
     ! MPI local group size
@@ -346,8 +346,7 @@ contains
     call ls_mpibcast(DECDRIVER,master,MPI_COMM_LSDALTON)
 
     ! Send DEC input information to slaves
-    siz=sizeof(DECinfo)
-    call MPI_BCAST(DECinfo,siz,MPI_CHARACTER,master,MPI_COMM_LSDALTON,ierr)
+    call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
 
     ! Pass very basic information on dimensions to local masters (necessary to allocate arrays)
     call ls_mpibcast(natoms,master,MPI_COMM_LSDALTON)

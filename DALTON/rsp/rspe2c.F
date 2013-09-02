@@ -5902,7 +5902,7 @@ C
      &              LBLLR(KSYMOP,IOPA),KSYMOP,-FREQ(IFREQ),
      &              ' B operator, symmetry, frequency: ',
      &                LBLLR(KSYMOP,IOPB),KSYMOP, FREQ(IFREQ),
-     &              ' Value of linear response -<<A;B>(omega): ',VAL
+     &              ' Value of linear response -<<A;B>>(omega): ',VAL
             END DO
          END DO
       END DO

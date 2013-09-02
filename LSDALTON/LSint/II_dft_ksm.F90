@@ -6,7 +6,7 @@ use IIDFTINT, only: II_DFTINT, II_DFTDISP, TEST_NELECTRONS
 use dft_type
 use dft_memory_handling
 use IIDFTKSMWORK
-#if MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
 use IIABSVALINT
 #endif
 !WARNING you must not add memory_handling, all memory goes through 
@@ -212,7 +212,7 @@ REAL(REALK),intent(in) :: CMAT(NBAST,NBAST)
 !> absolute valued Overlap matrix
 REAL(REALK),intent(inout) :: ABSVALOVERLAP(NBAST,NBAST)
 !
-#if MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
 LOGICAL          :: USE_MPI
 REAL(REALK)      :: DFTHRI
 USE_MPI = .TRUE.

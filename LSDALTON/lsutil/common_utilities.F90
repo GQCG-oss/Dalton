@@ -96,6 +96,22 @@
    deallocate(IFAIL)
    end subroutine dsyevx_interface
 
+!!$   SUBROUTINE my_dcopy8(N,DX,INCX,DY,INCY)
+!!$     use precision
+!!$     implicit none
+!!$     integer(kind=8),intent(in)::N
+!!$     integer,intent(in)::INCX,INCY
+!!$     real(realk),intent(in) :: DX(*)
+!!$     real(realk),intent(out) :: DY(*)
+!!$     integer(kind=8)::nel,i
+!!$     
+!!$     do i=1,N,MAXINT
+!!$       nel=MAXINT
+!!$       if(((N-i)<MAXINT).and.&
+!!$         &(mod(N-i+1,MAXINT)/=0))nel=mod(N,MAXINT)
+!!$       call dcopy(nel,DX(i),INCX,DY(i),INCY)
+!!$     enddo
+!!$   end SUBROUTINE my_dcopy8
    !> \brief Interface to DSYGV. Computes eigenvector and eigenvalues of A*x = (lambda)*B*x
    !> \author L. Thogersen
    !> \date 2003
@@ -127,10 +143,9 @@
      lwrk = -1
 #ifdef VAR_LSESSL
      no_ref=0.0E0_realk
-     tol = 2*DLAMCH('S')
+     tol = 0.0E0_realk
      call DSYGVX( 1,'V','A','L', N, A, N, B, N, no_ref,no_ref,no_ref,&
       &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
-     A=Z
 #else
      call DSYGV(1,'V','L',N,A,N,B,N,eigval,wrk,lwrk,ierr)
 #endif 
@@ -144,7 +159,7 @@
 #ifdef VAR_LSESSL
      call DSYGVX( 1,'V','A','L', N, A, N, B, N, no_ref,no_ref,no_ref,&
       &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
-     A=Z
+     call dcopy(N*N,Z,1,A,1)
 #else
      call DSYGV(1,'V','L',N,A,N,B,N,eigval,wrk,lwrk,ierr)
 #endif 
@@ -172,7 +187,19 @@
        double precision              :: W(N)
        character(len=70)             :: MSG
        INTEGER                       :: INFO, LWORK, NB, ILAENV
-       double precision, allocatable :: WORK(:)
+       double precision, allocatable     :: WORK(:)
+#ifdef VAR_LSESSL
+       integer :: liwork
+       integer, allocatable :: iwork(:)
+       liwork = -1
+       if(JOBZ=='V'.or.JOBZ=='v')then
+         liwork = 3+5*N
+         allocate(iwork(3+5*N))
+       elseif(JOBZ=='N'.or.JOBZ=='n')then
+         liwork = 1
+         allocate(iwork(1))
+       endif
+#endif
        INFO=0
    
        !find out optimal work memory size
@@ -183,7 +210,12 @@
        allocate(WORK(LWORK))
    
        !run
+#ifdef VAR_LSESSL
+       call dsyev(JOBZ,UPLO,N,A,N,W,WORK,LWORK,iwork,liwork,INFO)
+       deallocate(iwork)
+#else
        call dsyev(JOBZ,UPLO,N,A,N,W,WORK,LWORK,INFO)
+#endif
        if (info.ne. 0) then
          write(*,'(1X,A,I3)') 'Error in dsyev in my_DSYGV, info=',info
          call LSquit('Error in dsyev in my_DSYGV',-1)
@@ -537,12 +569,17 @@ end subroutine ls_dcopy
 !
       if (lupri > 0) then
          luprin = lupri
+
+         CALL ls_TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---', LUPRIN)
+         WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
+         CALL ls_TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---', 6)
+         WRITE (6,'(/2A/)') ' Reason: ',TEXT
       else
          luprin = 6
+         CALL ls_TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---', LUPRIN)
+         WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
       endif
 
-      CALL ls_TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---', LUPRIN)
-      WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
 
 #if  defined (SYS_AIX) || defined (SYS_LINUX)
 !     Write to stderr

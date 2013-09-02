@@ -100,7 +100,7 @@ contains
 !   ----------------------------------------------------------------------------
 
 !   reset old type information
-    call communication_free_mpi(A)
+    call communication_free_mpi(A,nr_of_process_glb)
 
     A%communication_type_init  = .true.
     A%communication_intranode  = -1
@@ -122,46 +122,49 @@ contains
     A%shared_mem_group_list   = -1
     A%intra_node_group_list   = -1
 
+    if(nr_of_process_glb > 1)then
 #ifdef VAR_MPI
-!   start communication model setup
-!   -------------------------------
+!     start communication model setup
+!     -------------------------------
 
-!   1. determine # communication process groups and store group-IDs in total_process_list
-    call set_communication_groups(A%total_process_list,     &
-                                  my_process_id_glb,        &
-                                  nr_of_process_glb,        &
-                                  communicator_glb)
+!     1. determine # communication process groups and store group-IDs in total_process_list
+      call set_communication_groups(A%total_process_list,     &
+                                    my_process_id_glb,        &
+                                    nr_of_process_glb,        &
+                                    communicator_glb)
 
-!   2. setup communicators and process-id for the various communication levels
-!      a. intra-node
-!      b. inter-node
-!      c. shared-memory
-    call set_communication_levels(A%intra_node_group_list,                   &
-                                  A%shared_mem_group_list,                   &
-                                  A%total_process_list,                      &
-                                  nr_of_process_glb,                         &
-                                  my_process_id_glb,                         &
-                                  communicator_glb,                          &
-                                  A%my_intra_node_id,                        &
-                                  A%my_inter_node_id,                        &
-                                  A%my_shmem_node_id,                        &
-                                  A%intra_node_size,                         &
-                                  A%inter_node_size,                         &
-                                  A%shmem_node_size,                         &
-                                  A%communication_intranode,                 &
-                                  A%communication_internode,                 &
-                                  A%communication_shmemnode,                 &
-                                  A%communication_glb_world,                 &
-                                  A%intra_node_group_id)                      
+!     2. setup communicators and process-id for the various communication levels
+!        a. intra-node
+!        b. inter-node
+!        c. shared-memory
+      call set_communication_levels(A%intra_node_group_list,                   &
+                                    A%shared_mem_group_list,                   &
+                                    A%total_process_list,                      &
+                                    nr_of_process_glb,                         &
+                                    my_process_id_glb,                         &
+                                    communicator_glb,                          &
+                                    A%my_intra_node_id,                        &
+                                    A%my_inter_node_id,                        &
+                                    A%my_shmem_node_id,                        &
+                                    A%intra_node_size,                         &
+                                    A%inter_node_size,                         &
+                                    A%shmem_node_size,                         &
+                                    A%communication_intranode,                 &
+                                    A%communication_internode,                 &
+                                    A%communication_shmemnode,                 &
+                                    A%communication_glb_world,                 &
+                                    A%intra_node_group_id)                      
 #endif
+    end if
 
   end subroutine communication_init_mpi
 !*******************************************************************************
 
-  subroutine communication_free_mpi(A)
+  subroutine communication_free_mpi(A,nr_of_process_glb)
 
 !   ----------------------------------------------------------------------------
     type(communication_type_mpi) :: A
+    integer, intent(in)          :: nr_of_process_glb
     integer                      :: ierr
 !   ----------------------------------------------------------------------------
 
@@ -172,11 +175,13 @@ contains
     deallocate(A%shared_mem_group_list)
     deallocate(A%intra_node_group_list)
 
+    if(nr_of_process_glb > 1)then
 #ifdef VAR_MPI
-    call mpi_comm_free(A%communication_intranode,  ierr)
-    call mpi_comm_free(A%communication_internode,  ierr)
-    call mpi_comm_free(A%communication_shmemnode,  ierr)
+      call mpi_comm_free(A%communication_intranode,  ierr)
+      call mpi_comm_free(A%communication_internode,  ierr)
+      call mpi_comm_free(A%communication_shmemnode,  ierr)
 #endif
+    end if
 
   end subroutine communication_free_mpi
 !*******************************************************************************

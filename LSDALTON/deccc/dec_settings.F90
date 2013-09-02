@@ -45,6 +45,7 @@ contains
     DECinfo%TimeBackup = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals = .false.
     DECinfo%CheckPairs=.false.
+    call dec_set_model_names(DECinfo)
 
 
     ! -- Debug modes
@@ -62,9 +63,10 @@ contains
     DECinfo%array_test=.false.
     DECinfo%reorder_test=.false.
     DECinfo%CCSDno_restart=.false.
-    DECinfo%CCSDsaferun=.false.
+    DECinfo%CCSDnosaferun=.false.
     DECinfo%solver_par=.false.
     DECinfo%CCSDpreventcanonical=.false.
+    DECinfo%CCSD_MPICH=.false.
     DECinfo%CCDhack = .false.
 
     ! -- Output options 
@@ -115,11 +117,6 @@ contains
     ! -- CC solver options
 
     DECinfo%ccsd_expl=.false.
-    DECinfo%cc_models(1)='MP2     '
-    DECinfo%cc_models(2)='CC2     '
-    DECinfo%cc_models(3)='CCSD    '
-    DECinfo%cc_models(4)='CCSD(T) '
-    DECinfo%cc_models(5)='RPA     '
     DECinfo%simulate_eri= .false.
     DECinfo%fock_with_ri= .false.
     DECinfo%ccMaxIter=100
@@ -164,6 +161,20 @@ contains
 
 
   end subroutine dec_set_default_config
+
+  !> \brief Set names for models in DEC
+  subroutine dec_set_model_names(DECitem)
+    implicit none
+    !> The DEC item
+    type(decsettings),intent(inout) :: DECitem
+
+    DECitem%cc_models(1)='MP2     '
+    DECitem%cc_models(2)='CC2     '
+    DECitem%cc_models(3)='CCSD    '
+    DECitem%cc_models(4)='CCSD(T) '
+    DECitem%cc_models(5)='RPA     '
+
+  end subroutine dec_set_model_names
 
 
   !> \brief Read the **DEC or **CC input section in LSDALTON.INP and set 
@@ -253,7 +264,7 @@ contains
           ! ==============
 
           ! Save CCSD amplitudes to be able to restart full CCSD calculation
-       case('.CCSDSAFE'); DECinfo%CCSDsaferun=.true.
+       case('.CCSDNOSAFE'); DECinfo%CCSDnosaferun=.true.
 
           ! Maximum number of CC iterations
        case('.CCMAXITER'); read(input,*) DECinfo%ccMaxIter 
@@ -358,13 +369,20 @@ contains
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
        case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
           ! Size of local groups in MPI scheme
-       case('.MPIGROUPSIZE'); read(input,*) DECinfo%MPIgroupsize
+       case('.MPIGROUPSIZE') 
+          read(input,*) DECinfo%MPIgroupsize
+#ifndef VAR_MPI
+          print *, 'WARNING: You have specified MPI groupsize - but this is a serial run!'
+          print *, '--> Hence, this keyword has no effect.'
+          print *
+#endif
 
 #ifdef MOD_UNRELEASED
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
        case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
+       case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=3; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.HACK'); DECinfo%hack=.true.
@@ -612,7 +630,7 @@ end if
     write(lupri,*) 'singlesthr ', DECitem%singlesthr
     write(lupri,*) 'convert64to32 ', DECitem%convert64to32
     write(lupri,*) 'convert32to64 ', DECitem%convert32to64
-    write(lupri,*) 'CCSDsaferun ', DECitem%CCSDsaferun
+    write(lupri,*) 'CCSDnosaferun ', DECitem%CCSDnosaferun
     write(lupri,*) 'solver_par ', DECitem%solver_par
     write(lupri,*) 'force_scheme ', DECitem%force_scheme
     write(lupri,*) 'dyn_load ', DECitem%dyn_load
@@ -636,7 +654,7 @@ end if
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
     write(lupri,*) 'manual_batchsizes ', DECitem%manual_batchsizes
-    write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,ccsdGbatch
+    write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,DECitem%ccsdGbatch
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
     write(lupri,*) 'mp2energydebug ', DECitem%mp2energydebug

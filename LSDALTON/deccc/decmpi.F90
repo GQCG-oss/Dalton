@@ -16,6 +16,7 @@ module decmpi_module
   use Matrix_module!,only: matrix
   use tensor_basic_module
   use tensor_interface_module
+  use DEC_settings_mod
 
 contains
 
@@ -825,12 +826,13 @@ contains
 
   End subroutine mpicopy_fragment
 
-  subroutine share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s)
+  subroutine share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
     implicit none
     real(realk),pointer :: xo(:),yv(:),Gbi(:),Had(:)
     real(realk), intent(inout) :: ppf(:),qqf(:)
     integer :: no,nv,nb,s
     type(array),intent(inout) :: t2,omega2
+    logical :: lo
     integer :: oaddr(infpar%lg_nodtot)
     integer :: taddr(infpar%lg_nodtot)
     logical :: master
@@ -844,6 +846,7 @@ contains
     call ls_mpi_buffer(nv,infpar%master)
     call ls_mpi_buffer(nb,infpar%master)
     call ls_mpi_buffer(s,infpar%master)
+    call ls_mpi_buffer(lo,infpar%master)
     if(master)oaddr=omega2%addr_p_arr
     call ls_mpi_buffer(oaddr,infpar%lg_nodtot,infpar%master)
     if(master)taddr=t2%addr_p_arr
@@ -1610,87 +1613,116 @@ contains
 
   end subroutine print_MPI_fragment_statistics
 
-
-  subroutine mpicopy_dec_settings(decitem,comm)
+  !> \brief Bcast DEC setting structure
+  !> \author Kasper Kristensen
+  !> \date June 2013
+  subroutine mpibcast_dec_settings(DECitem,comm)
     implicit none
     integer(kind=ls_mpik) :: comm
     type(decsettings) :: DECitem
 
-    call lsquit('mpicopy_dec_settings: Needs implementation! ',-1)
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
-    call mpicopy_dec_settings1(decitem,comm)
+    call mpicopy_dec_settings(DECitem)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
 
-  end subroutine mpicopy_dec_settings
+  end subroutine mpibcast_dec_settings
 
-  ! USE HIGHLY DISCOURAGED!!!
-  subroutine mpicopy_dec_settings1(decitem,comm)
+
+  !> \brief Copy DEC setting structure to buffer (master)
+  !> or read from buffer (slave)
+  !> \author Kasper Kristensen
+  !> \date June 2013
+  subroutine mpicopy_dec_settings(DECitem)
     implicit none
-    integer(kind=ls_mpik) :: comm,master
     type(decsettings) :: DECitem
+    integer(kind=ls_mpik) :: master
+    integer :: mydim
     master = 0
+
     call ls_mpi_buffer(DECitem%doDEC,Master)
-    call ls_mpi_buffer(DECitem%memory,Master)
+    call ls_mpi_buffer(DECitem%frozencore,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
-    call ls_mpi_buffer(DECitem%mp2energydebug,Master)
+    call ls_mpi_buffer(DECitem%use_canonical,Master)
+    call ls_mpi_buffer(DECitem%user_defined_orbitals,Master)
     call ls_mpi_buffer(DECitem%simulate_full,Master)
     call ls_mpi_buffer(DECitem%simulate_natoms,Master)
-    call ls_mpi_buffer(DECitem%SkipReadIn,Master)
-    call ls_mpi_buffer(DECitem%SinglesPolari,Master)
-    call ls_mpi_buffer(DECitem%singlesthr,Master)
+    call ls_mpi_buffer(DECitem%InclFullMolecule,Master)
+    call dec_set_model_names(DECitem)
+    call ls_mpi_buffer(DECitem%ccModel,Master)
+    call ls_mpi_buffer(DECitem%use_singles,Master)
     call ls_mpi_buffer(DECitem%restart,Master)
     call ls_mpi_buffer(DECitem%TimeBackup,Master)
-    call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
+    call ls_mpi_buffer(DECitem%read_dec_orbitals,Master)
+    call ls_mpi_buffer(DECitem%memory,Master)
+    call ls_mpi_buffer(DECitem%memory_defined,Master)
+    call ls_mpi_buffer(DECitem%fullmolecule_memory,Master)
+    call ls_mpi_buffer(DECitem%array4OnFile,Master)
+    call ls_mpi_buffer(DECitem%array4OnFile_specified,Master)
+    call ls_mpi_buffer(DECitem%SinglesPolari,Master)
+    call ls_mpi_buffer(DECitem%singlesthr,Master)
+    call ls_mpi_buffer(DECitem%convert64to32,Master)
+    call ls_mpi_buffer(DECitem%convert32to64,Master)
+    call ls_mpi_buffer(DECitem%CCSDnosaferun,Master)
+    call ls_mpi_buffer(DECitem%solver_par,Master)
+    call ls_mpi_buffer(DECitem%force_scheme,Master)
+    call ls_mpi_buffer(DECitem%dyn_load,Master)
     call ls_mpi_buffer(DECitem%ccsd_old,Master)
+    call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
+    call ls_mpi_buffer(DECitem%CCSD_MPICH,Master)
+    call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
+    call ls_mpi_buffer(DECitem%CCDhack,Master)
+    call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
+    call ls_mpi_buffer(DECitem%en_mem,Master)
+    call ls_mpi_buffer(DECitem%precondition_with_full,Master)
+    call ls_mpi_buffer(DECitem%ccsd_expl,Master)
+    call ls_mpi_buffer(DECitem%ccMaxIter,Master)
+    call ls_mpi_buffer(DECitem%ccMaxDIIS,Master)
+    call ls_mpi_buffer(DECitem%ccConvergenceThreshold,Master)
+    call ls_mpi_buffer(DECitem%CCthrSpecified,Master)
+    call ls_mpi_buffer(DECitem%use_preconditioner,Master)
+    call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
+    call ls_mpi_buffer(DECitem%use_crop,Master)
+    call ls_mpi_buffer(DECitem%simulate_eri,Master)
+    call ls_mpi_buffer(DECitem%fock_with_ri,Master)
+    call ls_mpi_buffer(DECitem%F12,Master)
+    call ls_mpi_buffer(DECitem%mpisplit,Master)
+    call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
     call ls_mpi_buffer(DECitem%ccsdAbatch,Master)
     call ls_mpi_buffer(DECitem%ccsdGbatch,Master)
     call ls_mpi_buffer(DECitem%hack,Master)
     call ls_mpi_buffer(DECitem%hack2,Master)
+    call ls_mpi_buffer(DECitem%mp2energydebug,Master)
+    call ls_mpi_buffer(DECitem%SkipReadIn,Master)
+    call ls_mpi_buffer(DECitem%array_test,Master)
+    call ls_mpi_buffer(DECitem%reorder_test,Master)
+    call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
+    call ls_mpi_buffer(DECitem%PL,Master)
+    call ls_mpi_buffer(DECitem%skipfull,Master)
     call ls_mpi_buffer(DECitem%output,Master)
+    call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
+    call ls_mpi_buffer(DECitem%FitOrbitals,Master)
+    call ls_mpi_buffer(DECitem%simple_orbital_threshold,Master)
+    call ls_mpi_buffer(DECitem%purifyMOs,Master)
+    call ls_mpi_buffer(DECitem%fragadapt,Master)
+    call ls_mpi_buffer(DECitem%simple_orbital_threshold_set,Master)
+    call ls_mpi_buffer(DECitem%BoughtonPulay,Master)
     call ls_mpi_buffer(DECitem%mulliken_threshold,Master)
     call ls_mpi_buffer(DECitem%simple_mulliken_threshold,Master)
     call ls_mpi_buffer(DECitem%approximated_norm_threshold,Master)
-    call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
-    call ls_mpi_buffer(DECitem%use_canonical,Master)
-    call ls_mpi_buffer(DECitem%user_defined_orbitals,Master)
-    call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%mulliken,Master)
-    call ls_mpi_buffer(DECitem%BoughtonPulay,Master)
-    call ls_mpi_buffer(DECitem%FitOrbitals,Master)
-    call ls_mpi_buffer(DECitem%simple_orbital_threshold,Master)
-    call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOT,Master)
-    call ls_mpi_buffer(DECitem%PL,Master)
-    call ls_mpi_buffer(DECitem%purifyMOs,Master)
-    call ls_mpi_buffer(DECitem%precondition_with_full,Master)
-    call ls_mpi_buffer(DECitem%InclFullMolecule,Master)
+    call ls_mpi_buffer(DECitem%MaxIter,Master)
+    call ls_mpi_buffer(DECitem%FOTlevel,Master)
+    call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
     call ls_mpi_buffer(DECitem%HybridScheme,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
+    call ls_mpi_buffer(DECitem%use_mp2_frag,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
+    call ls_mpi_buffer(DECitem%paircut_set,Master)
     call ls_mpi_buffer(DECitem%PairReductionDistance,Master)
-    call ls_mpi_buffer(DECitem%fullmolecule_memory,Master)
-    call ls_mpi_buffer(DECitem%ccsd_expl,Master)
-    DECitem%cc_models(1)='MP2     '
-    DECitem%cc_models(2)='CC2     '
-    DECitem%cc_models(3)='CCSD    '
-    DECitem%cc_models(4)='CCSD(T) '
-    DECitem%cc_models(5)='RPA     '
-    call ls_mpi_buffer(DECitem%simulate_eri,Master)
-    call ls_mpi_buffer(DECitem%fock_with_ri,Master)
-    call ls_mpi_buffer(DECitem%ccMaxIter,Master)
-    call ls_mpi_buffer(DECitem%ccMaxDIIS,Master)
-    call ls_mpi_buffer(DECitem%ccModel,Master)
-    call ls_mpi_buffer(DECitem%F12,Master)
-    call ls_mpi_buffer(DECitem%ccConvergenceThreshold,Master)
-    call ls_mpi_buffer(DECitem%CCthrSpecified,Master)
-    call ls_mpi_buffer(DECitem%use_singles,Master)
-    call ls_mpi_buffer(DECitem%use_preconditioner,Master)
-    call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
-    call ls_mpi_buffer(DECitem%use_crop,Master)
-    call ls_mpi_buffer(DECitem%array4OnFile,Master)
-    call ls_mpi_buffer(DECitem%array4OnFile_specified,Master)
-    call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
+    call ls_mpi_buffer(DECitem%PairMinDist,Master)
+    call ls_mpi_buffer(DECitem%checkpairs,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%MP2density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
@@ -1700,7 +1732,12 @@ contains
     call ls_mpi_buffer(DECitem%kappaMaxIter,Master)
     call ls_mpi_buffer(DECitem%kappa_driver_debug,Master)
     call ls_mpi_buffer(DECitem%kappaTHR,Master)
-  end subroutine mpicopy_dec_settings1
+    mydim=8  
+    call ls_mpi_buffer(DECitem%ncalc,mydim,Master)
+    call ls_mpi_buffer(DECitem%EerrFactor,Master)
+    call ls_mpi_buffer(DECitem%EerrOLD,Master)
+
+  end subroutine mpicopy_dec_settings
 
 end module decmpi_module
 

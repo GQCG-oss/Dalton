@@ -422,7 +422,9 @@ C     the necessary integrals in the primitive basis.
 C     See further notes in DKH_INTF routine.
 C
       IF (DKTRAN .AND. RNHERM) THEN
+         DKHINT = .TRUE. ! now we are calculating DKH 1-el. integrals
          CALL DKH_INTF(WORK(1),LMWORK)
+         DKHINT = .FALSE.
          NEWPRP = .TRUE.
       END IF
 C
@@ -528,11 +530,13 @@ C  /* Deck execc */
 #include "implicit.h"
       DIMENSION WORK(0:LMWORK)
 #include "priunit.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "mxcent.h"
 #include "siripc.h"
 #include "inftra.h"
-#include "gnrinf.h"
-#include "mxcent.h"
 #include "optinf.h"
+#include "nuclei.h"
 C
 C     Run Coupled Cluster program
 C
@@ -543,6 +547,20 @@ C
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
          CALL ER2INI
+      END IF
+
+!
+!     The CC module uses a lot of static allocation for pointer arrays.
+!     To minimize the static allocation in Dalton we use a smaller
+!     max number of orbitals in CC than the global MXCORB. /hjaaj Sep 2013
+!
+      IF (NBASIS .GT. MXCORB_CC) THEN
+         WRITE (LUPRI,'(//A,I6/A,I6/A)')
+     &  ' ERROR Too many orbitals for CC module:',NBASIS,
+     &  ' ERROR Limit is MXCORB_CC in maxorb.h :',MXCORB_CC,
+     %  ' ERROR To proceed increase MXCORB_CC in maxorb.h and recompile'
+         CALL QUIT('Too many orbitals for CC module.'//
+     &      'Increase MXCORB_CC in maxorb.h and recompile.')
       END IF
 
       ! ITRNMR > 0 required for proper restart of CPHF solver
@@ -1007,7 +1025,7 @@ Cholesky
 Cholesky
          IF (RNSIRI) CALL EXESIR(WORK(0),LMWORK,WRKDLM)
 Cact
-         IF (ACTIVE) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
+         IF (ACTSEL) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
 Cact
          IF (DOCCSD) CALL EXECC (WORK(0),LMWORK,WRKDLM)
 C
@@ -1111,8 +1129,10 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
       use polarizable_embedding, only: pe_dalton_input
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1225,6 +1245,7 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       RELCAL = .FALSE.
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
+      DKHINT = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       IF (NODTOT.GE.1) THEN
@@ -1286,7 +1307,6 @@ C
 C
 Cholesky
       CHOINT = .FALSE.
-      ACTIVE = .FALSE.
 Cholesky
 C
 C     Initialize /GRDCCPT/
@@ -1473,7 +1493,12 @@ C        '.DOUGLA'
          GOTO 100
 !        .PEQM
  133     continue
+#if defined (BUILD_PELIB)
             peqm = .true.
+#else
+            write(lupri,*) 'ERROR: PE library not enabled.'
+            call quit('ERROR: PE library not enabled.')
+#endif
          goto 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
@@ -1547,7 +1572,6 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Only totally symmetric part of molecular Hessian calculated'
       IF (DIRCAL) WRITE(LUPRI,'(4X,A)')
      &   'AO-direct calculation (in sections where implemented)'
-      IF (MOLDEN) CALL MOHEAD
       IF (DKTRAN) WRITE (LUPRI,'(4X,A)') 
      &   'The second order Douglas-Kroll-Hess transformation is applied'
       IF (RNHERM) WRITE (LUPRI,'(4X,A)')
@@ -1585,15 +1609,18 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
+#if defined (BUILD_PELIB)
         if (peqm) write(lupri,'(4x,a)')
      &   'Environment is modeled using polarizable embedding scheme'//
-     &   ' (PE module)'
+     &   ' (PE library)'
+#endif
 C
 Cholesky
-      IF (CHOINT) WRITE (LUPRI,'(4X,A)')
+      IF (CHOINT) THEN
+        IF (PARCAL) CALL PARQUIT('CHOLESKY')
+        WRITE (LUPRI,'(4X,A)')
      &  'Cholesky decomposition-based calculation will be done'
-      IF (ACTIVE) WRITE (LUPRI,'(4X,A)')
-     &  'Selection of active atoms switched on'
+      ENDIF
 Cholesky
 C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
@@ -1687,7 +1714,11 @@ C     "*QMMM  " input
 
 !     "*PEQM  " input
    10 continue
+#if defined (BUILD_PELIB)
         call pe_dalton_input(word, lucmd, lupri)
+#else
+        call quit('ERROR: PE library not enabled.')
+#endif
       goto 200
 
 C
@@ -1977,19 +2008,18 @@ C
 C
 C     Select orbitals and basis fucntions for hybrid CC models.
 C
-      CALL QENTER('SELACT')
+      CALL QENTER('EXEACT')
 C
-      CALL TITLER('Starting in Selact Section',' ',200)
+      CALL TITLER('Starting in Choact Section',' ',200)
 C
-C_not_yet     CALL CC_SELACT(WORK(1),LMWORK)
-      write(lupri,*) 'INFO: SELACT is not yet implemented. Skipped.'
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELECT_ACTIVE')
+      CALL CC_SELACT(WORK(1),LMWORK)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOACT')
 C
 ctst  CLOSE(24)
-      CALL TITLER('End of Selact Section',' ',200)
+      CALL TITLER('End of Choact Section',' ',200)
 C
       CALL FLSHFO(LUPRI)
-      CALL QEXIT('SELACT')
+      CALL QEXIT('EXEACT')
       RETURN
       END
 C --- end of dalgnr.F ---

@@ -119,7 +119,7 @@ C
       PARAMETER(FNDPTIA='DPTIA', FNDPTIA2 = 'DPTIA2',
      *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  ) 
 C
-      LOGICAL LTESTE
+      LOGICAL LTESTE, NATOCC
 C
       INTEGER ISYOF(8),KOFF(8,8),NCVAI1(8,8),NCVAI2(8,8),NCVAI3(8,8)
       INTEGER NCVIJ(8,8),NCVAI5(8,8) 
@@ -131,6 +131,9 @@ Cholesky
 Cholesky
 C
       CALL QENTER('CC_FOP')
+C     Initialize variable for natural occupation numbers to false
+      NATOCC = .FALSE.
+
 C     Define CCDC and initialize local variables
       CCDC = CCSLV .AND. (.NOT. CCMM)
       CCMMCONV = .FALSE.
@@ -1399,10 +1402,10 @@ C
       !Sonia
       write(lupri,*)'CCFOP: call CC_D1AO to recalc the 1e Density'
       call flshfo(lupri)
-      natocc=.false.
+      NATOCC=.TRUE.
       !
       CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
-     &             LWRK3,MODEL, LIST,ILSTNR,.TRUE.,
+     &             LWRK3,MODEL, LIST,ILSTNR,NATOCC,
      &             FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
 C
       IF ((FROIMP .OR. FROEXP) .AND. (.NOT. MP2)) THEN
@@ -3835,7 +3838,7 @@ C
 #include "aovec.h"
 #include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION INDEXA(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
       DIMENSION ETAAI(*), WORK(LWORK)
       CHARACTER MODEL*(10)
 #include "ccorb.h"
@@ -5448,7 +5451,7 @@ C
 #include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       CHARACTER MODEL*10
-      DIMENSION INDEXA(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
 #include "ccorb.h"
 CCN#include <infind.h> 
@@ -6300,7 +6303,7 @@ C
 #include "aovec.h"
 #include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION INDEXA(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
 #include "ccorb.h"
 #include "ccisao.h"
@@ -6715,8 +6718,8 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
       LOGICAL SAVDIR, LEX, SAVHER, OLDDX
-      DIMENSION INDEXA(MXCORB)
-      DIMENSION IADR(MXCORB,MXDIST)
+      DIMENSION INDEXA(MXCORB_CC)
+      DIMENSION IADR(MXCORB_CC,MXDIST)
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL
       CHARACTER*10 MODEL

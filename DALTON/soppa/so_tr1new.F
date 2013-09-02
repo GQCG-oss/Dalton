@@ -16,7 +16,7 @@ C
 #include "soppinf.h"
 #include "ccsdsym.h"
 C
-      PARAMETER (ONE = 1.0D0, STHR = 1.0D-5)
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, STHR = 1.0D-5)
 C
       INTEGER   POINT(LPOINT)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB)

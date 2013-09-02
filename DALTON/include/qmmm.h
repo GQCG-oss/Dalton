@@ -10,7 +10,7 @@ C
      *        MXMMDI,NMMAC,IQMMMC,
      *        NELEME,ELEME,IPQMMM,
      *        MXMMCT,MXEXCL
-C 
+C
       PARAMETER(MXMMCT = 9000)
       PARAMETER(MXEXCL = 80)
 
@@ -22,10 +22,10 @@ C
      *                EDELD,EDNUC,EDMULT,ENUMUL
       PARAMETER ( THRMM = 1.0D-10 )
 
-      COMMON /REQMMM/ MMCORD(3,MXMMCT), MUL0MM(MXMMCT), 
+      COMMON /REQMMM/ MMCORD(3,MXMMCT), MUL0MM(MXMMCT),
      *                MUL1MM(3,MXMMCT), MUL2MM(6,MXMMCT),
      *                MUL3MM(10,MXMMCT),
-     *                POLMM(6,MXMMCT), POLIMM(MXMMCT), 
+     *                POLMM(6,MXMMCT), POLIMM(MXMMCT),
      *                QMPOL(MXCENT) , THMMIT, RQMMMC, RCUTMM,
      *                DELFLD,ECHART,EDIPT,EQUADT,EOCTUP,
      *                EDELD,EDNUC,EDMULT,ENUMUL

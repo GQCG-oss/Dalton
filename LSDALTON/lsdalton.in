@@ -67,7 +67,7 @@ frl=rel
 usage (){
 	  echo
 	  echo "Usage:    lsdalton [-b directory] [-d] [-D] [-ext log | -o file] [-f] [-m mem | -M mem]"
-	  echo  "[-N nodes] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
+	  echo  "[-N cores] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
 	  echo
 	  echo 'Options:'
 	  echo ' -b dir    change directory where basis sets are searched for to dir'
@@ -82,7 +82,7 @@ usage (){
 	  echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
 	  echo ' -m mem    set scratch memory to mem Mwords'
 	  echo ' -M mem    set scratch memory to mem Mb'
-	  echo ' -N num    use MPI version with num nodes'
+	  echo ' -N num    use num MPI procs (defaults to DALTON_NUM_MPI_PROCS)'
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
 	  echo ' -t dir    change DALTON_TMPDIR from default to dir'
 	  echo ' -w dir    change WRKDIR from default to dir'
@@ -244,7 +244,15 @@ else
    echo "$DALTON_TMPDIR does not exist or is not writeable"
    exit 1
 fi
-#
+
+if [ -n "$DALTON_NUM_MPI_PROCS" ]; then
+    if [ $optn -eq 0 ] ; then
+        # DALTON_NUM_MPI_PROCS is set but -N is not
+        # in this case default -N to DALTON_NUM_MPI_PROCS
+        optn=$DALTON_NUM_MPI_PROCS
+    fi
+fi
+
 if [ $optn -gt 1 ] ; then
    if [ $opt_lslib_test -eq 1 ]; then
       MPI=$LSLIB_TEST

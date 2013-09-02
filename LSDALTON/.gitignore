@@ -1,21 +1,8 @@
-test/*
-build/*
-*/*.o
-*/*/*.o
-*/*.mod
-*/*/*.mod
-*/*.a
-*/*/*.a
-*/Makefile.depend
+# only configure-related ignores should be here
+*.o
+*.mod
+*.a
+Makefile.depend
 Makefile.config
 lsdalton
 lsdalton.x
-doc_LSDALTON/*.aux
-doc_LSDALTON/*.pdf
-doc_LSDALTON/*.log
-doc_LSDALTON/*.bbl
-doc_LSDALTON/*.blg
-doc_LSDALTON/*.idx
-doc_LSDALTON/*.ilg
-doc_LSDALTON/*.ind
-doc_LSDALTON/*.toc

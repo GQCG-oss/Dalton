@@ -113,13 +113,13 @@ CTRL[2]=2
 ERROR[2]="CONFIGURATION AND ORBITAL ROTATIONS NOT CORRECT"
 
 # SCF energy:
-CRIT1=`$GREP "Hartree-Fock total energy : * \-113\.909396425[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree-Fock total energy *: * \-113\.909396425[0-9]" $log | wc -l`
 TEST[3]=`expr $CRIT1`
 CTRL[3]=1
 ERROR[3]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy:
-CRIT1=`$GREP "MP2 second order energy : * \-114\.2592103..." $log | wc -l`
+CRIT1=`$GREP "MP2 second order energy *: * \-114\.2592103..." $log | wc -l`
 TEST[4]=`expr $CRIT1`
 CTRL[4]=1
 ERROR[4]="MP2 ENERGY NOT CORRECT"

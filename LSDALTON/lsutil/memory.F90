@@ -317,7 +317,7 @@ INTERFACE mem_alloc
      &             AOBATCH_allocate_1dim, ODBATCH_allocate_1dim, CCORBITAL_allocate_1dim, &
      &             LSAOTENSOR_allocate_1dim, SLSAOTENSOR_allocate_1dim, &
      &             GLOBALLSAOTENSOR_allocate_1dim, ATOMTYPEITEM_allocate_1dim, &
-     &             ATOMITEM_allocate_1dim, LSMATRIX_allocate_1dim, LSMATRIXP_allocate_1dim, &
+     &             ATOMITEM_allocate_1dim, LSMATRIX_allocate_1dim,&! LSMATRIXP_allocate_1dim, &
      &             MATRIX_allocate_1dim, MATRIXP_allocate_1dim, CCATOM_allocate_1dim, &
      &             BATCHTOORB_allocate_1dim,MYPOINTER_allocate_1dim, MYPOINTER_allocate_2dim, &
      &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
@@ -343,7 +343,7 @@ INTERFACE mem_dealloc
      &             AOBATCH_deallocate_1dim, ODBATCH_deallocate_1dim, CCORBITAL_deallocate_1dim, &
      &             LSAOTENSOR_deallocate_1dim, SLSAOTENSOR_deallocate_1dim, &
      &             GLOBALLSAOTENSOR_deallocate_1dim, ATOMTYPEITEM_deallocate_1dim, &
-     &             ATOMITEM_deallocate_1dim, LSMATRIX_deallocate_1dim, LSMATRIXP_deallocate_1dim, &
+     &             ATOMITEM_deallocate_1dim, LSMATRIX_deallocate_1dim, &!LSMATRIXP_deallocate_1dim, &
      &             MATRIX_deallocate_1dim, MATRIXP_deallocate_1dim,CCATOM_deallocate_1dim, &
      &             BATCHTOORB_deallocate_1dim,MYPOINTER_deallocate_1dim,MYPOINTER_deallocate_2dim, &
      &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
@@ -1490,7 +1490,8 @@ integer (kind=long) :: nsize
    nullify(A)
    ALLOCATE(A(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_1dim_int64',IERR,n
+     write(*,'("ERROR(real_allocate_1dim_int64),status=",I6," n=",I15," GBallocd=",f19.10)')&
+     &IERR,n,1.0E-9_realk*mem_allocated_global
      CALL memory_error_quit('Error in real_allocate_1dim_int64')
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
@@ -1918,7 +1919,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_dV8):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
@@ -1926,7 +1927,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV8):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV8):error in alloc",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -1958,7 +1959,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_dV4):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
@@ -1966,7 +1967,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV4):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV4):error in alloc",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -1998,7 +1999,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_INTEGER,lb,mpi_intlen,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_iV):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2006,7 +2007,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_iV):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_iV):error in alloc",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
    call c_f_pointer(cip,A,[n])
@@ -2035,7 +2036,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_INTEGER,lb,mpi_intlen,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_iV):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2049,7 +2050,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
 
    call MPI_FREE_MEM(A,IERR)
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_iV):error in MPI_FREE_MEM",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_iV):error in MPI_FREE_MEM",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -2075,7 +2076,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_dV):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2090,7 +2091,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_FREE_MEM(A,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV):error in MPI_FREE_MEM",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV):error in MPI_FREE_MEM",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -3727,40 +3728,40 @@ integer (kind=long) :: nsize
    NULLIFY(LSMATRIXITEM)
 END SUBROUTINE LSMATRIX_deallocate_1dim
 
-SUBROUTINE LSMATRIXP_allocate_1dim(LSMATRIXITEM,n)
-implicit none
-integer,intent(in) :: n
-TYPE(LSMATRIXpointer),pointer    :: LSMATRIXITEM(:)
-integer :: IERR
-integer (kind=long) :: nsize
-nullify(LSMATRIXITEM)
-ALLOCATE(LSMATRIXITEM(n),STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in LSMATRIX_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_allocate_1dim')
-ENDIF
-nsize = size(LSMATRIXITEM,KIND=long)*8
-call mem_allocated_mem_LSMATRIX(nsize)
-END SUBROUTINE LSMATRIXP_allocate_1dim
-
-SUBROUTINE LSMATRIXP_deallocate_1dim(LSMATRIXITEM)
-implicit none
-TYPE(LSMATRIXpointer),pointer :: LSMATRIXITEM(:)
-integer :: IERR
-integer (kind=long) :: nsize
-   nsize = size(LSMATRIXITEM,KIND=long)*8
-   call mem_deallocated_mem_LSMATRIX(nsize)
-   if (.not.ASSOCIATED(LSMATRIXITEM)) then
-      print *,'Memory previously released!!'
-      call memory_error_quit('Error in LSMATRIX_deallocate_1dim - memory previously released')
-   endif
-   DEALLOCATE(LSMATRIXITEM,STAT = IERR)
-   IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in LSMATRIX_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_deallocate_1dim')
-   ENDIF
-   NULLIFY(LSMATRIXITEM)
-END SUBROUTINE LSMATRIXP_deallocate_1dim
+!SUBROUTINE LSMATRIXP_allocate_1dim(LSMATRIXITEM,n)
+!implicit none
+!integer,intent(in) :: n
+!TYPE(LSMATRIXpointer),pointer    :: LSMATRIXITEM(:)
+!integer :: IERR
+!integer (kind=long) :: nsize
+!nullify(LSMATRIXITEM)
+!ALLOCATE(LSMATRIXITEM(n),STAT = IERR)
+!IF (IERR.NE. 0) THEN
+!   write(*,*) 'Error in LSMATRIX_allocate_1dim',IERR,n
+!   CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_allocate_1dim')
+!ENDIF
+!nsize = size(LSMATRIXITEM,KIND=long)*8
+!call mem_allocated_mem_LSMATRIX(nsize)
+!END SUBROUTINE LSMATRIXP_allocate_1dim
+!
+!SUBROUTINE LSMATRIXP_deallocate_1dim(LSMATRIXITEM)
+!implicit none
+!TYPE(LSMATRIXpointer),pointer :: LSMATRIXITEM(:)
+!integer :: IERR
+!integer (kind=long) :: nsize
+!   nsize = size(LSMATRIXITEM,KIND=long)*8
+!   call mem_deallocated_mem_LSMATRIX(nsize)
+!   if (.not.ASSOCIATED(LSMATRIXITEM)) then
+!      print *,'Memory previously released!!'
+!      call memory_error_quit('Error in LSMATRIX_deallocate_1dim - memory previously released')
+!   endif
+!   DEALLOCATE(LSMATRIXITEM,STAT = IERR)
+!   IF (IERR.NE. 0) THEN
+!      write(*,*) 'Error in LSMATRIX_deallocate_1dim',IERR
+!      CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_deallocate_1dim')
+!   ENDIF
+!   NULLIFY(LSMATRIXITEM)
+!END SUBROUTINE LSMATRIXP_deallocate_1dim
 
 !----- ALLOCATE MATRIX POINTERS -----!
 

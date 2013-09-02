@@ -78,7 +78,7 @@ C
       CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
 #endif
       IF (IPRTYP.EQ.1) THEN
-         if (iprint .gt. 3) 
+         if (iprint .gt. 3)
      &        write (lupri,*) 'Calling parallel HERMIT routines.'
          CALL HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
@@ -147,11 +147,12 @@ C
 #if defined (VAR_MPI)
          NWHO = -1
          CALL MPIXRECV(TMGARR,2,'DOUBLE',NWHO,MTAG8)
-#endif
-#if defined (VAR_PVM)
+#elif defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG8)
          CALL PVMXUNPACK(NWHO  ,1,'INTEGER')
          CALL PVMXUNPACK(TMGARR,2,'DOUBLE')
+#else
+         NWHO = I
 #endif
          CPUS(NWHO)   = TMGARR(1)
          WALLS(NWHO)  = TMGARR(2)
@@ -561,7 +562,7 @@ C
       RETURN
       END
 C     /* Deck dopar */
-Cef begin 
+Cef begin
       SUBROUTINE DOPAR(INDEX,MXBTCH,NBATCH,NSTAT,IPRINT)
 C
 #include "implicit.h"
@@ -578,20 +579,20 @@ C
       LOGICAL DONE, TDONE
       DIMENSION INDEX(3,MXBTCH), NSTAT(NODTOT), IQUEUE(2,NODTOT,1000),
      &     NQUEUE(NODTOT)
-C  
+C
 C Used from common blocks
 C
 C  MXORB  : MXSHEL (for INFPAR)
 C  INFPAR : NODTOT, NODEID(), NTASK, NCODE
 C
 #include "infpar.h"
-C   
+C
 C For MPE event logging
 C      evIDb1 = MPE_Log_get_event_number()
 C      evIDe1 = MPE_Log_get_event_number()
 C      call MPE_Describe_state(evIDb1,evIDe1,
 C     &     "DOPAR","magenta")
-C   
+C
 C Begin logging the event
 C      call MPE_Log_event(evIDb1,0,'')
 C
@@ -601,9 +602,9 @@ C
       CALL IZERO(NSTAT,NODTOT)
 C
       CALL IZERO(IQUEUE,(2*1000*NODTOT))
-C     
+C
       CALL IZERO(NQUEUE,NODTOT)
-      
+
 C     Start loop over integrals (class1|class2).
 C
       IQSIZE = 1000
@@ -615,17 +616,17 @@ C
       IDONE = 0
 C
       IF (AOSAVE) THEN
-C     
+C
 C         do ii=1,mxbtch
-C            write(lupri,*) 'i,INDEX(1..3,i):',ii,INDEX(1,ii), 
+C            write(lupri,*) 'i,INDEX(1..3,i):',ii,INDEX(1,ii),
 C     &           INDEX(2,ii),  INDEX(3,ii)
 C         end do
          IF (NTASK .GT. 1) THEN
             CALL QUIT('NTASK > 1 is not ported to AOSAVE = TRUE.')
          END IF
-C               
- 110     CONTINUE 
-C     
+C
+ 110     CONTINUE
+C
 #if defined (VAR_MPI)
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
@@ -637,7 +638,7 @@ C         CALL MPI_BARRIER(MPI_COMM_WORLD)
          END IF
 C
 C     Send (I|J) batch to NODEID
-C     
+C
          IF (IPLACE .GT. NBATCH .AND. NQUEUE(NWHO) .EQ. 0) THEN
             TDONE = .TRUE.
             CALL MPIXSEND(TDONE,1,'LOGICAL',NWHO,MTAG6)
@@ -645,11 +646,11 @@ C
             IDONE = IDONE + 1
          ELSE
             CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
-            IF (NQUEUE(NWHO) .GT. 0) THEN 
+            IF (NQUEUE(NWHO) .GT. 0) THEN
                CALL MPIXSEND(IQUEUE(1,NWHO,1),NTASK,
      &              'INTEGER',NWHO,MTAG61)
-               CALL MPIXSEND(INDEX(3,IQUEUE(2,NWHO,1)),NTASK,'INTEGER', 
-     &              NWHO,MTAG64) 
+               CALL MPIXSEND(INDEX(3,IQUEUE(2,NWHO,1)),NTASK,'INTEGER',
+     &              NWHO,MTAG64)
                CALL MPIXSEND(IQUEUE(2,NWHO,1),1,'INTEGER',
      &              NWHO,MTAG62)
                NQUEUE(NWHO) = NQUEUE(NWHO) - 1
@@ -657,9 +658,9 @@ C
      &              IQUEUE(1,NWHO,1),(2*NODTOT))
                CALL ICOPY((NQUEUE(NWHO)+1),IQUEUE(2,NWHO,2),(2*NODTOT),
      &              IQUEUE(2,NWHO,1),(2*NODTOT))
-C     
-               IPLACQ = IPLACQ - 1  
-            ELSE IF ((INDEX(3,IPLACE) .EQ. 1 
+C
+               IPLACQ = IPLACQ - 1
+            ELSE IF ((INDEX(3,IPLACE) .EQ. 1
      &          .AND. INDEX(2,IPLACE) .EQ. NWHO)
      &          .OR. (INDEX(3,IPLACE) .EQ. 0)) THEN
 C
@@ -669,18 +670,18 @@ C
      &              MTAG64)
 C
                INDEX(2,IPLACE) = NWHO
-C     
+C
                CALL MPIXSEND(IPLACE,1,'INTEGER',NWHO,MTAG62)
                IPLACE = IPLACE + NTASK
-            ELSE     
-C     
+            ELSE
+C
                NQUEUE(INDEX(2,IPLACE)) = NQUEUE(INDEX(2,IPLACE)) + 1
                IF (NQUEUE(INDEX(2,IPLACE)) .GT. IQSIZE) THEN
                   CALL QUIT('The queue array IQUEUE must be enlarged.')
                END IF
-               IQUEUE(1,INDEX(2,IPLACE),NQUEUE(INDEX(2,IPLACE))) = 
+               IQUEUE(1,INDEX(2,IPLACE),NQUEUE(INDEX(2,IPLACE))) =
      &              INDEX(1,IPLACE)
-               IQUEUE(2,INDEX(2,IPLACE),NQUEUE(INDEX(2,IPLACE))) = 
+               IQUEUE(2,INDEX(2,IPLACE),NQUEUE(INDEX(2,IPLACE))) =
      &              IPLACE
                IPLACQ = IPLACQ + 1
                IPLACE = IPLACE + NTASK
@@ -689,7 +690,7 @@ C     Tell the unemployed node to try again
                CALL MPIXSEND(ITMP,1,'INTEGER',NWHO,MTAG61)
             END IF
          END IF
-C     
+C
 #endif
 #if defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG5)
@@ -757,10 +758,10 @@ C         write(lupri,*) j,(INDX_C(I,J),i=1,3)
 C      END DO
 C
 C  ELSE below is for the compability to old code: AOSAVE = FALSE
-      ELSE 
+      ELSE
 C
          DO 100, I = 1,NBATCH
-C     
+C
 #if defined (VAR_MPI)
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
@@ -774,9 +775,9 @@ C
 #if defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG5)
          CALL PVMXUNPACK(NWHO,1,'INTEGER')
-C     
+C
 C     Send (I|J) batch to NODEID
-C     
+C
          CALL PVMXINITSEND(NCODE)
          CALL PVMXPACK(DONE,1,'LOGICAL')
          CALL PVMXPACK(INDEX(1,IPLACE),NTASK,'INTEGER')
@@ -816,7 +817,7 @@ C
          CALL PVMXSEND(NODEID(NWHO),MTAG6)
 #endif
   200 CONTINUE
-C  ENDIF below ends if-test on AOSAVE   
+C  ENDIF below ends if-test on AOSAVE
       END IF
 C
 C End logging the event
@@ -972,8 +973,8 @@ C
       IF (IPRTYP.GT.0) THEN
 
 !        allocate memory here if we don't call hermit (more to follow...).
-!        idea: move allocation down to main driver routines of modules as we might want to use 
-!              dynamic memory allocation down there (for MPI performance/MPI standard compliance reasons) 
+!        idea: move allocation down to main driver routines of modules as we might want to use
+!              dynamic memory allocation down there (for MPI performance/MPI standard compliance reasons)
 !              which is severely hampered by a "static" WORK for everything.
 !              sknecht - feb 2013.
          if(iprtyp /= her_work .and. .not.(allocated(work)))then
@@ -987,7 +988,7 @@ C
              write (luerr,*) mynum,
      &           ': ALLOCATE command failed to allocate'//
      &           ' the requested memory. Error code:',i
-             write (luerr,*) 
+             write (luerr,*)
      &           'Reduce the memory demands and be welcome back'
              call quit('Failed to allocate memory')
            end if
@@ -1015,7 +1016,7 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL DFTHED_SLAVE(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_SUSCEP_WORK) THEN
              CALL DFT_SUSCEP_SLAVE(WORK(1),MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.NPETES2_WORK .OR. 
+         ELSE IF (IPRTYP.EQ.NPETES2_WORK .OR.
      &            IPRTYP.EQ.PCMBSOL_WORK) THEN
             CALL J1INTS(WORK(1),MWORK,IPRTYP,IPRINT)
          ELSE IF (IPRTYP.EQ.J1XP_WORK) THEN
@@ -1173,6 +1174,7 @@ C
 #if defined (VAR_MPI)
          NWHO = -1
          CALL MPIXRECV(NAME,20 ,'STRING',NWHO,MTAG8)
+         NODNAM(NWHO) = NAME
 #endif
 #if defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG8)
@@ -1181,8 +1183,8 @@ C
          DO J=1, NODTOT
             IF (NODEID(J) .EQ. NTID) NWHO = J
          END DO
-#endif
          NODNAM(NWHO) = NAME
+#endif
       END DO
 C
       IF (IPRPAR.GT.0) THEN
@@ -1359,8 +1361,7 @@ C  comr12
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NDMAT,'INTEGER',MASTER)
-#endif
-#if defined (VAR_PVM)
+#elif defined (VAR_PVM)
 C
 C     Receive initialization.
 C
@@ -1399,15 +1400,18 @@ C  comr12
       END IF
       CALL PVMXUNPACK(ISYMDM,NDMAT,'INTEGER')
       CALL PVMXUNPACK(IFCTYP,NDMAT,'INTEGER')
+#else
+!     to remove compiler warnings for sequential builds
+      FIRST = .TRUE.
 #endif
 C
 C     Set hermit
 C
       IF (NEWGEO) RDINPC = .FALSE.
-C                                                                                                     
-C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
-C     initialize it properly                                                                        
-C                                                                                                     
+C
+C     Since REAINI is not initialized outside of SETHER, make sure slaves
+C     initialize it properly
+C
       IF (FIRST) THEN
           RELCAL = .FALSE.
           TSTINP = .FALSE.

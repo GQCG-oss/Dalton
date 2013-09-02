@@ -1,8 +1,14 @@
 !> @file
 !> Contains Direct Density Optimization utilities module for unrestricted calculations.
 module direct_dens_util_unres
+use precision
+use matrix_module
+use matrix_operations
 use direct_dens_util
-
+use matrix_operations_unres_dense
+use queue_module
+use rspPrecond
+!use queue_ops
 contains
 
 

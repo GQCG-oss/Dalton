@@ -64,16 +64,9 @@ subroutine main_fragment_driver_slave()
   ! ************
   ! Just in case, initialize using default settings
   call dec_set_default_config(0)
-  siz=sizeof(DECinfo)
-  ! Get DEC settings for current calculation from master (quick and dirty bcast...)
-  ierr=0
+  ! Get DEC settings for current calculation from master
+  call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
 
-    call MPI_BCAST(DECinfo,siz,MPI_CHARACTER,master,MPI_COMM_LSDALTON,ierr)
-
-  if(ierr/=0) then
-     call  lsquit('main_fragment_driver_slave: Something went wrong when &
-          & bcasting DEC structure!',-1)
-  end if
   ! Set output unit number to 0 for slaves
   DECinfo%output=0
 
@@ -641,6 +634,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
   integer :: scheme,nocc,nunocc,MinAObatch,iter
   real(realk) :: MemFree
+  integer(kind=8) :: dummy
 
   ! Initialize stuff (just dummy arguments here)
   nullify(orb2batchAlpha)
@@ -670,7 +664,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch)
      call get_currently_available_memory(MemFree)
      call get_max_batch_sizes(scheme,MyFragment%number_basis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
-          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.)
+          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,dummy)
   end if
 
 

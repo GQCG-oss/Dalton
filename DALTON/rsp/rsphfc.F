@@ -97,7 +97,7 @@ C
       END IF         
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults in HFC:',0)
-         IF (IPRHFC .NE. IPRDEF) WRITE(LUPRI,'(A,I5)')                                                                                                                                                      
+         IF (IPRHFC .NE. 0) WRITE(LUPRI,'(A,I5)')
      &       ' Print level in HFC:', IPRHFC
          IF (HFCFC) WRITE (LUPRI,'(A)') 
      &                 ' Isotropic Fermi contact contribution '//
@@ -524,7 +524,7 @@ C
                   DO IDX = 1,NUCIND 
                      DO ICOORX = 1,3
                         ISCORX = IPTCNT(3*(IDX-1)+ICOORX,KSYMOP-1,2)
-                        IF (ISCORX .GT. O) THEN
+                        IF (ISCORX .GT. 0) THEN
                            IFIRST = ISCORX/100
                            ISECND = MOD(ISCORX,100)/10
                            ITHIRD = MOD(MOD(ISCORX,100),10) 
@@ -946,3 +946,4 @@ C            Principal axes
 C
        RETURN 
        END  
+! -- end of rsp/rsphfc.F --

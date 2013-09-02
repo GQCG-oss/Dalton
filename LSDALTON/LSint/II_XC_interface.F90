@@ -74,7 +74,7 @@ TYPE(MATRIX)          :: temp
 INTEGER               :: i,j,ndmat2,idmat
 TYPE(DFTDATATYPE)     :: DFTDATA
 REAL(REALK),pointer   :: Dmat(:,:,:),DmatAO(:,:,:),EDFT2(:)
-REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2,CPUTIME,WALLTIME
+REAL(REALK)           :: TS,TE
 REAL(REALK)   :: DUMMY(1,1)
 LOGICAL               :: UNRES
 call time_II_operations1
@@ -84,7 +84,7 @@ ELSE
    UNRES=.FALSE.
 ENDIF
 call init_dftmemvar
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 call initDFTdatatype(DFTDATA)
 DFTDATA%LB94=SETTING%SCHEME%DFT%LB94
 DFTDATA%CS00=SETTING%SCHEME%DFT%CS00
@@ -136,9 +136,7 @@ ELSE
    DmatAO => Dmat
 ENDIF
 
-CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_KSM(SETTING,LUPRI,1,nbast,ndmat2,DmatAO,DFTDATA,EDFT2,UNRES)
-CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
 IF(SETTING%SCHEME%DFT%DODISP) THEN 
     ! add empirical dispersion correction \Andreas Krapp
@@ -187,11 +185,7 @@ ENDIF
 call mat_free(temp)
 call mem_dft_dealloc(DFTDATA%FKSM)
 
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
-CALL ls_TIMTXT('>>>  CPU  Time used II_get_xc_Fock_mat is  ',CPUTIME,LUPRI)
-CALL ls_TIMTXT('>>>  WALL Time used II_get_xc_Fock_mat is  ',WALLTIME,LUPRI)
+CALL LSTIMER('II_get_xc_Fock_mat',TS,TE,LUPRI)
 call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_Fock_mat)
 
@@ -211,16 +205,16 @@ INTEGER,intent(in)    :: nbast
 TYPE(MATRIX),intent(in) :: CMO
 !> The Absolute Valued overlap  matrix
 TYPE(MATRIX),intent(inout) :: S
-#if MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
 !
 REAL(REALK),pointer   :: Cmat(:,:),ABSVALOVERLAP(:,:)
-REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2,CPUTIME,WALLTIME
+REAL(REALK)           :: TS,TE
 LOGICAL               :: UNRES
 !call time_II_operations1
 UNRES=.FALSE.
 IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
 call init_dftmemvar
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 call mem_dft_alloc(Cmat,nbast,nbast)
 call mem_dft_alloc(ABSVALOVERLAP,nbast,nbast)
 CALL LS_DZERO(ABSVALOVERLAP,nbast*nbast)
@@ -242,9 +236,7 @@ SETTING%scheme%DFT%igrid = Grid_ABSVAL
 SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%RADINT = 2.15443E-17_realk
 SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%ANGINT = 47
 
-CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,CMAT,ABSVALOVERLAP)
-CALL LSTIMER('ABSVAL-Overlap',TS,TE,LUPRI)
 
 !revert to default grid
 SETTING%scheme%DFT%igrid = Grid_Default
@@ -253,11 +245,7 @@ call mem_dft_dealloc(Cmat)
 CALL mat_set_from_full(ABSVALOVERLAP,1E0_realk,S,'ABSVAL')
 call mem_dft_dealloc(ABSVALOVERLAP)
 
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
-CALL ls_TIMTXT('>>> CPU  Time used II_get_AbsoluteValue_overlap',CPUTIME,LUPRI)
-CALL ls_TIMTXT('>>> WALL Time used II_get_AbsoluteValue_overlap',WALLTIME,LUPRI)
+CALL LSTIMER('II_get_AbsoluteValue_overlap',TS,TE,LUPRI)
 call stats_dft_mem(lupri)
 !call time_II_operations2(JOB_II_get_xc_Fock_mat)
 #endif
@@ -287,7 +275,7 @@ TYPE(MATRIX)          :: temp
 INTEGER               :: i,j,ndmat2,idmat
 TYPE(DFTDATATYPE)     :: DFTDATA
 REAL(REALK),pointer   :: Dmat(:,:,:),DmatAO(:,:,:),EDFT2(:)
-REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2,CPUTIME,WALLTIME
+REAL(REALK)           :: TS,TE
 REAL(REALK)   :: DUMMY(1,1),RHOTHR,DFTHRI
 LOGICAL               :: UNRES
 
@@ -297,7 +285,7 @@ ELSE
    UNRES=.FALSE.
 ENDIF
 call init_dftmemvar
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 call initDFTdatatype(DFTDATA)
 DFTDATA%nbast = nbast
 ndmat2=ndmat
@@ -340,9 +328,7 @@ RHOTHR = SETTING%scheme%DFT%RHOTHR
 SETTING%scheme%DFT%DFTHRI = DFTHRI*5000
 SETTING%scheme%DFT%RHOTHR = RHOTHR*5000
 
-CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_KSME(SETTING,LUPRI,1,nbast,ndmat2,DmatAO,DFTDATA,EDFT2,UNRES)
-CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
 !revert to default grid
 SETTING%scheme%DFT%DFTHRI = DFTHRI
@@ -366,11 +352,7 @@ ELSE
 ENDIF
 call mem_dft_dealloc(EDFT2)
 
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
-CALL ls_TIMTXT('>>>  CPU  Time used II_get_xc_energy is  ',CPUTIME,LUPRI)
-CALL ls_TIMTXT('>>>  WALL Time used II_get_xc_energy is  ',WALLTIME,LUPRI)
+CALL LSTIMER('II_get_xc_energy',TS,TE,LUPRI)
 call stats_dft_mem(lupri)
 
 END SUBROUTINE II_get_xc_energy
@@ -421,7 +403,7 @@ call mem_dft_alloc(Dmat,nbast,nbast,ndmat)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
 DFTDATA%grad = 0E0_realk
 
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
 DFTDATA%natoms = natoms
 
@@ -473,15 +455,9 @@ ELSE
    DmatAO => Dmat
 ENDIF
 
-CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_dft_geoderiv_molgrad(setting,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
-CALL LSTIMER('geoderiv_molgrd',TS,TE,LUPRI)
 GRAD = DFTDATA%grad
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
-CALL ls_TIMTXT('>>>  CPU  Time used II_get_xc_geoderiv_molgrad is  ',CPUTIME,LUPRI)
-CALL ls_TIMTXT('>>>  WALL Time used II_get_xc_geoderiv_molgrad is  ',WALLTIME,LUPRI)
+CALL LSTIMER('II_get_xc_geoderiv_molgrad',TS,TE,LUPRI)
 call mem_dft_dealloc(DFTDATA%orb2atom)
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%grad)
@@ -530,7 +506,7 @@ ELSE
    UNRES=.FALSE.
 ENDIF
 call init_dftmemvar
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 call initDFTdatatype(DFTDATA)
 DFTDATA%nbast = nbast
 ndmat = 1
@@ -581,9 +557,7 @@ ELSE
    DmatAO => Dmat
 ENDIF
 
-CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_LINRSP(SETTING,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
-CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
 IF(matrix_type .EQ. mtype_unres_dense)THEN
    CALL LSQUIT('NOT IMPLEMENTED YET',-1)
@@ -599,12 +573,7 @@ ELSE !CLOSED_SHELL
    ENDDO
 ENDIF
 
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
-CALL ls_TIMTXT('>>>  CPU  Time used II_get_xc_linrsp is  ',CPUTIME,LUPRI)
-CALL ls_TIMTXT('>>>  WALL Time used II_get_xc_linrsp is  ',WALLTIME,LUPRI)
-
+CALL LSTIMER('II_get_xc_linrsp',TS,TE,LUPRI)
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%FKSM)
 call mem_dft_dealloc(DFTDATA%BMAT)
@@ -652,7 +621,7 @@ ELSE
 ENDIF
 call init_dftmemvar
 call initDFTdatatype(DFTDATA)
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
 ndmat = 1
 nbmat = 2
@@ -700,9 +669,7 @@ ELSE
    DmatAO => Dmat
 ENDIF
 
-CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_QUADRSP(SETTING,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
-CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
 IF(matrix_type .EQ. mtype_unres_dense)THEN
    CALL DCOPY(D%nrow*D%ncol,DFTDATA%FKSM(:,:,1),1,T%elms,1)
@@ -718,11 +685,7 @@ ELSE !CLOSED_SHELL
    CALL mat_scal(0.5E0_realk,T)
 ENDIF
 
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
-CALL ls_TIMTXT('>>>  CPU  Time used II_get_xc_quadrsp is ',CPUTIME,LUPRI)
-CALL ls_TIMTXT('>>>  WALL Time used II_get_xc_quadrsp is ',WALLTIME,LUPRI)
+CALL LSTIMER('II_get_xc_quadrsp',TS,TE,LUPRI)
 
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%FKSM)
@@ -765,7 +728,7 @@ ELSE
 ENDIF
 call init_dftmemvar
 call initDFTdatatype(DFTDATA)
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
 ndmat = 1
 IF(matrix_type .EQ. mtype_unres_dense)ndmat=2
@@ -798,9 +761,7 @@ ELSE
    DmatAO => Dmat
 ENDIF
 
-CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_dft_magderiv_kohnsham_mat(SETTING,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
-CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
 !WARNING: 
 ! For a closed shell molecule calculated using an unrestricted and a 
@@ -824,11 +785,7 @@ ELSE !CLOSED_SHELL
    enddo
 ENDIF
 
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
-CALL ls_TIMTXT('>>>  CPU  Time used II_get_xc_magderiv_kohnsham_mat is  ',CPUTIME,LUPRI)
-CALL ls_TIMTXT('>>>  WALL Time used II_get_xc_magderiv_kohnsham_mat is  ',WALLTIME,LUPRI)
+CALL LSTIMER('II_get_xc_magderiv_kohnsham',TS,TE,LUPRI)
 
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%FKSM)
@@ -878,7 +835,7 @@ ENDIF
 call init_dftmemvar
 call initDFTdatatype(DFTDATA)
 WRITE(lupri,*)'STARTING II_get_xc_magderiv_linrsp'
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
 ndmat = 1
 IF(matrix_type .EQ. mtype_unres_dense)ndmat=2
@@ -945,9 +902,7 @@ ELSE
    DmatAO => Dmat
 ENDIF
 
-CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_MAGDERIV_LINRSP(SETTING,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
-CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
 IF(matrix_type .EQ. mtype_unres_dense)THEN
    CALL LSQUIT('NOT IMPLEMENTED YET',-1)
@@ -973,11 +928,7 @@ ELSE !CLOSED_SHELL
    ENDIF
 ENDIF
 
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
-CALL ls_TIMTXT('>>>  CPU  Time used II_get_xc_linrsp is  ',CPUTIME,LUPRI)
-CALL ls_TIMTXT('>>>  WALL Time used II_get_xc_linrsp is  ',WALLTIME,LUPRI)
+CALL LSTIMER('II_get_xc_magderiv_linrsp',TS,TE,LUPRI)
 
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%FKSM)
@@ -1038,7 +989,7 @@ call mem_dft_alloc(Dmat,nbast,nbast,ndmat)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
 DFTDATA%grad = 0E0_realk
 
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
 DFTDATA%natoms = natoms
 
@@ -1087,15 +1038,9 @@ ELSE
    DmatAO => Dmat
 ENDIF
 
-CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_geoderiv_kohnsham_mat(setting,LUPRI,1,nbast,1,DmatAO,DFTDATA,UNRES)
-CALL LSTIMER('geoderiv_FxDgrd',TS,TE,LUPRI)
 GRAD = DFTDATA%grad
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
-CALL ls_TIMTXT('>>>  CPU  Time used II_get_xc_geoderiv_FxDgrad is  ',CPUTIME,LUPRI)
-CALL ls_TIMTXT('>>>  WALL Time used II_get_xc_geoderiv_FxDgrad is  ',WALLTIME,LUPRI)
+CALL LSTIMER('II_get_xc_geoderiv_FxDgrad',TS,TE,LUPRI)
 
 call mem_dft_dealloc(DFTDATA%orb2atom)
 call mem_dft_dealloc(DmatAO)
@@ -1156,7 +1101,7 @@ call mem_dft_alloc(Dmat,nbast,nbast,ndmat)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
 DFTDATA%grad = 0E0_realk
 
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
 DFTDATA%natoms = natoms
 
@@ -1207,15 +1152,9 @@ ELSE
    DmatAO => Dmat
 ENDIF
 
-CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_geoderiv_linrspgrad(setting,LUPRI,1,nbast,1,DmatAO,DFTDATA,UNRES)
-CALL LSTIMER('geoderiv_FxDgrd',TS,TE,LUPRI)
 GRAD = DFTDATA%grad
-CALL LS_GETTIM(CPU2,WALL2)
-CPUTIME = CPU2-CPU1
-WALLTIME = WALL2-WALL1
-CALL ls_TIMTXT('>>>  CPU  Time used II_get_xc_geoderiv_FxDgrad is  ',CPUTIME,LUPRI)
-CALL ls_TIMTXT('>>>  WALL Time used II_get_xc_geoderiv_FxDgrad is  ',WALLTIME,LUPRI)
+CALL LSTIMER('II_get_xc_geoderiv_GxDgrad',TS,TE,LUPRI)
 
 call mem_dft_dealloc(DFTDATA%orb2atom)
 call mem_dft_dealloc(DmatAO)

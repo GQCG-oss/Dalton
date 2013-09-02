@@ -5,12 +5,17 @@ MODULE LSTENSOR_OPERATIONSMOD
   use precision
   use basis_type
   use Matrix_module
+  use matrix_operations_csr, only: zeroCSR,mat_csr_allocate
+  use matrix_operations_scalapack
   use matrix_operations
   use memory_handling
   use OD_Type
   use AO_Type
   use OD_TypeType
   use AO_TypeType
+#ifdef VAR_MPI
+  use infpar_module
+#endif
   use LSTENSORmem
   INTERFACE Build_mat_from_lst
      MODULE PROCEDURE Build_singlemat_from_lst, &
@@ -2177,7 +2182,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
     ENDIF
   end SUBROUTINE build_sublstensor_from_full_lstensor
 
-  !> \brief copy an lstensor to a new lstensor
+  !> \brief 
   !> \author T. Kjaergaard
   !> \date 2010
   !> \param TENSOR1 dummy full lstensor
@@ -3286,7 +3291,8 @@ end subroutine memdist_lstensor_SetupFullinfo
                    lsao%nLocal(iAO) = nLocal(iAO)
                    IF(nLocal(iAO).NE.TENSOR%G_LSAO(I1)%G_nLocal(iAO))THEN
                       print*,'iAO',iAO,'infpar%mynum',infpar%mynum
-                      print*,'nLocal(iAO)',nLocal(iAO),'I2',I2,'IATOM',IATOM2,JATOM2,'infpar%mynum',infpar%mynum
+                      print*,'nLocal(iAO)',nLocal(iAO),'I2',I2,'IATOM',IATOM2,JATOM2,&
+                           & 'infpar%mynum',infpar%mynum
                       print*,'TENSOR%G_LSAO(I2)%G_nLocal(iAO)',TENSOR%G_LSAO(I2)%G_nLocal(iAO),'I1',&
      &                        I1,'IATOM',IATOM1,JATOM1,'infpar%mynum',infpar%mynum
                       CALL LSQUIT('nLocal mismatch localinfo',-1)
@@ -3316,6 +3322,81 @@ end subroutine memdist_lstensor_SetupFullinfo
     call lsquit('called memdist_lstensor_SetupFullinfo but no MPI',-1)
 #endif
   end SUBROUTINE memdist_lstensor_SetupLocalinfo
+
+  !> \brief 
+  !> \author T. Kjaergaard
+  !> \date 2010
+  !> \param TENSOR1 the original lstensor
+  !> \param TENSOR2 the new sublstensor
+  SUBROUTINE build_empty_sublstensor(TENSOR)
+    implicit none
+    TYPE(LSTENSOR)     :: TENSOR
+#ifdef VAR_MPI
+    !
+    TYPE(AOITEMPOINTER) :: AOT(2)
+    TYPE(AOITEM),target :: AOTE
+    integer :: lstmem_index
+    integer(kind=long) :: nmemsize,AllocInt,AllocIntS,AllocRealk
+
+    call LSTENSOR_mem_est(TENSOR,nmemsize)
+    call remove_mem_from_global(nmemsize)
+
+    call SET_EMPTY_AO(AOTE)
+    AOT(1)%p => AOTE
+    AOT(2)%p => AOTE
+
+    call mem_alloc(TENSOR%G_fullatoms1,1)
+    TENSOR%G_fullatoms1(1) = 1
+    call mem_alloc(TENSOR%G_fullatoms2,1)
+    TENSOR%G_fullatoms2(1) = 1
+
+    nullify(TENSOR%nAOBATCH)
+    IF(ASSOCIATED(TENSOR%G_nAOBATCH))THEN
+       call mem_alloc(TENSOR%nAOBATCH,1,2)
+       TENSOR%nAOBATCH(1,1) = 1
+       TENSOR%nAOBATCH(1,2) = 1
+    ENDIF
+
+    TENSOR%natom(1) = 0
+    TENSOR%natom(2) = 0
+    TENSOR%natom(3) = 0
+    TENSOR%natom(4) = 0
+    TENSOR%nbast(1) = 0
+    TENSOR%nbast(2) = 0
+    TENSOR%nbast(3) = 0
+    TENSOR%nbast(4) = 0
+    TENSOR%nLSAO  = 0
+    NULLIFY(TENSOR%INDEX)
+    CALL MEM_ALLOC(TENSOR%INDEX,1,1,1,1)
+    !memory estimation
+    CALL MEM_ALLOC(TENSOR%LSAO,1)
+    AllocInt = 1
+    AllocRealk = 1
+    AllocInts = 1
+    call init_lstensorMem(AllocInt,AllocRealk,AllocInts,lstmem_index)
+    call zero_lstensorMem
+    TENSOR%lstmem_index = lstmem_index
+    call FREE_EMPTY_AO(AOTE)
+    call LSTENSOR_mem_est(TENSOR,nmemsize)
+    call add_mem_to_global(nmemsize)
+#else
+    call lsquit('called build_empty_sublstensor but no MPI',-1)
+#endif
+  end SUBROUTINE build_empty_sublstensor
+
+  !> \brief copy an lstensor to a new lstensor
+  !> \author T. Kjaergaard
+  !> \date 2010
+  !> \param TENSOR1 the original lstensor
+  !> \param TENSOR2 the new sublstensor
+  SUBROUTINE alloc_build_empty_sublstensor(TENSOR2)
+    implicit none
+    TYPE(LSTENSOR)     :: TENSOR2
+    integer(kind=long) :: nmemsize
+    call LSTENSOR_nullify(TENSOR2)
+    call LSTENSOR_mem_est(TENSOR2,nmemsize)
+    call add_mem_to_global(nmemsize)
+  end SUBROUTINE alloc_build_empty_sublstensor
 
   !> \brief build full 5 dimensional array from an lstensor 
   !> \author T. Kjaergaard
@@ -4881,7 +4962,6 @@ END SUBROUTINE Build_single_dense_mat_from_lst
 !> \param TENSOR the lstensor
 !> \param MAT the type matrix
 subroutine Build_single_csr_mat_from_lst(TENSOR,MAT)
-use matrix_operations_csr
 !include 'mkl_spblas.fi'
 implicit none
 TYPE(LSTENSOR)     :: TENSOR
@@ -5013,8 +5093,10 @@ n = mat%nrow
 !WRITE(6,'(2X,A4,5E13.3,/(6X,5E13.3))')'VAL:',(VAL(j),j=1,nnz)
 !WRITE(6,'(2X,A4,15I4,/(6X,15I4))')'COL:',(COL(j),j=1,nnz)
 !WRITE(6,'(2X,A4,15I4,/(6X,15I4))')'ROW:',(row(j),j=1,nnz)
-#ifdef VAR_MKL
+#ifdef VAR_CSR
 call mkl_dcsrcoo(job,n,mat%val,mat%col,mat%row,nnz,VAL,ROW,COL,info)
+#else
+call lsquit('Build_single_csr_mat_from_lst requires VAR_CSR',-1)
 #endif
 !print*,'THE CSR from MKL  '
 !call mat_print(mat,1,mat%nrow,1,mat%ncol,6)
@@ -5132,9 +5214,11 @@ DO IMAT = 1,TENSOR%ndim5
    job(8)=1
    n = mat(IMAT)%nrow
    !call mat_print(mat,1,mat%nrow,1,mat%nrow,6)
-#ifdef VAR_MKL
+#ifdef VAR_CSR
    call mkl_dcsrcoo(job,n,mat(IMAT)%val,mat(IMAT)%col,mat(IMAT)%row,nnz(IMAT),&
         &VAL(1:NNZ(IMAT),IMAT),ROW(1:NNZ(IMAT),IMAT),COL(1:NNZ(IMAT),IMAT),info)
+#else
+   call lsquit('Build_array_csr_mat_from_lst requires VAR_CSR',-1)
 #endif
 
 enddo

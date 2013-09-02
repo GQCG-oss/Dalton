@@ -108,14 +108,15 @@ K(rhoa,grada,rhob,gradb,gradab):=
 #endif
 #include <math.h>
 #include <stddef.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
  
 /* INTERFACE PART */
-static int pbec_isgga(void) { return 1; } /* FIXME: detect! */
-static int pbec_read(const char *conf_line);
+static integer pbec_isgga(void) { return 1; } /* FIXME: detect! */
+static integer pbec_read(const char *conf_line);
 static real pbec_energy(const FunDensProp* dp);
 static void pbec_first(FunFirstFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
@@ -140,7 +141,7 @@ Functional PBEcFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 pbec_read(const char *conf_line)
 {
     fun_set_hf_weight(0);

@@ -2,6 +2,8 @@ module lowdin_module
 ! Implements Lowdin decomposition of S to S^1/2 and S^-1/2
 ! by diagonalization or in linearly scaling Schulz iterations.
 ! B. Jansik, Arhus, Jun 2006
+use precision
+use matrix_module
 use matrix_operations
 use matrix_operations_aux
 
@@ -245,6 +247,11 @@ contains
      character*70                 :: msg
      integer                      :: lwork
      real(realk), dimension(:), allocatable :: work
+#ifdef VAR_LSESSL
+     integer :: liwork
+     integer, pointer :: iwork(:)
+     liwork = -1
+#endif
      infdiag=0
 
      allocate(T1(n,n),T2(n,n))
@@ -257,14 +264,27 @@ contains
 ! we inquire the size of lwork (NOT max(n*n,5*n)
      lwork = -1
      allocate(work(5))
+#ifdef VAR_LSESSL
+     call mem_alloc(iwork,5)
+     call dsyevd('V','U',n,T1,n,eigen_sqrt,work,lwork,iwork,liwork,infdiag)
+     liwork = iwork(1)
+     call mem_dealloc(iwork)
+     call mem_alloc(iwork,liwork)
+#else
      call dsyev('V','U',n,T1,n,eigen_sqrt,work,lwork,infdiag)
+#endif
      lwork = NINT(work(1))
      deallocate(work)
 !=============================================================     
 
      allocate(work(lwork))
      !diagonalization
+#ifdef VAR_LSESSL
+     call dsyevd('V','U',n,T1,n,eigen_sqrt,work,lwork,iwork,liwork,infdiag)
+     call mem_dealloc(iwork)
+#else
      call dsyev('V','U',n,T1,n,eigen_sqrt,work,lwork,infdiag)
+#endif
      deallocate(work)
 
      if(infdiag.ne. 0) then

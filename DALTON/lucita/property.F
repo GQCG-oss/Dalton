@@ -53,6 +53,7 @@
 #include "oper.inc"
 #include "crun.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
 *. Construct FIFA in WORK(KFI)
 *

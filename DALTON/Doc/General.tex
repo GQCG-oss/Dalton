@@ -8,9 +8,9 @@ input file for the \dalton\ program.
 \section{General input to DALTON : \Sec{*DALTON}}\label{sec:general}
 
 This input module describes the overall type of calculation that is to
-be done. It also contains seven submodules describing
+be done. It also contains eight submodules describing
 the control of the two different geometry optimization routines,
-the control of the two different environment models, PCM and QM3,
+the control of the three different environment models, PCM, QM3 and PE,
 the control of the reading of the molecule and basis set input
   in the ".mol" file,
 tuning of the performance of parallel calculations,
@@ -23,7 +23,7 @@ This input section is compulsory to do a calculation, by default Dalton does not
 (will stop with the error message:
 {\tt End of file on DALTON.INP, no **DALTON input found}.
 Lines before the first line with \verb|**DALTON| are ignored by \dalton .
-The general input module stops at the next line stating with two starts: \verb|**anything|.
+The general input module stops at the next line starting with two stars: \verb|**anything|.
 
 If more than one node, \dalton\ will automatically perform those modules in parallel
 which are implemented in parallel, and Fock matrix calculations will be done AO-direct,
@@ -115,18 +115,6 @@ option.
 %\item[\Key{MINIMIZE}] Alternative keyword to \verb|.OPTIMIZE|. Obsolete,
 %do not use.
 
-\item[\Key{OPTIMIZE}] Perform a geometry optimization\index{geometry optimization!.OPTIMIZE module}.
-The default is a geometry minimization\index{geometry minimization!.OPTIMIZE module}:
-an optimization of the molecular geometry to a stationary point with no
-negative Hessian eigenvalues
-(a local minimum) will be done using the default first-order
-methods. However, this may be changed using appropriate
-keywords in the submodule \Sec{OPTIMIZE}, and we refer to examples in
-the chapter on potential energy surfaces
-(Chapter~\ref{ch:geometrywalks}), and subsection~\ref{subsec:minimize}
-describing the input cards for the \Sec{OPTIMIZE} submodule for a more
-detailed description of possible options.
-
 \item[\Key{NEWTRA}]\index{integral transformation!"new"} Requests that the
 two-electron integral transformation routines of Bj\o rn
 Roos should be used during execution of the program, also if less than
@@ -139,6 +127,18 @@ molecular point group in order to minimize the number of point to be
 calculated. What order of derivatives and whether any analytical
 derivatives are to be used is determined in the \verb|*NMDDRV| input
 module.
+
+\item[\Key{OPTIMIZE}] Perform a geometry optimization\index{geometry optimization!.OPTIMIZE module}.
+The default is a geometry minimization\index{geometry minimization!.OPTIMIZE module}:
+an optimization of the molecular geometry to a stationary point with no
+negative Hessian eigenvalues
+(a local minimum) will be done using the default first-order
+methods. However, this may be changed using appropriate
+keywords in the submodule \Sec{OPTIMIZE}, and we refer to examples in
+the chapter on potential energy surfaces
+(Chapter~\ref{ch:geometrywalks}), and subsection~\ref{subsec:minimize}
+describing the input cards for the \Sec{OPTIMIZE} submodule for a more
+detailed description of possible options.
 
 %% hjaaj Apr 2011: .PARALLEL is not needed any more, Dalton automatically perform the modules
 %% in parallel if more than one MPI node is associated.
@@ -179,6 +179,8 @@ module.
 %sorted and that the integral transformation routines of Bj\o rn
 %Roos should be used during execution of the program.
 %The keyword is needed if one attempts an MCSCF, CI or MP2 (run through the \sir\ module and not using the Coupled-Cluster module) with more than 255 basis functions.
+
+\item[\Key{PEQM}] \index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM} Include environment effects by using the polarizable embedding (PE) model. This will embed the core molecular system, as defined in the \mol\ input file, in a polarizable embedding potential given in the \pot\ input file. See further input options in the \Sec{PEQM} input section (see subsection~\ref{subsec:peqm}). See Chapter~\ref{ch:embedding} for an introduction to polarizable embedding calculations.
 
 \item[\Key{PRIERR}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRERR|
@@ -966,16 +968,69 @@ timing for all nodes will be
 given if the print level is 4 or higher.
 \end{description}
 
-\subsection{PCM environment model: \Sec{PCM}}
-\label{sec:pcm}
+\subsection{Polarizable embedding environment model: \Sec{PEQM}}
+\label{subsec:peqm} \index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}
 
-Not documented yet. Examples can be found by grepping for "PCM" in the "dalton/test" directory in the distribution.
+This input section controls calculations using the polarizable embedding (PE) model to describe environment effects on a core molecular system. The core system is defined by the \mol\ input file. The environment can be described by multipole moment expansions and anisotropic dipole-dipole polarizabilities provided in the \pot\ input file. See Chapter~\ref{ch:embedding} for an introduction to calculations using the polarizable embedding model.
+
+
+\begin{description}
+
+\item[\Key{POTENTIAL}]\verb| |\newline
+\verb|READ (LUCMD, *) POTFILE|\verb| |\newline
+This option can be used to specify a non-default name of the \pot\ input file that contains the embedding potential parameters. The default name is \verb|POTENTIAL.INP|.
+
+\item[\Key{DIRECT}]\verb| |\newline
+Use the direct solver to determine the induced dipole moments. It will explicitly build a classical response matrix of size $3S(3S+1)/2$, where $S$ is the number of polarizable sites and is therefore only recommendable for smaller molecular systems. Note that this solver is not parallelized. The default is to use the iterative solver.
+
+\item[\Key{ITERATIVE}]\verb| |\newline
+\verb|READ (LUCMD, *) THRITER| (optional)\verb| |\newline
+Use the iterative solver to determine the induced dipole moments. This is the default. The convergence threshold defaults to $1.0\cdot10^{-8} > \sum_{s=1}^{S}|\mu_s^{(k)} - \mu_s^{(k-1)}|$, where $k$ is the current iteration, but can also be provided with this option.
+
+\item[\Key{BORDER}]\verb| |\newline
+1) \verb|READ (LUCMD, *) BORDER_TYPE, RMIN, AUORAA|\verb| |\newline
+2) \verb|READ (LUCMD, *) BORDER_TYPE, REDIST_ORDER, RMIN, AUORAA, NREDIST|\verb| |\newline
+Controls the handling of the border between the core molecular system and its environment described by the embedding potential. There are two mutually exclusive schemes: 1) \verb|BORDER_TYPE = REMOVE| and 2) \verb|BORDER_TYPE = REDIST|. The first option will remove all multipoles and polarizabilities that are within the given distance \verb|RMIN| from any atom in the core molecular system. The \verb|AUORAA| variable specifies whether the distance threshold is given in \AA{}ngstr\"{o}m (AA) or bohr (AU). The second option will redistribute parameters that are within the given threshold \verb|RMIN| from any atom in the core system to nearest sites in the environment. The order of multipoles upto which will be redistributed is determined by the \verb|REDIST_ORDER| variable, e.g. \verb|REDIST_ORDER = 1| means that only charges will be redistributed and all other parameters removed, \verb|REDIST_ORDER = 2| means charges and dipoles are redistributed and so on. The sign of \verb|REDIST_ORDER| specifies if the polarizabilities are redistributed. Positive means that the polarizabilities are removed and negative means redistributed. The number of sites that parameters on a given site are redistributed to is determined by the \verb|NREDIST| variable which can be between 1 and 3. The default is to redistribute charges within 2.2 bohr to its nearest site and removing all other parameters.
+
+\item[\Key{DAMP}]\verb| |\newline
+\verb|READ (LUCMD, *) damp| (optional)\verb| |\newline
+Damp the interactions between inducible dipole moments using Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. The default damping coefficient is the standard 2.1304.
+
+\item[\Key{GSPOL}]\verb| |\newline
+Activate the ground-state polarization approximation, i.e.\ freeze the embedding potential according to the ground-state density. This means that the polarizable environment is self-consistently relaxed during the optimization of the ground-state density/wave function of the core molecular system and then kept frozen in any following response calculations.
+
+\item[\Key{NOMB}]\verb| |\newline
+Remove many-body effects in the environment. This is done by deactivating interactions between inducible dipole moments. 
+
+\item[\Key{RESTART}]\verb| |\newline
+Use any existing files to restart calculation.
+
+\item[\Key{CUBE}]\verb| |\newline
+\verb|DO|\verb| |\newline
+\verb|    READ (LUCMD, *) OPTION|\verb| |\newline
+\verb|    IF (OPTION == 'GRID') THEN|\verb| |\newline
+\verb|       READ (LUCMD, *) XSIZE, XGRID, YSIZE, YGRID, ZSIZE, ZGRID|\verb| |\newline
+\verb|    END IF| \verb| |\newline
+\verb|END DO|\verb| |\newline
+Create cube file for the core molecular system containing the electrostatic potential due to the final converged polarizable embedding potential. The grid density can be either \verb|COARSE| (3 points/bohr), \verb|MEDIUM| (6 points/bohr) or \verb|FINE| (12 points/bohr). The default grid density is \verb|MEDIUM| and default cube size is the extent of the molecule plus 8.0 bohr in plus and minus each Cartesian coordinate. If the \verb|FIELD| option is given then also cube files containing the electric field from the embedding potential will be created. The \verb|GRID| option gives full control of the cube size and density, and requires an additional input line specifying the size (in bohr) and density (in points/bohr) in each Cartesian direction. Here the size again specifies the amount to add to the extent of the core molecular system.
+
+\item[\Key{VERBOSE}]\verb| |\newline
+Verbose output. Currently this will print the final converged induced dipole moments.
+
+\item[\Key{DEBUG}]\verb| |\newline
+Debug output. Prints the total electric field and the induced dipole moments in each iteration. WARNING: for large systems this will produce very large output files.
+
+\end{description}
 
 \subsection{QM/MM environment model: \Sec{QM3}}
 \label{sec:qm3}
 
-Not documented yet. Examples can be found by grepping for "QM3" in the "dalton/test" directory in the distribution.
+Not documented. Examples can be found by grepping for "QM3" in the "DALTON/test" directory in the distribution. See also \Key{PEQM} and \Sec{PEQM} for a more general and efficient implementation with many of the same capabilities.
 
+\subsection{PCM environment model: \Sec{PCM}}
+\label{sec:pcm}
+
+Not documented yet. Examples can be found by grepping for "PCM" in the "DALTON/test" directory in the distribution.
 
 \subsection{Geometry optimization module 2: \Sec{WALK}}
 \label{sec:abawalk}

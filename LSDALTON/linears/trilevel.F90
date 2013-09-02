@@ -62,7 +62,6 @@ integer,     pointer    :: indexlist(:)
 #ifdef VAR_LSESSL
 integer :: ifail(basis_size(ang+1)),iwrk(5*basis_size(ang+1)),nfound
 real(realk) :: no_ref,tol
-real(realk), external :: DLAMCH
 real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
 #endif
  
@@ -91,10 +90,9 @@ real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
   call mem_alloc(wrk,2)
 #ifdef VAR_LSESSL
   no_ref=0.0E0_realk
-  tol = 2*DLAMCH('S')
+  tol = 0.0E0_realk
   call DSYGVX( 1,'V','A','U', nb,bF,nb,bS,nb,no_ref,no_ref,no_ref,&
    &no_ref,tol,nfound,eig, Z,nb, wrk, lwrk, iwrk, ifail, info)
-  bF=Z
 #else
   call dsygv(1,'V','U',nb,bF,nb,bS,nb,eig,wrk,lwrk,info)
 #endif
@@ -106,11 +104,15 @@ real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
 #ifdef VAR_LSESSL
   call DSYGVX( 1,'V','A','U', nb,bF,nb,bS,nb,no_ref,no_ref,no_ref,&
    &no_ref,tol,nfound,eig, Z,nb, wrk, lwrk, iwrk, ifail, info)
-  bF=Z
+  call dcopy(nb*nb,Z,1,bF,1)
 #else
   call dsygv(1,'V','U',nb,bF,nb,bS,nb,eig,wrk,lwrk,info)
 #endif
  
+  if(info/=0)then
+    call lsquit("ERROR(trilevel_diag_per_ang):dsygv(x) failed to converge",-1)
+  endif 
+
   call mem_dealloc(eig)
   call mem_dealloc(wrk)
  else
@@ -969,9 +971,6 @@ do i=1, ai%ND
       atomicSetting%molecule(iAO)%p => atomicmolecule
       atomicSetting%fragment(iAO)%p => atomicmolecule
    enddo
-   atomicSetting%numNodes = 1
-   atomicSetting%numFragments = 1
-   atomicSetting%scheme%fragment = .FALSE.
    !deactivate density fitting, FMM and screening - provide no speedup and just complicates things
    atomicSetting%scheme%densfit = .FALSE.
    atomicSetting%scheme%df_k = .FALSE.
@@ -1540,6 +1539,7 @@ use IntegralInterfaceMOD
 use diagonalization
 use scfloop_module
 use molecule_module
+use optimlocMOD, only: optimloc
 implicit none
 TYPE(lsitem),target :: ls
 TYPE(trilevel_atominfo) :: ai
@@ -1559,19 +1559,6 @@ type(ConfigItem) :: config
 real(realk),parameter :: THRNEL=1E-3_realk
 real(realk),external :: HOMO_energy
 type(LowAccuracyStartType)  :: LAStype
-interface 
-   subroutine optimloc(CMO,nocc,m,ls,CFG)
-     use davidson_settings
-     use matrix_module, only: matrix
-     use typedeftype
-     implicit none
-     type(RedSpaceItem) :: CFG
-     type(Matrix), target:: CMO
-     TYPE(lsitem) , intent(inout) :: ls
-     integer,       intent(in)    :: nocc
-     integer,       intent(in)    :: m(2)
-   end subroutine optimloc
-end interface
 
   ndmat = 1
   OnMaster = .TRUE.
