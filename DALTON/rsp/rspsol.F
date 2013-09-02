@@ -116,6 +116,10 @@ C
 #if defined (BUILD_PELIB)
       use pe_variables, only: peqm
 #endif
+#if defined (PCM_MODULE)
+      use pcmmod_cfg
+      use pcm_linear_response
+#endif 
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -377,6 +381,11 @@ C
      &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
       end if
 #endif
+#if defined (PCM_MODULE)
+      if (pcmmod_is_pcm_calculation) then
+        call hello_world
+      end if
+#endif 
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)

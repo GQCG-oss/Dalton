@@ -9,8 +9,21 @@ module pcm_linear_response
    implicit none
 
    public pcm_lin_res
+   public hello_world
+
+   private
+
+   integer, save :: lr_solver_iteration_counter = 1
    
    contains
+
+      subroutine hello_world
+
+      print *, "HELLO WORLD, iteration", lr_solver_iteration_counter
+
+      lr_solver_iteration_counter = lr_solver_iteration_counter + 1
+
+      end subroutine hello_world
 
       subroutine pcm_lin_res(trial_vec, density, cmo, work, lwork)                         
       

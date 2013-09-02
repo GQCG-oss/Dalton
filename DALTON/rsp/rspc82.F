@@ -575,6 +575,9 @@ C
 #if defined (BUILD_PELIB)
       use pe_variables, only: peqm
 #endif
+#if defined (PCM_MODULE)
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -597,9 +600,15 @@ C
 #include "wavpcm.h"
 C
       logical :: polemb = .false.
+      logical :: is_pcmsolver = .false.
 #if defined (BUILD_PELIB)
       if (peqm) then
         polemb = .true.
+      end if
+#endif
+#if defined (PCM_MODULE)
+      if (pcmmod_is_pcm_calculation) then
+        is_pcmsolver = .true.
       end if
 #endif
 C
@@ -676,7 +685,7 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. is_pcmsolver
      &             .or. QMNPMM .or. WAVPCM .or. polemb) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
