@@ -3720,7 +3720,7 @@ contains
                 Nold = FOfragment%nunoccAOS
              end if
              ! decrease rejection threshold by a factor 10 in each step
-             AtomicFragment%RejectThr(ov) = AtomicFragment%RejectThr(ov)/2.0_realk
+             AtomicFragment%RejectThr(ov) = AtomicFragment%RejectThr(ov)/10.0_realk
              call atomic_fragment_free(FOfragment)
           end if
           if(ov==1) then
