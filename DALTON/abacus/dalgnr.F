@@ -530,11 +530,13 @@ C  /* Deck execc */
 #include "implicit.h"
       DIMENSION WORK(0:LMWORK)
 #include "priunit.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "mxcent.h"
 #include "siripc.h"
 #include "inftra.h"
-#include "gnrinf.h"
-#include "mxcent.h"
 #include "optinf.h"
+#include "nuclei.h"
 C
 C     Run Coupled Cluster program
 C
@@ -545,6 +547,20 @@ C
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
          CALL ER2INI
+      END IF
+
+!
+!     The CC module uses a lot of static allocation for pointer arrays.
+!     To minimize the static allocation in Dalton we use a smaller
+!     max number of orbitals in CC than the global MXCORB. /hjaaj Sep 2013
+!
+      IF (NBASIS .GT. MXCORB_CC) THEN
+         WRITE (LUPRI,'(//A,I6/A,I6/A)')
+     &  ' ERROR Too many orbitals for CC module:',NBASIS,
+     &  ' ERROR Limit is MXCORB_CC in maxorb.h :',MXCORB_CC,
+     %  ' ERROR To proceed increase MXCORB_CC in maxorb.h and recompile'
+         CALL QUIT('Too many orbitals for CC module.'//
+     &      'Increase MXCORB_CC in maxorb.h and recompile.')
       END IF
 
       ! ITRNMR > 0 required for proper restart of CPHF solver
