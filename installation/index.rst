@@ -6,7 +6,7 @@ Installing Dalton |version|
 .. toctree::
    :maxdepth: 2
 
-   basics.rst
+   general.rst
    math.rst
    scratch.rst
    basis.rst

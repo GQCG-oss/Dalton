@@ -45,8 +45,8 @@ You can compile the code on several cores::
   $ make -j4
 
 
-Most typical examples
----------------------
+Typical examples
+----------------
 
 In order to get familiar with the configuration setup, let us demonstrate
 some of the most typical configuration scenarios.
@@ -67,6 +67,10 @@ Configure for sequential compilation using ifort/icc/icpc::
 Configure for sequential compilation using gfortran/gcc/g++::
 
   $ ./setup --fc=gfortran --cc=gcc --cxx=g++
+
+Parallel compilation on a Cray::
+
+  ./setup --fc=ftn --cc=cc --cxx=CC --cray --mpi
 
 You get the idea. The configuration is normally good at detecting math libraries
 automatically, provided you export the proper environment variable ``MATH_ROOT``
