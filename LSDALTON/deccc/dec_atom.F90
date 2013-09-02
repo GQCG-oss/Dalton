@@ -788,7 +788,6 @@ contains
     call mem_alloc(VirtOrbs,nvirt)
     call mem_alloc(OccOrbs,nocc)
     call which_fragment_adapted_orbitals(LocalFragment,nocc,nvirt,Oeival,Veival,OccOrbs,VirtOrbs)
-    print *, 'virtorbs', virtorbs
     write(DECinfo%output,'(1X,a,i6,a,i6,a)') 'FOP Removed ', nvirt-count(VirtOrbs), ' of ', &
          & nvirtTRANS, ' fragment-adapted virtual orbitals'
     write(DECinfo%output,'(1X,a,i6,a,i6,a)') 'FOP Removed ', nocc-count(OccOrbs), ' of ', &
