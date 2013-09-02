@@ -575,7 +575,7 @@ When using Compressed-Sparse Row (CSR) matrices, only non-zero elements in matri
 When matrices are sparse enough, linear scaling in both memory and cpu time is obtained. However, for
 small or non-sparse systems, there is a considerable overhead in cpu time compared to 
 using standard dense matrices, so don't use it unless you need it. You enable CSR by putting
-"-DVAR\_MKL" in your CPPFLAGS (in addition to what is already there. You also need to link
+"-DVAR\_MKL" and "-DVAR_CSR" in your CPPFLAGS (in addition to what is already there. You also need to link
 to MKL's CSR library (what we have in \lsdalton\ is an interface to MKL CSR). Furthermore, to run a calculation
 using CSR matrices, you always need .CSR under *DENSOPT in the input file LSDALTON.INP (described in detail in
 chapters~\ref{ch:starting} and~\ref{ch:keywords}).

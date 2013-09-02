@@ -2640,14 +2640,14 @@ C        Reset MMCORE,ISCORE since we did not save anything useful in this call.
                   MMCORE = LMCORE
                   ISCORE = JSCORE
 C
-               END IF
-            END IF
- 300     CONTINUE
-      END IF
- 200  CONTINUE
-      END IF
+               END IF    ! IF (AOSAVE .AND. ...
+            END IF     ! IF (IBTAND(ISYMT,IBTOR(MULAB,MULCD)) .EQ. 0) THEN
+ 300        CONTINUE   ! DO 300 ISYMT = 0, MAXOPR
+         END IF        ! IF (IBTAND(ISYMS,IBTOR(MULC,MULD)) .EQ. 0) THEN
+ 200     CONTINUE      ! DO 200 ISYMS = 0, MAXOPR
+      END IF           ! IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
 C
- 100  CONTINUE
+ 100  CONTINUE         ! DO 100 ISYMR = 0,MAXOPR
 C
 C     ********************************
 C     ***** Process SO integrals *****
@@ -4968,7 +4968,7 @@ C
       RETURN
       END
 C
-C  /* Deck CLEARMEM */
+C  /* Deck CLEAR_INCOREMEM */
       SUBROUTINE CLEAR_INCOREMEM()
 C
 #include "maxorb.h"

@@ -65,11 +65,21 @@ target_link_libraries(
     ${EXTERNAL_LIBS}
     )
 
-# compile Peter's utilities
+# compile utilities
+
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/tools) 
+
 add_library(peter_utils_blocks ${CMAKE_SOURCE_DIR}/DALTON/tools/blocks.f90)
-add_executable(aces2dalton ${CMAKE_SOURCE_DIR}/DALTON/tools/aces2dalton.f90)
-add_executable(xyz2dalton  ${CMAKE_SOURCE_DIR}/DALTON/tools/xyz2dalton.f90)
-add_executable(distances   ${CMAKE_SOURCE_DIR}/DALTON/tools/distances.f90)
-target_link_libraries(aces2dalton peter_utils_blocks)
-target_link_libraries(xyz2dalton peter_utils_blocks)
-target_link_libraries(distances peter_utils_blocks)
+
+add_executable(tools/aces2dalton ${CMAKE_SOURCE_DIR}/DALTON/tools/aces2dalton.f90)
+add_executable(tools/xyz2dalton  ${CMAKE_SOURCE_DIR}/DALTON/tools/xyz2dalton.f90)
+add_executable(tools/distances   ${CMAKE_SOURCE_DIR}/DALTON/tools/distances.f90)
+
+target_link_libraries(tools/aces2dalton peter_utils_blocks)
+target_link_libraries(tools/xyz2dalton  peter_utils_blocks)
+target_link_libraries(tools/distances   peter_utils_blocks)
+
+add_executable(tools/FChk2HES ${CMAKE_SOURCE_DIR}/DALTON/tools/FChk2HES.f)
+add_executable(tools/labread  ${CMAKE_SOURCE_DIR}/DALTON/tools/labread.f)
+# radovan: compilation broken
+#add_executable(tools/ODCPRG   ${CMAKE_SOURCE_DIR}/DALTON/tools/ODCPRG.f)

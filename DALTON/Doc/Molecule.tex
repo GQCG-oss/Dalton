@@ -172,7 +172,7 @@ atoms, in which case the first line should read
  1:ATOMBASIS
 \end{verbatim}
 
-The fourth line (fifth in a calculation using the basis set library)
+The fourth line (fifth in a calculation using the basis set library with "BASIS" in line 1)
 looks a bit devastating. However, for ordinary
 Hartree--Fock\index{HF}\index{MP2}\index{SCF}\index{Hartree--Fock}\index{M{\o}ller-Plesset!second-order}
 or MP2 calculations, only the number of different atom types and the charge
@@ -237,12 +237,16 @@ to be used in the calculation (in this case C$_{2v}$, with the yz- and
 xz-planes as mirror planes).
 
 In tetrahedrane we will have two different kinds of atoms, carbon
-and hydrogen, as indicated by the number 2 on the fourth (fifth)
-line of the input. We will also assume that we punch the basis set
-ourselves, in order to present the input format for the basis set.
+and hydrogen, as indicated by the number 2 on the fourth line of the input.
+We will also assume that we enter the basis set ourselves,
+in order to present the input format for the basis set.
 
 For tetrahedrane, the input would then look like
 \begin{verbatim}
+ 1:INTGRL
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:                 4-31G** basis
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
  5:Charge=6.0 Atoms=2 Blocks=3 1 1 1
  6:C1    1.379495419          .0                 0.975450565
  7:C2     .0                 1.379495419         -.975450565
@@ -274,7 +278,7 @@ For tetrahedrane, the input would then look like
 33:0.75       1.0
 \end{verbatim}
 
-The different lines are:
+Lines 1-4 are already described. The different new types of lines are:
 \begin{description}
 \item[5] This line is keyword-driven. The general structure of the input is
 \verb|Keyword=|. The input is case sensitive, but it will recognize
@@ -315,10 +319,9 @@ evaluates all integrals arising from that
 shell\index{shell of basis functions} simultaneously, and
 the memory requirements grow rapidly with the number of basis
 functions in a shell (note for instance that four $g$ functions
-actually are 36
-basis functions, as there are 9 components of each $g$
-function). Memory requirements\index{memory} can therefore be reduced
-by splitting
+actually are 36 basis functions,
+as there are 9 components of each $g$ function).
+Memory requirements\index{memory} can therefore be reduced by splitting
 basis functions of the quantum number into different blocks. However,
 this will decrease the performance of the
 integral\index{performance of integral program} calculation.
@@ -341,7 +344,7 @@ integral\index{performance of integral program} calculation.
 \item[NAME] Atom name.  A different name should be used for
 each atom of the same type, although this is not required. Note that
 only the first four characters of the atom name will be used by the
-program, and that no spaces are allowed in naming the atom.
+program.
 \item[X] $x$-coordinate (in atomic units, unless \AA ngstr\"{o}m
 has been requested on line 4 of the input).
 \item[Y] $y$-coordinate.
