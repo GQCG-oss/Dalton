@@ -1600,8 +1600,11 @@ C     ... default print level for statistics /hjaaj apr 2000
 #endif
 C
 Cholesky
-      IF (CHOINT) WRITE (LUPRI,'(4X,A)')
+      IF (CHOINT) THEN
+        IF (PARCAL) CALL PARQUIT('CHOLESKY')
+        WRITE (LUPRI,'(4X,A)')
      &  'Cholesky decomposition-based calculation will be done'
+      ENDIF
 Cholesky
 C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
