@@ -257,7 +257,8 @@ def gen_cmake_command(args):
         command += ' -DENABLE_BUILTIN_BLAS=ON'
         command += ' -DENABLE_AUTO_BLAS=OFF'
     elif args.blas == 'auto':
-        command += ' -DENABLE_AUTO_BLAS=ON'
+        if (args.mkl != 'none') and not args.cray:
+            command += ' -DENABLE_AUTO_BLAS=ON'
     elif args.blas == 'none':
         command += ' -DENABLE_AUTO_BLAS=OFF'
     else:
@@ -271,7 +272,8 @@ def gen_cmake_command(args):
         command += ' -DENABLE_BUILTIN_LAPACK=ON'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
     elif args.lapack == 'auto':
-        command += ' -DENABLE_AUTO_LAPACK=ON'
+        if (args.mkl != 'none') and not args.cray:
+            command += ' -DENABLE_AUTO_LAPACK=ON'
     elif args.lapack == 'none':
         command += ' -DENABLE_AUTO_LAPACK=OFF'
     else:
