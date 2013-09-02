@@ -2879,6 +2879,7 @@ contains
     ! ******************************************
     ! **   Initialization of stuff needed..   **
     ! ******************************************
+    iter=0
     converged=.false.
     REDconverged=.false.
     max_iter_red=15   ! allow 15 reduction steps (should be more than enough)
@@ -3439,6 +3440,7 @@ contains
     ! ******************************************
     ! **   Initialization of stuff needed..   **
     ! ******************************************
+    iter=0
     converged=.false.
     max_iter_red=15   ! allow 15 reduction steps (should be more than enough)
     FOT = DECinfo%FOT
