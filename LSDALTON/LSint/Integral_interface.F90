@@ -32,7 +32,7 @@ MODULE IntegralInterfaceMOD
   use molecule_module, only: getMolecularDimensions
   use matrix_operations, only: mat_dotproduct, matrix_type, mtype_unres_dense,&
        & mat_daxpy, mat_init, mat_free, mat_write_to_disk, mat_print, mat_zero,&
-       & mat_scal, mat_mul, mat_assign, mat_trans, mat_copy, mat_add
+       & mat_scal, mat_mul, mat_assign, mat_trans, mat_copy, mat_add, mat_trAB
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify, &
                          util_get_symm_and_antisymm_part_full
   use memory_handling, only: mem_alloc, mem_dealloc
@@ -5168,7 +5168,8 @@ real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
-
+Logical             :: const_electrons
+real(realk)         :: lagrangian, factor
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
 ELSE
@@ -5241,8 +5242,17 @@ ELSE
 ENDIF
        
 !We transform the full Density to a level 2 density D2
-call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
+                  & nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
 
+const_electrons = setting%scheme%ADMM_CONST_EL
+IF (const_electrons) THEN
+! Lagrangian multiplier for conservation of the total nb. of electrons
+call get_Lagrange_multipliers_charge_conservation(lagrangian,factor,D,&
+         &setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
+call mat_scal(1.0E0_realk/factor,D2(1))
+ENDIF
+     
 !Store original AO-indeces (AOdf will not change, but is still stored)
 AORold  = AORdefault
 AOdfold = AODFdefault
@@ -5255,7 +5265,10 @@ call set_default_AOs(AO2,AOdfold)
 CALL lstimer('AUX-IN',ts,te,lupri)
 call mat_zero(F2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,F2)
-call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
+call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
+IF (const_electrons) THEN
+   call mat_scal(1.0E0_realk/factor,TMPF)
+ENDIF
 call mat_daxpy(1E0_realk,TMPF,F)
 CALL lstimer('AUX-EX',ts,te,lupri)
 call mat_zero(F2(1))
@@ -5280,6 +5293,9 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
+IF (const_electrons) THEN
+   call mat_scal(1.0E0_realk/factor,TMPF)
+ENDIF
 call mat_daxpy(-GGAXfactor,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
@@ -5317,6 +5333,53 @@ IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_
 !call mat_free(TMP)
 
 CONTAINS
+   SUBROUTINE get_Lagrange_multipliers_charge_conservation(lagrangian,factor,&
+                     & D3,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
+      implicit none
+      type(matrix),intent(in)    :: D3     !level 3 matrix input 
+      real(realk),intent(inout)  :: lagrangian, factor
+      type(lssetting)            :: setting
+      integer                    :: n2,n3,AO3,AO2,lupri,luerr
+      logical                    :: GCAO2,GCAO3
+      !
+      TYPE(MATRIX) :: temp,S23,T23
+      real(realk)  :: trace
+      integer      :: nelectrons
+
+     CALL mat_init(T23,n2,n3)
+     CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+     
+     CALL mat_init(S23,n2,n3)
+     CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+      ! The lagrangian 
+      ! lambda = 1 - sqrt[ 2/N Tr(D3 S32 T23) ] 
+      CALL mat_init(temp,n3,n3)
+      CALL mat_mul(S23,T23,'t','n',1E0_realk,0E0_realk,temp)
+      CALL mat_free(S23)
+      CALL mat_free(T23)
+      
+      trace = mat_trAB(D3,temp)
+      CALL mat_free(temp)
+      write(*,*)     "Tr(D S32 T23)=", trace
+      write(lupri,*) "Tr(D S32 T23)=", trace
+      
+      nelectrons = setting%molecule(1)%p%nelectrons
+      write(*,*)     "nelectrons=", nelectrons
+      write(lupri,*) "nelectrons=", nelectrons
+      
+      lagrangian = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
+      write(*,*)     "lagrangian=", lagrangian
+      write(lupri,*) "lagrangian=", lagrangian
+      
+      ! Scaling factor for the constrained reduced density matrix
+      factor = (1E0_realk - lagrangian)**2
+      write(*,*)     "(1-lambda)^2=", factor
+      write(lupri,*) "(1-lambda)^2=", factor
+      write(*,*)     "1/[(1-lambda)^2]=", 1E0_realk/factor
+      write(lupri,*) "1/[(1-lambda)^2]=", 1E0_realk/factor
+      
+   END SUBROUTINE get_Lagrange_multipliers_charge_conservation
+   
    SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,luerr,n2,n3,AO2,AO3,McWeeny,GCAO2,GCAO3)
      implicit none
      type(matrix),intent(in)    :: D     !level 3 matrix input 
@@ -5325,9 +5388,8 @@ CONTAINS
      integer :: n2,n3,AO3,AO2,lupri,luerr
      logical :: McWeeny,GCAO2,GCAO3
      !
-     TYPE(MATRIX) :: S22,S23,T23
-     Logical :: purify_failed
-   
+     TYPE(MATRIX)       :: S22,S23,T23
+     Logical            :: purify_failed
    
      CALL mat_init(T23,n2,n3)
      CALL mat_init(S23,n2,n3)
@@ -5338,7 +5400,7 @@ CONTAINS
      CALL mat_mul(S23,T23,'n','t',1E0_realk,0E0_realk,D2)
     
      IF (McWeeny) THEN
-       CALL mat_init(S22,n2,n3)
+       CALL mat_init(S22,n2,n2)
        CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
        CALL McWeeney_purify(S22,D2,purify_failed)
        IF (purify_failed) THEN
@@ -5346,9 +5408,8 @@ CONTAINS
        ENDIF
        CALL mat_free(S22)
      ENDIF
-     CALL mat_free(T23)
-     CALL mat_free(S23)
-   
+      CALL mat_free(T23)
+      CALL mat_free(S23)
    END SUBROUTINE TRANSFORM_D3_TO_D2
    
    SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
