@@ -72,6 +72,10 @@ Parallel compilation on a Cray::
 
   ./setup --fc=ftn --cc=cc --cxx=CC --cray --mpi
 
+Parallel compilation on a SGI using Intel compilers and MPT::
+
+  ./setup --fc=ifort --cc=icc --cxx=icpc --sgi-mpt
+
 You get the idea. The configuration is normally good at detecting math libraries
 automatically, provided you export the proper environment variable ``MATH_ROOT``
 (see further below).
