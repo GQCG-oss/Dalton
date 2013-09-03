@@ -14,7 +14,6 @@
 
 include(FindPackageHandleStandardArgs)
 include(FindPackageMessage)
-include(MathLibs)
 
 if(NOT MATH_LANG)
     set(MATH_LANG C)

@@ -1,3 +1,4 @@
+include(MathLibs)
 include(MathLibsFunctions)
 
 set(MATH_LANG "Fortran")
