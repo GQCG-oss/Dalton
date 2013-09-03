@@ -1363,6 +1363,40 @@ WRITE (LUPRI,'(A)')'--------------------------------------------------------&
 WRITE(LUPRI,*) '                     '
 END SUBROUTINE PRINT_MOLECULE_AND_BASIS
 
+!call like 
+! call Atom_for_each_basisfunc(LUPRI,Setting%MOLECULE(1)%p,Setting%BASIS(1)%p%REGULAR,&
+!    &Atom_for_each_bas,nbast)
+!  and the XYZ coordinate of the molecule is in
+!  Setting%MOLECULE(1)%ATOM(iatom)%CENTER(1:3)
+!> \param lupri the logical unit number to write to
+!> \param molecule the molecule structure
+!> \param basinfo the basis info structure
+SUBROUTINE Atom_for_each_basisfunc(LUPRI,MOLECULE,basInfo,Atom_for_each_bas,nbast)
+IMPLICIT NONE
+TYPE(BASISSETINFO),intent(in) :: basInfo
+TYPE(MOLECULEINFO),intent(in) :: MOLECULE
+INTEGER,intent(in)            :: LUPRI,nbast
+integer,intent(inout) ::  Atom_for_each_bas(nbast)
+!
+integer :: ibasis,I,Icharge,type,J
+iF(MOLECULE%nbastREG.NE.nbast)call lsquit('dim mismatch in Atom_for_each_basisfunc',-1)
+ibasis = 0 
+DO I=1,MOLECULE%nAtoms
+   IF(basInfo%labelindex .EQ. 0)THEN
+      ICHARGE = INT(MOLECULE%ATOM(I)%charge) 
+      type= basInfo%Chargeindex(ICHARGE)
+   ELSE
+      type=MOLECULE%ATOM(I)%IDtype(basInfo%labelindex)
+   ENDIF
+   IF(MOLECULE%ATOM(I)%pointcharge)CYCLE   
+   DO J = 1, basInfo%ATOMTYPE(type)%Totnorb
+      ibasis = ibasis + 1
+      Atom_for_each_bas(ibasis) = I
+   ENDDO
+ENDDO
+iF(ibasis.NE.nbast)call lsquit('dim mismatch2 in Atom_for_each_basisfunc',-1)
+END SUBROUTINE ATOM_FOR_EACH_BASISFUNC
+
 !> \brief print the molceule and basis info
 !> \author S. Reine and T. Kjaergaard
 !> \date 2010
