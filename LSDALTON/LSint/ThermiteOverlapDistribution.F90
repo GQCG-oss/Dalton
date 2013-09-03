@@ -441,8 +441,13 @@ ENDDO
          P%center(3+offset)         = 0.0E0_realk
        ENDIF 
        IF (.NOT. P%single) THEN 
-         IF (P%exponents(i12) .NE. 0.0E0_realk) THEN
-            P%preExpFac(i12)        = exp(-P%reducedExponents(i12)*d2)
+         IF (ABS(P%exponents(i12)) .GT. 1.0E-15_realk) THEN
+!PGI compiler gives some stange values for P%reducedExponents(i12)*d2 = 728 
+            IF (P%reducedExponents(i12)*d2 .GT. 500.0E0_realk) THEN
+               P%preExpFac(i12)        = 0.0E0_realk
+            ELSE	    
+               P%preExpFac(i12)        = exp(-P%reducedExponents(i12)*d2)
+            ENDIF	    
          ELSEIF(Input%operator .EQ. NucpotOperator)THEN
             P%preExpFac(i12)        = exp(-e1*d2)
          ELSE

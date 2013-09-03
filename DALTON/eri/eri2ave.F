@@ -200,7 +200,7 @@ C  /* Deck erifrc */
       PARAMETER (D4=4.0D0, D2=2.0D0, D1=1.0D0, DP5=0.5D0, DP25=0.25D0)
       LOGICAL DAB, DCD, NOTRAS
       DIMENSION SO(NAOINT,3,4), IPOINT(NCCS,5), DMAT(NBASE,NBASE), 
-     &          D2MAT(NBASE,NBASE,NPDIMB,NPDIMA), ID2MAT(MXCORB,2),
+     &          D2MAT(NBASE,NBASE,NPDIMB,NPDIMA), ID2MAT(MXCORB_CC,2),
      &          IODXYZ(3)
 #include "cbieri.h"
 #include "ericom.h"

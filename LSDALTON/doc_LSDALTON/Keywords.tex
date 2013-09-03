@@ -121,12 +121,12 @@ The various integral-evaluation thresholds (below) are set according to this Thr
       is used for setting up AO extents. Overlap distributions (ODs) for which the 
       distance between the two AOs are larger than the sum of the extents are 
       screened away. %(OD screening)
-\item The Overlap-distribution extent-screeing threshold is set equal to 
+\item The Overlap-distribution extent-screening threshold is set equal to 
       Threshold $\cdot 10^{-1}$. When calculating overlap integrals, this threshold 
       is used for setting up OD extents. Overlap integrals between two ODs separated
       by more than the sum of the extents are screened away. %(OE screening)
 \item The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on
-      the non-classical extent of the contineous charge distribution (orbitals or orbital products). By default this threshold 
+      the non-classical extent of the continuous charge distribution (orbitals or orbital products). By default this threshold 
       is set equal to Threshold $\cdot 10^{-1}$ (can be set separately by \Key{SCREEN} under *FMM)
 \end{itemize}
 \end{description}
@@ -134,7 +134,7 @@ The various integral-evaluation thresholds (below) are set according to this Thr
 \section{**INTEGRAL advanced keywords}\label{sec:integral:adv}
 
 This input module defines the way the integrals should be calculated. 
-This section contains some advanced keywords which is mostly usefull 
+This section contains some advanced keywords which is mostly useful
 for debugging or comparisons with other codes. 
 \begin{description}
 
@@ -167,11 +167,11 @@ Sets the maximum number of primitives used in the FTUV batches in the J-engine a
 \verb|<maxpass>|\newline
 Change the maximum number of collected overlap distributions (default is 40).
 \item[\Key{NO PASS}] Deactivate the use of Passes, the collection of overlap distributions which is used as default in order to increase efficiency. 
-\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals. The basis is considered to be a general contracted basis where all primitives contribute to all contracted functions. 
+\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the number of primitive functions in the calculation of integrals. The basis is considered to be a general contracted basis where all primitives contribute to all contracted functions. 
 \item[\Key{NSETUV}] Use non-spherical E-coefficients.
 \item[\Key{OVERLAP-DF-J}] Use the Overlap density fitting algorithm for the calculation of the Coulomb matrix.
 %\item[\Key{PARI}] Use pair-atomic-resolution-of-the-identity algorithm for the calculation of the Fock matrix
-\item[\Key{UNCONT}] Treat the basis functions (given by input) as fully uncontracted basis fuctions (i.e. ignore
+\item[\Key{UNCONT}] Treat the basis functions (given by input) as fully uncontracted basis functions (i.e. ignore
 any contraction coefficients given in the basis and treat instead all the primitives as separate basis functions).
 \end{description}
 
@@ -183,10 +183,10 @@ classical Coulomb interactions.\newline
 %
 % Meant as a reminder to those who will rewrite/restructure/optimise the FMM code
 %
-For gradients OpenMP parallelisation is turned off. The reason for this is that a continous counter used 
+For gradients OpenMP parallelization is turned off. The reason for this is that a continuous counter used 
 to identify moments for orbital products has to be the same in both moments and derivative moments. 
 For the same reason screening [only during writing (see printmm routines)!!] is turned off both for the serial 
-and parallel cases. As a consequence of the screeening been turned off the moments have to be recalculated for the gradient and can not be reused from the preceeding energy evaluation. 
+and parallel cases. As a consequence of the screening been turned off the moments have to be recalculated for the gradient and can not be reused from the preceding energy evaluation. 
 %
 % a solution to these problems could be to calculate moments and derivatives moments at the same time as was
 % done in the FCK3 code.
@@ -226,7 +226,7 @@ One can always create own combined functionals by using GGAKey general functiona
 A number of standalone functionals are also included within \lsdalton. 
 
 It should be noted that the input is not case sensitive, although the notation
-employed in this manual makes use of case to exphasise exchange or correlation 
+employed in this manual makes use of case to emphasise exchange or correlation 
 functional properties and reflect the original literature sources.
 
 Supported functionals are: 
@@ -412,7 +412,7 @@ The following GGA and hybrid functional aliases are defined within
 \item[B3LYP-G] hybrid functional with VWN3 form used for
   correlation---this is the form used by the Gaussian quantum chemistry
   program. Keyword B3LYPGauss is a synonym for B3LYPg.\index{B3LYPG} 
-  This functional can be explicitely set up by
+  This functional can be explicitly set up by
   \funexample{GGAKey HF=0.2 Slater=0.8 Becke=0.72 LYP=0.81 VWN3=0.19}
   \index{B3LYP, Gaussian version}
 
@@ -680,7 +680,7 @@ are possible with the \verb|GGAKey| keyword.
 \subsubsection{XCFUN functionals}
 
 Recently some support have been added for using the functionals from the XCFUN lib \textbf{fixme: insert proper reference}. Full 
-support is expected in the next release, but unfortunetly time constraints did not allow for 
+support is expected in the next release, but unfortunately time constraints did not allow for 
 full support in this release. 
 
 Currently only LDA and GGA type functionals are currently supported and only upto and including 
@@ -832,7 +832,7 @@ atom-in-a-molecule  starting guess.
 solving the (level-shifted) Newton equation.\index{Augmented Roothaan-Hall}\index{ARH} 
 \item[\Key{ARH FULL}] Use Augmented Roothaan-Hall for density optimization -
 no truncation of the reduced space, keep all micro vectors for the CROP algorithm. 
-\item[\Key{ARH DAVID}] Use Augmented Roothan-Hall for density optimization where
+\item[\Key{ARH DAVID}] Use Augmented Roothaan-Hall for density optimization where
 the (level-shifted) Newton equations are solved using a reduced space solver based 
 Davidson's algorithm \cite{davidson:1975}. This setting may be used if default settings  
 converges to a saddle point. 
@@ -949,7 +949,6 @@ Only referenced if ARH, Direct Density optimization or second order optimization
 \verb|<Minimum damping>|\newline
 Never allow level shift to be smaller than this.
 %\item[\Key{MOCHANGE}] Level shifting is done by use of MO overlaps (diagonalization only).
-\item[\Key{MUOPT}] Optimal level shift is chosen by doing a line search in the SCF energy - very expensive! For diagonalization only.
 %\item[\Key{NALPHA}] \verb| | \newline
 %\verb|<Number of alpha electrons>|\newline
 %Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
@@ -974,7 +973,7 @@ Maximum number of previous Fock and density matrices to be stored and used for A
 %\item[\Key{PURIFY}] \verb| | \newline
 %\verb|<Purification method>|\newline
 %Use purification scheme for density optimization 
-\item[\Key{RESTART}] The code automaticly saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
+\item[\Key{RESTART}] The code automatically saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
 \item[\Key{RH}] Use standard Roothaan-Hall scheme (diagonalization) for density optimization.
 %\item[\Key{SCALVIR}]
 %\item[\Key{SOEO}]
@@ -1393,7 +1392,7 @@ Below, the list of general response input keywords follows.
 Determines the number of excitation energies to be calculated.
 If this keyword is set, the excitation energies 
 and the corresponding one-photon dipole absorption strengths
-for the lowext NEXCIT excited states (i.e. excited states 1 to NEXCIT) 
+for the lowest NEXCIT excited states (i.e. excited states 1 to NEXCIT) 
 are always calculated.
 \emph{\bf Important:} If properties involving excited states
 are to be requested (e.g. two-photon absorption or the excited state gradient),
@@ -1846,7 +1845,7 @@ These test cases illustrate the main features of the DEC scheme. The test cases 
 \item
 \textit{decmp2\_gradient}: Calculate DEC-MP2 molecular gradient.
 \item
-\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT level will be increased to get a more accurate energy and gradient in the next iteration.
+\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optimization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT level will be increased to get a more accurate energy and gradient in the next iteration.
 \end{itemize}
 
 
@@ -1943,7 +1942,7 @@ dens.plt \newline
 
 \item[\Key{EP}]\verb| | \newline
 Construct .plt file for electrostatic potential grid points based on input density matrix.
-For example to calculate electrostatic potential from the density in the the file  \emph{dens.restart} and save information in file  ep.plt,
+For example to calculate electrostatic potential from the density in the file  \emph{dens.restart} and save information in file  ep.plt,
 insert the following section in the LSDALTON.INP file used to generate the  \emph{dens.restart} file in the first place:
  \newline
 **PLT \newline
@@ -2013,7 +2012,7 @@ Manual definition of gridbox as described above. All input values are in a.u.
 \item[\Key{MOLECULE}] \verb| | \newline
 \verb|<buffer>| \newline
 \verb|<deltax    deltay    deltaz>| \newline
-Molecule-specifc definition of gridbox as described above. All input values are in a.u.
+Molecule-specific definition of gridbox as described above. All input values are in a.u.
 
 \end{description}
 
