@@ -254,8 +254,8 @@ Specification of which wave function calculation is to be performed.
   \index{Coupled Cluster}\index{CC}
   Coupled-cluster calculation. Automatically activates Hartree--Fock (\quotekw{.HF}).
   After the Hartree--Fock calculation,
-  the \cc\ program is called to do a coupled cluster (response) calculation.
-  For further input options for the \cc\ program see Section~\ref{sec:ccgeneral}. 
+  the \cc\ module is called to do a coupled cluster (response) calculation.
+  For further input options for the \cc\ module see Section~\ref{sec:ccgeneral}. 
 
 \item[\Key{CC ONLY}] Skip the calculation of a Hartree--Fock wave
   function, and start directly in the coupled cluster part. Convenient
@@ -1241,7 +1241,7 @@ Add extra terms to the Hamiltonian (for finite field\index{finite field} calcula
   \verb"READ (LUINP,'(A)') LFIELD(NFIELD)" \\
   Enter field strength (in atomic units) and property label on separate lines
   where label is a MOLE\-CULE-style property label on file AOPROPER
-  produced by the property program module, see Chapter~\ref{ch:hermit}.
+  produced by the property module, see Chapter~\ref{ch:hermit}.
   The calculation of the necessary property integral(s) must be requested
   in the \quotekw{**INTEGRALS} input module. \\
   NOTE: This keyword may be repeated several times for adding more than
