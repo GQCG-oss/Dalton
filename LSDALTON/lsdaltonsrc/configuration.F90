@@ -1198,12 +1198,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_JKBASIS    = .FALSE.
         CASE ('.ADMM-McWeeny'); ! EXPERIMENTAL
            INTEGRAL%ADMM_MCWEENY    = .TRUE.
-        CASE ('.ADMM-CONST-EL');
-           IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
-             CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
-                  &ADMM has been previously defined.',lupri)
-           ENDIF
-           INTEGRAL%ADMM_CONST_EL   = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
