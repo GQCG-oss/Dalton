@@ -3838,7 +3838,7 @@ C
 #include "aovec.h"
 #include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION INDEXA(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
       DIMENSION ETAAI(*), WORK(LWORK)
       CHARACTER MODEL*(10)
 #include "ccorb.h"
@@ -5451,7 +5451,7 @@ C
 #include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       CHARACTER MODEL*10
-      DIMENSION INDEXA(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
 #include "ccorb.h"
 CCN#include <infind.h> 
@@ -6303,7 +6303,7 @@ C
 #include "aovec.h"
 #include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION INDEXA(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
 #include "ccorb.h"
 #include "ccisao.h"
@@ -6718,8 +6718,8 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
       LOGICAL SAVDIR, LEX, SAVHER, OLDDX
-      DIMENSION INDEXA(MXCORB)
-      DIMENSION IADR(MXCORB,MXDIST)
+      DIMENSION INDEXA(MXCORB_CC)
+      DIMENSION IADR(MXCORB_CC,MXDIST)
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL
       CHARACTER*10 MODEL

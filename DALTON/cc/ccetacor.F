@@ -44,7 +44,7 @@ C
 #include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
-      DIMENSION INDEXA(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
 #include "ccorb.h"
 #include "ccisao.h"

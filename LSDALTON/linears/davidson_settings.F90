@@ -40,6 +40,10 @@ logical :: NOL2OPT
 logical :: OnlyLocalize
 ! True if you want to print info useful for debug
 logical :: debug_info
+! Number of starting vectors
+integer :: start_it
+! TRUE if b3 coupling to b1 and b2 is too weak
+logical :: singularity
 ! *************************
 ! * convergence settings  *
 ! *************************
@@ -244,6 +248,10 @@ subroutine davidson_reset(CFG)
 implicit none
 type(RedSpaceItem) :: CFG
 
+
+
+CFG%singularity=.false.
+CFG%start_it = 0
 !**********************************
 !*       Solver settings          *
 !**********************************
