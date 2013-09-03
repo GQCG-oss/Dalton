@@ -222,7 +222,7 @@ if [ -z "$2" ]; then
 #  only one input file, check if molfil exist with same base name;
     if [ -r ${dalfil}.mol ]; then
         molfil=$dalfil
-        if [ -r ${dalfil}.pot ]; then
+        if [ -s ${dalfil}.pot ]; then
             potfil=$dalfil
             input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
         else
