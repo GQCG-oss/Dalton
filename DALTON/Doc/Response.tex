@@ -64,6 +64,10 @@ should follow another {\ttfamily{**<something>}} input group
 %\item{\Key{DFT-SO}} Request that the contribution to the spin--orbit
   %integrals are calculated for a given reference density.
 
+\item{\Key{CIS}}
+Request a CI Singles calculation, which is equivalent to invoking the 
+Tamm-Dancoff approximation to RPA/TDHF (invoked by \Key{TDA}).
+
 \item{\Key{HIRPA}}
 Invoke the higher RPA approximation for the calculation of linear
 response properties\index{linear response!higher RPA}.
@@ -169,7 +173,7 @@ the \verb|RSPVEC| file.
 % hjaaj Aug 2012: does not work when excitation energies are involved because Dalton
 % does not know them when restarting, and they are needed to get the right records from
 % the RSPVEC file.
-Requires that \em{all} needed linear response solutions % and excitation vectors
+Requires that {\em all} needed linear response solutions % and excitation vectors
 are available on the \verb|RSPVEC| file.
 
 \item{\Key{S0MIX}}
@@ -200,6 +204,10 @@ SOPPA\index{SOPPA}\index{polarization propagator!SOPPA} or
 SOPPA(CCSD)\index{SOPPA(CCSD)} result, and used mostly for comparing to older
 calculations. Note that this keyword requires that \Key{SOPPA} or
 \Key{SOPPA(CCSD)}is set.
+
+\item{\Key{TDA}}
+Invoke the Tamm-Dancoff approximation to RPA/TDHF or TDDFT. Equivalent to the
+use of \Key{CIS} on a Hartree-Fock calculation.
 
 \item{\Key{TRPFLG}}
 Triplet flag. This option is set whenever triplet

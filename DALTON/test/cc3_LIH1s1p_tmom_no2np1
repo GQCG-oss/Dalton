@@ -112,16 +112,16 @@ else
 fi
 
 # SCF, MP2 and CC3 energies:
-CRIT1=`$GREP "Total SCF   energy: * -2\.7801922471" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -2\.7824034471" $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -2\.7976480465" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * -2\.780192247." $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -2\.782403447." $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -2\.79764804.." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 transition moments:
-CRIT1=`$GREP  " *\| XDIPLEN *\| *(|0)\.09414391 *\| *(|0)\.09514908 *\| *(|0)\.00895771 *\|" $log | wc -l`
+CRIT1=`$GREP  " *\| XDIPLEN *\| *(|0)\.0941439. *\| *(|0)\.0951490. *\| *(|0)\.0089577. *\|" $log | wc -l`
 
 TEST[2]=$CRIT1
 CTRL[2]=1
