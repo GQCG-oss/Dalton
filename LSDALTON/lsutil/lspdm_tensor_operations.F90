@@ -42,6 +42,7 @@ module lspdm_tensor_operations_module
                     &array_accumulate_tile_modeidx
   end interface array_accumulate_tile 
 
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
   abstract interface
     subroutine put_acc_tile(arr,globtilenr,fort,nelms,lock_set)
       use precision
@@ -75,6 +76,7 @@ module lspdm_tensor_operations_module
       integer(kind=ls_mpik),intent(in) :: win
     end subroutine put_acc_vec
   end interface
+#endif
 
   !interface array_accumulate_tile_nobuff
   !  module procedure array_accumulate_tile_combidx4_nobuff,&
@@ -147,12 +149,14 @@ module lspdm_tensor_operations_module
   integer(kind=long) :: nmsg_get = 0
 
 #ifdef VAR_MPI
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
   procedure(array_acct4),pointer :: acc_ti4 
   procedure(array_acct8),pointer :: acc_ti8 
   procedure(array_gett4),pointer :: get_ti4 
   procedure(array_gett8),pointer :: get_ti8 
   procedure(array_putt4),pointer :: put_ti4 
   procedure(array_putt8),pointer :: put_ti8 
+#endif
 #endif
 
   !procedure(lsmpi_put_realkV_w8),pointer :: put_rk8 
@@ -1397,6 +1401,7 @@ module lspdm_tensor_operations_module
     logical               :: internal_alloc,lock_outside
     integer               :: maxintmp,b,e,minstart
 #ifdef VAR_MPI
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     procedure(put_acc_tile), pointer :: put_acc => null()
 
     acc_ti8 => array_acct8
@@ -1488,6 +1493,9 @@ module lspdm_tensor_operations_module
     else
       tmp  => null()
     endif
+#else
+    call lsquit("ERROR(array_scatter):this routine is FORTRAN 2003 only",-1)
+#endif
 #else
     call lsquit("ERROR(array_scatter):this routine is MPI only",-1)
 #endif
@@ -1651,6 +1659,7 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
     logical :: deb
 #ifdef VAR_MPI
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     procedure(put_acc_el), pointer :: pga => null()
     procedure(put_acc_vec), pointer :: pgav => null()
     integer(kind=ls_mpik) :: source
@@ -2205,6 +2214,9 @@ module lspdm_tensor_operations_module
     u_ro => null()
     pga  => null()
 #else
+    call lsquit("ERROR(array_gather_to_two_dim_1batch):this routine is F2003 only",-1)
+#endif
+#else
     call lsquit("ERROR(array_gather_to_two_dim_1batch):this routine is MPI only",-1)
 #endif
   end subroutine array_two_dim_1batch
@@ -2236,6 +2248,7 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
     logical :: goto_default
 #ifdef VAR_MPI
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     procedure(put_acc_el), pointer :: pga => null()
     procedure(put_acc_vec), pointer :: pgav => null()
     integer(kind=ls_mpik) :: source
@@ -2416,6 +2429,9 @@ module lspdm_tensor_operations_module
     u_o  => null()
     u_ro => null()
     pga  => null()
+#else
+    call lsquit("ERROR(array_gather_to_two_dim_2batch):this routine is F2003 only",-1)
+#endif
 #else
     call lsquit("ERROR(array_gather_to_two_dim_2batch):this routine is MPI only",-1)
 #endif

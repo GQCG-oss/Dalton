@@ -857,6 +857,8 @@ case "$WHICH" in
           fi;;
 esac
 
+#for now we just assume that the compiler can handle 2003 standard, at some point a test should be introduced here
+cpp="$cpp -DCOMPILER_UNDERSTANDS_FORTRAN_2003"
 # add OpenMP compiler flag and library
 if [ $useOMP = "true" ]; then
     #find out install root of F90
