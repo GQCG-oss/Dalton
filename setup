@@ -240,19 +240,6 @@ def gen_cmake_command(args):
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
 
-    if args.mkl != 'none':
-        if args.mkl == None:
-            print('you have to choose between --mkl=[{sequential,parallel,cluster}]')
-            sys.exit(1)
-        command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
-        command += ' -DENABLE_AUTO_BLAS=OFF'
-        command += ' -DENABLE_AUTO_LAPACK=OFF'
-
-    if args.cray:
-        command += ' -DENABLE_CRAY_WRAPPERS=ON'
-        command += ' -DENABLE_AUTO_BLAS=OFF'
-        command += ' -DENABLE_AUTO_LAPACK=OFF'
-
     if args.blas == 'builtin':
         command += ' -DENABLE_BUILTIN_BLAS=ON'
         command += ' -DENABLE_AUTO_BLAS=OFF'
@@ -281,6 +268,19 @@ def gen_cmake_command(args):
             print('--lapack=%s does not exist' % args.lapack)
             sys.exit(1)
         command += ' -DEXPLICIT_LAPACK_LIB=%s' % args.lapack
+        command += ' -DENABLE_AUTO_LAPACK=OFF'
+
+    if args.cray:
+        command += ' -DENABLE_CRAY_WRAPPERS=ON'
+        command += ' -DENABLE_AUTO_BLAS=OFF'
+        command += ' -DENABLE_AUTO_LAPACK=OFF'
+
+    if args.mkl != 'none':
+        if args.mkl == None:
+            print('you have to choose between --mkl=[{sequential,parallel,cluster}]')
+            sys.exit(1)
+        command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
+        command += ' -DENABLE_AUTO_BLAS=OFF'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
 
     if args.explicit_libs:
