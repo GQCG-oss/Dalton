@@ -1679,15 +1679,15 @@ contains
     ! ****************************
     nb2                      = nb*nb
     nb3                      = nb2*nb
-    nb4                      = int(nb3*nb,kind=long)
+    nb4                      = int((i8*nb3)*nb,kind=long)
     nv2                      = nv*nv
     no2                      = no*no
     no3                      = no2*no
-    no4                      = int(no3*no,kind=long)
+    no4                      = int((i8*no3)*no,kind=long)
     b2v                      = nb2*nv
     o2v                      = no2*nv
     v2o                      = nv2*no
-    o2v2                     = int(nv2*no2,kind=long)
+    o2v2                     = int((i8*nv2)*no2,kind=long)
     nor                      = no*(no+1)/2
     nvr                      = nv*(nv+1)/2
 
@@ -1862,7 +1862,7 @@ contains
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
          & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
          &nbatchesGamma,orb2BatchGamma)
-    if(master)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
+    if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
                                        & 'with maximum size',MaxActualDimGamma
 
     ! Translate batchindex to orbital index
@@ -1890,7 +1890,7 @@ contains
     call mem_alloc(orb2batchAlpha,nb)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
          & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha)
-    if(master)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
+    if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
                                       &, 'with maximum size',MaxActualDimAlpha
 
     ! Translate batchindex to orbital index
@@ -1917,7 +1917,7 @@ contains
 
     ! PRINT some information about the calculation
     ! --------------------------------------------
-    if(master) then
+    if(master.and.DECinfo%PL>1) then
       if(scheme==4) write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
       if(scheme==3) write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
       if(scheme==2) write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
@@ -1933,8 +1933,8 @@ contains
     ! ------------------------
    
     !get the t+ and t- for the Kobayshi-like B2 term
-    call mem_alloc(tpl,int(nor*nvr,kind=long))
-    call mem_alloc(tmi,int(nor*nvr,kind=long))
+    call mem_alloc(tpl,int(i8*nor*nvr,kind=long))
+    call mem_alloc(tmi,int(i8*nor*nvr,kind=long))
     call get_tpl_and_tmi(t2%elm1,nv,no,tpl,tmi)
 
     !get u2 in pdm or local
@@ -1960,8 +1960,8 @@ contains
     if(DECinfo%ccModel>2)then
 
 #ifdef VAR_MPI
-      call mem_alloc(sio4,sio4_c,int(nor*no2,kind=long))
-      call lsmpi_win_create(sio4,sio4_w,int(nor*no2,kind=long),infpar%lg_comm)
+      call mem_alloc(sio4,sio4_c,int(i8*nor*no2,kind=long))
+      call lsmpi_win_create(sio4,sio4_w,int(i8*nor*no2,kind=long),infpar%lg_comm)
 #else
       call mem_alloc(sio4,nor*no2)
 #endif
@@ -1982,35 +1982,36 @@ contains
     Gbi=0.0E0_realk
    
     ! allocate working arrays depending on the batch sizes
-    maxsize64 = nb2*MaxActualDimAlpha*MaxActualDimGamma
+    maxsize64 = int((i8*nb2)*MaxActualDimAlpha*MaxActualDimGamma,kind=8)
     w0size    = maxsize64
     call mem_alloc(w0,w0size)
 
-    maxsize64 = max(int(nb2*MaxActualDimAlpha*MaxActualDimGamma,kind=8),int(v2o*MaxActualDimAlpha,kind=8))
-    maxsize64 = max(maxsize64,int(o2v*MaxActualDimGamma,kind=8))
-    if(scheme==4.or.scheme==3) maxsize64 = max(maxsize64,int(o2v*MaxActualDimAlpha,kind=8))
+    maxsize64 = max(int((i8*nb2)*MaxActualDimAlpha*MaxActualDimGamma,kind=8),int((i8*v2o)*MaxActualDimAlpha,kind=8))
+    maxsize64 = max(maxsize64,int((i8*o2v)*MaxActualDimGamma,kind=8))
+    if(scheme==4.or.scheme==3) maxsize64 = max(maxsize64,int((i8*o2v)*MaxActualDimAlpha,kind=8))
     w1size    = maxsize64
     call mem_alloc(w1,w1size)
 
-    maxsize64 = max(int(nb*nb*MaxActualDimAlpha*MaxActualDimGamma,kind=8),o2v2)
+    maxsize64 = max(int((i8*nb)*nb*MaxActualDimAlpha*MaxActualDimGamma,kind=8),o2v2)
     maxsize64 = max(maxsize64,int(nor*no2,kind=8))
     w2size    = maxsize64
     call mem_alloc(w2,w2size)
 
-    maxsize64 = max(int(nv*no*MaxActualDimAlpha*MaxActualDimGamma,kind=8),int(no2*MaxActualDimAlpha*MaxActualDimGamma,kind=8))
-    maxsize64 = max(maxsize64,int(o2v*MaxActualDimAlpha,kind=8))
-    maxsize64 = max(maxsize64,int(2*nor*MaxActualDimAlpha*MaxActualDimGamma,kind=8)) 
-    maxsize64 = max(maxsize64,int(nor*nv*MaxActualDimAlpha,kind=8)) 
-    maxsize64 = max(maxsize64,int(nor*nv*MaxActualDimGamma,kind=8)) 
-    maxsize64 = max(maxsize64,int(no*nor*MaxActualDimAlpha,kind=8)) 
-    maxsize64 = max(maxsize64,int(no*nor*MaxActualDimGamma,kind=8)) 
+    maxsize64 = max(int((i8*nv)*no*MaxActualDimAlpha*MaxActualDimGamma,kind=8),&
+    &int((i8*no2)*MaxActualDimAlpha*MaxActualDimGamma,kind=8))
+    maxsize64 = max(maxsize64,int((i8*o2v)*MaxActualDimAlpha,kind=8))
+    maxsize64 = max(maxsize64,int((2_long*nor)*MaxActualDimAlpha*MaxActualDimGamma,kind=8)) 
+    maxsize64 = max(maxsize64,int((i8*nor)*nv*MaxActualDimAlpha,kind=8)) 
+    maxsize64 = max(maxsize64,int((i8*nor)*nv*MaxActualDimGamma,kind=8)) 
+    maxsize64 = max(maxsize64,int((i8*no)*nor*MaxActualDimAlpha,kind=8)) 
+    maxsize64 = max(maxsize64,int((i8*no)*nor*MaxActualDimGamma,kind=8)) 
     w3size    = maxsize64
     call mem_alloc(w3,w3size)
 
     !allocate semi-permanent storage arrays for loop
     !print *,"allocing help things:",o2v*MaxActualDimGamma*2,&
     !      &(8.0E0_realk*o2v*MaxActualDimGamma*2)/(1024.0E0_realk*1024.0E0_realk*1024.0E0_realk)
-    call mem_alloc(uigcj,o2v*MaxActualDimGamma)
+    call mem_alloc(uigcj,int((i8*o2v)*MaxActualDimGamma,kind=8))
 
     if(DECinfo%ccModel>2)then
       sio4=0.0E0_realk
@@ -2423,7 +2424,7 @@ contains
        !***********************************************************************
        if(DECinfo%ccModel>2)then
 
-         call lsmpi_local_allreduce_chunks(sio4,int(nor*no2,kind=8),double_2G_nel)
+         call lsmpi_local_allreduce_chunks(sio4,int((i8*nor)*no2,kind=8),double_2G_nel)
 
          if(scheme==4)then
 
@@ -2454,8 +2455,8 @@ contains
 
 
     ! Reallocate 1 temporary array
-    maxsize64 = max(int(nv2*no2,kind=8),int(nb2,kind=8))
-    maxsize64 = max(maxsize64,int(nv2*nor,kind=8))
+    maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
+    maxsize64 = max(maxsize64,int((i8*nv2)*nor,kind=8))
     call mem_alloc(w1,maxsize64)
 
 
@@ -2654,9 +2655,9 @@ contains
 
     if(print_debug)then
       write(msg,*)"NORM(Gbi):"
-      call print_norm(Gbi,int(no*nb,kind=8),msg)
+      call print_norm(Gbi,int((i8*no)*nb,kind=8),msg)
       write(msg,*)"NORM(Had):"
-      call print_norm(Had,int(nv*nb,kind=8),msg)
+      call print_norm(Had,int((i8*nv)*nb,kind=8),msg)
       write(msg,*)"NORM(omega2 s-o):"
       call print_norm(omega2,msg)
       write(msg,*)"NORM(govov s-o):"
@@ -2699,9 +2700,9 @@ contains
 #endif
     if(print_debug)then
       write(msg,*)"NORM(deltafock):"
-      call print_norm(deltafock,int(nb*nb,kind=8),msg)
+      call print_norm(deltafock,int((i8*nb)*nb,kind=8),msg)
       write(msg,*)"NORM(iFock):"
-      call print_norm(iFock%elms,int(nb*nb,kind=8),msg)
+      call print_norm(iFock%elms,int((i8*nb)*nb,kind=8),msg)
     endif
 
 
@@ -2737,13 +2738,13 @@ contains
 
     if(print_debug)then
       write(msg,*)"NORM(ppfock):"
-      call print_norm(ppfock,int(no*no,kind=8),msg)
+      call print_norm(ppfock,int((i8*no)*no,kind=8),msg)
       write(msg,*)"NORM(pqfock):"
-      call print_norm(pqfock,int(no*nv,kind=8),msg)
+      call print_norm(pqfock,int((i8*no)*nv,kind=8),msg)
       write(msg,*)"NORM(qpfock):"
-      call print_norm(qpfock,int(no*nv,kind=8),msg)
+      call print_norm(qpfock,int((i8*no)*nv,kind=8),msg)
       write(msg,*)"NORM(qqfock):"
-      call print_norm(qqfock,int(nv*nv,kind=8),msg)
+      call print_norm(qqfock,int((i8*nv)*nv,kind=8),msg)
     endif
 
     !Free the AO fock matrix
@@ -2825,7 +2826,7 @@ contains
 
     if(print_debug)then
       write(msg,*)"NORM(omega1):"
-      call print_norm(omega1,int(no*nv,kind=8),msg)
+      call print_norm(omega1,int((i8*no)*nv,kind=8),msg)
       write(msg,*)"NORM(omega2):"
       call print_norm(omega2,msg)
     endif
@@ -2867,7 +2868,7 @@ contains
     nv2          = nv*nv
     v2o          = nv*nv*no
     o2v          = no*no*nv
-    o2v2         = int(no2*nv2,kind=8)
+    o2v2         = int((i8*no2)*nv2,kind=8)
     me           = 0
     nnod         = 1
     
@@ -2953,7 +2954,7 @@ contains
             enddo
           endif
           if(me==0.or.me==nod)then
-            call ls_mpisendrecv(w3(1:no*tri),int(no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+            call ls_mpisendrecv(w3(1:no*tri),int((i8*no)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
           endif
         enddo
         if(me==0)then
@@ -2999,7 +3000,7 @@ contains
             enddo
           endif
           if(me==0.or.me==nod)then
-            call ls_mpisendrecv(w3(1:nv*tri),int(nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+            call ls_mpisendrecv(w3(1:nv*tri),int((i8*nv)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
           endif
         enddo
         if(me==0)then
@@ -3194,14 +3195,14 @@ contains
       me     = infpar%lg_mynum
       mode   = MPI_MODE_NOCHECK
 #endif
-      o2v2   = int(no*no*nv*nv,kind=8)
+      o2v2   = int((i8*no)*no*nv*nv,kind=8)
       w1size = o2v2
       
      !Setting transformation variables for each rank
      !**********************************************
      call mo_work_dist(nv*no,fai,tl)
 
-     tlov  = int(tl*no*nv,kind=8)
+     tlov  = int((i8*tl)*no*nv,kind=8)
 
      if(DECinfo%PL>2.and.me==0)then
        write(DECinfo%output,'("Trafolength in striped CD:",I5)')tl
@@ -3251,9 +3252,9 @@ contains
          call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,lock_outside,debug=.true.)
          call arr_unlock_wins(gvvoo,.true.)
          write (msg,*),infpar%lg_mynum,"w2"
-         call print_norm(w2,int(tl*no*nv,kind=8),msg)
+         call print_norm(w2,int((i8*tl)*no*nv,kind=8),msg)
        else
-         call array_gather_tilesinfort(gvvoo,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
+         call array_gather_tilesinfort(gvvoo,w1,int((i8*no)*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
          do nod=1,nnod-1
            call mo_work_dist(no*nv,fri,tri,nod)
            if(me==0)then
@@ -3262,7 +3263,7 @@ contains
              enddo
            endif
            if(me==0.or.me==nod)then
-             call ls_mpisendrecv(w2(1:no*nv*tri),int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+             call ls_mpisendrecv(w2(1:no*nv*tri),int((i8*no)*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
            endif
          enddo
          if(me==0)then
@@ -3313,7 +3314,7 @@ contains
              enddo
            endif
            if(me==0.or.me==nod)then
-             call ls_mpisendrecv(w3(1:no*nv*tri),int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+             call ls_mpisendrecv(w3(1:no*nv*tri),int((i8*no)*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
            endif
          enddo
          if(me==0)then
@@ -3844,7 +3845,7 @@ contains
     integer(kind=ls_mpik) :: mode
     integer(kind=long)    :: o2v2
 
-    o2v2 = int(no*no*nv*nv,kind=long)
+    o2v2 = int((i8*no)*no*nv*nv,kind=long)
 #ifdef VAR_MPI
     mode = int(MPI_MODE_NOCHECK,kind=ls_mpik)
 #endif
@@ -4921,7 +4922,7 @@ contains
     elseif(s==3)then
       !govov stays in pdm and is dense in second part
       ! u 2 + omega2 + H +G  + keep space for one update batch
-      call get_int_dist_info(int(nv*nv*no*no,kind=8),fe,ne,master)
+      call get_int_dist_info(int((i8*nv)*nv*no*no,kind=8),fe,ne,master)
       memrq = 1.0E0_realk*(2*no*no*nv*nv+ nb*nv+nb*no) + ne
       !gvoov gvvoo (govov, allocd outside)
       memrq=memrq+ 2.0E0_realk*ne 
@@ -5876,7 +5877,7 @@ subroutine ccsd_data_preparation()
     call ls_mpibcast_chunks(yvdata,nelms,infpar%master,infpar%lg_comm,k)
     
 
-    nelms = int(nvirt*nvirt*nocc*nocc,kind=8)
+    nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
     call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
     if(iter/=1.and.scheme==4)then
       call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
@@ -5956,7 +5957,7 @@ subroutine calculate_E2_and_permute_slave()
         call mem_alloc(qqf,nv*nv)
         call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
         call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
-        call mem_alloc(w1,int(no*no*nv*nv,kind=8))
+        call mem_alloc(w1,int((i8*no)*no*nv*nv,kind=8))
         call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,.false.,lo)
 
         call mem_dealloc(ppf)

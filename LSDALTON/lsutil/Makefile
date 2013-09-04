@@ -135,12 +135,8 @@ F90_OBJS = \
 	lspdm_tensor_operations.o\
 	papi.o
 
-#F03_OBJS = \
-	lspdm_tensor_operations.o
 
-#       AoBatchType.o\
 
-#liblsutil.a: $(F03_OBJS) $(F90_OBJS) $(C_OBJS)
 liblsutil.a: $(F90_OBJS) $(C_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
@@ -148,8 +144,6 @@ clean :
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD reord*.F90
 
 
-#Makefile.depend depend: $(F03_OBJS:.o=.F03) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
-#	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F03_OBJS:.o=.F03) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) > Makefile.depend
 Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
 	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) > Makefile.depend
 

@@ -24,12 +24,12 @@ module parallel_models_mpi
 ! use parallel_file_io_models_mpi
 
 #ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
 #else
   implicit none
-!#include "mpif.h"
+#include "mpif.h"
 #endif
 #else
   implicit none

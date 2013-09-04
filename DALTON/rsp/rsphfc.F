@@ -920,7 +920,7 @@ C
              IJ = 1  
              DO I = 1,3
                 DO J = 1,I 
-                   IF (.NOT.(I.EQ.Q)) THEN  
+                   IF (.NOT.(I.EQ.J)) THEN  
                       TMPVAL = DP5*(ATEN(IDX,I,J)+ATEN(IDX,J,I))
                       ATEN(IDX,I,J) = TMPVAL 
                       ATEN(IDX,J,I) = TMPVAL
