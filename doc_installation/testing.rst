@@ -6,7 +6,8 @@ Testing the installation
 It is very important that you verify that your Dalton installation correctly
 reproduces the reference test set before running any production calculations.
 
-The test set driver is CTest which can be invoked with "make test".
+The test set driver is CTest which can be invoked with "make test" after building
+the code.
 
 
 Environment variables for testing
