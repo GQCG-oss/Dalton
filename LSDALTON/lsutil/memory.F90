@@ -12,8 +12,11 @@ MODULE memory_handling
    use OverlapType
    use tensor_type_def_module
 #ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+   use mpi
+#else
   include 'mpif.h'
-!   use mpi
+#endif
 #endif
    private
    public get_available_memory
