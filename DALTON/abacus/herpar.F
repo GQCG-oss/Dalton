@@ -562,13 +562,15 @@ C  /* Deck her_sdinit */
       use rma_windows
 
 #ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
       use mpi
 #include "implicit.h"
 #else
 #include "implicit.h"
-!#include "mpif.h"
+#include "mpif.h"
 #endif
+#else
+#include "implicit.h"
 #endif
 C
 #include "priunit.h"
@@ -1456,13 +1458,15 @@ C
       use rma_windows
 
 #ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
       use mpi
 #include "implicit.h"
 #else
 #include "implicit.h"
-!#include "mpif.h"
+#include "mpif.h"
 #endif
+#else
+#include "implicit.h"
 #endif
 
 #include "priunit.h"

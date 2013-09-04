@@ -7,7 +7,7 @@ Expert options
 Compiling in verbose mode
 -------------------------
 
-Sometimes you want to see the actual compiler flags and definitions::
+Sometimes you want to see the actual compiler flags and definitions when compiling the code::
 
   $ make VERBOSE=1
 

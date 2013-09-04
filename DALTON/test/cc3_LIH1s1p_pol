@@ -104,17 +104,17 @@ else
 fi
 
 # SCF, MP2 and CC3 energies:
-CRIT1=`$GREP "Total SCF   energy: * -2\.7801922471" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -2\.7824034471" $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -2\.7976480465" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * -2\.780192247." $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -2\.782403447." $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -2\.79764804.." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 polarizability :
-CRIT1=`$GREP  "YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *(-|-0)\.52964096" $log | wc -l`
-CRIT2=`$GREP  " *(-|-0)\.5000 *(|0)\.5000 *(|0)\.75079172" $log | wc -l`
+CRIT1=`$GREP  "YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *(-|-0)\.529640.." $log | wc -l`
+CRIT2=`$GREP  " *(-|-0)\.5000 *(|0)\.5000 *(|0)\.750791.." $log | wc -l`
 
 TEST[2]=`expr $CRIT1  \+ $CRIT2`
 CTRL[2]=2

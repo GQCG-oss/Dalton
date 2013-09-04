@@ -14,7 +14,7 @@ module sync_coworkers
   use dalton_mpi
   use lucita_cfg
   use lucita_mcscf_ci_task
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
 #else
