@@ -5037,8 +5037,11 @@ contains
        CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
             & count,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
        !IF direct communication is used the unlock times are interesting
+#ifdef MOD_UNRELEASED
        call lsmpi_reduction(time_win_unlock,infpar%master,MPI_COMM_LSDALTON)
-       print *,"YEAH DEBUG INFO TIME SPENT IN UNLOCK",infpar%mynum,time_win_unlock
+       print *,"TIME SPENT IN UNLOCK",infpar%mynum,time_win_unlock
+#endif
+
        IF(infpar%mynum.eq.infpar%master) THEN
           WRITE(lupri,'(A)')'  The total memory used across all MPI nodes'
           call print_maxmem(lupri,recvbuffer,'TOTAL')
