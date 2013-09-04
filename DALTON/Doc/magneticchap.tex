@@ -651,16 +651,18 @@ H.J.Aa.Jensen. \newblock {\em J.Chem.Phys.}, {\bf
 P.J{\o}rgensen, K.V. Mikkelsen. \newblock {\em J.Chem.Phys.}, {\bf
 104},\hspace{0.25em}629, (1996).
 \item DFT: Z.Rinkevicius, L.Telyatnyk, O.Vahtras and H.{\AA}gren.
-\newblock {\em J.Chem.Phys.}, {\bf 121},\hspace{0.25em} 7614 (2004)
+\newblock {\em J.Chem.Phys.}, {\bf 121},\hspace{0.25em} 7614 (2004);
+Z. Rinkevicius, K. J. de Almeida and O. Vahtras, 
+\newblock {\em J.Chem.Phys.}, {\bf 129},\hspace{0.25em} 64109 (2008)
 \end{list}
 }}
 \end{center}
 
     The calculation of hyperfine coupling\index{hyperfine
 coupling} tensors (in vacuum or in
-solution) is invoked by the keyword \Sec{ESR} in the \Sec{*RESPONSE}
+solution) is invoked by the keyword \Sec{ESR} or keyword \Sec{HFC} in the \Sec{*RESPONSE}
 input module. Thus a complete input file for the calculation of
-hyperfine coupling tensors will be:
+hyperfine coupling tensors will be using ESR keyword:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -682,24 +684,26 @@ hyperfine coupling tensors will be:
    30
 **END OF DALTON INPUT
 \end{verbatim}
-%.TRPPRP
-%FC Cl 01
-%.TRPPRP
-%.
-%.
-%.
-%
-%.TRPPRP
-%SD  01 x
-%.TRPPRP
-%SD  01 y
-%.TRPPRP
-%SD  01 z
-%.TRPPRP
-%.
-%.
-%.
 
+    Alternatively at DFT level hyperfine coupling tensor can be computed using HFC keyword:
+
+ \begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**INTEGRALS
+.MNF-SO
+**WAVE FUNCTIONS
+.DFT
+B3LYP
+**RESPON
+.TRPFLG
+*HFC
+.HFC-FC
+.HFC-SD 
+.HFC-SO
+**END OF DALTON INPUT
+\end{verbatim}
+    
     This will invoke the calculation of hyperfine
 coupling\index{hyperfine coupling} tensors
 using the Restricted-Unrestricted\index{restricted-unrestricted method}

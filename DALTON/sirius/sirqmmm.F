@@ -140,7 +140,6 @@ C     The different static energy contributions
       ECHART = 0.0D0
       EDIPT  = 0.0D0
       EQUADT = 0.0D0
-      EOCTUP = 0.0D0
 
 C     Backup diporg. We use diporg to transfer coordinates to int. program.
 
@@ -168,11 +167,7 @@ C     3) The quadrupole correction to the Fock/KS operator
         IF (NMULT .GE. 2) CALL QMMM_QUADPOLE(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
 
-C     4) The octupole correction to the Fock/KS operator. We do the
-C     integrals numerically here.
-        IF (NMULT .GE. 3) CALL QMMM_OCTUPOLE(DCAO,ESOLT,WRK(KTAO),
-     &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
-      
+
 #if defined(VAR_MPI)
       ENDIF ! nodtot .ge. 1
 #endif
@@ -186,7 +181,6 @@ C     integrals numerically here.
         write(lupri,*) 'MM-charge QM density interaction energy:',ECHART
         write(lupri,*) 'MM-dipole QM density interaction energy:',EDIPT
         write(lupri,*) 'MM-quadr. QM density interaction energy:',EQUADT
-        write(lupri,*) 'MM-octup. QM density interaction energy:',EOCTUP
       ENDIF 
 
 C     5) The polarization correction to the Fock/KS operator
@@ -532,114 +526,6 @@ C     Write integrals to file
       ENDIF
 
       CALL QEXIT('QMMM_QUADPOLE')
-
-      RETURN
-      END
-
-C******************************************************************************
-C  /* Deck qmmm_octupole */
-      SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
-     &                       WRK,LWRK,IPRINT)
-
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "iratdef.h"
-#include "maxash.h"
-#include "maxorb.h"
-
-#include "qmmm.h"
-#include "qm3.h"
-#include "inforb.h"
-#include "inftap.h"
-#include "infpri.h"
-#include "scbrhf.h"
-#include "maxaqn.h"
-#include "symmet.h"
-#include "orgcom.h"
-#include "infinp.h"
-#include "nuclei.h"
-#include "codata.h"
-#include "infpar.h"
-
-      DIMENSION WRK(LWRK), TAO(NNBASX), DCAO(*)
-      LOGICAL LOCDEB, FIRST
-
-      CALL QENTER('QMMM_OCTUPOLE')
-
-      KTAO   = 1
-      KNSEL  = KTAO   + NNBASX
-      KNSNUC = KNSEL  + MMCENT
-      KLAST  = KNSNUC + MMCENT
-      LWRK2  = LWRK - KLAST + 1
-
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_OCTUPOLE 1',-KLAST,LWRK)
-
-      FAC1   = 1.0D0
-      FACM1  = -1.0D0
-      EMUL3T = 0.0D0
-      ELOCT  = 0.0D0
-
-      CALL DZERO(WRK(KTAO),NNBASX)
-
-      DO 410 I = 1,MMCENT
-
-        DIST2 = (MMCORD(1,I)-QMCOM(1))**2 +
-     *          (MMCORD(2,I)-QMCOM(2))**2 +
-     *          (MMCORD(3,I)-QMCOM(3))**2
-        DIST = SQRT(DIST2)
-
-        IF (DIST .GT. RCUTMM) THEN
-          WRK(KNSEL + I - 1)  = 0.0D0
-          WRK(KNSNUC + I - 1) = 0.0D0
-          IF (LOCDEB) THEN
-            WRITE(LUPRI,*) 'Skipping octupole ', I
-          ENDIF
-          GOTO 410
-        ENDIF
-
-        CALL OCTUPOLE_ITER(I,DCAO,WRK(KNSEL+I-1),WRK(KNSNUC+I-1),LOCDEB,
-     *                    WRK(KTAO),WRK(KLAST),LWRK2,IPRINT)
-        EMUL3T = EMUL3T + WRK(KNSEL+I-1)
-        ELOCT  = ELOCT  + WRK(KNSNUC+I-1)
-
- 410  CONTINUE
-
-C Add up QM nuclei - multipole energy contributions to be used in CC
-      ENUMUL = ENUMUL + ELOCT
-      IF (FIRST) THEN
-C     Write integrals to file
-         LUQMMM = -1
-         IF (LUQMMM .LT. 0) THEN
-            CALL GPOPEN(LUQMMM,'MU3INT','UNKNOWN','','',
-     &                  IDUMMY,.FALSE.)
-         ENDIF
-         REWIND(LUQMMM)
-         WRITE (LUQMMM) (WRK(KTAO+J-1), J=1,NNBASX)
-         CALL GPCLOSE(LUQMMM,'KEEP')
-      ENDIF
-
-      CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO,1)
-
-      EOCTUP = EMUL3T + ELOCT
-      ESOLT  = ESOLT  + EOCTUP
-
-      IF ( (IPRINT.GT.5) .OR. (LOCDEB) ) THEN
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,*) ' Center Octup.-electronic Octup.-nuclear Total'
-        DO 412 I = 1,MMCENT
-          ETEMP = WRK(KNSEL + I - 1) + WRK(KNSNUC + I - 1)
-          WRITE(LUPRI,*) I,WRK(KNSEL + I - 1),WRK(KNSNUC + I - 1),ETEMP
-  412   CONTINUE
-  
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,*) ' Total '
-        WRITE(LUPRI,*) EMUL3T, ELOCT, EMUL3T+ELOCT
-        WRITE(LUPRI,*) 
-      ENDIF
-
-      CALL QEXIT('QMMM_OCTUPOLE')
 
       RETURN
       END
@@ -3608,308 +3494,6 @@ C     Remember the factor of 1/2 from the Taylor expansion
       END
 
 C******************************************************************************
-C  /* Deck octupole_iter */
-      SUBROUTINE OCTUPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
-     &                       TAO,WRK,LWRK,IPRTMP)
-
-#include "implicit.h"
-#include "mxcent.h"
-#include "inforb.h"
-#include "nuclei.h"
-#include "qm3.h"
-#include "qmmm.h"
-#include "gnrinf.h"
-#include "orgcom.h"
-#include "priunit.h"
-
-      DIMENSION WRK(LWRK), DCAO(NNBASX), TAO(NNBASX)
-      CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      PARAMETER ( DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
-
-      CALL QENTER('OCTUPOLE_ITER')
-
-      FAC1   =  1.0D0
-      FACM1  = -1.0D0
-
-      KMAT1 = 1
-      KMAT2 = KMAT1 + 6*NNBASX
-      KMAT3 = KMAT2 + 6*NNBASX
-      KMAT4 = KMAT3 + 6*NNBASX
-      KLAST = KMAT4 + 6*NNBASX
-      LWRK2 = LWRK - KLAST + 1
-
-      IF (LWRK2 .LT. 0) CALL ERRWRK('OCTUPOLE_ITER',-KLAST,LWRK)
-
-C       See if the octupole moment at this site is zero
-      DNORM2 = MUL3MM(1,I)**2+MUL3MM(2,I)**2+MUL3MM(3,I)**2
-     *         + MUL3MM(4,I)**2+MUL3MM(5,I)**2+MUL3MM(6,I)**2
-     *         + MUL3MM(7,I)**2+MUL3MM(8,I)**2+MUL3MM(9,I)**2
-     *         + MUL3MM(10,I)**2
-      DNORM = SQRT(DNORM2)
-      IF (ABS(DNORM) .LE. THRMM) THEN
-         ENSEL = 0.0D0
-         ENSNUC = 0.0D0
-         CALL QEXIT('OCTUPOLE_ITER')
-         RETURN
-      ENDIF
-
-      CALL DZERO(WRK(KMAT1),6*NNBASX)
-      CALL DZERO(WRK(KMAT2),6*NNBASX)
-      CALL DZERO(WRK(KMAT3),6*NNBASX)
-      CALL DZERO(WRK(KMAT4),6*NNBASX)
-
-      KPATOM = 0
-      NOSIM = 6
-      TOFILE = .FALSE.
-      TRIMAT = .TRUE.
-      EXP1VL = .FALSE.
-      DIPORG(1) = MMCORD(1,I)
-      DIPORG(2) = MMCORD(2,I)
-      DIPORG(3) = MMCORD(3,I)
-
-      XSAVE = DIPORG(1)
-      YSAVE = DIPORG(2)
-      ZSAVE = DIPORG(3)
-
-C     Consider first the derivative wrt. z 
-
-      DIPORG(3) = DIPORG(3) + DELFLD
-      RUNQM3=.TRUE.
-      CALL GET1IN(WRK(KMAT1),'ELFGRDC',NOSIM,WRK(KLAST),
-     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
-      RUNQM3=.FALSE.
-      DIPORG(3) = ZSAVE
-
-      DIPORG(3) = DIPORG(3) - DELFLD
-      RUNQM3=.TRUE.
-      CALL GET1IN(WRK(KMAT2),'ELFGRDC',NOSIM,WRK(KLAST),
-     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
-      RUNQM3=.FALSE.
-      DIPORG(3) = ZSAVE
-
-C     Calculate gradient of these integrals
-
-      FSCAL = 1.0D0/(2.0D0*DELFLD)
-      CALL DAXPY(6*NNBASX,FACM1,WRK(KMAT2),1,WRK(KMAT1),1)
-      CALL DSCAL(6*NNBASX,FSCAL,WRK(KMAT1),1)
-      CALL DZERO(WRK(KMAT2),6*NNBASX)
-
-      IF ( (IPRTMP.GT.15) .OR. (LOCDEB) ) THEN
-         WRITE (LUPRI,'(/A)') ' E_xxz_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT1),NBAST,1,LUPRI)
-          
-         WRITE (LUPRI,'(/A)') ' E_xyz matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT1+NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_xzz matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT1+2*NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_yyz_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT1+3*NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_yzz_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT1+4*NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_zzz_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT1+5*NNBASX),NBAST,1,LUPRI)
-      END IF
-
-C     Continue with the derivatives wrt. y   
-
-      DIPORG(2) = DIPORG(2) + DELFLD
-      RUNQM3=.TRUE.
-      CALL GET1IN(WRK(KMAT2),'ELFGRDC',NOSIM,WRK(KLAST),
-     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
-      RUNQM3=.FALSE.
-      DIPORG(2) = YSAVE
-
-      DIPORG(2) = DIPORG(2) - DELFLD
-      RUNQM3=.TRUE.
-      CALL GET1IN(WRK(KMAT3),'ELFGRDC',NOSIM,WRK(KLAST),
-     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
-      RUNQM3=.FALSE.
-      DIPORG(2) = YSAVE
-
-C       Calculate gradient of these integrals
-
-      FSCAL = 1.0D0/(2.0D0*DELFLD)
-      CALL DAXPY(6*NNBASX,FACM1,WRK(KMAT3),1,WRK(KMAT2),1)
-      CALL DSCAL(6*NNBASX,FSCAL,WRK(KMAT2),1)
-      CALL DZERO(WRK(KMAT3),6*NNBASX)
-
-      IF ( (IPRTMP.GT.15) .OR. (LOCDEB) ) THEN
-         WRITE (LUPRI,'(/A)') ' E_xxy_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT2),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_xyy matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT2+NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_xzy matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT2+2*NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_yyy_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT2+3*NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_yzy_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT2+4*NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_zzy_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT2+5*NNBASX),NBAST,1,LUPRI)
-      END IF
-
-C     Continue with the derivatives wrt. x
-
-      DIPORG(1) = DIPORG(1) + DELFLD
-      RUNQM3=.TRUE.
-      CALL GET1IN(WRK(KMAT3),'ELFGRDC',NOSIM,WRK(KLAST),
-     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
-      RUNQM3=.FALSE.
-      DIPORG(1) = XSAVE
-
-      DIPORG(1) = DIPORG(1) - DELFLD
-      RUNQM3=.TRUE.
-      CALL GET1IN(WRK(KMAT4),'ELFGRDC',NOSIM,WRK(KLAST),
-     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
-      RUNQM3=.FALSE.
-      DIPORG(1) = XSAVE
-
-C     Calculate gradient of these integrals
-
-      FSCAL = 1.0D0/(2.0D0*DELFLD)
-      CALL DAXPY(6*NNBASX,FACM1,WRK(KMAT4),1,WRK(KMAT3),1)
-      CALL DSCAL(6*NNBASX,FSCAL,WRK(KMAT3),1)
-      CALL DZERO(WRK(KMAT4),6*NNBASX)
-
-      IF ( (IPRTMP.GT.15) .OR. (LOCDEB) ) THEN
-         WRITE (LUPRI,'(/A)') ' E_xxx_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT3),NBAST,1,LUPRI)
-         
-         WRITE (LUPRI,'(/A)') ' E_xyx matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT3+NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_xzx matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT3+2*NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_yyx_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT3+3*NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_yzx_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT3+4*NNBASX),NBAST,1,LUPRI)
-
-         WRITE (LUPRI,'(/A)') ' E_zzx_matrix in QMMM_FCK:'
-         CALL OUTPAK(WRK(KMAT3+5*NNBASX),NBAST,1,LUPRI)
-      END IF
-
-      CALL DSCAL(NNBASX,MUL3MM(1,I),WRK(KMAT3),1) ! xxx
-      CALL DSCAL(NNBASX,D3*MUL3MM(2,I),WRK(KMAT2),1) ! xxy
-      CALL DSCAL(NNBASX,D3*MUL3MM(3,I),WRK(KMAT1),1) ! xxz
-      CALL DSCAL(NNBASX,D3*MUL3MM(4,I),WRK(KMAT2+NNBASX),1) ! xyy
-      CALL DSCAL(NNBASX,D6*MUL3MM(5,I),WRK(KMAT1+NNBASX),1) ! xyz
-      CALL DSCAL(NNBASX,D3*MUL3MM(6,I),WRK(KMAT1+2*NNBASX),1) ! xzz
-      CALL DSCAL(NNBASX,MUL3MM(7,I),WRK(KMAT2+3*NNBASX),1) ! yyy
-      CALL DSCAL(NNBASX,D3*MUL3MM(8,I),WRK(KMAT1+3*NNBASX),1) ! yyz
-      CALL DSCAL(NNBASX,D3*MUL3MM(9,I),WRK(KMAT1+4*NNBASX),1) ! yzz
-      CALL DSCAL(NNBASX,MUL3MM(10,I),WRK(KMAT1+5*NNBASX),1) ! zzz
-
-C     Include 1/6 from the Taylor expansion
-      CALL DSCAL(6*NNBASX,D6I,WRK(KMAT1),1)
-      CALL DSCAL(6*NNBASX,D6I,WRK(KMAT2),1)
-      CALL DSCAL(6*NNBASX,D6I,WRK(KMAT3),1)
-C
-C     The integrals contains a factor of -1 since they are obtained as
-C     derivative if the field gradient and these contains a factor of
-C     -1. Therefore no -1 in the daxpy.
-      CALL DAXPY(NNBASX,FAC1,WRK(KMAT3),1,TAO(1),1) ! xxx 
-      CALL DAXPY(NNBASX,FAC1,WRK(KMAT2),1,TAO(1),1) ! xxy
-      CALL DAXPY(NNBASX,FAC1,WRK(KMAT1),1,TAO(1),1) ! xxz
-      CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+NNBASX),1,TAO(1),1) ! xyy
-      CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+NNBASX),1,TAO(1),1) ! xyz
-      CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+2*NNBASX),1,TAO(1),1) ! xzz 
-      CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+3*NNBASX),1,TAO(1),1) ! yyy
-      CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+3*NNBASX),1,TAO(1),1) ! yyz
-      CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+4*NNBASX),1,TAO(1),1) ! yzz
-      CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+5*NNBASX),1,TAO(1),1) ! zzz
-
-C     Contract with the density to get the expectation values. The
-C     factor of 1/6 in the Taylor expansion has been included. Also, the
-C     off-diagonal elements have been scaled by 3 and the xyz element by
-C     6 in order to include all contributions (the off -diagonal parts
-C     are related by symmetry)
-
-C     Since the integrals contains a factor of -1 no -DDOT here.
-
-      E3XXX=DDOT(NNBASX,DCAO,1,WRK(KMAT3),1)
-      E3XXY=DDOT(NNBASX,DCAO,1,WRK(KMAT2),1)
-      E3XXZ=DDOT(NNBASX,DCAO,1,WRK(KMAT1),1)
-      E3XYY=DDOT(NNBASX,DCAO,1,WRK(KMAT2+NNBASX),1)
-      E3XYZ=DDOT(NNBASX,DCAO,1,WRK(KMAT1+NNBASX),1)
-      E3XZZ=DDOT(NNBASX,DCAO,1,WRK(KMAT1+2*NNBASX),1)
-      E3YYY=DDOT(NNBASX,DCAO,1,WRK(KMAT2+3*NNBASX),1)
-      E3YYZ=DDOT(NNBASX,DCAO,1,WRK(KMAT1+3*NNBASX),1)
-      E3YZZ=DDOT(NNBASX,DCAO,1,WRK(KMAT1+4*NNBASX),1)
-      E3ZZZ=DDOT(NNBASX,DCAO,1,WRK(KMAT1+5*NNBASX),1)
-
-      EQTOT = E3XXX + E3XXY + E3XXZ + E3XYY + E3XYZ + E3XZZ
-     *        + E3YYY + E3YYZ + E3YZZ + E3ZZZ
-      ENSEL = EQTOT
-
-C     Now the QM nuclear contribution. Note that we switch the sign here
-C     by writing CORD(1,J) - MMCORD(1,I)
-
-      ELOC     = 0.0D0
-      DO 411 J = 1,NUCIND
-         XDIS   = CORD(1,J) - MMCORD(1,I)  
-         YDIS   = CORD(2,J) - MMCORD(2,I) 
-         ZDIS   = CORD(3,J) - MMCORD(3,I)  
-         DIST2  = XDIS**2+YDIS**2+ZDIS**2
-         DIST   = SQRT(DIST2)
-         DIST3  = DIST2*DIST
-         DIST5  = DIST3*DIST2
-         DIST7  = DIST5*DIST2
-C
-         TXXX=(15.0D0*XDIS*XDIS*XDIS-3*DIST2*(XDIS+XDIS+XDIS))/DIST7
-         TXXY=(15.0D0*XDIS*XDIS*YDIS-3*DIST2*(          YDIS))/DIST7
-         TXXZ=(15.0D0*XDIS*XDIS*ZDIS-3*DIST2*(          ZDIS))/DIST7
-         TXYY=(15.0D0*XDIS*YDIS*YDIS-3*DIST2*(XDIS          ))/DIST7
-         TXYZ=(15.0D0*XDIS*YDIS*ZDIS)/DIST7
-         TXZZ=(15.0D0*XDIS*ZDIS*ZDIS-3*DIST2*(XDIS          ))/DIST7
-         TYYY=(15.0D0*YDIS*YDIS*YDIS-3*DIST2*(YDIS+YDIS+YDIS))/DIST7
-         TYYZ=(15.0D0*YDIS*YDIS*ZDIS-3*DIST2*(          ZDIS))/DIST7
-         TYZZ=(15.0D0*YDIS*ZDIS*ZDIS-3*DIST2*(YDIS          ))/DIST7
-         TZZZ=(15.0D0*ZDIS*ZDIS*ZDIS-3*DIST2*(ZDIS+ZDIS+ZDIS))/DIST7
-
-         ELOC   =   ELOC
-     *           +   CHARGE(J)*MUL3MM(1,I)*TXXX
-     *           +   CHARGE(J)*MUL3MM(2,I)*TXXY*3
-     *           +   CHARGE(J)*MUL3MM(3,I)*TXXZ*3
-     *           +   CHARGE(J)*MUL3MM(4,I)*TXYY*3
-     *           +   CHARGE(J)*MUL3MM(5,I)*TXYZ*6
-     *           +   CHARGE(J)*MUL3MM(6,I)*TXZZ*3
-     *           +   CHARGE(J)*MUL3MM(7,I)*TYYY
-     *           +   CHARGE(J)*MUL3MM(8,I)*TYYZ*3
-     *           +   CHARGE(J)*MUL3MM(9,I)*TYZZ*3
-     *           +   CHARGE(J)*MUL3MM(10,I)*TZZZ
- 411  CONTINUE
-
-C     Remember the factor of 1/6 from the Taylor expansion
-      ELOC   = D6I*ELOC
-
-      ENSNUC = ELOC
-
-      CALL QEXIT('OCTUPOLE_ITER')
-
-      RETURN
-      END
-C******************************************************************************
 C  /* Deck get_field */
       SUBROUTINE GET_FIELD(I,LRI,ELF,ELFEL,ELFNU,DCAO,
      &                         LOCDEB,WRK,LWRK)
@@ -4192,25 +3776,6 @@ C     C.3  Quadrupole contribution
 
             ENDIF
 
-C     C.3  Octupole contribution
-
-            IF (NMULT .GE. 3) THEN
-
-               CALL GET_OCTUPOLE_ELFLD(
-     &                        MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
-     &                        MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
-     &                        MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
-     &                        MUL3MM(10,J),
-     &                        MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
-     &                        MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
-     &                        ELFLDX,ELFLDY,ELFLDZ)
-
-               EF3MX = EF3MX + ELFLDX
-               EF3MY = EF3MY + ELFLDY
-               EF3MZ = EF3MZ + ELFLDZ
-
-            ENDIF
-            
          ENDIF
 
  520  CONTINUE
@@ -4254,20 +3819,6 @@ C     Quadrupole contribution
          ET = 0.0D0
          ET = ET + DMINV2*(EXCOMP + EYCOMP + EZCOMP)
          EDALL(5) = ET
-
-      ENDIF
-
-C     Octupole contribution
-
-      IF (NMULT .GE. 3) THEN
-
-         EXCOMP = DINDMOM(1)*EF3MX
-         EYCOMP = DINDMOM(2)*EF3MY
-         EZCOMP = DINDMOM(3)*EF3MZ
-
-         ET = 0.0D0
-         ET = ET + DMINV2*(EXCOMP + EYCOMP + EZCOMP)
-         EDALL(6) = ET
 
       ENDIF
 
@@ -4541,10 +4092,6 @@ C     Send data to slaves (Lick it up)
       IF (NMULT .GE. 0) CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
       IF (NMULT .GE. 1) CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
       IF (NMULT .GE. 2) CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
-      IF (NMULT .GE. 3) THEN
-         CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
-         CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
-      ENDIF
 
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
@@ -4604,9 +4151,6 @@ C     Collect data from all slaves (Great expectations)
       IF (NMULT .GE. 2) CALL MPI_REDUCE(EQUTMP,EQUADT,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      IF (NMULT .GE. 3) CALL MPI_REDUCE(EOCTMP,EOCTUP,1, 
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
-     &                   IERR)
 
       CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO(1),1)
       
@@ -4619,7 +4163,7 @@ C     Collect data from all slaves (Great expectations)
       END DO
 
       ENUMUL = ECHCH
-      ESOLT = ECHART + EDIPT + EQUADT + EOCTUP
+      ESOLT = ECHART + EDIPT + EQUADT
 
       CALL QEXIT('PARQMMM_M')
 
@@ -4674,12 +4218,6 @@ C     Receiving data from master (I was made for lovin' you)
       IF (NMULT .GE. 0) CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
       IF (NMULT .GE. 1) CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
       IF (NMULT .GE. 2) CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
-      IF (NMULT .GE. 3) THEN
-         CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
-         CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
-      ENDIF
-
-
 
       KNSNUC = 1
       KNSEL  = KNSNUC + MMCENT
@@ -4723,7 +4261,6 @@ C     Do the work (I love it load)
       ECHART = 0.0D0
       EDIPT  = 0.0D0
       EQUADT = 0.0D0
-      EOCTUP = 0.0D0
 
  1    CONTINUE
 
@@ -4769,16 +4306,6 @@ C-------------------------------------------------
          WRK(KNSEL+I-1)  = WRK(KNSEL+I-1)  + ENSEL
          WRK(KNSNUC+I-1) = WRK(KNSNUC+I-1) + ENSNUC
          EQUADT = EQUADT + ENSEL + ENSNUC
-         IF (NMULT .LT. 3) GOTO 1
-
-C------------------------------------------------- 
-C        Octupole contributions:
-C------------------------------------------------- 
-         CALL OCTUPOLE_ITER(I,WRK(KDCAO),ENSEL,ENSNUC,LOCDEB,
-     *                    WRK(KTAO),WRK(KLAST),LWRK2,IPRTMP)
-         WRK(KNSEL+I-1)  = WRK(KNSEL+I-1)  + ENSEL
-         WRK(KNSNUC+I-1) = WRK(KNSNUC+I-1) + ENSNUC
-         EOCTUP = EOCTUP + ENSEL + ENSNUC
          GOTO 1
       ENDIF
 
@@ -4800,9 +4327,6 @@ C     Send data to master (Do you love me?)
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
       IF (NMULT .GE. 2) CALL MPI_REDUCE(EQUADT,MPI_IN_PLACE,1, 
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
-     &                   IERR)
-      IF (NMULT .GE. 3) CALL MPI_REDUCE(EOCTUP,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 

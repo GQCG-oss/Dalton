@@ -1861,8 +1861,8 @@ contains
     call mem_alloc(orb2batchGamma,nb)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
          & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-         &nbatchesGamma,orb2BatchGamma,'R')
-    if(master)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
+         &nbatchesGamma,orb2BatchGamma)
+    if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
                                        & 'with maximum size',MaxActualDimGamma
 
     ! Translate batchindex to orbital index
@@ -1889,8 +1889,8 @@ contains
     ! ----------------------------
     call mem_alloc(orb2batchAlpha,nb)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
-         & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
-    if(master)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
+         & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha)
+    if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
                                       &, 'with maximum size',MaxActualDimAlpha
 
     ! Translate batchindex to orbital index
@@ -1917,7 +1917,7 @@ contains
 
     ! PRINT some information about the calculation
     ! --------------------------------------------
-    if(master) then
+    if(master.and.DECinfo%PL>1) then
       if(scheme==4) write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
       if(scheme==3) write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
       if(scheme==2) write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
@@ -4894,61 +4894,59 @@ contains
     ! u+3*integrals
     if(s==4)then
       !govov + u 2 + Omega 2 +  H +G  
-      memrq = 1.0E0_realk*(3*no*no*nv*nv+ nb*nv+nb*no)
+      memrq = 1.0E0_realk*(3_long*no*no*nv*nv+ i8*nb*nv+i8*nb*no)
       !gvoov gvvoo
-      memrq=memrq+ 2.0E0_realk*nv*nv*no*no
+      memrq=memrq+ 2.0E0_realk*(i8*nv*nv)*no*no
       !allocation of matries ONLY used inside the loop
       !uigcj sio4
-      memin  = 1.0E0_realk*(no*no*nv*nbg+no*no*nor)
+      memin  = 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
       !tpl tmi
-      memin  = memin + nor*nvr*2
+      memin  = memin + (i8*nor)*nvr*2.0E0_realk
       !w0
-      memin = memin +&
-      &nb*nb*nba*nbg
+      memin = memin + 1.0E0_realk*(i8*nb*nb)*nba*nbg
       !w1
-      memin = memin +&
-      &max(max(max(nb*nb*nba*nbg,nv*nv*no*nba),no*no*nv*nbg),no*no*nv*nba)
+      memin = memin + 1.0E0_realk * &
+      &max(max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*nba),(i8*no*no)*nv*nbg),(i8*no*no)*nv*nba)
       !w2
-      memin = memin +&
-      &max(max(nb*nb*nba*nbg,nv*nv*no*no),nor*no*no)
+      memin = memin +1.0E0_realk *&
+      &max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*no),(i8*nor)*no*no)
       !w3
-      memin = memin +&
-      &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
-      &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
+      memin = memin + 1.0E0_realk*&
+      &max(max(max(max(max(max(max((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
+      &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no*nor)*nba),(i8*no)*nor*nbg)
       ! allocation of matrices ONLY used outside loop
       ! w1 + FO + w2 + w3
-      memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+nb*nb+2*no*no*nv*nv)
+      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,nb*nb)+i8*nb*nb+(2_long*no*no)*nv*nv)
       !memrq=memrq+max(memin,memout)
     elseif(s==3)then
       !govov stays in pdm and is dense in second part
       ! u 2 + omega2 + H +G  + keep space for one update batch
       call get_int_dist_info(int((i8*nv)*nv*no*no,kind=8),fe,ne,master)
-      memrq = 1.0E0_realk*(2*no*no*nv*nv+ nb*nv+nb*no) + ne
+      memrq = 1.0E0_realk*((2_long*no*no)*nv*nv+ i8*nb*nv+i8*nb*no) + i8*ne
       !gvoov gvvoo (govov, allocd outside)
       memrq=memrq+ 2.0E0_realk*ne 
       !call array_default_batches([no,nv,no,nv],4,tdim,splt)
       !call array_get_ntpm([no,nv,no,nv],tdim,4,ntpm,ntiles)
       !allocation of matries ONLY used inside the loop
       !uigcj sio4
-      memin  = 1.0E0_realk*(no*no*nv*nbg+no*no*nor)
+      memin  = 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
       !tpl tmi
-      memin  = memin + nor*nvr*2
+      memin  = memin + 1.0E0_realk*nor*(nvr*2_long)
       !w0
-      memin = memin +&
-      &nb*nb*nba*nbg
+      memin = memin + 1.0E0_realk * (i8*nb*nb)*nba*nbg
       !w1
-      memin = memin +&
-      &max(max(max(nb*nb*nba*nbg,nv*nv*no*nba),no*no*nv*nbg),no*no*nv*nba)
+      memin = memin + 1.0E0_realk*&
+      &max(max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*nba),(i8*no*no)*nv*nbg),(i8*no*no)*nv*nba)
       !w2
-      memin = memin +&
-      &max(max(nb*nb*nba*nbg,nv*nv*no*no),nor*no*no)
+      memin = memin + 1.0E0_realk*&
+      &max(max(((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*no),(i8*nor)*no*no)
       !w3
-      memin = memin +&
-      &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
-      &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
+      memin = memin + 1.E0_realk*&
+      &max(max(max(max(max(max(max(((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
+      &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no)*nor*nba),(i8*no)*nor*nbg)
       ! allocation of matrices ONLY used outside loop
       ! w1 + FO + w2 + w3 + govov
-      memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+max(nb*nb,max(2*tl1,tl2)))
+      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,nb*nb)+max(i8*nb*nb,max(2_long*tl1,i8*tl2)))
       !memrq=memrq+max(memin,memout)
     elseif(s==2)then
       call array_default_batches(d1,mode,tdim,splt)
@@ -4961,34 +4959,34 @@ contains
       enddo
       !govov stays in pdm and is dense in second part
       ! u 2 + H +G + space for one update tile 
-      memrq = 1.0E0_realk*(tsze*nloctiles+ nb*nv+nb*no) + tsze
+      memrq = 1.0E0_realk*((i8*tsze)*nloctiles+ i8*nb*nv+i8*nb*no) + i8*tsze
       !gvoov gvvoo
       memrq=memrq+ 2.0E0_realk*tsze*nloctiles
       !allocation of matries ONLY used inside the loop
       !uigcj sio4
-      memin  = 1.0E0_realk*(no*no*nv*nbg+no*no*nor)
+      memin  = 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
       !tpl tmi
-      memin  = memin + nor*nvr*2
+      memin  = memin + 1.0E0_realk*nor*nvr*2_long
       !w0
-      memin = memin +&
-      &nb*nb*nba*nbg
+      memin = memin + 1.0E0_realk*&
+      &(i8*nb*nb)*nba*nbg
       !w1
-      memin = memin +&
-      &max(max(max(nb*nb*nba*nbg,nv*nv*no*nba),no*no*nv*nbg),no*no*nv*nba)
+      memin = memin + 1.0E0_realk *&
+      &max(max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*nba),(i8*no*no)*nv*nbg),(i8*no*no)*nv*nba)
       !w2
-      memin = memin +&
-      &max(max(nb*nb*nba*nbg,nv*nv*no*no),nor*no*no)
+      memin = memin + 1.0E0_realk * &
+      &max(max((i8*nb*nb)*nba*nbg,)(i8*nv*nv)*no*no),(i8*nor)*no*no)
       !w3
-      memin = memin +&
-      &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
-      &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
+      memin = memin + 1.0E0_realk * &
+      &max(max(max(max(max(max(max((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
+      &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no)*nor*nba),(i8*no)*nor*nbg)
       ! allocation of matrices ONLY used outside loop
       ! w1 + FO + w2 + w3
       !in cd terms w2 and w3 have tl1, in b2 w2 has tl2
-      cd = max(2*tl1,tl2)
+      cd = max(2_long*tl1,i8*tl2)
       ! in e2 term w2 has max(tl2,tl3) and w3 has max(no2,nv2)
-      e2 = max(tl3,tl4) + max(no*no,nv*nv)
-      memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+max(nb*nb,max(cd,e2)))
+      e2 = max(tl3,itl4) + max(no*no,nv*nv)
+      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,(i8*nb*nb))+max(i8*nb*nb,i8*max(cd,e2)))
       !memrq=memrq+max(memin,memout)
     else
       print *,"DECinfo%force_scheme",DECinfo%force_scheme,s

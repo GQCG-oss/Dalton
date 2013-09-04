@@ -2400,6 +2400,11 @@ contains
     nnodes=1
 #ifdef VAR_MPI
     nnodes=infpar%lg_nodtot
+#ifndef COMPILER_UNDERSTANDS_FORTRAN_2003
+    call lsquit("ERROR(ccsolver_par):Your compiler does not support certain&
+    & features needed to run that part of the code. Use a compiler supporting&
+    & Fortran 2003 features",-1)
+#endif
 #endif
 
     call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
