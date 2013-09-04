@@ -1883,7 +1883,7 @@ C
       NQ = NINT(Q)
 C
       IF (GAUNUC.AND.(NQ.GT.0)) THEN
-         IF(Q_EXPONENT.LE.D0) THEN
+         IF (Q_EXPONENT.LE.D0) THEN
             CALL NUCSIZ(NQ,GEXP)
          ELSE
             GEXP = Q_EXPONENT
@@ -1970,6 +1970,12 @@ C
      &     ' ERROR: Unable to read Cartesian coordinates of atom no.',
      &     NCTOT,' from line',NMLINE,' in the MOLECULE input file:'
         WRITE(LUPRI,'(A)') MLINE(NMLINE)
+        IF (LUERR .NE. LUPRI) THEN
+           WRITE(LUERR,'(/A,I5/A,I5,A)')
+     &     ' ERROR: Unable to read Cartesian coordinates of atom no.',
+     &     NCTOT,' from line',NMLINE,' in the MOLECULE input file:'
+           WRITE(LUERR,'(A)') MLINE(NMLINE)
+        END IF
         CALL QUIT('ERROR reading atomic coordinates in MOLECULE input')
 C
   104   CONTINUE
@@ -2806,6 +2812,10 @@ C
             IF (IOS.NE.0) THEN
                WRITE(LUPRI,*) 'Error in reading .mol input, line',NMLINE
                WRITE(LUPRI,*) 'Read MLINE(NMLINE)=',MLINE(NMLINE)
+               IF (LUERR .NE. LUPRI) THEN
+               WRITE(LUERR,*) 'Error in reading .mol input, line',NMLINE
+               WRITE(LUERR,*) 'Read MLINE(NMLINE)=',MLINE(NMLINE)
+               END IF
                CALL QUIT('Error in reading BN,A,I4,2I5 ... ')
             ENDIF
 

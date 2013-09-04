@@ -151,7 +151,7 @@ end subroutine init_gridObject
 subroutine init_dftfunc(dft)
 TYPE(dftparam) :: dft
 !
-integer :: iDFT
+integer :: iDFT,ialpha
 character(80) :: word
 
 do iDFT=1,size(dft%dftfuncObject)
@@ -159,7 +159,12 @@ do iDFT=1,size(dft%dftfuncObject)
 enddo
 IF ((INDEX(dft%dftfunc,'cam').NE.0).OR.(INDEX(dft%dftfunc,'CAM').NE.0)) THEN
   !word = 'Camx'
-  word = 'Camcompx'
+  ialpha = max (INDEX(dft%dftfunc,'alpha='),INDEX(dft%dftfunc,'ALPHA='))
+  IF (ialpha.NE.0) THEN
+    write(word,'(A8,X,A71)') 'Camcompx',dft%dftfunc(ialpha:)
+  ELSE
+    word = 'Camcompx'
+  ENDIF
 ELSE
   word = 'BX'
 ENDIF
