@@ -575,7 +575,7 @@ When using Compressed-Sparse Row (CSR) matrices, only non-zero elements in matri
 When matrices are sparse enough, linear scaling in both memory and cpu time is obtained. However, for
 small or non-sparse systems, there is a considerable overhead in cpu time compared to 
 using standard dense matrices, so don't use it unless you need it. You enable CSR by putting
-"-DVAR\_MKL" in your CPPFLAGS (in addition to what is already there. You also need to link
+"-DVAR\_MKL" and "-DVAR\_CSR" in your CPPFLAGS (in addition to what is already there. You also need to link
 to MKL's CSR library (what we have in \lsdalton\ is an interface to MKL CSR). Furthermore, to run a calculation
 using CSR matrices, you always need .CSR under *DENSOPT in the input file LSDALTON.INP (described in detail in
 chapters~\ref{ch:starting} and~\ref{ch:keywords}).
@@ -613,7 +613,7 @@ input-files (these are described in more detail in
 chapter~\ref{ch:starting}), and the output file from the test
 calculation which will have the extension \verb|.log| 
 For all
-successfull tests these files, as well as some other auxiliary files,
+successful tests these files, as well as some other auxiliary files,
 will be deleted as soon as the output has been checked, unless
 \verb|TEST| is being run with the option \verb|-keep|.
 
@@ -661,7 +661,7 @@ The setup script takes a number of optional parameters like the following exampl
 > ./setup --fc=ifort --cc=icc --omp --math="-L/opt/intel/mkl/10.2.6.038/lib/32 
 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread"
 \end{verbatim}
-We strongly encourage that the enviromental variable MATH$\_$ROOT is defined
+We strongly encourage that the environmental variable MATH$\_$ROOT is defined
 \begin{verbatim}
 > export MATH$\_$ROOT=/path/to/math/library
 \end{verbatim}
@@ -675,9 +675,9 @@ MKL libraries that you want to use reside in
 > export MATH$\_$ROOT=/opt/intel/mkl/10.0.3.020
 \end{verbatim}
 
-the optional paramters are described here:
+the optional parameters are described here:
 \begin{description}
-\item \verb| --auto|     The setup script will automaticly find a suitable Fortran and C compiler
+\item \verb| --auto|     The setup script will automatically find a suitable Fortran and C compiler
 \item   \verb| --fc=fortrancompiler|     The user supplies the fortran compiler\\
  options: $\{ $\verb| ifort , gfortran, pgf90, mpif90, g95, xlf, f90, open64 | $\}$
 \item   \verb| --cc=Ccompiler|     The user supplies the C compiler\\
@@ -686,7 +686,7 @@ the optional paramters are described here:
 \item  \verb| --check| The Code is compiled using check options
 \item   \verb| --mpiexec=/path/to/mpiexec|     The user supplies the mpirun or mpiexec the code should use when running test cases and the lsdalton script
 \item   \verb| --mathdir=/path/to/math|     The user supplies the math directory
-\item   \verb| --internal-math|     The code is compiled using the math lib that is part of {\lsdalton}. THis option is highly discourage if efficiency is required. 
+\item   \verb| --internal-math|     The code is compiled using the math lib that is part of {\lsdalton}. This option is highly discourage if efficiency is required. 
 \item   \verb| --mpi|     The code is compiled using Message Passing Interface (MPI) 
 \item   \verb| --mpi32|     The code is linked to an 32 bit integer version MPI library 
 \item   \verb| --omp|     The code is compiled using OpenMP
@@ -695,7 +695,7 @@ the optional paramters are described here:
 \item   \verb| --int64|     The code is compiled using 64 bit integers
 \item   \verb| --csr|     The MKL compressed sparse row (CSR)feature are enabled
 \item   \verb| --scalapack|     The MKL SCALAPACK feature are enabled
-\item   \verb| --timings|     The timings of individuel steps are printet at the bottom
+\item   \verb| --timings|     The timings of individual steps are printed at the bottom
 \item   \verb| --show|     shows the cmake command and exits
 \item   \verb| --scratch=/path/to/scratchdir|     The user supplies the scratch directory
 \item   \verb| --build=build-dir-name|     The user supplies the name of the build dir

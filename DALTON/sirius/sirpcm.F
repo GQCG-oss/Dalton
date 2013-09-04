@@ -587,7 +587,7 @@ C
 
       WRITE(LUPRI,9010)
       NERR = 0
-      IF(ICESPH .LT. 3) THEN
+      IF(ICESPH .LT. 2) THEN
          DO J=1,NESFP
             WRITE(LUPRI,9020) J,XE(J),YE(J),ZE(J),RIN(J)
             IF(RIN(J).LE.0) NERR=NERR+1

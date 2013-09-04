@@ -81,10 +81,10 @@ Douglas-Kroll-Hess second-order (DKH2) transformed one-electron potential and ki
 module. The program will abort after the completion of the input test,
 and no calculations will be executed.
 
-\item[\Key{INTEGRALS}] Invoke the {\her} and/or the {\eri} program module for generating molecular one-
+\item[\Key{INTEGRALS}] Invoke the {\her} and/or the {\eri} module for generating molecular one-
 and two-electron integrals.
 See Chapter~\ref{ch:hermit} for the \her\ and
-Section~\ref{ch:eri}\index{one-electron integral}\index{two-electron integral} for the \eri\ program module, respectively.
+Section~\ref{ch:eri}\index{one-electron integral}\index{two-electron integral} for the \eri\ module, respectively.
 
 \item[\Key{ITERATION}]\verb| |\newline
 \verb|READ (LUCMD, '(I5)') ITERNR|
@@ -194,32 +194,32 @@ file. Default print level is \verb|IPRUSR+1|.
 Reads in the print level that is to be used the rest of the subsequent
 calculations. Default is a print level of 0.
 
-\item[\Key{PROPERTIES}] Invoke the \aba\ program module for the evaluation of static
+\item[\Key{PROPERTIES}] Invoke the \aba\ module for the evaluation of static
 and dynamic properties, using a previously converged and saved wave function. See Chapter~\ref{ch:abacus}.
 
 \item[\Key{RESPONSE}]
 
-Invoke the \resp\ program module for the evaluation of static and dynamic
+Invoke the \resp\ module for the evaluation of static and dynamic
 properties, using a previously converged and saved wave function. See Chapter~\ref{ch:response}.
 
 \item[\Key{RUN ALL}]
 
-Invoke all the program modules {\her}, {\sir}, {\resp}, and {\aba} for a single point
+Invoke all the modules {\her}, {\sir}, {\resp}, and {\aba} for a single point
      calculation.
 
 \item[\Key{RUN PROPERTIES}]
 
-Invoke the program modules {\her}, {\sir}, and {\aba} for a single point
+Invoke the modules {\her}, {\sir}, and {\aba} for a single point
 calculation.
 
 \item[\Key{RUN RESPONSE}]
 
-Invoke all the program modules {\her}, {\sir}, and {\resp} for a single point
+Invoke all the modules {\her}, {\sir}, and {\resp} for a single point
 calculation.
 
 \item[\Key{RUN WAVE FUNCTIONS}]
 
-Invoke the program modules {\her} and {\sir} for a single point energy calculation.
+Invoke the modules {\her} and {\sir} for a single point energy calculation.
 
 %\item[\Key{RUNABA}] Alternative keyword to \verb|.RUN PROPERTIES|. Obsolete, do not use.
 
@@ -260,7 +260,7 @@ detailed description of possible options.
 \item[\Key{WAVE FUNCTIONS}]
 \index{SCF}\index{HF}\index{Hartree--Fock}\index{MP2}\index{MCSCF}\index{CC}
 \index{NEVPT2}\index{GASCI}\index{DFT}
-Invoke the {\sir} program module for the evaluation of SCF, MP2, Coupled
+Invoke the {\sir} module for the evaluation of SCF, MP2, Coupled
 Cluster, MCSCF, NEVPT2, GASCI wave functions as well as DFT calculations.
 Necessary one-electron integrals are already evaluated and saved on files.
 See Chapter~\ref{chap:sirius-inpref}.
@@ -996,7 +996,7 @@ Use the iterative solver to determine the induced dipole moments. This is the de
 \item[\Key{BORDER}]\verb| |\newline
 1) \verb|READ (LUCMD, *) BORDER_TYPE, RMIN, AUORAA|\verb| |\newline
 2) \verb|READ (LUCMD, *) BORDER_TYPE, REDIST_ORDER, RMIN, AUORAA, NREDIST|\verb| |\newline
-Controls the handling of the border between the core molecular system and its environment described by the embedding potential. There are two mutually exclusive schemes: 1) \verb|BORDER_TYPE = REMOVE| and 2) \verb|BORDER_TYPE = REDIST|. The first option will remove all multipoles and polarizabilities that are within the given distance \verb|RMIN| from any atom in the core molecular system. The \verb|AUORAA| variable specifies whether the distance threshold is given in \AA{}ngstr\"{o}m (AA) or bohr (AU). The second option will redistribute parameters that are within the given threshold \verb|RMIN| from any atom in the core system to nearest sites in the environment. The order of multipoles upto which will be redistributed is determined by the \verb|REDIST_ORDER| variable, e.g. \verb|REDIST_ORDER = 1| means that only charges will be redistributed and all other parameters removed, \verb|REDIST_ORDER = 2| means charges and dipoles are redistributed and so on. The sign of \verb|REDIST_ORDER| specifies if the polarizabilities are redistributed. Positive means that the polarizabilities are removed and negative means redistributed. The number of sites that parameters on a given site are redistributed to is determined by the \verb|NREDIST| variable which can be between 1 and 3. The default is to redistribute charges within 2.2 bohr to its nearest site and removing all other parameters.
+Controls the handling of the border between the core molecular system and its environment described by the embedding potential. There are two mutually exclusive schemes: 1) \verb|BORDER_TYPE = REMOVE| and 2) \verb|BORDER_TYPE = REDIST|. The first option will remove all multipoles and polarizabilities that are within the given distance \verb|RMIN| from any atom in the core molecular system. The \verb|AUORAA| variable specifies whether the distance threshold is given in \AA{}ngstr\"{o}m (AA) or bohr (AU). The second option will redistribute parameters that are within the given threshold \verb|RMIN| from any atom in the core system to nearest sites in the environment. The order of multipoles up to which will be redistributed is determined by the \verb|REDIST_ORDER| variable, e.g. \verb|REDIST_ORDER = 1| means that only charges will be redistributed and all other parameters removed, \verb|REDIST_ORDER = 2| means charges and dipoles are redistributed and so on. The sign of \verb|REDIST_ORDER| specifies if the polarizabilities are redistributed. Positive means that the polarizabilities are removed and negative means redistributed. The number of sites that parameters on a given site are redistributed to is determined by the \verb|NREDIST| variable which can be between 1 and 3. The default is to redistribute charges within 2.2 bohr to its nearest site and removing all other parameters.
 
 \item[\Key{DAMP}]\verb| |\newline
 \verb|READ (LUCMD, *) damp| (optional)\verb| |\newline
@@ -1545,10 +1545,10 @@ is~25, except for the Cray-T3D/E, where the default is 14.
 %Default is that the molecular input is to be
 %read from unit~9.
 
-\item[\Key{OLDNORM}] Use the normalization scheme for spherical AO's used in {\dalton} 1.0.
-From {\dalton} 1.1, all components of spherical AO's are normalized to 1.
-This was not the case in {\dalton} 1.0, and this option is needed to read
-MO's correctly from an old file generated by {\dalton} 1.0 if spherical AO's were used.
+\item[\Key{OLDNORM}] Use the normalization scheme for spherical AO's used in Dalton~1.0.
+From Dalton~1.1, all components of spherical AO's are normalized to 1.
+This was not the case in Dalton~1.0, and this option is needed to read
+MO's correctly from an old file generated by Dalton~1.0 if spherical AO's were used.
 (Cartesian AO's are still not all normalized to 1 for $d$-orbitals and higher $l$'s.)
 
 \item[\Key{PRINT}]\verb| |\newline

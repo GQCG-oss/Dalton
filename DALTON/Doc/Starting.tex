@@ -137,7 +137,7 @@ calculation of the second
 hyperpolarizability\index{second hyperpolarizability}
 ($\gamma_{xxxx}$) using
 the cubic response solver\index{cubic response}\index{response!cubic}
-of the {\resp} program. No two-electron
+of the {\resp} module. No two-electron
 integrals will be stored on disc in any part of the calculation. The
 number of nodes\index{node} used is determined when submitting the
 job, and how
@@ -154,7 +154,7 @@ specify that we are to do a Hartree--Fock calculation.
 .RUN RESPONS\hspace{2.5cm} & Run integrals, wave function, and response\\
 \**WAVE FUNCTIONS\\
 .HF\\
-\*\*RESPONSE & Input for the response program\\
+\*\*RESPONSE & Input for the response module\\
 \*CUBIC     & Input for cubic response calculation\\
 .DIPLNX     & Only consider x-comp. of dipole moment\\
 .BFREQ      & Two frequencies for B operator\\
@@ -176,7 +176,7 @@ specify that we are to do a Hartree--Fock calculation.
 The input is divided into modules\index{module}, which in turn are
 further divided into submodules\index{submodule}. The modules contain
 the input to the different
-sections that constitute the {\dalton} program package. There exists
+sections that constitute the {\dalton} program. There exists
 four such sections corresponding to respectively the integral
 evaluation\index{atomic integrals}, the choice of wave function, the
 choice of static properties\index{molecular properties} and finally

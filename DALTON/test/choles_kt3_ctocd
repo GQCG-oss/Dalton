@@ -85,6 +85,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # KT3 energy
 CRIT1=`$GREP "Final * DFT energy: * -383\.2383416" $log | wc -l`
 TEST[1]=$CRIT1

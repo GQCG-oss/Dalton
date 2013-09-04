@@ -57,7 +57,7 @@ C
 #include "iratdef.h"
       logical r12prp
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION INDEXA(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
       DIMENSION AODEN(*), ZKAM(*), WORK(LWORK)
 #include "ccorb.h"
 #include "infind.h" 
@@ -3124,7 +3124,7 @@ C
 #include "aovec.h"
 #include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION INDEXA(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
       DIMENSION AODEN(*), ZKAM(*), WORK(LWORK)
       CHARACTER*10 MODEL
 #include "ccorb.h"

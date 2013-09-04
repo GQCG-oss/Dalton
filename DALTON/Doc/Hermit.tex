@@ -8,7 +8,7 @@ this will be automatically taken care of by the program. However,
 {\her} has an extensive set of atomic one- and two-electron
 integrals\index{one-electron integral}\index{two-electron integral},
 and some users may find it useful to generate explicit integrals using
-{\her}. This is for instance necessary if the {\resp} program (dynamic
+{\her}. This is for instance necessary if the {\resp} module (dynamic
 properties) is to be
 used, as described in Chapter~\ref{ch:response}. Disk usage may also
 be reduced by not calculating the
@@ -16,7 +16,7 @@ supermatrix\index{supermatrix}, and this is also controlled in the
 \Sec{*INTEGRALS} input section.
 
 It is worth noticing that the two-electron part of {\her} is actually
-two integral programs. {\twoint} is the more general one and is invoked by
+two integral modules. {\twoint} is the more general one and is invoked by
 default in sequential calculations; {\eri} (Electron Repulsion
 Integrals) is a highly vectorized two-electron integral code with
 orientation towards integral distributions. {\eri} is
@@ -45,7 +45,7 @@ a supermatrix as defined in for instance Ref.~\cite{pemsjaahborjcp74}.
 \section{\Sec{*INTEGRALS} directives}\label{sec:herinp}
 
           The following directives may be included in the input to
-the integral evaluation.  They are organized according to the program
+the integral evaluation.  They are organized according to the
 section names in which they can appear.
 
 %\subsection{End of input: \Sec{END OF}}
@@ -1202,7 +1202,7 @@ Set print level during the calculation of one-electron Hamiltonian
 integrals.  Read one more line containing print level. Default is
 the value of \verb|IPRDEF| from the \Sec{*INTEGRALS} input module.
 
-\item[\Key{SKIP}] Skip the the calculation of one-electron Hamiltonian
+\item[\Key{SKIP}] Skip the calculation of one-electron Hamiltonian
 integrals. Mainly for debugging purposes.
 
 \item[\Key{SOLVEN}]\verb| |\newline

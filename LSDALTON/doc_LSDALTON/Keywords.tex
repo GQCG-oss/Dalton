@@ -25,9 +25,9 @@ This input module defines the way the integrals should be calculated.
 \begin{description}
 
 \item[\Key{SCALAPACK}] Use SCALAPACK matrices. \newline
-NB: Requires linking to the scalapack lib (provided by MKL).
+NB: Requires linking to the scalapack lib (provided by MKL) and the use of the --scalapack keyword during installation.
 \item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices
-\item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library!
+\item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library and the use of the --csr keyword during installation!
 \item[\Key{TIME}] Activate the printout of timings.
 \item[\Key{NOGCBASIS}] Deactivate the use of the Grand Canonical basis \cite{trilevel1, trilevel2}
 \item[\Key{FORCEGCBASIS}] The Grand Canonical basis \cite{trilevel1, trilevel2} is deactivated when the program
@@ -65,10 +65,10 @@ Using a print level of 6 will print the input exponents and contraction coeffici
 When using this keyword, an auxiliary basis set has to be 
 specified in the \mol\ file. For the Poples basis sets we recommend df-def2 and for
 Dunnings basis sets use the corresponding cc-pV$X$Zdenfit basis sets, with $X=$T$,$Q$,5$.
-\item[\Key{INTPRINT}] 
-\verb| | \newline
-\verb|<Print level>|\newline
-Print information about the actual integral evaluation. The higher the print level, the more information will be printed. Default value is 0.
+%\item[\Key{INTPRINT}] 
+%\verb| | \newline
+%\verb|<Print level>|\newline
+%Print information about the actual integral evaluation. The higher the print level, the more information will be printed. Default value is 0.
 \item[\Key{LINSCAPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
@@ -80,9 +80,9 @@ Print level in the integral code. The higher the print level, the more informati
 <Print level>
 .MOLPRINT
 <Print level>
-.INTPRINT
-<Print level>
 \end{verbatim} 
+%.INTPRINT
+%<Print level>
 See the individual keywords for more details. Default value is 0.
 \item[\Key{MOLPRINT}] 
 \verb| | \newline
@@ -120,12 +120,12 @@ The various integral-evaluation thresholds (below) are set according to this Thr
       is used for setting up AO extents. Overlap distributions (ODs) for which the 
       distance between the two AOs are larger than the sum of the extents are 
       screened away. %(OD screening)
-\item The Overlap-distribution extent-screeing threshold is set equal to 
+\item The Overlap-distribution extent-screening threshold is set equal to 
       Threshold $\cdot 10^{-1}$. When calculating overlap integrals, this threshold 
       is used for setting up OD extents. Overlap integrals between two ODs separated
       by more than the sum of the extents are screened away. %(OE screening)
 \item The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on
-      the non-classical extent of the contineous charge distribution (orbitals or orbital products). By default this threshold 
+      the non-classical extent of the continuous charge distribution (orbitals or orbital products). By default this threshold 
       is set equal to Threshold $\cdot 10^{-1}$ (can be set separately by \Key{SCREEN} under *FMM)
 \end{itemize}
 \end{description}
@@ -133,7 +133,7 @@ The various integral-evaluation thresholds (below) are set according to this Thr
 \section{**INTEGRAL advanced keywords}\label{sec:integral:adv}
 
 This input module defines the way the integrals should be calculated. 
-This section contains some advanced keywords which is mostly usefull 
+This section contains some advanced keywords which is mostly useful
 for debugging or comparisons with other codes. 
 \begin{description}
 
@@ -166,11 +166,11 @@ Sets the maximum number of primitives used in the FTUV batches in the J-engine a
 \verb|<maxpass>|\newline
 Change the maximum number of collected overlap distributions (default is 40).
 \item[\Key{NO PASS}] Deactivate the use of Passes, the collection of overlap distributions which is used as default in order to increase efficiency. 
-\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals. The basis is considered to be a general contracted basis where all primitives contribute to all contracted functions. 
+\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the number of primitive functions in the calculation of integrals. The basis is considered to be a general contracted basis where all primitives contribute to all contracted functions. 
 \item[\Key{NSETUV}] Use non-spherical E-coefficients.
 \item[\Key{OVERLAP-DF-J}] Use the Overlap density fitting algorithm for the calculation of the Coulomb matrix.
 %\item[\Key{PARI}] Use pair-atomic-resolution-of-the-identity algorithm for the calculation of the Fock matrix
-\item[\Key{UNCONT}] Treat the basis functions (given by input) as fully uncontracted basis fuctions (i.e. ignore
+\item[\Key{UNCONT}] Treat the basis functions (given by input) as fully uncontracted basis functions (i.e. ignore
 any contraction coefficients given in the basis and treat instead all the primitives as separate basis functions).
 \end{description}
 
@@ -182,10 +182,10 @@ classical Coulomb interactions.\newline
 %
 % Meant as a reminder to those who will rewrite/restructure/optimise the FMM code
 %
-For gradients OpenMP parallelisation is turned off. The reason for this is that a continous counter used 
+For gradients OpenMP parallelization is turned off. The reason for this is that a continuous counter used 
 to identify moments for orbital products has to be the same in both moments and derivative moments. 
 For the same reason screening [only during writing (see printmm routines)!!] is turned off both for the serial 
-and parallel cases. As a consequence of the screeening been turned off the moments have to be recalculated for the gradient and can not be reused from the preceeding energy evaluation. 
+and parallel cases. As a consequence of the screening been turned off the moments have to be recalculated for the gradient and can not be reused from the preceding energy evaluation. 
 %
 % a solution to these problems could be to calculate moments and derivatives moments at the same time as was
 % done in the FCK3 code.
@@ -225,7 +225,7 @@ One can always create own combined functionals by using GGAKey general functiona
 A number of standalone functionals are also included within \lsdalton. 
 
 It should be noted that the input is not case sensitive, although the notation
-employed in this manual makes use of case to exphasise exchange or correlation 
+employed in this manual makes use of case to emphasise exchange or correlation 
 functional properties and reflect the original literature sources.
 
 Supported functionals are: 
@@ -411,7 +411,7 @@ The following GGA and hybrid functional aliases are defined within
 \item[B3LYP-G] hybrid functional with VWN3 form used for
   correlation---this is the form used by the Gaussian quantum chemistry
   program. Keyword B3LYPGauss is a synonym for B3LYPg.\index{B3LYPG} 
-  This functional can be explicitely set up by
+  This functional can be explicitly set up by
   \funexample{GGAKey HF=0.2 Slater=0.8 Becke=0.72 LYP=0.81 VWN3=0.19}
   \index{B3LYP, Gaussian version}
 
@@ -679,7 +679,7 @@ are possible with the \verb|GGAKey| keyword.
 \subsubsection{XCFUN functionals}
 
 Recently some support have been added for using the functionals from the XCFUN lib \textbf{fixme: insert proper reference}. Full 
-support is expected in the next release, but unfortunetly time constraints did not allow for 
+support is expected in the next release, but unfortunately time constraints did not allow for 
 full support in this release. 
 
 Currently only LDA and GGA type functionals are currently supported and only upto and including 
@@ -796,34 +796,51 @@ Note that the value of \verb|RADINT| is changed by the following keywords:
 The \verb|GRIDX| keywords also imply specific \verb|RADINT| values.
 \item[\Key{ULTRAF}]
 Shortcut keyword for radial integration accuracy $10^{-15}$ and angular expansion order equal to $64$.
+\item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. This correction can be combined with all GGA type functionals
+\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{CasidaSalahub} 
+\begin{eqnarray}
+V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + V_{LB94,correction}\right),  
+\end{eqnarray}
+with a Zhan-Nichols-Dixon shift \cite{dixon,ZND}
+\begin{eqnarray}
+\Delta = NZD_{1} \cdot \epsilon_{HOMO} - NZD_{2}
+\end{eqnarray}
+Where $NZD_{1} = 0.2332$ and $NZD_{2} = 0.315$. Note that NWCHEM have introduced the same correction but uses a $NZD_{2} = 0.0116$. The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords. Note that this keyword only works with GGA type functionals. The CS00 keyword only work with a method which calculates the HOMO energy.
+\item[\Key{CS00 NZD1}] \verb| | \newline
+\verb|<NZD1>|\newline
+Changes the parameter $NZD_{1}$ (default $NZD_{1} = 0.2332$) see .CS00
+\item[\Key{CS00 NZD1}] \verb| | \newline
+\verb|<NZD2>|\newline
+Changes the parameter $NZD_{2}$ (default $NZD_{1} = 0.315$) see .CS00
+\item[\Key{CS00}] \verb| | \newline
+\verb|<Delta>|\newline
+Using the Casida-Salahub correction with a shift of Delta see .CS00
 \end{description}
 
 \subsection{*DENSOPT}\label{subsec:densopt}
 This section contains the different options for obtaining the SCF wave function
-and energy. The default is diagonalization combined with the DIIS scheme for acceleration
-of SCF convergence (no damping/level shifting). 
-Should have a different name. DENSOPT?
+and energy. The default is augmented Roothaan--Hall density optimization  in combination with
+a conjugate residual optimal trialvectors (CROP) scheme for solving the (level-shifted) Newton equations ((see ref.~\cite{crop})) and using an
+atom-in-a-molecule  starting guess. 
+
 \begin{description}
 \item[\Key{2ND\_ALL}] Use second order optimization in all SCF iterations.
 \item[\Key{2ND\_LOC}] Use second order optimization in local SCF iterations.
 \item[\Key{ARH}] Use Augmented Roothaan-Hall scheme for density optimization 
 (default)~\cite{ARH1,ARH2} where the CROP solver (\cite{crop}) is used for 
-solving the (level-shifted) Newton equationw.\index{Augmented Roothaan-Hall}\index{ARH} 
+solving the (level-shifted) Newton equation.\index{Augmented Roothaan-Hall}\index{ARH} 
 \item[\Key{ARH FULL}] Use Augmented Roothaan-Hall for density optimization -
-no truncation of the reduced space, keep all micro vectors for the CROP algorithm 
-(see ref.~\cite{crop}).
-\item[\Key{ARH DAVID}] Use Augmented Roothan-Hall for density optimization where
+no truncation of the reduced space, keep all micro vectors for the CROP algorithm. 
+\item[\Key{ARH DAVID}] Use Augmented Roothaan-Hall for density optimization where
 the (level-shifted) Newton equations are solved using a reduced space solver based 
-Davidson's algorithm \cite{davidson:1975}. This option
-is recommended for complicated optimizations, especially for large molecular systems
- with charges separated in space. This setting should be used if \Key{ARH} 
+Davidson's algorithm \cite{davidson:1975}. This setting may be used if default settings  
 converges to a saddle point. 
  \item[\Key{ARH(LS) DAVID}] The same procedure as described for \Key{ARH DAVID} 
 augmented with a line search to accelerate convergence for very large molecular 
 systems, but is less efficient than \Key{ARH DAVID} for smaller molecular systems. 
 \item[\Key{STABILITY}] Check stability of the optimized wave function by calculation
 of the lowest Hessian eigenvalue. 
-\item[\Key{STAB\_MAXIT}] \verb| | \newline
+\item[\Key{STAB MAXIT}] \verb| | \newline
 \verb|<Max. number of stability iterations>|\newline
 Max. number of iterations in calculation of lowest Hessian eigenvalue (default is 40).
 \item[\Key{CHOLESKY}] Do Cholesky decomposition of overlap matrix (for density optimization
@@ -839,7 +856,7 @@ For update of trust-radius (used in ARH and second order optimization). Contract
 if trust-radius ratio is smaller than this criterion (default is 0.25).
 \item[\Key{CONVDYN}] \verb| | \newline
 \verb|<Option>|\newline 
-Dynamic SCF convergence threshold. This is suitable for large calculations, since the standard SCF
+Dynamic SCF convergence threshold. This is suitable for calculations on large molecules, since the standard SCF
 convergence threshold is based on the Frobenius norm of the SCF gradient, which is not size-extensive.
 Options are TIGHT, STANDARD, and SLOPPY.
 \item[\Key{CONVTHR}] \verb| | \newline
@@ -847,35 +864,6 @@ Options are TIGHT, STANDARD, and SLOPPY.
 SCF convergence threshold - Frobenius norm of SCF gradient (default is 1.0d-4). 
 Note that this convergence criterion
 is not size-extensive. For large molecules, it is recommended to use .CONVDYN instead.
-\item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. Note that the LB94 functional is the same as using the follwing input. 
-\begin{verbatim}
-**WAVE FUNCTIONS
-.DFT
-GGAKey SLATER=1.0 VWN=1.0
-*DENSOPT
-.LB94
-**END OF INPUT
-\end{verbatim}
-However this correction can be combined with all functionals
-\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{CasidaSalahub} 
-\begin{eqnarray}
-V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + V_{LB94,correction}\right),  
-\end{eqnarray}
-with a Zhan-Nichols-Dixon shift \cite{dixon,ZND}
-\begin{eqnarray}
-\Delta = NZD_{1} \cdot \epsilon_{HOMO} - NZD_{2}
-\end{eqnarray}
-Where $NZD_{1} = 0.2332$ and $NZD_{2} = 0.315$. Note that NWCHEM have introduced the same correction but uses a $NZD_{2} = 0.0116$. The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD1>|\newline
-Changes the parameter $NZD_{1}$ (default $NZD_{1} = 0.2332$) see .CS00
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD2>|\newline
-Changes the parameter $NZD_{2}$ (default $NZD_{1} = 0.315$) see .CS00
-\item[\Key{CS00}] \verb| | \newline
-\verb|<Delta>|\newline
-Using the Casida-Salahub correction with a shift of Delta see .CS00
-
 %\item[\Key{DIAGHESONLY}] Calculate only one SCF energy (i.e., no optimization) 
 %and the lowest Hessian eigenvalue for a density constructed by weighted
 %average of two input densities. Needs files D1 and D2 (densities). Lowest Hessian
@@ -884,16 +872,14 @@ Using the Casida-Salahub correction with a shift of Delta see .CS00
 \item[\Key{DISK}] Store densities and Fock/KS matrices from previous 
 iterations on disk instead of in core when constructing the new Fock/KS matrix ({\it memory-saving option}).
 \item[\Key{DISKSOLVER}] Store trial and sigma vectors on disk instead of in core
-when solving linear equations ({\it memory-saving option}). Only referenced is density 
-optimization method is ARH, Direct Density optimization or second order optimization.
-\item[\Key{DORTH}] Do level shift by using the ratio $\vert\vert$Dorth$\vert\vert$/$\vert\vert$D$\vert\vert$ 
-(for diagonalization only).
+when solving linear equations ({\it memory-saving option}). Only referenced using ARH
+, Direct Density optimization or second order optimization.
 %\item[\Key{DSM}] The Density Subspace Minimization scheme is used to speed up SCF convergence~\cite{TOKJ,TOYJ}.
 %\item[\Key{DSMONE}] The Density Subspace Minimization scheme is used to speed up SCF convergence, 
 %but only one DSM step is taken in each SCF iteration.
 %\item[\Key{DSMXTRA}] The Density Subspace Minimization scheme is used to speed up SCF convergence,
 %including extra (more expensive) term.
-\item[\Key{DUMPMAT}] Dump Fock/KS and density matrices from all iterations to disk for later investigation.
+%\item[\Key{DUMPMAT}] Dump Fock/KS and density matrices from all iterations to disk for later investigation.
 \item[\Key{EDIIS}] The energy-DIIS scheme is used to speed up SCF convergence~\cite{ediis}.
 \item[\Key{EXPAND}] \verb| | \newline
 \verb|<Expansion criterion>|\newline 
@@ -942,27 +928,26 @@ Used in ARH and second order optimization.
 \item[\Key{MAXIT}] \verb| | \newline
 \verb|<Max. number of iterations> |\newline
 Max. number of SCF iterations (default is 100).
-\item[\Key{MAXRATIO}] \verb| | \newline
-\verb|<Max. ratio for DORTH> |\newline
-Largest accepted ratio when using level shift .DORTH.
+%\item[\Key{MAXRATIO}] \verb| | \newline
+%\verb|<Max. ratio for DORTH> |\newline
+%Largest accepted ratio when using level shift .DORTH.
 \item[\Key{MAXSTEP}] \verb| | \newline
 \verb|<Trust radius (Frobenius norm)>|\newline
 Absolute max. Frobenius norm of step allowed (default is 0.6).
 Used in ARH and second order optimization.
 \item[\Key{MICTHRS}] \verb| | \newline
 \verb|<Threshold for micro iterations>|\newline
-The micro iterations are converged to gradient norm times this factor (default is 1.0d-2).
+The micro iterations of the CROP algorithm are converged to gradient norm times this factor (default is 1.0d-2).
 Only referenced if ARH, Direct Density optimization or second order optimization.
 \item[\Key{MICROVECS}] \verb| | \newline
 \verb|<Max. number of microvectors>|\newline
-Max. number of microvectors to be kept in Conjugate Residual Optimal Vectors (CROP) scheme
+Max. number of microvectors to be kept in the CROP scheme
 (default is 2). 
 Only referenced if ARH, Direct Density optimization or second order optimization.
 \item[\Key{MINDAMP}] \verb| | \newline
 \verb|<Minimum damping>|\newline
 Never allow level shift to be smaller than this.
-\item[\Key{MOCHANGE}] Level shifting is done by use of MO overlaps (diagonalization only).
-\item[\Key{MUOPT}] Optimal level shift is chosen by doing a line search in the SCF energy - very expensive! For diagonalization only.
+%\item[\Key{MOCHANGE}] Level shifting is done by use of MO overlaps (diagonalization only).
 %\item[\Key{NALPHA}] \verb| | \newline
 %\verb|<Number of alpha electrons>|\newline
 %Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
@@ -978,16 +963,16 @@ Maximum number of previous Fock and density matrices to be stored and used for A
 %\verb|<Max. no of vectors for DSM>|\newline
 %\item[\Key{NVECDII}] \verb| | \newline
 %\verb|<Max. no of vectors for DIIS>|\newline
-\item[\Key{NOINCREM}] Turn off incremental scheme for Fock/KS matrix build.
+%\item[\Key{NOINCREM}] Turn off incremental scheme for Fock/KS matrix build.
 \item[\Key{NOPREC}] Turn off preconditioning of linear equations (ARH, TrFD, and second order optimization).
 \item[\Key{NOSHIFT}] Do no level shifting.
-\item[\Key{OVERLAP}] \verb| | \newline
-\verb|<Overlap>|\newline
-Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANGE).
+%\item[\Key{OVERLAP}] \verb| | \newline
+%\verb|<Overlap>|\newline
+%Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANGE).
 %\item[\Key{PURIFY}] \verb| | \newline
 %\verb|<Purification method>|\newline
 %Use purification scheme for density optimization 
-\item[\Key{RESTART}] The code automaticly saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
+\item[\Key{RESTART}] The code automatically saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
 \item[\Key{RH}] Use standard Roothaan-Hall scheme (diagonalization) for density optimization.
 %\item[\Key{SCALVIR}]
 %\item[\Key{SOEO}]
@@ -1049,7 +1034,7 @@ Note that Huckel guess is not supported by \lsdalton.
 For the different parts of the wave function optimization, it is possible
 to get very detailed information.
 This section describes these keywords. They must be put
-under *LINSCA in a section beginning with
+under *DENSOPT in a section beginning with
 \$INFO and ending with \$END INFO. Note that these keywords
 do NOT start with a dot!
 \begin{description}
@@ -1351,7 +1336,7 @@ Below, the list of general response input keywords follows.
 Determines the number of excitation energies to be calculated.
 If this keyword is set, the excitation energies 
 and the corresponding one-photon dipole absorption strengths
-for the lowext NEXCIT excited states (i.e. excited states 1 to NEXCIT) 
+for the lowest NEXCIT excited states (i.e. excited states 1 to NEXCIT) 
 are always calculated.
 \emph{\bf Important:} If properties involving excited states
 are to be requested (e.g. two-photon absorption or the excited state gradient),
@@ -1804,7 +1789,7 @@ These test cases illustrate the main features of the DEC scheme. The test cases 
 \item
 \textit{decmp2\_gradient}: Calculate DEC-MP2 molecular gradient.
 \item
-\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT level will be increased to get a more accurate energy and gradient in the next iteration.
+\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optimization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT level will be increased to get a more accurate energy and gradient in the next iteration.
 \end{itemize}
 
 
@@ -1901,7 +1886,7 @@ dens.plt \newline
 
 \item[\Key{EP}]\verb| | \newline
 Construct .plt file for electrostatic potential grid points based on input density matrix.
-For example to calculate electrostatic potential from the density in the the file  \emph{dens.restart} and save information in file  ep.plt,
+For example to calculate electrostatic potential from the density in the file  \emph{dens.restart} and save information in file  ep.plt,
 insert the following section in the LSDALTON.INP file used to generate the  \emph{dens.restart} file in the first place:
  \newline
 **PLT \newline
@@ -1971,7 +1956,7 @@ Manual definition of gridbox as described above. All input values are in a.u.
 \item[\Key{MOLECULE}] \verb| | \newline
 \verb|<buffer>| \newline
 \verb|<deltax    deltay    deltaz>| \newline
-Molecule-specifc definition of gridbox as described above. All input values are in a.u.
+Molecule-specific definition of gridbox as described above. All input values are in a.u.
 
 \end{description}
 

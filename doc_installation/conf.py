@@ -60,7 +60,7 @@ copyright = u'The authors of Dalton'
 #
 # Read version from file (miro: workaround for Windows as for some reasons it does not find the file)
 try:
-  dalton_version = open(os.path.join('..', '..', 'VERSION'), 'r').read().rstrip()
+  dalton_version = open(os.path.join('..', 'VERSION'), 'r').read().rstrip()
 except:
   dalton_version = 'not found'
 # The short X.Y version.
