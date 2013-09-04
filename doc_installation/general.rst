@@ -4,20 +4,22 @@ Basic installation
 ==================
 
 General
-------
+-------
 
-Dalton is configured using CMake, typically via the setup script,
+Dalton is configured using CMake, typically via the ``setup`` script,
 and subsequently compiled using make or gmake.
+The ``setup`` script is a useful front-end to CMake.
+You need python to run ``setup``.
 
 
 Basics
 ------
 
-The setup script is a useful front-end to CMake. To see all options, run::
+To see all options, run::
 
   $ ./setup --help
 
-The setup script does nothing else than creating the directory "build" and
+The ``setup`` script does nothing else than creating the directory "build" and
 calling CMake with appropriate environment variables and flags::
 
   $ ./setup [--flags]
@@ -49,7 +51,7 @@ Typical examples
 ----------------
 
 In order to get familiar with the configuration setup, let us demonstrate
-some of the most typical configuration scenarios.
+some typical configuration scenarios.
 
 Configure for parallel compilation using MPI (make sure to properly export MPI
 paths)::
@@ -72,9 +74,13 @@ Parallel compilation on a Cray::
 
   ./setup --fc=ftn --cc=cc --cxx=CC --cray --mpi
 
-You get the idea. The configuration is normally good at detecting math libraries
-automatically, provided you export the proper environment variable ``MATH_ROOT``
-(see further below).
+Parallel compilation on a SGI using Intel compilers and MPT::
+
+  ./setup --fc=ifort --cc=icc --cxx=icpc --sgi-mpt
+
+You get the idea. The configuration is usually good at detecting math libraries
+automatically, provided you export the proper environment variable ``MATH_ROOT``,
+see :ref:`linking_to_math`.
 
 
 What to do if CMake is not available or too old?
@@ -95,6 +101,6 @@ If it is a cluster, please ask the Administrator to install/upgrade CMake.
 
 If it is a cluster, but you prefer to install it yourself (it's easy):
 
-1. Download the latest precompiled tarball from http://www.cmake.org/cmake/resources/software.html
-2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
+1. Download the latest pre-compiled tarball from http://www.cmake.org/cmake/resources/software.html
+2. Extract the tarball to, say, ~/cmake-2.8.11-Linux-i386
 3. Set correct PATH variable

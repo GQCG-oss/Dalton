@@ -156,7 +156,7 @@ esac
 # thus define only two for each computer type.
 # Check first local libraries (hoping they were installed there for a
 # reason), then system-provided libraries.
-dirlist="$DIRLIST /lib /usr/local/lib /usr/lib64 /usr/lib /usr/local/lib/ATLAS"
+dirlist="$DIRLIST /lib /usr/local/lib /usr/lib64 /usr/lib /usr/local/lib/ATLAS /opt/local/lib"
 
 case $WHICH in
     rs6000)   liblist='libessl.a libblas.a'
@@ -168,9 +168,9 @@ case $WHICH in
               compf90list='ifort ifc pgf90 gfortran'
               ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
-              complist='gfortran'
-              compf90list='gfortran'
-              ccmplist='gcc';;
+              complist='gfortran gfortran-mp-4.7 gfortran-mp-4.8'
+              compf90list='gfortran gfortran-mp-4.7 gfortran-mp-4.8'
+              ccmplist='gcc gcc-mp-4.7 gcc-mp-4.8';;
 esac
 #
 if [ $WHICH = "linux" ]; then
@@ -850,7 +850,7 @@ case "$WHICH" in
                LIB="-lgcc"
                cpp=${cpp}" -DVAR_LINSCA -DIMPLICIT_NONE"
 # use Vector Libraries for BLAS and LAPACK
-               pdpackextras='linpack.o eispack.o'
+               pdpackextras='linpack.o eispack.o invroutines.o cholesky.o'
           else
              echo "Sorry - Do not know how to handle $F90 options for darwin'"
              exit 1

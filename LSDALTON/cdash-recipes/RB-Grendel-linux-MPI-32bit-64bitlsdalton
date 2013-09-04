@@ -1,6 +1,6 @@
 #!/bin/bash
 TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonReleaseomp64MPI23
-SCRATCH_DIR=/scratch/tkjaer/DaltonReleaseomp64MPI32
+SCRATCH_DIR=/tmp/tkjaer/DaltonReleaseomp64MPI32
 mv $TMP_DIR /home/tkjaer/NightlyTestingCdash/tmp/tmp7
 rm -rf $SCRATCH_DIR
 rm -rf /home/tkjaer/NightlyTestingCdash/tmp/tmp7

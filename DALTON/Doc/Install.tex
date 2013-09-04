@@ -2,21 +2,22 @@
 
 \section{Installation instructions}\index{installation instructions}
 
-Dalton is configured using CMake, typically via the setup script,
+\dalton\ is configured using CMake, typically via the setup script,
 and subsequently compiled using make or gmake.
 
-Please consult \verb|http://daltonprogram.org/installation/2013/|
-and \verb|http://daltonprogram.org/forum/| for details.
+Please consult \verb|http://daltonprogram.org/installation/2013/| for details.
+Help and support from the Dalton community is available at \verb|http://daltonprogram.org/forum|.
 
 \section{Hardware/software
 supported}\label{sec:hardsoft}\index{hardware/software support}
 
 {\dalton} can be run on a variety of systems running the UNIX operating system.
-The current release of the program supports Linux\index{Linux}, Cray\index{Cray}, and
-MacOS\index{MacOSX} using GNU or Intel compilers.
+The current release of the program supports Linux\index{Linux}, Cray\index{Cray}, SGI\index{SGI},
+and MacOS\index{MacOSX} using GNU or Intel compilers (we plan to publish patches
+for PGI and XL compilers)..
 
 The program is written in FORTRAN~77\index{FORTRAN~77},
-FORTRAN~90\index{FORTRAN~90} and C~\index{C}, with machine dependencies
+FORTRAN~90\index{FORTRAN~90} and C\index{C}, with machine dependencies
 isolated using C preprocessor directives\index{C preprocessor}.  All
 floating-point computations are performed in 64-bit precision, but if 32-bit
 integers are available the code will take advantage of this to reduce storage
@@ -29,14 +30,16 @@ directives to the authors.
 
 \section{Source files}\label{sec:source}
 
-{\dalton} is distributed as a \verb|tar| file obtainable from
-the {\dalton} homepage  \verb|http://www.daltonprogram.org|.
+The \latestrelease\ program suite is distributed as a \verb|tar|
+file obtainable from
+the Dalton homepage at \verb|http://www.daltonprogram.org|.
 After you have downloaded the file extract it with:
 \begin{verbatim}
 tar xvzf DALTON-2013.0-Source.tar.gz
 \end{verbatim}
-Most of the extracted subdirectories under \verb|DALTON/*|contain source code for the different
-sections constituting the program (not listed here).  Furthermore, there is a
+Most of the extracted subdirectories under \verb|DALTON/*| contain source code for the different
+sections constituting the \dalton\ program (not listed here).
+Furthermore, there is a
 directory containing various public domain routines (\verb|pdpack|), a
 directory with the necessary include files containing common blocks and machine
 dependent routines (\verb|include|), a directory containing all the basis sets
