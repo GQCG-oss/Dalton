@@ -5168,8 +5168,8 @@ real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
-Logical             :: const_electrons
-real(realk)         :: lagrangian, factor
+real(realk)         :: lagrangian, constrain_factor
+logical             :: const_electrons
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
 ELSE
@@ -5240,18 +5240,22 @@ ELSEIF (optlevel.EQ.2) THEN
 ELSE
   CALL LSQUIT('II_get_admm_exchange_mat:Error in ADMM, unknown optlevel',-1)
 ENDIF
-       
+
+! Get the scaling factor derived from constraining the total charge
+constrain_factor = 1.0E0_realk
+lagrangian = 0E0_realk  
+const_electrons = setting%scheme%ADMM_CONST_EL
+IF (const_electrons) THEN   
+   call get_Lagrange_multiplier_charge_conservation(lagrangian,&
+            &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
+ENDIF
+         
 !We transform the full Density to a level 2 density D2
 call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
-                  & nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+                  & nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,&
+                  & GC2,GC3,constrain_factor)
 
-const_electrons = setting%scheme%ADMM_CONST_EL
-IF (const_electrons) THEN
-! Lagrangian multiplier for conservation of the total nb. of electrons
-call get_Lagrange_multipliers_charge_conservation(lagrangian,factor,D,&
-         &setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
-call mat_scal(1.0E0_realk/factor,D2(1))
-ENDIF
+
      
 !Store original AO-indeces (AOdf will not change, but is still stored)
 AORold  = AORdefault
@@ -5265,10 +5269,8 @@ call set_default_AOs(AO2,AOdfold)
 CALL lstimer('AUX-IN',ts,te,lupri)
 call mat_zero(F2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,F2)
-call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
-IF (const_electrons) THEN
-   call mat_scal(1.0E0_realk/factor,TMPF)
-ENDIF
+call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
+                        & AO2,AO3,GC2,GC3,constrain_factor)
 call mat_daxpy(1E0_realk,TMPF,F)
 CALL lstimer('AUX-EX',ts,te,lupri)
 call mat_zero(F2(1))
@@ -5292,10 +5294,8 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 !Level 2 XC matrix
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
 !Transform to level 3
-call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
-IF (const_electrons) THEN
-   call mat_scal(1.0E0_realk/factor,TMPF)
-ENDIF
+call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
+                          & AO2,AO3,GC2,GC3,constrain_factor)
 call mat_daxpy(-GGAXfactor,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
@@ -5333,11 +5333,12 @@ IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_
 !call mat_free(TMP)
 
 CONTAINS
-   SUBROUTINE get_Lagrange_multipliers_charge_conservation(lagrangian,factor,&
-                     & D3,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
+   SUBROUTINE get_Lagrange_multiplier_charge_conservation(lagrangian,&
+                     & constrain_factor,D3,setting,lupri,luerr,n2,n3,&
+                     & AO2,AO3,GCAO2,GCAO3)
       implicit none
       type(matrix),intent(in)    :: D3     !level 3 matrix input 
-      real(realk),intent(inout)  :: lagrangian, factor
+      real(realk),intent(inout)  :: lagrangian, constrain_factor
       type(lssetting)            :: setting
       integer                    :: n2,n3,AO3,AO2,lupri,luerr
       logical                    :: GCAO2,GCAO3
@@ -5347,7 +5348,7 @@ CONTAINS
       integer      :: nelectrons
 
      CALL mat_init(T23,n2,n3)
-     CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+     CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,1E0_realk)
      
      CALL mat_init(S23,n2,n3)
      CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
@@ -5372,21 +5373,25 @@ CONTAINS
       write(lupri,*) "lagrangian=", lagrangian
       
       ! Scaling factor for the constrained reduced density matrix
-      factor = (1E0_realk - lagrangian)**2
-      write(*,*)     "(1-lambda)^2=", factor
-      write(lupri,*) "(1-lambda)^2=", factor
-      write(*,*)     "1/[(1-lambda)^2]=", 1E0_realk/factor
-      write(lupri,*) "1/[(1-lambda)^2]=", 1E0_realk/factor
+      constrain_factor = 1.0E0_realk / (1E0_realk - lagrangian)
+      write(*,*)     "(1-lambda)^2=", (1E0_realk - lagrangian)**2
+      write(lupri,*) "(1-lambda)^2=", (1E0_realk - lagrangian)**2
+      write(*,*)     "1/[(1-lambda)^2]=", constrain_factor**2
+      write(lupri,*) "1/[(1-lambda)^2]=", constrain_factor**2
+      write(*,*)     "factor = (1-lambda)=", constrain_factor
+      write(lupri,*) "factor = (1-lambda)=", constrain_factor
       
-   END SUBROUTINE get_Lagrange_multipliers_charge_conservation
+   END SUBROUTINE get_Lagrange_multiplier_charge_conservation
    
-   SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,luerr,n2,n3,AO2,AO3,McWeeny,GCAO2,GCAO3)
+   SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,luerr,n2,n3,AO2,AO3,&
+                                 & McWeeny,GCAO2,GCAO3,constrain_factor)
      implicit none
      type(matrix),intent(in)    :: D     !level 3 matrix input 
      type(matrix),intent(inout) :: D2 !level 2 matrix input 
      type(lssetting) :: setting
      integer :: n2,n3,AO3,AO2,lupri,luerr
      logical :: McWeeny,GCAO2,GCAO3
+     real(realk),intent(IN)        :: constrain_factor
      !
      TYPE(MATRIX)       :: S22,S23,T23
      Logical            :: purify_failed
@@ -5394,7 +5399,8 @@ CONTAINS
      CALL mat_init(T23,n2,n3)
      CALL mat_init(S23,n2,n3)
    
-     CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+     CALL get_T23(setting,lupri,luerr,T23,n2,n3,&
+                  & AO2,AO3,GCAO2,GCAO3,constrain_factor)
    
      CALL mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
      CALL mat_mul(S23,T23,'n','t',1E0_realk,0E0_realk,D2)
@@ -5412,20 +5418,23 @@ CONTAINS
       CALL mat_free(S23)
    END SUBROUTINE TRANSFORM_D3_TO_D2
    
-   SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
+   SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,&
+                                 & GCAO2,GCAO3,constrain_factor)
      implicit none
      type(matrix),intent(inout) :: F  !level 3 matrix output 
      type(matrix),intent(in)    :: F2 !level 2 matrix input 
      type(lssetting) :: setting
      Integer :: n2,n3,AO2,AO3,lupri,luerr
      Logical :: GCAO2,GCAO3
+     real(realk),intent(IN)        :: constrain_factor     
      !
      TYPE(MATRIX) :: S23,T23
    
      CALL mat_init(T23,n2,n3)
      CALL mat_init(S23,n2,n3)
    
-     CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+     CALL get_T23(setting,lupri,luerr,T23,n2,n3,&
+                  & AO2,AO3,GCAO2,GCAO3,constrain_factor)
    
      CALL mat_mul(F2,T23,'n','n',1E0_realk,0E0_realk,S23)
      CALL mat_mul(T23,S23,'t','n',1E0_realk,0E0_realk,F)
@@ -5434,17 +5443,21 @@ CONTAINS
      CALL mat_free(S23)
    END SUBROUTINE TRANSFORMED_F2_TO_F3
    
-   SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+   SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,&
+                     & AO2,AO3,GCAO2,GCAO3,constrain_factor)
    use io
    implicit none
    TYPE(lssetting),intent(inout) :: setting
    TYPE(MATRIX),intent(inout)    :: T23
    Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
    Logical,intent(IN)            :: GCAO2,GCAO3
+   real(realk),intent(IN)        :: constrain_factor
    !
    TYPE(MATRIX) :: S23,S22,S22inv
    Character(80) :: Filename = 'ADMM_T23'
    Logical :: onMaster
+   real(realk) :: lagrangian
+   Logical     :: const_electrons
    
    onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
    
@@ -5466,6 +5479,13 @@ CONTAINS
      CALL mat_free(S22)
      call io_add_filename(setting%IO,Filename,LUPRI)
      call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+   ENDIF
+   ! IF constraining the total charge
+   ! Lagrangian multiplier for conservation of the total nb. of electrons
+   ! constrain_factor = 1 / (1-lambda)
+   const_electrons = setting%scheme%ADMM_CONST_EL
+   IF (const_electrons) THEN
+      call mat_scal(constrain_factor,T23)
    ENDIF
    END SUBROUTINE get_T23
 !CONTAINS END
