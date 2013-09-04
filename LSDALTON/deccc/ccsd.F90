@@ -2040,10 +2040,12 @@ contains
 
 #ifdef VAR_OMP
     nthreads=OMP_GET_MAX_THREADS()
-    if(master)write(DECinfo%output,*) 'Starting CCSD residuals - OMP. Number of threads: ', OMP_GET_MAX_THREADS()
+    if(master.and.DECinfo%PL>2)write(DECinfo%output,*)&
+    & 'Starting CCSD residuals - OMP. Number of threads: ', OMP_GET_MAX_THREADS()
 #else
     nthreads=1
-    if(master)write(DECinfo%output,*) 'Starting CCSD integral/amplitudes - NO OMP!'
+    if(master.and.DECinfo%PL>2)write(DECinfo%output,*) &
+    &'Starting CCSD integral/amplitudes - NO OMP!'
 #endif
 
 #ifdef VAR_MPI
@@ -4939,10 +4941,10 @@ contains
       &max(max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*nba),(i8*no*no)*nv*nbg),(i8*no*no)*nv*nba)
       !w2
       memin = memin + 1.0E0_realk*&
-      &max(max(((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*no),(i8*nor)*no*no)
+      &max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*no),(i8*nor)*no*no)
       !w3
       memin = memin + 1.E0_realk*&
-      &max(max(max(max(max(max(max(((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
+      &max(max(max(max(max(max(max((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
       &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no)*nor*nba),(i8*no)*nor*nbg)
       ! allocation of matrices ONLY used outside loop
       ! w1 + FO + w2 + w3 + govov
@@ -4975,7 +4977,7 @@ contains
       &max(max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*nba),(i8*no*no)*nv*nbg),(i8*no*no)*nv*nba)
       !w2
       memin = memin + 1.0E0_realk * &
-      &max(max((i8*nb*nb)*nba*nbg,)(i8*nv*nv)*no*no),(i8*nor)*no*no)
+      &max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*no),(i8*nor)*no*no)
       !w3
       memin = memin + 1.0E0_realk * &
       &max(max(max(max(max(max(max((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
@@ -4985,7 +4987,7 @@ contains
       !in cd terms w2 and w3 have tl1, in b2 w2 has tl2
       cd = max(2_long*tl1,i8*tl2)
       ! in e2 term w2 has max(tl2,tl3) and w3 has max(no2,nv2)
-      e2 = max(tl3,itl4) + max(no*no,nv*nv)
+      e2 = max(tl3,tl4) + max(no*no,nv*nv)
       memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,(i8*nb*nb))+max(i8*nb*nb,i8*max(cd,e2)))
       !memrq=memrq+max(memin,memout)
     else
