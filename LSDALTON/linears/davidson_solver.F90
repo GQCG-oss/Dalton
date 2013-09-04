@@ -58,7 +58,6 @@ subroutine davidson_solver(CFG,grad,x)
       if (CFG%arh_extravec) CFG%start_it = 4
       if (CFG%arh_gradnorm .ge. 1E-3_realk) arh_thresh=0.0001_realk
       if (CFG%arh_gradnorm < 1E-3_realk) arh_thresh=0.00001_realk
-      if (CFG%arh_gradnorm < 1E-5_realk) arh_thresh=0.00001_realk
   end if
 
    call mem_alloc(CFG%Allb,CFG%max_it)
@@ -337,10 +336,9 @@ subroutine IncreaseDimRedSpace(grad,CFG,b_current,iter)
  end do
 
 
-
  if (CFG%start_it == 4 .and. iter==3) then
-    if ((dabs(CFG%Ared(2,4))+dabs(CFG%Ared(3,4))) < 1.0E-8_realk) then  
-        !Must abandon trial vector
+    if ((dabs(CFG%Ared(2,4))+dabs(CFG%Ared(3,4))) < 1.0E-3_realk) then  
+        !Must abandon b3  due to no coupling to b1 and b2
         CFG%singularity=.true.
     endif
  end if

@@ -125,8 +125,8 @@ implicit none
            config%davidOrbLoc%precond=.false.
            config%davidSCF%precond=.false.
            config%davidOrbLoc%PM_input%precond=.false.
-
-
+        CASE('.MACRO IT')
+           READ(input,*)  config%davidOrbLoc%max_macroit
        ! TESTING AND DEBUG OPTIONS
        CASE('.TEST PFM')
            config%davidOrbLoc%PFM_input%TESTCASE = .true.

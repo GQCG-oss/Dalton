@@ -55,7 +55,8 @@ real(realk)  :: local_conv_thresh
 real(realk)  :: global_conv_thresh
 ! Thresh for converging macro iterations
 real(realk)  :: macro_thresh
-
+! Maximum number of macro iterations 
+integer :: max_macroit
 
 
 !*******************
@@ -226,6 +227,7 @@ CFG%mostl_virt=0
 
 !General solver related keywords
 CFG%max_it = 25
+CFG%max_macroit = 200
 end subroutine davidson_default
 
 subroutine davidson_default_SCF(CFG)
