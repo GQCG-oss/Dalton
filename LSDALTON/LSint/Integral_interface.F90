@@ -5246,10 +5246,10 @@ type(MatrixP),intent(in)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 !
 real(realk),pointer :: grad_k2(:,:),grad_xc2(:,:),grad_XC3(:,:),ADMM_proj(:,:)
 integer             :: nbast,nbast2,AO2,AO3,idmat,nAtoms
-real(realk)         :: ts,te,hfweight,EX3
+real(realk)         :: ts,te,hfweight
 real(realk)         :: Exc2(1)
 type(Matrix),target :: D2
-type(Matrix)        :: k2,xc2,zeromat,F3
+type(Matrix)        :: k2,xc2,zeromat
 type(matrixp)       :: D2p(1)
 logical             :: GC3,GC2,testNelectrons,grid_done,DSym,unres
 integer             :: AOdfold,AORold
@@ -5335,6 +5335,7 @@ DO idmat=1,ndrhs
    !Level 2 XC matrix
    call mat_init(xc2,nbast2,nbast2)
    call mat_zero(xc2)
+   Exc2(1) = 0.0E0_realk
    call II_get_xc_Fock_mat(lupri,luerr,setting,nbast2,D2,xc2,Exc2,1)
  
    !Level 2 XC gradient
@@ -5362,22 +5363,17 @@ DO idmat=1,ndrhs
    ! set back the default choice for testing the nb. of electrons
    setting%scheme%dft%testNelectrons = testNelectrons
    
-   ! Additional (reorthonormalisation like) projection terms coming from the derivative of the small d2 Density matrix
+   ! Additional (reorthonormalisation like) projection terms coming from the 
+   ! derivative of the small d2 Density matrix
+   ! calculating Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
    call mem_alloc(ADMM_proj,3,nAtoms)
    call ls_dzero(ADMM_proj,3*nAtoms)
-   call mat_init(zeromat,nbast2,nbast2)
-   call mat_zero(zeromat)
 
-   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,zeromat,DmatLHS(idmat)%p,D2,&
-        &   nbast2,nbast,nAtoms,GGAXfactor,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,DmatLHS(idmat)%p,D2,&
+        &   nbast2,nbast,nAtoms,GGAXfactor,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) 2 k22(D2)))
    call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
-   call get_ADMM_K_gradient_projection_term(ADMM_proj,zeromat,xc2,DmatLHS(idmat)%p,D2,&
-        &   nbast2,nbast,nAtoms,GGAXfactor,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
-   call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
-
 
    !FREE MEMORY
-   call mat_free(zeromat)
    call mem_dealloc(ADMM_proj)
    call mat_free(k2)
    call mat_free(xc2)
@@ -5406,14 +5402,14 @@ CONTAINS
         real(realk),intent(in)     :: GGAXfactor
         !
         type(matrix),target        :: A22,B32,C22
-        type(matrix)               :: S22,S22inv,S23,T23,tmp32,tmp22
+        type(matrix)               :: S22,S22inv,T23,tmp32,tmp22
         type(matrixp)              :: tmpDFD(1)
         real(realk),pointer        :: reOrtho1(:,:)
         real(realk),pointer        :: reOrtho2(:,:)
         integer :: i,j
         !
         call mat_init(T23,n2,n3)
-        call mat_init(S23,n2,n3)
+        call mat_zero(T23)
         call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
         ! A22 = 2*[ k2(d2) - xc2(d2) ]
         call mat_init(A22,n2,n2)
@@ -5424,14 +5420,12 @@ CONTAINS
         call mat_init(S22,n2,n2)
         call mat_zero(S22)
         call mat_init(S22inv,n2,n2)       
-        call mat_zero(S22inv)
         call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
         call mat_inv(S22,S22inv)
 
         ! B32 = D33 T32 A22 S22inv
         call mat_init(B32,n3,n2)
         call mat_init(tmp32,n3,n2)
-        call mat_zero(B32)
         call mat_mul(D3 ,T23,'n','t',1E0_realk,0E0_realk,B32)
         call mat_mul(B32,A22,'n','n',1E0_realk,0E0_realk,tmp32)
         call mat_mul(tmp32,S22inv,'n','n',1E0_realk,0E0_realk,B32)
@@ -5439,24 +5433,22 @@ CONTAINS
         ! C22 = D22 A22 S22inv
         call mat_init(C22,n2,n2)
         call mat_init(tmp22,n2,n2)
-        call mat_zero(C22)
-        call mat_zero(tmp22)
         call mat_mul(D2 ,A22,'n','n',1E0_realk,0E0_realk,tmp22)
         call mat_mul(tmp22,S22inv,'n','n',1E0_realk,0E0_realk,C22)
         
         ! 2 correction terms similar in the form to the reorthonormalisation gradient term 
         tmpDFD(1)%p => C22
         call mem_alloc(reOrtho2,3,nAtoms)
-        reOrtho2 = 0E0_realk
+	call ls_dzero(reOrtho2,3*nAtoms)
         call II_get_reorthoNormalization_mixed(reOrtho2,tmpDFD,1,AO2,AO2,GCAO2,GCAO2,setting,&
      &                                         lupri,luerr)
         tmpDFD(1)%p => B32
         call mem_alloc(reOrtho1,3,nAtoms)
-        reOrtho1 = 0E0_realk
+	call ls_dzero(reOrtho1,3*nAtoms)
         call II_get_reorthoNormalization_mixed(reOrtho1,tmpDFD,1,AO3,AO2,GCAO3,GCAO2,setting,&
      &                                         lupri,luerr)
 
-        ADMM_proj = 0E0_realk
+	call ls_dzero(ADMM_proj,3*nAtoms)
         call DAXPY(3*nAtoms, 1E0_realk,reOrtho1,1,ADMM_proj,1)
         call DAXPY(3*nAtoms,-1E0_realk,reOrtho2,1,ADMM_proj,1)
         
@@ -5466,7 +5458,6 @@ CONTAINS
         call mat_free(S22inv)
         call mat_free(S22)
         call mat_free(T23)
-        call mat_free(S23)
         call mat_free(A22)
         call mat_free(B32)
         call mat_free(C22)
@@ -5488,8 +5479,9 @@ CONTAINS
    
    
      CALL mat_init(T23,n2,n3)
+     CALL mat_zero(T23)	
      CALL mat_init(S23,n2,n3)
-   
+
      CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
    
      CALL mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
@@ -5497,6 +5489,7 @@ CONTAINS
     
      IF (McWeeny) THEN
        CALL mat_init(S22,n2,n3)
+       CALL mat_zero(S22)	
        CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
        CALL McWeeney_purify(S22,D2,purify_failed)
        IF (purify_failed) THEN
@@ -5527,8 +5520,11 @@ CONTAINS
      call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
    ELSE
      CALL mat_init(S22,n2,n2)
+     CALL mat_zero(S22)	
      CALL mat_init(S22inv,n2,n2)
+     CALL mat_zero(S22inv)	
      CALL mat_init(S23,n2,n3)
+     CALL mat_zero(S23)	
      
      CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
      CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
