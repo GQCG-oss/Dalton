@@ -1043,26 +1043,11 @@ using PCM in {\dalton}\index{PCM}.
 
 \begin{description}
 
-\item[\Key{ICESPH}]\verb| |\newline
-\verb|READ (LUCMD, *) ICESPH|\verb| |\newline
-Define how to put the spheres when generating the PCM cavity. ICESPH can either be 0, 1 or 2.
-\begin{itemize}
-\item[0] automatic assignment of spheres on all atoms following the
-  tabulated radii values. This is the default.
-\item[1] reading the sphere centers coordinates in the MOLECULE
-  geometry file, as (X,Y,Z,R), with R the radius of the sphere. Be
-  aware that this option is not working if molecular symmetry is
-  detected.
-\item[2] specifying the nuclei associated with the sphere. This is
-  used together with the \Key{NESFP} keyword and, from the
-  \Sec{PCMCAV} section (see below), the \Key{INA} and \Key{RIN}
-  keywords
-\end{itemize}
-
 \item[\Key{SOLVNT}]\verb| |\newline
 \verb|READ (LUCMD, *) RZSOL|\verb| |\newline
 Solvent. The following solvents are supported in
 {\dalton}
+
 \begin{tabular}[h]{l|l}
 Formula  & Keyword \\
 \hline
@@ -1085,22 +1070,35 @@ THF      & TETHYDFU \\
 DMSO     & DIMETSOX \\
 CH3CN    & ACETONIT \\
 \hline
-\end{tabular}
-It is also possible to define your own solvent by using the keywords
-\Key{EPS}, \Key{EPSINF} and \Key{RSOLV} (see below)
+\end{tabular}\newline
 
-\item[\Key{NESFP}]\verb| |\newline
-\verb|READ (LUCMD, *) NESFP|\verb| |\newline
-Number of spheres (only if ICESPH is defined as 2).
+It is also possible to define solvent by the keywords \Key{EPS},
+\Key{EPSINF} and \Key{RSOLV}.
 
 \item[\Key{NEQRSP}]\verb| |\newline
 Non-equilibrium contributions of the solvent to the response
 calculation.
 
-\item[\Key{RET}]\verb| |\newline
-\verb|READ (LUCMD, *) RET|\verb| |\newline
-Defines the minimum radius of added spheres during the cavity
-generation (default 0.2 au).
+
+\item[\Key{ICESPH}]\verb| |\newline
+\verb|READ (LUCMD, *) ICESPH|\verb| |\newline
+Define how to put the spheres when generating the PCM cavity. ICESPH can either be 0, 1 or 2.
+\begin{itemize}
+\item[0] automatic assignment of spheres on all atoms following the
+  tabulated radii values. This is the default.
+\item[1] reading the sphere centers coordinates in the MOLECULE
+  geometry file, as (X,Y,Z,R), with R the radius of the sphere. Be
+  aware that this option is not working if molecular symmetry is
+  detected.
+\item[2] specifying the nuclei associated with the sphere. This is
+  used together with the \Key{NESFP} keyword and, from the
+  \Sec{PCMCAV} section (see below), the \Key{INA} and \Key{RIN}
+  keywords
+\end{itemize}
+
+\item[\Key{NESFP}]\verb| |\newline
+\verb|READ (LUCMD, *) NESFP|\verb| |\newline
+Number of spheres (only if ICESPH is defined as 2).
 
 \item[\Key{EPS}]\verb| |\newline
 \verb|READ (LUCMD, *) EPS|\verb| |\newline
@@ -1131,7 +1129,7 @@ This input section is only used right after the *PCM section
 \item[\Key{AREATS}]\verb| |\newline
 \verb|READ (LUCMD, *) AREATS|\verb| |\newline
 Defines the maximum area of a tessera in the initial tesselation of a
-sphere. (default 0.4 au$^2$)
+sphere. (default 0.4)
 
 \item[\Key{INA}]\verb| |\newline
 \verb|DO I = 1, NESFP|\newline
