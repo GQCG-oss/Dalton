@@ -1,4 +1,5 @@
 
+.. _linking_to_math:
 
 Linking to math libraries
 =========================
@@ -80,6 +81,6 @@ Builtin BLAS and LAPACK implementation
 
 If no external BLAS and LAPACK libraries are available, you can use the builtin
 implementation. However note that these are not optimized and you will sacrifice
-performace. This should be the last resort if nothing else is available::
+performance. This should be the last resort if nothing else is available::
 
-  $ ./setup --blas=builtin --lapack=lapack
+  $ ./setup --blas=builtin --lapack=builtin
