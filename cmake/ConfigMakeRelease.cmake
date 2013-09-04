@@ -16,7 +16,7 @@ set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${EXPORT_DIR};/")
 
 include(CPack)
 
-set(DIRS_TO_RELEASE basis cmake CMakeLists.txt COPYING CTestConfig.cmake DALTON external INSTALL.rst LSDALTON setup update VERSION)
+set(DIRS_TO_RELEASE basis cmake CMakeLists.txt COPYING CTestConfig.cmake DALTON external LSDALTON setup update VERSION)
 
 add_custom_target(
     release
