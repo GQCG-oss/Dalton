@@ -70,21 +70,4 @@ if(MPI_FOUND)
         set(USE_32BIT_MPI_INTERFACE TRUE)
     endif()
 
-    if(ENABLE_MPI2_DETECTION)
-        # test whether MPI-2 is available
-        file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-2-compatibility.F90" _source)
-        check_fortran_source_compiles(
-            ${_source}
-            MPI_2_COMPATIBLE
-            )
-        if(MPI_2_COMPATIBLE)
-            add_definitions(-DVAR_MPI2)
-            message("-- MPI-2 support found")
-        else()
-            message("-- no MPI-2 support found, will try with MPI-1")
-        endif()
-    else()
-        message("-- MPI-2 support disabled, will try with MPI-1")
-    endif()
-
 endif()

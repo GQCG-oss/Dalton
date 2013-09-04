@@ -7,7 +7,7 @@
 The {\mol}-style input is originally based on the input for the \mol\
 integral program by Alml\"{o}f~\cite{moleculeref}. However, there are
 few remnants of the original input structure. For users of earlier
-releases of the Dalton program, note should be taken of the fact that
+releases of the \dalton\ program, note should be taken of the fact that
 the input structure for the \mol\ file has undergone major changes,
 however, backward compatibility has in most cases been
 retained\footnote{The two exceptions to the backward are that when
@@ -36,9 +36,7 @@ different basis sets provided is in part
 related to the variety of molecular properties with very different
 basis set requirements that can be calculated with \dalton.
 Most of the basis sets have been downloaded from the EMSL basis set
-library service\index{EMSL basis set library service}\index{basis set!EMSL library}\newline
-(http://www.emsl.pnl.gov:2080/forms/basisform.html)~\cite{emslref}.
-Only a small number of the basis sets were obtained from different sources:
+library service\index{EMSL basis set library service}\index{basis set!EMSL library}\footnote{http://www.emsl.pnl.gov:2080/forms/basisform.html~\cite{emslref}} Only a small number of the basis sets were obtained from different sources:
 
 \begin{list}{--}{}
 \item The ano-1, ano-2, ano-3, ano-4 and Sadlej-pVTZ basis sets which where
@@ -46,7 +44,7 @@ downloaded from the MOLCAS home-page\index{NQvD basis set}\index{basis set!NQvD}
 \index{basis set!ANO}\index{sadlej basis set}\index{basis set!sadlej}
 (http://www.teokem.lu.se/molcas/).
 \item The NQvD (The Not Quite van Duijneveldt) basis sets were constructed
-by Knut F\ae gri for this distribution~\cite{nqvdref}.
+by Knut F\ae gri~\cite{nqvdref}.
 \item The Turbomole-X {X = SV,SVP,DZ,DZP,TZ,TZP,TZV,TZVP,TZVPP,TZVPPP} basis sets have
 been downloaded from Turbomole\index{Turbomole basis set}\index{basis set!Turbomole}(http://www.turbomole.com)
 \item The pc-$n$ and apc-$n$ polarization-consistent basis sets were provided to us by Frank Jensen.
@@ -718,7 +716,7 @@ Note that the keyword \Key{R12AUX} must be specified in the
 \label{sec:basislist}
 \index{basis set!library}
 
-As was mentioned above, all the basis sets supplied with this distribution
+As was mentioned above, all the basis sets supplied with this release
 of the \dalton\ program --- with a few exceptions --- have been obtained 
 from the EMSL basis set library~\cite{emslref}. 
 Supplied basis sets include the STO-$n$G and Pople style basis sets,
@@ -922,7 +920,7 @@ raf-r & O, Y--Pd, Hf--Tl, & Wahlgren/Faegri Relavistic Basis Set\\
  & Po, Th, U & \\
 \hline
 \multicolumn{3}{l}{\bf{\emph{Effective core potential (ECP) basis sets}}} \\
-\multicolumn{3}{l}{\emph{Note}: ecp-sdd-DZ is Stuttgart ECP valence basis sets included in previous \dalton,}\\
+\multicolumn{3}{l}{\emph{Note}: ecp-sdd-DZ is Stuttgart ECP valence basis sets included in previous Dalton releases,}\\
 \multicolumn{3}{l}{see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html.}\\
 \multicolumn{3}{l}{Others are from EMSL with the EMSL name given in the third column,}\\
 \multicolumn{3}{l}{please check EMSL for complete reference.}\\
@@ -1004,9 +1002,9 @@ stuttgart\_rsc\_segmented\_ecp & La-Lu & Stuttgart RSC Segmented/ECP\\
 \hline
 \end{longtable}
 
-In the following, we give the comprehensive list of all ECPs included in \dalton,
+In the following, we give the comprehensive list of all ECPs included in the current release,
 together with a list of the elements supported. The ecp-sdd-DZ is Stuttgart
-ECPs included in previous \dalton~(see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html),
+ECPs included in previous Dalton releases~(see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html),
 while others are from EMSL, please check EMSL for the complete reference to be cited.
 
 \setlongtables
