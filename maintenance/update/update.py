@@ -55,10 +55,11 @@ and apply them. This script should be run from the main %s directory.""" % (pack
     if res == 0:
         res,stdout,stderr = run_git(['pull'])
     if res != 0:
-        sys.stderr.write("ERROR: The update script failed. This is the error message:\n\n")
+        sys.stderr.write("ERROR: The update script failed.\n")
+        sys.stderr.write("       If the error is due to your local changes, resolve the situation, then 'git pull' manually.\n")
+        sys.stderr.write("       This is the error message:\n\n")
         sys.stderr.write(stdout)
         sys.stderr.write(stderr)
-        sys.stderr.write("\nIf the error is due to your local changes please do a `git pull' manually and resolve conflicts.\n")
         sys.exit(-1)
     if stdout == "Already up-to-date.\n":
         print "Up-to-date."
