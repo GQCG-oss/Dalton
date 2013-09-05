@@ -180,7 +180,13 @@ detailed description of possible options.
 %Roos should be used during execution of the program.
 %The keyword is needed if one attempts an MCSCF, CI or MP2 (run through the \sir\ module and not using the Coupled-Cluster module) with more than 255 basis functions.
 
-\item[\Key{PEQM}] \index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM} Include environment effects by using the polarizable embedding (PE) model. This will embed the core molecular system, as defined in the \molinp\ file, in a polarizable embedding potential given in the \potinp\ file. See further input options in the \Sec{PEQM} input section (see subsection~\ref{subsec:peqm}). See Chapter~\ref{ch:embedding} for an introduction to polarizable embedding calculations.
+\item[\Key{PEQM}] Include environment effects by using the polarizable embedding (PE)
+model~(See Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa}
+for PE-MP2/SOPPA and Ref.~\cite{pecc} for PE-CC)\index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}.
+This will embed the core molecular system, as defined in the \molinp\ file, in a
+polarizable embedding potential given in the \potinp\ file. See further input options
+in the \Sec{PEQM} input section (see subsection~\ref{subsec:peqm}). See
+Chapter~\ref{ch:embedding} for an introduction to polarizable embedding calculations.
 
 \item[\Key{PRIERR}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRERR|
@@ -286,7 +292,7 @@ for locating minima and transition states (geometry optimization).
 \index{first-order geometry optimization}\index{geometry optimization!first-order}
 \index{second-order geometry optimization}\index{geometry optimization!second-order}
 Most of the Hessian updating\index{Hessian update} schemes were taken from
-ref.\cite{thkrprt95} and \cite{Fletcher}.
+ref.~\cite{thkrprt95} and \cite{Fletcher}.
 The implementation of redundant internal coordinates
 \index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
 follows the work of Peng {\it et al.\/}~\cite{cppyahbsmjfjcc17}.
@@ -976,7 +982,7 @@ embedding (PE) model to describe environment effects on a core
 molecular system. The core system is defined by the \molinp\ file. The environment can be described by multipole moment expansions
 and anisotropic dipole-dipole polarizabilities provided in the \potinp\
 file. See Chapter~\ref{ch:embedding} for an introduction to
-calculations using the polarizable embedding model.
+calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA and Ref.~\cite{pecc} for PE-CC.
 
 
 \begin{description}
@@ -1016,8 +1022,9 @@ Use any existing files to restart calculation.
 \verb|    IF (OPTION == 'GRID') THEN|\verb| |\newline
 \verb|       READ (LUCMD, *) XSIZE, XGRID, YSIZE, YGRID, ZSIZE, ZGRID|\verb| |\newline
 \verb|    END IF| \verb| |\newline
+\verb|    IF (OPTION == '.' .OR. OPTION == '*') EXIT| \newline
 \verb|END DO|\verb| |\newline
-Create cube file for the core molecular system containing the electrostatic potential due to the final converged polarizable embedding potential. The grid density can be either \verb|COARSE| (3 points/bohr), \verb|MEDIUM| (6 points/bohr) or \verb|FINE| (12 points/bohr). The default grid density is \verb|MEDIUM| and default cube size is the extent of the molecule plus 8.0 bohr in plus and minus each Cartesian coordinate. If the \verb|FIELD| option is given then also cube files containing the electric field from the embedding potential will be created. The \verb|GRID| option gives full control of the cube size and density, and requires an additional input line specifying the size (in bohr) and density (in points/bohr) in each Cartesian direction. Here the size again specifies the amount to add to the extent of the core molecular system.
+Create cube file for the core molecular system containing the electrostatic potential due to the final converged polarizable embedding potential. The grid density can be either \verb|COARSE| (3 points/Bohr), \verb|MEDIUM| (6 points/Bohr) or \verb|FINE| (12 points/bohr). The default grid density is \verb|MEDIUM| and default cube size is the extent of the molecule plus 8.0 Bohr in plus and minus each Cartesian coordinate. If the \verb|FIELD| option is given then also cube files containing the electric field from the embedding potential will be created. The \verb|GRID| option gives full control of the cube size and density, and requires an additional input line specifying the size (in Bohr) and density (in points/Bohr) in each Cartesian direction. Here the size again specifies the amount to add to the extent of the core molecular system.
 
 \item[\Key{VERBOSE}]\verb| |\newline
 Verbose output. Currently this will print the final converged induced dipole moments.
