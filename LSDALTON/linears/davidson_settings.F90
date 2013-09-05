@@ -55,7 +55,8 @@ real(realk)  :: local_conv_thresh
 real(realk)  :: global_conv_thresh
 ! Thresh for converging macro iterations
 real(realk)  :: macro_thresh
-
+! Maximum number of macro iterations 
+integer :: max_macroit
 
 
 !*******************
@@ -221,11 +222,18 @@ CFG%leastl_occ=0
 CFG%leastl_virt=0
 CFG%mostl_occ=0
 CFG%mostl_virt=0
+! Convergence thresh for micro
+CFG%conv_thresh = 0.01_realk
+! Global convergence threshold for micro
+CFG%global_conv_thresh = 0.01_realk
+! Local convergence threshold for micro
+CFG%local_conv_thresh = 0.005_realk
 
 
 
 !General solver related keywords
 CFG%max_it = 25
+CFG%max_macroit = 200
 end subroutine davidson_default
 
 subroutine davidson_default_SCF(CFG)
@@ -255,12 +263,6 @@ CFG%start_it = 0
 !**********************************
 !*       Solver settings          *
 !**********************************
-! Convergence thresh for micro
-CFG%conv_thresh = 0.01_realk
-! Global convergence threshold for micro
-CFG%global_conv_thresh = 0.01_realk
-! Local convergence threshold for micro
-CFG%local_conv_thresh = 0.005_realk
 ! convergence threshold for macro
 CFG%macro_thresh = 0.0001_realk
 

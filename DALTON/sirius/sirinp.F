@@ -210,6 +210,7 @@ Cjje
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
+#include "ecpinf.h"
       DIMENSION CMO(LCMO)
 C
 C -- local variables and constants
@@ -1654,6 +1655,9 @@ C
 C  Do we use embedding ?
 C  (that is, is QM part embedded in environment)
 C
+      if (qmmm .and. ECP) then
+         call quit('QMMM not working with ECP')
+      end if
       EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
 #if defined (BUILD_PELIB)
       embedding = embedding .or. peqm

@@ -583,6 +583,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/intsort.F
     DALTON/sirius/koopro4.F
     DALTON/sirius/newtrahso.F
+    DALTON/sirius/opt-solvers.F
     DALTON/sirius/r12aux.F
     DALTON/sirius/siraba.F
     DALTON/sirius/sirave.F

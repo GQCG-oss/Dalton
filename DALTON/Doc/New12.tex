@@ -258,7 +258,7 @@ species~\cite{fjthjcp121}.
 \item{\bf Spin--spin coupling constants:} Allows for the calculation
   of coupling constants to one single nucleus.
 
-\item{\bf Changes to DALTON.INP:} To harmonize the input for
+\item{\bf Changes to \dalinp:} To harmonize the input for
   single-point and geometry optimization calculations, the labels for
   calculating  molecular properties during a geometry optimization is
   changed such that
@@ -272,8 +272,8 @@ species~\cite{fjthjcp121}.
 \end{tabular}
 \end{center}
 
-\item{\bf New \mol\ input format:} There is now a new input structure
-  for the \mol\ input file. The new format is keyword driven and
+\item{\bf New molecule input format:} There is a new input structure
+  for the molecule input file (\molinp). The new format is keyword driven and
   contains no fixed-format input lines unless the basis set is
   explicitly given in the input file. However, with the exception of
   the \verb|ATOMBASIS| option, the input file is fully backward
@@ -282,14 +282,14 @@ species~\cite{fjthjcp121}.
 
 \item{\bf Single input file:} In addition to the new input format,
   \dalton\ now also allows the entire input to be given in a
-  single file. This file must be started by the \mol\ input on the
-  first line, and the \dalton\ input is placed at the end of the input
+  single file. This file must be started by the molecule input on the
+  first line, and the dalton input is placed at the end of the input
   file. An optimization of methane may thus look like:
 
 \begin{verbatim}
 BASIS
 aug-cc-pVDZ
-CH4  molecule. Basis: aug-cc-pVDZ.
+CH4 molecule. Basis: aug-cc-pVDZ.
 Geometry from JCP 112, 393 (2000).
 Atomtypes=2 Generators=2 Y X Angstrom
 Charge=6.0 Atoms=1
@@ -313,7 +313,7 @@ single filename is given as arguments to the \verb|dalton| script, that is
 
 \item{\bf More basis set directories:} \dalton\ will now search for basis sets
 in any user specified directories, the job directory, and in the \dalton\ basis
-set library. \dalton\ 1.2 would search in only one directory,
+set library. Dalton~1.2 would search in only one directory,
 either a directory specified by the user
 or the \dalton\ basis set library.
 

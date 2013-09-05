@@ -2194,7 +2194,7 @@ main(integer argc, char* argv[])
 /*Replacement for strdup() on certain systems*/
 char *StringDuplicate(const char *s1)
 {
-#if defined(SYS_OSXLION)
+#if defined(SYS_DARWIN)
     size_t len = strlen (s1) + 1;
     char *res = malloc (len);
     if (res)
