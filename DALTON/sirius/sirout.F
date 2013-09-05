@@ -344,7 +344,6 @@ csonia 04/10/95
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Charge contribution:    ',ECHART
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Dipole contribution:    ',EDIPT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Quadrupole contribution:',EQUADT
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Octuple contribution:   ',EOCTUP
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Electronic Pol. energy: ',EDELD
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ',EDNUC
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
