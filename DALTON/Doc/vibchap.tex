@@ -55,18 +55,18 @@ constitution}, this may be obtained through an input like:
 The keyword \Key{ISOTOP} in the \Sec{VIBANA} input module
 indicates that more than only the isotopic species containing the most
 abundant isotopes are to be calculated, which will always be
-calculated. The numbers on the second line denotes the number of
-isotopically substituted species that is requested and the number of
+calculated. The numbers on the second line denote the number of
+isotopically substituted species that are requested and the number of
 atoms in the system. The following lines then
-lists the isotopic constitution of each of these species. 1
+list the isotopic constitution of each of these species. 1
 corresponds to the most abundant isotope, 2 corresponds to the second
 most abundant isotope and so on. The isotopic substitution have to be
 given for all atoms in the molecule (not only the symmetry
 independent), and the above input could for instance correspond to a
-methane\index{methane} molecule, with the isotopic species $CH_3D$
-and $^{13}CH_4$.
+methane\index{methane} molecule, with the isotopic species CH$_3$D
+and $^{13}$CH$_4$.
 
-As the isotopic substitution of all atoms in the molecule has to be
+As the isotopic substitution of all atoms in the molecule have to be
 specified, let us mention the way symmetry-dependent atoms will be
 generated. The atoms will be grouped in symmetry-dependent atom
 blocks. The specified symmetry-independent atom will be the first of
@@ -251,7 +251,7 @@ in Section~\ref{sec:vroa}
 \end{verbatim}
 
 The keyword \Key{RAMAN} in the general input module indicates that
-a frequency-dependent polarizability \index{polarizability}\index{response!linear}
+a frequency-dependent polarizability\index{polarizability}\index{response!linear}
 calculation is to be done. The keyword \Key{RAMAN} indicates that we are only
 interested in the Raman intensities\index{Raman intensity} and
 depolarization ratios\index{depolarization ratio}. Note
@@ -349,7 +349,7 @@ calculation. The nuclear contribution, on the other hand, can trivially
 be calculated from the nuclear charges and coordinates
 \cite{spas063,spas084}. The program generates thus a series of linear
 response functions for components of the nuclear linear momentum
-operators, i.e. derivatives with respect to the nuclear (symmetry)
+operators, i.e.\ derivatives with respect to the nuclear (symmetry)
 coordinates. The user has then to select the pair of coordinates
 relevant for the vibrational mode of interest and multiply the
 corresponding response function with the appropriate masses and natural
@@ -362,8 +362,8 @@ Mass-independent contributions to the vibrational g factor of diatomic
 molecules can analogously be obtained by combining the linear response
 function of two nuclear momentum operators with response functions
 involving one nuclear momentum operator and components of the total
-electronic moment operator according to Eq. (11) in Ref.
-\cite{spas084}. These response functions are also printed in the
+electronic moment operator according to Eq.~(11) in Ref.~\cite{spas084}.
+ These response functions are also printed in the
 output.
 
 The convergence thresholds for the calculation of the molecular gradient as

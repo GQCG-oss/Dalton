@@ -252,8 +252,20 @@ C
       use memory_parallel
       use parallel_communication_models_mpi
       use rma_windows
-C
+
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
 #include "implicit.h"
+#else
+#include "implicit.h"
+#include "mpif.h"
+#endif
+#else
+#include "implicit.h"
+#endif
+
+C
 #include "maxorb.h"
 C
 C Used from common blocks
@@ -861,6 +873,11 @@ C  /* Deck her_rvres */
       use parallel_communication_models_mpi
       use one_sided_communication_wrappers
       use rma_windows
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#endif
+#endif
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -886,7 +903,11 @@ C
 #include "inforb.h"
 #include "infpar.h"
 #include "parint.h"
+
 #ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
+#include "mpif.h"
+#endif
        integer (kind=mpi_offset_kind) :: offset_mat
 #endif
 C
@@ -1147,6 +1168,11 @@ C
       use memory_parallel
       use parallel_communication_models_mpi
       use rma_windows
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#endif
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1179,6 +1205,9 @@ C
 #include "gnrinf.h"
 C
 #ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
+#include "mpif.h"
+#endif
       integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
       integer(kind=MPI_ADDRESS_KIND) :: nelement_d, nelement_f
@@ -2394,6 +2423,11 @@ C  /* Deck her_sdres */
       use parallel_communication_models_mpi
       use one_sided_communication_wrappers
       use rma_windows
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#endif
+#endif
 !
 #include "implicit.h"
 #include "mxcent.h"
@@ -2416,6 +2450,9 @@ C
 #include "inforb.h"
 #include "infpar.h"
 #ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
+#include "mpif.h"
+#endif
        integer (kind=mpi_offset_kind) :: offset_mat
 #endif
 C

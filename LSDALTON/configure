@@ -496,22 +496,25 @@ elif [ -n "$LIB" ]; then
 fi      
 
 
-#ask for OpenMP support
+#ask for Debug support
 useDEBUG="false"
-if [ $WHICH = "rs6000" ] || [ $WHICH = "linux" ]; then
- get_yes_or_no 'Do you want to use debug compiler options ?' n
- if [ "$answer" = "y" ]; then
-    useDEBUG="true"
- fi
+get_yes_or_no 'Do you want to use debug compiler options ?' n
+if [ "$answer" = "y" ]; then
+   useDEBUG="true"
 fi
 
 #ask for OpenMP support
 useOMP="false"
-if [ $WHICH = "rs6000" ] || [ $WHICH = "linux" ]; then
- get_yes_or_no 'Do you want to install the program with OpenMP parallelization?' y
- if [ "$answer" = "y" ]; then
-    useOMP="true"
- fi
+get_yes_or_no 'Do you want to install the program with OpenMP parallelization?' y
+if [ "$answer" = "y" ]; then
+   useOMP="true"
+fi
+
+#ask for Fortran2003 support
+Fortran2003Comp="true"
+get_yes_or_no 'Does the Fortran compiler support the Fortran 2003 features like procedure pointers and iso_c_bindings?' y
+if [ "$answer" = "n" ]; then
+   Fortran2003Comp="false"
 fi
 
 #ask for BSM support
@@ -897,10 +900,20 @@ echo $f90root/lib/$libversion
     esac
 fi
 
+# if the compiler can handle 2003 standard, at some point a test should be introduced here
+if [ $Fortran2003Comp = "true" ]; then
+    cpp="$cpp -DCOMPILER_UNDERSTANDS_FORTRAN_2003"
+fi
+
 # If single precision (needs more work)
 if [ $SPver = "true" ]; then
     cpp=${cpp}" -DSYS_REAL"
 fi
+
+#USE_MPI_MOD_F90 there needs to be a test
+#if [ $FortranMPIMOD = "true" ]; then
+#    cpp="$cpp -DUSE_MPI_MOD_F90"
+#fi
 
 # If 64-bit integers (needs more work - libraries!)
 if [ $int64 = "true" ]; then
