@@ -886,6 +886,7 @@ C
                   AVDIA  = .FALSE.
                GO TO 100
     3          CONTINUE
+                  IF (PARCAL) CALL PARQUIT("SOPPA")
                   SOPPA = .TRUE.
                   IF (SOPPA .AND. EMBEDDING) THEN
                     WRITE (LUPRI,'(/A)')
@@ -1097,6 +1098,7 @@ C              .PROP2Average
      &      ' Input ERROR: CI response and ".SOPPA " are incompatible.'
          CALL QUIT('RSPINP: Input error')
       END IF
+      IF (SOPPA .AND. PARCAL) CALL PARQUIT("SOPPA")
 C
 C *** END OF RSPINP
 C

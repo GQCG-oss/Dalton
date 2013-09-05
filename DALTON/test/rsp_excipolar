@@ -158,7 +158,7 @@ CTRL[5]=1
 ERROR[5]="MP2 ENERGY NOT CORRECT"
 
 # MCSCF energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-224\.1625475153" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-224\.16254751(4|5)." $log | wc -l`
 TEST[6]=`expr	$CRIT1`
 CTRL[6]=1
 ERROR[6]="MCSCF ENERGY NOT CORRECT"
