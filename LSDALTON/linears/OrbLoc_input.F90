@@ -127,6 +127,10 @@ implicit none
            config%davidOrbLoc%PM_input%precond=.false.
         CASE('.MACRO IT')
            READ(input,*)  config%davidOrbLoc%max_macroit
+       CASE('.LOOSE MICRO THRESH')
+           config%davidOrbLoc%conv_thresh= 0.1_realk
+           config%davidOrbLoc%global_conv_thresh= 0.1_realk
+           config%davidOrbLoc%local_conv_thresh= 0.01_realk
        ! TESTING AND DEBUG OPTIONS
        CASE('.TEST PFM')
            config%davidOrbLoc%PFM_input%TESTCASE = .true.

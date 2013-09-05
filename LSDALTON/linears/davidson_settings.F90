@@ -222,6 +222,12 @@ CFG%leastl_occ=0
 CFG%leastl_virt=0
 CFG%mostl_occ=0
 CFG%mostl_virt=0
+! Convergence thresh for micro
+CFG%conv_thresh = 0.01_realk
+! Global convergence threshold for micro
+CFG%global_conv_thresh = 0.01_realk
+! Local convergence threshold for micro
+CFG%local_conv_thresh = 0.005_realk
 
 
 
@@ -257,12 +263,6 @@ CFG%start_it = 0
 !**********************************
 !*       Solver settings          *
 !**********************************
-! Convergence thresh for micro
-CFG%conv_thresh = 0.01_realk
-! Global convergence threshold for micro
-CFG%global_conv_thresh = 0.01_realk
-! Local convergence threshold for micro
-CFG%local_conv_thresh = 0.005_realk
 ! convergence threshold for macro
 CFG%macro_thresh = 0.0001_realk
 

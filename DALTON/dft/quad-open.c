@@ -1141,8 +1141,10 @@ FSYM2(dft_qr_ab)(real * fi, real * fo, real *cmo,
     free(tmpb);
     quad_open_free(qr_data);
     /* print time and exit */
-    times(&endtm);
-    utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %f(%9.3f): QR-DFT-AB evaluation time: %9.1f s",
-               electrons,exp_el, utm/(double)sysconf(_SC_CLK_TCK));
+    if (*iprint>0) {
+      times(&endtm);
+      utm = endtm.tms_utime-starttm.tms_utime;
+      fort_print("Electrons: %f(%9.3f): QR-DFT-AB evaluation time: %9.1f s",
+                 electrons,exp_el, utm/(double)sysconf(_SC_CLK_TCK));
+    }
 }

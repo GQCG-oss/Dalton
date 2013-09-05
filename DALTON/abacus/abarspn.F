@@ -95,9 +95,12 @@ C
 #include "abslrs.h"
 #include "qm3.h"
 C
-      LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX
+      LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX, USEDRC_SAVE
 C
       CALL QENTER('ABARSP')
+
+      USEDRC_SAVE = USEDRC
+
       IF (MMPCM) CALL MMPCMINIT()
       TIMRSP = SECOND()
       IPRRSP = IPRCLC - 2
@@ -490,6 +493,7 @@ C
 C
 C     *******************************************
 C
+      USEDRC = USEDRC_SAVE
       CALL QEXIT('ABARSP')
       RETURN
       END
