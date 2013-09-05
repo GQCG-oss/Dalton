@@ -210,7 +210,7 @@ SUBROUTINE print_intro(lupri)
   WRITE(LUPRI,'(5X,A)')&
   &  '                                           ',&
        &  ' LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)',&
-       &  ' -------------------------------------------------------------------',&
+       &  ' ----------------------------------------------------------------------------',&
        &  ' Vebjoern Bakken,         University of Oslo,     Norway    (geometry optimizer)',&
        &  ' Sonia Coriani,           University of Trieste,  Italy     (response)',&
        &  ' Patrick Ettenhuber,      Aarhus University,      Denmark   (CCSD)',&
