@@ -164,6 +164,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # QM/MM interaction energy compared:
 CRIT1=`$GREP "\| * (\-|\-0)\.010695338. \| * (\-|\-0)\.001884127. \| * ( |0)\.005110972. \| * (\-|\-0)\.007468493. \|" $log | wc -l`
 CRIT2=`$GREP "\| * \-76\.23896471.. \| * \-76\.246433206. \| * ( |0)\.000009121. \|" $log | wc -l`
