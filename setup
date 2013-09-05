@@ -69,6 +69,11 @@ def parse_input():
             action='store_true',
             default=False,
             help='show cmake command and exit [default: %(default)s]')
+    group.add_argument('--cmake',
+            action='store',
+            default='cmake',
+            help='set the cmake command [default: cmake; e.g. --cmake cmake28]',
+            metavar='STRING')
     
     group = parser.add_argument_group('parallelization')
     group.add_argument('--mpi',
@@ -190,7 +195,8 @@ def parse_input():
 
 
 def check_cmake_exists():
-    p = subprocess.Popen('cmake --version',
+    cmake_version = '%s --version' % cmake_command
+    p = subprocess.Popen(cmake_version,
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
@@ -223,10 +229,10 @@ def gen_cmake_command(args):
         command += ' CXX=%s' % args.cxx
 
     if sys.platform != "win32":
-        command += ' cmake'
+        command = command + ' ' + cmake_command
     else:
         # fix for windows
-        command = ' cmake ' + command
+        command = cmake_command + command
 
     command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
@@ -365,7 +371,13 @@ def run_cmake(command, build_path):
 
 
 def main(argv):
+
+    global cmake_command
+
     args = parse_input()
+
+    cmake_command = args.cmake
+
     check_cmake_exists()
     build_path = args.builddir
     if not args.show:
