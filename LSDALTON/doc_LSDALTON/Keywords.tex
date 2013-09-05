@@ -1271,16 +1271,18 @@ These test cases illustrate the main features of direct dynamics. The test cases
 Print level for the output. The higher the print level, the more information
 is printed to the output file.
 \item[\Key{TIMESTEP}]\verb| | \newline
-Defines integration time step in femtoseconds which should be given in the next line (real).
+Defines integration time step in femtoseconds which should be given in the next line (real). The
+default i 0.5 fs.
 \item[\Key{MAX ITER}]\verb| | \newline
-Defines maximum number of time steps. Must be given in the next line (integer).
+Defines maximum number of time steps. Must be given in the next line (integer). The default is 100.
 \item[\Key{MASSWE}]\verb| | \newline 
 States that the integration is carried out in mass-weighted coordinates. The default is FALSE.
 \item[\Key{MWVEL}]\verb| | \newline 
 States that the input velocities are mass-weighted. The default is FALSE.
 \item[\Key{VELOCI}]\verb| | \newline 
 Begins the input of the velocities. In the next line the number of atoms should be given (integer),
-then the velocities grouped atom-wise: three(x,y,z) in a line (real).
+then the velocities grouped atom-wise: three(x,y,z) in a line (real). The default is for all 
+velocities to be zero.
 \item[\Key{FOCKMD}]\verb| | \newline 
 Fock matrix dynamics. Below number of points for extrapolation $N$ and polynomial order $M$ must
 be specified. Note that $M>N$ (both integer). Works only with .RESTART option under the *DENSOPT subsection
