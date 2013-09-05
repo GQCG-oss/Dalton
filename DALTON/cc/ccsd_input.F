@@ -143,10 +143,6 @@ Cring-CCD for triplet (rTCCD), and SOSEX added
 
       DATA SET/.FALSE./
 C
-      IF (PARCAL) THEN
-        WRITE(LUPRI,*) "WARNING: CC is not parallelized!"
-        WRITE(LUPRI,*) "For parallelization speedup, please use OMP"
-      ENDIF
       IF (SET) RETURN
       SET = .TRUE.
 C
@@ -414,6 +410,10 @@ C
       NEWDEF = (WORD .EQ. '*CC INP' .OR. WORD .EQ. '**CC   '.OR.
      *          WORD .EQ. '*CC    ')
       IF (NEWDEF) THEN
+         IF (PARCAL) THEN
+           WRITE(LUPRI,*) "WARNING: CC is not parallelized!"
+           WRITE(LUPRI,*) "For parallelization speedup, please use OMP"
+         ENDIF
          WORD1 = WORD
  1000    CONTINUE
             READ (LUCMD, '(A7)') WORD

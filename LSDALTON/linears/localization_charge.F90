@@ -75,17 +75,6 @@ integer     :: nel
 real(realk) :: minel
 integer     :: minel_pos(2)
 
-if (CFG%orb_debug) then
-write(ls%lupri,*)
-write(ls%lupri,'(a)')    '====================================='
-write(ls%lupri,'(a,l3)') 'INFO Pipek-Mezey, Lowdin   :', CFG%PM_input%PipekMezeyLowdin
-write(ls%lupri,'(a,l3)') 'INFO Pipek-Mezey, Mulliken :', CFG%PM_input%PipekMezeyMull
-write(ls%lupri,'(a,l3)') 'INFO Charge loc., Lowdin   :', CFG%PM_input%ChargeLocLowdin
-write(ls%lupri,'(a,l3)') 'INFO Charge loc., Mulliken :', CFG%PM_input%ChargeLocMulliken
-write(ls%lupri,'(a,i3)') 'INFO Power, m              :', m
-write(ls%lupri,'(a)')    '====================================='
-write(ls%lupri,*)
-end if
 
   CFG%PM_input%cmo=>CMO
   r=0.d0
@@ -107,7 +96,7 @@ end if
   stepsize = CFG%stepsize
   if (norb < 10) CFG%macro_thresh=CFG%macro_thresh*10.0d0
 
-  do i=1,100
+  do i=1,CFG%max_macroit
     CFG%old_mu = CFG%mu
     old_fVal = fVal
     nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
@@ -138,7 +127,6 @@ end if
   ! Compute r
   !call updatecmo(CMO,X)
   call update_OrbLoc(CFG%PM_input,CMO,ls)
-  write(ls%lupri,*) 'CHECK: Qii =', sum(CFG%PM_input%Q(:,:))
   fval = CFG%PM_input%funcVal
   r=2.0d0*(orig_eval-old_fVal)/CFG%r_denom
 
@@ -154,7 +142,13 @@ end if
 
    if (CFG%stepsize < 0.001) then
          write(CFG%lupri,'(a)') 'WARNING: Too many rejections for localization. We exit..' 
-	 exit
+         write(CFG%lupri,*) ' Cannot proceed with localization due to issues with    '
+         write(CFG%lupri,*) ' solving the level-shifted Newton equations. You may    '
+         write(CFG%lupri,*) ' try to restart calculation and lower the residual norm '
+         write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
+         write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
+         write(CFG%lupri,*) ' and keyword .MICRO THRESH                              '
+         call lsquit('Cannot converge micro iterations. ', CFG%lupri)
     end if
 
     !new gradient

@@ -274,7 +274,7 @@ Specification of which wave function calculation is to be performed.
   Usage is not documented.
 
 \item[\Key{INTERFACE}]
-  Write the "SIRIFC" interface file\index{interface file} for post-processing programs.
+  Write the "\verb|SIRIFC|" interface file\index{interface file} for post-processing programs.
 
 %hjaaj oct 2003: obsolete ...
 %\item[\Key{NSYM}]
@@ -317,7 +317,7 @@ Specification of which wave function calculation is to be performed.
   lines will be discarded.
 
 \item[\Key{WESTA}]
-  Write the "SIRIFC" interface file for the WESTA post-processing program.
+  Write the "\verb|SIRIFC|" interface file for the WESTA post-processing program.
 
 %hjaaj Oct 2003: obsolete
 %\item[\Key{BASIS SET}]
@@ -1240,7 +1240,7 @@ Add extra terms to the Hamiltonian (for finite field\index{finite field} calcula
   \verb"READ (LUINP,  *  ) EFIELD(NFIELD)" \\
   \verb"READ (LUINP,'(A)') LFIELD(NFIELD)" \\
   Enter field strength (in atomic units) and property label on separate lines
-  where label is a MOLE\-CULE-style property label on file AOPROPER
+  where label is a \molecule-style property label on file \verb|AOPROPER|
   produced by the property module, see Chapter~\ref{ch:hermit}.
   The calculation of the necessary property integral(s) must be requested
   in the \quotekw{**INTEGRALS} input module. \\
@@ -1780,7 +1780,7 @@ reordering and punching of orbitals.
                             (\verb|SIRIUS.RST| file) with label \quotekw{NEWORB  }
    \item[{\tt OLDORB\ }] Input from {\sir} restart file
                             (\verb|SIRIUS.RST| file) with label \quotekw{OLDORB  }
-   \item[{\tt SIRIFC\ }] Input from {\sir} interface file ("SIRIFC")
+   \item[{\tt SIRIFC\ }] Input from {\sir} interface file ("\verb|SIRIFC|")
 \end{description}
 
 %Oct 2003 hjaaj: now NOSUPSYM always default,
@@ -2113,7 +2113,7 @@ using the \quotekw{.SINGLY OCCUPIED} described here.
   Number of electrons in the molecule\index{electrons in molecule}.
   By default, this number will be determined on the basis of the nuclear
   charges and the total charge of the molecule\index{charge of molecule}
-  as specified in the \verb|MOLECULE.INP| file.
+  as specified in the \molinp\ file.
   The keyword is incompatible with the keywords \quotekw{.DOUBLY OCCUPIED},
   \quotekw{.OPEN SHELL}, and \quotekw{.SINGLY OCCUPIED}.
 
@@ -2208,7 +2208,7 @@ using the \quotekw{.SINGLY OCCUPIED} described here.
   DIIS seems to be stalling.
 
 \item[\Key{THRESH}]
-  Default = 1.0D-06\\
+  Default = 1.0D-05 (1.0D-06 if MP2)\\
   \kw{READ (LUINP,*) THRRHF} \\
   Hartree--Fock convergence threshold for energy gradient.  The convergence
   of the energy will be approximately the square of this number.
@@ -2259,7 +2259,7 @@ For RHF\index{RHF}\index{SCF}\index{Hartree--Fock}
 or MP2\index{MP2}\index{M{\o}ller-Plesset!second-order}
 calculations the orbital occupation will be determined on the
 basis of the nuclear charges and molecular charge of the molecule as
-specified in the \verb|MOLECULE.INP| file.
+specified in the \molinp\ file.
 
 By default, starting orbitals and initial orbital occupation will
 be determined automatically on the basis of a H\"{u}ckel\index{H\"{u}ckel}
