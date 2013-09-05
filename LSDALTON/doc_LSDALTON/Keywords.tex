@@ -14,8 +14,8 @@ for the optimization of the wave function (mandatory)
 \item **LOCALIZE ORBITALS contains settings for orbital localization procedure (optional)
 \item **RESPONS contains information about requested molecular properties for HF and DFT (optional)
 \item **DEC \emph{or} **CC contains info about MP2 and coupled-cluster calculations (optional)
-\item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera}.
-\item **PLTGRID contains information about grid used for construction of *.plt files.
+\item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera} (optional).
+\item **PLTGRID contains information about grid used for construction of *.plt files (optional).
 \end{itemize}
 Each of these sections may contain subsections, indicated by a single asterisk. LSDALTON.INP
 should always end with *END OF INPUT. 
@@ -859,7 +859,7 @@ if trust-radius ratio is smaller than this criterion (default is 0.25).
 \verb|<Option>|\newline 
 Dynamic SCF convergence threshold. This is suitable for calculations on large molecules, since the standard SCF
 convergence threshold is based on the Frobenius norm of the SCF gradient, which is not size-extensive.
-Options are TIGHT, STANDARD, and SLOPPY.
+Options are SLOPPY, STANDARD, TIGHT, VTIGHT corresponding to $10^{-4}$, $10^{-5}$, $10^{-6}$, $10^{-7}$ times the square root of the number of electrons in the system.
 \item[\Key{CONVTHR}] \verb| | \newline
 \verb|<Threshold>|\newline
 SCF convergence threshold - Frobenius norm of SCF gradient (default is 1.0d-4). 

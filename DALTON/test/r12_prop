@@ -103,6 +103,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # ?
 CRIT1=`$GREP "Electronic dipole moment \(au\)\: * (0| )\.000000000( |0E\+00) * (0| )\.000000000( |0E\+00) * \-1\.539644256" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
