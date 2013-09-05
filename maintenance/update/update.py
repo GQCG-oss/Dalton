@@ -46,7 +46,7 @@ and apply them. This script should be run from the main %s directory.""" % (pack
         sys.stderr.write("Unknown argument `%s', quitting.\n" % sys.argv[1])
         sys.exit(-1)
     res, dum, dum = run_git(['status']) # Check if we are in a git repo
-    if (res != 0) and (os.path.isdir('.git')): # we also check that we are not accidentaly within some other git repo
+    if (res != 0) or (not os.path.isdir('.git')): # we also check that we are not accidentaly within some other git repo
         sys.stderr.write("ERROR: The update script must be run from inside the %s directory\n" % package_name)
         sys.exit(-1)
     res = 0
