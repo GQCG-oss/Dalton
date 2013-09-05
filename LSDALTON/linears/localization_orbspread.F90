@@ -88,7 +88,8 @@ real(realk),pointer :: max_orbspreads(:)
            write(ls%lupri,*) '  '
            exit
         endif
-    elseif( nrmG.le. CFG%macro_thresh*10.0) then
+    endif
+    if( nrmG.le. CFG%macro_thresh*10.0) then
         write(ls%lupri,*) '  '
         write(ls%lupri,*) '   ********* Orbital localization converged ************'
         write(ls%lupri,*) '   *                                                   *'
@@ -149,7 +150,7 @@ real(realk),pointer :: max_orbspreads(:)
         write(CFG%lupri,*) ' try to restart calculation and lower the residual norm ' 
         write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
         write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
-        write(CFG%lupri,*) ' and keyword .MICRO THRESH                              ' 
+        write(CFG%lupri,*) ' and keyword .LOOSE MICRO THRESH                              ' 
         call lsquit('Cannot converge micro iterations. ', CFG%lupri)
    elseif (oVal-old_oVal < 0) then
             cycle
@@ -260,7 +261,7 @@ real(realk),pointer :: max_orbspreads(:)
    ! global and local thresholds defined in CFG settings
    if (dabs(CFG%mu)> 1.0) CFG%conv_thresh=CFG%global_conv_thresh
    if (dabs(CFG%mu)< 1.0)  CFG%conv_thresh=CFG%local_conv_thresh
-
+print*, "trhesh", CFG%local_conv_thresh
     call mat_copy(1.0_realk,CMO,CMOsav)
  
     stepsize = CFG%stepsize
@@ -296,7 +297,7 @@ real(realk),pointer :: max_orbspreads(:)
            write(CFG%lupri,*) ' try to restart calculation and lower the residual norm ' 
            write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
            write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
-           write(CFG%lupri,*) ' and keyword .MICRO THRESH                              ' 
+           write(CFG%lupri,*) ' and keyword .LOOSE MICRO THRESH                              ' 
            call lsquit('Cannot converge micro iterations. ', CFG%lupri)
    elseif (orig_Eval-old_oVal > 0) then
             cycle

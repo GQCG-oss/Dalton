@@ -1343,6 +1343,14 @@ Provided the file with the molecular orbital coefficients (e.g., \textit{cmo\_or
 This keyword will make sure second and fourth moment orbital spreads are printed for all orbitals, not just the least local ones.
 
 
+\item[\Key{MACRO IT}]\verb| | \newline
+<option>
+Set maximum number of macro iterations for orbital localization procedure. Default is 200. 
+
+
+\item[\Key{LOOSE MICRO THRESH}]\verb| | \newline
+Looser threshold for solving level-shifted Newton equations in davidson solver in orbital localization procedure. Should only be used if a calculation fails and the error message tells you to use this keyword.
+
 \item[\Key{Orbital Plot}]\verb| | \newline
 \verb|<orbital specification>|\newline	
 Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plotting other orbitals, use the **PLT option described in section \ref{sec:plt}. Also note that the grid dimensions may be modified as described in Section~\ref{sec:pltgrid}.
