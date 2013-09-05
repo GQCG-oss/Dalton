@@ -44,6 +44,8 @@ logical :: debug_info
 integer :: start_it
 ! TRUE if b3 coupling to b1 and b2 is too weak
 logical :: singularity
+! if using quadratic fit for line search
+logical :: lines_fit
 ! *************************
 ! * convergence settings  *
 ! *************************
@@ -228,6 +230,7 @@ CFG%conv_thresh = 0.01_realk
 CFG%global_conv_thresh = 0.01_realk
 ! Local convergence threshold for micro
 CFG%local_conv_thresh = 0.005_realk
+CFG%lines_fit =.true.
 
 
 
