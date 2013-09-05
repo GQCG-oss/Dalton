@@ -4918,7 +4918,7 @@ contains
       &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no*nor)*nba),(i8*no)*nor*nbg)
       ! allocation of matrices ONLY used outside loop
       ! w1 + FO + w2 + w3
-      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,nb*nb)+i8*nb*nb+(2_long*no*no)*nv*nv)
+      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,i8*nb*nb)+i8*nb*nb+(2_long*no*no)*nv*nv)
       !memrq=memrq+max(memin,memout)
     elseif(s==3)then
       !govov stays in pdm and is dense in second part
@@ -4948,7 +4948,7 @@ contains
       &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no)*nor*nba),(i8*no)*nor*nbg)
       ! allocation of matrices ONLY used outside loop
       ! w1 + FO + w2 + w3 + govov
-      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,nb*nb)+max(i8*nb*nb,max(2_long*tl1,i8*tl2)))
+      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,i8*nb*nb)+max(i8*nb*nb,max(2_long*tl1,i8*tl2)))
       !memrq=memrq+max(memin,memout)
     elseif(s==2)then
       call array_default_batches(d1,mode,tdim,splt)

@@ -35,7 +35,7 @@ type(orbspread_data) :: orbspread_input
 logical :: lower2
 type(Matrix) :: Xsav,CMOsav
 type(Matrix), target  ::  X, P, G,expX
-integer :: norb, i, nbas
+integer :: norb, i, nbas,iter_number
 real(realk) :: nrmG, oVal,old_oVal, max_step,max_FM
 real(realk) :: nrm_thresh,stepsize
 real(realk) :: trial(1,1)
@@ -64,6 +64,7 @@ real(realk),pointer :: max_orbspreads(:)
   lower2= .true.
   stepsize=0d0
   do i=1,CFG%max_macroit
+    iter_number = i
     CFG%old_mu = CFG%mu
     old_oVal = oVal
     nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
@@ -76,7 +77,12 @@ real(realk),pointer :: max_orbspreads(:)
     
 
     if (i>10) then
-        if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 ) then
+      if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.05) then
            write(ls%lupri,*) '  '
            write(ls%lupri,*) '    ********* Orbital localization converged ************'
            write(ls%lupri,*) '    *                                                   *'
@@ -88,7 +94,8 @@ real(realk),pointer :: max_orbspreads(:)
            write(ls%lupri,*) '  '
            exit
         endif
-    elseif( nrmG.le. CFG%macro_thresh*10.0) then
+    endif
+    if( nrmG.le. CFG%macro_thresh*10.0) then
         write(ls%lupri,*) '  '
         write(ls%lupri,*) '   ********* Orbital localization converged ************'
         write(ls%lupri,*) '   *                                                   *'
@@ -118,11 +125,11 @@ real(realk),pointer :: max_orbspreads(:)
     oVal=CFG%PFM_input%kurt_val
     
     if (oVal-old_oVal < 0) then 
-       write(CFG%lupri,*) "Pred: step accepted"
+       write(CFG%lupri,*) "Step accepted"
        CFG%stepsize=min(CFG%stepsize*2.0,CFG%max_stepsize)
        !CMOS are updated in linesearch
     else
-       write(CFG%lupri,*) "Pred: step rejected"
+       write(CFG%lupri,*) "Step rejected"
        call mat_copy(1d0,cmosav,cmo)
        call kurt_updateAO(CFG%PFM_input,cmo)
        call kurt_value(CFG%PFM_input)
@@ -149,7 +156,7 @@ real(realk),pointer :: max_orbspreads(:)
         write(CFG%lupri,*) ' try to restart calculation and lower the residual norm ' 
         write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
         write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
-        write(CFG%lupri,*) ' and keyword .MICRO THRESH                              ' 
+        write(CFG%lupri,*) ' and keyword .LOOSE MICRO THRESH                              ' 
         call lsquit('Cannot converge micro iterations. ', CFG%lupri)
    elseif (oVal-old_oVal < 0) then
             cycle
@@ -163,8 +170,23 @@ real(realk),pointer :: max_orbspreads(:)
     CFG%PFM_input%P => P
     CFG%P => CFG%PFM_input%P
 
-
   enddo
+    if (iter_number==CFG%max_macroit) then
+        write(CFG%lupri,*) ''
+        write(CFG%lupri,*) ' %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+        write(CFG%lupri,*) ' %%        LOCALIZATION PROCEDURE NOT CONVERGED!!!     %% '
+        write(CFG%lupri,*) ' %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+        write(CFG%lupri,*) ''
+        write(CFG%lupri,*) ' Localization is not converged in the maximum number of     '
+        write(CFG%lupri,*) ' iterations. Restart calculation by renaming orbital file'
+        write(CFG%lupri,*) ' localized_orbitals.u to orbitals_in.u, and run calculation '
+        write(CFG%lupri,*) ' using keyword .ONLY LOC in **LOCALIZE ORBITALS section'
+        write(CFG%lupri,*) ' or restart calculation from scratch and increase number of '
+        write(CFG%lupri,*) ' macro iterations allowed using keyword .MACRO IT as described '
+        write(CFG%lupri,*) ' in user manual.'
+        write(CFG%lupri,*) '  '
+        write(CFG%lupri,*) '  '
+    endif   
 
 
   call mem_dealloc(max_orbspreads)
@@ -188,7 +210,7 @@ integer      , intent(in)    :: m
 type(orbspread_data), target :: orbspread_input
 type(Matrix) :: CMOsav
 type(Matrix), target  ::  X, P, G
-integer :: norb, i,imx,idamax
+integer :: norb, i,imx,idamax,iter_number
 real(realk) :: nrmG, oVal,old_oVal
 real(realk) :: nrm_thresh,stepsize,orig_Eval
 real(realk),pointer :: max_orbspreads(:)  
@@ -218,6 +240,7 @@ real(realk),pointer :: max_orbspreads(:)
   stepsize=0d0
   CFG%it = 1
   do i=1,CFG%max_macroit
+    iter_number= i
     CFG%old_mu = CFG%mu
     old_oVal = oVal
     imx  =  idamax(norb,orbspread_input%spread2,1)
@@ -226,19 +249,25 @@ real(realk),pointer :: max_orbspreads(:)
     write (ls%lupri,'(I3,A,ES8.1,A,f6.2,A,ES8.1,A,ES8.1,A,I2,A,f5.2,A,f5.2)') &
          &i, ' Pred=',CFG%r_denom,' sigma_2 =',sqrt(orbspread_input%spread2(imx)),&
          &  ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region = ',CFG%stepsize,' step =', stepsize
-    
+  
+
   if (i>10) then
-     if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 ) then
-        write(ls%lupri,*) '  '
-        write(ls%lupri,*) '    ********* Orbital localization converged ************'
-        write(ls%lupri,*) '    *                                                   *'
-        write(ls%lupri,*) '    * There are insignificant changes in the  locality  *'
-        write(ls%lupri,*) '    * of the least local orbital, and procedure is      *'
-        write(ls%lupri,*) '    * exited irresptective of gradient norm.            *'
-        write(ls%lupri,*) '    *                                                   *'
-        write(ls%lupri,*) '    *****************************************************'
-        write(ls%lupri,*) '  '
-        exit
+        if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 .and. &
+         &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.05  .and. &
+         &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.05  .and. &
+         &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.05  .and. &
+         &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.05  .and. &
+         &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.05) then
+            write(ls%lupri,*) '  '
+            write(ls%lupri,*) '    ********* Orbital localization converged ************'
+            write(ls%lupri,*) '    *                                                   *'
+            write(ls%lupri,*) '    * There are insignificant changes in the  locality  *'
+            write(ls%lupri,*) '    * of the least local orbital, and procedure is      *'
+            write(ls%lupri,*) '    * exited irresptective of gradient norm.            *'
+            write(ls%lupri,*) '    *                                                   *'
+            write(ls%lupri,*) '    *****************************************************'
+            write(ls%lupri,*) '  '
+            exit
      endif
   endif
   if( nrmG.le. CFG%macro_thresh) then
@@ -260,11 +289,11 @@ real(realk),pointer :: max_orbspreads(:)
    ! global and local thresholds defined in CFG settings
    if (dabs(CFG%mu)> 1.0) CFG%conv_thresh=CFG%global_conv_thresh
    if (dabs(CFG%mu)< 1.0)  CFG%conv_thresh=CFG%local_conv_thresh
-
     call mat_copy(1.0_realk,CMO,CMOsav)
  
     stepsize = CFG%stepsize
-    call linesearch_orbspread2(CFG,cmo,X,stepsize,old_oval,orig_Eval)
+   ! call linesearch_orbspread2(CFG,cmo,X,stepsize,old_oval,orig_Eval)
+    call linesearch_orbspread3(CFG,cmo,X,stepsize,old_oval,orig_Eval,nrmG,i)
     call orbspread_value(oVal,orbspread_input)
     
 
@@ -296,7 +325,7 @@ real(realk),pointer :: max_orbspreads(:)
            write(CFG%lupri,*) ' try to restart calculation and lower the residual norm ' 
            write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
            write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
-           write(CFG%lupri,*) ' and keyword .MICRO THRESH                              ' 
+           write(CFG%lupri,*) ' and keyword .LOOSE MICRO THRESH                              ' 
            call lsquit('Cannot converge micro iterations. ', CFG%lupri)
    elseif (orig_Eval-old_oVal > 0) then
             cycle
@@ -311,6 +340,21 @@ real(realk),pointer :: max_orbspreads(:)
 
 
   enddo
+    if (iter_number==CFG%max_macroit) then
+        write(CFG%lupri,*) ''
+        write(CFG%lupri,*) ' %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+        write(CFG%lupri,*) ' %%        LOCALIZATION PROCEDURE NOT CONVERGED!!!     %% '
+        write(CFG%lupri,*) ' %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+        write(CFG%lupri,*) ''
+        write(CFG%lupri,*) ' Localization is not converged in the maximum number of     '
+        write(CFG%lupri,*) ' iterations. Restart calculation by renaming orbital file'
+        write(CFG%lupri,*) ' localized_orbitals.u to orbitals_in.u, and run calculation '
+        write(CFG%lupri,*) ' using keyword .ONLY LOC in **LOCALIZE ORBITALS section'
+        write(CFG%lupri,*) ' or restart calculation from scratch and increase number of '
+        write(CFG%lupri,*) ' macro iterations allowed using keyword .MACRO IT as described '
+        write(CFG%lupri,*) ' in user manual.'
+        write(CFG%lupri,*) ''
+    endif   
 
   call mem_dealloc(max_orbspreads)
   call orbspread_free(orbspread_input)
@@ -528,4 +572,167 @@ do i=1,nmats
 end do
 end subroutine linesearch_orbspread2
 
-end module orbspread_module
+subroutine linesearch_orbspread3(CFG,cmo,X,stepsize,value_last_macro,orig_eival,nrmg,macroit)
+implicit none
+type(RedSpaceItem) :: CFG
+type(matrix)  :: cmo,X
+real(realk),intent(in) :: value_last_macro,nrmg
+integer :: i,numb=15,nmats,macroit
+type(matrix)  :: cmotemp(15),Xtemp(15)
+real(realk) :: old_funcval,factor(6),step(15),stepsize,oval,d(6)
+real(realk) :: orig_eival,t1,t2,t3,t4,scal
+real(realk) :: Amat(3,3),C(3),b(3)
+integer :: IPIV(3),IERR,ndim,indx(1)
+logical :: fit,temp_off
+
+fit=.true.
+temp_off=.false.
+   old_funcval = value_last_macro
+   d=0.0_realk
+   d(1)=old_funcval
+   if (CFG%orb_debug) write(CFG%lupri,'(a,I4,a,f15.1)') &
+   &'Linesearch number :', 0, ' Original function value: ', old_funcval
+
+if (CFG%lines_fit) then
+   factor(1)=0.0_realk
+   factor(2)=5.0_realk
+   factor(3)=10.0_realk
+   factor(4)=18.0_realk
+   factor(5)=25.0_realk
+   do i=1,2
+       call mat_init(Xtemp(i),X%nrow,X%ncol)
+       call mat_copy(1.0d0,X,Xtemp(i))
+       call mat_init(cmotemp(i),cmo%nrow,cmo%ncol)
+       call mat_copy(1.0d0,cmo,cmotemp(i))
+       call mat_scal(factor(i+1),Xtemp(i))
+       call updatecmo(CMOtemp(i),Xtemp(i))
+       call orbspread_update(CFG%orbspread_input,CMOtemp(i))
+       call orbspread_value(d(i+1),CFG%orbspread_input)
+       if (i==1) then
+        if (d(2)>d(1)) then
+           fit=.false.
+           CFG%lines_fit=.false.
+           call mat_free(Xtemp(i))
+           call mat_free(cmotemp(i))
+           exit
+        end if
+       endif
+   end do
+   ndim=3
+   if (fit) then
+      do i=3,4
+        if (d(i)<d(i-1) .and. d(i)<d(1)) then
+            call mat_init(Xtemp(i),X%nrow,X%ncol)
+            call mat_copy(1.0d0,X,Xtemp(i))
+            call mat_init(cmotemp(i),cmo%nrow,cmo%ncol)
+            call mat_copy(1.0d0,cmo,cmotemp(i))
+            call mat_scal(factor(i+1),Xtemp(i))
+            call updatecmo(CMOtemp(i),Xtemp(i))
+            call orbspread_update(CFG%orbspread_input,CMOtemp(i))
+            call orbspread_value(d(i+1),CFG%orbspread_input)
+            ndim=i+1
+            write(CFG%lupri,*) 'DIMENSION OF FIT DATA == ', ndim
+        else
+            exit
+        endif
+      enddo
+      Amat=0.0_realk
+      b=0.0_realk
+      Amat(1,1)=dble(ndim)
+      do i=1,ndim
+         write(CFG%lupri,*) ' FUNCION VALUE = ', d(i), '  FOR DIMENSION ',i
+         Amat(1,2)= Amat(1,2)+ factor(i)
+         Amat(1,3)= Amat(1,3)+ factor(i)**2
+         Amat(2,3)= Amat(2,3)+factor(i)**3
+         Amat(3,3)= Amat(3,3)+factor(i)**4
+         b(1)=b(1)+d(i)
+         b(2)=b(2)+factor(i)*d(i)
+         b(3)=b(3)+factor(i)*factor(i)*d(i)
+      end do
+      Amat(2,2)=Amat(1,3);Amat(3,1)=Amat(1,3)
+      Amat(2,1)=Amat(1,2);Amat(3,2)=Amat(2,3)
+
+      call DGESV(3,1,Amat,3,IPIV,b,3,IERR)
+      if (IERR/=0) write(CFG%lupri,*) 'WRONG IN CALL TO DGESV IN LINESEARCH'
+
+      scal=-0.5_realk*b(2)/b(3)
+      call mat_scal(scal,X)
+      call updatecmo(CMO,X)
+      call orbspread_update(CFG%orbspread_input,CMO)
+      call orbspread_value(oval,CFG%orbspread_input)
+      if (oval > minval(d(1:ndim))) then
+          indx=minloc(d(1:ndim))
+          call mat_assign(CMO,CMOtemp(indx(1)-1))
+          call mat_assign(X,Xtemp(indx(1)-1))
+          call orbspread_update(CFG%orbspread_input,CMO)
+          call orbspread_value(oval,CFG%orbspread_input)
+          write(CFG%lupri,*) 'LINESEARCH POOR!!! LOWEST COMPUTED VALUE CHOSEN'
+       endif
+   if (CFG%orb_debug) write(CFG%lupri,'(a,I4,a,f15.1)') &
+   &'Linesearch number :', 0, ' NEW function value: ', oval
+   if (CFG%orb_debug) write(CFG%lupri,'(a,f8.1)') &
+   &' Reduction in percent :', ((d(1)-oval)/d(1))*100.0_realk
+   stepsize = dsqrt(mat_dotproduct(x,x))
+   do i=1,ndim-1
+     call  mat_free(CMOtemp(i))
+     call  mat_free(Xtemp(i))
+   end do
+   endif
+endif
+if ((.not. CFG%lines_fit)) then
+  ! USE LINEAR, EQUI-DISTANT  SEARCH!!
+   factor(2)=1.0_realk
+   factor(3)=2.0_realk
+   factor(4)=3.0_realk
+   factor(5)=6.0_realk
+   do i=2,5
+       call mat_init(Xtemp(i),X%nrow,X%ncol)
+       call mat_copy(factor(i),X,Xtemp(i))
+       call mat_init(cmotemp(i),cmo%nrow,cmo%ncol)
+       call mat_copy(1.0d0,cmo,cmotemp(i))
+       call updatecmo(CMOtemp(i),Xtemp(i))
+       call orbspread_update(CFG%orbspread_input,CMOtemp(i))
+       call orbspread_value(oVal,CFG%orbspread_input)
+       d(i)=oVal
+       if (CFG%orb_debug) write(CFG%lupri,'(a,I4,a,f15.4,a,f7.2)') &
+       &'Linesearch number :', i, ' Change ', d(i)-d(i-1), '  factor  ', factor(i)
+       if (i==2 .and. oVal > old_funcVal) then
+          call mat_assign(cmo,cmotemp(i))
+          call orbspread_update(CFG%orbspread_input,CMO)
+          call orbspread_value(oVal,CFG%orbspread_input)
+          nmats=i
+          exit
+       endif
+       if (oVal > old_funcVal) then
+              call mat_assign(cmo,cmotemp(i-1))
+              call orbspread_update(CFG%orbspread_input,CMO)
+              call orbspread_value(oVal,CFG%orbspread_input)
+              stepsize = dsqrt(mat_dotproduct(xtemp(i-1),xtemp(i-1)))
+              nmats=i
+              exit
+       end if
+       if (i==5 .or. dabs(oVal-old_funcval)< 1.0) then
+         call mat_assign(cmo,cmotemp(i))
+         call orbspread_update(CFG%orbspread_input,CMO)
+         call orbspread_value(oVal,CFG%orbspread_input)
+         stepsize = dsqrt(mat_dotproduct(xtemp(i),xtemp(i)))
+         nmats=i
+         exit
+       end if
+       old_funcval=oVal
+   end do
+    do i=2,nmats
+       call mat_free(cmotemp(i))
+       call mat_free(xtemp(i))
+    enddo
+endif
+
+
+end subroutine linesearch_orbspread3
+
+
+
+
+
+
+ end module orbspread_module

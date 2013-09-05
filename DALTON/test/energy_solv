@@ -116,16 +116,18 @@ fi
 
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
+CRIT1b=`$GREP "Calculation of one\-electron Hamiltonian integrals\." $log | wc -l`
 CRIT2=`$GREP "The following one\-electron property integrals are calculated" $log | wc -l`
 CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
 CRIT4=`$GREP "\- dipole length integrals" $log | wc -l`
 CRIT5=`$GREP "\- dipole velocity integrals" $log | wc -l`
 CRIT6=`$GREP "two-electron integrals are transformed to P-supermatrix elements" $log | wc -l`
+CRIT6b=`$GREP "Fock matrices are calculated directly and in parallel without use of integrals on disk" $log |wc -l`
 CRIT7=`$GREP "One\-electron RLM integrals calculated\." $log | wc -l`
 CRIT8=`$GREP "Maximum L quantum number\: * 7" $log | wc -l`
 CRIT9=`$GREP "All symmetries saved on file\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT1b \+ $CRIT6b`
 CTRL[1]=9
 ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
