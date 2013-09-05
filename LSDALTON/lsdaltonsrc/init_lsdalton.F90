@@ -224,6 +224,7 @@ SUBROUTINE print_intro(lupri)
        &  ' Andreas Krapp,           University of Oslo,     Norway    (FMM, dispersion-corrected DFT)',&
        &  ' Kasper Kristensen,       Aarhus University,      Denmark   (response, DEC)',&
        &  ' Patrick Merlot,          University of Oslo,     Norway    (PARI)',&
+       &  ' Cecilie Nygaard,         Aarhus University,      Denmark   (SOEO)',&
        &  ' Jeppe Olsen,             Aarhus University,      Denmark   (supervision)', &
        &  ' Simen Reine,             University of Oslo,     Norway    (integrals, geometry optimizer)',&
        &  ' Vladimir Rybkin,         University of Oslo,     Norway    (geometry optimizer, dynamics)',&
