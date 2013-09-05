@@ -61,9 +61,10 @@ and apply them. This script should be run from the main %s directory.""" % (pack
         sys.stderr.write("\nIf the error is due to your local changes please do a `git pull' manually and resolve conflicts.\n")
         sys.exit(-1)
     if stdout == "Already up-to-date.\n":
-        print "Up-to-date. Remember to recompile %s after updating." % package_name
+        print "Up-to-date."
     else:
         print "Applied updates to the %s source code." % package_name
+        print "Remember to recompile %s after updating." % package_name
         reincarnate()
     
 if __name__== "__main__":
