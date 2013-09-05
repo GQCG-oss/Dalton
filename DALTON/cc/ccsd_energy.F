@@ -3586,6 +3586,9 @@ C
 C     FREEZE OC230899
 C     Frozen orbital bug-fix, tbp July 2003.
 C
+
+      use dyn_iadrpk
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3891,6 +3894,7 @@ C
          ICOUN1 = ICOUN1 + N2BST(ISYM)
 C
   450 CONTINUE
+      N2BSTX = ICOUN1
 C
       DO 500 ISYMD = 1,NSYM
          NDISAO(ISYMD)   = 0
@@ -4404,35 +4408,8 @@ C
 C
   900 CONTINUE
 C
-      DO 920 ISYMAB = 1,NSYM
+      call get_iadrpk(lupri,nsym,muld2h,nbas,nbast,i2bst,iaodis,iaodpk)
 C
-         DO 930 ISYMB = 1,NSYM
-C
-            ISYMA = MULD2H(ISYMB,ISYMAB)
-C
-            DO 940 B = 1,NBAS(ISYMB)
-C
-               DO 950 A = 1,NBAS(ISYMA)
-C
-                  NABSQ = I2BST(ISYMAB) + IAODIS(ISYMA,ISYMB)
-     *                  + NBAS(ISYMA)*(B - 1) + A
-C
-                  IF (ISYMA .EQ. ISYMB) THEN
-                     NAB = INDEX(A,B)
-                  ELSE IF (ISYMB .GT.ISYMA) THEN
-                     NAB = NBAS(ISYMA)*(B - 1) + A
-                  ELSE
-                     NAB = NBAS(ISYMB)*(A - 1) + B
-                  END IF
-C
-                  NABPK = IAODPK(ISYMA,ISYMB) + NAB
-C
-                  IADRPK(NABSQ) = NABPK
-C
-  950          CONTINUE
-  940       CONTINUE
-  930    CONTINUE
-  920 CONTINUE
 C
       DO 1000 ISYM = 1,NSYM
 C
@@ -5270,6 +5247,9 @@ C     Henrik Koch and Alfredo Sanchez.       1-July-1994
 C
 C     Squareup the integral distribution.
 C
+
+      use dyn_iadrpk
+
 #include "implicit.h"
       DIMENSION DISTAB(*), SCR(*)
 #include "priunit.h"
@@ -5281,6 +5261,13 @@ C
       CALL QENTER('CCSD_SYMSQ')
 C
 C
+c     ii_sum = 0
+c     do i = 1,n2bstx
+c        ii_sum = ii_sum + iadrpk(i)
+c     end do
+c     write(lupri,*) 'ii_sum in ccsd_symsq', ii_sum
+c     call flshfo(lupri)
+
 #if !defined (SYS_CRAY)
       DO 100 IJSQ = 1,N2BST(ISYMAB)
 C
@@ -5304,6 +5291,9 @@ C
       END
       SUBROUTINE CCSD_SYMSQT(DISTAB1,ISYMAB,SCR)
 C
+
+      use dyn_iadrpk
+
 #include "implicit.h"
       DIMENSION DISTAB1(*), SCR(*)
 #include "priunit.h"

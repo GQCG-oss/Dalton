@@ -55,8 +55,8 @@ C
       DIMENSION FOCK(*),WORK(LWORK)
       LOGICAL SQRINT
 #include "ccorb.h"
-#include "symsq.h"
 #include "ccsdsym.h"
+#include "symsq.h"
 C
       ISYHOP = MULD2H(ISYMD,ISYDIS)
 C
@@ -155,6 +155,9 @@ C          a full square density matrix
 C
 C written by Christof Haettig, July 1998
 C
+
+      use dyn_iadrpk
+
 #include "implicit.h"
 #include "maxorb.h"
 #include "ccorb.h"

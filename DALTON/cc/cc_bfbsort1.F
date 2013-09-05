@@ -38,6 +38,9 @@ C  /* Deck cc_bfbsort1 */
 *     Written by Christof Haettig July/October 1998
 *     Updated by Sonia Coriani November 1999 to handle full (a b|
 *---------------------------------------------------------------------*
+
+      use dyn_iadrpk
+
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else

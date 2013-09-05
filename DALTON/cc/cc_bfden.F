@@ -1187,6 +1187,9 @@ C  /* Deck cc_bfbsort */
 *
 *     Written by Christof Haettig July/October 1998
 *---------------------------------------------------------------------*
+
+      use dyn_iadrpk
+
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else

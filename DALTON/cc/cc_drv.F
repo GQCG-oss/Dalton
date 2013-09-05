@@ -176,6 +176,8 @@ C
      *'*********************************************************'//
      *'**********************'
 C
+      CALL FLSHFO(LUPRI)
+C
       IDUM = 0
 C
       IF (IPRINT.GE.5) WRITE(LUPRI,'(/1X,A,I15,/)') 'LWORK = ',LWORK
@@ -576,6 +578,7 @@ C
 C
           WRITE(LUPRI,'(//A,I3)') ' CCR12 ANSATZ = ',IANR12
           WRITE(LUPRI,'(/A,I3/)') ' CCR12 APPROX = ',IAPR12
+          CALL FLSHFO(LUPRI)
 
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C        1. Start loop over different solvents.
