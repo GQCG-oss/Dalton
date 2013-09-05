@@ -163,8 +163,6 @@ add_dalton_test(cc2mm_lr_qr       "dalton;qm3;medium")
 add_dalton_test(cc2mm_spc_exci    "dalton;qm3;medium")
 add_dalton_test(ccmm_beta         "dalton;qm3;medium")
 
-add_dalton_test(qmmm_debug2 "dalton;qmmm;short;parallel")
-
 add_dalton_test(cc_rsp_alpha2                 "dalton;cc;short")
 add_dalton_test(cc_rsp_beta                   "dalton;cc;short")
 add_dalton_test(cc_rsp_beta2                  "dalton;cc;short")
@@ -332,6 +330,7 @@ add_dalton_test(dft_open_lr                   "dalton;dft")
 add_dalton_test(dft_properties_sym            "dalton;dft")
 add_dalton_test(dft_properties_nosym          "dalton;dft")
 add_dalton_test(dft_camb3lyp_magsus           "dalton;dft")
+add_dalton_test(dft_stex                      "dalton;dft")
 
 add_dalton_test(hfreqfromE                    "dalton;numder")
 add_dalton_test(hfreqfromg                    "dalton;numder")
