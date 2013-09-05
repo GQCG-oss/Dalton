@@ -116,7 +116,7 @@ C
       END IF
  
 Cef begin
-C If AOSAVE .eq. .TRUE. then run the incore-version of dalton where integrals
+C If AOSAVE .eq. .TRUE. then run the incore-version of Dalton where integrals
 C are stored in memory on each slave for reuse. Take a look at the header
 C file DALTON_SOURCE_DIR/include/incore.h  and the variables: MMWORK and IEIR. 
 C MMWORK (we used MMWORK=80000000 when testing ) determines the size of 
@@ -189,17 +189,17 @@ C
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 C
-         CALL TITLER('DALTON - An electronic structure program',
+         CALL TITLER('Dalton - An Electronic Structure Program',
      &               '*',115)
 
          WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON (Release Dalton2013)'
+     &'This is output from DALTON (Release Dalton2013 patch 0)'
 
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
      &'NOTE:',
      &' ',
-     &'DALTON is an experimental code for the evaluation of molecular',
+     &'Dalton is an experimental code for the evaluation of molecular',
      &'properties using (MC)SCF, DFT, CI, and CC wave functions.',
      &'The authors accept no responsibility for the performance of',
      &'the code or for the correctness of the results.',
@@ -212,7 +212,7 @@ C
      &//' for further information.',
      &' ',
      &'If results obtained with this code are published,',
-     &'an appropriate citation would be:',
+     &'the appropriate citations would be both of:',
      &' ',
      &'   K. Aidas, C. Angeli, K. L. Bak, V. Bakken, L. Boman,',
      &'   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,',
@@ -235,7 +235,10 @@ C
      &'   E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thøgersen,',
      &'   O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski,',
      &'   and H. Ågren. The Dalton quantum chemistry program system.',
-     &'   WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172'
+     &'   WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172',
+     &'and',
+     &'   Dalton, a Molecular Electronic Structure Program,',
+     &'   Release DALTON2013.0 (2013), see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
@@ -247,6 +250,8 @@ C
      &  '(AOSOPPA, non-adiabatic coupling, magnetic properties)',
      *'Vebjoern Bakken,','University of Oslo,','Norway',
      &  '(DALTON; geometry optimizer, symmetry detection)',
+     *'Radovan Bast,','KTH Stockholm','Sweden',
+     &  '(DALTON installation and execution frameworks)',
      *'Ove Christiansen,','Aarhus University,','Denmark',
      &  '(CC module)',
      *'Renzo Cimiraglia,','University of Ferrara,','Italy','(NEVPT2)',
@@ -288,11 +293,11 @@ C
      *'Wim Klopper,','University of Karlsruhe,','Germany',
      &  '(R12 code in CC, SIRIUS, and ABACUS modules)',
      *'Stefan Knecht,','Univ. of Southern Denmark,','Denmark',
-     &  '(Parallel CI)',
+     &  '(Parallel CI and MCSCF)',
      *'Rika Kobayashi,','ANU Supercomputer Facility,','Australia',
      &  '(DIIS in CC, London in MCSCF)',
      *'Jacob Kongsted,','Univ. of Southern Denmark,','Denmark',
-     &  '(QM/MM code)',
+     &  '(QM/MM, polarizable embedding)',
      *'Henrik Koch,','University of Trondheim,','Norway',
      &  '(CC module, Cholesky decomposition)',
      *'Andrea Ligabue,','University of Modena,','Italy',
@@ -307,7 +312,7 @@ C
      *'Christian B. Nielsen,','University of Copenhagen,','Denmark',
      &  '(QM/MM code)',
      *'Patrick Norman,','University of Linkoeping,','Sweden',
-     &  '(cubic response and complex response in RESPONS)',
+     &  '(Cubic response and complex response in RESPONS)',
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
      *'Jogvan Magnus H. Olsen,','Univ. of Southern Denmark,', 'Denmark',
@@ -355,7 +360,7 @@ C
      *'David J. Wilson,','La Trobe University,','Australia',
      &  '(DFT Hessian and DFT magnetizabilities)',
      *'Hans Agren,','KTH Stockholm,','Sweden',
-     &  '(SIRIUS module, MC-SCRF solvation model)'
+     &  '(SIRIUS module, RESPONS, MC-SCRF solvation model)'
 C
          WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
