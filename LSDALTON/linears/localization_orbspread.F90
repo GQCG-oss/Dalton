@@ -35,7 +35,7 @@ type(orbspread_data) :: orbspread_input
 logical :: lower2
 type(Matrix) :: Xsav,CMOsav
 type(Matrix), target  ::  X, P, G,expX
-integer :: norb, i, nbas
+integer :: norb, i, nbas,iter_number
 real(realk) :: nrmG, oVal,old_oVal, max_step,max_FM
 real(realk) :: nrm_thresh,stepsize
 real(realk) :: trial(1,1)
@@ -64,6 +64,7 @@ real(realk),pointer :: max_orbspreads(:)
   lower2= .true.
   stepsize=0d0
   do i=1,CFG%max_macroit
+    iter_number = i
     CFG%old_mu = CFG%mu
     old_oVal = oVal
     nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
@@ -76,7 +77,12 @@ real(realk),pointer :: max_orbspreads(:)
     
 
     if (i>10) then
-        if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 ) then
+      if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.05) then
            write(ls%lupri,*) '  '
            write(ls%lupri,*) '    ********* Orbital localization converged ************'
            write(ls%lupri,*) '    *                                                   *'
@@ -88,7 +94,8 @@ real(realk),pointer :: max_orbspreads(:)
            write(ls%lupri,*) '  '
            exit
         endif
-    elseif( nrmG.le. CFG%macro_thresh*10.0) then
+    endif
+    if( nrmG.le. CFG%macro_thresh*10.0) then
         write(ls%lupri,*) '  '
         write(ls%lupri,*) '   ********* Orbital localization converged ************'
         write(ls%lupri,*) '   *                                                   *'
@@ -149,7 +156,7 @@ real(realk),pointer :: max_orbspreads(:)
         write(CFG%lupri,*) ' try to restart calculation and lower the residual norm ' 
         write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
         write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
-        write(CFG%lupri,*) ' and keyword .MICRO THRESH                              ' 
+        write(CFG%lupri,*) ' and keyword .LOOSE MICRO THRESH                              ' 
         call lsquit('Cannot converge micro iterations. ', CFG%lupri)
    elseif (oVal-old_oVal < 0) then
             cycle
@@ -163,8 +170,23 @@ real(realk),pointer :: max_orbspreads(:)
     CFG%PFM_input%P => P
     CFG%P => CFG%PFM_input%P
 
-
   enddo
+    if (iter_number==CFG%max_macroit) then
+        write(CFG%lupri,*) ''
+        write(CFG%lupri,*) ' %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+        write(CFG%lupri,*) ' %%        LOCALIZATION PROCEDURE NOT CONVERGED!!!     %% '
+        write(CFG%lupri,*) ' %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+        write(CFG%lupri,*) ''
+        write(CFG%lupri,*) ' Localization is not converged in the maximum number of     '
+        write(CFG%lupri,*) ' iterations. Restart calculation by renaming orbital file'
+        write(CFG%lupri,*) ' localized_orbitals.u to orbitals_in.u, and run calculation '
+        write(CFG%lupri,*) ' using keyword .ONLY LOC in **LOCALIZE ORBITALS section'
+        write(CFG%lupri,*) ' or restart calculation from scratch and increase number of '
+        write(CFG%lupri,*) ' macro iterations allowed using keyword .MACRO IT as described '
+        write(CFG%lupri,*) ' in user manual.'
+        write(CFG%lupri,*) '  '
+        write(CFG%lupri,*) '  '
+    endif   
 
 
   call mem_dealloc(max_orbspreads)
@@ -188,7 +210,7 @@ integer      , intent(in)    :: m
 type(orbspread_data), target :: orbspread_input
 type(Matrix) :: CMOsav
 type(Matrix), target  ::  X, P, G
-integer :: norb, i,imx,idamax
+integer :: norb, i,imx,idamax,iter_number
 real(realk) :: nrmG, oVal,old_oVal
 real(realk) :: nrm_thresh,stepsize,orig_Eval
 real(realk),pointer :: max_orbspreads(:)  
@@ -218,6 +240,7 @@ real(realk),pointer :: max_orbspreads(:)
   stepsize=0d0
   CFG%it = 1
   do i=1,CFG%max_macroit
+    iter_number= i
     CFG%old_mu = CFG%mu
     old_oVal = oVal
     imx  =  idamax(norb,orbspread_input%spread2,1)
@@ -228,7 +251,12 @@ real(realk),pointer :: max_orbspreads(:)
          &  ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region = ',CFG%stepsize,' step =', stepsize
     
   if (i>10) then
-     if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 ) then
+      if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.05) then
         write(ls%lupri,*) '  '
         write(ls%lupri,*) '    ********* Orbital localization converged ************'
         write(ls%lupri,*) '    *                                                   *'
@@ -260,7 +288,7 @@ real(realk),pointer :: max_orbspreads(:)
    ! global and local thresholds defined in CFG settings
    if (dabs(CFG%mu)> 1.0) CFG%conv_thresh=CFG%global_conv_thresh
    if (dabs(CFG%mu)< 1.0)  CFG%conv_thresh=CFG%local_conv_thresh
-
+print*, "trhesh", CFG%local_conv_thresh
     call mat_copy(1.0_realk,CMO,CMOsav)
  
     stepsize = CFG%stepsize
@@ -296,7 +324,7 @@ real(realk),pointer :: max_orbspreads(:)
            write(CFG%lupri,*) ' try to restart calculation and lower the residual norm ' 
            write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
            write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
-           write(CFG%lupri,*) ' and keyword .MICRO THRESH                              ' 
+           write(CFG%lupri,*) ' and keyword .LOOSE MICRO THRESH                              ' 
            call lsquit('Cannot converge micro iterations. ', CFG%lupri)
    elseif (orig_Eval-old_oVal > 0) then
             cycle
@@ -311,6 +339,21 @@ real(realk),pointer :: max_orbspreads(:)
 
 
   enddo
+    if (iter_number==CFG%max_macroit) then
+        write(CFG%lupri,*) ''
+        write(CFG%lupri,*) ' %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+        write(CFG%lupri,*) ' %%        LOCALIZATION PROCEDURE NOT CONVERGED!!!     %% '
+        write(CFG%lupri,*) ' %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+        write(CFG%lupri,*) ''
+        write(CFG%lupri,*) ' Localization is not converged in the maximum number of     '
+        write(CFG%lupri,*) ' iterations. Restart calculation by renaming orbital file'
+        write(CFG%lupri,*) ' localized_orbitals.u to orbitals_in.u, and run calculation '
+        write(CFG%lupri,*) ' using keyword .ONLY LOC in **LOCALIZE ORBITALS section'
+        write(CFG%lupri,*) ' or restart calculation from scratch and increase number of '
+        write(CFG%lupri,*) ' macro iterations allowed using keyword .MACRO IT as described '
+        write(CFG%lupri,*) ' in user manual.'
+        write(CFG%lupri,*) ''
+    endif   
 
   call mem_dealloc(max_orbspreads)
   call orbspread_free(orbspread_input)
