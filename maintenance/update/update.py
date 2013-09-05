@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import sys
 import subprocess
 import os
@@ -32,6 +33,9 @@ def reincarnate():
     os.execv(os.path.abspath(sys.argv[0]),sys.argv)
 
 def main():
+    if not os.path.isdir('.git'):
+        sys.stderr.write("Script is not executed from the right place, quitting.\n")
+        sys.exit(-1)
     if len(sys.argv) == 1:
         pass
     elif sys.argv[1] in ['-h','-help','--help']:
