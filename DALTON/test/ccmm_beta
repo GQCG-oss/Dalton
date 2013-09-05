@@ -168,6 +168,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 CRIT1=`$GREP " CC2 Total  *energy: *\-76.12082433.." $log | wc -l`
 CRIT2=`$GREP "CCSD Total  *energy: *\-76.1264845[12].." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 ` 

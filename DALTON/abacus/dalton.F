@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -189,11 +189,11 @@ C
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 C
-         CALL TITLER('DALTON2011 - An electronic structure program',
+         CALL TITLER('DALTON2013 - An electronic structure program',
      &               '*',115)
 
          WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON Release 2011 (DEVELOPMENT VERSION)'
+     &'This is output from DALTON Release 2013'
 
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
@@ -215,7 +215,7 @@ C
      &'an appropriate citation would be:',
      &' ',
      &'"Dalton, a molecular electronic structure program,',
-     &'Release Dalton2011 (2011), see http://daltonprogram.org"'
+     &'Release Dalton2013 (2013), see http://daltonprogram.org"'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
