@@ -413,6 +413,7 @@ C
          IF (PARCAL) THEN
            WRITE(LUPRI,*) "WARNING: CC is not parallelized!"
            WRITE(LUPRI,*) "For parallelization speedup, please use OMP"
+           CALL PARQUIT("CC")
          ENDIF
          WORD1 = WORD
  1000    CONTINUE

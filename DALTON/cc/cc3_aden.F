@@ -9805,7 +9805,9 @@ C
             LWRK3    = LWORK    - KEND3
 C
             KINTVI = KEND3
-            KTRVI6 = KINTVI + MAX(NCKA(ISYCKBD0),NCKA(ISYCKBDL1R))
+!           Symmetry bug fix, filip, 05.09.2013
+!           KTRVI6 = KINTVI + MAX(NCKA(ISYCKBD0),NCKA(ISYCKBDL1R))
+            KTRVI6 = KINTVI + NCKAMAX
             KEND4  = KTRVI6 + NCKATR(ISYCKBD0) 
             LWRK4  = LWORK  - KEND4
            

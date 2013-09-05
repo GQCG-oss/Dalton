@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import sys
 import subprocess
 import os
@@ -7,7 +8,7 @@ import os
 # otherwise it will expose the git back-end. 
 # By Ulf Ekstrom 2013.
 
-package_name = "Dalton/LSDalton"
+package_name = "DALTON/LSDALTON"
 
 def run_git(args=[]):
     """Run git and return (returncode, stdout, stderr)"""
@@ -44,8 +45,8 @@ and apply them. This script should be run from the main %s directory.""" % (pack
     elif sys.argv[1] != '--force':
         sys.stderr.write("Unknown argument `%s', quitting.\n" % sys.argv[1])
         sys.exit(-1)
-    res,dum,dum =run_git(['status']) # Check if we are in a git repo
-    if res != 0:
+    res, dum, dum = run_git(['status']) # Check if we are in a git repo
+    if (res != 0) or (not os.path.isdir('.git')): # we also check that we are not accidentaly within some other git repo
         sys.stderr.write("ERROR: The update script must be run from inside the %s directory\n" % package_name)
         sys.exit(-1)
     res = 0
@@ -54,15 +55,17 @@ and apply them. This script should be run from the main %s directory.""" % (pack
     if res == 0:
         res,stdout,stderr = run_git(['pull'])
     if res != 0:
-        sys.stderr.write("ERROR: The update script failed. This is the error message:\n\n")
+        sys.stderr.write("ERROR: The update script failed.\n")
+        sys.stderr.write("       If the error is due to your local changes, resolve the situation, then 'git pull' manually.\n")
+        sys.stderr.write("       This is the error message:\n\n")
         sys.stderr.write(stdout)
         sys.stderr.write(stderr)
-        sys.stderr.write("\nIf the error is due to your local changes please do a `git pull' manually and resolve conflicts.\n")
         sys.exit(-1)
     if stdout == "Already up-to-date.\n":
-        print "Up-to-date. Remember to recompile %s after updating." % package_name
+        print "Up-to-date."
     else:
         print "Applied updates to the %s source code." % package_name
+        print "Remember to recompile %s after updating." % package_name
         reincarnate()
     
 if __name__== "__main__":
