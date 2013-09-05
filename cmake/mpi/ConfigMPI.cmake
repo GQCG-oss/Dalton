@@ -45,7 +45,7 @@ if(MPI_FOUND)
         message("-- mpi.mod matches current compiler, setting -DUSE_MPI_MOD_F90")
         add_definitions(-DUSE_MPI_MOD_F90)
     else()
-        message("-- WARNING: mpi.mod compiled with different compiler")
+        message("-- WARNING: mpi.mod compiled with different compiler, will use mpif.h instead")
     endif()
 
     # test whether MPI integer type matches

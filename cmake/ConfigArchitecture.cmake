@@ -7,7 +7,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    add_definitions(-DSYS_OSXLION)
+    add_definitions(-DSYS_DARWIN)
     add_definitions(-DSYS_UNIX)
     add_definitions(-DSYS_LINUX)
     # fixme: HAVE_NO_LSEEK64 should be tested by cmake

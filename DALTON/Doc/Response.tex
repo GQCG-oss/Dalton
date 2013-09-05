@@ -167,7 +167,7 @@ Restart quadratic response\index{quadratic response}\index{response!quadratic}
 calculation.
 It is only possible to restart regular quadratic response calculations, not those
 involving residues (as \Key{SINGLE RESIDUE}, \Key{TWO-PHOTON}, and \Key{DOUBLE RESIDUE}).
-because the restarted Dalton does not know the excitation energies associated with the
+because the restarted \dalton\ does not know the excitation energies associated with the
 residues, and the excitation energies are needed to retrieve the right records from
 the \verb|RSPVEC| file.
 % hjaaj Aug 2012: does not work when excitation energies are involved because Dalton
@@ -1560,7 +1560,7 @@ Calculate the spin-dipole contributions to the hyperfine coupling tensor
 \verb|READ (LUCMD,*) (NUCINF(IG), IG = 1, ESRNUC) | \\
 Select atoms for which to calculate hyperfine coupling constants.
 The first line contains  the number of atoms and the second line the
-index of each atom (ordered as in the molecule input file \texttt{MOLECULE.INP})
+index of each atom (ordered as in the molecule input file \molinp)
 
 \item{\Key{MAX IT}}      \\
 \verb|READ (LUCMD,*),MAXESR |\\

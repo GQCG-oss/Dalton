@@ -1365,10 +1365,10 @@ C
          IPRUSR_SAV = IPRUSR
          IPREAD_SAV = IPREAD
          IPRUSR = -10
-         IPREAD = -10
+         IPREAD = -1000
 C        Third parameter .FALSE. in call indicates that LUONEL will NOT be written.
-         write (lupri,'(A)')
-     &      ' Reading .mol file to determine number of atoms:'
+         write (lupri,'(A)') ' Reading .mol file'//
+     &      ' to determine number of atoms for parallel runs.'
          CALL READIN(WORK(2),LWORK-2,.FALSE.)
          INPTST = TSTIN
          IPRUSR = IPRUSR_SAV

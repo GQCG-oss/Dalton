@@ -110,7 +110,6 @@ usage (){
         echo ' -nw mem          : set node max usable work memory to mem double precision words'
         echo ' -N num           : use num MPI processes'
         echo '                    (defaults to 1 or DALTON_NUM_MPI_PROCS if defined)'
-        echo ' -hostfile file   : use hostfile "file" for start with mpirun'
         echo ' -rsh             : use rsh/rcp for communication with MPI nodes'
         echo '                    (default: ssh/scp)'
 	    echo ' -nocpex          : force to not copy dalton executable from master node to'
