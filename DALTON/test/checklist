@@ -339,7 +339,7 @@
   string   => "QRLRVE: SINGLET",
   maxout   => -1,
   maxget   => -1,
-  pos      => 7,
+  pos      => 10,
   rel      => 1,
   thr      => 1.0e-5};
 }
@@ -349,10 +349,10 @@
 {$params ={
   name     => "qrlrve2",
   type     => 1,
-  string   => "QRLRVE:  ",
+  string   => "@ QRLRVE:  ",
   maxout   => -1,
   maxget   => -1,
-  pos      => 9,
+  pos      => 10,
   rel      => 1,
   thr      => 1.0e-3};
 }
