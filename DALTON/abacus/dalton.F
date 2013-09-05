@@ -189,11 +189,11 @@ C
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 C
-         CALL TITLER('DALTON2013 - An electronic structure program',
+         CALL TITLER('DALTON - An electronic structure program',
      &               '*',115)
 
          WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON Release 2013'
+     &'This is output from DALTON (Release Dalton2013)'
 
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
@@ -214,8 +214,28 @@ C
      &'If results obtained with this code are published,',
      &'an appropriate citation would be:',
      &' ',
-     &'"Dalton, a molecular electronic structure program,',
-     &'Release Dalton2013 (2013), see http://daltonprogram.org"'
+     &'   K. Aidas, C. Angeli, K. L. Bak, V. Bakken, L. Boman,',
+     &'   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,',
+     &'   E. K. Dalskov, U. Ekström, T. Enevoldsen, J. J. Eriksen,',
+     &'   P. Ettenhuber, B. Fernández, L. Ferrighi, H. Fliegl,',
+     &'   L. Frediani, K. Hald, A. Halkier, C. Hättig, H. Heiberg,',
+     &'   T. Helgaker, A. C. Hennum, H. Hettema, E. Hjertenæs,',
+     &'   S. Høst, I.-M. Høyvik, M. F. Iozzi, B. Jansik,',
+     &'   H. J. Aa. Jensen, D. Jonsson, P. Jørgensen, J. Kauczor,',
+     &'   S. Kirpekar, T. Kjærgaard, W. Klopper, S. Knecht,',
+     &'   R. Kobayashi, H. Koch, J. Kongsted, A. Krapp, K. Kristensen,',
+     &'   A. Ligabue, O. B. Lutnæs, J. I. Melo, K. V. Mikkelsen,',
+     &'   R. H. Myhre, C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,',
+     &'   J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,',
+     &'   T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,',
+     &'   T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,',
+     &'   A. Sánchez de Merás, T. Saue, S. P. A. Sauer,',
+     &'   B. Schimmelpfennig, K. Sneskov, A. H. Steindal,',
+     &'   K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,',
+     &'   E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thøgersen,',
+     &'   O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski,',
+     &'   and H. Ågren. The Dalton quantum chemistry program system.',
+     &'   WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
