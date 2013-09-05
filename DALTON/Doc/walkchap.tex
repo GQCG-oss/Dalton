@@ -339,7 +339,7 @@ used in the order they appear in the input file, so one should
 sort the sets and put the smaller one at the top for maximum
 efficiency. The ``main'' basis set, that is, the one that will be
 used for the final optimized geometry, is specified in the file
-MOLECULE.INP as usual. After the last optimization, the energy of
+\molinp\ as usual. After the last optimization, the energy of
 the molecule will be calculated at the final geometry with the
 d-aug-cc-pVTZ basis. Please note that these features will work only
 when using basis sets from the basis set library.
@@ -617,7 +617,7 @@ coordinates\index{mass-weighted coordinates}, it is recommended to
 specify the isotopic constitution\index{isotopic constitution} of
 the molecule. If none is specified, the most abundant
 isotope of each atom is used by default. The isotopic constitution of
-a molecule is given in the \verb|MOLECULE.INP| file as described in Chapter~\ref{ch:molinp}.
+a molecule is given in the \molinp\ file as described in Chapter~\ref{ch:molinp}.
 
 A requirement in a gradient extremal calculation is that the
 calculation is started on a gradient extremal. In practice this is
@@ -763,7 +763,7 @@ As the IRC is defined with respect to mass-weighted
 coordinates\index{mass-weighted coordinates}, care
 has to be taken in order to specify the correct isotopic substitution
 of the molecule. The specification of the isotopic constitution of a
-molecule is given in the \verb|MOLECULE.INP| file, as described in
+molecule is given in the \molinp\ file, as described in
 Chapter~\ref{ch:molinp}. 
 
 Due to the small steps that must be used in a calculation of an IRC,
@@ -863,7 +863,7 @@ molecular fragment\index{molecular fragments}. In this particular
 case, we assume that two
 protons leave the protonated formaldehyde\index{formaldehyde} as a
 hydrogen\index{hydrogen} molecule, and
-that the leaving hydrogen atoms are the last atoms of the \mol\ input
+that the leaving hydrogen atoms are the last atoms of the \molinp\ input
 file. This partitioning is mainly needed in order to get
 proper values for the relative translational energy between the two
 fragments, as well as for deciding how much of the energy has been
@@ -874,7 +874,7 @@ isotopes are to be used in the calculation. Isotopic
 substitution is important as the masses of the nuclei enters when
 Newton's equations of motion are integrated. The specification of the
 isotopic constitution of the molecule is given in the
-\verb|MOLECULE.INP| file, as described in Chapter~\ref{ch:molinp}.
+\molinp\ file, as described in Chapter~\ref{ch:molinp}.
 
 In this calculation we start the calculation at a transition
 state\index{transition state},

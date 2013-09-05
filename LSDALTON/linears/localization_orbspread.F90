@@ -9,21 +9,16 @@ module orbspread_module
 use precision
 use loc_utils
 use typedef
-!use typedeftype
 use loc_types
 use matrix_module, only: matrix
 use matrix_operations 
 use matrix_operations_aux
-!use arhDensity
 use kurtosis
 use davidson_settings
 use davidson_solv_mod !davidson_solver
 use LSTIMING
-!use ARHmodule
-!use trustradius_mod, only: update_trustradius
 use integralInterfaceMod
 use decompMod !orbspread_data
-!use trustradius_mod
 use orbspread_utilMod
 
 contains
@@ -41,19 +36,15 @@ logical :: lower2
 type(Matrix) :: Xsav,CMOsav
 type(Matrix), target  ::  X, P, G,expX
 integer :: norb, i, nbas
-real(realk) :: nrmG, oVal,old_oVal, r, max_step,max_FM
+real(realk) :: nrmG, oVal,old_oVal, max_step,max_FM
 real(realk) :: nrm_thresh,stepsize
 real(realk) :: trial(1,1)
-  
-  write(CFG%lupri,'(a)') '***** PFM SETTINGS *****'
-  write(CFG%lupri,'(a,i4)') ' m =        ', m
-  write(CFG%lupri,'(a,l4)') ' Crossterms ', CFG%PFM_input%crossterms
-  write(CFG%lupri,'(a)') '*****************************'
+real(realk),pointer :: max_orbspreads(:)  
   
   
-  r=0.d0
   norb=CMO%ncol
   nbas=CMO%nrow
+  call mem_alloc(max_orbspreads,CFG%max_macroit)
   call mat_init(X,norb,norb)
   call mat_init(G,norb,norb)
   call mat_init(P,norb,norb)
@@ -69,23 +60,43 @@ real(realk) :: trial(1,1)
   CFG%P => CFG%PFM_input%P
   
   CFG%mu = 0.0_realk
-  if (norb < 15) CFG%macro_thresh = CFG%macro_thresh*10.0d0 
   
   lower2= .true.
   stepsize=0d0
-  do i=1,200
+  do i=1,CFG%max_macroit
     CFG%old_mu = CFG%mu
     old_oVal = oVal
     nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
     max_FM=sqrt(sqrt(maxval(CFG%PFM_input%omega)))
-write(ls%lupri,'(I3,A,ES8.1,A,f6.2,A,ES8.1,A,ES8.1,A,I3,A,f5.2,A,f5.2)') &
+    max_orbspreads(i) =  max_FM
+   write(ls%lupri,'(I3,A,ES8.1,A,f6.2,A,ES8.1,A,ES8.1,A,I3,A,f5.2,A,f5.2)') &
      &i, ' Pred= ',CFG%r_denom,'  sigma_4 =',max_FM,&
      &   '  mu = ',CFG%mu,'  grd =', nrmG, '  it =',CFG%it, '  trust-region = ', CFG%stepsize&
-
      & ,' step= ',stepsize
     
-    if( nrmG.le. CFG%macro_thresh*100.0) then
-       exit
+
+    if ((i>10) .and. abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 ) then
+        write(ls%lupri,*) '  '
+        write(ls%lupri,*) '    ********* Orbital localization converged ************'
+        write(ls%lupri,*) '    *                                                   *'
+        write(ls%lupri,*) '    * There are insignificant changes in the  locality  *'
+        write(ls%lupri,*) '    * of the least local orbital, and procedure is      *'
+        write(ls%lupri,*) '    * exited irresptective of gradient norm.            *'
+        write(ls%lupri,*) '    *                                                   *'
+        write(ls%lupri,*) '    *****************************************************'
+        write(ls%lupri,*) '  '
+        exit
+    elseif( nrmG.le. CFG%macro_thresh*10.0) then
+        write(ls%lupri,*) '  '
+        write(ls%lupri,*) '   ********* Orbital localization converged ************'
+        write(ls%lupri,*) '   *                                                   *'
+        write(ls%lupri,*) '   * The gradient norm for the orbital localization    *'
+        write(ls%lupri,*) '   * function is below the threshold, and we exit      *'
+        write(ls%lupri,*) '   * the localization procedure.                       *'
+        write(ls%lupri,*) '   *                                                   *'
+        write(ls%lupri,*) '   *****************************************************'
+        write(ls%lupri,*) '  '
+        exit
     end if
    
    call davidson_solver(CFG,G,X)
@@ -102,13 +113,11 @@ write(ls%lupri,'(I3,A,ES8.1,A,f6.2,A,ES8.1,A,ES8.1,A,I3,A,f5.2,A,f5.2)') &
 
    call linesearch_kurtosis(CFG,cmo,X,stepsize,oval) 
    
-   ! COMPUTE r FOR value where factor =1d0
-   r=2.0d0*(oVal-old_oVal)/CFG%r_denom
     oVal=CFG%PFM_input%kurt_val
     
     if (oVal-old_oVal < 0) then 
        write(CFG%lupri,*) "Pred: step accepted"
-       CFG%stepsize=min(CFG%stepsize*1.2,CFG%max_stepsize)
+       CFG%stepsize=min(CFG%stepsize*2.0,CFG%max_stepsize)
        !CMOS are updated in linesearch
     else
        write(CFG%lupri,*) "Pred: step rejected"
@@ -118,17 +127,31 @@ write(ls%lupri,'(I3,A,ES8.1,A,f6.2,A,ES8.1,A,ES8.1,A,I3,A,f5.2,A,f5.2)') &
        old_oVal=CFG%PFM_input%kurt_val
        oVal=CFG%PFM_input%kurt_val
        CFG%stepsize=CFG%stepsize*0.5
-       if (CFG%stepsize < 0.001) then
-           write(CFG%lupri,'(a)') 'WARNING: Too many rejections for localization. We exit..' 
-	   exit
-       end if
-       cycle
-    end if
-    if (CFG%stepsize < 0.001) then
-         write(CFG%lupri,'(a)') 'WARNING: Stepsize very small --> cannot converge gradient norm further' 
-	 exit
-    end if
-    call update_trustradius_david(CFG,r,ls,i) 
+    endif    
+
+   if (CFG%stepsize < 0.001) then
+           write(CFG%lupri,*) ''
+           write(CFG%lupri,'(a)') 'WARNING: Stepsize too small. ' 
+           if (i>5 .and. abs(max_orbspreads(i)-max_orbspreads(i-5))< 0.1) then 
+                 write(CFG%lupri,*) ' However, the locality of the least local orbital       ' 
+                 write(CFG%lupri,*) ' has not changed significantly the last five iterations ' 
+                 write(CFG%lupri,*) ' and the generated orbitals are localized, and will      ' 
+                 write(CFG%lupri,*) ' be written to file.   '
+                 write(CFG%lupri,*) ''
+	         exit
+           else
+                 write(CFG%lupri,*) ' Cannot proceed with localization due to issues with    ' 
+                 write(CFG%lupri,*) ' solving the level-shifted Newton equations. You may    ' 
+                 write(CFG%lupri,*) ' try to restart calculation and lower the residual norm ' 
+                 write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
+                 write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
+                 write(CFG%lupri,*) ' and keyword .MICRO THRESH                              ' 
+                 call lsquit('Cannot converge micro iterations. ', CFG%lupri)
+            endif
+   elseif (oVal-old_oVal < 0) then
+            cycle
+   endif
+
     !new gradient
     call compute_gradient(CFG%PFM_input,G,norb)
 
@@ -141,6 +164,7 @@ write(ls%lupri,'(I3,A,ES8.1,A,f6.2,A,ES8.1,A,ES8.1,A,I3,A,f5.2,A,f5.2)') &
   enddo
 
 
+  call mem_dealloc(max_orbspreads)
   call kurt_freeMO(CFG%PFM_input)
   call mat_free(X)
   call mat_free(expX)
@@ -162,14 +186,14 @@ type(orbspread_data), target :: orbspread_input
 type(Matrix) :: CMOsav
 type(Matrix), target  ::  X, P, G
 integer :: norb, i,imx,idamax
-real(realk) :: nrmG, oVal,old_oVal, r 
+real(realk) :: nrmG, oVal,old_oVal
 real(realk) :: nrm_thresh,stepsize,orig_Eval
+real(realk),pointer :: max_orbspreads(:)  
 
 
-  r=0.d0
   norb=CMO%ncol
   CFG%orbspread_input=>orbspread_input
-
+  call mem_alloc(max_orbspreads,CFG%max_macroit)
   call mat_init(X,norb,norb)
   call mat_init(G,norb,norb)
   call mat_init(P,norb,norb)
@@ -188,20 +212,42 @@ real(realk) :: nrm_thresh,stepsize,orig_Eval
 
   stepsize = CFG%stepsize
   CFG%mu = 0.0_realk
-  if (norb < 10) CFG%macro_thresh = CFG%macro_thresh*10.0d0 
   stepsize=0d0
-  CFG%r_denom =1.0_realk
   CFG%it = 1
-  do i=1,200
+  do i=1,CFG%max_macroit
     CFG%old_mu = CFG%mu
     old_oVal = oVal
     imx  =  idamax(norb,orbspread_input%spread2,1)
     nrmG = sqrt(mat_sqnorm2(G))/real(norb)
-
+    max_orbspreads(i)=sqrt(orbspread_input%spread2(imx))
     write (ls%lupri,'(I3,A,ES8.1,A,f6.2,A,ES8.1,A,ES8.1,A,I2,A,f5.2,A,f5.2)') &
          &i, ' Pred=',CFG%r_denom,' sigma_2 =',sqrt(orbspread_input%spread2(imx)),&
          &  ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region = ',CFG%stepsize,' step =', stepsize
-    if(nrmG .le. CFG%macro_thresh) exit
+    
+
+if ((i>10) .and. abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 ) then
+        write(ls%lupri,*) '  '
+        write(ls%lupri,*) '    ********* Orbital localization converged ************'
+        write(ls%lupri,*) '    *                                                   *'
+        write(ls%lupri,*) '    * There are insignificant changes in the  locality  *'
+        write(ls%lupri,*) '    * of the least local orbital, and procedure is      *'
+        write(ls%lupri,*) '    * exited irresptective of gradient norm.            *'
+        write(ls%lupri,*) '    *                                                   *'
+        write(ls%lupri,*) '    *****************************************************'
+        write(ls%lupri,*) '  '
+        exit
+    elseif( nrmG.le. CFG%macro_thresh) then
+        write(ls%lupri,*) '  '
+        write(ls%lupri,*) '   ********* Orbital localization converged ************'
+        write(ls%lupri,*) '   *                                                   *'
+        write(ls%lupri,*) '   * The gradient norm for the orbital localization    *'
+        write(ls%lupri,*) '   * function is below the threshold, and we exit      *'
+        write(ls%lupri,*) '   * the localization procedure.                       *'
+        write(ls%lupri,*) '   *                                                   *'
+        write(ls%lupri,*) '   *****************************************************'
+        write(ls%lupri,*) '  '
+        exit
+    end if
 
    
    call davidson_solver(CFG,G,X)
@@ -216,7 +262,6 @@ real(realk) :: nrm_thresh,stepsize,orig_Eval
     call linesearch_orbspread2(CFG,cmo,X,stepsize,old_oval,orig_Eval)
     call orbspread_value(oVal,orbspread_input)
     
-    r=2.0d0*(orig_Eval-old_oVal)/CFG%r_denom
 
     if (orig_Eval-old_oVal > 0) then
        write(ls%lupri,*) 'Step not accepted. Go back'
@@ -224,19 +269,32 @@ real(realk) :: nrm_thresh,stepsize,orig_Eval
        call orbspread_update(orbspread_input,CMO)
        call orbspread_value(oVal,orbspread_input)
        CFG%Stepsize = CFG%Stepsize/2.0d0
-       if (CFG%stepsize < 0.001) then
-           write(CFG%lupri,'(a)') 'WARNING: Too many rejections for localization. We exit..' 
-	   exit
-       end if
-	cycle
     else
       CFG%Stepsize = min(CFG%Stepsize*2.5d0,CFG%max_stepsize) 
     endif
-
+     
    if (CFG%stepsize < 0.001) then
-           write(CFG%lupri,'(a)') 'WARNING: Stepsize too small.  We exit..' 
-	   exit
-   end if
+           write(CFG%lupri,*) ''
+           write(CFG%lupri,'(a)') 'WARNING: Stepsize too small. ' 
+           if (i>5 .and. abs(max_orbspreads(i)-max_orbspreads(i-5))< 0.1) then 
+                 write(CFG%lupri,*) ' However, the locality of the least local orbital       ' 
+                 write(CFG%lupri,*) ' has not changed significantly the last five iterations ' 
+                 write(CFG%lupri,*) ' and the generated orbitals are localized, and will      ' 
+                 write(CFG%lupri,*) ' be written to file.   '
+                 write(CFG%lupri,*) ''
+	         exit
+           else
+                 write(CFG%lupri,*) ' Cannot proceed with localization due to issues with    ' 
+                 write(CFG%lupri,*) ' solving the level-shifted Newton equations. You may    ' 
+                 write(CFG%lupri,*) ' try to restart calculation and lower the residual norm ' 
+                 write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
+                 write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
+                 write(CFG%lupri,*) ' and keyword .MICRO THRESH                              ' 
+                 call lsquit('Cannot converge micro iterations. ', CFG%lupri)
+            endif
+   elseif (orig_Eval-old_oVal > 0) then
+            cycle
+   endif
     !new gradient
     call orbspread_gradx(G,norb,orbspread_input)
 
@@ -248,6 +306,7 @@ real(realk) :: nrm_thresh,stepsize,orig_Eval
 
   enddo
 
+  call mem_dealloc(max_orbspreads)
   call orbspread_free(orbspread_input)
   call mat_free(X)
   call mat_free(G)
