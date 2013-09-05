@@ -726,7 +726,7 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
                             symY,symZ, spinY,spinZ); 
 
     if(!msg_printed) {
-        fort_print("DFT-QR uses %s matrix multipication code.\n",
+        fort_print("DFT-QR uses %s matrix multiplication code.\n",
                    mm_code_version);
         msg_printed = 1;
     }
@@ -748,10 +748,12 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
                 &inforb_.norbt, &inforb_.norbt);
     }
     quadfast_data_free(data);
-    times(&endtm);
-    utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("      Electrons: %15.7f. Quadratic response time: %10.2f s\n", 
-               electrons, utm/(double)sysconf(_SC_CLK_TCK));
+    if (*iprint>0) {
+      times(&endtm);
+      utm = endtm.tms_utime-starttm.tms_utime;
+      fort_print("      Electrons: %15.7f. Quadratic response time: %10.2f s\n", 
+                 electrons, utm/(double)sysconf(_SC_CLK_TCK));
+    }
 }
 
 #ifdef FAST_TEST
