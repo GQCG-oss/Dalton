@@ -291,13 +291,12 @@ fi
 
 
 
-# radovan: will insert here dynamic version
 echo
 echo "   ***************************************** "
 echo "   **** OUTPUT FROM DALTON SHELL SCRIPT **** "
 echo "   ***************************************** "
 echo
-echo "   Dalton Release DALTON2013 (DEVELOPMENT VERSION)"
+echo "   DALTON release @DALTON_VERSION@"
 echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"

@@ -192,9 +192,8 @@ C
          CALL TITLER('DALTON2013 - An electronic structure program',
      &               '*',115)
 
-!radovan i will insert here a dynamic version.patch
          WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON Release 2013 (DEVELOPMENT VERSION)'
+     &'This is output from DALTON Release 2013'
 
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
