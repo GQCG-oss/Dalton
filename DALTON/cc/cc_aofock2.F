@@ -155,6 +155,9 @@ C          a full square density matrix
 C
 C written by Christof Haettig, July 1998
 C
+
+      use dyn_iadrpk
+
 #include "implicit.h"
 #include "maxorb.h"
 #include "ccorb.h"

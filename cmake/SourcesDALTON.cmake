@@ -757,6 +757,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/gp/one_sided_communication_wrappers.F90
     DALTON/gp/memory_parallel.F90
     DALTON/abacus/rma_windows.F90
+    DALTON/cc/dyn_index.F90
     )
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F
