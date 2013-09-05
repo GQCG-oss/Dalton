@@ -457,7 +457,6 @@ type(matrix)  :: cmotemp(4),Xtemp(4)
 real(realk) :: old_funcval,factor,step(4),stepsize,oval
 
 numb=4
-factor = 1.0d0
 step(1) = 1.0d0
 step(2)= 2.0d0
 step(3)= 4.0d0
@@ -471,8 +470,7 @@ do i=1,numb
     call mat_assign(Xtemp(i),X)
     call mat_init(cmotemp(i),cmo%nrow,cmo%ncol)
     call mat_assign(cmotemp(i),cmo)
-    factor = factor + step(i)
-    call mat_scal(factor,Xtemp(i))
+    call mat_scal(step(i),Xtemp(i))
     call updatecmo(CMOtemp(i),Xtemp(i))      
     call kurt_updateAO(CFG%PFM_input,CMOtemp(i))
     call kurt_value(CFG%PFM_input)
