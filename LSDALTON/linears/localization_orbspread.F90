@@ -77,7 +77,12 @@ real(realk),pointer :: max_orbspreads(:)
     
 
     if (i>10) then
-        if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 ) then
+      if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.05) then
            write(ls%lupri,*) '  '
            write(ls%lupri,*) '    ********* Orbital localization converged ************'
            write(ls%lupri,*) '    *                                                   *'
@@ -246,7 +251,12 @@ real(realk),pointer :: max_orbspreads(:)
          &  ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region = ',CFG%stepsize,' step =', stepsize
     
   if (i>10) then
-     if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 ) then
+      if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.05  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.05) then
         write(ls%lupri,*) '  '
         write(ls%lupri,*) '    ********* Orbital localization converged ************'
         write(ls%lupri,*) '    *                                                   *'
