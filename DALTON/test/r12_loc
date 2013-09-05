@@ -211,6 +211,12 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #
 # ! Original MP2-R12 method !
 # Noninvariant MP2-R12/0   correlation energy =    0.176293571
