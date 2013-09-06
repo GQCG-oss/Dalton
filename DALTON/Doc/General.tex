@@ -1514,9 +1514,9 @@ for all quantum up to and including \verb|LCMMAX| will be generated
 (s=0, p=1 etc.) \verb|CMSTR| and \verb|CMEND| are the half-integer
 start- and ending quantum number for the Rydberg basis functions. The
 basis functions will be placed at the position of a dummy center
-indicated as \verb|X| in the \verb|MOLECULE.INP| file. The charge of
+indicated as \verb|X| in the \molinp\ file. The charge of
 the ion-core is determined by the keyword \Key{ZCMVAL} (default: +1).
-If no center named \verb|X| is present in the \verb|MOLECULE.INP| file,
+If no center named \verb|X| is present in the \molinp\ file,
 this input will be ignored.
 
 \item[\Key{CONTINUUM}]\verb| |\newline
@@ -1533,9 +1533,9 @@ for all quantum up to and including \verb|LCNTMAX| will be generated
 (s=0, p=1 etc.) \verb|CNTSTR| and \verb|CNTEND| are the integer
 start- and ending quantum number for the continuum basis functions. The
 basis functions will be placed at the position of a dummy center
-indicated as \verb|X| in the \verb|MOLECULE.INP| file. 
+indicated as \verb|X| in the \molinp\ file. 
 No charge of the ion-core is required for these functions.
-If no center named \verb|X| is present in the \verb|MOLECULE.INP| file,
+If no center named \verb|X| is present in the \molinp\ file,
 this input will be ignored.
 
 \item[\Key{MAXPRI}]\verb| |\newline
@@ -1565,7 +1565,7 @@ module.
 
 \item[\Key{R12AUX}] An auxiliary basis is used.
 Basis sets must be identified as either orbital basis or
-auxiliary basis in the \verb|MOLECULE.INP| file (line 5).
+auxiliary basis in the \molinp\ file (line 5).
 See Sec.~\ref{sec:r12aux} on page~\pageref{sec:r12aux}.
 
 \item[\Key{SYMTHR}]\verb| |\newline
@@ -1578,8 +1578,8 @@ in the automatic symmetry detection routines. Default is $5.0\cdot
 \item[\Key{UNCONT}] Force the program to use all input basis sets as primitive (completely decontracted) sets.
 
 \item[\Key{WRTLIN}] Write out the lines read in during the input
-  processing of the \verb|MOLECULE.INP| file. Primarily for debugging
-  purposes or for analyzing input errors in the \verb|MOLECULE.INP|
+  processing of the \molinp\ file. Primarily for debugging
+  purposes or for analyzing input errors in the \molinp\
   file.
 
 \item[\Key{ZCMVAL}]\verb| |\newline
