@@ -204,6 +204,7 @@ add_dalton_test(cc_prop_file                  "dalton;cc;short")
 add_dalton_test(cc_drpa_dipole_h2o            "dalton;cc;short")
 add_dalton_test(cc_drpa_grad                  "dalton;cc;short")
 add_dalton_test(drpa_grad_ch4                 "dalton;cc;long")
+add_dalton_test(cc_rsp_lanczos_alpha          "dalton;cc;medium")
 
 add_dalton_test(cc3_LIH1s1p_pol               "dalton;cc;cc3;short")
 add_dalton_test(cc3_LIH1s1p_asym_pol          "dalton;cc;cc3;short")
