@@ -114,7 +114,100 @@ the dens.restart is given in terms of the grand canonical basis rather than the 
 \section{The {\lsdalton} library bundle}
 \label{sec:LSlib}
 
-\dots Simen will write this section soon!!!!! \dots
+The {\lsdalton} library bundle \verb|liblsdalton.a| allows for porting \lsdalton\ code 
+functionality to other programs. Currently this functionalty is limited to 
+the evaluation of certain standard AO integrals and integral components: the overlap 
+matrix, the one-electron integral matrix (combining kinetic energy and 
+nuclear-electron attraction contributions), the Coulomb, exchange and exchange-correlation 
+matrices and the four-center two-electron repulsion integrals. Also, the 
+first derivatives of these integral components with respect to the nuclear displacments 
+are available, see the file \verb|LSDALTON/lsdaltonsrc/LSlib_tester.F90|
+for details. 
+
+After building \lsdalton\ under a \verb|build| directory (consult the installation guide
+\verb|http://daltonprogram.org/installation/2013/| for assistance), the \lsdalton\ library 
+\verb|liblsdalton.a| can be found under \verb|build\lib|. The you can now link you 
+program to the \lsdalton\ library. 
+The use is perhaps best illustrated by a simple example. The file \verb|lslib_test.F90|
+
+\begin{verbatim}
+PROGRAM testlslib
+implicit none
+integer :: nbast,natoms,nelectrons,lupri,luerr
+integer :: i,j
+double precision, allocatable :: Smat(:,:)
+
+call lsinit_all()
+
+lupri = 6 !standard output
+luerr = 0 !standard error
+CALL LSlib_get_dimensions(nbast,natoms,nelectrons,lupri,luerr)
+allocate(Smat(nbast,nbast))
+CALL LSlib_get_overlap(Smat,nbast,lupri,luerr)
+
+deallocate(Smat)
+call lsfree_all()
+
+END PROGRAM testlslib
+\end{verbatim}
+%
+calculates the AO overlap matrix (\verb|Smat|). To compile \verb|lslib_test.F90|
+you have to link to the external libraries required by \lsdalton, typically lapack
+and blas. For an example intel/mkl build
+
+\begin{verbatim}
+./setup --fc=ifort --cc=icc --cxx=icpc --mkl=parallel --omp
+\end{verbatim}
+%
+you can build the excecutable \verb|lslib_test.x| from \verb|lslib_test.F90| according to
+
+\begin{verbatim}
+ifort -mkl=parallel -openmp -parallel -O3 lslib_test.F90 -o lslib_test.x 
+/dalton-path/build/lib/liblsdalton.a
+\end{verbatim}
+%
+Exaclty how to compile and link your code to \verb|libsldalton.a| for other types of build 
+varies, and it can then be instrutive to see how \lsdalton\ is buildt. To see how 
+\verb|lsdalton.x| if compiled and linked, you can type
+
+\begin{verbatim}
+make VERBOSE=1 lsdalton.x
+\end{verbatim}
+%
+in the \verb|build| directory. The actual build of \verb|lsdalton.x| can be found towards
+the end of the standard output. 
+
+The execution of \verb|lslib_test.x| requires the precense of  valid \molecule\ and \lsdalton\ input 
+files in the directory where you execute your program, for example the \verb|MOLECULE.INP|
+
+\begin{verbatim}
+BASIS
+STO-3G
+
+
+Atomtypes=2 
+Charge=8.0 Atoms=1
+O    0.00000 0.00000 0.00000
+Charge=1.0 Atoms=2
+H    0.00000 0.50000 0.00000
+H    0.00000 0.00000 0.50000
+\end{verbatim}
+%
+and the \verb|LSDALTON.INP|
+
+\begin{verbatim}
+**GENERAL
+.NOGCBASIS
+**WAVE FUNCTION
+.DFT
+BLYP
+*END OF INPUT
+\end{verbatim}
+
+
+
+
+
 
 
 
