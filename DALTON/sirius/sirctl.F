@@ -284,6 +284,10 @@ C        Use always NEO for RHF (920221-hjaaj)
 C        unless .NR ALWAYS (FLAG(39)) is set, e.g. for core relax calc.
          IF (.NOT.FLAG(39)) FLAG(38) = .TRUE.
 C
+C        High-spin Fock matrices for all open-shell calcs with dft or direct
+         HSFOCK=(((DODFT.OR.DIRCAL).AND. NASHT .GE. 1) .OR. HSROHF)
+         IF (CORHOL.OR.CORRLX) HSFOCK = .FALSE.
+C
 C
          CALL GETTIM(TSTART,WSTART)
 C

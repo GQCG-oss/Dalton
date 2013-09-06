@@ -50,7 +50,6 @@ C  /* Deck qm3fck */
 
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
-      LOGICAL HSFOCK
       DIMENSION DFTNS(MXQM3)
 
 
@@ -61,7 +60,6 @@ C  /* Deck qm3fck */
       LWRK1 = LWRK - KEND
       IF (LWRK1 .LT. 0) CALL ERRWRK('QM3FCK',-KEND,LWRK)
 
-      HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
 
 C     Get total density      
       IF (NASHT .EQ. 0) THEN
