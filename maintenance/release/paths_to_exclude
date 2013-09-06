@@ -28,6 +28,7 @@ LSDALTON/test/dectests/decccsd
 LSDALTON/test/pbc2/pbc2_h2fock
 LSDALTON/test/pbc2/pbc2_h2SCF_iter1
 LSDALTON/test/pbc2/pbc2_h2STO6G
+LSDALTON/doc_LSDALTON/TODO_BEFORE_RELEASE2013
 DALTON/test/cc3_findiff
 DALTON/test/cc3_h2o_resid_noddy
 DALTON/test/cc3_HF_631G_2hyp_noddy
