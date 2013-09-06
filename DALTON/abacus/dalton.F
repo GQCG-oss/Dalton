@@ -214,7 +214,7 @@ C
      &'If results obtained with this code are published,',
      &'the appropriate citations would be both of:',
      &' ',
-     &'   K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,',
+     &'   K. Aidas, C. Angeli, K. L. Bak, V. Bakken,',
      &'   L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,',
      &'   P. Dahle, E. K. Dalskov, U. Ekström, T. Enevoldsen,',
      &'   J. J. Eriksen, P. Ettenhuber, B. Fernández, L. Ferrighi,',
