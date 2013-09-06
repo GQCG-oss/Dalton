@@ -43,7 +43,6 @@ subroutine get_iadrpk(luout,nsym,muld2h,nbas,nbast,i2bst,iaodis,iaodpk)
 !
    integer :: isymab, isyma, isymb, a, b, nab
    integer :: nabsq, nabpk
-   integer :: i, ii
 !
 !
    iadrpk_exists = allocated(iadrpk)
@@ -52,7 +51,6 @@ subroutine get_iadrpk(luout,nsym,muld2h,nbas,nbast,i2bst,iaodis,iaodpk)
    iadrpk_dim = nbast*nbast
    call alloc_iadrpk(luout)
 !
-   ii = 0
    do isymab = 1,nsym
       do isymb = 1,nsym
          isyma = muld2h(isymab,isymb)
@@ -73,7 +71,6 @@ subroutine get_iadrpk(luout,nsym,muld2h,nbas,nbast,i2bst,iaodis,iaodpk)
                nabpk = iaodpk(isyma,isymb) + nab
 !
                iadrpk(nabsq) = nabpk
-               ii = ii + 1
 !
             end do
          end do
@@ -81,7 +78,7 @@ subroutine get_iadrpk(luout,nsym,muld2h,nbas,nbast,i2bst,iaodis,iaodpk)
    end do
 !
    return
-end subroutine get_iadrpk
+   end subroutine get_iadrpk
 !
 !
 !

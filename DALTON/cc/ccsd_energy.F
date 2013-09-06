@@ -4410,7 +4410,6 @@ C
 C
       call get_iadrpk(lupri,nsym,muld2h,nbas,nbast,i2bst,iaodis,iaodpk)
 C
-C
       DO 1000 ISYM = 1,NSYM
 C
          ICOUN1 = 0
@@ -5298,7 +5297,6 @@ C
       RETURN
       END
       SUBROUTINE CCSD_SYMSQT(DISTAB1,ISYMAB,SCR)
-C
 
       use dyn_iadrpk
 

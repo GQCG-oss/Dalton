@@ -2105,7 +2105,6 @@ C
          END DO
       END DO
 C
-C
       call get_iadrpk(lupri,nsym,muld2h,nbas,nbast,i2bst,iaodis,iaodpk)
 C
 C
