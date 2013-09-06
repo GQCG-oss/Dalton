@@ -126,7 +126,7 @@ for details.
 
 After building \lsdalton\ under a \verb|build| directory (consult the installation guide
 \verb|http://daltonprogram.org/installation/2013/| for assistance), the \lsdalton\ library 
-\verb|liblsdalton.a| can be found under \verb|build\lib|. The you can now link you 
+\verb|liblsdalton.a| can be found under \verb|build\lib|. You can now link you 
 program to the \lsdalton\ library. 
 The use is perhaps best illustrated by a simple example. The file \verb|lslib_test.F90|
 
@@ -139,8 +139,8 @@ double precision, allocatable :: Smat(:,:)
 
 call lsinit_all()
 
-lupri = 6 !standard output
-luerr = 0 !standard error
+lupri = 6 !logical unit number of standard output
+luerr = 0 !logical unit number of standard error
 CALL LSlib_get_dimensions(nbast,natoms,nelectrons,lupri,luerr)
 allocate(Smat(nbast,nbast))
 CALL LSlib_get_overlap(Smat,nbast,lupri,luerr)
@@ -168,7 +168,7 @@ ifort -mkl=parallel -openmp -parallel -O3 lslib_test.F90 -o lslib_test.x
 %
 Exaclty how to compile and link your code to \verb|libsldalton.a| for other types of build 
 varies, and it can then be instrutive to see how \lsdalton\ is buildt. To see how 
-\verb|lsdalton.x| if compiled and linked, you can type
+\verb|lsdalton.x| is compiled and linked, you can type
 
 \begin{verbatim}
 make VERBOSE=1 lsdalton.x
