@@ -212,6 +212,7 @@ SUBROUTINE print_intro(lupri)
        &  ' LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)',&
        &  ' ----------------------------------------------------------------------------',&
        &  ' Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)',&
+       &  ' Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)',&
        &  ' Sonia Coriani,           University of Trieste,     Italy     (response)',&
        &  ' Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)',&
        &  ' Trygve Helgaker,         University of Oslo,        Norway    (supervision)',&
