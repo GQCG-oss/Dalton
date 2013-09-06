@@ -61,7 +61,7 @@ Print the Atomic Orbital information. The higher the print level, the more infor
 \verb| | \newline
 \verb|<Print level>|\newline
 Print the basis set information. The higher the print level, the more information will be printed.
-Using a print level of 6 will print the input exponents and contraction coefficients read from file as well as the normalized basis used in LSDALTON.  
+Using a print level of 6 will print the input exponents and contraction coefficients read from file as well as the normalized basis used in \lsdalton.  
 \item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
 When using this keyword, an auxiliary basis set has to be 
 specified in the \mol\ file. For the Poples basis sets we recommend df-def2 and for
@@ -715,7 +715,7 @@ Note that the value of \verb|ANGINT| is changed by the following keywords:
 The \verb|GRIDX| keywords also imply specific \verb|ANGINT| values.
 %%
 %%\item[\Key{ANGMIN}] 
-%% ANGMIN IS NOT ACTIVE ANYMORE IN LSDALTON 
+%% ANGMIN IS NOT ACTIVE ANYMORE IN \lsdalton\ 
 %% 
 \item[\Key{COARSE}]
 Shortcut keyword for radial integration accuracy $10^{-11}$ and angular expansion order equal to $35$.
@@ -1236,20 +1236,20 @@ Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-7}$.
 \end{description}
 
 \section{**DYNAMI}\label{sec:dynami}
-This input module is devoted to molecular dynamics simulations. LSDALTON provides some tools for performing
+This input module is devoted to molecular dynamics simulations. \lsdalton\ provides some tools for performing
 direct Born-Oppenheimer molecular dynamics, i.e. trajectories are integrated with forces calculated on the fly.
 Trajectory integration is available for SCF-type wavefunctions (with dispersion correction for DFT)
   and for DEC wavefunctions. Properties could be calculated along the trajectories and should be
  specified in the **RESPONSE section.
-LSDALTON simulates microcanonical(NVE) ensembles. Currently no sampling is availabe and the starting coordinates
+\lsdalton\ simulates microcanonical(NVE) ensembles. Currently no sampling is availabe and the starting coordinates
 and velocities must be provided as input. Trajectories are integrated with gradient-based velocity-Verlet 
 method \cite{Verlet}. 
 
-LSDALTON provides several options for the choice of starting guess for SCF-type electronic theory methods. By
+\lsdalton\ provides several options for the choice of starting guess for SCF-type electronic theory methods. By
 default, the guess is generated anew each time step according to the corresponding input. Alternatively, one can
 restart from the density optimized at the previous time-step. This is achieved by setting the .RESTART option under
 the *DENSOPT subsection. This reduces the number of SCF iterations per time-step and accelerates the integration. 
-Two more efficient algorithms for starting guess propagation are implemented in LSDALTON: Fock matrix dynamics \cite{FMD} 
+Two more efficient algorithms for starting guess propagation are implemented in \lsdalton\: Fock matrix dynamics \cite{FMD} 
  and time-reversible propagator \cite{TimRev}.  
 \newline
 \vspace{1 cm}
