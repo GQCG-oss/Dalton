@@ -175,7 +175,7 @@ SUBROUTINE print_intro(lupri)
        &' IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,',&
        &' THE FOLLOWING PAPER SHOULD BE CITED:',&
        &' ',&
-       & ' K. Aidas, C. Angeli, K. L. Bak, V. Bakken,',&
+       & ' K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,',&
        & ' L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,',&
        & ' P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,',&
        & ' J. J. Eriksen, P. Ettenhuber, B. Fernandez,',&
