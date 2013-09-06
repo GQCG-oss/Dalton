@@ -5346,7 +5346,9 @@ CONTAINS
       TYPE(MATRIX) :: temp,S23,T23
       real(realk)  :: trace
       integer      :: nelectrons
+      logical      :: DEBUG_ADMM_CONST
 
+      DEBUG_ADMM_CONST = .FALSE.
      CALL mat_init(T23,n2,n3)
      CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,1E0_realk)
      
@@ -5361,26 +5363,26 @@ CONTAINS
       
       trace = mat_trAB(D3,temp)
       CALL mat_free(temp)
-      write(*,*)     "Tr(D S32 T23)=", trace
-      write(lupri,*) "Tr(D S32 T23)=", trace
       
-      nelectrons = setting%molecule(1)%p%nelectrons
-      write(*,*)     "nelectrons=", nelectrons
-      write(lupri,*) "nelectrons=", nelectrons
-      
+      nelectrons = setting%molecule(1)%p%nelectrons    
       lambda = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
-      write(*,*)     "lambda=", lambda
-      write(lupri,*) "lambda=", lambda
       
       ! Scaling factor for the constrained reduced density matrix
       constrain_factor = 1.0E0_realk / (1E0_realk - lambda)
-      write(*,*)     "(1-lambda)^2=", (1E0_realk - lambda)**2
-      write(lupri,*) "(1-lambda)^2=", (1E0_realk - lambda)**2
-      write(*,*)     "1/[(1-lambda)^2]=", constrain_factor**2
-      write(lupri,*) "1/[(1-lambda)^2]=", constrain_factor**2
-      write(*,*)     "factor = 1/(1-lambda)=", constrain_factor
-      write(lupri,*) "factor = 1/(1-lambda)=", constrain_factor
-      
+      if(DEBUG_ADMM_CONST) then
+         write(*,*)     "Tr(D S32 T23)=", trace
+         write(lupri,*) "Tr(D S32 T23)=", trace
+         write(*,*)     "nelectrons=", nelectrons
+         write(lupri,*) "nelectrons=", nelectrons
+         write(*,*)     "lambda=", lambda
+         write(lupri,*) "lambda=", lambda
+         write(*,*)     "(1-lambda)^2=", (1E0_realk - lambda)**2
+         write(lupri,*) "(1-lambda)^2=", (1E0_realk - lambda)**2
+         write(*,*)     "1/[(1-lambda)^2]=", constrain_factor**2
+         write(lupri,*) "1/[(1-lambda)^2]=", constrain_factor**2
+         write(*,*)     "factor = 1/(1-lambda)=", constrain_factor
+         write(lupri,*) "factor = 1/(1-lambda)=", constrain_factor
+      endif
    END SUBROUTINE get_Lagrange_multiplier_charge_conservation
    
    SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,luerr,n2,n3,AO2,AO3,&
@@ -5522,9 +5524,11 @@ integer             :: AOdfold,AORold
 character(len=80)   :: WORD
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
-real(realk)         :: lambda, constrain_factor
-logical             :: const_electrons
+real(realk)         :: lambda, constrain_factor,nrm
+logical             :: const_electrons,DEBUG_ADMM_CONST
+integer             :: iAtom,iX
 !
+DEBUG_ADMM_CONST = .FALSE.
 call lstimer('START',ts,te,lupri)
 
 IF (setting%scheme%cam) THEN
@@ -5660,6 +5664,20 @@ DO idmat=1,ndrhs
                & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
                & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
+   if(DEBUG_ADMM_CONST) then
+      nrm = 0E0_realk
+      DO iAtom = 1,nAtoms
+         DO iX=1,3
+            nrm = nrm + ADMM_proj(iX,iAtom)*ADMM_proj(iX,iAtom)
+         ENDDO
+      ENDDO
+      nrm = sqrt(nrm/3/nAtoms)
+      write(lupri,*)
+      write(lupri,'(1X,A24,F23.16)') 'RMS ADMM gradient projection term norm (au): ',nrm
+      write(lupri,*) 
+      write(lupri,*) 
+   end if
+ 
    call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
 
    !FREE MEMORY
@@ -5688,7 +5706,9 @@ CONTAINS
       TYPE(MATRIX) :: temp,S23,T23
       real(realk)  :: trace
       integer      :: nelectrons
+      logical      :: DEBUG_ADMM_CONST
 
+      DEBUG_ADMM_CONST = .FALSE.
      CALL mat_init(T23,n2,n3)
      CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,1E0_realk)
      
@@ -5703,25 +5723,27 @@ CONTAINS
       
       trace = mat_trAB(D3,temp)
       CALL mat_free(temp)
-      write(*,*)     "Tr(D S32 T23)=", trace
-      write(lupri,*) "Tr(D S32 T23)=", trace
       
       nelectrons = setting%molecule(1)%p%nelectrons
-      write(*,*)     "nelectrons=", nelectrons
-      write(lupri,*) "nelectrons=", nelectrons
       
       lambda = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
-      write(*,*)     "lambda=", lambda
-      write(lupri,*) "lambda=", lambda
       
       ! Scaling factor for the constrained reduced density matrix
       constrain_factor = 1.0E0_realk / (1E0_realk - lambda)
-      write(*,*)     "(1-lambda)^2=", (1E0_realk - lambda)**2
-      write(lupri,*) "(1-lambda)^2=", (1E0_realk - lambda)**2
-      write(*,*)     "1/[(1-lambda)^2]=", constrain_factor**2
-      write(lupri,*) "1/[(1-lambda)^2]=", constrain_factor**2
-      write(*,*)     "factor = 1/(1-lambda)=", constrain_factor
-      write(lupri,*) "factor = 1/(1-lambda)=", constrain_factor
+      if(DEBUG_ADMM_CONST) then
+         write(*,*)     "Tr(D S32 T23)=", trace
+         write(lupri,*) "Tr(D S32 T23)=", trace
+         write(*,*)     "nelectrons=", nelectrons
+         write(lupri,*) "nelectrons=", nelectrons
+         write(*,*)     "lambda=", lambda
+         write(lupri,*) "lambda=", lambda
+         write(*,*)     "(1-lambda)^2=", (1E0_realk - lambda)**2
+         write(lupri,*) "(1-lambda)^2=", (1E0_realk - lambda)**2
+         write(*,*)     "1/[(1-lambda)^2]=", constrain_factor**2
+         write(lupri,*) "1/[(1-lambda)^2]=", constrain_factor**2
+         write(*,*)     "factor = 1/(1-lambda)=", constrain_factor
+         write(lupri,*) "factor = 1/(1-lambda)=", constrain_factor
+      endif
       
    END SUBROUTINE get_Lagrange_multiplier_charge_conservation
    SUBROUTINE get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,D3,D2,n2,n3,&
@@ -5747,12 +5769,14 @@ CONTAINS
       type(matrixp)              :: tmpDFD(1)
       real(realk),pointer        :: reOrtho1(:,:),reOrtho2(:,:),xtraTerm(:,:)
       real(realk),pointer        :: xtra(:,:)
-      real(realk)                :: Tr_d2A22
-      integer                    :: N ! nb. electrons
-      integer :: i,j
+      real(realk)                :: Tr_d2A22,nrm
+      integer                    :: NbEl ! nb. electrons
+      integer                    :: i,j,iAtom,iX
+      logical                    :: DEBUG_ADMM_CONST
       !
+      DEBUG_ADMM_CONST = .FALSE.
       const_electrons = setting%scheme%ADMM_CONST_EL
-      N = setting%molecule(1)%p%nelectrons
+      NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(T23,n2,n3)
       call mat_zero(T23)
       call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,&
@@ -5803,7 +5827,35 @@ CONTAINS
       call ls_dzero(ADMM_proj,3*nAtoms)
       call DAXPY(3*nAtoms, 1E0_realk,reOrtho1,1,ADMM_proj,1)
       call DAXPY(3*nAtoms,-1E0_realk,reOrtho2,1,ADMM_proj,1)
-        
+      
+      if(DEBUG_ADMM_CONST) then
+         write(lupri,'(1X,A24,F23.16)') 'RMS ADMM gradient projection contributions '
+         nrm = 0E0_realk
+         DO iAtom = 1,nAtoms
+            DO iX=1,3
+               nrm = nrm + reOrtho1(iX,iAtom)*reOrtho1(iX,iAtom)
+            ENDDO
+         ENDDO
+         nrm = sqrt(nrm/3/nAtoms)
+         write(lupri,'(1X,A24,F23.16)') 'reOrtho1 norm (au): ',nrm
+         nrm = 0E0_realk
+         DO iAtom = 1,nAtoms
+            DO iX=1,3
+               nrm = nrm + reOrtho2(iX,iAtom)*reOrtho2(iX,iAtom)
+            ENDDO
+         ENDDO
+         nrm = sqrt(nrm/3/nAtoms)
+         write(lupri,'(1X,A24,F23.16)') 'reOrtho2 norm (au): ',nrm
+         nrm = 0E0_realk
+         DO iAtom = 1,nAtoms
+            DO iX=1,3
+               nrm = nrm + ADMM_proj(iX,iAtom)*ADMM_proj(iX,iAtom)
+            ENDDO
+         ENDDO
+         nrm = sqrt(nrm/3/nAtoms)
+         write(lupri,'(1X,A24,F23.16)') 'reOrtho1-reOrtho2 norm (au): ',nrm
+      end if
+      
       ! IF constraining the total charge
       ! an additional term needs to be added
       ! xtraTerm = -2 Tr(d2~ A) /(1-lambda)^2 [ Tr(D3 S32 T23) ]_x
@@ -5815,7 +5867,7 @@ CONTAINS
          call mem_alloc(xtraTerm,3,nAtoms)
          call ls_dzero(xtraTerm,3*nAtoms)
 
-         ! Tr(D3_x S32 T23) = - Tr(S33_x D3 S32 T23 D3) 
+         ! Tr(D3_x S32 T23) = Tr( -S33_x D3 S32 T23 D3) 
          call mat_init(tmp23,n2,n3)
          call mat_init(tmp33,n3,n3)
          call mat_init(S32,n3,n2)
@@ -5828,35 +5880,112 @@ CONTAINS
          call ls_dzero(xtra,3*nAtoms)
          call II_get_reorthoNormalization_mixed(xtra,tmpDFD,1,AO3,AO3,&
                                        & GCAO3,GCAO3,setting,lupri,luerr)
-         call DAXPY(3*nAtoms,1E0_realk,xtra,1,xtraTerm,1)
-         
-         ! Tr(D3 S32_x T23) = Tr(S32_x T23 D3)
+         call DAXPY(3*nAtoms,-1E0_realk,xtra,1,xtraTerm,1)
+         if(DEBUG_ADMM_CONST) then
+            nrm = 0E0_realk
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                  nrm = nrm - xtra(iX,iAtom)*xtra(iX,iAtom)
+               ENDDO
+            ENDDO
+            nrm = sqrt(nrm/3/nAtoms)
+            write(lupri,'(1X,A24,F23.16)') 'Tr(D3_x S32 T23) norm (au): ',nrm
+         end if
+               
+         ! Tr(D3 S23_x T23) = Tr(S23_x T23 D3)
          tmpDFD(1)%p => tmp23
-         call ls_dzero(xtra,3*nAtoms)
-         call II_get_reorthoNormalization_mixed(xtra,tmpDFD,1,AO3,AO2,&
-                                       & GCAO3,GCAO2,setting,lupri,luerr)
-         call DAXPY(3*nAtoms,1E0_realk,xtra,1,xtraTerm,1)
-         
-         ! Tr(D3 S32 T23_x) = Tr(T23_x D3 S32) = ...
-         !                  =  Tr(S23_x            D3 S32 S22inv)
-         !                   + Tr(S22_x S22inv S23 D3 S32 S22inv)
-         call mat_init(tmp32b,n3,n2)
-         call mat_mul(tmp32 ,S22inv ,'n','n',1E0_realk,0E0_realk,tmp32b)
-         tmpDFD(1)%p => tmp32b ! D3 S32 S22inv
          call ls_dzero(xtra,3*nAtoms)
          call II_get_reorthoNormalization_mixed(xtra,tmpDFD,1,AO2,AO3,&
                                        & GCAO2,GCAO3,setting,lupri,luerr)
          call DAXPY(3*nAtoms,1E0_realk,xtra,1,xtraTerm,1)
+         if(DEBUG_ADMM_CONST) then
+            nrm = 0E0_realk
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                  nrm = nrm + xtra(iX,iAtom)*xtra(iX,iAtom)
+               ENDDO
+            ENDDO
+            nrm = sqrt(nrm/3/nAtoms)
+            write(lupri,'(1X,A24,F23.16)') 'Tr(D3 S23_x T23) norm (au): ',nrm
+         end if
+         
+         ! Tr(D3 S32 T23_x) = Tr(T23_x D3 S32) = ...
+         !                  =  Tr(S23_x            D3 S32 S22inv)
+         !                   - Tr(S22_x S22inv S23 D3 S32 S22inv)
+         call mat_init(tmp32b,n3,n2)
+         call mat_mul(tmp32 ,S22inv ,'n','n',1E0_realk,0E0_realk,tmp32b)
+         tmpDFD(1)%p => tmp32b ! D3 S32 S22inv
+         call ls_dzero(xtra,3*nAtoms)
+         call II_get_reorthoNormalization_mixed(xtra,tmpDFD,1,AO3,AO2,&
+                                       & GCAO3,GCAO2,setting,lupri,luerr)
+         call DAXPY(3*nAtoms,1E0_realk,xtra,1,xtraTerm,1)
+         if(DEBUG_ADMM_CONST) then
+            nrm = 0E0_realk
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                  nrm = nrm + xtra(iX,iAtom)*xtra(iX,iAtom)
+               ENDDO
+            ENDDO
+            nrm = sqrt(nrm/3/nAtoms)
+            write(lupri,'(1X,A24,F23.16)') 'Tr(S23_x D3 S32 S22inv) norm (au): ',nrm
+         end if
          call mat_mul(S22inv,S32  ,'n','t',1E0_realk,0E0_realk,tmp23)
          call mat_mul(tmp23,tmp32b,'n','n',1E0_realk,0E0_realk,tmp22)
          tmpDFD(1)%p => tmp22 ! S22inv S23 D3 S32 S22inv
          call ls_dzero(xtra,3*nAtoms)
          call II_get_reorthoNormalization_mixed(xtra,tmpDFD,1,AO2,AO2,&
                                        & GCAO2,GCAO2,setting,lupri,luerr)
-         call DAXPY(3*nAtoms,1E0_realk,xtra,1,xtraTerm,1)
+         call DAXPY(3*nAtoms,-1E0_realk,xtra,1,xtraTerm,1)
+         if(DEBUG_ADMM_CONST) then
+            nrm = 0E0_realk
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                  nrm = nrm - xtra(iX,iAtom)*xtra(iX,iAtom)
+               ENDDO
+            ENDDO
+            nrm = sqrt(nrm/3/nAtoms)
+            write(lupri,'(1X,A24,F23.16)') 'Tr(S22_x S22inv S23 D3 S32 S22inv) norm (au): ',nrm
+         end if
+
+         if(DEBUG_ADMM_CONST) then
+            nrm = 0E0_realk
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                  nrm = nrm + xtraTerm(iX,iAtom)*xtraTerm(iX,iAtom)
+               ENDDO
+            ENDDO
+            nrm = sqrt(nrm/3/nAtoms)
+
+            write(lupri,'(1X,A24,F23.16)') 'NON scaled xtraTerm norm (au): ',nrm
+         end if
          
-         call DAXPY(3*nAtoms,-2E0_realk / N * constrain_factor**2 * Tr_d2A22,&
-                     & xtraTerm,1,ADMM_proj,1)
+         call DSCAL(3*nAtoms,-2E0_realk / NbEl * constrain_factor**2 * Tr_d2A22,&
+                     & xtraTerm,1)
+         write(lupri,'(1X,A24,F23.16)') 'Nb electrons: ',NbEl
+         write(lupri,'(1X,A24,F23.16)') 'constrain_factor: ',constrain_factor
+         write(lupri,'(1X,A24,F23.16)') 'Tr_d2A22: ',Tr_d2A22
+         write(lupri,'(1X,A24,F23.16)') '-2/N * constrain_factor**2 * Tr_d2A22: ',-2E0_realk / NbEl * constrain_factor**2 * Tr_d2A22
+         call DAXPY(3*nAtoms,1E0_realk,xtraTerm,1,ADMM_proj,1)
+         
+         if(DEBUG_ADMM_CONST) then
+            nrm = 0E0_realk
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                  nrm = nrm + xtraTerm(iX,iAtom)*xtraTerm(iX,iAtom)
+               ENDDO
+            ENDDO
+            nrm = sqrt(nrm/3/nAtoms)
+            write(lupri,'(1X,A24,F23.16)') 'scaled xtraTerm norm (au): ',nrm
+            nrm = 0E0_realk
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                  nrm = nrm + ADMM_proj(iX,iAtom)*ADMM_proj(iX,iAtom)
+               ENDDO
+            ENDDO
+            nrm = sqrt(nrm/3/nAtoms)
+            write(lupri,'(1X,A24,F23.16)') 'final projection term norm (au): ',nrm
+         end if
+         
          call mem_dealloc(xtraTerm)
          call mem_dealloc(xtra)
          call mat_free(tmp33)
