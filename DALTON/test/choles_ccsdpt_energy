@@ -94,6 +94,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Final * HF energy:  * -56\.21914893(50|49)" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * -56\.4591059647" $log | wc -l`

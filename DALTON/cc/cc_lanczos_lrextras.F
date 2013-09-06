@@ -1075,7 +1075,7 @@ C
          WRITE (LUPRI,'(9(5X,I3,(4X,G13.6)/))')
      &         (N,SUM_L0_T(N),N=-6,2)
       WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,A,A,/)')
-     &   'I(N) Sum Rules : Dipole Length Approximation in a.u.',
+     &   'I(N) Sum Rules : Dipole Length Approximation in eV ',
      &   'N',LABEL(1:1),LABEL(1:1),' - component'
          WRITE (LUPRI,'(9(5X,I3,(4X,G13.6)/))')
      &         (N,mean_exc_energy(N),N=-6,2)

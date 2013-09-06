@@ -89,6 +89,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Nuclear repulsion
 CRIT1=`$GREP "Nuclear repulsion: * 16\.91009781024" $log | wc -l`
 TEST[1]=`expr $CRIT1 `

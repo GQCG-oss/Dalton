@@ -1,4 +1,4 @@
 radovan: Note to developers
 
-Do not run the update.py script. This script is exported by "make release"
+This script is exported by "make release"
 into the release tarball and it only makes sense there.
