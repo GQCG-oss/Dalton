@@ -97,6 +97,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-75.58537789." | wc -l`
 CRIT2=`$GREP "Total MP2 * energy: * \-75.70777049." $log | wc -l`
@@ -114,7 +119,7 @@ CTRLB=3
 ERRORB="LANCZOS EIGENVALUES NOT CORRECT"
 
 # CCSD XX polarizabilities
-CRIT1=`$GREP "fun with gamma =   4.55600000000000015E-003 J=         249" $log | wc -l`
+CRIT1=`$GREP "fun with gamma = * 0.00455600 J= * 249" $log | wc -l`
 CRIT2=`$GREP "( |0)\.00000000 *  \-6\.46815038  *  ( |0)\.00000000" $log | wc -l`
 CRIT3=`$GREP "2\.72113842  * \-6\.64521271  *  ( \-|\-0)\.01665755" $log | wc -l`
 CRIT4=`$GREP "5\.44227684  * \-7\.25241597  *  ( \-|\-0)\.04088594" $log | wc -l`
