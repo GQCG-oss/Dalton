@@ -262,12 +262,12 @@ butanal declaring as active the orbitals localized on the aldehyde group
 
 \begin{verbatim}
 **GENERAL
-.RUN WA
-**HERMIT
+.RUN WAVE FUNCTIONS
+**INTEGRALS
 .NOSUP
-**SIRIUS
+**WAVE FUNCTIONS
 .CC
-*SCF IN
+*SCF INPUT
 .THRESHOLD
  1.0D-8
 .MAX DIIS
@@ -275,7 +275,7 @@ butanal declaring as active the orbitals localized on the aldehyde group
 *ORBITAL
 .MOSTART
  HUCKEL
-*CC INP
+*CC INPUT
 .PRINT
  3
 .CCSD

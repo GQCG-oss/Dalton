@@ -175,7 +175,7 @@ SUBROUTINE print_intro(lupri)
        &' IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,',&
        &' THE FOLLOWING PAPER SHOULD BE CITED:',&
        &' ',&
-       & ' K. Aidas, C. Angeli, K. L. Bak, V. Bakken,',&
+       & ' K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,',&
        & ' L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,',&
        & ' P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,',&
        & ' J. J. Eriksen, P. Ettenhuber, B. Fernandez,',&
@@ -212,6 +212,7 @@ SUBROUTINE print_intro(lupri)
        &  ' LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)',&
        &  ' ----------------------------------------------------------------------------',&
        &  ' Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)',&
+       &  ' Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)',&
        &  ' Sonia Coriani,           University of Trieste,     Italy     (response)',&
        &  ' Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)',&
        &  ' Trygve Helgaker,         University of Oslo,        Norway    (supervision)',&
