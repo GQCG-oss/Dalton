@@ -3258,7 +3258,7 @@ contains
          call arr_lock_wins(gvvoo,'s',mode)
          call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,lock_outside,debug=.true.)
          call arr_unlock_wins(gvvoo,.true.)
-         write (msg,*),infpar%lg_mynum,"w2"
+         write (msg,*) infpar%lg_mynum,"w2"
          call print_norm(w2,int((i8*tl)*no*nv,kind=8),msg)
        else
          call array_gather_tilesinfort(gvvoo,w1,int((i8*no)*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
