@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,192 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:39:17 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 17:45:58 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_rsp_sresqr
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONS                                      
+**WAVE FUNCTIONS                                  
+.HF                                               
+.MP2                                              
+.MCSCF                                            
+*SCF INPUT                                        
+.DOUBLY OCCUPIED                                  
+ 2 0 0 0                                          
+*CONFIGURATION INPUT                              
+.INACTIVE                                         
+ 1 0 0 0                                          
+.ELECTRONS                                        
+ 2                                                
+.CAS SPACE                                        
+ 2 0 0 0                                          
+.SYMMET                                           
+ 1                                                
+.SPIN MULT                                        
+ 1                                                
+**RESPONS                                         
+*QUADRATIC                                        
+.DIPLEN                                           
+.SINGLE                                           
+.ROOTS                                            
+ 2 1 0 0                                          
+.FREQUE                                           
+ 1                                                
+ 0.03                                             
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+4-31G                                                                          
+Single residue of the quadratic response function                              
+                                                                               
+    2    2  X  Y    1 1.00D-12                                                 
+        1.0   1                                                                
+H           .0000000000             .0000000000            2.0969699107        
+        3.0   1                                                                
+Li          .0000000000             .0000000000            -.9969699107        
 
 
        *******************************************************************
@@ -105,7 +214,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -130,16 +239,16 @@
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/4-31G"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/4-31G"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   3.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   3 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/4-31G"
+  Basis set file used for this atomic type with Z =   3 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/4-31G"
 
 
                          SYMGRP: Point group information
@@ -208,7 +317,7 @@ Point group: C2v
   total:      2    4.0000    21    11
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.10D-11
+  Threshold for neglecting AO integrals:  1.10D-11
 
 
   Cartesian Coordinates (a.u.)
@@ -249,8 +358,10 @@ Point group: C2v
  Li    :    1.637242    0.000000
 
 
-  Max interatomic separation is    1.6372 Angstrom (    3.0939 Bohr)
+  Max    interatomic separation is    1.6372 Angstrom (    3.0939 Bohr)
   between atoms    2 and    1, "Li    " and "H     ".
+
+  Min HX interatomic separation is    1.6372 Angstrom (    3.0939 Bohr)
 
 
   Bond distances (Angstrom):
@@ -279,7 +390,7 @@ Point group: C2v
                B =       213942.91 MHz     (    7.136367 cm-1)
 
 
-@  Nuclear repulsion energy :    0.969637476220
+@  Nuclear repulsion energy :    0.969637476220 Hartree
 
 
   Symmetry Orbitals
@@ -334,13 +445,13 @@ Point group: C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.10D-11
 
+ Threshold for neglecting two-electron integrals:  1.10D-11
  Number of two-electron integrals written:         677 ( 30.6% )
  Megabytes written:                              0.014
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -378,8 +489,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:58 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:17 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      Single residue of the quadratic response function                       
@@ -388,63 +499,59 @@ Point group: C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     MC-SCF optimization.
+@    MC-SCF optimization.
 
+@    Multi-configurational response calculation.
+@              Type: complete active space calculation (CAS).
 
-     Multi-configurational response calculation.
-
-               Type: complete active space calculation (CAS).
-
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
-               an MP2 calculation
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+@              an MP2 calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EWMO  " input option.
+ ".MOSTART EWMO  " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> MC-SCF   <<<
-     Number of closed shell electrons          2
-     Number of electrons in active shells      2
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> MC-SCF <<<
+@    Number of closed shell electrons           2
+@    Number of electrons in active shells       2
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1    2    3    4
                                        --- |  ---  ---  ---  ---
-     Inactive orbitals                   1 |    1    0    0    0
-     Active orbitals                     2 |    2    0    0    0
+@    Inactive orbitals                   1 |    1    0    0    0
+@    Active orbitals                     2 |    2    0    0    0
      Secondary orbitals                  8 |    4    2    2    0
      Total number of orbitals           11 |    7    2    2    0
      Number of basis functions          11 |    7    2    2    0
 
       -- Initial occupation of symmetries is determined from user input.                      
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               2 |    2    0    0    0
+@    Occupied SCF orbitals               2 |    2    0    0    0
 
      Optimization information
      ========================
-     Number of configurations                 3
-     Number of orbital rotations             14
+@    Number of configurations                 3
+@    Number of orbital rotations             14
      ------------------------------------------
-     Total number of variables               17
+@    Total number of variables               17
 
      Maximum number of macro iterations      25
      Maximum number of micro iterations     600
-     Threshold for gradient            1.00D-05
+     Threshold for MCSCF gradient      1.00D-05
      Number of initial trial vectors          1
      Number of initial CI iterations          3
      Number of simultaneous trial vectors     1
 
-     This calculation converges to the lowest state
-     for the specified symmetry and spin species.
+@    This calculation converges to the lowest state for the specified symmetry and spin species.
 
      Maximum number of NEO/NR iterations  24
 
@@ -457,40 +564,43 @@ Point group: C2v
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.10D-11 )
-   1    -7.92585683519        6.75335D-01   -7.93D+00    1
+@  1    -7.92585683519        6.75335D-01   -7.93D+00    1
       Virial theorem: -V/T =      1.960277
-      MULPOP  H      -0.60; Li      0.60; 
+@      MULPOP H      -0.60; Li      0.60; 
  -----------------------------------------------------------------------------
-   2    -7.97650066943        6.69663D-02   -5.06D-02    2
+@  2    -7.97650066943        6.69663D-02   -5.06D-02    2
       Virial theorem: -V/T =      1.997450
-      MULPOP  H      -0.30; Li      0.30; 
+@      MULPOP H      -0.30; Li      0.30; 
  -----------------------------------------------------------------------------
-   3    -7.97731201305        1.09818D-02   -8.11D-04    3
+@  3    -7.97731201305        1.09818D-02   -8.11D-04    3
       Virial theorem: -V/T =      1.998930
-      MULPOP  H      -0.27; Li      0.27; 
+@      MULPOP H      -0.27; Li      0.27; 
  -----------------------------------------------------------------------------
-   4    -7.97734917569        7.78801D-04   -3.72D-05    4
+@  4    -7.97734917569        7.78801D-04   -3.72D-05    4
       Virial theorem: -V/T =      1.998683
-      MULPOP  H      -0.26; Li      0.26; 
+@      MULPOP H      -0.26; Li      0.26; 
  -----------------------------------------------------------------------------
-   5    -7.97734936902        9.67916D-05   -1.93D-07    5
+@  5    -7.97734936902        9.67916D-05   -1.93D-07    5
       Virial theorem: -V/T =      1.998653
-      MULPOP  H      -0.26; Li      0.26; 
+@      MULPOP H      -0.26; Li      0.26; 
  -----------------------------------------------------------------------------
-   6    -7.97734937078        7.81039D-06   -1.76D-09    6
+@  6    -7.97734937078        7.81039D-06   -1.76D-09    6
       Virial theorem: -V/T =      1.998655
-      MULPOP  H      -0.26; Li      0.26; 
+@      MULPOP H      -0.26; Li      0.26; 
  -----------------------------------------------------------------------------
-   7    -7.97734937080        1.74972D-06   -2.28D-11    7
+@  7    -7.97734937080        1.74972D-06   -2.28D-11    7
       Virial theorem: -V/T =      1.998655
-      MULPOP  H      -0.26; Li      0.26; 
+@      MULPOP H      -0.26; Li      0.26; 
  -----------------------------------------------------------------------------
-   8    -7.97734937081        3.22805D-07   -1.91D-12    8
+@  8    -7.97734937081        3.22802D-07   -1.92D-12    8
 
- *** DIIS converged in   8 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in   8 iterations !
+@     Converged SCF energy, gradient:     -7.977349370807    3.23D-07
+    - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.003       0.003
 
 
  >>>>> Output from SIRIUS MP2 module <<<<<
@@ -498,19 +608,15 @@ Point group: C2v
  Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,
             J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
 
- Check that orbitals are canonical HARTREE-FOCK orbitals
+ Checking that the closed shell orbitals are canonical Hartree-Fock orbitals
 
-    Number of electrons :    4
-    Orbital occupations :    2    0    0    0
+    Number of electrons  :    4
+    Closed shell orbitals:    2    0    0    0
+
+ Generating Fock matrix
 
  Hartree-Fock electronic energy:          -8.946986847027
- Hartree-Fock total      energy:          -7.977349370806
-
-Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  7.83D-08
-
-Symmetry  2 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+00
-
-Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+00
+ Hartree-Fock total      energy:          -7.977349370807
 
  Hartree-Fock orbital energies, symmetry 1, number of occupied SCF orbitals is    2
 
@@ -530,12 +636,14 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   --------------------------
     gap     :     0.31080680
 
+ Integral transformation: Total CPU and WALL times (sec)       0.000       0.000
+
  MP2 move   0.017338 electrons to unoccupied HF orbitals
 
 
- Hartree-Fock total energy :            -7.9773493708
- + MP2 contribution        :            -0.0128433573
- = MP2 second order energy :            -7.9901927281
+@   Hartree-Fock total energy   :            -7.9773493708
+@   + MP2 contribution          :            -0.0128433573
+@   = MP2 second order energy   :            -7.9901927281
 
  Natural orbital occupation numbers, symmetry 1
  Sum =     3.99765310; RHF =     4.00000000; Difference =    -0.00234690
@@ -553,7 +661,9 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
          0.00114884     0.00002461
 
- Time used for MP2 natural orbitals :       0.003 CPU seconds.
+ Time used for MP2 natural orbitals :       0.002 CPU seconds,       0.002 wall seconds.
+
+ >>>> CPU and wall time for MP2 :       0.002       0.002
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -565,6 +675,8 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
 
+
+ Integral transformation: Total CPU and WALL times (sec)       0.000       0.000
 
  (CIST1)  3 lowest diagonal elements:
 
@@ -586,10 +698,10 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
  CI energies and residuals:
-    1       -7.993704636456084       3.31D-15
+    1       -7.993704636456640       4.23D-16
 
 
- Final CI energy:       -7.993704636456084
+ Final CI energy:       -7.993704636456640
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -604,17 +716,19 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -7.99370463645608           (MACRO    1)
+ Integral transformation: Total CPU and WALL times (sec)       0.000       0.000
 
- - Nuclear repulsion      :    0.969637476220371    
- - Inactive energy        :    -7.87798442818330    
- - Active energy          :    -1.08535768449315    
+ Total MCSCF energy       :            -7.993704636456640  (MACRO    1)
 
- Norm of total gradient   :        0.028391664554
- -    of CI gradient      :        0.000000000000
- -    of orbital gradient :        0.028391664554
+ - Nuclear repulsion      :             0.969637476220371
+ - Inactive energy        :            -7.877984428183630
+ - Active energy          :            -1.085357684493379
+
+ Norm of total gradient   :             0.028391664555
+ -    of CI gradient      :             0.000000000000
+ -    of orbital gradient :             0.028391664555
       Virial theorem: -V/T =      1.997155
-      MULPOP  H      -0.24; Li      0.24; 
+@      MULPOP H      -0.24; Li      0.24; 
 
  Residual norm when dim(red L) =   5
  NEO root     CSF        orbital          total
@@ -635,17 +749,19 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -7.99406809869439           (MACRO    2)
+ Integral transformation: Total CPU and WALL times (sec)       0.000       0.000
 
- - Nuclear repulsion      :    0.969637476220371    
- - Inactive energy        :    -7.87924672004552    
- - Active energy          :    -1.08445885486924    
+ Total MCSCF energy       :            -7.994068098695001  (MACRO    2)
 
- Norm of total gradient   :        0.012923001198
- -    of CI gradient      :        0.005980050151
- -    of orbital gradient :        0.011456131989
+ - Nuclear repulsion      :             0.969637476220371
+ - Inactive energy        :            -7.879246720045555
+ - Active energy          :            -1.084458854869816
+
+ Norm of total gradient   :             0.012923001200
+ -    of CI gradient      :             0.005980050152
+ -    of orbital gradient :             0.011456131991
       Virial theorem: -V/T =      1.996253
-      MULPOP  H      -0.19; Li      0.19; 
+@      MULPOP H      -0.19; Li      0.19; 
 
  Residual norm when dim(red L) =   6
  NEO root     CSF        orbital          total
@@ -666,17 +782,19 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -7.99412988709244           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.001       0.001
 
- - Nuclear repulsion      :    0.969637476220371    
- - Inactive energy        :    -7.87920437597993    
- - Active energy          :    -1.08456298733288    
+ Total MCSCF energy       :            -7.994129887093063  (MACRO    3)
 
- Norm of total gradient   :        0.000878463454
- -    of CI gradient      :        0.000224253669
- -    of orbital gradient :        0.000849357600
+ - Nuclear repulsion      :             0.969637476220371
+ - Inactive energy        :            -7.879204375980022
+ - Active energy          :            -1.084562987333412
+
+ Norm of total gradient   :             0.000878463454
+ -    of CI gradient      :             0.000224253669
+ -    of orbital gradient :             0.000849357600
       Virial theorem: -V/T =      1.996702
-      MULPOP  H      -0.20; Li      0.20; 
+@      MULPOP H      -0.20; Li      0.20; 
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
@@ -697,17 +815,19 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -7.99413053267353           (MACRO    4)
+ Integral transformation: Total CPU and WALL times (sec)       0.001       0.001
 
- - Nuclear repulsion      :    0.969637476220371    
- - Inactive energy        :    -7.87919013031194    
- - Active energy          :    -1.08457787858195    
+ Total MCSCF energy       :            -7.994130532674149  (MACRO    4)
 
- Norm of total gradient   :        0.000013256343
- -    of CI gradient      :        0.000005356702
- -    of orbital gradient :        0.000012125856
+ - Nuclear repulsion      :             0.969637476220371
+ - Inactive energy        :            -7.879190130312050
+ - Active energy          :            -1.084577878582470
+
+ Norm of total gradient   :             0.000013256343
+ -    of CI gradient      :             0.000005356702
+ -    of orbital gradient :             0.000012125856
       Virial theorem: -V/T =      1.996707
-      MULPOP  H      -0.20; Li      0.20; 
+@      MULPOP H      -0.20; Li      0.20; 
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -728,29 +848,33 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :    -7.99413053271369           (MACRO    5)
+ Integral transformation: Total CPU and WALL times (sec)       0.000       0.000
 
- - Nuclear repulsion      :    0.969637476220371    
- - Inactive energy        :    -7.87918999658914    
- - Active energy          :    -1.08457801234492    
+ Total MCSCF energy       :            -7.994130532714304  (MACRO    5)
 
- Norm of total gradient   :        0.000002298171
- -    of CI gradient      :        0.000000000200
- -    of orbital gradient :        0.000002298171
+ - Nuclear repulsion      :             0.969637476220371
+ - Inactive energy        :            -7.879189996589242
+ - Active energy          :            -1.084578012345432
+
+ Norm of total gradient   :             0.000002298171
+ -    of CI gradient      :             0.000000000200
+ -    of orbital gradient :             0.000002298171
       Virial theorem: -V/T =      1.996708
-      MULPOP  H      -0.20; Li      0.20; 
+@      MULPOP H      -0.20; Li      0.20; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -4.01599D-11   -4.01556D-11
+ Energy difference; actual and predicted:   -4.01554D-11   -4.01556D-11
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    1.00011D+00
+ Energy difference; actual and predicted:    9.99995D-01
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used           17
-     Total number of CPU seconds used         0.02
+     Total number of CPU seconds used         0.01
+
+ >>>> CPU and wall time for MCSCF :       0.010       0.010
 
 
                      .----------------------------------------.
@@ -759,22 +883,22 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:58 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:17 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    4     -7.993704636456   0.0283916646  0.000000   0.1365634819
-    2    4     -7.994068098694   0.0129230012  0.740014   0.0299004445
-    3    7     -7.994129887092   0.0008784635  1.032047   0.0046463880
+    1    4     -7.993704636457   0.0283916646  0.000000   0.1365634819
+    2    4     -7.994068098695   0.0129230012  0.740014   0.0299004445
+    3    7     -7.994129887093   0.0008784635  1.032047   0.0046463880
     4    2     -7.994130532674   0.0000132563  1.002577   0.0000222813
     5    0     -7.994130532714   0.0000022982  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1      3   -0.000000    0.000000     10   -0.026946    0.028392    0.028392
+    1      3    0.000000    0.000000     10   -0.026946    0.028392    0.028392
     2      3    0.005685    0.005980     10    0.009902    0.011456    0.012923
     3      2   -0.000185    0.000224      2    0.000579    0.000849    0.000878
     4      3    0.000005    0.000005     10    0.000010    0.000012    0.000013
@@ -793,9 +917,9 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1     -7.877984428183     -1.085357684493     -7.993704636456
-    2     -7.879246720046     -1.084458854869     -7.994068098694
-    3     -7.879204375980     -1.084562987333     -7.994129887092
+    1     -7.877984428184     -1.085357684493     -7.993704636457
+    2     -7.879246720046     -1.084458854870     -7.994068098695
+    3     -7.879204375980     -1.084562987333     -7.994129887093
     4     -7.879190130312     -1.084577878582     -7.994130532674
     5     -7.879189996589     -1.084578012345     -7.994130532714
 
@@ -803,17 +927,17 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000491155982     -0.000363462238      0.740013868457
-    3     -0.000059869730     -0.000061788398      1.032047381511
-    4     -0.000000643922     -0.000000645581      1.002576767138
+    2     -0.000491155982     -0.000363462238      0.740013868449
+    3     -0.000059869730     -0.000061788398      1.032047381471
+    4     -0.000000643922     -0.000000645581      1.002576766834
     5     -0.000000000040     -0.000000000040      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.136563481862      0.700000000000
-    2      0.20000000  1.00000000      0.029900444538      0.700000000000
-    3      0.20000000  1.00000000      0.004646387998      0.700000000000
+    1      0.20000000  1.00000000      0.136563481874      0.700000000000
+    2      0.20000000  1.00000000      0.029900444541      0.700000000000
+    3      0.20000000  1.00000000      0.004646387999      0.700000000000
     4      0.20000000  1.00000000      0.000022281347      0.700000000000
     5      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -821,8 +945,8 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.000039263189    0.999627216863   -0.024440594136   -0.006084633391
-    2   -0.000004789407    0.999982119748   -0.000523073773   -0.005817219211
+    1   -0.000039263189    0.999627216863   -0.024440594138   -0.006084633391
+    2   -0.000004789407    0.999982119748   -0.000523073773   -0.005817219212
     3   -0.000000051514    0.999999568222   -0.000867607386   -0.000241607053
     4   -0.000000000003    0.999999999990   -0.000000060932   -0.000004442159
     5    0.000000000000    0.000000000000    0.000000000000    0.000000000000
@@ -833,21 +957,20 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
-     State number:                1
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
+@    State number:                1
 
-     Final MCSCF energy:           -7.994130532714                 
-     Nuclear repulsion:             0.969637476220
-     Electronic energy:            -8.963768008934
+@    Final MCSCF energy:           -7.994130532714                 
+@    Nuclear repulsion:             0.969637476220
+@    Electronic energy:            -8.963768008935
 
-     Final gradient norm:           0.000002298171
+@    Final gradient norm:           0.000002298171
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:58 2011 
-     Host name              : fe6                                     
-
+     Date and time (Linux)  : Sun Sep  8 20:39:17 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Occupancies of natural orbitals
  -------------------------------
@@ -922,12 +1045,12 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.02 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:58 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:17 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -995,10 +1118,12 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
  Old direct access AO file found, SORTA skipped.
 
+ Integral transformation: Total CPU and WALL times (sec)       0.000       0.000
 
- MCSCF energy         :       -7.994130532713686
- -- inactive part     :       -7.879189996589140
- --   active part     :       -1.084578012344916
+
+ MCSCF energy         :       -7.994130532714304
+ -- inactive part     :       -7.879189996589242
+ --   active part     :       -1.084578012345432
  -- nuclear repulsion :        0.969637476220371
 
 
@@ -1078,6 +1203,7 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
  QRLRVE -- linear response calculation for symmetry  1
  QRLRVE -- operator label : ZDIPLEN 
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies : -0.030000  0.089589  0.242189  0.127765
 
 
@@ -1088,35 +1214,35 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 RSPORT:    2 out of    8 new trial vectors linear dependent
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
 
  GP * SOLUTION vector at frequency     0.24219 a.u.
  after    6 linear transformations is      1.63198838
  INERTIA (POS,ZER,NEG) of reduced matrix is   11    0    1
  Determinant of reduced matrix is -1.06 * 10 ** -5.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
 
  GP * SOLUTION vector at frequency     0.24219 a.u.
  after   10 linear transformations is      6.41005173
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -1.75 * 10 **-11.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
 
  GP * SOLUTION vector at frequency     0.12777 a.u.
- after   10 linear transformations is   -126.73713975
+ after   10 linear transformations is   -126.73713976
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -7.00 * 10 **-12.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
 
  GP * SOLUTION vector at frequency     0.24219 a.u.
  after   14 linear transformations is      6.62221557
  INERTIA (POS,ZER,NEG) of reduced matrix is   27    0    1
  Determinant of reduced matrix is -1.52 * 10 **-12.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
 
  GP * SOLUTION vector at frequency     0.12777 a.u.
  after   14 linear transformations is   -126.39382421
@@ -1135,25 +1261,21 @@ RSPORT:    2 out of    8 new trial vectors linear dependent
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   -.300000D-01
- SYMMETRY    1
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY  -0.300000D-01
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (  -0.03000):     28.5201878108    
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (  -0.03000):     28.5201878110    
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.895892D-01
- SYMMETRY    1
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY   0.895892D-01
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.08959):     52.0247156214    
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.08959):     52.0247156220    
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.242189D+00
- SYMMETRY    1
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY   0.242189D+00
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.24219):     6.62221556765    
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.24219):     6.62221556758    
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.127765D+00
- SYMMETRY    1
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY   0.127765D+00
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.12777):    -126.393824206    
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.12777):    -126.393824212    
 
 
  Linear response calculations for quadratic response
@@ -1169,6 +1291,7 @@ RSPORT:    2 out of    8 new trial vectors linear dependent
 
  QRLRVE -- linear response calculation for symmetry  2
  QRLRVE -- operator label : XDIPLEN 
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.089589  0.242189  0.127765 -0.030000
 
 
@@ -1178,7 +1301,7 @@ RSPORT:    2 out of    8 new trial vectors linear dependent
  Operator symmetry =  2; triplet =   F
 
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
 
  GP * SOLUTION vector at frequency     0.24219 a.u.
  after    4 linear transformations is    -24.03161146
@@ -1186,7 +1309,7 @@ RSPORT:    2 out of    8 new trial vectors linear dependent
  Determinant of reduced matrix is -1.48 * 10 ** -4.0
 RSPORT:    2 out of    4 new trial vectors linear dependent
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
 
  GP * SOLUTION vector at frequency     0.24219 a.u.
  after    6 linear transformations is    -23.36389446
@@ -1205,25 +1328,21 @@ RSPORT:    2 out of    4 new trial vectors linear dependent
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.895892D-01
- SYMMETRY    2
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   XDIPLEN     FREQUENCY   0.895892D-01
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.08959):     47.1944367335    
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.08959):     47.1944367339    
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.242189D+00
- SYMMETRY    2
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   XDIPLEN     FREQUENCY   0.242189D+00
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.24219):    -23.3638944625    
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.24219):    -23.3638944624    
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.127765D+00
- SYMMETRY    2
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   XDIPLEN     FREQUENCY   0.127765D+00
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.12777):     92.7871558628    
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.12777):     92.7871558634    
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   -.300000D-01
- SYMMETRY    2
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   XDIPLEN     FREQUENCY  -0.300000D-01
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (  -0.03000):     33.2128542049    
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (  -0.03000):     33.2128542051    
 
 
  Linear response calculations for quadratic response
@@ -1239,6 +1358,7 @@ RSPORT:    2 out of    4 new trial vectors linear dependent
 
  QRLRVE -- linear response calculation for symmetry  3
  QRLRVE -- operator label : YDIPLEN 
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.242189 -0.030000  0.089589
 
 
@@ -1248,14 +1368,14 @@ RSPORT:    2 out of    4 new trial vectors linear dependent
  Operator symmetry =  3; triplet =   F
 
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.24219 a.u.
  after    3 linear transformations is    -29.90621553
  INERTIA (POS,ZER,NEG) of reduced matrix is    5    0    1
  Determinant of reduced matrix is -6.10 * 10 ** -5.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.24219 a.u.
  after    6 linear transformations is    -23.36389363
@@ -1273,20 +1393,17 @@ RSPORT:    2 out of    4 new trial vectors linear dependent
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.242189D+00
- SYMMETRY    3
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3    LABEL   YDIPLEN     FREQUENCY   0.242189D+00
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.24219):    -23.3638936328    
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.24219):    -23.3638936328    
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   -.300000D-01
- SYMMETRY    3
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3    LABEL   YDIPLEN     FREQUENCY  -0.300000D-01
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (  -0.03000):     33.2128550086    
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (  -0.03000):     33.2128550087    
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.895892D-01
- SYMMETRY    3
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3    LABEL   YDIPLEN     FREQUENCY   0.895892D-01
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.08959):     47.1944386437    
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.08959):     47.1944386441    
 
 
  Second order moment in a.u. for
@@ -1352,17 +1469,17 @@ RSPORT:    2 out of    4 new trial vectors linear dependent
 
  omega B, excitation energy, moment :    0.030000    0.157765 -174.162606
 
- >>>> Total CPU  time used in RESPONSE:   0.04 seconds
- >>>> Total wall time used in RESPONSE:   1.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.02 seconds
+ >>>> Total wall time used in RESPONSE:   0.02 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.08 seconds
- >>>> Total wall time used in DALTON:   1.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.04 seconds
+ >>>> Total wall time used in DALTON:   0.04 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:17 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
