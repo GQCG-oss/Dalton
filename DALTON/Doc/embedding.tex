@@ -202,14 +202,17 @@ EXCLISTS
 9  6  7  8 10
 10 6  7  8  9
 \end{verbatim}
-where the values have been truncated for readability. Note, that the input is actually not case-sensitive even though we have used uppercase letters in the example. In the following we describe the contents of each section.\\
+where the values have been truncated for readability. Note, that the
+input is actually not case-sensitive even though we have used
+uppercase letters in the example. In the following we describe the
+contents of each section.\\
 
 \noindent\texttt{@COORDINATES}\newline
 The coordinates section follows the standard XYZ file format so that the 
 environment can be easily visualized using standard programs. The first line in 
 gives the total number of sites in the environment and the second line 
-specifies whether the coordinates are given in \AA{}ngstr\"{o}m (\verb|AA|) or 
-Bohr (\verb|AU|). The rest of the coordinates section is a list of the sites in 
+specifies whether the coordinates are given in \angstrom{} (\verb|AA|) or 
+\bohr{} (\verb|AU|). The rest of the coordinates section is a list of the sites in 
 the environment where each line contains the element symbol and x-, y- and 
 z-coordinates of a site. If a site is not located on an atom, e.g. if it is a 
 bond-midpoint, then the element symbol should be specified as \verb|X|. The 
@@ -218,17 +221,21 @@ is site number one, the second line is site number two and so on. This
 numbering is important and used in the following sections.\\
 
 \noindent\texttt{@MULTIPOLES}\newline
-The multipoles section is subdivided into the orders of the multipoles, i.e.\ 
-\verb|ORDER 0| for monopoles/charges, \verb|ORDER 1| for dipoles and so on. 
-For each order there is a number specifying the number of multipoles of that 
-specific order. Note, that this number does not have to be equal to the total 
-number of sites. This is followed by a list of multipoles where each line 
-gives the multipole of a site. The lines begin with a number that specifies 
-which site the multipole is placed. Only the symmetry-independent Cartesian 
-multipoles (given in a.u.) should be provided using an ordering such that the components are stepped from the right, e.g.\ \verb|xx xy xz yy yz zz| or 
-\verb|xxx xxy xxz xyy xyz xzz yyy yyz yzz zzz|. Note, that the multipoles
-should in general be traceless, however, for multipoles up to and including
-octopoles (i.e.\ \verb|ORDER 3|) the trace is removed if present. Furthermore,
+
+The multipoles section is subdivided into the orders of the
+multipoles, i.e.\ \verb|ORDER 0| for monopoles/charges, \verb|ORDER 1|
+for dipoles and so on.  For each order there is a number specifying
+the number of multipoles of that specific order. Note, that this
+number does not have to be equal to the total number of sites. This is
+followed by a list of multipoles where each line gives the multipole
+of a site. The lines begin with a number that specifies which site the
+multipole is placed. Only the symmetry-independent Cartesian
+multipoles (given in a.u.) should be provided using an ordering such
+that the components are stepped from the right, e.g.
+\verb|xx xy xz yy yz zz| or \verb|xxx xxy xxz xyy xyz xzz yyy yyz yzz zzz|.
+Note, that the multipoles should in general be traceless, however, for
+multipoles up to and including octopoles (i.e.\ \verb|ORDER 3|) the
+trace is removed if present. Furthermore,
 the current implementation is limited to fifth order multipoles.\\
 
 \noindent\texttt{@POLARIZABILITIES}\newline
