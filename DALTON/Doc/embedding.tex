@@ -125,12 +125,12 @@ introduction to the \dalton\ (and \molinp) input in general. The format of the
 additional changes to be used in a PE calculation.
 
 \subsection*{The potential input format}
-The \potinp\ file is split into three sections: \verb|coordinates|, 
-\verb|multipoles| and \verb|polarizabilities|. The format is perhaps best 
+The \potinp\ file is split into three sections: \verb|@COORDINATES|, 
+\verb|@MULTIPOLES| and \verb|@POLARIZABILITIES|. The format is perhaps best 
 illustrated using an example:
 \begin{verbatim}
 ! two water molecules
-coordinates
+@COORDINATES
 10
 AA
 O    -3.328  -0.103  -0.000
@@ -143,8 +143,8 @@ H     0.841   1.971  -0.000
 H     1.632   3.298   0.004
 X     1.291   2.156  -0.000
 X     1.687   2.819   0.001
-multipoles
-order 0
+@MULTIPOLES
+ORDER 0
 6
 1    -0.742
 2     0.369
@@ -152,7 +152,7 @@ order 0
 6    -0.742
 7     0.369
 8     0.372
-order 1
+ORDER 1
 10
 1     0.030    0.328    0.000
 2    -0.100   -0.055   -0.000
@@ -164,7 +164,7 @@ order 1
 8     0.005   -0.116   -0.000
 9     0.156    0.028   -0.000
 10    0.050   -0.149   -0.000
-order 2
+ORDER 2
 10
 1    -3.951   -0.056    0.000   -4.577    0.000   -5.020
 2    -0.577   -0.053   -0.000   -0.604   -0.000   -0.559
@@ -176,8 +176,8 @@ order 2
 8    -0.556    0.045    0.000   -0.624   -0.000   -0.558
 9     0.930    0.228   -0.000    0.242   -0.000    0.233
 10    0.217   -0.166   -0.000    0.964    0.003    0.241
-polarizabilities
-order 1 1
+@POLARIZABILITIES
+ORDER 1 1
 10
 1     1.593    0.080   -0.001    2.525    0.001    3.367
 2     0.792    0.154    0.000    0.601    0.000    0.592
@@ -189,7 +189,7 @@ order 1 1
 8     0.499   -0.019    0.000    0.861    0.002    0.575
 9     4.294    1.269    0.000    1.056   -0.004    1.413
 10    0.617   -0.440   -0.000    4.622    0.017    1.430
-exclists
+EXCLISTS
 10 5
 1  2  3  4  5
 2  1  3  4  5
@@ -202,9 +202,9 @@ exclists
 9  6  7  8 10
 10 6  7  8  9
 \end{verbatim}
-where the values have been truncated for readability. In the following we describe the contents of each section.\\
+where the values have been truncated for readability. Note, that the input is actually not case-sensitive even though we have used uppercase letters in the example. In the following we describe the contents of each section.\\
 
-\noindent\texttt{coordinates}\newline
+\noindent\texttt{@COORDINATES}\newline
 The coordinates section follows the standard XYZ file format so that the 
 environment can be easily visualized using standard programs. The first line in 
 gives the total number of sites in the environment and the second line 
@@ -217,9 +217,9 @@ listing also gives an implicit numbering of the sites, so that the first line
 is site number one, the second line is site number two and so on. This 
 numbering is important and used in the following sections.\\
 
-\noindent\texttt{multipoles}\newline
+\noindent\texttt{@MULTIPOLES}\newline
 The multipoles section is subdivided into the orders of the multipoles, i.e.\ 
-\verb|order 0| for monopoles/charges, \verb|order 1| for dipoles and so on. 
+\verb|ORDER 0| for monopoles/charges, \verb|ORDER 1| for dipoles and so on. 
 For each order there is a number specifying the number of multipoles of that 
 specific order. Note, that this number does not have to be equal to the total 
 number of sites. This is followed by a list of multipoles where each line 
@@ -228,17 +228,17 @@ which site the multipole is placed. Only the symmetry-independent Cartesian
 multipoles (given in a.u.) should be provided using an ordering such that the components are stepped from the right, e.g.\ \verb|xx xy xz yy yz zz| or 
 \verb|xxx xxy xxz xyy xyz xzz yyy yyz yzz zzz|. Note, that the multipoles
 should in general be traceless, however, for multipoles up to and including
-octopoles (i.e.\ \verb|order 3|) the trace is removed if present. Furthermore,
+octopoles (i.e.\ \verb|ORDER 3|) the trace is removed if present. Furthermore,
 the current implementation is limited to fifth order multipoles.\\
 
-\noindent\texttt{polarizabilities}\newline
+\noindent\texttt{@POLARIZABILITIES}\newline
 The polarizabilities section is also subdivided into orders,
-i.e.\ \verb|order 1 1| for dipole-dipole polarizabilities, which is the only 
+i.e.\ \verb|ORDER 1 1| for dipole-dipole polarizabilities, which is the only 
 type supported in the current release. The format is the same as for 
 multipoles, i.e. first line contains number of polarizabilities which is 
 followed by a list of the polarizabilities using the same ordering as the 
 multipoles. The polarizabilities should also be given in a.u. In addition, 
-there is also the exclusion lists (\verb|exclists| 
+there is also the exclusion lists (\verb|EXCLISTS| 
 section). Here the first line gives the number of lists (i.e.\ the number of 
 lines) and the length of the exclusion lists (i.e.\ the number of entries per 
 line). The exclusion lists specify what the polarizable sites are not allowed 
