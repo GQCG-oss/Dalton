@@ -54,6 +54,8 @@ type DiagItem
    integer :: lupri
    !> Specifies wether calculation should be restarted from old density
    logical :: CFG_restart
+   !> Specifies wether calculation should be purify the old density
+   logical :: CFG_purifyrestart
    !> Force level 2 re-calculation on calculations restarted from old density
    logical :: CFG_redo_l2 
    !> What kind of level shift should be used with diagonalization?
@@ -118,6 +120,7 @@ implicit none
 
    diag%cfg_unres            = .false.
    diag%cfg_restart          = .false.
+   diag%cfg_purifyrestart    = .false.
    diag%cfg_redo_l2          = .false.
 
    diag%CFG_lshift = Diag_lshift_none !Default = no level shift
