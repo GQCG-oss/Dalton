@@ -42,9 +42,9 @@
        A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
        A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
        L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
@@ -128,35 +128,48 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:47:07 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:13 2013
+     Host name              : fe8                                     
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_pehf_2pa
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407
+   2) /people/disk2/magnus/Projects/dalton_devel/dalton/build/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | magnus
+ Host                     | fe8
+ System                   | Linux-2.6.32-279.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ MPI                      | ON
+ Fortran compiler         | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | if90
+ Fortran compiler version | ifort (IFORT) 13.1.3 20130607
+ C compiler               | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icc
+ C compiler version       | icc (ICC) 13.1.3 20130607
+ C++ compiler             | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icxx
+ C++ compiler version     | unknown
+ BLAS                     | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_core.so;/people/disk2/magnus/int
+                          | el/mkl/lib/intel64/libmkl_intel_lp64.so;/people/di
+                          | sk2/magnus/intel/mkl/lib/intel64/libmkl_sequential
+                          | .so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-o
+                          | penmp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_lapack95_lp64.a;/people/disk2/ma
+                          | gnus/intel/mkl/lib/intel64/libmkl_intel_lp64.so;-o
+                          | penmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 72792444bfcf70cffefbb31f508f6872a0f88620
+ Configuration time       | 2013-09-09 13:03:34.480961
 
 
    Content of the .dal input file
@@ -233,7 +246,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -241,7 +254,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -249,7 +262,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -391,7 +404,8 @@ Point group: C1
 
 @  Nuclear repulsion energy :  102.664846860515 Hartree
 
-
+  Reading potential input file
+ 
   Polarizable embedding information
   ---------------------------------
 
@@ -426,9 +440,8 @@ Point group: C1
  Number of two-electron integrals written:       43383 ( 96.1% )
  Megabytes written:                              0.502
 
- >>>  Time used in TWOINT     is   0.11 seconds
- >>>> Total CPU  time used in HERMIT:   0.13 seconds
- >>>> Total wall time used in HERMIT:   0.13 seconds
+ >>>> Total CPU  time used in HERMIT:   0.10 seconds
+ >>>> Total wall time used in HERMIT:   0.14 seconds
 
 
                         .----------------------------------.
@@ -464,8 +477,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:07 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:13 2013
+     Host name              : fe8                                     
 
  Title lines from ".mol" input file:
      Acrolein                                                                
@@ -523,7 +536,7 @@ Point group: C1
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1  -187.948496597     -4.868374075775E-02    2.01259D+00   -1.88D+02
+@  1  -187.948496597     -4.868374075774E-02    2.01259D+00   -1.88D+02
       Virial theorem: -V/T =      2.003056
 @      MULPOP C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
  -----------------------------------------------------------------------------
@@ -559,7 +572,7 @@ Point group: C1
       Virial theorem: -V/T =      2.007835
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@ 10  -188.317391915     -1.918442015518E-02    7.82819D-06   -1.90D-10
+@ 10  -188.317391915     -1.918442015518E-02    7.82819D-06   -1.89D-10
 
 @ *** DIIS converged in  10 iterations !
 @     Converged SCF energy, gradient:   -188.317391915058    7.83D-06
@@ -604,7 +617,7 @@ Point group: C1
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.315       0.318
+ >>>> CPU and wall time for SCF :       0.465       0.484
 
 
                        .-----------------------------------.
@@ -624,8 +637,8 @@ Point group: C1
 @    Final gradient norm:           0.000007828188
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:07 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:14 2013
+     Host name              : fe8                                     
 
  (Only coefficients >0.0100 are printed.)
 
@@ -688,12 +701,12 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.32 seconds
- >>>> Total wall time used in SIRIUS :      0.32 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.47 seconds
+ >>>> Total wall time used in SIRIUS :      0.50 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:07 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:14 2013
+     Host name              : fe8                                     
 
 
                      .---------------------------------------.
@@ -749,11 +762,11 @@ Point group: C1
           YDIPLEN 
           ZDIPLEN 
 
- Integral transformation: Total CPU and WALL times (sec)       0.035       0.035
+ Integral transformation: Total CPU and WALL times (sec)       0.030       0.033
 
 
-   SCF energy         :     -188.317391915057840
- -- inactive part     :     -290.963054355417853
+   SCF energy         :     -188.317391915057669
+ -- inactive part     :     -290.963054355417682
  -- nuclear repulsion :      102.664846860515169
 
 
@@ -835,7 +848,7 @@ Point group: C1
 
 @ QRLRVE:  << YDIPLEN  ; XDIPLEN  >> (   0.07812):    -9.31548320478    
 
-@ QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.07812):   -7.862510881606E-03
+@ QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.07812):   -7.862510881587E-03
 
  QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   XDIPLEN     FREQUENCY   0.154293D+00
 
@@ -843,7 +856,7 @@ Point group: C1
 
 @ QRLRVE:  << YDIPLEN  ; XDIPLEN  >> (   0.15429):    -11.8072414162    
 
-@ QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.15429):   -8.347093980537E-03
+@ QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.15429):   -8.347093980504E-03
 
  QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   XDIPLEN     FREQUENCY   0.160988D+00
 
@@ -851,7 +864,7 @@ Point group: C1
 
 @ QRLRVE:  << YDIPLEN  ; XDIPLEN  >> (   0.16099):    -12.1901663906    
 
-@ QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.16099):   -8.416387625959E-03
+@ QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.16099):   -8.416387625923E-03
 
  QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   XDIPLEN     FREQUENCY   0.190350D+00
 
@@ -859,7 +872,7 @@ Point group: C1
 
 @ QRLRVE:  << YDIPLEN  ; XDIPLEN  >> (   0.19035):    -14.4597521901    
 
-@ QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.19035):   -8.807798081494E-03
+@ QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.19035):   -8.807798081448E-03
 
 
  QRLRVE -- linear response calculation for symmetry  1
@@ -892,7 +905,7 @@ Point group: C1
 
 @ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.07812):     34.8231534084    
 
-@ QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.07812):   -8.765148325571E-04
+@ QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.07812):   -8.765148325619E-04
 
  QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   YDIPLEN     FREQUENCY   0.154293D+00
 
@@ -900,7 +913,7 @@ Point group: C1
 
 @ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.15429):     39.6831396171    
 
-@ QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.15429):   -3.772699172000E-04
+@ QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.15429):   -3.772699172091E-04
 
  QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   YDIPLEN     FREQUENCY   0.160988D+00
 
@@ -908,7 +921,7 @@ Point group: C1
 
 @ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.16099):     40.4139060754    
 
-@ QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.16099):   -2.979694024456E-04
+@ QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.16099):   -2.979694024554E-04
 
  QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   YDIPLEN     FREQUENCY   0.190350D+00
 
@@ -916,7 +929,7 @@ Point group: C1
 
 @ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.19035):     44.6834312201    
 
-@ QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.19035):    1.820741061082E-04
+@ QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.19035):    1.820741060936E-04
 
 
  QRLRVE -- linear response calculation for symmetry  1
@@ -1015,33 +1028,33 @@ Point group: C1
 
  QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY   0.781201D-01
 
-@ QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.07812):   -7.844961042094E-03
+@ QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.07812):   -7.844961042256E-03
 
-@ QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.07812):   -8.912581886754E-04
+@ QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.07812):   -8.912581883820E-04
 
 @ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.07812):     4.64042178271    
 
  QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY   0.154293D+00
 
-@ QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.15429):   -8.057884467344E-03
+@ QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.15429):   -8.057884466423E-03
 
-@ QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.15429):   -6.967219529052E-04
+@ QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.15429):   -6.967219549535E-04
 
 @ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.15429):     4.84122575217    
 
  QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY   0.160988D+00
 
-@ QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.16099):   -8.592725351821E-03
+@ QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.16099):   -8.592725354152E-03
 
-@ QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.16099):   -1.254055284981E-05
+@ QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.16099):   -1.254054847537E-05
 
 @ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.16099):     4.83873134877    
 
  QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY   0.190350D+00
 
-@ QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.19035):   -8.940763310119E-03
+@ QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.19035):   -8.940763313227E-03
 
-@ QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.19035):    4.723328056026E-04
+@ QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.19035):    4.723328111734E-04
 
 @ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.19035):     4.96741927388    
 
@@ -1399,17 +1412,17 @@ Point group: C1
      1   4   10.36   Circular     0.495E-07  0.146E+00  0.873E+00  0.687E-01    1.50
    ---------------------------------------------------------------------------------
 
- >>>> Total CPU  time used in RESPONSE:   1.03 seconds
- >>>> Total wall time used in RESPONSE:   1.41 seconds
+ >>>> Total CPU  time used in RESPONSE:   1.30 seconds
+ >>>> Total wall time used in RESPONSE:   1.43 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.49 seconds
- >>>> Total wall time used in DALTON:   1.87 seconds
+ >>>> Total CPU  time used in DALTON:   1.89 seconds
+ >>>> Total wall time used in DALTON:   2.11 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:09 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:15 2013
+     Host name              : fe8                                     

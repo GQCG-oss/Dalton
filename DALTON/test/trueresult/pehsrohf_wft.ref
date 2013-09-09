@@ -42,9 +42,9 @@
        A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
        A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
        L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
@@ -128,35 +128,48 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:47:17 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:41 2013
+     Host name              : fe8                                     
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_pehsrohf_wft
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407
+   2) /people/disk2/magnus/Projects/dalton_devel/dalton/build/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | magnus
+ Host                     | fe8
+ System                   | Linux-2.6.32-279.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ MPI                      | ON
+ Fortran compiler         | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | if90
+ Fortran compiler version | ifort (IFORT) 13.1.3 20130607
+ C compiler               | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icc
+ C compiler version       | icc (ICC) 13.1.3 20130607
+ C++ compiler             | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icxx
+ C++ compiler version     | unknown
+ BLAS                     | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_core.so;/people/disk2/magnus/int
+                          | el/mkl/lib/intel64/libmkl_intel_lp64.so;/people/di
+                          | sk2/magnus/intel/mkl/lib/intel64/libmkl_sequential
+                          | .so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-o
+                          | penmp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_lapack95_lp64.a;/people/disk2/ma
+                          | gnus/intel/mkl/lib/intel64/libmkl_intel_lp64.so;-o
+                          | penmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 72792444bfcf70cffefbb31f508f6872a0f88620
+ Configuration time       | 2013-09-09 13:03:34.480961
 
 
    Content of the .dal input file
@@ -230,7 +243,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -238,7 +251,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -246,7 +259,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -361,7 +374,8 @@ Point group: C1
 
 @  Nuclear repulsion energy :   31.249215315972 Hartree
 
-
+  Reading potential input file
+ 
   Polarizable embedding information
   ---------------------------------
 
@@ -396,8 +410,8 @@ Point group: C1
  Number of two-electron integrals written:        2907 ( 94.4% )
  Megabytes written:                              0.034
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.06 seconds
 
 
                         .----------------------------------.
@@ -431,8 +445,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:17 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:41 2013
+     Host name              : fe8                                     
 
  Title lines from ".mol" input file:
      Formaldehyde                                                            
@@ -776,7 +790,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      2
 WARNING: induced dipole is larger than the permanent dipole at site:      4
          induced dipole magnitude:    0.2941
          permanent dipole magnitude:    0.1906
-@ 16  -111.194200426     -2.529284789653E-02    4.00128D-03   -2.65D-08
+@ 16  -111.194200426     -2.529284789654E-02    4.00128D-03   -2.65D-08
 
 Info: SCF gradient has been lower than now,
       therefore  1 old iterations are removed from DIIS.
@@ -813,7 +827,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      2
 WARNING: induced dipole is larger than the permanent dipole at site:      4
          induced dipole magnitude:    0.2941
          permanent dipole magnitude:    0.1906
-@ 18  -111.194178837     -2.528730462594E-02    3.09349D-03    2.16D-05
+@ 18  -111.194178837     -2.528730462632E-02    3.09349D-03    2.16D-05
       Virial theorem: -V/T =      2.024995
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
@@ -830,7 +844,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      2
 WARNING: induced dipole is larger than the permanent dipole at site:      4
          induced dipole magnitude:    0.2941
          permanent dipole magnitude:    0.1906
-@ 19  -111.194147138     -2.528852580686E-02    9.67587D-04    3.17D-05
+@ 19  -111.194147138     -2.528852580623E-02    9.67587D-04    3.17D-05
       Virial theorem: -V/T =      2.024993
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
@@ -847,7 +861,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      2
 WARNING: induced dipole is larger than the permanent dipole at site:      4
          induced dipole magnitude:    0.2941
          permanent dipole magnitude:    0.1906
-@ 20  -111.194146275     -2.528245073179E-02    4.56506D-04    8.63D-07
+@ 20  -111.194146275     -2.528245073214E-02    4.56506D-04    8.63D-07
       Virial theorem: -V/T =      2.024993
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
@@ -864,7 +878,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      2
 WARNING: induced dipole is larger than the permanent dipole at site:      4
          induced dipole magnitude:    0.2941
          permanent dipole magnitude:    0.1906
-@ 21  -111.194146448     -2.528864772641E-02    2.73892D-04   -1.73D-07
+@ 21  -111.194146448     -2.528864772596E-02    2.73892D-04   -1.73D-07
       Virial theorem: -V/T =      2.024992
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
@@ -881,7 +895,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      2
 WARNING: induced dipole is larger than the permanent dipole at site:      4
          induced dipole magnitude:    0.2941
          permanent dipole magnitude:    0.1906
-@ 22  -111.194146521     -2.528288515361E-02    1.29210D-04   -7.27D-08
+@ 22  -111.194146521     -2.528288515317E-02    1.29210D-04   -7.27D-08
       Virial theorem: -V/T =      2.024993
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
@@ -898,7 +912,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      2
 WARNING: induced dipole is larger than the permanent dipole at site:      4
          induced dipole magnitude:    0.2941
          permanent dipole magnitude:    0.1906
-@ 23  -111.194146528     -2.528465516380E-02    2.32208D-05   -6.75D-09
+@ 23  -111.194146528     -2.528465516383E-02    2.32208D-05   -6.75D-09
       Virial theorem: -V/T =      2.024993
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
@@ -972,7 +986,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      4
        Electrostatic contributions:
          Monopoles                  0.006147771307
          Dipoles                   -0.006050013734
-         Quadrupoles                0.011767501523
+         Quadrupoles                0.011767501524
 
        Polarization contributions:
          Electronic                 0.243629316688
@@ -1000,7 +1014,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      4
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.109       0.111
+ >>>> CPU and wall time for SCF :       0.160       0.175
 
 
                        .-----------------------------------.
@@ -1020,8 +1034,8 @@ WARNING: induced dipole is larger than the permanent dipole at site:      4
 @    Final gradient norm:           0.000006524044
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:17 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:41 2013
+     Host name              : fe8                                     
 
  (Only coefficients >0.0100 are printed.)
 
@@ -1058,12 +1072,12 @@ WARNING: induced dipole is larger than the permanent dipole at site:      4
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.11 seconds
- >>>> Total wall time used in SIRIUS :      0.12 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.16 seconds
+ >>>> Total wall time used in SIRIUS :      0.19 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:17 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:41 2013
+     Host name              : fe8                                     
 
 
                      .---------------------------------------.
@@ -1080,7 +1094,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      4
  NSETUP: generating MO 2-el. integral file.
 
 
- Integral transformation: Total CPU and WALL times (sec)       0.002       0.002
+ Integral transformation: Total CPU and WALL times (sec)       0.002       0.005
 
  Center of mass dipole origin  :   -3.067740   -0.312997    0.018175
 
@@ -1093,8 +1107,8 @@ WARNING: induced dipole is larger than the permanent dipole at site:      4
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:17 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:41 2013
+     Host name              : fe8                                     
 
 
    ***************************************************************************
@@ -1103,8 +1117,8 @@ WARNING: induced dipole is larger than the permanent dipole at site:      4
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:17 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:41 2013
+     Host name              : fe8                                     
 
 
                              Molecular geometry (au)
@@ -1212,16 +1226,16 @@ WARNING: induced dipole is larger than the permanent dipole at site:      4
 
 
  >>>> Total CPU  time used in ABACUS:   0.00 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total wall time used in ABACUS:   0.01 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.14 seconds
- >>>> Total wall time used in DALTON:   0.14 seconds
+ >>>> Total CPU  time used in DALTON:   0.20 seconds
+ >>>> Total wall time used in DALTON:   0.30 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:17 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:41 2013
+     Host name              : fe8                                     
