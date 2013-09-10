@@ -153,9 +153,15 @@ contains
 !endif mod_unreleased
 #endif
 
-          Ecorr = ccsolver_justenergy(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
+          if(DECinfo%CCSDmultipliers)then
+            call ccsolver_energy_multipliers(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
+               & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
+               & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ecorr)
+          else
+            Ecorr = ccsolver_justenergy(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
                & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
                & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock)
+          endif
 
 #ifdef MOD_UNRELEASED
 
