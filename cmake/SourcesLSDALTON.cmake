@@ -179,7 +179,7 @@ set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc-krsp-op.F90
     LSDALTON/pbc2/pbc-nfinteractions.F90
     LSDALTON/pbc2/pbc-ffinteractions.F90
-    LSDALTON/pbc2/pbc_eigsolv.F90
+    LSDALTON/pbc2/pbc-scf.F90
     LSDALTON/pbc2/pbc-data.F90
     LSDALTON/pbc2/pbc-ffdata.F90
     LSDALTON/pbc2/pbcmain.F90

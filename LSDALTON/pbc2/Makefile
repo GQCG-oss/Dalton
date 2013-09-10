@@ -13,7 +13,7 @@ F90_OBJS = \
 	           pbc-nfinteractions.o\
                    pbcmain.o\
 		   pbc-ffinteractions.o\
-		   pbc_eigsolv.o\
+		   pbc-scf.o\
 		   pbc_compare.o
 F_CPPS = $(F_OBJS:.o=.i)
 
