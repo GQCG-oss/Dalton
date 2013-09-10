@@ -128,7 +128,7 @@ contains
     type(array4) :: omega2_opt, t2_opt, omega2_prec, u
     type(array2) :: ifock,delta_fock,fockguess
     type(ri) :: l_ao
-    type(array2) :: ppfock_prec, qqfock_prec
+    type(array2) :: ppfock_prec, qqfock_prec,t1tmp
     type(array4) :: Lmo
     real(realk) :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
     real(realk) :: iter_cpu,iter_wall, sosex
@@ -424,8 +424,11 @@ contains
              if(get_mult)then
                fockguess=array2_init(ao2_dims)
                call Get_AOt1Fock(mylsitem,t1_final,fockguess,nocc,nvirt,nbasis,ypo,yho,yhv)
-               t1(iter) = array2_similarity_transformation(xocc,fockguess,yvirt,[nocc,nvirt])
+               t1tmp = array2_similarity_transformation(xocc,fockguess,yvirt,[nocc,nvirt]) 
                call array2_free(fockguess)
+               t1(iter) = array2_init([nvirt,nocc])
+               call mat_transpose(nocc,nvirt,1.0E0_realk,t1tmp%val,0.0E0_realk,t1(iter)%val)
+               call array2_free(t1tmp)
                call dscal(nocc*nvirt,2.0E0_realk,t1(iter)%val,1)
              else
                t1(iter) = array2_init(ampl2_dims)

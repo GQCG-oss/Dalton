@@ -5824,14 +5824,6 @@ contains
    o4   = o2*o2
    v4   = v2*v2
 
-
-   open(122,file='matlab_inp_no',STATUS='REPLACE')
-   write(122,*)no
-   close(122)
-   open(122,file='matlab_inp_nv',STATUS='REPLACE')
-   write(122,*)nv
-   close(122)
-
    123 format (" ",A5," ",I5," ",f5.0,"*")
 
    write (msg,*)"gao"
@@ -5846,26 +5838,12 @@ contains
    call print_norm(yv,int(nb*nv,kind=8),msg)
    write (msg,123)"t1   ",ov,sign(1.0E0_realk,t1f(1,1))
    call print_norm(t1f,int(ov,kind=8),msg)
-   open(122,file='matlab_inp_t1f',STATUS='REPLACE')
-   write(122,*)t1f
-   close(122)
    write (msg,123)"z1   ",ov,sign(1.0E0_realk,m1(1,1))
    call print_norm(m1,int(ov,kind=8),msg)
-   open(122,file='matlab_inp_m1',STATUS='REPLACE')
-   write(122,*)m1
-   close(122)
    write (msg,123)"t2   ",o2v2,sign(1.0E0_realk,t2f(1,1,1,1))
    call print_norm(t2f,int(o2v2,kind=8),msg)
-   open(122,file='matlab_inp_t2f',STATUS='REPLACE')
-   write(122,*)t2f
-   close(122)
-   print *,"T2LSD",t2f
    write (msg,123)"z2   ",o2v2,sign(1.0E0_realk,m2(1,1,1,1))
    call print_norm(m2,int(o2v2,kind=8),msg)
-   open(122,file='matlab_inp_m2',STATUS='REPLACE')
-   write(122,*)m2
-   close(122)
-   print *,"M2LSD",m2
    
    norm = 0.0E0_realk
    nrm2 = 0.0E0_realk
@@ -5878,11 +5856,6 @@ contains
              norm = norm + t2f(a,i,b,j)**2
              ctr  = ctr  + 1
              nrm2 = nrm2 + m2(a,i,b,j)**2
-             !t2f(a,i,b,j) = readbuft2(ctr)
-             !t2f(b,j,a,i) = readbuft2(ctr)
-             !if(abs(t2f(a,i,b,j)-readbuft2(ctr))>1.0E-6_realk)then
-             !  print *,t2f(a,i,b,j),readbuft2(ctr),abs(t2f(a,i,b,j)-readbuft2(ctr)),a,i,b,j,ctr
-             !endif
            endif
          enddo
        enddo
@@ -5890,8 +5863,6 @@ contains
    enddo
    write (msg,*)"t2",ctr
    print *,msg,sqrt(norm)
-   !write (msg,*)"z2",ctr
-   !print *,msg,sqrt(nrm2)
 
 
    call mem_alloc(w1,nb**4)
@@ -5936,67 +5907,52 @@ contains
    !govov
    call dcopy(nb**4,gao%val,1,w1,1)
    call successive_4ao_mo_trafo(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2)
-   write (msg,123)"govov",o2v2,sign(1.0E0_realk,w1(1))
-   call print_norm(w1,int(no**2*nv**2,kind=8),msg)
+   !write (msg,123)"govov",o2v2,sign(1.0E0_realk,w1(1))
+   !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
    call dcopy(o2v2,w1,1,govov,1)
 
    call array_reorder_4d(2.0E0_realk,w1,no,nv,no,nv,[1,2,3,4],0.0E0_realk,Lovov)
    call array_reorder_4d(-1.0E0_realk,w1,no,nv,no,nv,[1,4,3,2],1.0E0_realk,Lovov)
 
-   norm = 0.0E0_realk
-   nrm2 = 0.0E0_realk
-   ctr = 0
-   do b = 1, nv
-     do j = 1, no
-       do a = 1,nv
-         do i = 1, no
-           if(i+(a-1)*no<=j+(b-1)*no)then
-             ctr  = ctr  + 1
-             norm = norm + Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv)**2
-             nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
-             !t2f(a,i,b,j) = readbuft2(ctr)
-             !t2f(b,j,a,i) = readbuft2(ctr)
-             !if(abs(t2f(a,i,b,j)-readbuft2(ctr))>1.0E-6_realk)then
-             !  print *,t2f(a,i,b,j),readbuft2(ctr),abs(t2f(a,i,b,j)-readbuft2(ctr)),a,i,b,j,ctr
-             !endif
-           endif
-         enddo
-       enddo
-     enddo
-   enddo
-   write (msg,*)"L n 2L",ctr
-   print *,msg,sqrt(norm),sqrt(nrm2),abs(sqrt(norm)-sqrt(nrm2)),sign(1.0E0_realk,Lovov(1))
+   !norm = 0.0E0_realk
+   !nrm2 = 0.0E0_realk
+   !ctr = 0
+   !do b = 1, nv
+   !  do j = 1, no
+   !    do a = 1,nv
+   !      do i = 1, no
+   !        if(i+(a-1)*no<=j+(b-1)*no)then
+   !          ctr  = ctr  + 1
+   !          norm = norm + Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv)**2
+   !          nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
+   !        endif
+   !      enddo
+   !    enddo
+   !  enddo
+   !enddo
+   !write (msg,*)"L n 2L",ctr
+   !print *,msg,sqrt(norm),sqrt(nrm2),abs(sqrt(norm)-sqrt(nrm2)),sign(1.0E0_realk,Lovov(1))
 
-   write (msg,123)"Lovov",o2v2,sign(1.0E0_realk,Lovov(1))
-   call print_norm(Lovov,int(o2v2,kind=8),msg)
-   open(122,file='matlab_inp_Lovov',STATUS='REPLACE')
-   do i=1,o2v2
-   write(122,*)Lovov(i)
-   enddo
-   close(122)
+   !write (msg,123)"Lovov",o2v2,sign(1.0E0_realk,Lovov(1))
+   !call print_norm(Lovov,int(o2v2,kind=8),msg)
 
    !gvoov
    call dcopy(nb**4,gao%val,1,w1,1)
    call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2)
-   write (msg,*)"gvoov"
-   call print_norm(w1,int(no**2*nv**2,kind=8),msg)
+   !write (msg,*)"gvoov"
+   !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
    !Lvoov (a i j b) += gvoov (a i j b)
    call array_reorder_4d(2.0E0_realk,w1,nv,no,no,nv,[1,2,3,4],0.0E0_realk,Lvoov)
 
    !gvvoo
    call dcopy(nb**4,gao%val,1,w1,1)
    call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yo,no,w2)
-   write (msg,*)"gvvoo"
-   call print_norm(w1,int(no**2*nv**2,kind=8),msg)
+   !write (msg,*)"gvvoo"
+   !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
    !Lvoov (a i j b) += gvvoo (a b i j)
    call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,no,[1,4,3,2],1.0E0_realk,Lvoov)
    write (msg,123)"Lvoov",o2v2,sign(1.0E0_realk,Lvoov(1))
    call print_norm(Lvoov,int(o2v2,kind=8),msg)
-   open(122,file='matlab_inp_Lvoov',STATUS='REPLACE')
-   do i=1,o2v2
-   write(122,*)Lvoov(i)
-   enddo
-   close(122) 
 
    call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,[3,4,1,2],0.0E0_realk,goovv)
    write (msg,123)"goovv",o2v2,sign(1.0E0_realk,goovv(1))
@@ -6008,21 +5964,11 @@ contains
    write (msg,123)"gvvov",ov*v2,sign(1.0E0_realk,w1(1))
    call print_norm(w1,int(no*nv**3,kind=8),msg)
    call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,govvv)
-   open(122,file='matlab_inp_govvv',STATUS='REPLACE')
-   do i=1,ov*v2
-   write(122,*)govvv(i)
-   enddo
-   close(122) 
 
    call array_reorder_4d(2.0E0_realk,w1,nv,nv,no,nv,[1,2,3,4],0.0E0_realk,Lvvov)
    call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,nv,[1,4,3,2],1.0E0_realk,Lvvov)
    write (msg,123)"Lvvov",ov*v2,sign(1.0E0_realk,Lvvov(1))
    call print_norm(Lvvov,int(ov*v2,kind=8),msg)
-   open(122,file='matlab_inp_Lvvov',STATUS='REPLACE')
-   do i=1,ov*v2
-   write(122,*)Lvvov(i)
-   enddo
-   close(122)
    
 
    call array_reorder_4d(2.0E0_realk,w1,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,Lovvv)
@@ -6062,7 +6008,7 @@ contains
    call print_norm(Looov,int(no*o2,kind=8),msg)
 
    call array_reorder_4d(2.0E0_realk,w1,no,no,no,nv,[3,4,1,2],0.0E0_realk,Lovoo)
-   call array_reorder_4d(-1.0E0_realk,w1,no,no,no,nv,[1,4,2,3],1.0E0_realk,Lovoo)
+   call array_reorder_4d(-1.0E0_realk,w1,no,no,no,nv,[1,4,3,2],1.0E0_realk,Lovoo)
    write (msg,123)"Lovoo",ov*o2,sign(1.0E0_realk,Looov(1))
    call print_norm(Lovoo,int(no*o2,kind=8),msg)
 
@@ -6086,11 +6032,6 @@ contains
    write (msg,123)"gvvvv",v4,sign(1.0E0_realk,w1(1))
    call print_norm(w1,int(v4,kind=8),msg)
    call dcopy(v4,w1,1,gvvvv,1)
-   open(122,file='matlab_inp_gvvvv',STATUS='REPLACE')
-   do i=1,v4
-    write(122,*)gvvvv(i)
-   enddo
-   close(122)
 
    call mem_dealloc(w1)
    call mem_dealloc(w2)
@@ -6145,64 +6086,6 @@ contains
    !SINGLES EXPRESSIONS
    !*******************
 
-   !rho a
-   !-----
-   rho1 = 0.0E0_realk
-   ! sort \hat{L}_{bkia} (b k i a) -> w1
-   call dcopy(o2v2,Lvoov,1,w1,1)
-   ! w1 : \sum_{dl} u^{bd}_{kl}(b k d l) \hat{L}_{ldia} (l d i a) + \hat{L}_{bkia} (b k i a)
-   call dgemm('n','n',ov,ov,ov,1.0E0_realk,u2,ov,Lovov,ov,1.0E0_realk,w1,ov)
-   ! w2 : \sum_{bk}  w1(b k , i a)^T \zeta_k^b (b k)
-   call dgemv('t',ov,ov,1.0E0_realk,w1,ov,m1,1,0.0E0_realk,w2,1)
-   write(msg,*)"rho a (11A)"
-   call print_norm(w2,int(ov,kind=8),msg)
-   !rho1 += w2(i a)^T
-   call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
-   
-
-   !rho b
-   !-----
-   rho1 = 0.0E0_realk
-   !part2
-   ! w2 : sort t(d j b k) -[3,1,4,2]> t (b d k j)
-   call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[3,1,4,2],0.0E0_realk,w2)
-   ! w3 : sort \hat{L}_{kbid} (k b i d} -[3,2,4,1]> \hat{L}_{kbid} (i b d k)
-   call array_reorder_4d(1.0E0_realk,Lovov,no,nv,no,nv,[3,2,4,1],0.0E0_realk,w3)
-   ! w1 : sort  F_{ij} -> w1
-   call dcopy(o2,oof,1,w1,1)
-   ! w1 : \sum_{bdk} \hat{L}_{kbid}(i b d k) t^{db}_{jk} (b d k j) + \hat{F}_{ij}
-   call dgemm('n','n',no,no,no*v2,1.0E0_realk,w3,no,w2,no*v2,1.0E0_realk,w1,no)
-   ! w2 : \sum_{j} \zeta_{j}^{a} (a j) w1(ij)^T = w2
-   call dgemm('n','t',nv,no,no,1.0E0_realk,m1,nv,w1,no,0.0E0_realk,w2,nv) 
-   write(msg,*)"rho b - 2"
-   call print_norm(w2,int(ov,kind=8),msg)
-   call daxpy(ov,-1.0E0_realk,w2,1,rho1,1)
-   !part1
-   ! w2 : sort t(d l b k) -[3,2,1,4]> t (b l d k)
-   call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[3,2,1,4],0.0E0_realk,w2)
-   ! w1 : sort  F_{ba} -> w1
-   call dcopy(v2,vvf,1,w1,1)
-   ! w1 : \sum_{bdk} t^{db}_{lk} (b l d k)\hat{L}_{ldka}(l d k a)  + \hat{F}_{ba}
-   call dgemm('n','n',nv,nv,o2*nv,-1.0E0_realk,w2,nv,Lovov,o2*nv,1.0E0_realk,w1,nv)
-   ! w2 : \sum_{j} w1(b a)^T \zeta_{j}^{b} (b j) = w2
-   call dgemm('t','n',nv,no,nv,1.0E0_realk,w1,nv,m1,nv,0.0E0_realk,w2,nv) 
-   write(msg,*)"rho b - 1"
-   call print_norm(w2,int(ov,kind=8),msg)
-   call daxpy(ov,1.0E0_realk,w2,1,rho1,1)
-   write(msg,*)"rho b (11B)"
-   call print_norm(rho1,int(ov,kind=8),msg)
-
-   
-   !rho c - part2
-   ! w3 : \sum_{dke} t^{de}_{kl} (d k e ,l)^T \zeta^{de}_{kj} (d k e j)
-   call dgemm('t','n',no,no,no*v2,1.0E0_realk,t2f,v2*no,m2,v2*no,0.0E0_realk,w3,no)
-   ! w1 : \sum_{lj} w3 (lj) L_{l j i a} (l j i a)
-   call dgemv('t',o2,ov,1.0E0_realk,Looov,o2,w3,1,0.0E0_realk,w2,1)
-   write(msg,*)"rho c - 2(LT21B)"
-   call print_norm(w2,int(ov,kind=8),msg)
-   !rho1 += w2(i a)^T
-   call mat_transpose(no,nv,-1.0E0_realk,w2,1.0E0_realk,rho1)
-
    !rho f
    !-----
    rho1 = 0.0E0_realk
@@ -6237,11 +6120,10 @@ contains
 
    !\sum_{dke} \zeta^{d e}_{k i}(d k e , i)^T w3(d k e a)
    call dgemm('t','n',no,nv,v2*no,1.0E0_realk,m2,v2*no,w3,v2*no,0.0E0_realk,w2,no)
-   write(msg,*)"rho f1-3(LT21I)"
-   call print_norm(w2,int(ov,kind=8),msg)
+   !write(msg,*)"rho f1-3(LT21I)"
+   !call print_norm(w2,int(ov,kind=8),msg)
    !rho1 += w2(i a)^T
    call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
-   print *,"rho1 21I",rho1
 
    !rho c - 1
    !-----
@@ -6254,8 +6136,8 @@ contains
    call dgemm('n','n',nv,nv,no*no*nv,1.0E0_realk,w1,nv,w2,nv*no*no,0.0E0_realk,w3,nv)
    ! w1 : \sum_{fe} w3 (fe) L_{feia} (f e i a)
    call dgemv('t',v2,ov,1.0E0_realk,Lvvov,v2,w3,1,0.0E0_realk,w2,1)
-   write(msg,*)"rho c - 1(LT21A)"
-   call print_norm(w2,int(ov,kind=8),msg)
+   !write(msg,*)"rho c - 1(LT21A)"
+   !call print_norm(w2,int(ov,kind=8),msg)
    !rho1 += w2(i a)^T
    call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
    write(msg,*)"rho1 after (LT21A)"
@@ -6289,8 +6171,8 @@ contains
    call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[3,1,2,4],0.0E0_realk,w1)
    ! \sum_{dkl} \zeta^{da}_{kl} w2(dkli)
    call dgemm('n','n',nv,no,o2*nv,1.0E0_realk,w1,nv,w2,o2*nv,0.0E0_realk,w4,nv)
-   write(msg,*)"rho g terms 1-3 (21H)"
-   call print_norm(w4,int(ov,kind=8),msg)
+   !write(msg,*)"rho g terms 1-3 (21H)"
+   !call print_norm(w4,int(ov,kind=8),msg)
    !rho1 += w2(i a)
    call daxpy(ov,1.0E0_realk,w4,1,rho1,1)
 
@@ -6300,47 +6182,14 @@ contains
    ! part1
    ! \sum_{dke} \zeta^{de}_{ki}(d k e, i)^T g_{dkea} (d k e a)
    call dgemm('t','n',no,nv,v2*no,1.0E0_realk,m2,v2*no,gvovv,v2*no,0.0E0_realk,w2,no)
-   write(msg,*)"rho e - 1 (21DC)" 
-   call print_norm(w2,int(ov,kind=8),msg)
+   !write(msg,*)"rho e - 1 (21DC)" 
+   !call print_norm(w2,int(ov,kind=8),msg)
    !rho1 += w2(i a)^T
    call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
 
    write(msg,*)"singles after loop" 
    call print_norm(rho1,int(ov,kind=8),msg)
 
-   !rho d
-   !-----
-   rho1 = 0.0E0_realk
-   ! part1
-   ! sort \zeta^{da}_{kl} (d k a l) -[3 1 2 4]> w1(a d k l)
-   call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[3,1,2,4],0.0E0_realk,w1)
-   ! sort t^{de}_{kl} (d k e l) -[1,2,4,3]> w2(d k l e)
-   call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
-   ! w3 : \sum_{dkl} w1 (a d k l) w2 (d k l e)
-   call dgemm('n','n',nv,nv,o2*nv,1.0E0_realk,w1,nv,w2,nv*no*no,0.0E0_realk,w3,nv)
-   ! w1 : \sum_{e} w3 (ae) F_{ie} (i e)^T
-   call dgemm('n','t',nv,no,nv,1.0E0_realk,w3,nv,ovf,no,0.0E0_realk,w2,nv)
-   write(msg,*)"rho d - 1"
-   call print_norm(w2,int(ov,kind=8),msg)
-   !rho1 += w2(i a)^T
-   call daxpy(ov,-1.0E0_realk,w2,1,rho1,1)
-   ! part2
-   ! w3 : \sum_{dke} t^{de}_{ki} (d k e ,i)^T \zeta^{de}_{kl} (d k e ,l)
-   call dgemm('t','n',no,no,no*v2,1.0E0_realk,t2f,v2*no,m2,v2*no,0.0E0_realk,w3,no)
-   ! w1 : \sum_{e} w3 (il) F_{la} (l a)
-   call dgemm('n','n',no,nv,no,1.0E0_realk,w3,no,ovf,no,0.0E0_realk,w2,no)
-   write(msg,*)"rho d - 2"
-   call print_norm(w2,int(ov,kind=8),msg)
-   !rho1 += w2(i a)^T
-   call mat_transpose(no,nv,-1.0E0_realk,w2,1.0E0_realk,rho1)
-   write(msg,*)"rho d(LT2EFM)"
-   call print_norm(rho1,int(ov,kind=8),msg)
-    
-
-  
-
-
-  
 
    ! f-term
    ! part4
@@ -6350,21 +6199,21 @@ contains
    call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[2,4,1,3],0.0E0_realk,w2)
    ! \sum_{de} m2(k i d e)  t^{de}_{jl} (d e j l)
    call dgemm('n','n',o2,o2,v2,1.0E0_realk,w2,o2,w1,v2,0.0E0_realk,w3,o2)
-   print *,"MINTLSD NORM:",norm2(w3(1:o2*o2))
-   print *,"MINTLSD",w3(1:o2*o2)
+   ! w3 (k i j l) -> w2 (i j l k)
+   call array_reorder_4d(1.0E0_realk,w3,no,no,no,no,[2,3,4,1],0.0E0_realk,w2)
   
    ! sort gooov(jkla) -[1,3,2,4]> (j l k a)
-   call array_reorder_4d(1.0E0_realk,gooov,no,no,no,nv,[1,3,2,4],0.0E0_realk,w2)
-   ! \sum_{jl} t^{de}_{jl} (d e j l) gooov_{jkla} (j l k a)
-   call dgemm('n','n',v2,ov,o2,1.0E0_realk,w2,v2,w1,o2,0.0E0_realk,w4,v2)
-   ! sort result w4(d e k a) -[1,3,2,4]+> w3 (d k e a)
-   call array_reorder_4d(1.0E0_realk,w4,nv,nv,no,nv,[1,3,2,4],1.0E0_realk,w3)
-   write(msg,*)"rho f 4(LT21G)"
-   call print_norm(w3,int(ov3,kind=8),msg)
+   call array_reorder_4d(1.0E0_realk,gooov,no,no,no,nv,[1,3,2,4],0.0E0_realk,w1)
+   ! \sum_{jl} w3(i j l k) gooov_{jkla} (j l k a)
+   call dgemm('n','n',no,nv,o2*no,1.0E0_realk,w2,no,w1,no*o2,0.0E0_realk,w3,no)
+   !write(msg,*)"rho f 4(LT21G)"
+   !call print_norm(w3,int(ov,kind=8),msg)
+   call mat_transpose(no,nv,1.0E0_realk,w3,1.0E0_realk,rho1)
 
-   
 
-   
+   write(msg,*)"rho 4.f(21G):" 
+   call print_norm(rho1,int(ov,kind=8),msg)
+
    !rho g
    !-----
    ! part 4
@@ -6393,10 +6242,116 @@ contains
    call dgemm('n','n',nv,no,o2*nv,1.0E0_realk,w1,nv,w3,o2*nv,0.0E0_realk,w2,nv)
    !w4 += w2(i a)^T
    call daxpy(ov,1.0E0_realk,w2,1,w4,1)
-   write(msg,*)"4.g+2.e 21BF:"
-   call print_norm(w4,int(ov,kind=8),msg)
+   !write(msg,*)"4.g+2.e 21BF:"
+   !call print_norm(w4,int(ov,kind=8),msg)
    
    call daxpy(ov,-1.0E0_realk,w4,1,rho1,1)
+   write(msg,*)"rho 4.g +2.e(21BF):" 
+   call print_norm(rho1,int(ov,kind=8),msg)
+
+   !rho a
+   !-----
+   ! sort \hat{L}_{bkia} (b k i a) -> w1
+   call dcopy(o2v2,Lvoov,1,w1,1)
+   ! sort u2^{bd}_{kl} (b k d l) -[1,2,4,3]> (b k l d)
+   call array_reorder_4d(1.0E0_realk,u2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+   ! w1 : \sum_{dl} u^{bd}_{kl}(b k l d) \hat{L}_{ldia} (l d i a) + \hat{L}_{bkia} (b k i a)
+   call dgemm('n','n',ov,ov,ov,1.0E0_realk,w2,ov,Lovov,ov,1.0E0_realk,w1,ov)
+   ! w2 : \sum_{bk}  w1(b k , i a)^T \zeta_k^b (b k)
+   call dgemv('t',ov,ov,1.0E0_realk,w1,ov,m1,1,0.0E0_realk,w2,1)
+   !write(msg,*)"rho a (11A)"
+   !call print_norm(w2,int(ov,kind=8),msg)
+   !rho1 += w2(i a)^T
+   call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
+   
+   write(msg,*)"rho a (11A):" 
+   call print_norm(rho1,int(ov,kind=8),msg)
+
+   !rho b
+   !-----
+   !part2
+   ! w2 : sort t(d j b k) -[3,1,4,2]> t (b d k j)
+   call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[3,1,4,2],0.0E0_realk,w2)
+   ! w3 : sort \hat{L}_{kbid} (k b i d} -[3,2,4,1]> \hat{L}_{kbid} (i b d k)
+   call array_reorder_4d(1.0E0_realk,Lovov,no,nv,no,nv,[3,2,4,1],0.0E0_realk,w3)
+   ! w1 : sort  F_{ij} -> w1
+   call dcopy(o2,oof,1,w1,1)
+   ! w1 : \sum_{bdk} \hat{L}_{kbid}(i b d k) t^{db}_{jk} (b d k j) + \hat{F}_{ij}
+   call dgemm('n','n',no,no,no*v2,1.0E0_realk,w3,no,w2,no*v2,1.0E0_realk,w1,no)
+   ! w2 : \sum_{j} \zeta_{j}^{a} (a j) w1(ij)^T = w2
+   call dgemm('n','t',nv,no,no,1.0E0_realk,m1,nv,w1,no,0.0E0_realk,w2,nv) 
+   !write(msg,*)"rho b - 2"
+   !call print_norm(w2,int(ov,kind=8),msg)
+   call daxpy(ov,-1.0E0_realk,w2,1,rho1,1)
+   !part1
+   ! w2 : sort t(d l b k) -[3,2,1,4]> t (b l d k)
+   call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[3,2,1,4],0.0E0_realk,w2)
+   ! w1 : sort  F_{ba} -> w1
+   call dcopy(v2,vvf,1,w1,1)
+   ! w1 : \sum_{bdk} t^{db}_{lk} (b l d k)\hat{L}_{ldka}(l d k a)  + \hat{F}_{ba}
+   call dgemm('n','n',nv,nv,o2*nv,-1.0E0_realk,w2,nv,Lovov,o2*nv,1.0E0_realk,w1,nv)
+   ! w2 : \sum_{j} w1(b a)^T \zeta_{j}^{b} (b j) = w2
+   call dgemm('t','n',nv,no,nv,1.0E0_realk,w1,nv,m1,nv,0.0E0_realk,w2,nv) 
+   !write(msg,*)"rho b - 1"
+   !call print_norm(w2,int(ov,kind=8),msg)
+   call daxpy(ov,1.0E0_realk,w2,1,rho1,1)
+
+   write(msg,*)"rho b (11B):"
+   call print_norm(rho1,int(ov,kind=8),msg)
+
+   
+   !rho c - part2
+   !-------------
+   ! w3 : \sum_{dke} t^{de}_{kl} (d k e ,l)^T \zeta^{de}_{kj} (d k e j)
+   call dgemm('t','n',no,no,no*v2,1.0E0_realk,t2f,v2*no,m2,v2*no,0.0E0_realk,w3,no)
+   ! w1 : \sum_{lj} w3 (lj) L_{l j i a} (l j i a)
+   call dgemv('t',o2,ov,1.0E0_realk,Looov,o2,w3,1,0.0E0_realk,w2,1)
+   !rho1 += w2(i a)^T
+   call mat_transpose(no,nv,-1.0E0_realk,w2,1.0E0_realk,rho1)
+
+   write(msg,*)"rho c - 2(LT21B)"
+   call print_norm(rho1,int(ov,kind=8),msg)
+
+
+
+
+   !rho d
+   !-----
+   ! part1
+   ! sort \zeta^{da}_{kl} (d k a l) -[3 1 2 4]> w1(a d k l)
+   call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[3,1,2,4],0.0E0_realk,w1)
+   ! sort t^{de}_{kl} (d k e l) -[1,2,4,3]> w2(d k l e)
+   call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+   ! w3 : \sum_{dkl} w1 (a d k l) w2 (d k l e)
+   call dgemm('n','n',nv,nv,o2*nv,1.0E0_realk,w1,nv,w2,nv*o2,0.0E0_realk,w3,nv)
+   ! w1 : \sum_{e} w3 (ae) F_{ie} (i e)^T
+   call dgemm('n','t',nv,no,nv,1.0E0_realk,w3,nv,ovf,no,0.0E0_realk,w2,nv)
+   write(msg,*)"rho d - 1"
+   call print_norm(w2,int(ov,kind=8),msg)
+   !rho1 += w2(i a)^T
+   call daxpy(ov,-1.0E0_realk,w2,1,rho1,1)
+   ! part2
+   ! w3 : \sum_{dke} zeta^{de}_{ki} (d k e ,i)^T t^{de}_{kl} (d k e ,l)
+   call dgemm('t','n',no,no,no*v2,1.0E0_realk,m2,v2*no,t2f,v2*no,0.0E0_realk,w3,no)
+   ! w1 : \sum_{e} w3 (il) F_{la} (l a)
+   call dgemm('n','n',no,nv,no,1.0E0_realk,w3,no,ovf,no,0.0E0_realk,w2,no)
+   write(msg,*)"rho d - 2"
+   call print_norm(w2,int(ov,kind=8),msg)
+   !rho1 += w2(i a)^T
+   call mat_transpose(no,nv,-1.0E0_realk,w2,1.0E0_realk,rho1)
+   write(msg,*)"rho d(LT2EFM)"
+   call print_norm(rho1,int(ov,kind=8),msg)
+    
+
+  
+
+
+  
+
+
+   
+
+   
 
    write(msg,*)"singles end" 
    call print_norm(w4,int(ov,kind=8),msg)
@@ -6406,48 +6361,6 @@ contains
  
    !DOUBLES EXPRESSIONS
    !*******************
-
-   !rho A
-   !-----
-   ! copy goooo[j n i m ]  -[2,4,3,1]> w1[n m i j]
-   call array_reorder_4d(1.0E0_realk,goooo,no,no,no,no,[2,4,3,1],0.0E0_realk,w1)
-   ! sort govov{jfie}(jfie) -[4,2,3,1]> (e f i j)
-   call array_reorder_4d(1.0E0_realk,govov,no,nv,no,nv,[4,2,3,1],0.0E0_realk,w2)
-   ! sort t^{fe}_{nm} (f n e m) -[2,4,3,1]> (n m e f)
-   call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[2,4,3,1],0.0E0_realk,w3)
-   !\sum_{ef} t^{fe}_{nm} (n m e f) govov_{jfie} (ef ij) + goooo
-   call dgemm('n','n',o2,o2,v2,1.0E0_realk,w3,o2,w2,v2,1.0E0_realk,w1,o2)
-   ! sort \zeta^{ab}_{mn} (a m b n) -[1,3,4,2]> (a b n m)
-   call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[1,3,4,2],0.0E0_realk,w2)
-   !\frac{1}{2} \sum_{mn} w2:\zeta^{ab}_{mn} (a b n m} w1(n m i j)
-   call dgemm('n','n',v2,o2,o2,0.5E0_realk,w2,v2,w1,o2,0.0E0_realk,w3,v2)
-   write(msg,*)"rho A"
-   call print_norm(w3,int(o2v2,kind=8),msg)
-   norm = 0.0E0_realk
-   nrm2 = 0.0E0_realk
-   ctr = 0
-   do b = 1, nv
-     do j = 1, no
-       do a = 1,nv
-         do i = 1, no
-           if(a+(i-1)*nv<=b+(j-1)*nv)then
-             ctr  = ctr  + 1
-             norm = norm + (w3(b+(a-1)*nv+(j-1)*v2+(i-1)*v2*no)+w3(a+(b-1)*nv+(i-1)*v2+(j-1)*v2*no))**2
-             !nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
-             !t2f(a,i,b,j) = readbuft2(ctr)
-             !t2f(b,j,a,i) = readbuft2(ctr)
-             !if(abs(t2f(a,i,b,j)-readbuft2(ctr))>1.0E-6_realk)then
-             !  print *,t2f(a,i,b,j),readbuft2(ctr),abs(t2f(a,i,b,j)-readbuft2(ctr)),a,i,b,j,ctr
-             !endif
-           endif
-         enddo
-       enddo
-     enddo
-   enddo
-   write (msg,*)"A(22A-TERM)",ctr
-   print *,msg,sqrt(norm)
-   ! order and add to residual rho2 (a i b j)
-   call array_reorder_4d(1.0E0_realk,w3,nv,nv,no,no,[1,3,2,4],0.0E0_realk,rho2)
 
    !rho B
    !-----
@@ -6464,12 +6377,12 @@ contains
    call array_reorder_4d(0.5E0_realk,w3,no,no,nv,nv,[3,1,4,2],1.0E0_realk,rho2)
 
    !rho 2. H part 
-   ! \sum_{c} \zeta_{j}^{c} (cj)^T Lvvov_{ciba} (ciba)
+   ! \sum_{c} \zeta_{j}^{c} (c,j)^T Lvvov_{cbia} (cbia)
    call dgemm('t','n',no,v2*no,nv,1.0E0_realk,m1,nv,Lvvov,nv,0.0E0_realk,w1,no)
    write(msg,*)"rho H - 2"
    call print_norm(w1,int(o2v2,kind=8),msg)
-   ! order w1(j i b a) and add to residual rho2 (a i b j)
-   call array_reorder_4d(1.0E0_realk,w1,no,no,nv,nv,[4,2,3,1],1.0E0_realk,rho2)
+   ! order w1(j b i a) and add to residual rho2 (a i b j)
+   call array_reorder_4d(1.0E0_realk,w1,no,nv,no,nv,[4,3,2,1],1.0E0_realk,rho2)
    norm = 0.0E0_realk
    nrm2 = 0.0E0_realk
    ctr = 0
@@ -6487,7 +6400,6 @@ contains
    enddo
    write (msg,*)"H(B-TERM)",ctr
    print *,msg,sqrt(norm)
-   print *,rho2
 
    !rho E
    !----- 
@@ -6501,31 +6413,8 @@ contains
    call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[2,4,1,3],0.0E0_realk,w2)
    ! \sum_{cd} \zeta^{cd}_{ij} (i j c d) w3 (c d a b)
    call dgemm('n','n',o2,v2,v2,0.5E0_realk,w2,o2,w3,v2,0.0E0_realk,w1,o2)
-   write(msg,*)"rho E"
-   call print_norm(w1,int(o2v2,kind=8),msg)
-   norm = 0.0E0_realk
-   nrm2 = 0.0E0_realk
-   ctr = 0
-   do b = 1, nv
-     do j = 1, no
-       do a = 1,nv
-         do i = 1, no
-           if(a+(i-1)*nv<=b+(j-1)*nv)then
-             ctr  = ctr  + 1
-             norm = norm + (w1(i+(j-1)*no+(a-1)*o2+(b-1)*o2*nv) +w1(j+(i-1)*no+(b-1)*o2+(a-1)*o2*nv) )**2
-             !nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
-             !t2f(a,i,b,j) = readbuft2(ctr)
-             !t2f(b,j,a,i) = readbuft2(ctr)
-             !if(abs(t2f(a,i,b,j)-readbuft2(ctr))>1.0E-6_realk)then
-             !  print *,t2f(a,i,b,j),readbuft2(ctr),abs(t2f(a,i,b,j)-readbuft2(ctr)),a,i,b,j,ctr
-             !endif
-           endif
-         enddo
-       enddo
-     enddo
-   enddo
-   !write (msg,*)"E",ctr
-   !print *,msg,sqrt(norm)
+   !write(msg,*)"rho E"
+   !call print_norm(w1,int(o2v2,kind=8),msg)
    ! order w1(i j  a b) and add to residual rho2 (a i b j)
    call array_reorder_4d(1.0E0_realk,w1,no,no,nv,nv,[3,1,4,2],1.0E0_realk,rho2)
    norm = 0.0E0_realk
@@ -6546,99 +6435,9 @@ contains
    write (msg,*)"E(AM-TERM)",ctr
    print *,msg,sqrt(norm)
 
-   !rho C
-   !-----
-   rho2 = 0.0E0_realk
-   ! sort govov(nbif) -[4,1,2,3]> (fnbi)
-   call array_reorder_4d(1.0E0_realk,govov,no,nv,no,nv,[4,1,2,3],0.0E0_realk,w1)
-   ! sort t^{ef}_{nm} (enfm) -[1,4,3,2]> (emfn)
-   call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,3,2],0.0E0_realk,w2)
-   ! sort goovv(imeb) -[3,2,4,1]> (e m b i)
-   call array_reorder_4d(1.0E0_realk,goovv,no,no,nv,nv,[3,2,4,1],0.0E0_realk,w3)
-   ! \sum_{fn} t^{ef)_{nm}(em fn) govov_{nbif} (fn bi) + goovv
-   call dgemm('n','n',ov,ov,ov,-1.0E0_realk,w2,ov,w1,ov,1.0E0_realk,w3,ov)
-   ! sort make anti-u2 analog of \zeta^{ae}_{mj} (a m e j) as 2 (a j e m) + (a m e j)
-   call array_reorder_4d(2.0E0_realk,m2,nv,no,nv,no,[1,4,3,2],0.0E0_realk,w2)
-   call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[1,2,3,4],1.0E0_realk,w2)
-   ! \sum_{em} w2(a j e m) w3(em bi)
-   call dgemm('n','n',ov,ov,ov,1.0E0_realk,w2,ov,w3,ov,0.0E0_realk,w1,ov)
-   write(msg,*)"rho C"
-   call print_norm(w1,int(o2v2,kind=8),msg)
-   ! order w1(a j b i) and add to residual rho2 (a i b j)
-   call array_reorder_4d(-0.5E0_realk,w1,nv,no,nv,no,[1,4,3,2],1.0E0_realk,rho2)
-   norm = 0.0E0_realk
-   nrm2 = 0.0E0_realk
-   ctr = 0
-   do b = 1, nv
-     do j = 1, no
-       do a = 1,nv
-         do i = 1, no
-           if(a+(i-1)*nv<=b+(j-1)*nv)then
-             ctr  = ctr  + 1
-             norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             !nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
-             !t2f(a,i,b,j) = readbuft2(ctr)
-             !t2f(b,j,a,i) = readbuft2(ctr)
-             !if(abs(t2f(a,i,b,j)-readbuft2(ctr))>1.0E-6_realk)then
-             !  print *,t2f(a,i,b,j),readbuft2(ctr),abs(t2f(a,i,b,j)-readbuft2(ctr)),a,i,b,j,ctr
-             !endif
-           endif
-         enddo
-       enddo
-     enddo
-   enddo
-   write (msg,*)"C(22C-TERM)",ctr
-   print *,msg,sqrt(norm)
-
-
-
-   !rho D
-   !-----
-   rho2 = 0.0E0_realk
-   ! copy Lvoov in w3 
-   call dcopy(o2v2,Lvoov,1,w3,1)
-   ! sort u2^{ef}_{mn} (emfn) -> em nf
-   call array_reorder_4d(1.0E0_realk,u2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w1)
-   ! \sum_{fn} u2^{ef}_{mn} (emnf) Lovov_{nfjb} (nfjb) + Lvoov_{emjb} (emjb)
-   call dgemm('n','n',ov,ov,ov,1.0E0_realk,w1,ov,Lovov,ov,1.0E0_realk,w3,ov)
-   ! \sum_{em} \zeta^{ae}_{im} (a i e m) w3 (e m j b)
-   call dgemm('n','n',ov,ov,ov,1.0E0_realk,m2,ov,w3,ov,0.0E0_realk,w2,ov)
-   write(msg,*)"rho D"
-   call print_norm(w2,int(o2v2,kind=8),msg)
-   ! order w1(a i j b) and add to residual rho2 (a i b j)
-   call array_reorder_4d(1.0E0_realk,w2,nv,no,no,nv,[1,2,4,3],1.0E0_realk,rho2)
-   ! order w1(a j i b) and add to residual rho2 (a i b j)
-   call array_reorder_4d(-0.5E0_realk,w2,nv,no,no,nv,[1,3,4,2],1.0E0_realk,rho2)
-   norm = 0.0E0_realk
-   nrm2 = 0.0E0_realk
-   ctr = 0
-   do b = 1, nv
-     do j = 1, no
-       do a = 1,nv
-         do i = 1, no
-           if(a+(i-1)*nv<=b+(j-1)*nv)then
-             ctr  = ctr  + 1
-             norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             !nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
-             !t2f(a,i,b,j) = readbuft2(ctr)
-             !t2f(b,j,a,i) = readbuft2(ctr)
-             !if(abs(t2f(a,i,b,j)-readbuft2(ctr))>1.0E-6_realk)then
-             !  print *,t2f(a,i,b,j),readbuft2(ctr),abs(t2f(a,i,b,j)-readbuft2(ctr)),a,i,b,j,ctr
-             !endif
-           endif
-         enddo
-       enddo
-     enddo
-   enddo
-   write (msg,*)"D(22D-TERM)",ctr
-   print *,msg,sqrt(norm)
-   
-   
-
 
    !rho F
    !-----
-   rho2 = 0.0E0_realk
    !part1
    ! \sum_{efm} \zeta^{ef}_{mj} (e m f , j)^T t^{ef}_{mn} (e m f , n)
    call dgemm('t','n',no,no,v2*no,1.0E0_realk,m2,v2*no,t2f,v2*no,0.0E0_realk,w1,no)
@@ -6661,8 +6460,8 @@ contains
    call array_reorder_4d(1.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],0.0E0_realk,w2)
    ! \sum_{f} w3 (a f) Lovov_{ifjb} (f i b j) 
    call dgemm('n','n',nv,o2*nv,nv,1.0E0_realk,w3,nv,w2,nv,0.0E0_realk,w1,nv)
-   write(msg,*)"rho F - 2"
-   call print_norm(w1,int(o2v2,kind=8),msg)
+   !write(msg,*)"rho F - 2"
+   !call print_norm(w1,int(o2v2,kind=8),msg)
    !rho2 += w1(a i b j)
    call daxpy(o2v2,-1.0E0_realk,w1,1,rho2,1)
    norm = 0.0E0_realk
@@ -6675,12 +6474,6 @@ contains
            if(a+(i-1)*nv<=b+(j-1)*nv)then
              ctr  = ctr  + 1
              norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             !nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
-             !t2f(a,i,b,j) = readbuft2(ctr)
-             !t2f(b,j,a,i) = readbuft2(ctr)
-             !if(abs(t2f(a,i,b,j)-readbuft2(ctr))>1.0E-6_realk)then
-             !  print *,t2f(a,i,b,j),readbuft2(ctr),abs(t2f(a,i,b,j)-readbuft2(ctr)),a,i,b,j,ctr
-             !endif
            endif
          enddo
        enddo
@@ -6692,7 +6485,6 @@ contains
 
    !rho G
    !-----
-   rho2 = 0.0E0_realk
    ! part1
    ! copy vv F to w3
    call dcopy(v2,vvf,1,w3,1)
@@ -6724,7 +6516,6 @@ contains
    ! order w1(a i b j) and add to residual rho2 (a i b j)
    call array_reorder_4d(-1.0E0_realk,w2,nv,no,nv,no,[1,2,3,4],1.0E0_realk,rho2)
    norm = 0.0E0_realk
-   nrm2 = 0.0E0_realk
    ctr = 0
    do b = 1, nv
      do j = 1, no
@@ -6732,25 +6523,134 @@ contains
          do i = 1, no
            if(a+(i-1)*nv<=b+(j-1)*nv)then
              ctr  = ctr  + 1
-             !norm = norm + (w2(a+(i-1)*nv+(b-1)*ov+(j-1)*v2*no) + w2(a+(i-1)*nv+(b-1)*ov+(j-1)*v2*no) )**2
              norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             !nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
-             !t2f(a,i,b,j) = readbuft2(ctr)
-             !t2f(b,j,a,i) = readbuft2(ctr)
-             !if(abs(t2f(a,i,b,j)-readbuft2(ctr))>1.0E-6_realk)then
-             !  print *,t2f(a,i,b,j),readbuft2(ctr),abs(t2f(a,i,b,j)-readbuft2(ctr)),a,i,b,j,ctr
-             !endif
            endif
          enddo
        enddo
      enddo
    enddo
-   write (msg,*)"G(E-TRM)",ctr
+   write (msg,*)"G(22E-TERM)",ctr
    print *,msg,sqrt(norm)
 
 
+   !rho A
+   !-----
+   ! copy goooo[j n i m ]  -[2,4,3,1]> w1[n m i j]
+   call array_reorder_4d(1.0E0_realk,goooo,no,no,no,no,[2,4,3,1],0.0E0_realk,w1)
+   ! sort govov{jfie}(jfie) -[4,2,3,1]> (e f i j)
+   call array_reorder_4d(1.0E0_realk,govov,no,nv,no,nv,[4,2,3,1],0.0E0_realk,w2)
+   ! sort t^{fe}_{nm} (f n e m) -[2,4,3,1]> (n m e f)
+   call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[2,4,3,1],0.0E0_realk,w3)
+   !\sum_{ef} t^{fe}_{nm} (n m e f) govov_{jfie} (ef ij) + goooo
+   call dgemm('n','n',o2,o2,v2,1.0E0_realk,w3,o2,w2,v2,1.0E0_realk,w1,o2)
+   ! sort \zeta^{ab}_{mn} (a m b n) -[1,3,4,2]> (a b n m)
+   call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[1,3,4,2],0.0E0_realk,w2)
+   !\frac{1}{2} \sum_{mn} w2:\zeta^{ab}_{mn} (a b n m} w1(n m i j)
+   call dgemm('n','n',v2,o2,o2,0.5E0_realk,w2,v2,w1,o2,0.0E0_realk,w3,v2)
+   !write(msg,*)"rho A"
+   !call print_norm(w3,int(o2v2,kind=8),msg)
+   ! order and add (a b i j) to residual rho2 (a i b j)
+   call array_reorder_4d(1.0E0_realk,w3,nv,nv,no,no,[1,3,2,4],1.0E0_realk,rho2)
+   norm = 0.0E0_realk
+   ctr = 0
+   do b = 1, nv
+     do j = 1, no
+       do a = 1,nv
+         do i = 1, no
+           if(a+(i-1)*nv<=b+(j-1)*nv)then
+             ctr  = ctr  + 1
+             norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+           endif
+         enddo
+       enddo
+     enddo
+   enddo
+   write (msg,*)"A(22A-TERM)",ctr
+   print *,msg,sqrt(norm)
+
+   !rho D
+   !-----
+   ! copy Lvoov in w3 
+   call dcopy(o2v2,Lvoov,1,w3,1)
+   ! sort u2^{ef}_{mn} (emfn) -> em nf
+   call array_reorder_4d(1.0E0_realk,u2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w1)
+   ! \sum_{fn} u2^{ef}_{mn} (emnf) Lovov_{nfjb} (nfjb) + Lvoov_{emjb} (emjb)
+   call dgemm('n','n',ov,ov,ov,1.0E0_realk,w1,ov,Lovov,ov,1.0E0_realk,w3,ov)
+   ! \sum_{em} \zeta^{ae}_{im} (a i e m) w3 (e m j b)
+   call dgemm('n','n',ov,ov,ov,1.0E0_realk,m2,ov,w3,ov,0.0E0_realk,w2,ov)
+   !write(msg,*)"rho D"
+   !call print_norm(w2,int(o2v2,kind=8),msg)
+   ! order w1(a i j b) and add to residual rho2 (a i b j)
+   call array_reorder_4d(1.0E0_realk,w2,nv,no,no,nv,[1,2,4,3],1.0E0_realk,rho2)
+   ! order w1(a j i b) and add to residual rho2 (a i b j)
+   call array_reorder_4d(-0.5E0_realk,w2,nv,no,no,nv,[1,3,4,2],1.0E0_realk,rho2)
+   norm = 0.0E0_realk
+   ctr = 0
+   do b = 1, nv
+     do j = 1, no
+       do a = 1,nv
+         do i = 1, no
+           if(a+(i-1)*nv<=b+(j-1)*nv)then
+             ctr  = ctr  + 1
+             norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+           endif
+         enddo
+       enddo
+     enddo
+   enddo
+   write (msg,*)"D(22D-TERM)",ctr
+   print *,msg,sqrt(norm)
+
+
+
+   !rho C
+   !-----
+   ! sort govov(nbif) -[4,1,2,3]> (fnbi)
+   call array_reorder_4d(1.0E0_realk,govov,no,nv,no,nv,[4,1,2,3],0.0E0_realk,w1)
+   ! sort t^{ef}_{nm} (enfm) -[1,4,3,2]> (emfn)
+   call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,3,2],0.0E0_realk,w2)
+   ! sort goovv(imeb) -[3,2,4,1]> (e m b i)
+   call array_reorder_4d(1.0E0_realk,goovv,no,no,nv,nv,[3,2,4,1],0.0E0_realk,w3)
+   ! \sum_{fn} t^{ef)_{nm}(em fn) govov_{nbif} (fn bi) + goovv
+   call dgemm('n','n',ov,ov,ov,-1.0E0_realk,w2,ov,w1,ov,1.0E0_realk,w3,ov)
+   ! sort make anti-u2 analog of \zeta^{ae}_{mj} (a m e j) as 2 (a j e m) + (a m e j)
+   call array_reorder_4d(2.0E0_realk,m2,nv,no,nv,no,[1,4,3,2],0.0E0_realk,w2)
+   call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[1,2,3,4],1.0E0_realk,w2)
+   ! \sum_{em} w2(a j e m) w3(em bi)
+   call dgemm('n','n',ov,ov,ov,1.0E0_realk,w2,ov,w3,ov,0.0E0_realk,w1,ov)
+   !write(msg,*)"rho C"
+   !call print_norm(w1,int(o2v2,kind=8),msg)
+   ! order w1(a j b i) and add to residual rho2 (a i b j)
+   call array_reorder_4d(-0.5E0_realk,w1,nv,no,nv,no,[1,4,3,2],1.0E0_realk,rho2)
+   norm = 0.0E0_realk
+   ctr = 0
+   do b = 1, nv
+     do j = 1, no
+       do a = 1,nv
+         do i = 1, no
+           if(a+(i-1)*nv<=b+(j-1)*nv)then
+             ctr  = ctr  + 1
+             norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+           endif
+         enddo
+       enddo
+     enddo
+   enddo
+   write (msg,*)"C(22C-TERM)",ctr
+   print *,msg,sqrt(norm)
+
+
+
+   
+   
+
+
+
+
+
+
    !rho H
-   rho2 = 0.0E0_realk
+   !-----
    ! 2*\zeta_i^a * F_{jb} - \zeta_j^b F_{ib}
    do j = 1, no
      do b = 1, nv
@@ -6770,14 +6670,7 @@ contains
          do i = 1, no
            if(a+(i-1)*nv<=b+(j-1)*nv)then
              ctr  = ctr  + 1
-             !norm = norm + (w2(a+(i-1)*nv+(b-1)*ov+(j-1)*v2*no) + w2(a+(i-1)*nv+(b-1)*ov+(j-1)*v2*no) )**2
              norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             !nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
-             !t2f(a,i,b,j) = readbuft2(ctr)
-             !t2f(b,j,a,i) = readbuft2(ctr)
-             !if(abs(t2f(a,i,b,j)-readbuft2(ctr))>1.0E-6_realk)then
-             !  print *,t2f(a,i,b,j),readbuft2(ctr),abs(t2f(a,i,b,j)-readbuft2(ctr)),a,i,b,j,ctr
-             !endif
            endif
          enddo
        enddo
@@ -6787,13 +6680,11 @@ contains
    print *,msg,sqrt(norm)
 
 
-   rho2 = 0.0E0_realk
    !\sum_{k} Lovoo_{jbik} \zeta_{k}^{a} (a k)^T
    call dgemm('n','t',o2*nv,nv,no,1.0E0_realk,Lovoo,o2*nv,m1,nv,0.0E0_realk,w1,o2*nv)
    ! order w1(j b i a) and add to residual rho2 (a i b j)
-   call array_reorder_4d(1.0E0_realk,w1,no,nv,no,nv,[4,3,2,1],1.0E0_realk,rho2)
+   call array_reorder_4d(-1.0E0_realk,w1,no,nv,no,nv,[4,3,2,1],1.0E0_realk,rho2)
    norm = 0.0E0_realk
-   nrm2 = 0.0E0_realk
    ctr = 0
    do b = 1, nv
      do j = 1, no
