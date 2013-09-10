@@ -42,9 +42,9 @@
        A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
        A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
        L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
@@ -128,35 +128,48 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:47:17 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:43 2013
+     Host name              : fe8                                     
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_pesoppa_excit
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407
+   2) /people/disk2/magnus/Projects/dalton_devel/dalton/build/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | magnus
+ Host                     | fe8
+ System                   | Linux-2.6.32-279.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ MPI                      | ON
+ Fortran compiler         | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | if90
+ Fortran compiler version | ifort (IFORT) 13.1.3 20130607
+ C compiler               | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icc
+ C compiler version       | icc (ICC) 13.1.3 20130607
+ C++ compiler             | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icxx
+ C++ compiler version     | unknown
+ BLAS                     | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_core.so;/people/disk2/magnus/int
+                          | el/mkl/lib/intel64/libmkl_intel_lp64.so;/people/di
+                          | sk2/magnus/intel/mkl/lib/intel64/libmkl_sequential
+                          | .so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-o
+                          | penmp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_lapack95_lp64.a;/people/disk2/ma
+                          | gnus/intel/mkl/lib/intel64/libmkl_intel_lp64.so;-o
+                          | penmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 72792444bfcf70cffefbb31f508f6872a0f88620
+ Configuration time       | 2013-09-09 13:03:34.480961
 
 
    Content of the .dal input file
@@ -247,22 +260,23 @@ H              2.675323   -2.516779   -0.000673
       C      1.630116000000000  -2.207690000000000  -0.000132000000000
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/test_pesoppa_excit/3-21G"
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/basis/3-21G"
-     "/home/bast/DALTON-2013.0-Source/build/basis/3-21G"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407/3-21G"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/3-21G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/3-21G"
  READNU...NBLOCK,J=           1           6
-   172.25600000000000        25.910900000000002        5.5333500000000004        3.6649799999999999       0.77054500000000004       0.19585700000000000     
+   172.256000000000        25.9109000000000        5.53335000000000     
+   3.66498000000000       0.770545000000000       0.195857000000000     
  READNU...NBLOCK,J=           2           3
-   3.6649799999999999       0.77054500000000004       0.19585700000000000     
+   3.66498000000000       0.770545000000000       0.195857000000000     
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
   Basis set:
       Max.ang.quantum no.:    1  Blocks:    1    1
   Basis set file used for this atomic type with Z =   6 :
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/test_pesoppa_excit/ano-4"
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/basis/ano-4"
-     "/home/bast/DALTON-2013.0-Source/build/basis/ano-4"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407/ano-4"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/ano-4"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/ano-4"
   Basis set:
       Max.ang.quantum no.:    1  Blocks:    1    1
 
@@ -274,22 +288,23 @@ H              2.675323   -2.516779   -0.000673
       O     -0.560104000000000   0.608977000000000   0.000534000000000
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/test_pesoppa_excit/3-21G"
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/basis/3-21G"
-     "/home/bast/DALTON-2013.0-Source/build/basis/3-21G"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407/3-21G"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/3-21G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/3-21G"
  READNU...NBLOCK,J=           1           6
-   322.03699999999998        48.430799999999998        10.420600000000000        7.4029400000000001        1.5762000000000000       0.37368400000000002     
+   322.037000000000        48.4308000000000        10.4206000000000     
+   7.40294000000000        1.57620000000000       0.373684000000000     
  READNU...NBLOCK,J=           2           3
-   7.4029400000000001        1.5762000000000000       0.37368400000000002     
+   7.40294000000000        1.57620000000000       0.373684000000000     
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
   Basis set:
       Max.ang.quantum no.:    1  Blocks:    1    1
   Basis set file used for this atomic type with Z =   8 :
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/test_pesoppa_excit/ano-4"
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/basis/ano-4"
-     "/home/bast/DALTON-2013.0-Source/build/basis/ano-4"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407/ano-4"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/ano-4"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/ano-4"
   Basis set:
       Max.ang.quantum no.:    1  Blocks:    1    1
 
@@ -304,20 +319,20 @@ H              2.675323   -2.516779   -0.000673
       H      2.675323000000000  -2.516779000000000  -0.000673000000000
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/test_pesoppa_excit/3-21G"
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/basis/3-21G"
-     "/home/bast/DALTON-2013.0-Source/build/basis/3-21G"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407/3-21G"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/3-21G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/3-21G"
  READNU...NBLOCK,J=           1           3
-   5.4471780000000001       0.82454700000000003       0.18319199999999999     
+   5.44717800000000       0.824547000000000       0.183192000000000     
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
   Basis set:
       Max.ang.quantum no.:    0  Blocks:    1
   Basis set file used for this atomic type with Z =   1 :
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/test_pesoppa_excit/ano-4"
-  Trying file: "/home/bast/DALTON-2013.0-Source/build/basis/ano-4"
-     "/home/bast/DALTON-2013.0-Source/build/basis/ano-4"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407/ano-4"
+  Trying file: "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/ano-4"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/ano-4"
   Basis set:
       Max.ang.quantum no.:    0  Blocks:    1
 
@@ -467,7 +482,8 @@ Point group: C1
 
 @  Nuclear repulsion energy :  102.664846860515 Hartree
 
-
+  Reading potential input file
+ 
   Polarizable embedding information
   ---------------------------------
 
@@ -870,15 +886,14 @@ H           2.6753230000       -2.5167790000       -0.0006730000
   Number of primitive integrals (counting zeros) :     3454506
 
 
-  Average time for non-zero (written) integrals:    0.3 microseconds
+  Average time for non-zero (written) integrals:    0.2 microseconds
   Average time for zero/non-zero integrals     :    0.2 microseconds
   Average time for primitive integrals         :    0.0 microseconds
 
   Average reduction of primitive ODC vectors:   16.85 %
   Average reduction of contracted ODC vectors:   2.15 %
- >>>  Time used in TWOINT     is   0.12 seconds
- >>>> Total CPU  time used in HERMIT:   0.15 seconds
- >>>> Total wall time used in HERMIT:   0.15 seconds
+ >>>> Total CPU  time used in HERMIT:   0.13 seconds
+ >>>> Total wall time used in HERMIT:   0.13 seconds
 
 
                         .----------------------------------.
@@ -1054,8 +1069,8 @@ H           2.6753230000       -2.5167790000       -0.0006730000
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:17 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:43 2013
+     Host name              : fe8                                     
 
  Title lines from ".mol" input file:
      Acrolein                                                                
@@ -1245,7 +1260,7 @@ H           2.6753230000       -2.5167790000       -0.0006730000
  -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
-@ DIIS iter.  12    -189.714806175        4.02739D-06   -3.23D-11   -7    F
+@ DIIS iter.  12    -189.714806175        4.02739D-06   -3.25D-11   -7    F
 
  DIIS C vector; C2DIIS = F, LAMBDA = -3.08D-12
    -0.666852    1.565886    0.000015    0.000066   -0.000664    0.000673    0.004059   -0.007398   -0.019159    0.123375
@@ -1254,7 +1269,7 @@ H           2.6753230000       -2.5167790000       -0.0006730000
  -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
-@ DIIS iter.  13    -189.714806175        7.99516D-07   -2.93D-12   -7    F
+@ DIIS iter.  13    -189.714806175        7.99516D-07   -2.70D-12   -7    F
 
 @ *** DIIS converged in  13 iterations !
 @     Converged SCF energy, gradient:   -189.714806174551    8.00D-07
@@ -1299,7 +1314,7 @@ H           2.6753230000       -2.5167790000       -0.0006730000
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.495       0.501
+ >>>> CPU and wall time for SCF :       0.634       0.651
 
 
  >>>>> Output from SIRIUS MP2 module <<<<<
@@ -1319,7 +1334,7 @@ H           2.6753230000       -2.5167790000       -0.0006730000
 @ Please see JCC, 2012-2022, 33, (2012) for reference.
 
  Hartree-Fock electronic energy:        -292.349132255926
- Hartree-Fock total      energy:        -189.684285395411
+ Hartree-Fock total      energy:        -189.684285395410
 Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-08
 
  Hartree-Fock orbital energies, symmetry 1, number of occupied SCF orbitals is   15
@@ -1363,7 +1378,7 @@ Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-
  NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 11 IS    524517
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-12
- TIME IN TRACD      0.13
+ TIME IN TRACD      0.10
 
  SECOND HALF-SORT STATISTICS
   NUMBER OF PASSES OVER FILE       1
@@ -1377,15 +1392,15 @@ Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-
   NUMBER OF DA RECORDS ACTUALLY USED         308
   PERCENT NON-ZERO INTEGRALS                0.01
  TIME IN SORTB      0.01
- TIME IN TRAAB      0.15
+ TIME IN TRAAB      0.07
 
  NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 10 IS    549431
  USING   555 + 1 RECORDS WITH BUFFER LENGTH   990
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-12
- TOTAL TIME IN TRACD,SORTB,TRAAB      0.30
+ TOTAL TIME IN TRACD,SORTB,TRAAB      0.18
 
- Integral transformation: Total CPU and WALL times (sec)       0.312       0.315
+ Integral transformation: Total CPU and WALL times (sec)       0.203       0.213
 
  Number of PARTICLE-HOLE distributions      435
  Number of BATCHES                            1
@@ -1394,7 +1409,7 @@ Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-
  MP2 move   0.289377 electrons to unoccupied HF orbitals
 
  MP2 move   0.289377 electrons from occupied HF orbitals
- MP2 change in trace of one electron density matrix :  1.11D-16 electrons.
+ MP2 change in trace of one electron density matrix : -1.11D-16 electrons.
 
 
 @   Hartree-Fock total energy   :          -189.6842853954
@@ -1414,9 +1429,9 @@ Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-
          0.00164910     0.00131510     0.00130527     0.00110359     0.00079078
          0.00053390     0.00047229     0.00040198     0.00019829
 
- Time used for MP2 natural orbitals :       0.348 CPU seconds,       0.352 wall seconds.
+ Time used for MP2 natural orbitals :       0.222 CPU seconds,       0.232 wall seconds.
 
- >>>> CPU and wall time for MP2 :       0.348       0.352
+ >>>> CPU and wall time for MP2 :       0.222       0.232
 
 
                        .-----------------------------------.
@@ -1436,8 +1451,8 @@ Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-
 @    Final gradient norm:           0.000000799516
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:18 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:44 2013
+     Host name              : fe8                                     
 
  (Only coefficients >0.0100 are printed.)
 
@@ -1492,12 +1507,12 @@ Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.86 seconds
- >>>> Total wall time used in SIRIUS :      0.87 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.87 seconds
+ >>>> Total wall time used in SIRIUS :      0.91 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:18 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:44 2013
+     Host name              : fe8                                     
 
 
                      .---------------------------------------.
@@ -1567,7 +1582,7 @@ Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-
  NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 13 IS    938053
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-12
- TIME IN TRACD      0.26
+ TIME IN TRACD      0.12
 
  SECOND HALF-SORT STATISTICS
   NUMBER OF PASSES OVER FILE       1
@@ -1581,15 +1596,15 @@ Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-
   NUMBER OF DA RECORDS ACTUALLY USED         550
   PERCENT NON-ZERO INTEGRALS                0.01
  TIME IN SORTB      0.02
- TIME IN TRAAB      0.28
+ TIME IN TRAAB      0.13
 
  NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 11 IS    980081
  USING   990 + 1 RECORDS WITH BUFFER LENGTH   990
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-12
- TOTAL TIME IN TRACD,SORTB,TRAAB      0.56
+ TOTAL TIME IN TRACD,SORTB,TRAAB      0.28
 
- Integral transformation: Total CPU and WALL times (sec)       0.561       0.568
+ Integral transformation: Total CPU and WALL times (sec)       0.283       0.286
 
  DRCCTL: Number of Dirac integrals written on file
 
@@ -1597,8 +1612,8 @@ Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-
          Number of passes over Mulliken file MOTWOINT    1
 
 
-   SCF energy         :     -189.714806174551427
- -- inactive part     :     -292.349132255925952
+   SCF energy         :     -189.714806174551086
+ -- inactive part     :     -292.349132255925610
  -- nuclear repulsion :      102.664846860515169
 
 
@@ -1703,22 +1718,22 @@ Symmetry  1: MAX 2-norm of a row of off-diagonal Fock matrix elements is  8.69D-
 @ Oscillator strength (LENGTH)   :  1.48188292E-08  (Transition moment :  2.98674628E-04 )
 
 
- Time used in polarization propagator calculation is      3.86 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      1.38 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:   4.44 seconds
- >>>> Total wall time used in RESPONSE:   4.93 seconds
+ >>>> Total CPU  time used in RESPONSE:   1.69 seconds
+ >>>> Total wall time used in RESPONSE:   1.73 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   5.46 seconds
- >>>> Total wall time used in DALTON:   5.97 seconds
+ >>>> Total CPU  time used in DALTON:   2.71 seconds
+ >>>> Total wall time used in DALTON:   2.82 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:23 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:31:46 2013
+     Host name              : fe8                                     
   
 
  +---------------------------------------------------------+ 

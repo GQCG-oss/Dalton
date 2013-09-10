@@ -42,9 +42,9 @@
        A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
        A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
        L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
@@ -128,35 +128,48 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:47:12 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:38:47 2013
+     Host name              : fe8                                     
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_pehf_cube
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_38-testjob-pid-38496
+   2) /people/disk2/magnus/Projects/dalton_devel/dalton/build/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | magnus
+ Host                     | fe8
+ System                   | Linux-2.6.32-279.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ MPI                      | ON
+ Fortran compiler         | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | if90
+ Fortran compiler version | ifort (IFORT) 13.1.3 20130607
+ C compiler               | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icc
+ C compiler version       | icc (ICC) 13.1.3 20130607
+ C++ compiler             | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icxx
+ C++ compiler version     | unknown
+ BLAS                     | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_core.so;/people/disk2/magnus/int
+                          | el/mkl/lib/intel64/libmkl_intel_lp64.so;/people/di
+                          | sk2/magnus/intel/mkl/lib/intel64/libmkl_sequential
+                          | .so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-o
+                          | penmp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_lapack95_lp64.a;/people/disk2/ma
+                          | gnus/intel/mkl/lib/intel64/libmkl_intel_lp64.so;-o
+                          | penmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 72792444bfcf70cffefbb31f508f6872a0f88620
+ Configuration time       | 2013-09-09 13:03:34.480961
 
 
    Content of the .dal input file
@@ -226,7 +239,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -234,7 +247,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -242,7 +255,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -357,7 +370,8 @@ Point group: C1
 
 @  Nuclear repulsion energy :   31.249215315972 Hartree
 
-
+  Reading potential input file
+ 
   Polarizable embedding information
   ---------------------------------
 
@@ -395,7 +409,7 @@ Point group: C1
  Megabytes written:                              0.034
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.06 seconds
 
 
                         .----------------------------------.
@@ -429,8 +443,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:12 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:38:48 2013
+     Host name              : fe8                                     
 
  Title lines from ".mol" input file:
      Formaldehyde                                                            
@@ -490,7 +504,7 @@ Point group: C1
       Virial theorem: -V/T =      2.002609
 @      MULPOP C       1.10; O      -0.82; H      -0.14; H      -0.14; 
  -----------------------------------------------------------------------------
-@  2  -112.306468592     -5.278552328906E-03    9.67240D-01   -1.50D-01
+@  2  -112.306468592     -5.278552328907E-03    9.67240D-01   -1.50D-01
       Virial theorem: -V/T =      2.010956
 @      MULPOP C      -0.43; O       0.20; H       0.13; H       0.10; 
  -----------------------------------------------------------------------------
@@ -563,7 +577,7 @@ Point group: C1
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       2.788       2.868
+ >>>> CPU and wall time for SCF :       2.861       2.892
 
 
                        .-----------------------------------.
@@ -583,8 +597,8 @@ Point group: C1
 @    Final gradient norm:           0.000001850596
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:15 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:38:50 2013
+     Host name              : fe8                                     
 
  (Only coefficients >0.0100 are printed.)
 
@@ -621,21 +635,21 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      2.79 seconds
- >>>> Total wall time used in SIRIUS :      2.87 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.86 seconds
+ >>>> Total wall time used in SIRIUS :      2.91 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:15 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:38:50 2013
+     Host name              : fe8                                     
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.81 seconds
- >>>> Total wall time used in DALTON:   2.89 seconds
+ >>>> Total CPU  time used in DALTON:   2.90 seconds
+ >>>> Total wall time used in DALTON:   3.02 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:47:15 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Sep  9 13:38:50 2013
+     Host name              : fe8                                     

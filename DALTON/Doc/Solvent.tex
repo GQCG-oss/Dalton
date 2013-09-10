@@ -1,21 +1,20 @@
 \chapter{Continuum solvation calculations}\label{ch:solvent}
 
 In {\dalton} it is possible to describe the solvent implicitly by two
-different models, by the polarizable continuum model (PCM, section
-\ref{sec:pcm}) or by the Multiconfigurational Self-Consistent Reaction
+different models, the polarizable continuum model (PCM, section
+\ref{sec:pcm}) or the Multiconfigurational Self-Consistent Reaction
 Field model (MCSCRF, section \ref{sec:mcscrf}).
 
 \section{Polarizable Continuum Model}
 \label{sec:pcm}
 
-This chapter describe how to run calculation using the integral
+This chapter describes how to run calculation using the integral
 equation formulation of the polarizable continuum model (IEF-PCM)
-implemented in {\dalton}\index{PCM}. In {\dalton}, IEF-PCM is
-implemented for SCF, DFT and MCSCF~\cite{cammi02}. For calculating
-molecular properties using MCSCF, linear~\cite{cammi03} and quadratic
-response~\cite{frediani05} IEF-PCM has been implemented. At the HF/DFT
-level of theory, PCM has been implemented up to cubic
-response~\cite{ferrighi07}.
+implemented in {\dalton}\index{PCM}. IEF-PCM is implemented for SCF,
+DFT and MCSCF~\cite{cammi02}. For calculating molecular properties
+using MCSCF, linear~\cite{cammi03} and quadratic
+response~\cite{frediani05} IEF-PCM is implemented. At the HF/DFT level
+of theory, PCM is implemented up to cubic response~\cite{ferrighi07}.
 
 \begin{center}
 \fbox{
@@ -48,7 +47,7 @@ WATER
 .HF
 **END OF
 \end{verbatim}
-An input file for an one-photon absorption DFT calculation for a
+An input file for a one-photon absorption DFT calculation for a
 molecule solvated in methanol can look like
 \begin{verbatim}
 **DALTON INPUT
@@ -71,9 +70,10 @@ B3LYP
 The solvent is given with its formula, in this case \verb|CH3OH|, but
 it is totally equivalent to specify it by its name
 \verb|METHANOL|. See Section~\ref{subsec:pcm} for a complete list of
-solvents supported by {\dalton}. With the keyword \Key{NEQRSP} we are
-specifying that the non-equilibrium contributions of the solvent to
-the response calculation are used.
+solvents supported by {\dalton}, and details about other
+keywords. With the keyword \Key{NEQRSP} we are specifying that the
+non-equilibrium contributions of the solvent to the response
+calculation are used.
 
 In the above example we are using the default way of creating the PCM
 cavity, that is putting a sphere on every atom with radii depending on
@@ -107,8 +107,8 @@ H       0.000000       -2.148080       -1.178005
 H       0.000000        0.000000       -2.461606
 \end{verbatim}
 We want to put a sphere on every atom except the hydrogens. The
-nitrogen will get a sphere with radius 1.7 angstrom while the carbon
-atoms will get spheres with radii 1.9 angstrom. The maximum area of
+nitrogen will get a sphere with radius 1.7 \angstrom{} while the carbon
+atoms will get spheres with radii 1.9 \angstrom{}. The maximum area of
 the tesserea has been reduced from the default 0.4 to 0.3 by the
 \Key{AREATS} keyword. The input would then look like
 \begin{verbatim}
