@@ -1323,6 +1323,127 @@ contains
 end subroutine pbc_mat_redefine_q
 
 
+SUBROUTINE READ_multipole_files(il1,il2,il3,maxmultmom,sphermom,nbast,lupri)
+  IMPLICIT NONE
+  !TYPE(lvec_list_t), INTENT(IN) :: ll
+  INTEGER, INTENT(IN) :: il1,il2,il3, maxmultmom,nbast,lupri
+  TYPE(lattice_cell_info_t), INTENT(INOUT) :: sphermom!(:)
+  !LOCAL VARIABLES
+  INTEGER :: fileunit,totalmom !For file detection
+  INTEGER :: i,j,stat
+  INTEGER :: sphermoms,ii, debdum
+  CHARACTER(len=10) :: numtostring1,numtostring2,numtostring3
+  CHARACTER(LEN=20) :: filename
+  REAL(realk) :: testread
+  !For debugging
+  !REAL(realk) :: debugsumT
+
+  fileunit=9950
+
+  
+  totalmom=(maxmultmom+1)**2
+  !numnn=0
+!  DO dummy=1,numvecs
+
+!     call find_latt_vectors(dummy,il1,il2,il3,fdim,ll)
+
+     if(abs(il1) .gt. n_neighbour) call lsquit('ERROR in READ_multipole_files&
+     & vector not in NF',lupri)
+     if(abs(il2) .gt. n_neighbour) call lsquit('ERROR in READ_multipole_files&
+     & vector not in NF',lupri)
+     if(abs(il3) .gt. n_neighbour) call lsquit('ERROR in READ_multipole_files&
+     & vector not in NF',lupri)
+!     numnn=numnn+1
+
+!  ENDDO
+  !allocate(sphermom(numnn))
+
+  !DO dummy=1,numnn
+  !   allocate(sphermom(dummy)%getmultipole(totalmom))
+  !   DO ii=1,totalmom
+  !   call Mat_init(sphermom(dummy)%getmultipole(ii),nbast,nbast)
+  !   call Mat_zero(sphermom(dummy)%getmultipole(ii))
+  !   ENDDO
+  !ENDDO
+  call mem_alloc(sphermom%getmultipole,totalmom)
+  DO ii=1,totalmom
+     call Mat_init(sphermom%getmultipole(ii),nbast,nbast)
+     call Mat_zero(sphermom%getmultipole(ii))
+  ENDDO
+
+  !numnn=0
+  !DO dummy=1,numvecs
+
+     !call find_latt_vectors(dummy,il1,il2,il3,fdim,ll)
+
+!     if(abs(il1) .gt. ll%nneighbour) CYCLE
+!     if(abs(il2) .gt. ll%nneighbour) CYCLE
+!     if(abs(il3) .gt. ll%nneighbour) CYCLE
+     !numnn=numnn+1
+     write(numtostring1,'(I5)')  il1
+     write(numtostring2,'(I5)')  il2
+     write(numtostring3,'(I5)')  il3
+     numtostring1=adjustl(numtostring1)
+     numtostring2=adjustl(numtostring2)
+     numtostring3=adjustl(numtostring3)
+  !ENDDO
+     !filename='Qcdlm.dat'!&
+     filename='Qcdlm'//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)//'.dat'
+     !filename2=&
+     !&'kopi'//trim(numtostring1)//trim(numtostring2)//trim(numtostring2)//'.dat'
+
+     call LSOPEN(fileunit,filename, 'old','unformatted')
+!     read(fileunit,IOSTAT=stat) testread
+     !write(*,*) testread,stat
+!    BACKSPACE(fileunit)
+!     if(stat .ne. 0) then
+       rewind(fileunit) 
+!     endif
+     !OPEN(UNIT=9998,FILE=filename2)
+     debdum=0
+     !write(lupri,*) 'Debug 1: ', fileunit
+     DO sphermoms=1,totalmom
+        
+        !DO ii=1,nbast*nbast
+        debdum=debdum+1
+
+        call mat_read_from_disk(fileunit,sphermom%getmultipole(sphermoms),.true.)
+        !READ(fileunit,*) sphermom(numnn)%getmultipole(sphermoms)%elms!(ii)  
+        !do j=1,nbast
+        !READ(fileunit) (sphermom%getmultipole(sphermoms)%elms(i+(j-1)*nbast),&
+        !i=1,nbast)
+        !enddo
+
+        !debugsumT=0d0
+        !do j=1,nbast*nbast
+        !  debugsumT=debugsumT+sphermom%getmultipole(sphermoms)%elms(j)
+        !enddo
+        !if(debugsumT .gt. 0d0) then
+        !  write(*,*) 'debugsumT > 0d0',il1
+        !  write(*,*) debugsumT , sphermoms
+        !  write(*,*) sphermom%getmultipole(sphermoms)%elms
+        !  stop
+        !endif
+        !write(9998,*) sphermom(dummy)%getmultipole(sphermoms)%elms!(ii)
+        !write(*,*) 'Debug 2: ', dummy, ii,nbast*nbast
+        !ENDDO
+     ENDDO
+        !write(*,*) 'Debug 3: ', filename
+     !stop
+     call LSCLOSE(fileunit,'KEEP') 
+
+  !ENDDO
+
+!  write(*,*) 'Debug 4: ', numnn
+!  stop
+  !DO ii=1,totalmom
+  !   call Mat_free(sphermom%getmultipole(ii))
+  !enddo
+
+
+END SUBROUTINE READ_multipole_files
+
+
 
 
 END MODULE pbc_ff_contrib

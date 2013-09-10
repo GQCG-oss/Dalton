@@ -12,8 +12,8 @@ F90_OBJS = \
 		   pbc-matop.o\
 		   pbc-data.o\
 		   pbc-ffdata.o\
-	           pbc_kscf.o\
-                   pbc_int.o\
+	           pbc-nfinteractions.o\
+                   pbcmain.o\
 		   pbc_mmit.o\
 		   pbc_eigsolv.o\
 		   pbc_compare.o

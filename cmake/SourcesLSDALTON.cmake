@@ -179,12 +179,12 @@ set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc-harmonics.F90
     LSDALTON/pbc2/pbc-msc.F90
     LSDALTON/pbc2/pbc-krsp-op.F90
-    LSDALTON/pbc2/pbc_kscf.F90
+    LSDALTON/pbc2/pbc-nfinteractions.F90
     LSDALTON/pbc2/pbc_mmit.F90
     LSDALTON/pbc2/pbc_eigsolv.F90
     LSDALTON/pbc2/pbc-data.F90
     LSDALTON/pbc2/pbc-ffdata.F90
-    LSDALTON/pbc2/pbc_int.F90
+    LSDALTON/pbc2/pbcmain.F90
     )
 set(FMM_SOURCES
     LSDALTON/mm/mm_T_contractors.F90
