@@ -36,3 +36,6 @@ DALTON/test/cc3_hyp
 DALTON/test/cc3_LIH1s1p_noddy_pol
 DALTON/test/cc3_tmom_fdif
 DALTON/test/cc3_twophot3_noddy
+external/gen1int/.git
+external/xcfun/.git
+external/pelib/.git
