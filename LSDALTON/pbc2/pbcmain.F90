@@ -9,7 +9,7 @@ MODULE pbc_setup
   USE lattice_type
   use pbc_msc
   USE memory_handling
-  USE multipole_pbc
+!  USE multipole_pbc
   USE harmonics_pbc
   USE pbc_matrix_operations
   USE pbc_scfdiis

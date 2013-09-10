@@ -174,13 +174,11 @@ if(DEVELOPMENT_CODE)
 endif()
 set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc_compare.F90
-    LSDALTON/pbc2/pbc-multipole.F90
     LSDALTON/pbc2/pbc-matop.F90
-    LSDALTON/pbc2/pbc-harmonics.F90
     LSDALTON/pbc2/pbc-msc.F90
     LSDALTON/pbc2/pbc-krsp-op.F90
     LSDALTON/pbc2/pbc-nfinteractions.F90
-    LSDALTON/pbc2/pbc_mmit.F90
+    LSDALTON/pbc2/pbc-ffinteractions.F90
     LSDALTON/pbc2/pbc_eigsolv.F90
     LSDALTON/pbc2/pbc-data.F90
     LSDALTON/pbc2/pbc-ffdata.F90

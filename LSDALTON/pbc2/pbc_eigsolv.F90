@@ -5,7 +5,7 @@ MODULE pbc_scfdiis
   USE matrix_module
   USE lattice_vectors
   USE lattice_type
-  USE multipole_pbc
+!  USE multipole_pbc
   USE harmonics_pbc
   USE pbc_matrix_operations
   USE pbc_interactions
