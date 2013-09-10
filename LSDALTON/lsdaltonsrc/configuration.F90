@@ -1388,6 +1388,8 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD)
+        CASE('.DEBUG_SCF_MEM')
+           call Set_PrintSCFmemory(.TRUE.)
         CASE('.DEBUG_MPI_MEM')
            config%mpi_mem_monitor = .true.
         CASE('.DEBUG_ARH_LINTRA')
