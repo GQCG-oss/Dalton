@@ -96,6 +96,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #       !  First-order DPT corrections to the ground-state energy  !
 #        Total first-order DPT correction:     -0.091121192
 #        Total first-order DPT correction:     -0.091209180

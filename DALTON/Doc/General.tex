@@ -18,8 +18,8 @@ as well as control of the general routines for calculating
 numerical geometrical derivatives of molecular energies or selected
 first- and second-order properties.
 
-We note that \verb|**DALTON| identifies that what follows is Dalton general input.
-This input section is compulsory to do a calculation, by default Dalton does nothing
+We note that \verb|**DALTON| identifies that what follows is general input.
+This input section is compulsory to do a calculation, by default \dalton\ does nothing
 (will stop with the error message:
 {\tt End of file on DALTON.INP, no **DALTON input found}.
 Lines before the first line with \verb|**DALTON| are ignored by \dalton .
@@ -28,7 +28,7 @@ The general input module stops at the next line starting with two stars: \verb|*
 If more than one node, \dalton\ will automatically perform those modules in parallel
 which are implemented in parallel, and Fock matrix calculations will be done AO-direct,
 also if you don't specify \verb|.DIRECT|.
-In contrast to previous releases of Dalton, it will not quit in the non-parallelized modules
+In contrast to previous releases of the \dalton\ program, it will not quit in the non-parallelized modules
 but run them on the master node while the other nodes are idling.
 The keyword \verb|.PARALLEL| of previous releases is still recognized for backward compatibility,
 but it is not needed any more.
@@ -180,7 +180,13 @@ detailed description of possible options.
 %Roos should be used during execution of the program.
 %The keyword is needed if one attempts an MCSCF, CI or MP2 (run through the \sir\ module and not using the Coupled-Cluster module) with more than 255 basis functions.
 
-\item[\Key{PEQM}] \index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM} Include environment effects by using the polarizable embedding (PE) model. This will embed the core molecular system, as defined in the \mol\ input file, in a polarizable embedding potential given in the \pot\ input file. See further input options in the \Sec{PEQM} input section (see subsection~\ref{subsec:peqm}). See Chapter~\ref{ch:embedding} for an introduction to polarizable embedding calculations.
+\item[\Key{PEQM}] Include environment effects by using the polarizable embedding (PE)
+model~(See Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa}
+for PE-MP2/SOPPA and Ref.~\cite{pecc} for PE-CC)\index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}.
+This will embed the core molecular system, as defined in the \molinp\ file, in a
+polarizable embedding potential given in the \potinp\ file. See further input options
+in the \Sec{PEQM} input section (see subsection~\ref{subsec:peqm}). See
+Chapter~\ref{ch:embedding} for an introduction to polarizable embedding calculations.
 
 \item[\Key{PRIERR}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRERR|
@@ -286,7 +292,7 @@ for locating minima and transition states (geometry optimization).
 \index{first-order geometry optimization}\index{geometry optimization!first-order}
 \index{second-order geometry optimization}\index{geometry optimization!second-order}
 Most of the Hessian updating\index{Hessian update} schemes were taken from
-ref.\cite{thkrprt95} and \cite{Fletcher}.
+ref.~\cite{thkrprt95} and \cite{Fletcher}.
 The implementation of redundant internal coordinates
 \index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
 follows the work of Peng {\it et al.\/}~\cite{cppyahbsmjfjcc17}.
@@ -973,18 +979,17 @@ given if the print level is 4 or higher.
 
 This input section controls calculations using the polarizable
 embedding (PE) model to describe environment effects on a core
-molecular system. The core system is defined by the \mol\ input
-file. The environment can be described by multipole moment expansions
-and anisotropic dipole-dipole polarizabilities provided in the \pot\
-input file. See Chapter~\ref{ch:embedding} for an introduction to
-calculations using the polarizable embedding model.
+molecular system. The core system is defined by the \molinp\ file. The environment can be described by multipole moment expansions
+and anisotropic dipole-dipole polarizabilities provided in the \potinp\
+file. See Chapter~\ref{ch:embedding} for an introduction to
+calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA and Ref.~\cite{pecc} for PE-CC.
 
 
 \begin{description}
 
 \item[\Key{POTENTIAL}]\verb| |\newline
 \verb|READ (LUCMD, *) POTFILE|\verb| |\newline
-This option can be used to specify a non-default name of the \pot\ input file that contains the embedding potential parameters. The default name is \verb|POTENTIAL.INP|.
+This option can be used to specify a non-default name of the \potinp\ input file that contains the embedding potential parameters. The default name is \verb|POTENTIAL.INP|.
 
 \item[\Key{DIRECT}]\verb| |\newline
 Use the direct solver to determine the induced dipole moments. It will explicitly build a classical response matrix of size $3S(3S+1)/2$, where $S$ is the number of polarizable sites and is therefore only recommendable for smaller molecular systems. Note that this solver is not parallelized. The default is to use the iterative solver.
@@ -1017,8 +1022,9 @@ Use any existing files to restart calculation.
 \verb|    IF (OPTION == 'GRID') THEN|\verb| |\newline
 \verb|       READ (LUCMD, *) XSIZE, XGRID, YSIZE, YGRID, ZSIZE, ZGRID|\verb| |\newline
 \verb|    END IF| \verb| |\newline
+\verb|    IF (OPTION == '.' .OR. OPTION == '*') EXIT| \newline
 \verb|END DO|\verb| |\newline
-Create cube file for the core molecular system containing the electrostatic potential due to the final converged polarizable embedding potential. The grid density can be either \verb|COARSE| (3 points/bohr), \verb|MEDIUM| (6 points/bohr) or \verb|FINE| (12 points/bohr). The default grid density is \verb|MEDIUM| and default cube size is the extent of the molecule plus 8.0 bohr in plus and minus each Cartesian coordinate. If the \verb|FIELD| option is given then also cube files containing the electric field from the embedding potential will be created. The \verb|GRID| option gives full control of the cube size and density, and requires an additional input line specifying the size (in bohr) and density (in points/bohr) in each Cartesian direction. Here the size again specifies the amount to add to the extent of the core molecular system.
+Create cube file for the core molecular system containing the electrostatic potential due to the final converged polarizable embedding potential. The grid density can be either \verb|COARSE| (3 points/Bohr), \verb|MEDIUM| (6 points/Bohr) or \verb|FINE| (12 points/bohr). The default grid density is \verb|MEDIUM| and default cube size is the extent of the molecule plus 8.0 Bohr in plus and minus each Cartesian coordinate. If the \verb|FIELD| option is given then also cube files containing the electric field from the embedding potential will be created. The \verb|GRID| option gives full control of the cube size and density, and requires an additional input line specifying the size (in Bohr) and density (in points/Bohr) in each Cartesian direction. Here the size again specifies the amount to add to the extent of the core molecular system.
 
 \item[\Key{VERBOSE}]\verb| |\newline
 Verbose output. Currently this will print the final converged induced dipole moments.
@@ -1031,7 +1037,8 @@ Debug output. Prints the total electric field and the induced dipole moments in 
 \subsection{QM/MM environment model: \Sec{QM3}}
 \label{sec:qm3}
 
-Not documented. Examples can be found by grepping for "QM3" in the "DALTON/test" directory in the distribution. See also \Key{PEQM} and \Sec{PEQM} for a more general and efficient implementation with many of the same capabilities.
+Not documented. Examples can be found by grepping for "QM3" in the "DALTON/test" directory in the distribution. See also \Key{PEQM} and \Sec{PEQM} 
+(introduction in Chapter~\ref{ch:embedding}) for a newer more general and efficient implementation with many of the same capabilities.
 
 \subsection{PCM environment model: \Sec{PCM}}
 \label{subsec:pcm}
@@ -1493,7 +1500,7 @@ state.
 \subsection{Molecule geometry and basis sets, \Sec{MOLBAS}}\label{sec:herrdn}
 
 The directives in this section extend or modify the reading of the molecule geometry and basis set
-specifications in the ".mol" input file (internally \verb|MOLECULE.INP|).
+specifications in the "\verb|.mol|" input file (internally \molinp).
 
 \begin{description}
 \item[\Key{CM FUN}]\verb| |\newline

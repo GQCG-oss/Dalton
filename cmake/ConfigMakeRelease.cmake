@@ -16,7 +16,7 @@ set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${EXPORT_DIR};/")
 
 include(CPack)
 
-set(DIRS_TO_RELEASE basis cmake CMakeLists.txt COPYING CTestConfig.cmake DALTON external INSTALL.rst LSDALTON setup update VERSION)
+set(DIRS_TO_RELEASE basis cmake CMakeLists.txt COPYING CTestConfig.cmake DALTON external LSDALTON setup VERSION doc_installation .gitignore)
 
 add_custom_target(
     release
@@ -32,6 +32,7 @@ add_custom_target(
         COMMAND rm -rf ${EXPORT_DIR}/external/pelib/.git
     endif()
     COMMAND echo "${GIT_REVISION}" > ${EXPORT_DIR}/cmake/GIT_HASH
+    COMMAND cp ${CMAKE_SOURCE_DIR}/maintenance/update/update.py ${EXPORT_DIR}
     COMMAND make package_source
     COMMENT "Packaging source files"
     VERBATIM

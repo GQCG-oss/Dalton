@@ -681,12 +681,14 @@ SUBROUTINE mm_get_J_matrix(n_el,Fock_matrix,Nfock1,Nfock2,WORK,LWRK)
 #ifdef VAR_MPI
 #ifdef USE_MPI_MOD_F90
    use mpi
+   IMPLICIT NONE
 #else
+   IMPLICIT NONE
    INCLUDE 'mpif.h'
 #endif
-#endif
-
+#else
    IMPLICIT NONE
+#endif
    CHARACTER(6),  INTENT(IN)    :: n_el
    REAL(REALK),   INTENT(INOUT) :: Fock_matrix(Nfock1,Nfock2) 
    INTEGER, INTENT(IN)    :: LWRK, Nfock1,Nfock2
@@ -784,10 +786,11 @@ SUBROUTINE mm_getj_sync_slaves
    ! can be split into two parts: syncing scheme, and other parts.
 #ifdef USE_MPI_MOD_F90
    use mpi
+   IMPLICIT NONE
 #else
+   IMPLICIT NONE
    INCLUDE 'mpif.h'
 #endif
-   IMPLICIT NONE
    INTEGER ierr
    INTEGER, PARAMETER :: master = 0
 
@@ -805,10 +808,11 @@ END SUBROUTINE mm_getj_sync_slaves
 SUBROUTINE bcast_scheme_paras(master)
 #ifdef USE_MPI_MOD_F90
    use mpi
+   IMPLICIT NONE
 #else
+   IMPLICIT NONE
    INCLUDE 'mpif.h'
 #endif
-   IMPLICIT NONE
    INTEGER, INTENT(IN) :: master
    INTEGER intEx, logEx, doubleEx, ierr, theType
    INTEGER, DIMENSION(4) :: bllen, types, disps
@@ -831,10 +835,11 @@ END SUBROUTINE bcast_scheme_paras
 SUBROUTINE bcast_T_searcher_type(master,searcher)
 #ifdef USE_MPI_MOD_F90
    use mpi
+   IMPLICIT NONE
 #else
+   IMPLICIT NONE
    INCLUDE 'mpif.h'
 #endif
-   IMPLICIT NONE
    INTEGER, INTENT(IN)   :: master
    TYPE(T_searcher_type) :: searcher(5)
 
@@ -857,10 +862,11 @@ END SUBROUTINE bcast_T_searcher_type
 SUBROUTINE bcast_T_contract_schm(master,contractor)
 #ifdef USE_MPI_MOD_F90
    use mpi
+   IMPLICIT NONE
 #else
+   IMPLICIT NONE
    INCLUDE 'mpif.h'
 #endif
-   IMPLICIT NONE
    INTEGER, INTENT(IN)                  :: master
    TYPE(T_contract_schm), INTENT(INOUT) :: contractor
    INTEGER ierr
@@ -870,10 +876,11 @@ END SUBROUTINE bcast_T_contract_schm
 SUBROUTINE bcast_W_contract_schm(master,w_con)
 #ifdef USE_MPI_MOD_F90
    use mpi
+   IMPLICIT NONE
 #else
+   IMPLICIT NONE
    INCLUDE 'mpif.h'
 #endif
-   IMPLICIT NONE
    INTEGER, INTENT(In)                  :: master
    TYPE(W_contract_schm), INTENT(INOUT) :: w_con
    integer ierr
@@ -883,10 +890,11 @@ END SUBROUTINE bcast_W_contract_schm
 SUBROUTINE mm_getj_collect(tm)
 #ifdef USE_MPI_MOD_F90
    use mpi
+   IMPLICIT NONE
 #else
+   IMPLICIT NONE
    INCLUDE 'mpif.h'
 #endif
-   IMPLICIT NONE
    INTEGER IERR, MASTER,I
    REAL(REALK) :: Work(NBAST*NBAST)
    DOUBLE PRECISION, INTENT(IN) :: tm

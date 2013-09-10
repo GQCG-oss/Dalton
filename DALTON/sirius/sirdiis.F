@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -542,6 +542,53 @@ Chj      ... if (GEOWLK) then
          DEPGEO = DEPRED
       END IF
 C
+C Projection operators for removing non-rotated orbitals (.FREEZE option)
+C A -> P_f*A*P_f(T), P_f = 1-S*D_f
+C
+      IF (LNOROT) THEN
+         CALL MEMGET('REAL',KPFROZ,N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KDFROZ,N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KS,N2BASX,WRK,KFREE,LFREE)
+         CALL GET_H1(WRK(KS),'OVERLAP',WRK(KFREE),LFREE)
+         CALL DUNIT(WRK(KPFROZ),NBAST)
+         CALL DZERO(WRK(KDFROZ),N2BASX)
+         KDFI=KDFROZ
+         DO ISYM=1,NSYM
+            IORBI=IORB(ISYM)
+            NORBI=NORB(ISYM)
+            DO I=1,NORBI
+               IF (NOROT(IORBI+I).NE.0) THEN
+                  NBASI=NBAS(ISYM)
+                  ICMOI=ICMO(ISYM)+NBASI*(I-1)+1
+                  ! C*C.T()
+                  CALL DGEMM(
+     &               'N','T',NBASI,NBASI,1,
+     &               D1,CMO(ICMOI),NBASI,
+     &                  CMO(ICMOI),NBASI,
+     &               D1,WRK(KDFI),NBAST
+     &               )
+               END IF
+            END DO
+            KDFI=KDFI+NBAST*NBAS(ISYM)+NBAS(ISYM)
+         END DO
+         CALL DGEMM('N','N',NBAST,NBAST,NBAST,
+     &      DM1,WRK(KS),NBAST,
+     &          WRK(KDFROZ),NBAST,
+     &      D1, WRK(KPFROZ),NBAST
+     &      )
+C        IF (IPRDIS.GT.10) THEN
+            CALL HEADER('Start orbitals',-1)
+            CALL PRORB(CMO,.FALSE.,LUPRI)
+            CALL HEADER('Frozen orbital density',-1)
+            CALL OUTPUT(
+     &         WRK(KDFROZ),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI
+     &         )
+            CALL HEADER('Frozen orbital projector',-1)
+            CALL OUTPUT(
+     &         WRK(KPFROZ),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI
+     &         )
+C        END IF
+      END IF
   100 CONTINUE
          ITDIIS = ITDIIS + 1
          JTDIIS = JTDIIS + 1
@@ -701,7 +748,7 @@ C           .. subtract DCOVLP*FVAO_previous to get DCOVLP*FCAO_previous
 C
          IF (ONLYFC) THEN
             EACTIV = D0
-         ELSE
+         ELSE 
 C           EACTIV = DV(u,u)FC(u,u) = FC(u,u)
 C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
             IF (HSFOCK) THEN
@@ -902,6 +949,10 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
             WRITE (LUPRI,*) ' Error vector, DIIS iteration',ITDIIS
             CALL OUTPKB(EVCSAV(1,INDEVC),NORB,NSYM,-1,LUPRI)
          END IF
+C
+C Project out .FREEZE'ed orbitals from the gradient matrix
+C
+         IF (LNOROT) CALL PHPT(WRK(KPFROZ),WRK(KTMP1),NBAST)
          GRDNRM = DNRM2(NNORBT,EVCSAV(1,INDEVC),1)
          EGSAV(2,INDEVC) = GRDNRM
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .GT. 1) THEN
@@ -2082,6 +2133,7 @@ C
 #include "mxcent.h"
 #include "dftcom.h"
 #include "dftacb.h"
+#include "dummy.h"
 C
       LOGICAL LSAVE4,LSAVE6
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -2129,22 +2181,33 @@ C        zero rows and columns corresponding to frozen orbitals
          IF (NFRZI .GT. 0 .OR. LNOROT) THEN
             JNFRZ = 0
             DO 130 K = 1,NORBI
-            IF (K .LE. NFRZI .OR. NOROT(K) .NE. 0) THEN
-               IF (JNFRZ .GT. 0) GO TO 9000
+               IK=IORBI+K
+               IF (K .LE. NFRZI .OR. NOROT(IK) .NE. 0) THEN
+                  IF (IOBTYP(IK).NE.JTACT) THEN
+C              ... enable freezing an active orbital
+                     IF (JNFRZ .GT. 0) GO TO 9000
 C              ... exit if free orbital below this frozen orbital
 C                  because then ORDRSS cannot be called
-               JFRZI = JFRZI + 1
-               KROW  = IROW(K)
-               DO 110 L = 1,K-1
-                  FC(IFSYM+KROW+L) = D0
-  110          CONTINUE
-               DO 120 L = K+1,NORBI
-                  KL = (IFSYM+K)+IROW(L)
-                  FC(KL) = D0
-  120          CONTINUE
-            ELSE
-               JNFRZ = JNFRZ + 1
-            END IF
+                     JFRZI = JFRZI + 1
+                  END IF
+                  KROW  = IROW(K)
+                  DO 110 L = 1,K-1
+                     FC(IFSYM+KROW+L) = D0
+  110             CONTINUE
+                  DO 120 L = K+1,NORBI
+                     KL = (IFSYM+K)+IROW(L)
+                     FC(KL) = D0
+  120             CONTINUE
+                  IF (NOROT(IK).NE.0 .AND. IOBTYP(IK).EQ.JTACT) THEN
+                     KK = (IFSYM+K)+IROW(K)
+                     FC(KK) = DUMMY 
+C
+C This assignment puts it last in the sorting  - put back in place later
+C
+                  END IF
+               ELSE
+                  JNFRZ = JNFRZ + 1
+               END IF
   130       CONTINUE
          END IF
 C
@@ -2168,10 +2231,34 @@ C
          JORBI = IORBI + JFRZI + 1
          NNOTFR= NORBI - JFRZI
          CALL ORDRSS(CMO(JCSYM),FC(JORBI),ISSMO(JORBI),NNOTFR,NBASI)
+C 
+C         CALL HEADER('Sorted orbitals',-1)
+C         CALL PRORB(CMO,.FALSE.,LUPRI)
+C
+C If there are frozen open shell orbitals they are last - put back in place
 C
          IF (IPR_DIIS .GE. 4) WRITE (LUPRI,'(/A,I2/,(5F15.5))')
      &      ' DIIS Fock eigenvalues in symmetry',ISYM,
      &      (FC(IORBI+I), I = 1,NORBI)
+
+         IF (LNOROT) THEN
+            NISHI=NISH(ISYM)
+            NASHI=NASH(ISYM)
+            JA=NISHI+1
+            KA=IORBI+NISHI+1
+            DO IA=1,NASHI
+
+               JA=IA+NISHI
+               KA=JA+IORBI
+               IF (NOROT(KA).NE.0) THEN
+                  CALL ROTCOL(CMO(ICSYM),NBASI,NORBI,JA,NORBI)
+               END IF
+            END DO
+         END IF
+C
+C         CALL HEADER('Reordered orbitals',-1)
+C         CALL PRORB(CMO,.FALSE.,LUPRI)
+
   200 CONTINUE
       IF (SUPSYM) CALL AVEORD()
 C     ... remake ISSORD() as ISSMO() may have changed in ORDRSS
@@ -2228,6 +2315,30 @@ C
       CALL QTRACE(LUPRI)
       CALL QUIT('FCKEIG error, cannot handle orbitals '//
      &          'frozen with ".FREEZE"')
+      CONTAINS
+      SUBROUTINE ROTCOL(A,NR,NC,I1,I2)
+C
+C Cyclic permutation of columns in A
+C I2>I1 is moved to I1 and rest shifted right
+C
+      IMPLICIT NONE
+      DOUBLE PRECISION A,B
+      INTEGER NR,NC,I1,I2
+      DIMENSION A(NR,NC),B(NR)
+
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TMP
+      INTEGER I,MC
+      IF (I2.LE.I1) CALL QEXIT('ROTCOL ERROR: I1<I2 not fulfilled')
+      IF (I1.LE.0 .OR. I2.LE.0 .OR. I1.GT.NC.OR.I2.GT.NC)
+     &   CALL QEXIT('ROTCOL ERROR: I1 or I2 out of bounds')
+      MC=(I2-I1+1)
+      ALLOCATE(TMP(NR,MC))
+      TMP(:,1)=A(:,I2)
+      TMP(:,2:)=A(:,I1:I2-1)
+      A(:,I1:I2)=TMP(:,:)
+      DEALLOCATE(TMP)
+      RETURN
+      END SUBROUTINE ROTCOL
       END
 #ifdef MOD_DFTASC
  -- hjaaj: DFTASC is not active (June 09)
@@ -2410,3 +2521,45 @@ C
       RETURN
       END
 
+      SUBROUTINE SDFCOMM(F,D,SAOUNP,COMM,KFRSAV,LFRSAV,WRK)
+C     In: F apk,D apk and S unp
+C     Out: SDF-FDS
+
+#include <implicit.h>
+#include <inforb.h>
+      DOUBLE PRECISION F(NNBAST),D(NNBAST),SAOUNP(NBAST,NBAST)
+      DOUBLE PRECISION COMM(NBAST,NBAST),WRK(*)
+      PARAMETER (D1=1.0D0, D0=0.0D0, DM1=-1.0D0)
+ 
+      KFREE = KFRSAV
+      LFREE = LFRSAV
+      CALL MEMGET('REAL',KFTMP2,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDTMP2,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDForFD,N2BASX,WRK,KFREE,LFREE)
+
+      IF (NSYM.GT.1) THEN
+         CALL MEMGET('REAL',KFTMP,NNBASX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KDTMP,NNBASX,WRK,KFREE,LFREE)
+      ENDIF
+
+      IF (NSYM.GT.1) THEN
+         CALL PKSYM1(WRK(KFTMP),F,NBAS,NSYM,-1)
+         CALL DSPTSI(NBAST,WRK(KFTMP),WRK(KFTMP2))
+         CALL PKSYM1(WRK(KDTMP),D,NBAS,NSYM,-1)
+         CALL DUNFLD(NBAST,WRK(KDTMP),WRK(KDTMP2))
+      ELSE
+         CALL DSPTSI(NBAST,F,WRK(KFTMP2))
+         CALL DUNFLD(NBAST,D,WRK(KDTMP2))
+      ENDIF
+
+      CALL DGEMM('N','N',NBAST,NBAST,NBAST,D1,WRK(KFTMP2),NBAST,
+     &     WRK(KDTMP2),NBAST,D0,WRK(KDForFD),NBAST)
+      CALL DGEMM('N','N',NBAST,NBAST,NBAST,D1,WRK(KDForFD),NBAST,
+     &     SAOUNP,NBAST,D0,COMM,NBAST)
+           CALL DGEMM('N','N',NBAST,NBAST,NBAST,D1,WRK(KDTMP2),NBAST,
+     &     WRK(KFTMP2),NBAST,D0,WRK(KDForFD),NBAST)
+      CALL DGEMM('N','N',NBAST,NBAST,NBAST,D1,SAOUNP,NBAST,
+     &     WRK(KDForFD),NBAST,DM1,COMM,NBAST)
+
+      CALL MEMREL('SDFCOMM',WRK,KFRSAV,KFTMP2,KFREE,LFREE)      
+      END
