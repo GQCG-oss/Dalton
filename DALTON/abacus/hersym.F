@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -124,13 +124,15 @@ C ***********************************************************
          DIMENSION TMPARR(7,0:LENTMP), WORK(*)
          DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM), JCO(MXAQN)
          LOGICAL   VRML_SYM, ADDSYM, DOCART, DOOWN, AUTOSY, NOSYM
+         LOGICAL   MIDAS_SYM
          PARAMETER (D0 = 0.0D0)
-         CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41, ID3, CRT
+         CHARACTER*1 KASYM(3,3), ID3, CRT
          CHARACTER SYMM*9, TMPLN*80, BSNM*80
-         CHARACTER NAME*4
-         LOGICAL   MIDSYM
-         MIDSYM = .TRUE.
-         I = 1
+         CHARACTER CLASS*15, TEXT*41, NAME*4
+
+C        MIDAS_SYM: write out input coordinates for midas.sym analysis
+         MIDAS_SYM = .TRUE.
+
 C ::: IPRTHR - Print level threshold for verbose output. :::
          IPRTHR = 3
 C
@@ -166,10 +168,9 @@ C               /hjaaj Mar 2004
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
 C
-C        MIDAS Interface, write out input coordinates for midas.sym
-C        analysis
+C        MIDAS Interface, write out input coordinates for midas.sym analysis
 C
-         IF (MIDSYM) THEN
+         IF (MIDAS_SYM) THEN
             LUCOOR = -1
             CALL GPOPEN(LUCOOR,'midasifc.cartorig','NEW',
      &                  ' ','FORMATTED',IDUMMY,.FALSE.)
@@ -257,16 +258,16 @@ C ::: The new symmetry is added. :::
  200     CONTINUE
 C ::: The input file is modified to include symmetry. :::
 C ::: If there's any Angstrom mark, it's removed.    :::
-         TMPLN = MLINE(NMLAU)
          CALL UPCASE(MLINE(NMLAU))
+         TMPLN = MLINE(NMLAU)
          IF (INDEX(TMPLN,'ATO') .EQ. 0) THEN
             WRITE(TMPLN(10:10), '(I1)') NSYMOP
             WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
          ELSE
-            CALL LINE4(TMPLN,NONTYP,NSMOP2,CRT,KCHARG,THRS,ADDSYM,KASYM,
-     &                 ID3,DOCART,DOOWN)
+            CALL LINE4(TMPLN,NONTYP2,NSMOP2,CRT,KCHARG,THRS,
+     &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
             AUTOSY = .FALSE.
-            NOSYM = .FALSE.
+            NOSYM  = .FALSE.
             IWHERE = 1
             DO I2 = 1, 3
                DO J2 = 1, 3

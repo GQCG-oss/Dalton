@@ -3949,11 +3949,7 @@ retval=0
 
   end subroutine orthogonalize_MOs
 
-
-  !> \brief Print short energy summary (both HF and correlation)
-  !> (Necessary to place here because it is used both for DEC and for full calculation).
-  !> \author Kasper Kristensen
-  !> \date April 2013
+  !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
   subroutine print_total_energy_summary(EHF,Ecorr,Eerr)
     implicit none
     !> HF energy
@@ -3962,54 +3958,84 @@ retval=0
     real(realk),intent(in) :: Ecorr
     !> Estimated intrinsic DEC energy error
     real(realk),intent(in) :: Eerr
+    integer :: lupri
 
-    ! Print summary
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(13X,a)') '**********************************************************'
-    write(DECinfo%output,'(13X,a,19X,a,19X,a)') '*', 'DEC ENERGY SUMMARY', '*'
-    write(DECinfo%output,'(13X,a)') '**********************************************************'
-    write(DECinfo%output,*)
-    if(DECinfo%first_order) then
-       write(DECinfo%output,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
-       write(DECinfo%output,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
-       ! skip error print for full calculation (0 by definition)
-       if(.not. DECinfo%full_molecular_cc) then  
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
-       end if
-       if(DECinfo%ccmodel==1) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==2) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==3) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==4) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
-       end if
-    else
-       write(DECinfo%output,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
-       write(DECinfo%output,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
-       ! skip error print for full calculation (0 by definition)
-       if(.not. DECinfo%full_molecular_cc) then  
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
-       end if
-       if(DECinfo%ccmodel==1) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total MP2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==2) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==3) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==4) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
-       end if
-    end if
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
+    lupri=6
+    call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+
+    lupri=DECinfo%output
+    call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
 
 
   end subroutine print_total_energy_summary
+
+
+  !> \brief Print short energy summary (both HF and correlation) to specific logical unit number.
+  !> (Necessary to place here because it is used both for DEC and for full calculation).
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+    implicit none
+    !> HF energy
+    real(realk),intent(in) :: EHF
+    !> Correlation energy
+    real(realk),intent(in) :: Ecorr
+    !> Estimated intrinsic DEC energy error
+    real(realk),intent(in) :: Eerr
+    !> Logical unit number to print to
+    integer,intent(in) :: lupri
+
+    ! Print summary
+    write(lupri,*)
+    write(lupri,*)
+    write(lupri,*)
+    write(lupri,*)
+    write(lupri,'(13X,a)') '**********************************************************'
+    if(DECinfo%full_molecular_cc) then
+       write(lupri,'(13X,a,19X,a,19X,a)') '*', 'CC ENERGY SUMMARY', '*'
+    else
+       write(lupri,'(13X,a,19X,a,19X,a)') '*', 'DEC ENERGY SUMMARY', '*'
+    end if
+    write(lupri,'(13X,a)') '**********************************************************'
+    write(lupri,*)
+    if(DECinfo%first_order) then
+       write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
+       write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
+       ! skip error print for full calculation (0 by definition)
+       if(.not. DECinfo%full_molecular_cc) then  
+          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
+       end if
+       if(DECinfo%ccmodel==1) then
+          write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==2) then
+          write(lupri,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==3) then
+          write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==4) then
+          write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
+       end if
+    else
+       write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
+       write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
+       ! skip error print for full calculation (0 by definition)
+       if(.not. DECinfo%full_molecular_cc) then  
+          write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
+       end if
+       if(DECinfo%ccmodel==1) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total MP2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==2) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==3) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==4) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
+       end if
+    end if
+    write(lupri,*)
+    write(lupri,*)
+
+
+  end subroutine print_total_energy_summary_lupri
 
 
 end module dec_fragment_utils

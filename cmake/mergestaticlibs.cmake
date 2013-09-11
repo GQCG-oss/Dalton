@@ -44,7 +44,7 @@ function(merge_static_libs outlib )
 			list(APPEND libfiles "${libfile}")
 		endif(multiconfig)
 	endforeach()
-	message(STATUS "will be merging ${libfiles}")
+#message(STATUS "will be merging ${libfiles}")
 # Just to be sure: cleanup from duplicates
 	if(multiconfig)
 		foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
@@ -83,7 +83,7 @@ function(merge_static_libs outlib )
 		message(FATAL_ERROR "Multiple configurations are not supported")
 	endif()
 	get_target_property(outfile ${outlib} LOCATION)
-	message(STATUS "outfile location is ${outfile}")
+#message(STATUS "outfile location is ${outfile}")
 	foreach(lib ${libfiles})
 # objlistfile will contain the list of object files for the library
 		set(objlistfile ${lib}.objlist)
@@ -111,9 +111,14 @@ EXECUTE_PROCESS(COMMAND ls .
 		list(APPEND extrafiles "${objlistfile}")
 		# relative path is needed by ar under MSYS
 		file(RELATIVE_PATH objlistfilerpath ${objdir} ${objlistfile})
+	#add_custom_command(TARGET ${outlib} POST_BUILD
+	#	COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}"
+	#	COMMAND ${CMAKE_AR} ru "${outfile}" @"${objlistfilerpath}"
+	#	WORKING_DIRECTORY ${objdir})
+		# radovan: the above is not portable to AIX, workaround:
 		add_custom_command(TARGET ${outlib} POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}"
-			COMMAND ${CMAKE_AR} ru "${outfile}" @"${objlistfilerpath}"
+		 	COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}"
+			COMMAND ${CMAKE_AR} ru "${outfile}" `cat "${objlistfilerpath}" | tr '\\n' ' '`
 			WORKING_DIRECTORY ${objdir})
 	endforeach()
 	add_custom_command(TARGET ${outlib} POST_BUILD

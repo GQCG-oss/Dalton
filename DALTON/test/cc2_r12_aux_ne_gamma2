@@ -110,6 +110,12 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # 
 #            Total SCF   energy:                  -128.5225530540                
 #            Total MP2-R12/B energy:              -128.7984758804                

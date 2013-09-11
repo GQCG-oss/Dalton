@@ -110,7 +110,7 @@ module dec_typedef_module
      !> CCSD residual/solver settings
      !> *****************************
      !> save next guess amplitudes of CCSD in each iteration on disk
-     logical :: CCSDsaferun
+     logical :: CCSDnosaferun
      !> Use parallel CCSD solver
      logical :: solver_par
      !> forcing one or the other scheme in get_coubles residual integral_driven
@@ -260,6 +260,9 @@ module dec_typedef_module
      logical :: use_mp2_frag
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
+     !> Repeat atomic fragment calculations after fragment optimization?
+     ! (this is necessary e.g. for gradient calculations).
+     logical :: RepeatAF
      ! --  
 
      !> Pair fragments

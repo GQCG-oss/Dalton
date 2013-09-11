@@ -223,7 +223,6 @@ set(LSINT_SOURCES
     LSDALTON/LSint/dft_gridLL.F90
     LSDALTON/LSint/BuildBasis.F90
     LSDALTON/LSint/BuildMolFile.F90
-    LSDALTON/LSint/II_Fragment.F90
     LSDALTON/LSint/gridgeneration.F90
     LSDALTON/LSint/gridgeneration_boxify.F90
     LSDALTON/LSint/II_XC_interface.F90

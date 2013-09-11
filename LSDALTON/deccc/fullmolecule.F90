@@ -368,12 +368,6 @@ contains
     nocc = molecule%numocc
     nunocc = molecule%numvirt
 
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) 'Using canonical orbitals as requested in input!'
-    write(DECinfo%output,*) 'Warning: This may cause meaningless results when the DEC scheme is used!'
-    write(DECinfo%output,*)
-
     ! Canonical MO coefficients
     call mem_alloc(C,nbasis,nbasis)
 

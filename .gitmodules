@@ -7,7 +7,6 @@
 [submodule "external/pelib"]
 	path = external/pelib
 	url = git@repo.ctcc.no:pelib.git
-	branch = develop
 [submodule "external/matrix-defop"]
 	path = external/matrix-defop
 	url = git@repo.ctcc.no:matrix-defop.git

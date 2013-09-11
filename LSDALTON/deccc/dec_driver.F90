@@ -481,6 +481,7 @@ contains
        end if
     end do
 
+
     ! Now all atomic fragment energies have been calculated and the
     ! fragment information has been stored in AtomicFragments.
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
@@ -514,9 +515,8 @@ contains
     njobs = jobs%njobs
 
 
-    ! Zero fragment energies because they are recalculated
-    ! (except for simple DEC-MP2 with only energies)
-    if(DECinfo%ccmodel/=1 .or. DECinfo%first_order .or. DECinfo%InclFullMolecule ) then
+    ! Zero fragment energies if they are recalculated
+    if(DECinfo%RepeatAF) then
        FragEnergies = 0.0E0_realk
     end if
 
@@ -669,7 +669,6 @@ contains
     do j=1,ndecenergies
        call add_dec_energies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
     end do
-
 
     ! Print all fragment energies (should be turned of before release...)
     call print_all_fragment_energies(natoms,FragEnergies,dofrag,AtomicFragments,&

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -97,7 +97,7 @@ C
       END IF         
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults in HFC:',0)
-         IF (IPRHFC .NE. IPRDEF) WRITE(LUPRI,'(A,I5)')                                                                                                                                                      
+         IF (IPRHFC .NE. 0) WRITE(LUPRI,'(A,I5)')
      &       ' Print level in HFC:', IPRHFC
          IF (HFCFC) WRITE (LUPRI,'(A)') 
      &                 ' Isotropic Fermi contact contribution '//
@@ -920,7 +920,7 @@ C
              IJ = 1  
              DO I = 1,3
                 DO J = 1,I 
-                   IF (.NOT.(I.EQ.Q)) THEN  
+                   IF (.NOT.(I.EQ.J)) THEN  
                       TMPVAL = DP5*(ATEN(IDX,I,J)+ATEN(IDX,J,I))
                       ATEN(IDX,I,J) = TMPVAL 
                       ATEN(IDX,J,I) = TMPVAL
@@ -946,3 +946,4 @@ C            Principal axes
 C
        RETURN 
        END  
+! -- end of rsp/rsphfc.F --

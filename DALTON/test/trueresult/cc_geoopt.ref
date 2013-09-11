@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,180 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:44:46 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 18:22:46 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_cc_geoopt
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.OPTIMIZE                                         
+**INTEGRAL                                        
+.DIPLEN                                           
+.DEROVL                                           
+.DERHAM                                           
+**WAVE FUNCTIONS                                  
+.CC                                               
+*SCF INPUT                                        
+.THRESH                                           
+ 1.0D-10                                          
+*CC INPUT                                         
+.CCSD                                             
+.THRLEQ                                           
+ 1.0D-08                                          
+.THRENR                                           
+ 1.0D-10                                          
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+cc-pVDZ                                                                        
+  Cis-diazine CCSD geometry optimisation (cc-dzp basis)                        
+  001  ( A1)                                                                   
+    2    2  Y  X      1.00D-15                                                 
+        7.0   1                                                                
+N    1.1798400 0.0000000 -0.12616200       *                                   
+        1.0   1                                                                
+H    1.9234220 0.0000000 1.75294370       *                                    
 
 
        *******************************************************************
@@ -105,7 +202,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     "Old" integral transformation used (limited to max 255 basis functions)
  --------------------------------------------------------------------------------
@@ -128,13 +225,7 @@
               >>>>>>>>>> 1st Order Geometry Optimization >>>>>>>>>>
               >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
- Read .mol file to determine number of atoms:
-
-
- **************************************************************************************
- ****************** Output of molecule and basis set info suppressed ******************
- **************************************************************************************
-
+ Reading .mol file to determine number of atoms for parallel runs.
 
 
    ****************************************************************************
@@ -153,16 +244,16 @@
   Nuclear charge:   7.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   7 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   7 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
 
                          SYMGRP: Point group information
@@ -234,7 +325,7 @@ Point group: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-15
 
 
   Cartesian Coordinates (a.u.)
@@ -288,8 +379,12 @@ Point group: C2v
  H   _2:    1.919774    1.069403    2.035662    0.000000
 
 
-  Max interatomic separation is    2.0357 Angstrom (    3.8468 Bohr)
+  Max    interatomic separation is    2.0357 Angstrom (    3.8468 Bohr)
   between atoms    4 and    3, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    1.0694 Angstrom (    2.0209 Bohr)
+
+  Min YX interatomic separation is    1.2487 Angstrom (    2.3597 Bohr)
 
 
   Bond distances (Angstrom):
@@ -332,7 +427,7 @@ Point group: C2v
             9.066925            1.296228            1.134096 cm-1
 
 
-@  Nuclear repulsion energy :   31.812197210209
+@  Nuclear repulsion energy :   31.812197210209 Hartree
 
 
   Symmetry Orbitals
@@ -432,13 +527,13 @@ Point group: C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:       62733 ( 22.8% )
  Megabytes written:                              0.721
 
- >>>> Total CPU  time used in HERMIT:   0.10 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
+ >>>> Total wall time used in HERMIT:   0.08 seconds
 
 
                         .----------------------------------.
@@ -475,8 +570,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 18:22:46 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:44:46 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
        Cis-diazine CCSD geometry optimisation (cc-dzp basis)                 
@@ -485,30 +580,28 @@ Point group: C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
-
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         16
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          16
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -521,18 +614,12 @@ Point group: C2v
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               8 |    4    1    3    0
+@    Occupied SCF orbitals               8 |    4    1    3    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-10
-
-
- Changes of defaults for CC:
- ---------------------------
-
-  
 
 
  Changes of defaults for CC:
@@ -547,70 +634,71 @@ Point group: C2v
 
  Automatic occupation of symmetries with  16 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
-   1  -109.662214756       2.68D+00  -1.10D+02    4  1  3  0
+@  1  -109.662214756       2.68D+00  -1.10D+02     4   1   3   0
       Virial theorem: -V/T =      2.010294
-      MULPOP  N   _1  0.00; N   _2  0.00; H   _1 -0.00; H   _2 -0.00; 
+@      MULPOP N   _1  0.00; N   _2  0.00; H   _1 -0.00; H   _2 -0.00; 
  -----------------------------------------------------------------------------
-   2  -109.971650055       5.73D-01  -3.09D-01    4  1  3  0
+@  2  -109.971650055       5.73D-01  -3.09D-01     4   1   3   0
       Virial theorem: -V/T =      1.996999
-      MULPOP  N   _1 -0.13; N   _2 -0.13; H   _1  0.13; H   _2  0.13; 
+@      MULPOP N   _1 -0.13; N   _2 -0.13; H   _1  0.13; H   _2  0.13; 
  -----------------------------------------------------------------------------
-   3  -109.991432909       1.72D-01  -1.98D-02    4  1  3  0
+@  3  -109.991432909       1.72D-01  -1.98D-02     4   1   3   0
       Virial theorem: -V/T =      2.005218
-      MULPOP  N   _1 -0.09; N   _2 -0.09; H   _1  0.09; H   _2  0.09; 
+@      MULPOP N   _1 -0.09; N   _2 -0.09; H   _1  0.09; H   _2  0.09; 
  -----------------------------------------------------------------------------
-   4  -109.993465537       3.71D-02  -2.03D-03    4  1  3  0
+@  4  -109.993465537       3.71D-02  -2.03D-03     4   1   3   0
       Virial theorem: -V/T =      2.002830
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   5  -109.993625172       8.42D-03  -1.60D-04    4  1  3  0
+@  5  -109.993625172       8.42D-03  -1.60D-04     4   1   3   0
       Virial theorem: -V/T =      2.003047
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   6  -109.993634214       1.79D-03  -9.04D-06    4  1  3  0
+@  6  -109.993634214       1.79D-03  -9.04D-06     4   1   3   0
       Virial theorem: -V/T =      2.002989
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   7  -109.993634861       3.33D-04  -6.47D-07    4  1  3  0
+@  7  -109.993634861       3.33D-04  -6.47D-07     4   1   3   0
       Virial theorem: -V/T =      2.002987
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   8  -109.993634884       3.94D-05  -2.29D-08    4  1  3  0
+@  8  -109.993634884       3.94D-05  -2.29D-08     4   1   3   0
       Virial theorem: -V/T =      2.002986
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   9  -109.993634884       7.60D-06  -2.38D-10    4  1  3  0
+@  9  -109.993634884       7.60D-06  -2.38D-10     4   1   3   0
       Virial theorem: -V/T =      2.002986
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-  10  -109.993634884       1.24D-06  -7.84D-12    4  1  3  0
+@ 10  -109.993634884       1.24D-06  -7.87D-12     4   1   3   0
       Virial theorem: -V/T =      2.002986
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-  11  -109.993634884       1.33D-07  -3.13D-13    4  1  3  0
+@ 11  -109.993634884       1.33D-07  -1.99D-13     4   1   3   0
       Virial theorem: -V/T =      2.002986
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-  12  -109.993634884       2.74D-08   8.53D-14    4  1  3  0
+@ 12  -109.993634884       2.74D-08  -5.68D-14     4   1   3   0
       Virial theorem: -V/T =      2.002986
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-  13  -109.993634884       4.16D-09   5.68D-14    4  1  3  0
+@ 13  -109.993634884       4.16D-09   0.00D+00     4   1   3   0
       Virial theorem: -V/T =      2.002986
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-  14  -109.993634884       7.25D-10  -5.68D-14    4  1  3  0
+@ 14  -109.993634884       7.25D-10   5.68D-14     4   1   3   0
       Virial theorem: -V/T =      2.002986
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-  15  -109.993634884       8.32D-11  -5.68D-14    4  1  3  0
+@ 15  -109.993634884       8.31D-11  -5.68D-14     4   1   3   0
 
- *** DIIS converged in  15 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  15 iterations !
+@     Converged SCF energy, gradient:   -109.993634884099    8.31D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -641,25 +729,27 @@ Point group: C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.016       0.016
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -109.993634884102                 
-     Nuclear repulsion:            31.812197210209
-     Electronic energy:          -141.805832094310
+@    Final HF energy:            -109.993634884099                 
+@    Nuclear repulsion:            31.812197210209
+@    Electronic energy:          -141.805832094308
 
-     Final gradient norm:           0.000000000083
+@    Final gradient norm:           0.000000000083
 
  
-     Date and time (Linux)  : Wed Mar 16 18:22:46 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:44:46 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -722,12 +812,12 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.02 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:22:46 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:44:46 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -777,25 +867,25 @@ Point group: C2v
           Number of t2 amplitudes                 :      7970
           Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster MP2   energy :    -110.3325686854997087
- Iter.  1: Coupled cluster CCSD  energy :    -110.3366541853826135
- Iter.  2: Coupled cluster CCSD  energy :    -110.3479288713133428
- Iter.  3: Coupled cluster CCSD  energy :    -110.3507266590141427
- Iter.  4: Coupled cluster CCSD  energy :    -110.3506992235998752
- Iter.  5: Coupled cluster CCSD  energy :    -110.3507543859922322
- Iter.  6: Coupled cluster CCSD  energy :    -110.3507464768403707
- Iter.  7: Coupled cluster CCSD  energy :    -110.3507419146780109
- Iter.  8: Coupled cluster CCSD  energy :    -110.3507420764385643
- Iter.  9: Coupled cluster CCSD  energy :    -110.3507417887662854
- Iter. 10: Coupled cluster CCSD  energy :    -110.3507418556636139
- Iter. 11: Coupled cluster CCSD  energy :    -110.3507418036370353
- Iter. 12: Coupled cluster CCSD  energy :    -110.3507417983236252
- Iter. 13: Coupled cluster CCSD  energy :    -110.3507418102255713
- Iter. 14: Coupled cluster CCSD  energy :    -110.3507418022326618
- Iter. 15: Coupled cluster CCSD  energy :    -110.3507418022583551
+ Iter.  1: Coupled cluster MP2   energy :    -110.3325686854969945
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3366541853808798
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3479288713107991
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3507266590114995
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3506992235972177
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3507543859896884
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3507464768375570
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3507419146742023
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3507420764366742
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3507417887628321
+ Iter. 10: Coupled cluster CCSD  energy :    -110.3507418556611697
+ Iter. 11: Coupled cluster CCSD  energy :    -110.3507418036344490
+ Iter. 12: Coupled cluster CCSD  energy :    -110.3507417983202714
+ Iter. 13: Coupled cluster CCSD  energy :    -110.3507418102228144
+ Iter. 14: Coupled cluster CCSD  energy :    -110.3507418022295212
+ Iter. 15: Coupled cluster CCSD  energy :    -110.3507418022549018
 
- CCSD  energy converged to within   0.10D-09 is   -110.350741802
- Final 2-norm of the CC vector function:  2.49747689D-08
+ CCSD  energy converged to within   0.10D-09 is         -110.350741802255
+ Final 2-norm of the CC vector function:  2.49747650D-08
 
 
 
@@ -860,6 +950,12 @@ Point group: C2v
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       0.826       0.831
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:47 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
@@ -870,6 +966,8 @@ Point group: C2v
      This will be the default.
 
  Center of mass dipole origin  :    0.000000    0.000000    0.000000
+
+ Center of mass gauge origin   :    0.000000    0.000000    0.000000
 
 
                     .------------------------------------------.
@@ -908,18 +1006,22 @@ Point group: C2v
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of type L0  and symmetry  1 was not found on file.
+ RPA: exit cceq_str
 
 
                   Constructing right-hand-side for CCSD-kappa-0
                   ---------------------------------------------
 
- CC_FOP> Norm of RHS vector:  4.85745367852989489E-004
+ CC_FOP> Norm of RHS vector:   4.8574536785094327E-004
 
 
                       Solving for orbital relaxation vector
                       -------------------------------------
 
+
+ Integral transformation: Total CPU and WALL times (sec)       0.017       0.017
 
    Equations converged to residual less than:  0.000000
   
@@ -952,7 +1054,7 @@ Point group: C2v
 
                    Molecular gradient norm:  1.81E-03
 
->>> Total time used in gradient section:        0.90 seconds.
+>>> Total time used in gradient section:        0.95 seconds.
   
 
  *******************************************************************************
@@ -982,6 +1084,12 @@ Point group: C2v
  *******************************************************************************
  *******************************************************************************
 
+
+ >>>> CPU and wall time for CC :       1.954       2.025
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                       .-------------------------------------.
@@ -1051,17 +1159,17 @@ Point group: C2v
           - Geometrical derivatives of overlap integrals
           - Geometrical derivatives of one-electron Hamiltonian integrals
 
- Center of mass  (bohr):      0.000000000000      0.000000000000      0.013132855851
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.013132855850
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:       62733 ( 22.8% )
  Megabytes written:                              0.721
 
- >>>> Total CPU  time used in HERMIT:   0.09 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
+ >>>> Total wall time used in HERMIT:   0.08 seconds
 
 
                         .----------------------------------.
@@ -1090,58 +1198,59 @@ Point group: C2v
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
-   1    -109.995106939        3.68461D-02   -1.47D-03    1
+@  1    -109.995106939        3.68461D-02   -1.47D-03    1
       Virial theorem: -V/T =      2.002747
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   2    -109.995218354        8.57677D-03   -1.11D-04    2
+@  2    -109.995218354        8.57677D-03   -1.11D-04    2
       Virial theorem: -V/T =      2.002603
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   3    -109.995227690        2.09153D-03   -9.34D-06    3
+@  3    -109.995227690        2.09153D-03   -9.34D-06    3
       Virial theorem: -V/T =      2.002644
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   4    -109.995228475        7.04017D-04   -7.85D-07    4
+@  4    -109.995228475        7.04017D-04   -7.85D-07    4
       Virial theorem: -V/T =      2.002636
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   5    -109.995228560        1.74915D-04   -8.49D-08    5
+@  5    -109.995228560        1.74915D-04   -8.49D-08    5
       Virial theorem: -V/T =      2.002645
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   6    -109.995228564        4.23039D-05   -4.07D-09    6
+@  6    -109.995228564        4.23039D-05   -4.07D-09    6
       Virial theorem: -V/T =      2.002643
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   7    -109.995228564        6.77299D-06   -2.89D-10    7
+@  7    -109.995228564        6.77299D-06   -2.89D-10    7
       Virial theorem: -V/T =      2.002643
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   8    -109.995228564        9.78208D-07   -7.59D-12    8
+@  8    -109.995228564        9.78208D-07   -7.56D-12    8
       Virial theorem: -V/T =      2.002643
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   9    -109.995228564        1.54937D-07   -1.71D-13    9
+@  9    -109.995228564        1.54937D-07   -2.27D-13    9
       Virial theorem: -V/T =      2.002643
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-  10    -109.995228564        2.43007D-08    5.68D-14   10
+@ 10    -109.995228564        2.43006D-08    0.00D+00   10
       Virial theorem: -V/T =      2.002643
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-  11    -109.995228564        4.39092D-09    0.00D+00   10
+@ 11    -109.995228564        4.39175D-09    5.68D-14   10
       Virial theorem: -V/T =      2.002643
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-  12    -109.995228564        7.08757D-10   -1.14D-13   10
+@ 12    -109.995228564        7.08713D-10    0.00D+00   10
       Virial theorem: -V/T =      2.002643
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-  13    -109.995228564        6.20737D-11    5.68D-14   10
+@ 13    -109.995228564        6.20912D-11   -2.84D-14   10
 
- *** DIIS converged in  13 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  13 iterations !
+@     Converged SCF energy, gradient:   -109.995228564019    6.21D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1172,34 +1281,36 @@ Point group: C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.013       0.013
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -109.995228564021                 
-     Nuclear repulsion:            31.912734739082
-     Electronic energy:          -141.907963303103
+@    Final HF energy:            -109.995228564019                 
+@    Nuclear repulsion:            31.912734739053
+@    Electronic energy:          -141.907963303071
 
-     Final gradient norm:           0.000000000062
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:22:51 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+@    Final gradient norm:           0.000000000062
 
  
-     Date and time (Linux)  : Wed Mar 16 18:22:51 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:44:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.02 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -1249,24 +1360,24 @@ Point group: C2v
           Number of t2 amplitudes                 :      7970
           Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster RSTAR energy :    -110.3521116857953359
- Iter.  1: Coupled cluster CCSD  energy :    -110.3514490306972959
- Iter.  2: Coupled cluster CCSD  energy :    -110.3514016478785607
- Iter.  3: Coupled cluster CCSD  energy :    -110.3513390800565048
- Iter.  4: Coupled cluster CCSD  energy :    -110.3513248117429129
- Iter.  5: Coupled cluster CCSD  energy :    -110.3513227350040040
- Iter.  6: Coupled cluster CCSD  energy :    -110.3513236979039505
- Iter.  7: Coupled cluster CCSD  energy :    -110.3513238444610209
- Iter.  8: Coupled cluster CCSD  energy :    -110.3513239578466454
- Iter.  9: Coupled cluster CCSD  energy :    -110.3513239335603515
- Iter. 10: Coupled cluster CCSD  energy :    -110.3513239521923310
- Iter. 11: Coupled cluster CCSD  energy :    -110.3513239496933664
- Iter. 12: Coupled cluster CCSD  energy :    -110.3513239519514997
- Iter. 13: Coupled cluster CCSD  energy :    -110.3513239528226535
- Iter. 14: Coupled cluster CCSD  energy :    -110.3513239527679275
+ Iter.  1: Coupled cluster RSTAR energy :    -110.3521116857943269
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3514490306947806
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3514016478761022
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3513390800551406
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3513248117398149
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3513227350015740
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3513236979009093
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3513238444584772
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3513239578440590
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3513239335576230
+ Iter. 10: Coupled cluster CCSD  energy :    -110.3513239521898441
+ Iter. 11: Coupled cluster CCSD  energy :    -110.3513239496906664
+ Iter. 12: Coupled cluster CCSD  energy :    -110.3513239519489417
+ Iter. 13: Coupled cluster CCSD  energy :    -110.3513239528194561
+ Iter. 14: Coupled cluster CCSD  energy :    -110.3513239527663075
 
- CCSD  energy converged to within   0.10D-09 is   -110.351323953
- Final 2-norm of the CC vector function:  7.37992329D-09
+ CCSD  energy converged to within   0.10D-09 is         -110.351323952766
+ Final 2-norm of the CC vector function:  7.37991845D-09
 
 
 
@@ -1331,6 +1442,12 @@ Point group: C2v
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       0.777       0.868
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:50 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
@@ -1343,6 +1460,8 @@ Point group: C2v
      This will be the default.
 
  Center of mass dipole origin  :    0.000000    0.000000    0.013133
+
+ Center of mass gauge origin   :    0.000000    0.000000    0.013133
 
 
                     .------------------------------------------.
@@ -1381,22 +1500,26 @@ Point group: C2v
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
+ RPA: exit cceq_str
 
 
                   Constructing right-hand-side for CCSD-kappa-0
                   ---------------------------------------------
 
- CC_FOP> Norm of RHS vector:  4.78749764281213776E-004
+ CC_FOP> Norm of RHS vector:   4.7874976428696097E-004
 
 
                       Solving for orbital relaxation vector
                       -------------------------------------
 
 
- Converged vectors from previous calculation are used as starting vectors for property
-ETAKAPPA        
+ Integral transformation: Total CPU and WALL times (sec)       0.017       0.017
+
+ INFO: Converged vectors from previous calculation are used as starting vectors for property
+          ETAKAPPA           
 
    Equations converged to residual less than:  0.000000
   
@@ -1429,7 +1552,7 @@ ETAKAPPA
 
                    Molecular gradient norm:  2.18E-04
 
->>> Total time used in gradient section:        0.90 seconds.
+>>> Total time used in gradient section:        0.95 seconds.
   
 
  *******************************************************************************
@@ -1460,6 +1583,12 @@ ETAKAPPA
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       1.860       2.012
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:52 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
@@ -1476,8 +1605,8 @@ ETAKAPPA
                                 Next geometry (au)
                                 ------------------
 
- N   _1     1.1809413494            0.0000000000           -0.1043948282
- N   _2    -1.1809413494            0.0000000000           -0.1043948282
+ N   _1     1.1809413495            0.0000000000           -0.1043948282
+ N   _2    -1.1809413495            0.0000000000           -0.1043948282
  H   _1     1.9148634888            0.0000000000            1.7311765282
  H   _2    -1.9148634888            0.0000000000            1.7311765282
 
@@ -1529,17 +1658,17 @@ ETAKAPPA
           - Geometrical derivatives of overlap integrals
           - Geometrical derivatives of one-electron Hamiltonian integrals
 
- Center of mass  (bohr):      0.000000000000      0.000000000000      0.018844606147
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.018844606148
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:       62733 ( 22.8% )
  Megabytes written:                              0.721
 
- >>>> Total CPU  time used in HERMIT:   0.09 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
+ >>>> Total wall time used in HERMIT:   0.08 seconds
 
 
                         .----------------------------------.
@@ -1568,58 +1697,59 @@ ETAKAPPA
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
-   1    -109.995833028        1.99640D-02   -6.04D-04    1
+@  1    -109.995833028        1.99640D-02   -6.04D-04    1
       Virial theorem: -V/T =      2.002490
-      MULPOP  N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
+@      MULPOP N   _1 -0.12; N   _2 -0.12; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   2    -109.995864897        4.43263D-03   -3.19D-05    2
+@  2    -109.995864897        4.43263D-03   -3.19D-05    2
       Virial theorem: -V/T =      2.002407
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   3    -109.995867282        1.04200D-03   -2.39D-06    3
+@  3    -109.995867282        1.04200D-03   -2.39D-06    3
       Virial theorem: -V/T =      2.002427
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   4    -109.995867481        3.38834D-04   -1.99D-07    4
+@  4    -109.995867481        3.38834D-04   -1.99D-07    4
       Virial theorem: -V/T =      2.002424
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   5    -109.995867501        8.32833D-05   -2.06D-08    5
+@  5    -109.995867501        8.32833D-05   -2.06D-08    5
       Virial theorem: -V/T =      2.002428
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   6    -109.995867502        2.10874D-05   -9.25D-10    6
+@  6    -109.995867502        2.10874D-05   -9.25D-10    6
       Virial theorem: -V/T =      2.002427
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   7    -109.995867502        3.57047D-06   -7.08D-11    7
+@  7    -109.995867502        3.57047D-06   -7.07D-11    7
       Virial theorem: -V/T =      2.002427
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   8    -109.995867502        5.70526D-07   -2.25D-12    8
+@  8    -109.995867502        5.70526D-07   -2.27D-12    8
       Virial theorem: -V/T =      2.002427
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   9    -109.995867502        9.73961D-08   -1.14D-13    9
+@  9    -109.995867502        9.73961D-08   -5.68D-14    9
       Virial theorem: -V/T =      2.002427
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-  10    -109.995867502        1.83650D-08    1.42D-13   10
+@ 10    -109.995867502        1.83650D-08   -5.68D-14   10
       Virial theorem: -V/T =      2.002427
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-  11    -109.995867502        2.37698D-09   -8.53D-14   10
+@ 11    -109.995867502        2.37742D-09    8.53D-14   10
       Virial theorem: -V/T =      2.002427
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-  12    -109.995867502        3.56099D-10    2.84D-14   10
+@ 12    -109.995867502        3.56119D-10   -5.68D-14   10
       Virial theorem: -V/T =      2.002427
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-  13    -109.995867502        3.82122D-11    0.00D+00   10
+@ 13    -109.995867502        3.81867D-11    2.84D-14   10
 
- *** DIIS converged in  13 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  13 iterations !
+@     Converged SCF energy, gradient:   -109.995867502465    3.82D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1650,34 +1780,36 @@ ETAKAPPA
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.013       0.013
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -109.995867502469                 
-     Nuclear repulsion:            31.979115275931
-     Electronic energy:          -141.974982778400
+@    Final HF energy:            -109.995867502465                 
+@    Nuclear repulsion:            31.979115275892
+@    Electronic energy:          -141.974982778357
 
-     Final gradient norm:           0.000000000038
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:22:56 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+@    Final gradient norm:           0.000000000038
 
  
-     Date and time (Linux)  : Wed Mar 16 18:22:56 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:44:52 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.01 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:52 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -1727,24 +1859,24 @@ ETAKAPPA
           Number of t2 amplitudes                 :      7970
           Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster RSTAR energy :    -110.3518691872322819
- Iter.  1: Coupled cluster CCSD  energy :    -110.3514737159778889
- Iter.  2: Coupled cluster CCSD  energy :    -110.3514489124442690
- Iter.  3: Coupled cluster CCSD  energy :    -110.3514095600982188
- Iter.  4: Coupled cluster CCSD  energy :    -110.3514017531581288
- Iter.  5: Coupled cluster CCSD  energy :    -110.3514001375597786
- Iter.  6: Coupled cluster CCSD  energy :    -110.3514007962765220
- Iter.  7: Coupled cluster CCSD  energy :    -110.3514008789930614
- Iter.  8: Coupled cluster CCSD  energy :    -110.3514009284183999
- Iter.  9: Coupled cluster CCSD  energy :    -110.3514009204256041
- Iter. 10: Coupled cluster CCSD  energy :    -110.3514009238094218
- Iter. 11: Coupled cluster CCSD  energy :    -110.3514009231545003
- Iter. 12: Coupled cluster CCSD  energy :    -110.3514009244783836
- Iter. 13: Coupled cluster CCSD  energy :    -110.3514009247429044
- Iter. 14: Coupled cluster CCSD  energy :    -110.3514009247364953
+ Iter.  1: Coupled cluster RSTAR energy :    -110.3518691872288144
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3514737159747625
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3514489124412847
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3514095600953198
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3514017531547609
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3514001375559985
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3514007962734809
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3514008789891960
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3514009284156572
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3514009204217103
+ Iter. 10: Coupled cluster CCSD  energy :    -110.3514009238057838
+ Iter. 11: Coupled cluster CCSD  energy :    -110.3514009231513597
+ Iter. 12: Coupled cluster CCSD  energy :    -110.3514009244750866
+ Iter. 13: Coupled cluster CCSD  energy :    -110.3514009247394938
+ Iter. 14: Coupled cluster CCSD  energy :    -110.3514009247331700
 
- CCSD  energy converged to within   0.10D-09 is   -110.351400925
- Final 2-norm of the CC vector function:  3.58238458D-09
+ CCSD  energy converged to within   0.10D-09 is         -110.351400924733
+ Final 2-norm of the CC vector function:  3.58238214D-09
 
 
 
@@ -1809,6 +1941,12 @@ ETAKAPPA
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       0.776       0.782
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:53 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
@@ -1821,6 +1959,8 @@ ETAKAPPA
      This will be the default.
 
  Center of mass dipole origin  :    0.000000    0.000000    0.018845
+
+ Center of mass gauge origin   :    0.000000    0.000000    0.018845
 
 
                     .------------------------------------------.
@@ -1859,22 +1999,26 @@ ETAKAPPA
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
+ RPA: exit cceq_str
 
 
                   Constructing right-hand-side for CCSD-kappa-0
                   ---------------------------------------------
 
- CC_FOP> Norm of RHS vector:  4.74572546369204256E-004
+ CC_FOP> Norm of RHS vector:   4.7457254637828765E-004
 
 
                       Solving for orbital relaxation vector
                       -------------------------------------
 
 
- Converged vectors from previous calculation are used as starting vectors for property
-ETAKAPPA        
+ Integral transformation: Total CPU and WALL times (sec)       0.017       0.016
+
+ INFO: Converged vectors from previous calculation are used as starting vectors for property
+          ETAKAPPA           
 
    Equations converged to residual less than:  0.000000
   
@@ -1907,7 +2051,7 @@ ETAKAPPA
 
                    Molecular gradient norm:  2.49E-06
 
->>> Total time used in gradient section:        0.89 seconds.
+>>> Total time used in gradient section:        0.94 seconds.
   
 
  *******************************************************************************
@@ -1938,6 +2082,12 @@ ETAKAPPA
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       1.807       1.871
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:54 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
@@ -1954,8 +2104,8 @@ ETAKAPPA
                                 Next geometry (au)
                                 ------------------
 
- N   _1     1.1811682707            0.0000000000           -0.1051899206
- N   _2    -1.1811682707            0.0000000000           -0.1051899206
+ N   _1     1.1811682708            0.0000000000           -0.1051899206
+ N   _2    -1.1811682708            0.0000000000           -0.1051899206
  H   _1     1.9135474684            0.0000000000            1.7319716206
  H   _2    -1.9135474684            0.0000000000            1.7319716206
 
@@ -2007,17 +2157,17 @@ ETAKAPPA
           - Geometrical derivatives of overlap integrals
           - Geometrical derivatives of one-electron Hamiltonian integrals
 
- Center of mass  (bohr):      0.000000000000      0.000000000000      0.018156278072
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.018156278071
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:       62733 ( 22.8% )
  Megabytes written:                              0.721
 
- >>>> Total CPU  time used in HERMIT:   0.09 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
+ >>>> Total wall time used in HERMIT:   0.08 seconds
 
 
                         .----------------------------------.
@@ -2046,54 +2196,55 @@ ETAKAPPA
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
-   1    -109.995804689        1.96874D-03    6.28D-05    1
+@  1    -109.995804689        1.96874D-03    6.28D-05    1
       Virial theorem: -V/T =      2.002439
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   2    -109.995804991        5.04647D-04   -3.02D-07    2
+@  2    -109.995804991        5.04647D-04   -3.02D-07    2
       Virial theorem: -V/T =      2.002449
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   3    -109.995805016        1.48374D-04   -2.45D-08    3
+@  3    -109.995805016        1.48374D-04   -2.45D-08    3
       Virial theorem: -V/T =      2.002444
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   4    -109.995805018        4.43996D-05   -2.33D-09    4
+@  4    -109.995805018        4.43996D-05   -2.33D-09    4
       Virial theorem: -V/T =      2.002445
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   5    -109.995805019        9.80949D-06   -2.89D-10    5
+@  5    -109.995805019        9.80949D-06   -2.89D-10    5
       Virial theorem: -V/T =      2.002445
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   6    -109.995805019        2.22790D-06   -1.96D-11    6
+@  6    -109.995805019        2.22790D-06   -1.95D-11    6
       Virial theorem: -V/T =      2.002445
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   7    -109.995805019        2.01711D-07   -7.96D-13    7
+@  7    -109.995805019        2.01711D-07   -8.53D-13    7
       Virial theorem: -V/T =      2.002445
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   8    -109.995805019        3.11783D-08   -1.14D-13    8
+@  8    -109.995805019        3.11783D-08   -5.68D-14    8
       Virial theorem: -V/T =      2.002445
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   9    -109.995805019        5.81105D-09    8.53D-14    9
+@  9    -109.995805019        5.81108D-09    5.68D-14    9
       Virial theorem: -V/T =      2.002445
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-  10    -109.995805019        8.23608D-10    0.00D+00   10
+@ 10    -109.995805019        8.23597D-10    0.00D+00   10
       Virial theorem: -V/T =      2.002445
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-  11    -109.995805019        1.52234D-10   -5.68D-14   10
+@ 11    -109.995805019        1.52294D-10    0.00D+00   10
       Virial theorem: -V/T =      2.002445
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-  12    -109.995805019        3.13758D-11    1.14D-13   10
+@ 12    -109.995805019        3.14074D-11    0.00D+00   10
 
- *** DIIS converged in  12 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  12 iterations !
+@     Converged SCF energy, gradient:   -109.995805018585    3.14D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2124,34 +2275,36 @@ ETAKAPPA
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.012       0.012
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -109.995805018590                 
-     Nuclear repulsion:            31.972204905834
-     Electronic energy:          -141.968009924424
+@    Final HF energy:            -109.995805018585                 
+@    Nuclear repulsion:            31.972204905802
+@    Electronic energy:          -141.968009924387
 
-     Final gradient norm:           0.000000000031
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:23:00 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.02 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+@    Final gradient norm:           0.000000000031
 
  
-     Date and time (Linux)  : Wed Mar 16 18:23:00 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:44:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.02 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -2201,22 +2354,22 @@ ETAKAPPA
           Number of t2 amplitudes                 :      7970
           Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster RSTAR energy :    -110.3513457150754675
- Iter.  1: Coupled cluster CCSD  energy :    -110.3513964234409599
- Iter.  2: Coupled cluster CCSD  energy :    -110.3513981688542742
- Iter.  3: Coupled cluster CCSD  energy :    -110.3514010042708264
- Iter.  4: Coupled cluster CCSD  energy :    -110.3514020147353705
- Iter.  5: Coupled cluster CCSD  energy :    -110.3514020133108460
- Iter.  6: Coupled cluster CCSD  energy :    -110.3514020453562523
- Iter.  7: Coupled cluster CCSD  energy :    -110.3514020180931965
- Iter.  8: Coupled cluster CCSD  energy :    -110.3514020099346311
- Iter.  9: Coupled cluster CCSD  energy :    -110.3514020097643993
- Iter. 10: Coupled cluster CCSD  energy :    -110.3514020081621112
- Iter. 11: Coupled cluster CCSD  energy :    -110.3514020077796545
- Iter. 12: Coupled cluster CCSD  energy :    -110.3514020077977733
+ Iter.  1: Coupled cluster RSTAR energy :    -110.3513457150716448
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3513964234374640
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3513981688504373
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3514010042664353
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3514020147318888
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3514020133063696
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3514020453518611
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3514020180893453
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3514020099306947
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3514020097612303
+ Iter. 10: Coupled cluster CCSD  energy :    -110.3514020081573932
+ Iter. 11: Coupled cluster CCSD  energy :    -110.3514020077758317
+ Iter. 12: Coupled cluster CCSD  energy :    -110.3514020077936664
 
- CCSD  energy converged to within   0.10D-09 is   -110.351402008
- Final 2-norm of the CC vector function:  5.55317320D-09
+ CCSD  energy converged to within   0.10D-09 is         -110.351402007794
+ Final 2-norm of the CC vector function:  5.55316990D-09
 
 
 
@@ -2281,6 +2434,12 @@ ETAKAPPA
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       0.674       0.678
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
@@ -2293,6 +2452,8 @@ ETAKAPPA
      This will be the default.
 
  Center of mass dipole origin  :    0.000000    0.000000    0.018156
+
+ Center of mass gauge origin   :    0.000000    0.000000    0.018156
 
 
                     .------------------------------------------.
@@ -2331,22 +2492,26 @@ ETAKAPPA
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
+ RPA: exit cceq_str
 
 
                   Constructing right-hand-side for CCSD-kappa-0
                   ---------------------------------------------
 
- CC_FOP> Norm of RHS vector:  4.75384920348516610E-004
+ CC_FOP> Norm of RHS vector:   4.7538492035398175E-004
 
 
                       Solving for orbital relaxation vector
                       -------------------------------------
 
 
- Converged vectors from previous calculation are used as starting vectors for property
-ETAKAPPA        
+ Integral transformation: Total CPU and WALL times (sec)       0.016       0.017
+
+ INFO: Converged vectors from previous calculation are used as starting vectors for property
+          ETAKAPPA           
 
    Equations converged to residual less than:  0.000000
   
@@ -2379,7 +2544,7 @@ ETAKAPPA
 
                    Molecular gradient norm:  4.03E-07
 
->>> Total time used in gradient section:        0.90 seconds.
+>>> Total time used in gradient section:        0.94 seconds.
   
 
  *******************************************************************************
@@ -2409,6 +2574,12 @@ ETAKAPPA
  *******************************************************************************
  *******************************************************************************
 
+
+ >>>> CPU and wall time for CC :       1.711       1.938
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:57 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                       .-------------------------------------.
@@ -2479,17 +2650,17 @@ ETAKAPPA
           - Geometrical derivatives of overlap integrals
           - Geometrical derivatives of one-electron Hamiltonian integrals
 
- Center of mass  (bohr):      0.000000000000      0.000000000000      0.017945547352
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.017945547350
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:       62733 ( 22.8% )
  Megabytes written:                              0.721
 
- >>>> Total CPU  time used in HERMIT:   0.09 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
+ >>>> Total wall time used in HERMIT:   0.08 seconds
 
 
                         .----------------------------------.
@@ -2518,50 +2689,51 @@ ETAKAPPA
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
-   1    -109.995779445        1.04210D-03    2.56D-05    1
+@  1    -109.995779445        1.04210D-03    2.56D-05    1
       Virial theorem: -V/T =      2.002449
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   2    -109.995779530        2.73706D-04   -8.52D-08    2
+@  2    -109.995779530        2.73706D-04   -8.52D-08    2
       Virial theorem: -V/T =      2.002453
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   3    -109.995779536        8.81046D-05   -6.60D-09    3
+@  3    -109.995779536        8.81046D-05   -6.60D-09    3
       Virial theorem: -V/T =      2.002449
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   4    -109.995779537        1.57577D-05   -6.10D-10    4
+@  4    -109.995779537        1.57577D-05   -6.10D-10    4
       Virial theorem: -V/T =      2.002450
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   5    -109.995779537        3.18462D-06   -3.68D-11    5
+@  5    -109.995779537        3.18462D-06   -3.71D-11    5
       Virial theorem: -V/T =      2.002450
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   6    -109.995779537        7.58942D-07   -1.93D-12    6
+@  6    -109.995779537        7.58942D-07   -1.88D-12    6
       Virial theorem: -V/T =      2.002450
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   7    -109.995779537        9.76593D-08   -5.68D-14    7
+@  7    -109.995779537        9.76593D-08    8.53D-14    7
       Virial theorem: -V/T =      2.002450
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   8    -109.995779537        1.68337D-08    5.68D-14    8
+@  8    -109.995779537        1.68337D-08   -1.14D-13    8
       Virial theorem: -V/T =      2.002450
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-   9    -109.995779537        3.38845D-09   -5.68D-14    9
+@  9    -109.995779537        3.38843D-09    1.14D-13    9
       Virial theorem: -V/T =      2.002450
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-  10    -109.995779537        6.48715D-10   -2.84D-14   10
+@ 10    -109.995779537        6.48727D-10   -1.14D-13   10
       Virial theorem: -V/T =      2.002450
-      MULPOP  N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
+@      MULPOP N   _1 -0.11; N   _2 -0.11; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
-  11    -109.995779537        9.39287D-11    8.53D-14   10
+@ 11    -109.995779537        9.38758D-11   -5.68D-14   10
 
- *** DIIS converged in  11 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:   -109.995779536994    9.39D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2592,34 +2764,36 @@ ETAKAPPA
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.012       0.011
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -109.995779536997                 
-     Nuclear repulsion:            31.969254997132
-     Electronic energy:          -141.965034534130
+@    Final HF energy:            -109.995779536994                 
+@    Nuclear repulsion:            31.969254997049
+@    Electronic energy:          -141.965034534043
 
-     Final gradient norm:           0.000000000094
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:23:05 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.02 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+@    Final gradient norm:           0.000000000094
 
  
-     Date and time (Linux)  : Wed Mar 16 18:23:05 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:44:57 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.01 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:57 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -2669,19 +2843,19 @@ ETAKAPPA
           Number of t2 amplitudes                 :      7970
           Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster RSTAR energy :    -110.3513802902074872
- Iter.  1: Coupled cluster CCSD  energy :    -110.3514007527034266
- Iter.  2: Coupled cluster CCSD  energy :    -110.3514009629475368
- Iter.  3: Coupled cluster CCSD  energy :    -110.3514018213933241
- Iter.  4: Coupled cluster CCSD  energy :    -110.3514022032373845
- Iter.  5: Coupled cluster CCSD  energy :    -110.3514021450627496
- Iter.  6: Coupled cluster CCSD  energy :    -110.3514021721314151
- Iter.  7: Coupled cluster CCSD  energy :    -110.3514021648266379
- Iter.  8: Coupled cluster CCSD  energy :    -110.3514021607154802
- Iter.  9: Coupled cluster CCSD  energy :    -110.3514021606412854
+ Iter.  1: Coupled cluster RSTAR energy :    -110.3513802902038350
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3514007526999166
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3514009629445098
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3514018213910788
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3514022032346844
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3514021450596374
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3514021721281182
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3514021648233694
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3514021607126949
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3514021606383011
 
- CCSD  energy converged to within   0.10D-09 is   -110.351402161
- Final 2-norm of the CC vector function:  4.58766935D-08
+ CCSD  energy converged to within   0.10D-09 is         -110.351402160638
+ Final 2-norm of the CC vector function:  4.58766953D-08
 
 
 
@@ -2746,6 +2920,12 @@ ETAKAPPA
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       0.521       0.524
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:44:58 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
@@ -2758,6 +2938,8 @@ ETAKAPPA
      This will be the default.
 
  Center of mass dipole origin  :    0.000000    0.000000    0.017946
+
+ Center of mass gauge origin   :    0.000000    0.000000    0.017946
 
 
                     .------------------------------------------.
@@ -2796,22 +2978,26 @@ ETAKAPPA
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
+ RPA: exit cceq_str
 
 
                   Constructing right-hand-side for CCSD-kappa-0
                   ---------------------------------------------
 
- CC_FOP> Norm of RHS vector:  4.75852420761824983E-004
+ CC_FOP> Norm of RHS vector:   4.7585242077542592E-004
 
 
                       Solving for orbital relaxation vector
                       -------------------------------------
 
 
- Converged vectors from previous calculation are used as starting vectors for property
-ETAKAPPA        
+ Integral transformation: Total CPU and WALL times (sec)       0.016       0.017
+
+ INFO: Converged vectors from previous calculation are used as starting vectors for property
+          ETAKAPPA           
 
    Equations converged to residual less than:  0.000000
   
@@ -2844,7 +3030,7 @@ ETAKAPPA
 
                    Molecular gradient norm:  1.38E-08
 
->>> Total time used in gradient section:        0.90 seconds.
+>>> Total time used in gradient section:        0.95 seconds.
   
 
  *******************************************************************************
@@ -2874,6 +3060,12 @@ ETAKAPPA
  *******************************************************************************
  *******************************************************************************
 
+
+ >>>> CPU and wall time for CC :       1.715       1.769
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:45:00 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                       .-------------------------------------.
@@ -2916,6 +3108,8 @@ ETAKAPPA
 
  Center of mass dipole origin  :    0.000000    0.000000    0.017946
 
+ Center of mass gauge origin   :    0.000000    0.000000    0.017946
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -2923,8 +3117,8 @@ ETAKAPPA
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:23:09 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:45:00 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
    ***************************************************************************
@@ -2933,8 +3127,8 @@ ETAKAPPA
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:23:09 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:45:00 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -3003,8 +3197,12 @@ ETAKAPPA
  H   _2:    1.904277    1.046606    2.024226    0.000000
 
 
-  Max interatomic separation is    2.0242 Angstrom (    3.8252 Bohr)
+  Max    interatomic separation is    2.0242 Angstrom (    3.8252 Bohr)
   between atoms    4 and    3, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    1.0466 Angstrom (    1.9778 Bohr)
+
+  Min YX interatomic separation is    1.2503 Angstrom (    2.3627 Bohr)
 
 
   Bond distances (Angstrom):
@@ -3035,7 +3233,7 @@ ETAKAPPA
 
 
  >>>> Total CPU  time used in ABACUS:   0.01 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total wall time used in ABACUS:   0.01 seconds
 
 
                    .-------------------------------------------.
@@ -3060,15 +3258,15 @@ ETAKAPPA
 
 
 
- Iter      Energy        Change       GradNorm  Index   StepLen    TrustRad #Rej
- -------------------------------------------------------------------------------
-   0     -110.350742     0.000000     0.030093    0    0.046340*   0.500000   0 
-   1     -110.351324    -0.000582     0.010433    0    0.029329*   0.500000   0 
-   2     -110.351401    -0.000077     0.001116    0    0.001991*   0.500000   0 
-   3     -110.351402    -0.000001     0.000449    0    0.001102*   0.500000   0 
-   4     -110.351402    -0.000000     0.000083    0    0.000146*   0.500000   0 
+@ Iter      Energy        Change       GradNorm  Index   StepLen    TrustRad #Rej
+@ -------------------------------------------------------------------------------
+@   0     -110.350742     0.000000     0.030093    0    0.046340*   0.500000   0 
+@   1     -110.351324    -0.000582     0.010433    0    0.029329*   0.500000   0 
+@   2     -110.351401    -0.000077     0.001116    0    0.001991*   0.500000   0 
+@   3     -110.351402    -0.000001     0.000449    0    0.001102*   0.500000   0 
+@   4     -110.351402    -0.000000     0.000083    0    0.000146*   0.500000   0 
 
- *) Newton step taken.
+@  *) Newton step taken.
 
 
    Interatomic separations (in Angstrom):
@@ -3082,8 +3280,12 @@ ETAKAPPA
  H   _2:    1.904277    1.046606    2.024226    0.000000
 
 
-  Max interatomic separation is    2.0242 Angstrom (    3.8252 Bohr)
+  Max    interatomic separation is    2.0242 Angstrom (    3.8252 Bohr)
   between atoms    4 and    3, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    1.0466 Angstrom (    1.9778 Bohr)
+
+  Min YX interatomic separation is    1.2503 Angstrom (    2.3627 Bohr)
 
 
   Bond distances (Angstrom):
@@ -3106,15 +3308,15 @@ ETAKAPPA
 
 
 
- Geometry converged in            5  iterations!
+@ Geometry converged in  5 iterations!
 
- Energy at final geometry is       :    -110.351402 a.u.
- Energy change during optimization :      -0.000660 a.u.
-                                             -1.734 kJ/mol
+@ Energy at final geometry is       :    -110.351402 a.u.
+@ Energy change during optimization :      -0.000660 a.u.
+@                                             -1.734 kJ/mol
 
- >>>> Total CPU  time used in DALTON:  12.82 seconds
- >>>> Total wall time used in DALTON:  23.00 seconds
+ >>>> Total CPU  time used in DALTON:  13.14 seconds
+ >>>> Total wall time used in DALTON:  13.82 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:23:09 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:45:00 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

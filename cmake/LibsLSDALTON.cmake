@@ -46,13 +46,15 @@ set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_t2f.F90
     )
-foreach(_source ${MANUAL_REORDERING_SOURCES})
-    set_source_files_properties(${_source} PROPERTIES GENERATED 1)
-endforeach()
+
 get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-add_custom_target(
-    generate_man_reord
+add_custom_command(
+    OUTPUT
+    ${MANUAL_REORDERING_SOURCES}
+    COMMAND
     python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
+    DEPENDS
+    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
     )
 unset(LIST_OF_DEFINITIONS)
 
@@ -61,7 +63,6 @@ add_library(
     ${MANUAL_REORDERING_SOURCES}
     ${LSUTIL_COMMON_SOURCES}
     )
-add_dependencies(lsutillib_common generate_man_reord)
 
 target_link_libraries(lsutillib_common matrixmlib)
 
@@ -88,9 +89,9 @@ set(ExternalProjectCMakeArgs
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     )
 add_external(matrix-defop)
-set(LIBS
+set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libmatrix-defop.a
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
 add_dependencies(matrix-defop matrixmlib)
@@ -143,10 +144,10 @@ if(ENABLE_XCFUN)
     add_external(xcfun)
     add_dependencies(xcfun_interface xcfun)
     add_definitions(-DVAR_XCFUN)
-    set(LIBS
+    set(EXTERNAL_LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
-        ${LIBS}
+        ${EXTERNAL_LIBS}
         )
 endif()
 
@@ -241,9 +242,9 @@ set(ExternalProjectCMakeArgs
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     )
 add_external(openrsp)
-set(LIBS
+set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libopenrsp.a
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
 add_dependencies(openrsp matrix-defop)
@@ -365,7 +366,7 @@ MERGE_STATIC_LIBS(
 target_link_libraries(
     lsdalton
     lsdaltonmain
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
 target_link_libraries(

@@ -15,28 +15,28 @@ input section:\\[2ex]
 \end{verbatim} \end{inputex}
 \vspace{2ex}
 
-{\lucita} is a string-based Hamiltonian-direct configuration interaction (CI) program, based on the LUCIA code \cite{olsen90}. 
+{\lucita} is a string-based Hamiltonian-direct configuration interaction (CI) module, based on the LUCIA code \cite{olsen90}. 
 For high efficiency the code takes advantage of point group symmetry of D$_{2h}$\ and it's subgroups.
 
-A central feature of the program is the Generalized Active Space (GAS) concept \cite{fleig_gasci2}, 
+A central feature of the module is the Generalized Active Space (GAS) concept \cite{fleig_gasci2}, 
 in which the underlying total orbital space is subdivided 
 into a basically arbitrary number (save for an upper limit) 
 of subspaces with arbitrary occupation constraints. 
 This is the most general approach to orbital space subdivisions and allows one to do 
 efficient CI computations at arbitrary excitation level, e.g. FCI, SDCI, RASCI, 
-and MRCI. The program uses orbitals from either a closed- or an open-shell calculation.
+and MRCI. The module uses orbitals from either a closed- or an open-shell calculation.
 
 The technical limitations are roughly set by several 100 million determinants 
 in the CI expansion on desktop PCs and several billions of determinants 
 on common computing clusters and supercomputers with ample memory.
 
-If desired, the program also computes 1- and 2-particle densities from optimized CI wave functions. 
+If desired, the module also computes 1- and 2-particle densities from optimized CI wave functions. 
 The density matrices may be printed along with natural orbital occupations 
 and the corresponding eigenvectors (NOs).
 
 \section{\Sec{LUCITA} directives}\label{sec:lucita-inp}
 
-          The following \Sec{LUCITA}\ directives for a succesful GAS-CI calculation 
+          The following \Sec{LUCITA}\ directives for a successful GAS-CI calculation 
 are subdivided into {\bf{compulsory}} (Section \ref{sec:lucita-inp-mand}) 
 and {\bf{optional keywords}} (Section \ref{sec:lucita-inp-opt}). 
 
@@ -49,7 +49,7 @@ and {\bf{optional keywords}} (Section \ref{sec:lucita-inp-opt}).
 \item[\Key{CITYPE}] Type of CI calculation. Allowed values are ``GASCI'' and ``RASCI'' \verb| |\newline
 \verb|READ(LUCMD,*) lucita_cfg_ci_type |
 
-\item[\Key{MULTIP}] Spin state multiplicity (singlett: 1, triplett: 3, etc.) \verb| |\newline
+\item[\Key{MULTIP}] Spin state multiplicity (singlet: 1, triplet: 3, etc.) \verb| |\newline
 \verb|READ(LUCMD,*) lucita_cfg_is_spin_multiplett |
 
 

@@ -75,17 +75,6 @@ integer     :: nel
 real(realk) :: minel
 integer     :: minel_pos(2)
 
-if (CFG%orb_debug) then
-write(ls%lupri,*)
-write(ls%lupri,'(a)')    '====================================='
-write(ls%lupri,'(a,l3)') 'INFO Pipek-Mezey, Lowdin   :', CFG%PM_input%PipekMezeyLowdin
-write(ls%lupri,'(a,l3)') 'INFO Pipek-Mezey, Mulliken :', CFG%PM_input%PipekMezeyMull
-write(ls%lupri,'(a,l3)') 'INFO Charge loc., Lowdin   :', CFG%PM_input%ChargeLocLowdin
-write(ls%lupri,'(a,l3)') 'INFO Charge loc., Mulliken :', CFG%PM_input%ChargeLocMulliken
-write(ls%lupri,'(a,i3)') 'INFO Power, m              :', m
-write(ls%lupri,'(a)')    '====================================='
-write(ls%lupri,*)
-end if
 
   CFG%PM_input%cmo=>CMO
   r=0.d0
@@ -107,7 +96,7 @@ end if
   stepsize = CFG%stepsize
   if (norb < 10) CFG%macro_thresh=CFG%macro_thresh*10.0d0
 
-  do i=1,100
+  do i=1,CFG%max_macroit
     CFG%old_mu = CFG%mu
     old_fVal = fVal
     nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
@@ -138,23 +127,28 @@ end if
   ! Compute r
   !call updatecmo(CMO,X)
   call update_OrbLoc(CFG%PM_input,CMO,ls)
-  write(ls%lupri,*) 'CHECK: Qii =', sum(CFG%PM_input%Q(:,:))
   fval = CFG%PM_input%funcVal
   r=2.0d0*(orig_eval-old_fVal)/CFG%r_denom
 
-  if (r<0) then
+  if (r<0.0_realk) then
        write(ls%lupri,*) 'Step not accepted. Go back'
        call mat_copy(1.0d0,CMOsav,CMO)
        call update_OrbLoc(CFG%PM_input,CMO,ls)
        fval = CFG%PM_input%funcVal
-       CFG%stepsize = CFG%stepsize/2.0
+       CFG%stepsize = CFG%stepsize/2.0_realk
    else
-       CFG%stepsize = min(CFG%stepsize*1.2,CFG%max_stepsize)
+       CFG%stepsize = min(CFG%stepsize*2.5_realk,CFG%max_stepsize)
    endif
 
-   if (CFG%stepsize < 0.001) then
+   if (CFG%stepsize < 0.0001_realk) then
          write(CFG%lupri,'(a)') 'WARNING: Too many rejections for localization. We exit..' 
-	 exit
+         write(CFG%lupri,*) ' Cannot proceed with localization due to issues with    '
+         write(CFG%lupri,*) ' solving the level-shifted Newton equations. You may    '
+         write(CFG%lupri,*) ' try to restart calculation and lower the residual norm '
+         write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
+         write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
+         write(CFG%lupri,*) ' and keyword .MICRO THRESH                              '
+         call lsquit('Cannot converge micro iterations. ', CFG%lupri)
     end if
 
     !new gradient
@@ -180,22 +174,17 @@ type(PMitem) :: OrbLoc
 type(lsitem) :: ls
 type(matrix)  :: cmo,X
 integer :: i,nmats,numb
-type(matrix),target  :: cmotemp(15)
-type(matrix) :: Xtemp(15)
-real(realk) :: old_funcval,factor,step(15),stepsize,oval
+type(matrix),target  :: cmotemp(6)
+type(matrix) :: Xtemp(6)
+real(realk) :: old_funcval,factor,step(6),stepsize,oval
 real(realk) :: orig_eival
 
-numb=15
+numb=6
 old_funcval = OrbLoc%funcval
 
-factor = 1.0d0
+factor = 2.5d0
 step = 1.0d0
 step(1)=0.0d0
-step(11)=1.50
-step(12)=1.50
-step(13)=1.50
-step(14)=1.50
-step(15)=1.50
 if (OrbLoc%orb_debug) write(ls%lupri,'(a,I4,a,f15.1)') &
 &'Linesearch number :', 0, ' Original function value: ', old_funcval
 do i=1,numb

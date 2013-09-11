@@ -327,7 +327,8 @@ ERROR[28]="TOTAL POLARIZABILITIES NOT CORRECT"
 # Check for integrals:
 CRIT1=`$GREP "TRACTL\_1\: Integral transformation abandoned\," $log | wc -l`
 CRIT2=`$GREP "the required MO integrals are already available\." $log | wc -l`
-TEST[29]=`expr $CRIT1  \+ $CRIT2`
+CRIT2b=`$GREP "Direct calculation - no two-electron integrals written or read." $log | wc -l`
+TEST[29]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT2b  \+ $CRIT2b`
 CTRL[29]=2
 ERROR[29]="MO INTEGRALS NOT AVAILABLE"
 

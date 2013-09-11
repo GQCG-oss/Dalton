@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -540,11 +540,13 @@ C  /* Deck execc */
 #include "implicit.h"
       DIMENSION WORK(0:LMWORK)
 #include "priunit.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "mxcent.h"
 #include "siripc.h"
 #include "inftra.h"
-#include "gnrinf.h"
-#include "mxcent.h"
 #include "optinf.h"
+#include "nuclei.h"
 C
 C     Run Coupled Cluster program
 C
@@ -555,6 +557,20 @@ C
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
          CALL ER2INI
+      END IF
+
+!
+!     The CC module uses a lot of static allocation for pointer arrays.
+!     To minimize the static allocation in Dalton we use a smaller
+!     max number of orbitals in CC than the global MXCORB. /hjaaj Sep 2013
+!
+      IF (NBASIS .GT. MXCORB_CC) THEN
+         WRITE (LUPRI,'(//A,I6/A,I6/A)')
+     &  ' ERROR Too many orbitals for CC module:',NBASIS,
+     &  ' ERROR Limit is MXCORB_CC in maxorb.h :',MXCORB_CC,
+     %  ' ERROR To proceed increase MXCORB_CC in maxorb.h and recompile'
+         CALL QUIT('Too many orbitals for CC module.'//
+     &      'Increase MXCORB_CC in maxorb.h and recompile.')
       END IF
 
       ! ITRNMR > 0 required for proper restart of CPHF solver
@@ -1611,8 +1627,11 @@ C     ... default print level for statistics /hjaaj apr 2000
 #endif
 C
 Cholesky
-      IF (CHOINT) WRITE (LUPRI,'(4X,A)')
+      IF (CHOINT) THEN
+        IF (PARCAL) CALL PARQUIT('CHOLESKY')
+        WRITE (LUPRI,'(4X,A)')
      &  'Cholesky decomposition-based calculation will be done'
+      ENDIF
 Cholesky
 C
       WRITE (LUPRI,'(1X,A)') SEPARATOR

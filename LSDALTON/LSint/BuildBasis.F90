@@ -934,7 +934,11 @@ IF((ELEMENT .EQ. 0) .OR. (ELEMENT.NE.CHARGE))THEN
     IF(ios /= 0)THEN
       WRITE (LUPRI,'(/I3,2A)') CHARGE&
       & ,' is an unsupported element for basis ',BASISSETNAME
-      CALL LSQUIT('Unsupported element in linsca',lupri)
+      WRITE (LUPRI,'(A)') 'You need to choose a basis set that support this element'
+      WRITE (LUPRI,'(A)') 'You can look at EMSL to find a suitable basis set that support this element'
+      WRITE (LUPRI,'(A)') 'If you download a new basis set from EMSL please read the EMSL section in the manual!'
+      WRITE (LUPRI,'(A)') 'Note that LSDALTON do NOT support Effective Core Potentials (ECP)'
+      CALL LSQUIT('Unsupported element in basis set, choose a proper basis set',lupri)
     ELSE
       READ (STRING, '(A1)') SIGN
       IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN

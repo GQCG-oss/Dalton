@@ -97,6 +97,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Basis set
 CRIT1=`$GREP "C * 1 * 6\.0000 * 20 * 10 * \[8s4p\|4s2p\]" $log | wc -l`
 CRIT2=`$GREP "H * 4 * 1\.0000 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
