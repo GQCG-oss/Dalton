@@ -5601,6 +5601,7 @@ END SUBROUTINE BUILD_LST_FROM_MATARRAY
 !> \param useAO2 flag to describe if the AO1 item should be used or an empty AO 
 !> \param lupri the logical unit number for the output
 subroutine Build_lst_from_dense_matarray(TENSOR,MAT,AO1,AO2,nbast1,nbast2,nmat,useAO1,useAO2,ODscreen,lupri)
+  implicit none
   TYPE(LSTENSOR)     :: TENSOR
   TYPE(MATRIXP)       :: MAT(:)
   TYPE(AOITEM),target :: AO1,AO2
@@ -5611,6 +5612,7 @@ subroutine Build_lst_from_dense_matarray(TENSOR,MAT,AO1,AO2,nbast1,nbast2,nmat,u
   TYPE(AOITEM),pointer :: AOT1,AOT2,AOT3,AOT4
   logical :: useAO3,useAO4
   LOGICAL :: MATELMZERO
+  integer :: I
   TYPE(LSTAUXITEM) :: LSTAUX
   call SET_EMPTY_AO(AOT)
   AOT1 => AO1
