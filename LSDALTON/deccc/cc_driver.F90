@@ -152,7 +152,7 @@ contains
 
 
     ! title
-    Call print_ccjob_header(ccPrintLevel,fragment_job,nbasis,nocc,nvirt)
+    Call print_ccjob_header(ccPrintLevel,fragment_job,.false.,nbasis,nocc,nvirt,DECinfo%ccMaxDIIS)
 
     ! dimension vectors
     occ_dims   = [nbasis,nocc]
@@ -2181,7 +2181,7 @@ contains
 
 
     ! title
-    Call print_ccjob_header(ccPrintLevel,fragment_job,nb,no,nv)
+    Call print_ccjob_header(ccPrintLevel,fragment_job,.false.,nb,no,nv,DECinfo%ccMaxDIIS)
     ! dimension vectors
     occ_dims = [nb,no]
     virt_dims = [nb,nv]

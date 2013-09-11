@@ -274,16 +274,23 @@ module crop_tools_module
   !> \param nbasis Number of basis functions
   !> \param nocc Number of occupied orbitals
   !> \param nvirt Number of unoccupied orbitals
-  subroutine print_ccjob_header(ccPrintLevel,fragment_job,nbasis,nocc,nvirt)
+  subroutine print_ccjob_header(ccPrintLevel,fragment_job,multiplier_job,&
+  &nbasis,nocc,nvirt,maxsub)
     implicit none
-    integer, intent(in) :: ccPrintLevel,nbasis,nocc,nvirt
-    logical, intent(in) :: fragment_job
+    integer, intent(in) :: ccPrintLevel,nbasis,nocc,nvirt,maxsub
+    logical, intent(in) :: fragment_job,multiplier_job
 
     if(ccPrintLevel > 0) then
        if(.not.fragment_job) then
-          write(DECinfo%output,'(/,a)') '--------------------------'
-          write(DECinfo%output,'(a)')   '  Coupled-cluster energy  '
-          write(DECinfo%output,'(a,/)') '--------------------------'
+          if(multiplier_job)then
+             write(DECinfo%output,'(/,a)') '-------------------------------'
+             write(DECinfo%output,'(a)')   '  Coupled-cluster multipliers  '
+             write(DECinfo%output,'(a,/)') '-------------------------------'
+          else
+             write(DECinfo%output,'(/,a)') '--------------------------'
+             write(DECinfo%output,'(a)')   '  Coupled-cluster energy  '
+             write(DECinfo%output,'(a,/)') '--------------------------'
+          endif
           if(DECinfo%CCDhack)then
             write(DECinfo%output,'(a,a)')      'Wave function    = ','CCD'
           else
@@ -294,10 +301,11 @@ module crop_tools_module
           write(DECinfo%output,'(a,i4)')     'Num. occ. orb.   = ',nocc
           write(DECinfo%output,'(a,i4)')     'Num. unocc. orb. = ',nvirt
           write(DECinfo%output,'(a,e8.1e2)') 'Convergence      = ',DECinfo%ccConvergenceThreshold
+          write(DECinfo%output,'(a,l1)')     'Debug routine    = ',DECinfo%CCDEBUG
           write(DECinfo%output,'(a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
           write(DECinfo%output,'(a,i4)')     'Print level      = ',ccPrintLevel
           write(DECinfo%output,'(a,l1)')     'Use CROP         = ',DECinfo%use_crop
-          write(DECinfo%output,'(a,i4)')     'CROP subspace    = ',DECinfo%ccMaxDIIS
+          write(DECinfo%output,'(a,i4)')     'CROP subspace    = ',maxsub
           write(DECinfo%output,'(a,l1)')     'Preconditioner   = ',DECinfo%use_preconditioner
           write(DECinfo%output,'(a,l1)')     'Precond. B       = ',DECinfo%use_preconditioner_in_b
           write(DECinfo%output,'(a,l1)')     'Singles          = ',DECinfo%use_singles
