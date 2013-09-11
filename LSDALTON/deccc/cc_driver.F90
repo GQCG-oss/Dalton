@@ -898,10 +898,16 @@ contains
     logical, pointer :: orbitals_assigned(:)
 
 
-    if(.not. DECinfo%solver_par .or. DECinfo%ccModel==1)then
-      call ccsolver(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+    if(.not. DECinfo%solver_par .or. DECinfo%ccModel==1.or.DECinfo%CCDEBUG)then
+      if(DECinfo%CCDEBUG)then
+        call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
          & t1_final,t2_final,VOVO,.false.)
+      else
+        call ccsolver(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+         & t1_final,t2_final,VOVO,.false.)
+      endif
     else
       call ccsolver_par(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
@@ -909,65 +915,65 @@ contains
     endif
 
 #ifdef MOD_UNRELEASED
-    if(DECinfo%PL>1)then
-      natoms = MyMolecule%natoms
-      nocc_tot = MyMolecule%numocc
-      if(DECinfo%frozencore)then
-        ncore = MyMolecule%ncore
-      else
-        ncore = 0
-      endif
+    !if(DECinfo%PL>1)then
+    !  natoms = MyMolecule%natoms
+    !  nocc_tot = MyMolecule%numocc
+    !  if(DECinfo%frozencore)then
+    !    ncore = MyMolecule%ncore
+    !  else
+    !    ncore = 0
+    !  endif
 
-      ! -- Calculate distance matrix
-      call mem_alloc(distance_table,natoms,natoms)
-      distance_table = 0.0E0_realk
-      call GetDistances(distance_table,natoms,mylsitem,DECinfo%output) ! distances in atomic units
-     
-      ! -- Analyze basis and create orbitals
-      call mem_alloc(occ_orbitals,nocc_tot)
-      call mem_alloc(unocc_orbitals,nvirt)
-      call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc_tot,nvirt,natoms, &
-           & occ_orbitals,unocc_orbitals,distance_table)
-     
-      ! Orbital assignment
-      call mem_alloc(orbitals_assigned,natoms)
-      orbitals_assigned=.false.
-      do p=1,nocc_tot
-         pdx = occ_orbitals(p)%centralatom
-         orbitals_assigned(pdx) = .true.
-      end do
-      do p=1,nvirt
-         pdx = unocc_orbitals(p)%centralatom
-         orbitals_assigned(pdx) = .true.
-      end do
-     
-      ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
-      call array4_reorder(VOVO,[1,3,2,4])
-      ! reorder doubles amplitudes from (a,i,b,j) to (a,b,i,j)
-      call array4_reorder(t2_final,[1,3,2,4])
-     
-      ! print out ccsd fragment and pair interaction energies
-      ccsd_mat_tot = array2_init([natoms,natoms])
-      ccsd_mat_tmp = array2_init([natoms,natoms])
-     
-      call ccsd_energy_full(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
-                             & ccsd_mat_tot%val,ccsd_mat_tmp%val)
-     
-      call print_ccsd_full(natoms,ccsd_mat_tot%val,orbitals_assigned,distance_table)
-     
-      ! release print stuff
-      call array2_free(ccsd_mat_tot)
-      call array2_free(ccsd_mat_tmp)
-      call mem_dealloc(distance_table)
-      call mem_dealloc(occ_orbitals)
-      call mem_dealloc(unocc_orbitals)
-      call mem_dealloc(orbitals_assigned)
+    !  ! -- Calculate distance matrix
+    !  call mem_alloc(distance_table,natoms,natoms)
+    !  distance_table = 0.0E0_realk
+    !  call GetDistances(distance_table,natoms,mylsitem,DECinfo%output) ! distances in atomic units
+    ! 
+    !  ! -- Analyze basis and create orbitals
+    !  call mem_alloc(occ_orbitals,nocc_tot)
+    !  call mem_alloc(unocc_orbitals,nvirt)
+    !  call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc_tot,nvirt,natoms, &
+    !       & occ_orbitals,unocc_orbitals,distance_table)
+    ! 
+    !  ! Orbital assignment
+    !  call mem_alloc(orbitals_assigned,natoms)
+    !  orbitals_assigned=.false.
+    !  do p=1,nocc_tot
+    !     pdx = occ_orbitals(p)%centralatom
+    !     orbitals_assigned(pdx) = .true.
+    !  end do
+    !  do p=1,nvirt
+    !     pdx = unocc_orbitals(p)%centralatom
+    !     orbitals_assigned(pdx) = .true.
+    !  end do
+    ! 
+    !  ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
+    !  call array4_reorder(VOVO,[1,3,2,4])
+    !  ! reorder doubles amplitudes from (a,i,b,j) to (a,b,i,j)
+    !  call array4_reorder(t2_final,[1,3,2,4])
+    ! 
+    !  ! print out ccsd fragment and pair interaction energies
+    !  ccsd_mat_tot = array2_init([natoms,natoms])
+    !  ccsd_mat_tmp = array2_init([natoms,natoms])
+    ! 
+    !  call ccsd_energy_full(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
+    !                         & ccsd_mat_tot%val,ccsd_mat_tmp%val)
+    ! 
+    !  call print_ccsd_full(natoms,ccsd_mat_tot%val,orbitals_assigned,distance_table)
+    ! 
+    !  ! release print stuff
+    !  call array2_free(ccsd_mat_tot)
+    !  call array2_free(ccsd_mat_tmp)
+    !  call mem_dealloc(distance_table)
+    !  call mem_dealloc(occ_orbitals)
+    !  call mem_dealloc(unocc_orbitals)
+    !  call mem_dealloc(orbitals_assigned)
 
-      ! reorder VOVO integrals from (a,b,i,j) to (a,i,b,j)
-      call array4_reorder(VOVO,[1,3,2,4])
-      ! reorder doubles amplitudes from (a,b,i,j) to (a,i,b,j)
-      call array4_reorder(t2_final,[1,3,2,4])
-    endif
+    !  ! reorder VOVO integrals from (a,b,i,j) to (a,i,b,j)
+    !  call array4_reorder(VOVO,[1,3,2,4])
+    !  ! reorder doubles amplitudes from (a,b,i,j) to (a,i,b,j)
+    !  call array4_reorder(t2_final,[1,3,2,4])
+    !endif
 #endif
 
     ! Free arrays

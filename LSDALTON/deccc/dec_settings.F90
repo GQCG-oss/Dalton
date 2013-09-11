@@ -24,51 +24,51 @@ contains
     !> Unit number for DALTON.OUT
     integer, intent(in) :: output
 
-    DECinfo%doDEC = .false.
+    DECinfo%doDEC             = .false.
     ! Max memory measured in GB. By default set to 2 GB
-    DECinfo%memory=2.0E0_realk
-    DECinfo%memory_defined=.false.
-    DECinfo%frozencore=.false.
-    DECinfo%ncalc = 0
+    DECinfo%memory            = 2.0E0_realk
+    DECinfo%memory_defined    = .false.
+    DECinfo%frozencore        = .false.
+    DECinfo%ncalc             = 0
 
     ! -- Type of calculation
-    DECinfo%full_molecular_cc=.false. ! full molecular cc
-    DECinfo%mp2energydebug=.false.
-    DECinfo%simulate_full=.false.
-    DECinfo%simulate_natoms=1
-    DECinfo%SkipReadIn=.false.
-    DECinfo%SinglesPolari=.false.
-    DECinfo%SinglesThr=0.2E0_realk   ! this is completely random, currently under investigation
-    DECinfo%convert64to32=.false.
-    DECinfo%convert32to64=.false.
-    DECinfo%restart = .false.
-    DECinfo%TimeBackup = 300.0E0_realk   ! backup every 5th minute
+    DECinfo%full_molecular_cc = .false. ! full molecular cc
+    DECinfo%mp2energydebug    = .false.
+    DECinfo%simulate_full     = .false.
+    DECinfo%simulate_natoms   = 1
+    DECinfo%SkipReadIn        = .false.
+    DECinfo%SinglesPolari     = .false.
+    DECinfo%SinglesThr        = 0.2E0_realk   ! this is completely random, currently under investigation
+    DECinfo%convert64to32     = .false.
+    DECinfo%convert32to64     = .false.
+    DECinfo%restart           = .false.
+    DECinfo%TimeBackup        = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals = .false.
-    DECinfo%CheckPairs=.false.
+    DECinfo%CheckPairs        = .false.
     call dec_set_model_names(DECinfo)
 
 
     ! -- Debug modes
-    DECinfo%cc_driver_debug=.false.
-    DECinfo%ccsd_old=.false.
-    DECinfo%manual_batchsizes=.false.
-    DECinfo%ccsdAbatch=0
-    DECinfo%ccsdGbatch=0
-    DECinfo%hack=.false.
-    DECinfo%hack2=.false.
-    DECinfo%mpisplit=10
-    DECinfo%dyn_load=.false.
-    DECinfo%force_scheme=.false.
-    DECinfo%en_mem=0
-    DECinfo%array_test=.false.
-    DECinfo%reorder_test=.false.
-    DECinfo%CCSDno_restart=.false.
-    DECinfo%CCSDnosaferun=.false.
-    DECinfo%solver_par=.false.
+    DECinfo%cc_driver_debug   = .false.
+    DECinfo%CCDEBUG           = .false.
+    DECinfo%manual_batchsizes = .false.
+    DECinfo%ccsdAbatch        = 0
+    DECinfo%ccsdGbatch        = 0
+    DECinfo%hack              = .false.
+    DECinfo%hack2             = .false.
+    DECinfo%mpisplit          = 10
+    DECinfo%dyn_load          = .false.
+    DECinfo%force_scheme      = .false.
+    DECinfo%en_mem            = 0
+    DECinfo%array_test        = .false.
+    DECinfo%reorder_test      = .false.
+    DECinfo%CCSDno_restart    = .false.
+    DECinfo%CCSDnosaferun     = .false.
+    DECinfo%solver_par        = .false.
     DECinfo%CCSDpreventcanonical=.false.
-    DECinfo%CCSD_MPICH=.false.
-    DECinfo%CCSDmultipliers=.false.
-    DECinfo%CCDhack = .false.
+    DECinfo%CCSD_MPICH        = .false.
+    DECinfo%CCSDmultipliers   = .false.
+    DECinfo%CCDhack           = .false.
 
     ! -- Output options 
     DECinfo%output=output
@@ -384,7 +384,7 @@ contains
 #endif
 
 #ifdef MOD_UNRELEASED
-       case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
+       case('.CCDEBUG'); DECinfo%CCDEBUG=.true.
        case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
@@ -643,7 +643,7 @@ end if
     write(lupri,*) 'solver_par ', DECitem%solver_par
     write(lupri,*) 'force_scheme ', DECitem%force_scheme
     write(lupri,*) 'dyn_load ', DECitem%dyn_load
-    write(lupri,*) 'ccsd_old ', DECitem%ccsd_old
+    write(lupri,*) 'CCDEBUG ', DECitem%CCDEBUG
     write(lupri,*) 'CCSDno_restart ', DECitem%CCSDno_restart
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
