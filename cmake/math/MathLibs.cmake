@@ -147,13 +147,13 @@ else()
 endif()
 
 # first try this MKL BLAS combination with SGI MPT
-set(MKL_BLAS_LIBS  ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_sgimpt_lib}   mkl_core guide pthread m)
+set(MKL_BLAS_LIBS  ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_sgimpt_lib}   guide pthread m)
 # now with Intel MPI
-set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_intelmpi_lib} mkl_core guide pthread m)
+set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_intelmpi_lib} guide pthread m)
 # newer MKL BLAS versions do not have libguide
-set(MKL_BLAS_LIBS3 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_sgimpt_lib}   mkl_core       pthread m)
+set(MKL_BLAS_LIBS3 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_sgimpt_lib}         pthread m)
 # now with Intel MPI
-set(MKL_BLAS_LIBS4 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_intelmpi_lib} mkl_core       pthread m)
+set(MKL_BLAS_LIBS4 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_intelmpi_lib}       pthread m)
 # ancient MKL BLAS
 set(MKL_BLAS_LIBS5 mkl guide m)
 
