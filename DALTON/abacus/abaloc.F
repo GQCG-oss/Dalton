@@ -1617,7 +1617,7 @@ C
                NLOC1 = NOCC1
             END IF
 C
-            CALL LOC_LOWDIN(IPRSOS,CLOCV(1,(I-1)*NV2LOC + 1),NVIRT,NLOC1,
+           CALL LOC_LOWDIN(IPRSOS,CLOCV(1,(I-1)*NV2LOC + 1),NVIRT,NLOC1,
      &                  LFLAG,WORK(KWORK1),LWORK1)
          END DO
 C

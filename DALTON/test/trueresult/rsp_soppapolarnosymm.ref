@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,183 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:39:16 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 17:45:48 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_rsp_soppapolarnosymm
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+**WAVE FUNCTION                                   
+.HF                                               
+.MP2                                              
+**RESPONSE                                        
+.S0MIX                                            
+.SOPPA                                            
+*LINEAR                                           
+.DIPLEN                                           
+.FREQUE                                           
+ 2                                                
+0.0 0.0592                                        
+*C6                                               
+.PRINT                                            
+  5                                               
+.DIPLEN                                           
+.MAXMOM                                           
+  6                                               
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+cc-pVDZ                                                                        
+SOPPA singlet properties without symmetry.                                     
+                                                                               
+    2    0                                                                     
+        8.    1                                                                
+O     0.0 -0.2249058930 0.0                                                    
+        1.    2                                                                
+H     1.45235 0.899623 0.0                                                     
+H    -1.45235 0.899623 0.0                                                     
 
 
        *******************************************************************
@@ -105,7 +205,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -130,16 +230,16 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
 
                          SYMGRP: Point group information
@@ -178,7 +278,7 @@ Point group: C1
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -200,8 +300,10 @@ Point group: C1
  H     :    0.972000    1.537101    0.000000
 
 
-  Max interatomic separation is    1.5371 Angstrom (    2.9047 Bohr)
+  Max    interatomic separation is    1.5371 Angstrom (    2.9047 Bohr)
   between atoms    3 and    2, "H     " and "H     ".
+
+  Min HX interatomic separation is    0.9720 Angstrom (    1.8368 Bohr)
 
 
   Bond distances (Angstrom):
@@ -242,7 +344,7 @@ Point group: C1
            26.593976           14.159129            9.239726 cm-1
 
 
-@  Nuclear repulsion energy :    9.055004525638
+@  Nuclear repulsion energy :    9.055004525638 Hartree
 
 
                      .---------------------------------------.
@@ -261,13 +363,13 @@ Point group: C1
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:       21669 ( 48.0% )
  Megabytes written:                              0.254
 
  >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -300,8 +402,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:48 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:16 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      SOPPA singlet properties without symmetry.                              
@@ -310,43 +412,41 @@ Point group: C1
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      MP2, Moeller-Plesset second-order calculation.
+@    MP2, closed-shell Moeller-Plesset second-order calculation.
 
-
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EWMO  " input option.
+ ".MOSTART EWMO  " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> MP2      <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> MP2 <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                1
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 1
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1
                                        --- |  ---
-     Occupied SCF orbitals               5 |    5
+@    Occupied SCF orbitals               5 |    5
      Secondary orbitals                 19 |   19
      Total number of orbitals           24 |   24
      Number of basis functions          24 |   24
 
      Optimization information
      ========================
-     Number of configurations                 1
-     Number of orbital rotations             95
+@    Number of configurations                 1
+@    Number of orbital rotations             95
      ------------------------------------------
-     Total number of variables               96
+@    Total number of variables               96
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -361,49 +461,52 @@ Point group: C1
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1    -75.8558054129        1.60794D+00   -7.59D+01    1
+      Threshold for discarding integrals :  1.00D-12 )
+@  1    -75.8558054129        1.60794D+00   -7.59D+01    1
       Virial theorem: -V/T =      2.000312
-      MULPOP  O      -0.55; H       0.28; H       0.28; 
+@      MULPOP O      -0.55; H       0.28; H       0.28; 
  -----------------------------------------------------------------------------
-   2    -76.0198639633        3.12287D-01   -1.64D-01    2
+@  2    -76.0198639633        3.12287D-01   -1.64D-01    2
       Virial theorem: -V/T =      2.002416
-      MULPOP  O      -0.28; H       0.14; H       0.14; 
+@      MULPOP O      -0.28; H       0.14; H       0.14; 
  -----------------------------------------------------------------------------
-   3    -76.0251506648        7.25194D-02   -5.29D-03    3
+@  3    -76.0251506648        7.25194D-02   -5.29D-03    3
       Virial theorem: -V/T =      2.000758
-      MULPOP  O      -0.31; H       0.16; H       0.16; 
+@      MULPOP O      -0.31; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-   4    -76.0256406432        2.50537D-02   -4.90D-04    4
+@  4    -76.0256406432        2.50537D-02   -4.90D-04    4
       Virial theorem: -V/T =      2.001614
-      MULPOP  O      -0.32; H       0.16; H       0.16; 
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-   5    -76.0256763237        6.18368D-03   -3.57D-05    5
+@  5    -76.0256763237        6.18368D-03   -3.57D-05    5
       Virial theorem: -V/T =      2.001128
-      MULPOP  O      -0.32; H       0.16; H       0.16; 
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-   6    -76.0256811281        1.40431D-03   -4.80D-06    6
+@  6    -76.0256811281        1.40431D-03   -4.80D-06    6
       Virial theorem: -V/T =      2.001201
-      MULPOP  O      -0.32; H       0.16; H       0.16; 
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-   7    -76.0256814782        1.85175D-04   -3.50D-07    7
+@  7    -76.0256814782        1.85175D-04   -3.50D-07    7
       Virial theorem: -V/T =      2.001217
-      MULPOP  O      -0.32; H       0.16; H       0.16; 
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-   8    -76.0256814838        2.87151D-05   -5.64D-09    8
+@  8    -76.0256814838        2.87151D-05   -5.64D-09    8
       Virial theorem: -V/T =      2.001217
-      MULPOP  O      -0.32; H       0.16; H       0.16; 
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-   9    -76.0256814839        5.54466D-06   -1.02D-10    9
+@  9    -76.0256814839        5.54466D-06   -1.03D-10    9
       Virial theorem: -V/T =      2.001217
-      MULPOP  O      -0.32; H       0.16; H       0.16; 
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-  10    -76.0256814839        3.02762D-07   -3.61D-12   10
+@ 10    -76.0256814839        3.02762D-07   -3.47D-12   10
 
- *** DIIS converged in  10 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -76.025681483944    3.03D-07
+    - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.011       0.012
 
 
  >>>>> Output from SIRIUS MP2 module <<<<<
@@ -411,15 +514,15 @@ Point group: C1
  Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,
             J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
 
- Check that orbitals are canonical HARTREE-FOCK orbitals
+ Checking that the closed shell orbitals are canonical Hartree-Fock orbitals
 
-    Number of electrons :   10
-    Orbital occupations :    5
+    Number of electrons  :   10
+    Closed shell orbitals:    5
+
+ Generating Fock matrix
 
  Hartree-Fock electronic energy:         -85.080686009582
  Hartree-Fock total      energy:         -76.025681483944
-
-Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-08
 
  Hartree-Fock orbital energies, symmetry 1, number of occupied SCF orbitals is    5
 
@@ -434,12 +537,14 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
   --------------------------
     gap     :     0.67516550
 
+ Integral transformation: Total CPU and WALL times (sec)       0.009       0.009
+
  MP2 move   0.101828 electrons to unoccupied HF orbitals
 
 
- Hartree-Fock total energy :           -76.0256814839
- + MP2 contribution        :            -0.2049853470
- = MP2 second order energy :           -76.2306668309
+@   Hartree-Fock total energy   :           -76.0256814839
+@   + MP2 contribution          :            -0.2049853470
+@   = MP2 second order energy   :           -76.2306668309
 
  Natural orbital occupation numbers, symmetry 1
  Sum =    10.00000000; RHF =    10.00000000; Difference =     0.00000000
@@ -450,7 +555,9 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
          0.00089853     0.00061968     0.00053531     0.00047702     0.00045840
          0.00041081     0.00039136     0.00004517     0.00004229
 
- Time used for MP2 natural orbitals :       0.025 CPU seconds.
+ Time used for MP2 natural orbitals :       0.011 CPU seconds,       0.011 wall seconds.
+
+ >>>> CPU and wall time for MP2 :       0.011       0.011
 
 
                        .-----------------------------------.
@@ -458,19 +565,19 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -76.025681483944                 
-     Nuclear repulsion:             9.055004525638
-     Electronic energy:           -85.080686009582
+@    Final HF energy:             -76.025681483944                 
+@    Nuclear repulsion:             9.055004525638
+@    Electronic energy:           -85.080686009582
 
-     Final gradient norm:           0.000000302762
+@    Final gradient norm:           0.000000302762
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:48 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:16 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -478,38 +585,38 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  ------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
-   1 O   :1s    -1.0004   0.0076   0.0000  -0.0022   0.0000  -0.0519   0.0000
-   2 O   :1s    -0.0021  -0.8737   0.0000   0.2932  -0.0000   0.1433  -0.0000
-   3 O   :1s     0.0014   0.1145  -0.0000   0.1768   0.0000   0.9058  -0.0000
-   4 O   :2px   -0.0000   0.0000  -0.7111  -0.0000  -0.0000  -0.0000  -0.4190
-   5 O   :2py   -0.0025  -0.1108   0.0000  -0.7927   0.0000   0.2855  -0.0000
-   6 O   :2pz   -0.0000   0.0000   0.0000  -0.0000  -0.9204   0.0000  -0.0000
-   7 O   :2px   -0.0000  -0.0000   0.1012   0.0000   0.0000  -0.0000  -0.4775
-   8 O   :2py    0.0017   0.0619  -0.0000  -0.0018   0.0000   0.2117  -0.0000
-   9 O   :2pz   -0.0000   0.0000   0.0000  -0.0000  -0.0724   0.0000  -0.0000
-  10 O   :3d2-  -0.0000  -0.0000  -0.0262  -0.0000   0.0000  -0.0000  -0.0201
-  11 O   :3d1-  -0.0000   0.0000   0.0000  -0.0000  -0.0180   0.0000  -0.0000
-  12 O   :3d0    0.0001   0.0031   0.0000   0.0128  -0.0000  -0.0117   0.0000
+   1 O   :1s    -1.0004   0.0076   0.0000  -0.0022  -0.0000  -0.0519   0.0000
+   2 O   :1s    -0.0021  -0.8737   0.0000   0.2932   0.0000   0.1433   0.0000
+   3 O   :1s     0.0014   0.1145  -0.0000   0.1768  -0.0000   0.9058  -0.0000
+   4 O   :2px   -0.0000   0.0000  -0.7111  -0.0000   0.0000  -0.0000  -0.4190
+   5 O   :2py   -0.0025  -0.1108   0.0000  -0.7927   0.0000   0.2855   0.0000
+   6 O   :2pz    0.0000  -0.0000  -0.0000   0.0000  -0.9204  -0.0000  -0.0000
+   7 O   :2px    0.0000  -0.0000   0.1012  -0.0000  -0.0000  -0.0000  -0.4775
+   8 O   :2py    0.0017   0.0619  -0.0000  -0.0018  -0.0000   0.2117   0.0000
+   9 O   :2pz   -0.0000  -0.0000  -0.0000   0.0000  -0.0724  -0.0000  -0.0000
+  10 O   :3d2-  -0.0000  -0.0000  -0.0262  -0.0000  -0.0000  -0.0000  -0.0201
+  11 O   :3d1-  -0.0000  -0.0000  -0.0000   0.0000  -0.0180   0.0000  -0.0000
+  12 O   :3d0    0.0001   0.0031   0.0000   0.0128   0.0000  -0.0117  -0.0000
   14 O   :3d2+  -0.0000  -0.0004  -0.0000   0.0130   0.0000  -0.0019   0.0000
-  15 H   :1s     0.0003  -0.3191  -0.5530  -0.3516  -0.0000  -0.1058   0.0501
-  16 H   :1s    -0.0006   0.1494   0.1845   0.1327  -0.0000  -0.7699   1.3912
-  17 H   :2px   -0.0005   0.0364   0.0234   0.0317   0.0000   0.0162  -0.0198
-  18 H   :2py   -0.0005   0.0201   0.0324  -0.0070   0.0000   0.0156  -0.0157
-  19 H   :2pz    0.0000  -0.0000  -0.0000   0.0000  -0.0305  -0.0000   0.0000
+  15 H   :1s     0.0003  -0.3191  -0.5530  -0.3516   0.0000  -0.1058   0.0501
+  16 H   :1s    -0.0006   0.1494   0.1845   0.1327   0.0000  -0.7699   1.3912
+  17 H   :2px   -0.0005   0.0364   0.0234   0.0317  -0.0000   0.0162  -0.0198
+  18 H   :2py   -0.0005   0.0201   0.0324  -0.0070  -0.0000   0.0156  -0.0157
+  19 H   :2pz   -0.0000   0.0000   0.0000  -0.0000  -0.0305   0.0000   0.0000
   20 H   :1s     0.0003  -0.3191   0.5530  -0.3516   0.0000  -0.1058  -0.0501
-  21 H   :1s    -0.0006   0.1494  -0.1845   0.1327   0.0000  -0.7699  -1.3912
-  22 H   :2px    0.0005  -0.0364   0.0234  -0.0317   0.0000  -0.0162  -0.0198
-  23 H   :2py   -0.0005   0.0201  -0.0324  -0.0070  -0.0000   0.0156   0.0157
-  24 H   :2pz    0.0000  -0.0000  -0.0000   0.0000  -0.0305  -0.0000   0.0000
+  21 H   :1s    -0.0006   0.1494  -0.1845   0.1327  -0.0000  -0.7699  -1.3912
+  22 H   :2px    0.0005  -0.0364   0.0234  -0.0317  -0.0000  -0.0162  -0.0198
+  23 H   :2py   -0.0005   0.0201  -0.0324  -0.0070   0.0000   0.0156   0.0157
+  24 H   :2pz   -0.0000   0.0000   0.0000  -0.0000  -0.0305   0.0000   0.0000
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.05 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.03 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:48 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:16 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -539,13 +646,11 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  Second Order Polarization Propagator Approximation -- SOPPA
 
- MO INTEGRALS FOR RESPONSE ARE ALREADY AVAILABLE.  NOITRA = T
+ Default : Using Fock type decoupling of the two-electron density matrix :
+    Add DV*(FC+FV) instead of DV*FC to E[2] approximate orbital diagonal
 
- USE FOCK TYPE DECOUPLING OF THE TWO-ELECTRON DENSITY MATRIX :
- ADD DV*(FC+FV) INSTEAD OF DV*FC TO E[2] APPROXIMATE ORBITAL DIAGONAL
-  AVDIA = T
 
- S(0) SUM RULE CALCULATED IN MIXED REPRESENTATION NOS0MX = F
+ S(0) sum rule calculated in mixed representation NOS0MX = F
 
 
  Linear Response calculation
@@ -563,6 +668,8 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  -----------------------------
 
 
+ PRINT LEVEL IN C6 ROUTINES. IPRC6 =    5
+
     3 second order properties calculated with symmetry no.    1 and labels:
 
           XDIPLEN 
@@ -575,9 +682,13 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
           YDIPLEN 
           ZDIPLEN 
 
+ Old direct access AO file found, SORTA skipped.
 
-   SCF energy         :      -76.025681483944012
- -- inactive part     :      -85.080686009581910
+ Integral transformation: Total CPU and WALL times (sec)       0.018       0.018
+
+
+   SCF energy         :      -76.025681483943671
+ -- inactive part     :      -85.080686009581569
  -- nuclear repulsion :        9.055004525637894
 
 
@@ -587,8 +698,8 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
 
 
-  ** S(0) sum rule in mixed representation **
- --------------------------------------------
+                    ** S(0) sum rule in mixed representation **
+                   --------------------------------------------
 
 
  Symmetry of XDIPLEN  and XDIPVEL  is 1
@@ -656,8 +767,9 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : XDIPLEN 
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000  0.059200
- FREQ 2    0.0000000000000000       5.92000000000000026E-002
+ FREQ 2    0.0000000000000000        5.9200000000000003E-002
 
 
 
@@ -679,8 +791,9 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : YDIPLEN 
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000  0.059200
- FREQ 2    0.0000000000000000       5.92000000000000026E-002
+ FREQ 2    0.0000000000000000        5.9200000000000003E-002
 
 
 
@@ -702,8 +815,9 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : ZDIPLEN 
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000  0.059200
- FREQ 2    0.0000000000000000       5.92000000000000026E-002
+ FREQ 2    0.0000000000000000        5.9200000000000003E-002
 
 
 
@@ -734,12 +848,12 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
 @ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@ -<< XDIPLEN  ; XDIPLEN  >> =  7.396691946212D+00
-@ -<< XDIPLEN  ; YDIPLEN  >> = -1.922428387507D-13
-@ -<< XDIPLEN  ; ZDIPLEN  >> =  4.788676923746D-15
-@ -<< YDIPLEN  ; YDIPLEN  >> =  5.500083478617D+00
-@ -<< YDIPLEN  ; ZDIPLEN  >> =  5.435088547250D-16
-@ -<< ZDIPLEN  ; ZDIPLEN  >> =  3.206925055259D+00
+@ -<< XDIPLEN  ; XDIPLEN  >> =  7.396691962438D+00
+@ -<< XDIPLEN  ; YDIPLEN  >> = -7.073553725958D-15
+@ -<< XDIPLEN  ; ZDIPLEN  >> = -2.634838190044D-16
+@ -<< YDIPLEN  ; YDIPLEN  >> =  5.500083444673D+00
+@ -<< YDIPLEN  ; ZDIPLEN  >> = -4.721053920842D-17
+@ -<< ZDIPLEN  ; ZDIPLEN  >> =  3.206925052823D+00
 
 @ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :
 
@@ -749,15 +863,15 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
   kJ/mol.:  1.5542958D+02
      nm  :  7.6965123D+02
 
-@ -<< XDIPLEN  ; XDIPLEN  >> =  7.462906541138D+00
-@ -<< XDIPLEN  ; YDIPLEN  >> = -1.977071135532D-13
-@ -<< XDIPLEN  ; ZDIPLEN  >> =  5.093539235172D-15
-@ -<< YDIPLEN  ; YDIPLEN  >> =  5.560575009613D+00
-@ -<< YDIPLEN  ; ZDIPLEN  >> =  5.693828180473D-16
-@ -<< ZDIPLEN  ; ZDIPLEN  >> =  3.251795977225D+00
+@ -<< XDIPLEN  ; XDIPLEN  >> =  7.462906558140D+00
+@ -<< XDIPLEN  ; YDIPLEN  >> = -5.532656517205D-15
+@ -<< XDIPLEN  ; ZDIPLEN  >> = -2.847202664511D-16
+@ -<< YDIPLEN  ; YDIPLEN  >> =  5.560574974741D+00
+@ -<< YDIPLEN  ; ZDIPLEN  >> = -4.935563653776D-17
+@ -<< ZDIPLEN  ; ZDIPLEN  >> =  3.251795975274D+00
 
 
- Time used in linear response calculation is      0.16 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.17 CPU seconds for symmetry 1
 
 
  Solving RSPC6 for
@@ -787,6 +901,105 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    1 linear transformations is      6.15454110
+ INERTIA (POS,ZER,NEG) of reduced matrix is    2    0    0
+ Determinant of reduced matrix is  3.18 * 10 **  0.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.91504D+00  1.63D+00  1.01D+00  1.71D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    2 linear transformations is      6.92335588
+ INERTIA (POS,ZER,NEG) of reduced matrix is    4    0    0
+ Determinant of reduced matrix is  2.65 * 10 **  1.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.22858D+00  1.39D-02  1.23D+00  1.94D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    3 linear transformations is      7.36340760
+ INERTIA (POS,ZER,NEG) of reduced matrix is    6    0    0
+ Determinant of reduced matrix is  1.66 * 10 **  2.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.48081D-01  2.61D-01  2.30D-01  2.23D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    4 linear transformations is      7.38100938
+ INERTIA (POS,ZER,NEG) of reduced matrix is    8    0    0
+ Determinant of reduced matrix is  1.91 * 10 **  3.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.72693D-01  3.78D-04  2.73D-01  2.24D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    5 linear transformations is      7.39613997
+ INERTIA (POS,ZER,NEG) of reduced matrix is   10    0    0
+ Determinant of reduced matrix is  2.50 * 10 **  4.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.98923D-02  3.44D-02  3.61D-02  2.27D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    6
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    6 linear transformations is      7.39632579
+ INERTIA (POS,ZER,NEG) of reduced matrix is   12    0    0
+ Determinant of reduced matrix is  3.30 * 10 **  5.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.86807D-02  3.84D-02  4.65D-03  2.27D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    7
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    7 linear transformations is      7.39666639
+ INERTIA (POS,ZER,NEG) of reduced matrix is   14    0    0
+ Determinant of reduced matrix is  4.16 * 10 **  6.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.01724D-02  7.40D-04  1.01D-02  2.27D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    8
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    8 linear transformations is      7.39668990
+ INERTIA (POS,ZER,NEG) of reduced matrix is   16    0    0
+ Determinant of reduced matrix is  1.85 * 10 **  7.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.37243D-03  3.01D-03  1.53D-03  2.27D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    9
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    9 linear transformations is      7.39669226
+ INERTIA (POS,ZER,NEG) of reduced matrix is   18    0    0
+ Determinant of reduced matrix is  1.94 * 10 **  8.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.05087D-03  2.51D-05  2.05D-03  2.27D+00    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -804,6 +1017,125 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  Operator symmetry =  1; triplet =   F
 
+
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :    9
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1
+
+
+ ***    9 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   10 linear transformations is      4.37497590
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    0
+ Determinant of reduced matrix is  7.29 * 10 **  8.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.84070D+00  1.33D+00  1.28D+00  1.37D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   11 linear transformations is      4.89164146
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    0
+ Determinant of reduced matrix is  5.55 * 10 **  9.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.45418D+00  1.25D-02  1.45D+00  1.54D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   12 linear transformations is      5.40181310
+ INERTIA (POS,ZER,NEG) of reduced matrix is   24    0    0
+ Determinant of reduced matrix is  4.08 * 10 ** 10.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    5.02094D-01  2.44D-01  4.39D-01  1.83D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   13 linear transformations is      5.46153718
+ INERTIA (POS,ZER,NEG) of reduced matrix is   26    0    0
+ Determinant of reduced matrix is  2.25 * 10 ** 11.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.54826D-01  3.37D-01  1.12D-01  1.93D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   14 linear transformations is      5.49204806
+ INERTIA (POS,ZER,NEG) of reduced matrix is   28    0    0
+ Determinant of reduced matrix is  2.33 * 10 ** 12.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.74513D-01  7.00D-03  1.74D-01  1.97D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    6
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   15 linear transformations is      5.49961770
+ INERTIA (POS,ZER,NEG) of reduced matrix is   30    0    0
+ Determinant of reduced matrix is  1.84 * 10 ** 13.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.20562D-02  3.10D-02  2.84D-02  1.99D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    7
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   16 linear transformations is      5.49984058
+ INERTIA (POS,ZER,NEG) of reduced matrix is   32    0    0
+ Determinant of reduced matrix is  2.26 * 10 ** 14.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.24518D-02  1.92D-05  3.25D-02  1.99D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    8
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   17 linear transformations is      5.50007247
+ INERTIA (POS,ZER,NEG) of reduced matrix is   34    0    0
+ Determinant of reduced matrix is  2.13 * 10 ** 15.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    7.78929D-03  5.94D-03  5.03D-03  1.99D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    9
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   18 linear transformations is      5.50008051
+ INERTIA (POS,ZER,NEG) of reduced matrix is   36    0    0
+ Determinant of reduced matrix is  3.01 * 10 ** 16.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    5.81414D-03  3.59D-05  5.81D-03  1.99D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER   10
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   19 linear transformations is      5.50008337
+ INERTIA (POS,ZER,NEG) of reduced matrix is   38    0    0
+ Determinant of reduced matrix is  8.79 * 10 ** 17.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    7.81462D-04  5.44D-04  5.61D-04  1.99D+00    0.00000D+00
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -823,6 +1155,115 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   19
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1
+
+
+ ***   19 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   20 linear transformations is      2.66476309
+ INERTIA (POS,ZER,NEG) of reduced matrix is   40    0    0
+ Determinant of reduced matrix is  6.25 * 10 ** 18.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.07309D+00  8.86D-01  6.05D-01  9.49D-01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   21 linear transformations is      2.89040215
+ INERTIA (POS,ZER,NEG) of reduced matrix is   42    0    0
+ Determinant of reduced matrix is  5.27 * 10 ** 19.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    7.56212D-01  7.36D-03  7.56D-01  1.05D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   22 linear transformations is      3.15183372
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    0
+ Determinant of reduced matrix is  1.06 * 10 ** 20.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.97344D-01  3.09D-01  2.50D-01  1.39D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   23 linear transformations is      3.17870599
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    0
+ Determinant of reduced matrix is  1.03 * 10 ** 21.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.39594D-01  3.07D-04  3.40D-01  1.44D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   24 linear transformations is      3.20582197
+ INERTIA (POS,ZER,NEG) of reduced matrix is   48    0    0
+ Determinant of reduced matrix is  1.27 * 10 ** 22.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.44404D-02  4.40D-02  4.71D-02  1.53D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    6
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   25 linear transformations is      3.20631705
+ INERTIA (POS,ZER,NEG) of reduced matrix is   50    0    0
+ Determinant of reduced matrix is  9.63 * 10 ** 22.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    5.21940D-02  5.15D-02  8.22D-03  1.53D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    7
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   26 linear transformations is      3.20691200
+ INERTIA (POS,ZER,NEG) of reduced matrix is   52    0    0
+ Determinant of reduced matrix is  1.45 * 10 ** 24.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.37497D-02  1.26D-03  1.37D-02  1.53D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    8
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   27 linear transformations is      3.20692407
+ INERTIA (POS,ZER,NEG) of reduced matrix is   54    0    0
+ Determinant of reduced matrix is  5.02 * 10 ** 25.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.38700D-03  2.01D-03  1.28D-03  1.53D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    9
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   28 linear transformations is      3.20692492
+ INERTIA (POS,ZER,NEG) of reduced matrix is   56    0    0
+ Determinant of reduced matrix is  8.35 * 10 ** 26.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.51558D-03  2.33D-06  1.52D-03  1.53D+00    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -835,18 +1276,18 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Static polarisabilities (length)
  ------------------------------------------------
   
- XDIPLEN  XDIPLEN         7.3966922433
-   Max difference in grid polarizabilities:      7.3966922   XDIPLEN 
+ XDIPLEN  XDIPLEN         7.3966922596
+   Max difference in grid polarizabilities:      7.3966923   XDIPLEN 
 
  YDIPLEN  XDIPLEN        -0.0000000000
   
- YDIPLEN  YDIPLEN         5.5000834074
+ YDIPLEN  YDIPLEN         5.5000833734
    Max difference in grid polarizabilities:      5.5000834   YDIPLEN 
 
  ZDIPLEN  XDIPLEN         0.0000000000
  ZDIPLEN  YDIPLEN         0.0000000000
   
- ZDIPLEN  ZDIPLEN         3.2069249272
+ ZDIPLEN  ZDIPLEN         3.2069249248
    Max difference in grid polarizabilities:      3.2069249   ZDIPLEN 
 
 
@@ -862,6 +1303,83 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  Operator symmetry =  1; triplet =   F
 
+
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   28
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1
+
+
+ ***   28 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   29 linear transformations is     18.59381920
+ INERTIA (POS,ZER,NEG) of reduced matrix is   58    0    0
+ Determinant of reduced matrix is  8.12 * 10 ** 27.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    5.16892D-01  2.98D-01  4.22D-01  4.42D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   30 linear transformations is     18.63083253
+ INERTIA (POS,ZER,NEG) of reduced matrix is   60    0    0
+ Determinant of reduced matrix is  1.35 * 10 ** 29.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.13259D-01  3.12D-01  2.76D-02  4.43D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   31 linear transformations is     18.65303392
+ INERTIA (POS,ZER,NEG) of reduced matrix is   62    0    0
+ Determinant of reduced matrix is  1.87 * 10 ** 30.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.97226D-02  6.27D-03  4.93D-02  4.44D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   32 linear transformations is     18.65330276
+ INERTIA (POS,ZER,NEG) of reduced matrix is   64    0    0
+ Determinant of reduced matrix is  2.80 * 10 ** 31.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.14425D-02  1.00D-02  5.54D-03  4.44D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   33 linear transformations is     18.65332769
+ INERTIA (POS,ZER,NEG) of reduced matrix is   66    0    0
+ Determinant of reduced matrix is  3.07 * 10 ** 32.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    7.36294D-03  1.24D-04  7.36D-03  4.44D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    6
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   34 linear transformations is     18.65333172
+ INERTIA (POS,ZER,NEG) of reduced matrix is   68    0    0
+ Determinant of reduced matrix is  8.52 * 10 ** 33.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.20997D-03  8.47D-04  8.64D-04  4.44D+00    0.00000D+00
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -881,6 +1399,95 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   34
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1
+
+
+ ***   34 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   35 linear transformations is     16.81481722
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    0
+ Determinant of reduced matrix is  7.89 * 10 ** 34.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.40434D-01  4.86D-01  4.17D-01  4.72D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   36 linear transformations is     16.86351866
+ INERTIA (POS,ZER,NEG) of reduced matrix is   72    0    0
+ Determinant of reduced matrix is  1.15 * 10 ** 36.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.33913D-01  4.94D-03  4.34D-01  4.74D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   37 linear transformations is     16.90658427
+ INERTIA (POS,ZER,NEG) of reduced matrix is   74    0    0
+ Determinant of reduced matrix is  1.77 * 10 ** 37.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    8.54059D-02  7.91D-02  3.22D-02  4.76D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   38 linear transformations is     16.90795728
+ INERTIA (POS,ZER,NEG) of reduced matrix is   76    0    0
+ Determinant of reduced matrix is  2.83 * 10 ** 38.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.71357D-02  4.91D-04  3.71D-02  4.76D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   39 linear transformations is     16.90811564
+ INERTIA (POS,ZER,NEG) of reduced matrix is   78    0    0
+ Determinant of reduced matrix is  5.44 * 10 ** 39.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.74808D-03  4.85D-03  4.69D-03  4.76D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    6
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   40 linear transformations is     16.90812055
+ INERTIA (POS,ZER,NEG) of reduced matrix is   80    0    0
+ Determinant of reduced matrix is  8.67 * 10 ** 40.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    5.62875D-03  5.94D-05  5.63D-03  4.76D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    7
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   41 linear transformations is     16.90812218
+ INERTIA (POS,ZER,NEG) of reduced matrix is   82    0    0
+ Determinant of reduced matrix is  7.80 * 10 ** 42.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    5.90282D-04  4.47D-04  3.86D-04  4.76D+00    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -899,6 +1506,85 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   41
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1
+
+
+ ***   41 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   42 linear transformations is     12.25271718
+ INERTIA (POS,ZER,NEG) of reduced matrix is   84    0    0
+ Determinant of reduced matrix is  1.48 * 10 ** 44.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.32902D-01  2.01D-01  3.84D-01  4.70D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   43 linear transformations is     12.27919848
+ INERTIA (POS,ZER,NEG) of reduced matrix is   86    0    0
+ Determinant of reduced matrix is  1.94 * 10 ** 45.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.07643D-01  2.03D-01  4.31D-02  4.72D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   44 linear transformations is     12.28882084
+ INERTIA (POS,ZER,NEG) of reduced matrix is   88    0    0
+ Determinant of reduced matrix is  1.80 * 10 ** 46.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.75962D-02  1.93D-03  4.76D-02  4.72D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   45 linear transformations is     12.28904793
+ INERTIA (POS,ZER,NEG) of reduced matrix is   90    0    0
+ Determinant of reduced matrix is  5.68 * 10 ** 47.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    7.24909D-03  5.83D-03  4.31D-03  4.72D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   46 linear transformations is     12.28905470
+ INERTIA (POS,ZER,NEG) of reduced matrix is   92    0    0
+ Determinant of reduced matrix is  1.05 * 10 ** 49.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.87933D-03  3.82D-05  4.88D-03  4.72D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    6
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   47 linear transformations is     12.28905625
+ INERTIA (POS,ZER,NEG) of reduced matrix is   94    0    0
+ Determinant of reduced matrix is  5.46 * 10 ** 50.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.95380D-04  4.04D-04  5.66D-04  4.72D+00    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -911,18 +1597,18 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Static polarisabilities (length)
  ------------------------------------------------
   
- XDIPLEN  XDIPLEN         7.3966924832
+ XDIPLEN  XDIPLEN         7.3966924994
    Max difference in grid polarizabilities:      0.0326649   XDIPLEN 
 
  YDIPLEN  XDIPLEN        -0.0000000000
   
- YDIPLEN  YDIPLEN         5.5000834114
+ YDIPLEN  YDIPLEN         5.5000833775
    Max difference in grid polarizabilities:      0.0333937   YDIPLEN 
 
  ZDIPLEN  XDIPLEN         0.0000000000
  ZDIPLEN  YDIPLEN         0.0000000000
   
- ZDIPLEN  ZDIPLEN         3.2069250082
+ ZDIPLEN  ZDIPLEN         3.2069250057
    Max difference in grid polarizabilities:      0.0153360   ZDIPLEN 
 
 
@@ -938,6 +1624,74 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  Operator symmetry =  1; triplet =   F
 
+
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   47
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1
+
+
+ ***   47 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   48 linear transformations is     67.39826503
+ INERTIA (POS,ZER,NEG) of reduced matrix is   96    0    0
+ Determinant of reduced matrix is  4.42 * 10 ** 51.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.45236D-01  3.90D-01  2.14D-01  8.20D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   49 linear transformations is     67.43387027
+ INERTIA (POS,ZER,NEG) of reduced matrix is   98    0    0
+ Determinant of reduced matrix is  5.58 * 10 ** 52.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.02928D-01  7.68D-03  2.03D-01  8.21D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   50 linear transformations is     67.43775445
+ INERTIA (POS,ZER,NEG) of reduced matrix is  100    0    0
+ Determinant of reduced matrix is  1.62 * 10 ** 54.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.66188D-02  2.30D-02  1.33D-02  8.21D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   51 linear transformations is     67.43785484
+ INERTIA (POS,ZER,NEG) of reduced matrix is  102    0    0
+ Determinant of reduced matrix is  2.76 * 10 ** 55.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.77961D-02  1.19D-04  1.78D-02  8.21D+00    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   52 linear transformations is     67.43787405
+ INERTIA (POS,ZER,NEG) of reduced matrix is  104    0    0
+ Determinant of reduced matrix is  2.40 * 10 ** 57.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.76032D-03  1.54D-03  8.59D-04  8.21D+00    0.00000D+00
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -957,6 +1711,75 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   52
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1
+
+
+ ***   52 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   53 linear transformations is     98.11075768
+ INERTIA (POS,ZER,NEG) of reduced matrix is  106    0    0
+ Determinant of reduced matrix is  2.13 * 10 ** 58.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    5.08992D-01  4.54D-01  2.31D-01  1.13D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   54 linear transformations is     98.15769853
+ INERTIA (POS,ZER,NEG) of reduced matrix is  108    0    0
+ Determinant of reduced matrix is  2.54 * 10 ** 59.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.22375D-01  9.89D-03  2.22D-01  1.13D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   55 linear transformations is     98.16740717
+ INERTIA (POS,ZER,NEG) of reduced matrix is  110    0    0
+ Determinant of reduced matrix is  4.98 * 10 ** 60.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.05578D-02  3.67D-02  1.72D-02  1.13D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   56 linear transformations is     98.16769767
+ INERTIA (POS,ZER,NEG) of reduced matrix is  112    0    0
+ Determinant of reduced matrix is  8.00 * 10 ** 61.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.93453D-02  1.75D-04  1.93D-02  1.13D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   57 linear transformations is     98.16772643
+ INERTIA (POS,ZER,NEG) of reduced matrix is  114    0    0
+ Determinant of reduced matrix is  2.22 * 10 ** 63.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.95854D-03  1.85D-03  2.31D-03  1.13D+01    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -975,6 +1798,53 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   57
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1   1  -1   1  -1   1
+
+
+ ***   57 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   58 linear transformations is    140.50217816
+ INERTIA (POS,ZER,NEG) of reduced matrix is  116    0    0
+ Determinant of reduced matrix is  3.26 * 10 ** 64.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.16783D-01  3.09D-01  6.85D-02  1.59D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   59 linear transformations is    140.52198556
+ INERTIA (POS,ZER,NEG) of reduced matrix is  118    0    0
+ Determinant of reduced matrix is  5.28 * 10 ** 65.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.67901D-02  3.36D-03  6.67D-02  1.59D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   60 linear transformations is    140.52275227
+ INERTIA (POS,ZER,NEG) of reduced matrix is  120    0    0
+ Determinant of reduced matrix is  1.16 * 10 ** 67.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.15347D-02  1.03D-02  5.28D-03  1.59D+01    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -987,18 +1857,18 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Static polarisabilities (length)
  ------------------------------------------------
   
- XDIPLEN  XDIPLEN         7.3966925796
+ XDIPLEN  XDIPLEN         7.3966925958
    Max difference in grid polarizabilities:      0.0195770   XDIPLEN 
 
  YDIPLEN  XDIPLEN        -0.0000000000
   
- YDIPLEN  YDIPLEN         5.5000834255
+ YDIPLEN  YDIPLEN         5.5000833916
    Max difference in grid polarizabilities:      0.0193291   YDIPLEN 
 
  ZDIPLEN  XDIPLEN        -0.0000000000
- ZDIPLEN  YDIPLEN        -0.0000000000
+ ZDIPLEN  YDIPLEN         0.0000000000
   
- ZDIPLEN  ZDIPLEN         3.2069250481
+ ZDIPLEN  ZDIPLEN         3.2069250457
    Max difference in grid polarizabilities:      0.0038958   ZDIPLEN 
 
 
@@ -1014,6 +1884,75 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  Operator symmetry =  1; triplet =   F
 
+
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   60
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1   1  -1   1  -1   1   1  -1   1
+
+
+ ***   60 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   61 linear transformations is    266.77027341
+ INERTIA (POS,ZER,NEG) of reduced matrix is  122    0    0
+ Determinant of reduced matrix is  2.83 * 10 ** 68.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    5.20881D-01  4.37D-01  2.84D-01  1.72D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   62 linear transformations is    266.81026860
+ INERTIA (POS,ZER,NEG) of reduced matrix is  124    0    0
+ Determinant of reduced matrix is  4.53 * 10 ** 69.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.78833D-01  7.42D-03  2.79D-01  1.72D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   63 linear transformations is    266.82067626
+ INERTIA (POS,ZER,NEG) of reduced matrix is  126    0    0
+ Determinant of reduced matrix is  1.21 * 10 ** 71.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.55208D-02  4.00D-02  2.17D-02  1.72D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   64 linear transformations is    266.82100119
+ INERTIA (POS,ZER,NEG) of reduced matrix is  128    0    0
+ Determinant of reduced matrix is  2.23 * 10 ** 72.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.17908D-02  5.13D-04  2.18D-02  1.72D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   65 linear transformations is    266.82104591
+ INERTIA (POS,ZER,NEG) of reduced matrix is  130    0    0
+ Determinant of reduced matrix is  9.03 * 10 ** 73.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.85385D-03  2.34D-03  1.63D-03  1.72D+01    0.00000D+00
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1033,6 +1972,65 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   65
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1   1  -1   1  -1   1   1  -1   1
+            1  -1   1  -1   1
+
+
+ ***   65 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   66 linear transformations is    643.69346144
+ INERTIA (POS,ZER,NEG) of reduced matrix is  132    0    0
+ Determinant of reduced matrix is  1.99 * 10 ** 75.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.30923D+00  8.32D-01  1.01D+00  3.05D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   67 linear transformations is    643.84245583
+ INERTIA (POS,ZER,NEG) of reduced matrix is  134    0    0
+ Determinant of reduced matrix is  4.37 * 10 ** 76.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    8.22595D-01  8.19D-01  7.55D-02  3.05D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   68 linear transformations is    643.98856900
+ INERTIA (POS,ZER,NEG) of reduced matrix is  136    0    0
+ Determinant of reduced matrix is  6.27 * 10 ** 77.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.32241D-01  1.17D-02  1.32D-01  3.05D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   69 linear transformations is    643.98973432
+ INERTIA (POS,ZER,NEG) of reduced matrix is  138    0    0
+ Determinant of reduced matrix is  3.77 * 10 ** 79.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.79446D-02  1.67D-02  6.57D-03  3.05D+01    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -1051,6 +2049,65 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   69
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1   1  -1   1  -1   1   1  -1   1
+            1  -1   1  -1   1   1   1  -1   1
+
+
+ ***   69 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   70 linear transformations is   1722.32790143
+ INERTIA (POS,ZER,NEG) of reduced matrix is  140    0    0
+ Determinant of reduced matrix is  2.88 * 10 ** 81.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    9.46057D-01  7.53D-01  5.72D-01  5.77D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   71 linear transformations is   1722.43773513
+ INERTIA (POS,ZER,NEG) of reduced matrix is  142    0    0
+ Determinant of reduced matrix is  5.55 * 10 ** 82.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    5.75463D-01  8.02D-03  5.75D-01  5.77D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   72 linear transformations is   1722.48494180
+ INERTIA (POS,ZER,NEG) of reduced matrix is  144    0    0
+ Determinant of reduced matrix is  2.33 * 10 ** 84.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    7.29302D-02  7.16D-02  1.40D-02  5.77D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   73 linear transformations is   1722.48591280
+ INERTIA (POS,ZER,NEG) of reduced matrix is  146    0    0
+ Determinant of reduced matrix is  4.84 * 10 ** 85.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.77892D-02  6.19D-04  1.78D-02  5.77D+01    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -1063,18 +2120,18 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Static polarisabilities (length)
  ------------------------------------------------
   
- XDIPLEN  XDIPLEN         7.3966925878
+ XDIPLEN  XDIPLEN         7.3966926040
    Max difference in grid polarizabilities:      0.0013927   XDIPLEN 
 
  YDIPLEN  XDIPLEN        -0.0000000000
   
- YDIPLEN  YDIPLEN         5.5000834393
+ YDIPLEN  YDIPLEN         5.5000834054
    Max difference in grid polarizabilities:      0.0024079   YDIPLEN 
 
  ZDIPLEN  XDIPLEN         0.0000000000
- ZDIPLEN  YDIPLEN         0.0000000000
+ ZDIPLEN  YDIPLEN        -0.0000000000
   
- ZDIPLEN  ZDIPLEN         3.2069250491
+ ZDIPLEN  ZDIPLEN         3.2069250467
    Max difference in grid polarizabilities:      0.0003646   ZDIPLEN 
 
 
@@ -1090,6 +2147,55 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  Operator symmetry =  1; triplet =   F
 
+
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   73
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1   1  -1   1  -1   1   1  -1   1
+            1  -1   1  -1   1   1   1  -1   1   1
+           -1   1  -1
+
+
+ ***   73 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   74 linear transformations is   1092.45555982
+ INERTIA (POS,ZER,NEG) of reduced matrix is  148    0    0
+ Determinant of reduced matrix is  1.13 * 10 ** 87.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.60175D-01  2.47D-01  2.62D-01  3.38D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   75 linear transformations is   1092.46134290
+ INERTIA (POS,ZER,NEG) of reduced matrix is  150    0    0
+ Determinant of reduced matrix is  7.87 * 10 ** 88.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.45112D-01  2.45D-01  1.26D-02  3.38D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   76 linear transformations is   1092.47312936
+ INERTIA (POS,ZER,NEG) of reduced matrix is  152    0    0
+ Determinant of reduced matrix is  1.26 * 10 ** 90.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    1.52075D-02  3.38D-03  1.48D-02  3.38D+01    0.00000D+00
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1109,6 +2215,55 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   76
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1   1  -1   1  -1   1   1  -1   1
+            1  -1   1  -1   1   1   1  -1   1   1
+           -1   1  -1   1   1  -1
+
+
+ ***   76 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   77 linear transformations is   4350.52987414
+ INERTIA (POS,ZER,NEG) of reduced matrix is  154    0    0
+ Determinant of reduced matrix is  1.67 * 10 ** 91.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    9.34753D-01  7.12D-01  6.06D-01  7.65D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   78 linear transformations is   4350.65718210
+ INERTIA (POS,ZER,NEG) of reduced matrix is  156    0    0
+ Determinant of reduced matrix is  2.03 * 10 ** 92.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.19620D-01  1.19D-02  6.20D-01  7.65D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   79 linear transformations is   4350.69522094
+ INERTIA (POS,ZER,NEG) of reduced matrix is  158    0    0
+ Determinant of reduced matrix is  8.91 * 10 ** 93.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    7.11962D-02  5.91D-02  3.97D-02  7.65D+01    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -1127,6 +2282,55 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   79
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1   1  -1   1  -1   1   1  -1   1
+            1  -1   1  -1   1   1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1
+
+
+ ***   79 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   80 linear transformations is  21201.65716461
+ INERTIA (POS,ZER,NEG) of reduced matrix is  160    0    0
+ Determinant of reduced matrix is  4.97 * 10 ** 95.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    7.28407D-01  4.03D-01  6.07D-01  1.96D+02    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   81 linear transformations is  21201.68758609
+ INERTIA (POS,ZER,NEG) of reduced matrix is  162    0    0
+ Determinant of reduced matrix is  6.16 * 10 ** 97.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.07089D-01  4.07D-01  6.36D-03  1.96D+02    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   82 linear transformations is  21201.71689863
+ INERTIA (POS,ZER,NEG) of reduced matrix is  164    0    0
+ Determinant of reduced matrix is  1.00 * 10 ** 99.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.60705D-02  4.20D-03  2.57D-02  1.96D+02    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -1139,18 +2343,18 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Static polarisabilities (length)
  ------------------------------------------------
   
- XDIPLEN  XDIPLEN         7.3966926086
+ XDIPLEN  XDIPLEN         7.3966926248
    Max difference in grid polarizabilities:      0.0007071   XDIPLEN 
 
- YDIPLEN  XDIPLEN        -0.0000000000
+ YDIPLEN  XDIPLEN         0.0000000000
   
- YDIPLEN  YDIPLEN         5.5000834479
+ YDIPLEN  YDIPLEN         5.5000834140
    Max difference in grid polarizabilities:      0.0020130   YDIPLEN 
 
- ZDIPLEN  XDIPLEN         0.0000000000
- ZDIPLEN  YDIPLEN        -0.0000000000
+ ZDIPLEN  XDIPLEN        -0.0000000000
+ ZDIPLEN  YDIPLEN         0.0000000000
   
- ZDIPLEN  ZDIPLEN         3.2069250598
+ ZDIPLEN  ZDIPLEN         3.2069250574
    Max difference in grid polarizabilities:      0.0001547   ZDIPLEN 
 
 
@@ -1166,6 +2370,56 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  Operator symmetry =  1; triplet =   F
 
+
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   82
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1   1  -1   1  -1   1   1  -1   1
+            1  -1   1  -1   1   1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+            1  -1
+
+
+ ***   82 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   83 linear transformations is   4578.48964077
+ INERTIA (POS,ZER,NEG) of reduced matrix is  166    0    0
+ Determinant of reduced matrix is  4.14 * 10 **100.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.93659D-01  3.48D-01  6.00D-01  7.21D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   84 linear transformations is   4578.52825924
+ INERTIA (POS,ZER,NEG) of reduced matrix is  168    0    0
+ Determinant of reduced matrix is  2.21 * 10 **102.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.65198D-01  3.64D-01  3.28D-02  7.21D+01    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   85 linear transformations is   4578.55591581
+ INERTIA (POS,ZER,NEG) of reduced matrix is  170    0    0
+ Determinant of reduced matrix is  3.76 * 10 **103.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    3.76926D-02  4.65D-03  3.74D-02  7.21D+01    0.00000D+00
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1185,6 +2439,56 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   85
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1   1  -1   1  -1   1   1  -1   1
+            1  -1   1  -1   1   1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+            1  -1   1   1  -1
+
+
+ ***   85 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   86 linear transformations is  29665.07935370
+ INERTIA (POS,ZER,NEG) of reduced matrix is  172    0    0
+ Determinant of reduced matrix is  1.26 * 10 **105.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    7.51323D-01  4.01D-01  6.35D-01  2.07D+02    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   87 linear transformations is  29665.13154953
+ INERTIA (POS,ZER,NEG) of reduced matrix is  174    0    0
+ Determinant of reduced matrix is  5.35 * 10 **106.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    4.07221D-01  4.06D-01  3.52D-02  2.07D+02    0.00000D+00
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   88 linear transformations is  29665.16232808
+ INERTIA (POS,ZER,NEG) of reduced matrix is  176    0    0
+ Determinant of reduced matrix is  9.77 * 10 **107.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    6.87030D-02  6.27D-03  6.84D-02  2.07D+02    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -1203,6 +2507,34 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Operator symmetry =  1; triplet =   F
 
 
+ >>> Restart in LRST >>>
+ OPERATOR SYMMETRY          :    1
+ DIMENSION OF REDUCED SPACE :   88
+ IBTYP :    1  -1   1  -1   1   1  -1   1  -1   1
+           -1   1   1  -1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1  -1
+            1   1   1  -1   1  -1   1   1  -1   1
+           -1   1   1  -1   1  -1   1   1  -1   1
+            1  -1   1  -1   1   1   1  -1   1   1
+           -1   1  -1   1   1  -1   1  -1   1   1
+            1  -1   1   1  -1   1   1  -1
+
+
+ ***   88 OLD TRIAL VECTORS FOUND ON LURSP3
+
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   89 linear transformations is 261066.19859448
+ INERTIA (POS,ZER,NEG) of reduced matrix is  178    0    0
+ Determinant of reduced matrix is  4.70 * 10 **109.0
+
+       No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
+      ----------------------------------------------------------------
+         1    2.74805D-01  2.16D-01  1.70D-01  7.11D+02    0.00000D+00
+
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
@@ -1215,35 +2547,455 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Static polarisabilities (length)
  ------------------------------------------------
   
- XDIPLEN  XDIPLEN         7.3966926304
+ XDIPLEN  XDIPLEN         7.3966926466
    Max difference in grid polarizabilities:      0.0003208   XDIPLEN 
 
  YDIPLEN  XDIPLEN        -0.0000000000
   
- YDIPLEN  YDIPLEN         5.5000834518
+ YDIPLEN  YDIPLEN         5.5000834179
    Max difference in grid polarizabilities:      0.0002740   YDIPLEN 
 
- ZDIPLEN  XDIPLEN         0.0000000000
+ ZDIPLEN  XDIPLEN        -0.0000000000
  ZDIPLEN  YDIPLEN         0.0000000000
   
- ZDIPLEN  ZDIPLEN         3.2069250602
+ ZDIPLEN  ZDIPLEN         3.2069250578
    Max difference in grid polarizabilities:      0.0000030   ZDIPLEN 
 
   
  Number of ITC6 iterations used :    6
  =============================================
 
+
+ Final pseudo-spectrum for
+
+ operator type:    XDIPLEN 
+ operator symmetry:   1
+
+ State no:   Transition moment:    3*Oscillator strength:   Energy (eV):
+    1       -5.525767166558E-16      1.740265180027E-31   7.75444832679    
+    2       -3.333707617126E-14      8.491298749423E-28   10.3953650510    
+    3        0.501852757595          0.230787728982       12.4675386311    
+    4       -0.917672689944          0.889850631540       14.3767968901    
+    5       -3.261159306497E-14      1.361136227069E-27   17.4131845497    
+    6       -7.994280863695E-15      1.081954106626E-28   23.0340695464    
+    7        0.578419905786          0.628451230140       25.5567578825    
+    8        9.828328598390E-13      1.886278241201E-24   26.5685013247    
+    9        1.355869539235E-12      4.021806271635E-24   29.7650062195    
+   10       -3.104450594151E-14      2.247170957116E-27   31.7239492709    
+   11       -0.309412383655          0.224267737505       31.8722011307    
+   12       -1.964703147375E-11      9.214495077467E-22   32.4786746920    
+   13       -0.614630996661          0.904732999613       32.5845819053    
+   14        2.023371241061E-16      1.032555016469E-31   34.3148965427    
+   15        0.310469029661          0.263822154801       37.2387704692    
+   16       -1.925574512166E-12      1.062970379064E-23   39.0050773719    
+   17        0.766728118076           1.72053935462       39.8201112364    
+   18        3.718122770662E-12      4.128994482524E-23   40.6366117372    
+   19        1.232053533890E-15      4.665451545828E-30   41.8172206647    
+   20       -0.357139366255          0.413731065593       44.1329870933    
+   21       -1.303564598330E-12      5.575621269646E-24   44.6425290326    
+   22        1.032442164187E-12      3.656942068987E-24   46.6774641716    
+   23        0.480306442710          0.809771820023       47.7580376533    
+   24        5.842936853355E-14      1.199355867402E-26   47.7976249605    
+   25        8.801072628024E-16      2.862203994675E-30   50.2747607414    
+   26        7.921791666528E-13      2.393109792821E-24   51.8843558214    
+   27       -4.255025397010E-15      7.087659321129E-29   53.2622072140    
+   28        2.460274365005E-11      2.388005348058E-21   53.6770760922    
+   29        0.279386845255          0.309835393391       54.0057197097    
+   30       -2.260576079918E-14      2.040415575393E-27   54.3251598710    
+   31        7.001436932138E-13      2.034613140842E-24   56.4713436992    
+   32        2.361761321875E-02      2.457701710193E-03   59.9484278869    
+   33       -1.404726974897E-12      8.759054075515E-24   60.3940288051    
+   34       -6.634697823460E-12      2.015673083813E-22   62.3014909118    
+   35        4.582443854968E-14      9.640205218376E-27   62.4615292176    
+   36        7.420843020787E-02      2.533518423917E-02   62.5947942406    
+   37        5.543064305612E-03      1.458708133590E-04   64.5935583009    
+   38       -2.053310970129E-16      2.084360497928E-31   67.2642056491    
+   39       -1.283019216360E-15      8.362441258993E-30   69.1174006192    
+   40        7.348042570475E-02      2.861067078344E-02   72.0950340630    
+   41        1.557144350939E-13      1.296770250778E-25   72.7655687796    
+   42        1.513516621357E-02      1.229218079903E-03   73.0087963748    
+   43       -1.189499892502E-12      7.878876132453E-24   75.7628140491    
+   44        1.659488445332E-12      1.569325937518E-23   77.5327745580    
+   45       -0.214917337342          0.274028191787       80.7184810770    
+   46       -2.618848406312E-15      4.212300324273E-29   83.5640050651    
+   47       -3.438163275732E-12      7.376595724469E-23   84.9031155126    
+   48       -8.150246283239E-02      4.289833694699E-02   87.8657519377    
+   49       -1.323874251243E-13      1.183172928882E-25   91.8492030223    
+   50       -1.504261293288E-14      1.533862256248E-27   92.2275003957    
+   51        3.353083249047E-02      7.755377967573E-03   93.8501422271    
+   52       -1.108698594431E-14      8.632767239851E-28   95.5528568705    
+   53       -0.347412444863          0.855117529130       96.3952657268    
+   54       -5.467976738811E-13      2.163782804295E-24   98.4647963619    
+   55        6.772021651445E-14      3.355217646066E-26   99.5416098142    
+   56       -1.228205678617E-15      1.104370253314E-29   99.6077515582    
+   57        0.261711097172          0.514400956757       102.182877903    
+   58        3.595519581886E-14      9.822224708895E-27   103.373016036    
+   59       -7.558835721391E-02      4.481755558659E-02   106.723237413    
+   60       -9.893205678578E-12      7.691173794362E-22   106.915134724    
+   61        4.679684490789E-13      1.760182760720E-24   109.356664411    
+   62       -9.524087985969E-17      7.363524587109E-32   110.448439001    
+   63        1.623548000951E-12      2.212063943757E-23   114.179476914    
+   64        4.530446965259E-02      1.723753204973E-02   114.265105196    
+   65        1.326278521074E-02      1.505146191708E-03   116.420604543    
+   66        7.079549774923E-13      4.368868776330E-24   118.598271647    
+   67       -4.320056595568E-02      1.633224131332E-02   119.065942484    
+   68        1.807498947244E-16      2.964703987170E-31   123.465571244    
+   69       -3.415169850232E-15      1.073315238456E-28   125.205474512    
+   70       -3.662728659405E-02      1.238955674134E-02   125.651279225    
+   71       -4.094162264964E-12      1.548151836882E-22   125.662035076    
+   72       -5.389399848159E-02      2.720202406390E-02   127.421011295    
+   73       -1.958375887680E-16      3.605490177444E-31   127.906568826    
+   74        4.520416537172E-13      1.960769952053E-24   130.554056807    
+   75        2.844823218069E-16      7.974156484565E-31   134.058644891    
+   76        1.758948736793E-13      3.062756964315E-25   134.687350520    
+   77        5.650595472658E-03      3.181291228619E-04   135.561271109    
+   78        5.383729923071E-15      2.888811540312E-28   135.604255493    
+   79       -1.143001125780E-02      1.343941562973E-03   139.961216193    
+   80       -2.398366654007E-14      6.052457255227E-27   143.159843556    
+   81        1.506625996549E-03      2.430994376521E-05   145.711449768    
+   82       -6.720172170516E-16      4.866649421818E-30   146.618881212    
+   83       -1.971746217456E-13      4.278192497310E-25   149.719692940    
+   84        7.397192969894E-13      8.070309064163E-24   200.667439518    
+   85       -8.323878816427E-02      0.114223959856       224.298491566    
+   86       -8.171168677373E-13      2.001362226557E-23   407.828888728    
+   87        3.265142043730E-16      3.393793040620E-30   433.113614068    
+   88        9.769902677591E-02      0.387364474847       552.153656788    
+   89       -4.073759949064E-16      7.420116670111E-30   608.331779003    
+
+ Sum rules (length)
+
+   k           S(k)
+   -2   7.39669264659    
+   -3   10.8433237393    
+   -4   18.6536871867    
+   -5   34.7860628946    
+   -6   67.4411909977    
+   -7   133.372657110    
+   -8   266.843547053    
+   -9   538.208593144    
+  -10   1092.60451618    
+  -11   2230.84710383    
+  -12   4579.27414784    
+  -13   9447.71603395    
+  -14   19586.7078669    
+  -15   40794.5734834    
+  -16   85338.7205777    
+
+
+ Final pseudo-spectrum for
+
+ operator type:    YDIPLEN 
+ operator symmetry:   1
+
+ State no:   Transition moment:    3*Oscillator strength:   Energy (eV):
+    1       -5.525767166558E-16      1.740265180027E-31   7.75444832679    
+    2       -3.333707617126E-14      8.491298749423E-28   10.3953650510    
+    3        0.501852757595          0.230787728982       12.4675386311    
+    4       -0.917672689944          0.889850631540       14.3767968901    
+    5       -3.261159306497E-14      1.361136227069E-27   17.4131845497    
+    6       -7.994280863695E-15      1.081954106626E-28   23.0340695464    
+    7        0.578419905786          0.628451230140       25.5567578825    
+    8        9.828328598390E-13      1.886278241201E-24   26.5685013247    
+    9        1.355869539235E-12      4.021806271635E-24   29.7650062195    
+   10       -3.104450594151E-14      2.247170957116E-27   31.7239492709    
+   11       -0.309412383655          0.224267737505       31.8722011307    
+   12       -1.964703147375E-11      9.214495077467E-22   32.4786746920    
+   13       -0.614630996661          0.904732999613       32.5845819053    
+   14        2.023371241061E-16      1.032555016469E-31   34.3148965427    
+   15        0.310469029661          0.263822154801       37.2387704692    
+   16       -1.925574512166E-12      1.062970379064E-23   39.0050773719    
+   17        0.766728118076           1.72053935462       39.8201112364    
+   18        3.718122770662E-12      4.128994482524E-23   40.6366117372    
+   19        1.232053533890E-15      4.665451545828E-30   41.8172206647    
+   20       -0.357139366255          0.413731065593       44.1329870933    
+   21       -1.303564598330E-12      5.575621269646E-24   44.6425290326    
+   22        1.032442164187E-12      3.656942068987E-24   46.6774641716    
+   23        0.480306442710          0.809771820023       47.7580376533    
+   24        5.842936853355E-14      1.199355867402E-26   47.7976249605    
+   25        8.801072628024E-16      2.862203994675E-30   50.2747607414    
+   26        7.921791666528E-13      2.393109792821E-24   51.8843558214    
+   27       -4.255025397010E-15      7.087659321129E-29   53.2622072140    
+   28        2.460274365005E-11      2.388005348058E-21   53.6770760922    
+   29        0.279386845255          0.309835393391       54.0057197097    
+   30       -2.260576079918E-14      2.040415575393E-27   54.3251598710    
+   31        7.001436932138E-13      2.034613140842E-24   56.4713436992    
+   32        2.361761321875E-02      2.457701710193E-03   59.9484278869    
+   33       -1.404726974897E-12      8.759054075515E-24   60.3940288051    
+   34       -6.634697823460E-12      2.015673083813E-22   62.3014909118    
+   35        4.582443854968E-14      9.640205218376E-27   62.4615292176    
+   36        7.420843020787E-02      2.533518423917E-02   62.5947942406    
+   37        5.543064305612E-03      1.458708133590E-04   64.5935583009    
+   38       -2.053310970129E-16      2.084360497928E-31   67.2642056491    
+   39       -1.283019216360E-15      8.362441258993E-30   69.1174006192    
+   40        7.348042570475E-02      2.861067078344E-02   72.0950340630    
+   41        1.557144350939E-13      1.296770250778E-25   72.7655687796    
+   42        1.513516621357E-02      1.229218079903E-03   73.0087963748    
+   43       -1.189499892502E-12      7.878876132453E-24   75.7628140491    
+   44        1.659488445332E-12      1.569325937518E-23   77.5327745580    
+   45       -0.214917337342          0.274028191787       80.7184810770    
+   46       -2.618848406312E-15      4.212300324273E-29   83.5640050651    
+   47       -3.438163275732E-12      7.376595724469E-23   84.9031155126    
+   48       -8.150246283239E-02      4.289833694699E-02   87.8657519377    
+   49       -1.323874251243E-13      1.183172928882E-25   91.8492030223    
+   50       -1.504261293288E-14      1.533862256248E-27   92.2275003957    
+   51        3.353083249047E-02      7.755377967573E-03   93.8501422271    
+   52       -1.108698594431E-14      8.632767239851E-28   95.5528568705    
+   53       -0.347412444863          0.855117529130       96.3952657268    
+   54       -5.467976738811E-13      2.163782804295E-24   98.4647963619    
+   55        6.772021651445E-14      3.355217646066E-26   99.5416098142    
+   56       -1.228205678617E-15      1.104370253314E-29   99.6077515582    
+   57        0.261711097172          0.514400956757       102.182877903    
+   58        3.595519581886E-14      9.822224708895E-27   103.373016036    
+   59       -7.558835721391E-02      4.481755558659E-02   106.723237413    
+   60       -9.893205678578E-12      7.691173794362E-22   106.915134724    
+   61        4.679684490789E-13      1.760182760720E-24   109.356664411    
+   62       -9.524087985969E-17      7.363524587109E-32   110.448439001    
+   63        1.623548000951E-12      2.212063943757E-23   114.179476914    
+   64        4.530446965259E-02      1.723753204973E-02   114.265105196    
+   65        1.326278521074E-02      1.505146191708E-03   116.420604543    
+   66        7.079549774923E-13      4.368868776330E-24   118.598271647    
+   67       -4.320056595568E-02      1.633224131332E-02   119.065942484    
+   68        1.807498947244E-16      2.964703987170E-31   123.465571244    
+   69       -3.415169850232E-15      1.073315238456E-28   125.205474512    
+   70       -3.662728659405E-02      1.238955674134E-02   125.651279225    
+   71       -4.094162264964E-12      1.548151836882E-22   125.662035076    
+   72       -5.389399848159E-02      2.720202406390E-02   127.421011295    
+   73       -1.958375887680E-16      3.605490177444E-31   127.906568826    
+   74        4.520416537172E-13      1.960769952053E-24   130.554056807    
+   75        2.844823218069E-16      7.974156484565E-31   134.058644891    
+   76        1.758948736793E-13      3.062756964315E-25   134.687350520    
+   77        5.650595472658E-03      3.181291228619E-04   135.561271109    
+   78        5.383729923071E-15      2.888811540312E-28   135.604255493    
+   79       -1.143001125780E-02      1.343941562973E-03   139.961216193    
+   80       -2.398366654007E-14      6.052457255227E-27   143.159843556    
+   81        1.506625996549E-03      2.430994376521E-05   145.711449768    
+   82       -6.720172170516E-16      4.866649421818E-30   146.618881212    
+   83       -1.971746217456E-13      4.278192497310E-25   149.719692940    
+   84        7.397192969894E-13      8.070309064163E-24   200.667439518    
+   85       -8.323878816427E-02      0.114223959856       224.298491566    
+   86       -8.171168677373E-13      2.001362226557E-23   407.828888728    
+   87        3.265142043730E-16      3.393793040620E-30   433.113614068    
+   88        9.769902677591E-02      0.387364474847       552.153656788    
+   89       -4.073759949064E-16      7.420116670111E-30   608.331779003    
+
+ Sum rules (length)
+
+   k           S(k)
+   -2   7.39669264659    
+   -3   10.8433237393    
+   -4   18.6536871867    
+   -5   34.7860628946    
+   -6   67.4411909977    
+   -7   133.372657110    
+   -8   266.843547053    
+   -9   538.208593144    
+  -10   1092.60451618    
+  -11   2230.84710383    
+  -12   4579.27414784    
+  -13   9447.71603395    
+  -14   19586.7078669    
+  -15   40794.5734834    
+  -16   85338.7205777    
+
+
+ Final pseudo-spectrum for
+
+ operator type:    ZDIPLEN 
+ operator symmetry:   1
+
+ State no:   Transition moment:    3*Oscillator strength:   Energy (eV):
+    1       -5.525767166558E-16      1.740265180027E-31   7.75444832679    
+    2       -3.333707617126E-14      8.491298749423E-28   10.3953650510    
+    3        0.501852757595          0.230787728982       12.4675386311    
+    4       -0.917672689944          0.889850631540       14.3767968901    
+    5       -3.261159306497E-14      1.361136227069E-27   17.4131845497    
+    6       -7.994280863695E-15      1.081954106626E-28   23.0340695464    
+    7        0.578419905786          0.628451230140       25.5567578825    
+    8        9.828328598390E-13      1.886278241201E-24   26.5685013247    
+    9        1.355869539235E-12      4.021806271635E-24   29.7650062195    
+   10       -3.104450594151E-14      2.247170957116E-27   31.7239492709    
+   11       -0.309412383655          0.224267737505       31.8722011307    
+   12       -1.964703147375E-11      9.214495077467E-22   32.4786746920    
+   13       -0.614630996661          0.904732999613       32.5845819053    
+   14        2.023371241061E-16      1.032555016469E-31   34.3148965427    
+   15        0.310469029661          0.263822154801       37.2387704692    
+   16       -1.925574512166E-12      1.062970379064E-23   39.0050773719    
+   17        0.766728118076           1.72053935462       39.8201112364    
+   18        3.718122770662E-12      4.128994482524E-23   40.6366117372    
+   19        1.232053533890E-15      4.665451545828E-30   41.8172206647    
+   20       -0.357139366255          0.413731065593       44.1329870933    
+   21       -1.303564598330E-12      5.575621269646E-24   44.6425290326    
+   22        1.032442164187E-12      3.656942068987E-24   46.6774641716    
+   23        0.480306442710          0.809771820023       47.7580376533    
+   24        5.842936853355E-14      1.199355867402E-26   47.7976249605    
+   25        8.801072628024E-16      2.862203994675E-30   50.2747607414    
+   26        7.921791666528E-13      2.393109792821E-24   51.8843558214    
+   27       -4.255025397010E-15      7.087659321129E-29   53.2622072140    
+   28        2.460274365005E-11      2.388005348058E-21   53.6770760922    
+   29        0.279386845255          0.309835393391       54.0057197097    
+   30       -2.260576079918E-14      2.040415575393E-27   54.3251598710    
+   31        7.001436932138E-13      2.034613140842E-24   56.4713436992    
+   32        2.361761321875E-02      2.457701710193E-03   59.9484278869    
+   33       -1.404726974897E-12      8.759054075515E-24   60.3940288051    
+   34       -6.634697823460E-12      2.015673083813E-22   62.3014909118    
+   35        4.582443854968E-14      9.640205218376E-27   62.4615292176    
+   36        7.420843020787E-02      2.533518423917E-02   62.5947942406    
+   37        5.543064305612E-03      1.458708133590E-04   64.5935583009    
+   38       -2.053310970129E-16      2.084360497928E-31   67.2642056491    
+   39       -1.283019216360E-15      8.362441258993E-30   69.1174006192    
+   40        7.348042570475E-02      2.861067078344E-02   72.0950340630    
+   41        1.557144350939E-13      1.296770250778E-25   72.7655687796    
+   42        1.513516621357E-02      1.229218079903E-03   73.0087963748    
+   43       -1.189499892502E-12      7.878876132453E-24   75.7628140491    
+   44        1.659488445332E-12      1.569325937518E-23   77.5327745580    
+   45       -0.214917337342          0.274028191787       80.7184810770    
+   46       -2.618848406312E-15      4.212300324273E-29   83.5640050651    
+   47       -3.438163275732E-12      7.376595724469E-23   84.9031155126    
+   48       -8.150246283239E-02      4.289833694699E-02   87.8657519377    
+   49       -1.323874251243E-13      1.183172928882E-25   91.8492030223    
+   50       -1.504261293288E-14      1.533862256248E-27   92.2275003957    
+   51        3.353083249047E-02      7.755377967573E-03   93.8501422271    
+   52       -1.108698594431E-14      8.632767239851E-28   95.5528568705    
+   53       -0.347412444863          0.855117529130       96.3952657268    
+   54       -5.467976738811E-13      2.163782804295E-24   98.4647963619    
+   55        6.772021651445E-14      3.355217646066E-26   99.5416098142    
+   56       -1.228205678617E-15      1.104370253314E-29   99.6077515582    
+   57        0.261711097172          0.514400956757       102.182877903    
+   58        3.595519581886E-14      9.822224708895E-27   103.373016036    
+   59       -7.558835721391E-02      4.481755558659E-02   106.723237413    
+   60       -9.893205678578E-12      7.691173794362E-22   106.915134724    
+   61        4.679684490789E-13      1.760182760720E-24   109.356664411    
+   62       -9.524087985969E-17      7.363524587109E-32   110.448439001    
+   63        1.623548000951E-12      2.212063943757E-23   114.179476914    
+   64        4.530446965259E-02      1.723753204973E-02   114.265105196    
+   65        1.326278521074E-02      1.505146191708E-03   116.420604543    
+   66        7.079549774923E-13      4.368868776330E-24   118.598271647    
+   67       -4.320056595568E-02      1.633224131332E-02   119.065942484    
+   68        1.807498947244E-16      2.964703987170E-31   123.465571244    
+   69       -3.415169850232E-15      1.073315238456E-28   125.205474512    
+   70       -3.662728659405E-02      1.238955674134E-02   125.651279225    
+   71       -4.094162264964E-12      1.548151836882E-22   125.662035076    
+   72       -5.389399848159E-02      2.720202406390E-02   127.421011295    
+   73       -1.958375887680E-16      3.605490177444E-31   127.906568826    
+   74        4.520416537172E-13      1.960769952053E-24   130.554056807    
+   75        2.844823218069E-16      7.974156484565E-31   134.058644891    
+   76        1.758948736793E-13      3.062756964315E-25   134.687350520    
+   77        5.650595472658E-03      3.181291228619E-04   135.561271109    
+   78        5.383729923071E-15      2.888811540312E-28   135.604255493    
+   79       -1.143001125780E-02      1.343941562973E-03   139.961216193    
+   80       -2.398366654007E-14      6.052457255227E-27   143.159843556    
+   81        1.506625996549E-03      2.430994376521E-05   145.711449768    
+   82       -6.720172170516E-16      4.866649421818E-30   146.618881212    
+   83       -1.971746217456E-13      4.278192497310E-25   149.719692940    
+   84        7.397192969894E-13      8.070309064163E-24   200.667439518    
+   85       -8.323878816427E-02      0.114223959856       224.298491566    
+   86       -8.171168677373E-13      2.001362226557E-23   407.828888728    
+   87        3.265142043730E-16      3.393793040620E-30   433.113614068    
+   88        9.769902677591E-02      0.387364474847       552.153656788    
+   89       -4.073759949064E-16      7.420116670111E-30   608.331779003    
+
+ Sum rules (length)
+
+   k           S(k)
+   -2   7.39669264659    
+   -3   10.8433237393    
+   -4   18.6536871867    
+   -5   34.7860628946    
+   -6   67.4411909977    
+   -7   133.372657110    
+   -8   266.843547053    
+   -9   538.208593144    
+  -10   1092.60451618    
+  -11   2230.84710383    
+  -12   4579.27414784    
+  -13   9447.71603395    
+  -14   19586.7078669    
+  -15   40794.5734834    
+  -16   85338.7205777    
+
  Static polarisabilities (length)
  ------------------------------------------------
   
- XDIPLEN  XDIPLEN         7.3966926304
+ XDIPLEN  XDIPLEN         7.3966926466
+         GRIDSQ               ALPHA
+      0.0000000           7.3966926
+      0.0061940           7.2836780
+      0.0576378           6.5042073
+      0.1715729           5.3865616
+      0.3755248           4.2805619
+      0.7294538           3.2954692
+      1.3708887           2.4258588
+      2.6629399           1.6484704
+      5.8284271           0.9614847
+     17.3497222           0.4004809
+    161.4476388           0.0511236
  YDIPLEN  XDIPLEN        -0.0000000000
+         GRIDSQ               ALPHA
+      0.0000000          -0.0000000
+      0.0061940          -0.0000000
+      0.0576378          -0.0000000
+      0.1715729          -0.0000000
+      0.3755248          -0.0000000
+      0.7294538          -0.0000000
+      1.3708887          -0.0000000
+      2.6629399          -0.0000000
+      5.8284271          -0.0000000
+     17.3497222          -0.0000000
+    161.4476388          -0.0000000
   
- YDIPLEN  YDIPLEN         5.5000834518
- ZDIPLEN  XDIPLEN         0.0000000000
+ YDIPLEN  YDIPLEN         5.5000834179
+         GRIDSQ               ALPHA
+      0.0000000           5.5000834
+      0.0061940           5.3989737
+      0.0576378           4.7628259
+      0.1715729           3.9762822
+      0.3755248           3.2654385
+      0.7294538           2.6353156
+      1.3708887           2.0472673
+      2.6629399           1.4725731
+      5.8284271           0.9087906
+     17.3497222           0.3976921
+    161.4476388           0.0518026
+ ZDIPLEN  XDIPLEN        -0.0000000000
+         GRIDSQ               ALPHA
+      0.0000000          -0.0000000
+      0.0061940          -0.0000000
+      0.0576378          -0.0000000
+      0.1715729          -0.0000000
+      0.3755248          -0.0000000
+      0.7294538          -0.0000000
+      1.3708887          -0.0000000
+      2.6629399          -0.0000000
+      5.8284271          -0.0000000
+     17.3497222          -0.0000000
+    161.4476388          -0.0000000
  ZDIPLEN  YDIPLEN         0.0000000000
+         GRIDSQ               ALPHA
+      0.0000000           0.0000000
+      0.0061940           0.0000000
+      0.0576378           0.0000000
+      0.1715729           0.0000000
+      0.3755248           0.0000000
+      0.7294538           0.0000000
+      1.3708887           0.0000000
+      2.6629399           0.0000000
+      5.8284271           0.0000000
+     17.3497222           0.0000000
+    161.4476388           0.0000000
   
- ZDIPLEN  ZDIPLEN         3.2069250602
+ ZDIPLEN  ZDIPLEN         3.2069250578
+         GRIDSQ               ALPHA
+      0.0000000           3.2069251
+      0.0061940           3.1358195
+      0.0576378           2.7724953
+      0.1715729           2.4381988
+      0.3755248           2.1686802
+      0.7294538           1.9092031
+      1.3708887           1.6195832
+      2.6629399           1.2718052
+      5.8284271           0.8542800
+     17.3497222           0.4021814
+    161.4476388           0.0550550
 
 
  Cauchy moments (length)
@@ -1253,166 +3005,166 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  XDIPLEN  XDIPLEN 
 
    k               Moment = S(-k-2)
-    0         7.39669263036805002542E+00
-    2         1.86536869704614609589E+01
-    4         6.74411896352256547971E+01
-    6         2.66843539559580392506E+02
-    8         1.09260447702350120380E+03
-   10         4.57927394808808912785E+03
-   12         1.95867068607914370659E+04
-   14         8.53387155424993979977E+04
-   16         3.78002710869371425360E+05
-   18         1.69851417834830051288E+06
-   20         7.72517002128079812974E+06
-   22         3.54890124314950406551E+07
-   24         1.64360719021647244692E+08
-   26         7.66132046376773238182E+08
-   28         3.58931100459875965118E+09
-   30         1.68822944454911460876E+10
-   32         7.96477991268258361816E+10
-   34         3.76643074998955749512E+11
-   36         1.78426827839436889648E+12
-   38         8.46406493555312890625E+12
+    0         7.39669264659402614370E+00
+    2         1.86536871866827880240E+01
+    4         6.74411909976814882839E+01
+    6         2.66843547052564758815E+02
+    8         1.09260451618468141533E+03
+   10         4.57927414783681433619E+03
+   12         1.95867078669375259778E+04
+   14         8.53387205776770570083E+04
+   16         3.78002735985373961739E+05
+   18         1.69851430343315424398E+06
+   20         7.72517064377342164516E+06
+   22         3.54890155280695408583E+07
+   24         1.64360734419976353645E+08
+   26         7.66132122915373563766E+08
+   28         3.58931138483181571960E+09
+   30         1.68822963331595630646E+10
+   32         7.96478084907564544678E+10
+   34         3.76643121408533325195E+11
+   36         1.78426850819193457031E+12
+   38         8.46406607227297949219E+12
 
 
  YDIPLEN  XDIPLEN 
 
    k               Moment = S(-k-2)
-    0        -2.07121808127145200495E-13
-    2        -1.48021740657898528444E-12
-    4        -1.00452096288488196436E-11
-    6        -6.87881571525944584154E-11
-    8        -4.77826904986715643746E-10
-   10        -3.34052398350081313048E-09
-   12        -2.33576612846912651814E-08
-   14        -1.62873829829831344177E-07
-   16        -1.13172697738321298099E-06
-   18        -7.83777019925889789512E-06
-   20        -5.41310644580460180561E-05
-   22        -3.73049474279754818534E-04
-   24        -2.56675003347478199525E-03
-   26        -1.76394208789977594010E-02
-   28        -1.21118771520960843979E-01
-   30        -8.31134249395273694283E-01
-   32        -5.70086761038369882471E+00
-   34        -3.90909796549745109928E+01
-   36        -2.67989483391756948549E+02
-   38        -1.83693051914602483521E+03
+    0        -4.48779767564126063006E-14
+    2         4.10186369757182783906E-13
+    4         4.28832021536041294330E-12
+    6         3.27814513190953769700E-11
+    8         2.32825258965901413576E-10
+   10         1.61472522371852785979E-09
+   12         1.11029850607486491736E-08
+   14         7.61053789973308310294E-08
+   16         5.21114844167913410576E-07
+   18         3.56737204135736790509E-06
+   20         2.44225631283390959129E-05
+   22         1.67225082502898785269E-04
+   24         1.14520205771628347073E-03
+   26         7.84375052272665018727E-03
+   28         5.37296321846377281095E-02
+   30         3.68078758520728965831E-01
+   32         2.52170819105340182631E+00
+   34         1.72770120196573628846E+01
+   36         1.18374073422992935889E+02
+   38         8.11063043098671641928E+02
 
 
  YDIPLEN  YDIPLEN 
 
    k               Moment = S(-k-2)
-    0         5.50008345179561963789E+00
-    2         1.69082673243989063394E+01
-    4         9.81693323959541004342E+01
-    6         6.44000635159331636714E+02
-    8         4.35077965052555737202E+03
-   10         2.96657836482482380234E+04
-   12         2.02919151901955046924E+05
-   14         1.38955746292224805802E+06
-   16         9.51925015471489541233E+06
-   18         6.52214538767679929733E+07
-   20         4.46889473388382852077E+08
-   22         3.06208740333970022202E+09
-   24         2.09815623464021492004E+10
-   26         1.43766949086004486084E+11
-   28         9.85100734150439331055E+11
-   30         6.74997796129836621094E+12
-   32         4.62513178685841328125E+13
-   34         3.16917254493719937500E+14
-   36         2.17153915051388125000E+15
-   38         1.48795379153856940000E+16
+    0         5.50008341785202237162E+00
+    2         1.69082670680752435999E+01
+    4         9.81693300661470971136E+01
+    6         6.44000614849611679347E+02
+    8         4.35077948134541111358E+03
+   10         2.96657822840187982365E+04
+   12         2.02919141153738251887E+05
+   14         1.38955737969507952221E+06
+   16         9.51924951884959265590E+06
+   18         6.52214490705325007439E+07
+   20         4.46889437377968013287E+08
+   22         3.06208713550622177124E+09
+   24         2.09815603666986045837E+10
+   26         1.43766934530893737793E+11
+   28         9.85100627633983154297E+11
+   30         6.74997718495703515625E+12
+   32         4.62513122305336328125E+13
+   34         3.16917213678983000000E+14
+   36         2.17153885589435150000E+15
+   38         1.48795357941655620000E+16
 
 
  ZDIPLEN  XDIPLEN 
 
    k               Moment = S(-k-2)
-    0         5.39100674802756670997E-14
-    2         8.89899032987547196608E-14
-    4         9.19902322882929043234E-13
-    6         1.12365444976813677826E-11
-    8         1.37918757039490067905E-10
-   10         1.69550604440805666110E-09
-   12         2.08626498699147484485E-08
-   14         2.56819493935373090410E-07
-   16         3.16205263336695901568E-06
-   18         3.89354213394167990346E-05
-   20         4.79440654110946211375E-04
-   22         5.90378525646895104678E-03
-   24         7.26990145375791818605E-02
-   26         8.95215092542866464065E-01
-   28         1.10236805757514986226E+01
-   30         1.35745669587810169787E+02
-   32         1.67157320794239285533E+03
-   34         2.05837661951850604964E+04
-   36         2.53468670555237738881E+05
-   38         3.12121537008003378287E+06
+    0        -6.21601792512182800943E-14
+    2         1.01298019881428568369E-14
+    4         2.49756230555776284869E-13
+    6         2.79206267590923956375E-12
+    8         3.30961228368381058291E-11
+   10         4.01736123235424460420E-10
+   12         4.91911009906044898486E-09
+   14         6.04382204513356616824E-08
+   16         7.43576245282972508035E-07
+   18         9.15320360582300276758E-06
+   20         1.12697181216720457774E-04
+   22         1.38767975674333808415E-03
+   24         1.70875439824545206913E-02
+   26         2.10414457100480983831E-01
+   28         2.59103728469871841256E+00
+   30         3.19060166239247138265E+01
+   32         3.92890779883949960549E+02
+   34         4.83805959222290948674E+03
+   36         5.95759036685474638944E+04
+   38         7.33618175876300549135E+05
 
 
  ZDIPLEN  YDIPLEN 
 
    k               Moment = S(-k-2)
-    0         6.42910144867038821597E-14
-    2         2.37501632466699597324E-14
-    4        -8.29428178871294994971E-14
-    6        -2.70159964432058954580E-12
-    8        -4.36254830742353746971E-11
-   10        -6.05427989037521474057E-10
-   12        -7.91590966410944109061E-09
-   14        -1.00616291894860109320E-07
-   16        -1.26046216573838542473E-06
-   18        -1.56683704610593271236E-05
-   20        -1.93947650877873358942E-04
-   22        -2.39517385524412769471E-03
-   24        -2.95414748183312377006E-02
-   26        -3.64097960057022662639E-01
-   28        -4.48572536813999711569E+00
-   30        -5.52524720022436923728E+01
-   32        -6.80483643407931936054E+02
-   34        -8.38019560911512962775E+03
-   36        -1.03198694290341140004E+05
-   38        -1.27082313871810329147E+06
+    0         2.02479991012655342755E-14
+    2        -6.70484553821561518267E-14
+    4        -7.47791205527594026870E-13
+    6        -8.58806593982014130593E-12
+    8        -1.01783226036348472104E-10
+   10        -1.22666040119693128166E-09
+   12        -1.49230682799360569029E-08
+   14        -1.82517243129234967134E-07
+   16        -2.23898816871481569514E-06
+   18        -2.75124751692407975320E-05
+   20        -3.38388412251589866531E-04
+   22        -4.16417401444290572604E-03
+   24        -5.12588741893831370544E-02
+   26        -6.31073398254679007735E-01
+   28        -7.77016060301200717220E+00
+   30        -9.56757768548789897523E+01
+   32        -1.17811090445713671215E+03
+   34        -1.45069839493168983608E+04
+   36        -1.78637180730045103701E+05
+   38        -2.19972646470478363335E+06
 
 
  ZDIPLEN  ZDIPLEN 
 
    k               Moment = S(-k-2)
-    0         3.20692506021671430716E+00
-    2         1.22887964857421359000E+01
-    4         1.40520857480292363562E+02
-    6         1.72246572111214436518E+03
-    8         2.12014747151907322404E+04
-   10         2.61063222365460649598E+05
-   12         3.21471832184991566464E+06
-   14         3.95860461302875280380E+07
-   16         4.87462879886255979538E+08
-   18         6.00262204190391254425E+09
-   20         7.39163392773801269531E+10
-   22         9.10206436136974243164E+11
-   24         1.12082898660085429688E+13
-   26         1.38018977601216015625E+14
-   28         1.69956687468231600000E+15
-   30         2.09284810807953840000E+16
-   32         2.57713495640521856000E+17
-   34         3.17348619705626675200E+18
-   36         3.90783362659224371200E+19
-   38         4.81210968155168178176E+20
+    0         3.20692505778056569099E+00
+    2         1.22887966132914669970E+01
+    4         1.40520860396610203225E+02
+    6         1.72246577350708889753E+03
+    8         2.12014755638426249789E+04
+   10         2.61063235322407330386E+05
+   12         3.21471851227102102712E+06
+   14         3.95860488552618324757E+07
+   16         4.87462918122509360313E+08
+   18         6.00262257038607406616E+09
+   20         7.39163464949009704590E+10
+   22         9.10206533753911132813E+11
+   24         1.12082911756927539063E+13
+   26         1.38018995054015875000E+14
+   28         1.69956710591645750000E+15
+   30         2.09284841291818520000E+16
+   32         2.57713535653091552000E+17
+   34         3.17348672024502630400E+18
+   36         3.90783430837258895360E+19
+   38         4.81211056730521796608E+20
 
 
- Time used in c6/c8 calculation       1.52 CPU seconds for symmetry 1
+ Time used in c6/c8 calculation       2.48 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:   1.69 seconds
- >>>> Total wall time used in RESPONSE:   5.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   2.67 seconds
+ >>>> Total wall time used in RESPONSE:   2.70 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.78 seconds
- >>>> Total wall time used in DALTON:   5.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.73 seconds
+ >>>> Total wall time used in DALTON:   2.76 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:53 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:19 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

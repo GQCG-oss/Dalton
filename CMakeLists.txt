@@ -80,6 +80,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
 include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/include
     ${CMAKE_SOURCE_DIR}/DALTON/dft
+    ${CMAKE_SOURCE_DIR}/DALTON/abacus
     ${CMAKE_SOURCE_DIR}/LSDALTON/dft
     ${CMAKE_Fortran_MODULE_DIRECTORY}
     )
