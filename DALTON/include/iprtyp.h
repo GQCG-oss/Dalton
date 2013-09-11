@@ -40,7 +40,7 @@
 #define QMMMB2_4_WORK 41
 #define LUCITA_WORK 42
 #define MEP_WORK 43
-#define PE 44
+#define POLARIZABLE_EMBEDDING 44
 #define GEN1INT_INIT 79
 #define GEN1INT_GET_INT 80
 #define GEN1INT_GET_EXPT 81
