@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,196 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:42:23 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 17:52:42 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_cc_rsp_threephot
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE FUNCTIONS                               
+**INTEGRAL                                        
+.DIPLEN                                           
+**WAVE FUNCTIONS                                  
+.CC                                               
+*SCF INPUT                                        
+.THRESH                                           
+ 1.0d-12                                          
+*CC INPUT                                         
+.CCS                                              
+.CC2                                              
+.CCSD                                             
+.NSYM                                             
+ 4                                                
+.THRENR                                           
+ 1.0d-8                                           
+.THRLEQ                                           
+ 1.0d-8                                           
+.PRINT                                            
+   2                                              
+*CCEXCI                                           
+.NCCEXCI                                          
+  0 0 0 1                                         
+.THREXC                                           
+ 1.0d-8                                           
+*CCTM                                             
+.SELSTA                                           
+ 4 1 0.0 0.2                                      
+.OPERATOR                                         
+YDIPLEN XDIPLEN ZDIPLEN YDIPLEN XDIPLEN ZDIPLEN   
+*CCLRSD                                           
+.DIPOLE                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+6-31G**                                                                        
+Hydrogen flourid                                                               
+small test basis                                                               
+    2    2  Y  X      1.00D-15                                                 
+        9.0   1                                                                
+F     0.0000000000000000  0.0000000000000000 1.76320000000000000               
+        1.0   1                                                                
+H     0.0000000000000000  0.0000000000000000 0.00000000000000000               
 
 
        *******************************************************************
@@ -105,7 +218,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -129,8 +242,8 @@
   Nuclear charge:   9.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   9 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G**"
+  Basis set file used for this atomic type with Z =   9 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-31G**"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-31G**                                                                         
@@ -140,8 +253,8 @@
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G**"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-31G**"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-31G**                                                                         
@@ -214,7 +327,7 @@ Point group: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-15
 
 
   Cartesian Coordinates (a.u.)
@@ -255,8 +368,10 @@ Point group: C2v
  H     :    0.933045    0.000000
 
 
-  Max interatomic separation is    0.9330 Angstrom (    1.7632 Bohr)
+  Max    interatomic separation is    0.9330 Angstrom (    1.7632 Bohr)
   between atoms    2 and    1, "H     " and "F     ".
+
+  Min HX interatomic separation is    0.9330 Angstrom (    1.7632 Bohr)
 
 
   Bond distances (Angstrom):
@@ -285,7 +400,7 @@ Point group: C2v
                B =       606561.40 MHz     (   20.232710 cm-1)
 
 
-@  Nuclear repulsion energy :    5.104355716878
+@  Nuclear repulsion energy :    5.104355716878 Hartree
 
 
   Symmetry Orbitals
@@ -364,13 +479,13 @@ Point group: C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:        4125 ( 22.7% )
  Megabytes written:                              0.048
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -410,8 +525,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 17:52:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:42:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      Hydrogen flourid                                                        
@@ -420,30 +535,28 @@ Point group: C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
-
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EWMO  " input option.
+ ".MOSTART EWMO  " input option
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -456,21 +569,12 @@ Point group: C2v
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-12
-
-
- Changes of defaults for CC:
- ---------------------------
-
- -Excitation energies calculated
- -One-photon absorption strengths will be calculated
- -Oscillator strengths calculated
-  
 
 
  Changes of defaults for CC:
@@ -488,66 +592,67 @@ Point group: C2v
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
-   1  -99.9159496472       1.29D+00  -9.99D+01    3  1  1  0
+@  1  -99.9159496472       1.29D+00  -9.99D+01     3   1   1   0
       Virial theorem: -V/T =      1.997399
-      MULPOP  F      -0.44; H       0.44; 
+@      MULPOP F      -0.44; H       0.44; 
  -----------------------------------------------------------------------------
-   2  -100.006061881       2.26D-01  -9.01D-02    3  1  1  0
+@  2  -100.006061881       2.26D-01  -9.01D-02     3   1   1   0
       Virial theorem: -V/T =      2.002657
-      MULPOP  F      -0.38; H       0.38; 
+@      MULPOP F      -0.38; H       0.38; 
  -----------------------------------------------------------------------------
-   3  -100.008563846       8.51D-02  -2.50D-03    3  1  1  0
+@  3  -100.008563846       8.51D-02  -2.50D-03     3   1   1   0
       Virial theorem: -V/T =      1.999075
-      MULPOP  F      -0.41; H       0.41; 
+@      MULPOP F      -0.41; H       0.41; 
  -----------------------------------------------------------------------------
-   4  -100.008886254       2.15D-02  -3.22D-04    3  1  1  0
+@  4  -100.008886254       2.15D-02  -3.22D-04     3   1   1   0
       Virial theorem: -V/T =      2.000623
-      MULPOP  F      -0.41; H       0.41; 
+@      MULPOP F      -0.41; H       0.41; 
  -----------------------------------------------------------------------------
-   5  -100.008918307       3.56D-03  -3.21D-05    3  1  1  0
+@  5  -100.008918307       3.56D-03  -3.21D-05     3   1   1   0
       Virial theorem: -V/T =      2.000296
-      MULPOP  F      -0.42; H       0.42; 
+@      MULPOP F      -0.42; H       0.42; 
  -----------------------------------------------------------------------------
-   6  -100.008919840       7.37D-04  -1.53D-06    3  1  1  0
+@  6  -100.008919840       7.37D-04  -1.53D-06     3   1   1   0
       Virial theorem: -V/T =      2.000320
-      MULPOP  F      -0.42; H       0.42; 
+@      MULPOP F      -0.42; H       0.42; 
  -----------------------------------------------------------------------------
-   7  -100.008919896       5.25D-05  -5.51D-08    3  1  1  0
+@  7  -100.008919896       5.25D-05  -5.51D-08     3   1   1   0
       Virial theorem: -V/T =      2.000327
-      MULPOP  F      -0.42; H       0.42; 
+@      MULPOP F      -0.42; H       0.42; 
  -----------------------------------------------------------------------------
-   8  -100.008919896       4.66D-06  -2.57D-10    3  1  1  0
+@  8  -100.008919896       4.66D-06  -2.57D-10     3   1   1   0
       Virial theorem: -V/T =      2.000326
-      MULPOP  F      -0.42; H       0.42; 
+@      MULPOP F      -0.42; H       0.42; 
  -----------------------------------------------------------------------------
-   9  -100.008919896       4.39D-07  -1.12D-12    3  1  1  0
+@  9  -100.008919896       4.39D-07  -1.05D-12     3   1   1   0
       Virial theorem: -V/T =      2.000327
-      MULPOP  F      -0.42; H       0.42; 
+@      MULPOP F      -0.42; H       0.42; 
  -----------------------------------------------------------------------------
-  10  -100.008919896       2.49D-08   1.42D-14    3  1  1  0
+@ 10  -100.008919896       2.49D-08  -9.95D-14     3   1   1   0
       Virial theorem: -V/T =      2.000327
-      MULPOP  F      -0.42; H       0.42; 
+@      MULPOP F      -0.42; H       0.42; 
  -----------------------------------------------------------------------------
-  11  -100.008919896       2.56D-09  -7.11D-14    3  1  1  0
+@ 11  -100.008919896       2.56D-09  -1.42D-14     3   1   1   0
       Virial theorem: -V/T =      2.000327
-      MULPOP  F      -0.42; H       0.42; 
+@      MULPOP F      -0.42; H       0.42; 
  -----------------------------------------------------------------------------
-  12  -100.008919896       6.66D-11   5.68D-14    3  1  1  0
+@ 12  -100.008919896       6.66D-11   5.68D-14     3   1   1   0
       Virial theorem: -V/T =      2.000327
-      MULPOP  F      -0.42; H       0.42; 
+@      MULPOP F      -0.42; H       0.42; 
  -----------------------------------------------------------------------------
-  13  -100.008919896       8.92D-12  -1.42D-14    3  1  1  0
+@ 13  -100.008919896       8.93D-12   1.42D-14     3   1   1   0
       Virial theorem: -V/T =      2.000327
-      MULPOP  F      -0.42; H       0.42; 
+@      MULPOP F      -0.42; H       0.42; 
  -----------------------------------------------------------------------------
-  14  -100.008919896       3.63D-13  -1.42D-14    3  1  1  0
+@ 14  -100.008919896       3.46D-13  -2.84D-14     3   1   1   0
 
- *** DIIS converged in  14 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -100.008919895850    3.46D-13
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -575,25 +680,27 @@ Point group: C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.006       0.006
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -100.008919895851                 
-     Nuclear repulsion:             5.104355716878
-     Electronic energy:          -105.113275612730
+@    Final HF energy:            -100.008919895850                 
+@    Nuclear repulsion:             5.104355716878
+@    Electronic energy:          -105.113275612729
 
-     Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Mar 16 17:52:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:42:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -638,11 +745,11 @@ Point group: C2v
 
 
  >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      0.01 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:52:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:42:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -799,9 +906,9 @@ Point group: C2v
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE    2.1139823648444405        2.5192906057640974     
+  MIN AND MAX IN SELECTED SUPSPACE    2.1139823648441709        2.5192906057642448     
  Start vector guessed from diagonal
- ... selected element no.  7
+ ... selected element no.  4
 
 
 
@@ -812,8 +919,9 @@ Point group: C2v
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.46331998
+               Column   1
+       1       1.46331998
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.56402D-02
       1       1         0.00     0.26E-01
@@ -822,8 +930,9 @@ Point group: C2v
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.46280451
+               Column   1
+       1       1.46280451
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 9.39265D-03
       2       1         0.00     0.94E-02
@@ -832,8 +941,9 @@ Point group: C2v
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.46080826
+               Column   1
+       1       1.46080826
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.46567D-02
       3       1         0.00     0.35E-01
@@ -842,8 +952,9 @@ Point group: C2v
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.45573747
+               Column   1
+       1       1.45573747
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.60276D-02
       4       1         0.00     0.26E-01
@@ -852,8 +963,9 @@ Point group: C2v
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.45525837
+               Column   1
+       1       1.45525837
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.76007D-02
       5       1         0.00     0.38E-01
@@ -862,8 +974,9 @@ Point group: C2v
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.45515685
+               Column   1
+       1       1.45515685
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 6.79115D-03
       6       1         0.00     0.68E-02
@@ -872,8 +985,9 @@ Point group: C2v
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.45514407
+               Column   1
+       1       1.45514407
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 8.19253D-06
       7       1         0.00     0.82E-05
@@ -882,8 +996,9 @@ Point group: C2v
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.45514407
+               Column   1
+       1       1.45514407
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.40525D-06
       8       1         0.00     0.34E-05
@@ -892,12 +1007,13 @@ Point group: C2v
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.45514407
+               Column   1
+       1       1.45514407
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 3.77545D-15
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.77545D-15
-      9       1         0.00     0.38E-14
+ ROOT:  1 RESIDUAL TOT: 5.68909D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.68909D-15
+      9       1         0.00     0.57E-14
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
@@ -915,7 +1031,7 @@ Point group: C2v
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -945,7 +1061,7 @@ Point group: C2v
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.553775822749515
+@@    4    1           -98.553775822748662
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -960,13 +1076,12 @@ Point group: C2v
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        7          |              |    0.707079  |
- | 3   2   |   1       1     |        4          |              |   -0.707079  |
+ | 2   3   |   1       1     |        7          |              |   -0.707079  |
+ | 3   2   |   1       1     |        4          |              |    0.707079  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             1.0000
-
 
           Printed all single excitations greater than 0.250000
 
@@ -1069,7 +1184,7 @@ Point group: C2v
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE    2.1139823648444405        2.5192906057640974     
+  MIN AND MAX IN SELECTED SUPSPACE    2.1139823648441709        2.5192906057642448     
 Try to use right eigenvector as start for a left eigenvector.
  Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a  CCS       RE vector
@@ -1083,12 +1198,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.45514407
+               Column   1
+       1       1.45514407
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 2.01399D-15
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.01399D-15
-      1       1         0.00     0.20E-14
+ ROOT:  1 RESIDUAL TOT: 5.62995D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.62995D-15
+      1       1         0.00     0.56E-14
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
@@ -1136,7 +1252,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.553775822749515
+@@    4    1           -98.553775822748662
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1151,13 +1267,12 @@ Try to use right eigenvector as start for a left eigenvector.
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        7          |              |    0.707079  |
- | 3   2   |   1       1     |        4          |              |   -0.707079  |
+ | 2   3   |   1       1     |        7          |              |   -0.707079  |
+ | 3   2   |   1       1     |        4          |              |    0.707079  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             1.0000
-
 
           Printed all single excitations greater than 0.250000
 
@@ -1471,8 +1586,10 @@ Try to use right eigenvector as start for a left eigenvector.
    will be performed.
 
 
+ RPA: call cceq_str
      R1  start vector nr.  1 of symmetry  1 generated from gradient
      R1  start vector nr.  2 of symmetry  1 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -1552,8 +1669,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.01 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1577,7 +1694,6 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.8775
 
-
           Printed all single excitations greater than 0.250000
 
 
@@ -1598,10 +1714,11 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             1.6521
 
-
           Printed all single excitations greater than 0.250000
+ RPA: call cceq_str
      R1  start vector nr.  3 of symmetry  2 generated from gradient
      R1  start vector nr.  4 of symmetry  2 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -1646,8 +1763,8 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- ROOT:  1 RESIDUAL TOT: 9.86894D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.86894D-11
+ ROOT:  1 RESIDUAL TOT: 9.86895D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.86895D-11
  ROOT:  2 RESIDUAL TOT: 4.32306D-04
       7       2         0.00     0.43E-03
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -1660,10 +1777,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- ROOT:  1 RESIDUAL TOT: 1.14845D-15
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.14845D-15
- ROOT:  2 RESIDUAL TOT: 1.00134D-12
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.00134D-12
+ ROOT:  1 RESIDUAL TOT: 1.25479D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.25479D-15
+ ROOT:  2 RESIDUAL TOT: 1.03963D-12
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.03963D-12
       9       1         0.00     0.10E-11
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
@@ -1681,8 +1798,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.01 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1711,7 +1828,6 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.3036
 
-
           Printed all single excitations greater than 0.050000
 
 
@@ -1736,9 +1852,10 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             2.3777
 
-
           Printed all single excitations greater than 0.250000
+ RPA: call cceq_str
      R1  start vector nr.  5 of symmetry  3 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -1825,9 +1942,10 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.3479
 
-
           Printed all single excitations greater than 0.250000
+ RPA: call cceq_str
      L1  start vector nr.  1 of symmetry  1 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -1901,7 +2019,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.01 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1928,9 +2046,10 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             3.0784
 
-
           Printed all single excitations greater than 0.250000
+ RPA: call cceq_str
      L1  start vector nr.  2 of symmetry  2 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -2028,8 +2147,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.01 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2058,9 +2177,10 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             4.4701
 
-
           Printed all single excitations greater than 0.250000
+ RPA: call cceq_str
      L1  start vector nr.  3 of symmetry  3 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -2151,9 +2271,10 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             1.0354
 
-
           Printed all single excitations greater than 0.250000
+ RPA: call cceq_str
      M1  start vector nr.  1 of symmetry  4 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -2172,9 +2293,9 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- ROOT:  1 RESIDUAL TOT: 4.58630D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.58630D-16
-      3       1         0.00     0.46E-15
+ ROOT:  1 RESIDUAL TOT: 6.08468D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.08468D-16
+      3       1         0.00     0.61E-15
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
@@ -2209,13 +2330,12 @@ Try to use right eigenvector as start for a left eigenvector.
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        7          |              |   -0.060150  |
- | 3   2   |   1       1     |        4          |              |    0.060150  |
+ | 2   3   |   1       1     |        7          |              |    0.060150  |
+ | 3   2   |   1       1     |        4          |              |   -0.060150  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.0851
-
 
           Printed all single excitations greater than 0.050000
 
@@ -2258,12 +2378,14 @@ Try to use right eigenvector as start for a left eigenvector.
  |     5    |     3    |      5       |       0.00  |
  |     5    |     4    |      6       |       0.00  |
  +--------------------------------------------------+
- | total time for   6 B transforms.:      0.01 secs.|
+ | total time for   6 B transforms.:      0.00 secs.|
  +==================================================+
 
 
+ RPA: call cceq_str
      R2  start vector nr.  1 of symmetry  2 generated from gradient
      R2  start vector nr.  2 of symmetry  2 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -2322,11 +2444,11 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- ROOT:  1 RESIDUAL TOT: 4.06675D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.06675D-16
- ROOT:  2 RESIDUAL TOT: 2.54154D-13
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.54154D-13
-      9       1         0.00     0.25E-12
+ ROOT:  1 RESIDUAL TOT: 1.06340D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.06340D-15
+ ROOT:  2 RESIDUAL TOT: 2.01763D-13
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.01763D-13
+      9       1         0.00     0.20E-12
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
@@ -2343,8 +2465,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.01 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2368,7 +2490,6 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
           Norm of Printed Amplitude Vector :             0.1620
-
 
           Printed all single excitations greater than 0.050000
 
@@ -2399,10 +2520,11 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :            10.9964
 
-
           Printed all single excitations greater than 0.250000
+ RPA: call cceq_str
      R2  start vector nr.  3 of symmetry  3 generated from gradient
      R2  start vector nr.  4 of symmetry  3 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -2475,8 +2597,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.01 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2499,7 +2621,6 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9213
 
-
           Printed all single excitations greater than 0.250000
 
 
@@ -2520,10 +2641,11 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             2.3681
 
-
           Printed all single excitations greater than 0.250000
+ RPA: call cceq_str
      R2  start vector nr.  5 of symmetry  4 generated from gradient
      R2  start vector nr.  6 of symmetry  4 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -2556,11 +2678,11 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- ROOT:  1 RESIDUAL TOT: 3.26508D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.26508D-16
- ROOT:  2 RESIDUAL TOT: 3.05281D-16
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.05281D-16
-      5       1         0.00     0.33E-15
+ ROOT:  1 RESIDUAL TOT: 2.68347D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.68347D-16
+ ROOT:  2 RESIDUAL TOT: 4.20291D-16
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.20291D-16
+      5       1         0.00     0.42E-15
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
@@ -2578,7 +2700,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.01 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2601,7 +2723,6 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.0980
 
-
           Printed all single excitations greater than 0.050000
 
 
@@ -2623,7 +2744,6 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
           Norm of Printed Amplitude Vector :             3.3699
-
 
           Printed all single excitations greater than 0.250000
 
@@ -2661,7 +2781,9 @@ Try to use right eigenvector as start for a left eigenvector.
  +==================================================+
 
 
+ RPA: call cceq_str
      L2  start vector nr.  1 of symmetry  2 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -2745,9 +2867,9 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- ROOT:  1 RESIDUAL TOT: 6.49102D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.49102D-16
-     16       1         0.00     0.65E-15
+ ROOT:  1 RESIDUAL TOT: 7.78466D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.78466D-16
+     16       1         0.00     0.78E-15
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
@@ -2764,8 +2886,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.01 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2799,9 +2921,10 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :            23.5926
 
-
           Printed all single excitations greater than 0.250000
+ RPA: call cceq_str
      L2  start vector nr.  2 of symmetry  3 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -2875,7 +2998,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.01 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2902,9 +3025,10 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             5.2817
 
-
           Printed all single excitations greater than 0.250000
+ RPA: call cceq_str
      L2  start vector nr.  3 of symmetry  4 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -2953,9 +3077,9 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- ROOT:  1 RESIDUAL TOT: 4.61727D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.61727D-16
-      9       1         0.00     0.46E-15
+ ROOT:  1 RESIDUAL TOT: 1.57181D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.57181D-16
+      9       1         0.00     0.16E-15
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
@@ -2973,7 +3097,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.01 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2998,7 +3122,6 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
           Norm of Printed Amplitude Vector :             7.1342
-
 
           Printed all single excitations greater than 0.250000
 
@@ -3040,7 +3163,7 @@ Try to use right eigenvector as start for a left eigenvector.
  |     4    |     4    |      2       |       0.00  |
  |     2    |     5    |      2       |       0.00  |
  +--------------------------------------------------+
- | total time for   6 B transforms.:      0.01 secs.|
+ | total time for   6 B transforms.:      0.00 secs.|
  +==================================================+
 
 
@@ -3137,6 +3260,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Gauge: length
 
      Zero matrix.
+    ==== End of matrix output ====
 
  Principal values of diagonalized transition strength matrix:
 
@@ -3148,10 +3272,11 @@ Try to use right eigenvector as start for a left eigenvector.
  Principal axis of diagonalized transition strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1      1.00000000    0.00000000    0.00000000
-       2      0.00000000    1.00000000    0.00000000
-       3      0.00000000    0.00000000    1.00000000
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
 
 
  CCS    oscillator strength matrix for state nr.  1 of symmetry 4
@@ -3159,6 +3284,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
      Zero matrix.
+    ==== End of matrix output ====
 
  Principal values of diagonalized oscillator strength matrix:
 
@@ -3170,10 +3296,11 @@ Try to use right eigenvector as start for a left eigenvector.
  Principal axis of diagonalized oscillator strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1      1.00000000    0.00000000    0.00000000
-       2      0.00000000    1.00000000    0.00000000
-       3      0.00000000    0.00000000    1.00000000
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
 
  >>> Total time for      0 linear response residues:       0.00 seconds.
 
@@ -3192,8 +3319,8 @@ Try to use right eigenvector as start for a left eigenvector.
   D:  YDIPLEN (2) ; E: XDIPLEN (3) ; F: ZDIPLEN (1)
   Laser frequencies (au): w1 =   0.000000; w2 =   0.200000
 
-  M^ABC_of(-w1,-w2):     7.538390860  M^DEF_fo(w1,w2):     3.500110178
-  M^DEF_of(-w1,-w2):     7.538390860  M^ABC_fo(w1,w2):     3.500110178
+  M^ABC_of(-w1,-w2):    -7.538390860  M^DEF_fo(w1,w2):    -3.500110178
+  M^DEF_of(-w1,-w2):    -7.538390860  M^ABC_fo(w1,w2):    -3.500110178
   M^ABC_of(-w1,-w2) x M^DEF_fo(w1,w2)   =    26.385198571
  [M^DEF_of(-w1,-w2) x M^ABC_fo(w1,w2)]* =    26.385198571
 
@@ -3225,27 +3352,27 @@ Try to use right eigenvector as start for a left eigenvector.
           Number of t2 amplitudes                 :       729
           Total number of amplitudes in ccsd      :       756
 
- Iter.  1: Coupled cluster MP2   energy :    -100.1936625719348086
+ Iter.  1: Coupled cluster MP2   energy :    -100.1936625719336860
      Conventional correlation energy:    -0.1847426760833741
- Iter.  1: Coupled cluster CC2   energy :    -100.1935148231952155
-     Conventional correlation energy:    -0.1845949273437810
- Iter.  2: Coupled cluster CC2   energy :    -100.1946025749528388
-     Conventional correlation energy:    -0.1856826791014043
- Iter.  3: Coupled cluster CC2   energy :    -100.1947009890535867
-     Conventional correlation energy:    -0.1857810932021522
- Iter.  4: Coupled cluster CC2   energy :    -100.1946891284135575
-     Conventional correlation energy:    -0.1857692325621230
- Iter.  5: Coupled cluster CC2   energy :    -100.1946869351780407
-     Conventional correlation energy:    -0.1857670393266062
- Iter.  6: Coupled cluster CC2   energy :    -100.1946868715986625
-     Conventional correlation energy:    -0.1857669757472280
- Iter.  7: Coupled cluster CC2   energy :    -100.1946868924445226
-     Conventional correlation energy:    -0.1857669965930882
- Iter.  8: Coupled cluster CC2   energy :    -100.1946868962250079
-     Conventional correlation energy:    -0.1857670003735734
+ Iter.  1: Coupled cluster CC2   energy :    -100.1935148231938513
+     Conventional correlation energy:    -0.1845949273435394
+ Iter.  2: Coupled cluster CC2   energy :    -100.1946025749516451
+     Conventional correlation energy:    -0.1856826791013333
+ Iter.  3: Coupled cluster CC2   energy :    -100.1947009890525067
+     Conventional correlation energy:    -0.1857810932021948
+ Iter.  4: Coupled cluster CC2   energy :    -100.1946891284123069
+     Conventional correlation energy:    -0.1857692325619951
+ Iter.  5: Coupled cluster CC2   energy :    -100.1946869351769749
+     Conventional correlation energy:    -0.1857670393266631
+ Iter.  6: Coupled cluster CC2   energy :    -100.1946868715974261
+     Conventional correlation energy:    -0.1857669757471143
+ Iter.  7: Coupled cluster CC2   energy :    -100.1946868924434852
+     Conventional correlation energy:    -0.1857669965931734
+ Iter.  8: Coupled cluster CC2   energy :    -100.1946868962236579
+     Conventional correlation energy:    -0.1857670003733460
 
- CC2   energy converged to within   0.10D-07 is   -100.194686896
- Final 2-norm of the CC vector function:  4.13903663D-07
+ CC2   energy converged to within   0.10D-07 is         -100.194686896224
+ Final 2-norm of the CC vector function:  4.13903657D-07
 
 
 
@@ -3292,7 +3419,9 @@ Try to use right eigenvector as start for a left eigenvector.
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
+ RPA: call cceq_str
      Start vector generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -3370,8 +3499,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.04 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3424,9 +3553,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.3140
 
-
           Printed all single excitations greater than 0.017777
-
 
           Printed all double excitations greater than 0.049873
   
@@ -3519,7 +3646,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE    1.6837768644200071        2.1139823648444427     
+  MIN AND MAX IN SELECTED SUPSPACE    1.6837768644188769        2.1139823648441771     
  Start vector guessed from diagonal
  ... selected element no.189
 
@@ -3532,8 +3659,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.68377686
+               Column   1
+       1       1.68377686
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 8.84606D-03
       1       1         0.00     0.88E-02
@@ -3542,8 +3670,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.68338247
+               Column   1
+       1       1.68338247
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.03372D-02
       2       1         0.00     0.20E-01
@@ -3552,8 +3681,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.68281674
+               Column   1
+       1       1.68281674
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.04431D-02
       3       1         0.00     0.30E-01
@@ -3562,8 +3692,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.54336212
+               Column   1
+       1       1.54336212
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.66509D-01
       4       1         0.00     0.37E+00
@@ -3572,8 +3703,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.52073661
+               Column   1
+       1       1.52073661
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.40600D-01
       5       1         0.00     0.14E+00
@@ -3582,8 +3714,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51854693
+               Column   1
+       1       1.51854693
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.77753D-02
       6       1         0.00     0.48E-01
@@ -3592,8 +3725,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51831772
+               Column   1
+       1       1.51831772
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.02838D-03
       7       1         0.00     0.50E-02
@@ -3602,8 +3736,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51833308
+               Column   1
+       1       1.51833308
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.15376D-03
       8       1         0.00     0.12E-02
@@ -3612,8 +3747,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832875
+               Column   1
+       1       1.51832875
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.17758D-04
       9       1         0.00     0.52E-03
@@ -3622,8 +3758,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832853
+               Column   1
+       1       1.51832853
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.63844D-04
      10       1         0.00     0.26E-03
@@ -3632,8 +3769,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832929
+               Column   1
+       1       1.51832929
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.79939D-05
      11       1         0.00     0.28E-04
@@ -3642,8 +3780,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832925
+               Column   1
+       1       1.51832925
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 6.56589D-06
      12       1         0.00     0.66E-05
@@ -3652,8 +3791,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832921
+               Column   1
+       1       1.51832921
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.40160D-06
      13       1         0.00     0.14E-05
@@ -3662,8 +3802,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.49282D-07
      14       1         0.00     0.35E-06
@@ -3672,8 +3813,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 9.16557D-08
      15       1         0.00     0.92E-07
@@ -3682,8 +3824,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.76516D-08
      16       1         0.00     0.18E-07
@@ -3692,11 +3835,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 5.26046D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.26046D-09
+ ROOT:  1 RESIDUAL TOT: 5.26044D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.26044D-09
      17       1         0.00     0.53E-08
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
@@ -3714,8 +3858,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.02 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3739,13 +3883,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            1.5183292175       41.3158396945
+         1            1.5183292175       41.3158396944
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.676357678730426
+@@    4    1           -98.676357678729332
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3850,9 +3994,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9993
 
-
           Printed all single excitations greater than 0.248916
-
 
           Printed all double excitations greater than 0.004651
 
@@ -3955,7 +4097,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE    1.6837768644200071        2.1139823648444427     
+  MIN AND MAX IN SELECTED SUPSPACE    1.6837768644188769        2.1139823648441771     
 Try to use right eigenvector as start for a left eigenvector.
  Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a  CC2       RE vector
@@ -3969,8 +4111,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.39906D-01
       1       1         0.00     0.24E+00
@@ -3979,8 +4122,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.35147D-02
       2       1         0.00     0.24E-01
@@ -3989,8 +4133,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 7.87335D-03
       3       1         0.00     0.79E-02
@@ -3999,8 +4144,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.58291D-03
       4       1         0.00     0.16E-02
@@ -4009,8 +4155,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.94318D-04
       5       1         0.00     0.49E-03
@@ -4019,8 +4166,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.33817D-04
       6       1         0.00     0.33E-03
@@ -4029,8 +4177,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 8.68157D-05
       7       1         0.00     0.87E-04
@@ -4039,18 +4188,20 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 2.97868D-05
+ ROOT:  1 RESIDUAL TOT: 2.97867D-05
       8       1         0.00     0.30E-04
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.98857D-05
       9       1         0.00     0.20E-04
@@ -4059,8 +4210,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.77428D-05
      10       1         0.00     0.28E-04
@@ -4069,61 +4221,67 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 7.22500D-06
+ ROOT:  1 RESIDUAL TOT: 7.22501D-06
      11       1         0.00     0.72E-05
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 1.54309D-06
+ ROOT:  1 RESIDUAL TOT: 1.54310D-06
      12       1         0.00     0.15E-05
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 9.14108D-07
+ ROOT:  1 RESIDUAL TOT: 9.14125D-07
      13       1         0.00     0.91E-06
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 1.55607D-07
+ ROOT:  1 RESIDUAL TOT: 1.55599D-07
      14       1         0.00     0.16E-06
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 2.64786D-08
+ ROOT:  1 RESIDUAL TOT: 2.64572D-08
      15       1         0.00     0.26E-07
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51832922
+               Column   1
+       1       1.51832922
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 4.89757D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.89757D-09
+ ROOT:  1 RESIDUAL TOT: 4.89594D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.89594D-09
      16       1         0.00     0.49E-08
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
@@ -4141,8 +4299,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.05 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4172,7 +4330,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.676357678736807
+@@    4    1           -98.676357678735727
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4281,9 +4439,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9989
 
-
           Printed all single excitations greater than 0.247786
-
 
           Printed all double excitations greater than 0.006639
 
@@ -4597,8 +4753,10 @@ Try to use right eigenvector as start for a left eigenvector.
    will be performed.
 
 
+ RPA: call cceq_str
      R1  start vector nr.  1 of symmetry  1 generated from gradient
      R1  start vector nr.  2 of symmetry  1 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -4658,7 +4816,7 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  1 RESIDUAL TOT: 1.25914D-08
  ROOT:  2 RESIDUAL TOT: 1.17490D-07
       9       2         0.00     0.12E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.45435D-09
@@ -4689,8 +4847,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.04 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4731,9 +4889,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.8862
 
-
           Printed all single excitations greater than 0.247089
-
 
           Printed all double excitations greater than 0.038042
 
@@ -4776,13 +4932,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             1.7447
 
-
           Printed all single excitations greater than 0.246925
 
-
           Printed all double excitations greater than 0.039091
+ RPA: call cceq_str
      R1  start vector nr.  3 of symmetry  2 generated from gradient
      R1  start vector nr.  4 of symmetry  2 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -4936,8 +5092,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.06 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4989,9 +5145,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.2879
 
-
           Printed all single excitations greater than 0.049660
-
 
           Printed all double excitations greater than 0.005823
 
@@ -5036,12 +5190,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             1.3019
 
-
           Printed all single excitations greater than 0.245437
 
-
           Printed all double excitations greater than 0.047546
+ RPA: call cceq_str
      R1  start vector nr.  5 of symmetry  3 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -5124,8 +5278,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.02 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5183,12 +5337,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.4184
 
-
           Printed all single excitations greater than 0.247332
 
-
           Printed all double excitations greater than 0.007285
+ RPA: call cceq_str
      L1  start vector nr.  1 of symmetry  1 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -5272,7 +5426,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.05 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5332,12 +5486,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             3.3678
 
-
           Printed all single excitations greater than 0.240424
 
-
           Printed all double excitations greater than 0.068530
+ RPA: call cceq_str
      L1  start vector nr.  2 of symmetry  2 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -5475,8 +5629,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.10 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5539,12 +5693,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             2.6590
 
-
           Printed all single excitations greater than 0.239056
 
-
           Printed all double excitations greater than 0.073160
+ RPA: call cceq_str
      L1  start vector nr.  3 of symmetry  3 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -5627,8 +5781,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.05 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5675,12 +5829,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             1.1360
 
-
           Printed all single excitations greater than 0.242799
 
-
           Printed all double excitations greater than 0.059569
+ RPA: call cceq_str
      M1  start vector nr.  1 of symmetry  4 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -5754,7 +5908,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.04 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5815,9 +5969,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.0188
 
-
           Printed all single excitations greater than 0.009943
-
 
           Printed all double excitations greater than 0.000214
 
@@ -5860,12 +6012,14 @@ Try to use right eigenvector as start for a left eigenvector.
  |     5    |     3    |      5       |       0.00  |
  |     5    |     4    |      6       |       0.00  |
  +--------------------------------------------------+
- | total time for   6 B transforms.:      0.02 secs.|
+ | total time for   6 B transforms.:      0.01 secs.|
  +==================================================+
 
 
+ RPA: call cceq_str
      R2  start vector nr.  1 of symmetry  2 generated from gradient
      R2  start vector nr.  2 of symmetry  2 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -5932,7 +6086,7 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.86117D-09
  ROOT:  2 RESIDUAL TOT: 3.97124D-02
      10       2         0.00     0.40E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.64815D-09
@@ -6054,8 +6208,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.07 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6094,9 +6248,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.1597
 
-
           Printed all single excitations greater than 0.048104
-
 
           Printed all double excitations greater than 0.013640
 
@@ -6161,13 +6313,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             7.0107
 
-
           Printed all single excitations greater than 0.232747
 
-
           Printed all double excitations greater than 0.091262
+ RPA: call cceq_str
      R2  start vector nr.  3 of symmetry  3 generated from gradient
      R2  start vector nr.  4 of symmetry  3 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -6259,8 +6411,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.04 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6300,9 +6452,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             1.2029
 
-
           Printed all single excitations greater than 0.242820
-
 
           Printed all double excitations greater than 0.059485
 
@@ -6354,13 +6504,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             3.6810
 
-
           Printed all single excitations greater than 0.243984
 
-
           Printed all double excitations greater than 0.054514
+ RPA: call cceq_str
      R2  start vector nr.  5 of symmetry  4 generated from gradient
      R2  start vector nr.  6 of symmetry  4 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -6396,7 +6546,7 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  1 RESIDUAL TOT: 4.08866D-05
  ROOT:  2 RESIDUAL TOT: 2.61825D-02
       5       2         0.00     0.26E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.99756D-06
@@ -6494,8 +6644,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.05 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6560,9 +6710,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.1026
 
-
           Printed all single excitations greater than 0.049079
-
 
           Printed all double excitations greater than 0.001911
 
@@ -6599,9 +6747,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             1.6526
 
-
           Printed all single excitations greater than 0.244259
-
 
           Printed all double excitations greater than 0.053266
 
@@ -6635,11 +6781,13 @@ Try to use right eigenvector as start for a left eigenvector.
  |     0  |     5  |     1  |      2  |       0.00  |
  |     0  |     5  |     3  |      3  |       0.00  |
  +--------------------------------------------------+
- | total time for   3 G transforms.:      0.01 secs.|
+ | total time for   3 G transforms.:      0.00 secs.|
  +==================================================+
 
 
+ RPA: call cceq_str
      L2  start vector nr.  1 of symmetry  2 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -6802,8 +6950,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.12 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6967,12 +7115,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :            13.6088
 
-
           Printed all single excitations greater than 0.228702
 
-
           Printed all double excitations greater than 0.100971
+ RPA: call cceq_str
      L2  start vector nr.  2 of symmetry  3 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -7056,7 +7204,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.04 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -7150,12 +7298,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             7.3198
 
-
           Printed all single excitations greater than 0.233638
 
-
           Printed all double excitations greater than 0.088956
+ RPA: call cceq_str
      L2  start vector nr.  3 of symmetry  4 generated from gradient
+ RPA: exit cceq_str
 
 
 
@@ -7278,8 +7426,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.07 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -7358,9 +7506,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             3.4766
 
-
           Printed all single excitations greater than 0.217749
-
 
           Printed all double excitations greater than 0.122822
 
@@ -7437,7 +7583,7 @@ Try to use right eigenvector as start for a left eigenvector.
  |     0  |     3  |     3  |      1  |       0.00  |
  |     0  |     1  |     5  |      1  |       0.00  |
  +--------------------------------------------------+
- | total time for   3 G transforms.:      0.01 secs.|
+ | total time for   3 G transforms.:      0.00 secs.|
  +==================================================+
 
 
@@ -7454,7 +7600,7 @@ Try to use right eigenvector as start for a left eigenvector.
  |     2  |     5  |     1  |      1  |       0.00  |
  |     1  |     5  |     3  |      1  |       0.00  |
  +--------------------------------------------------+
- | total time for   3 G transforms.:      0.01 secs.|
+ | total time for   3 G transforms.:      0.00 secs.|
  +==================================================+
 
 
@@ -7499,6 +7645,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Gauge: length
 
      Zero matrix.
+    ==== End of matrix output ====
 
  Principal values of diagonalized transition strength matrix:
 
@@ -7510,10 +7657,11 @@ Try to use right eigenvector as start for a left eigenvector.
  Principal axis of diagonalized transition strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1      1.00000000    0.00000000    0.00000000
-       2      0.00000000    1.00000000    0.00000000
-       3      0.00000000    0.00000000    1.00000000
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
 
 
  CC2    oscillator strength matrix for state nr.  1 of symmetry 4
@@ -7521,6 +7669,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
      Zero matrix.
+    ==== End of matrix output ====
 
  Principal values of diagonalized oscillator strength matrix:
 
@@ -7532,10 +7681,11 @@ Try to use right eigenvector as start for a left eigenvector.
  Principal axis of diagonalized oscillator strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1      1.00000000    0.00000000    0.00000000
-       2      0.00000000    1.00000000    0.00000000
-       3      0.00000000    0.00000000    1.00000000
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
 
  >>> Total time for      0 linear response residues:       0.00 seconds.
 
@@ -7587,29 +7737,29 @@ Try to use right eigenvector as start for a left eigenvector.
           Number of t2 amplitudes                 :       729
           Total number of amplitudes in ccsd      :       756
 
- Iter.  1: Coupled cluster RSTAR energy :    -100.1946868962250079
-     Conventional correlation energy:    -0.1857670003735734
- Iter.  1: Coupled cluster CCSD  energy :    -100.1952031637585492
+ Iter.  1: Coupled cluster RSTAR energy :    -100.1946868962236579
+     Conventional correlation energy:    -0.1857670003733460
+ Iter.  1: Coupled cluster CCSD  energy :    -100.1952031637574265
      Conventional correlation energy:    -0.1862832679071147
- Iter.  2: Coupled cluster CCSD  energy :    -100.1975916909404702
-     Conventional correlation energy:    -0.1886717950890358
- Iter.  3: Coupled cluster CCSD  energy :    -100.1977330868713807
-     Conventional correlation energy:    -0.1888131910199462
- Iter.  4: Coupled cluster CCSD  energy :    -100.1977837135628562
-     Conventional correlation energy:    -0.1888638177114217
- Iter.  5: Coupled cluster CCSD  energy :    -100.1977917545972190
-     Conventional correlation energy:    -0.1888718587457845
- Iter.  6: Coupled cluster CCSD  energy :    -100.1977908827203407
-     Conventional correlation energy:    -0.1888709868689062
- Iter.  7: Coupled cluster CCSD  energy :    -100.1977909369537656
-     Conventional correlation energy:    -0.1888710411023311
- Iter.  8: Coupled cluster CCSD  energy :    -100.1977909063986232
-     Conventional correlation energy:    -0.1888710105471887
- Iter.  9: Coupled cluster CCSD  energy :    -100.1977909077876632
-     Conventional correlation energy:    -0.1888710119362287
+ Iter.  2: Coupled cluster CCSD  energy :    -100.1975916909393050
+     Conventional correlation energy:    -0.1886717950889931
+ Iter.  3: Coupled cluster CCSD  energy :    -100.1977330868701728
+     Conventional correlation energy:    -0.1888131910198609
+ Iter.  4: Coupled cluster CCSD  energy :    -100.1977837135618898
+     Conventional correlation energy:    -0.1888638177115780
+ Iter.  5: Coupled cluster CCSD  energy :    -100.1977917545964374
+     Conventional correlation energy:    -0.1888718587461256
+ Iter.  6: Coupled cluster CCSD  energy :    -100.1977908827192039
+     Conventional correlation energy:    -0.1888709868688920
+ Iter.  7: Coupled cluster CCSD  energy :    -100.1977909369528561
+     Conventional correlation energy:    -0.1888710411025443
+ Iter.  8: Coupled cluster CCSD  energy :    -100.1977909063973016
+     Conventional correlation energy:    -0.1888710105469897
+ Iter.  9: Coupled cluster CCSD  energy :    -100.1977909077866542
+     Conventional correlation energy:    -0.1888710119363424
 
- CCSD  energy converged to within   0.10D-07 is   -100.197790908
- Final 2-norm of the CC vector function:  3.04022890D-07
+ CCSD  energy converged to within   0.10D-07 is         -100.197790907787
+ Final 2-norm of the CC vector function:  3.04022891D-07
 
 
 
@@ -7660,8 +7810,10 @@ Try to use right eigenvector as start for a left eigenvector.
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
+ RPA: exit cceq_str
 
 
 
@@ -7672,63 +7824,63 @@ Try to use right eigenvector as start for a left eigenvector.
   
  ROOT:  1 RESIDUAL TOT: 4.57270D-01
       1       1         0.00     0.46E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 8.20834D-02
       2       1         0.00     0.82E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.45609D-02
       3       1         0.00     0.15E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.94868D-03
       4       1         0.00     0.29E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.06071D-04
       5       1         0.00     0.51E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.25141D-04
       6       1         0.00     0.13E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.41852D-05
       7       1         0.00     0.24E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 8.94460D-06
       8       1         0.00     0.89E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.35249D-06
       9       1         0.00     0.14E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.30669D-07
      10       1         0.00     0.23E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 3.65349D-08
      11       1         0.00     0.37E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.80313D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.80313D-09
      12       1         0.00     0.58E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 12 iterations
@@ -7744,8 +7896,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.09 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -7807,9 +7959,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.3045
 
-
           Printed all single excitations greater than 0.002788
-
 
           Printed all double excitations greater than 0.049922
   
@@ -7902,7 +8052,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE    1.6837768644200071        2.1139823648444427     
+  MIN AND MAX IN SELECTED SUPSPACE    1.6837768644188769        2.1139823648441771     
  Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
 
@@ -7915,8 +8065,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51285380
+               Column   1
+       1       1.51285380
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 6.91706D-02
       1       1         0.00     0.69E-01
@@ -7925,38 +8076,42 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.50976601
+               Column   1
+       1       1.50976601
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.41961D-02
       2       1         0.00     0.24E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.50843635
+               Column   1
+       1       1.50843635
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 7.31711D-02
       3       1         0.00     0.73E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.37701831
+               Column   1
+       1       1.37701831
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.73425D-01
       4       1         0.00     0.57E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.33473644
+               Column   1
+       1       1.33473644
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.23880D-01
       5       1         0.00     0.22E+00
@@ -7965,48 +8120,53 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32901549
+               Column   1
+       1       1.32901549
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 9.05927D-02
       6       1         0.00     0.91E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32833512
+               Column   1
+       1       1.32833512
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.44498D-02
       7       1         0.00     0.34E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32823231
+               Column   1
+       1       1.32823231
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 6.87416D-03
       8       1         0.00     0.69E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821516
+               Column   1
+       1       1.32821516
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.40436D-03
       9       1         0.00     0.24E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821344
+               Column   1
+       1       1.32821344
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.09330D-03
      10       1         0.00     0.11E-02
@@ -8015,18 +8175,20 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821514
+               Column   1
+       1       1.32821514
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.91194D-04
      11       1         0.00     0.49E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821614
+               Column   1
+       1       1.32821614
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.87245D-04
      12       1         0.00     0.19E-03
@@ -8035,8 +8197,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821628
+               Column   1
+       1       1.32821628
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 7.07858D-05
      13       1         0.00     0.71E-04
@@ -8045,93 +8208,102 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821609
+               Column   1
+       1       1.32821609
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.81218D-05
      14       1         0.00     0.28E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821602
+               Column   1
+       1       1.32821602
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 8.18364D-06
      15       1         0.00     0.82E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821601
+               Column   1
+       1       1.32821601
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.56370D-06
      16       1         0.00     0.26E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 7.43907D-07
      17       1         0.00     0.74E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.47677D-07
      18       1         0.00     0.25E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.14904D-07
      19       1         0.00     0.11E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.58506D-08
      20       1         0.00     0.36E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.00853D-08
      21       1         0.00     0.10E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 2.65505D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.65505D-09
+ ROOT:  1 RESIDUAL TOT: 2.65506D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.65506D-09
      22       1         0.00     0.27E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 22 iterations
@@ -8147,8 +8319,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.13 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.17 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -8178,7 +8350,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.869574903168242
+@@    4    1           -98.869574903168029
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -8214,9 +8386,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9223
 
-
           Printed all single excitations greater than 0.014694
-
 
           Printed all double excitations greater than 0.249568
 
@@ -8319,7 +8489,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE    1.6837768644200071        2.1139823648444427     
+  MIN AND MAX IN SELECTED SUPSPACE    1.6837768644188769        2.1139823648441771     
  Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a CC2       LE  vector
 
@@ -8332,8 +8502,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.50881052
+               Column   1
+       1       1.50881052
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 8.92788D-02
       1       1         0.00     0.89E-01
@@ -8342,18 +8513,20 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.51102303
+               Column   1
+       1       1.51102303
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.20267D-02
       2       1         0.00     0.32E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.50593069
+               Column   1
+       1       1.50593069
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.09993D-01
       3       1         0.00     0.11E+00
@@ -8362,8 +8535,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.36423038
+               Column   1
+       1       1.36423038
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.53994D-01
       4       1         0.00     0.45E+00
@@ -8372,8 +8546,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.33362945
+               Column   1
+       1       1.33362945
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.18464D-01
       5       1         0.00     0.22E+00
@@ -8382,8 +8557,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32883605
+               Column   1
+       1       1.32883605
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 6.71718D-02
       6       1         0.00     0.67E-01
@@ -8392,8 +8568,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32825024
+               Column   1
+       1       1.32825024
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.82820D-02
       7       1         0.00     0.28E-01
@@ -8402,18 +8579,20 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32822573
+               Column   1
+       1       1.32822573
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.05839D-02
       8       1         0.00     0.11E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32823107
+               Column   1
+       1       1.32823107
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.23540D-03
       9       1         0.00     0.32E-02
@@ -8422,8 +8601,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32822082
+               Column   1
+       1       1.32822082
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.26220D-03
      10       1         0.00     0.13E-02
@@ -8432,8 +8612,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821669
+               Column   1
+       1       1.32821669
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.54192D-04
      11       1         0.00     0.55E-03
@@ -8442,8 +8623,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821541
+               Column   1
+       1       1.32821541
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.36468D-04
      12       1         0.00     0.24E-03
@@ -8452,8 +8634,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821540
+               Column   1
+       1       1.32821540
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 9.35438D-05
      13       1         0.00     0.94E-04
@@ -8462,8 +8645,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821587
+               Column   1
+       1       1.32821587
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.28444D-05
      14       1         0.00     0.33E-04
@@ -8472,8 +8656,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 7.53593D-06
      15       1         0.00     0.75E-05
@@ -8482,18 +8667,20 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821601
+               Column   1
+       1       1.32821601
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.50091D-06
      16       1         0.00     0.25E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821601
+               Column   1
+       1       1.32821601
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 7.38425D-07
      17       1         0.00     0.74E-06
@@ -8502,8 +8689,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.99124D-07
      18       1         0.00     0.20E-06
@@ -8512,8 +8700,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 8.69928D-08
      19       1         0.00     0.87E-07
@@ -8522,8 +8711,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.17792D-08
      20       1         0.00     0.32E-07
@@ -8532,13 +8722,14 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      1.32821600
+               Column   1
+       1       1.32821600
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 9.04146D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.04146D-09
      21       1         0.00     0.90E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 21 iterations
@@ -8554,8 +8745,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.15 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -8579,13 +8770,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            1.3282160046       36.1425960153
+         1            1.3282160046       36.1425960152
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.869574903177380
+@@    4    1           -98.869574903177153
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -8623,9 +8814,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9209
 
-
           Printed all single excitations greater than 0.010000
-
 
           Printed all double excitations greater than 0.249814
 
@@ -8939,10 +9128,12 @@ Try to use right eigenvector as start for a left eigenvector.
    will be performed.
 
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
+ RPA: exit cceq_str
 
 
 
@@ -9023,7 +9214,7 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  2 RESIDUAL TOT: 1.58105D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.58105D-09
      12       1         0.00     0.16E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 12 iterations
@@ -9039,8 +9230,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.11 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.23 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -9079,9 +9270,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.8682
 
-
           Printed all single excitations greater than 0.246605
-
 
           Printed all double excitations greater than 0.041059
 
@@ -9123,11 +9312,10 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             1.7054
 
-
           Printed all single excitations greater than 0.246330
 
-
           Printed all double excitations greater than 0.042681
+ RPA: call cceq_str
  vector for wrong frequencies on file CCR1_2___1
 FILE  :CCR1_2___1
 IDXLST:    3
@@ -9160,6 +9348,7 @@ LORXFIL:    F
   IOPTSV=33... read vector nevertheless...
  Vector nr.  4 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
+ RPA: exit cceq_str
 
 
 
@@ -9233,7 +9422,7 @@ LORXFIL:    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.27976D-09
  ROOT:  2 RESIDUAL TOT: 3.68338D-04
      11       1         0.00     0.37E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.27880D-09
@@ -9247,56 +9436,56 @@ LORXFIL:    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.27841D-09
  ROOT:  2 RESIDUAL TOT: 4.93328D-05
      13       1         0.00     0.49E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.29939D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.29939D-09
  ROOT:  2 RESIDUAL TOT: 1.33963D-05
      14       1         0.00     0.13E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.26679D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.26679D-09
  ROOT:  2 RESIDUAL TOT: 4.51886D-06
      15       1         0.00     0.45E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.26439D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.26439D-09
  ROOT:  2 RESIDUAL TOT: 2.23542D-06
      16       1         0.00     0.22E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.26961D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.26961D-09
  ROOT:  2 RESIDUAL TOT: 9.29488D-07
      17       1         0.00     0.93E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.25882D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.25882D-09
  ROOT:  2 RESIDUAL TOT: 2.88858D-07
      18       1         0.00     0.29E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.26060D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.26060D-09
  ROOT:  2 RESIDUAL TOT: 7.94064D-08
      19       1         0.00     0.79E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.26318D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.26318D-09
  ROOT:  2 RESIDUAL TOT: 2.09994D-08
      20       1         0.00     0.21E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.25463D-09
@@ -9304,7 +9493,7 @@ LORXFIL:    F
  ROOT:  2 RESIDUAL TOT: 7.35165D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 7.35165D-09
      21       1         0.00     0.74E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 21 iterations
@@ -9320,8 +9509,8 @@ LORXFIL:    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.21 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.14 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.32 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -9371,9 +9560,7 @@ LORXFIL:    F
 
           Norm of Printed Amplitude Vector :             0.3049
 
-
           Printed all single excitations greater than 0.049610
-
 
           Printed all double excitations greater than 0.006235
 
@@ -9446,13 +9633,13 @@ LORXFIL:    F
 
           Norm of Printed Amplitude Vector :             5.2085
 
-
           Printed all single excitations greater than 0.243575
 
-
           Printed all double excitations greater than 0.056314
+ RPA: call cceq_str
  Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
+ RPA: exit cceq_str
 
 
 
@@ -9463,22 +9650,22 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 7.59922D-02
       1       1         0.00     0.76E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.82110D-02
       2       1         0.00     0.18E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.18714D-03
       3       1         0.00     0.42E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
  ROOT:  1 RESIDUAL TOT: 1.26051D-03
       4       1         0.00     0.13E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.06075D-04
@@ -9488,7 +9675,7 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 9.11691D-05
       6       1         0.00     0.91E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.59839D-05
@@ -9508,7 +9695,7 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 4.81320D-08
      10       1         0.00     0.48E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 8.61990D-09
@@ -9530,8 +9717,8 @@ LORXFIL:    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.10 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -9593,13 +9780,13 @@ LORXFIL:    F
 
           Norm of Printed Amplitude Vector :             0.4070
 
-
           Printed all single excitations greater than 0.247164
 
-
           Printed all double excitations greater than 0.007510
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
+ RPA: exit cceq_str
 
 
 
@@ -9610,27 +9797,27 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 1.27126D-01
       1       1         0.00     0.13E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 3.45137D-02
       2       1         0.00     0.35E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 7.09143D-03
       3       1         0.00     0.71E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.61822D-03
       4       1         0.00     0.16E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.70399D-04
       5       1         0.00     0.27E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 6.68634D-05
@@ -9640,7 +9827,7 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 1.54422D-05
       7       1         0.00     0.15E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 3.51902D-06
@@ -9650,12 +9837,12 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 6.62448D-07
       9       1         0.00     0.66E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.37964D-07
      10       1         0.00     0.14E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.78867D-08
@@ -9666,7 +9853,7 @@ LORXFIL:    F
  ROOT:  1 RESIDUAL TOT: 5.05001D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.05001D-09
      12       1         0.00     0.51E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 12 iterations
@@ -9682,8 +9869,8 @@ LORXFIL:    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.10 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -9740,11 +9927,10 @@ LORXFIL:    F
 
           Norm of Printed Amplitude Vector :             3.3374
 
-
           Printed all single excitations greater than 0.239183
 
-
           Printed all double excitations greater than 0.072743
+ RPA: call cceq_str
  vector for wrong frequencies on file CCL1_2___1
 FILE  :CCL1_2___1
 IDXLST:    2
@@ -9761,6 +9947,7 @@ LORXFIL:    F
   IOPTSV=33... read vector nevertheless...
  Vector nr.  2 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
+ RPA: exit cceq_str
 
 
 
@@ -9781,7 +9968,7 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 7.14344D-01
       3       1         0.00     0.71E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 3.07694D-01
@@ -9791,17 +9978,17 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 1.34962D-01
       5       1         0.00     0.13E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 6.04867D-02
       6       1         0.00     0.60E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.84967D-02
       7       1         0.00     0.28E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.55974D-02
@@ -9816,17 +10003,17 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 3.47376D-03
      10       1         0.00     0.35E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.02503D-03
      11       1         0.00     0.20E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 9.88358D-04
      12       1         0.00     0.99E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.78208D-04
@@ -9841,53 +10028,53 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 4.75953D-05
      15       1         0.00     0.48E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.73009D-05
      16       1         0.00     0.17E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 6.45333D-06
      17       1         0.00     0.65E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.34425D-06
      18       1         0.00     0.23E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 9.37466D-07
      19       1         0.00     0.94E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 3.70780D-07
      20       1         0.00     0.37E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.04260D-07
      21       1         0.00     0.10E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.85646D-08
      22       1         0.00     0.29E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.14420D-08
      23       1         0.00     0.11E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.53531D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.53531D-09
      24       1         0.00     0.45E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 24 iterations
@@ -9903,8 +10090,8 @@ LORXFIL:    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.14 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.16 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -10017,13 +10204,13 @@ LORXFIL:    F
 
           Norm of Printed Amplitude Vector :            10.5564
 
-
           Printed all single excitations greater than 0.234612
 
-
           Printed all double excitations greater than 0.086356
+ RPA: call cceq_str
  Vector nr.  3 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
+ RPA: exit cceq_str
 
 
 
@@ -10039,12 +10226,12 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 2.47173D-02
       2       1         0.00     0.25E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.45010D-03
       3       1         0.00     0.45E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 8.57760D-04
@@ -10064,28 +10251,28 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 1.56978D-05
       7       1         0.00     0.16E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.34349D-06
       8       1         0.00     0.23E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 3.34355D-07
       9       1         0.00     0.33E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.90734D-08
      10       1         0.00     0.49E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 7.96594D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.96594D-09
      11       1         0.00     0.80E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 11 iterations
@@ -10101,8 +10288,8 @@ LORXFIL:    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.07 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -10149,11 +10336,10 @@ LORXFIL:    F
 
           Norm of Printed Amplitude Vector :             1.1219
 
-
           Printed all single excitations greater than 0.242443
 
-
           Printed all double excitations greater than 0.061002
+ RPA: call cceq_str
  vector for wrong frequencies on file CCM1_4___1
 FILE  :CCM1_4___1
 IDXLST:    1
@@ -10170,6 +10356,7 @@ LORXFIL:    F
   IOPTSV=33... read vector nevertheless...
  Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a CC2       M1  vector
+ RPA: exit cceq_str
 
 
 
@@ -10185,7 +10372,7 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 3.44367D-01
       2       1         0.00     0.34E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.27961D-02
@@ -10200,7 +10387,7 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 1.04499D-03
       5       1         0.00     0.10E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.42794D-04
@@ -10215,7 +10402,7 @@ LORXFIL:    F
   
  ROOT:  1 RESIDUAL TOT: 1.22287D-06
       8       1         0.00     0.12E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.13462D-07
@@ -10247,8 +10434,8 @@ LORXFIL:    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.07 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -10293,9 +10480,7 @@ LORXFIL:    F
 
           Norm of Printed Amplitude Vector :             0.0090
 
-
           Printed all single excitations greater than 0.000316
-
 
           Printed all double excitations greater than 0.001975
 
@@ -10325,7 +10510,7 @@ LORXFIL:    F
  +--------------------------------------------------+
  | time for zero order intermediat.:      0.00 secs.|
  | time for  5 sets of 1. ord. int.:      0.00 secs.|
- | time for  6 sets of 2. ord. int.:      0.01 secs.|
+ | time for  6 sets of 2. ord. int.:      0.00 secs.|
  | intermediates calculated in   1 batches          |
  +--------------------------------------------------+
  | R vector | R vector |    result    |             |
@@ -10338,10 +10523,11 @@ LORXFIL:    F
  |     5    |     3    |      5       |       0.00  |
  |     5    |     4    |      6       |       0.00  |
  +--------------------------------------------------+
- | total time for   6 B transforms.:      0.03 secs.|
+ | total time for   6 B transforms.:      0.02 secs.|
  +==================================================+
 
 
+ RPA: call cceq_str
  vector for wrong frequencies on file CCR2_2___1
 FILE  :CCR2_2___1
 IDXLST:    1
@@ -10374,6 +10560,7 @@ LORXFIL:    F    F
   IOPTSV=33... read vector nevertheless...
  Vector nr.  2 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CC2       R2  vector
+ RPA: exit cceq_str
 
 
 
@@ -10440,7 +10627,7 @@ LORXFIL:    F    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.50274D-09
  ROOT:  2 RESIDUAL TOT: 7.69695D-03
      10       2         0.00     0.77E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
  ROOT:  1 RESIDUAL TOT: 5.48619D-09
@@ -10454,7 +10641,7 @@ LORXFIL:    F    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.46293D-09
  ROOT:  2 RESIDUAL TOT: 6.22386D-03
      12       1         0.00     0.62E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.38530D-09
@@ -10468,7 +10655,7 @@ LORXFIL:    F    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.28181D-09
  ROOT:  2 RESIDUAL TOT: 2.34576D-03
      14       1         0.00     0.23E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.28716D-09
@@ -10482,7 +10669,7 @@ LORXFIL:    F    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.33763D-09
  ROOT:  2 RESIDUAL TOT: 5.28439D-04
      16       1         0.00     0.53E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.20601D-09
@@ -10496,7 +10683,7 @@ LORXFIL:    F    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.20482D-09
  ROOT:  2 RESIDUAL TOT: 5.67290D-05
      18       1         0.00     0.57E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.20595D-09
@@ -10510,7 +10697,7 @@ LORXFIL:    F    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.20623D-09
  ROOT:  2 RESIDUAL TOT: 7.23762D-06
      20       1         0.00     0.72E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.18207D-09
@@ -10531,7 +10718,7 @@ LORXFIL:    F    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.20070D-09
  ROOT:  2 RESIDUAL TOT: 4.74241D-07
      23       1         0.00     0.47E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.15745D-09
@@ -10545,7 +10732,7 @@ LORXFIL:    F    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.17666D-09
  ROOT:  2 RESIDUAL TOT: 4.01293D-08
      25       1         0.00     0.40E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.14793D-09
@@ -10560,7 +10747,7 @@ LORXFIL:    F    F
  ROOT:  2 RESIDUAL TOT: 4.64389D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.64389D-09
      27       1         0.00     0.51E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 27 iterations
@@ -10576,8 +10763,8 @@ LORXFIL:    F    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.24 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.18 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.34 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -10618,9 +10805,7 @@ LORXFIL:    F    F
 
           Norm of Printed Amplitude Vector :             0.1740
 
-
           Printed all single excitations greater than 0.048220
-
 
           Printed all double excitations greater than 0.013224
 
@@ -10800,15 +10985,15 @@ LORXFIL:    F    F
 
           Norm of Printed Amplitude Vector :            26.3819
 
-
           Printed all single excitations greater than 0.234914
 
-
           Printed all double excitations greater than 0.085529
+ RPA: call cceq_str
  Vector nr.  3 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC2       R2  vector
  Vector nr.  4 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC2       R2  vector
+ RPA: exit cceq_str
 
 
 
@@ -10883,7 +11068,7 @@ LORXFIL:    F    F
  ROOT:  2 RESIDUAL TOT: 3.36029D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.36029D-09
      11       1         0.00     0.34E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 11 iterations
@@ -10899,8 +11084,8 @@ LORXFIL:    F    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.13 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.18 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -10940,9 +11125,7 @@ LORXFIL:    F    F
 
           Norm of Printed Amplitude Vector :             1.1422
 
-
           Printed all single excitations greater than 0.242832
-
 
           Printed all double excitations greater than 0.059435
 
@@ -10990,11 +11173,10 @@ LORXFIL:    F    F
 
           Norm of Printed Amplitude Vector :             3.4230
 
-
           Printed all single excitations greater than 0.243363
 
-
           Printed all double excitations greater than 0.057222
+ RPA: call cceq_str
  vector for wrong frequencies on file CCR2_4___1
 FILE  :CCR2_4___1
 IDXLST:    5
@@ -11027,6 +11209,7 @@ LORXFIL:    F    F
   IOPTSV=33... read vector nevertheless...
  Vector nr.  6 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a CC2       R2  vector
+ RPA: exit cceq_str
 
 
 
@@ -11094,7 +11277,7 @@ LORXFIL:    F    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.36466D-09
  ROOT:  2 RESIDUAL TOT: 1.88063D-04
      10       1         0.00     0.19E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.28092D-09
@@ -11108,42 +11291,42 @@ LORXFIL:    F    F
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.16618D-09
  ROOT:  2 RESIDUAL TOT: 2.18548D-05
      12       1         0.00     0.22E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.17189D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.17189D-09
  ROOT:  2 RESIDUAL TOT: 7.69649D-06
      13       1         0.00     0.77E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.14470D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.14470D-09
  ROOT:  2 RESIDUAL TOT: 2.38044D-06
      14       1         0.00     0.24E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.14341D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.14341D-09
  ROOT:  2 RESIDUAL TOT: 6.08560D-07
      15       1         0.00     0.61E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.20208D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.20208D-09
  ROOT:  2 RESIDUAL TOT: 1.86571D-07
      16       1         0.00     0.19E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.11206D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.11206D-09
  ROOT:  2 RESIDUAL TOT: 5.53089D-08
      17       1         0.00     0.55E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.08670D-09
@@ -11174,8 +11357,8 @@ LORXFIL:    F    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.17 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.12 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.25 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -11243,9 +11426,7 @@ LORXFIL:    F    F
 
           Norm of Printed Amplitude Vector :             0.1063
 
-
           Printed all single excitations greater than 0.049022
-
 
           Printed all double excitations greater than 0.001968
 
@@ -11314,9 +11495,7 @@ LORXFIL:    F    F
 
           Norm of Printed Amplitude Vector :             4.2838
 
-
           Printed all single excitations greater than 0.242808
-
 
           Printed all double excitations greater than 0.059533
 
@@ -11354,6 +11533,7 @@ LORXFIL:    F    F
  +==================================================+
 
 
+ RPA: call cceq_str
  vector for wrong frequencies on file CCL2_2___1
 FILE  :CCL2_2___1
 IDXLST:    1
@@ -11370,6 +11550,7 @@ LORXFIL:    F    F
   IOPTSV=33... read vector nevertheless...
  Vector nr.  1 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CC2       L2  vector
+ RPA: exit cceq_str
 
 
 
@@ -11385,37 +11566,37 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 7.34646D-01
       2       1         0.00     0.73E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.04676D+00
       3       1         0.00     0.10E+01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.57783D-01
       4       1         0.00     0.46E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.51457D-01
       5       1         0.00     0.25E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.64906D-01
       6       1         0.00     0.16E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.21963D-01
       7       1         0.00     0.12E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.15799D-01
       8       1         0.00     0.12E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.39153D-01
@@ -11430,22 +11611,22 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 6.58843D-02
      11       1         0.00     0.66E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 3.38051D-02
      12       1         0.00     0.34E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.39115D-02
      13       1         0.00     0.24E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.23795D-02
      14       1         0.00     0.12E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.22373D-03
@@ -11455,17 +11636,17 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 2.14031D-03
      16       1         0.00     0.21E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 8.21822D-04
      17       1         0.00     0.82E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.37515D-04
      18       1         0.00     0.24E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 6.60445D-05
@@ -11475,22 +11656,22 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 2.94136D-05
      20       1         0.00     0.29E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.52137D-05
      21       1         0.00     0.15E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.03300D-06
      22       1         0.00     0.50E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.94094D-06
      23       1         0.00     0.19E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 7.57090D-07
@@ -11500,28 +11681,28 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 2.34813D-07
      25       1         0.00     0.23E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 9.47579D-08
      26       1         0.00     0.95E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 3.53318D-08
      27       1         0.00     0.35E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.20845D-08
      28       1         0.00     0.12E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 3.33572D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.33572D-09
      29       1         0.00     0.33E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 29 iterations
@@ -11537,8 +11718,8 @@ LORXFIL:    F    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.17 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.12 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.21 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -11755,13 +11936,13 @@ LORXFIL:    F    F
 
           Norm of Printed Amplitude Vector :            78.3593
 
-
           Printed all single excitations greater than 0.162340
 
-
           Printed all double excitations greater than 0.190120
+ RPA: call cceq_str
  Vector nr.  2 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC2       L2  vector
+ RPA: exit cceq_str
 
 
 
@@ -11772,17 +11953,17 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 1.50050D-01
       1       1         0.00     0.15E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 8.04548D-02
       2       1         0.00     0.80E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.47242D-02
       3       1         0.00     0.15E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.76692D-03
@@ -11792,17 +11973,17 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 1.68471D-03
       5       1         0.00     0.17E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.84783D-04
       6       1         0.00     0.28E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 6.27185D-05
       7       1         0.00     0.63E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.25018D-05
@@ -11812,7 +11993,7 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 2.59197D-06
       9       1         0.00     0.26E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.72442D-07
@@ -11849,8 +12030,8 @@ LORXFIL:    F    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.11 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -11942,11 +12123,10 @@ LORXFIL:    F    F
 
           Norm of Printed Amplitude Vector :             7.0434
 
-
           Printed all single excitations greater than 0.227737
 
-
           Printed all double excitations greater than 0.103131
+ RPA: call cceq_str
  vector for wrong frequencies on file CCL2_4___1
 FILE  :CCL2_4___1
 IDXLST:    3
@@ -11963,6 +12143,7 @@ LORXFIL:    F    F
   IOPTSV=33... read vector nevertheless...
  Vector nr.  3 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a CC2       L2  vector
+ RPA: exit cceq_str
 
 
 
@@ -11978,7 +12159,7 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 3.73509D-01
       2       1         0.00     0.37E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.26018D-01
@@ -11993,7 +12174,7 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 6.17418D-02
       5       1         0.00     0.62E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.34406D-02
@@ -12003,7 +12184,7 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 7.52012D-03
       7       1         0.00     0.75E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.30609D-03
@@ -12033,7 +12214,7 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 1.02215D-04
      13       1         0.00     0.10E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 3.08059D-05
@@ -12048,7 +12229,7 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 2.69889D-06
      16       1         0.00     0.27E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 6.60644D-07
@@ -12063,7 +12244,7 @@ LORXFIL:    F    F
   
  ROOT:  1 RESIDUAL TOT: 9.58810D-08
      19       1         0.00     0.96E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 2.00179D-08
@@ -12074,7 +12255,7 @@ LORXFIL:    F    F
  ROOT:  1 RESIDUAL TOT: 5.24795D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.24795D-09
      21       1         0.00     0.52E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 21 iterations
@@ -12090,8 +12271,8 @@ LORXFIL:    F    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.11 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.15 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -12187,9 +12368,7 @@ LORXFIL:    F    F
 
           Norm of Printed Amplitude Vector :            11.4723
 
-
           Printed all single excitations greater than 0.175188
-
 
           Printed all double excitations greater than 0.178352
 
@@ -12231,7 +12410,7 @@ LORXFIL:    F    F
  |     4    |     4    |      2       |       0.00  |
  |     2    |     5    |      2       |       0.00  |
  +--------------------------------------------------+
- | total time for   6 B transforms.:      0.04 secs.|
+ | total time for   6 B transforms.:      0.02 secs.|
  +==================================================+
 
 
@@ -12328,6 +12507,7 @@ LORXFIL:    F    F
  Gauge: length
 
      Zero matrix.
+    ==== End of matrix output ====
 
  Principal values of diagonalized transition strength matrix:
 
@@ -12339,10 +12519,11 @@ LORXFIL:    F    F
  Principal axis of diagonalized transition strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1      1.00000000    0.00000000    0.00000000
-       2      0.00000000    1.00000000    0.00000000
-       3      0.00000000    0.00000000    1.00000000
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
 
 
  CCSD   oscillator strength matrix for state nr.  1 of symmetry 4
@@ -12350,6 +12531,7 @@ LORXFIL:    F    F
 
 
      Zero matrix.
+    ==== End of matrix output ====
 
  Principal values of diagonalized oscillator strength matrix:
 
@@ -12361,10 +12543,11 @@ LORXFIL:    F    F
  Principal axis of diagonalized oscillator strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1      1.00000000    0.00000000    0.00000000
-       2      0.00000000    1.00000000    0.00000000
-       3      0.00000000    0.00000000    1.00000000
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
 
  >>> Total time for      0 linear response residues:       0.00 seconds.
 
@@ -12497,14 +12680,20 @@ LORXFIL:    F    F
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       2.567       4.780
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:42:28 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   3.77 seconds
- >>>> Total wall time used in DALTON:  26.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.59 seconds
+ >>>> Total wall time used in DALTON:   4.81 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:53:08 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:42:28 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

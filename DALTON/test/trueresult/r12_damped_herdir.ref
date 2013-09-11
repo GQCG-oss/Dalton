@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,190 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:56:57 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 19:04:07 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_r12_damped_herdir
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE FUNCTION                                
+.DIRECT                                           
+**INTEGRALS                                       
+.R12RGG                                           
+1                                                 
+1. .123                                           
+**WAVE FUNCTIONS                                  
+.CC                                               
+*SCF INPUT                                        
+.THRESHOLD                                        
+ 1D-10                                            
+*CC INPUT                                         
+.MP2                                              
+.PRINT                                            
+ 3                                                
+.HERDIR                                           
+.FROIMP                                           
+ 1 0 0 0 0 0 0 0                                  
+ 0 0 0 0 0 0 0 0                                  
+*ORBITALS                                         
+.MOSTART                                          
+ H1DIAG                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+cc-pVDZ cc-pCVQZ                                                               
+Direct Gaussian-damped MP2-R12 calculation using symmetry                      
+                                                                               
+    4    1  X                                                                  
+ 1      8.    1                                                                
+O       .000000000000000    .000000000000000  -0.124309000000000       *       
+ 1      1.    1                                                                
+H      1.427450200000000    .000000000000000   0.986437000000000       *       
+ 2      8.    1                                                                
+O       .000000000000000    .000000000000000  -0.124309000000000       *       
+ 2      1.    1                                                                
+H      1.427450200000000    .000000000000000   0.986437000000000       *       
 
 
        *******************************************************************
@@ -105,7 +212,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
@@ -134,32 +241,32 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    1
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    1
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
   Atomic type no.    3
   --------------------
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   This is an auxiliary basis for R12, MBSI:    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pCVQZ"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pCVQZ"
 
   Atomic type no.    4
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   This is an auxiliary basis for R12, MBSI:    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pCVQZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pCVQZ"
 
 
                          SYMGRP: Point group information
@@ -230,7 +337,7 @@ Point group: Cs
   ------------------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -288,8 +395,16 @@ Point group: Cs
  H   _2:    0.957119    1.510748    0.000000    0.957119    1.510748    0.000000
 
 
-  Max interatomic separation is    1.5107 Angstrom (    2.8549 Bohr)
+  Max    interatomic separation is    1.5107 Angstrom (    2.8549 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+  Min YX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    2    5
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -330,7 +445,7 @@ Point group: Cs
            27.258063           14.657408            9.531864 cm-1
 
 
-@  Nuclear repulsion energy :    9.196441218324
+@  Nuclear repulsion energy :    9.196441218324 Hartree
 
 
   Symmetry Orbitals
@@ -555,9 +670,9 @@ Point group: Cs
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>> Time used in GABGEN is   0.14 seconds
- >>>> Total CPU  time used in HERMIT:   0.30 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>  Time used in GABGEN     is   0.13 seconds
+ >>>> Total CPU  time used in HERMIT:   0.25 seconds
+ >>>> Total wall time used in HERMIT:   0.25 seconds
 
 
                         .----------------------------------.
@@ -576,8 +691,8 @@ Point group: Cs
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 19:04:08 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:57 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      Direct Gaussian-damped MP2-R12 calculation using symmetry               
@@ -586,32 +701,29 @@ Point group: Cs
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
-
-               Fock matrices are calculated directly
-               without use of integrals on disk.
+ Fock matrices are calculated directly without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART H1DIAG" input option.
+ ".MOSTART H1DIAG" input option
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                2
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 2
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -624,23 +736,12 @@ Point group: Cs
 
       -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    4    1
+@    Occupied SCF orbitals               5 |    4    1
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-10
-
-
- Changes of defaults for CC:
- ---------------------------
-
-
- -This is a direct atomic orbital integral based
-  calculation for coupled cluster wave function
-
- -Implicit frozen core calculation
-  
 
 
  Changes of defaults for CC:
@@ -660,88 +761,89 @@ Point group: Cs
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   1  -68.8723124414       8.79D+00  -6.89D+01    4  1
+   1  Screening settings (-IFTHRS, DIFDEN)   -8    T
+@  1  -68.8723124414       8.79D+00  -6.89D+01     4   1
       Virial theorem: -V/T =      1.695183
-      MULPOP  O      -2.32; H   _1  1.16; H   _2  1.16; 
+@      MULPOP O      -2.32; H   _1  1.16; H   _2  1.16; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   2  -69.9465490096       7.17D+00  -1.07D+00    3  2
+   2  Screening settings (-IFTHRS, DIFDEN)   -8    T
+@  2  -69.9465490096       7.17D+00  -1.07D+00     3   2
       Virial theorem: -V/T =      2.064349
-      MULPOP  O       3.95; H   _1 -1.97; H   _2 -1.97; 
+@      MULPOP O       3.95; H   _1 -1.97; H   _2 -1.97; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   3  -75.7361545471       2.47D+00  -5.79D+00    4  1
+   3  Screening settings (-IFTHRS, DIFDEN)   -8    T
+@  3  -75.7361545471       2.47D+00  -5.79D+00     4   1
       Virial theorem: -V/T =      1.952246
-      MULPOP  O      -0.89; H   _1  0.45; H   _2  0.45; 
+@      MULPOP O      -0.89; H   _1  0.45; H   _2  0.45; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   4  -76.0016352740       6.70D-01  -2.65D-01    4  1
+   4  Screening settings (-IFTHRS, DIFDEN)   -8    T
+@  4  -76.0016352740       6.70D-01  -2.65D-01     4   1
       Virial theorem: -V/T =      1.987968
-      MULPOP  O      -0.51; H   _1  0.25; H   _2  0.25; 
+@      MULPOP O      -0.51; H   _1  0.25; H   _2  0.25; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   5  -76.0265197918       6.02D-02  -2.49D-02    4  1
+   5  Screening settings (-IFTHRS, DIFDEN)   -8    T
+@  5  -76.0265197917       6.02D-02  -2.49D-02     4   1
       Virial theorem: -V/T =      2.001301
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   6  -76.0267628938       2.65D-02  -2.43D-04    4  1
+   6  Screening settings (-IFTHRS, DIFDEN)  -10    F
+@  6  -76.0267628938       2.65D-02  -2.43D-04     4   1
       Virial theorem: -V/T =      2.000993
-      MULPOP  O      -0.31; H   _1  0.15; H   _2  0.15; 
+@      MULPOP O      -0.31; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   7  -76.0268031214       3.71D-03  -4.02D-05    4  1
+   7  Screening settings (-IFTHRS, DIFDEN)  -10    T
+@  7  -76.0268031214       3.71D-03  -4.02D-05     4   1
       Virial theorem: -V/T =      2.000469
-      MULPOP  O      -0.31; H   _1  0.15; H   _2  0.15; 
+@      MULPOP O      -0.31; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   8  -76.0268047151       1.25D-03  -1.59D-06    4  1
+   8  Screening settings (-IFTHRS, DIFDEN)  -10    T
+@  8  -76.0268047151       1.25D-03  -1.59D-06     4   1
       Virial theorem: -V/T =      2.000469
-      MULPOP  O      -0.30; H   _1  0.15; H   _2  0.15; 
+@      MULPOP O      -0.30; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   9  -76.0268048037       7.12D-05  -8.86D-08    4  1
+   9  Screening settings (-IFTHRS, DIFDEN)  -12    F
+@  9  -76.0268048037       7.12D-05  -8.86D-08     4   1
       Virial theorem: -V/T =      2.000489
-      MULPOP  O      -0.30; H   _1  0.15; H   _2  0.15; 
+@      MULPOP O      -0.30; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  10  -76.0268048044       2.55D-05  -7.14D-10    4  1
+  10  Screening settings (-IFTHRS, DIFDEN)  -12    T
+@ 10  -76.0268048044       2.55D-05  -7.14D-10     4   1
       Virial theorem: -V/T =      2.000489
-      MULPOP  O      -0.30; H   _1  0.15; H   _2  0.15; 
+@      MULPOP O      -0.30; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  11  -76.0268048045       4.54D-06  -4.64D-11    4  1
+  11  Screening settings (-IFTHRS, DIFDEN)  -12    T
+@ 11  -76.0268048045       4.54D-06  -4.64D-11     4   1
       Virial theorem: -V/T =      2.000489
-      MULPOP  O      -0.30; H   _1  0.15; H   _2  0.15; 
+@      MULPOP O      -0.30; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  12  -76.0268048045       3.25D-07  -1.36D-12    4  1
+  12  Screening settings (-IFTHRS, DIFDEN)  -14    F
+@ 12  -76.0268048045       3.25D-07  -1.29D-12     4   1
       Virial theorem: -V/T =      2.000489
-      MULPOP  O      -0.30; H   _1  0.15; H   _2  0.15; 
+@      MULPOP O      -0.30; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  13  -76.0268048045       3.65D-08   8.53D-14    4  1
+  13  Screening settings (-IFTHRS, DIFDEN)  -17    F
+@ 13  -76.0268048045       3.65D-08  -7.11D-14     4   1
       Virial theorem: -V/T =      2.000489
-      MULPOP  O      -0.30; H   _1  0.15; H   _2  0.15; 
+@      MULPOP O      -0.30; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  14  -76.0268048045       4.81D-09  -4.26D-14    4  1
+  14  Screening settings (-IFTHRS, DIFDEN)  -17    T
+@ 14  -76.0268048045       4.81D-09   8.53D-14     4   1
       Virial theorem: -V/T =      2.000489
-      MULPOP  O      -0.30; H   _1  0.15; H   _2  0.15; 
+@      MULPOP O      -0.30; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-  15  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  15  -76.0268048045       3.04D-10  -1.42D-14    4  1
+  15  Screening settings (-IFTHRS, DIFDEN)  -17    T
+@ 15  -76.0268048045       3.04D-10  -8.53D-14     4   1
       Virial theorem: -V/T =      2.000489
-      MULPOP  O      -0.30; H   _1  0.15; H   _2  0.15; 
+@      MULPOP O      -0.30; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-  16  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  16  -76.0268048045       3.46D-11   2.84D-14    4  1
+  16  Screening settings (-IFTHRS, DIFDEN)  -17    T
+@ 16  -76.0268048045       3.47D-11   0.00D+00     4   1
 
- *** DIIS converged in  16 iterations !
-   - total time used in SIRFCK :              0.31 seconds
+@ *** DIIS converged in  16 iterations !
+@     Converged SCF energy, gradient:    -76.026804804477    3.47D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -777,7 +879,9 @@ Point group: Cs
  ISYM         EIGENVALUE
    1      0.000000000000
    2      0.000000000000
- >>> Time used in R12AUX is   0.25 seconds
+ >>>  Time used in R12AUX     is   0.23 seconds
+
+ >>>> CPU and wall time for SCF :       0.502       0.509
 
 
                        .-----------------------------------.
@@ -785,19 +889,19 @@ Point group: Cs
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -76.026804804479                 
-     Nuclear repulsion:             9.196441218324
-     Electronic energy:           -85.223246022803
+@    Final HF energy:             -76.026804804477                 
+@    Nuclear repulsion:             9.196441218324
+@    Electronic energy:           -85.223246022801
 
-     Final gradient norm:           0.000000000035
+@    Final gradient norm:           0.000000000035
 
  
-     Date and time (Linux)  : Wed Mar 16 19:04:09 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:57 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -835,12 +939,12 @@ Point group: Cs
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.64 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.51 seconds
+ >>>> Total wall time used in SIRIUS :      0.52 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:04:09 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:57 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -939,7 +1043,7 @@ Point group: Cs
 
  Number of two-electron spin-orbit integrals written:      2586 ( 0.0%)
  Computation of (ik|[[f12,T1],f12]|jl) integrals done
- >>> Time used in #6 [4] is   1.38 seconds
+ >>>  Time used in #6 [4]     is   1.48 seconds
 
  Number of two-electron spin-orbit integrals written:      6681 ( 0.1%)
 
@@ -969,7 +1073,7 @@ Point group: Cs
 
  Number of two-electron spin-orbit integrals written:      2586 ( 0.0%)
  Computation of (ik|f12**2|jl) integrals done
- >>> Time used in #4 [4] is   1.34 seconds
+ >>>  Time used in #4 [4]     is   1.44 seconds
 
  Number of two-electron spin-orbit integrals written:      6681 ( 0.1%)
 
@@ -983,7 +1087,7 @@ Point group: Cs
 
  Number of two-electron spin-orbit integrals written:      2976 ( 0.0%)
 
- Number of two-electron spin-orbit integrals written:      7749 ( 0.0%)
+ Number of two-electron spin-orbit integrals written:      7746 ( 0.0%)
 
  Number of two-electron spin-orbit integrals written:      9210 ( 0.0%)
 
@@ -999,30 +1103,29 @@ Point group: Cs
 
  Number of two-electron spin-orbit integrals written:      2586 ( 0.0%)
  Computation of (ik|f12/r12|jl) integrals done
- >>> Time used in #2 [4] is   1.34 seconds
+ >>>  Time used in #2 [4]     is   1.45 seconds
 
- Number of two-electron spin-orbit integrals written:     96150 ( 1.3%)
- >>> Time used in TWOINT is   0.21 seconds
+ Number of two-electron spin-orbit integrals written:     96148 ( 1.3%)
+ >>>  Time used in TWOINT     is   0.20 seconds
 
- Number of two-electron spin-orbit integrals written:    184936 ( 1.3%)
- >>> Time used in TWOINT is   0.19 seconds
+ Number of two-electron spin-orbit integrals written:    184934 ( 1.3%)
+ >>>  Time used in TWOINT     is   0.17 seconds
 
- Number of two-electron spin-orbit integrals written:    151748 ( 1.3%)
- >>> Time used in TWOINT is   0.12 seconds
+ Number of two-electron spin-orbit integrals written:    151736 ( 1.3%)
 
- Number of two-electron spin-orbit integrals written:    140232 ( 1.5%)
- >>> Time used in TWOINT is   0.20 seconds
+ Number of two-electron spin-orbit integrals written:    140225 ( 1.5%)
+ >>>  Time used in TWOINT     is   0.18 seconds
 
- Number of two-electron spin-orbit integrals written:    199250 ( 1.4%)
- >>> Time used in TWOINT is   0.14 seconds
+ Number of two-electron spin-orbit integrals written:    199249 ( 1.4%)
+ >>>  Time used in TWOINT     is   0.12 seconds
 
  Number of two-electron spin-orbit integrals written:     17816 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     43330 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     43327 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     50300 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     50297 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     41262 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     41260 ( 0.1%)
 
  Number of two-electron spin-orbit integrals written:     17218 ( 0.1%)
 
@@ -1034,25 +1137,23 @@ Point group: Cs
 
  Number of two-electron spin-orbit integrals written:     27324 ( 0.1%)
  Computation of (ip'|f12|jq') integrals done
- >>> Time used in #3 [5] is   2.39 seconds
+ >>>  Time used in #3 [5]     is   2.33 seconds
 
  Number of two-electron spin-orbit integrals written:     96150 ( 1.3%)
 
- Number of two-electron spin-orbit integrals written:    184936 ( 1.3%)
- >>> Time used in TWOINT is   0.11 seconds
+ Number of two-electron spin-orbit integrals written:    184934 ( 1.3%)
 
- Number of two-electron spin-orbit integrals written:    151748 ( 1.3%)
+ Number of two-electron spin-orbit integrals written:    151744 ( 1.3%)
 
- Number of two-electron spin-orbit integrals written:    140232 ( 1.5%)
- >>> Time used in TWOINT is   0.11 seconds
+ Number of two-electron spin-orbit integrals written:    140229 ( 1.5%)
 
  Number of two-electron spin-orbit integrals written:    199250 ( 1.4%)
 
  Number of two-electron spin-orbit integrals written:     17816 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     43330 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     43329 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     50300 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     50298 ( 0.1%)
 
  Number of two-electron spin-orbit integrals written:     41262 ( 0.1%)
 
@@ -1066,7 +1167,7 @@ Point group: Cs
 
  Number of two-electron spin-orbit integrals written:     27324 ( 0.1%)
  Computation of (ip'|1/r12|jq') integrals done
- >>> Time used in #1 [5] is   1.97 seconds
+ >>>  Time used in #1 [5]     is   1.99 seconds
 
  Number of two-electron spin-orbit integrals written:      6681 ( 0.1%)
 
@@ -1095,30 +1196,29 @@ Point group: Cs
  Number of two-electron spin-orbit integrals written:      3684 ( 0.0%)
 
  Number of two-electron spin-orbit integrals written:      2586 ( 0.0%)
- >>> Time used in #4 [4] is   1.36 seconds
+ >>>  Time used in #4 [4]     is   1.43 seconds
 
- Number of two-electron spin-orbit integrals written:     96150 ( 1.3%)
- >>> Time used in TWOINT is   0.20 seconds
+ Number of two-electron spin-orbit integrals written:     96148 ( 1.3%)
+ >>>  Time used in TWOINT     is   0.20 seconds
 
- Number of two-electron spin-orbit integrals written:    184936 ( 1.3%)
- >>> Time used in TWOINT is   0.19 seconds
+ Number of two-electron spin-orbit integrals written:    184934 ( 1.3%)
+ >>>  Time used in TWOINT     is   0.17 seconds
 
- Number of two-electron spin-orbit integrals written:    151748 ( 1.3%)
- >>> Time used in TWOINT is   0.12 seconds
+ Number of two-electron spin-orbit integrals written:    151736 ( 1.3%)
 
- Number of two-electron spin-orbit integrals written:    140232 ( 1.5%)
- >>> Time used in TWOINT is   0.20 seconds
+ Number of two-electron spin-orbit integrals written:    140225 ( 1.5%)
+ >>>  Time used in TWOINT     is   0.18 seconds
 
- Number of two-electron spin-orbit integrals written:    199250 ( 1.4%)
- >>> Time used in TWOINT is   0.14 seconds
+ Number of two-electron spin-orbit integrals written:    199249 ( 1.4%)
+ >>>  Time used in TWOINT     is   0.12 seconds
 
  Number of two-electron spin-orbit integrals written:     17816 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     43330 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     43327 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     50300 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     50297 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     41262 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     41260 ( 0.1%)
 
  Number of two-electron spin-orbit integrals written:     17218 ( 0.1%)
 
@@ -1130,30 +1230,29 @@ Point group: Cs
 
  Number of two-electron spin-orbit integrals written:     27324 ( 0.1%)
  Computation of (i* p'|f12|jq') integrals done
- >>> Time used in #3 [5] is   2.45 seconds
+ >>>  Time used in #3 [5]     is   2.40 seconds
 
- Number of two-electron spin-orbit integrals written:     96150 ( 1.3%)
- >>> Time used in TWOINT is   0.21 seconds
+ Number of two-electron spin-orbit integrals written:     96148 ( 1.3%)
+ >>>  Time used in TWOINT     is   0.20 seconds
 
- Number of two-electron spin-orbit integrals written:    184936 ( 1.3%)
- >>> Time used in TWOINT is   0.19 seconds
+ Number of two-electron spin-orbit integrals written:    184934 ( 1.3%)
+ >>>  Time used in TWOINT     is   0.17 seconds
 
- Number of two-electron spin-orbit integrals written:    151748 ( 1.3%)
- >>> Time used in TWOINT is   0.12 seconds
+ Number of two-electron spin-orbit integrals written:    151736 ( 1.3%)
 
- Number of two-electron spin-orbit integrals written:    140232 ( 1.5%)
- >>> Time used in TWOINT is   0.20 seconds
+ Number of two-electron spin-orbit integrals written:    140225 ( 1.5%)
+ >>>  Time used in TWOINT     is   0.18 seconds
 
- Number of two-electron spin-orbit integrals written:    199250 ( 1.4%)
- >>> Time used in TWOINT is   0.14 seconds
+ Number of two-electron spin-orbit integrals written:    199249 ( 1.4%)
+ >>>  Time used in TWOINT     is   0.12 seconds
 
  Number of two-electron spin-orbit integrals written:     17816 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     43330 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     43327 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     50300 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     50297 ( 0.1%)
 
- Number of two-electron spin-orbit integrals written:     41262 ( 0.1%)
+ Number of two-electron spin-orbit integrals written:     41260 ( 0.1%)
 
  Number of two-electron spin-orbit integrals written:     17218 ( 0.1%)
 
@@ -1165,34 +1264,34 @@ Point group: Cs
 
  Number of two-electron spin-orbit integrals written:     27324 ( 0.1%)
  Computation of (i'p|f12|jq') integrals done
- >>> Time used in #3 [5] is   2.54 seconds
+ >>>  Time used in #3 [5]     is   2.59 seconds
 
  Number of two-electron spin-orbit integrals written:     93621 ( 1.3%)
- >>> Time used in TWOINT is   0.60 seconds
+ >>>  Time used in TWOINT     is   0.62 seconds
 
- Number of two-electron spin-orbit integrals written:    170912 ( 1.2%)
- >>> Time used in TWOINT is   0.46 seconds
+ Number of two-electron spin-orbit integrals written:    170910 ( 1.2%)
+ >>>  Time used in TWOINT     is   0.47 seconds
 
- Number of two-electron spin-orbit integrals written:    132785 ( 1.1%)
- >>> Time used in TWOINT is   0.24 seconds
+ Number of two-electron spin-orbit integrals written:    132782 ( 1.1%)
+ >>>  Time used in TWOINT     is   0.22 seconds
 
- Number of two-electron spin-orbit integrals written:    135928 ( 1.4%)
- >>> Time used in TWOINT is   0.53 seconds
+ Number of two-electron spin-orbit integrals written:    135927 ( 1.4%)
+ >>>  Time used in TWOINT     is   0.55 seconds
 
  Number of two-electron spin-orbit integrals written:    189504 ( 1.3%)
- >>> Time used in TWOINT is   0.30 seconds
+ >>>  Time used in TWOINT     is   0.27 seconds
 
  Number of two-electron spin-orbit integrals written:     17816 ( 0.1%)
- >>> Time used in TWOINT is   0.11 seconds
+ >>>  Time used in TWOINT     is   0.11 seconds
 
  Number of two-electron spin-orbit integrals written:     43330 ( 0.1%)
- >>> Time used in TWOINT is   0.12 seconds
+ >>>  Time used in TWOINT     is   0.12 seconds
 
  Number of two-electron spin-orbit integrals written:     50300 ( 0.1%)
- >>> Time used in TWOINT is   0.12 seconds
+ >>>  Time used in TWOINT     is   0.12 seconds
 
  Number of two-electron spin-orbit integrals written:     41262 ( 0.1%)
- >>> Time used in TWOINT is   0.11 seconds
+ >>>  Time used in TWOINT     is   0.11 seconds
 
  Number of two-electron spin-orbit integrals written:     17218 ( 0.1%)
 
@@ -1204,7 +1303,7 @@ Point group: Cs
 
  Number of two-electron spin-orbit integrals written:     27036 ( 0.1%)
  Computation of (ip'|[T,f12]|jq') integrals done
- >>> Time used in #5 [5] is   4.10 seconds
+ >>>  Time used in #5 [5]     is   4.19 seconds
 
 
                  +-----------------------------------------------+
@@ -1341,9 +1440,9 @@ Point group: Cs
        -0.125570253   -0.168996204   -0.076074848   -0.083602979
 
               MP2-R12/B   correlation energy =   -0.252599183
- >>> Time used in E(R12) is   0.70 seconds
- Time for MP2-R12 part cpu:   19.579024076461792     
- Time for MP2-R12 part wall:   19.000000000000000     
+ >>>  Time used in E(R12)     is   0.56 seconds
+ Time for MP2-R12 part cpu :   19.866999999999997     
+ Time for MP2-R12 part wall:   21.506000012159348     
 
 NOAUXB with HERDIR not implemented
 
@@ -1382,14 +1481,20 @@ NOAUXB with HERDIR not implemented
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :      19.867      21.506
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:57:19 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  20.53 seconds
- >>>> Total wall time used in DALTON:  21.00 seconds
+ >>>> Total CPU  time used in DALTON:  20.64 seconds
+ >>>> Total wall time used in DALTON:  22.30 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:04:28 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:57:19 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

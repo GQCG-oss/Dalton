@@ -29,7 +29,7 @@ assume that most users will exploit the basis sets provided in the basis
 set library as opposed to entering them directly in the \molinp\ file. The format for basis sets are described in detail in Sec.~\ref{sec:molcart}.
 
 Let us first start with an input for water using Cartesian coordinates
-in Bohr, and the very popular 6-31G** basis set.
+in \bohr{}, and the very popular 6-31G** basis set.
 
 \begin{verbatim}
 BASIS
@@ -98,7 +98,7 @@ total charge\index{molecular charge} of the
 molecule ($+2$), and the keyword \verb|Nosymmetry| indicates that
 symmetry is not to be used in this calculation. Note that
 unlike Cartesian coordinate input, which by default is in atomic units, the
-Z-matrix input is always to be in \AA ngstr\"{o}m.
+Z-matrix input is always to be in \angstrom{}.
 
 \section{The \dalinp\ input file}\label{sec:daltoninp}
 
@@ -404,7 +404,7 @@ CAMB3LYP
 **END OF
 \end{verbatim}
 Here we have specified that we want to calculate a response property 
-(\Key{RUN RESPONSE}) using CAMB3LYP. The property were after is a quadratic 
+(\Key{RUN RESPONSE}) using CAMB3LYP. The property we are after is a quadratic 
 response property so we specify \Sec{QUADRATIC} under the \Sec{RESPONSE} 
 section. We get the 2PA from the single residue of the quadratic response 
 function and use the \Key{TWO-PHOTON} keyword to get those. In addition, we 
@@ -413,7 +413,7 @@ want the four lowest states, thus, we solve for four roots indicated by the
 specifies that the core system (acrolein) is to be embedded in a (polarizable) environment given in the \potinp\ file:
 \begin{verbatim}
 ! Two water molecules
-**coordinates
+@COORDINATES
 10
 AA
 O   -3.3285510  -0.1032300  -0.0004160
@@ -426,8 +426,8 @@ H    0.8416780   1.9718070  -0.0008200
 H    1.6325590   3.2983010   0.0041540
 X    1.2919875   2.1565840  -0.0007825
 X    1.6874280   2.8198310   0.0017045
-**multipoles
-*order 0
+@MULTIPOLES
+ORDER 0
 6
 1   -0.74232
 2    0.36993
@@ -435,7 +435,7 @@ X    1.6874280   2.8198310   0.0017045
 6   -0.74244
 7    0.36996
 8    0.37247
-*order 1
+ORDER 1
 10
 1    0.03035   0.32807   0.00008
 2   -0.10057  -0.05572  -0.00009
@@ -447,7 +447,7 @@ X    1.6874280   2.8198310   0.0017045
 8    0.00581  -0.11658  -0.00058
 9    0.15621   0.02893  -0.00015
 10   0.05016  -0.14938  -0.00082
-*order 2
+ORDER 2
 10
 1   -3.95163  -0.05617   0.00083  -4.57788   0.00004  -5.02068
 2   -0.57742  -0.05330  -0.00002  -0.60439  -0.00005  -0.55958
@@ -459,8 +459,8 @@ X    1.6874280   2.8198310   0.0017045
 8   -0.55626   0.04501   0.00021  -0.62441  -0.00041  -0.55831
 9    0.93099   0.22805  -0.00022   0.24298  -0.00039   0.23303
 10   0.21761  -0.16639  -0.00076   0.96429   0.00386   0.24162
-**polarizabilities
-*order 1 1
+@POLARIZABILITIES
+ORDER 1 1
 10
 1    1.59316   0.08008  -0.00121   2.52556   0.00134   3.36700
 2    0.79298   0.15423   0.00015   0.60150   0.00028   0.59251
@@ -472,7 +472,7 @@ X    1.6874280   2.8198310   0.0017045
 8    0.49932  -0.01960   0.00005   0.86127   0.00201   0.57507
 9    4.29463   1.26940   0.00040   1.05663  -0.00449   1.41332
 10   0.61742  -0.44025  -0.00029   4.62200   0.01748   1.43071
-*exclists
+EXCLISTS
 10 5
 1  2  3  4  5
 2  1  3  4  5
@@ -487,7 +487,7 @@ X    1.6874280   2.8198310   0.0017045
 \end{verbatim}
 The \potinp\ file contains two water molecules described by distributed 
 multipoles up to second order (i.e.\ quadrupoles) and dipole-dipole polarizabilities
-located on atoms and bond-midpoints (indicated with \verb|X| in the \Sec{*coordinates} 
+located on atoms and bond-midpoints (the latter is indicated with \verb|X| in the \verb|@COORDINATES|
 section). The potential parameters are obtained from separate calculations on each 
 water molecule in vacuum and it is therefore also necessary to specify 
 an exclusion list which specifies what other sites a given site can be polarized by.
@@ -516,9 +516,10 @@ Calculations with {\dalton} is most conveniently done using the
 supplied \verb|dalton| shell script\index{dalton shell script}.
 The general usage of the \verb|dalton| script is as follows
 \begin{verbatim}
->  dalton [options] dalinp{.dal} [molinp{.mol} [potinp{.pot}]]
+> dalton [options] dalinp{.dal} [molinp{.mol} [potinp{.pot}]]
 \end{verbatim}
-where \verb|[]| indicates optional input.
+where \verb|[]| indicates optional input and assuming \verb|dalton| is
+available in your path.
 Thus, to run a calculation of $\beta$ (first
 hyperpolarizability)\index{first hyperpolarizability} 
 with input available as \verb|beta.dal| on the HCl molecule, and with
@@ -526,7 +527,7 @@ molecule input available as \verb|hcl.mol|, you would type
 \begin{verbatim}
 > dalton beta hcl
 \end{verbatim}
-assuming \verb|dalton| is available in your path. When the job is
+When the job is
 finished, the output is copied back as \verb|beta_hcl.out|. If it is an embedding
 calculation requiring also a potential input, e.g.\ \verb|water.pot|, it would be
 \begin{verbatim}
@@ -682,6 +683,10 @@ Sec.~\ref{sec:dynamic}\index{dynamics}.
 
 \item[DALTON.WLK] Contains information from the walk-procedure, and is
 needed when restarting a walk (e.g. a numerical differentiation).
+
+\item[gv.off] Contains the information needed by the \verb|GEOMVIEW|
+  program (\verb|http://www.geomview.org|) for visualizing the PCM
+  cavity (see Section~\ref{sec:pcm})
 
 \item[molden.inp] Contains the input required for visualizing the
   results of the calculation using the MOLDEN program

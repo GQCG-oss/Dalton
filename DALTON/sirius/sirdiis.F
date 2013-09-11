@@ -365,7 +365,7 @@ C
       PARAMETER (THREVC = 0.01D0, THRINC = 1.0D-10, CNVFAC = 0.8D0)
 C
       LOGICAL   ONLYFC, C2DIIS, DIFDEN, DODIFDEN, NEWTHR, RHFWOP, OLDWOP
-      LOGICAL   HSFOCK, LCONV, LNEWOCC
+      LOGICAL   LCONV, LNEWOCC
       DIMENSION MISH(8)
       CHARACTER*8 CMOLBL
 C
@@ -504,7 +504,7 @@ C       keep vectors until GRDNRM fallen a factor 100
 C     if (LNEWOCC) then write new BASINFO to SIRIUS.RST in NEWORB
       NOSCIL = 0
 C------------------
-      DODIFDEN = .NOT.FLAG(49) .AND. .NOT.HSROHF
+      DODIFDEN = .NOT.FLAG(49) .AND. .NOT.HSFOCK
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
@@ -613,7 +613,6 @@ C
             END IF
          END IF
          CALL FLSHFO(LUPRI)
-         HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
 C
 C  ***** Construct folded inactive and active parts of the one-electron
 C        density matrix in AO-basis (DCAO and DVAO). DV is the active
@@ -1685,12 +1684,14 @@ C  INFINP : LNOROT,NOROT()
 C  INFORB : N2BAST, NNBAST, NCMOT, NSYM, ..., NFROT, ...
 C  INFDIM : N2BASM
 C
+#include "gnrinf.h"
 #include "maxorb.h"
 #include "priunit.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infdim.h"
 #include "infpri.h"
+#include "scbrhf.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
 C
@@ -1700,7 +1701,7 @@ C
       CALL MEMGET2('REAL','TMP1',KTMP1,N2BASM,WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','TMP2',KTMP2,N2BASM,WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','TMP3',KTMP3,N2BASM,WRK,KFREE,LFREE)
-      IF (HSROHF.OR.(DODFT.AND.NASHT.GE.1)) THEN
+      IF (HSFOCK) THEN
          CALL DAXPY(NNBAST,D1,DVAO,1,DCAO,1)
          CALL DSCAL(NNBAST,DM1,DVAO,1)
       END IF
@@ -1816,7 +1817,7 @@ C
             CALL OUTPUT(WRK(KTMP1),1,NORBI,1,NORBI,NORBI,NORBI,-1,LUPRI)
          END IF
   800 CONTINUE
-      IF (HSROHF.OR.(DODFT.AND.NASHT.GE.1)) THEN
+      IF (HSFOCK) THEN
          CALL DAXPY(NNBAST,D1,DVAO,1,DCAO,1)
          CALL DSCAL(NNBAST,DM1,DVAO,1)
       END IF
