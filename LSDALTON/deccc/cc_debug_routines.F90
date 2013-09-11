@@ -67,28 +67,28 @@ module cc_debug_routines_module
      type(ccorbital), pointer :: occ_orbitals(:)
      type(ccorbital), pointer :: unocc_orbitals(:)
      logical, pointer :: orbitals_assigned(:)
-     type(array4) :: mult
-
-     
-     mult = array4_init([nvirt,nocc,nvirt,nocc])
-
-     print *,"testing"
-     call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
-        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-        & t1_final,t2_final,VOVO,.false.)
+     type(array4) :: mult2
+     type(array2) :: mult1
 
 
+     call ccsolver_debug(ypo_f, ypv_f, fock_f, nbasis, nocc, nvirt, &
+        & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
+        & t1_final, t2_final, VOVO, .false.)
 
 
-     call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
-        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-        & t1_final,t2_final,VOVO,.false.,multipliers = mult)
+     call ccsolver_debug(ypo_f, ypv_f, fock_f, nbasis, nocc, nvirt, &
+        & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
+        & t1_final, t2_final, VOVO, .false., m2 = mult2, m1 = mult1)
 
+     call print_norm(mult2%val,int(nvirt*nvirt*nocc*nocc,kind=8))
+     call print_norm(mult1%val,int(nvirt*nocc,kind=8))
 
      ! Free arrays
      call array2_free(t1_final)
+     call array2_free(mult1)
      call array4_free(t2_final)
      call array4_free(VOVO)
+     call array4_free(mult2)
 
    end subroutine ccsolver_energy_multipliers
 
@@ -96,7 +96,7 @@ module cc_debug_routines_module
    !  Ettenhuber)
    subroutine ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-        & t1_final,t2_final,VOVO,longrange_singles,multipliers)
+        & t1_final,t2_final,VOVO,longrange_singles,m2,m1)
 
      implicit none
 
@@ -132,7 +132,8 @@ module cc_debug_routines_module
      !> Two electron integrals (a i | b j) stored as (a,i,b,j)
      type(array4),intent(inout) :: VOVO
     
-     type(array4),optional,intent(inout) :: multipliers
+     type(array4),optional,intent(inout) :: m2
+     type(array2),optional,intent(inout) :: m1
      !> Include long-range singles effects using singles amplitudes
      !> from previous fragment calculations.
      !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
@@ -170,7 +171,10 @@ module cc_debug_routines_module
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-     get_mult = present(multipliers)
+     get_mult = (present(m2).and.present(m1))
+     if((present(m2).and..not.present(m1)).or.(present(m1).and..not.present(m2)))then
+       call lsquit("ERROR(ccsolver_debug):requested unkown multipliers",-1)
+     endif
 
      ! Sanity check 1: Number of orbitals
      if( (nvirt < 1) .or. (nocc < 1) ) then
@@ -210,39 +214,55 @@ module cc_debug_routines_module
      call mem_alloc(qqfock_d,nvirt,nvirt)
      call mem_alloc(Uocc,nocc,nocc)
      call mem_alloc(Uvirt,nvirt,nvirt)
+
+
+     !TRANSFORM TO A CANONICAL BASIS
+     !******************************
+
      if(DECinfo%CCSDpreventcanonical)then
        !nocc diagonalization
-       ypo_d   = ypo_f
-       ypv_d   = ypv_f
+       ypo_d    = ypo_f
+       ypv_d    = ypv_f
        ppfock_d = ppfock_f
        qqfock_d = qqfock_f
-       Uocc=0.0E0_realk
-       Uvirt=0.0E0_realk
+       Uocc     = 0.0E0_realk
+       Uvirt    = 0.0E0_realk
        do ii=1,nocc
          Uocc(ii,ii) = 1.0E0_realk
        enddo
+
        do aa=1,nvirt
          Uvirt(aa,aa) = 1.0E0_realk
        enddo
+
      else
+
        call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock_f,&
             &qqfock_f,ypo_f,ypv_f,ypo_d,ypv_d,Uocc,Uvirt,focc,fvirt)
+
        ppfock_d = 0.0E0_realk
        qqfock_d = 0.0E0_realk
+
        do ii=1,nocc
          ppfock_d(ii,ii) = focc(ii)
        enddo
        do aa=1,nvirt
          qqfock_d(aa,aa) = fvirt(aa)
        enddo
+
        if(get_mult)then
+
          if(DECinfo%use_singles)then
            call ccsolver_local_can_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt,t1_final%val)
          else
            call ccsolver_local_can_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt)
          endif
+
        endif
+
+
      endif
+
      call mem_dealloc(focc)
      call mem_dealloc(fvirt)
 
@@ -250,15 +270,13 @@ module cc_debug_routines_module
      ! (including transposed MO matrices) efficiently. 
      yho_d = ypo_d
      yhv_d = ypv_d
-     !print *,"occ",ypo_d
-     !print *,"virt",ypv_d
 
      ! create transformation matrices in array form
-     ypo = array2_init(occ_dims,ypo_d)
-     ypv = array2_init(virt_dims,ypv_d)
-     yho = array2_init(occ_dims,yho_d)
-     yhv = array2_init(virt_dims,yhv_d)
-     fock = array2_init(ao2_dims,fock_f)
+     ypo   = array2_init(occ_dims,ypo_d)
+     ypv   = array2_init(virt_dims,ypv_d)
+     yho   = array2_init(occ_dims,yho_d)
+     yhv   = array2_init(virt_dims,yhv_d)
+     fock  = array2_init(ao2_dims,fock_f)
 
      call mem_dealloc(ypo_d)
      call mem_dealloc(ypv_d)
@@ -284,8 +302,7 @@ module cc_debug_routines_module
 
      ! get two-electron integrals in ao
      if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') 'debug :: calculating AO integrals'
-
-     ! Only calculate full 4-dimensional AO integrals for old/debug mode
+     ! Only calculate full 4-dimensional AO integrals 
      call get_full_eri(mylsitem,nbasis,gao)
      if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,/)') 'debug :: AO integrals done'
 
@@ -366,8 +383,8 @@ module cc_debug_routines_module
 
      ! iterate
      break_iterations = .false.
-     crop_ok = .false.
-     prev_norm = 1.0E6_realk
+     crop_ok          = .false.
+     prev_norm        = 1.0E6_realk
 
 
 
@@ -403,7 +420,10 @@ module cc_debug_routines_module
         end if RemoveOldVectors
 
 
-        if(iter==1.and.DECinfo%use_singles .and. get_mult) then
+        ! If we want the multipliers, the t1 transformation has to be calculated
+        ! with the t1_final and not the t1(iter) (so actually only once, but as
+        ! it is a debug code this solution was simpler)
+        if(iter == 1.and.DECinfo%use_singles .and. get_mult) then
            call getT1transformation(t1_final,xocc,xvirt,yocc,yvirt, &
            ypo,ypv,yho,yhv)
         endif
@@ -518,17 +538,14 @@ module cc_debug_routines_module
                 & nocc,nvirt)
 
         elseif(DECinfo%ccModel==2) then
-           !print *,"old cc2 scheme"
            u = get_u(t2(iter))
            call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock, &
                 xocc,xvirt,yocc,yvirt,nocc,nvirt)
-           !call print_norm(omega1(iter)%val,nvirt,nocc)
            call array4_free(u)
 
            gmo = get_gmo_simple(gao,xvirt,yocc,xvirt,yocc)
            call getDoublesResidualMP2_simple(omega2(iter),t2(iter),gmo,ppfock,qqfock, &
                 nocc,nvirt)
-           !call print_norm(1.0E0_realk,omega2(iter)%val,nvirt*nvirt,nocc*nocc)
            call array4_free(gmo)
 
 
@@ -536,7 +553,6 @@ module cc_debug_routines_module
 
            if(get_mult)then
 
-              call print_norm(iajb)
               call array4_read(gao)
               call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
               &,t2_final%val,t1(iter)%val,t2(iter)%val,gao,xocc%val,yocc%val,xvirt%val,yvirt%val&
@@ -689,11 +705,6 @@ module cc_debug_routines_module
         one_norm_total = one_norm1 + one_norm2
         two_norm_total = sqrt(one_norm_total)
 
-        one_norm1 = 0.0E0_realk
-        one_norm2 = 0.0E0_realk
-        if(DECinfo%use_singles) one_norm1 = array2_norm(t1(iter))
-        one_norm2 = array4_norm(t2(iter))
-        print *,"singles and doubles norms",sqrt(one_norm1),sqrt(one_norm2)
         ! simple crop diagnostics
         if(two_norm_total < prev_norm) then
            crop_ok=.true.
@@ -751,10 +762,6 @@ module cc_debug_routines_module
               t2(iter+1) = t2_opt + omega2_opt
            end if
         end if
-        !msg="t1+1:"
-        !call print_norm(t1(iter+1)%val,nocc*nvirt,msg) 
-        !msg="t2+1:"
-        !call print_norm(t2(iter+1)%val,nocc*nocc*nvirt*nvirt,msg) 
 
         if(DECinfo%PL>1) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
 
@@ -838,12 +845,16 @@ module cc_debug_routines_module
         if(DECinfo%use_singles) then
 
            ! Save final singles amplitudes
-           if(i==last_iter .and. .not. get_mult) then
-              if(longrange_singles) then ! just copy
-                 call array2_copy(t1_final,t1(last_iter))
-              else ! initialize and copy
-                 t1_final = array2_duplicate(t1(last_iter))
-              end if
+           if(i==last_iter) then
+              if(get_mult)then
+                   m1 = array2_duplicate(t1(last_iter))
+              else
+                if(longrange_singles) then ! just copy
+                   call array2_copy(t1_final,t1(last_iter))
+                else ! initialize and copy
+                   t1_final = array2_duplicate(t1(last_iter))
+                end if
+              endif
            end if
 
            ! Free singles amplitudes and residuals
@@ -856,8 +867,12 @@ module cc_debug_routines_module
         call array4_free(omega2(i))
 
         ! Save final double amplitudes
-        if(i==last_iter .and. .not. get_mult) then
-           t2_final = array4_duplicate(t2(last_iter))
+        if(i==last_iter) then
+           if(get_mult)then
+             m2       = array4_duplicate(t2(last_iter))
+           else
+             t2_final = array4_duplicate(t2(last_iter))
+           endif
         end if
 
         ! Free doubles amplitudes
@@ -923,6 +938,8 @@ module cc_debug_routines_module
      call array2_free(ypv)
      call array2_free(yhv)
      call array2_free(fock)
+
+
      !transform back to original basis   
      if(DECinfo%use_singles)then
        call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt,t1_final%val)
@@ -1796,6 +1813,16 @@ module cc_debug_routines_module
 
      return
    end subroutine getDoublesResidualCCSD_simple2
+   !> \author Patrick Ettenhuber
+   !> \Date September 2013
+   !> \brief This debug routine calculates the residual of the CCSD left
+   !transformations rho1 and rho2, on input, the converged CCSD amplitudes t1f
+   !and t2f must be given, furthermore a first guess for the multipliers m1 and
+   !m2, the full ao integrals as array4 the t1 transformation matrices xo yo xv
+   !and yv being the occupied and virtual particle and hole matrices, the number
+   !of occupied orbitals no, the number of virtual orbitals nv and the number of
+   !basis functions nb, MyLsItem is required to calculate the Fock matrix in
+   !here
    subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,gao,xo,yo,xv,yv,no,nv,nb,MyLsItem)
      implicit none
 
@@ -1814,7 +1841,7 @@ module cc_debug_routines_module
      integer                   :: v4,o4,o3v,ov3,o2v2,ov,b2,v2,o2
      type(matrix)              :: iFock, Dens
      integer                   :: i,a,j,b,ctr
-     real(realk)               :: norm,nrm2
+     real(realk)               :: norm,nrmt2,nrmm2
 
      b2   = nb*nb
      v2   = nv*nv
@@ -1826,46 +1853,48 @@ module cc_debug_routines_module
      o4   = o2*o2
      v4   = v2*v2
 
-     123 format (" ",A5," ",I5," ",f5.0,"*")
+     if( DECinfo%PL>2 )then 
+        !write (msg,*)"gao"
+        !call print_norm(gao,msg)
+        !write (msg,*)"xo"
+        !call print_norm(xo,int(nb*no,kind=8),msg)
+        !write (msg,*)"xv"
+        !call print_norm(xv,int(nb*nv,kind=8),msg)
+        !write (msg,*)"yo"
+        !call print_norm(yo,int(nb*no,kind=8),msg)
+        !write (msg,*)"yv"
+        !call print_norm(yv,int(nb*nv,kind=8),msg)
 
-     write (msg,*)"gao"
-     call print_norm(gao,msg)
-     write (msg,*)"xo"
-     call print_norm(xo,int(nb*no,kind=8),msg)
-     write (msg,*)"xv"
-     call print_norm(xv,int(nb*nv,kind=8),msg)
-     write (msg,*)"yo"
-     call print_norm(yo,int(nb*no,kind=8),msg)
-     write (msg,*)"yv"
-     call print_norm(yv,int(nb*nv,kind=8),msg)
-     write (msg,123)"t1   ",ov,sign(1.0E0_realk,t1f(1,1))
-     call print_norm(t1f,int(ov,kind=8),msg)
-     write (msg,123)"z1   ",ov,sign(1.0E0_realk,m1(1,1))
-     call print_norm(m1,int(ov,kind=8),msg)
-     write (msg,123)"t2   ",o2v2,sign(1.0E0_realk,t2f(1,1,1,1))
-     call print_norm(t2f,int(o2v2,kind=8),msg)
-     write (msg,123)"z2   ",o2v2,sign(1.0E0_realk,m2(1,1,1,1))
-     call print_norm(m2,int(o2v2,kind=8),msg)
-     
-     norm = 0.0E0_realk
-     nrm2 = 0.0E0_realk
-     ctr = 0
-     do j = 1, no
-       do b = 1, nv
-         do i = 1, no
-           do a = 1,nv
-             if(a+(i-1)*nv<=b+(j-1)*nv)then
-               norm = norm + t2f(a,i,b,j)**2
-               ctr  = ctr  + 1
-               nrm2 = nrm2 + m2(a,i,b,j)**2
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-     write (msg,*)"t2",ctr
-     print *,msg,sqrt(norm)
+        write (msg,*)"t1 n**2 n"
+        call print_norm(t1f,int(ov,kind=8),norm,.true.)
+        print *,msg,norm,sqrt(norm)
 
+        write (msg,*)"z1 n**2 n"
+        call print_norm(m1,int(ov,kind=8),norm,.true.)
+        print *,msg,norm,sqrt(norm)
+
+        write (msg,*)"t2 n**2 n pn**2"
+        call print_norm(t2f,int(o2v2,kind=8),norm,.true.)
+        nrmt2 = 0.0E0_realk
+        nrmm2 = 0.0E0_realk
+        do j = 1, no
+          do b = 1, nv
+            do i = 1, no
+              do a = 1,nv
+                if(a+(i-1)*nv<=b+(j-1)*nv)then
+                  nrmt2 = nrmt2 + t2f(a,i,b,j)**2
+                  nrmm2 = nrmm2 + m2(a,i,b,j)**2
+                endif
+              enddo
+            enddo
+          enddo
+        enddo
+        print *,msg,norm,sqrt(norm),nrmt2
+        
+        write (msg,*)"z2 n**2 n pn**2 pn"
+        call print_norm(m2,int(o2v2,kind=8),norm,.true.)
+        print *,msg,norm,sqrt(norm),nrmm2,sqrt(nrmm2)
+     endif
 
      call mem_alloc(w1,nb**4)
      call mem_alloc(w2,max(no,nv)*nb**3)
@@ -1901,48 +1930,19 @@ module cc_debug_routines_module
      call array_reorder_4d(-1.0E0_realk,t2f,nv,no,nv,no,[1,4,3,2],1.0E0_realk,u2)
 
 
-     write (msg,123)"u2   ",o2v2,sign(1.0E0_realk,u2(1))
-     call print_norm(u2,int(o2v2,kind=8),msg)
-
      !construct Ls from gs
 
      !govov
      call dcopy(nb**4,gao%val,1,w1,1)
      call successive_4ao_mo_trafo(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2)
-     !write (msg,123)"govov",o2v2,sign(1.0E0_realk,w1(1))
-     !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
      call dcopy(o2v2,w1,1,govov,1)
 
      call array_reorder_4d(2.0E0_realk,w1,no,nv,no,nv,[1,2,3,4],0.0E0_realk,Lovov)
      call array_reorder_4d(-1.0E0_realk,w1,no,nv,no,nv,[1,4,3,2],1.0E0_realk,Lovov)
 
-     !norm = 0.0E0_realk
-     !nrm2 = 0.0E0_realk
-     !ctr = 0
-     !do b = 1, nv
-     !  do j = 1, no
-     !    do a = 1,nv
-     !      do i = 1, no
-     !        if(i+(a-1)*no<=j+(b-1)*no)then
-     !          ctr  = ctr  + 1
-     !          norm = norm + Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv)**2
-     !          nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
-     !        endif
-     !      enddo
-     !    enddo
-     !  enddo
-     !enddo
-     !write (msg,*)"L n 2L",ctr
-     !print *,msg,sqrt(norm),sqrt(nrm2),abs(sqrt(norm)-sqrt(nrm2)),sign(1.0E0_realk,Lovov(1))
-
-     !write (msg,123)"Lovov",o2v2,sign(1.0E0_realk,Lovov(1))
-     !call print_norm(Lovov,int(o2v2,kind=8),msg)
-
      !gvoov
      call dcopy(nb**4,gao%val,1,w1,1)
      call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2)
-     !write (msg,*)"gvoov"
-     !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
      !Lvoov (a i j b) += gvoov (a i j b)
      call array_reorder_4d(2.0E0_realk,w1,nv,no,no,nv,[1,2,3,4],0.0E0_realk,Lvoov)
 
@@ -1953,86 +1953,50 @@ module cc_debug_routines_module
      !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
      !Lvoov (a i j b) += gvvoo (a b i j)
      call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,no,[1,4,3,2],1.0E0_realk,Lvoov)
-     write (msg,123)"Lvoov",o2v2,sign(1.0E0_realk,Lvoov(1))
-     call print_norm(Lvoov,int(o2v2,kind=8),msg)
 
      call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,[3,4,1,2],0.0E0_realk,goovv)
-     write (msg,123)"goovv",o2v2,sign(1.0E0_realk,goovv(1))
-     call print_norm(goovv,int(o2v2,kind=8),msg)
 
      !gvvov
      call dcopy(nb**4,gao%val,1,w1,1)
      call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2)
-     write (msg,123)"gvvov",ov*v2,sign(1.0E0_realk,w1(1))
-     call print_norm(w1,int(no*nv**3,kind=8),msg)
      call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,govvv)
 
      call array_reorder_4d(2.0E0_realk,w1,nv,nv,no,nv,[1,2,3,4],0.0E0_realk,Lvvov)
      call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,nv,[1,4,3,2],1.0E0_realk,Lvvov)
-     write (msg,123)"Lvvov",ov*v2,sign(1.0E0_realk,Lvvov(1))
-     call print_norm(Lvvov,int(ov*v2,kind=8),msg)
-     
 
      call array_reorder_4d(2.0E0_realk,w1,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,Lovvv)
      call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,nv,[3,2,1,4],1.0E0_realk,Lovvv)
-     do i=1,no
-       do j=1,nv
-         do a=1,nv
-           do b=1,nv
-             if(abs(Lovvv(i+(j-1)*no+(a-1)*ov+(b-1)*v2*no)-Lvvov(a+(b-1)*nv+(i-1)*v2+(j-1)*v2*no))>1.0E-11_realk)then
-               print *,"Lovvv and Lvvov wrong"
-               stop 0
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-
 
      !gvovv
      call dcopy(nb**4,gao%val,1,w1,1)
      call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xv,nv,yv,nv,w2)
-     write (msg,123)"gvovv",ov*v2,sign(1.0E0_realk,w1(1))
-     call print_norm(w1,int(no*nv**3,kind=8),msg)
      call dcopy(no*nv**3,w1,1,gvovv,1)
 
      !gooov
      call dcopy(nb**4,gao%val,1,w1,1)
      call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2)
-     write (msg,*)"gooov"
-     call print_norm(w1,int(nv*no**3,kind=8),msg)
 
      call dcopy(nv*no**3,w1,1,gooov,1)
 
      call array_reorder_4d(2.0E0_realk,w1,no,no,no,nv,[1,2,3,4],0.0E0_realk,Looov)
      call array_reorder_4d(-1.0E0_realk,w1,no,no,no,nv,[3,2,1,4],1.0E0_realk,Looov)
-     write (msg,123)"Looov",ov*o2,sign(1.0E0_realk,Looov(1))
-     call print_norm(Looov,int(no*o2,kind=8),msg)
 
      call array_reorder_4d(2.0E0_realk,w1,no,no,no,nv,[3,4,1,2],0.0E0_realk,Lovoo)
      call array_reorder_4d(-1.0E0_realk,w1,no,no,no,nv,[1,4,3,2],1.0E0_realk,Lovoo)
-     write (msg,123)"Lovoo",ov*o2,sign(1.0E0_realk,Looov(1))
-     call print_norm(Lovoo,int(no*o2,kind=8),msg)
 
      !gvooo
      call dcopy(nb**4,gao%val,1,w1,1)
      call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yo,no,w2)
-     write (msg,123)"gvooo",ov*o2,sign(1.0E0_realk,w1(1))
-     call print_norm(w1,int(nv*no**3,kind=8),msg)
      call dcopy(nv*no**3,w1,1,gvooo,1)
 
      !goooo
      call dcopy(nb**4,gao%val,1,w1,1)
      call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yo,no,w2)
-     write (msg,*)"goooo"
-     call print_norm(w1,int(o4,kind=8),msg)
      call dcopy(o4,w1,1,goooo,1)
 
      !gvvvv
      call dcopy(nb**4,gao%val,1,w1,1)
      call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xv,nv,yv,nv,w2)
-     write (msg,123)"gvvvv",v4,sign(1.0E0_realk,w1(1))
-     call print_norm(w1,int(v4,kind=8),msg)
      call dcopy(v4,w1,1,gvvvv,1)
 
      call mem_dealloc(w1)
@@ -2072,18 +2036,12 @@ module cc_debug_routines_module
 
      call mem_alloc(w2,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
      call mem_alloc(w3,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
-
-     write(msg,123)"Fia  ",ov,sign(1.0E0_realk,ovf(1))
-     call print_norm(ovf,int(ov,kind=8),msg)
-     write(msg,123)"Fij  ",ov,sign(1.0E0_realk,oof(1))
-     call print_norm(oof,int(o2,kind=8),msg)
-     write(msg,123)"Fab  ",ov,sign(1.0E0_realk,vvf(1))
-     call print_norm(vvf,int(v2,kind=8),msg)
-
      call mem_alloc(w4,max(max(ov3,o3v),o2v2))
 
+
      !The notation in this routine is according to Halkier et. al. J. chem. phys.,
-     !Vol 107. No.3 15 july 1997
+     !Vol 107. No.3 15 july 1997, and the order of terms is according to the
+     !DALTON program  for simple comparison of the terms
 
      !SINGLES EXPRESSIONS
      !*******************
@@ -2096,8 +2054,8 @@ module cc_debug_routines_module
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
      ! w3 : \sum_{fj} t^{df}_{kj} (d k f j) Lovvv (j f e a)
      call dgemm('n','n',ov,v2,ov,1.0E0_realk,w2,ov,Lovvv,ov,0.0E0_realk,w3,ov)
-     write(msg,*)"rho f 1"
-     call print_norm(w3,int(ov3,kind=8),msg)
+     !write(msg,*)"rho f 1"
+     !call print_norm(w3,int(ov3,kind=8),msg)
      ! part2
      ! sort t2f (e j f k) -[1,4,2,3]> t2f (e k j f)
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
@@ -2105,20 +2063,20 @@ module cc_debug_routines_module
      call array_reorder_4d(1.0E0_realk,govvv,no,nv,nv,nv,[1,4,2,3],0.0E0_realk,w1)
      ! w1 : \sum_{jf} t^{ef}_{jk}(e k j f) govvv_{jadf}(j f a d)
      call dgemm('n','n',ov,v2,ov,1.0E0_realk,w2,ov,w1,ov,0.0E0_realk,w4,ov)
-     write(msg,*)"rho f 2"
-     call print_norm(w4,int(ov3,kind=8),msg)
+     !write(msg,*)"rho f 2"
+     !call print_norm(w4,int(ov3,kind=8),msg)
      ! sort result w4(e k a d) -[4,2,1,3]+> w3 (d k e a)
      call array_reorder_4d(-1.0E0_realk,w4,nv,no,nv,nv,[4,2,1,3],1.0E0_realk,w3)
-     write(msg,*)"rho f 2 - added"
-     call print_norm(w3,int(ov3,kind=8),msg)
+     !write(msg,*)"rho f 2 - added"
+     !call print_norm(w3,int(ov3,kind=8),msg)
      ! part3
     
      ! sort t2f (d j f k) -[1,4,2,3]> t2f (d k j f)
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
      ! \sum_{jf} t^{df}_{jk} (d k j f)(still in w2) govvv(j f e a)
      call dgemm('n','n',ov,v2,ov,-1.0E0_realk,w2,ov,govvv,ov,1.0E0_realk,w3,ov)
-     write(msg,*)"rho f 3"
-     call print_norm(w3,int(ov3,kind=8),msg)
+     !write(msg,*)"rho f 3"
+     !call print_norm(w3,int(ov3,kind=8),msg)
 
      !\sum_{dke} \zeta^{d e}_{k i}(d k e , i)^T w3(d k e a)
      call dgemm('t','n',no,nv,v2*no,1.0E0_realk,m2,v2*no,w3,v2*no,0.0E0_realk,w2,no)
@@ -2142,8 +2100,11 @@ module cc_debug_routines_module
      !call print_norm(w2,int(ov,kind=8),msg)
      !rho1 += w2(i a)^T
      call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
-     write(msg,*)"rho1 after (LT21A)"
-     call print_norm(rho1,int(ov,kind=8),msg)
+   
+     if( DECinfo%PL > 2) then
+        write(msg,*)"rho1 after (LT21A)"
+        call print_norm(rho1,int(ov,kind=8),msg)
+     endif
 
      !rho g 1-3
      !-----
@@ -2189,8 +2150,10 @@ module cc_debug_routines_module
      !rho1 += w2(i a)^T
      call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
 
-     write(msg,*)"singles after loop" 
-     call print_norm(rho1,int(ov,kind=8),msg)
+     if( DECinfo%PL > 2) then
+        write(msg,*)"singles after loop" 
+        call print_norm(rho1,int(ov,kind=8),msg)
+     endif
 
 
      ! f-term
@@ -2212,9 +2175,10 @@ module cc_debug_routines_module
      !call print_norm(w3,int(ov,kind=8),msg)
      call mat_transpose(no,nv,1.0E0_realk,w3,1.0E0_realk,rho1)
 
-
-     write(msg,*)"rho 4.f(21G):" 
-     call print_norm(rho1,int(ov,kind=8),msg)
+     if( DECinfo%PL > 2) then
+        write(msg,*)"rho 4.f(21G):" 
+        call print_norm(rho1,int(ov,kind=8),msg)
+     endif
 
      !rho g
      !-----
@@ -2246,10 +2210,12 @@ module cc_debug_routines_module
      call daxpy(ov,1.0E0_realk,w2,1,w4,1)
      !write(msg,*)"4.g+2.e 21BF:"
      !call print_norm(w4,int(ov,kind=8),msg)
-     
      call daxpy(ov,-1.0E0_realk,w4,1,rho1,1)
-     write(msg,*)"rho 4.g +2.e(21BF):" 
-     call print_norm(rho1,int(ov,kind=8),msg)
+
+     if( DECinfo%PL > 2) then
+        write(msg,*)"rho 4.g +2.e(21BF):" 
+        call print_norm(rho1,int(ov,kind=8),msg)
+     endif
 
      !rho a
      !-----
@@ -2266,8 +2232,10 @@ module cc_debug_routines_module
      !rho1 += w2(i a)^T
      call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
      
-     write(msg,*)"rho a (11A):" 
-     call print_norm(rho1,int(ov,kind=8),msg)
+     if( DECinfo%PL > 2) then
+        write(msg,*)"rho a (11A):" 
+        call print_norm(rho1,int(ov,kind=8),msg)
+     endif
 
      !rho b
      !-----
@@ -2298,9 +2266,10 @@ module cc_debug_routines_module
      !call print_norm(w2,int(ov,kind=8),msg)
      call daxpy(ov,1.0E0_realk,w2,1,rho1,1)
 
-     write(msg,*)"rho b (11B):"
-     call print_norm(rho1,int(ov,kind=8),msg)
-
+     if( DECinfo%PL > 2) then
+        write(msg,*)"rho b (11B):"
+        call print_norm(rho1,int(ov,kind=8),msg)
+     endif
      
      !rho c - part2
      !-------------
@@ -2311,11 +2280,10 @@ module cc_debug_routines_module
      !rho1 += w2(i a)^T
      call mat_transpose(no,nv,-1.0E0_realk,w2,1.0E0_realk,rho1)
 
-     write(msg,*)"rho c - 2(LT21B)"
-     call print_norm(rho1,int(ov,kind=8),msg)
-
-
-
+     if( DECinfo%PL > 2) then
+        write(msg,*)"rho c - 2(LT21B)"
+        call print_norm(rho1,int(ov,kind=8),msg)
+     endif
 
      !rho d
      !-----
@@ -2328,8 +2296,8 @@ module cc_debug_routines_module
      call dgemm('n','n',nv,nv,o2*nv,1.0E0_realk,w1,nv,w2,nv*o2,0.0E0_realk,w3,nv)
      ! w1 : \sum_{e} w3 (ae) F_{ie} (i e)^T
      call dgemm('n','t',nv,no,nv,1.0E0_realk,w3,nv,ovf,no,0.0E0_realk,w2,nv)
-     write(msg,*)"rho d - 1"
-     call print_norm(w2,int(ov,kind=8),msg)
+     !write(msg,*)"rho d - 1"
+     !call print_norm(w2,int(ov,kind=8),msg)
      !rho1 += w2(i a)^T
      call daxpy(ov,-1.0E0_realk,w2,1,rho1,1)
      ! part2
@@ -2337,16 +2305,18 @@ module cc_debug_routines_module
      call dgemm('t','n',no,no,no*v2,1.0E0_realk,m2,v2*no,t2f,v2*no,0.0E0_realk,w3,no)
      ! w1 : \sum_{e} w3 (il) F_{la} (l a)
      call dgemm('n','n',no,nv,no,1.0E0_realk,w3,no,ovf,no,0.0E0_realk,w2,no)
-     write(msg,*)"rho d - 2"
-     call print_norm(w2,int(ov,kind=8),msg)
+     !write(msg,*)"rho d - 2"
+     !call print_norm(w2,int(ov,kind=8),msg)
      !rho1 += w2(i a)^T
      call mat_transpose(no,nv,-1.0E0_realk,w2,1.0E0_realk,rho1)
-     write(msg,*)"rho d(LT2EFM)"
-     call print_norm(rho1,int(ov,kind=8),msg)
-      
 
-     write(msg,*)"singles end" 
-     call print_norm(w4,int(ov,kind=8),msg)
+     if( DECinfo%PL > 2) then
+        write(msg,*)"rho d(LT2EFM)"
+        call print_norm(rho1,int(ov,kind=8),msg)
+
+        write(msg,*)"singles end" 
+        call print_norm(rho1,int(ov,kind=8),msg)
+     endif
 
      call mem_dealloc(w4)
      
@@ -2363,35 +2333,23 @@ module cc_debug_routines_module
      call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[2,4,1,3],0.0E0_realk,w2)
      ! \sum_{cd} \zeta{cd}_{ij} (ij cd) gvvvv_{cadb} (cd ab)
      call dgemm('n','n',o2,v2,v2,1.0E0_realk,w2,o2,w1,v2,0.0E0_realk,w3,o2)
-     write(msg,*)"rho B"
-     call print_norm(w3,int(o2v2,kind=8),msg)
+     !write(msg,*)"rho B"
+     !call print_norm(w3,int(o2v2,kind=8),msg)
      ! order w3(i j a b) and add to residual rho2 (a i b j)
      call array_reorder_4d(0.5E0_realk,w3,no,no,nv,nv,[3,1,4,2],1.0E0_realk,rho2)
 
      !rho 2. H part 
      ! \sum_{c} \zeta_{j}^{c} (c,j)^T Lvvov_{cbia} (cbia)
      call dgemm('t','n',no,v2*no,nv,1.0E0_realk,m1,nv,Lvvov,nv,0.0E0_realk,w1,no)
-     write(msg,*)"rho H - 2"
-     call print_norm(w1,int(o2v2,kind=8),msg)
+     !write(msg,*)"rho H - 2"
+     !call print_norm(w1,int(o2v2,kind=8),msg)
      ! order w1(j b i a) and add to residual rho2 (a i b j)
      call array_reorder_4d(1.0E0_realk,w1,no,nv,no,nv,[4,3,2,1],1.0E0_realk,rho2)
-     norm = 0.0E0_realk
-     nrm2 = 0.0E0_realk
-     ctr = 0
-     do b = 1, nv
-       do j = 1, no
-         do a = 1,nv
-           do i = 1, no
-             if(a+(i-1)*nv>=b+(j-1)*nv)then
-               ctr  = ctr  + 1
-               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-     write (msg,*)"H(B-TERM)",ctr
-     print *,msg,sqrt(norm)
+
+     if( DECinfo%PL > 2) then
+        write (msg,*)"H(B-TERM)"
+        print *,msg,symmetrized_packed_1norm(rho2,nv,no)
+     endif
 
      !rho E
      !----- 
@@ -2409,23 +2367,11 @@ module cc_debug_routines_module
      !call print_norm(w1,int(o2v2,kind=8),msg)
      ! order w1(i j  a b) and add to residual rho2 (a i b j)
      call array_reorder_4d(1.0E0_realk,w1,no,no,nv,nv,[3,1,4,2],1.0E0_realk,rho2)
-     norm = 0.0E0_realk
-     nrm2 = 0.0E0_realk
-     ctr = 0
-     do b = 1, nv
-       do j = 1, no
-         do a = 1,nv
-           do i = 1, no
-             if(a+(i-1)*nv<=b+(j-1)*nv)then
-               ctr  = ctr  + 1
-               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-     write (msg,*)"E(AM-TERM)",ctr
-     print *,msg,sqrt(norm)
+
+     if( DECinfo%PL > 2) then
+        write (msg,*)"E(AM-TERM)"
+        print *,msg,symmetrized_packed_1norm(rho2,nv,no)
+     endif
 
 
      !rho F
@@ -2437,8 +2383,8 @@ module cc_debug_routines_module
      call array_reorder_4d(1.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],0.0E0_realk,w2)
      ! \sum_{n} Lovov_{ianb} (aibn) w1 (j n)^T
      call dgemm('n','t',v2*no,no,no,1.0E0_realk,w2,v2*no,w1,no,0.0E0_realk,w3,v2*no)
-     write(msg,*)"rho F - 1"
-     call print_norm(w3,int(o2v2,kind=8),msg)
+     !write(msg,*)"rho F - 1"
+     !call print_norm(w3,int(o2v2,kind=8),msg)
      !rho2 += w1(a i b j)
      call daxpy(o2v2,-1.0E0_realk,w3,1,rho2,1)
      !part2
@@ -2456,23 +2402,11 @@ module cc_debug_routines_module
      !call print_norm(w1,int(o2v2,kind=8),msg)
      !rho2 += w1(a i b j)
      call daxpy(o2v2,-1.0E0_realk,w1,1,rho2,1)
-     norm = 0.0E0_realk
-     nrm2 = 0.0E0_realk
-     ctr = 0
-     do b = 1, nv
-       do j = 1, no
-         do a = 1,nv
-           do i = 1, no
-             if(a+(i-1)*nv<=b+(j-1)*nv)then
-               ctr  = ctr  + 1
-               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-     write (msg,*)"F(EM-TRM)",ctr
-     print *,msg,sqrt(norm)
+
+     if( DECinfo%PL > 2) then
+        write (msg,*)"F(EM-TRM)"
+        print *,msg,symmetrized_packed_1norm(rho2,nv,no)
+     endif
 
 
      !rho G
@@ -2488,8 +2422,8 @@ module cc_debug_routines_module
      call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w1)
      ! \sum_{e} \zeta^{ae}_{ij} (a i j e) w3 (e a)
      call dgemm('n','n',o2*nv,nv,nv,1.0E0_realk,w1,o2*nv,w3,nv,0.0E0_realk,w2,o2*nv)
-     write(msg,*)"rho G - 1"
-     call print_norm(w2,int(o2v2,kind=8),msg)
+     !write(msg,*)"rho G - 1"
+     !call print_norm(w2,int(o2v2,kind=8),msg)
      ! order w1(a i j b) and add to residual rho2 (a i b j)
      call array_reorder_4d(1.0E0_realk,w2,nv,no,no,nv,[1,2,4,3],1.0E0_realk,rho2)
      !part2
@@ -2503,26 +2437,15 @@ module cc_debug_routines_module
      call dgemm('n','n',no,no,v2*no,1.0E0_realk,w1,no,w2,v2*no,1.0E0_realk,w3,no)
      ! \sum_{n} \zeta^{ab}_{in} (a i b n) w3 (j n)^T
      call dgemm('n','t',v2*no,no,no,1.0E0_realk,m2,v2*no,w3,no,0.0E0_realk,w2,v2*no)
-     write(msg,*)"rho G - 2"
-     call print_norm(w2,int(o2v2,kind=8),msg)
+     !write(msg,*)"rho G - 2"
+     !call print_norm(w2,int(o2v2,kind=8),msg)
      ! order w1(a i b j) and add to residual rho2 (a i b j)
      call array_reorder_4d(-1.0E0_realk,w2,nv,no,nv,no,[1,2,3,4],1.0E0_realk,rho2)
-     norm = 0.0E0_realk
-     ctr = 0
-     do b = 1, nv
-       do j = 1, no
-         do a = 1,nv
-           do i = 1, no
-             if(a+(i-1)*nv<=b+(j-1)*nv)then
-               ctr  = ctr  + 1
-               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-     write (msg,*)"G(22E-TERM)",ctr
-     print *,msg,sqrt(norm)
+
+     if( DECinfo%PL > 2) then
+        write (msg,*)"G(22E-TERM)"
+        print *,msg,symmetrized_packed_1norm(rho2,nv,no)
+     endif
 
 
      !rho A
@@ -2543,22 +2466,11 @@ module cc_debug_routines_module
      !call print_norm(w3,int(o2v2,kind=8),msg)
      ! order and add (a b i j) to residual rho2 (a i b j)
      call array_reorder_4d(1.0E0_realk,w3,nv,nv,no,no,[1,3,2,4],1.0E0_realk,rho2)
-     norm = 0.0E0_realk
-     ctr = 0
-     do b = 1, nv
-       do j = 1, no
-         do a = 1,nv
-           do i = 1, no
-             if(a+(i-1)*nv<=b+(j-1)*nv)then
-               ctr  = ctr  + 1
-               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-     write (msg,*)"A(22A-TERM)",ctr
-     print *,msg,sqrt(norm)
+
+     if( DECinfo%PL > 2) then
+        write (msg,*)"A(22A-TERM)"
+        print *,msg,symmetrized_packed_1norm(rho2,nv,no)
+     endif
 
      !rho D
      !-----
@@ -2576,24 +2488,11 @@ module cc_debug_routines_module
      call array_reorder_4d(1.0E0_realk,w2,nv,no,no,nv,[1,2,4,3],1.0E0_realk,rho2)
      ! order w1(a j i b) and add to residual rho2 (a i b j)
      call array_reorder_4d(-0.5E0_realk,w2,nv,no,no,nv,[1,3,4,2],1.0E0_realk,rho2)
-     norm = 0.0E0_realk
-     ctr = 0
-     do b = 1, nv
-       do j = 1, no
-         do a = 1,nv
-           do i = 1, no
-             if(a+(i-1)*nv<=b+(j-1)*nv)then
-               ctr  = ctr  + 1
-               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-     write (msg,*)"D(22D-TERM)",ctr
-     print *,msg,sqrt(norm)
 
-
+     if( DECinfo%PL > 2) then
+        write (msg,*)"D(22D-TERM)"
+        print *,msg,symmetrized_packed_1norm(rho2,nv,no)
+     endif
 
      !rho C
      !-----
@@ -2614,23 +2513,11 @@ module cc_debug_routines_module
      !call print_norm(w1,int(o2v2,kind=8),msg)
      ! order w1(a j b i) and add to residual rho2 (a i b j)
      call array_reorder_4d(-0.5E0_realk,w1,nv,no,nv,no,[1,4,3,2],1.0E0_realk,rho2)
-     norm = 0.0E0_realk
-     ctr = 0
-     do b = 1, nv
-       do j = 1, no
-         do a = 1,nv
-           do i = 1, no
-             if(a+(i-1)*nv<=b+(j-1)*nv)then
-               ctr  = ctr  + 1
-               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-     write (msg,*)"C(22C-TERM)",ctr
-     print *,msg,sqrt(norm)
 
+     if( DECinfo%PL > 2) then
+        write (msg,*)"C(22C-TERM)"
+        print *,msg,symmetrized_packed_1norm(rho2,nv,no)
+     endif
 
      !rho H
      !-----
@@ -2644,60 +2531,40 @@ module cc_debug_routines_module
          enddo
        enddo
      enddo
-     norm = 0.0E0_realk
-     nrm2 = 0.0E0_realk
-     ctr = 0
-     do b = 1, nv
-       do j = 1, no
-         do a = 1,nv
-           do i = 1, no
-             if(a+(i-1)*nv<=b+(j-1)*nv)then
-               ctr  = ctr  + 1
-               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-     write (msg,*)"H(A12-TERM)",ctr
-     print *,msg,sqrt(norm)
+
+     if( DECinfo%PL > 2) then
+        write (msg,*)"H(A12-TERM)"
+        print *,msg,symmetrized_packed_1norm(rho2,nv,no)
+     endif
 
 
      !\sum_{k} Lovoo_{jbik} \zeta_{k}^{a} (a k)^T
      call dgemm('n','t',o2*nv,nv,no,1.0E0_realk,Lovoo,o2*nv,m1,nv,0.0E0_realk,w1,o2*nv)
      ! order w1(j b i a) and add to residual rho2 (a i b j)
      call array_reorder_4d(-1.0E0_realk,w1,no,nv,no,nv,[4,3,2,1],1.0E0_realk,rho2)
-     norm = 0.0E0_realk
-     ctr = 0
-     do b = 1, nv
-       do j = 1, no
-         do a = 1,nv
-           do i = 1, no
-             if(a+(i-1)*nv<=b+(j-1)*nv)then
-               ctr  = ctr  + 1
-               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
-             endif
-           enddo
-         enddo
-       enddo
-     enddo
-     write (msg,*)"H(C12-TERM)",ctr
-     print *,msg,sqrt(norm)
 
-     
+     if( DECinfo%PL > 2) then
+       write (msg,*)"H(C12-TERM)"
+       print *,msg,symmetrized_packed_1norm(rho2,nv,no)
+     endif
 
-     !permute rho 2
+
+     !END OF CONTRIBUTIONS
+     !********************
+
+
+     !PERMUTE RHO 2
      call array_reorder_4d(1.0E0_realk,rho2,nv,no,nv,no,[1,2,3,4],0.0E0_realk,w1)
      call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[3,4,1,2],1.0E0_realk,rho2)
-     write(msg,*)"rho end"
-     call print_norm(rho2,int(o2v2,kind=8),msg)
 
+     if( DECinfo%PL > 2) then
+        write(msg,*)"rho end"
+        call print_norm(rho2,int(o2v2,kind=8),msg)
+     endif
+
+     !ADD RIGHT HAND SIDES
      call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
      call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
-
-
-
-
 
      call mem_dealloc(govov)   
      call mem_dealloc(goovv)   
@@ -2707,7 +2574,7 @@ module cc_debug_routines_module
      call mem_dealloc(Lvvov)
      call mem_dealloc(gvovv)
      call mem_dealloc(govvv)
-     
+    
      call mem_dealloc(Looov)   
      call mem_dealloc(Lovoo)   
      call mem_dealloc(gvooo)   
@@ -2728,6 +2595,32 @@ module cc_debug_routines_module
      call mem_dealloc(w3)
 
     end subroutine get_ccsd_multipliers_simple
+
+    !This function calculates the norm according to how it should be compared to
+    !DALTON, because they construct the symmetrization for each term
+    !individually and store the packed residual, furthermore they only print the
+    !square of the 2 norm
+    function symmetrized_packed_1norm(m,nv,no)result(nrm)
+      implicit none
+      integer,intent(in)     :: nv,no
+      real(realk),intent(in) :: m(nv,no,nv,no)
+      integer                :: a,i,b,j
+      real(realk)            :: nrm
+
+      nrm = 0.0E0_realk
+      do b = 1, nv
+        do j = 1, no
+          do a = 1,nv
+            do i = 1, no
+              if(a+(i-1)*nv<=b+(j-1)*nv)then
+                nrm = nrm + (m(a,i,b,j) + m(b,j,a,i) )**2
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
+
+    end function symmetrized_packed_1norm
      
     subroutine successive_4ao_mo_trafo(ao,WXYZ,WW,w,XX,x,YY,y,ZZ,z,WRKWXYZ)
       implicit none
