@@ -1228,6 +1228,8 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                        ENDIF
                     ENDIF
                     NUMNUMOLD = NUMNUM
+                    !just in case NUMBER_OF_LINES was wrong
+                    IF(KNTORB.EQ.nOrbital)EXIT
                  ENDDO
               ENDIF
            ENDIF
