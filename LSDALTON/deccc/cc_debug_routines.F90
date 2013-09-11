@@ -1,0 +1,2747 @@
+!@file:
+! This file should contain cc debug routines, noddy codes etc which we
+! should be able to call with a keyword
+!> \author Patrick Ettenhuber
+!> \Date September 2013
+
+module cc_debug_routines_module
+   use precision
+   use typedef
+   use typedeftype
+   use dec_typedef_module
+   use tensor_type_def_module
+ 
+
+   ! DEC DEPENDENCIES (within deccc directory)   
+   ! *****************************************
+   use crop_tools_module
+   use array2_simple_operations
+   use array4_simple_operations
+   use ri_simple_operations
+   use mp2_module
+   use ccintegrals
+   use ccsd_module
+   use ccsdpt_module
+   use orbital_operations
+   use rpa_module
+   
+
+   contains
+   subroutine ccsolver_energy_multipliers(MyMolecule,ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+        &mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy)
+
+     implicit none
+
+     !> full molecule information
+     type(fullmolecule), intent(in) :: MyMolecule
+     !> Number of occupied orbitals in full molecule/fragment AOS
+     integer, intent(in) :: nocc
+     !> Number of virtual orbitals in full molecule/fragment AOS
+     integer, intent(in) :: nvirt
+     !> Number of basis functions in full molecule/atomic extent
+     integer, intent(in) :: nbasis
+     !> Fock matrix in AO basis for fragment or full molecule
+     real(realk), dimension(nbasis,nbasis), intent(in) :: fock_f
+     !> Occupied MO coefficients  for fragment/full molecule
+     real(realk), dimension(nbasis,nocc), intent(inout) :: ypo_f
+     !> Virtual MO coefficients  for fragment/full molecule
+     real(realk), dimension(nbasis,nvirt), intent(inout) :: ypv_f
+     !> Occ-occ block of Fock matrix in MO basis
+     real(realk), dimension(nocc,nocc), intent(inout) :: ppfock_f
+     !> Virt-virt block of Fock matrix in MO basis
+     real(realk), dimension(nvirt,nvirt), intent(inout) :: qqfock_f
+     !> Is this a fragment job (true) or a full molecular calculation (false)
+     logical, intent(in) :: fragment_job
+     !> LS item information
+     type(lsitem), intent(inout) :: mylsitem
+     !> How much to print? ( ccPrintLevel>0 --> print info stuff)
+     integer, intent(in) :: ccPrintLevel
+     !> Coupled cluster energy for fragment/full molecule
+     real(realk),intent(inout) :: ccenergy!,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
+     type(array4) :: t2_final,VOVO!,ccsdpt_t2
+     type(array2) :: t1_final!,ccsdpt_t1
+     !> stuff needed for pair analysis
+     type(array2) :: ccsd_mat_tot,ccsd_mat_tmp
+     integer :: natoms,ncore,nocc_tot,p,pdx,i
+     real(realk), pointer :: distance_table(:,:)
+     type(ccorbital), pointer :: occ_orbitals(:)
+     type(ccorbital), pointer :: unocc_orbitals(:)
+     logical, pointer :: orbitals_assigned(:)
+     type(array4) :: mult
+
+     
+     mult = array4_init([nvirt,nocc,nvirt,nocc])
+
+     print *,"testing"
+     call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+        & t1_final,t2_final,VOVO,.false.)
+
+
+
+
+     call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+        & t1_final,t2_final,VOVO,.false.,multipliers = mult)
+
+
+     ! Free arrays
+     call array2_free(t1_final)
+     call array4_free(t2_final)
+     call array4_free(VOVO)
+
+   end subroutine ccsolver_energy_multipliers
+
+   !> \author Marcin Ziolkowski (modified by Kasper Kristensen and Patrick
+   !  Ettenhuber)
+   subroutine ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+        & t1_final,t2_final,VOVO,longrange_singles,multipliers)
+
+     implicit none
+
+     !> Number of occupied orbitals in full molecule/fragment AOS
+     integer, intent(in) :: nocc
+     !> Number of virtual orbitals in full molecule/fragment AOS
+     integer, intent(in) :: nvirt
+     !> Number of basis functions in full molecule/atomic extent
+     integer, intent(in) :: nbasis
+     !> Fock matrix in AO basis for fragment or full molecule
+     real(realk), dimension(nbasis,nbasis), intent(in) :: fock_f
+     !> Occupied MO coefficients for fragment/full molecule
+     real(realk), dimension(nbasis,nocc), intent(in) :: ypo_f
+     !> Virtual MO coefficients for fragment/full molecule
+     real(realk), dimension(nbasis,nvirt), intent(in) :: ypv_f
+     !> Occ-occ block of Fock matrix in MO basis
+     real(realk), dimension(nocc,nocc), intent(in) :: ppfock_f
+     !> Virt-virt block of Fock matrix in MO basis
+     real(realk), dimension(nvirt,nvirt), intent(in) :: qqfock_f
+     real(realk),pointer :: dens(:,:)
+     !> Is this a fragment job (true) or a full molecular calculation (false)
+     logical, intent(in) :: fragment_job
+     !> LS item information
+     type(lsitem), intent(inout) :: mylsitem
+     !> How much to print? ( ccPrintLevel>0 --> print info stuff)
+     integer, intent(in) :: ccPrintLevel
+     !> Coupled cluster energy for fragment/full molecule
+     real(realk),intent(inout) :: ccenergy
+     !> Final singles amplitudes
+     type(array2),intent(inout) :: t1_final
+     !> Final doubles amplitudes
+     type(array4),intent(inout) :: t2_final
+     !> Two electron integrals (a i | b j) stored as (a,i,b,j)
+     type(array4),intent(inout) :: VOVO
+    
+     type(array4),optional,intent(inout) :: multipliers
+     !> Include long-range singles effects using singles amplitudes
+     !> from previous fragment calculations.
+     !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
+     !> (from previous calculations) must be stored in t1_final at input!
+     logical,intent(in) :: longrange_singles
+     real(realk),pointer :: yho_d(:,:), yhv_d(:,:),ypo_d(:,:),ypv_d(:,:),focc(:),fvirt(:)
+     real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:), Uocc(:,:), Uvirt(:,:)
+
+     integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims
+     integer, dimension(4) :: ampl4_dims
+     type(array2) :: fock,ypo,ypv,yho,yhv
+     type(array2) :: ppfock,qqfock,pqfock,qpfock
+     type(array4) :: gao,gmo,aibj,iajb
+     type(array4), pointer :: t2(:),omega2(:)
+     type(array2), pointer :: t1(:),omega1(:)
+     type(array2) :: omega1_opt, t1_opt, omega1_prec
+     type(array2) :: xocc,yocc,xvirt,yvirt,h1
+     real(realk) :: two_norm_total, one_norm_total, one_norm1, one_norm2, &
+          prev_norm
+     real(realk), pointer :: B(:,:),c(:)
+     integer :: iter,last_iter,i,j,k,l
+     logical :: crop_ok,break_iterations,get_mult
+     type(array4) :: omega2_opt, t2_opt, omega2_prec, u
+     type(array2) :: ifock,delta_fock,fockguess
+     type(ri) :: l_ao
+     type(array2) :: ppfock_prec, qqfock_prec,t1tmp
+     type(array4) :: Lmo
+     real(realk) :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
+     real(realk) :: iter_cpu,iter_wall, sosex
+     character(18) :: save_to,keep
+     character(ARR_MSG_LEN) :: msg
+     integer :: ii,aa
+
+
+     call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
+     if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+     get_mult = present(multipliers)
+
+     ! Sanity check 1: Number of orbitals
+     if( (nvirt < 1) .or. (nocc < 1) ) then
+        write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
+        write(DECinfo%output,*) 'Number of virtual  orbitals = ', nvirt
+        call lsquit('ccsolver: Empty occupied or virtual space!',DECinfo%output)
+     endif
+
+     ! Sanity check 2: Singles amplitudes initiated appropriately
+     if(longrange_singles) then
+        if(.not. associated(t1_final%val)) then
+           call lsquit('ccsolver: Long range singles corrections requested, &
+                & but t1_final does not contain existing amplitudes!',DECinfo%output)
+        end if
+     end if
+
+
+
+     ! title
+     Call print_ccjob_header(ccPrintLevel,fragment_job,nbasis,nocc,nvirt)
+
+     ! dimension vectors
+     occ_dims   = [nbasis,nocc]
+     virt_dims  = [nbasis,nvirt]
+     ao2_dims   = [nbasis,nbasis]
+     ampl4_dims = [nvirt,nocc,nvirt,nocc]
+     ampl2_dims = [nvirt,nocc]
+
+     ! go to a (pseudo) canonical basis
+     call mem_alloc(focc,nocc)
+     call mem_alloc(fvirt,nvirt)
+     call mem_alloc(ypo_d,nbasis,nocc)
+     call mem_alloc(ypv_d,nbasis,nvirt)
+     call mem_alloc(yho_d,nbasis,nocc)
+     call mem_alloc(yhv_d,nbasis,nvirt)
+     call mem_alloc(ppfock_d,nocc,nocc)
+     call mem_alloc(qqfock_d,nvirt,nvirt)
+     call mem_alloc(Uocc,nocc,nocc)
+     call mem_alloc(Uvirt,nvirt,nvirt)
+     if(DECinfo%CCSDpreventcanonical)then
+       !nocc diagonalization
+       ypo_d   = ypo_f
+       ypv_d   = ypv_f
+       ppfock_d = ppfock_f
+       qqfock_d = qqfock_f
+       Uocc=0.0E0_realk
+       Uvirt=0.0E0_realk
+       do ii=1,nocc
+         Uocc(ii,ii) = 1.0E0_realk
+       enddo
+       do aa=1,nvirt
+         Uvirt(aa,aa) = 1.0E0_realk
+       enddo
+     else
+       call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock_f,&
+            &qqfock_f,ypo_f,ypv_f,ypo_d,ypv_d,Uocc,Uvirt,focc,fvirt)
+       ppfock_d = 0.0E0_realk
+       qqfock_d = 0.0E0_realk
+       do ii=1,nocc
+         ppfock_d(ii,ii) = focc(ii)
+       enddo
+       do aa=1,nvirt
+         qqfock_d(aa,aa) = fvirt(aa)
+       enddo
+       if(get_mult)then
+         if(DECinfo%use_singles)then
+           call ccsolver_local_can_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt,t1_final%val)
+         else
+           call ccsolver_local_can_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt)
+         endif
+       endif
+     endif
+     call mem_dealloc(focc)
+     call mem_dealloc(fvirt)
+
+     ! Copy MO coeffcients. It is very convenient to store them twice to handle transformation
+     ! (including transposed MO matrices) efficiently. 
+     yho_d = ypo_d
+     yhv_d = ypv_d
+     !print *,"occ",ypo_d
+     !print *,"virt",ypv_d
+
+     ! create transformation matrices in array form
+     ypo = array2_init(occ_dims,ypo_d)
+     ypv = array2_init(virt_dims,ypv_d)
+     yho = array2_init(occ_dims,yho_d)
+     yhv = array2_init(virt_dims,yhv_d)
+     fock = array2_init(ao2_dims,fock_f)
+
+     call mem_dealloc(ypo_d)
+     call mem_dealloc(ypv_d)
+     call mem_dealloc(yho_d)
+     call mem_dealloc(yhv_d)
+
+
+
+     ! Get Fock matrix correction (for fragment and/or frozen core)
+     ! ************************************************************
+     ! Full molecule/frozen core: The correction corresponds to difference between actual Fock matrix
+     !                            and Fock matrix where the density is made from only valence orbitals.
+     ! Fragment: The correction correspond to the difference between actual Fock matrix
+     !           and Fock matrix calculated from a "fragment density" determined from
+     !           fragment's occupied molecular orbitals (which for frozen core includes only valence
+     !           orbitals).
+
+     ! Density corresponding to input MOs
+     call mem_alloc(dens,nbasis,nbasis)
+     call get_density_from_occ_orbitals(nbasis,nocc,ypo%val,dens)
+
+     call mem_dealloc(dens)
+
+     ! get two-electron integrals in ao
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') 'debug :: calculating AO integrals'
+
+     ! Only calculate full 4-dimensional AO integrals for old/debug mode
+     call get_full_eri(mylsitem,nbasis,gao)
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,/)') 'debug :: AO integrals done'
+
+     ! Simulate two-electron integrals (debug mode)
+     if(DECinfo%simulate_eri .or. DECinfo%fock_with_ri) then
+        if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') &
+             'debug :: calculate RI intermediate - temporary'
+        l_ao = get_ao_ri_intermediate(mylsitem)
+        if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') &
+             'debug :: intermediates done'
+     end if
+
+     if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
+     if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+     ! special MP2 things
+     MP2Special : if(DECinfo%ccModel == 1 .or. DECinfo%ccModel == 5) then
+
+        write(DECinfo%output,*)
+        write(DECinfo%output,*) ' ********************  WARNING  **********************'
+        write(DECinfo%output,*) 'CCsolver is called for MP2 model.'
+        write(DECinfo%output,*) 'This will work fine but it is recommended to use the non-iterative'
+        write(DECinfo%output,*) 'MP2_integrals_and_amplitudes_workhorse to use get the MP2 amplitudes'
+        write(DECinfo%output,*)
+        call get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,ypv,ypo,gmo)
+
+        ! Construct L: L_{bjai} = 2*g_{bjai} - g_{ajbi}
+        Lmo = getL_simple_from_gmo(gmo)
+
+        ppfock = array2_similarity_transformation(ypo,fock,yho,[nocc,nocc])
+        qqfock = array2_similarity_transformation(ypv,fock,yhv,[nvirt,nvirt])
+
+        if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug :: gmo(vovo) norm  : ',gmo*gmo
+     end if MP2Special
+
+
+     ! get fock matrices for preconditioning
+     Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
+        if(DECinfo%precondition_with_full) then
+           ppfock_prec = array2_init([nocc,nocc],ppfock_d)
+           qqfock_prec = array2_init([nvirt,nvirt],qqfock_d)
+        else
+           ppfock_prec = array2_similarity_transformation(ypo,fock,yho,[nocc,nocc])
+           qqfock_prec = array2_similarity_transformation(ypv,fock,yhv,[nvirt,nvirt])
+        end if
+     end if Preconditioner
+     call mem_dealloc(ppfock_d)
+     call mem_dealloc(qqfock_d)
+
+
+     ! allocate things
+     if(DECinfo%use_singles) then
+        call mem_alloc(t1,DECinfo%ccMaxIter)
+        call mem_alloc(omega1,DECinfo%ccMaxIter)
+     end if
+     call mem_alloc(t2,DECinfo%ccMaxIter)
+     call mem_alloc(omega2,DECinfo%ccMaxIter)
+
+     ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
+     if(DECinfo%ccModel /= 1) then
+        xocc = array2_init(occ_dims)
+        yocc = array2_init(occ_dims)
+        xvirt = array2_init(virt_dims)
+        yvirt = array2_init(virt_dims)
+        h1 = array2_init_plain(ao2_dims)
+        CALL II_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsitem%SETTING,&
+             & h1%val,nbasis,nbasis,AORdefault,AORdefault)
+     end if
+
+
+     call mem_alloc(B,DECinfo%ccMaxIter,DECinfo%ccMaxIter)
+     call mem_alloc(c,DECinfo%ccMaxIter)
+
+     ! readme : the iteration sequence is universal and may be used for all
+     !          iterative cc models (linear or non-linear) and is
+     !          semi-independent on the storage of vectors (allocation and
+     !          deallocation, etc)
+
+     ! iterate
+     break_iterations = .false.
+     crop_ok = .false.
+     prev_norm = 1.0E6_realk
+
+
+
+
+     print *
+     print *, '### Starting CC iterations'
+     print *, '### ----------------------'
+     print '(1X,a)',  '###  Iteration     Residual norm          CC energy'
+
+     write(DECinfo%output,*)
+     write(DECinfo%output,*) '### Starting CC iterations'
+     write(DECinfo%output,*) '### ----------------------'
+     write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm          CC energy'
+
+     CCIteration : do iter=1,DECinfo%ccMaxIter
+
+        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+        call LSTIMER('START',iter_cpu,iter_wall,DECinfo%output)
+
+        ! remove old vectors
+        RemoveOldVectors : if(iter > DECinfo%ccMaxDIIS) then
+
+           if(DECinfo%cc_driver_debug) then
+              write(DECinfo%output,'(a,i4)') ' debug :: vector to delete : ',iter-DECinfo%ccMaxDIIS
+           end if
+
+           if(DECinfo%use_singles) then
+              call array2_free(t1(iter-DECinfo%ccMaxDIIS))
+              Call array2_free(omega1(iter-DECinfo%ccMaxDIIS))
+           end if
+           call array4_free(t2(iter-DECinfo%ccMaxDIIS))
+           call array4_free(omega2(iter-DECinfo%ccMaxDIIS))
+        end if RemoveOldVectors
+
+
+        if(iter==1.and.DECinfo%use_singles .and. get_mult) then
+           call getT1transformation(t1_final,xocc,xvirt,yocc,yvirt, &
+           ypo,ypv,yho,yhv)
+        endif
+
+
+        ! get new amplitude vectors
+        GetGuessVectors : if(iter == 1) then
+           if(DECinfo%use_singles)then
+              if(get_mult)then
+                fockguess=array2_init(ao2_dims)
+                call Get_AOt1Fock(mylsitem,t1_final,fockguess,nocc,nvirt,nbasis,ypo,yho,yhv)
+                t1tmp = array2_similarity_transformation(xocc,fockguess,yvirt,[nocc,nvirt]) 
+                call array2_free(fockguess)
+                t1(iter) = array2_init([nvirt,nocc])
+                call mat_transpose(nocc,nvirt,1.0E0_realk,t1tmp%val,0.0E0_realk,t1(iter)%val)
+                call array2_free(t1tmp)
+                call dscal(nocc*nvirt,2.0E0_realk,t1(iter)%val,1)
+              else
+                t1(iter) = array2_init(ampl2_dims)
+              endif
+           endif
+           if(DECinfo%array4OnFile) then
+              ! Initialize t2(iter) using storing type 2
+              t2(iter) = array4_init(ampl4_dims,2,.true.)
+           else
+              if(get_mult)then
+                iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
+                t2(iter) = array4_init(ampl4_dims)
+                call array4_reorder(iajb,[2,1,4,3])
+                call daxpy(nocc**2*nvirt**2,4.0E0_realk,iajb%val,1,t2(iter)%val,1)
+                call array4_reorder(iajb,[1,4,3,2])
+                call daxpy(nocc**2*nvirt**2,-2.0E0_realk,iajb%val,1,t2(iter)%val,1)
+                call array4_reorder(iajb,[4,1,2,3])
+                call array4_free(iajb)
+              else
+                t2(iter) = array4_init(ampl4_dims)
+              endif
+           end if
+        end if GetGuessVectors
+
+        ! Initialize residual vectors
+        if(DECinfo%use_singles) omega1(iter) = array2_init(ampl2_dims)
+        if(DECinfo%array4OnFile) then
+           ! KK, initialize omega2(iter) using storing type 2
+           omega2(iter) = array4_init(ampl4_dims,2,.true.)
+        else
+           omega2(iter) = array4_init(ampl4_dims)
+        endif
+
+        ! get singles
+        
+        T1Related : if(DECinfo%use_singles) then
+
+           ! get the T1 transformation matrices
+           if(.not.get_mult)then
+              call getT1transformation(t1(iter),xocc,xvirt,yocc,yvirt, &
+                ypo,ypv,yho,yhv)
+           endif
+
+           ! get inactive fock
+           if(DECinfo%fock_with_ri) then
+              ! Debug mode
+              ifock = getInactiveFockFromRI(l_ao,xocc,yocc,h1)
+           else
+              ifock = getInactiveFock_simple(h1,gao,xocc,yocc,nocc,nbasis)
+           end if
+           ! Note: If not fock_with_ri or ccsd_old, then the relevant
+           ! ifock is calculated below in get_ccsd_residual_integral_direct.
+           ! Long range fock matrix correction using old scheme
+           ! (See comments above regarding Fock correction)
+           if(iter == 1) then
+              ! calculate fock correction in first iteration
+              write(DECinfo%output,'(a)') 'long range fock correction requested'
+              if(fragment_job) then
+                 delta_fock = getFockCorrection(fock,ifock)
+              else ! full molecule: correction is zero by definition
+                 delta_fock= array2_init(ao2_dims)
+              end if
+
+           end if
+
+           ! Add fock correction to to existing T1-transformed Fock matrix
+           call array2_add_to(ifock,1.0E0_realk,delta_fock)
+
+           ! readme : this should be done in a more clear way
+           if(DECinfo%ccModel == 2) then
+              ! CC2
+              ppfock = array2_similarity_transformation(xocc,fock,yocc,[nocc,nocc])
+              qqfock = array2_similarity_transformation(xvirt,fock,yvirt,[nvirt,nvirt])
+           else if(DECinfo%ccModel >= 3) then
+              ! CCSD
+              ppfock = array2_similarity_transformation(xocc,ifock,yocc,[nocc,nocc])
+              qqfock = array2_similarity_transformation(xvirt,ifock,yvirt,[nvirt,nvirt])
+           endif
+
+           pqfock = array2_similarity_transformation(xocc,ifock,yvirt,[nocc,nvirt])
+           qpfock = array2_similarity_transformation(xvirt,ifock,yocc,[nvirt,nocc])
+           iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
+
+        end if T1Related
+
+        if(DECinfo%PL>1) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
+        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+
+
+        ! MODIFY FOR NEW MODEL
+        ! If you implement a new model, please insert call to your own residual routine here!
+        SelectCoupledClusterModel : if(DECinfo%ccModel==1) then
+
+           call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
+                & nocc,nvirt)
+
+        elseif(DECinfo%ccModel==2) then
+           !print *,"old cc2 scheme"
+           u = get_u(t2(iter))
+           call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock, &
+                xocc,xvirt,yocc,yvirt,nocc,nvirt)
+           !call print_norm(omega1(iter)%val,nvirt,nocc)
+           call array4_free(u)
+
+           gmo = get_gmo_simple(gao,xvirt,yocc,xvirt,yocc)
+           call getDoublesResidualMP2_simple(omega2(iter),t2(iter),gmo,ppfock,qqfock, &
+                nocc,nvirt)
+           !call print_norm(1.0E0_realk,omega2(iter)%val,nvirt*nvirt,nocc*nocc)
+           call array4_free(gmo)
+
+
+        elseif(DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4) then  ! CCSD or CCSD(T)
+
+           if(get_mult)then
+
+              call print_norm(iajb)
+              call array4_read(gao)
+              call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
+              &,t2_final%val,t1(iter)%val,t2(iter)%val,gao,xocc%val,yocc%val,xvirt%val,yvirt%val&
+              &,nocc,nvirt,nbasis,MyLsItem)
+
+           else
+
+             u = get_u(t2(iter))
+             call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock, &
+                  xocc,xvirt,yocc,yvirt,nocc,nvirt)
+             !aibj = get_gmo_simple(gao,xvirt,yocc,xvirt,yocc)
+             aibj = get_gmo_simple(gao,yocc,xvirt,yocc,xvirt)
+             call array4_reorder(aibj,[2,1,4,3])
+
+             if (DECinfo%ccsd_expl) then
+               !print *,"calling the old ccsd scheme"
+               call getDoublesResidualCCSD_simple(omega2(iter),t2(iter),u,gao,aibj,iajb,nocc,nvirt, &
+                    ppfock,qqfock,xocc,xvirt,yocc,yvirt)
+               ! just to debug
+               !          call getDoublesResidual_explicite(omega2(iter),t2(iter),u,gao,aibj,iajb,ppfock,qqfock, &
+               !            xocc,xvirt,yocc,yvirt,nocc,nvirt,nbasis)
+             else
+               call getDoublesResidualCCSD_simple2(omega2(iter),t2(iter),u,gao,aibj,iajb,nocc,nvirt, &
+                    ppfock,qqfock,xocc,xvirt,yocc,yvirt,nbasis)
+             endif
+           endif
+           call array4_free(aibj)
+           call array4_free(u)
+
+        elseif(DECinfo%ccmodel==5) then
+           call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
+        end if SelectCoupledClusterModel
+
+        if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
+
+
+        ForDebug : if(DECinfo%cc_driver_debug) then
+
+           if(DECinfo%use_singles) then
+              write(DECinfo%output,'(a,f16.10)') ' debug :: t1 norm         ',t1(iter)*t1(iter)
+              write(DECinfo%output,'(a,f16.10)') ' debug :: omega1 norm     ',omega1(iter)*omega1(iter)
+           end if
+
+           write(DECinfo%output,'(a,f16.10)') ' debug :: t2 norm         ',t2(iter)*t2(iter)
+           write(DECinfo%output,'(a,f16.10)') ' debug :: omega2 norm     ',omega2(iter)*omega2(iter)
+           write(DECinfo%output,'(a,f16.10)') ' debug :: ppfock norm     ',ppfock*ppfock
+           write(DECinfo%output,'(a,f16.10)') ' debug :: qqfock norm     ',qqfock*qqfock
+
+           if(DECinfo%use_singles) then
+              write(DECinfo%output,'(a,f16.10)') ' debug :: pqfock norm     ',pqfock*pqfock
+              write(DECinfo%output,'(a,f16.10)') ' debug :: qpfock norm     ',qpfock*qpfock
+           end if
+
+        end if ForDebug
+
+        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+        ! calculate crop/diis matrix
+        B=0.0E0_realk; c=0.0E0_realk
+        do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
+           do j=iter,i,-1
+              if(DECinfo%use_singles) then
+                 if(DECinfo%use_preconditioner_in_b) then
+                    omega1_prec = precondition_singles(omega1(j),ppfock_prec,qqfock_prec)
+                    omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec)
+                    B(i,j) = omega1(i)*omega1_prec + omega2(i)*omega2_prec
+                    call array2_free(omega1_prec)
+                    call array4_free(omega2_prec)
+                 else
+                    B(i,j) = omega1(i)*omega1(j) + omega2(i)*omega2(j)
+                 end if
+              else
+                 ! just doubles
+                 if(DECinfo%use_preconditioner_in_b) then
+                    omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec)
+                    B(i,j) = omega2(i)*omega2_prec
+                    call array4_free(omega2_prec)
+                 else
+                    B(i,j) = omega2(i)*omega2(j)
+                    if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,i4,a,i4,a,f16.10)') &
+                         ' debug :: B(',i,',',j,')=',B(i,j)
+                 end if
+              end if
+              B(j,i) = B(i,j)
+           end do
+        end do
+
+        if(DECinfo%PL>1) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
+
+        ! solve crop/diis equation
+        call CalculateDIIScoefficients(DECinfo%ccMaxDIIS,DECinfo%ccMaxIter,iter,B,c, &
+             DECinfo%cc_driver_debug)
+
+        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+        ! mixing to get optimal
+        if(DECinfo%use_singles) then
+           t1_opt = array2_init(ampl2_dims)
+           omega1_opt = array2_init(ampl2_dims)
+        end if
+        if(DECinfo%array4OnFile) then ! store array elements of file (storing type 2)
+           omega2_opt = array4_init(ampl4_dims,2,.true.)
+           t2_opt = array4_init(ampl4_dims,2,.true.)
+        else
+           omega2_opt = array4_init(ampl4_dims)
+           t2_opt = array4_init(ampl4_dims)
+        end if
+
+        do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
+           ! mix singles
+           if(DECinfo%use_singles) then
+              call array2_add_to(t1_opt,c(i),t1(i))
+              call array2_add_to(omega1_opt,c(i),omega1(i))
+           end if
+           ! mix doubles
+           call array4_add_to(t2_opt,c(i),t2(i))
+           call array4_add_to(omega2_opt,c(i),omega2(i))
+        end do
+
+        if(DECinfo%PL>1) call LSTIMER('CCIT: MIXING',tcpu,twall,DECinfo%output)
+        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+        ! if crop, put the optimal in place of trial (not for diis)
+        if(DECinfo%use_crop) then
+           if(DECinfo%use_singles) then
+              call array2_free(t1(iter))
+              call array2_free(omega1(iter))
+              t1(iter) = array2_duplicate(t1_opt)
+              omega1(iter) = array2_duplicate(omega1_opt)
+           end if
+           call array4_free(t2(iter))
+           call array4_free(omega2(iter))
+           if(DECinfo%array4OnFile) then
+              t2(iter) = array4_duplicate_same_file(t2_opt)
+              omega2(iter) = array4_duplicate_same_file(omega2_opt)
+           else
+              t2(iter) = array4_duplicate(t2_opt)
+              omega2(iter) = array4_duplicate(omega2_opt)
+           end if
+        end if
+
+        if(DECinfo%PL>1) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
+        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+        ! check for the convergence
+        one_norm1 = 0.0E0_realk
+        one_norm2 = 0.0E0_realk
+        if(DECinfo%use_singles) one_norm1 = array2_norm(omega1(iter))
+        one_norm2 = array4_norm(omega2(iter))
+        one_norm_total = one_norm1 + one_norm2
+        two_norm_total = sqrt(one_norm_total)
+
+        one_norm1 = 0.0E0_realk
+        one_norm2 = 0.0E0_realk
+        if(DECinfo%use_singles) one_norm1 = array2_norm(t1(iter))
+        one_norm2 = array4_norm(t2(iter))
+        print *,"singles and doubles norms",sqrt(one_norm1),sqrt(one_norm2)
+        ! simple crop diagnostics
+        if(two_norm_total < prev_norm) then
+           crop_ok=.true.
+        else
+           crop_ok=.false.
+           write(DECinfo%output,'(a)') ' warning :: total norm was smaller in previous iteration !!! '
+        end if
+        prev_norm=two_norm_total
+
+        if(DECinfo%PL>1) call LSTIMER('CCIT: CONV',tcpu,twall,DECinfo%output)
+        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+        ! calculate the correlation energy and fragment energy
+        ! MODIFY FOR NEW MODEL
+        ! If you implement a new model, please insert call to energy routine here,
+        ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
+        EnergyForCCmodel: if(DECinfo%ccmodel==1) then  
+           ! MP2
+           ccenergy = get_mp2_energy(t2(iter),Lmo)
+        elseif(DECinfo%ccmodel==2 .or. DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4 ) then
+           ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
+           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
+        elseif(DECinfo%ccmodel==5) then
+           ccenergy = RPA_energy(t2(iter),gmo)
+           sosex = SOSEX_contribution(t2(iter),gmo)
+           ccenergy=ccenergy+sosex
+        end if EnergyForCCmodel
+
+
+        if(DECinfo%PL>1) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
+
+        ! check if this is the last iteration
+        if(iter == DECinfo%ccMaxIter .or. two_norm_total < DECinfo%ccConvergenceThreshold) &
+             break_iterations=.true.
+
+        if(DECinfo%use_singles .and. (.not. break_iterations) ) then
+          call array4_free(iajb)
+        end if
+
+        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+        ! generate next trial vector if this is not the last iteration
+        if(.not.break_iterations) then
+           if(DECinfo%use_preconditioner) then
+              if(DECinfo%use_singles) then
+                 omega1_prec = precondition_singles(omega1_opt,ppfock_prec,qqfock_prec)
+                 t1(iter+1) = t1_opt + omega1_prec
+                 call array2_free(omega1_prec)
+              end if
+              omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec)
+              t2(iter+1) = t2_opt + omega2_prec
+              call array4_free(omega2_prec)
+           else
+              if(DECinfo%use_singles) t1(iter+1) = t1_opt + omega1_opt
+              t2(iter+1) = t2_opt + omega2_opt
+           end if
+        end if
+        !msg="t1+1:"
+        !call print_norm(t1(iter+1)%val,nocc*nvirt,msg) 
+        !msg="t2+1:"
+        !call print_norm(t2(iter+1)%val,nocc*nocc*nvirt*nvirt,msg) 
+
+        if(DECinfo%PL>1) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
+
+        ! delete optimals
+        if(DECinfo%use_singles) then
+           call array2_free(t1_opt)
+           call array2_free(omega1_opt)
+        end if
+        if(DECinfo%array4OnFile) then
+           ! Free optimial arrays BUT keep file, because the same file is used by t2(iter)
+           call array4_free(t2_opt,keep=.true.)
+           call array4_free(omega2_opt,keep=.true.)
+        else
+           call array4_free(t2_opt)
+           call array4_free(omega2_opt)
+        end if
+
+
+        ! delete fock matrices
+        if(DECinfo%use_singles) then
+           call array2_free(ifock)
+           call array2_free(ppfock)
+           call array2_free(pqfock)
+           call array2_free(qpfock)
+           call array2_free(qqfock)
+        end if
+
+
+        call LSTIMER('CC ITERATION',iter_cpu,iter_wall,DECinfo%output)
+
+#ifdef __GNUC__
+        call flush(DECinfo%output)
+#endif
+
+       print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',iter, two_norm_total,ccenergy
+       write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
+             &   '### ',iter, two_norm_total,ccenergy
+        last_iter = iter
+        if(break_iterations) exit
+
+     end do CCIteration
+
+     call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
+
+
+
+     write(DECinfo%output,*)
+     write(DECinfo%output,'(/,a)') '-------------------------------'
+     write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '
+     write(DECinfo%output,'(a,/)') '-------------------------------'
+     if(break_iterations) then
+        write(DECinfo%output,'(a)')     'Hooray! CC equation is solved!'
+     else
+        write(DECinfo%output,'(a,i4,a)')  'CC equation not solved in ', &
+             & DECinfo%ccMaxIter, ' iterations!'
+        call lsquit('CC equation not solved!',DECinfo%output)
+     end if
+     write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total cpu time    = ',ttotend_cpu-ttotstart_cpu,' s'
+     write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total wall time   = ',ttotend_wall-ttotstart_wall,' s'
+
+     if(fragment_job) then
+        write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ccenergy
+     else
+        write(DECinfo%output,'(a,f16.10)')  'Corr. energy       = ',ccenergy
+     end if
+     write(DECinfo%output,'(a,i5)') 'Number of CC iterations =', last_iter
+
+
+     ! Free memory and save final amplitudes
+     ! *************************************
+
+
+     ! remove rest of the singles amplitudes and residuals
+     do i=last_iter,max(last_iter-DECinfo%ccMaxDIIS+1,1),-1
+
+
+        ! remove the lase files of t2 and omega2
+        call array4_delete_file(omega2(i))
+        call array4_delete_file(t2(i))
+
+        if(DECinfo%use_singles) then
+
+           ! Save final singles amplitudes
+           if(i==last_iter .and. .not. get_mult) then
+              if(longrange_singles) then ! just copy
+                 call array2_copy(t1_final,t1(last_iter))
+              else ! initialize and copy
+                 t1_final = array2_duplicate(t1(last_iter))
+              end if
+           end if
+
+           ! Free singles amplitudes and residuals
+           call array2_free(t1(i))
+           call array2_free(omega1(i))
+
+        end if
+
+        ! Free doubles residuals
+        call array4_free(omega2(i))
+
+        ! Save final double amplitudes
+        if(i==last_iter .and. .not. get_mult) then
+           t2_final = array4_duplicate(t2(last_iter))
+        end if
+
+        ! Free doubles amplitudes
+        call array4_free(t2(i))
+
+     end do
+
+
+     ! Save two-electron integrals in the order (virt,occ,virt,occ)
+     if(DECinfo%ccModel == 1) then
+        call array4_free(lmo) ! also free lmo integrals
+        VOVO = array4_duplicate(gmo)
+        call array4_free(gmo)
+     else
+        VOVO = array4_duplicate(iajb)
+        call array4_free(iajb)
+        call array4_reorder(VOVO,[2,1,4,3])
+     end if
+
+     ! deallocate stuff
+     if(DECinfo%use_singles) then
+        call mem_dealloc(t1)
+        call mem_dealloc(omega1)
+     end if
+
+     call mem_dealloc(t2)
+     call mem_dealloc(omega2)
+
+     call mem_dealloc(B)
+     call mem_dealloc(c)
+
+
+     ! remove fock correction
+     call array2_free(delta_fock)
+     call array4_free(gao)
+
+     if(DECinfo%simulate_eri .or. DECinfo%fock_with_ri) then
+        call ri_free(l_ao)
+        call ri_reset()
+     end if
+
+
+     if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
+        call array2_free(ppfock_prec)
+        call array2_free(qqfock_prec)
+     end if
+
+     if(DECinfo%use_singles) then
+        call array2_free(h1)
+        call array2_free(xocc)
+        call array2_free(yocc)
+        call array2_free(xvirt)
+        call array2_free(yvirt)
+        call array2_free(pqfock)
+        call array2_free(qpfock)
+     end if
+
+     call array2_free(ppfock)
+     call array2_free(qqfock)
+
+     call array2_free(ypo)
+     call array2_free(yho)
+     call array2_free(ypv)
+     call array2_free(yhv)
+     call array2_free(fock)
+     !transform back to original basis   
+     if(DECinfo%use_singles)then
+       call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt,t1_final%val)
+     else
+       call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt)
+     endif
+
+     call mem_dealloc(Uocc)
+     call mem_dealloc(Uvirt)
+
+
+   end subroutine ccsolver_debug
+
+   !> \brief Simple double residual for CCSD
+   subroutine getDoublesResidualCCSD_simple(omega2,t2,u,gao,aibj,iajb,nocc,nvirt, &
+        ppfock,qqfock,xocc,xvirt,yocc,yvirt)
+
+     implicit none
+     real(realk) :: aStart,aEnd,bStart,bEnd,cStart,cEnd, &
+          dStart,dEnd,eStart,eEnd
+     type(array4), intent(inout) :: omega2,t2
+     type(array4), intent(inout) :: u,gao,aibj,iajb
+     type(array2), intent(inout) :: ppfock, qqfock
+     integer, intent(in) :: nocc,nvirt
+     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
+     type(array4) :: abcd, tmp1, X
+     type(array4) :: l1, l2, tmp
+     type(array2) :: ppX,qqY,pptmp,qqtmp
+     integer :: a,i,b,j,k,l,c,d
+
+     aStart=0.0E0_realk; aEnd=0.0E0_realk
+     bStart=0.0E0_realk; bEnd=0.0E0_realk
+     cStart=0.0E0_realk; cEnd=0.0E0_realk
+     dStart=0.0E0_realk; dEnd=0.0E0_realk
+     eStart=0.0E0_realk; eEnd=0.0E0_realk
+
+
+     ! -- A2
+     call cpu_time(aStart)
+     call array4_add_to(omega2,1.0E0_realk,aibj)
+
+     abcd = get_gmo_simple(gao,xvirt,yvirt,xvirt,yvirt)
+     call array4_reorder(t2,[1,3,2,4]) ! -> t2[ab,ij]
+     call array4_reorder(abcd,[2,4,1,3])
+     tmp1 = array4_init([nvirt,nvirt,nocc,nocc]) ! tmp1[ab,ij]
+     call array4_contract2(abcd,t2,tmp1)
+     call array4_reorder(tmp1,[1,3,2,4]) ! -> tmp1[ai,bj]
+     call array4_add_to(omega2,1.0E0_realk,tmp1)
+     call array4_free(tmp1)
+     call array4_reorder(t2,[1,3,2,4]) ! -> t2[ai,bj]
+     call array4_free(abcd)
+     call cpu_time(aEnd)
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: A2 done, norm :',omega2*omega2
+
+     ! -- B2
+     call cpu_time(bStart)
+     call array4_reorder(iajb,[2,4,1,3]) ! iajb[kc,ld] -> iajb[cd,kl] (iajb[ia,jb] -> iajb[ab,ij])
+     call array4_reorder(t2,[1,3,2,4]) ! t2[ci,dj] -> t2[cd,ij] (t2[ai,bj] -> t2[ab,ij])
+     tmp1 = array4_init([nocc,nocc,nocc,nocc])
+     call array4_contract2(t2,iajb,tmp1) ! tmp1[ij,kl]
+     X = get_gmo_simple(gao,xocc,yocc,xocc,yocc) ! X[ki,lj]
+     call array4_reorder(X,[2,4,1,3]) ! X[ki,lj] -> X[ij,kl]
+     call array4_add_to(X,1.0E0_realk,tmp1)
+     call array4_free(tmp1)
+
+     call array4_reorder(X,[3,4,1,2]) ! X[ij,kl] -> X[kl,ij]
+     call array4_reorder(t2,[3,4,1,2]) ! t2[ab,kl]-> t2[kl,ab]
+     tmp1 = array4_init([nvirt,nvirt,nocc,nocc])
+     call array4_contract2(t2,X,tmp1) ! tmp1[ab,ij]
+     call array4_reorder(tmp1,[1,3,2,4]) ! tmp1[ab,ij] -> tmp1[ai,bj]
+     call array4_add_to(omega2,1.0E0_realk,tmp1)
+     call array4_free(X)
+     call array4_free(tmp1)
+     call cpu_time(bEnd)
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: B2 done, norm :',omega2*omega2
+
+     ! -- C2
+     call cpu_time(cStart)
+
+     ! std                                  ij,ab  ->    bi,aj
+     call array4_reorder(t2,[4,1,3,2]) ! t2[li,ad] -> t2[dl,ai]
+     call array4_reorder(iajb,[1,4,3,2]) ! iajb[dc,kl] -> iajb[dl,kc]
+     X = get_gmo_simple(gao,xocc,yocc,xvirt,yvirt) ! X[ki,ac]
+     tmp1 = array4_init([nvirt,nocc,nocc,nvirt]) ! tmp1[ai,kc]
+     call array4_contract2(t2,iajb,tmp1)
+     call array4_reorder(tmp1,[3,2,1,4]) ! -> tmp1[ki,ac]
+     call array4_add_to(X,-0.5E0_realk,tmp1)
+     call array4_free(tmp1)
+
+     ! a
+     call array4_reorder(X,[4,1,3,2]) ! X[ki,ac] -> X[ck,ai]
+     tmp1 = array4_init([nvirt,nocc,nvirt,nocc])
+     call array4_contract2(X,t2,tmp1) ! tmp1[ai,bj]
+     call array4_add_to(omega2,-0.5E0_realk,tmp1)
+
+     ! b
+     call array4_reorder(tmp1,[1,4,3,2]) ! tmp1[aj,bi] -> tmp[ai,bj]
+     call array4_add_to(omega2,-1.0E0_realk,tmp1)
+
+     ! c
+     call array4_reorder(tmp1,[3,2,1,4]) ! tmp1[] -> tmp1[]
+     call array4_add_to(omega2,-0.5E0_realk,tmp1)
+
+     ! d
+     call array4_reorder(tmp1,[1,4,3,2]) ! tmp[] -> tmp1[]
+     call array4_add_to(omega2,-1.0E0_realk,tmp1)
+
+     call array4_free(tmp1)
+     call array4_free(X)
+     call array4_reorder(t2,[3,2,1,4]) ! t2[dl,ai] -> t2[al,di]
+     call cpu_time(cEnd)
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: C2 done, norm :',omega2*omega2
+
+     ! -- D2
+     call cpu_time(dStart)
+     l1 = getL(gao,xvirt,yocc,xocc,yvirt, &
+          xvirt,yvirt,xocc,yocc)
+     call array4_reorder(iajb,[3,1,2,4]) ! iajb[dl,kc] -> iajb[kd,lc]
+     l2 = getL(iajb)
+     X = array4_init([nvirt,nocc,nocc,nvirt]) ! X[ai,kc]
+     call array4_reorder(u,[4,3,1,2]) ! u[ai,dl] -> u[ld,ai]
+     call array4_contract2(u,l2,X) ! X[ai,kc]
+     call array4_scale(X,0.5E0_realk)
+     call array4_add_to(X,1.0E0_realk,l1)
+
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: l1 norm : ',l1*l1
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: l1 norm : ',l2*l2
+
+     call array4_free(l1)
+     call array4_free(l2)
+
+     ! a
+     call array4_reorder(X,[3,4,1,2]) ! X[ai,kc] -> X[kc,ai]
+     tmp = array4_init([nvirt,nocc,nvirt,nocc])
+     call array4_contract2(X,u,tmp)
+     call array4_add_to(omega2,0.5E0_realk,tmp)
+     call array4_reorder(u,[3,4,2,1]) ! u[ld,ai] -> u[ai,dl]
+
+     ! b
+     call array4_reorder(tmp,[3,4,1,2]) ! tmp[bj,ai] -> tmp[ai,bj]
+     call array4_add_to(omega2,0.5E0_realk,tmp)
+     call array4_free(X)
+     call array4_free(tmp)
+
+     call cpu_time(dEnd)
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: D2 done, norm',omega2*omega2
+
+     ! -- E2
+     call cpu_time(eStart)
+     qqY = array2_init([nvirt,nvirt]) ! qqY[b,c]
+     qqtmp = array2_init([nvirt,nvirt])
+     ppX = array2_init([nocc,nocc]) ! ppX[k,j]
+     pptmp = array2_init([nocc,nocc])
+
+     ! get qqY
+     call array4_reorder(u,[4,3,2,1]) ! u[bk,dl] -> u[ldk,b]
+     call array4_contract3(u,iajb,qqtmp)
+     qqY = array2_add(1.0E0_realk,qqfock,-1.0E0_realk,qqtmp)
+     call array2_free(qqtmp)
+
+     ! get ppX
+     call array4_reorder(u,[4,3,2,1]) ! u[jdl,c] -> u[cld,j]
+     call array4_reorder(iajb,[4,3,2,1]) ! iajb[kdl,c] -> iajb[cld,k]
+     call array4_contract3(iajb,u,pptmp)
+     ppX = array2_add(1.0E0_realk,ppfock,1.0E0_realk,pptmp)
+     call array4_reorder(iajb,[4,3,2,1])
+
+     ! 1
+     call array2_transpose(qqY)
+     call array4_reorder(t2,[3,4,1,2])
+     tmp = array4_init([nvirt,nocc,nvirt,nocc])
+     call array4_contract1(t2,qqY,tmp,.true.)
+     call array4_reorder(tmp,[3,4,1,2])
+     call array4_add_to(omega2,1.0E0_realk,tmp)
+     call array4_free(tmp)
+     call array4_reorder(t2,[3,4,1,2])
+
+     ! 2
+     call array4_contract1(t2,qqY,omega2,.false.)
+     call array2_transpose(qqY)
+
+     ! 3
+     call array4_reorder(t2,[4,3,2,1])
+     tmp = array4_init([nocc,nvirt,nocc,nvirt])
+     call array4_contract1(t2,ppX,tmp,.true.)
+     call array4_reorder(t2,[4,3,2,1])
+     call array4_reorder(tmp,[4,3,2,1])
+     call array4_add_to(omega2,-1.0E0_realk,tmp)
+     call array4_free(tmp)
+
+     ! 4
+     call array4_reorder(t2,[2,1,3,4])
+     tmp = array4_init([nocc,nvirt,nvirt,nocc])
+     call array4_contract1(t2,ppX,tmp,.true.)
+     call array4_reorder(t2,[2,1,3,4])
+     call array4_reorder(tmp,[2,1,3,4])
+     call array4_add_to(omega2,-1.0E0_realk,tmp)
+     call array4_free(tmp)
+
+     call array2_free(ppX)
+     call array2_free(qqY)
+     call cpu_time(eEnd)
+
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: E2 done, norm',omega2*omega2
+
+   end subroutine getDoublesResidualCCSD_simple
+
+   !> \brief Very simple debug version of CCSD residual
+   subroutine getDoublesResidual_explicite(omega2,t2,u,gao,aibj,iajb,ppfock,qqfock, &
+        xocc,xvirt,yocc,yvirt,nocc,nvirt,nbasis)
+
+     implicit none
+     type(array4), intent(inout) :: omega2,gao
+     type(array4), intent(in) :: t2,u
+     type(array4), intent(in) :: aibj,iajb
+     type(array4) :: aikc,acki,tmp
+     type(array2), intent(in) :: ppfock, qqfock
+     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
+     type(array2) :: pptmp, qqtmp
+     integer, intent(in) :: nocc, nvirt, nbasis
+     real(realk) :: starttime,endtime,aStart,aEnd,bStart,bEnd,cStart,cEnd, &
+          dStart,dEnd,eStart,eEnd
+     integer :: a,b,c,d,i,j,k,l
+
+     type(array4) :: abcd,X,l1,l2
+
+     aStart=0.0E0_realk; aEnd=0.0E0_realk
+     bStart=0.0E0_realk; bEnd=0.0E0_realk
+     cStart=0.0E0_realk; cEnd=0.0E0_realk
+     dStart=0.0E0_realk; dEnd=0.0E0_realk
+     eStart=0.0E0_realk; eEnd=0.0E0_realk
+     starttime=0.0E0_realk
+     endtime=0.0E0_realk
+
+     ! -- A2
+     call cpu_time(aStart)
+     write(DECinfo%output,'(a)') ' debug explicit :: A2'
+     omega2%val = omega2%val + aibj%val
+     abcd = get_gmo_simple(gao,xvirt,yvirt,xvirt,yvirt)
+
+     do j=1,nocc
+        do b=1,nvirt
+           do i=1,nocc
+              do a=1,nvirt
+
+                 do d=1,nvirt
+                    do c=1,nvirt
+                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + &
+                            t2%val(c,i,d,j)*abcd%val(a,c,b,d)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     call array4_free(abcd)
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: A2 done, norm',omega2*omega2
+     call cpu_time(aEnd)
+
+     ! -- B2
+     call cpu_time(bStart)
+     write(DECinfo%output,'(a)') ' debug explicit :: B2'
+     X = get_gmo_simple(gao,xocc,yocc,xocc,yocc)
+
+     do j=1,nocc
+        do l=1,nocc
+           do i=1,nocc
+              do k=1,nocc
+
+                 do d=1,nvirt
+                    do c=1,nvirt
+                       X%val(k,i,l,j) = X%val(k,i,l,j) + t2%val(c,i,d,j)*iajb%val(k,c,l,d)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     do j=1,nocc
+        do b=1,nvirt
+           do i=1,nocc
+              do a=1,nvirt
+
+                 do l=1,nocc
+                    do k=1,nocc
+                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + &
+                            t2%val(a,k,b,l)*X%val(k,i,l,j)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     call array4_free(X)
+     call cpu_time(bEnd)
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: B2 done, norm',omega2*omega2
+
+     ! -- C2
+     call cpu_time(cStart)
+     write(DECinfo%output,'(a)') ' debug explicit :: C2'
+     X = get_gmo_simple(gao,xocc,yocc,xvirt,yvirt)
+
+     do c=1,nvirt
+        do a=1,nvirt
+           do i=1,nocc
+              do k=1,nocc
+
+                 do d=1,nvirt
+                    do l=1,nocc
+                       X%val(k,i,a,c) = X%val(k,i,a,c) - &
+                            0.5E0_realk * t2%val(a,l,d,i)*iajb%val(k,d,l,c)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     do j=1,nocc
+        do b=1,nvirt
+           do i=1,nocc
+              do a=1,nvirt
+
+                 do c=1,nvirt
+                    do k=1,nocc
+                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - &
+                            0.5E0_realk*t2%val(b,k,c,j) * X%val(k,i,a,c)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     do j=1,nocc
+        do b=1,nvirt
+           do i=1,nocc
+              do a=1,nvirt
+
+                 do c=1,nvirt
+                    do k=1,nocc
+                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - &
+                            t2%val(b,k,c,i) * X%val(k,j,a,c)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     do j=1,nocc
+        do b=1,nvirt
+           do i=1,nocc
+              do a=1,nvirt
+
+                 do c=1,nvirt
+                    do k=1,nocc
+                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - &
+                            0.5E0_realk*t2%val(a,k,c,i) * X%val(k,j,b,c)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     do j=1,nocc
+        do b=1,nvirt
+           do i=1,nocc
+              do a=1,nvirt
+
+                 do c=1,nvirt
+                    do k=1,nocc
+                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - &
+                            t2%val(a,k,c,j) * X%val(k,i,b,c)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     call array4_free(X)
+
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: C2 done, norm',omega2*omega2
+     call cpu_time(cEnd)
+
+     ! -- D2
+     call cpu_time(dStart)
+     write(DECinfo%output,'(a)') ' debug explicit :: D2'
+
+     l2 = array4_init([nocc,nvirt,nocc,nvirt])
+     do c=1,nvirt
+        do k=1,nocc
+           do d=1,nvirt
+              do l=1,nocc
+                 l2%val(l,d,k,c) = 2.0E0_realk*iajb%val(l,d,k,c) - iajb%val(l,c,k,d)
+              end do
+           end do
+        end do
+     end do
+
+     l1 = array4_init([nvirt,nocc,nocc,nvirt])
+     aikc = get_gmo_simple(gao,xvirt,yocc,xocc,yvirt)
+     acki = get_gmo_simple(gao,xvirt,yvirt,xocc,yocc)
+
+     do c=1,nvirt
+        do k=1,nocc
+           do i=1,nocc
+              do a=1,nvirt
+                 l1%val(a,i,k,c) = 2.0E0_realk*aikc%val(a,i,k,c) - acki%val(a,c,k,i)
+              end do
+           end do
+        end do
+     end do
+
+     tmp = array4_init([nvirt,nocc,nocc,nvirt])
+     do c=1,nvirt
+        do k=1,nocc
+           do i=1,nocc
+              do a=1,nvirt
+
+                 do d=1,nvirt
+                    do l=1,nocc
+                       tmp%val(a,i,k,c) = tmp%val(a,i,k,c) + u%val(a,i,d,l)*l2%val(l,d,k,c)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     call array4_scale(tmp,0.5E0_realk)
+     call array4_add_to(tmp,1.0E0_realk,l1)
+
+     ! standard
+     do j=1,nocc
+        do b=1,nvirt
+           do i=1,nocc
+              do a=1,nvirt
+
+                 do c=1,nvirt
+                    do k=1,nocc
+                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + 0.5E0_realk*u%val(b,j,c,k)*tmp%val(a,i,k,c)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     ! permuted
+     do j=1,nocc
+        do b=1,nvirt
+           do i=1,nocc
+              do a=1,nvirt
+
+                 do c=1,nvirt
+                    do k=1,nocc
+                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + 0.5E0_realk*u%val(a,i,c,k)*tmp%val(b,j,k,c)
+                    end do
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     call array4_free(tmp)
+     call array4_free(l1)
+     call array4_free(l2)
+
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: D2 done, norm',omega2*omega2
+     call cpu_time(dEnd)
+
+     ! -- E2
+     call cpu_time(eStart)
+     write(DECinfo%output,'(a)') ' debug explicit :: E2'
+
+     pptmp = array2_init([nocc,nocc])
+     qqtmp = array2_init([nvirt,nvirt])
+
+     call array2_add_to(pptmp,1.0E0_realk,ppfock)
+     call array2_add_to(qqtmp,1.0E0_realk,qqfock)
+
+     ! do qqtmp
+     do b=1,nvirt
+        do c=1,nvirt
+
+           do d=1,nvirt
+              do k=1,nocc
+                 do l=1,nocc
+                    qqtmp%val(b,c) = qqtmp%val(b,c) - u%val(b,k,d,l)*iajb%val(l,d,k,c)
+                 end do
+              end do
+           end do
+
+        end do
+     end do
+
+     ! do pptmp
+     do k=1,nocc
+        do j=1,nocc
+
+           do c=1,nvirt
+              do d=1,nvirt
+                 do l=1,nocc
+                    pptmp%val(k,j) = pptmp%val(k,j) + u%val(c,l,d,j)*iajb%val(k,d,l,c)
+                 end do
+              end do
+           end do
+
+        end do
+     end do
+
+     ! second part of E2
+     do a=1,nvirt
+        do i=1,nocc
+           do b=1,nvirt
+              do j=1,nocc
+
+                 do c=1,nvirt
+                    omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + t2%val(a,i,c,j)*qqtmp%val(b,c)
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     do a=1,nvirt
+        do i=1,nocc
+           do b=1,nvirt
+              do j=1,nocc
+
+                 do c=1,nvirt
+                    omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + t2%val(c,i,b,j)*qqtmp%val(a,c)
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     do a=1,nvirt
+        do i=1,nocc
+           do b=1,nvirt
+              do j=1,nocc
+
+                 do k=1,nocc
+                    omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - t2%val(a,k,b,j)*pptmp%val(k,i)
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     do a=1,nvirt
+        do i=1,nocc
+           do b=1,nvirt
+              do j=1,nocc
+
+                 do k=1,nocc
+                    omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - t2%val(a,i,b,k)*pptmp%val(k,j)
+                 end do
+
+              end do
+           end do
+        end do
+     end do
+
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: C2 done, norm',omega2*omega2
+     call cpu_time(eEnd)
+
+   end subroutine getDoublesResidual_explicite
+
+
+   !> \brief Double residual for CCSD (devel version)
+   subroutine getDoublesResidualCCSD_simple2(omega2,t2,u,gao,aibj,iajb,nocc,nvirt, &
+        ppfock,qqfock,xocc,xvirt,yocc,yvirt,nbas)
+
+     implicit none
+     real(realk) :: starttime,endtime,aStart,aEnd,bStart,bEnd,cStart,cEnd, &
+          dStart,dEnd,eStart,eEnd,partial_start,partial_end
+     type(array4), intent(inout) :: omega2,t2
+     type(array4), intent(inout) :: u,gao,aibj,iajb
+     type(array2), intent(inout) :: ppfock, qqfock
+     integer, intent(in) :: nocc,nvirt,nbas
+     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
+     type(array4) :: abcd, tmp1, X
+     type(array4) :: l1, l2, tmp
+     type(array2) :: ppX,qqY,pptmp,qqtmp
+     integer :: a,i,b,j,k,l,c,d
+     type(array4) :: t2_half_ao,t2_ao,X_half_ao,X_ao, &
+          ABe_IJ,IJ_AlBe,Inu_AlBe
+
+     aStart=0.0E0_realk; aEnd=0.0E0_realk
+     bStart=0.0E0_realk; bEnd=0.0E0_realk
+     cStart=0.0E0_realk; cEnd=0.0E0_realk
+     dStart=0.0E0_realk; dEnd=0.0E0_realk
+     eStart=0.0E0_realk; eEnd=0.0E0_realk
+     starttime=0.0E0_realk; endtime=0.0E0_realk
+     partial_start=0.0E0_realk; partial_end=0.0E0_realk
+
+     call cpu_time(starttime)
+
+     ! -- A2
+     call cpu_time(aStart)
+
+     ! transform double amplitudes to AO in place of virtual indices
+     call cpu_time(partial_start)
+     t2_half_ao = array4_init([nbas,nocc,nvirt,nocc]) ! half transformed t2
+     call array2_transpose(yvirt)
+     call array4_contract1(t2,yvirt,t2_half_ao,.true.) ! t2[ai,bj] -> t2[mu i,bj]
+     call array4_reorder(t2_half_ao,[3,1,2,4]) ! t2[mu i,bj] -> t2[b mu,ij]
+     t2_ao = array4_init([nbas,nbas,nocc,nocc])
+     call array4_contract1(t2_half_ao,yvirt,t2_ao,.true.) ! t2[b mu,ij] -> t2[nu mu,ij]
+     call array4_free(t2_half_ao)
+     call array2_transpose(yvirt)
+     call array4_reorder(t2_ao,[2,1,3,4]) ! t2[nu mu,ij] -> t2[mu nu,ij]
+     call cpu_time(partial_end)
+     if(DECinfo%PL>1) &
+          write(DECinfo%output,'(/,a,f16.3,a)') ' time :: t2[ai,bj] -> t2[mu nu,ij] : ', &
+          partial_end-partial_start,' s'
+
+     ! reorder two-electron integrals
+     call cpu_time(partial_start)
+     call array4_read(gao) ! gao[al mu, be nu]
+     !call array4_reorder(gao,[2,4,1,3]) ! gao[al mu,be nu] -> gao[mu nu, al be]
+     call array4_reorder(gao,[1,3,2,4])
+     call cpu_time(partial_end)
+     if(DECinfo%PL>1) &
+          write(DECinfo%output,'(a,f16.3,a)') ' time :: sort GAO                  : ', &
+          partial_end-partial_start,' s'
+
+     ! contract aplitudes with two-electron integrals in AO basis
+     call cpu_time(partial_start)
+     X_ao = array4_init([nbas,nbas,nocc,nocc])
+     !call array4_contract2(gao,t2_ao,X_ao)
+     call array4_contract2_middle(gao,t2_ao,X_ao)
+     call array4_free(t2_ao)
+     call cpu_time(partial_end)
+     if(DECinfo%PL>1) &
+          write(DECinfo%output,'(a,f16.3,a)') ' time :: contract with GAO         : ', &
+          partial_end-partial_start,' s'
+
+     ! get g[ai,bj] and add it directly to omega2
+     call cpu_time(partial_start)
+     Inu_AlBe = array4_init([nocc,nbas,nbas,nbas]) ! gao[MuNu,AlBe] -> gao[INu,AlBe]
+     call array4_contract1(gao,yocc,Inu_AlBe,.true.)
+     call array4_alloc(gao)
+     call array4_reorder(Inu_AlBe,[2,1,3,4]) ! Inu_AlBe[INu,AlBe] -> Inu_AlBe[NuI,AlBe]
+
+     IJ_AlBe = array4_init([nocc,nocc,nbas,nbas])
+     call array4_contract1(Inu_AlBe,yocc,IJ_AlBe,.true.) ! Inu_AlBe[NuI,AlBe] -> IJ_AlBe[JI,AlBe]
+     call array4_free(Inu_AlBe)
+
+     call array4_reorder(IJ_AlBe,[4,3,2,1]) ! IJ_AlBe[JI,AlBe] -> IJ_AlBe[BeAl,IJ]
+     ABe_IJ = array4_init([nvirt,nbas,nocc,nocc])
+     call array4_contract1(IJ_AlBe,xvirt,ABe_IJ,.true.) ! IJ_AlBe[BeAl,IJ] -> ABe_IJ[ABe,IJ]
+     call array4_free(IJ_AlBe)
+
+     call array4_reorder(ABe_IJ,[2,3,1,4]) ! ABe_IJ[BAl,IJ] -> ABe_IJ[AlI,BJ]
+     call array4_contract1(ABe_IJ,xvirt,omega2,.false.) ! ABe_IJ[AlI,BJ] -> ABe_IJ[AI,BJ]
+     call array4_free(ABe_IJ)
+
+     call cpu_time(partial_end)
+     if(DECinfo%PL>1) &
+          write(DECinfo%output,'(a,f16.3,a)') ' time :: omega2 += g[ai,bj]        : ', &
+          partial_end-partial_start,' s'
+
+     ! transform to mo basis
+     call cpu_time(partial_start)
+     X_half_ao = array4_init([nvirt,nbas,nocc,nocc])
+     call array4_contract1(X_ao,xvirt,X_half_ao,.true.)
+     call array4_free(X_ao)
+     call array4_reorder(X_half_ao,[2,1,3,4])
+     X = array4_init([nvirt,nvirt,nocc,nocc])
+     call array4_contract1(X_half_ao,xvirt,X,.true.)
+     call array4_free(X_half_ao)
+     call array4_reorder(X,[2,3,1,4])
+     call array4_add_to(omega2,1.0E0_realk,X)
+     call array4_free(X)
+     call cpu_time(partial_end)
+     if(DECinfo%PL>1) &
+          write(DECinfo%output,'(a,f16.3,a)') ' time :: transform result to MO    : ', &
+          partial_end-partial_start,' s'
+
+     call cpu_time(aEnd)
+     if(DECinfo%PL>1) &
+          write(DECinfo%output,'(a,f16.3,a,/)') ' time :: total A term              : ', &
+          aEnd-aStart,' s'
+
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: A2 done, norm :',omega2*omega2
+
+     ! -- B2
+     call cpu_time(bStart)
+     call array4_reorder(iajb,[2,4,1,3]) ! iajb[kc,ld] -> iajb[cd,kl] (iajb[ia,jb] -> iajb[ab,ij])
+     call array4_reorder(t2,[1,3,2,4]) ! t2[ci,dj] -> t2[cd,ij] (t2[ai,bj] -> t2[ab,ij])
+     tmp1 = array4_init([nocc,nocc,nocc,nocc])
+     call array4_contract2(t2,iajb,tmp1) ! tmp1[ij,kl]
+     X = get_gmo_simple(gao,xocc,yocc,xocc,yocc) ! X[ki,lj]
+     call array4_reorder(X,[2,4,1,3]) ! X[ki,lj] -> X[ij,kl]
+     call array4_add_to(X,1.0E0_realk,tmp1)
+     call array4_free(tmp1)
+
+     call array4_reorder(X,[3,4,1,2]) ! X[ij,kl] -> X[kl,ij]
+     call array4_reorder(t2,[3,4,1,2]) ! t2[ab,kl]-> t2[kl,ab]
+     tmp1 = array4_init([nvirt,nvirt,nocc,nocc])
+     call array4_contract2(t2,X,tmp1) ! tmp1[ab,ij]
+     call array4_reorder(tmp1,[1,3,2,4]) ! tmp1[ab,ij] -> tmp1[ai,bj]
+     call array4_add_to(omega2,1.0E0_realk,tmp1)
+     call array4_free(X)
+     call array4_free(tmp1)
+     call cpu_time(bEnd)
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: B2 done, norm :',omega2*omega2
+
+     ! -- C2
+     call cpu_time(cStart)
+
+     ! std                                  ij,ab  ->    bi,aj
+     call array4_reorder(t2,[4,1,3,2]) ! t2[li,ad] -> t2[dl,ai]
+     call array4_reorder(iajb,[1,4,3,2]) ! iajb[dc,kl] -> iajb[dl,kc]
+     X = get_gmo_simple(gao,xocc,yocc,xvirt,yvirt) ! X[ki,ac]
+     tmp1 = array4_init([nvirt,nocc,nocc,nvirt]) ! tmp1[ai,kc]
+     call array4_contract2(t2,iajb,tmp1)
+     call array4_reorder(tmp1,[3,2,1,4]) ! -> tmp1[ki,ac]
+     call array4_add_to(X,-0.5E0_realk,tmp1)
+     call array4_free(tmp1)
+
+     ! a
+     call array4_reorder(X,[4,1,3,2]) ! X[ki,ac] -> X[ck,ai]
+     tmp1 = array4_init([nvirt,nocc,nvirt,nocc])
+     call array4_contract2(X,t2,tmp1) ! tmp1[ai,bj]
+     call array4_add_to(omega2,-0.5E0_realk,tmp1)
+
+     ! b
+     call array4_reorder(tmp1,[1,4,3,2]) ! tmp1[aj,bi] -> tmp[ai,bj]
+     call array4_add_to(omega2,-1.0E0_realk,tmp1)
+
+     ! c
+     call array4_reorder(tmp1,[3,2,1,4]) ! tmp1[] -> tmp1[]
+     call array4_add_to(omega2,-0.5E0_realk,tmp1)
+
+     ! d
+     call array4_reorder(tmp1,[1,4,3,2]) ! tmp[] -> tmp1[]
+     call array4_add_to(omega2,-1.0E0_realk,tmp1)
+
+     call array4_free(tmp1)
+     call array4_free(X)
+     call array4_reorder(t2,[3,2,1,4]) ! t2[dl,ai] -> t2[al,di]
+     call cpu_time(cEnd)
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: C2 done, norm :',omega2*omega2
+
+     ! -- D2
+     call cpu_time(dStart)
+     l1 = getL(gao,xvirt,yocc,xocc,yvirt, &
+          xvirt,yvirt,xocc,yocc)
+     call array4_reorder(iajb,[3,1,2,4]) ! iajb[dl,kc] -> iajb[kd,lc]
+     l2 = getL(iajb)
+     X = array4_init([nvirt,nocc,nocc,nvirt]) ! X[ai,kc]
+     call array4_reorder(u,[4,3,1,2]) ! u[ai,dl] -> u[ld,ai]
+     call array4_contract2(u,l2,X) ! X[ai,kc]
+     call array4_scale(X,0.5E0_realk)
+     call array4_add_to(X,1.0E0_realk,l1)
+
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: l1 norm : ',l1*l1
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: l1 norm : ',l2*l2
+
+     call array4_free(l1)
+     call array4_free(l2)
+
+     ! a
+     call array4_reorder(X,[3,4,1,2]) ! X[ai,kc] -> X[kc,ai]
+     tmp = array4_init([nvirt,nocc,nvirt,nocc])
+     call array4_contract2(X,u,tmp)
+     call array4_add_to(omega2,0.5E0_realk,tmp)
+     call array4_reorder(u,[3,4,2,1]) ! u[ld,ai] -> u[ai,dl]
+
+     ! b
+     call array4_reorder(tmp,[3,4,1,2]) ! tmp[bj,ai] -> tmp[ai,bj]
+     call array4_add_to(omega2,0.5E0_realk,tmp)
+     call array4_free(X)
+     call array4_free(tmp)
+
+     call cpu_time(dEnd)
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: D2 done, norm',omega2*omega2
+
+     ! -- E2
+     call cpu_time(eStart)
+     qqY = array2_init([nvirt,nvirt]) ! qqY[b,c]
+     qqtmp = array2_init([nvirt,nvirt])
+     ppX = array2_init([nocc,nocc]) ! ppX[k,j]
+     pptmp = array2_init([nocc,nocc])
+
+     ! get qqY
+     call array4_reorder(u,[4,3,2,1]) ! u[bk,dl] -> u[ldk,b]
+     call array4_contract3(u,iajb,qqtmp)
+     qqY = array2_add(1.0E0_realk,qqfock,-1.0E0_realk,qqtmp)
+     call array2_free(qqtmp)
+
+     ! get ppX
+     call array4_reorder(u,[4,3,2,1]) ! u[jdl,c] -> u[cld,j]
+     call array4_reorder(iajb,[4,3,2,1]) ! iajb[kdl,c] -> iajb[cld,k]
+     call array4_contract3(iajb,u,pptmp)
+     ppX = array2_add(1.0E0_realk,ppfock,1.0E0_realk,pptmp)
+     call array4_reorder(iajb,[4,3,2,1])
+
+     ! 1
+     call array2_transpose(qqY)
+     call array4_reorder(t2,[3,4,1,2])
+     tmp = array4_init([nvirt,nocc,nvirt,nocc])
+     call array4_contract1(t2,qqY,tmp,.true.)
+     call array4_reorder(tmp,[3,4,1,2])
+     call array4_add_to(omega2,1.0E0_realk,tmp)
+     call array4_free(tmp)
+     call array4_reorder(t2,[3,4,1,2])
+
+     ! 2
+     call array4_contract1(t2,qqY,omega2,.false.)
+     call array2_transpose(qqY)
+
+     ! 3
+     call array4_reorder(t2,[4,3,2,1])
+     tmp = array4_init([nocc,nvirt,nocc,nvirt])
+     call array4_contract1(t2,ppX,tmp,.true.)
+     call array4_reorder(t2,[4,3,2,1])
+     call array4_reorder(tmp,[4,3,2,1])
+     call array4_add_to(omega2,-1.0E0_realk,tmp)
+     call array4_free(tmp)
+
+     ! 4
+     call array4_reorder(t2,[2,1,3,4])
+     tmp = array4_init([nocc,nvirt,nvirt,nocc])
+     call array4_contract1(t2,ppX,tmp,.true.)
+     call array4_reorder(t2,[2,1,3,4])
+     call array4_reorder(tmp,[2,1,3,4])
+     call array4_add_to(omega2,-1.0E0_realk,tmp)
+     call array4_free(tmp)
+
+     call array2_free(ppX)
+     call array2_free(qqY)
+     call cpu_time(eEnd)
+
+     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: E2 done, norm',omega2*omega2
+
+     call cpu_time(endtime)
+     if(DECinfo%PL>1) then
+        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD A2 : ',aEnd-aStart,' s'
+        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD B2 : ',bEnd-bStart,' s'
+        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD C2 : ',cEnd-cStart,' s'
+        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD D2 : ',dEnd-dStart,' s'
+        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD E2 : ',eEnd-eStart,' s'
+        write(DECinfo%output,'(a,f16.3,a)')  &
+             ' time :: CCSD doubles : ',endtime-starttime,' s'
+     end if
+
+     return
+   end subroutine getDoublesResidualCCSD_simple2
+   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,gao,xo,yo,xv,yv,no,nv,nb,MyLsItem)
+     implicit none
+
+     type(lsitem), intent(inout) :: MyLsItem
+     real(realk),intent(inout) :: rho1(:,:),rho2(:,:,:,:)
+     type(array4),intent(in)   :: gao
+     real(realk),intent(inout)    :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:)
+     real(realk),intent(in)    :: xo(:,:),yo(:,:),xv(:,:),yv(:,:)
+     integer, intent(in)       :: no,nv,nb
+     real(realk), pointer      :: w1(:), w2(:), w3(:), w4(:)
+     real(realk), pointer      :: Loooo(:),Lovov(:),Lvoov(:),Lvvov(:),Looov(:),Lovvv(:), Lovoo(:)
+     real(realk), pointer      :: gvovv(:), gvooo(:), govvv(:), gooov(:), goooo(:), gvvvv(:), govov(:)
+     real(realk), pointer      :: goovv(:)
+     real(realk), pointer      :: u2(:),oof(:),ovf(:),vof(:),vvf(:)
+     character(ARR_MSG_LEN)    :: msg
+     integer                   :: v4,o4,o3v,ov3,o2v2,ov,b2,v2,o2
+     type(matrix)              :: iFock, Dens
+     integer                   :: i,a,j,b,ctr
+     real(realk)               :: norm,nrm2
+
+     b2   = nb*nb
+     v2   = nv*nv
+     o2   = no*no
+     ov   = no*nv
+     o2v2 = ov*ov
+     ov3  = ov*v2
+     o3v  = ov*o2
+     o4   = o2*o2
+     v4   = v2*v2
+
+     123 format (" ",A5," ",I5," ",f5.0,"*")
+
+     write (msg,*)"gao"
+     call print_norm(gao,msg)
+     write (msg,*)"xo"
+     call print_norm(xo,int(nb*no,kind=8),msg)
+     write (msg,*)"xv"
+     call print_norm(xv,int(nb*nv,kind=8),msg)
+     write (msg,*)"yo"
+     call print_norm(yo,int(nb*no,kind=8),msg)
+     write (msg,*)"yv"
+     call print_norm(yv,int(nb*nv,kind=8),msg)
+     write (msg,123)"t1   ",ov,sign(1.0E0_realk,t1f(1,1))
+     call print_norm(t1f,int(ov,kind=8),msg)
+     write (msg,123)"z1   ",ov,sign(1.0E0_realk,m1(1,1))
+     call print_norm(m1,int(ov,kind=8),msg)
+     write (msg,123)"t2   ",o2v2,sign(1.0E0_realk,t2f(1,1,1,1))
+     call print_norm(t2f,int(o2v2,kind=8),msg)
+     write (msg,123)"z2   ",o2v2,sign(1.0E0_realk,m2(1,1,1,1))
+     call print_norm(m2,int(o2v2,kind=8),msg)
+     
+     norm = 0.0E0_realk
+     nrm2 = 0.0E0_realk
+     ctr = 0
+     do j = 1, no
+       do b = 1, nv
+         do i = 1, no
+           do a = 1,nv
+             if(a+(i-1)*nv<=b+(j-1)*nv)then
+               norm = norm + t2f(a,i,b,j)**2
+               ctr  = ctr  + 1
+               nrm2 = nrm2 + m2(a,i,b,j)**2
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+     write (msg,*)"t2",ctr
+     print *,msg,sqrt(norm)
+
+
+     call mem_alloc(w1,nb**4)
+     call mem_alloc(w2,max(no,nv)*nb**3)
+
+     call mem_alloc(u2,o2v2)
+     call mem_alloc(oof,o2)
+     call mem_alloc(ovf,ov)
+     call mem_alloc(vof,ov)
+     call mem_alloc(vvf,v2)
+
+     call mem_alloc(govov,o2v2)
+     call mem_alloc(goovv,o2v2)
+     call mem_alloc(Lovov,o2v2)
+     call mem_alloc(Lvoov,o2v2)
+
+
+     call mem_alloc(Lvvov,ov3)
+     call mem_alloc(Lovvv,ov3)
+     call mem_alloc(gvovv,ov3)
+     call mem_alloc(govvv,ov3)
+
+     call mem_alloc(Looov,o3v)
+     call mem_alloc(Lovoo,o3v)
+     call mem_alloc(gvooo,o3v)
+     call mem_alloc(gooov,o3v)
+
+     call mem_alloc(goooo,o4)
+
+     call mem_alloc(gvvvv,v4)
+
+     !get u2
+     call array_reorder_4d(2.0E0_realk,t2f,nv,no,nv,no,[1,2,3,4],0.0E0_realk,u2)
+     call array_reorder_4d(-1.0E0_realk,t2f,nv,no,nv,no,[1,4,3,2],1.0E0_realk,u2)
+
+
+     write (msg,123)"u2   ",o2v2,sign(1.0E0_realk,u2(1))
+     call print_norm(u2,int(o2v2,kind=8),msg)
+
+     !construct Ls from gs
+
+     !govov
+     call dcopy(nb**4,gao%val,1,w1,1)
+     call successive_4ao_mo_trafo(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2)
+     !write (msg,123)"govov",o2v2,sign(1.0E0_realk,w1(1))
+     !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
+     call dcopy(o2v2,w1,1,govov,1)
+
+     call array_reorder_4d(2.0E0_realk,w1,no,nv,no,nv,[1,2,3,4],0.0E0_realk,Lovov)
+     call array_reorder_4d(-1.0E0_realk,w1,no,nv,no,nv,[1,4,3,2],1.0E0_realk,Lovov)
+
+     !norm = 0.0E0_realk
+     !nrm2 = 0.0E0_realk
+     !ctr = 0
+     !do b = 1, nv
+     !  do j = 1, no
+     !    do a = 1,nv
+     !      do i = 1, no
+     !        if(i+(a-1)*no<=j+(b-1)*no)then
+     !          ctr  = ctr  + 1
+     !          norm = norm + Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv)**2
+     !          nrm2 = nrm2 + (2*Lovov(i+(a-1)*no+(j-1)*ov+(b-1)*o2*nv))**2
+     !        endif
+     !      enddo
+     !    enddo
+     !  enddo
+     !enddo
+     !write (msg,*)"L n 2L",ctr
+     !print *,msg,sqrt(norm),sqrt(nrm2),abs(sqrt(norm)-sqrt(nrm2)),sign(1.0E0_realk,Lovov(1))
+
+     !write (msg,123)"Lovov",o2v2,sign(1.0E0_realk,Lovov(1))
+     !call print_norm(Lovov,int(o2v2,kind=8),msg)
+
+     !gvoov
+     call dcopy(nb**4,gao%val,1,w1,1)
+     call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2)
+     !write (msg,*)"gvoov"
+     !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
+     !Lvoov (a i j b) += gvoov (a i j b)
+     call array_reorder_4d(2.0E0_realk,w1,nv,no,no,nv,[1,2,3,4],0.0E0_realk,Lvoov)
+
+     !gvvoo
+     call dcopy(nb**4,gao%val,1,w1,1)
+     call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yo,no,w2)
+     !write (msg,*)"gvvoo"
+     !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
+     !Lvoov (a i j b) += gvvoo (a b i j)
+     call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,no,[1,4,3,2],1.0E0_realk,Lvoov)
+     write (msg,123)"Lvoov",o2v2,sign(1.0E0_realk,Lvoov(1))
+     call print_norm(Lvoov,int(o2v2,kind=8),msg)
+
+     call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,[3,4,1,2],0.0E0_realk,goovv)
+     write (msg,123)"goovv",o2v2,sign(1.0E0_realk,goovv(1))
+     call print_norm(goovv,int(o2v2,kind=8),msg)
+
+     !gvvov
+     call dcopy(nb**4,gao%val,1,w1,1)
+     call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2)
+     write (msg,123)"gvvov",ov*v2,sign(1.0E0_realk,w1(1))
+     call print_norm(w1,int(no*nv**3,kind=8),msg)
+     call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,govvv)
+
+     call array_reorder_4d(2.0E0_realk,w1,nv,nv,no,nv,[1,2,3,4],0.0E0_realk,Lvvov)
+     call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,nv,[1,4,3,2],1.0E0_realk,Lvvov)
+     write (msg,123)"Lvvov",ov*v2,sign(1.0E0_realk,Lvvov(1))
+     call print_norm(Lvvov,int(ov*v2,kind=8),msg)
+     
+
+     call array_reorder_4d(2.0E0_realk,w1,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,Lovvv)
+     call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,nv,[3,2,1,4],1.0E0_realk,Lovvv)
+     do i=1,no
+       do j=1,nv
+         do a=1,nv
+           do b=1,nv
+             if(abs(Lovvv(i+(j-1)*no+(a-1)*ov+(b-1)*v2*no)-Lvvov(a+(b-1)*nv+(i-1)*v2+(j-1)*v2*no))>1.0E-11_realk)then
+               print *,"Lovvv and Lvvov wrong"
+               stop 0
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+
+
+     !gvovv
+     call dcopy(nb**4,gao%val,1,w1,1)
+     call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xv,nv,yv,nv,w2)
+     write (msg,123)"gvovv",ov*v2,sign(1.0E0_realk,w1(1))
+     call print_norm(w1,int(no*nv**3,kind=8),msg)
+     call dcopy(no*nv**3,w1,1,gvovv,1)
+
+     !gooov
+     call dcopy(nb**4,gao%val,1,w1,1)
+     call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2)
+     write (msg,*)"gooov"
+     call print_norm(w1,int(nv*no**3,kind=8),msg)
+
+     call dcopy(nv*no**3,w1,1,gooov,1)
+
+     call array_reorder_4d(2.0E0_realk,w1,no,no,no,nv,[1,2,3,4],0.0E0_realk,Looov)
+     call array_reorder_4d(-1.0E0_realk,w1,no,no,no,nv,[3,2,1,4],1.0E0_realk,Looov)
+     write (msg,123)"Looov",ov*o2,sign(1.0E0_realk,Looov(1))
+     call print_norm(Looov,int(no*o2,kind=8),msg)
+
+     call array_reorder_4d(2.0E0_realk,w1,no,no,no,nv,[3,4,1,2],0.0E0_realk,Lovoo)
+     call array_reorder_4d(-1.0E0_realk,w1,no,no,no,nv,[1,4,3,2],1.0E0_realk,Lovoo)
+     write (msg,123)"Lovoo",ov*o2,sign(1.0E0_realk,Looov(1))
+     call print_norm(Lovoo,int(no*o2,kind=8),msg)
+
+     !gvooo
+     call dcopy(nb**4,gao%val,1,w1,1)
+     call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yo,no,w2)
+     write (msg,123)"gvooo",ov*o2,sign(1.0E0_realk,w1(1))
+     call print_norm(w1,int(nv*no**3,kind=8),msg)
+     call dcopy(nv*no**3,w1,1,gvooo,1)
+
+     !goooo
+     call dcopy(nb**4,gao%val,1,w1,1)
+     call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yo,no,w2)
+     write (msg,*)"goooo"
+     call print_norm(w1,int(o4,kind=8),msg)
+     call dcopy(o4,w1,1,goooo,1)
+
+     !gvvvv
+     call dcopy(nb**4,gao%val,1,w1,1)
+     call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xv,nv,yv,nv,w2)
+     write (msg,123)"gvvvv",v4,sign(1.0E0_realk,w1(1))
+     call print_norm(w1,int(v4,kind=8),msg)
+     call dcopy(v4,w1,1,gvvvv,1)
+
+     call mem_dealloc(w1)
+     call mem_dealloc(w2)
+
+     !allocate the density matrix
+     call mat_init(iFock,nb,nb)
+     call mat_init(Dens,nb,nb)
+
+     !calculate inactive fock matrix in ao basis
+     call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens%elms,nb)
+     call mat_zero(iFock)
+     call dec_fock_transformation(iFock,Dens,MyLsItem,.false.)
+
+     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
+          & Dens%elms,nb,nb,AORdefault,AORdefault)
+     ! Add one- and two-electron contributions to Fock matrix
+     call daxpy(b2,1.0E0_realk,Dens%elms,1,iFock%elms,1)
+     !Free the density matrix
+     call mat_free(Dens)
+
+     call mem_alloc(w1,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
+
+     !Transform inactive Fock matrix into the different mo subspaces
+     ! -> Foo
+     call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1,no)
+     call dgemm('n','n',no,no,nb,1.0E0_realk,w1,no,yo,nb,0.0E0_realk,oof,no)
+     ! -> Fov
+     call dgemm('n','n',no,nv,nb,1.0E0_realk,w1,no,yv,nb,0.0E0_realk,ovf,no)
+     ! -> Fvo
+     call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock%elms,nb,0.0E0_realk,w1,nv)
+     call dgemm('n','n',nv,no,nb,1.0E0_realk,w1,nv,yo,nb,0.0E0_realk,vof,nv)
+     ! -> Fvv
+     call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1,nv,yv,nb,0.0E0_realk,vvf,nv)
+
+     call mat_free(iFock)
+
+     call mem_alloc(w2,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
+     call mem_alloc(w3,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
+
+     write(msg,123)"Fia  ",ov,sign(1.0E0_realk,ovf(1))
+     call print_norm(ovf,int(ov,kind=8),msg)
+     write(msg,123)"Fij  ",ov,sign(1.0E0_realk,oof(1))
+     call print_norm(oof,int(o2,kind=8),msg)
+     write(msg,123)"Fab  ",ov,sign(1.0E0_realk,vvf(1))
+     call print_norm(vvf,int(v2,kind=8),msg)
+
+     call mem_alloc(w4,max(max(ov3,o3v),o2v2))
+
+     !The notation in this routine is according to Halkier et. al. J. chem. phys.,
+     !Vol 107. No.3 15 july 1997
+
+     !SINGLES EXPRESSIONS
+     !*******************
+
+     !rho f
+     !-----
+     rho1 = 0.0E0_realk
+     ! part1
+     !sort amps(dkfj) -> dkjf
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+     ! w3 : \sum_{fj} t^{df}_{kj} (d k f j) Lovvv (j f e a)
+     call dgemm('n','n',ov,v2,ov,1.0E0_realk,w2,ov,Lovvv,ov,0.0E0_realk,w3,ov)
+     write(msg,*)"rho f 1"
+     call print_norm(w3,int(ov3,kind=8),msg)
+     ! part2
+     ! sort t2f (e j f k) -[1,4,2,3]> t2f (e k j f)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
+     ! sort govvv(j a d f) -[1,4,2,3]> govvv (j f a d) 
+     call array_reorder_4d(1.0E0_realk,govvv,no,nv,nv,nv,[1,4,2,3],0.0E0_realk,w1)
+     ! w1 : \sum_{jf} t^{ef}_{jk}(e k j f) govvv_{jadf}(j f a d)
+     call dgemm('n','n',ov,v2,ov,1.0E0_realk,w2,ov,w1,ov,0.0E0_realk,w4,ov)
+     write(msg,*)"rho f 2"
+     call print_norm(w4,int(ov3,kind=8),msg)
+     ! sort result w4(e k a d) -[4,2,1,3]+> w3 (d k e a)
+     call array_reorder_4d(-1.0E0_realk,w4,nv,no,nv,nv,[4,2,1,3],1.0E0_realk,w3)
+     write(msg,*)"rho f 2 - added"
+     call print_norm(w3,int(ov3,kind=8),msg)
+     ! part3
+    
+     ! sort t2f (d j f k) -[1,4,2,3]> t2f (d k j f)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
+     ! \sum_{jf} t^{df}_{jk} (d k j f)(still in w2) govvv(j f e a)
+     call dgemm('n','n',ov,v2,ov,-1.0E0_realk,w2,ov,govvv,ov,1.0E0_realk,w3,ov)
+     write(msg,*)"rho f 3"
+     call print_norm(w3,int(ov3,kind=8),msg)
+
+     !\sum_{dke} \zeta^{d e}_{k i}(d k e , i)^T w3(d k e a)
+     call dgemm('t','n',no,nv,v2*no,1.0E0_realk,m2,v2*no,w3,v2*no,0.0E0_realk,w2,no)
+     !write(msg,*)"rho f1-3(LT21I)"
+     !call print_norm(w2,int(ov,kind=8),msg)
+     !rho1 += w2(i a)^T
+     call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
+
+     !rho c - 1
+     !-----
+     ! part1
+     ! sort \zeta^{df}_{kl} (d k f l) -[3 1 2 4]> w1(f d k l)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[3,1,2,4],0.0E0_realk,w1)
+     ! sort t^{de}_{kl} (d k e l) -[1,2,4,3]> w2(d k l e)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+     ! w3 : \sum_{dkl} w1 (f d k l) w2 (d k l e)
+     call dgemm('n','n',nv,nv,no*no*nv,1.0E0_realk,w1,nv,w2,nv*no*no,0.0E0_realk,w3,nv)
+     ! w1 : \sum_{fe} w3 (fe) L_{feia} (f e i a)
+     call dgemv('t',v2,ov,1.0E0_realk,Lvvov,v2,w3,1,0.0E0_realk,w2,1)
+     !write(msg,*)"rho c - 1(LT21A)"
+     !call print_norm(w2,int(ov,kind=8),msg)
+     !rho1 += w2(i a)^T
+     call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
+     write(msg,*)"rho1 after (LT21A)"
+     call print_norm(rho1,int(ov,kind=8),msg)
+
+     !rho g 1-3
+     !-----
+     ! part1
+     ! sort Lovoo (j f i l) -[2,1,3,4]> (f j i l)
+     call array_reorder_4d(1.0E0_realk,Lovoo,no,nv,no,no,[2,1,3,4],0.0E0_realk,w2)
+     ! -\sum_{jf} t^{df}_{kj} (d k f j) Lovoo (f j i l)
+     call dgemm('n','n',ov,o2,ov,-1.0E0_realk,t2f,ov,w2,ov,0.0E0_realk,w3,ov)
+     ! part2
+     ! sort gooov (jkif) -[1,4,2,3]> (jfki)
+     call array_reorder_4d(1.0E0_realk,gooov,no,no,no,nv,[1,4,2,3],0.0E0_realk,w2)
+     ! sort t^{df}_{jl} (d j f l) -[1,4,2,3]> (dljf)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w1)
+     ! \sum_{jf} t^{df}_{jl} gooov_{jkif}(jfki)
+     call dgemm('n','n',ov,o2,ov,1.0E0_realk,w1,ov,w2,ov,0.0E0_realk,w4,ov)
+     ! sort result w4(d l k i) -[1,3,4,2]+> w3 (d k i l)
+     call array_reorder_4d(1.0E0_realk,w4,nv,no,no,no,[1,3,4,2],1.0E0_realk,w3)
+     ! part3
+     ! govoo from gooov through 3,4,1,2
+     call array_reorder_4d(1.0E0_realk,gooov,no,no,no,nv,[3,4,1,2],0.0E0_realk,w2)
+     !\sum_{jf} t^{df}_{jk}(d k j f)in w1 govoo_{jfil}(jfil)
+     call dgemm('n','n',ov,o2,ov,1.0E0_realk,w1,ov,w2,ov,1.0E0_realk,w3,ov)
+
+     ! sort w3 (d k i l) -[1,2,4,3]> w2 (d k l i)
+     call array_reorder_4d(1.0E0_realk,w3,nv,no,no,no,[1,2,4,3],0.0E0_realk,w2)
+     ! sort \zeta^{da}_{kl} (d k a l} -[3,1,2,4]> w1(a d k l)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[3,1,2,4],0.0E0_realk,w1)
+     ! \sum_{dkl} \zeta^{da}_{kl} w2(dkli)
+     call dgemm('n','n',nv,no,o2*nv,1.0E0_realk,w1,nv,w2,o2*nv,0.0E0_realk,w4,nv)
+     !write(msg,*)"rho g terms 1-3 (21H)"
+     !call print_norm(w4,int(ov,kind=8),msg)
+     !rho1 += w2(i a)
+     call daxpy(ov,1.0E0_realk,w4,1,rho1,1)
+
+
+     !rho e
+     !-----
+     ! part1
+     ! \sum_{dke} \zeta^{de}_{ki}(d k e, i)^T g_{dkea} (d k e a)
+     call dgemm('t','n',no,nv,v2*no,1.0E0_realk,m2,v2*no,gvovv,v2*no,0.0E0_realk,w2,no)
+     !write(msg,*)"rho e - 1 (21DC)" 
+     !call print_norm(w2,int(ov,kind=8),msg)
+     !rho1 += w2(i a)^T
+     call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
+
+     write(msg,*)"singles after loop" 
+     call print_norm(rho1,int(ov,kind=8),msg)
+
+
+     ! f-term
+     ! part4
+     ! sort t^{de}_{jl} (d j e l) -[1,3,2,4]> (d e j l)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,3,2,4],0.0E0_realk,w1)
+     ! sort m^{de}_{ki} (d k e i) -[2,4,1,3]> (k i d e)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[2,4,1,3],0.0E0_realk,w2)
+     ! \sum_{de} m2(k i d e)  t^{de}_{jl} (d e j l)
+     call dgemm('n','n',o2,o2,v2,1.0E0_realk,w2,o2,w1,v2,0.0E0_realk,w3,o2)
+     ! w3 (k i j l) -> w2 (i j l k)
+     call array_reorder_4d(1.0E0_realk,w3,no,no,no,no,[2,3,4,1],0.0E0_realk,w2)
+    
+     ! sort gooov(jkla) -[1,3,2,4]> (j l k a)
+     call array_reorder_4d(1.0E0_realk,gooov,no,no,no,nv,[1,3,2,4],0.0E0_realk,w1)
+     ! \sum_{jl} w3(i j l k) gooov_{jkla} (j l k a)
+     call dgemm('n','n',no,nv,o2*no,1.0E0_realk,w2,no,w1,no*o2,0.0E0_realk,w3,no)
+     !write(msg,*)"rho f 4(LT21G)"
+     !call print_norm(w3,int(ov,kind=8),msg)
+     call mat_transpose(no,nv,1.0E0_realk,w3,1.0E0_realk,rho1)
+
+
+     write(msg,*)"rho 4.f(21G):" 
+     call print_norm(rho1,int(ov,kind=8),msg)
+
+     !rho g
+     !-----
+     ! part 4
+     ! sort t^{fe}_{kl} (f k e l) -[2,4,1,3]> (k l f e)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[2,4,1,3],0.0E0_realk,w1)
+     ! sort govvv_{iedf} -[3,4,1,2]> gvvov_{dfie} (d f i e) -[2,4,1,3]> (f e d i)
+     ! : [4,2,3,1]
+     call array_reorder_4d(1.0E0_realk,govvv,no,nv,nv,nv,[4,2,3,1],0.0E0_realk,w2)
+     ! \sum_{ef} t^{fe}_{kl}(k l f e)  gvvov_{dfie} (f e d i)
+     call dgemm('n','n',o2,ov,v2,1.0E0_realk,w1,o2,w2,v2,0.0E0_realk,w4,o2)
+     ! sort result w4(k l d i) -[3,1,2,4]> w3 (d k l i)
+     call array_reorder_4d(1.0E0_realk,w4,no,no,nv,no,[3,1,2,4],0.0E0_realk,w3)
+     ! sort \zeta^{da}_{kl} (d k a l} -[3,1,2,4]> w1(a d k l)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[3,1,2,4],0.0E0_realk,w1)
+     ! \sum_{dkl} \zeta^{da}_{kl} (a d k l) w3(dkli)
+     call dgemm('n','n',nv,no,o2*nv,1.0E0_realk,w1,nv,w3,o2*nv,0.0E0_realk,w4,nv)
+
+     !rho e
+     !-----
+     ! part2
+     ! sort: \zeta^{da}_{kl} (d k a l) -[3,1,2,4]> w1 (a, d k l)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[3,1,2,4],0.0E0_realk,w1)
+     ! sort: gvooo_{dkil} -[1,2,4,3]> (dkli)
+     call array_reorder_4d(1.0E0_realk,gvooo,nv,no,no,no,[1,2,4,3],0.0E0_realk,w3)
+     ! \sum_{dke} \zeta^{da}_{kl}(a, dkl) g_{dkil} (d k l i)
+     call dgemm('n','n',nv,no,o2*nv,1.0E0_realk,w1,nv,w3,o2*nv,0.0E0_realk,w2,nv)
+     !w4 += w2(i a)^T
+     call daxpy(ov,1.0E0_realk,w2,1,w4,1)
+     !write(msg,*)"4.g+2.e 21BF:"
+     !call print_norm(w4,int(ov,kind=8),msg)
+     
+     call daxpy(ov,-1.0E0_realk,w4,1,rho1,1)
+     write(msg,*)"rho 4.g +2.e(21BF):" 
+     call print_norm(rho1,int(ov,kind=8),msg)
+
+     !rho a
+     !-----
+     ! sort \hat{L}_{bkia} (b k i a) -> w1
+     call dcopy(o2v2,Lvoov,1,w1,1)
+     ! sort u2^{bd}_{kl} (b k d l) -[1,2,4,3]> (b k l d)
+     call array_reorder_4d(1.0E0_realk,u2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+     ! w1 : \sum_{dl} u^{bd}_{kl}(b k l d) \hat{L}_{ldia} (l d i a) + \hat{L}_{bkia} (b k i a)
+     call dgemm('n','n',ov,ov,ov,1.0E0_realk,w2,ov,Lovov,ov,1.0E0_realk,w1,ov)
+     ! w2 : \sum_{bk}  w1(b k , i a)^T \zeta_k^b (b k)
+     call dgemv('t',ov,ov,1.0E0_realk,w1,ov,m1,1,0.0E0_realk,w2,1)
+     !write(msg,*)"rho a (11A)"
+     !call print_norm(w2,int(ov,kind=8),msg)
+     !rho1 += w2(i a)^T
+     call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
+     
+     write(msg,*)"rho a (11A):" 
+     call print_norm(rho1,int(ov,kind=8),msg)
+
+     !rho b
+     !-----
+     !part2
+     ! w2 : sort t(d j b k) -[3,1,4,2]> t (b d k j)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[3,1,4,2],0.0E0_realk,w2)
+     ! w3 : sort \hat{L}_{kbid} (k b i d} -[3,2,4,1]> \hat{L}_{kbid} (i b d k)
+     call array_reorder_4d(1.0E0_realk,Lovov,no,nv,no,nv,[3,2,4,1],0.0E0_realk,w3)
+     ! w1 : sort  F_{ij} -> w1
+     call dcopy(o2,oof,1,w1,1)
+     ! w1 : \sum_{bdk} \hat{L}_{kbid}(i b d k) t^{db}_{jk} (b d k j) + \hat{F}_{ij}
+     call dgemm('n','n',no,no,no*v2,1.0E0_realk,w3,no,w2,no*v2,1.0E0_realk,w1,no)
+     ! w2 : \sum_{j} \zeta_{j}^{a} (a j) w1(ij)^T = w2
+     call dgemm('n','t',nv,no,no,1.0E0_realk,m1,nv,w1,no,0.0E0_realk,w2,nv) 
+     !write(msg,*)"rho b - 2"
+     !call print_norm(w2,int(ov,kind=8),msg)
+     call daxpy(ov,-1.0E0_realk,w2,1,rho1,1)
+     !part1
+     ! w2 : sort t(d l b k) -[3,2,1,4]> t (b l d k)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[3,2,1,4],0.0E0_realk,w2)
+     ! w1 : sort  F_{ba} -> w1
+     call dcopy(v2,vvf,1,w1,1)
+     ! w1 : \sum_{bdk} t^{db}_{lk} (b l d k)\hat{L}_{ldka}(l d k a)  + \hat{F}_{ba}
+     call dgemm('n','n',nv,nv,o2*nv,-1.0E0_realk,w2,nv,Lovov,o2*nv,1.0E0_realk,w1,nv)
+     ! w2 : \sum_{j} w1(b a)^T \zeta_{j}^{b} (b j) = w2
+     call dgemm('t','n',nv,no,nv,1.0E0_realk,w1,nv,m1,nv,0.0E0_realk,w2,nv) 
+     !write(msg,*)"rho b - 1"
+     !call print_norm(w2,int(ov,kind=8),msg)
+     call daxpy(ov,1.0E0_realk,w2,1,rho1,1)
+
+     write(msg,*)"rho b (11B):"
+     call print_norm(rho1,int(ov,kind=8),msg)
+
+     
+     !rho c - part2
+     !-------------
+     ! w3 : \sum_{dke} t^{de}_{kl} (d k e ,l)^T \zeta^{de}_{kj} (d k e j)
+     call dgemm('t','n',no,no,no*v2,1.0E0_realk,t2f,v2*no,m2,v2*no,0.0E0_realk,w3,no)
+     ! w1 : \sum_{lj} w3 (lj) L_{l j i a} (l j i a)
+     call dgemv('t',o2,ov,1.0E0_realk,Looov,o2,w3,1,0.0E0_realk,w2,1)
+     !rho1 += w2(i a)^T
+     call mat_transpose(no,nv,-1.0E0_realk,w2,1.0E0_realk,rho1)
+
+     write(msg,*)"rho c - 2(LT21B)"
+     call print_norm(rho1,int(ov,kind=8),msg)
+
+
+
+
+     !rho d
+     !-----
+     ! part1
+     ! sort \zeta^{da}_{kl} (d k a l) -[3 1 2 4]> w1(a d k l)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[3,1,2,4],0.0E0_realk,w1)
+     ! sort t^{de}_{kl} (d k e l) -[1,2,4,3]> w2(d k l e)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+     ! w3 : \sum_{dkl} w1 (a d k l) w2 (d k l e)
+     call dgemm('n','n',nv,nv,o2*nv,1.0E0_realk,w1,nv,w2,nv*o2,0.0E0_realk,w3,nv)
+     ! w1 : \sum_{e} w3 (ae) F_{ie} (i e)^T
+     call dgemm('n','t',nv,no,nv,1.0E0_realk,w3,nv,ovf,no,0.0E0_realk,w2,nv)
+     write(msg,*)"rho d - 1"
+     call print_norm(w2,int(ov,kind=8),msg)
+     !rho1 += w2(i a)^T
+     call daxpy(ov,-1.0E0_realk,w2,1,rho1,1)
+     ! part2
+     ! w3 : \sum_{dke} zeta^{de}_{ki} (d k e ,i)^T t^{de}_{kl} (d k e ,l)
+     call dgemm('t','n',no,no,no*v2,1.0E0_realk,m2,v2*no,t2f,v2*no,0.0E0_realk,w3,no)
+     ! w1 : \sum_{e} w3 (il) F_{la} (l a)
+     call dgemm('n','n',no,nv,no,1.0E0_realk,w3,no,ovf,no,0.0E0_realk,w2,no)
+     write(msg,*)"rho d - 2"
+     call print_norm(w2,int(ov,kind=8),msg)
+     !rho1 += w2(i a)^T
+     call mat_transpose(no,nv,-1.0E0_realk,w2,1.0E0_realk,rho1)
+     write(msg,*)"rho d(LT2EFM)"
+     call print_norm(rho1,int(ov,kind=8),msg)
+      
+
+     write(msg,*)"singles end" 
+     call print_norm(w4,int(ov,kind=8),msg)
+
+     call mem_dealloc(w4)
+     
+   
+     !DOUBLES EXPRESSIONS
+     !*******************
+
+     !rho B
+     !-----
+     rho2 = 0.0E0_realk
+     ! sort gvvvv_{cadb} (cadb) -> (cd ab)
+     call array_reorder_4d(1.0E0_realk,gvvvv,nv,nv,nv,nv,[1,3,2,4],0.0E0_realk,w1)
+     ! sort \zeta^{cd}_{ij} (c i d j) -> (i j c d)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[2,4,1,3],0.0E0_realk,w2)
+     ! \sum_{cd} \zeta{cd}_{ij} (ij cd) gvvvv_{cadb} (cd ab)
+     call dgemm('n','n',o2,v2,v2,1.0E0_realk,w2,o2,w1,v2,0.0E0_realk,w3,o2)
+     write(msg,*)"rho B"
+     call print_norm(w3,int(o2v2,kind=8),msg)
+     ! order w3(i j a b) and add to residual rho2 (a i b j)
+     call array_reorder_4d(0.5E0_realk,w3,no,no,nv,nv,[3,1,4,2],1.0E0_realk,rho2)
+
+     !rho 2. H part 
+     ! \sum_{c} \zeta_{j}^{c} (c,j)^T Lvvov_{cbia} (cbia)
+     call dgemm('t','n',no,v2*no,nv,1.0E0_realk,m1,nv,Lvvov,nv,0.0E0_realk,w1,no)
+     write(msg,*)"rho H - 2"
+     call print_norm(w1,int(o2v2,kind=8),msg)
+     ! order w1(j b i a) and add to residual rho2 (a i b j)
+     call array_reorder_4d(1.0E0_realk,w1,no,nv,no,nv,[4,3,2,1],1.0E0_realk,rho2)
+     norm = 0.0E0_realk
+     nrm2 = 0.0E0_realk
+     ctr = 0
+     do b = 1, nv
+       do j = 1, no
+         do a = 1,nv
+           do i = 1, no
+             if(a+(i-1)*nv>=b+(j-1)*nv)then
+               ctr  = ctr  + 1
+               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+     write (msg,*)"H(B-TERM)",ctr
+     print *,msg,sqrt(norm)
+
+     !rho E
+     !----- 
+     ! sort t^{cd}_{mn} (c m d n) -[1,3,2,4]> (c d m n)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,3,2,4],0.0E0_realk,w1)
+     ! sort govov_{manb} (m a n b) -[1,3,2,4]> (m n a b)
+     call array_reorder_4d(1.0E0_realk,govov,no,nv,no,nv,[1,3,2,4],0.0E0_realk,w2)
+     ! \sum_{mn} t^{cd}_{mn} (c d m n) govov_{manb} (m n a b)
+     call dgemm('n','n',v2,v2,o2,1.0E0_realk,w1,v2,w2,o2,0.0E0_realk,w3,v2)
+     ! sort \zeta^{cd}_{ij} (c i d j) -[2,4,1,3]> (i j c d)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[2,4,1,3],0.0E0_realk,w2)
+     ! \sum_{cd} \zeta^{cd}_{ij} (i j c d) w3 (c d a b)
+     call dgemm('n','n',o2,v2,v2,0.5E0_realk,w2,o2,w3,v2,0.0E0_realk,w1,o2)
+     !write(msg,*)"rho E"
+     !call print_norm(w1,int(o2v2,kind=8),msg)
+     ! order w1(i j  a b) and add to residual rho2 (a i b j)
+     call array_reorder_4d(1.0E0_realk,w1,no,no,nv,nv,[3,1,4,2],1.0E0_realk,rho2)
+     norm = 0.0E0_realk
+     nrm2 = 0.0E0_realk
+     ctr = 0
+     do b = 1, nv
+       do j = 1, no
+         do a = 1,nv
+           do i = 1, no
+             if(a+(i-1)*nv<=b+(j-1)*nv)then
+               ctr  = ctr  + 1
+               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+     write (msg,*)"E(AM-TERM)",ctr
+     print *,msg,sqrt(norm)
+
+
+     !rho F
+     !-----
+     !part1
+     ! \sum_{efm} \zeta^{ef}_{mj} (e m f , j)^T t^{ef}_{mn} (e m f , n)
+     call dgemm('t','n',no,no,v2*no,1.0E0_realk,m2,v2*no,t2f,v2*no,0.0E0_realk,w1,no)
+     ! sort Lovov{ianb} (i a n b) -[2,1,4,3]> (a i b n)
+     call array_reorder_4d(1.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],0.0E0_realk,w2)
+     ! \sum_{n} Lovov_{ianb} (aibn) w1 (j n)^T
+     call dgemm('n','t',v2*no,no,no,1.0E0_realk,w2,v2*no,w1,no,0.0E0_realk,w3,v2*no)
+     write(msg,*)"rho F - 1"
+     call print_norm(w3,int(o2v2,kind=8),msg)
+     !rho2 += w1(a i b j)
+     call daxpy(o2v2,-1.0E0_realk,w3,1,rho2,1)
+     !part2
+     ! sort \zeta^{ea}_{mn} (e m a n) -[3,1,2,4]> (a e m n)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[3,1,2,4],0.0E0_realk,w1)
+     ! sort \t^{ef}_{mn} (e m f n) -[1,2,4,3]> (e m n f)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+     ! \sum_{emn} \zeta^{ea}_{mn}(a e m n) t^{ef}_{mn} (e m n f)
+     call dgemm('n','n',nv,nv,o2*nv,1.0E0_realk,w1,nv,w2,o2*nv,0.0E0_realk,w3,nv)
+     ! sort Lovov{ifjb} (i f j b) -> (f i b j)
+     call array_reorder_4d(1.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],0.0E0_realk,w2)
+     ! \sum_{f} w3 (a f) Lovov_{ifjb} (f i b j) 
+     call dgemm('n','n',nv,o2*nv,nv,1.0E0_realk,w3,nv,w2,nv,0.0E0_realk,w1,nv)
+     !write(msg,*)"rho F - 2"
+     !call print_norm(w1,int(o2v2,kind=8),msg)
+     !rho2 += w1(a i b j)
+     call daxpy(o2v2,-1.0E0_realk,w1,1,rho2,1)
+     norm = 0.0E0_realk
+     nrm2 = 0.0E0_realk
+     ctr = 0
+     do b = 1, nv
+       do j = 1, no
+         do a = 1,nv
+           do i = 1, no
+             if(a+(i-1)*nv<=b+(j-1)*nv)then
+               ctr  = ctr  + 1
+               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+     write (msg,*)"F(EM-TRM)",ctr
+     print *,msg,sqrt(norm)
+
+
+     !rho G
+     !-----
+     ! part1
+     ! copy vv F to w3
+     call dcopy(v2,vvf,1,w3,1)
+     ! sort t^{fe}_{nm} (f n e m) -[3,2,1,4]> (e n f m)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[3,2,1,4],0.0E0_realk,w1)
+     ! vv F - \sum_{fmn} t^{fe}_{nm}(e n f m) Lovov_{nfmb} (n f m b)
+     call dgemm('n','n',nv,nv,o2*nv,-1.0E0_realk,w1,nv,Lovov,o2*nv,1.0E0_realk,w3,nv)
+     ! sort \zeta^{ae}_{ij} (a i e j) -> (a i j e)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w1)
+     ! \sum_{e} \zeta^{ae}_{ij} (a i j e) w3 (e a)
+     call dgemm('n','n',o2*nv,nv,nv,1.0E0_realk,w1,o2*nv,w3,nv,0.0E0_realk,w2,o2*nv)
+     write(msg,*)"rho G - 1"
+     call print_norm(w2,int(o2v2,kind=8),msg)
+     ! order w1(a i j b) and add to residual rho2 (a i b j)
+     call array_reorder_4d(1.0E0_realk,w2,nv,no,no,nv,[1,2,4,3],1.0E0_realk,rho2)
+     !part2
+     ! copy oo F to w3
+     call dcopy(o2,oof,1,w3,1)
+     ! sort t^{fe}_{nm} (f n e m) -[4,3,1,2]> (m e f n)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[4,3,1,2],0.0E0_realk,w2)
+     ! sort Lovov_{mejf} (mejf} -[3,1,2,4]> (j m e f)
+     call array_reorder_4d(1.0E0_realk,Lovov,no,nv,no,nv,[3,1,2,4],0.0E0_realk,w1)
+     ! oo F + \sum_{efm} Lovov_{mejf} (j mef) t^{fe}_{nm}(mef n) 
+     call dgemm('n','n',no,no,v2*no,1.0E0_realk,w1,no,w2,v2*no,1.0E0_realk,w3,no)
+     ! \sum_{n} \zeta^{ab}_{in} (a i b n) w3 (j n)^T
+     call dgemm('n','t',v2*no,no,no,1.0E0_realk,m2,v2*no,w3,no,0.0E0_realk,w2,v2*no)
+     write(msg,*)"rho G - 2"
+     call print_norm(w2,int(o2v2,kind=8),msg)
+     ! order w1(a i b j) and add to residual rho2 (a i b j)
+     call array_reorder_4d(-1.0E0_realk,w2,nv,no,nv,no,[1,2,3,4],1.0E0_realk,rho2)
+     norm = 0.0E0_realk
+     ctr = 0
+     do b = 1, nv
+       do j = 1, no
+         do a = 1,nv
+           do i = 1, no
+             if(a+(i-1)*nv<=b+(j-1)*nv)then
+               ctr  = ctr  + 1
+               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+     write (msg,*)"G(22E-TERM)",ctr
+     print *,msg,sqrt(norm)
+
+
+     !rho A
+     !-----
+     ! copy goooo[j n i m ]  -[2,4,3,1]> w1[n m i j]
+     call array_reorder_4d(1.0E0_realk,goooo,no,no,no,no,[2,4,3,1],0.0E0_realk,w1)
+     ! sort govov{jfie}(jfie) -[4,2,3,1]> (e f i j)
+     call array_reorder_4d(1.0E0_realk,govov,no,nv,no,nv,[4,2,3,1],0.0E0_realk,w2)
+     ! sort t^{fe}_{nm} (f n e m) -[2,4,3,1]> (n m e f)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[2,4,3,1],0.0E0_realk,w3)
+     !\sum_{ef} t^{fe}_{nm} (n m e f) govov_{jfie} (ef ij) + goooo
+     call dgemm('n','n',o2,o2,v2,1.0E0_realk,w3,o2,w2,v2,1.0E0_realk,w1,o2)
+     ! sort \zeta^{ab}_{mn} (a m b n) -[1,3,4,2]> (a b n m)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[1,3,4,2],0.0E0_realk,w2)
+     !\frac{1}{2} \sum_{mn} w2:\zeta^{ab}_{mn} (a b n m} w1(n m i j)
+     call dgemm('n','n',v2,o2,o2,0.5E0_realk,w2,v2,w1,o2,0.0E0_realk,w3,v2)
+     !write(msg,*)"rho A"
+     !call print_norm(w3,int(o2v2,kind=8),msg)
+     ! order and add (a b i j) to residual rho2 (a i b j)
+     call array_reorder_4d(1.0E0_realk,w3,nv,nv,no,no,[1,3,2,4],1.0E0_realk,rho2)
+     norm = 0.0E0_realk
+     ctr = 0
+     do b = 1, nv
+       do j = 1, no
+         do a = 1,nv
+           do i = 1, no
+             if(a+(i-1)*nv<=b+(j-1)*nv)then
+               ctr  = ctr  + 1
+               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+     write (msg,*)"A(22A-TERM)",ctr
+     print *,msg,sqrt(norm)
+
+     !rho D
+     !-----
+     ! copy Lvoov in w3 
+     call dcopy(o2v2,Lvoov,1,w3,1)
+     ! sort u2^{ef}_{mn} (emfn) -> em nf
+     call array_reorder_4d(1.0E0_realk,u2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w1)
+     ! \sum_{fn} u2^{ef}_{mn} (emnf) Lovov_{nfjb} (nfjb) + Lvoov_{emjb} (emjb)
+     call dgemm('n','n',ov,ov,ov,1.0E0_realk,w1,ov,Lovov,ov,1.0E0_realk,w3,ov)
+     ! \sum_{em} \zeta^{ae}_{im} (a i e m) w3 (e m j b)
+     call dgemm('n','n',ov,ov,ov,1.0E0_realk,m2,ov,w3,ov,0.0E0_realk,w2,ov)
+     !write(msg,*)"rho D"
+     !call print_norm(w2,int(o2v2,kind=8),msg)
+     ! order w1(a i j b) and add to residual rho2 (a i b j)
+     call array_reorder_4d(1.0E0_realk,w2,nv,no,no,nv,[1,2,4,3],1.0E0_realk,rho2)
+     ! order w1(a j i b) and add to residual rho2 (a i b j)
+     call array_reorder_4d(-0.5E0_realk,w2,nv,no,no,nv,[1,3,4,2],1.0E0_realk,rho2)
+     norm = 0.0E0_realk
+     ctr = 0
+     do b = 1, nv
+       do j = 1, no
+         do a = 1,nv
+           do i = 1, no
+             if(a+(i-1)*nv<=b+(j-1)*nv)then
+               ctr  = ctr  + 1
+               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+     write (msg,*)"D(22D-TERM)",ctr
+     print *,msg,sqrt(norm)
+
+
+
+     !rho C
+     !-----
+     ! sort govov(nbif) -[4,1,2,3]> (fnbi)
+     call array_reorder_4d(1.0E0_realk,govov,no,nv,no,nv,[4,1,2,3],0.0E0_realk,w1)
+     ! sort t^{ef}_{nm} (enfm) -[1,4,3,2]> (emfn)
+     call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,3,2],0.0E0_realk,w2)
+     ! sort goovv(imeb) -[3,2,4,1]> (e m b i)
+     call array_reorder_4d(1.0E0_realk,goovv,no,no,nv,nv,[3,2,4,1],0.0E0_realk,w3)
+     ! \sum_{fn} t^{ef)_{nm}(em fn) govov_{nbif} (fn bi) + goovv
+     call dgemm('n','n',ov,ov,ov,-1.0E0_realk,w2,ov,w1,ov,1.0E0_realk,w3,ov)
+     ! sort make anti-u2 analog of \zeta^{ae}_{mj} (a m e j) as 2 (a j e m) + (a m e j)
+     call array_reorder_4d(2.0E0_realk,m2,nv,no,nv,no,[1,4,3,2],0.0E0_realk,w2)
+     call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[1,2,3,4],1.0E0_realk,w2)
+     ! \sum_{em} w2(a j e m) w3(em bi)
+     call dgemm('n','n',ov,ov,ov,1.0E0_realk,w2,ov,w3,ov,0.0E0_realk,w1,ov)
+     !write(msg,*)"rho C"
+     !call print_norm(w1,int(o2v2,kind=8),msg)
+     ! order w1(a j b i) and add to residual rho2 (a i b j)
+     call array_reorder_4d(-0.5E0_realk,w1,nv,no,nv,no,[1,4,3,2],1.0E0_realk,rho2)
+     norm = 0.0E0_realk
+     ctr = 0
+     do b = 1, nv
+       do j = 1, no
+         do a = 1,nv
+           do i = 1, no
+             if(a+(i-1)*nv<=b+(j-1)*nv)then
+               ctr  = ctr  + 1
+               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+     write (msg,*)"C(22C-TERM)",ctr
+     print *,msg,sqrt(norm)
+
+
+     !rho H
+     !-----
+     ! 2*\zeta_i^a * F_{jb} - \zeta_j^b F_{ib}
+     do j = 1, no
+       do b = 1, nv
+         do i = 1, no
+           do a = 1 ,nv
+             rho2(a,i,b,j) = rho2(a,i,b,j) + 2*m1(a,i)*ovf(j+(b-1)*no) - m1(a,j)*ovf(i+(b-1)*no)
+           enddo
+         enddo
+       enddo
+     enddo
+     norm = 0.0E0_realk
+     nrm2 = 0.0E0_realk
+     ctr = 0
+     do b = 1, nv
+       do j = 1, no
+         do a = 1,nv
+           do i = 1, no
+             if(a+(i-1)*nv<=b+(j-1)*nv)then
+               ctr  = ctr  + 1
+               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+     write (msg,*)"H(A12-TERM)",ctr
+     print *,msg,sqrt(norm)
+
+
+     !\sum_{k} Lovoo_{jbik} \zeta_{k}^{a} (a k)^T
+     call dgemm('n','t',o2*nv,nv,no,1.0E0_realk,Lovoo,o2*nv,m1,nv,0.0E0_realk,w1,o2*nv)
+     ! order w1(j b i a) and add to residual rho2 (a i b j)
+     call array_reorder_4d(-1.0E0_realk,w1,no,nv,no,nv,[4,3,2,1],1.0E0_realk,rho2)
+     norm = 0.0E0_realk
+     ctr = 0
+     do b = 1, nv
+       do j = 1, no
+         do a = 1,nv
+           do i = 1, no
+             if(a+(i-1)*nv<=b+(j-1)*nv)then
+               ctr  = ctr  + 1
+               norm = norm + (rho2(a,i,b,j) + rho2(b,j,a,i) )**2
+             endif
+           enddo
+         enddo
+       enddo
+     enddo
+     write (msg,*)"H(C12-TERM)",ctr
+     print *,msg,sqrt(norm)
+
+     
+
+     !permute rho 2
+     call array_reorder_4d(1.0E0_realk,rho2,nv,no,nv,no,[1,2,3,4],0.0E0_realk,w1)
+     call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[3,4,1,2],1.0E0_realk,rho2)
+     write(msg,*)"rho end"
+     call print_norm(rho2,int(o2v2,kind=8),msg)
+
+     call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
+     call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
+
+
+
+
+
+     call mem_dealloc(govov)   
+     call mem_dealloc(goovv)   
+     call mem_dealloc(Lovov)   
+     call mem_dealloc(Lvoov)   
+
+     call mem_dealloc(Lvvov)
+     call mem_dealloc(gvovv)
+     call mem_dealloc(govvv)
+     
+     call mem_dealloc(Looov)   
+     call mem_dealloc(Lovoo)   
+     call mem_dealloc(gvooo)   
+     call mem_dealloc(gooov)   
+
+     call mem_dealloc(goooo)
+
+     call mem_dealloc(gvvvv)
+
+     call mem_dealloc(u2)
+     call mem_dealloc(oof)
+     call mem_dealloc(ovf)
+     call mem_dealloc(vof)
+     call mem_dealloc(vvf)
+
+     call mem_dealloc(w1)
+     call mem_dealloc(w2)
+     call mem_dealloc(w3)
+
+    end subroutine get_ccsd_multipliers_simple
+     
+    subroutine successive_4ao_mo_trafo(ao,WXYZ,WW,w,XX,x,YY,y,ZZ,z,WRKWXYZ)
+      implicit none
+      integer, intent(in) :: ao,w,x,y,z
+      real(realk), intent(inout) :: WXYZ(ao*ao*ao*ao),WRKWXYZ(ao*ao*ao*w)
+      real(realk), intent(in) :: WW(ao,w),XX(ao,x),YY(ao,y),ZZ(ao,z)
+      !WXYZ(ao,ao ao ao)^T WW(ao,w)   -> WRKWXYZ (ao ao ao,w)
+      call dgemm('t','n',ao*ao*ao,w,ao,1.0E0_realk,WXYZ,ao,WW,ao,0.0E0_realk,WRKWXYZ,ao*ao*ao)
+      ! WRKWXYZ(ao,ao ao w)^T XX(ao,x)   -> WXYZ (ao ao w, x)
+      call dgemm('t','n',ao*ao*w,x,ao,1.0E0_realk,WRKWXYZ,ao,XX,ao,0.0E0_realk,WXYZ,ao*ao*w)
+      ! WXYZ(ao, ao w x)^T YY(ao,y)   -> WRKYXYX (ao w x,y)
+      call dgemm('t','n',ao*w*x,y,ao,1.0E0_realk,WXYZ,ao,YY,ao,0.0E0_realk,WRKWXYZ,ao*w*x)
+      ! WRKWXYZ(ao, w x y)^T ZZ(ao,z)^T   -> WXYZ (wxyz)
+      call dgemm('t','n',w*x*y,z,ao,1.0E0_realk,WRKWXYZ,ao,ZZ,ao,0.0E0_realk,WXYZ,w*x*y)
+    end subroutine successive_4ao_mo_trafo
+
+end module cc_debug_routines_module

@@ -26,6 +26,7 @@ module full
 !  use orbital_operations
   use full_molecule
   use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
+  use cc_debug_routines_module
   use ccdriver!,only: ccsolver_justenergy, ccsolver
 
   public :: full_driver
