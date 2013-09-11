@@ -124,6 +124,8 @@ module dec_typedef_module
      logical :: CCSD_MPICH
      !> prevent canonicalization in the ccsolver
      logical :: CCSDpreventcanonical
+     !> chose left-transformations to be carried out
+     logical :: CCSDmultipliers
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver

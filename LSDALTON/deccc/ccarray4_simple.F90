@@ -367,7 +367,7 @@ contains
        end if
 
        ! File associated with array is no longer used so that file unit is again available.
-       available_file_units(array%funit)=.true.
+       !available_file_units(array%funit)=.true.
        array%funit=0
 
     end if FileExists
