@@ -1061,7 +1061,7 @@ C        *************************************************
 C---------------------------------------------------------
          IF (CCLRLCZ) THEN
            IF ((.not. CCR12).AND. (.NOT. CCSLV)) THEN
-            write(lupri,*)'CCLRLANCZOS: building the'//
+            write(lupri,*)'CCLRLANCZOS: building the '//
      &                    'Lanczos Chain'
             !if (.false.) then
                !IF (REDMEML) then
