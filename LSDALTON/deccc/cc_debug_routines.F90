@@ -75,20 +75,21 @@ module cc_debug_routines_module
         & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
         & t1_final, t2_final, VOVO, .false.)
 
+     call array4_free(VOVO)
 
      call ccsolver_debug(ypo_f, ypv_f, fock_f, nbasis, nocc, nvirt, &
         & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
         & t1_final, t2_final, VOVO, .false., m2 = mult2, m1 = mult1)
 
-     call print_norm(mult2%val,int(nvirt*nvirt*nocc*nocc,kind=8))
-     call print_norm(mult1%val,int(nvirt*nocc,kind=8))
+     !call print_norm(mult2%val,int(i8*nvirt*nvirt*nocc*nocc,kind=8))
+     !call print_norm(mult1%val,int(i8*nvirt*nocc,kind=8))
 
      ! Free arrays
      call array2_free(t1_final)
      call array2_free(mult1)
      call array4_free(t2_final)
-     call array4_free(VOVO)
      call array4_free(mult2)
+     call array4_free(VOVO)
 
    end subroutine ccsolver_energy_multipliers
 
@@ -166,15 +167,13 @@ module cc_debug_routines_module
      character(18) :: save_to,keep
      character(ARR_MSG_LEN) :: msg
      integer :: ii,aa
+     integer :: MaxSubSpace
 
 
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-     get_mult = (present(m2).and.present(m1))
-     if((present(m2).and..not.present(m1)).or.(present(m1).and..not.present(m2)))then
-       call lsquit("ERROR(ccsolver_debug):requested unkown multipliers",-1)
-     endif
+
 
      ! Sanity check 1: Number of orbitals
      if( (nvirt < 1) .or. (nocc < 1) ) then
@@ -191,10 +190,18 @@ module cc_debug_routines_module
         end if
      end if
 
+     ! Sanity check 3: if CCSD multipliers are requested, make sure that both are
+     ! there
+     if((present(m2).and..not.present(m1)).or.(present(m1).and..not.present(m2)))then
+       call lsquit("ERROR(ccsolver_debug):requested unkown multipliers",-1)
+     endif
 
+
+     get_mult    = (present(m2).and.present(m1))
+     MaxSubSpace = DECinfo%ccMaxDIIS
 
      ! title
-     Call print_ccjob_header(ccPrintLevel,fragment_job,nbasis,nocc,nvirt)
+     Call print_ccjob_header(ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace)
 
      ! dimension vectors
      occ_dims   = [nbasis,nocc]
@@ -398,6 +405,7 @@ module cc_debug_routines_module
      write(DECinfo%output,*) '### Starting CC iterations'
      write(DECinfo%output,*) '### ----------------------'
      write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm          CC energy'
+     
 
      CCIteration : do iter=1,DECinfo%ccMaxIter
 
@@ -405,18 +413,18 @@ module cc_debug_routines_module
         call LSTIMER('START',iter_cpu,iter_wall,DECinfo%output)
 
         ! remove old vectors
-        RemoveOldVectors : if(iter > DECinfo%ccMaxDIIS) then
+        RemoveOldVectors : if(iter > MaxSubSpace) then
 
            if(DECinfo%cc_driver_debug) then
-              write(DECinfo%output,'(a,i4)') ' debug :: vector to delete : ',iter-DECinfo%ccMaxDIIS
+              write(DECinfo%output,'(a,i4)') ' debug :: vector to delete : ',iter-MaxSubSpace
            end if
 
            if(DECinfo%use_singles) then
-              call array2_free(t1(iter-DECinfo%ccMaxDIIS))
-              Call array2_free(omega1(iter-DECinfo%ccMaxDIIS))
+              call array2_free(t1(iter-MaxSubSpace))
+              Call array2_free(omega1(iter-MaxSubSpace))
            end if
-           call array4_free(t2(iter-DECinfo%ccMaxDIIS))
-           call array4_free(omega2(iter-DECinfo%ccMaxDIIS))
+           call array4_free(t2(iter-MaxSubSpace))
+           call array4_free(omega2(iter-MaxSubSpace))
         end if RemoveOldVectors
 
 
@@ -557,33 +565,26 @@ module cc_debug_routines_module
               call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
               &,t2_final%val,t1(iter)%val,t2(iter)%val,gao,xocc%val,yocc%val,xvirt%val,yvirt%val&
               &,nocc,nvirt,nbasis,MyLsItem)
+              call array4_dealloc(gao)
 
            else
 
              u = get_u(t2(iter))
-             call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock, &
-                  xocc,xvirt,yocc,yvirt,nocc,nvirt)
-             !aibj = get_gmo_simple(gao,xvirt,yocc,xvirt,yocc)
+             call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock,xocc,xvirt,yocc,yvirt,nocc,nvirt)
              aibj = get_gmo_simple(gao,yocc,xvirt,yocc,xvirt)
              call array4_reorder(aibj,[2,1,4,3])
+             call getDoublesResidualCCSD_simple(omega2(iter),t2(iter),u,gao,aibj,iajb,nocc,nvirt, &
+                  ppfock,qqfock,xocc,xvirt,yocc,yvirt)
 
-             if (DECinfo%ccsd_expl) then
-               !print *,"calling the old ccsd scheme"
-               call getDoublesResidualCCSD_simple(omega2(iter),t2(iter),u,gao,aibj,iajb,nocc,nvirt, &
-                    ppfock,qqfock,xocc,xvirt,yocc,yvirt)
-               ! just to debug
-               !          call getDoublesResidual_explicite(omega2(iter),t2(iter),u,gao,aibj,iajb,ppfock,qqfock, &
-               !            xocc,xvirt,yocc,yvirt,nocc,nvirt,nbasis)
-             else
-               call getDoublesResidualCCSD_simple2(omega2(iter),t2(iter),u,gao,aibj,iajb,nocc,nvirt, &
-                    ppfock,qqfock,xocc,xvirt,yocc,yvirt,nbasis)
-             endif
            endif
            call array4_free(aibj)
            call array4_free(u)
 
+
         elseif(DECinfo%ccmodel==5) then
+
            call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
+
         end if SelectCoupledClusterModel
 
         if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
@@ -612,7 +613,7 @@ module cc_debug_routines_module
 
         ! calculate crop/diis matrix
         B=0.0E0_realk; c=0.0E0_realk
-        do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
+        do i=iter,max(iter-MaxSubSpace+1,1),-1
            do j=iter,i,-1
               if(DECinfo%use_singles) then
                  if(DECinfo%use_preconditioner_in_b) then
@@ -643,7 +644,7 @@ module cc_debug_routines_module
         if(DECinfo%PL>1) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
 
         ! solve crop/diis equation
-        call CalculateDIIScoefficients(DECinfo%ccMaxDIIS,DECinfo%ccMaxIter,iter,B,c, &
+        call CalculateDIIScoefficients(MaxSubSpace,DECinfo%ccMaxIter,iter,B,c, &
              DECinfo%cc_driver_debug)
 
         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -661,7 +662,7 @@ module cc_debug_routines_module
            t2_opt = array4_init(ampl4_dims)
         end if
 
-        do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
+        do i=iter,max(iter-MaxSubSpace+1,1),-1
            ! mix singles
            if(DECinfo%use_singles) then
               call array2_add_to(t1_opt,c(i),t1(i))
@@ -835,7 +836,7 @@ module cc_debug_routines_module
 
 
      ! remove rest of the singles amplitudes and residuals
-     do i=last_iter,max(last_iter-DECinfo%ccMaxDIIS+1,1),-1
+     do i=last_iter,max(last_iter-MaxSubSpace+1,1),-1
 
 
         ! remove the lase files of t2 and omega2
@@ -1016,10 +1017,10 @@ module cc_debug_routines_module
      call cpu_time(bEnd)
      if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: B2 done, norm :',omega2*omega2
 
-     ! -- C2
-     call cpu_time(cStart)
+     !! -- C2
+     !call cpu_time(cStart)
 
-     ! std                                  ij,ab  ->    bi,aj
+     !! std                                  ij,ab  ->    bi,aj
      call array4_reorder(t2,[4,1,3,2]) ! t2[li,ad] -> t2[dl,ai]
      call array4_reorder(iajb,[1,4,3,2]) ! iajb[dc,kl] -> iajb[dl,kc]
      X = get_gmo_simple(gao,xocc,yocc,xvirt,yvirt) ! X[ki,ac]
@@ -1029,21 +1030,21 @@ module cc_debug_routines_module
      call array4_add_to(X,-0.5E0_realk,tmp1)
      call array4_free(tmp1)
 
-     ! a
+     !! a
      call array4_reorder(X,[4,1,3,2]) ! X[ki,ac] -> X[ck,ai]
      tmp1 = array4_init([nvirt,nocc,nvirt,nocc])
      call array4_contract2(X,t2,tmp1) ! tmp1[ai,bj]
      call array4_add_to(omega2,-0.5E0_realk,tmp1)
 
-     ! b
+     !! b
      call array4_reorder(tmp1,[1,4,3,2]) ! tmp1[aj,bi] -> tmp[ai,bj]
      call array4_add_to(omega2,-1.0E0_realk,tmp1)
 
-     ! c
+     !! c
      call array4_reorder(tmp1,[3,2,1,4]) ! tmp1[] -> tmp1[]
      call array4_add_to(omega2,-0.5E0_realk,tmp1)
 
-     ! d
+     !! d
      call array4_reorder(tmp1,[1,4,3,2]) ! tmp[] -> tmp1[]
      call array4_add_to(omega2,-1.0E0_realk,tmp1)
 
@@ -1053,7 +1054,7 @@ module cc_debug_routines_module
      call cpu_time(cEnd)
      if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: C2 done, norm :',omega2*omega2
 
-     ! -- D2
+     !! -- D2
      call cpu_time(dStart)
      l1 = getL(gao,xvirt,yocc,xocc,yvirt, &
           xvirt,yvirt,xocc,yocc)
@@ -1071,14 +1072,14 @@ module cc_debug_routines_module
      call array4_free(l1)
      call array4_free(l2)
 
-     ! a
+     !! a
      call array4_reorder(X,[3,4,1,2]) ! X[ai,kc] -> X[kc,ai]
      tmp = array4_init([nvirt,nocc,nvirt,nocc])
      call array4_contract2(X,u,tmp)
      call array4_add_to(omega2,0.5E0_realk,tmp)
      call array4_reorder(u,[3,4,2,1]) ! u[ld,ai] -> u[ai,dl]
 
-     ! b
+     !! b
      call array4_reorder(tmp,[3,4,1,2]) ! tmp[bj,ai] -> tmp[ai,bj]
      call array4_add_to(omega2,0.5E0_realk,tmp)
      call array4_free(X)
@@ -1087,27 +1088,26 @@ module cc_debug_routines_module
      call cpu_time(dEnd)
      if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: D2 done, norm',omega2*omega2
 
-     ! -- E2
+     !! -- E2
      call cpu_time(eStart)
-     qqY = array2_init([nvirt,nvirt]) ! qqY[b,c]
      qqtmp = array2_init([nvirt,nvirt])
-     ppX = array2_init([nocc,nocc]) ! ppX[k,j]
      pptmp = array2_init([nocc,nocc])
 
-     ! get qqY
+     !! get qqY
      call array4_reorder(u,[4,3,2,1]) ! u[bk,dl] -> u[ldk,b]
      call array4_contract3(u,iajb,qqtmp)
      qqY = array2_add(1.0E0_realk,qqfock,-1.0E0_realk,qqtmp)
      call array2_free(qqtmp)
 
-     ! get ppX
+     !! get ppX
      call array4_reorder(u,[4,3,2,1]) ! u[jdl,c] -> u[cld,j]
      call array4_reorder(iajb,[4,3,2,1]) ! iajb[kdl,c] -> iajb[cld,k]
      call array4_contract3(iajb,u,pptmp)
      ppX = array2_add(1.0E0_realk,ppfock,1.0E0_realk,pptmp)
+     call array2_free(pptmp)
      call array4_reorder(iajb,[4,3,2,1])
 
-     ! 1
+     !! 1
      call array2_transpose(qqY)
      call array4_reorder(t2,[3,4,1,2])
      tmp = array4_init([nvirt,nocc,nvirt,nocc])
@@ -1117,11 +1117,11 @@ module cc_debug_routines_module
      call array4_free(tmp)
      call array4_reorder(t2,[3,4,1,2])
 
-     ! 2
+     !! 2
      call array4_contract1(t2,qqY,omega2,.false.)
      call array2_transpose(qqY)
 
-     ! 3
+     !! 3
      call array4_reorder(t2,[4,3,2,1])
      tmp = array4_init([nocc,nvirt,nocc,nvirt])
      call array4_contract1(t2,ppX,tmp,.true.)
@@ -1130,7 +1130,7 @@ module cc_debug_routines_module
      call array4_add_to(omega2,-1.0E0_realk,tmp)
      call array4_free(tmp)
 
-     ! 4
+     !! 4
      call array4_reorder(t2,[2,1,3,4])
      tmp = array4_init([nocc,nvirt,nvirt,nocc])
      call array4_contract1(t2,ppX,tmp,.true.)
@@ -1147,672 +1147,6 @@ module cc_debug_routines_module
 
    end subroutine getDoublesResidualCCSD_simple
 
-   !> \brief Very simple debug version of CCSD residual
-   subroutine getDoublesResidual_explicite(omega2,t2,u,gao,aibj,iajb,ppfock,qqfock, &
-        xocc,xvirt,yocc,yvirt,nocc,nvirt,nbasis)
-
-     implicit none
-     type(array4), intent(inout) :: omega2,gao
-     type(array4), intent(in) :: t2,u
-     type(array4), intent(in) :: aibj,iajb
-     type(array4) :: aikc,acki,tmp
-     type(array2), intent(in) :: ppfock, qqfock
-     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
-     type(array2) :: pptmp, qqtmp
-     integer, intent(in) :: nocc, nvirt, nbasis
-     real(realk) :: starttime,endtime,aStart,aEnd,bStart,bEnd,cStart,cEnd, &
-          dStart,dEnd,eStart,eEnd
-     integer :: a,b,c,d,i,j,k,l
-
-     type(array4) :: abcd,X,l1,l2
-
-     aStart=0.0E0_realk; aEnd=0.0E0_realk
-     bStart=0.0E0_realk; bEnd=0.0E0_realk
-     cStart=0.0E0_realk; cEnd=0.0E0_realk
-     dStart=0.0E0_realk; dEnd=0.0E0_realk
-     eStart=0.0E0_realk; eEnd=0.0E0_realk
-     starttime=0.0E0_realk
-     endtime=0.0E0_realk
-
-     ! -- A2
-     call cpu_time(aStart)
-     write(DECinfo%output,'(a)') ' debug explicit :: A2'
-     omega2%val = omega2%val + aibj%val
-     abcd = get_gmo_simple(gao,xvirt,yvirt,xvirt,yvirt)
-
-     do j=1,nocc
-        do b=1,nvirt
-           do i=1,nocc
-              do a=1,nvirt
-
-                 do d=1,nvirt
-                    do c=1,nvirt
-                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + &
-                            t2%val(c,i,d,j)*abcd%val(a,c,b,d)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     call array4_free(abcd)
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: A2 done, norm',omega2*omega2
-     call cpu_time(aEnd)
-
-     ! -- B2
-     call cpu_time(bStart)
-     write(DECinfo%output,'(a)') ' debug explicit :: B2'
-     X = get_gmo_simple(gao,xocc,yocc,xocc,yocc)
-
-     do j=1,nocc
-        do l=1,nocc
-           do i=1,nocc
-              do k=1,nocc
-
-                 do d=1,nvirt
-                    do c=1,nvirt
-                       X%val(k,i,l,j) = X%val(k,i,l,j) + t2%val(c,i,d,j)*iajb%val(k,c,l,d)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     do j=1,nocc
-        do b=1,nvirt
-           do i=1,nocc
-              do a=1,nvirt
-
-                 do l=1,nocc
-                    do k=1,nocc
-                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + &
-                            t2%val(a,k,b,l)*X%val(k,i,l,j)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     call array4_free(X)
-     call cpu_time(bEnd)
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: B2 done, norm',omega2*omega2
-
-     ! -- C2
-     call cpu_time(cStart)
-     write(DECinfo%output,'(a)') ' debug explicit :: C2'
-     X = get_gmo_simple(gao,xocc,yocc,xvirt,yvirt)
-
-     do c=1,nvirt
-        do a=1,nvirt
-           do i=1,nocc
-              do k=1,nocc
-
-                 do d=1,nvirt
-                    do l=1,nocc
-                       X%val(k,i,a,c) = X%val(k,i,a,c) - &
-                            0.5E0_realk * t2%val(a,l,d,i)*iajb%val(k,d,l,c)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     do j=1,nocc
-        do b=1,nvirt
-           do i=1,nocc
-              do a=1,nvirt
-
-                 do c=1,nvirt
-                    do k=1,nocc
-                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - &
-                            0.5E0_realk*t2%val(b,k,c,j) * X%val(k,i,a,c)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     do j=1,nocc
-        do b=1,nvirt
-           do i=1,nocc
-              do a=1,nvirt
-
-                 do c=1,nvirt
-                    do k=1,nocc
-                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - &
-                            t2%val(b,k,c,i) * X%val(k,j,a,c)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     do j=1,nocc
-        do b=1,nvirt
-           do i=1,nocc
-              do a=1,nvirt
-
-                 do c=1,nvirt
-                    do k=1,nocc
-                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - &
-                            0.5E0_realk*t2%val(a,k,c,i) * X%val(k,j,b,c)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     do j=1,nocc
-        do b=1,nvirt
-           do i=1,nocc
-              do a=1,nvirt
-
-                 do c=1,nvirt
-                    do k=1,nocc
-                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - &
-                            t2%val(a,k,c,j) * X%val(k,i,b,c)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     call array4_free(X)
-
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: C2 done, norm',omega2*omega2
-     call cpu_time(cEnd)
-
-     ! -- D2
-     call cpu_time(dStart)
-     write(DECinfo%output,'(a)') ' debug explicit :: D2'
-
-     l2 = array4_init([nocc,nvirt,nocc,nvirt])
-     do c=1,nvirt
-        do k=1,nocc
-           do d=1,nvirt
-              do l=1,nocc
-                 l2%val(l,d,k,c) = 2.0E0_realk*iajb%val(l,d,k,c) - iajb%val(l,c,k,d)
-              end do
-           end do
-        end do
-     end do
-
-     l1 = array4_init([nvirt,nocc,nocc,nvirt])
-     aikc = get_gmo_simple(gao,xvirt,yocc,xocc,yvirt)
-     acki = get_gmo_simple(gao,xvirt,yvirt,xocc,yocc)
-
-     do c=1,nvirt
-        do k=1,nocc
-           do i=1,nocc
-              do a=1,nvirt
-                 l1%val(a,i,k,c) = 2.0E0_realk*aikc%val(a,i,k,c) - acki%val(a,c,k,i)
-              end do
-           end do
-        end do
-     end do
-
-     tmp = array4_init([nvirt,nocc,nocc,nvirt])
-     do c=1,nvirt
-        do k=1,nocc
-           do i=1,nocc
-              do a=1,nvirt
-
-                 do d=1,nvirt
-                    do l=1,nocc
-                       tmp%val(a,i,k,c) = tmp%val(a,i,k,c) + u%val(a,i,d,l)*l2%val(l,d,k,c)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     call array4_scale(tmp,0.5E0_realk)
-     call array4_add_to(tmp,1.0E0_realk,l1)
-
-     ! standard
-     do j=1,nocc
-        do b=1,nvirt
-           do i=1,nocc
-              do a=1,nvirt
-
-                 do c=1,nvirt
-                    do k=1,nocc
-                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + 0.5E0_realk*u%val(b,j,c,k)*tmp%val(a,i,k,c)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     ! permuted
-     do j=1,nocc
-        do b=1,nvirt
-           do i=1,nocc
-              do a=1,nvirt
-
-                 do c=1,nvirt
-                    do k=1,nocc
-                       omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + 0.5E0_realk*u%val(a,i,c,k)*tmp%val(b,j,k,c)
-                    end do
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     call array4_free(tmp)
-     call array4_free(l1)
-     call array4_free(l2)
-
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: D2 done, norm',omega2*omega2
-     call cpu_time(dEnd)
-
-     ! -- E2
-     call cpu_time(eStart)
-     write(DECinfo%output,'(a)') ' debug explicit :: E2'
-
-     pptmp = array2_init([nocc,nocc])
-     qqtmp = array2_init([nvirt,nvirt])
-
-     call array2_add_to(pptmp,1.0E0_realk,ppfock)
-     call array2_add_to(qqtmp,1.0E0_realk,qqfock)
-
-     ! do qqtmp
-     do b=1,nvirt
-        do c=1,nvirt
-
-           do d=1,nvirt
-              do k=1,nocc
-                 do l=1,nocc
-                    qqtmp%val(b,c) = qqtmp%val(b,c) - u%val(b,k,d,l)*iajb%val(l,d,k,c)
-                 end do
-              end do
-           end do
-
-        end do
-     end do
-
-     ! do pptmp
-     do k=1,nocc
-        do j=1,nocc
-
-           do c=1,nvirt
-              do d=1,nvirt
-                 do l=1,nocc
-                    pptmp%val(k,j) = pptmp%val(k,j) + u%val(c,l,d,j)*iajb%val(k,d,l,c)
-                 end do
-              end do
-           end do
-
-        end do
-     end do
-
-     ! second part of E2
-     do a=1,nvirt
-        do i=1,nocc
-           do b=1,nvirt
-              do j=1,nocc
-
-                 do c=1,nvirt
-                    omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + t2%val(a,i,c,j)*qqtmp%val(b,c)
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     do a=1,nvirt
-        do i=1,nocc
-           do b=1,nvirt
-              do j=1,nocc
-
-                 do c=1,nvirt
-                    omega2%val(a,i,b,j) = omega2%val(a,i,b,j) + t2%val(c,i,b,j)*qqtmp%val(a,c)
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     do a=1,nvirt
-        do i=1,nocc
-           do b=1,nvirt
-              do j=1,nocc
-
-                 do k=1,nocc
-                    omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - t2%val(a,k,b,j)*pptmp%val(k,i)
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     do a=1,nvirt
-        do i=1,nocc
-           do b=1,nvirt
-              do j=1,nocc
-
-                 do k=1,nocc
-                    omega2%val(a,i,b,j) = omega2%val(a,i,b,j) - t2%val(a,i,b,k)*pptmp%val(k,j)
-                 end do
-
-              end do
-           end do
-        end do
-     end do
-
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: C2 done, norm',omega2*omega2
-     call cpu_time(eEnd)
-
-   end subroutine getDoublesResidual_explicite
-
-
-   !> \brief Double residual for CCSD (devel version)
-   subroutine getDoublesResidualCCSD_simple2(omega2,t2,u,gao,aibj,iajb,nocc,nvirt, &
-        ppfock,qqfock,xocc,xvirt,yocc,yvirt,nbas)
-
-     implicit none
-     real(realk) :: starttime,endtime,aStart,aEnd,bStart,bEnd,cStart,cEnd, &
-          dStart,dEnd,eStart,eEnd,partial_start,partial_end
-     type(array4), intent(inout) :: omega2,t2
-     type(array4), intent(inout) :: u,gao,aibj,iajb
-     type(array2), intent(inout) :: ppfock, qqfock
-     integer, intent(in) :: nocc,nvirt,nbas
-     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
-     type(array4) :: abcd, tmp1, X
-     type(array4) :: l1, l2, tmp
-     type(array2) :: ppX,qqY,pptmp,qqtmp
-     integer :: a,i,b,j,k,l,c,d
-     type(array4) :: t2_half_ao,t2_ao,X_half_ao,X_ao, &
-          ABe_IJ,IJ_AlBe,Inu_AlBe
-
-     aStart=0.0E0_realk; aEnd=0.0E0_realk
-     bStart=0.0E0_realk; bEnd=0.0E0_realk
-     cStart=0.0E0_realk; cEnd=0.0E0_realk
-     dStart=0.0E0_realk; dEnd=0.0E0_realk
-     eStart=0.0E0_realk; eEnd=0.0E0_realk
-     starttime=0.0E0_realk; endtime=0.0E0_realk
-     partial_start=0.0E0_realk; partial_end=0.0E0_realk
-
-     call cpu_time(starttime)
-
-     ! -- A2
-     call cpu_time(aStart)
-
-     ! transform double amplitudes to AO in place of virtual indices
-     call cpu_time(partial_start)
-     t2_half_ao = array4_init([nbas,nocc,nvirt,nocc]) ! half transformed t2
-     call array2_transpose(yvirt)
-     call array4_contract1(t2,yvirt,t2_half_ao,.true.) ! t2[ai,bj] -> t2[mu i,bj]
-     call array4_reorder(t2_half_ao,[3,1,2,4]) ! t2[mu i,bj] -> t2[b mu,ij]
-     t2_ao = array4_init([nbas,nbas,nocc,nocc])
-     call array4_contract1(t2_half_ao,yvirt,t2_ao,.true.) ! t2[b mu,ij] -> t2[nu mu,ij]
-     call array4_free(t2_half_ao)
-     call array2_transpose(yvirt)
-     call array4_reorder(t2_ao,[2,1,3,4]) ! t2[nu mu,ij] -> t2[mu nu,ij]
-     call cpu_time(partial_end)
-     if(DECinfo%PL>1) &
-          write(DECinfo%output,'(/,a,f16.3,a)') ' time :: t2[ai,bj] -> t2[mu nu,ij] : ', &
-          partial_end-partial_start,' s'
-
-     ! reorder two-electron integrals
-     call cpu_time(partial_start)
-     call array4_read(gao) ! gao[al mu, be nu]
-     !call array4_reorder(gao,[2,4,1,3]) ! gao[al mu,be nu] -> gao[mu nu, al be]
-     call array4_reorder(gao,[1,3,2,4])
-     call cpu_time(partial_end)
-     if(DECinfo%PL>1) &
-          write(DECinfo%output,'(a,f16.3,a)') ' time :: sort GAO                  : ', &
-          partial_end-partial_start,' s'
-
-     ! contract aplitudes with two-electron integrals in AO basis
-     call cpu_time(partial_start)
-     X_ao = array4_init([nbas,nbas,nocc,nocc])
-     !call array4_contract2(gao,t2_ao,X_ao)
-     call array4_contract2_middle(gao,t2_ao,X_ao)
-     call array4_free(t2_ao)
-     call cpu_time(partial_end)
-     if(DECinfo%PL>1) &
-          write(DECinfo%output,'(a,f16.3,a)') ' time :: contract with GAO         : ', &
-          partial_end-partial_start,' s'
-
-     ! get g[ai,bj] and add it directly to omega2
-     call cpu_time(partial_start)
-     Inu_AlBe = array4_init([nocc,nbas,nbas,nbas]) ! gao[MuNu,AlBe] -> gao[INu,AlBe]
-     call array4_contract1(gao,yocc,Inu_AlBe,.true.)
-     call array4_alloc(gao)
-     call array4_reorder(Inu_AlBe,[2,1,3,4]) ! Inu_AlBe[INu,AlBe] -> Inu_AlBe[NuI,AlBe]
-
-     IJ_AlBe = array4_init([nocc,nocc,nbas,nbas])
-     call array4_contract1(Inu_AlBe,yocc,IJ_AlBe,.true.) ! Inu_AlBe[NuI,AlBe] -> IJ_AlBe[JI,AlBe]
-     call array4_free(Inu_AlBe)
-
-     call array4_reorder(IJ_AlBe,[4,3,2,1]) ! IJ_AlBe[JI,AlBe] -> IJ_AlBe[BeAl,IJ]
-     ABe_IJ = array4_init([nvirt,nbas,nocc,nocc])
-     call array4_contract1(IJ_AlBe,xvirt,ABe_IJ,.true.) ! IJ_AlBe[BeAl,IJ] -> ABe_IJ[ABe,IJ]
-     call array4_free(IJ_AlBe)
-
-     call array4_reorder(ABe_IJ,[2,3,1,4]) ! ABe_IJ[BAl,IJ] -> ABe_IJ[AlI,BJ]
-     call array4_contract1(ABe_IJ,xvirt,omega2,.false.) ! ABe_IJ[AlI,BJ] -> ABe_IJ[AI,BJ]
-     call array4_free(ABe_IJ)
-
-     call cpu_time(partial_end)
-     if(DECinfo%PL>1) &
-          write(DECinfo%output,'(a,f16.3,a)') ' time :: omega2 += g[ai,bj]        : ', &
-          partial_end-partial_start,' s'
-
-     ! transform to mo basis
-     call cpu_time(partial_start)
-     X_half_ao = array4_init([nvirt,nbas,nocc,nocc])
-     call array4_contract1(X_ao,xvirt,X_half_ao,.true.)
-     call array4_free(X_ao)
-     call array4_reorder(X_half_ao,[2,1,3,4])
-     X = array4_init([nvirt,nvirt,nocc,nocc])
-     call array4_contract1(X_half_ao,xvirt,X,.true.)
-     call array4_free(X_half_ao)
-     call array4_reorder(X,[2,3,1,4])
-     call array4_add_to(omega2,1.0E0_realk,X)
-     call array4_free(X)
-     call cpu_time(partial_end)
-     if(DECinfo%PL>1) &
-          write(DECinfo%output,'(a,f16.3,a)') ' time :: transform result to MO    : ', &
-          partial_end-partial_start,' s'
-
-     call cpu_time(aEnd)
-     if(DECinfo%PL>1) &
-          write(DECinfo%output,'(a,f16.3,a,/)') ' time :: total A term              : ', &
-          aEnd-aStart,' s'
-
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: A2 done, norm :',omega2*omega2
-
-     ! -- B2
-     call cpu_time(bStart)
-     call array4_reorder(iajb,[2,4,1,3]) ! iajb[kc,ld] -> iajb[cd,kl] (iajb[ia,jb] -> iajb[ab,ij])
-     call array4_reorder(t2,[1,3,2,4]) ! t2[ci,dj] -> t2[cd,ij] (t2[ai,bj] -> t2[ab,ij])
-     tmp1 = array4_init([nocc,nocc,nocc,nocc])
-     call array4_contract2(t2,iajb,tmp1) ! tmp1[ij,kl]
-     X = get_gmo_simple(gao,xocc,yocc,xocc,yocc) ! X[ki,lj]
-     call array4_reorder(X,[2,4,1,3]) ! X[ki,lj] -> X[ij,kl]
-     call array4_add_to(X,1.0E0_realk,tmp1)
-     call array4_free(tmp1)
-
-     call array4_reorder(X,[3,4,1,2]) ! X[ij,kl] -> X[kl,ij]
-     call array4_reorder(t2,[3,4,1,2]) ! t2[ab,kl]-> t2[kl,ab]
-     tmp1 = array4_init([nvirt,nvirt,nocc,nocc])
-     call array4_contract2(t2,X,tmp1) ! tmp1[ab,ij]
-     call array4_reorder(tmp1,[1,3,2,4]) ! tmp1[ab,ij] -> tmp1[ai,bj]
-     call array4_add_to(omega2,1.0E0_realk,tmp1)
-     call array4_free(X)
-     call array4_free(tmp1)
-     call cpu_time(bEnd)
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: B2 done, norm :',omega2*omega2
-
-     ! -- C2
-     call cpu_time(cStart)
-
-     ! std                                  ij,ab  ->    bi,aj
-     call array4_reorder(t2,[4,1,3,2]) ! t2[li,ad] -> t2[dl,ai]
-     call array4_reorder(iajb,[1,4,3,2]) ! iajb[dc,kl] -> iajb[dl,kc]
-     X = get_gmo_simple(gao,xocc,yocc,xvirt,yvirt) ! X[ki,ac]
-     tmp1 = array4_init([nvirt,nocc,nocc,nvirt]) ! tmp1[ai,kc]
-     call array4_contract2(t2,iajb,tmp1)
-     call array4_reorder(tmp1,[3,2,1,4]) ! -> tmp1[ki,ac]
-     call array4_add_to(X,-0.5E0_realk,tmp1)
-     call array4_free(tmp1)
-
-     ! a
-     call array4_reorder(X,[4,1,3,2]) ! X[ki,ac] -> X[ck,ai]
-     tmp1 = array4_init([nvirt,nocc,nvirt,nocc])
-     call array4_contract2(X,t2,tmp1) ! tmp1[ai,bj]
-     call array4_add_to(omega2,-0.5E0_realk,tmp1)
-
-     ! b
-     call array4_reorder(tmp1,[1,4,3,2]) ! tmp1[aj,bi] -> tmp[ai,bj]
-     call array4_add_to(omega2,-1.0E0_realk,tmp1)
-
-     ! c
-     call array4_reorder(tmp1,[3,2,1,4]) ! tmp1[] -> tmp1[]
-     call array4_add_to(omega2,-0.5E0_realk,tmp1)
-
-     ! d
-     call array4_reorder(tmp1,[1,4,3,2]) ! tmp[] -> tmp1[]
-     call array4_add_to(omega2,-1.0E0_realk,tmp1)
-
-     call array4_free(tmp1)
-     call array4_free(X)
-     call array4_reorder(t2,[3,2,1,4]) ! t2[dl,ai] -> t2[al,di]
-     call cpu_time(cEnd)
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: C2 done, norm :',omega2*omega2
-
-     ! -- D2
-     call cpu_time(dStart)
-     l1 = getL(gao,xvirt,yocc,xocc,yvirt, &
-          xvirt,yvirt,xocc,yocc)
-     call array4_reorder(iajb,[3,1,2,4]) ! iajb[dl,kc] -> iajb[kd,lc]
-     l2 = getL(iajb)
-     X = array4_init([nvirt,nocc,nocc,nvirt]) ! X[ai,kc]
-     call array4_reorder(u,[4,3,1,2]) ! u[ai,dl] -> u[ld,ai]
-     call array4_contract2(u,l2,X) ! X[ai,kc]
-     call array4_scale(X,0.5E0_realk)
-     call array4_add_to(X,1.0E0_realk,l1)
-
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: l1 norm : ',l1*l1
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: l1 norm : ',l2*l2
-
-     call array4_free(l1)
-     call array4_free(l2)
-
-     ! a
-     call array4_reorder(X,[3,4,1,2]) ! X[ai,kc] -> X[kc,ai]
-     tmp = array4_init([nvirt,nocc,nvirt,nocc])
-     call array4_contract2(X,u,tmp)
-     call array4_add_to(omega2,0.5E0_realk,tmp)
-     call array4_reorder(u,[3,4,2,1]) ! u[ld,ai] -> u[ai,dl]
-
-     ! b
-     call array4_reorder(tmp,[3,4,1,2]) ! tmp[bj,ai] -> tmp[ai,bj]
-     call array4_add_to(omega2,0.5E0_realk,tmp)
-     call array4_free(X)
-     call array4_free(tmp)
-
-     call cpu_time(dEnd)
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: D2 done, norm',omega2*omega2
-
-     ! -- E2
-     call cpu_time(eStart)
-     qqY = array2_init([nvirt,nvirt]) ! qqY[b,c]
-     qqtmp = array2_init([nvirt,nvirt])
-     ppX = array2_init([nocc,nocc]) ! ppX[k,j]
-     pptmp = array2_init([nocc,nocc])
-
-     ! get qqY
-     call array4_reorder(u,[4,3,2,1]) ! u[bk,dl] -> u[ldk,b]
-     call array4_contract3(u,iajb,qqtmp)
-     qqY = array2_add(1.0E0_realk,qqfock,-1.0E0_realk,qqtmp)
-     call array2_free(qqtmp)
-
-     ! get ppX
-     call array4_reorder(u,[4,3,2,1]) ! u[jdl,c] -> u[cld,j]
-     call array4_reorder(iajb,[4,3,2,1]) ! iajb[kdl,c] -> iajb[cld,k]
-     call array4_contract3(iajb,u,pptmp)
-     ppX = array2_add(1.0E0_realk,ppfock,1.0E0_realk,pptmp)
-     call array4_reorder(iajb,[4,3,2,1])
-
-     ! 1
-     call array2_transpose(qqY)
-     call array4_reorder(t2,[3,4,1,2])
-     tmp = array4_init([nvirt,nocc,nvirt,nocc])
-     call array4_contract1(t2,qqY,tmp,.true.)
-     call array4_reorder(tmp,[3,4,1,2])
-     call array4_add_to(omega2,1.0E0_realk,tmp)
-     call array4_free(tmp)
-     call array4_reorder(t2,[3,4,1,2])
-
-     ! 2
-     call array4_contract1(t2,qqY,omega2,.false.)
-     call array2_transpose(qqY)
-
-     ! 3
-     call array4_reorder(t2,[4,3,2,1])
-     tmp = array4_init([nocc,nvirt,nocc,nvirt])
-     call array4_contract1(t2,ppX,tmp,.true.)
-     call array4_reorder(t2,[4,3,2,1])
-     call array4_reorder(tmp,[4,3,2,1])
-     call array4_add_to(omega2,-1.0E0_realk,tmp)
-     call array4_free(tmp)
-
-     ! 4
-     call array4_reorder(t2,[2,1,3,4])
-     tmp = array4_init([nocc,nvirt,nvirt,nocc])
-     call array4_contract1(t2,ppX,tmp,.true.)
-     call array4_reorder(t2,[2,1,3,4])
-     call array4_reorder(tmp,[2,1,3,4])
-     call array4_add_to(omega2,-1.0E0_realk,tmp)
-     call array4_free(tmp)
-
-     call array2_free(ppX)
-     call array2_free(qqY)
-     call cpu_time(eEnd)
-
-     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: E2 done, norm',omega2*omega2
-
-     call cpu_time(endtime)
-     if(DECinfo%PL>1) then
-        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD A2 : ',aEnd-aStart,' s'
-        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD B2 : ',bEnd-bStart,' s'
-        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD C2 : ',cEnd-cStart,' s'
-        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD D2 : ',dEnd-dStart,' s'
-        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD E2 : ',eEnd-eStart,' s'
-        write(DECinfo%output,'(a,f16.3,a)')  &
-             ' time :: CCSD doubles : ',endtime-starttime,' s'
-     end if
-
-     return
-   end subroutine getDoublesResidualCCSD_simple2
    !> \author Patrick Ettenhuber
    !> \Date September 2013
    !> \brief This debug routine calculates the residual of the CCSD left
@@ -1854,16 +1188,6 @@ module cc_debug_routines_module
      v4   = v2*v2
 
      if( DECinfo%PL>2 )then 
-        !write (msg,*)"gao"
-        !call print_norm(gao,msg)
-        !write (msg,*)"xo"
-        !call print_norm(xo,int(nb*no,kind=8),msg)
-        !write (msg,*)"xv"
-        !call print_norm(xv,int(nb*nv,kind=8),msg)
-        !write (msg,*)"yo"
-        !call print_norm(yo,int(nb*no,kind=8),msg)
-        !write (msg,*)"yv"
-        !call print_norm(yv,int(nb*nv,kind=8),msg)
 
         write (msg,*)"t1 n**2 n"
         call print_norm(t1f,int(ov,kind=8),norm,.true.)
@@ -2566,29 +1890,31 @@ module cc_debug_routines_module
      call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
      call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
 
-     call mem_dealloc(govov)   
-     call mem_dealloc(goovv)   
-     call mem_dealloc(Lovov)   
-     call mem_dealloc(Lvoov)   
-
-     call mem_dealloc(Lvvov)
-     call mem_dealloc(gvovv)
-     call mem_dealloc(govvv)
-    
-     call mem_dealloc(Looov)   
-     call mem_dealloc(Lovoo)   
-     call mem_dealloc(gvooo)   
-     call mem_dealloc(gooov)   
-
-     call mem_dealloc(goooo)
-
-     call mem_dealloc(gvvvv)
-
      call mem_dealloc(u2)
      call mem_dealloc(oof)
      call mem_dealloc(ovf)
      call mem_dealloc(vof)
      call mem_dealloc(vvf)
+
+     call mem_dealloc(govov)
+     call mem_dealloc(goovv)
+     call mem_dealloc(Lovov)
+     call mem_dealloc(Lvoov)
+
+
+     call mem_dealloc(Lvvov)
+     call mem_dealloc(Lovvv)
+     call mem_dealloc(gvovv)
+     call mem_dealloc(govvv)
+
+     call mem_dealloc(Looov)
+     call mem_dealloc(Lovoo)
+     call mem_dealloc(gvooo)
+     call mem_dealloc(gooov)
+
+     call mem_dealloc(goooo)
+
+     call mem_dealloc(gvvvv)
 
      call mem_dealloc(w1)
      call mem_dealloc(w2)
