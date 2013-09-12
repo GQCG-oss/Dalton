@@ -652,8 +652,10 @@ module array2_simple_operations
     !> Transforming from AO to virtual orbitals in the basis where the fragment Fock matrix is diagonal
     type(array2),intent(inout) :: CDIAGvirt
     !> Occupied space: Transforming between local basis and basis where the fragment Fock matrix is diagonal
+    !> - indices: (local,semi-canonical)
     type(array2),intent(inout) :: Uocc
     !> Virtual space: Transforming between local basis and basis where the fragment Fock matrix is diagonal
+    !> - indices: (local,semi-canonical)
     type(array2),intent(inout) :: Uvirt
     !> Eigenvalues from diagonalization of occ-occ Fock matrix block
     real(realk), dimension(MyFragment%noccAOS),intent(inout) :: EVocc
@@ -775,8 +777,10 @@ module array2_simple_operations
     !> mo coefficents for occ and virt space for fragment or full molecule
     real(realk), intent(in) :: ypo(nb,no), ypv(nb,nv)
     !> Transforming from AO to occupied orbitals in the basis where the fock matrix is diagonal
+    !> - indices: (local,semi-canonical)
     real(realk),intent(inout) :: CDIAGocc(nb,no)
     !> Transforming from AO to virtual orbitals in the basis where the fock matrix is diagonal
+    !> - indices: (local,semi-canonical)
     real(realk),intent(inout) :: CDIAGvirt(nb,nv)
     !> Occupied space: Transforming between local basis and basis where the fock matrix is diagonal
     real(realk),intent(inout) :: Uocc(no,no)
