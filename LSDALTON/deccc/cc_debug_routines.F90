@@ -524,11 +524,9 @@ module cc_debug_routines_module
 
            if(get_mult)then
 
-              call array4_read(gao)
               call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
               &,t2_final%val,t1(iter)%val,t2(iter)%val,gao,xocc%val,yocc%val,xvirt%val,yvirt%val&
               &,nocc,nvirt,nbasis,MyLsItem)
-              call array4_dealloc(gao)
 
            else
 
@@ -775,6 +773,7 @@ module cc_debug_routines_module
      call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
 
      ! Write finalization message
+     !---------------------------
      call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,&
      &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu)
 
@@ -1164,15 +1163,15 @@ module cc_debug_routines_module
 
      type(lsitem), intent(inout) :: MyLsItem
      real(realk),intent(inout) :: rho1(:,:),rho2(:,:,:,:)
-     type(array4),intent(in)   :: gao
-     real(realk),intent(inout)    :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:)
+     type(array4),intent(inout):: gao
+     real(realk),intent(inout) :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:)
      real(realk),intent(in)    :: xo(:,:),yo(:,:),xv(:,:),yv(:,:)
      integer, intent(in)       :: no,nv,nb
      real(realk), pointer      :: w1(:), w2(:), w3(:), w4(:)
-     real(realk), pointer      :: Loooo(:),Lovov(:),Lvoov(:),Lvvov(:),Looov(:),Lovvv(:), Lovoo(:)
-     real(realk), pointer      :: gvovv(:), gvooo(:), govvv(:), gooov(:), goooo(:), gvvvv(:), govov(:)
+     real(realk), pointer      :: Lovov(:),Lvoov(:), Lovoo(:)
+     real(realk), pointer      :: gvovv(:), gvooo(:), govvv(:), gooov(:), govov(:)
      real(realk), pointer      :: goovv(:)
-     real(realk), pointer      :: u2(:),oof(:),ovf(:),vof(:),vvf(:)
+     real(realk), pointer      :: oof(:),ovf(:),vof(:),vvf(:)
      character(ARR_MSG_LEN)    :: msg
      integer                   :: v4,o4,o3v,ov3,o2v2,ov,b2,v2,o2
      type(matrix)              :: iFock, Dens
@@ -1222,10 +1221,8 @@ module cc_debug_routines_module
         print *,msg,norm,sqrt(norm),nrmm2,sqrt(nrmm2)
      endif
 
-     call mem_alloc(w1,nb**4)
-     call mem_alloc(w2,max(no,nv)*nb**3)
+     call mem_alloc(w2,max(max(no,nv)*nb**3,max(max(max(max(o2v2,ov3),v4),o2*v2),o4)))
 
-     call mem_alloc(u2,o2v2)
      call mem_alloc(oof,o2)
      call mem_alloc(ovf,ov)
      call mem_alloc(vof,ov)
@@ -1237,96 +1234,79 @@ module cc_debug_routines_module
      call mem_alloc(Lvoov,o2v2)
 
 
-     call mem_alloc(Lvvov,ov3)
-     call mem_alloc(Lovvv,ov3)
      call mem_alloc(gvovv,ov3)
      call mem_alloc(govvv,ov3)
 
-     call mem_alloc(Looov,o3v)
      call mem_alloc(Lovoo,o3v)
      call mem_alloc(gvooo,o3v)
      call mem_alloc(gooov,o3v)
-
-     call mem_alloc(goooo,o4)
-
-     call mem_alloc(gvvvv,v4)
-
-     !get u2
-     call array_reorder_4d(2.0E0_realk,t2f,nv,no,nv,no,[1,2,3,4],0.0E0_realk,u2)
-     call array_reorder_4d(-1.0E0_realk,t2f,nv,no,nv,no,[1,4,3,2],1.0E0_realk,u2)
 
 
      !construct Ls from gs
 
      !govov
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2)
-     call dcopy(o2v2,w1,1,govov,1)
+     call array4_read(gao)
+     call successive_4ao_mo_trafo(nb,gao%val,xo,no,yv,nv,xo,no,yv,nv,w2)
+     call dcopy(o2v2,gao%val,1,govov,1)
 
-     call array_reorder_4d(2.0E0_realk,w1,no,nv,no,nv,[1,2,3,4],0.0E0_realk,Lovov)
-     call array_reorder_4d(-1.0E0_realk,w1,no,nv,no,nv,[1,4,3,2],1.0E0_realk,Lovov)
+     call array_reorder_4d(2.0E0_realk,gao%val,no,nv,no,nv,[1,2,3,4],0.0E0_realk,Lovov)
+     call array_reorder_4d(-1.0E0_realk,gao%val,no,nv,no,nv,[1,4,3,2],1.0E0_realk,Lovov)
+
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gvoov
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yo,no,xo,no,yv,nv,w2)
      !Lvoov (a i j b) += gvoov (a i j b)
-     call array_reorder_4d(2.0E0_realk,w1,nv,no,no,nv,[1,2,3,4],0.0E0_realk,Lvoov)
+     call array_reorder_4d(2.0E0_realk,gao%val,nv,no,no,nv,[1,2,3,4],0.0E0_realk,Lvoov)
+
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gvvoo
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yo,no,w2)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yv,nv,xo,no,yo,no,w2)
      !write (msg,*)"gvvoo"
-     !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
+     !call print_norm(gao%val,int(no**2*nv**2,kind=8),msg)
      !Lvoov (a i j b) += gvvoo (a b i j)
-     call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,no,[1,4,3,2],1.0E0_realk,Lvoov)
+     call array_reorder_4d(-1.0E0_realk,gao%val,nv,nv,no,no,[1,4,3,2],1.0E0_realk,Lvoov)
 
-     call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,[3,4,1,2],0.0E0_realk,goovv)
+     call array_reorder_4d(1.0E0_realk,gao%val,nv,nv,no,no,[3,4,1,2],0.0E0_realk,goovv)
+
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gvvov
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2)
-     call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,govvv)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yv,nv,xo,no,yv,nv,w2)
+     call array_reorder_4d(1.0E0_realk,gao%val,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,govvv)
 
-     call array_reorder_4d(2.0E0_realk,w1,nv,nv,no,nv,[1,2,3,4],0.0E0_realk,Lvvov)
-     call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,nv,[1,4,3,2],1.0E0_realk,Lvvov)
-
-     call array_reorder_4d(2.0E0_realk,w1,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,Lovvv)
-     call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,nv,[3,2,1,4],1.0E0_realk,Lovvv)
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gvovv
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xv,nv,yv,nv,w2)
-     call dcopy(no*nv**3,w1,1,gvovv,1)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yo,no,xv,nv,yv,nv,w2)
+     call dcopy(no*nv**3,gao%val,1,gvovv,1)
+
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gooov
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2)
+     call successive_4ao_mo_trafo(nb,gao%val,xo,no,yo,no,xo,no,yv,nv,w2)
 
-     call dcopy(nv*no**3,w1,1,gooov,1)
+     call dcopy(nv*no**3,gao%val,1,gooov,1)
 
-     call array_reorder_4d(2.0E0_realk,w1,no,no,no,nv,[1,2,3,4],0.0E0_realk,Looov)
-     call array_reorder_4d(-1.0E0_realk,w1,no,no,no,nv,[3,2,1,4],1.0E0_realk,Looov)
 
-     call array_reorder_4d(2.0E0_realk,w1,no,no,no,nv,[3,4,1,2],0.0E0_realk,Lovoo)
-     call array_reorder_4d(-1.0E0_realk,w1,no,no,no,nv,[1,4,3,2],1.0E0_realk,Lovoo)
+     call array_reorder_4d(2.0E0_realk,gao%val,no,no,no,nv,[3,4,1,2],0.0E0_realk,Lovoo)
+     call array_reorder_4d(-1.0E0_realk,gao%val,no,no,no,nv,[1,4,3,2],1.0E0_realk,Lovoo)
+
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gvooo
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yo,no,w2)
-     call dcopy(nv*no**3,w1,1,gvooo,1)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yo,no,xo,no,yo,no,w2)
+     call dcopy(nv*no**3,gao%val,1,gvooo,1)
 
-     !goooo
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yo,no,w2)
-     call dcopy(o4,w1,1,goooo,1)
+     call array4_dealloc(gao)
 
-     !gvvvv
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xv,nv,yv,nv,w2)
-     call dcopy(v4,w1,1,gvvvv,1)
-
-     call mem_dealloc(w1)
-     call mem_dealloc(w2)
 
      !allocate the density matrix
      call mat_init(iFock,nb,nb)
@@ -1360,7 +1340,6 @@ module cc_debug_routines_module
 
      call mat_free(iFock)
 
-     call mem_alloc(w2,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
      call mem_alloc(w3,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
      call mem_alloc(w4,max(max(ov3,o3v),o2v2))
 
@@ -1379,7 +1358,9 @@ module cc_debug_routines_module
      !sort amps(dkfj) -> dkjf
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
      ! w3 : \sum_{fj} t^{df}_{kj} (d k f j) Lovvv (j f e a)
-     call dgemm('n','n',ov,v2,ov,1.0E0_realk,w2,ov,Lovvv,ov,0.0E0_realk,w3,ov)
+     call array_reorder_4d(2.0E0_realk,govvv,no,nv,nv,nv,[1,2,3,4],0.0E0_realk,w1)
+     call array_reorder_4d(-1.0E0_realk,govvv,no,nv,nv,nv,[1,4,3,2],1.0E0_realk,w1)
+     call dgemm('n','n',ov,v2,ov,1.0E0_realk,w2,ov,w1,ov,0.0E0_realk,w3,ov)
      !write(msg,*)"rho f 1"
      !call print_norm(w3,int(ov3,kind=8),msg)
      ! part2
@@ -1421,7 +1402,9 @@ module cc_debug_routines_module
      ! w3 : \sum_{dkl} w1 (f d k l) w2 (d k l e)
      call dgemm('n','n',nv,nv,no*no*nv,1.0E0_realk,w1,nv,w2,nv*no*no,0.0E0_realk,w3,nv)
      ! w1 : \sum_{fe} w3 (fe) L_{feia} (f e i a)
-     call dgemv('t',v2,ov,1.0E0_realk,Lvvov,v2,w3,1,0.0E0_realk,w2,1)
+     call array_reorder_4d(2.0E0_realk,govvv,no,nv,nv,nv,[3,4,1,2],0.0E0_realk,w1)
+     call array_reorder_4d(-1.0E0_realk,govvv,no,nv,nv,nv,[3,2,1,4],1.0E0_realk,w1)
+     call dgemv('t',v2,ov,1.0E0_realk,w1,v2,w3,1,0.0E0_realk,w2,1)
      !write(msg,*)"rho c - 1(LT21A)"
      !call print_norm(w2,int(ov,kind=8),msg)
      !rho1 += w2(i a)^T
@@ -1548,7 +1531,8 @@ module cc_debug_routines_module
      ! sort \hat{L}_{bkia} (b k i a) -> w1
      call dcopy(o2v2,Lvoov,1,w1,1)
      ! sort u2^{bd}_{kl} (b k d l) -[1,2,4,3]> (b k l d)
-     call array_reorder_4d(1.0E0_realk,u2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+     call array_reorder_4d(2.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+     call array_reorder_4d(-1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],1.0E0_realk,w2)
      ! w1 : \sum_{dl} u^{bd}_{kl}(b k l d) \hat{L}_{ldia} (l d i a) + \hat{L}_{bkia} (b k i a)
      call dgemm('n','n',ov,ov,ov,1.0E0_realk,w2,ov,Lovov,ov,1.0E0_realk,w1,ov)
      ! w2 : \sum_{bk}  w1(b k , i a)^T \zeta_k^b (b k)
@@ -1602,7 +1586,9 @@ module cc_debug_routines_module
      ! w3 : \sum_{dke} t^{de}_{kl} (d k e ,l)^T \zeta^{de}_{kj} (d k e j)
      call dgemm('t','n',no,no,no*v2,1.0E0_realk,t2f,v2*no,m2,v2*no,0.0E0_realk,w3,no)
      ! w1 : \sum_{lj} w3 (lj) L_{l j i a} (l j i a)
-     call dgemv('t',o2,ov,1.0E0_realk,Looov,o2,w3,1,0.0E0_realk,w2,1)
+     call array_reorder_4d(2.0E0_realk,gooov,no,no,no,nv,[1,2,3,4],0.0E0_realk,w1)
+     call array_reorder_4d(-1.0E0_realk,gooov,no,no,no,nv,[3,2,1,4],1.0E0_realk,w1)
+     call dgemv('t',o2,ov,1.0E0_realk,w1,o2,w3,1,0.0E0_realk,w2,1)
      !rho1 += w2(i a)^T
      call mat_transpose(no,nv,-1.0E0_realk,w2,1.0E0_realk,rho1)
 
@@ -1653,8 +1639,12 @@ module cc_debug_routines_module
      !rho B
      !-----
      rho2 = 0.0E0_realk
+     !gvvvv
+     call array4_read(gao)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yv,nv,xv,nv,yv,nv,w2)
      ! sort gvvvv_{cadb} (cadb) -> (cd ab)
-     call array_reorder_4d(1.0E0_realk,gvvvv,nv,nv,nv,nv,[1,3,2,4],0.0E0_realk,w1)
+     call array_reorder_4d(1.0E0_realk,gao%val,nv,nv,nv,nv,[1,3,2,4],0.0E0_realk,w1)
+     call array4_dealloc(gao)
      ! sort \zeta^{cd}_{ij} (c i d j) -> (i j c d)
      call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[2,4,1,3],0.0E0_realk,w2)
      ! \sum_{cd} \zeta{cd}_{ij} (ij cd) gvvvv_{cadb} (cd ab)
@@ -1666,7 +1656,9 @@ module cc_debug_routines_module
 
      !rho 2. H part 
      ! \sum_{c} \zeta_{j}^{c} (c,j)^T Lvvov_{cbia} (cbia)
-     call dgemm('t','n',no,v2*no,nv,1.0E0_realk,m1,nv,Lvvov,nv,0.0E0_realk,w1,no)
+     call array_reorder_4d(2.0E0_realk,govvv,no,nv,nv,nv,[3,4,1,2],0.0E0_realk,w2)
+     call array_reorder_4d(-1.0E0_realk,govvv,no,nv,nv,nv,[3,2,1,4],1.0E0_realk,w2)
+     call dgemm('t','n',no,v2*no,nv,1.0E0_realk,m1,nv,w2,nv,0.0E0_realk,w1,no)
      !write(msg,*)"rho H - 2"
      !call print_norm(w1,int(o2v2,kind=8),msg)
      ! order w1(j b i a) and add to residual rho2 (a i b j)
@@ -1777,7 +1769,11 @@ module cc_debug_routines_module
      !rho A
      !-----
      ! copy goooo[j n i m ]  -[2,4,3,1]> w1[n m i j]
-     call array_reorder_4d(1.0E0_realk,goooo,no,no,no,no,[2,4,3,1],0.0E0_realk,w1)
+     !goooo
+     call array4_read(gao)
+     call successive_4ao_mo_trafo(nb,gao%val,xo,no,yo,no,xo,no,yo,no,w2)
+     call array_reorder_4d(1.0E0_realk,gao%val,no,no,no,no,[2,4,3,1],0.0E0_realk,w1)
+     call array4_dealloc(gao)
      ! sort govov{jfie}(jfie) -[4,2,3,1]> (e f i j)
      call array_reorder_4d(1.0E0_realk,govov,no,nv,no,nv,[4,2,3,1],0.0E0_realk,w2)
      ! sort t^{fe}_{nm} (f n e m) -[2,4,3,1]> (n m e f)
@@ -1803,7 +1799,8 @@ module cc_debug_routines_module
      ! copy Lvoov in w3 
      call dcopy(o2v2,Lvoov,1,w3,1)
      ! sort u2^{ef}_{mn} (emfn) -> em nf
-     call array_reorder_4d(1.0E0_realk,u2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w1)
+     call array_reorder_4d(2.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w1)
+     call array_reorder_4d(-1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],1.0E0_realk,w1)
      ! \sum_{fn} u2^{ef}_{mn} (emnf) Lovov_{nfjb} (nfjb) + Lvoov_{emjb} (emjb)
      call dgemm('n','n',ov,ov,ov,1.0E0_realk,w1,ov,Lovov,ov,1.0E0_realk,w3,ov)
      ! \sum_{em} \zeta^{ae}_{im} (a i e m) w3 (e m j b)
@@ -1892,7 +1889,6 @@ module cc_debug_routines_module
      call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
      call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
 
-     call mem_dealloc(u2)
      call mem_dealloc(oof)
      call mem_dealloc(ovf)
      call mem_dealloc(vof)
@@ -1904,19 +1900,12 @@ module cc_debug_routines_module
      call mem_dealloc(Lvoov)
 
 
-     call mem_dealloc(Lvvov)
-     call mem_dealloc(Lovvv)
      call mem_dealloc(gvovv)
      call mem_dealloc(govvv)
 
-     call mem_dealloc(Looov)
      call mem_dealloc(Lovoo)
      call mem_dealloc(gvooo)
      call mem_dealloc(gooov)
-
-     call mem_dealloc(goooo)
-
-     call mem_dealloc(gvvvv)
 
      call mem_dealloc(w1)
      call mem_dealloc(w2)
