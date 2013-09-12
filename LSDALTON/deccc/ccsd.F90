@@ -82,11 +82,12 @@ module ccsd_module
     
 
 contains
-  function precondition_doubles_newarr(omega2,ppfock,qqfock) result(prec)
+  function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
 
     integer none
     type(array), intent(in) :: omega2
     type(array), intent(inout) :: ppfock, qqfock
+    logical, intent(in) :: loc
     type(array) :: prec
     integer, dimension(4) :: dims
     integer :: a,i,b,j
@@ -97,9 +98,8 @@ contains
     endif
     dims = omega2%dims
 
-    if(omega2%atype==DENSE.and.&
-    &(ppfock%atype==DENSE.or.ppfock%atype==REPLICATED).and.&
-    &(qqfock%atype==DENSE.or.qqfock%atype==REPLICATED))then
+    !make sure all data is local
+    if(loc)then
       prec = array_init(dims,4)
      
       !$OMP PARALLEL DEFAULT(NONE) SHARED(prec,dims,omega2,ppfock,qqfock) &
@@ -122,18 +122,16 @@ contains
       !$OMP END DO
       !$OMP END PARALLEL
 
-    elseif(omega2%atype==TILED_DIST.and.&
-          &associated(ppfock%addr_p_arr).and.associated(qqfock%addr_p_arr))then
+    else
+    !make sure all data is in the correct for this routine, that is omega2 is
+    !TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
+
       prec = array_init(dims,4,TILED_DIST,MASTER_INIT,omega2%tdim)
-      call array_change_atype_to_rep(ppfock)
-      call array_change_atype_to_rep(qqfock)
+      call array_change_atype_to_rep(ppfock,loc)
+      call array_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
       call array_change_atype_to_d(ppfock)
       call array_change_atype_to_d(qqfock)
-
-    else
-      call lsquit("ERROR(precondition_doubles_newarr):No preconditioning routine&
-      & available for your choice of arrays",DECinfo%output)
     endif
 
   end function precondition_doubles_newarr

@@ -838,6 +838,12 @@ contains
     type(ccorbital), pointer :: occ_orbitals(:)
     type(ccorbital), pointer :: unocc_orbitals(:)
     logical, pointer :: orbitals_assigned(:)
+    logical :: local
+
+    local = .true.
+#ifdef VAR_MPI
+    local = .false.
+#endif
 
 
     if(.not. DECinfo%solver_par .or. DECinfo%ccModel==1.or.DECinfo%CCDEBUG)then
@@ -853,7 +859,7 @@ contains
     else
       call ccsolver_par(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-         & t1_final,t2_final,VOVO,.false.)
+         & t1_final,t2_final,VOVO,.false.,local)
     endif
 
 #ifdef MOD_UNRELEASED
@@ -963,6 +969,11 @@ contains
     type(ccorbital), pointer :: occ_orbitals(:)
     type(ccorbital), pointer :: unocc_orbitals(:)
     logical, pointer :: orbitals_assigned(:)
+    logical :: local
+    local=.true.
+#ifdef VAR_MPI
+    local=.false.
+#endif
 
     ! is this a frozen core calculation or not?
     if (DECinfo%frozencore) then
@@ -987,7 +998,7 @@ contains
        else
           call ccsolver_par(ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-               & t1_final,t2_final,VOVO,.false.)
+               & t1_final,t2_final,VOVO,.false.,local)
        endif
 
     else
@@ -1006,7 +1017,7 @@ contains
        else
           call ccsolver_par(MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-               & t1_final,t2_final,VOVO,.false.)
+               & t1_final,t2_final,VOVO,.false.,local)
        endif
 
     end if
@@ -1198,7 +1209,7 @@ contains
       call ccsolver_par(myfragment%ypo,myfragment%ypv,&
          & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored)
+         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,.false.)
     else
       call ccsolver(myfragment%ypo,myfragment%ypv,&
          & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
@@ -1972,16 +1983,16 @@ contains
   !> \author Patrick Ettenhuber (adapted from Marcin)
   subroutine ccsolver_par(ypo_f,ypv_f,fock_f,nb,no,nv, &
        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-       & t1_final,t2_final,VOVO,longrange_singles)
+       & t1_final,t2_final,VOVO,longrange_singles,local)
 
     implicit none
 
     !> Number of occupied orbitals in full molecule/fragment AOS
-    integer, intent(in) :: no
+    integer, intent(in)                       :: no
     !> Number of virtual orbitals in full molecule/fragment AOS
-    integer, intent(in) :: nv
+    integer, intent(in)                       :: nv
     !> Number of basis functions in full molecule/atomic extent
-    integer, intent(in) :: nb
+    integer, intent(in)                       :: nb
     !> Fock matrix in AO basis for fragment or full molecule
     real(realk), dimension(nb,nb), intent(in) :: fock_f
     !> Occupied MO coefficients for fragment/full molecule
@@ -1992,28 +2003,29 @@ contains
     real(realk), dimension(no,no), intent(in) :: ppfock_f
     !> Virt-virt block of Fock matrix in MO basis
     real(realk), dimension(nv,nv), intent(in) :: qqfock_f
-    real(realk),pointer :: dens(:,:)
+    real(realk),pointer                       :: dens(:,:)
     !> Is this a fragment job (true) or a full molecular calculation (false)
-    logical, intent(in) :: fragment_job
+    logical, intent(in)                       :: fragment_job
     !> LS item information
-    type(lsitem), intent(inout) :: mylsitem
+    type(lsitem), intent(inout)               :: mylsitem
     !> How much to print? ( ccPrintLevel>0 --> print info stuff)
-    integer, intent(in) :: ccPrintLevel
+    integer, intent(in)                       :: ccPrintLevel
     !> Coupled cluster energy for fragment/full molecule
-    real(realk),intent(inout) :: ccenergy
+    real(realk),intent(inout)                 :: ccenergy
     !> Final singles amplitudes
-    type(array2),intent(inout) :: t1_final
-    type(array) :: t1_final_work
+    type(array2),intent(inout)                :: t1_final
+    type(array)                               :: t1_final_work
     !> Final doubles amplitudes
-    type(array4),intent(inout) :: t2_final
-    type(array) :: t2_final_work
+    type(array4),intent(inout)                :: t2_final
+    type(array)                               :: t2_final_work
     !> Two electron integrals (a i | b j) stored as (a,i,b,j)
-    type(array4),intent(inout) :: VOVO
+    type(array4),intent(inout)                :: VOVO
     !> Include long-range singles effects using singles amplitudes
     !> from previous fragment calculations.
     !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
     !> (from previous calculations) must be stored in t1_final at input!
-    logical,intent(in) :: longrange_singles
+    logical,intent(in)                        :: longrange_singles
+    logical,intent(in)                        :: local
     !
     !work stuff
     real(realk),pointer :: ypo_d(:,:),ypv_d(:,:),yho_d(:,:), yhv_d(:,:),focc(:),fvirt(:)
@@ -2137,9 +2149,9 @@ contains
     ! title
     Call print_ccjob_header(ccPrintLevel,fragment_job,.false.,nb,no,nv,DECinfo%ccMaxDIIS)
     ! dimension vectors
-    occ_dims = [nb,no]
-    virt_dims = [nb,nv]
-    ao2_dims = [nb,nb]
+    occ_dims   = [nb,no]
+    virt_dims  = [nb,nv]
+    ao2_dims   = [nb,nb]
     ampl4_dims = [nv,nv,no,no]
     ampl2_dims = [nv,no]
 
@@ -2233,11 +2245,11 @@ contains
 
     ! get fock matrices for preconditioning
     Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
-       ppfock_prec = array_minit_rpseudo_dense([no,no],2)
-       qqfock_prec = array_minit_rpseudo_dense([nv,nv],2)
+       ppfock_prec = array_minit_rpseudo_dense([no,no],2,local)
+       qqfock_prec = array_minit_rpseudo_dense([nv,nv],2,local)
 
-       call array_change_atype_to_rep(ppfock_prec)
-       call array_change_atype_to_rep(qqfock_prec)
+       call array_change_atype_to_rep(ppfock_prec,local)
+       call array_change_atype_to_rep(qqfock_prec,local)
        if(DECinfo%precondition_with_full) then
           call array_convert(ppfock_d,ppfock_prec)
           call array_convert(qqfock_d,qqfock_prec)
@@ -2280,7 +2292,7 @@ contains
        yv = array_init(virt_dims,2)
     end if
     !iajb=array_minit_tdpseudo_dense([no,nv,no,nv],4)
-    iajb=array_minit_td([no,nv,no,nv],4)
+    iajb=array_minit_td([no,nv,no,nv],4,local)
     call array_zero(iajb)
 
     call mem_alloc(B,DECinfo%ccMaxIter,DECinfo%ccMaxIter)
@@ -2311,7 +2323,7 @@ contains
           end if
 
           if(DECinfo%use_singles) then
-             call array_free_rpseudo_dense(t1(iter-DECinfo%ccMaxDIIS))
+             call array_free_rpseudo_dense(t1(iter-DECinfo%ccMaxDIIS),local)
              Call array_free(omega1(iter-DECinfo%ccMaxDIIS))
              
           end if
@@ -2322,11 +2334,11 @@ contains
        ! get guess amplitude vectors in the first iteration --> zero
        GetGuessVectors : if(iter == 1) then
           if(DECinfo%use_singles)then
-            t1(iter) = array_minit_rpseudo_dense(ampl2_dims,2)
-            t2(iter) = array_minit_tdpseudo_dense(ampl4_dims,4)
+            t1(iter) = array_minit_rpseudo_dense(ampl2_dims,2,local)
+            t2(iter) = array_minit_tdpseudo_dense(ampl4_dims,4,local)
             call get_guess_vectors(restart,t2(iter),safefilet21,safefilet22,t1(iter),safefilet11,safefilet12)
           else
-            t2(iter) = array_minit_tdpseudo_dense(ampl4_dims,4)
+            t2(iter) = array_minit_tdpseudo_dense(ampl4_dims,4,local)
             call get_guess_vectors(restart,t2(iter),safefilet21,safefilet22)
          endif
        end if GetGuessVectors
@@ -2336,7 +2348,7 @@ contains
          omega1(iter) = array_init(ampl2_dims,2)
          call array_zero(omega1(iter))
        endif
-       omega2(iter) = array_minit_td(ampl4_dims,4)
+       omega2(iter) = array_minit_td(ampl4_dims,4,local)
        call array_zero(omega2(iter))
 
        ! get singles
@@ -2398,18 +2410,19 @@ contains
                 if(DECinfo%use_preconditioner_in_b) then
 
                    omega1_prec = precondition_singles(omega1(j),ppfock_prec,qqfock_prec)
-                   omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec)
+                   omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec,local)
                    B(i,j) = array_ddot(omega1(i),omega1_prec) 
                    B(i,j) = B(i,j) + array_ddot(omega2(i),omega2_prec)
                    call array_free(omega1_prec)
                    call array_free(omega2_prec)
                 else
+                   call lsquit("ERROR NO preconditioner is not implemented yet, to do soon",-1)
                    !B(i,j) = d_omega1(i)*d_omega1(j) + d_omega2(i)*d_omega2(j)
                 end if
             else
                 ! just doubles
                 if(DECinfo%use_preconditioner_in_b) then
-                   omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec)
+                   omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec,local)
                    B(i,j) = array_ddot(omega2(i),omega2_prec)
                    call array_free(omega2_prec)
                 else
@@ -2442,9 +2455,9 @@ contains
           t1_opt     = array_init(ampl2_dims,2)
           omega1_opt = array_init(ampl2_dims,2)
        end if
-       omega2_opt  = array_minit_td(ampl4_dims,4)
+       omega2_opt  = array_minit_td(ampl4_dims,4,local)
        call array_zero(omega2_opt)
-       t2_opt = array_minit_td(ampl4_dims,4)
+       t2_opt = array_minit_td(ampl4_dims,4,local)
        call array_zero(t2_opt)
        do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
           ! mix singles
@@ -2523,23 +2536,23 @@ contains
           if(DECinfo%use_preconditioner) then
              if(DECinfo%use_singles) then
                 omega1_prec = precondition_singles(omega1_opt,ppfock_prec,qqfock_prec)
-                t1(iter+1) = array_minit_rpseudo_dense(ampl2_dims,2)
+                t1(iter+1) = array_minit_rpseudo_dense(ampl2_dims,2,local)
                 call array_cp_data(t1_opt,t1(iter+1))
                 call array_add(t1(iter+1),1.0E0_realk,omega1_prec)
                 call array_free(omega1_prec)
              end if
-             omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec)
-             t2(iter+1) = array_minit_tdpseudo_dense(ampl4_dims,4)
+             omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec,local)
+             t2(iter+1) = array_minit_tdpseudo_dense(ampl4_dims,4,local)
              call array_cp_data(t2_opt,t2(iter+1))
              call array_add(t2(iter+1),1.0E0_realk,omega2_prec)
              call array_free(omega2_prec)
           else
              if(DECinfo%use_singles)then
-                t1(iter+1) = array_minit_rpseudo_dense(ampl2_dims,2)
+                t1(iter+1) = array_minit_rpseudo_dense(ampl2_dims,2,local)
                 call array_cp_data(t1_opt,t1(iter+1))
                 call array_add(t1(iter+1),1.0E0_realk,omega1_opt)
              endif
-             t2(iter+1) = array_minit_tdpseudo_dense(ampl4_dims,4)
+             t2(iter+1) = array_minit_tdpseudo_dense(ampl4_dims,4,local)
              call array_cp_data(t2_opt,t2(iter+1))
              call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
           end if
@@ -2601,7 +2614,7 @@ contains
           end if
 
           ! Free singles amplitudes and residuals
-          call array_free_rpseudo_dense(t1(i))
+          call array_free_rpseudo_dense(t1(i),local)
           call array_free(omega1(i))
 
        end if
@@ -2612,13 +2625,13 @@ contains
           t2_final = array4_init([nv,no,nv,no])
           call array_cp_tiled2dense(t2(last_iter),.true.)
           call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
-          call array_change_atype_to_td(t2(last_iter))
+          call array_change_atype_to_td(t2(last_iter),local)
        end if
 
        ! Free doubles residuals
-       call array_free_tdpseudo_dense(omega2(i))
+       call array_free_tdpseudo_dense(omega2(i),local)
        ! Free doubles amplitudes
-       call array_free_tdpseudo_dense(t2(i))
+       call array_free_tdpseudo_dense(t2(i),local)
 
     end do
 
@@ -2661,8 +2674,8 @@ contains
 
 
     if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
-       call array_free_rpseudo_dense(ppfock_prec)
-       call array_free_rpseudo_dense(qqfock_prec)
+       call array_free_rpseudo_dense(ppfock_prec,local)
+       call array_free_rpseudo_dense(qqfock_prec,local)
     end if
 
     if(DECinfo%use_singles) then
