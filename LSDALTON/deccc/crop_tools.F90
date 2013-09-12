@@ -376,6 +376,29 @@ module crop_tools_module
   end subroutine print_ccjob_header
 
 
+  !it = iteration number
+  !norm = norm of the total residual
+  !ce = correlation energy
+  !gm = multipliers yes or no?
+  subroutine print_ccjob_iterinfo(it,norm,ce,gm)
+    implicit none
+    integer,intent(in)     :: it
+    real(realk),intent(in) :: norm,ce
+    logical, intent(in)    :: gm
+    if( gm ) then
+      print '(1X,a,2X,i4,5X,g19.9,4X)',  '### ',it, norm
+      write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X)') &
+         &   '### ',it, norm
+    else
+      print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',it, norm,ce
+      write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
+         &   '### ',it, norm,ce
+    endif
+    
+  end subroutine print_ccjob_iterinfo
+  
+
+
   ! bi is the logical for break_iterations => success of the crop procedure
   ! gm is the logical for get_mult(ipliers) => ccequations vs left-hand
   ! transformations

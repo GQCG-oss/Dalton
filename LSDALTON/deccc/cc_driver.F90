@@ -347,21 +347,8 @@ contains
 
     ! iterate
     break_iterations = .false.
-    crop_ok = .false.
-    prev_norm = 1.0E6_realk
-
-
-
-
-    print *
-    print *, '### Starting CC iterations'
-    print *, '### ----------------------'
-    print '(1X,a)',  '###  Iteration     Residual norm          CC energy'
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '### Starting CC iterations'
-    write(DECinfo%output,*) '### ----------------------'
-    write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm          CC energy'
+    crop_ok          = .false.
+    prev_norm        = 1.0E6_realk
 
     CCIteration : do iter=1,DECinfo%ccMaxIter
 
@@ -681,10 +668,8 @@ contains
 #ifdef __GNUC__
        call flush(DECinfo%output)
 #endif
+       call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,.false.)
 
-      print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',iter, two_norm_total,ccenergy
-      write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
-            &   '### ',iter, two_norm_total,ccenergy
        last_iter = iter
        if(break_iterations) exit
 
@@ -692,28 +677,10 @@ contains
 
     call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
 
+    ! Write finalization message
+    call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter,&
+    &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu)
 
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(/,a)') '-------------------------------'
-    write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '
-    write(DECinfo%output,'(a,/)') '-------------------------------'
-    if(break_iterations) then
-       write(DECinfo%output,'(a)')     'Hooray! CC equation is solved!'
-    else
-       write(DECinfo%output,'(a,i4,a)')  'CC equation not solved in ', &
-            & DECinfo%ccMaxIter, ' iterations!'
-       call lsquit('CC equation not solved!',DECinfo%output)
-    end if
-    write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total cpu time    = ',ttotend_cpu-ttotstart_cpu,' s'
-    write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total wall time   = ',ttotend_wall-ttotstart_wall,' s'
-
-    if(fragment_job) then
-       write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ccenergy
-    else
-       write(DECinfo%output,'(a,f16.10)')  'Corr. energy       = ',ccenergy
-    end if
-    write(DECinfo%output,'(a,i5)') 'Number of CC iterations =', last_iter
 
 
     ! Free memory and save final amplitudes
@@ -2328,20 +2295,8 @@ contains
 
     ! iterate
     break_iterations = .false.
-    crop_ok = .false.
-    prev_norm = 1.0E6_realk
-
-
-    print *
-    print *, '### Starting CC iterations'
-    print *, '### ----------------------'
-    print '(1X,a)',  '###  Iteration     Residual norm          CC energy'
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '### Starting CC iterations'
-    write(DECinfo%output,*) '### ----------------------'
-    write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm          CC energy'
-
+    crop_ok          = .false.
+    prev_norm        = 1.0E6_realk
 
     CCIteration : do iter=1,DECinfo%ccMaxIter
 
@@ -2617,9 +2572,8 @@ contains
        call flush(DECinfo%output)
 #endif
 
-       print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',iter, two_norm_total,ccenergy
-       write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
-            &   '### ',iter, two_norm_total,ccenergy
+        call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,.false.)
+
        last_iter = iter
        if(break_iterations) exit
          
@@ -2627,27 +2581,9 @@ contains
 
    call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
 
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(/,a)') '-------------------------------'
-    write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '
-    write(DECinfo%output,'(a,/)') '-------------------------------'
-    if(break_iterations) then
-       write(DECinfo%output,'(a)')     'Hooray! CC equation is solved!'
-    else
-       write(DECinfo%output,'(a,i4,a)')  'CC equation not solved in ', &
-            & DECinfo%ccMaxIter, ' iterations!'
-       call lsquit('CC equation not solved!',DECinfo%output)
-    end if
-    write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total cpu time    = ',ttotend_cpu-ttotstart_cpu,' s'
-    write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total wall time   = ',ttotend_wall-ttotstart_wall,' s'
-
-    if(fragment_job) then
-       write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ccenergy
-    else
-       write(DECinfo%output,'(a,f16.10)')  'Corr. energy       = ',ccenergy
-    end if
-    write(DECinfo%output,'(a,i5)') 'Number of CC iterations =', last_iter
+   ! Write finalization message
+   call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter,&
+   &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu)
 
 
     ! Free memory and save final amplitudes

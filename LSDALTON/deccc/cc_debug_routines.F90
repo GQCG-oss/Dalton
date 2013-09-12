@@ -765,15 +765,7 @@ module cc_debug_routines_module
 
         !Print Iter info
         !---------------
-        if( get_mult ) then
-          print '(1X,a,2X,i4,5X,g19.9,4X)',  '### ',iter, two_norm_total
-          write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X)') &
-             &   '### ',iter, two_norm_total
-        else
-          print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',iter, two_norm_total,ccenergy
-          write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
-             &   '### ',iter, two_norm_total,ccenergy
-        endif
+        call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,get_mult)
 
         last_iter = iter
         if(break_iterations) exit
