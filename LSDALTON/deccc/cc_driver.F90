@@ -828,31 +828,6 @@ contains
 
   end subroutine ccsolver
 
-  subroutine read_dalton_amps1(amps)
-    implicit none
-    type(array2), intent(inout) :: amps
-    integer :: tmpunit,ierr,istat
-    tmpunit = 121
-    OPEN(tmpunit,file='extracted_t1')
-    READ (tmpunit,*)amps%val
-    CLOSE(tmpunit)
-   
-    print *,"read singles",norm2(amps%val)
-  end subroutine read_dalton_amps1
-  subroutine read_dalton_amps2(amps)
-    implicit none
-    type(array4), intent(inout) :: amps
-    real(realk) :: readbuff(amps%dims(1)*amps%dims(2)*(amps%dims(1)*amps%dims(2)+1)/2)
-    integer :: tmpunit,ierr,istat
-    tmpunit = 121
-    OPEN(tmpunit,file='extracted_t2')
-    READ (tmpunit,*)amps%val
-    CLOSE(tmpunit)
-    print *,"read doubles",norm2(amps%val)
-   
-  end subroutine read_dalton_amps2
-  
-
 
   !> \brief Get coupled-cluster energy by calling general ccsolver.
   !> \author Kasper Kristensen
