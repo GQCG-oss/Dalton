@@ -450,8 +450,6 @@ add_dalton_test(dcpt2                         "dalton")
 #add_dalton_test(prop_parallel                 "dalton;parallel")
 #add_dalton_test(rsp_parallel                  "dalton;parallel")
 #add_dalton_test(dft_parallell_properties      "dalton;parallel;dft")
-#add_dalton_test(parallel_lucita_gasci         "dalton;parallel")
-#add_dalton_test(parallel_spin_local           "dalton;parallel;dft")
 #endif()
 
 add_dalton_perl_test(Bterm_sym         "dalton;perl;pcm")
