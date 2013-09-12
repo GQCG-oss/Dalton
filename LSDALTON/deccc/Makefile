@@ -21,6 +21,7 @@ F90_OBJS = dec_settings.o \
 	ccsdpt.o \
 	ccorbital.o \
 	cc_integrals.o \
+        cc_debug_routines.o\
 	ccsd.o \
 	rpa.o \
 	f12_integrals.o \

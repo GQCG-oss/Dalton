@@ -27,6 +27,7 @@ module full
 !  use orbital_operations
   use full_molecule
   use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
+  use cc_debug_routines_module
   use ccdriver!,only: ccsolver_justenergy, ccsolver
 
   public :: full_driver
@@ -154,9 +155,15 @@ contains
 !endif mod_unreleased
 #endif
 
-          Ecorr = ccsolver_justenergy(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
+          if(DECinfo%CCSDmultipliers)then
+            call ccsolver_energy_multipliers(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
+               & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
+               & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ecorr)
+          else
+            Ecorr = ccsolver_justenergy(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
                & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
                & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock)
+          endif
 
 #ifdef MOD_UNRELEASED
 

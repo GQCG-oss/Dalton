@@ -66,13 +66,14 @@ set(DEC_SOURCES
     LSDALTON/deccc/CABS.F90
     LSDALTON/deccc/mp2.F90
     LSDALTON/deccc/ccsdpt.F90
-    LSDALTON/deccc/cc_crop.F90
+    LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/ccsd.F90
     LSDALTON/deccc/rpa.F90
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/f12_routines.F90
     LSDALTON/deccc/wangy_playground.F90 
     LSDALTON/deccc/cc_driver.F90
+    LSDALTON/deccc/cc_debug_routines.F90
     LSDALTON/deccc/cc_integrals.F90
     LSDALTON/deccc/ccarray2_simple.F90
     LSDALTON/deccc/ccarray4_simple.F90

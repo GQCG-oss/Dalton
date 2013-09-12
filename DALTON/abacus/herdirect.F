@@ -401,9 +401,11 @@ Chj   June 09: maybe READIN may still be needed for NEWGEO, keep it for
 Chj   now for safety, but REAINI should definitely NOT be called, it will
 Chj   reiinitialize variables changed by user under *READIN
 C
+         IPREAD_save = IPREAD
          IPREAD = JPRINT
          HERMIT = .FALSE.
          CALL READIN(WORK,LWORK,HERMIT)
+         IPREAD = IPREAD_save
 C
 C        consistency check
 C
