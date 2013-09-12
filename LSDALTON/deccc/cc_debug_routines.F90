@@ -75,20 +75,21 @@ module cc_debug_routines_module
         & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
         & t1_final, t2_final, VOVO, .false.)
 
+     call array4_free(VOVO)
 
      call ccsolver_debug(ypo_f, ypv_f, fock_f, nbasis, nocc, nvirt, &
         & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
         & t1_final, t2_final, VOVO, .false., m2 = mult2, m1 = mult1)
 
-     call print_norm(mult2%val,int(i8*nvirt*nvirt*nocc*nocc,kind=8))
-     call print_norm(mult1%val,int(i8*nvirt*nocc,kind=8))
+     !call print_norm(mult2%val,int(i8*nvirt*nvirt*nocc*nocc,kind=8))
+     !call print_norm(mult1%val,int(i8*nvirt*nocc,kind=8))
 
      ! Free arrays
      call array2_free(t1_final)
      call array2_free(mult1)
      call array4_free(t2_final)
-     call array4_free(VOVO)
      call array4_free(mult2)
+     call array4_free(VOVO)
 
    end subroutine ccsolver_energy_multipliers
 
@@ -564,6 +565,7 @@ module cc_debug_routines_module
               call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
               &,t2_final%val,t1(iter)%val,t2(iter)%val,gao,xocc%val,yocc%val,xvirt%val,yvirt%val&
               &,nocc,nvirt,nbasis,MyLsItem)
+              call array4_dealloc(gao)
 
            else
 
@@ -703,7 +705,6 @@ module cc_debug_routines_module
         one_norm2 = array4_norm(omega2(iter))
         one_norm_total = one_norm1 + one_norm2
         two_norm_total = sqrt(one_norm_total)
-        !two_norm_total = 0.9*DECinfo%ccConvergenceThreshold
 
         ! simple crop diagnostics
         if(two_norm_total < prev_norm) then
@@ -941,11 +942,11 @@ module cc_debug_routines_module
 
 
      !transform back to original basis   
-     !if(DECinfo%use_singles)then
-     !  call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt,t1_final%val)
-     !else
-     !  call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt)
-     !endif
+     if(DECinfo%use_singles)then
+       call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt,t1_final%val)
+     else
+       call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt)
+     endif
 
      call mem_dealloc(Uocc)
      call mem_dealloc(Uvirt)
@@ -1187,16 +1188,6 @@ module cc_debug_routines_module
      v4   = v2*v2
 
      if( DECinfo%PL>2 )then 
-        !write (msg,*)"gao"
-        !call print_norm(gao,msg)
-        !write (msg,*)"xo"
-        !call print_norm(xo,int(nb*no,kind=8),msg)
-        !write (msg,*)"xv"
-        !call print_norm(xv,int(nb*nv,kind=8),msg)
-        !write (msg,*)"yo"
-        !call print_norm(yo,int(nb*no,kind=8),msg)
-        !write (msg,*)"yv"
-        !call print_norm(yv,int(nb*nv,kind=8),msg)
 
         write (msg,*)"t1 n**2 n"
         call print_norm(t1f,int(ov,kind=8),norm,.true.)
@@ -1899,29 +1890,31 @@ module cc_debug_routines_module
      call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
      call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
 
-     call mem_dealloc(govov)   
-     call mem_dealloc(goovv)   
-     call mem_dealloc(Lovov)   
-     call mem_dealloc(Lvoov)   
-
-     call mem_dealloc(Lvvov)
-     call mem_dealloc(gvovv)
-     call mem_dealloc(govvv)
-    
-     call mem_dealloc(Looov)   
-     call mem_dealloc(Lovoo)   
-     call mem_dealloc(gvooo)   
-     call mem_dealloc(gooov)   
-
-     call mem_dealloc(goooo)
-
-     call mem_dealloc(gvvvv)
-
      call mem_dealloc(u2)
      call mem_dealloc(oof)
      call mem_dealloc(ovf)
      call mem_dealloc(vof)
      call mem_dealloc(vvf)
+
+     call mem_dealloc(govov)
+     call mem_dealloc(goovv)
+     call mem_dealloc(Lovov)
+     call mem_dealloc(Lvoov)
+
+
+     call mem_dealloc(Lvvov)
+     call mem_dealloc(Lovvv)
+     call mem_dealloc(gvovv)
+     call mem_dealloc(govvv)
+
+     call mem_dealloc(Looov)
+     call mem_dealloc(Lovoo)
+     call mem_dealloc(gvooo)
+     call mem_dealloc(gooov)
+
+     call mem_dealloc(goooo)
+
+     call mem_dealloc(gvvvv)
 
      call mem_dealloc(w1)
      call mem_dealloc(w2)
