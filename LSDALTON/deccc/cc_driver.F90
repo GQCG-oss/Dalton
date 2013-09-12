@@ -1007,10 +1007,16 @@ contains
           call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
        end if
 
-       if (.not. DECinfo%solver_par) then
-          call ccsolver(ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
+       if (.not. DECinfo%solver_par.or.DECinfo%CCDEBUG) then
+          if(DECinfo%CCDEBUG)then
+            call ccsolver_debug(ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
                & t1_final,t2_final,VOVO,.false.)
+          else
+            call ccsolver(ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
+               & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
+               & t1_final,t2_final,VOVO,.false.)
+          endif
        else
           call ccsolver_par(ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
@@ -1020,10 +1026,16 @@ contains
     else
        ncore = 0
 
-       if (.not. DECinfo%solver_par) then
-          call ccsolver(MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
+       if (.not. DECinfo%solver_par.or.DECinfo%CCDEBUG) then
+          if(DECinfo%CCDEBUG)then
+            call ccsolver_debug(MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
                & t1_final,t2_final,VOVO,.false.)
+          else
+            call ccsolver(MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
+               & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+               & t1_final,t2_final,VOVO,.false.)
+          endif
        else
           call ccsolver_par(MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&

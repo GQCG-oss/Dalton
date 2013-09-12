@@ -396,16 +396,6 @@ module cc_debug_routines_module
 
 
 
-     print *
-     print *, '### Starting CC iterations'
-     print *, '### ----------------------'
-     print '(1X,a)',  '###  Iteration     Residual norm          CC energy'
-
-     write(DECinfo%output,*)
-     write(DECinfo%output,*) '### Starting CC iterations'
-     write(DECinfo%output,*) '### ----------------------'
-     write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm          CC energy'
-     
 
      CCIteration : do iter=1,DECinfo%ccMaxIter
 
@@ -439,37 +429,10 @@ module cc_debug_routines_module
 
         ! get new amplitude vectors
         GetGuessVectors : if(iter == 1) then
-           if(DECinfo%use_singles)then
-              if(get_mult)then
-                fockguess=array2_init(ao2_dims)
-                call Get_AOt1Fock(mylsitem,t1_final,fockguess,nocc,nvirt,nbasis,ypo,yho,yhv)
-                t1tmp = array2_similarity_transformation(xocc,fockguess,yvirt,[nocc,nvirt]) 
-                call array2_free(fockguess)
-                t1(iter) = array2_init([nvirt,nocc])
-                call mat_transpose(nocc,nvirt,1.0E0_realk,t1tmp%val,0.0E0_realk,t1(iter)%val)
-                call array2_free(t1tmp)
-                call dscal(nocc*nvirt,2.0E0_realk,t1(iter)%val,1)
-              else
-                t1(iter) = array2_init(ampl2_dims)
-              endif
-           endif
-           if(DECinfo%array4OnFile) then
-              ! Initialize t2(iter) using storing type 2
-              t2(iter) = array4_init(ampl4_dims,2,.true.)
-           else
-              if(get_mult)then
-                iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
-                t2(iter) = array4_init(ampl4_dims)
-                call array4_reorder(iajb,[2,1,4,3])
-                call daxpy(nocc**2*nvirt**2,4.0E0_realk,iajb%val,1,t2(iter)%val,1)
-                call array4_reorder(iajb,[1,4,3,2])
-                call daxpy(nocc**2*nvirt**2,-2.0E0_realk,iajb%val,1,t2(iter)%val,1)
-                call array4_reorder(iajb,[4,1,2,3])
-                call array4_free(iajb)
-              else
-                t2(iter) = array4_init(ampl4_dims)
-              endif
-           end if
+
+           call get_guess_vectors_simple(mylsitem,t2(iter),t1(iter),&
+           &t1_final,gao,get_mult,ypo,yho,yhv,nocc,nvirt,nbasis,xocc,yvirt)
+
         end if GetGuessVectors
 
         ! Initialize residual vectors
@@ -722,17 +685,19 @@ module cc_debug_routines_module
         ! MODIFY FOR NEW MODEL
         ! If you implement a new model, please insert call to energy routine here,
         ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
-        EnergyForCCmodel: if(DECinfo%ccmodel==1) then  
-           ! MP2
-           ccenergy = get_mp2_energy(t2(iter),Lmo)
-        elseif(DECinfo%ccmodel==2 .or. DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4 ) then
-           ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
-           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
-        elseif(DECinfo%ccmodel==5) then
-           ccenergy = RPA_energy(t2(iter),gmo)
-           sosex = SOSEX_contribution(t2(iter),gmo)
-           ccenergy=ccenergy+sosex
-        end if EnergyForCCmodel
+        if(.not. get_mult)then
+           EnergyForCCmodel: if(DECinfo%ccmodel==1) then  
+              ! MP2
+              ccenergy = get_mp2_energy(t2(iter),Lmo)
+           elseif(DECinfo%ccmodel==2 .or. DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4 ) then
+              ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
+              ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
+           elseif(DECinfo%ccmodel==5) then
+              ccenergy = RPA_energy(t2(iter),gmo)
+              sosex = SOSEX_contribution(t2(iter),gmo)
+              ccenergy=ccenergy+sosex
+           end if EnergyForCCmodel
+        endif
 
 
         if(DECinfo%PL>1) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
@@ -796,10 +761,20 @@ module cc_debug_routines_module
 #ifdef __GNUC__
         call flush(DECinfo%output)
 #endif
+    
 
-       print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',iter, two_norm_total,ccenergy
-       write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
+        !Print Iter info
+        !---------------
+        if( get_mult ) then
+          print '(1X,a,2X,i4,5X,g19.9,4X)',  '### ',iter, two_norm_total
+          write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X)') &
+             &   '### ',iter, two_norm_total
+        else
+          print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',iter, two_norm_total,ccenergy
+          write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
              &   '### ',iter, two_norm_total,ccenergy
+        endif
+
         last_iter = iter
         if(break_iterations) exit
 
@@ -807,28 +782,10 @@ module cc_debug_routines_module
 
      call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
 
+     ! Write finalization message
+     call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,&
+     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu)
 
-
-     write(DECinfo%output,*)
-     write(DECinfo%output,'(/,a)') '-------------------------------'
-     write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '
-     write(DECinfo%output,'(a,/)') '-------------------------------'
-     if(break_iterations) then
-        write(DECinfo%output,'(a)')     'Hooray! CC equation is solved!'
-     else
-        write(DECinfo%output,'(a,i4,a)')  'CC equation not solved in ', &
-             & DECinfo%ccMaxIter, ' iterations!'
-        call lsquit('CC equation not solved!',DECinfo%output)
-     end if
-     write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total cpu time    = ',ttotend_cpu-ttotstart_cpu,' s'
-     write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total wall time   = ',ttotend_wall-ttotstart_wall,' s'
-
-     if(fragment_job) then
-        write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ccenergy
-     else
-        write(DECinfo%output,'(a,f16.10)')  'Corr. energy       = ',ccenergy
-     end if
-     write(DECinfo%output,'(a,i5)') 'Number of CC iterations =', last_iter
 
 
      ! Free memory and save final amplitudes
@@ -953,6 +910,59 @@ module cc_debug_routines_module
 
 
    end subroutine ccsolver_debug
+
+
+   !get guess vectors for crop solver, this is model specific
+   subroutine get_guess_vectors_simple(mylsitem,t2,t1,t1_final,gao,&
+   &get_mult,ypo,yho,yhv,no,nv,nb,xocc,yvirt)
+     implicit none
+     type(lsitem),intent(inout) :: mylsitem
+     type(array4),intent(inout) :: t2
+     type(array2),intent(inout) :: t1
+     type(array2),intent(inout) :: t1_final,ypo,yho,yhv,xocc,yvirt
+     type(array4),intent(inout) :: gao
+     integer, intent(in)        :: no,nv,nb
+     logical,intent(in)         :: get_mult
+     integer                    :: d2(4), d1(2)
+     type(array2) :: fockguess,t1tmp
+     type(array4) :: iajb
+     d1 = [nv,no]
+     d2 = [nv,no,nv,no]
+
+     if(DECinfo%use_singles)then
+        if(get_mult)then
+          fockguess=array2_init([nb,nb])
+          call Get_AOt1Fock(mylsitem,t1_final,fockguess,no,nv,nb,ypo,yho,yhv)
+          t1tmp = array2_similarity_transformation(xocc,fockguess,yvirt,[no,nv]) 
+          call array2_free(fockguess)
+          t1 = array2_init([nv,no])
+          call mat_transpose(no,nv,1.0E0_realk,t1tmp%val,0.0E0_realk,t1%val)
+          call array2_free(t1tmp)
+          call dscal(no*nv,2.0E0_realk,t1%val,1)
+        else
+          t1 = array2_init(d1)
+        endif
+     endif
+     if(DECinfo%array4OnFile) then
+        ! Initialize t2(iter) using storing type 2
+        t2 = array4_init(d2,2,.true.)
+     else
+        if(get_mult)then
+          iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
+          t2 = array4_init(d2)
+          call array4_reorder(iajb,[2,1,4,3])
+          call daxpy(no**2*nv**2,4.0E0_realk,iajb%val,1,t2%val,1)
+          call array4_reorder(iajb,[1,4,3,2])
+          call daxpy(no**2*nv**2,-2.0E0_realk,iajb%val,1,t2%val,1)
+          call array4_reorder(iajb,[4,1,2,3])
+          call array4_free(iajb)
+        else
+          t2 = array4_init(d2)
+        endif
+     end if
+     
+   end subroutine get_guess_vectors_simple
+
 
    !> \brief Simple double residual for CCSD
    subroutine getDoublesResidualCCSD_simple(omega2,t2,u,gao,aibj,iajb,nocc,nvirt, &
