@@ -149,7 +149,7 @@ ERROR[2]="G-TENSOR QUADRATIC RESPONSE NOT CORRECT"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -184,7 +184,7 @@ ERROR[2]="G-TENSOR - FIELD NOT CORRECT"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -219,7 +219,7 @@ ERROR[2]="G-TENSOR-E-FIELD NOT CORRECT"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

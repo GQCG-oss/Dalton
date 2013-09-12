@@ -196,7 +196,7 @@ ERROR[13]="CCSD(R12)/B EXCITATION ENERGIES NOT CORRECT"
 PASSED=1
 for i in 1 2 12
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

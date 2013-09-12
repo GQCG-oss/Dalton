@@ -133,7 +133,7 @@ ERROR[3]="NUCLEAR REPULSION ENERGY NOT CORRECT"
 CRIT1=`$GREP "Number of closed shell electrons * 36" $log | wc -l`
 CRIT2=`$GREP "Number of electrons in active shells * 0" $log | wc -l`
 CRIT4=`$GREP "Total number of orbitals * 32" $log | wc -l`
-CRIT5=`$GREP "Spin multiplicity .* 1" $log | wc -l`
+CRIT5=`$GREP "Spin multiplicity and 2 M_S .* 1 * 0" $log | wc -l`
 CRIT6=`$GREP "Total number of symmetries * 4" $log | wc -l`
 CRIT7=`$GREP "Reference state symmetry * 1" $log | wc -l`
 TEST[4]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT4  \+ $CRIT5  \+ \
@@ -159,9 +159,9 @@ ERROR[6]="SCF ENERGY NOT CORRECT"
 # LUCITA setup
 CRIT1=` $GREP "Orbitals as initial wave .* HF_SCF" $log | wc -l`
 CRIT2=` $GREP "Type of calculation .* GASCI" $log | wc -l`
-CRIT3=` $GREP "Number of roots .* 2" $log | wc -l`
+CRIT3=` $GREP "Number of roots to be obtained * 2" $log | wc -l`
 CRIT4=` $GREP "Number of active electrons .* 8" $log | wc -l`
-CRIT5=` $GREP "Spin multiplicity .* 1" $log | wc -l`
+CRIT5=` $GREP "Spin multiplicity .... * 1" $log | wc -l`
 TEST[7]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
 CTRL[7]=5
 ERROR[7]="SETUP OF LUCITA NOT CORRECT"
@@ -174,7 +174,7 @@ CRIT4=`$GREP "GAS 1 * 5 * 8" $log | wc -l`
 CRIT5=`$GREP "GAS 2 * 6 * 8" $log | wc -l`
 CRIT6=`$GREP "GAS 3 * 8 * 8" $log | wc -l`
 TEST[8]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[8]=3
+CTRL[8]=6
 ERROR[8]="GAS SPACES NOT CORRECT"
 
 # CI energies
@@ -201,7 +201,7 @@ ERROR[11]="NATORB OCCUPATIONS ROOT 2 NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
