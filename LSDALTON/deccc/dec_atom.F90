@@ -804,7 +804,7 @@ contains
     ! We want to include only the orbitals "i" defined by OccOrbs to generate a
     ! matrix OUred where:
     ! Dimension 1: Number of occupied AOS orbitals in LOCAL basis
-    ! Dimension 2: Number of occupied AOS orbitals in SITE SPECIFIC basis
+    ! Dimension 2: Number of occupied AOS orbitals in FRAGMENT-ADAPTED basis
     ! In general dimension 1 is larger than dimension 2.
     LocalFragment%noccFA = count(OccOrbs)
     call mem_alloc(OUred,LocalFragment%noccAOS,LocalFragment%noccFA)
@@ -883,7 +883,7 @@ contains
     !> Information about DEC unoccupied orbitals
     type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Atomic fragment where all quantities are expressed in local basis
-    !> and where site specific MO coefficients have been stored in 
+    !> and where fragment-adapted MO coefficients have been stored in 
     !> CoccFA and CunoccFA (see fragment_adapted_transformation_matrices).
     type(ccatom),intent(inout) :: LocalFragment
     !> Atomic fragment where all quantities are expressed in fragment-adapted basis
