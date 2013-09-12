@@ -48,7 +48,6 @@ add_dalton_test(geoopt_redintmin   "dalton;geo;short;parallel")
 add_dalton_test(geoopt_vrml        "dalton;geo;short;parallel")
 
 add_dalton_test(prop_ecd           "dalton;prop;short;parallel")
-add_dalton_test(prop_or            "dalton;prop;short")
 add_dalton_test(prop_exci          "dalton;prop;short")
 add_dalton_test(prop_nolondon      "dalton;prop;short")
 add_dalton_test(prop_spinspin      "dalton;prop;short;parallel")
