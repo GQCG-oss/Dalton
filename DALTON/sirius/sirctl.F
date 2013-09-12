@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -183,11 +183,11 @@ C
       IF (DORHF .OR. DOMP2) THEN
          MCTYPE   = 0
          IF (DOCINO .OR. DOCI .OR. DOMC) THEN
-            FLAG(25)=.FALSE.
+            FLAG(25) = .FALSE. ! do not write to SIRIFC if RHF followed by MC or CI
             IF (DOMP2) THEN
-               FLAG(16)= .FALSE.
-               PCMSV   = PCM
-               PCM     = .FALSE.
+               FLAG(16) = .FALSE.
+               PCMSV    = PCM
+               PCM      = .FALSE.
             END IF
          END IF
 C        ... do not write interface file if RHF or MP2 not final calc.
@@ -293,6 +293,10 @@ C        Integral transformations not needed
 C        Use always NEO for RHF (920221-hjaaj)
 C        unless .NR ALWAYS (FLAG(39)) is set, e.g. for core relax calc.
          IF (.NOT.FLAG(39)) FLAG(38) = .TRUE.
+C
+C        High-spin Fock matrices for all open-shell calcs with dft or direct
+         HSFOCK=(((DODFT.OR.DIRCAL).AND. NASHT .GE. 1) .OR. HSROHF)
+         IF (CORHOL.OR.CORRLX) HSFOCK = .FALSE.
 C
 C
          CALL GETTIM(TSTART,WSTART)

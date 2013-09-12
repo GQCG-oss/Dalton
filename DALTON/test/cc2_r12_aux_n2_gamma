@@ -99,6 +99,12 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+
 #           Total SCF   energy:                  -108.9541307667
 #           Total MP2-R12/A energy:              -109.3671238978
 #           Total CC2-R12/A energy:              -109.3693042691

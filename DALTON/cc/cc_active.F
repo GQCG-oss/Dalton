@@ -1450,7 +1450,7 @@ C
       READ(LUMOLDEN,'(A8)',END=556) LINE
       GOTO 555
   556 CONTINUE
-#if defined (SYS_OSXLION)
+#if defined (SYS_DARWIN)
       BACKSPACE(LUMOLDEN)
 #endif
 C
@@ -1475,14 +1475,14 @@ C
       END DO
 C
       IF (DBGPRT) THEN
-         WRITE(LUPRI,'(//,A,/)') 'Information passed to MOMOS'
+         WRITE(LUPRI,'(//,A,/)') 'Information passed to MOLDEN_MOS'
          DO I = 1,NORBT
             WRITE(LUPRI,'(A,F12.6)') 'Energy',OREN(I)
-c    &                  '   Occupation',WORK(KOCCU+I-1)
+c    &                 ,'   Occupation',WORK(KOCCU+I-1)
          END DO
       END IF
 C
-      CALL MOMOS(1,WORK(KCMO),WORK(KOCCU),WORK(KAOSO),
+      CALL MOLDEN_MOS(1,WORK(KCMO),WORK(KOCCU),WORK(KAOSO),
      &           WORK(KUNPK),WORK(KOVEC))
  
       CALL GPCLOSE(LUMOLDEN,'KEEP')

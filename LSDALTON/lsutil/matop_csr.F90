@@ -9,6 +9,7 @@
 module matrix_operations_csr
   use matrix_module
   use memory_handling
+  use precision
 ! HACK
   use matrix_operations_dense
 ! HACK
@@ -250,8 +251,10 @@ contains
        return
     endif
     call mat_csr_allocate(b, a%nnz)
-#ifdef VAR_MKL
+#ifdef VAR_CSR
+#ifdef VAR_CSR
     call mkl_dcsrcsc(job, a%nrow, a%val, a%col, a%row, b%val, b%col,b%row, info)
+#endif
 #endif
 !RA: Currently (mkl v. 10.2.1.017), info is not used in csrcsc as result status!
 !RA: When it comes, check it for the exit status
@@ -334,7 +337,7 @@ contains
        call mat_csr_zero(c)
     endif
     !calculate nnz
-#ifdef VAR_MKL
+#ifdef VAR_CSR
     call mkl_dcsradd('n', request, sort, m, n, a_temp%val, a_temp%col, a_temp%row, beta, &
          & b%val, b%col, b%row, ddummy, idummy, c%row, idummy, info)
 #endif
@@ -345,7 +348,7 @@ contains
     call mat_csr_allocate(c, c%row(n+1)-1)
     !alter request to initiate addition
     request = 2
-#ifdef VAR_MKL
+#ifdef VAR_CSR
     call mkl_dcsradd('n', request, sort, m, n, a_temp%val, a_temp%col, a_temp%row, beta, &
          & b%val, b%col, b%row, c%val, c%col, c%row, c%nnz, info)
 #endif
@@ -423,7 +426,7 @@ contains
        call mat_csr_zero(c)
     endif
     !calculate nnz
-#ifdef VAR_MKL
+#ifdef VAR_CSR
     call mkl_dcsrmultcsr(transa, request, sort, m, n, k, a%val, a%col, a%row, &
          & b_temp%val, b_temp%col, b_temp%row, ddummy, idummy, c%row, idummy, info)
 #endif
@@ -435,7 +438,7 @@ contains
     !alter request to initiate multiplication
     request = 2
 
-#ifdef VAR_MKL
+#ifdef VAR_CSR
     call mkl_dcsrmultcsr(transa, request, sort, m, n, k, a%val, a%col, a%row, &
          & b_temp%val, b_temp%col, b_temp%row, c%val, c%col, c%row, c%nnz, info)
 #endif
@@ -514,7 +517,7 @@ contains
     lda = a%nrow
     m = a%nrow
     n = a%ncol
-#ifdef VAR_MKL
+#ifdef VAR_CSR
     call mkl_ddnscsr(job, m, n, afull, lda, ddummy, idummy, a%row, info)
 #endif
     !nnz can now be found as the last element -1 in the row array
@@ -527,7 +530,7 @@ contains
     call mat_csr_allocate(a, nnz)
     !alter request to initiate actual conversion
     job(6) = 1
-#ifdef VAR_MKL
+#ifdef VAR_CSR
     call mkl_ddnscsr(job, m, n, afull, lda, a%val, a%col, a%row, info)
 #endif
      ! assert info     
@@ -559,7 +562,7 @@ contains
      if (a%nnz .eq. 0) then
         return
      endif
-#ifdef VAR_MKL
+#ifdef VAR_CSR
      call mkl_ddnscsr(job, m, n, afull, lda, a%val, a%col, a%row, info)
 #endif
     if (abs(1.0E0_realk-alpha) > 1.0E-7_realk) then

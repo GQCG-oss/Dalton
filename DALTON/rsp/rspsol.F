@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -153,15 +153,6 @@ C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
 C         CALL QUIT(
 C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
 C      END IF
-      IF (.NOT. SOPRPA .AND. SOPPA) THEN
-         WRITE (LUPRI,*)
-     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
-         WRITE (LUPRI,*) 'Full solvent model SOPPA not implemented.'
-         WRITE (LUPRI,*) 'Only SOPPA/RPA (JCC, 2012-2022, 33, (2012))'
-         WRITE (LUPRI,*) 'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-         CALL QUIT(
-     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
-      END IF
 Clf      IF (IREFSY.EQ.KSYMST .AND. NASHT.GT.1 .AND. KZCONF.NE.NCREF)
 Clf     &   THEN
 ClfC

@@ -9,7 +9,12 @@ module dec_typedef_module
   use,intrinsic :: iso_c_binding, only:c_ptr
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
-
+  !Could someone please rename ri to something less generic. TK!!
+  private
+  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,ccorbital,ri,&
+       & fullmolecule,ccatom,FullMP2grad,mp2dens,mp2grad,&
+       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
+       & SPgridbox
   ! IMPORTANT: Number of possible energies to calculate using the DEC scheme
   ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
   ! MODIFY FOR NEW MODEL
@@ -105,18 +110,22 @@ module dec_typedef_module
      !> CCSD residual/solver settings
      !> *****************************
      !> save next guess amplitudes of CCSD in each iteration on disk
-     logical :: CCSDsaferun
+     logical :: CCSDnosaferun
      !> Use parallel CCSD solver
      logical :: solver_par
      !> forcing one or the other scheme in get_coubles residual integral_driven
      logical :: force_scheme
      logical :: dyn_load
-     !> Use old CCSD solver
-     logical :: ccsd_old
+     !> Use the cc debug routines from the file cc_debug_routines.F90
+     logical :: CCDEBUG
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
+     !> if mpich is used CCSD has some special treats that can be used
+     logical :: CCSD_MPICH
      !> prevent canonicalization in the ccsolver
      logical :: CCSDpreventcanonical
+     !> chose left-transformations to be carried out
+     logical :: CCSDmultipliers
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver
@@ -148,12 +157,15 @@ module dec_typedef_module
      !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
      logical :: fock_with_ri
 
-
      !> F12 settings
      !> ************
      !> Use F12 correction
      logical :: F12
 
+     !> F12 debug settings
+     !> ************
+     !> Use F12 correction
+     logical :: F12DEBUG
 
      !> MPI settings
      !> ************
@@ -161,7 +173,6 @@ module dec_typedef_module
      integer :: mpisplit
      !> Manually set starting group size for local MPI group
      integer(kind=ls_mpik) :: MPIgroupsize
-
 
      !> Integral batching
      !> *****************
@@ -249,6 +260,11 @@ module dec_typedef_module
      integer :: FragmentExpansionSize
      !> Use MP2 optimized fragments (default)
      logical :: use_mp2_frag
+     !> Only consider occupied partitioning
+     logical :: OnlyOccPart
+     !> Repeat atomic fragment calculations after fragment optimization?
+     ! (this is necessary e.g. for gradient calculations).
+     logical :: RepeatAF
      ! --  
 
      !> Pair fragments
@@ -415,7 +431,6 @@ module dec_typedef_module
      !> Number of unoccupied orbitals
      integer :: numvirt
 
-
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()
      !> Index of the first basis function for an atom
@@ -427,6 +442,8 @@ module dec_typedef_module
      real(realk), pointer :: ypo(:,:) => null()
      !> Virtual MO coefficients (mu,a)
      real(realk), pointer :: ypv(:,:) => null()
+     !> CABS MO coefficients (mu,x)
+     real(realk), pointer :: cabsMOs(:,:) => null()
 
      !> Fock matrix (AO basis)
      real(realk), pointer :: fock(:,:) => null()
@@ -585,7 +602,9 @@ module dec_typedef_module
      real(realk), pointer :: ypo(:,:) => null()
      !> Virtual MO coefficients
      real(realk), pointer :: ypv(:,:) => null()
-     !> Core MO coefficients
+     !> Cabs MO coefficients
+     real(realk),pointer :: cabsMOs(:,:) => null()     
+     !> Core MO coefficients 
      real(realk),pointer :: CoreMO(:,:) => null()
 
      !> AO Fock matrix

@@ -304,8 +304,8 @@ Do
 !                 Case('.VR-BON')
 !                 Case('.VR-EIG')
                  Case('.INITHE')
-                   Write(lupri,*)'INITHE optinon is not availvable in LSDALTON'
-                   Call LSQuit('Hessian not availvable in LSDALTON',lupri)
+                   Write(lupri,*)'INITHE optinon is not available in LSDALTON'
+                   Call LSQuit('Hessian not available in LSDALTON',lupri)
                  Case('.INITEV')
                    Read(lucmd,*) optinfo%EvLini
                  Case('.HESFIL')
@@ -324,8 +324,8 @@ Do
                  Case('.BFGS  ')
                    optinfo%BFGS = .TRUE. 
                  Case('.NEWTON')
-                   Write(lupri,*)'NEWTON optinon is not availvable in LSDALTON'
-                   Call LSQuit('Hessian not availvable in LSDALTON',lupri)
+                   Write(lupri,*)'NEWTON optinon is not available in LSDALTON'
+                   Call LSQuit('Hessian not available in LSDALTON',lupri)
                  Case('.QUADSD')
                     Call lsquit('.QUADSD not implemented in LSDALTON',lupri)
 !                   optinfo%QuadSD = .TRUE.
@@ -343,13 +343,13 @@ Do
                     optinfo%CartCoord = .TRUE. 
                     optinfo%RedInt = .FALSE.
                  Case('.REDINT')
-                    optinfo%RedInt = .TRUE.
-                    optinfo%CartCoord = .FALSE.
                     If (optinfo%CartCoord) then
                        Call LSQuit('The user must choose&
-                 & between optimization in cartesian or&
-                 & internal coordinates', lupri)
-                    Endif
+                                 & between optimization in cartesian or&
+                                 & internal coordinates', lupri)
+                    Endif       
+                    optinfo%RedInt = .TRUE.
+                    optinfo%CartCoord = .FALSE.
                  Case('.INIRED')
                     optinfo%InrdHess = .TRUE.
                  Case('.1STORD')

@@ -83,7 +83,6 @@ F90_OBJS = \
 	reord4d_4_utils_t2f.o\
         tensor_type_def.o\
         tensor_interface.o\
-        lspdm_tensor_operations.o\
         lspdm_slave.o\
         tensor_basic.o\
         lspdm_basic.o\
@@ -101,9 +100,7 @@ F90_OBJS = \
 	matop_dense_unrest.o\
 	mat-operations-aux.o\
 	mat-operations-essential.o\
-	matrix_defop.o\
-	matrix_defop_backend.o\
-        matrix_utilities.o \
+	matrix_utilities.o\
 	matrix_module.o\
 	MoleculeType.o\
 	Molecule_operations.o\
@@ -134,9 +131,10 @@ F90_OBJS = \
 	rsp-typedef.o\
 	response_prop_type.o\
         fundamental.o\
+	lspdm_tensor_operations.o\
 	papi.o
 
-#       AoBatchType.o\
+
 
 liblsutil.a: $(F90_OBJS) $(C_OBJS)
 	$(AR) $(ARFLAGS) $@ $?

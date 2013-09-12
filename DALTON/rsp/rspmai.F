@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -886,13 +886,20 @@ C
                   AVDIA  = .FALSE.
                GO TO 100
     3          CONTINUE
+                  IF (PARCAL) CALL PARQUIT("SOPPA")
                   SOPPA = .TRUE.
                   IF (SOPPA .AND. EMBEDDING) THEN
                     WRITE (LUPRI,'(/A)')
-     &              'Full SOPPA + Embedding model not implemented '//
-     &               '- use .SOPRPA instead'
-                    CALL QUIT('RSPINP: Full SOPPA + Embedding model '//
-     &                    'not implemented - use .SOPRPA instead')
+     &              '@ **INFO**'//
+     &               ' This is a solvent-SOPPA calculation w/ dynamic'
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' solvent response at RPA level only,'
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' cf. JCC, 2012-2022, 33, (2012) for reference.'
+cjje: change this if full solvent soppa is ever implemented
+                    SOPRPA = .TRUE.
                   END IF
                GO TO 100
     4          CONTINUE
@@ -977,6 +984,15 @@ C              .PROP2Average
  24            CONTINUE
                  SOPRPA = .TRUE.
                  SOPPA = .TRUE.
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' This is a solvent-SOPPA calculation w/ dynamic'
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' solvent response at RPA level only,'
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'
                  IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
                   WRITE (LUPRI,'(/A)')
      &             'Vacuum calc. - use .SOPPA instead'
@@ -1082,6 +1098,7 @@ C              .PROP2Average
      &      ' Input ERROR: CI response and ".SOPPA " are incompatible.'
          CALL QUIT('RSPINP: Input error')
       END IF
+      IF (SOPPA .AND. PARCAL) CALL PARQUIT("SOPPA")
 C
 C *** END OF RSPINP
 C
@@ -1240,7 +1257,7 @@ C  Initializing ESRHFC
       DATA HFCFC/.FALSE./,HFCSD/.FALSE./,HFCSO/.FALSE./
       DATA UNGAUSS/.TRUE./
       DATA HSOBRT/.FALSE./,HSOEFF/.FALSE./
-      DATA IPRHFC/5/
+      DATA IPRHFC/0/
 C  Initializing ABSLRS
        DATA ABSLRS/.FALSE./,ABSLRS_INTERVAL/.FALSE./
        DATA ABSLRS_ALPHA/.FALSE./,ABS_BATCH/.FALSE./
@@ -1618,8 +1635,8 @@ C .CHANNEL - restrict to excitations from particular orbitals
                DO I=1,NSYM
                   CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
                END DO
-               IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
-     &               'Too many orbitals for CHANNEL calculation: ' //
+               IF (CHANNEL_NORB .GT. CHANNEL_MAX) CALL QUIT(
+     &               'Too many orbitals for .CHANNEL calculation: ' //
      &               'increase CHANNEL_MAX and recompile')
                IOFF=0
                DO ISYM=1,NSYM
@@ -1720,33 +1737,6 @@ C
             WRITE(LUPRI,'(A,F8.4)')
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
-         END IF
-C
-         IF (QM3 .OR. QMMM .OR. PCM) THEN
-            IF (.NOT. SOPRPA .AND. SOPPA) THEN
-               WRITE (LUPRI,*)
-     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
-               WRITE (LUPRI,*)
-     *     'Full solvent model SOPPA not implemented.'
-               WRITE (LUPRI,*)
-     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
-               WRITE (LUPRI,*)
-     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-               CALL QUIT(
-     *     'Full solvent-SOPPA is not implemented, see output')
-            END IF
-#if defined (BUILD_PELIB)
-         else if (peqm .and. .not. soprpa .and. soppa) then
-            write(lupri,*) 
-     &      'ERROR: SOPPA not implemented with PE library.'
-            write(lupri,*)
-     &      'Full polarizable embedding with SOPPA not implemented.'
-            write(lupri,*)
-     &      'For PE with SOPPA/RPA (JCC, 2012-2022, 33, (2012)),'
-            write(lupri,*)
-     &      'use .SOPRPA under **RESPONSE.'
-            call quit('ERROR: SOPPA not implemented with PE library.')
-#endif
          END IF
 C
          IF (DOESA) THEN
@@ -4358,7 +4348,9 @@ C
         DO 20 I = 1,NNORBT
            FC(I) = FC(I) - WRK(I)
  20     CONTINUE
-      ELSEIF(PCM) THEN
+Cjje
+      ELSE IF(PCM .and. (.not. SOPRPA)) then
+!      ELSEIF(PCM) THEN
         CALL MOLLAB('PCMJXMAT',LUSIFC,LUPRI)
         CALL READT (LUSIFC,NNORBT,WRK)
         DO I = 1,NNORBT
@@ -4369,7 +4361,8 @@ C
             FC(I) = FC(I) + WAVFCK(I)
          ENDDO
       END IF
-
+Cjje
+C
       IF ((NCONRF .GT. 1) .AND. QMMM ) THEN
          write(lupri,*) 'MCSCF detected (NCONRF > 1) in PE calc.'
          write(lupri,*) 'NCONRF...........................', NCONRF
@@ -4380,7 +4373,7 @@ C
              FC(I) = FC(I) - WRK(I)
          ENDDO
       END IF
- 
+C
 #if defined (BUILD_PELIB)
       if (peqm .and. .not. tdhf) then
         write(lupri,*) 'Running PE-MCSCF response calculation.'
@@ -4390,7 +4383,7 @@ C
         fc(1:nnorbt) = fc(1:nnorbt) - wrk(1:nnorbt)
        endif
 #endif
-
+C
       IF (SOPPA) THEN
 C
          IF (CCPPA) THEN

@@ -1,5 +1,5 @@
 C
-C cbirhs.h  1998/08/11 
+C cbirhs.h  1998/08/11
 C
       LOGICAL SKIP, RUNINT,
      &        RUNFCK, TWOH1, NOH1, NOH2, FCKTST, RUNSDR, RUNTRA,
@@ -13,4 +13,4 @@ C
      &                IPRGDY, NODC, NODV, NOPV, TESTFS, DIAGTD, NOFD,
      &                NOFS, NOSSF, NOORTH, GDHAM, RETUR, TKTIME,
      &                AOMAT, CUT, DMAGGD, NODDY, NODPTR, IPRPTR, IPRSOR,
-     &                RUNPTR, RALLCO, IPRIN4, IPRIN6 
+     &                RUNPTR, RALLCO, IPRIN4, IPRIN6

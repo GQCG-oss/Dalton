@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1068,48 +1068,64 @@
     real(REALK), parameter :: RATIO_THRSH = 10.0_REALK**(-6)  !threshold of ratio to the referenced result
     logical test_failed                                   !indicator if the test failed
     integer num_ao                                        !number of orbitals
-    integer, parameter :: NUM_TEST = 5                    !number of tests
+    integer, parameter :: NUM_TEST = 10                   !number of tests
     character*20, parameter :: PROP_NAME(NUM_TEST) = &    !names of testing property integrals,
       (/"INT_KIN_ENERGY    ", "INT_OVERLAP       ",  &    !see Gen1int library src/gen1int.F90
         "INT_POT_ENERGY    ", "INT_CART_MULTIPOLE",  &
-        "INT_ANGMOM        "/)
+        "INT_ANGMOM        ", "INT_ONE_HAMIL     ",  &
+        "INT_ONE_HAMIL     ", "INT_OVERLAP       ",  &
+        "INT_OVERLAP       ", "INT_OVERLAP       "/)
     character*8, parameter :: HERM_PROP(NUM_TEST) = &     !names of property integrals,
       (/"KINENERG", "SQHDOR  ", "POTENERG",         &     !see \fn(PR1IN1) in abacus/her1pro.F
-        "CARMOM  ", "ANGMOM  "/)
+        "CARMOM  ", "ANGMOM  ", "MAGMOM  ",         &
+        "ANGMOM  ", "S1MAG   ", "S1MAGL  ",         &
+        "S1MAGR  "/)
     integer, parameter :: GTO_TYPE(NUM_TEST) = &          !
-      (/NON_LAO, NON_LAO, NON_LAO, NON_LAO, NON_LAO/)
+      (/NON_LAO, NON_LAO, NON_LAO, NON_LAO,    &
+        NON_LAO, LONDON, NON_LAO, LONDON,      &
+        LONDON, LONDON/)
     integer, parameter :: ORDER_MOM(NUM_TEST) = &         !order of Cartesian multipole moments
-      (/0, 0, 0, 1, 0/)
+      (/0, 0, 0, 1, 0, 0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_MAG_BRA(NUM_TEST) = &     !
-      (/0, 0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0, 0, 1, 0/)
     integer, parameter :: ORDER_MAG_KET(NUM_TEST) = &     !
-      (/0, 0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0, 0, 0, 1/)
     integer, parameter :: ORDER_MAG_TOTAL(NUM_TEST) = &   !
-      (/0, 0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 1, 1, 1, 0, 0/)
     integer, parameter :: ORDER_RAM_BRA(NUM_TEST) = &     !
-      (/0, 0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_RAM_KET(NUM_TEST) = &     !
-      (/0, 0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_RAM_TOTAL(NUM_TEST) = &   !
-      (/0, 0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_GEO_BRA(NUM_TEST) = &     !
-      (/0, 0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_GEO_KET(NUM_TEST) = &     !
-      (/0, 1, 0, 0, 0/)
+      (/0, 1, 0, 0, 0, 0, 0, 0, 0, 0/)
     integer, parameter :: MAX_NUM_CENT(NUM_TEST) = &      !maximum number of differentiated centers
-      (/0, 1, 0, 0, 0/)
+      (/0, 1, 0, 0, 0, 0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_GEO_TOTAL(NUM_TEST) = &   !order of total geometric derivatives
-      (/0, 0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
     logical, parameter :: ADD_SR(NUM_TEST) = &            !
-      (/.false., .false., .false., .false., .false./)
+      (/.false., .false., .false., .false.,  &
+        .false., .false., .false., .false.,  &
+        .false., .false./)
     logical, parameter :: ADD_SO(NUM_TEST) = &            !
-      (/.false., .false., .false., .false., .false./)
+      (/.false., .false., .false., .false.,  &
+        .false., .false., .false., .false.,  &
+        .false., .false./)
     logical, parameter :: ADD_LONDON(NUM_TEST) = &        !
-      (/.false., .false., .false., .false., .false./)
+      (/.false., .false., .false., .false.,      &
+        .false., .false., .false., .false.,      &
+        .false., .false./)
     logical, parameter :: TRIANG(NUM_TEST) = &            !integral matrices are triangularized or squared
-      (/.true., .false., .true., .true., .true./)
+      (/.true., .false., .true., .true.,     &
+        .true., .true., .true., .true.,      &
+        .false., .false./)
     logical, parameter :: SYMMETRIC(NUM_TEST) = &         !integral matrices are symmetric or anti-symmetric
-      (/.true., .false., .true., .true., .false./)
+      (/.true., .false., .true., .true.,        &
+        .false., .false., .false., .false.,     &
+        .false., .false./)
     integer NUM_INTS(NUM_TEST)                            !number of integral matrices
     type(matrix), allocatable :: val_ints(:)              !integral matrices
     logical, parameter :: WRITE_INTS = .false.            !if writing integrals on file
@@ -1165,6 +1181,11 @@
     NUM_INTS(3) = 1
     NUM_INTS(4) = 3
     NUM_INTS(5) = 3
+    NUM_INTS(6) = 3
+    NUM_INTS(7) = 3
+    NUM_INTS(8) = 3
+    NUM_INTS(9) = 3
+    NUM_INTS(10) = 3
     ! loops over different tests
     do itest = 1, NUM_TEST
       test_failed = .false.
@@ -1259,10 +1280,16 @@
       deallocate(int_rep)
       deallocate(int_adr)
       deallocate(lb_int)
+      ! magnetic derivatives of one-electron Hamiltonian using non-LAOs
+      if (PROP_NAME(itest)=="INT_ONE_HAMIL     " .and. &
+          GTO_TYPE(itest)==NON_LAO .and.               &
+          ORDER_MAG_TOTAL(itest)==1) then
+        wrk_space(1:end_herm_int) = -0.5_REALK*wrk_space(1:end_herm_int)
       ! HERMIT uses different sign for the following integrals
-      if (HERM_PROP(itest)=="DPLGRA  " .or. HERM_PROP(itest)=="POTENERG" .or. &
+      else if (HERM_PROP(itest)=="DPLGRA  " .or. HERM_PROP(itest)=="POTENERG" .or. &
           HERM_PROP(itest)=="NUCSLO  " .or. HERM_PROP(itest)=="PSO     " .or. &
-          HERM_PROP(itest)=="ANGMOM  " .or. HERM_PROP(itest)=="SQHDOR  ") then
+          HERM_PROP(itest)=="ANGMOM  " .or. HERM_PROP(itest)=="SQHDOR  " .or. &
+          HERM_PROP(itest)=="MAGMOM  " .or. HERM_PROP(itest)=="S1MAG   ") then
         wrk_space(1:end_herm_int) = -wrk_space(1:end_herm_int)
       end if
       ! checks the results

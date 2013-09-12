@@ -105,8 +105,8 @@ CTRL[4]=2
 ERROR[4]="SYMMETRY NOT CORRECT"
 
 # Initial energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-75\.97834103" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.1114779" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-75\.97834103" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy *\: * \-76\.1114779" $log | wc -l`
 CRIT3=`$GREP "Final * HF energy\: * \-75\.9783410313" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[5]=6
@@ -136,16 +136,16 @@ CTRL[7]=45
 ERROR[7]="SYMMETRY COORDINATES NOT CORRECT"
 
 # First displacement
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-75\.97859652[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.11149159[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-75\.97859652[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy *\: * \-76\.11149159[0-9][0-9]" $log | wc -l`
 CRIT3=`$GREP "Final * HF energy\: * \-75\.978596525" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="FIRST DISPLACEMENT NOT CORRECT"
 
 # Second displacement
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-75\.97805034[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.11142957[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-75\.97805034[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy *\: * \-76\.11142957[0-9][0-9]" $log | wc -l`
 CRIT3=`$GREP "Final * HF energy\: * \-75\.9780503475[0-9][0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3

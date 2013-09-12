@@ -831,12 +831,13 @@ contains
 
   End subroutine mpicopy_fragment
 
-  subroutine share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s)
+  subroutine share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
     implicit none
     real(realk),pointer :: xo(:),yv(:),Gbi(:),Had(:)
     real(realk), intent(inout) :: ppf(:),qqf(:)
     integer :: no,nv,nb,s
     type(array),intent(inout) :: t2,omega2
+    logical :: lo
     integer :: oaddr(infpar%lg_nodtot)
     integer :: taddr(infpar%lg_nodtot)
     logical :: master
@@ -850,6 +851,7 @@ contains
     call ls_mpi_buffer(nv,infpar%master)
     call ls_mpi_buffer(nb,infpar%master)
     call ls_mpi_buffer(s,infpar%master)
+    call ls_mpi_buffer(lo,infpar%master)
     if(master)oaddr=omega2%addr_p_arr
     call ls_mpi_buffer(oaddr,infpar%lg_nodtot,infpar%master)
     if(master)taddr=t2%addr_p_arr
@@ -933,7 +935,7 @@ contains
       call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
       call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
 
-      nelms = int(nvirt*nvirt*nocc*nocc,kind=8)
+      nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
       call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
       if(iter/=1.and.(s==0.or.s==4))then
         call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
@@ -1040,7 +1042,8 @@ contains
         do j=1,nbA
           actual_node=MODULO(j-1+(i-1)*MODULO(nbA,infpar%lg_nodtot),infpar%lg_nodtot)
           mpi_task_distribution((j-1)*nbG+i)=actual_node
-          jobsize_per_node(actual_node+1)=jobsize_per_node(actual_node+1) + int(batchdimGamma(i)*batchdimAlpha(j),kind=8)
+          jobsize_per_node(actual_node+1)=jobsize_per_node(actual_node+1) & 
+          &+ int(i8*batchdimGamma(i)*batchdimAlpha(j),kind=8)
           touched((j-1)*nbg+i) = .true.
         enddo
       enddo
@@ -1058,7 +1061,7 @@ contains
         do i=1,nbG
          la=batchdimAlpha(j)
          lg=batchdimGamma(i)
-         workloads((j-1)*nbG+i)   = int(la*lg,kind=8)
+         workloads((j-1)*nbG+i)   = int((i8*la)*lg,kind=8)
 
          !in CCSD the workloads are not equally distributed, and a more accurate
          !estimation of the work has to be done
@@ -1069,7 +1072,7 @@ contains
            workloads((j-1)*nbG+i) = workloads((j-1)*nbG+i) * nb * nb * 2
            !account for Kobayashi-Term
            if(fa<=fg+lg-1 )then
-             workloads((j-1)*nbG+i) = workloads((j-1)*nbG+i) + int((nv**2*no**2*la*lg)/4,kind=8)
+             workloads((j-1)*nbG+i) = workloads((j-1)*nbG+i) + int(((i8*nv**2)*no**2*la*lg)/4,kind=8)
            endif
          endif
 
@@ -1665,12 +1668,13 @@ contains
     call ls_mpi_buffer(DECitem%singlesthr,Master)
     call ls_mpi_buffer(DECitem%convert64to32,Master)
     call ls_mpi_buffer(DECitem%convert32to64,Master)
-    call ls_mpi_buffer(DECitem%CCSDsaferun,Master)
+    call ls_mpi_buffer(DECitem%CCSDnosaferun,Master)
     call ls_mpi_buffer(DECitem%solver_par,Master)
     call ls_mpi_buffer(DECitem%force_scheme,Master)
     call ls_mpi_buffer(DECitem%dyn_load,Master)
-    call ls_mpi_buffer(DECitem%ccsd_old,Master)
+    call ls_mpi_buffer(DECitem%CCDEBUG,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
+    call ls_mpi_buffer(DECitem%CCSD_MPICH,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
@@ -1687,6 +1691,7 @@ contains
     call ls_mpi_buffer(DECitem%simulate_eri,Master)
     call ls_mpi_buffer(DECitem%fock_with_ri,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
+    call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
@@ -1721,6 +1726,8 @@ contains
     call ls_mpi_buffer(DECitem%HybridScheme,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
     call ls_mpi_buffer(DECitem%use_mp2_frag,Master)
+    call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
+    call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%paircut_set,Master)
     call ls_mpi_buffer(DECitem%PairReductionDistance,Master)

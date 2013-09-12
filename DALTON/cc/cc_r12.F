@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -3516,7 +3516,11 @@ celena
 celena
          R12HYB = R12HYB .OR. ONEAUX
          LABEL = 'FULLBAS '
+         write(lupri,*) 'Before INIT1 in ccsd_r12'
+         call flshfo(lupri) ! asm
          CALL CCSD_INIT1(WORK,LWORK)
+         write(lupri,*) 'After INIT1 in ccsd_r12'
+         call flshfo(lupri) ! asm
          NORB1T = 0
          NORB2T = 0
          NNBASF = 0
@@ -3671,6 +3675,7 @@ C
      *    ' C. C. M. Samson, W. Klopper and T. Helgaker,',
      *    ' Comp. Phys. Commun. 149, 1-10 (2002).'
          WRITE(LUPRI,'(1X,78A1/)') ('*',I=1,78)
+         CALL FLSHFO(LUPRI)
 C
          KFOCKD = 1
          KFOCKQ = KFOCKD + NORBTS
@@ -3734,6 +3739,7 @@ cWK        END IF
          END IF
          WRITE(LUPRI,'(A,I15,A/)')' Core memory required by CCSD_R12 :',
      &                             KEND1,'  (double words)'
+         CALL FLSHFO(LUPRI)
          LWRK1 = LWORK - KEND1
          IF (KEND1 .GT. LWORK) CALL STOPIT('CCSD_R12','R12 WORK SPACE',
      &        LWORK,KEND1)
@@ -3780,13 +3786,18 @@ C
             INTGAC = 6
             CALL DZERO(WORK(KT1AM),NT1AMX)
             LHTF = .FALSE.
+            write(Lupri,*) 'ccsd_r12.1'
+            call flshfo(lupri) !asm
             CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
      &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
+            write(Lupri,*) 'ccsd_r12.1'
+            call flshfo(lupri) !asm
             CALL CCSD_IKJL(WORK(KQQ6M),NRHFT,WXRK(KS2AM))
             WRITE(LUPRI,'(1X,A)')
      *        'Computation of (ik|[[f12,T1],f12]|jl) integrals done' 
             WRITE(TIMLAB,1013) '#6 ',MBSMAX
             CALL TIMER(TIMLAB,TIMSTR,TIMEND)  
+            CALL FLSHFO(LUPRI)
 C
 C           COMPUTE (IA|F12**2|JB) INTEGRALS
 C
@@ -3808,6 +3819,7 @@ C
      *        'Computation of (ik|f12**2|jl) integrals done' 
             WRITE(TIMLAB,1013) '#4 ',MBSMAX
             CALL TIMER(TIMLAB,TIMSTR,TIMEND)  
+            CALL FLSHFO(LUPRI)
 C
 C           COMPUTE (IA|(1/R12)*F12|JB) INTEGRALS
 C
@@ -3830,6 +3842,7 @@ C
      *        'Computation of (ik|f12/r12|jl) integrals done' 
             WRITE(TIMLAB,1013) '#2 ',MBSMAX
             CALL TIMER(TIMLAB,TIMSTR,TIMEND)  
+            CALL FLSHFO(LUPRI)
             R12EIN = .FALSE.
             CCR12SM = .FALSE.
             LUSIFC = -1
@@ -3844,6 +3857,7 @@ C
          ELSE
             CALL TIMER('START ',TIMSTR,TIMEND)  
          END IF
+         CALL FLSHFO(LUPRI)
 C
 C        COMPUTE (IA|R12|JB) INTEGRALS
 C     
@@ -3870,8 +3884,12 @@ C
          CALL DZERO(WORK(KT1AM),NT1AMX)
 C........LHTF must be variable (WK/14-06-2004).
          LHTF = CCR12.AND.(CCR12RSP.OR.IANR12.EQ.2.OR.IANR12.EQ.3)
+         write(lupri,*) 'ccsd_r12.11'
+         call flshfo(lupri) ! asm
          CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),LHTF,
      &                  CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+         write(lupri,*) 'ccsd_r12.12'
+         call flshfo(lupri) ! asm
 c------------------------------------------------------
 chf      get r12 integrals on file
 c------------------------------------------------------
@@ -3900,6 +3918,7 @@ c------------------------------------------------------
             WRITE(TIMLAB,1013) 'R  ',MBSMAX
             CALL TIMER(TIMLAB,TIMSTR,TIMEND)  
          END IF
+         CALL FLSHFO(LUPRI)
 C
          IF (CC2R12INT .OR. CCSDR12INT .OR. R12PRP) THEN
            IF (IANR12.EQ.1.OR.IANR12.EQ.3) THEN
@@ -4258,8 +4277,9 @@ celena
             WRITE(TIMLAB,1013) 'R  ',MBSMAX
             CALL TIMER(TIMLAB,TIMSTR,TIMEND)  
          END IF
+         CALL FLSHFO(LUPRI)
 C
-C        COMPUTE (IA|[T1,R12]|JB) INTEGRALS
+C        COMPUTE (IA|[T1,R12]|JB) INTEGRALS   ASM
 C
  1097    CONTINUE
          R12TRA = .TRUE.

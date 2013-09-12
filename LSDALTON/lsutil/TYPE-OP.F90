@@ -299,6 +299,8 @@ WRITE(LUN) DALTON%ADMM_GCBASIS
 WRITE(LUN) DALTON%ADMM_JKBASIS
 WRITE(LUN) DALTON%ADMM_DFBASIS
 WRITE(LUN) DALTON%ADMM_MCWEENY
+WRITE(LUN) DALTON%ADMM_CONST_EL
+
 WRITE(LUN) DALTON%SR_EXCHANGE
 WRITE(LUN) DALTON%CAM
 
@@ -312,8 +314,6 @@ WRITE(LUN) DALTON%maxpasses
 WRITE(LUN) DALTON%MM_LMAX
 WRITE(LUN) DALTON%MM_TLMAX
 WRITE(LUN) DALTON%MMunique_ID1
-WRITE(LUN) DALTON%CARMOM
-WRITE(LUN) DALTON%SPHMOM
 WRITE(LUN) DALTON%numAtomsPerFragment
 WRITE(LUN) DALTON%LU_LUINTM
 WRITE(LUN) DALTON%LU_LUINTR
@@ -452,6 +452,8 @@ READ(LUN) DALTON%ADMM_GCBASIS
 READ(LUN) DALTON%ADMM_JKBASIS
 READ(LUN) DALTON%ADMM_DFBASIS
 READ(LUN) DALTON%ADMM_MCWEENY
+READ(LUN) DALTON%ADMM_CONST_EL
+
 READ(LUN) DALTON%SR_EXCHANGE
 READ(LUN) DALTON%CAM
 
@@ -465,8 +467,6 @@ READ(LUN) DALTON%maxpasses
 READ(LUN) DALTON%MM_LMAX
 READ(LUN) DALTON%MM_TLMAX
 READ(LUN) DALTON%MMunique_ID1
-READ(LUN) DALTON%CARMOM
-READ(LUN) DALTON%SPHMOM
 READ(LUN) DALTON%numAtomsPerFragment
 READ(LUN) DALTON%LU_LUINTM
 READ(LUN) DALTON%LU_LUINTR
@@ -537,10 +537,11 @@ DALTON%AUXBASIS = .FALSE.
 DALTON%CABSBASIS = .FALSE.
 DALTON%JKBASIS = .FALSE.
 DALTON%ADMM_EXCHANGE = .FALSE.
-DALTON%ADMM_GCBASIS = .FALSE.
-DALTON%ADMM_DFBASIS = .FALSE.
-DALTON%ADMM_JKBASIS = .FALSE.
-DALTON%ADMM_MCWEENY = .FALSE.
+DALTON%ADMM_GCBASIS  = .FALSE.
+DALTON%ADMM_DFBASIS  = .FALSE.
+DALTON%ADMM_JKBASIS  = .FALSE.
+DALTON%ADMM_MCWEENY  = .FALSE.
+DALTON%ADMM_CONST_EL = .FALSE.
 DALTON%NOFAMILY = .FALSE.
 DALTON%Hermiteecoeff = .TRUE.
 DALTON%JENGINE = .TRUE.
@@ -645,8 +646,6 @@ DALTON%OD_SCREEN = .TRUE.
 DALTON%MBIE_SCREEN = .FALSE.!.TRUE. For now it is turned off, until fully testet
 DALTON%PS_DEBUG = .FALSE.
 DALTON%DEBUGKINETIC = .FALSE.
-DALTON%CARMOM = 0
-DALTON%SPHMOM = 0
 !DALTON%FRAGMENT = .TRUE.
 DALTON%FRAGMENT = .FALSE.
 !Default is to make the number of atoms so large fragmentation is not used
@@ -661,6 +660,7 @@ DALTON%ADMM_GCBASIS    = .FALSE.
 DALTON%ADMM_JKBASIS    = .FALSE.
 DALTON%ADMM_DFBASIS    = .FALSE.
 DALTON%ADMM_MCWEENY    = .FALSE.
+DALTON%ADMM_CONST_EL   = .FALSE.
 !CAM PARAMETERS
 DALTON%SR_EXCHANGE = .FALSE.
 DALTON%CAM = .FALSE.
@@ -1203,7 +1203,6 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'NOSEGMENT',DALTON%NOSEGMENT
 
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DO3CENTEROVL',DALTON%DO3CENTEROVL
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DO2CENTERERI',DALTON%DO2CENTERERI
-WRITE(LUPRI,'(2X,A35,I8)')'CARMOM',DALTON%CARMOM
 WRITE(LUPRI,'(2X,A35,7X,L1)')'MIXEDOVERLAP',DALTON%MIXEDOVERLAP
 
 !*CAUCHY-SCHWARZ INTEGRAL PARAMETERS
@@ -1231,6 +1230,7 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_GCBASIS',DALTON%ADMM_GCBASIS
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_JKBASIS',DALTON%ADMM_JKBASIS
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_DFBASIS',DALTON%ADMM_DFBASIS
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_MCWEENY',DALTON%ADMM_MCWEENY
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_CONST_EL',DALTON%ADMM_CONST_EL
 WRITE(LUPRI,'(2X,A35,7X,L1)')'SR_EXCHANGE',DALTON%SR_EXCHANGE
 WRITE(LUPRI,'(2X,A35,7X,L1)')'CAM',DALTON%CAM
 WRITE(LUPRI,'(2X,A35,F16.8)') 'CAMalpha',DALTON%CAMalpha
@@ -1369,6 +1369,40 @@ WRITE (LUPRI,'(A)')'--------------------------------------------------------&
      &-------------'
 WRITE(LUPRI,*) '                     '
 END SUBROUTINE PRINT_MOLECULE_AND_BASIS
+
+!call like 
+! call Atom_for_each_basisfunc(LUPRI,Setting%MOLECULE(1)%p,Setting%BASIS(1)%p%REGULAR,&
+!    &Atom_for_each_bas,nbast)
+!  and the XYZ coordinate of the molecule is in
+!  Setting%MOLECULE(1)%ATOM(iatom)%CENTER(1:3)
+!> \param lupri the logical unit number to write to
+!> \param molecule the molecule structure
+!> \param basinfo the basis info structure
+SUBROUTINE Atom_for_each_basisfunc(LUPRI,MOLECULE,basInfo,Atom_for_each_bas,nbast)
+IMPLICIT NONE
+TYPE(BASISSETINFO),intent(in) :: basInfo
+TYPE(MOLECULEINFO),intent(in) :: MOLECULE
+INTEGER,intent(in)            :: LUPRI,nbast
+integer,intent(inout) ::  Atom_for_each_bas(nbast)
+!
+integer :: ibasis,I,Icharge,type,J
+iF(MOLECULE%nbastREG.NE.nbast)call lsquit('dim mismatch in Atom_for_each_basisfunc',-1)
+ibasis = 0 
+DO I=1,MOLECULE%nAtoms
+   IF(basInfo%labelindex .EQ. 0)THEN
+      ICHARGE = INT(MOLECULE%ATOM(I)%charge) 
+      type= basInfo%Chargeindex(ICHARGE)
+   ELSE
+      type=MOLECULE%ATOM(I)%IDtype(basInfo%labelindex)
+   ENDIF
+   IF(MOLECULE%ATOM(I)%pointcharge)CYCLE   
+   DO J = 1, basInfo%ATOMTYPE(type)%Totnorb
+      ibasis = ibasis + 1
+      Atom_for_each_bas(ibasis) = I
+   ENDDO
+ENDDO
+iF(ibasis.NE.nbast)call lsquit('dim mismatch2 in Atom_for_each_basisfunc',-1)
+END SUBROUTINE ATOM_FOR_EACH_BASISFUNC
 
 !> \brief print the molceule and basis info
 !> \author S. Reine and T. Kjaergaard
@@ -1899,7 +1933,7 @@ IF(setting%Output%memdistResultTensor)then
    call memdist_lstensor_BuildToScalapack(setting%Output%resultTensor,&
         & setting%comm,setting%node,setting%numnodes,singleMAT)
 ELSE
-    call Build_mat_from_lst(lupri,setting%Output%resultTensor,singleMAT)
+   call Build_mat_from_lst(lupri,setting%Output%resultTensor,singleMAT)
 ENDIF
 call retrieve_postprocess(setting%Output%postprocess(1),singleMAT,lupri)
 call lstensor_free(setting%Output%resultTensor)
@@ -1912,6 +1946,7 @@ call mem_dealloc(setting%Output%postprocess)
 END SUBROUTINE retrieve_output_mat_single
 
 subroutine retrieve_postprocess(postprocess,MAT,lupri)
+implicit none
 integer :: postprocess,lupri
 type(matrix) :: MAT
 !
@@ -2121,6 +2156,7 @@ END SUBROUTINE retrieve_output_4dim
 
 !call retrieve_postprocess_full(setting%Output%postprocess(1),singleMAT,lupri)
 subroutine retrieve_postprocess_full(postprocess,MAT,ndim,lupri)
+implicit none
 integer :: postprocess,lupri,ndim
 real(realk) :: MAT(ndim,ndim)
 !
@@ -2973,8 +3009,6 @@ scheme%NOSEGMENT             = dalton_inp%NOSEGMENT
 scheme%contAng               = dalton_inp%contAng
 scheme%DO3CENTEROVL          = dalton_inp%DO3CENTEROVL
 scheme%DO2CENTERERI          = dalton_inp%DO2CENTERERI
-scheme%CARMOM                = dalton_inp%CARMOM
-scheme%SPHMOM                = dalton_inp%SPHMOM
 scheme%CMORDER               = 0
 scheme%CMiMat                = 0
 scheme%MIXEDOVERLAP          = dalton_inp%MIXEDOVERLAP
@@ -2983,6 +3017,7 @@ scheme%ADMM_GCBASIS          = dalton_inp%ADMM_GCBASIS
 scheme%ADMM_DFBASIS          = dalton_inp%ADMM_DFBASIS 
 scheme%ADMM_JKBASIS          = dalton_inp%ADMM_JKBASIS 
 scheme%ADMM_MCWEENY          = dalton_inp%ADMM_MCWEENY 
+scheme%ADMM_CONST_EL         = dalton_inp%ADMM_CONST_EL
 scheme%THRESHOLD             = dalton_inp%THRESHOLD
 scheme%CS_THRESHOLD          = dalton_inp%CS_THRESHOLD
 scheme%OE_THRESHOLD          = dalton_inp%OE_THRESHOLD
@@ -3100,8 +3135,6 @@ WRITE(IUNIT,'(3X,A22,L7)') 'NOSEGMENT             ', scheme%NOSEGMENT
 WRITE(IUNIT,'(3X,A22,L7)') 'ContAng               ', scheme%ContAng               
 WRITE(IUNIT,'(3X,A22,L7)') 'DO3CENTEROVL          ', scheme%DO3CENTEROVL          
 WRITE(IUNIT,'(3X,A22,L7)') 'DO2CENTERERI          ', scheme%DO2CENTERERI          
-WRITE(IUNIT,'(3X,A22,I7)') 'CARMOM                ', scheme%CARMOM                
-WRITE(IUNIT,'(3X,A22,I7)') 'SPHMOM                ', scheme%SPHMOM             
 WRITE(IUNIT,'(3X,A22,L7)') 'CMORDER               ', scheme%CMORDER
 WRITE(IUNIT,'(3X,A22,I7)') 'CMIMAT                ', scheme%CMIMAT
 WRITE(IUNIT,'(3X,A22,L7)') 'MIXEDOVERLAP          ', scheme%MIXEDOVERLAP
@@ -3110,6 +3143,7 @@ WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_GCBASIS          ', scheme%ADMM_GCBASIS
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_DFBASIS          ', scheme%ADMM_DFBASIS 
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_JKBASIS          ', scheme%ADMM_JKBASIS 
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_MCWEENY          ', scheme%ADMM_MCWEENY 
+WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_CONST_EL         ', scheme%ADMM_CONST_EL
 WRITE(IUNIT,'(3X,A22,G14.2)') 'THRESHOLD             ', scheme%THRESHOLD
 WRITE(IUNIT,'(3X,A22,G14.2)') 'CS_THRESHOLD          ', scheme%CS_THRESHOLD
 WRITE(IUNIT,'(3X,A22,G14.2)') 'OE_THRESHOLD          ', scheme%OE_THRESHOLD
@@ -3349,6 +3383,7 @@ ENDIF
 END SUBROUTINE print_aoAtomInfo
 
 SUBROUTINE print_aoBatchInfo(batch,iprint,iunit)
+implicit none
 TYPE(aoBatchInfo),intent(IN) :: batch
 Integer,intent(IN)          :: iprint,iunit
 !

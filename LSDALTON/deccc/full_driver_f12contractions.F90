@@ -7,7 +7,7 @@ contains
 
 #ifdef MOD_UNRELEASED
   subroutine ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj,Viajb,Vijja,Viaji,Tai,nocc,nvirt)
-  implicit none
+  implicit none 
   real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
   real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
   real(realk),intent(IN)    :: Viajb(nocc,nvirt,nocc,nvirt)
@@ -442,9 +442,92 @@ contains
         ENDDO
       ENDDO
     ENDDO
-  ENDDO
+  ENDDO 
   end subroutine mp2f12_Xijij
 
+  !> \brief Xijij contribution for MP2-f12
+  !> \author Simen Reine
+  !> \date May 2012
+  subroutine mp2f12_Xijij_term1(Xijij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+  implicit none
+  Real(realk),intent(OUT) :: Xijij(nocc,nocc)
+  Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+  Real(realk),intent(IN)  :: Tijkl(nocc,nocc,nocc,nocc)
+  Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+  Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs
+  !
+  Integer :: i,j,p,q
+  Xijij = 0.0E0_realk
+  DO j=1,nocc
+    DO i=1,nocc
+      Xijij(i,j) = Tijkl(i,i,j,j)
+    ENDDO
+  ENDDO
+  end subroutine mp2f12_Xijij_term1
+
+  subroutine mp2f12_Xijij_term2(Xijij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(OUT) :: Xijij(nocc,nocc)
+    Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+    Real(realk),intent(IN)  :: Tijkl(nocc,nocc,nocc,nocc)
+    Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+    Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Xijij = 0.0E0_realk
+    DO q=1,nbasis
+       DO j=1,nocc
+          DO p=1,nbasis
+             DO i=1,nocc
+                Xijij(i,j) = Xijij(i,j) - Gipjq(i,p,j,q)*Gipjq(i,p,j,q)
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+  end subroutine mp2f12_Xijij_term2
+  
+  subroutine mp2f12_Xijij_term3(Xijij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(OUT) :: Xijij(nocc,nocc)
+    Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+    Real(realk),intent(IN)  :: Tijkl(nocc,nocc,nocc,nocc)
+    Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+    Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Xijij = 0.0E0_realk
+    DO q=1,ncabs
+       DO j=1,nocc
+          DO p=1,noccfull
+             DO i=1,nocc
+                Xijij(i,j) = Xijij(i,j) - Gimjc(i,p,j,q)*Gimjc(i,p,j,q)
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+  end subroutine mp2f12_Xijij_term3
+  
+  subroutine mp2f12_Xijij_term4(Xijij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(OUT) :: Xijij(nocc,nocc)
+    Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+    Real(realk),intent(IN)  :: Tijkl(nocc,nocc,nocc,nocc)
+    Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+    Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Xijij = 0.0E0_realk
+    DO q=1,ncabs
+       DO j=1,nocc
+          DO p=1,noccfull
+             DO i=1,nocc
+                Xijij(i,j) = Xijij(i,j) - Gimjc(j,p,i,q)*Gimjc(j,p,i,q)
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+  end subroutine mp2f12_Xijij_term4
+  
   !> \brief Xijij contribution for MP2-f12
   !> \author Simen Reine
   !> \date May 2012
@@ -554,6 +637,86 @@ end subroutine mp2f12_Xijijfull
     ENDDO
   ENDDO
   end subroutine mp2f12_Xjiij
+
+  subroutine mp2f12_Xjiij_term1(Xjiij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(OUT) :: Xjiij(nocc,nocc)
+    Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+    Real(realk),intent(IN)  :: Tijkl(nocc,nocc,nocc,nocc)
+    Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+    Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Xjiij = 0.0E0_realk
+    DO j=1,nocc
+       DO i=1,nocc
+          Xjiij(i,j) = Tijkl(i,j,j,i)
+       ENDDO
+    ENDDO
+  end subroutine mp2f12_Xjiij_term1
+  
+  subroutine mp2f12_Xjiij_term2(Xjiij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+  implicit none
+  Real(realk),intent(OUT) :: Xjiij(nocc,nocc)
+  Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+  Real(realk),intent(IN)  :: Tijkl(nocc,nocc,nocc,nocc)
+  Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+  Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs
+  !
+  Integer :: i,j,p,q
+  Xjiij = 0.0E0_realk
+  DO q=1,nbasis
+    DO j=1,nocc
+      DO p=1,nbasis
+        DO i=1,nocc
+          Xjiij(i,j) = Xjiij(i,j) - Gipjq(i,p,j,q)*Gipjq(j,p,i,q)
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+  end subroutine mp2f12_Xjiij_term2
+
+  subroutine mp2f12_Xjiij_term3(Xjiij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+  implicit none
+  Real(realk),intent(OUT) :: Xjiij(nocc,nocc)
+  Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+  Real(realk),intent(IN)  :: Tijkl(nocc,nocc,nocc,nocc)
+  Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+  Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs
+  !
+  Integer :: i,j,p,q
+  Xjiij = 0.0E0_realk
+  DO q=1,ncabs
+    DO j=1,nocc
+      DO p=1,noccfull
+        DO i=1,nocc
+          Xjiij(i,j) = Xjiij(i,j) - Gimjc(i,p,j,q)*Gimjc(j,p,i,q)
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+  end subroutine mp2f12_Xjiij_term3
+
+  subroutine mp2f12_Xjiij_term4(Xjiij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+  implicit none
+  Real(realk),intent(OUT) :: Xjiij(nocc,nocc)
+  Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+  Real(realk),intent(IN)  :: Tijkl(nocc,nocc,nocc,nocc)
+  Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+  Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs
+  !
+  Integer :: i,j,p,q
+  Xjiij = 0.0E0_realk
+  DO q=1,ncabs
+    DO j=1,nocc
+      DO p=1,noccfull
+        DO i=1,nocc
+          Xjiij(i,j) = Xjiij(i,j) - Gimjc(j,p,i,q)*Gimjc(i,p,j,q)
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+  end subroutine mp2f12_Xjiij_term4
 
   !> \brief Bijij contribution for MP2-f12
   !> \author T Kjaergaard

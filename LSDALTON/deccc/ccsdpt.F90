@@ -3037,7 +3037,7 @@ contains
     call mem_alloc(orb2batchGamma,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
          & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-         & nbatchesGamma,orb2BatchGamma)
+         & nbatchesGamma,orb2BatchGamma,'R')
 
     write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
@@ -3071,7 +3071,7 @@ contains
     call mem_alloc(orb2batchAlpha,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
          & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
-         & nbatchesAlpha,orb2BatchAlpha)
+         & nbatchesAlpha,orb2BatchAlpha,'R')
 
     write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
@@ -3111,7 +3111,7 @@ contains
        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,DECinfo%output,DECinfo%output)
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
 
     end if
 
@@ -3165,8 +3165,8 @@ contains
 
 #endif
 
-          if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabRHS
-          if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+          if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+          if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
 
           ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
@@ -3401,7 +3401,7 @@ contains
     ! The smallest possible AO batch depends on the basis set
     ! (More precisely, if all batches are made as small as possible, then the
     !  call below determines the largest of these small batches).
-    call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch)
+    call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
   
   
     ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
@@ -3432,7 +3432,7 @@ contains
     ! The optimal gamma batch size is GammaOpt.
     ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
     ! and store this number in gammadim.
-    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,GammaOpt,gammadim)
+    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,GammaOpt,gammadim,'R')
   
   
     ! Largest possible alpha batch size
@@ -3458,7 +3458,7 @@ contains
     ! The optimal alpha batch size is AlphaOpt.
     ! We now find the maximum possible alpha batch size smaller than or equal to AlphaOpt
     ! and store this number in alphadim.
-    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim)
+    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
   
   
     ! Print out and sanity check
@@ -3536,25 +3536,32 @@ contains
     !> Tot size of temporary arrays (in GB)
     real(realk), intent(inout) :: mem
     real(realk) :: GB
-  
+    integer(kind=long) :: tmpI
     GB = 1.000E-9_realk ! 1 GB
     ! Array sizes needed in get_CCSDpT_integrals are checked and the largest one is found
   
     ! Tmp array 1 (five candidates)
     size1 = i8*alphadim*gammadim*nbasis*nbasis
-    size1 = max(size1,i8*nvirt**2*gammadim*alphadim)
-    size1 = max(size1,i8*nvirt*nocc*gammadim*alphadim)
-    size1 = max(size1,i8*nvirt*nocc**2*alphadim)
-    size1 = max(size1,i8*nvirt**3)
+    tmpI = i8*nvirt**2*gammadim*alphadim
+    size1 = max(size1,tmpI)
+    tmpI = i8*nvirt*nocc*gammadim*alphadim
+    size1 = max(size1,tmpI)
+    tmpI = i8*nvirt*nocc**2*alphadim
+    size1 = max(size1,tmpI)
+    tmpI = i8*nvirt**3
+    size1 = max(size1,tmpI)
   
     ! tmp array 2 (three candidates)
     size2 = i8*alphadim*gammadim*nbasis*nvirt
-    size2 = max(size2,alphadim*gammadim*nvirt*nocc)
-    size2 = max(size2,i8*nvirt**3)
+    tmpI = alphadim*gammadim*nvirt*nocc
+    size2 = max(size2,tmpI)
+    tmpI = i8*nvirt**3
+    size2 = max(size2,tmpI)
   
     ! Tmp array3 (two candidates)
     size3 = i8*alphadim*gammadim*nvirt**2
-    size3 = max(size3,i8*alphadim*nvirt**3)
+    tmpI = i8*alphadim*nvirt**3
+    size3 = max(size3,tmpI)
   
     ! Size = size1+size2+size3,  convert to GB
     mem = realk*GB*(size1+size2+size3)

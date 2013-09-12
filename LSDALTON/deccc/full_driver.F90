@@ -2,7 +2,7 @@
 !> Full calculation
 !> This file is mainly a playground for new developments, not intended to be included in a release.
 
-module full
+module full 
   use fundamental
   use precision
   use typedeftype!,only:lsitem
@@ -18,6 +18,7 @@ module full
   use CABS_operations
 #ifdef MOD_UNRELEASED
   use full_f12contractions
+  use f12_routines_module   ! Moved to August 2013 by Yang M. Wang
 #endif
   use array4_simple_operations
   use array3_simple_operations
@@ -26,6 +27,7 @@ module full
 !  use orbital_operations
   use full_molecule
   use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
+  use cc_debug_routines_module
   use ccdriver!,only: ccsolver_justenergy, ccsolver
 
   public :: full_driver
@@ -153,9 +155,15 @@ contains
 !endif mod_unreleased
 #endif
 
-          Ecorr = ccsolver_justenergy(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
+          if(DECinfo%CCSDmultipliers)then
+            call ccsolver_energy_multipliers(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
+               & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
+               & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ecorr)
+          else
+            Ecorr = ccsolver_justenergy(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
                & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
                & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock)
+          endif
 
 #ifdef MOD_UNRELEASED
 
@@ -173,7 +181,6 @@ contains
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine full_canonical_mp2_f12(MyMolecule,MyLsitem,Dmat,energy)
-
 
     implicit none
     !> Full molecule info
@@ -224,10 +231,25 @@ contains
     real(realk),pointer :: Vjiij_term4(:,:)
 
     real(realk),pointer :: Xijkl(:,:,:,:)
+
     real(realk),pointer :: Xijij(:,:)
-    real(realk),pointer :: Xjiij(:,:)
+    real(realk),pointer :: Xijij_term1(:,:)
+    real(realk),pointer :: Xijij_term2(:,:)
+    real(realk),pointer :: Xijij_term3(:,:)
+    real(realk),pointer :: Xijij_term4(:,:)
+
+    real(realk),pointer :: Xjiij(:,:)    
+    real(realk),pointer :: Xjiij_term1(:,:)
+    real(realk),pointer :: Xjiij_term2(:,:)
+    real(realk),pointer :: Xjiij_term3(:,:)
+    real(realk),pointer :: Xjiij_term4(:,:)
+
     real(realk),pointer :: Bijij(:,:)
     real(realk),pointer :: Bjiij(:,:)
+    
+    real(realk),pointer :: Bijij_debug(:,:)
+    real(realk),pointer :: Bjiij_debug(:,:)
+
     integer :: nbasis,ncabs,nocc,nvirt,I,A,B,J,noccfull,ncabsAO
     real(realk) :: eps
     character :: string(4)
@@ -245,7 +267,7 @@ contains
     type(matrix) :: Fcp
     type(matrix) :: Fii
     type(matrix) :: Fac
-    Real(realk)  :: E21,E22,Gtmp
+    Real(realk)  :: E21, E21_debug, E22, E22_debug, Gtmp
     type(array2) :: array2Tai
     type(array4) :: array4Taibj
 
@@ -266,7 +288,6 @@ contains
 
     ! Get all AO integrals
     ! ********************
-
     call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
@@ -280,46 +301,56 @@ contains
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
 
     call mem_alloc(Vijij,nocc,nocc)
-    call mem_alloc(Vijij_term1,nocc,nocc)
-    call mem_alloc(Vijij_term2,nocc,nocc)
-    call mem_alloc(Vijij_term3,nocc,nocc)
-    call mem_alloc(Vijij_term4,nocc,nocc)
-
     call mem_alloc(Vjiij,nocc,nocc)
-    call mem_alloc(Vjiij_term1,nocc,nocc)
-    call mem_alloc(Vjiij_term2,nocc,nocc)
-    call mem_alloc(Vjiij_term3,nocc,nocc)
-    call mem_alloc(Vjiij_term4,nocc,nocc)
-
+    
     call mp2f12_Vijij(Vijij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
     call mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
-
-    call mp2f12_Vijij_term1(Vijij_term1,Fijkl,nocc,noccfull,nbasis,ncabs)
-    call mp2f12_Vijij_term2(Vijij_term2,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
-    call mp2f12_Vijij_term3(Vijij_term3,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
-    call mp2f12_Vijij_term4(Vijij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
-
-    call mp2f12_Vjiij_term1(Vjiij_term1,Fijkl,nocc,noccfull,nbasis,ncabs)
-    call mp2f12_Vjiij_term2(Vjiij_term2,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
-    call mp2f12_Vjiij_term3(Vjiij_term3,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
-    call mp2f12_Vjiij_term4(Vjiij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
-
-    print *, 'E_21_V_term1: ', 2.0E0_REALK*mp2f12_EV(Vijij_term1,Vjiij_term1,nocc)
-    print *, 'E_21_V_term2: ', 2.0E0_REALK*mp2f12_EV(Vijij_term2,Vjiij_term2,nocc)
-    print *, 'E_21_V_term3: ', 2.0E0_REALK*mp2f12_EV(Vijij_term3,Vjiij_term3,nocc)
-    print *, 'E_21_V_term4: ', 2.0E0_REALK*mp2f12_EV(Vijij_term4,Vjiij_term4,nocc)
-    print *, '----------------------------------------'
-    print *, 'E_21_Vsum: ',  2.0E0_REALK*(mp2f12_EV(Vijij_term1,Vjiij_term1,nocc) + mp2f12_EV(Vijij_term2,Vjiij_term2,nocc) &
-         & + mp2f12_EV(Vijij_term3,Vjiij_term3,nocc) + mp2f12_EV(Vijij_term4,Vjiij_term4,nocc) ) 
-
-    print *, 'E_21_V: ',  2.0E0_REALK*mp2f12_EV(Vijij,Vjiij,nocc)
-
+       
+    if(DECinfo%F12DEBUG) then    
+       call mem_alloc(Vijij_term1,nocc,nocc)
+       call mem_alloc(Vijij_term2,nocc,nocc)
+       call mem_alloc(Vijij_term3,nocc,nocc)
+       call mem_alloc(Vijij_term4,nocc,nocc)
+       
+       call mem_alloc(Vjiij_term1,nocc,nocc)
+       call mem_alloc(Vjiij_term2,nocc,nocc)
+       call mem_alloc(Vjiij_term3,nocc,nocc)
+       call mem_alloc(Vjiij_term4,nocc,nocc)
+       
+       call mp2f12_Vijij_term1(Vijij_term1,Fijkl,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Vijij_term2(Vijij_term2,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Vijij_term3(Vijij_term3,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Vijij_term4(Vijij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+       
+       call mp2f12_Vjiij_term1(Vjiij_term1,Fijkl,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Vjiij_term2(Vjiij_term2,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Vjiij_term3(Vjiij_term3,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Vjiij_term4(Vjiij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+       
+       print *, '----------------------------------------'
+       print *, 'E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1,Vjiij_term1,nocc)
+       print *, 'E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
+       print *, 'E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
+       print *, 'E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
+       print *, '----------------------------------------'
+       print *, 'E_21_Vsum: ', 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
+            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) ) 
+       print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       print *, '----------------------------------------'
+!!$       print *,'norm2(Fijkl): ', norm2(Fijkl)
+!!$       print *,'norm2(Gipjq): ', norm2(Gipjq)
+!!$       print *,'norm2(Ripjq): ', norm2(Ripjq)
+!!$       print *, '----------------------------------------'
+!!$       print *,'norm2(Gimjc): ', norm2(Gimjc)
+!!$       print *,'norm2(Rimjc): ', norm2(Rimjc)
+!!$       print *, '----------------------------------------'
+    endif
+    
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)
- !   call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
+    !   call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
     call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
-!    call mp2f12_Cjaib(Cjaib,Giajc,Fac%elms,nocc,nvirt,ncabs)
-
-
+    !   call mp2f12_Cjaib(Cjaib,Giajc,Fac%elms,nocc,nvirt,ncabs)
+       
     if(DECinfo%use_canonical) then
        !construct canonical T amplitudes
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
@@ -355,8 +386,8 @@ contains
              end do
           end do
        end do
-       write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
-       print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+       !write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+       !print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
 
     else
        !  THIS PIECE OF CODE IS MORE GENERAL AS IT DOES NOT REQUIRE CANONICAL ORBITALS
@@ -379,36 +410,70 @@ contains
              end do
           end do
        end do
-       write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
-       print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
-    end if
+       !write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+       !print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+    endif
 
     call mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
     call mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
-
-    E21 = 2.0E0_REALK*mp2f12_EV(Vijij,Vjiij,nocc)
-!   write(*,*) 'MP2f12 energy term 2 <0|H1|1>',  E21
+    
+    !> Calculate E21 Energy
+    E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
 
     call mem_dealloc(Vijij)
-    call mem_dealloc(Vijij_term1)
-    call mem_dealloc(Vijij_term2)
-    call mem_dealloc(Vijij_term3)
-    call mem_dealloc(Vijij_term4)
-
-    call mem_dealloc(Vjiij)
-    call mem_dealloc(Vjiij_term1)
-    call mem_dealloc(Vjiij_term2)
-    call mem_dealloc(Vjiij_term3)
-    call mem_dealloc(Vjiij_term4)
-
+    call mem_dealloc(Vjiij)   
     call mem_dealloc(Taibj)
     call mem_dealloc(Ciajb)
 
-    if(DECinfo%use_canonical) then
+    if(DECinfo%F12DEBUG) then
+       call mem_dealloc(Vijij_term1)
+       call mem_dealloc(Vijij_term2)
+       call mem_dealloc(Vijij_term3)
+       call mem_dealloc(Vijij_term4)
+       
+       call mem_dealloc(Vjiij_term1)
+       call mem_dealloc(Vjiij_term2)
+       call mem_dealloc(Vjiij_term3)
+       call mem_dealloc(Vjiij_term4)      
+    endif
+    
+    if(DECinfo%use_canonical) then    
        call mem_alloc(Xijij,nocc,nocc)
        call mem_alloc(Xjiij,nocc,nocc)
+
        call mp2f12_Xijij(Xijij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
        call mp2f12_Xjiij(Xjiij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+
+       if(DECinfo%F12DEBUG) then
+       call mem_alloc(Xijij_term1,nocc,nocc)
+       call mem_alloc(Xijij_term2,nocc,nocc)
+       call mem_alloc(Xijij_term3,nocc,nocc)
+       call mem_alloc(Xijij_term4,nocc,nocc)      
+
+       call mem_alloc(Xjiij_term1,nocc,nocc)
+       call mem_alloc(Xjiij_term2,nocc,nocc)
+       call mem_alloc(Xjiij_term3,nocc,nocc)
+       call mem_alloc(Xjiij_term4,nocc,nocc)
+
+       call mp2f12_Xijij_term1(Xijij_term1,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Xijij_term2(Xijij_term2,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Xijij_term3(Xijij_term3,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Xijij_term4(Xijij_term4,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+
+       call mp2f12_Xjiij_term1(Xjiij_term1,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Xjiij_term2(Xjiij_term2,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Xjiij_term3(Xjiij_term3,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Xjiij_term4(Xjiij_term4,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
+    
+!!$       print *, '----------------------------------------'
+!!$       print *,'norm2(Xijij_term1): ', norm2(Xijij_term1)
+!!$       print *,'norm2(Xijij_term2): ', norm2(Xijij_term2)
+!!$       print *,'norm2(Xijij_term3): ', norm2(Xijij_term3)
+!!$       print *,'norm2(Xijij_term4): ', norm2(Xijij_term4)
+!!$       print *, '----------------------------------------'
+       
+    endif
+
     else
        call mem_alloc(Xijkl,nocc,nocc,nocc,nocc)
        call mp2f12_Xijijfull(Xijkl,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
@@ -420,21 +485,57 @@ contains
        !       enddo
        !    enddo
     endif
-
+    
     call mem_alloc(Bijij,nocc,nocc)
+    call mem_alloc(Bjiij,nocc,nocc)
+
+    if(DECinfo%F12DEBUG) then
+       call mem_alloc(Bjiij_debug,nocc,nocc)
+       call mem_alloc(Bijij_debug,nocc,nocc)
+    endif 
+    
     call mp2f12_Bijij(Bijij,Dijkl,Tirjk,Tijkr,Girjs,hJir%elms,Krr%elms,&
          & Frr%elms,Fpp%elms,Fmm%elms,Frm%elms,Fcp%elms,&
          & Girjm,Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,&
          & nocc,noccfull,nbasis,ncabsAO,nvirt,ncabs)
-
-    call mem_alloc(Bjiij,nocc,nocc)
+     
     call mp2f12_Bjiij(Bjiij,Dijkl,Tirjk,Tijkr,Girjs,hJir%elms,Krr%elms,&
          & Frr%elms,Fpp%elms,Fmm%elms,Frm%elms,Fcp%elms,&
          & Girjm,Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,&
          & nocc,noccfull,nbasis,ncabsAO,nvirt,ncabs)
 
     if(DECinfo%use_canonical) then
-       call submp2f12_EBX(E22,Bijij,Bjiij,Xijij,Xjiij,Fii%elms,nocc)
+
+       if(DECinfo%F12DEBUG) then
+          !> Setting Bmatrix = 0
+          Bijij_debug = 0.0E0_realk
+          Bjiij_debug = 0.0E0_realk  
+
+          call submp2f12_EBX(E22_debug,Bijij_debug,Bjiij_debug,Xijij,Xjiij,Fii%elms,nocc)
+
+       else
+
+          call submp2f12_EBX(E22,Bijij,Bjiij,Xijij,Xjiij,Fii%elms,nocc)
+          
+       endif
+       
+       if(DECinfo%F12DEBUG) then
+!!$          print *, '----------------------------------------'
+!!$          print *, 'nbasis ncabsAO', nbasis, ncabsAO
+!!$          print *, 'norm2(Fii): ', norm2(Fii%elms)
+!!$          print *, '----------------------------------------'
+!!$          print *, 'E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
+!!$          print *, 'E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
+!!$          print *, 'E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
+!!$          print *, 'E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
+!!$          print *, '----------------------------------------'
+!!$          print *, 'E22_Xsum: ',  mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc) & 
+!!$               & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
+!!$               & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
+!!$          print *, 'E22_debug: ', E22_debug
+!!$          print *, '----------------------------------------'
+       endif
+       
     else
        call submp2f12_EBXfull(E22,Bijij,Bjiij,Xijkl,Fii%elms,nocc)
     endif
@@ -444,29 +545,47 @@ contains
     if(DECinfo%use_canonical) then
        call mem_dealloc(Xijij)
        call mem_dealloc(Xjiij)
+       
+       if(DECinfo%F12DEBUG) then
+          call mem_dealloc(Xijij_term1)
+          call mem_dealloc(Xijij_term2)
+          call mem_dealloc(Xijij_term3)
+          call mem_dealloc(Xijij_term4)
+
+          call mem_dealloc(Xjiij_term1)
+          call mem_dealloc(Xjiij_term2)
+          call mem_dealloc(Xjiij_term3)
+          call mem_dealloc(Xjiij_term4)
+       endif
+       
     else
        call mem_dealloc(Xijkl)
     endif
-
+    
     call mem_dealloc(Bijij)
     call mem_dealloc(Bjiij)
-
+  
+    if(DECinfo%F12DEBUG) then
+       call mem_dealloc(Bijij_debug)
+       call mem_dealloc(Bjiij_debug)
+    endif
+  
     call free_4Center_F12_integrals(&
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
     call free_cabs
 
-!    write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
-!    print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
-
+    write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+    print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+   
     write(*,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
     write(DECinfo%output,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
     write(*,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
     write(DECinfo%output,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
 
     write(*,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21+E22
-    write(DECinfo%output,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21+E22
-
+    write(DECinfo%output,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ', E21+E22
+    
     ! Total MP2-F12 correlation energy
     ! Getting this energy 
 
@@ -480,6 +599,34 @@ contains
 
   end subroutine full_canonical_mp2_f12
 #endif
+
+!!$  !> Brief: Integral print
+!!$  !> Author: Yang M. Wang
+!!$  !> Data: August 2013
+!!$  subroutine matrix_print_4d(A, p, q, r, s)
+!!$    implicit none
+!!$
+!!$    real(realk),intent(in)  :: A(p,q,r,s)
+!!$    integer,intent(in)      :: p,q,r,s
+!!$    !
+!!$    integer     :: i,j,k,l
+!!$ 
+!!$    do i=1, p
+!!$       do j=1, q
+!!$          do k=1, r
+!!$             do l=1, s 
+!!$                if(abs(A(i,j,k,l)) > 1E-10_realk) then
+!!$                   print *, i,j,k,l, A(i,j,k,l)
+!!$                else
+!!$                   print *, i,j,k,l, 0E0_realk
+!!$                endif
+!!$             enddo
+!!$          enddo
+!!$       enddo
+!!$    enddo
+!!$    
+!!$  end subroutine matrix_print_4d
+
 
   !> \brief Memory check for full_canonical_mp2 subroutine
   !> \author Kasper Kristensen
@@ -582,11 +729,13 @@ contains
     mp2f12_EBX = mp2f12_EBX + tmp/16E0_realk
   end subroutine submp2f12_EBXfull
 
-  function mp2f12_EV(Vijij,Vjiij,nocc)
+  
+  !> Function for finding the E21 energy  
+  function mp2f12_E21(Vijij,Vjiij,nocc) result(energy)
   implicit none
-  Real(realk) :: mp2f12_EV
-  Real(realk),intent(IN) :: Vijij(nocc,nocc),Vjiij(nocc,nocc)
   Integer,intent(IN)     :: nocc
+  Real(realk),intent(IN) :: Vijij(nocc,nocc),Vjiij(nocc,nocc)
+  Real(realk) :: energy
   !
   Integer     :: i,j
   Real(realk) :: tmp
@@ -595,16 +744,69 @@ contains
   DO i=1,nocc
     tmp = tmp + Vijij(i,i)
   ENDDO
-  mp2f12_EV = -0.5E0_realk*tmp
 
+  energy = -0.5E0_realk*tmp
   tmp = 0E0_realk
+
   DO j=1,nocc
     DO i=j+1,nocc
       tmp = tmp + 5E0_realk * Vijij(i,j) - Vjiij(i,j)
     ENDDO
   ENDDO
-  mp2f12_EV = mp2f12_EV - 0.25E0_realk*tmp
-  end function mp2f12_EV
+  energy = energy - 0.25E0_realk*tmp
+  end function mp2f12_E21
+
+
+  !> Function for finding the E22 energy
+  function mp2f12_E22(Xijij,Xjiij,Fii,nocc) result(energy)
+  implicit none
+  integer,intent(IN)  :: nocc
+  real(realk), pointer :: Bijij(:,:), Bjiij(:,:)
+  !
+  real(realk),intent(IN) :: Xijij(nocc,nocc), Xjiij(nocc,nocc)
+  real(realk),intent(IN) :: Fii(nocc,nocc)
+  real(realk) :: energy
+  !
+  integer     :: i,j
+  real(realk) :: tmp
+
+  call mem_alloc(Bijij,nocc,nocc)
+  call mem_alloc(Bjiij,nocc,nocc)
+
+  Bijij = 0.0E0_realk
+  Bjiij = 0.0E0_realk
+
+  !print *,"norm(Bijij)", norm2(Xijij)
+  !print *,"norm(Bijij)", norm2(Xjiij)
+  !print *,"norm(Bijij)", norm2(Fii)
+
+    DO j=1,nocc
+       DO i=1,nocc
+          Bijij(i,j) = -1.0E0_realk*(Fii(i,i)+Fii(j,j))*Xijij(i,j)
+          Bjiij(i,j) = -1.0E0_realk*(Fii(i,i)+Fii(j,j))*Xjiij(i,j)
+       ENDDO
+    ENDDO
+
+  tmp = 0E0_realk
+  DO i=1,nocc
+    tmp = tmp + Bijij(i,i)
+  ENDDO
+
+  energy = 0.25E0_realk*tmp
+  tmp = 0E0_realk
+
+  DO j=1,nocc
+    DO i=j+1,nocc
+      tmp = tmp + 7.0E0_realk * Bijij(i,j) + Bjiij(i,j)
+    ENDDO
+  ENDDO
+  energy = energy + 0.0625E0_realk*tmp
+
+  call mem_dealloc(Bijij)
+  call mem_dealloc(Bjiij)
+
+  end function mp2f12_E22
+
 #endif
 
   subroutine get_4Center_MO_integrals(mylsitem,lupri,nbasis,nocc,noccfull,nvirt,&
@@ -715,7 +917,9 @@ contains
     do i=1,4
        call mat_free(CMO(i))
     enddo
+
   contains
+
     subroutine sub1(gao,tmp,elms,ndim2,ndim1)
       implicit none
       integer :: ndim1(4),ndim2(4)
@@ -810,100 +1014,6 @@ contains
 
   end subroutine get_4Center_MO_integrals
 
-  subroutine MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-       & Cocc,Cvirt,inputstring,matAO,matMO)
-    implicit none
-    !> Lsitem structure
-    integer :: nocc,noccfull,nvirt,nCabsAO,nCabs,nbasis
-    type(lsitem), intent(inout) :: mylsitem
-    integer :: ndim2(2),ndim1(2)
-    type(matrix) :: matAO,matMO
-    real(realk),pointer :: elms(:)
-    type(matrix) :: CMO(2)
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
-    !> Virtual MO coefficients
-    real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
-    type(matrix) :: CMO_cabs,CMO_ri,tmp
-    character(len=2) :: inputstring
-    logical :: doCABS,doRI
-    integer :: i,lupri
-    character :: string(2)
-    string(1)=inputstring(1:1) 
-    string(2)=inputstring(2:2) 
-    lupri=6
-    doCABS = .FALSE.
-    do i=1,2
-       if(string(i).EQ.'c')then !cabs
-          doCABS = .TRUE.
-       endif
-    enddo
-    doRI = .FALSE.
-    do i=1,2
-       if(string(i).EQ.'r')then !RI
-          doRI = .TRUE.
-       endif
-    enddo
-    call determine_CABS_nbast(nCabsAO,nCabs,mylsitem%SETTING,lupri)
-    IF(doCABS)THEN
-       call mat_init(CMO_cabs,nCabsAO,nCabs)
-       call build_CABS_MO(CMO_cabs,nCabsAO,mylsitem%SETTING,lupri)
-    ENDIF
-    IF(doRI)THEN
-       call mat_init(CMO_ri,nCabsAO,nCabsAO)
-       call build_RI_MO(CMO_ri,nCabsAO,mylsitem%SETTING,lupri)
-    ENDIF
-    do i=1,2
-       if(string(i).EQ.'i')then !occupied active
-          ndim1(i) = nbasis
-          ndim2(i) = nocc
-       elseif(string(i).EQ.'m')then !all occupied
-          ndim1(i) = nbasis
-          ndim2(i) = noccfull
-       elseif(string(i).EQ.'p')then !all occupied + virtual
-          ndim1(i) = nbasis
-          ndim2(i) = nbasis
-       elseif(string(i).EQ.'a')then !virtual
-          ndim1(i) = nbasis
-          ndim2(i) = nvirt
-       elseif(string(i).EQ.'c')then !cabs
-          ndim1(i) = ncabsAO
-          ndim2(i) = ncabs
-       elseif(string(i).EQ.'r')then !ri - MOs
-          ndim1(i) = ncabsAO
-          ndim2(i) = ncabsAO
-       endif
-       call mat_init(CMO(i),ndim1(i),ndim2(i))
-       if(string(i).EQ.'i')then !occupied active
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
-       elseif(string(i).EQ.'m')then !all occupied
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
-       elseif(string(i).EQ.'p')then !all occupied + virtual
-          call dcopy(noccfull*nbasis,Cocc,1,CMO(i)%elms,1)
-          call dcopy(nvirt*nbasis,Cvirt,1,CMO(i)%elms(noccfull*nbasis+1:nbasis*nbasis),1)
-       elseif(string(i).EQ.'a')then !virtual
-          call dcopy(ndim2(i)*ndim1(i),Cvirt,1,CMO(i)%elms,1)
-       elseif(string(i).EQ.'c')then !cabs
-          call dcopy(ndim2(i)*ndim1(i),CMO_cabs%elms,1,CMO(i)%elms,1)
-       elseif(string(i).EQ.'r')then !ri - MOs
-          call dcopy(ndim2(i)*ndim1(i),CMO_RI%elms,1,CMO(i)%elms,1)
-       endif
-    enddo
-    IF(doCABS)THEN
-       call mat_free(CMO_cabs)
-    ENDIF
-    IF(doRI)THEN
-       call mat_free(CMO_ri)
-    ENDIF
-    call mat_init(tmp,CMO(1)%ncol,matAO%ncol)
-    call mat_mul(CMO(1),matAO,'t','n',1E0_realk,0E0_realk,tmp)
-    call mat_mul(tmp,CMO(2),'n','n',1E0_realk,0E0_realk,matMO)
-    call mat_free(tmp)
-    do i=1,2
-       call mat_free(CMO(i))
-    enddo
-
-  end subroutine MO_transform_AOMatrix
-
 #ifdef MOD_UNRELEASED
   !> \brief Get CCSD-F12 energy, testing code.
   !> \date May 2012
@@ -992,7 +1102,7 @@ contains
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
 
     ! Get full CCSD singles (Tai) and doubles (Taibj) amplitudes
-    call full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,Tai, Taibj)
+    call full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,Tai,Taibj)
 
     ! Get all MO mixed matrices
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
@@ -1106,7 +1216,7 @@ contains
     call mem_dealloc(Viaji)
     call mem_dealloc(Viajb)
 
-    E21 = 2.0E0_realk*mp2f12_EV(Vijij,Vjiij,nocc)
+    E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
     print*,'E21',E21
     
     ! F12 Specific
@@ -1146,6 +1256,7 @@ contains
 
     if(DECinfo%use_canonical) then
        call submp2f12_EBX(E22,Bijij,Bjiij,Xijij,Xjiij,Fii%elms,nocc)
+
     else
        call submp2f12_EBXfull(E22,Bijij,Bjiij,Xijkl,Fii%elms,nocc)
     endif
@@ -1167,7 +1278,7 @@ contains
     call mem_dealloc(Bijij)
     call mem_dealloc(Bjiij)
 
-    EF12=E21 + E22
+    EF12 = E21 + E22
 
     ! Add contributions
     ECCSD_F12 = ECCSD + EF12
@@ -1210,8 +1321,8 @@ contains
 
 
     ! Quick fix to always use CCSD model
-!    save_model=DECinfo%ccmodel
-!    DECinfo%ccmodel=3
+    !    save_model=DECinfo%ccmodel
+    !    DECinfo%ccmodel=3
 
     if(DECinfo%FrozenCore) then
        nocc = MyMolecule%nval
@@ -1344,6 +1455,8 @@ contains
        &                          MyMolecule%ypo, MyMolecule%ypv,'imic',gAO,Rimjc)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCG')
+    !print *,"Gmjci", norm2(gao)
+
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
        &                          MyMolecule%ypo, MyMolecule%ypv,'imic',gAO,Gimjc)
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
@@ -1452,62 +1565,62 @@ contains
     call mem_dealloc(Gciaj)
     call mem_dealloc(Giajc)
   end subroutine free_4Center_F12_integrals
-
-    subroutine get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
-
-      implicit none
-      !> Full molecule info
-      type(fullmolecule), intent(in) :: MyMolecule
-      !> Lsitem structure
-      type(lsitem), intent(inout) :: mylsitem
-      integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
-      type(matrix) :: Dmat,K
-      type(matrix) :: HJir
-      type(matrix) :: Krr
-      type(matrix) :: Frr
-      type(matrix) :: Frc
-      type(matrix) :: Fpp
-      type(matrix) :: Fmm
-      type(matrix) :: Frm
-      type(matrix) :: Fcp
-      type(matrix) :: Fii
-      type(matrix) :: Fac
-! Temp
-      type(matrix) :: HJrc
-      type(matrix) :: Kcc
-      type(matrix) :: Fcc
-
+  
+  subroutine get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
+       & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+    
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> Lsitem structure
+    type(lsitem), intent(inout) :: mylsitem
+    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
+    type(matrix) :: Dmat,K
+    type(matrix) :: HJir
+    type(matrix) :: Krr
+    type(matrix) :: Frr
+    type(matrix) :: Frc
+    type(matrix) :: Fpp
+    type(matrix) :: Fmm
+    type(matrix) :: Frm
+    type(matrix) :: Fcp
+    type(matrix) :: Fii
+    type(matrix) :: Fac
+    ! Temp
+    type(matrix) :: HJrc
+    type(matrix) :: Kcc
+    type(matrix) :: Fcc
+    
     ! Mixed regular/CABS one-electron and Coulomb matrix (h+J) combination in AO basis
     call mat_init(HJrc,nbasis,ncabsAO)
     call get_AO_hJ(nbasis,ncabsAO,HJrc,Dmat,MyLsitem,'RCRRC')
     call mat_init(HJir,nocc,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-       & MyMolecule%ypo, MyMolecule%ypv,'ir',HJrc,HJir)
+         & MyMolecule%ypo, MyMolecule%ypv,'ir',HJrc,HJir)
     call mat_free(HJrc)
-
+    
     ! Mixed CABS/CABS exchange matrix
     call mat_init(Kcc,ncabsAO,ncabsAO)
     call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Krr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-       & MyMolecule%ypo, MyMolecule%ypv,'rr',Kcc,Krr)
+         & MyMolecule%ypo, MyMolecule%ypv,'rr',Kcc,Krr)
     call mat_free(Kcc)
-
+    
     ! Mixed CABS/CABS Fock matrix
     call mat_init(Fcc,ncabsAO,ncabsAO)
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Frr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-       & MyMolecule%ypo, MyMolecule%ypv,'rr',Fcc,Frr)
+         & MyMolecule%ypo, MyMolecule%ypv,'rr',Fcc,Frr)
     call mat_free(Fcc)
-
+    
     ! Mixed AO/CABS Fock matrix
     call mat_init(Frc,nbasis,ncabsAO)
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fac,nvirt,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-       & MyMolecule%ypo, MyMolecule%ypv,'ac',Frc,Fac)
+         & MyMolecule%ypo, MyMolecule%ypv,'ac',Frc,Fac)
     call mat_free(Frc)
 
     ! Mixed AO/AO full MO Fock matrix
@@ -1516,33 +1629,33 @@ contains
     !Fpp
     call mat_init(Fpp,nbasis,nbasis)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-       & MyMolecule%ypo, MyMolecule%ypv,'pp',Fcc,Fpp)
+         & MyMolecule%ypo, MyMolecule%ypv,'pp',Fcc,Fpp)
     !Fii
     call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-       & MyMolecule%ypo, MyMolecule%ypv,'ii',Fcc,Fii)
+         & MyMolecule%ypo, MyMolecule%ypv,'ii',Fcc,Fii)
     !Fmm
     call mat_init(Fmm,noccfull,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-       & MyMolecule%ypo, MyMolecule%ypv,'mm',Fcc,Fmm)
+         & MyMolecule%ypo, MyMolecule%ypv,'mm',Fcc,Fmm)
     call mat_free(Fcc)
-
+    
     ! Mixed CABS/AO MO Fock matrix
     call mat_init(Fcc,ncabsAO,nbasis)
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CRRRC')
     !Frm
     call mat_init(Frm,ncabsAO,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-       & MyMolecule%ypo, MyMolecule%ypv,'rm',Fcc,Frm)
+         & MyMolecule%ypo, MyMolecule%ypv,'rm',Fcc,Frm)
     !Fcc
     call mat_init(Fcp,ncabs,nbasis)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-       & MyMolecule%ypo, MyMolecule%ypv,'cp',Fcc,Fcp)
+         & MyMolecule%ypo, MyMolecule%ypv,'cp',Fcc,Fcp)
     call mat_free(Fcc)
   end subroutine get_F12_mixed_MO_Matrices
-
-    subroutine free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
-
+  
+  subroutine free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+    
       implicit none
       type(matrix) :: HJir
       type(matrix) :: Krr
@@ -1564,11 +1677,9 @@ contains
       call mat_free(Frm)
       call mat_free(Fcp)
 
-  end subroutine free_F12_mixed_MO_Matrices
+    end subroutine free_F12_mixed_MO_Matrices
 #endif
-
-
-
+  
   !> \brief Full canonical MP2 calculation, not particularly efficient, mainly to be used for
   !> testing.
   !> \author Kasper Kristensen
@@ -1582,10 +1693,9 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> Canonical MP2 correlation energy
     real(realk),intent(inout) :: Ecorr
-    type(array2) :: Cocc, Cunocc
+    real(realk),pointer :: Cocc(:,:), Cunocc(:,:)
     type(array4) :: g
     integer :: nbasis,i,j,a,b,ncore,offset,nocc,nunocc
-    integer, dimension(2) :: occ_dims,unocc_dims
     real(realk) :: eps
     real(realk), pointer :: ppfock(:,:)
 
@@ -1593,7 +1703,6 @@ contains
     if(.not. DECinfo%use_canonical) then
        call lsquit('full_canonical_mp2_correlation_energy requires canonical orbitals!',-1)
     end if
-
 
     ! Initialize stuff
     ! ****************
@@ -1608,14 +1717,12 @@ contains
     nunocc = MyMolecule%numvirt
     ncore = MyMolecule%ncore
     nbasis=MyMolecule%nbasis
-    occ_dims = [nbasis,nocc]
-    unocc_dims = [nbasis,nunocc]
     call mem_alloc(ppfock,nocc,nocc)
     if(DECinfo%frozencore) then
        ! Only copy valence orbitals into array2 structure
-       Cocc=array2_init(occ_dims)
+       call mem_alloc(Cocc,nbasis,nocc)
        do i=1,nocc
-          Cocc%val(:,i) = MyMolecule%ypo(:,i+Ncore)
+          Cocc(:,i) = MyMolecule%ypo(:,i+Ncore)
        end do
 
        ! Fock valence
@@ -1627,21 +1734,19 @@ contains
        offset = ncore
     else
        ! No frozen core, simply copy elements for all occupied orbitals
-       Cocc=array2_init(occ_dims,MyMolecule%ypo)
+       call mem_alloc(Cocc,nbasis,nocc)
+       Cocc=MyMolecule%ypo
        ppfock = MyMolecule%ppfock
        offset=0
     end if
-    Cunocc=array2_init(unocc_dims,MyMolecule%ypv)
-
-
+    call mem_alloc(Cunocc,nbasis,nunocc)
+    Cunocc = MyMolecule%ypv
 
     ! Get (AI|BJ) integrals stored in the order (A,I,B,J)
     ! ***************************************************
     call get_VOVO_integrals(mylsitem,nbasis,nocc,nunocc,Cunocc,Cocc,g)
-    call array2_free(Cocc)
-    call array2_free(Cunocc)
-
-
+    call mem_dealloc(Cocc)
+    call mem_dealloc(Cunocc)
 
     ! Calculate canonical MP2 energy
     ! ******************************

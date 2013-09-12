@@ -8,7 +8,7 @@ C     EMBEDDING : QM part is embedded in environment (solvent or e.g. protein)
 C                 May 2011/hjaaj: EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
 C                 (For now, EMBEDDING is defined in sirius/sirinp.F because this is
 C                 the first instance where all of FLAG(16), PCM, QM3, QMMM are set)
-C                            
+C
       LOGICAL TESTIN, OPTWLK, RNHERM, RNSIRI, RNABAC, GEOCNV,
      &        HRINPC, SRINPC, RDINPC, RDMLIN, PARCAL, DIRCAL,
      &        WRINDX, WLKREJ, WALKIN, RNRESP, USRIPR, SEGBAS,
@@ -23,7 +23,7 @@ C
 #endif
       INTEGER KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS
 C
-      COMMON /GNRINF/ 
+      COMMON /GNRINF/
      &        ! double:
      &        GRADML, PANAS,  CHIVAL, THR_REDFAC,
      &        ! integer:
@@ -40,5 +40,6 @@ C
       INTEGER LBASDIR
       PARAMETER (LBASDIR = 600)
       CHARACTER*(LBASDIR) BASDIR
-      COMMON /GNRCHR/ BASDIR
+      CHARACTER*12        WFTYPE
+      COMMON /GNRCHR/ BASDIR, WFTYPE
 C --- end of gnrinf.h ---

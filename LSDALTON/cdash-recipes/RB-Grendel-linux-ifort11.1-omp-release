@@ -14,9 +14,9 @@ export OMP_NUM_THREADS=3
 source /com/intel/Compiler/11.1/064/bin/intel64/ifortvars_intel64.sh
 cd $TMP_DIR
 export DALTON_TMPDIR=$SCRATCH_DIR
-export DALTON_NR_MPI_PROCS=1
+export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
-./setup --fc=ifort --cc=icc --timings --explicit-libs="-Llib -L/com/intel/mkl/10.1.1.019/lib/em64t -lmkl -lmkl_core -lmkl_lapack  -lmkl_intel_thread -lguide -lpthread" --omp -D BUILDNAME="RB-Grendel-linux-ifort11.1-omp-release"
+./setup --fc=ifort --cc=icc --timings --blas=none --lapack=none --explicit-libs="-Llib -L/com/intel/mkl/10.1.1.019/lib/em64t -lmkl -lmkl_core -lmkl_lapack  -lmkl_intel_thread -lguide -lpthread" --omp -D BUILDNAME="RB-Grendel-linux-ifort11.1-omp-release"
 #cp /home/tkjaer/NightlyTestingCdash/git_revision_info.f90 $TMP_DIR/lsutil/.
 #cp /home/tkjaer/NightlyTestingCdash/compilation_info.f90 $TMP_DIR/lsutil/.
 cd $TMP_DIR/build

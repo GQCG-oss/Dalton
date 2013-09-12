@@ -16,7 +16,7 @@
 
 %\end{enumerate}
 
-\section{New features in Dalton2011}
+\section{New features in DALTON2011}
 
 \begin{enumerate}
 
@@ -37,14 +37,12 @@ Main authors: Christof H\"{a}ttig, Poul J\o rgensen, Filip Pawlowski \\
 Dalton2011 is the only published program which can make cubic response
 and residues of quadratic response functions on the CC3 level. \\
    References:
-\begin{verbatim}
-
 %maj 2011
 %Nedenfor er CC3 referencerne. Tag dem du finder passer til formaalet.
 %Der er ingen artikler hvor CC3 implementeringen er beskrevet for
 %residuer og kvadratiske og kubiske response funktioner.
 %  Poul
-
+\begin{verbatim}
 1.	Response functions in the CC3 iterative triple excitation model.
 Ove Christiansen, Henrik Koch, and Poul J\o rgensen.
 J. Chem. Phys. 103, 7429 (1995).
@@ -200,7 +198,7 @@ shieldings and magnetizabilities at the coupled cluster level
 
 \section{New features in Dalton~2.0 (2005)}
 
-There are several new additions introduced in the Dalton~2.0. The most
+There are several new additions introduced in Dalton~2.0. The most
 important and largest extension to the code is the addition of a
 complete Density Functional Theory (DFT) module, including up to quadratic
 response properties as well as an extensive open-shell
@@ -260,7 +258,7 @@ species~\cite{fjthjcp121}.
 \item{\bf Spin--spin coupling constants:} Allows for the calculation
   of coupling constants to one single nucleus.
 
-\item{\bf Changes to DALTON.INP:} To harmonize the input for
+\item{\bf Changes to \dalinp:} To harmonize the input for
   single-point and geometry optimization calculations, the labels for
   calculating  molecular properties during a geometry optimization is
   changed such that
@@ -274,24 +272,24 @@ species~\cite{fjthjcp121}.
 \end{tabular}
 \end{center}
 
-\item{\bf New \mol\ input format:} There is now a new input structure
-  for the \mol\ input file. The new format is keyword driven and
+\item{\bf New molecule input format:} There is a new input structure
+  for the molecule input file (\molinp). The new format is keyword driven and
   contains no fixed-format input lines unless the basis set is
   explicitly given in the input file. However, with the exception of
   the \verb|ATOMBASIS| option, the input file is fully backward
   compatible with the old input format. For more information, see
   Sec.~\ref{ch:molinp}.
 
-\item{\bf Single input file:} In addition to the new input format for
-  \dalton , \dalton\ now also allows the entire input to be given in a
-  single file. This file must be started by the \mol\ input on the
-  first line, and the \dalton\ input is placed at the end of the input
+\item{\bf Single input file:} In addition to the new input format,
+  \dalton\ now also allows the entire input to be given in a
+  single file. This file must be started by the molecule input on the
+  first line, and the dalton input is placed at the end of the input
   file. An optimization of methane may thus look like:
 
 \begin{verbatim}
 BASIS
 aug-cc-pVDZ
-CH4  molecule. Basis: aug-cc-pVDZ.
+CH4 molecule. Basis: aug-cc-pVDZ.
 Geometry from JCP 112, 393 (2000).
 Atomtypes=2 Generators=2 Y X Angstrom
 Charge=6.0 Atoms=1
@@ -307,7 +305,7 @@ H     0.000000000    0.889981273   0.629311793
 *END OF INPUT
 \end{verbatim}
 This single input file has to be named \verb|foo.dal|, and only a
-single filename is given as arguments to the \dalton\ script, that is
+single filename is given as arguments to the \verb|dalton| script, that is
 
 \begin{verbatim}
 > ./dalton foo
@@ -315,12 +313,12 @@ single filename is given as arguments to the \dalton\ script, that is
 
 \item{\bf More basis set directories:} \dalton\ will now search for basis sets
 in any user specified directories, the job directory, and in the \dalton\ basis
-set library. \dalton\ 1.2 would search in only one directory,
+set library. Dalton~1.2 would search in only one directory,
 either a directory specified by the user
 or the \dalton\ basis set library.
 
 \item{\bf Changes to basis set names:} The following basis sets
-have been renamed from \dalton\ 1.2, largely for consistency with the
+have been renamed from Dalton~1.2, largely for consistency with the
 EMSL basis set order form. Note that spaces are not
 permitted in basis set names.
 \begin{center}
@@ -357,7 +355,7 @@ sad-J & Sadlej-pVTZ-J \\
 \end{enumerate}
 
 \section{New features in Dalton~1.2}
-Dalton 1.2 includes several large modules that have been added in order
+Dalton~1.2 includes several large modules that have been added in order
 to increase the possibilities for user applications of the code. In
 addition, several improvements in the general performance of the code
 has been made relative to Dalton~1.1. The most important new features

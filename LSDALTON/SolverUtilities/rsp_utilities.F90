@@ -2,10 +2,15 @@ MODULE rsp_util
 ! This module contains stuff that has to be separate because F90 allows
 ! only tree-type dependencies between files and there is no way to resolve
 ! circular dependency by eg. creation of a header file.
+   use matrix_module
+   use precision
    USE Matrix_operations
    USE Matrix_operations_aux ! mat_mo_precond,mat_new_mo_precond,mat_new_complex_precond,..
-   private :: Cmo_final,  Cmo_final_saved, orbE_final
-   public
+   private ! Cmo_final,  Cmo_final_saved, orbE_final
+   public :: flushed, init_rsp_util, util_save_MOinfo, util_get_CMO,&
+        & get_rsp_trials_from_MO, MO_precond, new_std_MO_precond, &
+        & new_complex_precond, MO_precond_complex, util_AO_to_MO,&
+        & util_MO_to_AO, util_free_mostuff, util_scriptPx, util_scriptPxOAO
    LOGICAL, SAVE :: flushed, Cmo_final_saved
    type(Matrix), save :: Cmo_final
    real(realk), pointer, save :: orbE_final(:)

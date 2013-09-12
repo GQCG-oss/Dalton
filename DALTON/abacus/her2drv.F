@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -3052,14 +3052,14 @@ C        Reset MMCORE,ISCORE since we did not save anything useful in this call.
                   MMCORE = LMCORE
                   ISCORE = JSCORE
 C
-               END IF
-            END IF
- 300     CONTINUE
-      END IF
- 200  CONTINUE
-      END IF
+               END IF    ! IF (AOSAVE .AND. ...
+            END IF     ! IF (IBTAND(ISYMT,IBTOR(MULAB,MULCD)) .EQ. 0) THEN
+ 300        CONTINUE   ! DO 300 ISYMT = 0, MAXOPR
+         END IF        ! IF (IBTAND(ISYMS,IBTOR(MULC,MULD)) .EQ. 0) THEN
+ 200     CONTINUE      ! DO 200 ISYMS = 0, MAXOPR
+      END IF           ! IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
 C
- 100  CONTINUE
+ 100  CONTINUE         ! DO 100 ISYMR = 0,MAXOPR
 C
 C     ********************************
 C     ***** Process SO integrals *****
@@ -5380,7 +5380,7 @@ C
       RETURN
       END
 C
-C  /* Deck CLEARMEM */
+C  /* Deck CLEAR_INCOREMEM */
       SUBROUTINE CLEAR_INCOREMEM()
 C
 #include "maxorb.h"

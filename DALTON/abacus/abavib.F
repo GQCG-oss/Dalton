@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -207,14 +207,14 @@ C     September 1989 tuh - symmetry
 C
 C     Driver for vibrational analysis. This subroutine calls
 C
-C       1) GETNOS for transformation to non-symmetry basis
+C       1) GET_NOSYM_COORD for transformation to non-symmetry coordinate basis
 C       2) INTERN for internal coordinate analysis
 C       3) VIBANA for vibrational analysis
 C
 C     Note: the vibrational analysis is always carried out in
 C     non-symmetry Cartesian coordinates, regardless of whether
 C     the gradient and Hessian have been calculated in symmetry
-C     coordinates. Therefore GETNOS is called first to set up the
+C     coordinates. Therefore GET_NOSYM_COORD is called first to set up the
 C     geometry, gradient and Hessian in non-symmetry coordinates.
 C
 C     Internal coordinates are used for two purposes:
@@ -273,9 +273,10 @@ C
       KCAAT  = KDGRAD + 3*NCORD
       KWRK1  = KCAAT  + 3*NCORD
       LWRK1  = LWORK  - KWRK1
-      IF (KWRK1 .GE. LWORK) CALL STOPIT('VIBCTL','GETNOS',KWRK1,LWORK)
-      CALL GETNOS(WORK(KCHRG),WORK(KGEOM),WORK(KGRAD),WORK(KHESS),
-     &            WORK(KGRDN),WORK(KDGRAD),WORK(KCAAT),
+      IF (KWRK1 .GE. LWORK)
+     &   CALL STOPIT('VIBCTL','GET_NOSYM_COORD',KWRK1,LWORK)
+      CALL GET_NOSYM_COORD(WORK(KCHRG),WORK(KGEOM),WORK(KGRAD),
+     &            WORK(KHESS),WORK(KGRDN),WORK(KDGRAD),WORK(KCAAT),
      &            WORK(KWRK1),LWRK1,NATOMS,NCORD,DIPDER,DOVCD,IPRINT,
      &            HESPUN)
       IF (NUMHES) THEN
@@ -1020,7 +1021,7 @@ C
  410     CONTINUE
          ISTR = ISTR + 5
  400  CONTINUE
-      IF (MOLDEN) CALL MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
+      IF (MOLDEN) CALL MOLDEN_FREQ(EVEC,NUMMOD,NCORD,FREQAU)
 C
 C     We punch out the normal coordinates on the file DALTON.NCA for
 C     use with the Gamess-US visualization software
@@ -2272,9 +2273,18 @@ C
       END IF
       RETURN
       END
-C  /* Deck getnos */
-      SUBROUTINE GETNOS(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,WRK,
-     &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
+C  /* Deck GET_NOSYM_COORD */
+      SUBROUTINE GET_NOSYM_COORD(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,
+     &           WRK,LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
+C
+C     Purpose: transformation to non-symmetry coordinates
+C
+C     Note: the vibrational analysis is always carried out in
+C     non-symmetry Cartesian coordinates, regardless of whether
+C     the gradient and Hessian have been calculated in symmetry
+C     coordinates. Therefore GET_NOSYM_COORD is called first to set up the
+C     geometry, gradient and Hessian in non-symmetry coordinates.
+C
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -2312,7 +2322,8 @@ C
       KSCTRA = KCSTRA + NCORD*NCORD
       KLAST  = KSCTRA + NCORD*NCORD
       KNEED  = KLAST  + NCORD*NCORD
-      IF (KNEED .GT. LWRK) CALL STOPIT('GETNOS','TRACOR',KLAST,LWRK)
+      IF (KNEED .GT. LWRK)
+     &   CALL STOPIT('GET_NOSYM_COORD','TRACOR',KLAST,LWRK)
       CALL TRACOR(WRK(KCSTRA),WRK(KSCTRA),1,NCORD,0)
 C
 C     Gradient
@@ -2364,12 +2375,13 @@ C
          CALL HEADER('Hessian in non-symmetry coordinates',-1)
          CALL OUTPUT(HESS,1,NCORD,1,NCORD,NCORD,NCORD,1,LUPRI)
          IF (DIPDER) THEN
-            CALL HEADER
-     &         ('Dipole gradient in non-symmetry basis - GETNOS',-1)
+            CALL HEADER('Dipole gradient in non-symmetry basis'//
+     &         '- GET_NOSYM_COORD',-1)
             CALL OUTPUT(DGRAD,1,3,1,NCORD,3,NCORD,1,LUPRI)
          END IF
          IF (DOVCD) THEN
-            CALL HEADER('AAT in non-symmetry basis - GETNOS',-1)
+            CALL HEADER('AAT in non-symmetry basis'//
+     &         '- GET_NOSYM_COORD',-1)
             CALL OUTPUT(CAAT,1,3,1,NCORD,3,NCORD,1,LUPRI)
          END IF
       END IF

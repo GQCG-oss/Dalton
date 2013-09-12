@@ -92,6 +92,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Initial symmetry
 CRIT1=`$GREP "Full point group is\: C\(2v\)" $log | wc -l`
 CRIT2=`$GREP "Represented as\: * C2v" $log | wc -l`
@@ -105,7 +110,7 @@ TEST[2]=`expr	$CRIT1`
 CTRL[2]=1
 ERROR[2]="BASIS SET NOT CHANGED"
 
-sed -n -e '/Basis set changed to 3-21G/,$ { /Starting geometry./,/Harmonic contribution/  p } ' $log > ${log}_0
+sed -n -e '/Basis set changed to 3-21G/,$p' $log | sed -n -e '/Starting geometry./,/Harmonic contribution/p' > ${log}_0
 log=${log}_0
 
 # Coupling constants at equilibrium geometry

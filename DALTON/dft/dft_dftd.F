@@ -726,7 +726,7 @@ C
                         t3 = (d2(3)+d2(2)-d2(1))/sqrt(d2(2)*d2(3))
                         ang=0.375d0*t1*t2*t3+1.0d0
                         !compute E63
-                        E63 = E63 - FDMP*C9*ANG/(d2(1)*d2(2)*d2(3))**1.5D0
+                      E63 = E63 - FDMP*C9*ANG/(d2(1)*d2(2)*d2(3))**1.5D0
                       ENDIF
                     ENDDO
                   END IF
@@ -2520,8 +2520,6 @@ C
                   FCOORD2(ICNT,3) = FCOORD(ICRX+2)
 
                   ICRX = ICRX + 3
-                  ICRY = ICRY + 3
-                  ICRZ = ICRZ + 3
                   ICNT = ICNT + 1
                END IF
             ENDDO ! ISYMOP  

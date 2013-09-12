@@ -23,22 +23,66 @@ module lspdm_tensor_operations_module
 
   !INTERFACES
   !**********
-  interface array_get_tile                                                                                        
-    module procedure array_gettile_combidx4,&                                                                     
+  interface array_get_tile
+    module procedure array_gettile_combidx4,&
                     &array_gettile_combidx8,&
                     &array_gettile_modeidx
   end interface array_get_tile
-  interface array_put_tile                                                                                        
+
+
+  interface array_put_tile
     module procedure array_puttile_combidx4,&
                     &array_puttile_combidx8,&
                     &array_puttile_modeidx
-  end interface array_put_tile 
+  end interface array_put_tile
 
   interface array_accumulate_tile
     module procedure array_accumulate_tile_combidx4,&
                     &array_accumulate_tile_combidx8,&
                     &array_accumulate_tile_modeidx
   end interface array_accumulate_tile 
+
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+  abstract interface
+    subroutine put_acc_tile(arr,globtilenr,fort,nelms,lock_set)
+      use precision
+      import
+      implicit none
+      type(array),intent(in) :: arr
+      integer,intent(in) :: globtilenr
+#ifdef VAR_INT64
+      integer(kind=8),intent(in) :: nelms
+#else
+      integer(kind=4),intent(in) :: nelms
+#endif
+      real(realk),intent(inout) :: fort(*)
+      logical, optional, intent(in) :: lock_set
+    end subroutine put_acc_tile
+    subroutine put_acc_el(buf,pos,dest,win)
+      use precision
+      implicit none
+      real(realk),intent(in) :: buf
+      integer, intent(in) :: pos
+      integer(kind=ls_mpik),intent(in) :: dest
+      integer(kind=ls_mpik),intent(in) :: win
+    end subroutine put_acc_el
+    subroutine put_acc_vec(buf,nelms,pos,dest,win)
+      use precision
+      implicit none
+      real(realk),intent(in) :: buf(*)
+      integer, intent(in) :: pos
+      integer(kind=8) :: nelms
+      integer(kind=ls_mpik),intent(in) :: dest
+      integer(kind=ls_mpik),intent(in) :: win
+    end subroutine put_acc_vec
+  end interface
+#endif
+
+  !interface array_accumulate_tile_nobuff
+  !  module procedure array_accumulate_tile_combidx4_nobuff,&
+  !                  &array_accumulate_tile_combidx8_nobuff,&
+  !                  &array_accumulate_tile_modeidx_nobuff
+  !end interface array_accumulate_tile_nobuff
 
 
   !Persistent array type definition
@@ -89,6 +133,7 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_GET_CC_ENERGY       = 20
   integer,parameter :: JOB_GET_FRAG_CC_ENERGY  = 21
   integer,parameter :: JOB_CHANGE_INIT_TYPE    = 22
+  integer,parameter :: JOB_ARRAY_SCALE         = 23
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -102,6 +147,21 @@ module lspdm_tensor_operations_module
   real(realk) :: time_pdm_get          = 0.0E0_realk
   integer(kind=long) :: bytes_transferred_get = 0
   integer(kind=long) :: nmsg_get = 0
+
+#ifdef VAR_MPI
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+  procedure(array_acct4),pointer :: acc_ti4 
+  procedure(array_acct8),pointer :: acc_ti8 
+  procedure(array_gett4),pointer :: get_ti4 
+  procedure(array_gett8),pointer :: get_ti8 
+  procedure(array_putt4),pointer :: put_ti4 
+  procedure(array_putt8),pointer :: put_ti8 
+#endif
+#endif
+
+  !procedure(lsmpi_put_realkV_w8),pointer :: put_rk8 
+  !procedure(lsmpi_get_realkV_w8),pointer :: get_rk8 
+  !procedure(lsmpi_acc_realkV_w8),pointer :: acc_rk8 
   contains
 
   !>  \brief intitialize storage room for the tiled distributed arrays
@@ -570,9 +630,9 @@ module lspdm_tensor_operations_module
 
       !count over local indices
       !$OMP PARALLEL DEFAULT(NONE) &
-      !$OMP SHARED(prec,om,dims,ppfock,qqfock,lt) &
-      !$OMP PRIVATE(i,j,a,b)
-      !$OMP DO COLLAPSE(4)
+      !$OMP& SHARED(prec,om,dims,ppfock,qqfock,lt) &
+      !$OMP& PRIVATE(i,j,a,b)
+      !$OMP DO COLLAPSE(3)
       do j=1,prec%ti(lt)%d(4)
         do i=1,prec%ti(lt)%d(3)
           do b=1,prec%ti(lt)%d(2)
@@ -1111,6 +1171,7 @@ module lspdm_tensor_operations_module
       p_arr%a(addr)%tsize  = p_arr%a(addr)%tsize  * min(p_arr%a(addr)%tdim(i),p_arr%a(addr)%dims(i))
     enddo
 
+
     !In the initialization the addess has to be set, since pdm_array_sync
     !depends on the  adresses, but setting them correctly is done later
     if(p_arr%a(addr)%init_type>=1)then
@@ -1148,6 +1209,7 @@ module lspdm_tensor_operations_module
       p_arr%a(addr)%nlti=p_arr%a(addr)%ntiles
     endif
 
+    call arr_init_lock_set(p_arr%a(addr))
     call memory_allocate_tiles(p_arr%a(addr))
 
     arr=p_arr%a(addr)
@@ -1320,118 +1382,1061 @@ module lspdm_tensor_operations_module
 
 
 
-  subroutine array_gatheradd_tilestofort(arr,sc,fort,nelms,nod,optorder)
+  ! arr = pre1 * fort + pre2 * arr
+  subroutine array_scatter(pre1,fort,pre2,arr,nelms,oo,wrk,iwrk)
     implicit none
-    type(array),intent(in) :: arr
-    real(realk),intent(in) :: sc
-    real(realk),intent(inout) :: fort(*)
-    integer(kind=long), intent(in) :: nelms
-    integer(kind=ls_mpik) :: nod
-    integer, intent(in), optional :: optorder(arr%mode)
+    real(realk),intent(in)             :: pre1,pre2
+    type(array),intent(in)             :: arr
+    real(realk),intent(inout)          :: fort(*)
+    integer(kind=long), intent(in)     :: nelms
+    integer(kind=ls_mpik)              :: nod
+    integer, intent(in), optional             :: oo(arr%mode)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
     integer(kind=ls_mpik) :: src,me,nnod
-    integer :: i,ltidx,order(arr%mode)
-    integer :: nelintile,fullfortdim(arr%mode)
-    real(realk), pointer :: tmp(:)
+    integer               :: i,ltidx,o(arr%mode)
+    integer               :: nelintile,fullfortdim(arr%mode)
+    real(realk), pointer  :: tmp(:)
+    integer               :: tmps 
+    logical               :: internal_alloc,lock_outside
+    integer               :: maxintmp,b,e,minstart
 #ifdef VAR_MPI
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+    procedure(put_acc_tile), pointer :: put_acc => null()
 
+    acc_ti8 => array_acct8
+    acc_ti4 => array_acct4
+    put_ti8 => array_putt8
+    put_ti4 => array_putt4
+  
     do i=1,arr%mode
-      order(i)=i
+      o(i)=i
     enddo
-    if(present(optorder))order=optorder
+    if(present(oo))o=oo
+
+#ifdef VAR_INT64
+    if(pre2==0.0E0_realk) put_acc => put_ti8
+    if(pre2/=0.0E0_realk) put_acc => acc_ti8
+#else
+    if(pre2==0.0E0_realk) put_acc => put_ti4
+    if(pre2/=0.0E0_realk) put_acc => acc_ti4
+#endif
    
+    if(pre2/=0.0E0_realk.and.pre2/=1.0E0_realk)then
+      call array_scale_td(arr,pre2)
+    endif
+
+#ifdef VAR_LSDEBUG
+    if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
+      call lsquit("ERROR(array_scatter):both or neither wrk and iwrk have to &
+                  &be given",-1)
+    endif
+#endif
+
+    internal_alloc = .true.
+    if(present(wrk).and.present(iwrk))then
+      if(iwrk>arr%tsize)then
+        internal_alloc=.false.
+#ifdef VAR_LSDEBUG
+      else
+        print *,"WARNING(array_scatter):allocating internally, given buffer not large enough"
+#endif
+      endif
+    endif
+
     me=0
     nnod=1
     me=infpar%lg_mynum
     nnod=infpar%lg_nodtot
-    if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
+
+#ifdef VAR_LSDEBUG
+    if(nelms/=arr%nelms)call lsquit("ERROR(array_scatter):array&
         &dimensions are not the same",DECinfo%output)
+#endif
 
     do i = 1, arr%mode
-      fullfortdim(i) = arr%dims(order(i))
+      fullfortdim(i) = arr%dims(o(i))
     enddo
 
-    call mem_alloc(tmp,arr%tsize)
+    if(internal_alloc)then
+      tmps = arr%tsize
+      call mem_alloc(tmp,tmps)
+    else
+      tmps =  iwrk
+      tmp  => wrk(1:tmps)
+    endif
+  
+    maxintmp = tmps / arr%tsize
 
     do i=1,arr%ntiles
-      src=get_residence_of_tile(i,arr)
-      if(src==me.or.nod==me)then
-        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
-        if(src==me.and.nod==me)then
-          ltidx = (i - 1) /nnod + 1
-          call tile_in_fort(sc,arr%ti(ltidx)%t,i,arr%tdim,&
-               &1.0E0_realk,fort,fullfortdim,arr%mode,order)
-        elseif(src==me)then
-          ltidx = (i - 1) /nnod + 1
-          call lsmpi_send(arr%ti(ltidx)%t,nelintile,infpar%lg_comm,nod)
-        elseif(nod==me)then
-          call lsmpi_recv(tmp,nelintile,infpar%lg_comm,src)
-          call tile_in_fort(sc,tmp,i,arr%tdim,&
-               &1.0E0_realk,fort,fullfortdim,arr%mode,order)
-        endif
-      endif
+      if(i>maxintmp.and.arr%lock_set(i-maxintmp))call arr_unlock_win(arr,i-maxintmp)
+      b = 1 + mod(i - 1, maxintmp) * arr%tsize
+      e = b + arr%tsize -1
+      call tile_from_fort(pre1,fort,fullfortdim,arr%mode,&
+               &0.0E0_realk,tmp(b:e),i,arr%tdim,o)
+      call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+      call put_acc(arr,i,tmp(b:e),nelintile,arr%lock_set(i))
     enddo
 
-    call mem_dealloc(tmp)
+    if(arr%ntiles - maxintmp >= 0)then
+      minstart = arr%ntiles - maxintmp + 1
+    else
+      minstart = 1
+    endif
+
+    do i=minstart, arr%ntiles
+      if(arr%lock_set(i))call arr_unlock_win(arr,i)
+    enddo
+
+    if(internal_alloc)then
+      call mem_dealloc(tmp)
+    else
+      tmp  => null()
+    endif
 #else
-    call lsquit("ERROR(array_gatheradd_tilestofort):this routine is MPI only",-1)
+    call lsquit("ERROR(array_scatter):this routine is FORTRAN 2003 only",-1)
 #endif
-  end subroutine array_gatheradd_tilestofort
+#else
+    call lsquit("ERROR(array_scatter):this routine is MPI only",-1)
+#endif
+  end subroutine array_scatter
 
 
+  ! fort = pre1 * arr + pre2 *fort
+  subroutine array_gather(pre1,arr,pre2,fort,nelms,oo,wrk,iwrk)
+    implicit none
+    real(realk),intent(in)             :: pre1,pre2
+    type(array),intent(in)             :: arr
+    real(realk),intent(inout)          :: fort(*)
+    integer(kind=long), intent(in)     :: nelms
+    integer(kind=ls_mpik)              :: nod
+    integer, intent(in), optional             :: oo(arr%mode)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
+    integer(kind=ls_mpik) :: src,me,nnod
+    integer               :: i,ltidx,o(arr%mode)
+    integer               :: nelintile,fullfortdim(arr%mode)
+    real(realk), pointer  :: tmp(:)
+    integer               :: tmps 
+    logical               :: internal_alloc,lock_outside,so
+    integer               :: maxintmp,b,e,minstart
+#ifdef VAR_MPI
+  
+    do i=1,arr%mode
+      o(i)=i
+    enddo
+    if(present(oo))o=oo
+ 
+    so = .true.
+    do i=1,arr%mode
+      if(o(i)/=i)so = .false.
+    enddo
 
-  subroutine array_gather_tilesinfort(arr,fort,nelms,nod,optorder)
+#ifdef VAR_LSDEBUG
+    if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
+      call lsquit("ERROR(array_gather):both or neither wrk and iwrk have to &
+                  &be given",-1)
+    endif
+#endif
+
+
+    !CHECK IF INTERNAL MEMORY ALLOCATION IS NEEDED
+    internal_alloc = .true.
+    if(present(wrk).and.present(iwrk))then
+      if(iwrk>arr%tsize)then
+        internal_alloc=.false.
+#ifdef VAR_LSDEBUG
+      else
+        print *,"WARNING(array_gather):allocating internally, given buffer not large enough"
+#endif
+      endif
+    endif
+
+    me=0
+    nnod=1
+    me=infpar%lg_mynum
+    nnod=infpar%lg_nodtot
+
+#ifdef VAR_LSDEBUG
+    if(nelms/=arr%nelms)call lsquit("ERROR(array_gather):array&
+        &dimensions are not the same",DECinfo%output)
+#endif
+
+    do i = 1, arr%mode
+      fullfortdim(i) = arr%dims(o(i))
+    enddo
+
+  
+
+    if(so.and.pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
+      b=1
+      do i=1,arr%ntiles
+        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+        e = b + nelintile - 1
+        call array_get_tile(arr,i,fort(b:e),nelintile,arr%lock_set(i))
+        b = e + 1
+      enddo
+    else
+
+      if(internal_alloc)then
+#ifdef VAR_LSDEBUG
+        print *,"WARINING(array_gather):Allocating internally"
+#endif
+        tmps = arr%tsize
+        call mem_alloc(tmp,tmps)
+      else
+        tmps =  iwrk
+        tmp  => wrk(1:tmps)
+      endif
+
+      maxintmp = tmps / arr%tsize
+
+      do i=1,arr%ntiles
+        if(i>maxintmp)then
+          b = 1 + mod(i - maxintmp - 1, maxintmp) * arr%tsize
+          e = b + arr%tsize -1
+          if(arr%lock_set(i-maxintmp))call arr_unlock_win(arr,i-maxintmp)
+          call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,&
+                 &pre2,fort,fullfortdim,arr%mode,o)
+        endif
+        b = 1 + mod(i - 1, maxintmp) * arr%tsize
+        e = b + arr%tsize -1
+        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+        call array_get_tile(arr,i,tmp(b:e),nelintile,arr%lock_set(i))
+      enddo
+     
+      if(arr%ntiles - maxintmp >= 0)then
+        minstart = arr%ntiles - maxintmp + 1
+      else
+        minstart = 1
+      endif
+     
+      do i=minstart, arr%ntiles
+        b = 1 + mod(i - 1, maxintmp) * arr%tsize
+        e = b + arr%tsize -1
+        if(arr%lock_set(i))call arr_unlock_win(arr,i)
+        call tile_in_fort(pre1,tmp(b:e),i,arr%tdim,&
+               &pre2,fort,fullfortdim,arr%mode,o)
+      enddo
+
+      if(internal_alloc)then
+        call mem_dealloc(tmp)
+      else
+        tmp  => null()
+      endif
+    endif
+
+#else
+    call lsquit("ERROR(array_gather):this routine is MPI only",-1)
+#endif
+  end subroutine array_gather
+
+  subroutine array_two_dim_1batch(arr,o,op,fort,n2comb,fel,tl,lock_outside,debug)
     implicit none
     type(array),intent(in) :: arr
     real(realk),intent(inout) :: fort(*)
-    integer(kind=long), intent(in) :: nelms
-    integer(kind=ls_mpik) :: nod
-    integer, intent(in), optional :: optorder(arr%mode)
-    integer(kind=ls_mpik) :: src,me,nnod
-    integer :: i,j,k,ltidx
-    integer :: nelintile,order(arr%mode)
-    integer :: fullfortdim(arr%mode)
-    real(realk), pointer :: tmp(:)
+    character, intent(in) :: op
+    integer, intent(in),target :: o(arr%mode)
+    integer, intent(in) :: fel,tl,n2comb
+    logical, intent(in) :: lock_outside
+    logical, intent(in),optional :: debug
+    integer :: fordims(arr%mode)
+    integer,target :: fx(arr%mode)
+    integer,target :: flx(arr%mode)
+    integer :: oldidx(arr%mode)
+    integer :: i,lel
+    integer,target :: ro(arr%mode)
+    integer :: comb1,comb2,c1,c2
+    integer :: tidx(arr%mode),idxt(arr%mode)
+    integer :: tlidx(arr%mode),lidxt(arr%mode)
+    integer :: ctidx, cidxt, cidxf, st_tiling
+    integer,pointer :: u_o(:),u_ro(:),tinfo(:,:)
+    integer,pointer ::for3,for4
+    real(realk), pointer :: p_fort3(:,:,:),p_fort2(:,:)
+    integer :: tsze(arr%mode),mult1,mult2,dummy
+    integer(kind=8) :: cons_el_in_t,cons_els,tl_max,tl_mod
+    integer(kind=8) :: cons_el_rd
+    integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
+    logical :: deb
 #ifdef VAR_MPI
-    do i = 1, arr%mode
-      order(i) = i
-    enddo
-    if(present(optorder))order=optorder
-    do i = 1, arr%mode
-      fullfortdim(i) = arr%dims(order(i))
-    enddo
-    me=0
-    nnod=1
-    me=infpar%lg_mynum
-    nnod=infpar%lg_nodtot
-    if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
-        &dimensions are not the same",DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+    procedure(put_acc_el), pointer :: pga => null()
+    procedure(put_acc_vec), pointer :: pgav => null()
+    integer(kind=ls_mpik) :: source
 
-    call mem_alloc(tmp,arr%tsize)
+    deb = .false.
+    if(present(debug))deb = debug
 
-    do i=1,arr%ntiles
-      src=get_residence_of_tile(i,arr)
-      if(src==me.or.nod==me)then
-        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
-        if(src==me.and.nod==me)then
-          ltidx = (i - 1) /nnod + 1
-          call tile_in_fort(1.0E0_realk,arr%ti(ltidx)%t,i,arr%tdim,&
-                           &0.0E0_realk,fort,fullfortdim,arr%mode,order)
-        elseif(src==me)then
-          ltidx = (i - 1) /nnod + 1
-          call lsmpi_send(arr%ti(ltidx)%t,nelintile,infpar%lg_comm,nod)
-        elseif(nod==me)then
-          call lsmpi_recv(tmp,nelintile,infpar%lg_comm,src)
-          call tile_in_fort(1.0E0_realk,tmp,i,arr%tdim,&
-                           &0.0E0_realk,fort,fullfortdim,arr%mode,order)
+    if( op/='a'.and.op/='p'.and.op/='g')then
+      call lsquit("ERROR(array_two_dim_1batch):unknown choice of operator",-1)
+    endif 
+    if(op=='p')then
+      pga  => lsmpi_put_realk
+      pgav => lsmpi_put_realkV_w8
+    elseif(op=='g')then
+      pga  => lsmpi_get_realk
+      pgav => lsmpi_get_realkV_w8
+    elseif(op=='a')then
+      pga  => lsmpi_acc_realk
+      pgav => lsmpi_acc_realkV_w8
+    endif
+
+    do i = 1,arr%mode
+      ro(o(i))      = i
+    enddo
+
+    if(op=='g')then
+      u_o  => o(1:arr%mode)
+      u_ro => ro(1:arr%mode)
+    else
+      u_o  => ro(1:arr%mode)
+      u_ro => o(1:arr%mode)
+    endif
+
+  
+    lel = fel + tl -1
+
+    do i = 1,arr%mode
+      fordims(i) = arr%dims(u_o(i))
+    enddo
+
+    comb1 = 1
+    do i = 1, n2comb
+      comb1   = comb1 * fordims(i)
+    enddo
+
+    comb2 = 1
+    do i = n2comb + 1, arr%mode
+      comb2          = comb2 * fordims(i)
+    enddo
+
+    if(arr%mode==4.and.n2comb==3.and.o(1)==1.and.o(2)==2.and.o(3)==3.and..not.deb)then
+      !ATTENTION ONLY WORKS IF TL <= cons_el_in_t --> always given if order = 1,2,3,4
+      !if modification needed for other types, compare the elseif statement
+      !where n2comb==2, this has been implemented generally
+
+      cons_el_in_t = 1_long
+      do i = 1, 4
+        if(o(i)==i)then
+          cons_el_in_t = cons_el_in_t * arr%tdim(i)
+        else
+          exit
         endif
+      enddo
+      cons_els = min(cons_el_in_t,int(tl,kind=8))
+
+      st_tiling = 4
+      do i = 1, 4
+        if(arr%ntpm(i)/=1)then
+          st_tiling = i
+          exit
+        endif
+      enddo
+      for4 => fx(4) 
+      tidx = 1
+      mult1 = arr%ntpm(1) * arr%ntpm(2)
+      mult2 = arr%ntpm(1) * arr%ntpm(2) * arr%ntpm(3)
+      !print *,"NEWOPTION",cons_els,st_tiling
+       
+
+
+      !precalculate tile dimensions and positions
+      call mem_alloc(tinfo,arr%ntiles,7)
+      do ctidx = 1, arr%ntiles
+        tinfo(ctidx,1) = get_residence_of_tile(ctidx,arr)
+        call get_tile_dim(tinfo(ctidx,2:5),arr,ctidx)
+        tinfo(ctidx,6) = tinfo(ctidx,2) * tinfo(ctidx,3)
+        tinfo(ctidx,7) = tinfo(ctidx,2) * tinfo(ctidx,3) * tinfo(ctidx,4)
+      enddo
+      call ass_D1to2(fort,p_fort2,[tl,fordims(4)])
+
+      if(lock_outside) then
+        do c1 = 1, tl,cons_els
+          call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+          do for4 = 1, fordims(4)
+       
+            do i = st_tiling, 4
+              tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+            enddo
+            
+            do i = 1, 4
+              idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+            enddo
+       
+            !ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
+            ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                     & mult1 + (tidx(4)-1) * mult2
+            !cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
+            cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                     &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+       
+            call pgav(p_fort2(c1:c1+cons_els-1,for4),cons_els,&
+            &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+
+          enddo
+        enddo
       endif
+
+      call mem_dealloc(tinfo)
+      for3 => null()
+      for4 => null()
+
+
+    elseif(arr%mode==4.and.n2comb==2.and..not.deb)then
+      st_tiling = 4
+      do i = 1, 4
+        if(arr%ntpm(i)/=1)then
+          st_tiling = i
+          exit
+        endif
+      enddo
+
+      cons_el_in_t = 1_long
+      diff_ord = arr%mode
+      do i = 1, st_tiling
+        if(u_o(i)==i)then
+          cons_el_in_t = cons_el_in_t * arr%tdim(i)
+        else
+          diff_ord = i - 1
+          exit
+        endif
+      enddo
+
+      cons_el_rd = 1_long
+      do i = 1, 2
+        if(u_o(i)==i)then
+          cons_el_rd = cons_el_rd * arr%tdim(i)
+        else
+          exit
+        endif
+      enddo
+
+      !precalculate tile dimensions and positions
+      call mem_alloc(tinfo,arr%ntiles,7)
+      do ctidx = 1, arr%ntiles
+        tinfo(ctidx,1) = get_residence_of_tile(ctidx,arr)
+        call get_tile_dim(tinfo(ctidx,2:5),arr,ctidx)
+        tinfo(ctidx,6) = tinfo(ctidx,2) * tinfo(ctidx,3)
+        tinfo(ctidx,7) = tinfo(ctidx,2) * tinfo(ctidx,3) * tinfo(ctidx,4)
+      enddo
+      for3 => fx(3)
+      for4 => fx(4) 
+      tidx = 1
+      tlidx = 1
+      mult1 = arr%ntpm(1) * arr%ntpm(2)
+      mult2 = arr%ntpm(1) * arr%ntpm(2) * arr%ntpm(3)
+   
+      fx=1
+      call get_midx(fel,fx(1:n2comb),fordims(1:n2comb),n2comb)
+      do i = 1, 4
+        idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+      enddo
+
+      !DETERMINE THE PARTS
+      part1 = 1
+      part2 = 1
+      if(cons_el_rd<tl)then
+        cons_els = cons_el_rd
+        do i = 1,min(diff_ord,2)
+          split_in = i
+          if(i>=2)then
+            part1 = part1 * (arr%tdim(i) - idxt(i) + 1)
+            part2 = part2 * (idxt(i) - 1)
+            
+            exit
+          else
+            part1 = part1 * arr%tdim(i)
+            part2 = part2 * arr%tdim(i)
+          endif
+        enddo
+      else
+        cons_els = tl
+        do i = 1,min(diff_ord,2)
+          split_in = i
+          if(i>=2)then
+            part1 = part1 * (arr%tdim(i) - idxt(i) + 1)
+            part2 = part2 * (idxt(i) - 1)
+            exit
+          else
+            part1 = part1 * arr%tdim(i)
+            part2 = part2 * arr%tdim(i)
+          endif
+        enddo
+        
+        if(infpar%lg_mynum==4)then
+          print *,part1,part2,tl
+        endif
+        part1 = max(tl,tl - part1)
+        part2 = max(0, tl - part1)
+        part1 = arr%tdim(1) - idxt(1) + 1
+        part2 = tl - (arr%tdim(1) - idxt(1) + 1)
+      endif
+
+      tl_max = (tl / cons_els) * cons_els
+      tl_mod = mod(tl ,cons_els)
+
+      if(infpar%lg_mynum==4)then
+        !print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
+        !print *,tl,part1,part2,tl_max,tl_mod
+        !print *,fx
+        !print *,idxt
+        !print *,arr%tdim
+        !print *,u_o
+        !stop 0 
+      endif
+      call lsmpi_barrier(infpar%lg_comm)
+
+
+      call ass_D1to3(fort,p_fort3,[tl,fordims(3),fordims(4)])
+
+      if(lock_outside) then
+        
+        !IF ONLY ONE ELEMENT CAN BE TRANSFERRED AT A TIME
+        if(cons_els==1)then
+
+          do c1 = 1, tl_max
+            call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+            do for4 = 1, fordims(4)
+              do for3 = 1, fordims(3)
+        
+                do i = st_tiling, 4
+                  tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                enddo
+               
+                do i = 1, 4
+                  idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                enddo
+        
+                ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                         & mult1 + (tidx(4)-1) * mult2
+
+                cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                         &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+        
+                call pga(p_fort3(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+              enddo
+            enddo
+          enddo
+
+        !IF MORE THAN ONE ELEMENT CAN BE TRANSFERRED AT A TIME
+        else
+
+          do c1 = 1, tl_max, cons_els
+            call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+            do for4 = 1, fordims(4)
+              flx(4) = fx(4) 
+              do for3 = 1, fordims(3)
+                do i = st_tiling, 4
+                  tidx(i)   = (fx(u_ro(i))-1)  / arr%tdim(i) + 1
+                enddo
+                do i = 1, 4
+                  idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                enddo
+        
+                ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                         & mult1 + (tidx(4)-1) * mult2
+                cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                         &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+        
+                !FOR PART 1
+                call pgav(p_fort3(c1:c1+part1-1,for3,for4),part1,&
+                &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+              enddo
+            enddo
+          enddo
+
+          if(part2/=0)then
+            do c1 = part1 + 1, tl_max, cons_els
+              call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+              do for4 = 1, fordims(4)
+                flx(4) = fx(4) 
+                do for3 = 1, fordims(3)
+                  do i = st_tiling, 4
+                    tidx(i)   = (fx(u_ro(i))-1)  / arr%tdim(i) + 1
+                  enddo
+                  do i = 1, 4
+                    idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                  enddo
+         
+                  ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                           & mult1 + (tidx(4)-1) * mult2
+                  cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                           &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+         
+                  !FOR PART 2
+                  call pgav(p_fort3(c1:c1+part2-1,for3,for4),part2,&
+                  &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                enddo
+              enddo
+            enddo
+          endif
+
+
+          if(tl_mod/=0)then
+            modp1=min(tl_mod,part1)
+            modp2=tl_mod - modp1
+            call get_midx(tl_max+fel,fx(1:n2comb),fordims(1:n2comb),n2comb)
+            do for4 = 1, fordims(4)
+              do for3 = 1, fordims(3)
+          
+                do i = st_tiling, 4
+                  tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                enddo
+               
+                do i = 1, 4
+                  idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                enddo
+          
+                ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                         & mult1 + (tidx(4)-1) * mult2
+                cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                         &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+
+                call pgav(p_fort3(tl_max+1:tl_max+part1,for3,for4),modp1,&
+                &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+              enddo
+            enddo
+
+            if(tl_mod>part1)then
+              call get_midx(tl_max+fel+modp1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+              do for4 = 1, fordims(4)
+                do for3 = 1, fordims(3)
+           
+                  do i = st_tiling, 4
+                    tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                  enddo
+                 
+                  do i = 1, 4
+                    idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                  enddo
+           
+                  ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                           & mult1 + (tidx(4)-1) * mult2
+                  cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                           &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+             
+                  call pgav(p_fort3(tl_max+modp1+1:tl_max+tl_mod,for3,for4),modp2,&
+                  &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                enddo
+              enddo
+            endif
+          endif
+
+        endif
+
+      else
+      !CASE arr%mode==4,n2comb==2 and lock_outside = .false.
+        if(cons_els==1)then
+
+          do c1 = 1, tl
+            call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+            do for4 = 1, fordims(4)
+              do for3 = 1, fordims(3)
+        
+                do i = st_tiling, 4
+                  tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                enddo
+               
+                do i = 1, 4
+                  idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                enddo
+        
+                ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                         & mult1 + (tidx(4)-1) * mult2
+                cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                         &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+        
+                call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                call pga(p_fort3(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+              enddo
+            enddo
+          enddo
+
+        else
+
+          do c1 = 1, tl_max, cons_els
+            call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+            do for4 = 1, fordims(4)
+              flx(4) = fx(4) 
+              do for3 = 1, fordims(3)
+                do i = st_tiling, 4
+                  tidx(i)   = (fx(u_ro(i))-1)  / arr%tdim(i) + 1
+                enddo
+                do i = 1, 4
+                  idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                enddo
+        
+                ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                         & mult1 + (tidx(4)-1) * mult2
+                cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                         &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+        
+                !FOR PART 1
+                call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                call pgav(p_fort3(c1:c1+part1-1,for3,for4),part1,&
+                &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+              enddo
+            enddo
+          enddo
+
+          if(part2/=0)then
+            do c1 = part1 + 1, tl_max, cons_els
+              call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+              do for4 = 1, fordims(4)
+                flx(4) = fx(4) 
+                do for3 = 1, fordims(3)
+                  do i = st_tiling, 4
+                    tidx(i)   = (fx(u_ro(i))-1)  / arr%tdim(i) + 1
+                  enddo
+                  do i = 1, 4
+                    idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                  enddo
+         
+                  ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                           & mult1 + (tidx(4)-1) * mult2
+                  cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                           &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+         
+                  !FOR PART 2
+                  call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                  call pgav(p_fort3(c1:c1+part2-1,for3,for4),part2,&
+                  &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                  call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                enddo
+              enddo
+            enddo
+          endif
+
+
+          if(tl_mod/=0)then
+            modp1=min(tl_mod,part1)
+            modp2=tl_mod - modp1
+            call get_midx(tl_max+fel,fx(1:n2comb),fordims(1:n2comb),n2comb)
+            do for4 = 1, fordims(4)
+              do for3 = 1, fordims(3)
+          
+                do i = st_tiling, 4
+                  tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                enddo
+               
+                do i = 1, 4
+                  idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                enddo
+          
+                ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                         & mult1 + (tidx(4)-1) * mult2
+                cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                         &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+
+                call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                call pgav(p_fort3(tl_max+1:tl_max+part1,for3,for4),modp1,&
+                &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+              enddo
+            enddo
+
+            if(tl_mod>part1)then
+              call get_midx(tl_max+fel+modp1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+              do for4 = 1, fordims(4)
+                do for3 = 1, fordims(3)
+           
+                  do i = st_tiling, 4
+                    tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                  enddo
+                 
+                  do i = 1, 4
+                    idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                  enddo
+           
+                  ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                           & mult1 + (tidx(4)-1) * mult2
+                  cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                           &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+             
+                  call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                  call pgav(p_fort3(tl_max+modp1+1:tl_max+tl_mod,for3,for4),modp2,&
+                  &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                  call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                enddo
+              enddo
+            endif
+          endif
+
+        endif
+      
+      endif
+
+      call mem_dealloc(tinfo)
+      for3 => null()
+      for4 => null()
+
+    else
+ 
+      !ONLY PRINT IF DEBUG IS NOT GIVEN, ELSE THE USER IS ASSUMED TO KNOW THAT
+      !IT IS SLOWER
+      if(.not.deb)print *,"WARINING(array_two_dim_1batch):this is a slow fallback option"
+
+      do c2 = 1, comb2
+        fx = 0
+        call get_midx(c2,fx(n2comb+1:arr%mode),fordims(n2comb+1:arr%mode),arr%mode-n2comb)
+ 
+        do c1 = fel, lel
+          call get_midx(c1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+ 
+          !get the information about the required index in the context of the
+          !array, i.e. which tile and which index in the tile
+          !also get the position of the index in the batched matrix
+
+          do i = 1, arr%mode
+            tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+            idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+          enddo
+
+          !get the combined indices, find all positions
+          ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
+          call get_tile_dim(tsze,arr,ctidx)
+          cidxt  = get_cidx(idxt,tsze,arr%mode)
+          source = get_residence_of_tile(ctidx,arr)
+          cidxf  = get_cidx([c1-fel+1,c2],[tl,comb2],2)
+     
+          !get the element from the correct place to the correct place
+          if(.not.lock_outside)call arr_lock_win(arr,ctidx,'s')
+          call pga(fort(cidxf),cidxt,source,arr%wi(ctidx))
+          if(.not.lock_outside)call arr_unlock_win(arr,ctidx)
+
+        enddo
+      enddo
+    endif
+
+    u_o  => null()
+    u_ro => null()
+    pga  => null()
+#else
+    call lsquit("ERROR(array_gather_to_two_dim_1batch):this routine is F2003 only",-1)
+#endif
+#else
+    call lsquit("ERROR(array_gather_to_two_dim_1batch):this routine is MPI only",-1)
+#endif
+  end subroutine array_two_dim_1batch
+
+  subroutine array_two_dim_2batch(arr,o,op,fort,n2comb,fel,tl,lock_outside)
+    implicit none
+    type(array),intent(in) :: arr
+    real(realk),intent(inout) :: fort(*)
+    character, intent(in) :: op
+    integer, intent(in),target :: o(arr%mode)
+    integer, intent(in) :: fel,tl,n2comb
+    logical, intent(in) :: lock_outside
+    integer :: fordims(arr%mode)
+    integer,target :: fx(arr%mode)
+    integer,target :: flx(arr%mode)
+    integer :: oldidx(arr%mode)
+    integer :: i,lel
+    integer,target :: ro(arr%mode)
+    integer :: comb1,comb2,c1,c2
+    integer :: tidx(arr%mode),idxt(arr%mode)
+    integer :: tlidx(arr%mode),lidxt(arr%mode)
+    integer :: ctidx, cidxt, cidxf, st_tiling
+    integer,pointer :: u_o(:),u_ro(:),tinfo(:,:)
+    integer,pointer ::for3,for4
+    real(realk), pointer :: p_fort3(:,:,:),p_fort2(:,:)
+    integer :: tsze(arr%mode),mult1,mult2,dummy
+    integer(kind=8) :: cons_el_in_t,cons_els,tl_max,tl_mod
+    integer(kind=8) :: cons_el_rd
+    integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
+    logical :: goto_default
+#ifdef VAR_MPI
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+    procedure(put_acc_el), pointer :: pga => null()
+    procedure(put_acc_vec), pointer :: pgav => null()
+    integer(kind=ls_mpik) :: source
+
+    goto_default = .false.
+
+    if( op/='a'.and.op/='p'.and.op/='g')then
+      call lsquit("ERROR(array_two_dim_2batch):unknown choice of operator",-1)
+    endif 
+    if(op=='p')then
+      pga  => lsmpi_put_realk
+      pgav => lsmpi_put_realkV_w8
+    elseif(op=='g')then
+      pga  => lsmpi_get_realk
+      pgav => lsmpi_get_realkV_w8
+    elseif(op=='a')then
+      pga  => lsmpi_acc_realk
+      pgav => lsmpi_acc_realkV_w8
+    endif
+
+    do i = 1,arr%mode
+      ro(o(i))      = i
     enddo
 
-    call mem_dealloc(tmp)
+    if(op=='g')then
+      u_o  => o(1:arr%mode)
+      u_ro => ro(1:arr%mode)
+    else
+      u_o  => ro(1:arr%mode)
+      u_ro => o(1:arr%mode)
+    endif
+
+  
+    lel = fel + tl -1
+
+    do i = 1,arr%mode
+      fordims(i) = arr%dims(u_o(i))
+    enddo
+
+    comb1 = 1
+    do i = 1, arr%mode-n2comb
+      comb1   = comb1 * fordims(i)
+    enddo
+
+    comb2 = 1
+    do i = arr%mode-n2comb+1 , arr%mode
+      comb2          = comb2 * fordims(i)
+    enddo
+    
+    if(arr%ntpm(1)>1)then
+      goto_default = .true.
+      print *,"WARNING(array_two_dim_2batch):going to slow default option"
+    endif
+
+    if(arr%mode==4.and.n2comb==3.and.o(1)==1.and..not.goto_default)then
+
+      cons_el_in_t = 1_long
+      do i = 1, 4
+        if(o(i)==i)then
+          cons_el_in_t = cons_el_in_t * arr%tdim(i)
+        else
+          exit
+        endif
+      enddo
+
+      cons_els = int(arr%tdim(1),kind=8)
+
+      st_tiling = 4
+      do i = 1, 4
+        if(arr%ntpm(i)/=1)then
+          st_tiling = i
+          exit
+        endif
+      enddo
+      tidx = 1
+      mult1 = arr%ntpm(1) * arr%ntpm(2)
+      mult2 = arr%ntpm(1) * arr%ntpm(2) * arr%ntpm(3)
+
+
+      !precalculate tile dimensions and positions
+      call mem_alloc(tinfo,arr%ntiles,7)
+      do ctidx = 1, arr%ntiles
+        tinfo(ctidx,1) = get_residence_of_tile(ctidx,arr)
+        call get_tile_dim(tinfo(ctidx,2:5),arr,ctidx)
+        tinfo(ctidx,6) = tinfo(ctidx,2) * tinfo(ctidx,3)
+        tinfo(ctidx,7) = tinfo(ctidx,2) * tinfo(ctidx,3) * tinfo(ctidx,4)
+      enddo
+      call ass_D1to2(fort,p_fort2,[tl,fordims(4)])
+
+      if(lock_outside) then
+        do c1 = 1, tl
+          fx(1)=1
+          call get_midx(c1+fel-1,fx(2:4),fordims(2:4),n2comb)
+
+          do i = 1, 4
+            tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+          enddo
+          
+          do i = 1, 4
+            idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+          enddo
+
+          ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                   & mult1 + (tidx(4)-1) * mult2
+          cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                   &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+       
+          call pgav(fort(1+(c1-1)*cons_els:c1*cons_els),cons_els,&
+          &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+
+        enddo
+      else
+        do c1 = 1, tl
+          fx(1)=1
+          call get_midx(c1+fel-1,fx(2:4),fordims(2:4),n2comb)
+
+          do i = st_tiling, 4
+            tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+          enddo
+          
+          do i = 1, 4
+            idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+          enddo
+
+          ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                   & mult1 + (tidx(4)-1) * mult2
+          cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                   &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+       
+          call arr_lock_win(arr,ctidx,'s')
+          call pgav(fort(1+(c1-1)*cons_els:c1*cons_els),cons_els,&
+          &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+          call arr_unlock_win(arr,ctidx)
+
+        enddo
+      endif
+
+      call mem_dealloc(tinfo)
+      for3 => null()
+      for4 => null()
+
+    else
+ 
+      print *,"WARINING(array_two_dim_2batch):this is a slow fallback option"
+
+      do c1 = 1, comb1
+        fx = 0
+        call get_midx(c1,fx(1:arr%mode-n2comb),fordims(1:arr%mode-n2comb),arr%mode-n2comb)
+        print *,c1,fx
+        do c2 = fel, lel
+          call get_midx(c2,fx(arr%mode-n2comb+1:arr%mode),fordims(arr%mode-n2comb+1:arr%mode),n2comb)
+ 
+          !get the information about the required index in the context of the
+          !array, i.e. which tile and which index in the tile
+          !also get the position of the index in the batched matrix
+
+          do i = 1, arr%mode
+            tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+            idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+          enddo
+
+          !get the combined indices, find all positions
+          ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
+          call get_tile_dim(tsze,arr,ctidx)
+          cidxt  = get_cidx(idxt,tsze,arr%mode)
+          source = get_residence_of_tile(ctidx,arr)
+          cidxf  = get_cidx([c1,c2-fel+1],[comb1,tl],2)
+     
+          !get the element from the correct place to the correct place
+          if(.not.lock_outside)call arr_lock_win(arr,ctidx,'s')
+          call pga(fort(cidxf),cidxt,source,arr%wi(ctidx))
+          if(.not.lock_outside)call arr_unlock_win(arr,ctidx)
+
+        enddo
+      enddo
+    endif
+
+    u_o  => null()
+    u_ro => null()
+    pga  => null()
 #else
-    call lsquit("ERROR(array_gather_tilesinfort):this routine is MPI only",-1)
+    call lsquit("ERROR(array_gather_to_two_dim_2batch):this routine is F2003 only",-1)
 #endif
-  end subroutine array_gather_tilesinfort
+#else
+    call lsquit("ERROR(array_gather_to_two_dim_2batch):this routine is MPI only",-1)
+#endif
+  end subroutine array_two_dim_2batch
+
 
 
   subroutine add_data2tiled_lowmem(arr,mult,A,dims,mode)
@@ -1523,29 +2528,13 @@ module lspdm_tensor_operations_module
         in_tile_mode(j)=(orig_addr(j)-1)/arr%tdim(j) + 1
       enddo
       comp_ti=get_cidx(in_tile_mode,arr%ntpm,arr%mode)
-      !if(comp_ti>arr%ntiles)then
-      !  call lsquit("tiles out of range",DECinfo%output)
-      !endif
       !check where the current tile resides and jump the following steps if not
       !master where the full matrix resides or the destination slave
       !dest = mod(comp_ti-1+arr%offset,nnod) 
       if(pdm)dest = get_residence_of_tile(comp_ti,arr) 
-      !print *,comp_ti,arr%offset,dest,infpar%lg_nodtot,i,nccblocks
-      !if(dest>infpar%lg_nodtot)then
-      !  call lsquit("destination out of range",DECinfo%output)
-      !endif
     
       !get the dimensions of the remote tile
       call get_tile_dim(remote_td,comp_ti,arr%dims,arr%tdim,arr%mode)
-      !do j=1, arr%mode
-      !  if(((arr%dims(j)-(in_tile_mode(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
-      !    remote_td(j)=arr%tdim(j)
-      !  elseif(((arr%dims(j)-(in_tile_mode(j)-1)*arr%tdim(j))/arr%tdim(j))<1 )then
-      !    remote_td(j)=mod(arr%dims(j)-(in_tile_mode(j)-1)*arr%tdim(j),arr%tdim(j))
-      !  endif
-      !enddo
-
-
 
       !now get position of the first element of the batch in the current tile
       do j=1,arr%mode
@@ -1691,24 +2680,16 @@ module lspdm_tensor_operations_module
 #endif
   end subroutine print_mem_per_node
 
-  subroutine add_data2tiled_intiles(arr,mult,A,dims,mode,order)
+  subroutine add_data2tiled_intiles_nobuffer(arr,A,dims,mode,o)
     implicit none
     type(array),intent(inout) :: arr
-    real(realk),intent(in) :: A(*),mult
+    real(realk),intent(in) :: A(*)
     integer,intent(in) :: mode, dims(mode)
-    integer,intent(in),optional :: order(mode)
+    integer,intent(in) :: o(mode)
     real(realk),pointer :: buf(:)
-    integer ::nnod,fib,lt,ce,j,me,dest,step,act_step,mod_step,iter,nccblocks,ierr,st
-    integer :: nelmsit,loc_ti,comp_ti,comp_el,i,nelms,fe_in_block,o(mode)
-    integer, pointer :: elm_in_tile(:),in_tile_mode(:),orig_addr(:),remote_td(:)
+    integer ::nnod,me
+    integer :: nelmsit,i
     integer :: fullfortdims(arr%mode)
-    do i=1,mode
-      o(i)=i
-    enddo
-    !TRY TO INCLUDE MPI_PUT FOR THAT OPERATION,SO MAYBE MASTER_SLAVE DEPENDENCE
-    !IN THIS ROUTINE IS GONE
-    if(present(order))o=order
-
     do i=1,arr%mode
       fullfortdims(o(i)) = arr%dims(i)
     enddo
@@ -1734,15 +2715,118 @@ module lspdm_tensor_operations_module
 
     
     do i=1,arr%ntiles
-      call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
       call get_tile_dim(nelmsit,arr,i)
-      if(mult/=1.0E0_realk)call dscal(nelmsit,mult,buf,1)
 #ifdef VAR_MPI
-      call array_accumulate_tile(arr,i,buf,nelmsit)
+      call array_accumulate_tile_combidx_nobuff(&
+      &A,fullfortdims,arr,i,o,arr%lock_set(i))
 #endif
     enddo
     call mem_dealloc(buf)
-  end subroutine add_data2tiled_intiles
+  end subroutine add_data2tiled_intiles_nobuffer
+
+  subroutine add_data2tiled_intiles_stackbuffer(arr,mult,A,dims,mode,o)
+    implicit none
+    type(array),intent(inout) :: arr
+    real(realk),intent(in) :: A(*),mult
+    integer,intent(in) :: mode, dims(mode)
+    integer,intent(in) :: o(mode)
+    real(realk),pointer :: buf(:)
+    integer ::nnod,me
+    integer :: nelmsit,i
+    integer :: fullfortdims(arr%mode)
+    do i=1,arr%mode
+      fullfortdims(o(i)) = arr%dims(i)
+    enddo
+    me = 0
+    nnod=1
+#ifdef VAR_MPI
+    me=infpar%lg_mynum
+    nnod=infpar%lg_nodtot
+#endif
+    !begin with sanity checks
+    if(arr%mode/=mode)then
+      print *,"ERROR(add_data2tiled_intiles):mode of array does not match mode of tiled_array"
+      stop 1
+    endif
+    do i=1,mode
+      if(arr%dims(i)/=dims(i))then
+        print *,"ERROR(add_data2tiled_intiles):dims in input do not match dims of tiled_array"
+        stop 1
+      endif
+    enddo
+    ! corresponding elements
+    call mem_alloc(buf,arr%tsize)
+
+    
+    do i=1,arr%ntiles
+      call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
+      call get_tile_dim(nelmsit,arr,i)
+#ifdef VAR_MPI
+      call array_accumulate_tile(arr,i,buf,nelmsit,lock_set=arr%lock_set(i))
+#endif
+    enddo
+    call mem_dealloc(buf)
+  end subroutine add_data2tiled_intiles_stackbuffer
+
+  subroutine add_data2tiled_intiles_explicitbuffer(arr,mult,A,dims,mode,o,wrk,iwrk)
+    implicit none
+    type(array),intent(inout) :: arr
+    real(realk),intent(in) :: A(*),mult
+    integer,intent(in) :: mode, dims(mode)
+    integer,intent(in) :: o(mode)
+    integer(kind=8),intent(in) :: iwrk
+    real(realk), intent(inout) :: wrk(*)
+    integer ::nnod,me
+    integer :: nelmsit
+    integer(kind=8) ::i,b,e,maxntiinwrk,mod_el
+    integer :: fullfortdims(arr%mode)
+
+    do i=1,arr%mode
+      fullfortdims(o(i)) = arr%dims(i)
+    enddo
+#ifdef VAR_MPI
+
+    me   = infpar%lg_mynum
+    nnod = infpar%lg_nodtot
+
+    !compute the maximum number of tiles to be stored in the workspace
+    maxntiinwrk = int(iwrk/arr%tsize,kind=8)
+    !begin with sanity checks
+    if(maxntiinwrk == 0)then
+      print *,"ERROR(add_data2tiled_intiles_explicitbuffer)&
+      &:not enough space in wrk --> run without .CCSD_WITH_MPICH or add nodes"
+      stop 1
+    endif
+    if(arr%mode/=mode)then
+      print *,"ERROR(add_data2tiled_intiles_explicitbuffer):&
+      &mode of array does not match mode of tiled_array"
+      stop 1
+    endif
+    do i=1,mode
+      if(arr%dims(i)/=dims(i))then
+        print *,"ERROR(add_data2tiled_intiles_explicitbuffer):&
+        &dims in input do not match dims of tiled_array"
+        stop 1
+      endif
+    enddo
+    
+    do i=1,arr%ntiles
+
+      if(arr%lock_set(i))then
+        if(i>maxntiinwrk) then
+          call arr_unlock_win(arr,int(i-maxntiinwrk))
+        endif
+      endif
+
+      call get_tile_dim(nelmsit,arr,i)
+      b = 1       + mod(i-1,maxntiinwrk) * arr%tsize
+      e = nelmsit + mod(i-1,maxntiinwrk) * arr%tsize
+      call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,wrk(b),int(i),arr%tdim,o)
+      call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit,lock_set=arr%lock_set(i))
+    enddo
+
+#endif
+  end subroutine add_data2tiled_intiles_explicitbuffer
 
   subroutine cp_data2tiled_lowmem(arr,A,dims,mode)
     implicit none
@@ -1820,7 +2904,6 @@ module lspdm_tensor_operations_module
     
     fe_in_block=1
     do i=1,nccblocks
-      !print *,me,"in round", i
       if(mod(i,iter)>0) act_step=step
       if(mod(i,iter)==0)act_step=mod_step
       ! get the position for the tile of the first element in the block, the previous
@@ -1832,29 +2915,14 @@ module lspdm_tensor_operations_module
         in_tile_mode(j)=(orig_addr(j)-1)/arr%tdim(j) + 1
       enddo
       comp_ti=get_cidx(in_tile_mode,arr%ntpm,arr%mode)
-      !if(comp_ti>arr%ntiles)then
-      !  call lsquit("tiles out of range",DECinfo%output)
-      !endif
+
       !check where the current tile resides and jump the following steps if not
       !master where the full matrix resides or the destination slave
       !dest = mod(comp_ti-1+arr%offset,nnod) 
       if(pdm)dest = get_residence_of_tile(comp_ti,arr) 
-      !print *,comp_ti,arr%offset,dest,infpar%lg_nodtot,i,nccblocks
-      !if(dest>infpar%lg_nodtot)then
-      !  call lsquit("destination out of range",DECinfo%output)
-      !endif
-    
+
       !get the dimensions of the remote tile
       call get_tile_dim(remote_td,comp_ti,arr%dims,arr%tdim,arr%mode)
-      !do j=1, arr%mode
-      !  if(((arr%dims(j)-(in_tile_mode(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
-      !    remote_td(j)=arr%tdim(j)
-      !  elseif(((arr%dims(j)-(in_tile_mode(j)-1)*arr%tdim(j))/arr%tdim(j))<1 )then
-      !    remote_td(j)=mod(arr%dims(j)-(in_tile_mode(j)-1)*arr%tdim(j),arr%tdim(j))
-      !  endif
-      !enddo
-
-
 
       !now get position of the first element of the batch in the current tile
       do j=1,arr%mode
@@ -1929,15 +2997,129 @@ module lspdm_tensor_operations_module
     do i=1,arr%ntiles
       call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,order)
       call get_tile_dim(nelmsit,arr,i)
-      !call pn(buf,nelmsit)
       !copy data to the identified places
 #ifdef VAR_MPI
-      !print *,"copying",i,arr%ntiles
       call array_put_tile(arr,i,buf,nelmsit)
 #endif
     enddo
     call mem_dealloc(buf)
   end subroutine cp_data2tiled_intiles
+
+
+
+
+  subroutine array_gatheradd_tilestofort(arr,sc,fort,nelms,nod,optorder)
+    implicit none
+    type(array),intent(in) :: arr
+    real(realk),intent(in) :: sc
+    real(realk),intent(inout) :: fort(*)
+    integer(kind=long), intent(in) :: nelms
+    integer(kind=ls_mpik) :: nod
+    integer, intent(in), optional :: optorder(arr%mode)
+    integer(kind=ls_mpik) :: src,me,nnod
+    integer :: i,ltidx,order(arr%mode)
+    integer :: nelintile,fullfortdim(arr%mode)
+    real(realk), pointer :: tmp(:)
+#ifdef VAR_MPI
+
+    do i=1,arr%mode
+      order(i)=i
+    enddo
+    if(present(optorder))order=optorder
+   
+    me=0
+    nnod=1
+    me=infpar%lg_mynum
+    nnod=infpar%lg_nodtot
+    if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
+        &dimensions are not the same",DECinfo%output)
+
+    do i = 1, arr%mode
+      fullfortdim(i) = arr%dims(order(i))
+    enddo
+
+    call mem_alloc(tmp,arr%tsize)
+
+    do i=1,arr%ntiles
+      src=get_residence_of_tile(i,arr)
+      if(src==me.or.nod==me)then
+        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+        if(src==me.and.nod==me)then
+          ltidx = (i - 1) /nnod + 1
+          call tile_in_fort(sc,arr%ti(ltidx)%t,i,arr%tdim,&
+               &1.0E0_realk,fort,fullfortdim,arr%mode,order)
+        elseif(src==me)then
+          ltidx = (i - 1) /nnod + 1
+          call lsmpi_send(arr%ti(ltidx)%t,nelintile,infpar%lg_comm,nod)
+        elseif(nod==me)then
+          call lsmpi_recv(tmp,nelintile,infpar%lg_comm,src)
+          call tile_in_fort(sc,tmp,i,arr%tdim,&
+               &1.0E0_realk,fort,fullfortdim,arr%mode,order)
+        endif
+      endif
+    enddo
+
+    call mem_dealloc(tmp)
+#else
+    call lsquit("ERROR(array_gatheradd_tilestofort):this routine is MPI only",-1)
+#endif
+  end subroutine array_gatheradd_tilestofort
+
+
+
+  subroutine array_gather_tilesinfort(arr,fort,nelms,nod,optorder)
+    implicit none
+    type(array),intent(in) :: arr
+    real(realk),intent(inout) :: fort(*)
+    integer(kind=long), intent(in) :: nelms
+    integer(kind=ls_mpik) :: nod
+    integer, intent(in), optional :: optorder(arr%mode)
+    integer(kind=ls_mpik) :: src,me,nnod
+    integer :: i,j,k,ltidx
+    integer :: nelintile,order(arr%mode)
+    integer :: fullfortdim(arr%mode)
+    real(realk), pointer :: tmp(:)
+#ifdef VAR_MPI
+    do i = 1, arr%mode
+      order(i) = i
+    enddo
+    if(present(optorder))order=optorder
+    do i = 1, arr%mode
+      fullfortdim(i) = arr%dims(order(i))
+    enddo
+    me=0
+    nnod=1
+    me=infpar%lg_mynum
+    nnod=infpar%lg_nodtot
+    if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
+        &dimensions are not the same",DECinfo%output)
+
+    call mem_alloc(tmp,arr%tsize)
+
+    do i=1,arr%ntiles
+      src=get_residence_of_tile(i,arr)
+      if(src==me.or.nod==me)then
+        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+        if(src==me.and.nod==me)then
+          ltidx = (i - 1) /nnod + 1
+          call tile_in_fort(1.0E0_realk,arr%ti(ltidx)%t,i,arr%tdim,&
+                           &0.0E0_realk,fort,fullfortdim,arr%mode,order)
+        elseif(src==me)then
+          ltidx = (i - 1) /nnod + 1
+          call lsmpi_send(arr%ti(ltidx)%t,nelintile,infpar%lg_comm,nod)
+        elseif(nod==me)then
+          call lsmpi_recv(tmp,nelintile,infpar%lg_comm,src)
+          call tile_in_fort(1.0E0_realk,tmp,i,arr%tdim,&
+                           &0.0E0_realk,fort,fullfortdim,arr%mode,order)
+        endif
+      endif
+    enddo
+
+    call mem_dealloc(tmp)
+#else
+    call lsquit("ERROR(array_gather_tilesinfort):this routine is MPI only",-1)
+#endif
+  end subroutine array_gather_tilesinfort
 
 
   subroutine array_scatter_densetotiled(arr,A,nelms,nod,optorder)
@@ -1999,6 +3181,94 @@ module lspdm_tensor_operations_module
 
 
 
+  !\> \brief lock all windows of a tensor from the current node with the
+  !specified lock and assertion
+  !\> \author Patrick Ettenhuber
+  !\> \date July 2013
+#ifdef VAR_MPI
+  subroutine arr_lock_win(arr,ti_idx,locktype,assert)
+    implicit none
+    type(array) :: arr
+    integer,intent(in) :: ti_idx
+    character, intent(in) :: locktype
+    integer(kind=ls_mpik), optional,intent(in) :: assert
+    integer(kind=ls_mpik) :: ass,node
+
+    ass = int(0,kind=ls_mpik)
+    if(present(assert))ass=assert
+
+    node=get_residence_of_tile(ti_idx,arr)
+    call lsmpi_win_lock(node,arr%wi(ti_idx),locktype,ass)
+    arr%lock_set(ti_idx)=.true.
+
+  end subroutine arr_lock_win
+
+  subroutine arr_unlock_win(arr,ti_idx)
+    implicit none
+    type(array) :: arr
+    integer,intent(in) :: ti_idx
+    integer(kind=ls_mpik) :: node
+
+    node=get_residence_of_tile(ti_idx,arr)
+    call lsmpi_win_unlock(node,arr%wi(ti_idx))
+    arr%lock_set(ti_idx)=.false.
+
+  end subroutine arr_unlock_win
+
+  subroutine arr_lock_wins(arr,locktype,assert)
+    implicit none
+    type(array) :: arr
+    character, intent(in) :: locktype
+    integer(kind=ls_mpik), optional,intent(in) :: assert
+    integer(kind=ls_mpik) :: ass,node
+    integer :: i
+    ass = int(0,kind=ls_mpik)
+    if(present(assert))ass=assert
+    do i=1,arr%ntiles
+      node=get_residence_of_tile(i,arr)
+      call lsmpi_win_lock(node,arr%wi(i),locktype,ass)
+      arr%lock_set(i)=.true.
+    enddo
+  end subroutine arr_lock_wins
+
+  !\> \brief unlock all windows of a tensor 
+  !\> \author Patrick Ettenhuber
+  !\> \date July 2013
+  subroutine arr_unlock_wins(arr,check)
+    implicit none
+    type(array) :: arr
+    logical, intent(in),optional:: check
+    integer(kind=ls_mpik) :: node
+    integer :: i
+    logical :: ch
+
+    ch = .false.
+    if(present(check))ch=check
+
+    if(ch)then
+
+      do i=1,arr%ntiles
+        if(arr%lock_set(i))then
+          node=get_residence_of_tile(i,arr)
+          call lsmpi_win_unlock(node,arr%wi(i))
+          arr%lock_set(i)=.false.
+        endif
+      enddo
+
+    else
+
+      do i=1,arr%ntiles
+        node=get_residence_of_tile(i,arr)
+        call lsmpi_win_unlock(node,arr%wi(i))
+        arr%lock_set(i)=.false.
+      enddo
+
+    endif
+
+  end subroutine arr_unlock_wins
+#endif
+
+
   subroutine pn(a,n)
     implicit none
     real(realk), intent(in) :: a(*)
@@ -2013,254 +3283,6 @@ module lspdm_tensor_operations_module
     print *,"NORM:",nrm
   end subroutine
 
-
-  !> \autor Patrick Ettenhuber
-  !> \brief Subroutine to put a specific tile in a general matrix
-  !> \date January 2013
-  !subroutine tile_in_fort(pre1,tilein,tnr,tdims,pre2,fort,full_arr_dim,mode,o)
-  !  implicit none
-  !  !> scaling factors
-  !  real(realk) :: pre1,pre2
-  !  !> input array with data in arbtirary order
-  !  real(realk), intent(inout) :: fort(*)
-  !  !> mode infortmation about how to interpret data
-  !  integer, intent(in) :: mode
-  !  !> the tile number in column major ordering of the tiles
-  !  integer, intent(in) :: tnr
-  !  !> dimension information for the mew array
-  !  integer, intent(in) :: full_arr_dim(mode)
-  !  !> batch information for the tiles
-  !  integer, intent(in) :: tdims(mode)
-  !  !> specify how to reorder the tile to the new full array
-  !  integer,intent(in) :: o(mode)
-  !  !> tile output
-  !  real(realk), intent(in) :: tilein(*)
-  !  integer :: i,nelms,k
-  !  integer :: tmodeidx(mode)
-  !  integer :: idxintile(mode),ro(mode),full_dim_tiled_arr(mode)
-  !  integer :: ccels,ntimes,acttdim(mode),fels(mode)
-  !  integer :: pos1,ntpm(mode),glbmodeidx(mode)
-  !  integer :: simpleorder,bs
-
-  !  bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-  !  !bs=5
-  !  simpleorder=0
-  !  do i=1,mode
-  !    if(o(i)/=i)simpleorder=-1
-  !    ro(o(i))=i
-  !  enddo
-
-  !  
-  !  do i=1,mode
-  !    full_dim_tiled_arr(i) = full_arr_dim(ro(i))
-  !    ntpm(i) = full_dim_tiled_arr(i)/tdims(i)
-  !    if(mod(full_dim_tiled_arr(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
-  !  enddo
-
-
-  !  if(mode==4)then
-  !    if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
-  !    if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)simpleorder=2
-  !  endif
-
-  !  call get_midx(tnr,tmodeidx,ntpm,mode)
-
-  !  ntimes=1
-  !  do i=1,mode
-  !    fels(i) = (tmodeidx(i)-1) * tdims(i) + 1
-  !    if(tmodeidx(i)*tdims(i)>full_dim_tiled_arr(i))then
-  !      acttdim(i)=mod(full_dim_tiled_arr(i),tdims(i))
-  !    else
-  !      acttdim(i)=tdims(i)
-  !    endif
-  !    if(i>1)ntimes=ntimes*acttdim(i)
-  !  enddo
-  !  
-
-  !  select case(simpleorder)
-  !    case(0)
-  !      ccels=acttdim(1)
-  !      do i=1,ntimes
-  !        call get_midx(i,idxintile(2:mode),acttdim(2:mode),mode-1)
-  !        idxintile(1)=1
-  !        do k=1,mode
-  !          glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
-  !        enddo
-  !        pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
-  !        if(pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
-  !          call dcopy(ccels,tilein(1+(i-1)*ccels),1,fort(pos1),1)
-  !        else
-  !          call dscal(ccels,pre2,fort(pos1),1)
-  !          call daxpy(ccels,pre1,tilein(1+(i-1)*ccels),1,fort(pos1),1)
-  !        endif
-  !      enddo
-  !    case(1)
-  !      call manual_2143_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-  !    case(2)
-  !      call manual_1423_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-  !    case default
-  !      print *,"expensive default tile_in_fort",o
-  !      !print *,"order  :",o
-  !      !print *,"rorder :",ro
-  !      !print *,"fad    :",full_arr_dim
-  !      !print *,"tad    :",full_dim_tiled_arr
-  !      !print *,"atd    :",acttdim
-  !      !count elements in the current tile for loop over elements
-  !      !identify their original position and put them in tile
-  !      nelms=1
-  !      do i=1,mode
-  !        nelms = nelms * acttdim(i)
-  !      enddo
-  !     
-  !      do i = 1,nelms
-  !        !get mode index of element in tile
-  !        call get_midx(i,idxintile,acttdim,mode)
-  !        !get full index in new array from indices referencing the tile
-  !        do k=1,mode
-  !          glbmodeidx(ro(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
-  !        enddo
-  !        !get index in new array
-  !        pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
-  !        fort(pos1)=pre2*fort(pos1) + pre1 * tilein(i)
-  !      enddo
-  !  end select
-  !end subroutine tile_in_fort
-
-
-
-  !!> \autor Patrick Ettenhuber
-  !!> \brief Subroutine to extract a specific tile from a general matrix
-  !!> \date November 2012
-  !subroutine tile_from_fort(pre1,fort,full_arr_dim,mode,pre2,tileout,tnr,tdims,o)
-  !  implicit none
-  !  !> scaling factors
-  !  real(realk) :: pre1,pre2
-  !  !> input array with data in arbtirary order
-  !  real(realk), intent(in) :: fort(*)
-  !  !> mode infortmation about how to interpret data
-  !  integer, intent(in) :: mode
-  !  !> the tile number in column major ordering of the tiles
-  !  integer, intent(in) :: tnr
-  !  !> dimension infortmation about how to interpret data
-  !  integer, intent(in) :: full_arr_dim(mode)
-  !  !> batch information for the tiles
-  !  integer, intent(in) :: tdims(mode)
-  !  !> reorder information for the array with respect to the original array,
-  !  !> if optorder is given, then the dimensions, tdims and tnr are with
-  !  !reference to the tile to calculate
-  !  integer, intent(in) :: o(mode)
-  !  !> tile output
-  !  real(realk), intent(out) :: tileout(*)
-  !  integer :: i,nccblcks,nels,k
-  !  integer :: tmodeidx(mode)
-  !  integer :: idxintile(mode),glbidx
-  !  integer :: ccels,ntimes,el,acttdim(mode),full_dim_tiled_arr(mode),nelms
-  !  integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),ro(mode),rtd(mode),fels(mode)
-  !  integer :: simpleorder,bs,a,b,c,d
-
-  !  bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-  !  !bs=5
-  !  simpleorder=0
-  !  do i=1,mode
-  !    if(o(i)/=i)simpleorder=-1
-  !  enddo
-
-
-  !  do i=1,mode
-  !    !get the reverse order information
-  !    ro(o(i))=i
-  !  enddo
-
-  !  !calculate number of tiles per mode
-  !  nels=1
-  !  do i=1,mode
-  !    full_dim_tiled_arr(i)=full_arr_dim(o(i))
-  !    ntpm(i) = full_dim_tiled_arr(i)/tdims(i)
-  !    if(mod(full_dim_tiled_arr(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
-  !    nels=nels*full_dim_tiled_arr(i)
-  !  enddo
-
-  !  !print *,"fad    :",full_arr_dim
-  !  !print *,"tad    :",full_dim_tiled_arr
-  !  !print *,"ntpm   :",ntpm
-  !  !print *,"td     :",tdims
-
-  !  if(mode==4)then
-  !    if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
-  !    if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)simpleorder=2
-  !    if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)simpleorder=3
-  !    if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)simpleorder=4
-  !    if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)simpleorder=5
-  !  endif
-  !  call get_midx(tnr,tmodeidx,ntpm,mode)
-  !  ntimes=1
-  !  do i=1,mode
-  !    fels(o(i)) = (tmodeidx(i)-1) * tdims(i) + 1
-  !    if(tmodeidx(i)*tdims(i)>full_dim_tiled_arr(i))then
-  !      acttdim(i)=mod(full_dim_tiled_arr(i),tdims(i))
-  !    else
-  !      acttdim(i)=tdims(i)
-  !    endif
-  !    if(i>1)ntimes=ntimes*acttdim(i)
-  !    rtd(o(i))     = acttdim(i)
-  !  enddo
-
-  !  select case(simpleorder)
-  !    case(0)
-  !      ccels=acttdim(1)
-  !      !loop over the remaining not-consecutive dimensions
-  !      do i=1,ntimes
-  !        !get the mode-index in the remaining dimensions
-  !        call get_midx(i,idxintile(2:mode),acttdim(2:mode),mode-1)
-  !        !get the position of the first element in the consecutive stretch
-  !        idxintile(1)=1
-  !        do k=1,mode
-  !          glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
-  !        enddo
-  !        pos1=get_cidx(glbmodeidx,full_dim_tiled_arr,mode)
-  !        if(pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
-  !          call dcopy(ccels,fort(pos1),1,tileout(1+(i-1)*ccels),1)
-  !        else
-  !          call dscal(ccels,pre2,tileout(1+(i-1)*ccels),1)
-  !          call daxpy(ccels,pre1,fort(pos1),1,tileout(1+(i-1)*ccels),1)
-  !        endif
-  !      enddo
-  !    case(1)
-  !      call manual_2143_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
-  !    case(2)
-  !      call manual_1324_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
-  !    case(3)
-  !      call manual_1342_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
-  !    case(4)
-  !      call manual_2134_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
-  !    case(5)
-  !      call manual_1423_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
-  !    case default
-  !      print *,"expensive default tile_from_fort",o
-  !      !print *,"order  :",o
-  !      !print *,"rorder :",ro
-  !      !print *,"atd    :",acttdim
-  !      !count elements in the current tile for loop over elements
-  !      !identify their original position and put them in tile
-  !      nelms=1
-  !      do i=1,mode
-  !        nelms = nelms * acttdim(i)
-  !      enddo
-  !      do i = 1,nelms
-  !        !get mode index of element in tile
-  !        call get_midx(i,idxintile,acttdim,mode)
-  !        !get global index of element, example order = 2 3 1 4 of new array with
-  !        !respect to old --> element 54 3 27 8 of old goes to 3 27 54 8 of new -
-  !        ! old with respect to new 3 1 2 4 
-  !        do k=1,mode
-  !          glbmodeidx(o(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
-  !        enddo
-  !        pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
-  !        tileout(i)=pre2*tileout(i)+pre1*fort(pos1)
-  !      enddo
-  !  end select
-
-  !end subroutine tile_from_fort
 
   subroutine array_free_pdm(arr)
     implicit none
@@ -2398,186 +3420,452 @@ module lspdm_tensor_operations_module
    end subroutine change_init_type_td
 
 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                 ACCUMULATE TILES
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> \brief direct communication routine for the accumulation of arrays,
   !> interface to the combined index routine
   !> \author Patrick Ettenhuber
-  subroutine array_accumulate_tile_modeidx(arr,modidx,fort,nelms)
+  subroutine array_accumulate_tile_modeidx(arr,modidx,fort,nelms,lock_set)
     implicit none
     !> input array for which a tile should be accumulated
     type(array),intent(in) ::arr
     !> input, the index of the tile in modular form and the number of elements
     integer,intent(in) :: modidx(arr%mode),nelms
     !> input the fortan array which should be transferred to the tile
-    real(realk),intent(inout) :: fort(nelms)
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    logical :: ls
     integer :: cidx
+    ls = .false.
+    if(present(lock_set))ls=lock_set
     cidx=get_cidx(modidx,arr%ntpm,arr%mode)
-    call array_accumulate_tile(arr,cidx,fort,nelms)
+    call array_accumulate_tile(arr,cidx,fort,nelms,lock_set=ls)
   end subroutine array_accumulate_tile_modeidx
-  subroutine array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms)
-    implicit none
-    type(array),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=4) :: nelms
-    !> input the fortan array which should be transferred to the tile
-    real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: assert,dest, ierr,n
-    real(realk) :: sta,sto
-#ifdef VAR_MPI
-    integer(kind=MPI_ADDRESS_KIND) ::offset
-    assert=0
-    offset=0
-    n=nelms
-    dest=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
-    call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
-    CALL lsmpi_win_unlock(dest, arr%wi(globtilenr))
-    sto = MPI_WTIME()
-    time_pdm_acc = time_pdm_acc + sto - sta
-    bytes_transferred_acc = bytes_transferred_acc + n * 8_long
-    nmsg_acc = nmsg_acc + 1
-#endif
-  end subroutine array_accumulate_tile_combidx4
-  subroutine array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms)
-    implicit none
-    type(array),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=8) :: nelms
-    !> input the fortan array which should be transferred to the tile
-    real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: assert,dest, ierr,n
-    real(realk) :: sta,sto
-#ifdef VAR_MPI
-    integer(kind=MPI_ADDRESS_KIND) ::offset
-    assert=0
-    offset=0
-    n=nelms
-    dest=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
-    call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
-    call lsmpi_win_unlock(dest,arr%wi(globtilenr))
-    sto = MPI_WTIME()
-    time_pdm_acc = time_pdm_acc + sto - sta
-    bytes_transferred_acc = bytes_transferred_acc + n * 8_long
-    nmsg_acc = nmsg_acc + 1
-#endif
-  end subroutine array_accumulate_tile_combidx8
-  subroutine array_puttile_modeidx(arr,modidx,fort,nelms)
-    implicit none
-    type(array),intent(in) ::arr
-    integer,intent(in) :: modidx(arr%mode),nelms
-    real(realk),intent(inout) :: fort(nelms)
-    integer :: cidx
-    cidx=get_cidx(modidx,arr%ntpm,arr%mode)
-    call array_put_tile(arr,cidx,fort,nelms)
-  end subroutine array_puttile_modeidx
-
-  subroutine array_puttile_combidx8(arr,globtilenr,fort,nelms)
-    implicit none
-    type(array),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=8),intent(in) :: nelms
-    real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: assert,dest, ierr,n
-    real(realk) :: sta,sto
-#ifdef VAR_MPI
-    integer(kind=MPI_ADDRESS_KIND) ::offset
-    assert=0
-    offset=0
-    n=nelms
-    dest=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
-    call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr))
-    call lsmpi_win_unlock(dest,arr%wi(globtilenr))
-    sto = MPI_WTIME()
-    time_pdm_put = time_pdm_put + sto - sta
-    bytes_transferred_put = bytes_transferred_put + n * 8_long
-    nmsg_put = nmsg_put + 1
-#endif
-  end subroutine array_puttile_combidx8
-  subroutine array_puttile_combidx4(arr,globtilenr,fort,nelms)
+  subroutine array_acct4(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
     integer,intent(in) :: globtilenr
     integer(kind=4),intent(in) :: nelms
-    real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: assert,dest, ierr,n
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms)
+  end subroutine array_acct4
+  subroutine array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=4),intent(in) :: nelms
+    !> input the fortan array which should be transferred to the tile
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    integer(kind=ls_mpik) :: dest
+    logical :: ls
     real(realk) :: sta,sto
 #ifdef VAR_MPI
-    integer(kind=MPI_ADDRESS_KIND) ::offset
-    assert=0
-    offset=0
-    n=nelms
+    ls = .false.
+    if(present(lock_set))ls=lock_set
+
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
-    call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
+    if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
+    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
+    if(.not.ls)CALL lsmpi_win_unlock(dest, arr%wi(globtilenr))
+    sto = MPI_WTIME()
+    time_pdm_acc = time_pdm_acc + sto - sta
+    bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
+    nmsg_acc = nmsg_acc + 1
+#endif
+  end subroutine array_accumulate_tile_combidx4
+  subroutine array_acct8(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=8),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms)
+  end subroutine array_acct8
+  subroutine array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    logical, optional, intent(in) :: lock_set
+    integer(kind=8),intent(in) :: nelms
+    !> input the fortan array which should be transferred to the tile
+    real(realk),intent(inout) :: fort(*)
+    integer(kind=ls_mpik) :: dest
+    logical :: ls
+    real(realk) :: sta,sto
+#ifdef VAR_MPI
+    ls = .false.
+    if(present(lock_set))ls=lock_set
+
+    dest=get_residence_of_tile(globtilenr,arr)
+    sta=MPI_WTIME()
+    if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
+    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
+    if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
+    sto = MPI_WTIME()
+    time_pdm_acc = time_pdm_acc + sto - sta
+    bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
+    nmsg_acc = nmsg_acc + 1
+#endif
+  end subroutine array_accumulate_tile_combidx8
+
+
+
+  subroutine array_accumulate_tile_combidx_nobuff(A,dimsA,arr,globtilenr,o,lock_set)
+    implicit none
+    real(realk),intent(in) :: A(*)
+    type(array),intent(in) :: arr
+    integer,intent(in) :: dimsA(arr%mode)
+    integer,intent(in) :: globtilenr
+    integer :: o(arr%mode)
+    !> input the fortan array which should be transferred to the tile
+    integer(kind=ls_mpik) :: dest
+    logical, intent(in) :: lock_set
+    integer :: order_type
+    integer :: ro(arr%mode),rtd(arr%mode),nel
+    integer :: acttdim(arr%mode),tmodeidx(arr%mode)
+    integer :: idxintile(arr%mode),fels(arr%mode)
+    integer :: glbmodeidx(arr%mode),pos1,i,k,nelms,ntimes,ccels
+    real(realk) :: sta,sto,bs
+
+#ifdef VAR_MPI
+
+    sta=MPI_WTIME()
+
+    order_type = -1
+    bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(arr%mode)))
+    !bs=5
+    order_type=0
+    do i=1,arr%mode
+      if(o(i)/=i)order_type=-1
+    enddo
+
+
+    do i=1,arr%mode
+      !get the reverse order information
+      ro(o(i))=i
+    enddo
+
+    dest=get_residence_of_tile(globtilenr,arr)
+
+    if(.not.lock_set)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
+
+    if(arr%mode==4)then
+      if(o(1)==1.and.o(2)==2.and.o(3)==3.and.o(4)==4)order_type = 0
+      if(o(1)==3.and.o(2)==4.and.o(3)==1.and.o(4)==2)order_type = 1
+      if(o(1)==4.and.o(2)==1.and.o(3)==2.and.o(4)==3)order_type = 2
+      if(o(1)==2.and.o(2)==3.and.o(3)==4.and.o(4)==1)order_type = 3
+      if(o(1)==1.and.o(2)==2.and.o(3)==4.and.o(4)==3)order_type = 4
+      if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)order_type = 5
+      if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)order_type = 6
+      if(o(1)==3.and.o(2)==1.and.o(3)==2.and.o(4)==4)order_type = 7
+      if(o(1)==2.and.o(2)==3.and.o(3)==1.and.o(4)==4)order_type = 8
+      if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)order_type = 9
+      if(o(1)==4.and.o(2)==3.and.o(3)==1.and.o(4)==2)order_type = 10
+      if(o(1)==4.and.o(2)==2.and.o(3)==3.and.o(4)==1)order_type = 11
+      if(o(1)==3.and.o(2)==4.and.o(3)==2.and.o(4)==1)order_type = 12
+      if(o(1)==2.and.o(2)==4.and.o(3)==1.and.o(4)==3)order_type = 13
+      if(o(1)==3.and.o(2)==2.and.o(3)==1.and.o(4)==4)order_type = 14
+      if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)order_type = 15
+      if(o(1)==4.and.o(2)==1.and.o(3)==3.and.o(4)==2)order_type = 16
+      if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)order_type = 17
+      if(o(1)==4.and.o(2)==3.and.o(3)==2.and.o(4)==1)order_type = 18
+      if(o(1)==2.and.o(2)==4.and.o(3)==3.and.o(4)==1)order_type = 19
+      if(o(1)==1.and.o(2)==4.and.o(3)==3.and.o(4)==2)order_type = 20
+      if(o(1)==3.and.o(2)==1.and.o(3)==4.and.o(4)==2)order_type = 21
+      if(o(1)==3.and.o(2)==2.and.o(3)==4.and.o(4)==1)order_type = 22
+      if(o(1)==4.and.o(2)==2.and.o(3)==1.and.o(4)==3)order_type = 23
+    endif
+
+    call get_midx(globtilenr,tmodeidx,arr%ntpm,arr%mode)
+    ntimes=1
+    nel = 1
+    do i=1,arr%mode
+      fels(o(i)) = (tmodeidx(i)-1) * arr%tdim(i) + 1
+      if(tmodeidx(i)*arr%tdim(i)>arr%dims(i))then
+        acttdim(i)=mod(arr%dims(i),arr%tdim(i))
+      else
+        acttdim(i)=arr%tdim(i)
+      endif
+      if(i>1)ntimes=ntimes*acttdim(i)
+      nel = acttdim(i) * nel
+      rtd(o(i))     = acttdim(i)
+    enddo
+
+    select case(order_type)
+      case(0)
+        ccels=acttdim(1)
+        !loop over the remaining not-consecutive dimensions
+        do i=1,ntimes
+          !get the mode-index in the remaining dimensions
+          call get_midx(i,idxintile(2:arr%mode),acttdim(2:arr%mode),arr%mode-1)
+          !get the position of the first element in the consecutive stretch
+          idxintile(1)=1
+          do k=1,arr%mode
+            glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) * arr%tdim(k)
+          enddo
+          pos1=get_cidx(glbmodeidx,arr%dims,arr%mode)
+          !  call dcopy(ccels,fort(pos1),1,tileout(1+(i-1)*ccels),1)
+          !  call daxpy(ccels,pre1,fort(pos1),1,tileout(1+(i-1)*ccels),1)
+          call lsmpi_acc(A(pos1:pos1+ccels-1),ccels,1+(i-1)*ccels,dest,arr%wi(globtilenr))
+        enddo
+      !case(1)
+      !  call manual_3412_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(2)
+      !  call manual_4123_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(3)
+      !  call manual_2341_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(4)
+      !  call manual_1243_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(5)
+      !  call manual_1423_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(6)
+      !  call manual_1342_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(7)
+      !  call manual_3124_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(8)
+      !  call manual_2314_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(9)
+      !  call manual_2134_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(10)
+      !  call manual_4312_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(11)
+      !  call manual_4231_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(12)
+      !  call manual_3421_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(13)
+      !  call manual_2413_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(14)
+      !  call manual_3214_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(15)
+      !  call manual_1324_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(16)
+      !  call manual_4132_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(17)
+      !  call manual_2143_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(18)
+      !  call manual_4321_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(19)
+      !  call manual_2431_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(20)
+      !  call manual_1432_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(21)
+      !  call manual_3142_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(22)
+      !  call manual_3241_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      !case(23)
+      !  call manual_4213_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)
+      case default
+        print *,"expensive default tile_from_fort",o
+        !print *,"order  :",o
+        !print *,"rorder :",ro
+        !print *,"atd    :",acttdim
+        !count elements in the current tile for loop over elements
+        !identify their original position and put them in tile
+        nelms=1
+        do i=1,arr%mode
+          nelms = nelms * acttdim(i)
+        enddo
+        do i = 1,nelms
+          !get mode index of element in tile
+          call get_midx(i,idxintile,acttdim,arr%mode)
+          !get global index of element, example order = 2 3 1 4 of new array with
+          !respect to old --> element 54 3 27 8 of old goes to 3 27 54 8 of new -
+          ! old with respect to new 3 1 2 4 
+          do k=1,arr%mode
+            glbmodeidx(o(k))=idxintile(k) + (tmodeidx(k)-1)*arr%tdim(k)
+          enddo
+          pos1=get_cidx(glbmodeidx,dimsA,arr%mode)
+          !DECinfo%ccModel>2tileout(i)=pre2*tileout(i)+pre1*A(pos1)
+          call lsmpi_acc(A(pos1:pos1),1,i,dest,arr%wi(globtilenr))
+        enddo
+    end select
+    if(.not.lock_set) call lsmpi_win_unlock(dest,arr%wi(globtilenr))
+    sto = MPI_WTIME()
+    time_pdm_acc = time_pdm_acc + sto - sta
+    bytes_transferred_acc = bytes_transferred_acc + nel * 8_long
+    nmsg_acc = nmsg_acc + 1
+#endif
+  end subroutine array_accumulate_tile_combidx_nobuff
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   PUT TILES
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  subroutine array_puttile_modeidx(arr,modidx,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) ::arr
+    integer,intent(in) :: modidx(arr%mode),nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    logical :: ls
+    integer :: cidx
+    ls = .false.
+    if(present(lock_set))ls=lock_set
+    cidx=get_cidx(modidx,arr%ntpm,arr%mode)
+    call array_put_tile(arr,cidx,fort,nelms,lock_set=ls)
+  end subroutine array_puttile_modeidx
+
+  subroutine array_putt8(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=8),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_puttile_combidx8(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_puttile_combidx8(arr,globtilenr,fort,nelms)
+  end subroutine array_putt8
+  subroutine array_puttile_combidx8(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=8),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    logical :: ls
+    integer(kind=ls_mpik) :: dest
+    real(realk) :: sta,sto
+#ifdef VAR_MPI
+    ls = .false.
+    if(present(lock_set))ls=lock_set
+    dest=get_residence_of_tile(globtilenr,arr)
+    sta=MPI_WTIME()
+    if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
     call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr))
-    call lsmpi_win_unlock(dest,arr%wi(globtilenr))
+    if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_put = time_pdm_put + sto - sta
-    bytes_transferred_put = bytes_transferred_put + n * 8_long
+    bytes_transferred_put = bytes_transferred_put + nelms * 8_long
+    nmsg_put = nmsg_put + 1
+#endif
+  end subroutine array_puttile_combidx8
+  subroutine array_putt4(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=4),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_puttile_combidx4(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_puttile_combidx4(arr,globtilenr,fort,nelms)
+  end subroutine array_putt4
+  subroutine array_puttile_combidx4(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=4),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    logical :: ls
+    integer(kind=ls_mpik) :: dest
+    real(realk) :: sta,sto
+#ifdef VAR_MPI
+    ls = .false.
+    if(present(lock_set))ls=lock_set
+    dest=get_residence_of_tile(globtilenr,arr)
+    sta=MPI_WTIME()
+    if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
+    call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr))
+    if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
+    sto = MPI_WTIME()
+    time_pdm_put = time_pdm_put + sto - sta
+    bytes_transferred_put = bytes_transferred_put + nelms * 8_long
     nmsg_put = nmsg_put + 1
 #endif
   end subroutine array_puttile_combidx4
 
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   GET TILES
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !interface to the array_gettile_combidx
-  subroutine array_gettile_modeidx(arr,modidx,fort,nelms)
+  subroutine array_gettile_modeidx(arr,modidx,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) ::arr
     integer,intent(in) :: modidx(arr%mode),nelms
-    real(realk),intent(inout) :: fort(nelms)
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    logical :: ls
     integer :: cidx
+    ls = .false.
+    if(present(lock_set))ls=lock_set
     cidx=get_cidx(modidx,arr%ntpm,arr%mode)
-    call array_get_tile(arr,cidx,fort,nelms)
+    call array_get_tile(arr,cidx,fort,nelms,lock_set=ls)
   end subroutine array_gettile_modeidx
-
-  subroutine array_gettile_combidx8(arr,globtilenr,fort,nelms)
+  subroutine array_gett8(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
     integer,intent(in) :: globtilenr
     integer(kind=8),intent(in) :: nelms
-    real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: assert,source, ierr,n
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_gettile_combidx8(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_gettile_combidx8(arr,globtilenr,fort,nelms)
+  end subroutine array_gett8
+  subroutine array_gettile_combidx8(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=8),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    integer(kind=ls_mpik) :: source
     real(realk) :: sta,sto
+    logical :: ls
 #ifdef VAR_MPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
-    assert=0
-    offset=0
-    n=nelms
+    ls = .false.
+    if(present(lock_set))ls=lock_set
     source=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
-    call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
+    if(.not.ls)call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
     call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
-    call lsmpi_win_unlock(source,arr%wi(globtilenr))
+    if(.not.ls)call lsmpi_win_unlock(source,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_get = time_pdm_get + sto - sta
-    bytes_transferred_get = bytes_transferred_get + n * 8_long
+    bytes_transferred_get = bytes_transferred_get + nelms * 8_long
     nmsg_get = nmsg_get + 1
 #endif
   end subroutine array_gettile_combidx8
-  subroutine array_gettile_combidx4(arr,globtilenr,fort,nelms)
+  subroutine array_gett4(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
     integer,intent(in) :: globtilenr
     integer(kind=4),intent(in) :: nelms
-    real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: assert,source, ierr,n
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_gettile_combidx4(arr,globtilenr,fort,nelms)
+  end subroutine array_gett4
+  subroutine array_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=4),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    integer(kind=ls_mpik) :: source
     real(realk) :: sta,sto
+    logical :: ls
 #ifdef VAR_MPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
-    assert=0
-    offset=0
-    n=nelms
+    ls = .false.
+    if(present(lock_set))ls=lock_set
     source=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
-    call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
+    if(.not.ls)call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
     call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
-    call lsmpi_win_unlock(source,arr%wi(globtilenr))
+    if(.not.ls)call lsmpi_win_unlock(source,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_get = time_pdm_get + sto - sta
-    bytes_transferred_get = bytes_transferred_get + n * 8_long
+    bytes_transferred_get = bytes_transferred_get + nelms * 8_long
     nmsg_get = nmsg_get + 1
 #endif
   end subroutine array_gettile_combidx4
@@ -2608,10 +3896,11 @@ module lspdm_tensor_operations_module
     endif
   end subroutine get_int_dist_info
 
-  subroutine dist_int_contributions(g,o2v2,win)
+  subroutine dist_int_contributions(g,o2v2,win,lock_outside)
     implicit none
     integer(kind=long),intent(in) :: o2v2
     real(realk),intent(in) :: g(o2v2)
+    logical :: lock_outside
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
     integer :: fe,ne,msg_len_mpi
@@ -2631,9 +3920,9 @@ module lspdm_tensor_operations_module
       call get_int_dist_info(o2v2,fe,ne,node)
       sta=MPI_WTIME()
       !print *,infpar%lg_mynum,"distributing",fe,fe+ne-1,ne,o2v2,node
-      call lsmpi_win_lock(node,win,'s')
+      if(.not.lock_outside)call lsmpi_win_lock(node,win,'s')
       call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-      call lsmpi_win_unlock(node,win)
+      if(.not.lock_outside)call lsmpi_win_unlock(node,win)
       sto = MPI_WTIME()
       time_pdm_acc = time_pdm_acc + sto - sta
       bytes_transferred_acc = bytes_transferred_acc + ne * 8_long
@@ -2712,6 +4001,57 @@ module lspdm_tensor_operations_module
 
 
 
+  subroutine array_scale_td(arr,sc)
+    implicit none
+    type(array) :: arr
+    real(realk) :: sc
+#ifdef VAR_MPI
+    integer     :: i
+
+    if(arr%init_type==MASTER_INIT)then
+      call PDM_ARRAY_SYNC(JOB_ARRAY_SCALE,arr)
+      call ls_mpibcast(sc,infpar%master,infpar%lg_comm)
+    endif
+
+    do i=1,arr%nlti
+      call dscal(int(arr%ti(i)%e),sc,arr%ti(i)%t,1)
+    enddo
+#endif
+  end subroutine array_scale_td
+
+  subroutine lsmpi_put_realkV_w8(buf,nelms,pos,dest,win)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI
+    call lsmpi_put_realkV_wrapper8(buf,nelms,pos,dest,win)
+#endif
+  end subroutine lsmpi_put_realkV_w8
+  subroutine lsmpi_get_realkV_w8(buf,nelms,pos,dest,win)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI
+    call lsmpi_get_realkV_wrapper8(buf,nelms,pos,dest,win)
+#endif
+  end subroutine lsmpi_get_realkV_w8
+  subroutine lsmpi_acc_realkV_w8(buf,nelms,pos,dest,win)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI
+    call lsmpi_acc_realkV_wrapper8(buf,nelms,pos,dest,win)
+#endif
+  end subroutine lsmpi_acc_realkV_w8
 end module lspdm_tensor_operations_module
 
 

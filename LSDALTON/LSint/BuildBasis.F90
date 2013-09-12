@@ -934,7 +934,11 @@ IF((ELEMENT .EQ. 0) .OR. (ELEMENT.NE.CHARGE))THEN
     IF(ios /= 0)THEN
       WRITE (LUPRI,'(/I3,2A)') CHARGE&
       & ,' is an unsupported element for basis ',BASISSETNAME
-      CALL LSQUIT('Unsupported element in linsca',lupri)
+      WRITE (LUPRI,'(A)') 'You need to choose a basis set that support this element'
+      WRITE (LUPRI,'(A)') 'You can look at EMSL to find a suitable basis set that support this element'
+      WRITE (LUPRI,'(A)') 'If you download a new basis set from EMSL please read the EMSL section in the manual!'
+      WRITE (LUPRI,'(A)') 'Note that LSDALTON do NOT support Effective Core Potentials (ECP)'
+      CALL LSQUIT('Unsupported element in basis set, choose a proper basis set',lupri)
     ELSE
       READ (STRING, '(A1)') SIGN
       IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
@@ -1224,6 +1228,8 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                        ENDIF
                     ENDIF
                     NUMNUMOLD = NUMNUM
+                    !just in case NUMBER_OF_LINES was wrong
+                    IF(KNTORB.EQ.nOrbital)EXIT
                  ENDDO
               ENDIF
            ENDIF
@@ -1544,17 +1550,20 @@ DO I=1,Nsegments
        SEGMENTcol(I)=SEGMENTcol(I)+1
        SEGMENTrow(I)=ELEMENTS-(SEGMENTcol(I)-1)*nprim
        DO K=1,SEGMENTrow(I)
-!          WRITE(LUPRI,*)'CC(',Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1,')=',Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)
           IF(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1.LE.nprim*norbital)THEN
-             IF(ABS(Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)) .GT. 1.0E-30_realk)&
-                  & CALL LSQUIT('something is wrong in ANALYSE_CONTRACTIONMATRIX',lupri)
+             IF(ABS(Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)) .GT. 1.0E-30_realk)THEN
+                WRITE(LUPRI,*)'CC(',Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1,')=',&
+                     &Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)
+                CALL LSQUIT('something is wrong in ANALYSE_CONTRACTIONMATRIX',lupri)
+             ENDIF
           ENDIF
        ENDDO
        EXTRAROWS=0
        DO L=1,SEGMENTcol(I)
+          IF(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim.LE.nprim*norbital)THEN
 !          WRITE(LUPRI,*)'CC(',Nstart(I)+SEGMENTrow(I)+(L-1)*nprim,')=',Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)
-          
-          IF(ABS(Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)) .GT. 1.0E-30_realk)EXTRAROWS=EXTRAROWS+1          
+             IF(ABS(Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)) .GT. 1.0E-30_realk)EXTRAROWS=EXTRAROWS+1          
+          ENDIF
        ENDDO
        IF(EXTRAROWS .GT. 0) SEGMENTrow(I)=SEGMENTrow(I)+1
     ELSE

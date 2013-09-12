@@ -5,12 +5,17 @@ MODULE LSTENSOR_OPERATIONSMOD
   use precision
   use basis_type
   use Matrix_module
+  use matrix_operations_csr, only: zeroCSR,mat_csr_allocate
+  use matrix_operations_scalapack
   use matrix_operations
   use memory_handling
   use OD_Type
   use AO_Type
   use OD_TypeType
   use AO_TypeType
+#ifdef VAR_MPI
+  use infpar_module
+#endif
   use LSTENSORmem
   INTERFACE Build_mat_from_lst
      MODULE PROCEDURE Build_singlemat_from_lst, &
@@ -3286,7 +3291,8 @@ end subroutine memdist_lstensor_SetupFullinfo
                    lsao%nLocal(iAO) = nLocal(iAO)
                    IF(nLocal(iAO).NE.TENSOR%G_LSAO(I1)%G_nLocal(iAO))THEN
                       print*,'iAO',iAO,'infpar%mynum',infpar%mynum
-                      print*,'nLocal(iAO)',nLocal(iAO),'I2',I2,'IATOM',IATOM2,JATOM2,'infpar%mynum',infpar%mynum
+                      print*,'nLocal(iAO)',nLocal(iAO),'I2',I2,'IATOM',IATOM2,JATOM2,&
+                           & 'infpar%mynum',infpar%mynum
                       print*,'TENSOR%G_LSAO(I2)%G_nLocal(iAO)',TENSOR%G_LSAO(I2)%G_nLocal(iAO),'I1',&
      &                        I1,'IATOM',IATOM1,JATOM1,'infpar%mynum',infpar%mynum
                       CALL LSQUIT('nLocal mismatch localinfo',-1)
@@ -4956,7 +4962,6 @@ END SUBROUTINE Build_single_dense_mat_from_lst
 !> \param TENSOR the lstensor
 !> \param MAT the type matrix
 subroutine Build_single_csr_mat_from_lst(TENSOR,MAT)
-use matrix_operations_csr
 !include 'mkl_spblas.fi'
 implicit none
 TYPE(LSTENSOR)     :: TENSOR
@@ -5088,8 +5093,10 @@ n = mat%nrow
 !WRITE(6,'(2X,A4,5E13.3,/(6X,5E13.3))')'VAL:',(VAL(j),j=1,nnz)
 !WRITE(6,'(2X,A4,15I4,/(6X,15I4))')'COL:',(COL(j),j=1,nnz)
 !WRITE(6,'(2X,A4,15I4,/(6X,15I4))')'ROW:',(row(j),j=1,nnz)
-#ifdef VAR_MKL
+#ifdef VAR_CSR
 call mkl_dcsrcoo(job,n,mat%val,mat%col,mat%row,nnz,VAL,ROW,COL,info)
+#else
+call lsquit('Build_single_csr_mat_from_lst requires VAR_CSR',-1)
 #endif
 !print*,'THE CSR from MKL  '
 !call mat_print(mat,1,mat%nrow,1,mat%ncol,6)
@@ -5207,9 +5214,11 @@ DO IMAT = 1,TENSOR%ndim5
    job(8)=1
    n = mat(IMAT)%nrow
    !call mat_print(mat,1,mat%nrow,1,mat%nrow,6)
-#ifdef VAR_MKL
+#ifdef VAR_CSR
    call mkl_dcsrcoo(job,n,mat(IMAT)%val,mat(IMAT)%col,mat(IMAT)%row,nnz(IMAT),&
         &VAL(1:NNZ(IMAT),IMAT),ROW(1:NNZ(IMAT),IMAT),COL(1:NNZ(IMAT),IMAT),info)
+#else
+   call lsquit('Build_array_csr_mat_from_lst requires VAR_CSR',-1)
 #endif
 
 enddo
@@ -5592,6 +5601,7 @@ END SUBROUTINE BUILD_LST_FROM_MATARRAY
 !> \param useAO2 flag to describe if the AO1 item should be used or an empty AO 
 !> \param lupri the logical unit number for the output
 subroutine Build_lst_from_dense_matarray(TENSOR,MAT,AO1,AO2,nbast1,nbast2,nmat,useAO1,useAO2,ODscreen,lupri)
+  implicit none
   TYPE(LSTENSOR)     :: TENSOR
   TYPE(MATRIXP)       :: MAT(:)
   TYPE(AOITEM),target :: AO1,AO2
@@ -5602,6 +5612,7 @@ subroutine Build_lst_from_dense_matarray(TENSOR,MAT,AO1,AO2,nbast1,nbast2,nmat,u
   TYPE(AOITEM),pointer :: AOT1,AOT2,AOT3,AOT4
   logical :: useAO3,useAO4
   LOGICAL :: MATELMZERO
+  integer :: I
   TYPE(LSTAUXITEM) :: LSTAUX
   call SET_EMPTY_AO(AOT)
   AOT1 => AO1
@@ -6773,11 +6784,11 @@ end subroutine determineODscreening
 !> \date 2010
 !> \param TENSOR1 the original full slstensor
 !> \param TENSOR2 the new batch slstensor
-SUBROUTINE build_BatchGab(AOfull,AO1,AO2,iBatch1,jBatch1,&
+SUBROUTINE build_BatchGab(AOfull1,AOfull2,AO1,AO2,iBatch1,jBatch1,&
      & ibatchStart,jbatchStart,dim1,dim2,TENSOR1,TENSOR2)
   implicit none
   integer,intent(in) :: dim1,dim2
-  type(AOITEM),intent(in) :: AOfull,AO1,AO2
+  type(AOITEM),intent(in) :: AOfull1,AOfull2,AO1,AO2
   TYPE(LSTENSOR),intent(in)     :: TENSOR1
   TYPE(LSTENSOR),intent(inout)  :: TENSOR2
   integer,intent(in)   :: iBatchStart,jBatchStart
@@ -6837,13 +6848,13 @@ SUBROUTINE build_BatchGab(AOfull,AO1,AO2,iBatch1,jBatch1,&
   DO jBatch2=1,nbatches2
      jBatch = jBatch + 1
      jBatchLoc2 = jBatchLoc2 + 1
-     jatom = AOfull%Batch(jBatch)%atom
+     jatom = AOfull2%Batch(jBatch)%atom
      IF(jatom.NE.jatom_old)then
         jatom_old = jatom
         jatom2 = Jatom2 +1 
         jBatchLoc2 = 1
      ENDIF
-     JbatchLoc = AOfull%Batch(jBatch)%batch
+     JbatchLoc = AOfull2%Batch(jBatch)%batch
 !     IF(JbatchLoc2.NE.AO2%Batch(JBatch2)%batch)CALL LSQUIT('batchlocB',-1)
      
      Iatom2 = 0
@@ -6853,13 +6864,13 @@ SUBROUTINE build_BatchGab(AOfull,AO1,AO2,iBatch1,jBatch1,&
      DO iBatch2=1,nbatches1
         iBatch = iBatch + 1
         iBatchLoc2 = iBatchLoc2 + 1
-        iatom = AOfull%Batch(iBatch)%atom
+        iatom = AOfull1%Batch(iBatch)%atom
         IF(iatom.NE.iatom_old)then
            iatom_old = iatom
            Iatom2 = Iatom2 +1 
            iBatchLoc2 = 1
         ENDIF
-        IbatchLoc = AOfull%Batch(iBatch)%batch
+        IbatchLoc = AOfull1%Batch(iBatch)%batch
 !        IF(IbatchLoc2.NE.AO1%Batch(iBatch2)%batch)CALL LSQUIT('batchlocA',-1)
         I1 = TENSOR1%INDEX(iatom,jatom,1,1)
         I2 = TENSOR2%INDEX(iatom2,jatom2,1,1)

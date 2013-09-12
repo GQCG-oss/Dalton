@@ -55,9 +55,8 @@ MODULE ls_Integral_Interface
   use io, only: io_get_filename, io_get_csidentifier
   use screen_mod, only: determine_lst_in_screenlist, screen_associate,&
        & screen_add_associate_item
-  use Fragment_module, only: buildfragmentinfoandblocks, setdaltonfragments, &
-       & freedaltonfragments, freefragmentinfoandblocks
-  use molecule_module, only: build_fragment, freeMolecularOrbitalInfo
+  use molecule_module, only: build_fragment, freeMolecularOrbitalInfo,&
+       & freeDaltonFragments
   use files,only: lsclose, lsopen
   use SphCart_Matrices, only: spherical_transformation
   use Thermite_OD, only: getTotalGeoComp
@@ -71,9 +70,6 @@ MODULE ls_Integral_Interface
        & lsmpi_free_MPI_task_list, lsmpi_time_harvest,&
        & set_reduced_screen_info, ls_print_tasks
   use infpar_module
-!#ifdef VAR_MPI
-!include 'mpif.h'
-!#endif
 #endif
 
   INTERFACE ls_attachDmatToSetting
@@ -491,7 +487,7 @@ Setting%sameFrag = sameMolSave
 ! ***************************************************************************
 call lsmpi_barrier(setting%comm)
 
-IF(Setting%scheme%cs_int)THEN
+IF(Setting%scheme%cs_int.or.Setting%scheme%ps_int)THEN
    call set_lst_maxgabelms(result_tensor_full)
    call set_lst_maxprimgabelms(result_tensor_full)
    call lsmpi_barrier(setting%comm)
@@ -515,7 +511,7 @@ IF (setting%node.NE.infpar%master) THEN
    !put slave to sleep
    call ls_free_lstensors(dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created)
    if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
-   IF(Setting%scheme%cs_int)THEN
+   IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)THEN
       call lstensor_free(setting%output%screenTensor)
       deallocate(setting%output%screenTensor)
       nullify(setting%output%screenTensor)
@@ -543,7 +539,7 @@ setting%output%ndim = ndim_full
 !write(6,*) 'debug-timing:timer results for ',setting%node
 !CALL LSTIMER('gi-mpi-permute',TS,TE,6)
 #else
-IF(Setting%scheme%cs_int)THEN
+IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)THEN
    call lstensor_free(result_tensor_full)
    deallocate(result_tensor_full)
    nullify(result_tensor_full)
@@ -4072,26 +4068,8 @@ Integer               :: start1,start2,MMunique_ID1,MMunique_ID2
 Integer               :: s1,s2,I,J,inode
 logical               :: samefragment,Ldummy
 
-IF(SETTING%SCHEME%FRAGMENT) THEN
-   CALL buildFragmentInfoAndBlocks(SETTING,AO1,AO2,AOEmpty,AOEmpty,LUPRI,LUERR)
-   SETTING%FRAGMENTS%iRHSblock = 1
-   DO I=1,SETTING%FRAGMENTS%LHSblock%numBlocks
-      iNode = SETTING%FRAGMENTS%LHSblock%blocks(I)%node
-      CALL SetDaltonFragments(SETTING,I,1,sameFragment,Ldummy,lupri)
-      SETTING%FRAGMENTS%iLHSblock = I
-      s1 = SETTING%FRAGMENTS%LHSblock%blocks(I)%startOrb1-1
-      s2 = SETTING%FRAGMENTS%LHSblock%blocks(I)%startOrb2-1
-      if((s2 .GE. s1).OR.(AO1.EQ.AOEmpty).OR.(AO2.EQ.AOEmpty))THEN
-         Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1+s1,start2+s2,&
-     &                  MMunique_ID1,MMunique_ID2,INT_OUTPUT)
-      endif
-      CALL FreeDaltonFragments(SETTING)
-   ENDDO
-   CALL freeFragmentInfoAndBlocks(SETTING)
-ELSE
-   Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1,start2,&
-     &            MMunique_ID1,MMunique_ID2,INT_OUTPUT)
-ENDIF
+Call MM_kernel(AO1,AO2,intType,SETTING,LUPRI,LUERR,start1,start2,&
+  &            MMunique_ID1,MMunique_ID2,INT_OUTPUT)
 SETTING%SCHEME%MMunique_ID1 = MMunique_ID1
 
 end subroutine MM_calculation
@@ -6454,7 +6432,7 @@ ENDIF
 call set_atomspointers(lhs,rhs,natom1,natom2,natom3,natom4,atoms1,atoms2,atoms3,atoms4,&
      &                    Dummyatomlist1,Dummyatomlist2,full,grad)
 
-IF(Setting%scheme%cs_int)then
+IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)then
    call add_sublstensor_to_full_lstensor(setting%output%ScreenTensor,result_full,nAtom1,nAtom2,nAtom3,nAtom4,&
         & atoms1,atoms2,atoms3,atoms4,n1,n2,n3,n4,sameAllFrag)
    call lstensor_free(setting%output%ScreenTensor)

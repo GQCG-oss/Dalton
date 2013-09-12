@@ -1,5 +1,5 @@
-C The PL1 list: 
-C Common blocks for the projected L1=Zeta^X response 
+C The PL1 list:
+C Common blocks for the projected L1=Zeta^X response
 C Lagrangian multipliers. List type: 'PL1'.....sonia
 C Vector and operator have the same symmetry (ISYPL1)
 C
@@ -17,7 +17,7 @@ C
 #endif
       !integer common block
       COMMON/IPL1RSP/ NPL1LBL,ISYPL1(MAXPL1LBL),ISYOFPL1(8),
-     &                LPRPL1(MAXPL1LBL), LORXPL1(MAXPL1LBL), 
+     &                LPRPL1(MAXPL1LBL), LORXPL1(MAXPL1LBL),
      &                LPL1OPN,
      &                ISYSPL1(MAXPL1LBL), ISTPL1(MAXPL1LBL)
       !character common block

@@ -1,9 +1,12 @@
 module COMPLEXSOLVER
   use decompMod
   use files
+  use memory_handling
+  use matrix_module
   use matrix_operations
   use RSPsolver
   use rsp_util
+  use precision
   private
   public ::  rsp_complex_solver,complex_solver_check,complex_solver, &
           &  rsp_complex_init
