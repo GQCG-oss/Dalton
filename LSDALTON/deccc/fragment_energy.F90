@@ -3421,6 +3421,7 @@ contains
     integer :: savemodel
     logical :: hybridsave    
 
+
     write(DECinfo%output,'(a)')    ' FOP'
     write(DECinfo%output,'(a)')    ' FOP ==============================================='
     write(DECinfo%output,'(a,i4)') ' FOP  Site fragment generator for fragment,',MyAtom
@@ -3621,6 +3622,7 @@ contains
          & Occ_Atoms,nocc,nunocc,OccOrbitals,UnoccOrbitals, &
          & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
+
     ! Get MP2 amplitudes for fragment
     ! *******************************
     ! Integrals (ai|bj)
@@ -3632,6 +3634,7 @@ contains
          & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
     call array4_free(g)
 
+
     ! MP2 amplitudes to be used for generates FOs have now been generated.
     ! Now we restore the original CC model
     if(DECinfo%use_mp2_frag) then
@@ -3639,10 +3642,9 @@ contains
        DECinfo%HybridScheme=hybridsave
     end if
 
+
     ! Get correlation density matrix for atomic fragment
     call calculate_corrdens(t2,AtomicFragment)
-
-    call array4_free(t2)
 
 
     ! Calculate energies in converged space of local orbitals
@@ -3695,6 +3697,14 @@ contains
        occ_converged=.false.
        virt_converged=.false.
        converged=.false.
+
+       if(ov==1) then
+          if(DECinfo%onlyoccpart) then
+             call transform_virt_amp_to_FOs(t2,AtomicFragment)
+             call calculate_corrdens_AOS_occocc(t2,AtomicFragment)
+          end if
+          call array4_free(t2)
+       end if
 
        REDUCTION_LOOP: do iter=1,max_iter_red
 

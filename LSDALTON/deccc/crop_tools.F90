@@ -391,6 +391,7 @@ module crop_tools_module
     !> ccsd_doubles and ccsdpt_doubles
     real(realk), intent(inout) :: t2(nv*nv*no*no), gvovo(nv*nv*no*no)
     !> unitary transformation matrices
+    !> unitary transformation matrices - indices: (local,semi-canonical)
     real(realk), intent(inout) :: Uocc(no*no), Uvirt(nv*nv)
     real(realk) :: UoccT(no*no), UvirtT(nv*nv)
     !> ccsdpt_singles
