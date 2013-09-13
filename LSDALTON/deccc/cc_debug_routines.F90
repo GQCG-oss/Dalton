@@ -772,11 +772,6 @@ module cc_debug_routines_module
 
      call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
 
-     ! Write finalization message
-     !---------------------------
-     call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,&
-     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu)
-
 
 
      ! Free memory and save final amplitudes
@@ -828,6 +823,11 @@ module cc_debug_routines_module
         call array4_free(t2(i))
 
      end do
+
+     ! Write finalization message
+     !---------------------------
+     call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,&
+     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
 
 
      ! Save two-electron integrals in the order (virt,occ,virt,occ)

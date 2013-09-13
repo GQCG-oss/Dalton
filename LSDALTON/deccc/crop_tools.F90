@@ -406,11 +406,19 @@ module crop_tools_module
   ! li is the number of the last iteration
   ! ce is the correlation energy
   ! t* are timings
-  subroutine print_ccjob_summary(bi,gm,fj,li,ce,tew,tsw,tec,tsc)
+  subroutine print_ccjob_summary(bi,gm,fj,li,ce,tew,tsw,tec,tsc,t1,t2)
     implicit none
-    logical, intent(in)     :: bi,gm,fj
-    integer, intent(in)     :: li
-    real(realk), intent(in) :: ce,tew,tsw,tec,tsc
+    logical, intent(in)        :: bi,gm,fj
+    integer, intent(in)        :: li
+    real(realk), intent(in)    :: ce,tew,tsw,tec,tsc
+    type(array2),intent(inout) :: t1
+    type(array4),intent(inout) :: t2
+    real(realk) :: snorm,dnorm,tnorm
+     call print_norm(t1,snorm,.true.)
+     call print_norm(t2,dnorm,.true.)
+     tnorm = sqrt(snorm+dnorm)
+     snorm = sqrt(snorm)
+     dnorm = sqrt(dnorm)
 
      write(DECinfo%output,*)
      write(DECinfo%output,'(/,a)') '-------------------------------'
@@ -433,7 +441,18 @@ module crop_tools_module
      if(fj) then
         write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ce
      else
-        if(.not. gm)then
+        if(gm)then
+          if(DECinfo%use_singles)then
+            write(DECinfo%output,'(a,f16.10)')  'Singles multiplier norm  = ',snorm
+          endif
+          write(DECinfo%output,'(a,f16.10)')  'Doubles multiplier norm  = ',dnorm
+          write(DECinfo%output,'(a,f16.10)')  'Total multiplier norm    = ',tnorm
+        else
+          if(DECinfo%use_singles)then
+            write(DECinfo%output,'(a,f16.10)')  'Singles amplitudes norm  = ',snorm
+          endif
+          write(DECinfo%output,'(a,f16.10)')  'Doubles amplitudes norm  = ',dnorm
+          write(DECinfo%output,'(a,f16.10)')  'Total amplitudes norm    = ',tnorm
           write(DECinfo%output,'(a,f16.10)')  'Corr. energy             = ',ce
         endif
      end if

@@ -677,9 +677,6 @@ contains
 
     call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
 
-    ! Write finalization message
-    call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter,&
-    &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu)
 
 
 
@@ -724,6 +721,10 @@ contains
        call array4_free(t2(i))
 
     end do
+
+    ! Write finalization message
+    call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter,&
+    &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
 
 
     ! Save two-electron integrals in the order (virt,occ,virt,occ)
@@ -2594,9 +2595,6 @@ contains
 
    call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
 
-   ! Write finalization message
-   call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter,&
-   &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu)
 
 
     ! Free memory and save final amplitudes
@@ -2635,6 +2633,9 @@ contains
 
     end do
 
+   ! Write finalization message
+   call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter,&
+   &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
 
     ! Save two-electron integrals in the order (virt,occ,virt,occ)
     if(DECinfo%ccModel == 1) then
