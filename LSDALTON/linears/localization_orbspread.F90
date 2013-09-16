@@ -77,12 +77,12 @@ real(realk),pointer :: max_orbspreads(:)
     
 
     if (i>10) then
-      if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 .and. &
-      &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.05  .and. &
-      &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.05  .and. &
-      &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.05  .and. &
-      &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.05  .and. &
-      &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.05) then
+      if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.02 .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.02  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.02  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.02  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.02  .and. &
+      &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.02) then
            write(ls%lupri,*) '  '
            write(ls%lupri,*) '    ********* Orbital localization converged ************'
            write(ls%lupri,*) '    *                                                   *'
@@ -252,12 +252,12 @@ real(realk),pointer :: max_orbspreads(:)
   
 
   if (i>10) then
-        if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.05 .and. &
-         &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.05  .and. &
-         &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.05  .and. &
-         &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.05  .and. &
-         &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.05  .and. &
-         &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.05) then
+        if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.01 .and. &
+         &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.01  .and. &
+         &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.01  .and. &
+         &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.01  .and. &
+         &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.01  .and. &
+         &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.01) then
             write(ls%lupri,*) '  '
             write(ls%lupri,*) '    ********* Orbital localization converged ************'
             write(ls%lupri,*) '    *                                                   *'
@@ -475,6 +475,11 @@ do i=1,numb
     call kurt_value(CFG%PFM_input)
     if (CFG%orb_debug) write(CFG%lupri,'(a,I4,a,ES13.3)') &
     &'Linesearch number :', i, ' Change ', CFG%PFM_input%kurt_val-old_funcval
+    if (i==1 .and. CFG%PFM_input%kurt_val> old_funcVal) then
+      oVal = CFG%PFM_input%kurt_val
+      nmats=i 
+      exit
+    end if
     if (i==1) oVal= CFG%PFM_input%kurt_val
     if ((CFG%PFM_input%kurt_val > old_funcVal) .and. i>1) then
            call mat_assign(cmo,cmotemp(i-1))
@@ -506,9 +511,9 @@ implicit none
 type(RedSpaceItem) :: CFG
 type(matrix)  :: cmo,X
 real(realk),intent(in) :: value_last_macro,nrmg
-integer :: i,numb=15,nmats,macroit
-type(matrix)  :: cmotemp(15),Xtemp(15)
-real(realk) :: old_funcval,factor(6),step(15),stepsize,oval,d(6)
+integer :: i,numb=5,nmats,macroit
+type(matrix)  :: cmotemp(5),Xtemp(5)
+real(realk) :: old_funcval,factor(6),step(5),stepsize,oval,d(6)
 real(realk) :: orig_eival
 
    old_funcval = value_last_macro
@@ -531,9 +536,7 @@ real(realk) :: orig_eival
        if (CFG%orb_debug) write(CFG%lupri,'(a,I4,a,f15.4,a,f7.2)') &
        &'Linesearch number :', i, ' Change ', d(i)-d(i-1), '  factor  ', factor(i)
        if (i==2 .and. oVal > old_funcVal) then
-          call mat_assign(cmo,cmotemp(i))
-          call orbspread_update(CFG%orbspread_input,CMO)
-          call orbspread_value(oVal,CFG%orbspread_input)
+          orig_eival = oVal
           nmats=i
           exit
        endif
@@ -543,6 +546,7 @@ real(realk) :: orig_eival
               call orbspread_value(oVal,CFG%orbspread_input)
               stepsize = dsqrt(mat_dotproduct(xtemp(i-1),xtemp(i-1)))
               nmats=i
+              orig_eival = old_funcVal
               exit
        end if
        if (i==5 .or. dabs(oVal-old_funcval)< 1.0) then
@@ -551,6 +555,7 @@ real(realk) :: orig_eival
          call orbspread_value(oVal,CFG%orbspread_input)
          stepsize = dsqrt(mat_dotproduct(xtemp(i),xtemp(i)))
          nmats=i
+         orig_eival= oVal
          exit
        end if
        old_funcval=oVal
