@@ -112,8 +112,8 @@ contains
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set=.false.
-    ! Pair reduction distance - default 5 Angstrom.
-    DECinfo%PairReductionDistance = 5.0E0_realk/bohr_to_angstrom
+    ! Pair reduction distance - set high to avoid using in practice right now...
+    DECinfo%PairReductionDistance = 1000000.0E0_realk
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
 
     ! Memory use for full molecule structure
@@ -594,11 +594,8 @@ contains
     end if
 
 
-    ! FOs do not work with reduced pairs, set reduction distance to 1000000 to
-    ! avoid it from being used in practice
-    ! Also use purification of FOs.
+    ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
-       DECinfo%PairReductionDistance = 1.0e6_realk
        DECinfo%purifyMOs=.true.
     end if
 
