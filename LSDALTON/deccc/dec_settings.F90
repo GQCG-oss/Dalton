@@ -102,8 +102,9 @@ contains
     DECinfo%HybridScheme=.false.
     DECinfo%FragmentExpansionSize = 5
     DECinfo%fragadapt=.false.
-    ! for ccsd(t) calculations, option to use MP2 optimized fragments
-    DECinfo%use_mp2_frag=.true.
+    ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
+    DECinfo%fragopt_exp_mp2=.true.  ! Use MP2 fragments for expansion procedure
+    DECinfo%fragopt_red_mp2=.true.  ! Use MP2 fragments for reduction procedure
     DECinfo%OnlyOccPart=.false.
     ! Repeat atomic fragment calcs after fragment optimization
     DECinfo%RepeatAF=.true.
@@ -398,8 +399,10 @@ contains
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
        case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
-       case('.NOTUSEMP2FRAG') 
-          DECinfo%use_mp2_frag=.false.
+       case('.NOTMP2EXP') 
+          DECinfo%fragopt_exp_mp2=.false.
+       case('.NOTMP2RED') 
+          DECinfo%fragopt_red_mp2=.false.
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.F12'); DECinfo%F12=.true.
        case('.F12DEBUG'); DECinfo%F12DEBUG=.true.
@@ -543,10 +546,6 @@ contains
        DECinfo%InclFullMolecule = .true.
     end if SimulateFullCalc
 
-
-    if(DECinfo%ccmodel==4 .and. DECinfo%restart .and. (.not. DECinfo%use_mp2_frag)) then
-       call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
-    end if
 
     ! Which orbitals to use?
     ! Default full calculation: Canonical orbitals
@@ -692,7 +691,8 @@ end if
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'HybridScheme ', DECitem%HybridScheme
     write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
-    write(lupri,*) 'use_mp2_frag ', DECitem%use_mp2_frag
+    write(lupri,*) 'fragopt_exp_mp2 ', DECitem%fragopt_exp_mp2
+    write(lupri,*) 'fragopt_red_mp2 ', DECitem%fragopt_red_mp2
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance
