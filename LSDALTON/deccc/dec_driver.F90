@@ -87,12 +87,6 @@ contains
 
     ! Calculation type
     ! ****************
-    ! Possibilities:
-    ! * Single atomic fragment calculation
-    ! * Single atomic pair fragment calculation
-    ! * Simulate full calculation and use full molecule for all fragments
-    ! * Calculate all atomic fragment and pairs to get total correlation energy
-
     CalculationType: if(DECinfo%mp2energydebug) then
        ! DEC calculation for full molecule where exact single and pair energies are calculated.
        ! Only for testing and only for MP2

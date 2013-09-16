@@ -672,6 +672,7 @@ REAL(realk) :: multfull(nbast,nbast), Dfull(nbast,nbast)
 REAL(realk) :: Coulombf2,Coulombfst,Coulomb2,Coulombst
 !REAL(realk) :: PI=3.14159265358979323846D0
 real(realk) :: tlatlm((lmax+1)**2),tlatlmnu((lmax+1)**2)
+real(realk) :: debugsumt
 complex(complexk) :: phase
 character(len=12) :: diis,stiter
 !TYPE(matrix) :: debug_tm !FOR debug only
@@ -769,11 +770,27 @@ ENDDO
 
 !call pbc_redefine_q(rhojk,lmax)
 !call pbc_multipl_moment_order(rhojk,lmax)
-!debugsumT=0d0
+debugsumT=0d0
 !write(lupri,*) 'electronic moments'
-!do jk=1,256
-!   write(lupri,*) rhojk(jk)
-!enddo
+do jk=1,(lmax+1)**2
+   debugsumt=debugsumt+rhojk(jk)**2
+enddo
+write(lupri,*) 'debugsum rhojk^2', debugsumt
+write(*,*) 'debugsumt rhojk^2', debugsumt
+
+DO lm=1,(lmax+1)**2
+  tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
+  tlatlmnu(lm)=dot_product(tlat(lm,1:nrlm),nucmom)
+ENDDO
+
+debugsumT=0d0
+do jk=1,(lmax+1)**2
+   debugsumt=debugsumt+tlatlm(jk)**2
+!   write(lupri,*) rhojk(jk)+nucmom(jk)
+enddo
+write(lupri,*) 'debugsum tlatlm^2', debugsumt
+write(*,*) 'debugsumt tlatlm^2', debugsumt
+
 !
 !write(lupri,*) 'total moments'
 !do jk=1,256
@@ -809,8 +826,8 @@ DO lm=1,(lmax+1)**2
       !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),rhojk)+&
                 ! dot_product(tlat(lm,1:nrlm),nucmom)
       !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),rhojk)!+&
-      tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
-      tlatlmnu(lm)=dot_product(tlat(lm,1:nrlm),nucmom)
+      !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
+      !tlatlmnu(lm)=dot_product(tlat(lm,1:nrlm),nucmom)
 
       !Construct fock matrix
       ll%lvec(nk)%fck_vec(delta)=ll%lvec(nk)%fck_vec(delta)&

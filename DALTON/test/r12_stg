@@ -137,7 +137,7 @@ ERROR[2]="MP2-R12/B ENERGY NOT CORRECT"
 PASSED=1
 for i in 2 
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
