@@ -1094,7 +1094,7 @@ contains
     call mem_alloc(Gbi,nb*no)
 
 
-    if(DECinfo%ccModel>2)then
+    if( DECinfo%ccModel > MODEL_CC2 )then
 
 #ifdef VAR_MPI
       call mem_alloc(sio4,sio4_c,int(i8*nor*no2,kind=long))
@@ -1155,7 +1155,7 @@ contains
     !      &(8.0E0_realk*o2v*MaxActualDimGamma*2)/(1024.0E0_realk*1024.0E0_realk*1024.0E0_realk)
     call mem_alloc(uigcj,int((i8*o2v)*MaxActualDimGamma,kind=8))
 
-    if(DECinfo%ccModel>2)then
+    if( DECinfo%ccModel > MODEL_CC2 )then
       sio4=0.0E0_realk
     endif
 
@@ -1327,7 +1327,7 @@ contains
        call lsmpi_poke()
 
        !VVOO
-       if (DECinfo%ccModel>2) then
+       if ( DECinfo%ccModel > MODEL_CC2 ) then
         !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
         call dgemm('n','n',la*no*lg,no,nb,1.0E0_realk,w1,la*no*lg,yo,nb,0.0E0_realk,w3,la*no*lg)
         call lsmpi_poke()
@@ -1386,7 +1386,7 @@ contains
        endif
 
 
-       if (DECinfo%ccModel>2.and.(iter/=1.or.restart)) then
+       if ( DECinfo%ccModel > MODEL_CC2 .and. ( iter/=1.or.restart ) ) then
         ! gvoov = (vo|ov) constructed from w2               = I [alpha j b  gamma]
         !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
         call dgemm('n','n',la*no*nv,no,lg,1.0E0_realk,w2,la*no*nv,yo(fg),nb,0.0E0_realk,w1,la*no*nv)
@@ -1415,13 +1415,13 @@ contains
 
 #ifdef VAR_MPI
        if(scheme/=4.and.iter==1.and.lock_outside) call arr_unlock_wins(govov,.true.)
-       if((scheme==2.or.scheme==3).and.DECinfo%ccModel>2.and.lock_outside) call arr_unlock_wins(gvvooa,.true.)
-       if (DECinfo%ccModel>2.and.(iter/=1.or.restart).and.(scheme==2.or.scheme==3).and.lock_outside) then
+       if((scheme==2.or.scheme==3).and.DECinfo%ccModel>MODEL_CC2.and.lock_outside) call arr_unlock_wins(gvvooa,.true.)
+       if (DECinfo%ccModel>MODEL_CC2.and.(iter/=1.or.restart).and.(scheme==2.or.scheme==3).and.lock_outside) then
          call arr_unlock_wins(gvoova,.true.)
        endif
 #endif
 
-      if(DECinfo%ccmodel>2)then
+      if( DECinfo%ccmodel > MODEL_CC2 )then
         if(fa<=fg+lg-1)then
         !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
         !element in the alpha batch has a smaller index as the last element in
@@ -1446,7 +1446,7 @@ contains
       call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2,no*lg*la,yo,nb,0.0E0_realk,w0,no*lg*la)
       call lsmpi_poke()
       ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
-      if(DECinfo%ccModel>2)call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
+      if( DECinfo%ccModel > MODEL_CC2 )call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
       call lsmpi_poke()
 
 
@@ -1528,7 +1528,7 @@ contains
     wait_time = stopp - startt
     max_wait_time = wait_time
 
-    if(DECinfo%ccmodel>2.and.scheme==3)then
+    if( DECinfo%ccmodel>MODEL_CC2 .and. scheme==3 )then
 #if VAR_MPI
       if(lock_outside)then
         call arr_lock_wins(gvoova,'s',mode)
@@ -1566,7 +1566,7 @@ contains
 
        ! The following block is structured like this due to performance reasons
        !***********************************************************************
-       if(DECinfo%ccModel>2)then
+       if(DECinfo%ccModel > MODEL_CC2)then
 
          call lsmpi_local_allreduce_chunks(sio4,int((i8*nor)*no2,kind=8),double_2G_nel)
 
@@ -1662,7 +1662,7 @@ contains
 #endif
     endif
 
-    if(DECinfo%ccModel>2)then
+    if(DECinfo%ccModel>MODEL_CC2)then
 
       !get B2.2 contributions
       !**********************
@@ -1852,7 +1852,7 @@ contains
 
 
     !Transform inactive Fock matrix into the different mo subspaces
-    if (DECinfo%ccModel>2) then
+    if (DECinfo%ccModel>MODEL_CC2) then
       ! -> Foo
       call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1,no)
       call dgemm('n','n',no,no,nb,1.0E0_realk,w1,no,yo,nb,0.0E0_realk,ppfock,no)
@@ -2028,14 +2028,14 @@ contains
       !calculate first part of doubles E term and its permutation
       ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
       call dcopy(no2,ppf,1,w1,1)
-      if (DECinfo%ccModel>2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w1,no)
+      if (DECinfo%ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w1,no)
       ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
       call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,w1,no,1.0E0_realk,omega2%elm1,v2o)
      
       !calculate second part of doubles E term
       ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
       call dcopy(nv2,qqf,1,w1,1)
-      if (DECinfo%ccModel>2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w1,nv)
+      if (DECinfo%ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w1,nv)
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       call dgemm('n','n',nv,o2v,nv,1.0E0_realk,w1,nv,t2%elm1,nv,1.0E0_realk,omega2%elm1,nv)
      
@@ -2085,7 +2085,7 @@ contains
       !calculate first part of doubles E term and its permutation
       ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
       call dcopy(no2,ppf,1,w2,1)
-      if (DECinfo%ccModel>2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
+      if (DECinfo%ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
       ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
       !if(me==0) call array_convert(t2,w1,t2%nelms)
       if(.not.lock_outside)then
@@ -2131,7 +2131,7 @@ contains
       !calculate second part of doubles E term
       ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
       call dcopy(nv2,qqf,1,w2,1)
-      if (DECinfo%ccModel>2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
+      if (DECinfo%ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
 
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       if(.not.lock_outside)then

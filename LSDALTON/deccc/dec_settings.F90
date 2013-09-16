@@ -126,7 +126,7 @@ contains
     DECinfo%fock_with_ri            = .false.
     DECinfo%ccMaxIter               = 100
     DECinfo%ccMaxDIIS               = 3
-    DECinfo%ccModel                 = 1 ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
+    DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
     DECinfo%F12                     = .false.
     DECinfo%F12debug                = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
@@ -261,9 +261,9 @@ contains
           ! ============
 
           ! CC model
-       case('.MP2'); DECinfo%ccModel=1; DECinfo%use_singles=.false.  ! both DEC and full calc
-       case('.CC2'); DECinfo%ccModel=2; DECinfo%use_singles=.true.   ! only for full calc
-       case('.CCSD'); DECinfo%ccModel=3; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.  ! only for full calc
+       case('.MP2'); DECinfo%ccModel=MODEL_MP2; DECinfo%use_singles=.false.  ! both DEC and full calc
+       case('.CC2'); DECinfo%ccModel=MODEL_CC2; DECinfo%use_singles=.true.   ! only for full calc
+       case('.CCSD'); DECinfo%ccModel=MODEL_CCSD; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.  ! only for full calc
 
 
           ! CC SOLVER INFO
@@ -391,13 +391,13 @@ contains
        case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.
        case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
-       case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=3; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
+       case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=MODEL_CCSD; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
-       case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
-       case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
+       case('.CCSD(T)'); DECinfo%ccModel=MODEL_CCSDpT; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
+       case('.RPA'); DECinfo%ccModel=MODEL_RPA; DECinfo%use_singles=.false.; DECinfo%CCDEBUG=.true.
        case('.NOTUSEMP2FRAG') 
           DECinfo%use_mp2_frag=.false.
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
@@ -497,7 +497,7 @@ contains
     ArraysOnFile: if(DECinfo%array4OnFile) then
 
        ! Only for MP2 so far
-       if(DECinfo%ccModel /= 1) then
+       if(DECinfo%ccModel /= MODEL_MP2) then
           call lsquit('Storing arrays on file only implemented for MP2. &
                & Suggestion: Remove .array4OnFile keyword!', DECinfo%output)
        end if
@@ -511,7 +511,7 @@ contains
     end if ArraysOnFile
 
 
-    BeyondMp2: if(DECinfo%ccModel /= 1) then
+    BeyondMp2: if(DECinfo%ccModel /= MODEL_MP2) then
 
 
        if(DECinfo%MP2density) then
@@ -544,7 +544,7 @@ contains
     end if SimulateFullCalc
 
 
-    if(DECinfo%ccmodel==4 .and. DECinfo%restart .and. (.not. DECinfo%use_mp2_frag)) then
+    if(DECinfo%ccmodel==MODEL_CCSDpT .and. DECinfo%restart .and. (.not. DECinfo%use_mp2_frag)) then
        call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
     end if
 
@@ -561,7 +561,7 @@ contains
     end if
 
     ! For special case of full MP2, we simply only accept canonical orbitals!
-    if(DECinfo%user_defined_orbitals .and. DECinfo%ccmodel==1 .and. DECinfo%full_molecular_cc) then
+    if(DECinfo%user_defined_orbitals .and. DECinfo%ccmodel==MODEL_MP2 .and. DECinfo%full_molecular_cc) then
        write(DECinfo%output,*) 'WARNING! You have requested a full molecular MP2 calculation using'
        write(DECinfo%output,*) 'local orbitals. This option is currently not available so I will'
        write(DECinfo%output,*) 'use canonical orbitals instead!'
@@ -576,7 +576,7 @@ contains
     end if
 
     ! Only full molecular for RPA at this stage
-    if(DECinfo%ccmodel==5 .and. .not. DECinfo%full_molecular_cc) then
+    if(DECinfo%ccmodel==MODEL_RPA .and. .not. DECinfo%full_molecular_cc) then
        call lsquit('RPA only implemented for full molecule! Use **CC rather than **DEC.',-1)
     end if
 
@@ -600,7 +600,7 @@ contains
     end if
 
 #ifdef RELEASE
-if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=1) then
+if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=MODEL_MP2) then
    call lsquit('Error in input: DEC scheme only implemented for MP2 model!',-1)
 end if
 #endif

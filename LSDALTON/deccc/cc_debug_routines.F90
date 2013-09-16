@@ -328,7 +328,7 @@ module cc_debug_routines_module
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
      ! special MP2 things
-     MP2Special : if(DECinfo%ccModel == 1 .or. DECinfo%ccModel == 5) then
+     MP2Special : if(DECinfo%ccModel == MODEL_MP2 .or. DECinfo%ccModel == MODEL_RPA) then
 
         write(DECinfo%output,*)
         write(DECinfo%output,*) ' ********************  WARNING  **********************'
@@ -371,7 +371,7 @@ module cc_debug_routines_module
      call mem_alloc(omega2,DECinfo%ccMaxIter)
 
      ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-     if(DECinfo%ccModel /= 1) then
+     if(DECinfo%ccModel /= MODEL_MP2) then
         xocc = array2_init(occ_dims)
         yocc = array2_init(occ_dims)
         xvirt = array2_init(virt_dims)
@@ -482,11 +482,11 @@ module cc_debug_routines_module
            call array2_add_to(ifock,1.0E0_realk,delta_fock)
 
            ! readme : this should be done in a more clear way
-           if(DECinfo%ccModel == 2) then
+           if(DECinfo%ccModel == MODEL_CC2) then
               ! CC2
               ppfock = array2_similarity_transformation(xocc,fock,yocc,[nocc,nocc])
               qqfock = array2_similarity_transformation(xvirt,fock,yvirt,[nvirt,nvirt])
-           else if(DECinfo%ccModel >= 3) then
+           else if(DECinfo%ccModel >= MODEL_CCSD) then
               ! CCSD
               ppfock = array2_similarity_transformation(xocc,ifock,yocc,[nocc,nocc])
               qqfock = array2_similarity_transformation(xvirt,ifock,yvirt,[nvirt,nvirt])
@@ -505,12 +505,12 @@ module cc_debug_routines_module
 
         ! MODIFY FOR NEW MODEL
         ! If you implement a new model, please insert call to your own residual routine here!
-        SelectCoupledClusterModel : if(DECinfo%ccModel==1) then
+        SelectCoupledClusterModel : if(DECinfo%ccModel==MODEL_MP2) then
 
            call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
                 & nocc,nvirt)
 
-        elseif(DECinfo%ccModel==2) then
+        elseif(DECinfo%ccModel==MODEL_CC2) then
            u = get_u(t2(iter))
            call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock, &
                 xocc,xvirt,yocc,yvirt,nocc,nvirt)
@@ -522,7 +522,7 @@ module cc_debug_routines_module
            call array4_free(gmo)
 
 
-        elseif(DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4) then  ! CCSD or CCSD(T)
+        elseif(DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT) then  ! CCSD or CCSD(T)
 
            if(get_mult)then
 
@@ -544,7 +544,7 @@ module cc_debug_routines_module
            call array4_free(u)
 
 
-        elseif(DECinfo%ccmodel==5) then
+        elseif(DECinfo%ccmodel==MODEL_RPA) then
 
            call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
 
@@ -686,13 +686,13 @@ module cc_debug_routines_module
         ! If you implement a new model, please insert call to energy routine here,
         ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
         if(.not. get_mult)then
-           EnergyForCCmodel: if(DECinfo%ccmodel==1) then  
+           EnergyForCCmodel: if(DECinfo%ccmodel==MODEL_MP2) then  
               ! MP2
               ccenergy = get_mp2_energy(t2(iter),Lmo)
-           elseif(DECinfo%ccmodel==2 .or. DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4 ) then
+           elseif(DECinfo%ccmodel==MODEL_CC2 .or. DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT )then
               ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
               ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
-           elseif(DECinfo%ccmodel==5) then
+           elseif(DECinfo%ccmodel==MODEL_RPA) then
               ccenergy = RPA_energy(t2(iter),gmo)
               sosex = SOSEX_contribution(t2(iter),gmo)
               ccenergy=ccenergy+sosex
@@ -836,7 +836,7 @@ module cc_debug_routines_module
 
 
      ! Save two-electron integrals in the order (virt,occ,virt,occ)
-     if(DECinfo%ccModel == 1) then
+     if(DECinfo%ccModel == MODEL_MP2) then
         call array4_free(lmo) ! also free lmo integrals
         VOVO = array4_duplicate(gmo)
         call array4_free(gmo)
@@ -1992,7 +1992,7 @@ module cc_debug_routines_module
             READ(fu_t11)saved_iter11
             READ(fu_t11)saved_nel11
             if(saved_nel11/=no*nv)then
-              call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
+              call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
               &file",DECinfo%output)
             endif
           endif
@@ -2005,7 +2005,7 @@ module cc_debug_routines_module
             READ(fu_t12)saved_iter12
             READ(fu_t12)saved_nel12
             if(saved_nel12/=no*nv)then
-              call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
+              call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
               &file",DECinfo%output)
             endif
           endif
@@ -2041,7 +2041,7 @@ module cc_debug_routines_module
           READ(fu_t21)saved_iter21
           READ(fu_t21)saved_nel21
           if(saved_nel21/=no*no*nv*nv)then
-            call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
+            call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
             &file",DECinfo%output)
           endif
         endif
@@ -2054,7 +2054,7 @@ module cc_debug_routines_module
           READ(fu_t22)saved_iter22
           READ(fu_t22)saved_nel22
           if(saved_nel22/=no*no*nv*nv)then
-            call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
+            call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
             &file",DECinfo%output)
           endif
         endif

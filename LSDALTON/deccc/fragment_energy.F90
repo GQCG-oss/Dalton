@@ -304,7 +304,7 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Which model? MP2,CC2, CCSD etc.
-    WhichCCmodel: if(DECinfo%ccModel==1) then ! MP2 calculation
+    WhichCCmodel: if(DECinfo%ccModel==MODEL_MP2) then ! MP2 calculation
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
@@ -348,7 +348,7 @@ contains
 
        ! we calculate (T) contribution to single  fragment energy 
        ! and store in MyFragment%energies(8) and MyFragment%energies(9)
-       if(DECinfo%ccModel==4) then
+       if(DECinfo%ccModel==MODEL_CCSDpT) then
 
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
           ccsdpt_t1 = array2_init([MyFragment%nunoccAOS,MyFragment%noccAOS])
@@ -727,21 +727,21 @@ contains
     ! ****************************
     ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
     select case(DECinfo%ccmodel)
-    case(1)
+    case(MODEL_MP2)
        ! MP2
        MyFragment%energies(1) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
        MyFragment%energies(2) = e1_final   ! occupied
        MyFragment%energies(3) = e3_final   ! virtual
-    case(2)
+    case(MODEL_CC2)
        ! CC2
        MyFragment%energies(4) = e1_final   ! occupied
        MyFragment%energies(5) = e3_final   ! virtual
-    case(3)
+    case(MODEL_CCSD)
        ! CCSD
        MyFragment%energies(6) = e1_final   ! occupied
        MyFragment%energies(7) = e3_final   ! virtual
 #ifdef MOD_UNRELEASED
-    case(4)
+    case(MODEL_CCSDpT)
        ! Save also CCSD contribution for CCSD(T)
        MyFragment%energies(6) = e1_final   ! occupied
        MyFragment%energies(7) = e3_final   ! virtual
@@ -930,7 +930,7 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
-    WhichCCModel: if(DECinfo%ccModel==1) then ! MP2
+    WhichCCModel: if(DECinfo%ccModel==MODEL_MP2) then ! MP2
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
@@ -1028,7 +1028,7 @@ contains
     ! (T) energy contributions are stored 
     ! in PairFragment%energies(8) and PairFragment%energies(9) 
 
-    if (DECinfo%CCModel .eq. 4) then
+    if (DECinfo%CCModel == MODEL_CCSDpT) then
 
        ! init ccsd(t) singles and ccsd(t) doubles
        ccsdpt_t1 = array2_init([PairFragment%nunoccAOS,PairFragment%noccAOS])
@@ -1054,7 +1054,7 @@ contains
 !endif mod_unreleased
 #endif
 
-    if(DECinfo%ccmodel/=1) then
+    if( DECinfo%ccmodel /= MODEL_MP2 ) then
        call array2_free(t1)
        call array4_free(t2)
     end if
@@ -1316,21 +1316,21 @@ contains
     ! *****************************
     ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
     select case(DECinfo%ccmodel)
-    case(1)
+    case(MODEL_MP2)
        ! MP2
        PairFragment%energies(1) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
        PairFragment%energies(2) = e1_final   ! occupied
        PairFragment%energies(3) = e3_final   ! virtual
-    case(2)
+    case(MODEL_CC2)
        ! CC2
        PairFragment%energies(4) = e1_final   ! occupied
        PairFragment%energies(5) = e3_final   ! virtual
-    case(3)
+    case(MODEL_CCSD)
        ! CCSD
        PairFragment%energies(6) = e1_final   ! occupied
        PairFragment%energies(7) = e3_final   ! virtual
 #ifdef MOD_UNRELEASED
-    case(4)
+    case(MODEL_CCSDpT)
        ! save CCSD contribution for CCSD(T)
        PairFragment%energies(6) = e1_final   ! occupied
        PairFragment%energies(7) = e3_final   ! virtual
@@ -1410,7 +1410,7 @@ contains
 #endif
 
     ! Only for MP2
-    if(DECinfo%ccModel/=1) then
+    if(DECinfo%ccModel/=MODEL_MP2) then
        call lsquit('Full_DEC_calculation: Only implemented for MP2!', DECinfo%output)
     end if
 
@@ -2281,7 +2281,7 @@ contains
     write(DECinfo%output,'(1X,a)') '-------------------------------------------------------------'
     write(DECinfo%output,'(1X,a)') '                 PAIR INTERACTION ENERGY PLOT                '
     write(DECinfo%output,'(1X,a)') '-------------------------------------------------------------'
-    if(DECinfo%ccmodel==1) then ! MP2: Lagrangian
+    if(DECinfo%ccmodel==MODEL_MP2) then ! MP2: Lagrangian
        write(DECinfo%output,'(1X,a)') 'Plot contains maximum pair energies for Lagrangian scheme'
        write(DECinfo%output,'(1X,a)') 'in intervals of 1 Angstrom.'
     else  ! higher order CC: currently averaged occupied-virtual scheme
@@ -2903,7 +2903,7 @@ contains
     ! Save existing model and do fragment optimization with MP2
     if(DECinfo%use_mp2_frag) then
        savemodel = DECinfo%ccmodel
-       DECinfo%ccmodel = 1
+       DECinfo%ccmodel = MODEL_MP2
        hybridsave = DECinfo%HybridScheme
        DECinfo%HybridScheme=.false.
     end if
@@ -3465,7 +3465,7 @@ contains
     ! Save existing model and do fragment optimization with MP2
     if(DECinfo%use_mp2_frag) then
        savemodel = DECinfo%ccmodel
-       DECinfo%ccmodel = 1
+       DECinfo%ccmodel = MODEL_MP2
        hybridsave = DECinfo%HybridScheme
        DECinfo%HybridScheme=.false.
     end if
@@ -3646,7 +3646,7 @@ contains
 
 
     ! Calculate energies in converged space of local orbitals
-    if(DECinfo%ccmodel==1) then
+    if(DECinfo%ccmodel==MODEL_MP2) then
        ! MP2 model - energies were already during expansion loop above and
        ! can simply be copied into fragment structure
        AtomicFragment%LagFOP = LagEnergyOld
@@ -4222,25 +4222,25 @@ contains
     fragment%LagFOP = 0.0_realk
 
     select case(DECinfo%ccmodel)
-    case(1)
+    case(MODEL_MP2)
        ! MP2
        fragment%LagFOP = fragment%energies(1)
        fragment%EoccFOP = fragment%energies(2)
        fragment%EvirtFOP = fragment%energies(3)
-    case(2)
+    case(MODEL_CC2)
        ! CC2
        fragment%EoccFOP = fragment%energies(4)
        fragment%EvirtFOP = fragment%energies(5)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
-    case(3)
+    case(MODEL_CCSD)
        ! CCSD
        fragment%EoccFOP = fragment%energies(6)
        fragment%EvirtFOP = fragment%energies(7)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
 #ifdef MOD_UNRELEASED
-    case(4)
+    case(MODEL_CCSDpT)
        ! CCSD(T)
        fragment%EoccFOP = fragment%energies(8)
        fragment%EvirtFOP = fragment%energies(9)
@@ -4273,21 +4273,21 @@ contains
     ! see ccatom type def to determine the "?".
 
     select case(DECinfo%ccmodel)
-    case(1)
+    case(MODEL_MP2)
        ! MP2
        fragment%energies(1) = fragment%LagFOP 
        fragment%energies(2) = fragment%EoccFOP
        fragment%energies(3) = fragment%EvirtFOP 
-    case(2)
+    case(MODEL_CC2)
        ! CC2
        fragment%energies(4) = fragment%EoccFOP
        fragment%energies(5) = fragment%EvirtFOP
-    case(3)
+    case(MODEL_CCSD)
        ! CCSD
        fragment%energies(6) = fragment%EoccFOP 
        fragment%energies(7) = fragment%EvirtFOP
 #ifdef MOD_UNRELEASED 
-    case(4)
+    case(MODEL_CCSDpT)
        ! CCSD(T)
        fragment%energies(8) = fragment%EoccFOP 
        fragment%energies(9) = fragment%EvirtFOP
@@ -4329,7 +4329,7 @@ contains
     do i=1,natoms
        do j=1,natoms
           select case(DECinfo%ccmodel)
-          case(1)
+          case(MODEL_MP2)
              ! MP2
 
              ! Lagrangian MP2 energy stored in entry 1 (see "energies" in ccatom type def)
@@ -4340,7 +4340,7 @@ contains
 
              ! Virtual MP2 energies stored in entry 3
              FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,3)
-          case(2)
+          case(MODEL_CC2)
              ! CC2
 
              ! Occupied CC2 energies stored in entry 4
@@ -4352,7 +4352,7 @@ contains
              ! Lagrangian CC2 energy not implemented, simply use average of occ and virt energies
              FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
                   & FragEnergiesModel(i,j,3) )
-          case(3)
+          case(MODEL_CCSD)
              ! CCSD
 
              ! Occupied CCSD energies stored in entry 6
@@ -4366,7 +4366,7 @@ contains
                   & FragEnergiesModel(i,j,3) )
 
 #ifdef MOD_UNRELEASED
-          case(4)
+          case(MODEL_CCSDpT)
              ! CCSD(T)
 
              ! Occupied CCSD energies stored in entry 6 + occupied (T) energies stored in entry 8 

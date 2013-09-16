@@ -676,16 +676,16 @@ contains
 
     ! Set output energy
     select case(DECinfo%ccmodel)
-    case(1)
+    case(MODEL_MP2)
        ! MP2, use occ energy
        Ecorr = energies(1)
-    case(2)
+    case(MODEL_CC2)
        ! CC2, use occ energy
        Ecorr = energies(4)
-    case(3)
+    case(MODEL_CCSD)
        ! CCSD, use occ energy
        Ecorr = energies(6)
-    case(4)
+    case(MODEL_CCSDpT)
        ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
        Ecorr = energies(6) + energies(8)
     end select
@@ -800,7 +800,7 @@ contains
 
 
     select case(DECinfo%ccmodel)
-    case(1)
+    case(MODEL_MP2)
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,1),dofrag,&
             & 'MP2 Lagrangian single energies')
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,2),dofrag,&
@@ -821,7 +821,7 @@ contains
        write(DECinfo%output,'(1X,a,g20.10)') 'MP2 virtual    correlation energy : ', energies(3)
        write(DECinfo%output,*)
 
-    case(2)
+    case(MODEL_CC2)
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,4),dofrag,&
             & 'CC2 occupied single energies')
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,5),dofrag,&
@@ -837,7 +837,7 @@ contains
        write(DECinfo%output,'(1X,a,g20.10)') 'CC2 virtual    correlation energy : ', energies(5)
        write(DECinfo%output,*)
 
-    case(3)
+    case(MODEL_CCSD)
        if(.not.DECinfo%CCDhack)then
          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,&
               & 'CCSD occupied single energies')
@@ -870,7 +870,7 @@ contains
          write(DECinfo%output,*)
        endif
 
-    case(4)
+    case(MODEL_CCSDpT)
 
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,&
             & 'CCSD occupied single energies')
@@ -1069,7 +1069,7 @@ contains
     real(realk),intent(inout) :: Ecorr
 
     ! Only MP2, Lagrangian scheme
-    if(DECinfo%ccmodel/=1) then
+    if(DECinfo%ccmodel/=MODEL_MP2) then
        call lsquit('Full DEC calculation only implemented for MP2!',DECinfo%output)
     end if
 

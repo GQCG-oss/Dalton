@@ -54,7 +54,7 @@ contains
     ! run cc program
     if(DECinfo%F12) then ! F12 correction
 #ifdef MOD_UNRELEASED
-       if(DECinfo%ccModel==1) then
+       if(DECinfo%ccModel==MODEL_MP2) then
           call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
        else
           call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
@@ -63,7 +63,7 @@ contains
        call lsquit('f12 not released',-1)
 #endif
     else
-       if(DECinfo%ccModel==1) then
+       if(DECinfo%ccModel==MODEL_MP2) then
           call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
        else
           call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
@@ -125,7 +125,7 @@ contains
 
 #ifdef MOD_UNRELEASED
 
-       if (DECinfo%ccModel .eq. 4) then
+       if (DECinfo%ccModel == MODEL_CCSDpT) then
           ! ccsd(t) correction
           Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
                & mylsitem,print_level,fragment_job,ypo_fc=ypo_fc,ppfock_fc=ppfock_fc)
@@ -146,7 +146,7 @@ contains
 
 #ifdef MOD_UNRELEASED
 
-       if (Decinfo%ccModel .eq. 4) then
+       if (Decinfo%ccModel == MODEL_CCSDpT) then
 
           Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
                & mylsitem,print_level,fragment_job)

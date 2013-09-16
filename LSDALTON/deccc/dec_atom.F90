@@ -2917,7 +2917,7 @@ end subroutine atomic_fragment_basis
     end if
 
     ! Sanity check: Only implemented for MP2
-    if(DECinfo%ccModel/=1) then
+    if(DECinfo%ccModel/=MODEL_MP2) then
        call lsquit('estimate_memory_consumption: &
             & Only implemented for the MP2 model!',-1)
     end if
@@ -4390,7 +4390,7 @@ if(DECinfo%PL>0) then
 
     ! Number of jobs in job list (for MP2 energy calculations atomic frags are not 
     ! included in job list because they have already been determined during fragment optimization)
-    if(DECinfo%ccmodel==1 .and. .not. DECinfo%first_order) then
+    if(DECinfo%ccmodel==MODEL_MP2 .and. .not. DECinfo%first_order) then
        n = npairold
     else
        n = nsingle+npairold
@@ -5346,7 +5346,7 @@ if(DECinfo%PL>0) then
     ! Different density matrix definitions depending on scheme
     ! - this is work in progress and will probably be modified.
 
-    if(DECinfo%ccmodel==1) then
+    if(DECinfo%ccmodel==MODEL_MP2) then
        ! MP2 model: Construct density matrix based only on EOS amplitudes
        call calculate_corrdens_EOS(t2,MyFragment)
     else
