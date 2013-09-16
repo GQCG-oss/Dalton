@@ -1826,18 +1826,6 @@ retval=0
        end do
        write(DECinfo%output,*)
 
-       write(DECinfo%output,*) 'Reduced Frag: Occ AOS indices (frag,full)'
-       do i=1,MyFragment%REDnoccAOS
-          write(DECinfo%output,*) i, MyFragment%REDoccAOSidx(i)
-       end do
-       write(DECinfo%output,*)
-
-       write(DECinfo%output,*) 'Reduced Frag: Virt AOS indices (frag,full)'
-       do i=1,MyFragment%REDnunoccAOS
-          write(DECinfo%output,*) i, MyFragment%REDunoccAOSidx(i)
-       end do
-       write(DECinfo%output,*)
-
        write(DECinfo%output,*) 'Atomic extent indices (frag,full in terms of atoms)'
        do i=1,MyFragment%number_atoms
           write(DECinfo%output,*) i, MyFragment%atoms_idx(i)
@@ -1973,16 +1961,6 @@ retval=0
        fragment%unoccAOSidx => null()
     end if
 
-
-    if(associated(fragment%REDoccAOSidx)) then
-       call mem_dealloc(fragment%REDoccAOSidx)
-       fragment%REDoccAOSidx => null()
-    end if
-
-    if(associated(fragment%REDunoccAOSidx)) then
-       call mem_dealloc(fragment%REDunoccAOSidx)
-       fragment%REDunoccAOSidx => null()
-    end if
 
     if(associated(fragment%coreidx)) then
        call mem_dealloc(fragment%coreidx)

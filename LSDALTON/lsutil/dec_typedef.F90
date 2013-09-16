@@ -500,17 +500,6 @@ module dec_typedef_module
      integer,pointer :: coreidx(:) => null()
 
 
-     ! Special info for reduced fragment of lower accuracy
-     !****************************************************
-     !> Number of occupied AOS orbitals 
-     integer :: REDnoccAOS=0
-     !> Total number of unoccupied orbitals (AOS)
-     integer :: REDnunoccAOS=0
-     !> Occupied orbital indices (AOS) for reduced fragment
-     integer, pointer :: REDoccAOSidx(:) => null()
-     !> All unoccupied orbital indices (AOS)
-     integer, pointer :: REDunoccAOSidx(:) => null()
-
      !> Indices of occupied EOS in AOS basis
      integer, pointer :: idxo(:) => null()
      !> Indices of unoccupied EOS in AOS basis

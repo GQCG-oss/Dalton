@@ -605,8 +605,6 @@ contains
     CALL ls_mpi_buffer(MyFragment%ncore,master)
     CALL ls_mpi_buffer(MyFragment%nocctot,master)
     CALL ls_mpi_buffer(MyFragment%nunoccAOS,master)
-    CALL ls_mpi_buffer(MyFragment%REDnoccAOS,master)
-    CALL ls_mpi_buffer(MyFragment%REDnunoccAOS,master)
     CALL ls_mpi_buffer(MyFragment%nEOSatoms,master)
     CALL ls_mpi_buffer(MyFragment%ntasks,master)
     CALL ls_mpi_buffer(MyFragment%t1dims,2,master)
@@ -654,10 +652,6 @@ contains
        if(MyFragment%ncore>0) then
           call mem_alloc(MyFragment%coreidx,MyFragment%ncore)
        end if
-       nullify(MyFragment%REDoccAOSidx)
-       call mem_alloc(MyFragment%REDoccAOSidx,MyFragment%REDnoccAOS)
-       nullify(MyFragment%REDunoccAOSidx)
-       call mem_alloc(MyFragment%REDunoccAOSidx,MyFragment%REDnunoccAOS)
        nullify(MyFragment%idxo)
        call mem_alloc(MyFragment%idxo,MyFragment%noccEOS)
        nullify(MyFragment%idxu)
@@ -685,10 +679,6 @@ contains
     if(MyFragment%ncore>0) then
        call ls_mpi_buffer(MyFragment%coreidx,MyFragment%ncore,master)
     end if
-    call ls_mpi_buffer(MyFragment%REDoccAOSidx,&
-         & MyFragment%REDnoccAOS,master)
-    call ls_mpi_buffer(MyFragment%REDunoccAOSidx,&
-         MyFragment%REDnunoccAOS,master)
     call ls_mpi_buffer(MyFragment%idxo,MyFragment%noccEOS,master)
     call ls_mpi_buffer(MyFragment%idxu,MyFragment%nunoccEOS,master)
     call ls_mpi_buffer(MyFragment%EOSatoms,MyFragment%nEOSatoms,master)

@@ -51,8 +51,6 @@ contains
     fragment%unoccAOSidx => null()
     fragment%coreidx => null()
 
-    fragment%REDoccAOSidx => null()
-    fragment%REDunoccAOSidx => null()
 
     fragment%occAOSorb => null()
     fragment%unoccAOSorb => null()
@@ -413,15 +411,6 @@ contains
          & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
 
 
-
-    ! Initially, set reduced fragment of lower accuracy to have the same orbitals as the original fragment
-    ! ****************************************************************************************************
-    fragment%REDnoccAOS = fragment%noccAOS
-    fragment%REDnunoccAOS = fragment%nunoccAOS
-    call mem_alloc(fragment%REDoccAOSidx,fragment%REDnoccAOS)
-    call mem_alloc(fragment%REDunoccAOSidx,fragment%REDnunoccAOS)
-    fragment%REDoccAOSidx = fragment%occAOSidx
-    fragment%REDunoccAOSidx = fragment%unoccAOSidx
 
     ! Set core orbital info (redundant if we do not use frozen core approx, but do it anyway)
     call set_Core_orbitals_for_fragment(MyMolecule,nocc,OccOrbitals,Fragment) 
@@ -972,10 +961,6 @@ contains
     FOfragment%occAOSidx(LocalFragment%noccEOS+1:LocalFragment%noccAOS) = -1
     FOfragment%unoccAOSidx(LocalFragment%nunoccEOS+1:LocalFragment%nunoccAOS) = -1
 
-    ! Do the same for reduced space indices. However, these should be removed at some point!
-    FOfragment%REDoccAOSidx(LocalFragment%noccEOS+1:LocalFragment%noccAOS) = -1
-    FOfragment%REDunoccAOSidx(LocalFragment%nunoccEOS+1:LocalFragment%nunoccAOS) = -1
-    
     ! Do the same for central atom in AOS orbitals
     do i=LocalFragment%noccEOS+1,LocalFragment%noccAOS
        FOfragment%occAOSorb(i)%centralatom = -1
@@ -1351,7 +1336,7 @@ contains
     type(ccatom),intent(inout) :: pairfragment
     logical, dimension(nunocc) :: Unocc_list
     logical, dimension(nocc) :: Occ_list
-    logical :: pairreduction,pairfrag
+    logical :: pairfrag,pairreduction
     logical,pointer :: EOSatoms(:)
     integer :: i,j,idx
     real(realk) :: pairdist
@@ -1428,21 +1413,8 @@ contains
 
     if(pairreduction) then  ! use reduced orbital space
 
-       ! Occupied
-       do i=1,fragment1%REDnoccAOS
-          occ_list(fragment1%REDoccAOSidx(i))=.true.
-       end do
-       do i=1,fragment2%REDnoccAOS
-          occ_list(fragment2%REDoccAOSidx(i))=.true.
-       end do
-
-       ! Unoccupied
-       do i=1,fragment1%REDnunoccAOS
-          unocc_list(fragment1%REDunoccAOSidx(i))=.true.
-       end do
-       do i=1,fragment2%REDnunoccAOS
-          unocc_list(fragment2%REDunoccAOSidx(i))=.true.
-       end do
+       call lsquit('merged_fragment_init: Reduced pairs are temporarily disabled! &
+            & Suggestion: Set .PAIRREDDIST to 1000000.0 to avoid using reduced pair fragments.',-1)
 
     else
 
@@ -2456,14 +2428,6 @@ end subroutine atomic_fragment_basis
     ! Energies
     write(wunit) fragment%energies
 
-    ! Occupied AOS orbitals for reduced fragment of lower accuracy
-    write(wunit) fragment%REDnoccAOS
-    write(wunit) fragment%REDoccAOSidx
-
-    ! Unoccupied AOS orbitals for reduced fragment of lower accuracy
-    write(wunit) fragment%REDnunoccAOS
-    write(wunit) fragment%REDunoccAOSidx
-
     ! Correlation density matrices
     write(wunit) fragment%CDset
     write(wunit) fragment%FAset
@@ -2727,43 +2691,6 @@ end subroutine atomic_fragment_basis
 
     ! Fragment energies 
     read(runit) fragment%energies
-
-
-    ! Occupied AOS orbitals for reduced fragment of lower accuracy
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,fragment%REDnoccAOS)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,fragment%REDnoccAOS)
-    else
-       read(runit) fragment%REDnoccAOS
-    end if
-    call mem_dealloc(fragment%REDoccAOSidx)
-    call mem_alloc(fragment%REDoccAOSidx,fragment%REDnoccAOS)
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,fragment%REDnoccAOS,fragment%REDoccAOSidx)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,fragment%REDnoccAOS,fragment%REDoccAOSidx)
-    else
-       read(runit) fragment%REDoccAOSidx
-    end if
-
-    ! Unoccupied AOS orbitals for reduced fragment of lower accuracy
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,fragment%REDnunoccAOS)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,fragment%REDnunoccAOS)
-    else
-       read(runit) fragment%REDnunoccAOS
-    end if
-    call mem_dealloc(fragment%REDunoccAOSidx)
-    call mem_alloc(fragment%REDunoccAOSidx,fragment%REDnunoccAOS)
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,fragment%REDnunoccAOS,fragment%REDunoccAOSidx)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,fragment%REDnunoccAOS,fragment%REDunoccAOSidx)
-    else
-       read(runit) fragment%REDunoccAOSidx
-    end if
 
 
     ! Correlation density matrices and fragment-adapted orbitals
@@ -3675,9 +3602,8 @@ if(DECinfo%PL>0) then
 
 
     ! Sanity check
-    if( (MyFragment%noccAOS==0) .or. (MyFragment%REDnoccAOS==0) ) then
-       write(DECinfo%output,'(1X,a,2i7)') 'nocc AOS/ reduced AOS', &
-            & MyFragment%noccAOS, MyFragment%REDnoccAOS
+    if( MyFragment%noccAOS==0 ) then
+       write(DECinfo%output,'(1X,a,i7)') 'nocc AOS', MyFragment%noccAOS
        call lsquit('set_CoreVal_orbitals_for_fragment: Occupied AOS is not set!',-1)
     end if
 
@@ -3800,7 +3726,7 @@ if(DECinfo%PL>0) then
     integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags
     integer:: maxbasis, nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
     real(realk) :: avocc,avunocc,tcpu,twall,avbasis
-    logical,pointer :: occAOS(:,:),unoccAOS(:,:),REDoccAOS(:,:),REDunoccAOS(:,:),fragbasis(:,:)
+    logical,pointer :: occAOS(:,:),unoccAOS(:,:),fragbasis(:,:)
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -3821,8 +3747,6 @@ if(DECinfo%PL>0) then
     avbasis = 0.0_realk
     call mem_alloc(occAOS,nocc,natoms)
     call mem_alloc(unoccAOS,nunocc,natoms)
-    call mem_alloc(REDoccAOS,nocc,natoms)
-    call mem_alloc(REDunoccAOS,nunocc,natoms)
     call mem_alloc(Fragbasis,nbasis,natoms)
     call mem_alloc(fragsize,natoms)
     call mem_alloc(occsize,natoms)
@@ -3830,8 +3754,6 @@ if(DECinfo%PL>0) then
     call mem_alloc(basissize,natoms)
     occAOS=.false.
     unoccAOS=.false.
-    REDoccAOS=.false.
-    REDunoccAOS=.false.
     fragbasis=.false.
     fragsize=0
     occsize=0
@@ -3849,11 +3771,6 @@ if(DECinfo%PL>0) then
           idx=AtomicFragments(atom)%occAOSidx(j)  ! index for local occupied AOS orbital
           occAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
        end do
-       ! Same for reduced occ fragment space
-       do j=1,AtomicFragments(atom)%REDnoccAOS
-          idx=AtomicFragments(atom)%REDoccAOSidx(j) 
-          REDoccAOS(idx,atom) = .true.
-       end do
 
 
        ! Set unoccupied AOS logical vector
@@ -3861,11 +3778,6 @@ if(DECinfo%PL>0) then
        do j=1,AtomicFragments(atom)%nunoccAOS
           idx=AtomicFragments(atom)%unoccAOSidx(j)  ! index for unoccupied AOS orbital
           unoccAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
-       end do
-       ! Same for reduced unocc fragment space
-       do j=1,AtomicFragments(atom)%REDnunoccAOS
-          idx=AtomicFragments(atom)%REDunoccAOSidx(j) 
-          REDunoccAOS(idx,atom) = .true.
        end do
 
 
@@ -3978,7 +3890,7 @@ if(DECinfo%PL>0) then
     call init_joblist(njobs,jobs)
 
     call set_dec_joblist(natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-         & REDoccAOS,REDunoccAOS,FragBasis,which_fragments, DistanceTable, jobs)
+         & FragBasis,which_fragments, DistanceTable, jobs)
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -4007,8 +3919,6 @@ if(DECinfo%PL>0) then
 
     call mem_dealloc(occAOS)
     call mem_dealloc(unoccAOS)
-    call mem_dealloc(REDoccAOS)
-    call mem_dealloc(REDunoccAOS)
     call mem_dealloc(Fragbasis)
     call mem_dealloc(fragsize)
     call mem_dealloc(fragtrack)
@@ -4090,7 +4000,7 @@ if(DECinfo%PL>0) then
   !> \author Kasper Kristensen
   !> \date April 2013
   subroutine set_dec_joblist(natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-       & REDoccAOS,REDunoccAOS,FragBasis,which_fragments, DistanceTable, jobs)
+       & FragBasis,which_fragments, DistanceTable, jobs)
 
     implicit none
     !> Number of atoms in full molecule
@@ -4105,10 +4015,6 @@ if(DECinfo%PL>0) then
     logical,dimension(nocc,natoms),intent(in) :: occAOS
     !> Logical vector describing unoccupied AOS (see create_dec_joblist_driver)
     logical,dimension(nunocc,natoms),intent(in) :: unoccAOS
-    !> Logical vector describing reduced occupied AOS (see create_dec_joblist_driver)
-    logical,dimension(nocc,natoms),intent(in) :: REDoccAOS
-    !> Logical vector describing reduced unoccupied AOS (see create_dec_joblist_driver)
-    logical,dimension(nunocc,natoms),intent(in) :: REDunoccAOS
     !> Logical vector describing which atomic basis functions to include for each fragment
     logical,dimension(nbasis,natoms) :: FragBasis
     !> Logical vector describing which atoms have orbitals assigned
@@ -4180,10 +4086,9 @@ if(DECinfo%PL>0) then
 
              else
 
-                ! Merge AOS for fragment 1 and 2 for reduced pair
-                call get_logical_pair_vector(nocc,REDoccAOS(1:nocc,i),REDoccAOS(1:nocc,j),occpairAOS)
-                call get_logical_pair_vector(nunocc,REDunoccAOS(1:nunocc,i),&
-                     & REDunoccAOS(1:nunocc,j),unoccpairAOS)
+                call lsquit('set_dec_joblist: Reduced pairs are temporarily disabled! &
+                     & Suggestion: Set .PAIRREDDIST to 1000000.0 to avoid using reduced &
+                     & pair fragments.',-1)
 
              end if
 
@@ -4363,7 +4268,7 @@ if(DECinfo%PL>0) then
     type(joblist) :: oldjobs
     integer :: i,j,nsingle,npairold,npairnew,npairdelta, nold,nnew,k,nbasisFragment,n
     integer,pointer :: atom1(:), atom2(:), jobsize(:),order(:)
-    logical,pointer :: occAOS(:,:), unoccAOS(:,:), REDoccAOS(:,:), REDunoccAOS(:,:)
+    logical,pointer :: occAOS(:,:), unoccAOS(:,:)
     logical,pointer :: occpairAOS(:), unoccpairAOS(:)
     real(realk) :: dist
 
@@ -4451,10 +4356,8 @@ if(DECinfo%PL>0) then
     call mem_alloc(occAOS,nocc,natoms)
     call mem_alloc(unoccAOS,nunocc,natoms)
     ! same for reduced fragment spaces (see ccatom type)
-    call mem_alloc(REDoccAOS,nocc,natoms)
-    call mem_alloc(REDunoccAOS,nunocc,natoms)
     call get_logical_vectors_for_AOS(nocc,nunocc,natoms,dofrag,Fragments,&
-         & occAOS, unoccAOS, REDoccAOS, REDunoccAOS)
+         & occAOS, unoccAOS)
 
 
 
@@ -4481,16 +4384,17 @@ if(DECinfo%PL>0) then
           AddPairToJobList: if( (dist < newpaircut) .and. (dist >= oldpaircut) ) then  
 
              if(dist < DECinfo%PairReductionDistance) then  
+
                 ! Merge AOS for fragment 1 and 2 for standard pair
                 call get_logical_pair_vector(nocc,occAOS(1:nocc,i),occAOS(1:nocc,j),occpairAOS)
                 call get_logical_pair_vector(nunocc,unoccAOS(1:nunocc,i),&
                      &unoccAOS(1:nunocc,j),unoccpairAOS)
 
              else
-                ! Merge AOS for fragment 1 and 2 for reduced pair
-                call get_logical_pair_vector(nocc,REDoccAOS(1:nocc,i),REDoccAOS(1:nocc,j),occpairAOS)
-                call get_logical_pair_vector(nunocc,REDunoccAOS(1:nunocc,i),&
-                     & REDunoccAOS(1:nunocc,j),unoccpairAOS)
+
+                call lsquit('expand_joblist_to_include_more_pairs: Reduced pairs are &
+                     & temporarily disabled! Suggestion: Set .PAIRREDDIST to 1000000.0 &
+                     & to avoid using reduced pair fragments.',-1)
 
              end if
 
@@ -4548,8 +4452,6 @@ if(DECinfo%PL>0) then
     call mem_dealloc(atom2)
     call mem_dealloc(occAOS)
     call mem_dealloc(unoccAOS)
-    call mem_dealloc(REDoccAOS)
-    call mem_dealloc(REDunoccAOS)
 
   end subroutine expand_joblist_to_include_more_pairs
 
@@ -4560,7 +4462,7 @@ if(DECinfo%PL>0) then
   !> \author Kasper Kristensen
   !> \date October 2012
   subroutine get_logical_vectors_for_AOS(nocc,nunocc,natoms,dofrag,Fragments,&
-       & occAOS, unoccAOS, REDoccAOS, REDunoccAOS)
+       & occAOS, unoccAOS)
 
     implicit none
     !> Number of occupied orbitals in full molecule
@@ -4577,17 +4479,11 @@ if(DECinfo%PL>0) then
     logical,intent(inout) :: occAOS(nocc,natoms)
     !> Logical vector for unoccupied AOS
     logical,intent(inout) :: unoccAOS(nunocc,natoms)
-    !> Logical vector for reduced occupied AOS
-    logical,intent(inout) :: REDoccAOS(nocc,natoms)
-    !> Logical vector for reduced unoccupied AOS
-    logical,intent(inout) :: REDunoccAOS(nunocc,natoms)
     integer :: i,idx,P
 
     ! Init
     occAOS = .false.
     unoccAOS = .false.
-    REDoccAOS = .false.
-    REDunoccAOS = .false.
 
     
     ! Set logical vectors
@@ -4603,22 +4499,10 @@ if(DECinfo%PL>0) then
           occAOS(idx,P) = .true.
        end do
 
-       ! Set reduced occupied AOS for P
-       do i=1,Fragments(P)%REDnoccAOS
-          idx = Fragments(P)%REDoccAOSidx(i)  
-          REDoccAOS(idx,P) = .true.
-       end do
-
        ! Set unoccupied AOS for P
        do i=1,Fragments(P)%nunoccAOS
           idx = Fragments(P)%unoccAOSidx(i)  
           unoccAOS(idx,P) = .true.
-       end do
-
-       ! Set reduced unoccupied AOS for P
-       do i=1,Fragments(P)%REDnunoccAOS
-          idx = Fragments(P)%REDunoccAOSidx(i)  
-          REDunoccAOS(idx,P) = .true.
        end do
 
     end do
