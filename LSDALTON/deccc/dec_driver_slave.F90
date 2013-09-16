@@ -657,7 +657,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   end if
 
   ! Determine optimal batchsizes with available memory
-  if(DECinfo%ccmodel==1) then ! MP2
+  if(DECinfo%ccmodel==MODEL_MP2) then ! MP2
      call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.)
   else  ! CC2 or CCSD
      iter=1

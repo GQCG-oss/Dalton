@@ -4005,13 +4005,13 @@ retval=0
        if(.not. DECinfo%full_molecular_cc) then  
           write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
        end if
-       if(DECinfo%ccmodel==1) then
+       if(DECinfo%ccmodel==MODEL_MP2) then
           write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==2) then
+       elseif(DECinfo%ccmodel==MODEL_CC2) then
           write(lupri,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==3) then
+       elseif(DECinfo%ccmodel==MODEL_CCSD) then
           write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==4) then
+       elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
           write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
        end if
     else
@@ -4021,13 +4021,13 @@ retval=0
        if(.not. DECinfo%full_molecular_cc) then  
           write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
        end if
-       if(DECinfo%ccmodel==1) then
+       if(DECinfo%ccmodel==MODEL_MP2) then
           write(lupri,'(15X,a,f20.10)') 'E: Total MP2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==2) then
+       elseif(DECinfo%ccmodel==MODEL_CC2) then
           write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==3) then
+       elseif(DECinfo%ccmodel==MODEL_CCSD) then
           write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==4) then
+       elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
           write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
        end if
     end if

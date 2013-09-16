@@ -3183,7 +3183,7 @@ call mem_TurnOffThread_Memory()
        call lsquit('dec_solve_kappabar_equation: Not implemented for full equation AND frozen core!',-1)
     end if
 
-    if(DECinfo%ccModel /= 1) then
+    if(DECinfo%ccModel /= MODEL_MP2) then
        print *, 'CC model: ', DECinfo%ccModel
        call lsquit('dec_solve_kappabar_equation:&
             & kappabar multiplier equation is only implemented for MP2',-1)

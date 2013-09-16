@@ -14,7 +14,7 @@ module dec_typedef_module
   public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,ccorbital,ri,&
        & fullmolecule,ccatom,FullMP2grad,mp2dens,mp2grad,&
        & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
-       & SPgridbox
+       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA
   ! IMPORTANT: Number of possible energies to calculate using the DEC scheme
   ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
   ! MODIFY FOR NEW MODEL
@@ -951,5 +951,13 @@ module dec_typedef_module
   !> Information about DEC calculation
   !> We keep it as a global parameter for now.
   type(DECsettings) :: DECinfo
+
+
+  !> Specify the parameters for ccModel here. NEVER HARDCODE THE NUMBER
+  integer,parameter :: MODEL_MP2    = 1
+  integer,parameter :: MODEL_CC2    = 2
+  integer,parameter :: MODEL_CCSD   = 3
+  integer,parameter :: MODEL_CCSDpT = 4
+  integer,parameter :: MODEL_RPA    = 5
 
 end module dec_typedef_module

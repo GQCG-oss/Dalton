@@ -285,7 +285,7 @@ contains
     if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! special MP2 things
-    MP2Special : if(DECinfo%ccModel == 1 .or. DECinfo%ccModel == 5) then
+    MP2Special : if(DECinfo%ccModel == MODEL_MP2 .or. DECinfo%ccModel == MODEL_RPA) then
 
        write(DECinfo%output,*)
        write(DECinfo%output,*) ' ********************  WARNING  **********************'
@@ -328,7 +328,7 @@ contains
     call mem_alloc(omega2,DECinfo%ccMaxIter)
 
     ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-    if(DECinfo%ccModel /= 1) then
+    if(DECinfo%ccModel /= MODEL_MP2) then
        xocc = array2_init(occ_dims)
        yocc = array2_init(occ_dims)
        xvirt = array2_init(virt_dims)
@@ -438,23 +438,23 @@ contains
 
        ! MODIFY FOR NEW MODEL
        ! If you implement a new model, please insert call to your own residual routine here!
-       SelectCoupledClusterModel : if(DECinfo%ccModel==1) then
+       SelectCoupledClusterModel : if(DECinfo%ccModel==MODEL_MP2) then
           call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
                & nocc,nvirt)
 
-       elseif(DECinfo%ccModel==2) then
+       elseif(DECinfo%ccModel==MODEL_CC2) then
           call get_ccsd_residual_integral_driven_oldarray_wrapper(delta_fock,&
              & omega2(iter),t2(iter),&
              & fock,iajb%val,nocc,nvirt,ppfock,qqfock,pqfock,qpfock,xocc,xvirt,&
              & yocc,yvirt,nbasis,MyLsItem, omega1(iter),iter)
 
-       elseif(DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4) then  ! CCSD or CCSD(T)
+       elseif(DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT) then  ! CCSD or CCSD(T)
           call get_ccsd_residual_integral_driven_oldarray_wrapper(delta_fock,omega2(iter),&
              & t2(iter),&
              & fock,iajb%val,nocc,nvirt,ppfock,qqfock,pqfock,qpfock,xocc,xvirt,&
              & yocc,yvirt,nbasis,MyLsItem, omega1(iter),iter)
 
-       elseif(DECinfo%ccmodel==5) then
+       elseif(DECinfo%ccmodel==MODEL_RPA) then
           call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
        end if SelectCoupledClusterModel
 
@@ -593,13 +593,13 @@ contains
        ! MODIFY FOR NEW MODEL
        ! If you implement a new model, please insert call to energy routine here,
        ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
-       EnergyForCCmodel: if(DECinfo%ccmodel==1) then  
+       EnergyForCCmodel: if(DECinfo%ccmodel==MODEL_MP2) then  
           ! MP2
           ccenergy = get_mp2_energy(t2(iter),Lmo)
-       elseif(DECinfo%ccmodel==2 .or. DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4 ) then
+       elseif(DECinfo%ccmodel==MODEL_CC2 .or. DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT ) then
           ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
-       elseif(DECinfo%ccmodel==5) then
+       elseif(DECinfo%ccmodel==MODEL_RPA) then
           ccenergy = RPA_energy(t2(iter),gmo)
           sosex = SOSEX_contribution(t2(iter),gmo)
           ccenergy=ccenergy+sosex
@@ -728,7 +728,7 @@ contains
 
 
     ! Save two-electron integrals in the order (virt,occ,virt,occ)
-    if(DECinfo%ccModel == 1) then
+    if(DECinfo%ccModel == MODEL_MP2) then
        call array4_free(lmo) ! also free lmo integrals
        VOVO = array4_duplicate(gmo)
        call array4_free(gmo)
@@ -847,7 +847,7 @@ contains
 #endif
 
 
-    if(.not. DECinfo%solver_par .or. DECinfo%ccModel==1.or.DECinfo%CCDEBUG)then
+    if(.not. DECinfo%solver_par .or. DECinfo%ccModel==MODEL_MP2.or.DECinfo%CCDEBUG)then
       if(DECinfo%CCDEBUG)then
         call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
@@ -1191,7 +1191,7 @@ contains
     real(realk) :: ccenergy
 
     ! Sanity check: This routine is not intended for MP2
-    if(DECinfo%ccmodel == 1) then
+    if(DECinfo%ccmodel == MODEL_MP2) then
        call lsquit('fragment_ccsolver cannot be used for MP2!',&
             & DECinfo%output)
     end if
@@ -1383,7 +1383,7 @@ contains
     endif
 
     ! Only implemented for MP2
-    if(DECinfo%ccModel /= 1) then
+    if(DECinfo%ccModel /= MODEL_MP2) then
        call lsquit('mp2_solver called with other model than MP2',DECinfo%output)
     end if
 
@@ -1671,7 +1671,7 @@ contains
     endif
 
     ! Only implemented for MP2
-    if(DECinfo%ccModel /= 1) then
+    if(DECinfo%ccModel /= MODEL_MP2) then
        call lsquit('mp2_solver called with other model than MP2',DECinfo%output)
     end if
 
@@ -2227,19 +2227,12 @@ contains
 
     call mem_dealloc(dens)
 
-    ! get two-electron integrals in ao
-    if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') 'debug :: calculating AO integrals'
-
-    ! Only calculate full 4-dimensional AO integrals for old/debug mode
-
-    ! Simulate two-electron integrals (debug mode)
-!    if(DECinfo%simulate_eri .or. DECinfo%fock_with_ri) then
-!       if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') &
-!            'debug :: calculate RI intermediate - temporary'
-!       l_ao = get_ao_ri_intermediate(mylsitem)
-!       if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') &
-!            'debug :: intermediates done'
-!    end if
+    ! special MP2 things
+    MP2Special : if(DECinfo%ccModel == MODEL_MP2 .or. DECinfo%ccModel == MODEL_RPA) then
+      call lsquit("ERROR(ccsolver_par):ccsolver_par is called for MP2, there&
+      & are faster and better possibilities to solve the MP2 equations than this&
+      & solver",-1)
+    end if MP2Special
 
     if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
     if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -2286,7 +2279,7 @@ contains
 
 
     ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-    if(DECinfo%ccModel /= 1) then
+    if(DECinfo%ccModel /= MODEL_MP2) then
        xo = array_init(occ_dims,2)
        yo = array_init(occ_dims,2)
        xv = array_init(virt_dims,2)
@@ -2318,7 +2311,6 @@ contains
 
        ! remove old vectors
        RemoveOldVectors : if(iter > DECinfo%ccMaxDIIS) then
-          !print *,"remove old"
           if(DECinfo%cc_driver_debug) then
              write(DECinfo%output,'(a,i4)') ' debug :: vector to delete : ',iter-DECinfo%ccMaxDIIS
           end if
@@ -2364,14 +2356,8 @@ contains
           call array_cp_data(ypo,xo)
           call array_contract_outer_indices_rl(1.0E0_realk,yhv,t1(iter),1.0E0_realk,yo)
 
-          ! get inactive fock
-          !if(DECinfo%fock_with_ri) then
-          !   ! Debug mode
-          !   ifock = getInactiveFockFromRI(l_ao,xocc,yocc,h1)
-          !end if
-
-
        end if T1Related
+
        if(DECinfo%PL>1) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -2382,21 +2368,22 @@ contains
 
        ! MODIFY FOR NEW MODEL
        ! If you implement a new model, please insert call to your own residual routine here!
-       SelectCoupledClusterModel : if(DECinfo%ccModel==1) then
-          !call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
-          !     & no,nv)
-          call lsquit("ERROR(ccsolver_par):no mp2 implemented --> use&
-          & ccsolver",DECinfo%output)
-       elseif(DECinfo%ccModel==2) then
+       SelectCoupledClusterModel : select case(DECinfo%ccModel)
+       case(MODEL_MP2)
+          call lsquit("ERROR(ccsolver_par):no mp2 implemented",DECinfo%output)
+       case(MODEL_CC2)
           call lsquit("ERROR(ccsolver_par):no cc2 implemented --> use&
           & ccsolver",DECinfo%output)
-       else  ! CCSD or CCSD(T)
+       case(MODEL_CCSD,MODEL_CCSDpT) ! CCSD or CCSD(T)
 
           call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
              & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
              & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,rest=restart)
-
-       end if SelectCoupledClusterModel
+       case(MODEL_RPA)
+          call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
+       case default
+          call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
+       end select SelectCoupledClusterModel
        
        if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
 
@@ -2521,10 +2508,10 @@ contains
        ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
        ! Note: This routine uses massive parallelization, if you do not want your model to use
        ! this you do not need to make modifications here.
-       EnergyForCCmodel: if(DECinfo%ccmodel==1) then  
+       EnergyForCCmodel: if(DECinfo%ccmodel==MODEL_MP2) then  
           ! MP2
           call lsquit("ERROR(ccsolver_par):CCD/MP2 energy not yet implemented",-1)
-       elseif(DECinfo%ccmodel==2 .or. DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4 ) then
+       elseif(DECinfo%ccmodel==MODEL_CC2 .or. DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT ) then
           ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
        end if EnergyForCCmodel
@@ -2638,7 +2625,7 @@ contains
    &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
 
     ! Save two-electron integrals in the order (virt,occ,virt,occ)
-    if(DECinfo%ccModel == 1) then
+    if(DECinfo%ccModel == MODEL_MP2) then
             print *,"not implemented"
             stop 0
        !call array4_free(lmo) ! also free lmo integrals

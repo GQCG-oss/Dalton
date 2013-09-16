@@ -168,6 +168,8 @@ module cc_debug_routines_module
      character(ARR_MSG_LEN) :: msg
      integer :: ii,aa
      integer :: MaxSubSpace
+     logical :: restart
+     
 
 
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
@@ -326,7 +328,7 @@ module cc_debug_routines_module
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
      ! special MP2 things
-     MP2Special : if(DECinfo%ccModel == 1 .or. DECinfo%ccModel == 5) then
+     MP2Special : if(DECinfo%ccModel == MODEL_MP2 .or. DECinfo%ccModel == MODEL_RPA) then
 
         write(DECinfo%output,*)
         write(DECinfo%output,*) ' ********************  WARNING  **********************'
@@ -369,7 +371,7 @@ module cc_debug_routines_module
      call mem_alloc(omega2,DECinfo%ccMaxIter)
 
      ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-     if(DECinfo%ccModel /= 1) then
+     if(DECinfo%ccModel /= MODEL_MP2) then
         xocc = array2_init(occ_dims)
         yocc = array2_init(occ_dims)
         xvirt = array2_init(virt_dims)
@@ -431,7 +433,7 @@ module cc_debug_routines_module
         GetGuessVectors : if(iter == 1) then
 
            call get_guess_vectors_simple(mylsitem,t2(iter),t1(iter),&
-           &t1_final,gao,get_mult,ypo,yho,yhv,nocc,nvirt,nbasis,xocc,yvirt)
+           &t1_final,gao,get_mult,ypo,yho,yhv,nocc,nvirt,nbasis,xocc,yvirt,restart)
 
         end if GetGuessVectors
 
@@ -480,11 +482,11 @@ module cc_debug_routines_module
            call array2_add_to(ifock,1.0E0_realk,delta_fock)
 
            ! readme : this should be done in a more clear way
-           if(DECinfo%ccModel == 2) then
+           if(DECinfo%ccModel == MODEL_CC2) then
               ! CC2
               ppfock = array2_similarity_transformation(xocc,fock,yocc,[nocc,nocc])
               qqfock = array2_similarity_transformation(xvirt,fock,yvirt,[nvirt,nvirt])
-           else if(DECinfo%ccModel >= 3) then
+           else if(DECinfo%ccModel >= MODEL_CCSD) then
               ! CCSD
               ppfock = array2_similarity_transformation(xocc,ifock,yocc,[nocc,nocc])
               qqfock = array2_similarity_transformation(xvirt,ifock,yvirt,[nvirt,nvirt])
@@ -503,12 +505,12 @@ module cc_debug_routines_module
 
         ! MODIFY FOR NEW MODEL
         ! If you implement a new model, please insert call to your own residual routine here!
-        SelectCoupledClusterModel : if(DECinfo%ccModel==1) then
+        SelectCoupledClusterModel : if(DECinfo%ccModel==MODEL_MP2) then
 
            call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
                 & nocc,nvirt)
 
-        elseif(DECinfo%ccModel==2) then
+        elseif(DECinfo%ccModel==MODEL_CC2) then
            u = get_u(t2(iter))
            call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock, &
                 xocc,xvirt,yocc,yvirt,nocc,nvirt)
@@ -520,7 +522,7 @@ module cc_debug_routines_module
            call array4_free(gmo)
 
 
-        elseif(DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4) then  ! CCSD or CCSD(T)
+        elseif(DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT) then  ! CCSD or CCSD(T)
 
            if(get_mult)then
 
@@ -542,7 +544,7 @@ module cc_debug_routines_module
            call array4_free(u)
 
 
-        elseif(DECinfo%ccmodel==5) then
+        elseif(DECinfo%ccmodel==MODEL_RPA) then
 
            call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
 
@@ -684,13 +686,13 @@ module cc_debug_routines_module
         ! If you implement a new model, please insert call to energy routine here,
         ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
         if(.not. get_mult)then
-           EnergyForCCmodel: if(DECinfo%ccmodel==1) then  
+           EnergyForCCmodel: if(DECinfo%ccmodel==MODEL_MP2) then  
               ! MP2
               ccenergy = get_mp2_energy(t2(iter),Lmo)
-           elseif(DECinfo%ccmodel==2 .or. DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4 ) then
+           elseif(DECinfo%ccmodel==MODEL_CC2 .or. DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT )then
               ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
               ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
-           elseif(DECinfo%ccmodel==5) then
+           elseif(DECinfo%ccmodel==MODEL_RPA) then
               ccenergy = RPA_energy(t2(iter),gmo)
               sosex = SOSEX_contribution(t2(iter),gmo)
               ccenergy=ccenergy+sosex
@@ -725,6 +727,9 @@ module cc_debug_routines_module
               if(DECinfo%use_singles) t1(iter+1) = t1_opt + omega1_opt
               t2(iter+1) = t2_opt + omega2_opt
            end if
+           
+           if(.not.DECinfo%CCSDnosaferun)&
+             &call save_current_guess_simple(iter,t2(iter),t1(iter),get_mult)
         end if
 
         if(DECinfo%PL>1) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
@@ -831,7 +836,7 @@ module cc_debug_routines_module
 
 
      ! Save two-electron integrals in the order (virt,occ,virt,occ)
-     if(DECinfo%ccModel == 1) then
+     if(DECinfo%ccModel == MODEL_MP2) then
         call array4_free(lmo) ! also free lmo integrals
         VOVO = array4_duplicate(gmo)
         call array4_free(gmo)
@@ -903,56 +908,6 @@ module cc_debug_routines_module
    end subroutine ccsolver_debug
 
 
-   !get guess vectors for crop solver, this is model specific
-   subroutine get_guess_vectors_simple(mylsitem,t2,t1,t1_final,gao,&
-   &get_mult,ypo,yho,yhv,no,nv,nb,xocc,yvirt)
-     implicit none
-     type(lsitem),intent(inout) :: mylsitem
-     type(array4),intent(inout) :: t2
-     type(array2),intent(inout) :: t1
-     type(array2),intent(inout) :: t1_final,ypo,yho,yhv,xocc,yvirt
-     type(array4),intent(inout) :: gao
-     integer, intent(in)        :: no,nv,nb
-     logical,intent(in)         :: get_mult
-     integer                    :: d2(4), d1(2)
-     type(array2) :: fockguess,t1tmp
-     type(array4) :: iajb
-     d1 = [nv,no]
-     d2 = [nv,no,nv,no]
-
-     if(DECinfo%use_singles)then
-        if(get_mult)then
-          fockguess=array2_init([nb,nb])
-          call Get_AOt1Fock(mylsitem,t1_final,fockguess,no,nv,nb,ypo,yho,yhv)
-          t1tmp = array2_similarity_transformation(xocc,fockguess,yvirt,[no,nv]) 
-          call array2_free(fockguess)
-          t1 = array2_init([nv,no])
-          call mat_transpose(no,nv,1.0E0_realk,t1tmp%val,0.0E0_realk,t1%val)
-          call array2_free(t1tmp)
-          call dscal(no*nv,2.0E0_realk,t1%val,1)
-        else
-          t1 = array2_init(d1)
-        endif
-     endif
-     if(DECinfo%array4OnFile) then
-        ! Initialize t2(iter) using storing type 2
-        t2 = array4_init(d2,2,.true.)
-     else
-        if(get_mult)then
-          iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
-          t2 = array4_init(d2)
-          call array4_reorder(iajb,[2,1,4,3])
-          call daxpy(no**2*nv**2,4.0E0_realk,iajb%val,1,t2%val,1)
-          call array4_reorder(iajb,[1,4,3,2])
-          call daxpy(no**2*nv**2,-2.0E0_realk,iajb%val,1,t2%val,1)
-          call array4_reorder(iajb,[4,1,2,3])
-          call array4_free(iajb)
-        else
-          t2 = array4_init(d2)
-        endif
-     end if
-     
-   end subroutine get_guess_vectors_simple
 
 
    !> \brief Simple double residual for CCSD
@@ -1953,5 +1908,360 @@ module cc_debug_routines_module
       ! WRKWXYZ(ao, w x y)^T ZZ(ao,z)^T   -> WXYZ (wxyz)
       call dgemm('t','n',w*x*y,z,ao,1.0E0_realk,WRKWXYZ,ao,ZZ,ao,0.0E0_realk,WXYZ,w*x*y)
     end subroutine successive_4ao_mo_trafo
+
+    !> \brief should be a general subroutine to get the guess amplitudes when
+    !starting up a CCSD or CC2 calculation and checks for files which contain
+    !amplitudes of a previous calculation. If none are found the usual zero guess
+    !is returned
+    !> \author Patrick Ettenhuber
+    !> \date December 2012
+   subroutine get_guess_vectors_simple(mylsitem,t2,t1,t1_final,gao,&
+   &get_mult,ypo,yho,yhv,no,nv,nb,xocc,yvirt,restart)
+     implicit none
+     type(lsitem),intent(inout) :: mylsitem
+     !> contains the guess doubles amplitudes on output
+     type(array4),intent(inout) :: t2
+     !> contains the singles amplitudes on output
+     type(array2),intent(inout) :: t1
+     type(array2),intent(inout) :: t1_final,ypo,yho,yhv,xocc,yvirt
+     type(array4),intent(inout) :: gao
+     integer, intent(in)        :: no,nv,nb
+     logical,intent(in)         :: get_mult
+     integer                    :: d2(4), d1(2)
+     type(array2) :: fockguess,t1tmp
+     type(array4) :: iajb
+     logical,intent(out) :: restart
+     !> the filenames to check for valid singles amplitudes
+     character(3):: safefilet11,safefilet12
+     !> the filenames to check for valid doubles amplitudes
+     character(3):: safefilet21,safefilet22
+     integer :: fu_t11,fu_t12,fu_t21,fu_t22,fu_t1,fu_t2
+     logical :: file_exists11,file_exists12,file_exists21,file_exists22
+     logical :: file_status11,file_status12,file_status21,file_status22
+     logical :: readfile1, readfile2
+     integer :: saved_iter11,saved_iter12,saved_iter21,saved_iter22,iter_start
+     integer :: saved_nel11,saved_nel12,saved_nel21,saved_nel22
+     character(11) :: fullname11, fullname12, fullname21, fullname22
+     character(ARR_MSG_LEN) :: msg
+     if(get_mult)then
+       safefilet21 = 'm21'
+       safefilet22 = 'm22'
+       safefilet11 = 'm11'
+       safefilet12 = 'm12'
+     else
+       safefilet21 = 't21'
+       safefilet22 = 't22'
+       safefilet11 = 't11'
+       safefilet12 = 't12'
+     endif
+
+
+     !print *,"CHECK INPUT",safefilet11,safefilet12,all_singles,DECinfo%use_singles
+     fu_t11=111
+     fu_t12=112
+     fu_t21=121
+     fu_t22=122
+
+     d1 = [nv,no]
+     d2 = [nv,no,nv,no]
+     if(DECinfo%use_singles)then
+       t1 = array2_init(d1)
+     endif
+     t2 = array4_init(d2)
+
+     
+
+
+      iter_start=0
+      !check for safe files of the amplitudes in the current directory and read
+      !them if they exist and ok
+      readfile1=.false.
+      readfile2=.false.
+      
+      !this can be skipped by input, but restart is default
+      if(DECinfo%restart)then
+        if(DECinfo%use_singles)then
+          fullname11=safefilet11//'.restart'
+          fullname12=safefilet12//'.restart'
+
+          file_status11=.false.
+          INQUIRE(FILE=fullname11,EXIST=file_exists11)
+          if(file_exists11)then
+            file_status11=.true.
+            OPEN(fu_t11,FILE=fullname11,STATUS='OLD',FORM='UNFORMATTED')
+            READ(fu_t11)saved_iter11
+            READ(fu_t11)saved_nel11
+            if(saved_nel11/=no*nv)then
+              call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
+              &file",DECinfo%output)
+            endif
+          endif
+         
+          file_status12=.false.
+          INQUIRE(FILE=fullname12,EXIST=file_exists12)
+          if(file_exists12)then
+            file_status12=.true.
+            OPEN(fu_t12,FILE=fullname12,STATUS='OLD',FORM='UNFORMATTED')
+            READ(fu_t12)saved_iter12
+            READ(fu_t12)saved_nel12
+            if(saved_nel12/=no*nv)then
+              call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
+              &file",DECinfo%output)
+            endif
+          endif
+         
+          !CHECK WHICH IS THE PREFERRED FILE TO READ
+          if(file_status11.and.file_status12)then
+            if(saved_iter11>saved_iter12)then
+              fu_t1=fu_t11
+              CLOSE(fu_t12)
+              readfile1=.true.
+            else
+              fu_t1=fu_t12
+              CLOSE(fu_t11)
+              readfile1=.true.
+            endif
+          elseif(file_status11)then
+            fu_t1=fu_t11
+            readfile1=.true.
+          elseif(file_status12)then
+            fu_t1=fu_t12
+            readfile1=.true.
+          endif  
+        endif
+
+        fullname21=safefilet21//'.restart'
+        fullname22=safefilet22//'.restart'
+       
+        file_status21=.false.
+        INQUIRE(FILE=fullname21,EXIST=file_exists21)
+        if(file_exists21)then
+          file_status21=.true.
+          OPEN(fu_t21,FILE=fullname21,STATUS='OLD',FORM='UNFORMATTED')
+          READ(fu_t21)saved_iter21
+          READ(fu_t21)saved_nel21
+          if(saved_nel21/=no*no*nv*nv)then
+            call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
+            &file",DECinfo%output)
+          endif
+        endif
+       
+        file_status22=.false.
+        INQUIRE(FILE=fullname22,EXIST=file_exists22)
+        if(file_exists22)then
+          file_status22=.true.
+          OPEN(fu_t22,FILE=fullname22,STATUS='OLD',FORM='UNFORMATTED')
+          READ(fu_t22)saved_iter22
+          READ(fu_t22)saved_nel22
+          if(saved_nel22/=no*no*nv*nv)then
+            call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
+            &file",DECinfo%output)
+          endif
+        endif
+       
+        !CHECK WHICH IS THE PREFERRED FILE TO READ
+        if(file_status21.and.file_status22)then
+          if(saved_iter21>saved_iter22)then
+            iter_start=saved_iter21
+            fu_t2=fu_t21
+            CLOSE(fu_t22)
+            readfile2=.true.
+          else
+            iter_start=saved_iter22
+            fu_t2=fu_t22
+            CLOSE(fu_t21)
+            readfile2=.true.
+          endif
+          WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
+        elseif(file_status21)then
+          iter_start=saved_iter21
+          fu_t2=fu_t21
+          WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
+          readfile2=.true.
+        elseif(file_status22)then
+          iter_start=saved_iter22
+          fu_t2=fu_t22
+          WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
+          readfile2=.true.
+        else
+          iter_start=1
+        endif  
+      endif
+
+
+      if(readfile1)then
+        READ(fu_t1)t1%val
+        CLOSE(fu_t1)
+        restart = .true.
+      else
+        restart = .false.
+        if(get_mult)then
+          fockguess=array2_init([nb,nb])
+          call Get_AOt1Fock(mylsitem,t1_final,fockguess,no,nv,nb,ypo,yho,yhv)
+          t1tmp = array2_similarity_transformation(xocc,fockguess,yvirt,[no,nv]) 
+          call array2_free(fockguess)
+          call mat_transpose(no,nv,-1.0E0_realk,t1tmp%val,0.0E0_realk,t1%val)
+          call array2_free(t1tmp)
+          call dscal(no*nv,2.0E0_realk,t1%val,1)
+        endif 
+      endif
+      if(readfile2)then
+        READ(fu_t2) t2%val
+        CLOSE(fu_t2)
+        restart = .true.
+      else
+        restart = .false.
+        if(get_mult)then
+          iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
+          call array4_reorder(iajb,[2,1,4,3])
+          call daxpy(no**2*nv**2,-4.0E0_realk,iajb%val,1,t2%val,1)
+          call array4_reorder(iajb,[1,4,3,2])
+          call daxpy(no**2*nv**2,2.0E0_realk,iajb%val,1,t2%val,1)
+          call array4_reorder(iajb,[4,1,2,3])
+          call array4_free(iajb)
+        endif
+      endif
+   end subroutine get_guess_vectors_simple
+   !> \brief Subroutine to save the current guess amplitudes for the next
+   !iteration
+   !> \author Patrick Ettenhuber
+   !> \date Dezember 2012
+   subroutine save_current_guess_simple(iter,t2,t1,get_mult)
+    implicit none
+    !> iteration number
+    integer,intent(in) :: iter
+    !> doubles guess amplitudes for the next iteration
+    type(array4), intent(in) :: t2
+    !> singles guess amplitudes for the next iteration
+    type(array2), intent(in) :: t1
+    logical, intent(in) :: get_mult
+    !> alternating filenames for the doubles amplitudes
+    character(3) :: safefilet21,safefilet22
+    !> alternating filenames for the singles amplitudes
+    character(3) :: safefilet11,safefilet12
+    integer :: fu_t21,fu_t22
+    integer :: fu_t11,fu_t12
+    logical :: file_status11,file_status12,file_status21,file_status22
+    logical :: all_singles
+    character(ARR_MSG_LEN) :: msg
+#ifdef SYS_AIX
+    character(12) :: fullname11,  fullname12,  fullname21,  fullname22
+    character(12) :: fullname11D, fullname12D, fullname21D, fullname22D
+#else
+    character(11) :: fullname11, fullname12, fullname21, fullname22
+    character(11) :: fullname11D, fullname12D, fullname21D, fullname22D
+#endif
+    if(get_mult)then
+      safefilet21 = 'm21'
+      safefilet22 = 'm22'
+      safefilet11 = 'm11'
+      safefilet12 = 'm12'
+    else
+      safefilet21 = 't21'
+      safefilet22 = 't22'
+      safefilet11 = 't11'
+      safefilet12 = 't12'
+    endif
+    fu_t11=111
+    fu_t12=112
+    fu_t21=121
+    fu_t22=122
+    if(DECinfo%use_singles)then
+      !msg="singles norm save"
+      !call print_norm(t1,msg)
+#ifdef SYS_AIX
+      fullname11=safefilet11//'.writing\0'
+      fullname12=safefilet12//'.writing\0'
+#else
+      fullname11=safefilet11//'.writing'
+      fullname12=safefilet12//'.writing'
+#endif
+
+      if(mod(iter,2)==1)then
+        file_status11=.false. 
+        OPEN(fu_t11,FILE=fullname11,STATUS='REPLACE',FORM='UNFORMATTED')
+        WRITE(fu_t11)iter
+        WRITE(fu_t11)t1%dims(1) * t1%dims(2)
+        WRITE(fu_t11)t1%val
+        file_status11=.true.
+        WRITE(fu_t11)file_status11
+        ENDFILE(fu_t11)
+        CLOSE(fu_t11)
+#ifdef SYS_AIX
+        fullname11D=safefilet11//'.restart\0'
+        fullname11=safefilet11//'\0'
+#else
+        fullname11D=safefilet11//'.restart'
+#endif
+       if(file_status11)call rename(fullname11,fullname11D)
+
+      elseif(mod(iter,2)==0)then
+        file_status12=.false. 
+        OPEN(fu_t12,FILE=fullname12,STATUS='REPLACE',FORM='UNFORMATTED')
+        WRITE(fu_t12)iter
+        WRITE(fu_t12)t1%dims(1) * t1%dims(2)
+        WRITE(fu_t12)t1%val
+        file_status12=.true.
+        WRITE(fu_t12)file_status12
+        ENDFILE(fu_t12)
+        CLOSE(fu_t12)
+#ifdef SYS_AIX
+        fullname12D=safefilet12//'.restart\0'
+        fullname12=safefilet12//'\0'
+#else
+        fullname12D=safefilet12//'.restart'
+#endif
+        if(file_status12)call rename(fullname12,fullname12D)
+
+      else
+        call lsquit("ERROR(ccdriver_par):impossible iteration&
+        &number)",DECinfo%output)
+      endif
+    endif
+
+    !msg="doubles norm save"
+    !call print_norm(t2,msg)
+    fullname21=safefilet21//'.writing'
+    fullname22=safefilet22//'.writing'
+    if(mod(iter,2)==1)then
+      file_status21=.false. 
+      OPEN(fu_t21,FILE=fullname21,STATUS='REPLACE',FORM='UNFORMATTED')
+      WRITE(fu_t21)iter
+      WRITE(fu_t21)t2%dims(1) * t2%dims(2) * t2%dims(3) * t2%dims(4)
+      WRITE(fu_t21)t2%val
+      file_status21=.true. 
+      WRITE(fu_t22)file_status21
+      ENDFILE(fu_t21)
+      CLOSE(fu_t21)
+#ifdef SYS_AIX
+      fullname21D=safefilet21//'.restart\0'
+      fullname21=safefilet21//'\0'
+#else
+      fullname21D=safefilet21//'.restart'
+#endif
+      if(file_status21)call rename(fullname21,fullname21D)
+
+    elseif(mod(iter,2)==0)then
+      file_status22=.false. 
+      OPEN(fu_t22,FILE=fullname22,STATUS='REPLACE',FORM='UNFORMATTED')
+      WRITE(fu_t22)iter
+      WRITE(fu_t22)t2%dims(1) * t2%dims(2) * t2%dims(3) * t2%dims(4)
+      WRITE(fu_t22)t2%val
+      file_status22=.true.
+      WRITE(fu_t22)file_status22
+      ENDFILE(fu_t22)
+      CLOSE(fu_t22)
+#ifdef SYS_AIX
+      fullname22D=safefilet22//'.restart\0'
+      fullname22=safefilet22//'\0'
+#else
+      fullname22D=safefilet22//'.restart'
+#endif
+      if(file_status22)call rename(fullname22,fullname22D)
+    else
+      call lsquit("ERROR(ccdriver_par):impossible iteration&
+      &number)",DECinfo%output)
+    endif
+  end subroutine save_current_guess_simple
 
 end module cc_debug_routines_module
