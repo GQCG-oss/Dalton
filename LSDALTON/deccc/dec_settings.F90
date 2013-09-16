@@ -49,45 +49,45 @@ contains
 
 
     ! -- Debug modes
-    DECinfo%cc_driver_debug   = .false.
-    DECinfo%CCDEBUG           = .false.
-    DECinfo%manual_batchsizes = .false.
-    DECinfo%ccsdAbatch        = 0
-    DECinfo%ccsdGbatch        = 0
-    DECinfo%hack              = .false.
-    DECinfo%hack2             = .false.
-    DECinfo%mpisplit          = 10
-    DECinfo%dyn_load          = .false.
-    DECinfo%force_scheme      = .false.
-    DECinfo%en_mem            = 0
-    DECinfo%array_test        = .false.
-    DECinfo%reorder_test      = .false.
-    DECinfo%CCSDno_restart    = .false.
-    DECinfo%CCSDnosaferun     = .false.
-    DECinfo%solver_par        = .false.
-    DECinfo%CCSDpreventcanonical=.false.
-    DECinfo%CCSD_MPICH        = .false.
-    DECinfo%CCSDmultipliers   = .false.
-    DECinfo%CCDhack           = .false.
+    DECinfo%cc_driver_debug      = .false.
+    DECinfo%CCDEBUG              = .false.
+    DECinfo%manual_batchsizes    = .false.
+    DECinfo%ccsdAbatch           = 0
+    DECinfo%ccsdGbatch           = 0
+    DECinfo%hack                 = .false.
+    DECinfo%hack2                = .false.
+    DECinfo%mpisplit             = 10
+    DECinfo%dyn_load             = .false.
+    DECinfo%force_scheme         = .false.
+    DECinfo%en_mem               = 0
+    DECinfo%array_test           = .false.
+    DECinfo%reorder_test         = .false.
+    DECinfo%CCSDno_restart       = .false.
+    DECinfo%CCSDnosaferun        = .false.
+    DECinfo%solver_par           = .false.
+    DECinfo%CCSDpreventcanonical = .false.
+    DECinfo%CCSD_MPICH           = .false.
+    DECinfo%CCSDmultipliers      = .false.
+    DECinfo%CCDhack              = .false.
 
     ! -- Output options 
-    DECinfo%output=output
+    DECinfo%output               = output
 
 
     ! -- Orbital
-    DECinfo%mulliken_threshold=0.01
-    DECinfo%simple_mulliken_threshold=.false.
-    DECinfo%approximated_norm_threshold=0.1E0_realk
-    DECinfo%check_lcm_orbitals=.false.
-    DECinfo%use_canonical=.false.
-    DECinfo%user_defined_orbitals=.false.
-    DECinfo%AbsorbHatoms=.true.  ! reassign H atoms to heavy atom neighbour
-    DECinfo%mulliken=.false.
-    DECinfo%Distance=.false.
-    DECinfo%BoughtonPulay=.false.
-    DECinfo%FitOrbitals=.true.
-    DECinfo%simple_orbital_threshold=0.05E0_realk
-    DECinfo%simple_orbital_threshold_set=.false.
+    DECinfo%mulliken_threshold           = 0.01
+    DECinfo%simple_mulliken_threshold    = .false.
+    DECinfo%approximated_norm_threshold  = 0.1E0_realk
+    DECinfo%check_lcm_orbitals           = .false.
+    DECinfo%use_canonical                = .false.
+    DECinfo%user_defined_orbitals        = .false.
+    DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
+    DECinfo%mulliken                     = .false.
+    DECinfo%Distance                     = .false.
+    DECinfo%BoughtonPulay                = .false.
+    DECinfo%FitOrbitals                  = .true.
+    DECinfo%simple_orbital_threshold     = 0.05E0_realk
+    DECinfo%simple_orbital_threshold_set = .false.
 
 
     ! -- Fragment
@@ -121,22 +121,22 @@ contains
 
     ! -- CC solver options
 
-    DECinfo%ccsd_expl=.false.
-    DECinfo%simulate_eri= .false.
-    DECinfo%fock_with_ri= .false.
-    DECinfo%ccMaxIter=100
-    DECinfo%ccMaxDIIS=3
-    DECinfo%ccModel=1 ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
-    DECinfo%F12=.false.
-    DECinfo%F12debug=.false.
-    DECinfo%ccConvergenceThreshold=1e-5
-    DECinfo%CCthrSpecified=.false.
-    DECinfo%use_singles=.false.
-    DECinfo%use_preconditioner=.true.
-    DECinfo%use_preconditioner_in_b=.true.
-    DECinfo%use_crop=.true.
-    DECinfo%array4OnFile=.false.
-    DECinfo%array4OnFile_specified=.false.
+    DECinfo%ccsd_expl               = .false.
+    DECinfo%simulate_eri            = .false.
+    DECinfo%fock_with_ri            = .false.
+    DECinfo%ccMaxIter               = 100
+    DECinfo%ccMaxDIIS               = 3
+    DECinfo%ccModel                 = 1 ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
+    DECinfo%F12                     = .false.
+    DECinfo%F12debug                = .false.
+    DECinfo%ccConvergenceThreshold  = 1e-5
+    DECinfo%CCthrSpecified          = .false.
+    DECinfo%use_singles             = .false.
+    DECinfo%use_preconditioner      = .true.
+    DECinfo%use_preconditioner_in_b = .true.
+    DECinfo%use_crop                = .true.
+    DECinfo%array4OnFile            = .false.
+    DECinfo%array4OnFile_specified  = .false.
 
 
     ! First order properties

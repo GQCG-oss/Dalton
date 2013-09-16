@@ -75,7 +75,7 @@ Level 6
 fragment_energy
 
 Level 5
-cc_driver
+cc_driver, cc_debug_routines
 
 Level 4
 rpa
@@ -84,11 +84,11 @@ Level 3
 ccsd, dec_atom,ccsdpt,mp2_gradient
 
 Level 2 
-array_operations,  fullmolecule, mp2, cc_integrals
+array_operations,  fullmolecule, mp2, cc_integrals, crop_tools
 
 Level 1
 ccorbital, ccarray2_simple, ccarray3_simple, ccarray4_simple, dec_pdm, decmpi
 
 Level 0 
-dec_settings, cc_crop, full_driver_f12contractions, CABS,
+dec_settings, full_driver_f12contractions, CABS,
 dec_utils, array3_memory, array4_memory, array_memory, manual_reorderings, ccri_simple
