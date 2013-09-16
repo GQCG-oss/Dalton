@@ -194,7 +194,7 @@ ERROR[10]="GEOMETRY OPTIMIZATION NOT CONVERGED"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
      PASSED=0
    fi
