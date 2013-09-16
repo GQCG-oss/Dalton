@@ -3621,7 +3621,7 @@ contains
     call atomic_fragment_init_atom_specific(MyAtom,natoms,Virt_Atoms, &
          & Occ_Atoms,nocc,nunocc,OccOrbitals,UnoccOrbitals, &
          & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-
+    
 
     ! Get MP2 amplitudes for fragment
     ! *******************************
@@ -3698,6 +3698,13 @@ contains
        virt_converged=.false.
        converged=.false.
 
+       ! When we have selected a set of virtual FOs, we want to adapt the
+       ! occupied correlation density matrix to this set of virtual FOs.
+       ! Diagonalization of this occupied correlation density matrix defines a 
+       ! set of occupied FOs which describe amplitudes t(a,i,b,j) 
+       ! (where a,b are virtual FOs) as compactly as possible.
+       ! Note: Only do this for occupied partitioning scheme, otherwise
+       !       we are not allowed to mix all virtual orbitals.
        if(ov==1) then
           if(DECinfo%onlyoccpart) then
              call transform_virt_amp_to_FOs(t2,AtomicFragment)
