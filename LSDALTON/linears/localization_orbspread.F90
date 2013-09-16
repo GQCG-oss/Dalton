@@ -237,7 +237,7 @@ real(realk),pointer :: max_orbspreads(:)
 
   stepsize = CFG%stepsize
   CFG%mu = 0.0_realk
-  stepsize=0d0
+  stepsize=0.0_realk
   CFG%it = 1
   do i=1,CFG%max_macroit
     iter_number= i
@@ -287,30 +287,29 @@ real(realk),pointer :: max_orbspreads(:)
    call davidson_solver(CFG,G,X)
 
    ! global and local thresholds defined in CFG settings
-   if (dabs(CFG%mu)> 1.0) CFG%conv_thresh=CFG%global_conv_thresh
-   if (dabs(CFG%mu)< 1.0)  CFG%conv_thresh=CFG%local_conv_thresh
+   if (dabs(CFG%mu)> 1.0_realk) CFG%conv_thresh=CFG%global_conv_thresh
+   if (dabs(CFG%mu)< 1.0_realk)  CFG%conv_thresh=CFG%local_conv_thresh
     call mat_copy(1.0_realk,CMO,CMOsav)
  
     stepsize = CFG%stepsize
     call linesearch_orbspread(CFG,cmo,X,stepsize,old_oval,orig_Eval,nrmG,i)
     call orbspread_value(oVal,orbspread_input)
-    
 
-    if (orig_Eval-old_oVal > 0) then
+    if (orig_Eval-old_oVal > 0.0_realk) then
        write(ls%lupri,*) 'Step not accepted. Go back'
        call mat_copy(1.0d0,CMOsav,CMO)
        call orbspread_update(orbspread_input,CMO)
        call orbspread_value(oVal,orbspread_input)
-       CFG%Stepsize = CFG%Stepsize/2.0d0
+       CFG%Stepsize = CFG%Stepsize/2.0_realk
     else
-      CFG%Stepsize = min(CFG%Stepsize*2.5d0,CFG%max_stepsize) 
+      CFG%Stepsize = min(CFG%Stepsize*2.5_realk,CFG%max_stepsize) 
     endif
      
-   if (CFG%stepsize < 0.001) then
+   if (CFG%stepsize < 0.001_realk) then
            write(CFG%lupri,*) ''
            write(CFG%lupri,'(a)') 'WARNING: Stepsize too small. ' 
            if (i>5) then
-              if  (abs(max_orbspreads(i)-max_orbspreads(i-5))< 0.1) then 
+              if  (abs(max_orbspreads(i)-max_orbspreads(i-5))< 0.1_realk) then 
                  write(CFG%lupri,*) ' However, the locality of the least local orbital       ' 
                  write(CFG%lupri,*) ' has not changed significantly the last five iterations ' 
                  write(CFG%lupri,*) ' and the generated orbitals are localized, and will      ' 
@@ -326,7 +325,7 @@ real(realk),pointer :: max_orbspreads(:)
            write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
            write(CFG%lupri,*) ' and keyword .LOOSE MICRO THRESH                              ' 
            call lsquit('Cannot converge micro iterations. ', CFG%lupri)
-   elseif (orig_Eval-old_oVal > 0) then
+   elseif (orig_Eval-old_oVal > 0.0_realk) then
             cycle
    endif
     !new gradient
