@@ -3372,6 +3372,7 @@ contains
 
 
 
+
   !> Routine that optimizes an atomic fragment by (1) expanding to include neighbour atoms,
   !> (2) checking that energy change is smaller than FOT, (3) for converged fragment we 
   !> make unitary transformations of occupied and virtual AOS (NOT including EOS) to 
@@ -3407,7 +3408,7 @@ contains
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
     real(realk)                    :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
-    real(realk)                    :: LagEnergyOld, OccEnergyOld, VirtEnergyOld, FOT, REDFOT
+    real(realk)                    :: LagEnergyOld, OccEnergyOld, VirtEnergyOld, FOT
     logical, dimension(natoms)     :: Occ_atoms,Virt_atoms,OccOld,VirtOld
     real(realk),dimension(natoms)  :: DistMyAtom,SortedDistMyAtom
     integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
@@ -3447,7 +3448,6 @@ contains
     expansion_converged=.false.
     max_iter_red=15   ! allow 15 reduction steps (should be more than enough)
     FOT = DECinfo%FOT
-    REDFOT = 10E0_realk*FOT
     DistMyAtom= DistanceTable(:,MyAtom)
     call GetSortedList(SortedDistMyAtom,DistTrackMyAtom,DistanceTable,natoms,MyAtom)
     nocc_per_atom=get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
@@ -3868,12 +3868,202 @@ contains
 
 
 
+  !> Given a converged atomic fragment, remove individual orbitals with the smallest energy
+  !> contributions, ensuring that the error introduced compared to the converged fragment
+  !> is smaller than the FOT.
+  !> \date September 2013
+  !> \author Kasper Kristensen
+  subroutine fragopt_reduce_local_orbitals(MyAtom,AtomicFragment, &
+       &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
+       &MyMolecule,mylsitem,freebasisinfo,max_iter_red,OccContribs,VirtContribs,t1full)
+    implicit none
+    !> Number of occupied orbitals in molecule
+    integer, intent(in) :: nOcc
+    !> Number of unoccupied orbitals in molecule
+    integer, intent(in) :: nunocc
+    !> Central atom in molecule
+    integer, intent(in) :: MyAtom
+    !> Atomic fragment to be optimized
+    type(ccatom),intent(inout)        :: AtomicFragment
+    !> All occupied orbitals
+    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    !> All unoccupied orbitals
+    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    !> Full molecule information
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> Integral information
+    type(lsitem), intent(inout)       :: mylsitem
+    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
+    logical,intent(in) :: freebasisinfo
+    !> Maximum number of reduction steps
+    integer,intent(in) :: max_iter_red
+    !> Contributions from individual occupied and virtual orbitals
+    real(realk),intent(in) :: OccContribs(nocc), VirtContribs(nunocc)
+    !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
+    type(array2),intent(inout),optional :: t1full
+    real(realk)  :: RejectThresh,FOT
+    logical,pointer :: OccAOS_old(:), VirtAOS_old(:), OccAOS_new(:), VirtAOS_new(:), &
+         & OccAOS_orig(:),VirtAOS_orig(:)
+    logical :: reduction_converged
+    integer :: i,iter,nocc_old,nvirt_old,nocc_new,nvirt_new,nocc_orig,nvirt_orig
+    real(realk)  :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
+    real(realk)  :: LagEnergyOld, OccEnergyOld,VirtEnergyOld
+
+
+    ! Initialize logical vectors controlling occupied and virtual AOS during reduction scheme
+    call mem_alloc(OccAOS_old,nocc)
+    call mem_alloc(VirtAOS_old,nunocc)
+    call mem_alloc(OccAOS_new,nocc)
+    call mem_alloc(VirtAOS_new,nunocc)
+    call mem_alloc(OccAOS_orig,nocc)
+    call mem_alloc(VirtAOS_orig,nunocc)
+    OccAOS_old=.false.
+    VirtAOS_old=.false.
+    OccAOS_new=.false.
+    VirtAOS_new=.false.
+    OccAOS_orig=.false.
+    VirtAOS_orig=.false.
+    do i=1,AtomicFragment%noccAOS
+       OccAOS_orig(AtomicFragment%occAOSidx(i)) = .true.
+    end do
+    do i=1,AtomicFragment%nunoccAOS
+       VirtAOS_orig(AtomicFragment%unoccAOSidx(i)) = .true.
+    end do
+    OccAOS_old = OccAOS_orig
+    VirtAOS_old = VirtAOS_orig
+    nocc_orig = AtomicFragment%noccAOS
+    nvirt_orig = AtomicFragment%nunoccAOS
+    LagEnergyOld = AtomicFragment%LagFOP
+    OccEnergyOld = AtomicFragment%EoccFOP
+    VirtEnergyOld = AtomicFragment%EvirtFOP
+
+
+    ! Set FOT and convergence control
+    FOT = DECinfo%FOT
+    reduction_converged=.false.
+
+    REDUCTION_LOOP: do iter=1,max_iter_red
+
+       write(DECinfo%output,*) 'FOP Starting reduction step ', iter
+       if(iter == 1) then
+          RejectThresh = FOT
+       else  ! decrease rejection threshold by a factor 5 in each step
+          RejectThresh = RejectThresh/5.0E0_realk
+       end if
+       write(DECinfo%output,'(a,ES13.5)') 'FOP Rejection threshold  : ',RejectThresh
+
+       ! Number of occupied and virtual AOS orbitals in current fragment
+       nocc_old = AtomicFragment%noccAOS
+       nvirt_old = AtomicFragment%nunoccAOS
+
+
+       ! Set new logical vectors controlling which occupied and virtual AOS orbitals are included
+       ! ****************************************************************************************
+
+       ! 1. Copy information from optimal fragment from expansion loop
+       OccAOS_new = OccAOS_old
+       VirtAOS_new = VirtAOS_old
+
+       ! 2. Reduce occupied/virtual AOS according to rejection threshold
+       write(DECinfo%output,*) ' FOP OCC: '
+       call ReduceSpace_orbitalspecific(AtomicFragment,nocc,OccContribs,'O',&
+            & RejectThresh,OccAOS_new,nocc_new)
+       write(DECinfo%output,*) ' FOP VIRT: '
+       call ReduceSpace_orbitalspecific(AtomicFragment,nunocc,VirtContribs,'V',&
+            & RejectThresh,VirtAOS_new,nvirt_new)
+
+
+       ! Check if the orbital space was reduced
+       ! **************************************
+
+       ! Special case: No reduction has occurred in any step
+       if(iter == max_iter_red .and. (nocc_new==nocc_orig) .and. (nvirt_new==nvirt_orig) ) then
+
+          write(DECinfo%output,*) "FOP No reduction possible. Use original converged fragment"
+
+          ! Go back to old fragment
+          ! ***********************
+          call atomic_fragment_free(AtomicFragment)
+          call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_orig, &
+               & OccAOS_orig,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
+               & AtomicFragment,.true.,.false.)
+          call atomic_fragment_energy_and_prop(AtomicFragment)
+          exit REDUCTION_LOOP
+       end if
+
+       ! Cycle if no atoms were rejected by the rejection procedure
+       if ((nocc_old == nocc_new) .and. (nvirt_old == nvirt_new)) then
+          write(DECinfo%output,*) 'FOP No reduction occurred - we try to reduce again'
+          cycle
+       end if
+
+
+       ! Get reduced atomic fragment
+       ! ***************************
+       call atomic_fragment_free(AtomicFragment)
+       call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
+            & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+       call atomic_fragment_energy_and_prop(AtomicFragment)
+
+
+       ! Check if reduced fragment energy is converged to FOT precision
+       ! **************************************************************
+       LagEnergyDiff=abs(AtomicFragment%LagFOP-LagEnergyOld)
+       OccEnergyDiff=abs(AtomicFragment%EoccFOP-OccEnergyOld)
+       VirtEnergyDiff=abs(AtomicFragment%EvirtFOP-VirtEnergyOld)
+       call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+       call fragopt_check_convergence(LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,&
+            &FOT,reduction_converged)
+
+       ! Quit if we are converged
+       if(reduction_converged) then
+          write(DECinfo%output,*) 'FOP Reduction of fragment converged in step', iter
+          exit REDUCTION_LOOP
+       end if
+
+    end do REDUCTION_LOOP
+
+
+
+    ! Update t1 amplitudes for full molecule
+    ! **************************************
+    ! KK: These are leftovers for treating long-range t1 interactions.
+    !     Some it may be reused but it general the lone-range t1 implementation requires 
+    !     rethinking the basic strategy!
+
+    if(DECinfo%SinglesPolari) then
+
+       ! Extract (virt AOS,occ EOS) indices from fragment
+       ! (This is necessary to avoid double counting)
+       call extract_specific_fragmentt1(AtomicFragment,.true.,.false.)
+
+       ! Update
+       call update_full_t1_from_atomic_frag(AtomicFragment,t1full)
+
+       ! Delete t1 information in fragment
+       call free_fragment_t1(AtomicFragment)
+
+    end if
+
+    call mem_dealloc(OccAOS_orig)
+    call mem_dealloc(VirtAOS_orig)
+    call mem_dealloc(OccAOS_old)
+    call mem_dealloc(VirtAOS_old)
+    call mem_dealloc(OccAOS_new)
+    call mem_dealloc(VirtAOS_new)
+
+
+  end subroutine fragopt_reduce_local_orbitals
+
+
+
+
   !> \brief Check if fragment energy (or energies) is converged to FOT precision
   !> \author Kasper Kristensen
   !> \date September 2013
   subroutine fragopt_check_convergence(LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,FOT,converged)
     implicit none
-    !> Energy differences for Lagrangian, occupied, and virtual partitioning schemes
+    !> ABSOLUTE Energy differences for Lagrangian, occupied, and virtual partitioning schemes
     !> (difference between current and previous iteration)
     real(realk),intent(in) :: LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff
     !> Fragment optimization threshold
