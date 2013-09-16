@@ -2749,69 +2749,69 @@ contains
   ! ===================================================================!
 
 
+!!$  !> Routine that optimizes an atomic fragment using the Lagrangian partitioning scheme
+!!$  !> and using a reduction scheme based on the individual orbitals.
+!!$  !> \date November 2011
+!!$  !> \author Ida-Marie Hoeyvik
+!!$  subroutine optimize_atomic_fragment(MyAtom,AtomicFragment,nAtoms, &
+!!$       &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
+!!$       &MyMolecule,mylsitem,freebasisinfo,t1full)
+!!$    implicit none
+!!$    !> Number of occupied orbitals in molecule
+!!$    integer, intent(in) :: nOcc
+!!$    !> Number of unoccupied orbitals in molecule
+!!$    integer, intent(in) :: nunocc
+!!$    !> Number of atoms in molecule
+!!$    integer, intent(in) :: natoms
+!!$    !> Central atom in molecule
+!!$    integer, intent(in) :: MyAtom
+!!$    !> Atomic fragment to be optimized
+!!$    type(ccatom),intent(inout)        :: AtomicFragment
+!!$    !> All occupied orbitals
+!!$    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+!!$    !> All unoccupied orbitals
+!!$    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+!!$    !> Distance table for all atoms in molecule
+!!$    real(realk), dimension(nAtoms,nAtoms), intent(in) :: DistanceTable
+!!$    !> Full molecule information
+!!$    type(fullmolecule), intent(in) :: MyMolecule
+!!$    !> Integral information
+!!$    type(lsitem), intent(inout)       :: mylsitem
+!!$    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
+!!$    logical,intent(in) :: freebasisinfo
+!!$    !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
+!!$    type(array2),intent(inout),optional :: t1full
+!!$
+!!$
+!!$    if(DECinfo%SinglesPolari) then 
+!!$       ! currently we store full amplitudes but not AOS amplitudes,
+!!$       ! to be modified!
+!!$       call optimize_atomic_fragment_main(MyAtom,AtomicFragment,nAtoms, &
+!!$            &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
+!!$            &MyMolecule,mylsitem,freebasisinfo,t1full=t1full)
+!!$    else   
+!!$
+!!$
+!!$       if(DECinfo%fragadapt) then
+!!$          call optimize_atomic_fragment_FO(MyAtom,AtomicFragment,nAtoms, &
+!!$               &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
+!!$               &MyMolecule,mylsitem,freebasisinfo)
+!!$       else
+!!$          call optimize_atomic_fragment_main(MyAtom,AtomicFragment,nAtoms, &
+!!$               &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
+!!$               &MyMolecule,mylsitem,freebasisinfo)
+!!$       end if
+!!$
+!!$    end if
+!!$
+!!$  end subroutine optimize_atomic_fragment
+
+
   !> Routine that optimizes an atomic fragment using the Lagrangian partitioning scheme
   !> and using a reduction scheme based on the individual orbitals.
   !> \date November 2011
   !> \author Ida-Marie Hoeyvik
-  subroutine optimize_atomic_fragment(MyAtom,AtomicFragment,nAtoms, &
-       &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
-       &MyMolecule,mylsitem,freebasisinfo,t1full)
-    implicit none
-    !> Number of occupied orbitals in molecule
-    integer, intent(in) :: nOcc
-    !> Number of unoccupied orbitals in molecule
-    integer, intent(in) :: nunocc
-    !> Number of atoms in molecule
-    integer, intent(in) :: natoms
-    !> Central atom in molecule
-    integer, intent(in) :: MyAtom
-    !> Atomic fragment to be optimized
-    type(ccatom),intent(inout)        :: AtomicFragment
-    !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
-    !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
-    !> Distance table for all atoms in molecule
-    real(realk), dimension(nAtoms,nAtoms), intent(in) :: DistanceTable
-    !> Full molecule information
-    type(fullmolecule), intent(in) :: MyMolecule
-    !> Integral information
-    type(lsitem), intent(inout)       :: mylsitem
-    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
-    logical,intent(in) :: freebasisinfo
-    !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
-    type(array2),intent(inout),optional :: t1full
-
-
-    if(DECinfo%SinglesPolari) then 
-       ! currently we store full amplitudes but not AOS amplitudes,
-       ! to be modified!
-       call optimize_atomic_fragment_main(MyAtom,AtomicFragment,nAtoms, &
-            &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
-            &MyMolecule,mylsitem,freebasisinfo,t1full=t1full)
-    else   
-
-
-       if(DECinfo%fragadapt) then
-          call optimize_atomic_fragment_FO(MyAtom,AtomicFragment,nAtoms, &
-               &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
-               &MyMolecule,mylsitem,freebasisinfo)
-       else
-          call optimize_atomic_fragment_main(MyAtom,AtomicFragment,nAtoms, &
-               &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
-               &MyMolecule,mylsitem,freebasisinfo)
-       end if
-
-    end if
-
-  end subroutine optimize_atomic_fragment
-
-
-  !> Routine that optimizes an atomic fragment using the Lagrangian partitioning scheme
-  !> and using a reduction scheme based on the individual orbitals.
-  !> \date November 2011
-  !> \author Ida-Marie Hoeyvik
-  subroutine optimize_atomic_fragment_main(MyAtom,AtomicFragment,nAtoms, &
+  subroutine optimize_atomic_fragment_old(MyAtom,AtomicFragment,nAtoms, &
        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
        &MyMolecule,mylsitem,freebasisinfo,t1full)
     implicit none
@@ -3367,7 +3367,7 @@ contains
     end if
 
 
-  end subroutine optimize_atomic_fragment_main
+  end subroutine optimize_atomic_fragment_old
 
 
 
@@ -3379,7 +3379,7 @@ contains
   !> generate fragment-adapted orbitals which describe AOS with as few orbitals as possible.
   !> \date February 2013
   !> \author Ida-Marie Hoeyvik & Kasper Kristensen
-  subroutine optimize_atomic_fragment_FO(MyAtom,AtomicFragment,nAtoms, &
+  subroutine optimize_atomic_fragment(MyAtom,AtomicFragment,nAtoms, &
        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
        &MyMolecule,mylsitem,freebasisinfo,t1full)
     implicit none
@@ -3412,14 +3412,10 @@ contains
     logical, dimension(natoms)     :: Occ_atoms,Virt_atoms,OccOld,VirtOld
     real(realk),dimension(natoms)  :: DistMyAtom,SortedDistMyAtom
     integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
-    integer      :: iter,i,ov,idx
-    integer      :: Nnew,Nold, max_iter_red,nocc_exp,nvirt_exp
-    logical      :: reduction_converged,ReductionPossible(2)
-    logical :: expansion_converged, lag_converged, occ_converged, virt_converged
-    real(realk) :: slavetime, flops_slaves
+    integer      :: iter,i,idx
+    integer      :: max_iter_red,savemodel
+    logical :: expansion_converged,hybridsave
     type(array4) :: t2,g
-    integer :: savemodel
-    logical :: hybridsave
     real(realk),pointer :: OccContribs(:),VirtContribs(:)    
 
 
@@ -3439,11 +3435,15 @@ contains
     end if
 
 
-    ! ******************************************
-    ! **   Initialization of stuff needed..   **
-    ! ******************************************
+
+    ! ======================================================================
+    !                    Initialization of various things...
+    ! ======================================================================
+
     iter=0
-    reduction_converged=.false.
+    LagEnergyDiff=0.0_realk
+    OccEnergyDiff=0.0_realk
+    VirtEnergyDiff=0.0_realk
     expansion_converged=.false.
     max_iter_red=15   ! allow 15 reduction steps (should be more than enough)
     FOT = DECinfo%FOT
@@ -3465,34 +3465,34 @@ contains
     end if
 
 
-    ! Save existing model and do fragment expansion with MP2 if requested
+    ! Save existing model and do fragment expansion with MP2 energies if requested
+    savemodel = DECinfo%ccmodel
+    hybridsave = DECinfo%HybridScheme
     if(DECinfo%fragopt_exp_mp2) then
-       savemodel = DECinfo%ccmodel
        DECinfo%ccmodel = MODEL_MP2
-       hybridsave = DECinfo%HybridScheme
        DECinfo%HybridScheme=.false.
     end if
 
 
-    ! ******************************************
-    ! **  Starting computation of fragment    **
-    ! ******************************************
 
-    ! Special case: Include full molecular system in fragment (debug option)
+    ! ======================================================================
+    !                            Initial fragment
+    ! ======================================================================
+
+
     if(DECinfo%simulate_full .or. DECinfo%InclFullMolecule) then
-
+       ! Special case: Include full molecular system in fragment (debug option)
        call fragopt_include_fullmolecule(MyAtom,AtomicFragment, &
             &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
             &MyMolecule,mylsitem,freebasisinfo,t1full)
 
-       ! Restore the original CC model
-       if(DECinfo%use_mp2_frag) then
-          DECinfo%ccmodel = savemodel
-          DECinfo%HybridScheme=hybridsave
-       end if
+       ! Restore the original CC model (only relevant if it was reset above, but it doesn't hurt...)
+       DECinfo%ccmodel = savemodel
+       DECinfo%HybridScheme=hybridsave
        return
 
     else
+
        ! Start fragment optimization by calculating initial fragment
        call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,Occ_atoms,Virt_atoms)
        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
@@ -3502,10 +3502,8 @@ contains
 
 
     ! Print initial fragment information
-    LagEnergyDiff=0.0_realk
-    OccEnergyDiff=0.0_realk
-    VirtEnergyDiff=0.0_realk
     call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+
 
 
 
@@ -3513,8 +3511,7 @@ contains
     !                             Expansion loop
     ! ======================================================================
 
-
-    ! Expansion is done using the MP2 model (if DECinfo%use_mp2_frag=true).
+    ! Expansion is done using the MP2 model if DECinfo%fragopt_exp_mp2=true).
     EXPANSION_LOOP: do iter = 1,DECinfo%maxiter
 
        ! Save information for current fragment (in case current fragment is the final one)
@@ -3559,22 +3556,29 @@ contains
     end if
 
 
+
+    ! ======================================================================
+    !             Transition from expansion to reduction loop
+    ! ======================================================================
+
+
     ! Save contributions from individual local orbitals for current fragment
     ! **********************************************************************
-    ! (the current fragment is larger than the converged fragment)
+    ! Note 1: The current fragment is larger than the converged fragment
+    ! Note 2: This information is only used for local reduction procedure below (not fragment-adapted)
     call mem_alloc(OccContribs,nocc)
     call mem_alloc(VirtContribs,nunocc)
     OccContribs=0.0E0_realk
     VirtContribs=0.0E0_realk
 
-    ! Contributions from occupied orbitals 
+    ! Contributions from local occupied orbitals 
     do i=1,AtomicFragment%noccAOS
        ! index of occupied AOS orbital "i" in list of ALL occupied orbitals in the molecule
        idx=AtomicFragment%occAOSidx(i)
        OccContribs(idx) = AtomicFragment%OccContribs(i)
     end do
 
-    ! Contributions from virtual orbitals
+    ! Contributions from local virtual orbitals
     do i=1,AtomicFragment%nunoccAOS
        ! index of virtual AOS orbital "i" in list of ALL virtual orbitals in the molecule
        idx=AtomicFragment%unoccAOSidx(i)
@@ -3613,40 +3617,51 @@ contains
     end if FragAdapt
 
 
-    ! Restore the original CC model for reduction step
-    if(DECinfo%use_mp2_frag) then
+    ! Which model for reduction loop?
+    ! *******************************
+    if(DECinfo%fragopt_red_mp2) then
+       ! Do reduction with MP2 calculations --> set model to be MP2.
+       DECinfo%ccmodel = MODEL_MP2
+       DECinfo%HybridScheme=.false.
+    else
+       ! Use original model for reduction loop --> restore original model
        DECinfo%ccmodel = savemodel
        DECinfo%HybridScheme=hybridsave
     end if
 
 
+
     ! Save energies in converged space of local orbitals
     ! **************************************************
-    if(DECinfo%ccmodel==MODEL_MP2) then
-       ! This is the MP2 model OR
-       ! we did not use MP2 calculations in the fragment optimization procedure
-       ! --> in both cases we do not need to repeat energy calculations;
-       !     we simply copy the energy from the expansion loop.
+    if(DECinfo%fragopt_exp_mp2 .eqv. DECinfo%fragopt_red_mp2) then
+       ! If the same model is used for expansion and reduction
+       ! (e.g. using MP2 for expansion AND reduction  
+       !   - or - using CCSD for expansion and reduction)
+       ! then we can simply copy reference energy from expansion calculation
        AtomicFragment%LagFOP = LagEnergyOld
        AtomicFragment%EoccFOP = OccEnergyOld
        AtomicFragment%EvirtFOP = VirtEnergyOld
     else
-       ! Higher order CC model (e.g. CCSD): Calculate new reference energy
+       ! Different model in expansion and reduction steps - Calculate new reference energy
+       ! for converged fragment from expansion loop.
        call atomic_fragment_energy_and_prop(AtomicFragment)
        LagEnergyDiff=0.0_realk
        OccEnergyDiff=0.0_realk
        VirtEnergyDiff=0.0_realk
        iter=0
-       write(DECinfo%output,*) 'FOP Calculated atomic fragment energy for higher-order CC model'
+       write(DECinfo%output,*) 'FOP Calculated reference atomic fragment energy for relevant CC model'
+       write(DECinfo%output,*) 'FOP CC model number: ', DECinfo%ccmodel
        call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
        LagEnergyOld = AtomicFragment%LagFOP
        OccEnergyOld= AtomicFragment%EoccFOP
        VirtEnergyOld = AtomicFragment%EvirtFOP
     end if
 
-    ! Save dimensions for statistics
-    nocc_exp = AtomicFragment%noccAOS
-    nvirt_exp = AtomicFragment%nunoccAOS
+
+
+    ! ======================================================================
+    !                             Reduction loop
+    ! ======================================================================
 
 
     write(DECinfo%output,*) ' FOP'
@@ -3661,6 +3676,7 @@ contains
        call fragopt_reduce_FOs(MyAtom,AtomicFragment, &
             &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
             &MyMolecule,mylsitem,freebasisinfo,t2,max_iter_red)
+       call array4_free(t2)
     else
        ! Reduce using local orbitals
        if(present(t1full)) then
@@ -3679,15 +3695,19 @@ contains
     if(freebasisinfo) then
        call atomic_fragment_free_basis_info(AtomicFragment)
     end if
+    call mem_dealloc(OccContribs)
+    call mem_dealloc(VirtContribs)
 
     ! Ensure that energies in fragment are set consistently
     call set_energies_ccatom_structure_fragopt(AtomicFragment)
 
-    call mem_dealloc(OccContribs)
-    call mem_dealloc(VirtContribs)
 
+    ! Restore the original CC model 
+    ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
+    DECinfo%ccmodel = savemodel
+    DECinfo%HybridScheme=hybridsave
 
-  end subroutine optimize_atomic_fragment_FO
+  end subroutine optimize_atomic_fragment
 
 
   !> Given a converged atomic fragment using local orbitals, determine fragment
