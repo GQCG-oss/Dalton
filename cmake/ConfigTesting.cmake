@@ -16,5 +16,16 @@ include(TestsCommon)
 include(TestsDALTON)
 include(TestsLSDALTON)
 
+configure_file(
+    ${CMAKE_SOURCE_DIR}/cmake/CTestCustom.cmake.in
+    ${CMAKE_BINARY_DIR}/CTestCustom.cmake
+    @ONLY
+    )
+configure_file(
+    ${CMAKE_SOURCE_DIR}/cmake/ConfigPreTest.cmake.in
+    ${CMAKE_BINARY_DIR}/ConfigPreTest.cmake
+    @ONLY
+    )
+
 include(CTest)
 enable_testing()
