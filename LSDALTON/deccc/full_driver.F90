@@ -1710,7 +1710,9 @@ contains
 
     ! Sanity check
     if(.not. DECinfo%use_canonical) then
-       call lsquit('full_canonical_mp2_correlation_energy requires canonical orbitals!',-1)
+       call lsquit('full_canonical_mp2_correlation_energy requires canonical orbitals! &
+            & Insert .CANONICAL keyword OR insert .PRINTFRAGS keyword to run test calculation,&
+            & where the individual fragment energies are calculated',-1)
     end if
 
     ! Initialize stuff

@@ -563,14 +563,6 @@ contains
        end if
     end if
 
-    ! For special case of full MP2, we simply only accept canonical orbitals!
-    if(DECinfo%user_defined_orbitals .and. DECinfo%ccmodel==MODEL_MP2 .and. DECinfo%full_molecular_cc) then
-       write(DECinfo%output,*) 'WARNING! You have requested a full molecular MP2 calculation using'
-       write(DECinfo%output,*) 'local orbitals. This option is currently not available so I will'
-       write(DECinfo%output,*) 'use canonical orbitals instead!'
-       DECinfo%use_canonical = .true.
-    end if
-
 
     ! Set CC residual threshold to be 0.01*FOT
     ! - unless it was specified explicitly in the input.
@@ -591,6 +583,13 @@ contains
 
     if(DECinfo%SinglesPolari) then
        call lsquit('Full singles polarization has been temporarily disabled!',-1)
+    end if
+
+    if(DECinfo%full_print_frag_energies) then
+       if(DECinfo%ccmodel/=MODEL_MP2 .and. DECinfo%ccmodel/=MODEL_CCSD) then
+          print *, 'MODEL: ', DECinfo%cc_models(DECinfo%ccmodel)
+          call lsquit('Printing of fragment energies not implemented for this CC model!',-1)
+       end if
     end if
 
 
