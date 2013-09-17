@@ -392,7 +392,7 @@ contains
 
 #ifdef MOD_UNRELEASED
        case('.CCDEBUG'); DECinfo%CCDEBUG=.true.
-       case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
+       case('.CCSOLVER_LOCAL'); DECinfo%solver_par=.false.
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
        case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.

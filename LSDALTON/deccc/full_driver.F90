@@ -1327,7 +1327,12 @@ contains
     real(realk) :: energy
     type(array4) :: VOVO
     real(realk),pointer :: ppfock(:,:)
-
+    logical :: local
+    local = .true.
+#ifdef VAR_MPI
+    local = .false.
+#endif
+    
 
     ! Quick fix to always use CCSD model
     !    save_model=DECinfo%ccmodel
@@ -1356,18 +1361,18 @@ contains
 
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%numocc
-       call ccsolver(MyMolecule%ypo(1:nbasis,startidx:endidx),&
+       call ccsolver_par(MyMolecule%ypo(1:nbasis,startidx:endidx),&
             & MyMolecule%ypv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
             & print_level,fragment_job,&
-            & ppfock,MyMolecule%qqfock,energy, Tai, Taibj, VOVO,.false.)
+            & ppfock,MyMolecule%qqfock,energy, Tai, Taibj, VOVO,.false.,local)
        call mem_dealloc(ppfock)
 
     else
 
-       call ccsolver(MyMolecule%ypo,MyMolecule%ypv,&
+       call ccsolver_par(MyMolecule%ypo,MyMolecule%ypv,&
             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, fragment_job,&
             & MyMolecule%ppfock,MyMolecule%qqfock,&
-            & energy, Tai, Taibj, VOVO,.false.)
+            & energy, Tai, Taibj, VOVO,.false.,local)
     end if
 
     call array4_free(VOVO)
