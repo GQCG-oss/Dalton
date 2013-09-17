@@ -102,8 +102,9 @@ contains
     DECinfo%HybridScheme=.false.
     DECinfo%FragmentExpansionSize = 5
     DECinfo%fragadapt=.false.
-    ! for ccsd(t) calculations, option to use MP2 optimized fragments
-    DECinfo%use_mp2_frag=.true.
+    ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
+    DECinfo%fragopt_exp_mp2=.true.  ! Use MP2 fragments for expansion procedure
+    DECinfo%fragopt_red_mp2=.true.  ! Use MP2 fragments for reduction procedure
     DECinfo%OnlyOccPart=.false.
     ! Repeat atomic fragment calcs after fragment optimization
     DECinfo%RepeatAF=.true.
@@ -111,8 +112,8 @@ contains
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set=.false.
-    ! Pair reduction distance - default 5 Angstrom.
-    DECinfo%PairReductionDistance = 5.0E0_realk/bohr_to_angstrom
+    ! Pair reduction distance - set high to avoid using in practice right now...
+    DECinfo%PairReductionDistance = 1000000.0E0_realk
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
 
     ! Memory use for full molecule structure
@@ -398,8 +399,10 @@ contains
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
        case('.CCSD(T)'); DECinfo%ccModel=MODEL_CCSDpT; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.RPA'); DECinfo%ccModel=MODEL_RPA; DECinfo%use_singles=.false.; DECinfo%CCDEBUG=.true.
-       case('.NOTUSEMP2FRAG') 
-          DECinfo%use_mp2_frag=.false.
+       case('.NOTMP2EXP') 
+          DECinfo%fragopt_exp_mp2=.false.
+       case('.NOTMP2RED') 
+          DECinfo%fragopt_red_mp2=.false.
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.F12'); DECinfo%F12=.true.
        case('.F12DEBUG'); DECinfo%F12DEBUG=.true.
@@ -544,7 +547,7 @@ contains
     end if SimulateFullCalc
 
 
-    if(DECinfo%ccmodel==MODEL_CCSDpT .and. DECinfo%restart .and. (.not. DECinfo%use_mp2_frag)) then
+    if(DECinfo%ccmodel==MODEL_CCSDpT .and. DECinfo%restart) then
        call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
     end if
 
@@ -591,11 +594,8 @@ contains
     end if
 
 
-    ! FOs do not work with reduced pairs, set reduction distance to 1000000 to
-    ! avoid it from being used in practice
-    ! Also use purification of FOs.
+    ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
-       DECinfo%PairReductionDistance = 1.0e6_realk
        DECinfo%purifyMOs=.true.
     end if
 
@@ -692,7 +692,8 @@ end if
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'HybridScheme ', DECitem%HybridScheme
     write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
-    write(lupri,*) 'use_mp2_frag ', DECitem%use_mp2_frag
+    write(lupri,*) 'fragopt_exp_mp2 ', DECitem%fragopt_exp_mp2
+    write(lupri,*) 'fragopt_red_mp2 ', DECitem%fragopt_red_mp2
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance

@@ -1388,11 +1388,6 @@ contains
        call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
     endif
 
-    ! Only implemented for MP2
-    if(DECinfo%ccModel /= MODEL_MP2) then
-       call lsquit('mp2_solver called with other model than MP2',DECinfo%output)
-    end if
-
 
 
 

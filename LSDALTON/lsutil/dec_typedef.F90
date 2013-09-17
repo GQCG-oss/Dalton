@@ -23,7 +23,7 @@ module dec_typedef_module
 
   !> \author Kasper Kristensen
   !> \date June 2010
-  !> \brief Contains settings for DEC calculation
+  !> \brief Contains settings for DEC calculation, see default settings in dec_set_default_config.
   type DECsettings
 
      ! ****************************************************************************************
@@ -258,8 +258,10 @@ module dec_typedef_module
      logical :: HybridScheme
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
-     !> Use MP2 optimized fragments (default)
-     logical :: use_mp2_frag
+     !> Use MP2 energies for expansion part of fragment optimization
+     logical :: fragopt_exp_mp2
+     !> Use MP2 energies for reduction part of fragment optimization
+     logical :: fragopt_red_mp2
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Repeat atomic fragment calculations after fragment optimization?
@@ -497,17 +499,6 @@ module dec_typedef_module
      !> otherwise there are included in the occAOSidx list).
      integer,pointer :: coreidx(:) => null()
 
-
-     ! Special info for reduced fragment of lower accuracy
-     !****************************************************
-     !> Number of occupied AOS orbitals 
-     integer :: REDnoccAOS=0
-     !> Total number of unoccupied orbitals (AOS)
-     integer :: REDnunoccAOS=0
-     !> Occupied orbital indices (AOS) for reduced fragment
-     integer, pointer :: REDoccAOSidx(:) => null()
-     !> All unoccupied orbital indices (AOS)
-     integer, pointer :: REDunoccAOSidx(:) => null()
 
      !> Indices of occupied EOS in AOS basis
      integer, pointer :: idxo(:) => null()

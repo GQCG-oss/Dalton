@@ -2277,10 +2277,10 @@ contains
     ! Cases where it is necessary to repeat atomic fragment calcs:
     ! - first order properties are requested
     ! - only one fragment (debug case: avoid empty job list)
-    ! - fragment opt using local orbs using MP2 calculations but
-    !   where the CC model of interest is not MP2.
+    ! - fragment opt where reduction step is done at the MP2 level
+    !   but where the target CC model is not MP2.
     if(DECinfo%first_order .or. nfrags==1 .or. &
-         & (DECinfo%ccmodel/=1 .and. (.not. DECinfo%fragadapt) ) ) then
+         & (DECinfo%ccmodel/=1 .and. DECinfo%fragopt_red_mp2 ) ) then
        DECinfo%RepeatAF=.true.
     else
        DECinfo%RepeatAF=.false.
