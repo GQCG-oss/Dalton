@@ -105,6 +105,7 @@ EXCLISTS
 cat > perohf_prop.dal <<'%EOF%'
 **DALTON
 .RUN PROPERTIES
+.DIRECT
 .PEQM
 *PEQM
 .VERBOSE
@@ -151,7 +152,7 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Convergence
 #
-CRIT1=`$GREP "*** DIIS converged in  17 iterations" $log | wc -l`
+CRIT1=`$GREP "*** DIIS converged in  11 iterations" $log | wc -l`
 TEST[2]=`expr $CRIT1 `
 CTRL[2]=1
 ERROR[2]="CONVERGENCE PROBLEM"
@@ -197,9 +198,9 @@ ERROR[5]="DIPOLE MOMENT NOT CORRECT"
 #
 # frequency independent polarizability
 #
-CRIT1=`$GREP "Ex *  6\.4283.. * (\-|\-0)\.15803.. * 3\.8442...E\-02" $log | wc -l`
-CRIT2=`$GREP "Ey * (\-|\-0)\.15805.. * 9\.4956.. * (\-|\-0)\.21779.." $log | wc -l`
-CRIT3=`$GREP "Ez * 3\.8442...E\-02 * (\-|\-0)\.21779.. * 2\.5700.." $log | wc -l`
+CRIT1=`$GREP "Ex *  6\.4283.. * (\-|\-0)\.1580... * 3\.844....E\-02" $log | wc -l`
+CRIT2=`$GREP "Ey * (\-|\-0)\.1580... * 9\.4956.. * (\-|\-0)\.2177..." $log | wc -l`
+CRIT3=`$GREP "Ez * 3\.844....E\-02 * (\-|\-0)\.2177... * 2\.5700.." $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[6]=3
 ERROR[6]="FREQUENCY INDEPENDENT POLARIZABILITY NOT CORRECT"
@@ -207,9 +208,9 @@ ERROR[6]="FREQUENCY INDEPENDENT POLARIZABILITY NOT CORRECT"
 #
 # frequency dependent polarizability
 #
-CRIT1=`$GREP "Ex * 6\.4535.. * (\-|\-0)\.15851.. * 3\.8603...E\-02" $log | wc -l`
-CRIT2=`$GREP "Ey * (\-|\-0)\.15853.. * 9\.5309.. * (\-|\-0)\.21860.." $log | wc -l`
-CRIT3=`$GREP "Ez * 3\.8604...E\-02 * (\-|\-0)\.21860.. * 2\.5788.." $log | wc -l`
+CRIT1=`$GREP "Ex * 6\.4535.. * (\-|\-0)\.1585... * 3\.860....E\-02" $log | wc -l`
+CRIT2=`$GREP "Ey * (\-|\-0)\.1585... * 9\.5309.. * (\-|\-0)\.2186..." $log | wc -l`
+CRIT3=`$GREP "Ez * 3\.860....E\-02 * (\-|\-0)\.2186... * 2\.5788.." $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[7]=3
 ERROR[7]="FREQUENCY DEPENDENT POLARIZABILITY NOT CORRECT"
