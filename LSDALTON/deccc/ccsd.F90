@@ -60,7 +60,7 @@ module ccsd_module
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, getsinglesresidualccsd,fullmolecular_get_aot1fock,calculate_E2_and_permute, &
-         & get_max_batch_sizes,ccsd_energy_full,print_ccsd_full
+         & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ
     private
 
   interface Get_AOt1Fock
@@ -4943,10 +4943,12 @@ contains
   end subroutine get_fock_matrix_for_dec_oa
 
 
-  !> \brief: calculate ccsd correlation energy for full molecule calculation
+  !> \brief: calculate atomic and pair fragment contributions to CCSD
+  !> correlation energy for full molecule calculation.
+  !> Currently, only for occupied partitioning scheme.
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsd_energy_full(nocc,nvirt,natoms,offset,ccsd_doubles,ccsd_singles,integral,occ_orbitals,&
+  subroutine ccsd_energy_full_occ(nocc,nvirt,natoms,offset,ccsd_doubles,ccsd_singles,integral,occ_orbitals,&
                            & eccsdpt_matrix_cou,eccsdpt_matrix_exc)
 
     implicit none
@@ -5033,13 +5035,15 @@ contains
     eccsdpt_matrix_cou = 2.0E0_realk * eccsdpt_matrix_cou - eccsdpt_matrix_exc
 
     ! for the pair fragment energy matrix,
-    ! we only consider pairs IJ where J>I; thus, move contributions
+    ! we only consider pairs IJ where J>I; thus, move contributions and set J<I contribs to zero.
+    ! (must be consistent with printout in print_pair_fragment_energies)
 
-    do AtomJ=1,natoms
-       do AtomI=AtomJ+1,natoms
+    do AtomI=1,natoms
+       do AtomJ=AtomI+1,natoms
 
           eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
                                               & + eccsdpt_matrix_cou(AtomJ,AtomI)
+          eccsdpt_matrix_cou(AtomJ,AtomI) = 0.0_realk
        end do
     end do
 
@@ -5048,13 +5052,14 @@ contains
     ! ************** done w/ energy for full molecule ******************
     ! ******************************************************************
 
-  end subroutine ccsd_energy_full
+  end subroutine ccsd_energy_full_occ
 
 
   !> \brief: print out CCSD fragment and pair interaction energies for full molecule calculation 
+  !> Only for occupied partitioning scheme.
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_ccsd_full(natoms,ccsd_matrix,orbitals_assigned,distance_table)
+  subroutine print_ccsd_full_occ(natoms,ccsd_matrix,orbitals_assigned,distance_table)
 
     implicit none
 
@@ -5066,83 +5071,21 @@ contains
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
     integer :: i,j
-!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
 
-    ! print out fragment energies
-    if(.not.DECinfo%CCDhack)then
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,'(1X,a)') '*           CCSD energies - occupied partitioning             *'
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCSD)'
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,*)
-    else
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,'(1X,a)') '*            CCD energies - occupied partitioning             *'
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCD)'
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,*)
-    endif
-
-    do i=1,natoms
-
-       if (orbitals_assigned(i)) then
-
-          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, ccsd_matrix(i,i)
-
-       end if
-
-    end do
-
-    ! now print out pair interaction energies
 
     if(.not.DECinfo%CCDhack)then
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCSD)                   '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
+       call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+            & 'CCSD occupied single energies','AF_CCSD_OCC')
+       call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+            & Distance_table, 'CCSD occupied pair energies','PF_CCSD_OCC')
     else
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCD)                   '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
+       call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+            & 'CCD occupied single energies','AF_CCD_OCC')
+       call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+            & Distance_table, 'CCD occupied pair energies','PF_CCD_OCC')
     endif
 
-    do j=1,natoms
-       do i=j+1,natoms
-
-          ! write increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
-                  & bohr_to_angstrom*distance_table(i,j), ccsd_matrix(i,j)
-
-          end if
-
-       end do
-    end do
-
-
-  end subroutine print_ccsd_full
+  end subroutine print_ccsd_full_occ
 
 
 

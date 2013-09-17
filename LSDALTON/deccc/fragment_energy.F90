@@ -40,7 +40,7 @@ module fragment_energy_module
 
 public :: optimize_atomic_fragment, pair_driver_singles, atomic_driver, &
      & pair_driver,atomic_driver_advanced,dec_energy_control_center,&
-     & Full_DEC_calculation_Lagrangian,estimate_energy_error
+     & Full_DECMP2_calculation,estimate_energy_error
 private
 
 contains
@@ -1372,7 +1372,7 @@ contains
   !> Only implemented for MP2.
   !> \author Kasper Kristensen
   !> \date April 2011
-  subroutine Full_DEC_calculation_Lagrangian(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
+  subroutine Full_DECMP2_calculation(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
        & natoms,nocctot,nunocc, DistanceTable,Ecorr)
 
     implicit none
@@ -1689,10 +1689,14 @@ contains
 
 
     ! Total fragment correlation density matrix
+    Ecorr =0.0_realk
     do atomI=1,natoms
        do atomJ=1,natoms
           energy_matrix(atomI,atomJ) = e1(atomI,atomJ) &
                & + e2(atomI,atomJ) + e3(atomI,atomJ) + e4(atomI,atomJ)
+          ! Calculate correlation energy using occ scheme
+          ! (of course we get the same for the other schemes).
+          Ecorr = Ecorr + e1(atomI,atomJ)
        end do
     end do
 
@@ -1709,212 +1713,23 @@ contains
     end do
 
 
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '*****************************************************************************'
-    write(DECinfo%output,'(1X,a)') '*               Full DEC Lagrangian calculation is done!                    *'
-    write(DECinfo%output,'(1X,a)') '*****************************************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Atomic fragments'
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
+    ! Print stuff
+    call print_atomic_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
+         & 'MP2 Lagrangian single energies','AF_MP2_LAG')
+    call print_atomic_fragment_energies(natoms,e1,orbitals_assigned,&
+         & 'MP2 occupied single energies','AF_MP2_OCC')
+    call print_atomic_fragment_energies(natoms,e3,orbitals_assigned,&
+         & 'MP2 virtual single energies','AF_MP2_VIR')
+    call print_pair_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
+         & DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
+    call print_pair_fragment_energies(natoms,e1,orbitals_assigned,&
+         & DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
+    call print_pair_fragment_energies(natoms,e3,orbitals_assigned,&
+         & DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')
 
-    singleenergy=0E0_realk
-    do i=1,natoms
-       if(orbitals_assigned(i)) then
-          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, energy_matrix(i,i)
-          singleenergy = singleenergy + energy_matrix(i,i)
-       end if
-    end do
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-    write(DECinfo%output,'(8X,a)') '-- Pair fragments'
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)           deltaE(PQ) '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    pairenergy=0E0_realk
-    do i=1,natoms
-       do j=i+1,natoms
-
-          ! print increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',i,j,&
-                  &bohr_to_angstrom*DistanceTable(i,j), energy_matrix(i,j)
-             pairenergy = pairenergy + energy_matrix(i,j)
-          end if
-
-       end do
-    end do
-    Ecorr = singleenergy + pairenergy
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)')   '------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,g20.10)') 'Atomic fragment energy   = ', singleenergy
-    write(DECinfo%output,'(1X,a,g20.10)') 'Pair atomic fragment en. = ', pairenergy
-    write(DECinfo%output,'(1X,a,g20.10)') 'Total correlation energy = ', Ecorr
-    write(DECinfo%output,'(1X,a)')    '-----------------------------------------------------'
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '-- Atomic fragments - the four contributions'
-    write(DECinfo%output,'(1X,a)') '********************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(7X,a)') '-- Contribution 1'
-    write(DECinfo%output,'(7X,a)') '------    --------------------'
-    write(DECinfo%output,'(7X,a)') ' Atom            Energy '
-    write(DECinfo%output,'(7X,a)') '------    --------------------'
-
-    do i=1,natoms
-       if(orbitals_assigned(i)) then
-          write(DECinfo%output,'(a,i6,4X,g20.10)') '#Se1#',i, e1(i,i)
-       end if
-    end do
-
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(7X,a)') '-- Contribution 2'
-    write(DECinfo%output,'(7X,a)') '------    --------------------'
-    write(DECinfo%output,'(7X,a)') ' Atom            Energy '
-    write(DECinfo%output,'(7X,a)') '------    --------------------'
-
-    do i=1,natoms
-       if(orbitals_assigned(i)) then
-          write(DECinfo%output,'(a,i6,4X,g20.10)') '#Se2#',i, e2(i,i)
-       end if
-    end do
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(7X,a)') '-- Contribution 3'
-    write(DECinfo%output,'(7X,a)') '------    --------------------'
-    write(DECinfo%output,'(7X,a)') ' Atom            Energy '
-    write(DECinfo%output,'(7X,a)') '------    --------------------'
-
-    do i=1,natoms
-       if(orbitals_assigned(i)) then
-          write(DECinfo%output,'(a,i6,4X,g20.10)') '#Se3#',i, e3(i,i)
-       end if
-    end do
-
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(7X,a)') '-- Contribution 4'
-    write(DECinfo%output,'(7X,a)') '------    --------------------'
-    write(DECinfo%output,'(7X,a)') ' Atom            Energy '
-    write(DECinfo%output,'(7X,a)') '------    --------------------'
-
-    do i=1,natoms
-       if(orbitals_assigned(i)) then
-          write(DECinfo%output,'(a,i6,4X,g20.10)') '#Se4#',i, e4(i,i)
-       end if
-    end do
-
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '-- Pair fragments - the four contributions'
-    write(DECinfo%output,'(1X,a)') '******************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-    write(DECinfo%output,'(7X,a)') '-- Contribution 1'
-    write(DECinfo%output,'(7X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,'(7X,a)') '   P         Q        R(Ang)           deltaE(PQ) '
-    write(DECinfo%output,'(7X,a)') '------    ------    ----------    --------------------'
-    pairenergy=0E0_realk
-    do i=1,natoms
-       do j=i+1,natoms
-
-          ! print increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#Pe1#', i,j,&
-                  &bohr_to_angstrom*DistanceTable(i,j), e1(i,j)
-          end if
-
-       end do
-    end do
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-    write(DECinfo%output,'(7X,a)') '-- Contribution 2'
-    write(DECinfo%output,'(7X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,'(7X,a)') '   P         Q        R(Ang)           deltaE(PQ) '
-    write(DECinfo%output,'(7X,a)') '------    ------    ----------    --------------------'
-    pairenergy=0E0_realk
-    do i=1,natoms
-       do j=i+1,natoms
-
-          ! print increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#Pe2#', i,j,&
-                  &bohr_to_angstrom*DistanceTable(i,j), e2(i,j)
-          end if
-
-       end do
-    end do
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-
-    write(DECinfo%output,'(7X,a)') '-- Contribution 3'
-    write(DECinfo%output,'(7X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,'(7X,a)') '   P         Q        R(Ang)           deltaE(PQ) '
-    write(DECinfo%output,'(7X,a)') '------    ------    ----------    --------------------'
-    pairenergy=0E0_realk
-    do i=1,natoms
-       do j=i+1,natoms
-
-          ! print increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#Pe3#', i,j,&
-                  &bohr_to_angstrom*DistanceTable(i,j), e3(i,j)
-          end if
-
-       end do
-    end do
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-
-    write(DECinfo%output,'(7X,a)') '-- Contribution 4'
-    write(DECinfo%output,'(7X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,'(7X,a)') '   P         Q        R(Ang)           deltaE(PQ) '
-    write(DECinfo%output,'(7X,a)') '------    ------    ----------    --------------------'
-    pairenergy=0E0_realk
-    do i=1,natoms
-       do j=i+1,natoms
-
-          ! print increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#Pe4#', i,j,&
-                  &bohr_to_angstrom*DistanceTable(i,j), e4(i,j)
-          end if
-
-       end do
-    end do
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
     call mem_dealloc(ppfock)
 
-  end subroutine Full_DEC_calculation_Lagrangian
+  end subroutine Full_DECMP2_calculation
 
 
 
