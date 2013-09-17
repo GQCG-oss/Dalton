@@ -835,9 +835,10 @@ contains
     type(array2) :: t1_final!,ccsdpt_t1
     logical :: local
 
-    local = .true.
 #ifdef VAR_MPI
-    if(infpar%lg_nodtot>1) local=.false.
+    local=.true.
+#else
+    local=.false.
 #endif
 
 
