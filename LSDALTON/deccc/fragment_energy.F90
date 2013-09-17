@@ -1724,18 +1724,22 @@ contains
 
 
     ! Print stuff
-    call print_atomic_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
-         & 'MP2 Lagrangian single energies','AF_MP2_LAG')
     call print_atomic_fragment_energies(natoms,e1,orbitals_assigned,&
          & 'MP2 occupied single energies','AF_MP2_OCC')
-    call print_atomic_fragment_energies(natoms,e3,orbitals_assigned,&
-         & 'MP2 virtual single energies','AF_MP2_VIR')
-    call print_pair_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
-         & DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
+    if(.not.DECinfo%onlyoccpart) then
+       call print_atomic_fragment_energies(natoms,e3,orbitals_assigned,&
+            & 'MP2 virtual single energies','AF_MP2_VIR')
+       call print_atomic_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
+            & 'MP2 Lagrangian single energies','AF_MP2_LAG')
+    end if
     call print_pair_fragment_energies(natoms,e1,orbitals_assigned,&
          & DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
-    call print_pair_fragment_energies(natoms,e3,orbitals_assigned,&
-         & DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')
+    if(.not.DECinfo%onlyoccpart) then
+       call print_pair_fragment_energies(natoms,e3,orbitals_assigned,&
+            & DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')
+       call print_pair_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
+            & DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
+    end if
 
     call mem_dealloc(ppfock)
     call mem_dealloc(DistanceTable)

@@ -5229,21 +5229,21 @@ if(DECinfo%PL>0) then
 
     ! Different density matrix definitions depending on scheme
     ! - this is work in progress and will probably be modified.
+    ! See DECsettings type definition for details.
 
-    if(DECinfo%ccmodel==MODEL_MP2) then
-       ! MP2 model: Construct density matrix based only on EOS amplitudes
+    CorrDensDefinition: select case(DECinfo%CorrDensScheme)
+    case(1)
+       ! Construct density matrix based only on EOS amplitudes
        call calculate_corrdens_EOS(t2,MyFragment)
-    else
-       ! Beyond MP2: Work in progress (will be documented better when optimal solution has been found)
-       if(DECinfo%OnlyOccPart) then ! only use occupied partitioning scheme
-          ! Use AOS ampltiudes but with special emphasis on EOS.
-          call calculate_corrdens_semiEOS(t2,MyFragment)
-       else
+    case(2)
+       ! Use AOS amplitudes but with special emphasis on EOS for virtual FOs,
+       ! while, for occupied FOs, we put equal weight on all AOS amplitudes.
+       call calculate_corrdens_semiEOS(t2,MyFragment)
+    case(3)
           ! Use AOS amplitudes with equal weight on all amplitudes.
           call calculate_corrdens_AOS(t2,MyFragment)
-       end if
-    end if
-    
+    end select CorrDensDefinition
+
     MyFragment%CDset=.true.
 
   end subroutine calculate_corrdens

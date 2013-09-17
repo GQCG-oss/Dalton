@@ -266,6 +266,14 @@ module dec_typedef_module
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
+     !> How to construct correlation density defining fragment-adapted orbitals?
+     !> THIS IS WORK IN PROGRESS AND SHOULD BE MODIFIED!!!
+     !> For now, for atomic site P: 
+     !> CorrDensScheme=1:   Only EOS ampllitudes enter corr. dens . (ij \in P)
+     !> CorrDensScheme=2:   EOS and EOS-coupling amplitudes         (i\in P, j \in [P] or vice versa)
+     !> CorrDensScheme=3:   All AOS ampllitudes                     (ij \in [P])
+     !> Note that scheme 2 is only meaningful for occupied partitioning scheme.
+     integer :: CorrDensScheme
      ! --  
 
      !> Pair fragments

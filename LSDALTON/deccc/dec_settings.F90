@@ -108,6 +108,8 @@ contains
     DECinfo%OnlyOccPart=.false.
     ! Repeat atomic fragment calcs after fragment optimization
     DECinfo%RepeatAF=.true.
+    ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
+    DECinfo%CorrDensScheme=1
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
@@ -318,6 +320,10 @@ contains
        case('.FOT')  
           read(input,*) FOTlevel
           call set_input_for_fot_level(FOTlevel)
+
+          !> Correlation density for fragment-adapted orbitals, see DECsettings type definition.
+       case('.CORRDENS')  
+          read(input,*) DECinfo%CorrDensScheme
 
           ! Use frozen core approximation
        case('.FROZENCORE') 
