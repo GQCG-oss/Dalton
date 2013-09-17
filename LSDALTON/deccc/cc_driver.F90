@@ -837,7 +837,7 @@ contains
 
     local=.true.
 #ifdef VAR_MPI
-    if(infpar%lg_mynum>1)local=.false.
+    if(infpar%lg_nodtot>1)local=.false.
 #endif
 
 
@@ -1008,7 +1008,7 @@ contains
 
     local=.true.
 #ifdef VAR_MPI
-    if(infpar%lg_mynum>1)local=.false.
+    if(infpar%lg_nodtot>1)local=.false.
 #endif
 
     ! is this a frozen core calculation or not?
@@ -1222,7 +1222,7 @@ contains
 
     local=.true.
 #ifdef VAR_MPI
-    if(infpar%lg_mynum>1)local=.false.
+    if(infpar%lg_nodtot>1)local=.false.
 #endif
 
     ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
@@ -1236,9 +1236,10 @@ contains
     end if
 
     if(DECinfo%CCDEBUG)then
-        call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
-         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-         & t1_final,t2_final,VOVO,.false.)
+      call ccsolver_debug(myfragment%ypo,myfragment%ypv,&
+         & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
+         & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
+         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored)
     else
       call ccsolver_par(myfragment%ypo,myfragment%ypv,&
          & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
@@ -2396,9 +2397,9 @@ contains
        case(MODEL_MP2)
           call lsquit("ERROR(ccsolver_par):no mp2 implemented",DECinfo%output)
        case(MODEL_CC2)
-          if(.not.local) &
-            &call lsquit("ERROR(ccsolver_par):cc2 not implemented for non-local solver&
-            & --> use .CCSOLVER_LOCAL",DECinfo%output)
+          !if(.not.local) &
+          !  &call lsquit("ERROR(ccsolver_par):cc2 not implemented for non-local solver&
+          !  & --> use .CCSOLVER_LOCAL",DECinfo%output)
           call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
              & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
              & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,local,rest=restart)

@@ -662,6 +662,51 @@ contains
   !> \brief Get CCSD residual in an integral direct fashion.
   !> \author Patrick Ettenhuber
   !> \date December 2012
+  !
+  !deltafock = on input deltafock is the difference fock matrix of one fragment with
+  !respect to the fock matrix of the full molecule, this only has relevance for
+  !DEC calculations, else it is 0
+  !
+  !omega2 = is the residual defined as type array. if local = .true. the array
+  !is assumed to be in local memory stored in the elms1 variable, else it is
+  !assumed to be in parallel distributed memory
+  !
+  !t2 = are the amplitudes as array type, the "local" variable gives the assumed
+  !data distribution as for omega2
+  !
+  !fock = is the ao Fock matrix which is only needed in case of a CC2
+  !calculation
+  !
+  !govov = is an mo-integral matrix in the distribution dictated by "local" as
+  !t2 and omega2
+  !
+  !no = number of occupied orbitals in the system
+  !
+  !nv = number of virtual orbitals in the system
+  !
+  !nb = number of basis functions in the system
+  !
+  !ppfock = is the t1 transformed occ occ fock matrix on output
+  !
+  !qqfock = is the t1 transformed virt virt fock matrix on output
+  !
+  !pqfock = is the t1 transformed occ virt fock matrix on output
+  !
+  !qpfock = is the t1 transformed virt occ fock matrix on output
+  !
+  !xo,xv,yo,yv = are the lambda particle and hole matrices for the occupied and
+  !virtual parts
+  !
+  !MyLSITEM = integral information
+  !
+  !omega1 = is the singles residual
+  !
+  !iter = the iteration number of the current cc iteration
+  !
+  !local = tells the routine (how) to handle the memory distriution
+  !
+  !rest = tells the routine wheter the calculation has been restarted from
+  !amplitude files
   subroutine get_ccsd_residual_integral_driven(deltafock,omega2,t2,fock,govov,no,nv,&
        ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
 #ifdef VAR_OMP
