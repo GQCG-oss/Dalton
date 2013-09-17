@@ -1451,6 +1451,7 @@ contains
        offset=0
     end if
     call mem_alloc(Cvirt,nbasis,nunocc)
+    Cvirt = MyMolecule%ypv
     e1=0E0_realk
     e2=0E0_realk
     e3=0E0_realk
@@ -1544,11 +1545,10 @@ contains
     call mem_dealloc(Cocc)
     call mem_dealloc(Cvirt)
 
+
     ! Get t2 amplitudes
     ! *****************
     call mp2_solver(nocc,nunocc,ppfock,MyMolecule%qqfock,g,t2)
-
-
 
     ! STATUS: Now integrals (g) and amplitudes (t) have been determined
     ! for the full molecular system. The individual fragment contributions - solved in the

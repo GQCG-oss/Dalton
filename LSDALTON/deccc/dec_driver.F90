@@ -475,7 +475,6 @@ contains
        end if
     end do
 
-
     ! Now all atomic fragment energies have been calculated and the
     ! fragment information has been stored in AtomicFragments.
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
@@ -507,7 +506,6 @@ contains
     call create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,DistanceTable,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
     njobs = jobs%njobs
-
 
     ! Zero fragment energies if they are recalculated
     if(DECinfo%RepeatAF) then
@@ -644,7 +642,6 @@ contains
        post_fragopt_restart=.false.
        
     end do MorePairs
-
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
     mastertime = twall2-twall1
