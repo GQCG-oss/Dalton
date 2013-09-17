@@ -843,7 +843,7 @@ contains
 
     local = .true.
 #ifdef VAR_MPI
-    local = .false.
+    if(infpar%lg_nodtot>1) local=.false.
 #endif
 
 
@@ -970,7 +970,7 @@ contains
     logical :: local
     local=.true.
 #ifdef VAR_MPI
-    local=.false.
+    if(infpar%lg_nodtot>1) local=.false.
 #endif
 
     ! is this a frozen core calculation or not?
@@ -1186,12 +1186,18 @@ contains
     type(array4),intent(inout) :: VOVO
     integer :: dims(2)
     real(realk) :: ccenergy
+    logical :: local
 
     ! Sanity check: This routine is not intended for MP2
     if(DECinfo%ccmodel == MODEL_MP2) then
        call lsquit('fragment_ccsolver cannot be used for MP2!',&
             & DECinfo%output)
     end if
+
+    local = .true.
+#ifdef VAR_MPI
+    if(infpar%lg_nodtot>1) local=.false.
+#endif
 
     ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
     ! from previous fragment calculations to describe long-range
@@ -1207,7 +1213,7 @@ contains
       call ccsolver_par(myfragment%ypo,myfragment%ypv,&
          & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,.false.)
+         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,local)
     else
       call ccsolver(myfragment%ypo,myfragment%ypv,&
          & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
