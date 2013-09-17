@@ -85,26 +85,16 @@ contains
          & OccOrbitals, UnoccOrbitals, DistanceTable)
 
 
-    ! Calculation type
-    ! ****************
-    CalculationType: if(DECinfo%mp2energydebug) then
-       ! DEC calculation for full molecule where exact single and pair energies are calculated.
-       ! Only for testing and only for MP2
-       call Full_DECMP2_calculation(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
-            & natoms,nocc,nunocc,DistanceTable,Ecorr)
-       Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D) 
-       call print_total_energy_summary(EHF,Ecorr,Eerr)
+    ! *************************************************
+    ! Optimize all atomic fragments and calculate pairs
+    ! *************************************************
+    call mem_alloc(mp2gradient,3,natoms)
+    call main_fragment_driver(MyMolecule,mylsitem,D,&
+         &OccOrbitals,UnoccOrbitals, &
+         & natoms,nocc,nunocc,DistanceTable,EHF,Ecorr,mp2gradient,Eerr)
 
-    else ! Optimize all fragments and calculate pairs to get full correlation energy
-
-       call mem_alloc(mp2gradient,3,natoms)
-       call main_fragment_driver(MyMolecule,mylsitem,D,&
-            &OccOrbitals,UnoccOrbitals, &
-            & natoms,nocc,nunocc,DistanceTable,EHF,Ecorr,mp2gradient,Eerr)
-       call mem_dealloc(mp2gradient)
-
-    end if CalculationType
-
+    ! Free stuff
+    call mem_dealloc(mp2gradient)
     call mem_dealloc(DistanceTable)
 
     ! Delete orbitals
@@ -475,7 +465,6 @@ contains
        end if
     end do
 
-
     ! Now all atomic fragment energies have been calculated and the
     ! fragment information has been stored in AtomicFragments.
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
@@ -507,7 +496,6 @@ contains
     call create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,DistanceTable,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
     njobs = jobs%njobs
-
 
     ! Zero fragment energies if they are recalculated
     if(DECinfo%RepeatAF) then
@@ -644,7 +632,6 @@ contains
        post_fragopt_restart=.false.
        
     end do MorePairs
-
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
     mastertime = twall2-twall1
