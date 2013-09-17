@@ -1689,7 +1689,6 @@ contains
     call ls_mpi_buffer(DECitem%ccsdGbatch,Master)
     call ls_mpi_buffer(DECitem%hack,Master)
     call ls_mpi_buffer(DECitem%hack2,Master)
-    call ls_mpi_buffer(DECitem%mp2energydebug,Master)
     call ls_mpi_buffer(DECitem%SkipReadIn,Master)
     call ls_mpi_buffer(DECitem%array_test,Master)
     call ls_mpi_buffer(DECitem%reorder_test,Master)

@@ -33,7 +33,6 @@ contains
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc = .false. ! full molecular cc
-    DECinfo%mp2energydebug    = .false.
     DECinfo%simulate_full     = .false.
     DECinfo%simulate_natoms   = 1
     DECinfo%SkipReadIn        = .false.
@@ -440,7 +439,6 @@ contains
        case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.
        case('.SIMPLEMULLIKENTHRESH'); DECinfo%simple_mulliken_threshold=.true.
        case('.NORMTHRESH'); read(input,*) DECinfo%approximated_norm_threshold
-       case('.MP2DEBUG'); DECinfo%mp2energydebug=.true.
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
        case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
        case('.SKIPREADIN'); DECinfo%SkipReadIn=.true.
@@ -669,7 +667,6 @@ end if
     write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,DECitem%ccsdGbatch
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
-    write(lupri,*) 'mp2energydebug ', DECitem%mp2energydebug
     write(lupri,*) 'SkipReadIn ', DECitem%SkipReadIn
     write(lupri,*) 'array_test ', DECitem%array_test
     write(lupri,*) 'reorder_test ', DECitem%reorder_test

@@ -1372,47 +1372,59 @@ contains
   !> Only implemented for MP2.
   !> \author Kasper Kristensen
   !> \date April 2011
-  subroutine Full_DECMP2_calculation(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
-       & natoms,nocctot,nunocc, DistanceTable,Ecorr)
+  subroutine Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
 
     implicit none
-    !> Number of atoms in full molecule
-    integer,intent(in) :: natoms
-    !> Number of occupied orbitals in molecule
-    integer,intent(in) :: nocctot
-    !> Number of unoccupied orbitals in molecule
-    integer,intent(in) :: nunocc
     !> Molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> LS Dalton info
     type(lsitem), intent(inout) :: mylsitem
-    !> Occupied MOs
-    type(ccorbital), intent(in) :: OccOrbitals(nocctot)
-    !> UnOccupied MOs
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
-    !> Distance table with interatomic distances for atoms in molecule
-    real(realk),intent(in) :: DistanceTable(natoms,natoms)
     !> Total correlation energy
     real(realk),intent(inout) :: Ecorr
-    logical,dimension(natoms) :: orbitals_assigned
+    logical,dimension(MyMolecule%natoms) :: orbitals_assigned
     real(realk),pointer :: Cocc(:,:), Cvirt(:,:)
     type(array4) :: t2, g
-    real(realk) :: energy_matrix(natoms,natoms), multaibj, multbiaj
-    integer :: nthreads, idx, nbatchINT, intstep, nbasis,ncore,offset
-    integer :: i,j,k,a,b,c,atomI,atomJ,atomA,atomB,nocc
+    real(realk) :: energy_matrix(MyMolecule%natoms,MyMolecule%natoms), multaibj, multbiaj
+    integer :: nthreads, idx, nbatchINT, intstep, ncore,offset
+    integer :: i,j,k,a,b,c,atomI,atomJ,atomA,atomB
     real(realk) :: intMEM, solMEM,OO,VV,AA,BB,mem_required
     real(realk) :: singleenergy, pairenergy, tmp, tmp2
-    real(realk),dimension(natoms,natoms) :: e1,e2,e3,e4,e1_tmp,e2_tmp,e3_tmp,e4_tmp
+    real(realk),dimension(MyMolecule%natoms,MyMolecule%natoms) :: e1,e2,e3,e4,e1_tmp,e2_tmp,e3_tmp,e4_tmp
     integer, dimension(4) :: dims
     real(realk), pointer :: gval(:,:,:),t2val(:,:,:),ppfock(:,:)
 #ifdef VAR_OMP
     integer, external :: OMP_GET_MAX_THREADS
 #endif
+    type(ccorbital), pointer :: OccOrbitals(:)
+    type(ccorbital), pointer :: UnoccOrbitals(:)
+    real(realk), pointer :: DistanceTable(:,:)
+    integer :: nocc,nunocc,nbasis,natoms
+
+    write(DECinfo%output,*) 'Using DEC-MP2 debug routine for full molecular system...'
 
     ! Only for MP2
     if(DECinfo%ccModel/=MODEL_MP2) then
-       call lsquit('Full_DEC_calculation: Only implemented for MP2!', DECinfo%output)
+       call lsquit('Full_DECMP2_calculation: Only implemented for MP2!', DECinfo%output)
     end if
+
+
+    ncore = MyMolecule%ncore
+    nOcc = MyMolecule%numocc
+    nUnocc = MyMolecule%numvirt
+    nBasis = MyMolecule%nbasis
+    nAtoms = MyMolecule%natoms
+
+    ! -- Calculate distance matrix 
+    call mem_alloc(DistanceTable,nAtoms,nAtoms)
+    DistanceTable=0.0E0_realk
+    call GetDistances(DistanceTable,nAtoms,mylsitem,DECinfo%output) ! distances in atomic units
+
+    ! -- Analyze basis and create orbitals 
+    call mem_alloc(OccOrbitals,nOcc)
+    call mem_alloc(UnoccOrbitals,nUnocc)
+    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
+         & OccOrbitals, UnoccOrbitals, DistanceTable)
+
 
     if(DECinfo%frozencore) then
        ! Frozen core: Only valence orbitals
@@ -1424,8 +1436,6 @@ contains
 
     ! Initialize stuff
     ! ****************
-    ncore = MyMolecule%ncore
-    nbasis=MyMolecule%nbasis
     energy_matrix(:,:) = 0E0_realk
     dims = [nunocc, nocc, nunocc, nocc]
     call mem_alloc(ppfock,nocc,nocc)
@@ -1728,6 +1738,16 @@ contains
          & DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')
 
     call mem_dealloc(ppfock)
+    call mem_dealloc(DistanceTable)
+
+    do i=1,nOcc
+       call orbital_free(OccOrbitals(i))
+    end do
+    do i=1,nUnocc
+       call orbital_free(UnoccOrbitals(i))
+    end do
+    call mem_dealloc(OccOrbitals)
+    call mem_dealloc(UnoccOrbitals)
 
   end subroutine Full_DECMP2_calculation
 

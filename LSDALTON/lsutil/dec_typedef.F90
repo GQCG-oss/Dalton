@@ -187,9 +187,6 @@ module dec_typedef_module
      !> General HACK parameters, to be used for easy debugging
      logical :: hack
      logical :: hack2
-     !> Full calculation where individual pair and single energies are calculated in ONE energy calc.
-     !> Only implemented for MP2 and only for debugging purposes.
-     logical :: mp2energydebug
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
      !> test the array structure

@@ -29,6 +29,7 @@ module full
   use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
   use cc_debug_routines_module
   use ccdriver!,only: ccsolver_justenergy, ccsolver
+  use fragment_energy_module,only : Full_DECMP2_calculation
 
   public :: full_driver
   private
@@ -64,7 +65,15 @@ contains
 #endif
     else
        if(DECinfo%ccModel==MODEL_MP2) then
-          call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+
+          if(DECinfo%full_print_frag_energies) then
+             ! Call debug routine which calculates individual fragment contributions
+             call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
+          else
+             ! simple canonical MP2 calculation
+             call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+          end if
+
        else
           call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
        end if
