@@ -836,9 +836,9 @@ contains
     logical :: local
 
 #ifdef VAR_MPI
-    local=.true.
-#else
     local=.false.
+#else
+    local=.true.
 #endif
 
 
@@ -1010,9 +1010,11 @@ contains
     type(ccorbital), pointer :: unocc_orbitals(:)
     logical, pointer :: orbitals_assigned(:)
     logical :: local
-    local=.true.
+
 #ifdef VAR_MPI
-    if(infpar%lg_nodtot>1) local=.false.
+    local=.false.
+#else
+    local=.true.
 #endif
 
     ! is this a frozen core calculation or not?
@@ -1236,9 +1238,10 @@ contains
             & DECinfo%output)
     end if
 
-    local = .true.
 #ifdef VAR_MPI
-    if(infpar%lg_nodtot>1) local=.false.
+    local=.false.
+#else
+    local=.true.
 #endif
 
     ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
