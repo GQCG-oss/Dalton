@@ -593,77 +593,77 @@ contains
 
 
 
-  subroutine get_ccsd_residual_integral_driven_oldarray_wrapper(deltafock,omega2,t2,fock,govov,nocc,nvirt,&
-       & ppfock,qqfock,pqfock,qpfock,xocc,xvirt,yocc,yvirt,nbas,MyLsItem, omega1,iter)
-       implicit none
-       type(array2),intent(in) :: deltafock
-       type(array4), intent(inout) :: omega2,t2
-       type(array2), intent(inout) :: ppfock, qqfock,pqfock,qpfock,omega1,fock
-       type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
-       type(lsitem), intent(inout) :: MyLsItem
-       integer,intent(in) :: nbas
-       integer,intent(in) :: nocc
-       integer,intent(in) :: nvirt
-       integer,intent(in) :: iter
-       real(realk),target,intent(inout) :: govov(nvirt*nocc*nvirt*nocc)
-       real(realk),pointer :: t2_p(:),xo_p(:),xv_p(:),yo_p(:),yv_p(:)
-       type(array) :: t2a,ga,o2
+  !subroutine get_ccsd_residual_integral_driven_oldarray_wrapper(deltafock,omega2,t2,fock,govov,nocc,nvirt,&
+  !     & ppfock,qqfock,pqfock,qpfock,xocc,xvirt,yocc,yvirt,nbas,MyLsItem, omega1,iter)
+  !     implicit none
+  !     type(array2),intent(in) :: deltafock
+  !     type(array4), intent(inout) :: omega2,t2
+  !     type(array2), intent(inout) :: ppfock, qqfock,pqfock,qpfock,omega1,fock
+  !     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
+  !     type(lsitem), intent(inout) :: MyLsItem
+  !     integer,intent(in) :: nbas
+  !     integer,intent(in) :: nocc
+  !     integer,intent(in) :: nvirt
+  !     integer,intent(in) :: iter
+  !     real(realk),target,intent(inout) :: govov(nvirt*nocc*nvirt*nocc)
+  !     real(realk),pointer :: t2_p(:),xo_p(:),xv_p(:),yo_p(:),yv_p(:)
+  !     type(array) :: t2a,ga,o2
 
-      ! get t2 and omega2 into the correct order
-      call array4_reorder(t2,[1,3,2,4])
-      call ass_D4to1(t2%val,t2_p,t2%dims)
-      t2a=array_init(t2%dims,4)
-      call memory_deallocate_array_dense(t2a)
-      call ass_D4to1(t2%val,t2a%elm1,t2%dims)
-      call assoc_ptr_arr(t2a)
+  !    ! get t2 and omega2 into the correct order
+  !    call array4_reorder(t2,[1,3,2,4])
+  !    call ass_D4to1(t2%val,t2_p,t2%dims)
+  !    t2a=array_init(t2%dims,4)
+  !    call memory_deallocate_array_dense(t2a)
+  !    call ass_D4to1(t2%val,t2a%elm1,t2%dims)
+  !    call assoc_ptr_arr(t2a)
 
-      call array4_reorder(omega2,[1,3,2,4])
-      o2=array_init(omega2%dims,4)
-      call memory_deallocate_array_dense(o2)
-      call ass_D4to1(omega2%val,o2%elm1,omega2%dims)
-      call assoc_ptr_arr(o2)
-  
-      ga=array_init([nocc,nvirt,nocc,nvirt],4)
-      call memory_deallocate_array_dense(ga)
-      ga%elm1 => govov
-      call assoc_ptr_arr(ga)
+  !    call array4_reorder(omega2,[1,3,2,4])
+  !    o2=array_init(omega2%dims,4)
+  !    call memory_deallocate_array_dense(o2)
+  !    call ass_D4to1(omega2%val,o2%elm1,omega2%dims)
+  !    call assoc_ptr_arr(o2)
+  !
+  !    ga=array_init([nocc,nvirt,nocc,nvirt],4)
+  !    call memory_deallocate_array_dense(ga)
+  !    ga%elm1 => govov
+  !    call assoc_ptr_arr(ga)
 
-      call ass_D2to1(xocc%val,xo_p,xocc%dims)
-      call ass_D2to1(xvirt%val,xv_p,xvirt%dims)
-      call ass_D2to1(yocc%val,yo_p,yocc%dims)
-      call ass_D2to1(yvirt%val,yv_p,yvirt%dims)
-      !call get_ccsd_residual_integral_driven(deltafock%val,omega2%val,t2_p,fock%val,govov,nocc,nvirt,&
-      ! & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
-      ! & omega1%val,iter)
-      call get_ccsd_residual_integral_driven(deltafock%val,o2,t2a,fock%val,ga,nocc,nvirt,&
-       & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
-       & omega1%val,iter)
+  !    call ass_D2to1(xocc%val,xo_p,xocc%dims)
+  !    call ass_D2to1(xvirt%val,xv_p,xvirt%dims)
+  !    call ass_D2to1(yocc%val,yo_p,yocc%dims)
+  !    call ass_D2to1(yvirt%val,yv_p,yvirt%dims)
+  !    !call get_ccsd_residual_integral_driven(deltafock%val,omega2%val,t2_p,fock%val,govov,nocc,nvirt,&
+  !    ! & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
+  !    ! & omega1%val,iter)
+  !    call get_ccsd_residual_integral_driven(deltafock%val,o2,t2a,fock%val,ga,nocc,nvirt,&
+  !     & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
+  !     & omega1%val,iter,.true.)
 
-      nullify(t2a%elm1)
-      nullify(t2a%elm4)
-      call array_free(t2a)
-      nullify(o2%elm1)
-      nullify(o2%elm4)
-      call array_free(o2)
-      nullify(ga%elm1)
-      nullify(ga%elm4)
-      call array_free(ga)
+  !    nullify(t2a%elm1)
+  !    nullify(t2a%elm4)
+  !    call array_free(t2a)
+  !    nullify(o2%elm1)
+  !    nullify(o2%elm4)
+  !    call array_free(o2)
+  !    nullify(ga%elm1)
+  !    nullify(ga%elm4)
+  !    call array_free(ga)
 
-      !reorder ampitudes and residuals for use within the solver
-      call array4_reorder(t2,[1,3,2,4])
-      call array4_reorder(omega2,[1,3,2,4])
-      nullify(xo_p)
-      nullify(yo_p)
-      nullify(xv_p)
-      nullify(yv_p)
-  end subroutine get_ccsd_residual_integral_driven_oldarray_wrapper
+  !    !reorder ampitudes and residuals for use within the solver
+  !    call array4_reorder(t2,[1,3,2,4])
+  !    call array4_reorder(omega2,[1,3,2,4])
+  !    nullify(xo_p)
+  !    nullify(yo_p)
+  !    nullify(xv_p)
+  !    nullify(yv_p)
+  !end subroutine get_ccsd_residual_integral_driven_oldarray_wrapper
 
 
   !> \brief Get CCSD residual in an integral direct fashion.
   !> \author Patrick Ettenhuber
   !> \date December 2012
   subroutine get_ccsd_residual_integral_driven(deltafock,omega2,t2,fock,govov,no,nv,&
-       ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,rest)
+       ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
 #ifdef VAR_OMP
     use omp_lib,only:omp_get_wtime
 #endif
@@ -713,6 +713,7 @@ contains
     integer,intent(in) :: iter
     !real(realk),intent(inout) :: govov(nv*no*nv*no)
     type(array),intent(inout) :: govov
+    logical, intent(in) :: local
     !logical that specifies whether the amplitudes were read
     logical, optional, intent(inout) :: rest
 
@@ -913,7 +914,7 @@ contains
       call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
       call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add)
+           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local)
 
       !SOME WORDS ABOUT THE CHOSEN SCHEME:
       ! Depending on the availability of memory on the nodes a certain scheme
@@ -948,7 +949,7 @@ contains
     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
       call ls_mpibcast(CCSDDATA,infpar%master,infpar%lg_comm)
       call mpi_communicate_ccsd_calcdata(omega2,t2,govov,xo,xv,yo,&
-      &yv,MyLsItem,nb,nv,no,iter,scheme,DECinfo%solver_par)
+      &yv,MyLsItem,nb,nv,no,iter,scheme,local)
     endif StartUpSlaves
       
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -1654,7 +1655,7 @@ contains
       call array_reorder_4d(1.0E0_realk,govov%elm1,no,no,nv,nv,[1,4,2,3],0.0E0_realk,w1)
       govov%elm1(1:o2v2) = w1(1:o2v2)
 #ifdef VAR_MPI
-      if(DECinfo%solver_par)then
+      if(.not.local)then
         govov%atype     = TILED_DIST
       endif
       call array_convert(w1,govov)
@@ -1775,7 +1776,7 @@ contains
     endif
     !convert stuff
     !set for correct access again, save as i a j b
-    if(DECinfo%solver_par)then
+    if(.not.local)then
       if((master.and..not.(scheme==2)).or.scheme==3)&
       &call memory_deallocate_array_dense(govov)
       govov%atype      = TILED_DIST
@@ -1955,7 +1956,7 @@ contains
 
 
 #ifdef VAR_MPI
-    if(DECinfo%solver_par.and.(scheme==4.or.scheme==3))then
+    if((.not.local).and.(scheme==4.or.scheme==3))then
       call array_mv_dense2tiled(omega2,.true.)
       call array_mv_dense2tiled(t2,.true.)
     endif
@@ -3772,7 +3773,7 @@ contains
   !> \author Patrick Ettenhuber
   !> \date January 2012
   recursive subroutine get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,&
-  &minbsize,manual,iter,MemFree,first,e2a)
+  &minbsize,manual,iter,MemFree,first,e2a,local)
     implicit none
     integer, intent(inout) :: scheme
     integer, intent(in)    :: nb,nv,no
@@ -3782,6 +3783,7 @@ contains
     real(realk)            :: mem_used,frac_of_total_mem,m
     logical,intent(in)     :: manual,first
     integer(kind=8), intent(inout) :: e2a
+    logical, intent(in)    :: local
     integer :: nnod,magic
 
     frac_of_total_mem=0.80E0_realk
@@ -3830,10 +3832,10 @@ contains
     if(DECinfo%force_scheme)then
       scheme=DECinfo%en_mem
       print *,"!!FORCING CCSD!!"
-      if(.not.DECinfo%solver_par)then
+      if(local)then
         if(scheme==3.or.scheme==2)then
           print *,"CHOSEN SCHEME DOES NOT WORK WITHOUT PARALLEL SOLVER, USE&
-          & .CCSDsolver_par IN LSDALTON.INP"
+          & .CCSDsolver_par IN LSDALTON.INP", local
           call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme",-1)
         endif
       endif
@@ -3844,6 +3846,7 @@ contains
       elseif(scheme==2)then
         print *,"SCHEME WITH LOW MEMORY REQUIREMENTS (PDM)"
       else
+        print *,"SCHEME ",scheme," DOES NOT EXIST"
         call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme2",-1)
       !elseif(scheme==1)then
       !  print *,"SCHEME WITH LOW MEMORY REQUIREMENTS (PDM), HIGH SCALING LOW COMM"
@@ -3868,7 +3871,7 @@ contains
       ! KK and PE hacks -> only for debugging
       ! extended to mimic the behaviour of the mem estimation routine when memory is filled up
       if((DECinfo%ccsdGbatch==0).and.(DECinfo%ccsdAbatch==0)) then
-        call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree,.false.,e2a)
+        call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree,.false.,e2a,local)
       else
         nba=DECinfo%ccsdAbatch - iter *0
         nbg=DECinfo%ccsdGbatch - iter *0
@@ -5173,7 +5176,7 @@ subroutine ccsd_data_preparation()
     type(array2) :: xocc,xvirt,yocc,yvirt
     type(array)  :: om2,t2,govov
     type(lsitem) :: MyLsItem
-    logical :: solver_par
+    logical :: local
     integer :: nbas,nocc,nvirt,scheme
     integer(kind=long) :: nelms
     integer      :: iter,k,n4,i
@@ -5186,16 +5189,14 @@ subroutine ccsd_data_preparation()
     !note that for the slave all allocatable arguments are just dummy indices
     !the allocation and broadcasting happens in here
     call mpi_communicate_ccsd_calcdata(om2,t2,govov,xodata,xvdata,yodata,yvdata,&
-    &MyLsItem,nbas,nvirt,nocc,iter,scheme,solver_par)
-   
-    DECinfo%solver_par=solver_par
-    if(solver_par)then
+    &MyLsItem,nbas,nvirt,nocc,iter,scheme,local)
+    
+    if(.not.local)then
       call memory_allocate_array_dense(t2)
       if(scheme==4)then
         call memory_allocate_array_dense(govov)
       endif
     else
-      !for not solver_par there is only the option 0 or 4
       t2   =array_init([nvirt,nvirt,nocc,nocc],4)
       govov=array_init([nocc,nvirt,nocc,nvirt],4)
       om2  =array_init([nvirt,nvirt,nocc,nocc],4)
@@ -5249,34 +5250,34 @@ subroutine ccsd_data_preparation()
     ! Calculate contribution to integrals/amplitudes for slave
     ! ********************************************************
     call get_ccsd_residual_integral_driven(df,om2,t2,f,govov,nocc,nvirt,&
-                    ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter)
+         ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
 
     ! FREE EVERYTHING
     ! ***************
-        if(solver_par)then
-        call memory_deallocate_array_dense(om2)
-call memory_deallocate_array_dense(t2)
-        if(scheme==4)then
-call memory_deallocate_array_dense(govov)
-        endif
-        else
-        call array_free(om2)
-        call array_free(t2)
-call array_free(govov)
-        endif
-        call mem_dealloc(df)
-        call mem_dealloc(f)
-        call mem_dealloc(ppf)
-        call mem_dealloc(pqf)
-        call mem_dealloc(qpf)
-        call mem_dealloc(qqf)
-        call mem_dealloc(om1)
-        call mem_dealloc(xodata)
-        call mem_dealloc(yodata)
-        call mem_dealloc(yvdata)
-        call mem_dealloc(xvdata)
-call ls_free(MyLsItem)
-        end subroutine ccsd_data_preparation
+    if(.not.local)then
+      call memory_deallocate_array_dense(om2)
+      call memory_deallocate_array_dense(t2)
+      if(scheme==4)then
+        call memory_deallocate_array_dense(govov)
+      endif
+    else
+      call array_free(om2)
+      call array_free(t2)
+      call array_free(govov)
+    endif
+    call mem_dealloc(df)
+    call mem_dealloc(f)
+    call mem_dealloc(ppf)
+    call mem_dealloc(pqf)
+    call mem_dealloc(qpf)
+    call mem_dealloc(qqf)
+    call mem_dealloc(om1)
+    call mem_dealloc(xodata)
+    call mem_dealloc(yodata)
+    call mem_dealloc(yvdata)
+    call mem_dealloc(xvdata)
+    call ls_free(MyLsItem)
+end subroutine ccsd_data_preparation
 
 subroutine calculate_E2_and_permute_slave()
         use precision
@@ -5286,7 +5287,7 @@ subroutine calculate_E2_and_permute_slave()
         use lsmpi_type, only:ls_mpibcast
         use daltoninfo, only:ls_free
         use memory_handling, only: mem_alloc, mem_dealloc
-! DEC DEPENDENCIES (within deccc directory) 
+        ! DEC DEPENDENCIES (within deccc directory) 
         ! *****************************************
         use decmpi_module, only: share_E2_with_slaves
         use ccsd_module, only:calculate_E2_and_permute
@@ -5311,6 +5312,6 @@ subroutine calculate_E2_and_permute_slave()
         call mem_dealloc(yv)
         call mem_dealloc(Gbi)
         call mem_dealloc(Had)
-call mem_dealloc(w1)
+        call mem_dealloc(w1)
         end subroutine calculate_E2_and_permute_slave
 #endif

@@ -664,7 +664,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
      call get_currently_available_memory(MemFree)
      call get_max_batch_sizes(scheme,MyFragment%number_basis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
-          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,dummy)
+          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,dummy,(.not.DECinfo%solver_par))
   end if
 
 

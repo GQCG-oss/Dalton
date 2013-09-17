@@ -871,7 +871,7 @@ contains
   !> \brief MPI communcation where CCSD and CC2 data is transferred
   !> \author Patrick Ettenhuber
   !> \date March 2012
-  subroutine mpi_communicate_ccsd_calcdata(om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,s,p)
+  subroutine mpi_communicate_ccsd_calcdata(om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,s,loc)
     implicit none
     type(mp2_batch_construction) :: bat
     integer            :: nbas,nocc,nvirt,ierr,iter,s
@@ -885,7 +885,7 @@ contains
     integer :: gaddr(infpar%lg_nodtot)
     integer :: taddr(infpar%lg_nodtot)
     integer :: oaddr(infpar%lg_nodtot)
-    logical :: p
+    logical :: loc
     character(ARR_MSG_LEN) :: msg
     logical :: master
     master=(infpar%lg_mynum==infpar%master)
@@ -897,8 +897,8 @@ contains
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(iter,infpar%master)
     call ls_mpi_buffer(s,infpar%master)
-    call ls_mpi_buffer(p,infpar%master)
-    if(p)then
+    call ls_mpi_buffer(loc,infpar%master)
+    if(.not.loc)then
       if(master)gaddr=govov%addr_p_arr
       call ls_mpi_buffer(gaddr,infpar%lg_nodtot,infpar%master)
       if(master)taddr=t2%addr_p_arr
@@ -931,7 +931,7 @@ contains
         call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
       endif
     else
-      if(p)then
+      if(.not.loc)then
         govov = get_arr_from_parr(gaddr(infpar%lg_mynum+1))
         t2    = get_arr_from_parr(taddr(infpar%lg_mynum+1))
         om2   = get_arr_from_parr(oaddr(infpar%lg_mynum+1))

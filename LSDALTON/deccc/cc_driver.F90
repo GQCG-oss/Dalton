@@ -835,24 +835,18 @@ contains
     type(array2) :: t1_final!,ccsdpt_t1
     logical :: local
 
-#ifdef VAR_MPI
-    local=.false.
-#else
     local=.true.
+#ifdef VAR_MPI
+    if(infpar%lg_mynum>1)local=.false.
 #endif
 
 
-    if(.not. DECinfo%solver_par .or. DECinfo%ccModel==MODEL_MP2.or.DECinfo%CCDEBUG)then
-      if(DECinfo%CCDEBUG)then
+    if(DECinfo%CCDEBUG)then
         call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
          & t1_final,t2_final,VOVO,.false.)
-      else
-        call ccsolver_par(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
-         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-         & t1_final,t2_final,VOVO,.false.,.true.)
-      endif
     else
+      print *,"CALLING CCSOLVER",local
       call ccsolver_par(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
          & t1_final,t2_final,VOVO,.false.,local)
@@ -1011,10 +1005,9 @@ contains
     logical, pointer :: orbitals_assigned(:)
     logical :: local
 
-#ifdef VAR_MPI
-    local=.false.
-#else
     local=.true.
+#ifdef VAR_MPI
+    if(infpar%lg_mynum>1)local=.false.
 #endif
 
     ! is this a frozen core calculation or not?
@@ -1027,16 +1020,10 @@ contains
           call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
        end if
 
-       if (.not. DECinfo%solver_par.or.DECinfo%CCDEBUG) then
-          if(DECinfo%CCDEBUG)then
-            call ccsolver_debug(ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-               & t1_final,t2_final,VOVO,.false.)
-          else
-            call ccsolver_par(ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-               & t1_final,t2_final,VOVO,.false.,.true.)
-          endif
+       if (DECinfo%CCDEBUG) then
+          call ccsolver_debug(ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
+             & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
+             & t1_final,t2_final,VOVO,.false.)
        else
           call ccsolver_par(ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
@@ -1046,16 +1033,10 @@ contains
     else
        ncore = 0
 
-       if (.not. DECinfo%solver_par.or.DECinfo%CCDEBUG) then
-          if(DECinfo%CCDEBUG)then
-            call ccsolver_debug(MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-               & t1_final,t2_final,VOVO,.false.)
-          else
-            call ccsolver_par(MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-               & t1_final,t2_final,VOVO,.false.,.true.)
-          endif
+       if (DECinfo%CCDEBUG) then
+          call ccsolver_debug(MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
+             & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+             & t1_final,t2_final,VOVO,.false.)
        else
           call ccsolver_par(MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
@@ -1238,10 +1219,9 @@ contains
             & DECinfo%output)
     end if
 
-#ifdef VAR_MPI
-    local=.false.
-#else
     local=.true.
+#ifdef VAR_MPI
+    if(infpar%lg_mynum>1)local=.false.
 #endif
 
     ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
@@ -1254,16 +1234,15 @@ contains
        t1 = array2_init(dims,MyFragment%t1)
     end if
 
-    if(DECinfo%solver_par)then
-      call ccsolver_par(myfragment%ypo,myfragment%ypv,&
-         & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
-         & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,local)
+    if(DECinfo%CCDEBUG)then
+        call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+         & t1_final,t2_final,VOVO,.false.)
     else
       call ccsolver_par(myfragment%ypo,myfragment%ypv,&
          & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,.true.)
+         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,local)
     endif
 
     ! Save singles amplitudes in fragment structure
@@ -2421,12 +2400,12 @@ contains
             & --> use .CCSOLVER_LOCAL",DECinfo%output)
           call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
              & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-             & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,rest=restart)
+             & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,local,rest=restart)
        case(MODEL_CCSD,MODEL_CCSDpT) ! CCSD or CCSD(T)
 
           call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
              & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-             & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,rest=restart)
+             & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,local,rest=restart)
        case(MODEL_RPA)
           call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
        case default
