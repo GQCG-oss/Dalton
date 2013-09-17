@@ -600,7 +600,6 @@
 !    *                 CR, RHO1,RHO2, ISPIN1,ISPIN2,TDM,NORHO2,
 !    *                 XINDX,WORK,KFREE,LFREE)
 
-      write(lupri,*)'ncsim', ncsim               
          if ( ncsim > 0 ) then         
             allocate(fdtvaos(nnbasx*ncsim))
             fdtvaos = 0.0d0
