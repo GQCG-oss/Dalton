@@ -90,7 +90,7 @@ contains
     CalculationType: if(DECinfo%mp2energydebug) then
        ! DEC calculation for full molecule where exact single and pair energies are calculated.
        ! Only for testing and only for MP2
-       call Full_DEC_calculation(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
+       call Full_DECMP2_calculation(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
             & natoms,nocc,nunocc,DistanceTable,Ecorr)
        Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D) 
        call print_total_energy_summary(EHF,Ecorr,Eerr)
@@ -770,46 +770,6 @@ contains
     write(DECinfo%output,'(a,l1)')     'CC Solver distribute   = ',DECinfo%solver_par
 
   end subroutine print_dec_info
-
-
-  !> \brief Full DEC calculation where exact single and pair energies are calculated. Mainly for testing.
-  !> Only implemented for MP2.
-  !> \author Kasper Kristensen
-  !> \date April 2011
-  subroutine Full_DEC_calculation(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
-       & natoms,nocc,nunocc, DistanceTable,Ecorr)
-
-
-    implicit none
-    !> Number of atoms in full molecule
-    integer,intent(in) :: natoms
-    !> Number of occupied orbitals in molecule
-    integer,intent(in) :: nocc
-    !> Number of unoccupied orbitals in molecule
-    integer,intent(in) :: nunocc
-    !> Molecule info
-    type(fullmolecule), intent(in) :: MyMolecule
-    !> LS Dalton info
-    type(lsitem), intent(inout) :: mylsitem
-    !> Occupied MOs
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
-    !> UnOccupied MOs
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
-    !> Distance table with interatomic distances for atoms in molecule
-    real(realk),intent(in) :: DistanceTable(natoms,natoms)
-    !> Correlation energy
-    real(realk),intent(inout) :: Ecorr
-
-    ! Only MP2, Lagrangian scheme
-    if(DECinfo%ccmodel/=MODEL_MP2) then
-       call lsquit('Full DEC calculation only implemented for MP2!',DECinfo%output)
-    end if
-
-    call Full_DEC_calculation_Lagrangian(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc, DistanceTable,Ecorr)
-
-  end subroutine Full_DEC_calculation
-
 
 
 

@@ -5032,7 +5032,7 @@ contains
     eccsdpt_matrix_cou = 2.0E0_realk * eccsdpt_matrix_cou - eccsdpt_matrix_exc
 
     ! for the pair fragment energy matrix,
-    ! we only consider pairs IJ where J>I; thus, move contributions and J<I contribs to zero.
+    ! we only consider pairs IJ where J>I; thus, move contributions and set J<I contribs to zero.
     ! (must be consistent with printout in print_pair_fragment_energies)
 
     do AtomI=1,natoms
