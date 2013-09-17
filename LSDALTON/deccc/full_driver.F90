@@ -277,8 +277,7 @@ contains
     type(matrix) :: Fii
     type(matrix) :: Fac
     Real(realk)  :: E21, E21_debug, E22, E22_debug, Gtmp
-    type(array2) :: array2Tai
-    type(array4) :: array4Taibj
+    type(array4) :: array4Taibj,array4gmo
 
     ! Init stuff
     ! **********
@@ -401,8 +400,13 @@ contains
     else
        !  THIS PIECE OF CODE IS MORE GENERAL AS IT DOES NOT REQUIRE CANONICAL ORBITALS
        !    ! Get full MP2 (as specified in input)
-       call full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,array2Tai, array4Taibj)
-       !Calculate standard MP2 energy (both canonical and noncanonical)
+
+       ! KK: Quick and dirty solution to the fact that the MP2 solver requires array4 format.
+       array4gmo = array4_init([nvirt,nocc,nvirt,nocc])
+       array4gmo%val=gmo
+       call mp2_solver(nocc,nvirt,MyMolecule%ppfock,MyMolecule%qqfock,array4gmo,array4Taibj)
+       call array4_free(array4gmo)
+
 
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
 
@@ -603,7 +607,6 @@ contains
     write(DECinfo%output,*) 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', energy
 
     call array4_free(array4Taibj)
-    call array2_free(array2Tai)
     call mem_dealloc(gmo)
 
   end subroutine full_canonical_mp2_f12
