@@ -69,6 +69,7 @@ contains
     DECinfo%CCSD_MPICH           = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%CCDhack              = .false.
+    DECinfo%full_print_frag_energies = .false.
 
     ! -- Output options 
     DECinfo%output               = output
@@ -393,6 +394,7 @@ contains
        case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=MODEL_CCSD; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
+       case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
