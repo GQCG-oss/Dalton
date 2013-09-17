@@ -57,6 +57,7 @@ C                subsequent steps requiring a converged w.f.
 C
 #if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+      use polarizable_embedding, only: pe_master
 #endif
 #ifdef VAR_MPI
       use par_mcci_io
@@ -1121,11 +1122,23 @@ C------------------
 #if defined (BUILD_PELIB)
       else if (peqm) then
         kfcsol = kwrkg
-        kwrkg = kfcsol + nnorbx
+        kenr = kfcsol + nnorbx
+        kdcao = kenr + 1
+        kdvao = kdcao + n2basx
+        kfdtao = kdvao + n2basx
+        kwrkg = kfdtao + nnbasx
         lwrkg = lfree - (kwrkg - 1)
-        call pe_fckmo(wrk(kcmo), wrk(kfcsol), wrk(kwrkg), wrk(kdv),
-     &                wrk(kwrkg+1), lwrkg)
+        call pe_fckmo(wrk(kcmo), wrk(kfcsol), wrk(kenr), wrk(kdv),
+     &                wrk(kwrkg), lwrkg)
         call daxpy(nnorbx, 1.0d0, wrk(kfc), 1, wrk(kfcsol), 1)
+        call fckden((nisht>0), (nasht>0), wrk(kdcao), wrk(kdvao),
+     &               wrk(kcmo), wrk(kdv), wrk(kwrkg), lwrkg)
+        if (nasht > 0) then
+           call daxpy(n2basx,1.0d0,wrk(kdvao),1,wrk(kdcao),1)
+        end if
+        call dgefsp(nbast, wrk(kdcao), wrk(kfdtao))
+        call pe_master(runtype='energy', denmats=wrk(kfdtao:(kwrkg-1)),
+     &                 nmats=1, dalwrk=wrk(kwrkg:lwrkg))        
 #endif
       ELSE
          KFCSOL = KFC
