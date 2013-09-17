@@ -5230,6 +5230,7 @@ if(DECinfo%PL>0) then
     ! Different density matrix definitions depending on scheme
     ! - this is work in progress and will probably be modified.
     ! See DECsettings type definition for details.
+    print *, 'CORRDENS: Using scheme ', DECinfo%CorrDensScheme  
 
     CorrDensDefinition: select case(DECinfo%CorrDensScheme)
     case(1)
@@ -5242,6 +5243,8 @@ if(DECinfo%PL>0) then
     case(3)
           ! Use AOS amplitudes with equal weight on all amplitudes.
           call calculate_corrdens_AOS(t2,MyFragment)
+    case default
+       call lsquit('calculate_corrdens: Invalid corrdens scheme',-1)
     end select CorrDensDefinition
 
     MyFragment%CDset=.true.
@@ -5265,7 +5268,7 @@ if(DECinfo%PL>0) then
 
     i2 = 2.0_realk
     i4 = 4.0_realk
-    print *, 'CORRDENS: Use EOS'  
+
     ! Occ-occ block of density matrix
     ! *******************************
     ! OccMat(i,j) = sum_{abk} t_{ik}^{ab}  tbar_{jk}^{ab}
@@ -5328,7 +5331,6 @@ if(DECinfo%PL>0) then
     real(realk) :: i2,i4
     logical,pointer :: OccEOS(:)
 
-    print *, 'CORRDENS: Use semiEOS'  
     i2 = 2.0_realk
     i4 = 4.0_realk
 
@@ -5399,8 +5401,6 @@ if(DECinfo%PL>0) then
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
     type(ccatom),intent(inout) :: MyFragment
 
-    print *, 'CORRDENS: Use AOS'  
-
     ! Occ-occ block of density matrix
     call calculate_corrdens_AOS_occocc(t2,MyFragment)
 
@@ -5468,7 +5468,6 @@ if(DECinfo%PL>0) then
     integer :: i,j,a,b,c
     real(realk) :: i2,i4
 
-    print *, 'CORRDENS: Use AOS'  
     i2 = 2.0_realk
     i4 = 4.0_realk
 
