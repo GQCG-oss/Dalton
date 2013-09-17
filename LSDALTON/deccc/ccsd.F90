@@ -669,10 +669,10 @@ contains
   !
   !omega2 = is the residual defined as type array. if local = .true. the array
   !is assumed to be in local memory stored in the elms1 variable, else it is
-  !assumed to be in parallel distributed memory
+  !assumed to be in parallel distributed memory. the order is [a,b,i,j]
   !
   !t2 = are the amplitudes as array type, the "local" variable gives the assumed
-  !data distribution as for omega2
+  !data distribution as for omega2, the order is [a,b,i,j]
   !
   !fock = is the ao Fock matrix which is only needed in case of a CC2
   !calculation
@@ -699,7 +699,7 @@ contains
   !
   !MyLSITEM = integral information
   !
-  !omega1 = is the singles residual
+  !omega1 = is the singles residual as [a,i]
   !
   !iter = the iteration number of the current cc iteration
   !
@@ -956,10 +956,14 @@ contains
 
     ! Get free memory and determine maximum batch sizes
     ! -------------------------------------------------
+      print *,"1"
       call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+      print *,"2"
       call get_currently_available_memory(MemFree)
+      print *,"3"
       call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
            &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local)
+      print *,"4"
 
       !SOME WORDS ABOUT THE CHOSEN SCHEME:
       ! Depending on the availability of memory on the nodes a certain scheme
@@ -1011,6 +1015,7 @@ contains
     hstatus = 80
     CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
 
+      print *,"5"
 
     !dense part was allocated in the communicate subroutine
 
@@ -1139,6 +1144,7 @@ contains
     call mem_alloc(Had,nv*nb)
     call mem_alloc(Gbi,nb*no)
 
+      print *,"6"
 
     if( DECinfo%ccModel > MODEL_CC2 )then
 
@@ -1723,7 +1729,7 @@ contains
 #ifdef VAR_LSDEBUG
       if(print_debug)then
 #ifdef VAR_MPI
-        call arr_unlock_wins(omega2,.true.)
+        if(.not.local)call arr_unlock_wins(omega2,.true.)
 #endif
         write(msg,*)"NORM(omega2 after B2.2):"
         if(scheme==4.or.scheme==3)then
@@ -1767,7 +1773,7 @@ contains
 #ifdef VAR_LSDEBUG
       if(print_debug)then
 #ifdef VAR_MPI
-        call arr_unlock_wins(omega2,.true.)
+        if(.not.local)call arr_unlock_wins(omega2,.true.)
 #endif
         write(msg,*)"NORM(omega2 after CND):"
         if(scheme==4)then
@@ -3880,7 +3886,7 @@ contains
       if(local)then
         if(scheme==3.or.scheme==2)then
           print *,"CHOSEN SCHEME DOES NOT WORK WITHOUT PARALLEL SOLVER, USE&
-          & .CCSDsolver_par IN LSDALTON.INP", local
+          & MORE THAN ONE NODE"
           call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme",-1)
         endif
       endif

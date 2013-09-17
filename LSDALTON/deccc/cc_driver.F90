@@ -2396,14 +2396,7 @@ contains
        SelectCoupledClusterModel : select case(DECinfo%ccModel)
        case(MODEL_MP2)
           call lsquit("ERROR(ccsolver_par):no mp2 implemented",DECinfo%output)
-       case(MODEL_CC2)
-          !if(.not.local) &
-          !  &call lsquit("ERROR(ccsolver_par):cc2 not implemented for non-local solver&
-          !  & --> use .CCSOLVER_LOCAL",DECinfo%output)
-          call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
-             & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-             & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,local,rest=restart)
-       case(MODEL_CCSD,MODEL_CCSDpT) ! CCSD or CCSD(T)
+       case(MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT) !CC2 or  CCSD or CCSD(T)
 
           call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
              & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
@@ -2413,6 +2406,7 @@ contains
        case default
           call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
        end select SelectCoupledClusterModel
+       print *,"residual done"
        
        if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
 
@@ -2449,6 +2443,7 @@ contains
              B(j,i) = B(i,j)
           end do
        end do
+       print *,"set up b matrix"
        !msg="DIIS mat, new"
        !call print_norm(B,DECinfo%ccMaxIter*DECinfo%ccMaxIter,msg)
 
