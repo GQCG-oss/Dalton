@@ -956,14 +956,10 @@ contains
 
     ! Get free memory and determine maximum batch sizes
     ! -------------------------------------------------
-      print *,"1"
       call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
-      print *,"2"
       call get_currently_available_memory(MemFree)
-      print *,"3"
       call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
            &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local)
-      print *,"4"
 
       !SOME WORDS ABOUT THE CHOSEN SCHEME:
       ! Depending on the availability of memory on the nodes a certain scheme
@@ -1014,8 +1010,6 @@ contains
 
     hstatus = 80
     CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
-
-      print *,"5"
 
     !dense part was allocated in the communicate subroutine
 
@@ -1144,7 +1138,6 @@ contains
     call mem_alloc(Had,nv*nb)
     call mem_alloc(Gbi,nb*no)
 
-      print *,"6"
 
     if( DECinfo%ccModel > MODEL_CC2 )then
 
