@@ -842,11 +842,10 @@ contains
 
 
     if(DECinfo%CCDEBUG)then
-        call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
-         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-         & t1_final,t2_final,VOVO,.false.)
+      call ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+       & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+       & t1_final,t2_final,VOVO,.false.)
     else
-      print *,"CALLING CCSOLVER",local
       call ccsolver_par(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
          & t1_final,t2_final,VOVO,.false.,local)
@@ -2406,7 +2405,6 @@ contains
        case default
           call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
        end select SelectCoupledClusterModel
-       print *,"residual done"
        
        if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
 
@@ -2443,7 +2441,6 @@ contains
              B(j,i) = B(i,j)
           end do
        end do
-       print *,"set up b matrix"
        !msg="DIIS mat, new"
        !call print_norm(B,DECinfo%ccMaxIter*DECinfo%ccMaxIter,msg)
 
