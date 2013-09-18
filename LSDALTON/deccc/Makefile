@@ -8,7 +8,7 @@ F90_OBJS = dec_settings.o \
 	decmpi.o \
 	decmpiSlave.o \
 	CABS.o \
-	cc_crop.o \
+	crop_tools.o \
         array4_memory.o \
         array3_memory.o \
 	dec_utils.o \
