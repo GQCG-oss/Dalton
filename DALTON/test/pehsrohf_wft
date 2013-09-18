@@ -145,7 +145,7 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Convergence
 #
-CRIT1=`$GREP "*** DIIS converged in  24 iterations" $log | wc -l`
+CRIT1=`$GREP " DIIS converged in  24 iterations" $log | wc -l`
 TEST[2]=`expr $CRIT1 `
 CTRL[2]=1
 ERROR[2]="CONVERGENCE PROBLEM"
@@ -168,12 +168,12 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Induced dipole moments in environment
 #
- CRIT1=`$GREP "*  1 * ( |0)\.14317... * ( |0)\.25830... * (\-|\-0)\.01784..." $log | wc -l`
- CRIT2=`$GREP "*  2 * ( |0)\.25214... * ( |0)\.12471... * (\-|\-0)\.03182..." $log | wc -l`
- CRIT3=`$GREP "*  3 * ( |0)\.03376... * ( |0)\.08590... * ( |0)\.06650..." $log | wc -l`
- CRIT4=`$GREP "*  4 * ( |0)\.29271... * ( |0)\.01854... * (\-|\-0)\.02170..." $log | wc -l`
- CRIT5=`$GREP "*  5 * ( |0)\.06059... * ( |0)\.15032... * (\-|\-0)\.01236..." $log | wc -l`
- CRIT6=`$GREP "*  6 * ( |0)\.08710... * (\-|\-0)\.01124... * ( |0)\.03167..." $log | wc -l`
+ CRIT1=`$GREP "  1 * ( |0)\.14317... * ( |0)\.25830... * (\-|\-0)\.01784..." $log | wc -l`
+ CRIT2=`$GREP "  2 * ( |0)\.25214... * ( |0)\.12471... * (\-|\-0)\.03182..." $log | wc -l`
+ CRIT3=`$GREP "  3 * ( |0)\.03376... * ( |0)\.08590... * ( |0)\.06650..." $log | wc -l`
+ CRIT4=`$GREP "  4 * ( |0)\.29271... * ( |0)\.01854... * (\-|\-0)\.02170..." $log | wc -l`
+ CRIT5=`$GREP "  5 * ( |0)\.06059... * ( |0)\.15032... * (\-|\-0)\.01236..." $log | wc -l`
+ CRIT6=`$GREP "  6 * ( |0)\.08710... * (\-|\-0)\.01124... * ( |0)\.03167..." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[4]=6
 ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"

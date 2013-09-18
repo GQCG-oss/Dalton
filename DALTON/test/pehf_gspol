@@ -183,7 +183,7 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Convergence
 #
-CRIT1=`$GREP "*** DIIS converged in  10 iterations" $log | wc -l`
+CRIT1=`$GREP " DIIS converged in  10 iterations" $log | wc -l`
 TEST[2]=`expr $CRIT1 `
 CTRL[2]=1
 ERROR[2]="CONVERGENCE PROBLEM"
