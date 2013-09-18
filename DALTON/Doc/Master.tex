@@ -103,24 +103,31 @@
 %
 %           
 %\renewcommand{\thetable}{\Roman{table}}
-\newcommand{\latestrelease}{Dalton2013}
-\newcommand{\dalton}{{\sc dalton}}
-\newcommand{\her}{{\sc hermit}\index{\sc hermit}}
-\newcommand{\hermit}{{\sc hermit}\index{\sc hermit}}
-\newcommand{\sir}{{\sc sirius}\index{\sc sirius}}
-\newcommand{\choles}{{\sc cholesky}\index{\sc cholesky}}
-\newcommand{\sirius}{{\sc sirius}\index{\sc sirius}}
-\newcommand{\aba}{{\sc abacus}\index{\sc abacus}}
-\newcommand{\abacus}{{\sc abacus}\index{\sc abacus}}
-\newcommand{\resp}{{\sc response}\index{\sc response}}
-\newcommand{\response}{{\sc response}\index{\sc response}}
-\newcommand{\pot}{{\sc potential}\index{\sc potential}}
-\newcommand{\mol}{{\sc molecule}\index{\sc molecule}}
-\newcommand{\molecule}{{\sc molecule}\index{\sc molecule}}
-\newcommand{\cc}{{\sc cc}\index{\sc cc}}
+\newcommand{\latestrelease}{DALTON2013}
+\newcommand{\dalton}{{\sc Dalton}}
+\newcommand{\her}{{\sc Hermit}\index{\sc Hermit}}
+\newcommand{\hermit}{{\sc Hermit}\index{\sc Hermit}}
+\newcommand{\sir}{{\sc Sirius}\index{\sc Sirius}}
+\newcommand{\choles}{{\sc Cholesky}\index{\sc Cholesky}}
+\newcommand{\sirius}{{\sc Sirius}\index{\sc Sirius}}
+\newcommand{\aba}{{\sc Abacus}\index{\sc Abacus}}
+\newcommand{\abacus}{{\sc Abacus}\index{\sc Abacus}}
+\newcommand{\resp}{{\sc Response}\index{\sc Response}}
+\newcommand{\response}{{\sc Response}\index{\sc Response}}
+\newcommand{\mol}{{\sc Molecule}\index{\sc Molecule}}
+\newcommand{\molecule}{{\sc Molecule}\index{\sc Molecule}}
+\newcommand{\cc}{{\sc CC}\index{\sc CC}}
 \newcommand{\eri}{{\sc eri}\index{\sc eri}}
 \newcommand{\twoint}{{\sc twoint}\index{\sc twoint}}
-\newcommand{\lucita}{{\sc lucita}\index{\sc lucita}}
+\newcommand{\lucita}{{\sc Lucita}\index{\sc Lucita}}
+
+\newcommand{\dalinp}{{\tt DALTON.INP}\index{dalton input file}\index{DALTON.INP}}
+\newcommand{\molinp}{{\tt MOLECULE.INP}\index{molecule input file}\index{MOLECULE.INP}}
+\newcommand{\potinp}{{\tt POTENTIAL.INP}\index{potential input file}\index{POTENTIAL.INP}}
+
+\newcommand{\angstrom}{\aa{}ngstr\"{o}m{}}
+\newcommand{\bohr}{bohr}
+
 \newcommand{\OM}{\mbox{1-matrix}}
 \newcommand{\TM}{\mbox{2-matrix}}
 \newcommand{\grp}[1]{\mbox{$\cal #1$}}
@@ -170,7 +177,7 @@
 %
 \baselineskip=15pt
 %
-\title{DALTON2013 -- DALTON Program Manual}
+\title{\latestrelease\ -- \dalton\ Program Manual}
 
 %
 \author{
@@ -179,28 +186,28 @@ C.~Angeli,
 K.~L.~Bak,
 V.~Bakken,
 R.~Bast,
-L.~Boman,
-O.~Christiansen,\\
+L.~Boman,\\
+O.~Christiansen,
 R.~Cimiraglia,
 S.~Coriani,
 P.~Dahle,
-E.~K.~Dalskov,
-U.~Ekstr\"{o}m,
-T.~Enevoldsen,\\
+E.~K.~Dalskov,\\
+T.~Enevoldsen,
 J.~J.~Eriksen,
 B.~Fern\'{a}ndez,
 L.~Ferrighi,
-H.~Fliegl,
+H.~Fliegl,\\
 L.~Frediani,
+B.~Gao,
 K.~Hald,
-A.~Halkier,\\
+A.~Halkier,
 C.~H{\"a}ttig,
-H.~Heiberg,
+H.~Heiberg,\\
 T.~Helgaker,
 A.~C.~Hennum,
 H.~Hettema,
-E.~Hjerten\ae{}s,\\
-M.~F.~Iozzi,
+E.~Hjerten\ae{}s,
+M.~F.~Iozzi,\\
 B.~Jansik,
 H.~J.~Aa.~Jensen,
 D.~Jonsson,
@@ -216,36 +223,34 @@ A.~Ligabue,
 O.~B.~Lutn\ae{}s,
 J.~I.~Melo,
 K.~V.~Mikkelsen,
-R.~H.~Myhre,
-C.~Neiss,\\
+R.~H.~Myhre,\\
+C.~Neiss,
 C.~B.~Nielsen,
 P.~Norman,
 J.~Olsen,
 J.~M.~H.~Olsen,
-A.~Osted,
-M.~J.~Packer,\\
+A.~Osted,\\
+M.~J.~Packer,
 F.~Pawlowski,
 T.~B.~Pedersen,
 P.~F.~Provasi,
-Z.~Rinkevicius,
-E.~Rudberg?,\\
+Z.~Rinkevicius,\\
+E.~Rudberg,
 T.~A.~Ruden,
 K.~Ruud,
 P.~Sa\l{}ek,
-C.~C.~M.~Samson,
+C.~C.~M.~Samson,\\
 A.~S\'{a}nchez de Mer\'{a}s,
-T.~Saue,\\
+T.~Saue,
 S.~P.~A.~Sauer,
 B.~Schimmelpfennig,
-K.~Sneskov,
+K.~Sneskov,\\
 A.~H.~Steindal,
-K.~O.~Sylvester-Hvid,\\
+K.~O.~Sylvester-Hvid,
 P.~R.~Taylor,
 A.~M.~Teale,
-E.~I.~Tellgren,
-D.~P.~Tew,
-L.~Th\o{}gersen,
-O.~Vahtras,\\
+D.~P.~Tew,\\
+O.~Vahtras,
 D.~J.~D.~Wilson
 and H.~{\AA}gren.
 }
@@ -260,10 +265,10 @@ and H.~{\AA}gren.
 \include{Preface}
 \include{Intro}
 \include{New12}
-\part{DALTON Installation Guide}
+\part{\dalton\ Installation Guide}
 \include{Install}
 \include{Maintain}
-\part{DALTON User's Guide}
+\part{\dalton\ User's Guide}
 \include{Starting}
 \include{wfguide}
 \include{walkchap}
@@ -283,7 +288,7 @@ and H.~{\AA}gren.
 \include{lucitaexamples}
 \include{ccexamples}
 \include{cholexamples}
-\part{DALTON Reference Manual}
+\part{\dalton\ Reference Manual}
 \include{General}
 \include{Choles}
 \include{Hermit}
@@ -317,7 +322,7 @@ and H.~{\AA}gren.
 \include{chopt}
 \include{choact}
 %%%%%% end of CC %%%%%%%
-\part{Appendix: DALTON Tool box}
+\part{Appendix: \dalton\ Tool box}
 \include{Appendix}
 \part{References}
 \bibliographystyle{unsrt}

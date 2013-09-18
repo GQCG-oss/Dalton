@@ -14,7 +14,7 @@ module dec_typedef_module
   public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,ccorbital,ri,&
        & fullmolecule,ccatom,FullMP2grad,mp2dens,mp2grad,&
        & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
-       & SPgridbox
+       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA
   ! IMPORTANT: Number of possible energies to calculate using the DEC scheme
   ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
   ! MODIFY FOR NEW MODEL
@@ -23,7 +23,7 @@ module dec_typedef_module
 
   !> \author Kasper Kristensen
   !> \date June 2010
-  !> \brief Contains settings for DEC calculation
+  !> \brief Contains settings for DEC calculation, see default settings in dec_set_default_config.
   type DECsettings
 
      ! ****************************************************************************************
@@ -116,14 +116,16 @@ module dec_typedef_module
      !> forcing one or the other scheme in get_coubles residual integral_driven
      logical :: force_scheme
      logical :: dyn_load
-     !> Use old CCSD solver
-     logical :: ccsd_old
+     !> Use the cc debug routines from the file cc_debug_routines.F90
+     logical :: CCDEBUG
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
      !> if mpich is used CCSD has some special treats that can be used
      logical :: CCSD_MPICH
      !> prevent canonicalization in the ccsolver
      logical :: CCSDpreventcanonical
+     !> chose left-transformations to be carried out
+     logical :: CCSDmultipliers
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver
@@ -185,9 +187,6 @@ module dec_typedef_module
      !> General HACK parameters, to be used for easy debugging
      logical :: hack
      logical :: hack2
-     !> Full calculation where individual pair and single energies are calculated in ONE energy calc.
-     !> Only implemented for MP2 and only for debugging purposes.
-     logical :: mp2energydebug
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
      !> test the array structure
@@ -200,6 +199,8 @@ module dec_typedef_module
      integer :: PL
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
+     !> Print fragment energies for full CC calculation
+     logical :: full_print_frag_energies
      ! --
 
      !> Output options 
@@ -256,13 +257,23 @@ module dec_typedef_module
      logical :: HybridScheme
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
-     !> Use MP2 optimized fragments (default)
-     logical :: use_mp2_frag
+     !> Use MP2 energies for expansion part of fragment optimization
+     logical :: fragopt_exp_mp2
+     !> Use MP2 energies for reduction part of fragment optimization
+     logical :: fragopt_red_mp2
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
+     !> How to construct correlation density defining fragment-adapted orbitals?
+     !> THIS IS WORK IN PROGRESS AND SHOULD BE MODIFIED!!!
+     !> For now, for atomic site P: 
+     !> CorrDensScheme=1:   Only EOS ampllitudes enter corr. dens . (ij \in P)
+     !> CorrDensScheme=2:   EOS and EOS-coupling amplitudes         (i\in P, j \in [P] or vice versa)
+     !> CorrDensScheme=3:   All AOS ampllitudes                     (ij \in [P])
+     !> Note that scheme 2 is only meaningful for occupied partitioning scheme.
+     integer :: CorrDensScheme
      ! --  
 
      !> Pair fragments
@@ -495,17 +506,6 @@ module dec_typedef_module
      !> otherwise there are included in the occAOSidx list).
      integer,pointer :: coreidx(:) => null()
 
-
-     ! Special info for reduced fragment of lower accuracy
-     !****************************************************
-     !> Number of occupied AOS orbitals 
-     integer :: REDnoccAOS=0
-     !> Total number of unoccupied orbitals (AOS)
-     integer :: REDnunoccAOS=0
-     !> Occupied orbital indices (AOS) for reduced fragment
-     integer, pointer :: REDoccAOSidx(:) => null()
-     !> All unoccupied orbital indices (AOS)
-     integer, pointer :: REDunoccAOSidx(:) => null()
 
      !> Indices of occupied EOS in AOS basis
      integer, pointer :: idxo(:) => null()
@@ -947,5 +947,13 @@ module dec_typedef_module
   !> Information about DEC calculation
   !> We keep it as a global parameter for now.
   type(DECsettings) :: DECinfo
+
+
+  !> Specify the parameters for ccModel here. NEVER HARDCODE THE NUMBER
+  integer,parameter :: MODEL_MP2    = 1
+  integer,parameter :: MODEL_CC2    = 2
+  integer,parameter :: MODEL_CCSD   = 3
+  integer,parameter :: MODEL_CCSDpT = 4
+  integer,parameter :: MODEL_RPA    = 5
 
 end module dec_typedef_module

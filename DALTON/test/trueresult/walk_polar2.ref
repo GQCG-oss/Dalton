@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,204 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:50:07 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 18:14:42 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_walk_polar2
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.WALK                                             
+**WAVE FUNCTIONS                                  
+.HF                                               
+.MP2                                              
+.MCSCF                                            
+.NSYM                                             
+ 4                                                
+*SCF INPUT                                        
+.DOUBLY OCCUPIED                                  
+ 6 4 1 1                                          
+*CONFIGURATION INPUT                              
+.SYMMETRY                                         
+ 1                                                
+.SPIN MUL                                         
+ 1                                                
+.INACTIVE                                         
+ 4 2 0 0                                          
+.ELECTRONS                                        
+ 12                                               
+.CAS SPACE                                        
+ 3 3 2 1                                          
+*OPTIMIZATION                                     
+.DETERMINANTS                                     
+**START                                           
+.PRINT                                            
+ 4                                                
+**PROPERTIES                                      
+.POLARI                                           
+.VIBANA                                           
+.POPANA                                           
+.ALPHA                                            
+*ABALNR                                           
+.FREQUE                                           
+ 3                                                
+ 0.0 0.0592 0.096                                 
+**RESPONSE                                        
+*LINEAR                                           
+.DIPLEN                                           
+.FREQUE                                           
+ 2                                                
+0.0 0.0592                                        
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+aug-cc-pVDZ                                                                    
+Geometry optimization using WALK module plus                                   
+static and dynamic polarizabilities                                            
+Atomtypes=1 Generators=2   Y  Z                                                
+Charge=8.0 Atoms=2                                                             
+OS         .0000000000        0.0000000000         .0000000000             *   
+OP        1.2634502500        2.0449019100         .0000000000             *   
 
 
        *******************************************************************
@@ -105,7 +226,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     Geometry optimization
       Starting at iteration:    0
@@ -141,8 +262,8 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/aug-cc-pVDZ"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/aug-cc-pVDZ"
 
 
                          SYMGRP: Point group information
@@ -212,7 +333,7 @@ Point group: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -261,8 +382,10 @@ Point group: C2v
  OP  _2:    1.272001    2.164231    0.000000
 
 
-  Max interatomic separation is    2.1642 Angstrom (    4.0898 Bohr)
+  Max    interatomic separation is    2.1642 Angstrom (    4.0898 Bohr)
   between atoms    3 and    2, "OP  _2" and "OP  _1".
+
+  Min YX interatomic separation is    1.2720 Angstrom (    2.4037 Bohr)
 
 
   Bond distances (Angstrom):
@@ -303,7 +426,7 @@ Point group: C2v
             3.536611            0.450026            0.399225 cm-1
 
 
-@  Nuclear repulsion energy :   68.899188090779
+@  Nuclear repulsion energy :   68.899188090779 Hartree
 
 
   Symmetry Orbitals
@@ -417,14 +540,14 @@ Point group: C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:      672537 ( 23.1% )
  Megabytes written:                              7.702
 
- >>> Time used in TWOINT is   0.32 seconds
- >>>> Total CPU  time used in HERMIT:   0.35 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>  Time used in TWOINT     is   0.30 seconds
+ >>>> Total CPU  time used in HERMIT:   0.32 seconds
+ >>>> Total wall time used in HERMIT:   0.32 seconds
 
 
                         .----------------------------------.
@@ -462,8 +585,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 18:14:43 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:08 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      Geometry optimization using WALK module plus                            
@@ -472,60 +595,57 @@ Point group: C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     MC-SCF optimization.
+@    MC-SCF optimization.
+@              Type: complete active space calculation (CAS).
 
-               Type: complete active space calculation (CAS).
-
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
-               an MP2 calculation
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+@              an MP2 calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> MC-SCF   <<<
-     Number of closed shell electrons         12
-     Number of electrons in active shells     12
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> MC-SCF <<<
+@    Number of closed shell electrons          12
+@    Number of electrons in active shells      12
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1    2    3    4
                                        --- |  ---  ---  ---  ---
-     Inactive orbitals                   6 |    4    2    0    0
-     Active orbitals                     9 |    3    3    2    1
+@    Inactive orbitals                   6 |    4    2    0    0
+@    Active orbitals                     9 |    3    3    2    1
      Secondary orbitals                 54 |   20   16   10    8
      Total number of orbitals           69 |   27   21   12    9
      Number of basis functions          69 |   27   21   12    9
 
       -- Initial occupation of symmetries is determined from user input.                      
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals              12 |    6    4    1    1
+@    Occupied SCF orbitals              12 |    6    4    1    1
 
      Optimization information
      ========================
-     Number of determinants                1788
-     Number of orbital rotations            266
+@    Number of determinants                1788
+@    Number of orbital rotations            266
      ------------------------------------------
-     Total number of variables             2054
+@    Total number of variables             2054
 
      Maximum number of macro iterations      25
      Maximum number of micro iterations     600
-     Threshold for gradient            1.00D-05
+     Threshold for MCSCF gradient      1.00D-05
      Number of initial trial vectors          1
      Number of initial CI iterations          3
      Number of simultaneous trial vectors     1
 
-     This calculation converges to the lowest state
-     for the specified symmetry and spin species.
+@    This calculation converges to the lowest state for the specified symmetry and spin species.
 
      Maximum number of NEO/NR iterations  24
 
@@ -537,61 +657,64 @@ Point group: C2v
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1    -223.582328824        4.04374D+00   -2.24D+02    1
+      Threshold for discarding integrals :  1.00D-12 )
+@  1    -223.582328824        4.04374D+00   -2.24D+02    1
       Virial theorem: -V/T =      2.002837
-      MULPOP  OS      1.10; OP  _1 -0.55; OP  _2 -0.55; 
+@      MULPOP OS      1.10; OP  _1 -0.55; OP  _2 -0.55; 
  -----------------------------------------------------------------------------
-   2    -223.870441217        3.17808D+00   -2.88D-01    2
+@  2    -223.870441217        3.17808D+00   -2.88D-01    2
       Virial theorem: -V/T =      1.994180
-      MULPOP  OS     -0.48; OP  _1  0.24; OP  _2  0.24; 
+@      MULPOP OS     -0.48; OP  _1  0.24; OP  _2  0.24; 
  -----------------------------------------------------------------------------
-   3    -224.276125959        5.39063D-01   -4.06D-01    3
+@  3    -224.276125959        5.39063D-01   -4.06D-01    3
       Virial theorem: -V/T =      2.002210
-      MULPOP  OS      0.47; OP  _1 -0.24; OP  _2 -0.24; 
+@      MULPOP OS      0.47; OP  _1 -0.24; OP  _2 -0.24; 
  -----------------------------------------------------------------------------
-   4    -224.289820916        8.05870D-02   -1.37D-02    4
+@  4    -224.289820916        8.05870D-02   -1.37D-02    4
       Virial theorem: -V/T =      2.002842
-      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+@      MULPOP OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
  -----------------------------------------------------------------------------
-   5    -224.290386085        2.51761D-02   -5.65D-04    5
+@  5    -224.290386085        2.51761D-02   -5.65D-04    5
       Virial theorem: -V/T =      2.002216
-      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+@      MULPOP OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
  -----------------------------------------------------------------------------
-   6    -224.290475206        9.25693D-03   -8.91D-05    6
+@  6    -224.290475206        9.25693D-03   -8.91D-05    6
       Virial theorem: -V/T =      2.002333
-      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+@      MULPOP OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
  -----------------------------------------------------------------------------
-   7    -224.290495903        3.80667D-03   -2.07D-05    7
+@  7    -224.290495903        3.80667D-03   -2.07D-05    7
       Virial theorem: -V/T =      2.002297
-      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+@      MULPOP OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
  -----------------------------------------------------------------------------
-   8    -224.290499746        1.50370D-03   -3.84D-06    8
+@  8    -224.290499746        1.50370D-03   -3.84D-06    8
       Virial theorem: -V/T =      2.002299
-      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+@      MULPOP OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
  -----------------------------------------------------------------------------
-   9    -224.290500230        2.74074D-04   -4.84D-07    9
+@  9    -224.290500230        2.74074D-04   -4.84D-07    9
       Virial theorem: -V/T =      2.002296
-      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+@      MULPOP OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
  -----------------------------------------------------------------------------
-  10    -224.290500243        4.26559D-05   -1.33D-08   10
+@ 10    -224.290500243        4.26559D-05   -1.33D-08   10
       Virial theorem: -V/T =      2.002296
-      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+@      MULPOP OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
  -----------------------------------------------------------------------------
-  11    -224.290500244        8.04962D-06   -2.46D-10   10
+@ 11    -224.290500244        8.04962D-06   -2.46D-10   10
       Virial theorem: -V/T =      2.002296
-      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+@      MULPOP OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
  -----------------------------------------------------------------------------
-  12    -224.290500244        2.83044D-06   -1.17D-11   10
+@ 12    -224.290500244        2.83044D-06   -1.14D-11   10
       Virial theorem: -V/T =      2.002296
-      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+@      MULPOP OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
  -----------------------------------------------------------------------------
-  13    -224.290500244        4.96605D-07   -1.65D-12   10
+@ 13    -224.290500244        4.96605D-07   -1.93D-12   10
 
- *** DIIS converged in  13 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  13 iterations !
+@     Converged SCF energy, gradient:   -224.290500243741    4.97D-07
+    - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.071       0.071
 
 
  >>>>> Output from SIRIUS MP2 module <<<<<
@@ -599,21 +722,15 @@ Point group: C2v
  Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,
             J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
 
- Check that orbitals are canonical HARTREE-FOCK orbitals
+ Checking that the closed shell orbitals are canonical Hartree-Fock orbitals
 
-    Number of electrons :   24
-    Orbital occupations :    6    4    1    1
+    Number of electrons  :   24
+    Closed shell orbitals:    6    4    1    1
 
- Hartree-Fock electronic energy:        -293.189688334524
- Hartree-Fock total      energy:        -224.290500243746
+ Generating Fock matrix
 
-Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  7.84D-08
-
-Symmetry  2 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.49D-08
-
-Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.61D-08
-
-Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-08
+ Hartree-Fock electronic energy:        -293.189688334520
+ Hartree-Fock total      energy:        -224.290500243741
 
  Hartree-Fock orbital energies, symmetry 1, number of occupied SCF orbitals is    6
 
@@ -628,7 +745,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
        -20.72029375    -1.44160595    -0.80567920    -0.56538615     0.12634724
          0.22629885     0.28964271     0.39158511     0.45833442     0.98680545
-         1.04725242     1.21463458     1.27464438     1.41332967     1.75858145
+         1.04725242     1.21463458     1.27464439     1.41332967     1.75858145
          2.44224814     3.10080986     3.29956962     3.56030892     3.64014471
          4.29747343
 
@@ -648,12 +765,14 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
   --------------------------
     gap     :     0.44061471
 
+ Integral transformation: Total CPU and WALL times (sec)       0.207       0.208
+
  MP2 move   0.472200 electrons to unoccupied HF orbitals
 
 
- Hartree-Fock total energy :          -224.2905002437
- + MP2 contribution        :            -0.6734135697
- = MP2 second order energy :          -224.9639138135
+@   Hartree-Fock total energy   :          -224.2905002437
+@   + MP2 contribution          :            -0.6734135697
+@   = MP2 second order energy   :          -224.9639138135
 
  Natural orbital occupation numbers, symmetry 1
  Sum =    12.00677322; RHF =    12.00000000; Difference =     0.00677322
@@ -687,7 +806,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
          1.86104840     0.01051553     0.00750153     0.00464138     0.00147214
          0.00042849     0.00032509     0.00020944     0.00011431
 
- Time used for MP2 natural orbitals :       0.269 CPU seconds.
+ Time used for MP2 natural orbitals :       0.235 CPU seconds,       0.238 wall seconds.
+
+ >>>> CPU and wall time for MP2 :       0.235       0.238
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -699,6 +820,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
 
+
+ Integral transformation: Total CPU and WALL times (sec)       0.052       0.052
 
  (CIST1)  4 lowest diagonal elements:
 
@@ -719,10 +842,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  CI energies and residuals:
-    1     -224.500819781119191       1.40D-01
+    1     -224.500819781115496       1.40D-01
 
 
- Final CI energy:     -224.500819781119191
+ Final CI energy:     -224.500819781115496
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -749,17 +872,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.500819781119           (MACRO    1)
+ Integral transformation: Total CPU and WALL times (sec)       0.157       0.159
 
- - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -254.323242918453    
- - Active energy          :    -39.0767649534450    
+ Total MCSCF energy       :          -224.500819781115496  (MACRO    1)
 
- Norm of total gradient   :        0.339419971540
- -    of CI gradient      :        0.280424963230
- -    of orbital gradient :        0.191226977902
-      Virial theorem: -V/T =      1.999893
-      MULPOP  OS      0.26; OP  _1 -0.13; OP  _2 -0.13; 
+ - Nuclear repulsion      :            68.899188090778793
+ - Inactive energy        :          -254.323242918460039
+ - Active energy          :           -39.076764953434264
+
+ Norm of total gradient   :             0.339419971541
+ -    of CI gradient      :             0.280424963231
+ -    of orbital gradient :             0.191226977902
+      Virial theorem: -V/T =      1.986142
+@      MULPOP OS     -0.46; OP  _1  0.23; OP  _2  0.23; 
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
@@ -792,17 +917,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.516609133270           (MACRO    2)
+ Integral transformation: Total CPU and WALL times (sec)       0.160       0.162
 
- - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -253.399593070628    
- - Active energy          :    -40.0162041534210    
+ Total MCSCF energy       :          -224.516609133266570  (MACRO    2)
 
- Norm of total gradient   :        0.100941984955
- -    of CI gradient      :        0.094137909021
- -    of orbital gradient :        0.036432655842
-      Virial theorem: -V/T =      1.999679
-      MULPOP  OS      0.32; OP  _1 -0.16; OP  _2 -0.16; 
+ - Nuclear repulsion      :            68.899188090778793
+ - Inactive energy        :          -253.399593070623496
+ - Active energy          :           -40.016204153421882
+
+ Norm of total gradient   :             0.100941984954
+ -    of CI gradient      :             0.094137909020
+ -    of orbital gradient :             0.036432655843
+      Virial theorem: -V/T =      1.988163
+@      MULPOP OS     -0.61; OP  _1  0.30; OP  _2  0.30; 
 
  Residual norm when dim(red L) =   9
  NEO root     CSF        orbital          total
@@ -835,17 +962,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518481999179           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.163       0.165
 
- - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -253.541886035153    
- - Active energy          :    -39.8757840548046    
+ Total MCSCF energy       :          -224.518481999176032  (MACRO    3)
 
- Norm of total gradient   :        0.017775922534
- -    of CI gradient      :        0.017110330988
- -    of orbital gradient :        0.004818713045
-      Virial theorem: -V/T =      1.999780
-      MULPOP  OS      0.29; OP  _1 -0.15; OP  _2 -0.15; 
+ - Nuclear repulsion      :            68.899188090778793
+ - Inactive energy        :          -253.541886035160360
+ - Active energy          :           -39.875784054794472
+
+ Norm of total gradient   :             0.017775922533
+ -    of CI gradient      :             0.017110330987
+ -    of orbital gradient :             0.004818713046
+      Virial theorem: -V/T =      1.987429
+@      MULPOP OS     -0.62; OP  _1  0.31; OP  _2  0.31; 
 
  Residual norm when dim(red L) =  16
  NEO root     CSF        orbital          total
@@ -878,17 +1007,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518523898924           (MACRO    4)
+ Integral transformation: Total CPU and WALL times (sec)       0.163       0.165
 
- - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -253.551901327247    
- - Active energy          :    -39.8658106624555    
+ Total MCSCF energy       :          -224.518523898920591  (MACRO    4)
 
- Norm of total gradient   :        0.000224595730
- -    of CI gradient      :        0.000191824941
- -    of orbital gradient :        0.000116817954
-      Virial theorem: -V/T =      1.999790
-      MULPOP  OS      0.29; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.899188090778793
+ - Inactive energy        :          -253.551901327255052
+ - Active energy          :           -39.865810662444360
+
+ Norm of total gradient   :             0.000224595730
+ -    of CI gradient      :             0.000191824941
+ -    of orbital gradient :             0.000116817954
+      Virial theorem: -V/T =      1.987426
+@      MULPOP OS     -0.63; OP  _1  0.31; OP  _2  0.31; 
 
  Residual norm when dim(red L) =  15
  NEO root     CSF        orbital          total
@@ -921,29 +1052,35 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518523910232           (MACRO    5)
+ Integral transformation: Total CPU and WALL times (sec)       0.169       0.171
 
- - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -253.552842135444    
- - Active energy          :    -39.8648698655664    
+ Total MCSCF energy       :          -224.518523910228055  (MACRO    5)
 
- Norm of total gradient   :        0.000007048857
- -    of CI gradient      :        0.000005191738
- -    of orbital gradient :        0.000004767834
-      Virial theorem: -V/T =      1.999790
-      MULPOP  OS      0.29; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.899188090778793
+ - Inactive energy        :          -253.552842135449652
+ - Active energy          :           -39.864869865557182
+
+ Norm of total gradient   :             0.000007048857
+ -    of CI gradient      :             0.000005191738
+ -    of orbital gradient :             0.000004767834
+      Virial theorem: -V/T =      1.987427
+@      MULPOP OS     -0.63; OP  _1  0.31; OP  _2  0.31; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -1.13079D-08   -1.13073D-08
+ Energy difference; actual and predicted:   -1.13075D-08   -1.13073D-08
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    1.00005D+00
+ Energy difference; actual and predicted:    1.00001D+00
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used           40
-     Total number of CPU seconds used         1.75
+     Total number of CPU seconds used         1.61
+
+ Integral transformation: Total CPU and WALL times (sec)       0.189       0.192
+
+ >>>> CPU and wall time for MCSCF :       1.798       1.819
 
 
                      .----------------------------------------.
@@ -952,17 +1089,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:14:46 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    6   -224.500819781119   0.3394199715  0.000000   0.4732713748
-    2    7   -224.516609133270   0.1009419850  0.872486   0.1083643311
-    3   14   -224.518481999179   0.0177759225  1.018079   0.0194366097
-    4   13   -224.518523898924   0.0002245957  1.002095   0.0004562999
-    5    0   -224.518523910232   0.0000070489  1.000000   0.0000000000
+    1    6   -224.500819781115   0.3394199715  0.000000   0.4732713748
+    2    7   -224.516609133267   0.1009419850  0.872486   0.1083643311
+    3   14   -224.518481999176   0.0177759225  1.018079   0.0194366097
+    4   13   -224.518523898921   0.0002245957  1.002095   0.0004562999
+    5    0   -224.518523910228   0.0000070489  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -977,36 +1114,36 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     6     4     3      0.31      0.18      0.12      0.11      0.02
-    2     7     5     3      0.32      0.18      0.13      0.12      0.02
-    3    14    10     5      0.43      0.18      0.24      0.22      0.02
-    4    13     9     5      0.41      0.18      0.22      0.21      0.02
-    5     0     0     0      0.19      0.18      0.00      0.00
+    1     6     4     3      0.28      0.16      0.11      0.11      0.02
+    2     7     5     3      0.30      0.16      0.13      0.12      0.02
+    3    14    10     5      0.40      0.16      0.22      0.22      0.02
+    4    13     9     5      0.38      0.16      0.21      0.20      0.02
+    5     0     0     0      0.18      0.17      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -254.323242918453    -39.076764953445   -224.500819781119
-    2   -253.399593070628    -40.016204153421   -224.516609133270
-    3   -253.541886035153    -39.875784054805   -224.518481999179
-    4   -253.551901327247    -39.865810662455   -224.518523898924
-    5   -253.552842135444    -39.864869865566   -224.518523910232
+    1   -254.323242918460    -39.076764953434   -224.500819781115
+    2   -253.399593070623    -40.016204153422   -224.516609133267
+    3   -253.541886035160    -39.875784054794   -224.518481999176
+    4   -253.551901327255    -39.865810662444   -224.518523898921
+    5   -253.552842135450    -39.864869865557   -224.518523910228
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.018096968487     -0.015789352151      0.872486027831
-    3     -0.001839607694     -0.001872865909      1.018078971774
-    4     -0.000041812132     -0.000041899745      1.002095394496
-    5     -0.000000011307     -0.000000011308      1.000000000000
+    2     -0.018096968487     -0.015789352151      0.872486027853
+    3     -0.001839607694     -0.001872865909      1.018078971866
+    4     -0.000041812132     -0.000041899745      1.002095389795
+    5     -0.000000011307     -0.000000011307      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.473271374824      0.700000000000
-    2      0.20000000  1.00000000      0.108364331135      0.700000000000
-    3      0.20000000  1.00000000      0.019436609725      0.700000000000
+    1      0.20000000  1.00000000      0.473271374818      0.700000000000
+    2      0.20000000  1.00000000      0.108364331132      0.700000000000
+    3      0.20000000  1.00000000      0.019436609724      0.700000000000
     4      0.20000000  1.00000000      0.000456299921      0.700000000000
     5      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -1014,10 +1151,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.001434901576    0.995550162899   -0.013610642121   -0.089528240776
+    1   -0.001434901576    0.995550162899   -0.013610642121   -0.089528240775
     2   -0.000147099521    0.999765226139   -0.006630298916   -0.019121659079
     3   -0.000003344920    0.999992444450   -0.000979745225   -0.003077286995
-    4   -0.000000000905    0.999999995836   -0.000020529974   -0.000078277194
+    4   -0.000000000905    0.999999995836   -0.000020529974   -0.000078277193
     5    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
@@ -1026,21 +1163,20 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
-     State number:                1
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
+@    State number:                1
 
-     Final MCSCF energy:         -224.518523910232                 
-     Nuclear repulsion:            68.899188090779
-     Electronic energy:          -293.417712001011
+@    Final MCSCF energy:         -224.518523910228                 
+@    Nuclear repulsion:            68.899188090779
+@    Electronic energy:          -293.417712001007
 
-     Final gradient norm:           0.000007048857
+@    Final gradient norm:           0.000007048857
 
  
-     Date and time (Linux)  : Wed Mar 16 18:14:46 2011 
-     Host name              : fe6                                     
-
+     Date and time (Linux)  : Sun Sep  8 20:50:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Occupancies of natural orbitals
  -------------------------------
@@ -1218,12 +1354,12 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      2.35 seconds
- >>>> Total wall time used in SIRIUS :      3.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.12 seconds
+ >>>> Total wall time used in SIRIUS :      2.14 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:14:46 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -1267,6 +1403,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
  Center of mass dipole origin  :    0.842300    0.000000    0.000000
 
+ Center of mass gauge origin   :    0.842300    0.000000    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -1274,8 +1412,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:14:47 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                             **************************
@@ -1425,22 +1563,22 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
 
- Greatest diff. between AO and SO reorthonormalization gradients:       3.61E-16
- Greatest diff. between AO and SO one-electron Hamiltonian gradients:   3.55E-14
+ Greatest diff. between AO and SO reorthonormalization gradients:       4.72E-16
+ Greatest diff. between AO and SO one-electron Hamiltonian gradients:   5.33E-14
 
 
                          Kinetic energy integral gradient
                          --------------------------------
 
-                         OS   x     0.3605776433
-                         OP   x    -0.3605776433
-                         OP   y    -0.7235677572
+                         OS   x     0.3605776428
+                         OP   x    -0.3605776428
+                         OP   y    -0.7235677562
 
 
 
- OS         0.3605776433            0.0000000000            0.0000000000
- OP  _1    -0.1802888216           -0.3617838786            0.0000000000
- OP  _2    -0.1802888216            0.3617838786            0.0000000000
+ OS         0.3605776428            0.0000000000            0.0000000000
+ OP  _1    -0.1802888214           -0.3617838781            0.0000000000
+ OP  _2    -0.1802888214            0.3617838781            0.0000000000
 
 
 
@@ -1449,15 +1587,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
                        Nuclear attraction integral gradient
                        ------------------------------------
 
-                         OS   x   -19.2999613188
-                         OP   x    19.2999613188
-                         OP   y    45.0144817856
+                         OS   x   -19.2999613075
+                         OP   x    19.2999613075
+                         OP   y    45.0144817683
 
 
 
- OS       -19.2999613188            0.0000000000            0.0000000000
- OP  _1     9.6499806594           22.5072408928            0.0000000000
- OP  _2     9.6499806594          -22.5072408928            0.0000000000
+ OS       -19.2999613075            0.0000000000            0.0000000000
+ OP  _1     9.6499806537           22.5072408841            0.0000000000
+ OP  _2     9.6499806537          -22.5072408841            0.0000000000
 
 
 
@@ -1466,15 +1604,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
                           Reorthonormalization gradient
                           -----------------------------
 
-                         OS   x     0.1514173128
-                         OP   x    -0.1514173128
-                         OP   y    -0.1809797813
+                         OS   x     0.1514173115
+                         OP   x    -0.1514173115
+                         OP   y    -0.1809797796
 
 
 
- OS         0.1514173128            0.0000000000            0.0000000000
- OP  _1    -0.0757086564           -0.0904898906            0.0000000000
- OP  _2    -0.0757086564            0.0904898906            0.0000000000
+ OS         0.1514173115            0.0000000000            0.0000000000
+ OP  _1    -0.0757086557           -0.0904898898            0.0000000000
+ OP  _2    -0.0757086557            0.0904898898            0.0000000000
 
 
 
@@ -1638,7 +1776,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  OP  _1 x    0.224532   -0.249036    0.000000   -0.171206
  OP  _1 y   -0.249036   -0.090368    0.000000    0.249036    0.013369
  OP  _2 x    0.224532    0.249036    0.000000   -0.053326    0.000000    0.000000
- OP  _2 y    0.249036   -0.090368    0.000000    0.000000    0.076999    0.000000
+ OP  _2 y    0.249036   -0.090368    0.000000   -0.000000    0.076999    0.000000
 
             OP  _2 x    OP  _2 y    OP  _2 z
 
@@ -1713,7 +1851,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
   <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
-1
+
 
                          M O L E C U L E - P T R A N
 
@@ -1759,8 +1897,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
     Thresholds for 2-matrix elements:
 
-      during first  half-transformation    0.10000000E-14
-      during second half-transformation    0.10000000E-14
+      during first  half-transformation    0.10000000E-11
+      during second half-transformation    0.10000000E-11
 
 
     Print level is    4
@@ -1793,8 +1931,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
     Sort Parameters:
 
-      Sorting memory            99933316
-      Transformation memory     99931921
+      Sorting memory            63911441
+      Transformation memory     63910046
       Number of blocks per chain     200
       Number of chains                13
       Length of DA buffer           2048
@@ -1802,9 +1940,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
   Time for sorting half-transformed matrix is    0.00 seconds
 
 
- Number of two-electron density elements transformed:  751029
+ Number of two-electron density elements transformed:  750898
 
-  Time in second half-transformation is    0.09 seconds
+  Time in second half-transformation is    0.10 seconds
+ >>>  Time used in PTRAN      is   0.10 seconds
             <<<<<<<<<<  P S O R T >>>>>>>>>>
 
 
@@ -1820,7 +1959,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
   Number of two-electron density elements sorted: 4441093
 
- >>> Time used in PSORT is   0.30 seconds
+ >>>  Time used in PSORT      is   0.19 seconds
 
 
  <<<<< Subroutine ONEDSF >>>>>
@@ -1868,27 +2007,27 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
   Number of primitive integrals (counting zeros) :    15487395
 
 
-  Average time for non-zero (written) integrals:    2.9 microseconds
-  Average time for zero/non-zero integrals     :    0.7 microseconds
+  Average time for non-zero (written) integrals:    3.4 microseconds
+  Average time for zero/non-zero integrals     :    0.8 microseconds
   Average time for primitive integrals         :    0.1 microseconds
 
   Average reduction of primitive ODC vectors:    0.00 %
   Average reduction of contracted ODC vectors:   0.00 %
- >>> Time used in TWOEXP/TWOINT is   1.96 seconds
+ >>>  Time used in TWOEXP/TWOINT is   2.30 seconds
 
 
                           Two-electron integral gradient
                           ------------------------------
 
-                         OS   x     7.1536775491
-                         OP   x    -7.1536775491
-                         OP   y   -17.6301551980
+                         OS   x     7.1536775396
+                         OP   x    -7.1536775396
+                         OP   y   -17.6301551834
 
 
 
- OS         7.1536775491            0.0000000000            0.0000000000
- OP  _1    -3.5768387745           -8.8150775990            0.0000000000
- OP  _2    -3.5768387745            8.8150775990            0.0000000000
+ OS         7.1536775396            0.0000000000            0.0000000000
+ OP  _1    -3.5768387698           -8.8150775917            0.0000000000
+ OP  _2    -3.5768387698            8.8150775917            0.0000000000
 
 
 
@@ -1897,15 +2036,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
                      Potential energy (NN + NE + EE) gradient
                      ----------------------------------------
 
-                         OS   x    -0.5020836376
-                         OP   x     0.5020836376
-                         OP   y     0.8855883068
+                         OS   x    -0.5020836358
+                         OP   x     0.5020836358
+                         OP   y     0.8855883041
 
 
 
- OS        -0.5020836376            0.0000000000            0.0000000000
- OP  _1     0.2510418188            0.4427941534            0.0000000000
- OP  _2     0.2510418188           -0.4427941534            0.0000000000
+ OS        -0.5020836358            0.0000000000            0.0000000000
+ OP  _1     0.2510418179            0.4427941521            0.0000000000
+ OP  _2     0.2510418179           -0.4427941521            0.0000000000
 
 
 
@@ -1984,7 +2123,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  OP  _2 y   -5.231429    3.968463
 
 
- >>> Time used in TWOEXP is   2.36 seconds
+ >>>  Time used in TWOEXP     is   2.60 seconds
 
 
                      +----------------------------------------+
@@ -2041,8 +2180,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
   Number of primitive integrals (counting zeros) :    15487395
 
 
-  Average time for non-zero (written) integrals:    1.5 microseconds
-  Average time for zero/non-zero integrals     :    0.3 microseconds
+  Average time for non-zero (written) integrals:    1.6 microseconds
+  Average time for zero/non-zero integrals     :    0.4 microseconds
   Average time for primitive integrals         :    0.1 microseconds
 
   Average reduction of primitive ODC vectors:    0.00 %
@@ -2065,7 +2204,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Symmetry of derivative: 1
 
 
- (DERTRA) Working area in transformation section99779525
+ (DERTRA) Working area in transformation section63549125
  Maximum number of integrals =   2506959
 
 TRDDRV: finished transformation in    1 passes over derivative AO integral file.
@@ -2087,7 +2226,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
 TRDDRV: finished transformation in    1 passes over derivative AO integral file.
- >>> Time used in RHSIDE is   1.37 seconds
+ >>>  Time used in RHSIDE     is   1.46 seconds
   <<<<<<<<<< OUTPUT FROM REORT >>>>>>>>>> 
 
 
@@ -2165,7 +2304,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  Total number of variables - NVARPT :    2028
 
  Maximum number of response vectors for this symmetry :    1
- >>> Time used in RESPON is   3.63 seconds
+ >>>  Time used in RESPON     is   4.04 seconds
   <<<<<<<<<< Output from RELAX >>>>>>>>>> 
 
 
@@ -2251,9 +2390,9 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
         Coordinate    Direct calc.     Tra.-rot. sym.   Difference
         ----------------------------------------------------------
 
-        OS   x        0.0099113184     0.0099113184     0.0000000000
+        OS   x        0.0099113184     0.0099113184    -0.0000000000
 
- Largest deviation from tra-rot symmetry is in gradient element  1:  1.24E-14
+ Largest deviation from tra-rot symmetry is in gradient element  1:  8.88E-15
 
 
    ***************************************************************************
@@ -2262,8 +2401,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:14:57 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:18 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -2411,8 +2550,10 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  OP  _2:    1.272001    2.164231    0.000000
 
 
-  Max interatomic separation is    2.1642 Angstrom (    4.0898 Bohr)
+  Max    interatomic separation is    2.1642 Angstrom (    4.0898 Bohr)
   between atoms    3 and    2, "OP  _2" and "OP  _1".
+
+  Min YX interatomic separation is    1.2720 Angstrom (    2.4037 Bohr)
 
 
   Bond distances (Angstrom):
@@ -2454,23 +2595,25 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  Newton step taken.
 
 
- Predicted energy change       -0.000225766728480
+ Predicted energy change       -0.000225766728617
 
 
   Step in diagonal representation (eigenvalue order)
   --------------------------------------------------
 
 
-              Column   1    Column   2
-       1      0.01399166   -0.02221278
+               Column   1     Column   2
+       1       0.01399166    -0.02221278
+    ==== End of matrix output ====
 
 
                       Scaled Cartesian symmetry step vector
                       -------------------------------------
 
 
-              Column   1    Column   2    Column   3
-       1     -0.00877199    0.00620274    0.02395313
+               Column   1     Column   2     Column   3
+       1      -0.00877199     0.00620274     0.02395313
+    ==== End of matrix output ====
 
  Norm of scaled step:   0.0262521249
 
@@ -2480,8 +2623,9 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
                           ------------------------------
 
 
-              Column   1    Column   2    Column   3
-       1     -0.00877199    0.00620274    0.02395313
+               Column   1     Column   2     Column   3
+       1      -0.00877199     0.00620274     0.02395313
+    ==== End of matrix output ====
 
  Norm of unscaled step:   0.0262521249
 
@@ -2502,8 +2646,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  Acceptable step has been obtained.
 
- Largest deviation from orthonormality of OMOs:0.109801E-12
- - found for element   25  26
+ Largest deviation from orthonormality of OMOs:0.149880E-12
+ - found for element   12  12
 
 
    ***************************************************************************
@@ -2635,8 +2779,10 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  OP  _2:    1.283286    2.182157    0.000000
 
 
-  Max interatomic separation is    2.1822 Angstrom (    4.1237 Bohr)
+  Max    interatomic separation is    2.1822 Angstrom (    4.1237 Bohr)
   between atoms    3 and    2, "OP  _2" and "OP  _1".
+
+  Min YX interatomic separation is    1.2833 Angstrom (    2.4251 Bohr)
 
 
   Bond distances (Angstrom):
@@ -2661,15 +2807,15 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:02      32 %
+ TWOTEX     00:00:03      32 %
  RHSIDE     00:00:01      18 %
  RESPON     00:00:04      49 %
 
- TOTAL      00:00:07     100 %
+ TOTAL      00:00:08     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   7.45 seconds
- >>>> Total wall time used in ABACUS:  10.00 seconds
+ >>>> Total CPU  time used in ABACUS:   8.19 seconds
+ >>>> Total wall time used in ABACUS:   8.28 seconds
 
 
                    .-------------------------------------------.
@@ -2701,14 +2847,14 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:      672537 ( 23.1% )
  Megabytes written:                              7.702
 
- >>> Time used in TWOINT is   0.28 seconds
- >>>> Total CPU  time used in HERMIT:   0.31 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>  Time used in TWOINT     is   0.30 seconds
+ >>>> Total CPU  time used in HERMIT:   0.33 seconds
+ >>>> Total wall time used in HERMIT:   0.33 seconds
 
 
                         .----------------------------------.
@@ -2735,9 +2881,9 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  (OPTST) Geometry walk
-               Old MCSCF energy:            -224.518523910231920
-               Predicted energy change:       -0.000225766728480
-               Predicted new energy:        -224.518749676960397
+               Old MCSCF energy:                 -224.518523910228055
+               Predicted energy change:            -0.000225766728617
+               Predicted new energy:             -224.518749676956674
 
                Ratios for rejecting walk,
                  Minimum :       0.10000
@@ -2746,7 +2892,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
+      Threshold for discarding integrals :  1.00D-12 )
 
  Occupations of CAS natural orbitals:
 
@@ -2770,17 +2916,19 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.202398535487           (MACRO    1)
+ Integral transformation: Total CPU and WALL times (sec)       0.185       0.187
 
- - Nuclear repulsion      :     68.3023491004875    
- - Inactive energy        :    -252.780002612538    
- - Active energy          :    -39.7247450234363    
+ Total MCSCF energy       :          -224.202398535410111  (MACRO    1)
 
- Norm of total gradient   :        4.803281173783
- -    of CI gradient      :        0.026917092802
- -    of orbital gradient :        4.803205752884
-      Virial theorem: -V/T =      1.995507
-      MULPOP  OS     -1.66; OP  _1  0.83; OP  _2  0.83; 
+ - Nuclear repulsion      :            68.302349100310920
+ - Inactive energy        :          -252.780002612322107
+ - Active energy          :           -39.724745023398924
+
+ Norm of total gradient   :             4.803281174266
+ -    of CI gradient      :             0.026917092809
+ -    of orbital gradient :             4.803205753366
+      Virial theorem: -V/T =      1.984058
+@      MULPOP OS      1.47; OP  _1 -0.74; OP  _2 -0.74; 
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -2813,17 +2961,19 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.512080726030           (MACRO    2)
+ Integral transformation: Total CPU and WALL times (sec)       0.160       0.161
 
- - Nuclear repulsion      :     68.3023491004875    
- - Inactive energy        :    -251.954985458870    
- - Active energy          :    -40.8594443676482    
+ Total MCSCF energy       :          -224.512080726025545  (MACRO    2)
 
- Norm of total gradient   :        0.388603726067
- -    of CI gradient      :        0.108787695310
- -    of orbital gradient :        0.373065802859
-      Virial theorem: -V/T =      2.000675
-      MULPOP  OS      0.49; OP  _1 -0.25; OP  _2 -0.25; 
+ - Nuclear repulsion      :            68.302349100310920
+ - Inactive energy        :          -251.954985457467473
+ - Active energy          :           -40.859444368868978
+
+ Norm of total gradient   :             0.388603726376
+ -    of CI gradient      :             0.108787695425
+ -    of orbital gradient :             0.373065803146
+      Virial theorem: -V/T =      1.988650
+@      MULPOP OS     -0.64; OP  _1  0.32; OP  _2  0.32; 
 
  (SIRNEO) iteration (  2,  5)
  Micro iteration termination criterion met, EVAL(ISTATE+1) = -4.02D-03
@@ -2853,20 +3003,22 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.151698766942           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.161       0.162
 
- - Nuclear repulsion      :     68.3023491004875    
- - Inactive energy        :    -246.514041687117    
- - Active energy          :    -45.9400061803119    
+ Total MCSCF energy       :          -224.151698767066250  (MACRO    3)
 
- Norm of total gradient   :        3.156750220521
- -    of CI gradient      :        2.708463335502
- -    of orbital gradient :        1.621511120839
-      Virial theorem: -V/T =      2.000399
-      MULPOP  OS      0.35; OP  _1 -0.17; OP  _2 -0.17; 
+ - Nuclear repulsion      :            68.302349100310920
+ - Inactive energy        :          -246.514041688772210
+ - Active energy          :           -45.940006178604960
+
+ Norm of total gradient   :             3.156750219706
+ -    of CI gradient      :             2.708463334774
+ -    of orbital gradient :             1.621511120466
+      Virial theorem: -V/T =      1.989326
+@      MULPOP OS     -0.57; OP  _1  0.29; OP  _2  0.29; 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:   0.3603819591  -0.0418119114   -8.619122
+ actual, predicted and ratio:   0.3603819590  -0.0418119115   -8.619122
 
  (SIRSTP) step is too large -- backstep
 
@@ -2897,20 +3049,22 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  <<< MACRO ITERATION  3 BACKSTEP NO.  1 >>>
 
- Total MCSCF energy       :    -224.431221703772           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.160       0.161
 
- - Nuclear repulsion      :     68.3023491004875    
- - Inactive energy        :    -250.639299389103    
- - Active energy          :    -42.0942714151572    
+ Total MCSCF energy       :          -224.431221703826111  (MACRO    3)
 
- Norm of total gradient   :        1.132148568715
- -    of CI gradient      :        0.948147429046
- -    of orbital gradient :        0.618689610739
-      Virial theorem: -V/T =      1.999991
-      MULPOP  OS      0.30; OP  _1 -0.15; OP  _2 -0.15; 
+ - Nuclear repulsion      :            68.302349100310920
+ - Inactive energy        :          -250.639299390342586
+ - Active energy          :           -42.094271413794459
+
+ Norm of total gradient   :             1.132148568237
+ -    of CI gradient      :             0.948147428644
+ -    of orbital gradient :             0.618689610481
+      Virial theorem: -V/T =      1.989326
+@      MULPOP OS     -0.62; OP  _1  0.31; OP  _2  0.31; 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:   0.0808590223  -0.0241151457   -3.353039
+ actual, predicted and ratio:   0.0808590222  -0.0241151457   -3.353039
 
  (SIRSTP) step is too large -- backstep
 
@@ -2941,17 +3095,19 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  <<< MACRO ITERATION  3 BACKSTEP NO.  2 >>>
 
- Total MCSCF energy       :    -224.501368439899           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.156       0.173
 
- - Nuclear repulsion      :     68.3023491004875    
- - Inactive energy        :    -252.507668502742    
- - Active energy          :    -40.2960490376448    
+ Total MCSCF energy       :          -224.501368439920498  (MACRO    3)
 
- Norm of total gradient   :        0.376816548807
- -    of CI gradient      :        0.317366509547
- -    of orbital gradient :        0.203148246541
-      Virial theorem: -V/T =      1.999989
-      MULPOP  OS      0.28; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.302349100310920
+ - Inactive energy        :          -252.507668503385389
+ - Active energy          :           -40.296049036846036
+
+ Norm of total gradient   :             0.376816548571
+ -    of CI gradient      :             0.317366509367
+ -    of orbital gradient :             0.203148246385
+      Virial theorem: -V/T =      1.988957
+@      MULPOP OS     -0.64; OP  _1  0.32; OP  _2  0.32; 
 
  (SIRSTP) Energy difference;
  actual, predicted and ratio:   0.0107122861  -0.0149841064   -0.714910
@@ -2985,17 +3141,19 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  <<< MACRO ITERATION  3 BACKSTEP NO.  3 >>>
 
- Total MCSCF energy       :    -224.516044812044           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.159       0.230
 
- - Nuclear repulsion      :     68.3023491004875    
- - Inactive energy        :    -253.076332541181    
- - Active energy          :    -39.7420613713505    
+ Total MCSCF energy       :          -224.516044812052201  (MACRO    3)
 
- Norm of total gradient   :        0.134010638030
- -    of CI gradient      :        0.119039481667
- -    of orbital gradient :        0.061550409501
-      Virial theorem: -V/T =      2.000071
-      MULPOP  OS      0.28; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.302349100310920
+ - Inactive energy        :          -253.076332541236127
+ - Active energy          :           -39.742061371127008
+
+ Norm of total gradient   :             0.134010637981
+ -    of CI gradient      :             0.119039481605
+ -    of orbital gradient :             0.061550409514
+      Virial theorem: -V/T =      1.988598
+@      MULPOP OS     -0.64; OP  _1  0.32; OP  _2  0.32; 
 
  Residual norm when dim(red L) =   5
  NEO root     CSF        orbital          total
@@ -3028,17 +3186,19 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518561809812           (MACRO    4)
+ Integral transformation: Total CPU and WALL times (sec)       0.158       0.160
 
- - Nuclear repulsion      :     68.3023491004875    
- - Inactive energy        :    -253.133012952746    
- - Active energy          :    -39.6878979575534    
+ Total MCSCF energy       :          -224.518561809816077  (MACRO    4)
 
- Norm of total gradient   :        0.025287988649
- -    of CI gradient      :        0.021940367166
- -    of orbital gradient :        0.012573887964
-      Virial theorem: -V/T =      2.000058
-      MULPOP  OS      0.28; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.302349100310920
+ - Inactive energy        :          -253.133012952788988
+ - Active energy          :           -39.687897957338002
+
+ Norm of total gradient   :             0.025287988632
+ -    of CI gradient      :             0.021940367158
+ -    of orbital gradient :             0.012573887945
+      Virial theorem: -V/T =      1.988422
+@      MULPOP OS     -0.62; OP  _1  0.31; OP  _2  0.31; 
 
  Residual norm when dim(red L) =  12
  NEO root     CSF        orbital          total
@@ -3071,17 +3231,19 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518754341662           (MACRO    5)
+ Integral transformation: Total CPU and WALL times (sec)       0.159       0.161
 
- - Nuclear repulsion      :     68.3023491004875    
- - Inactive energy        :    -253.175978483428    
- - Active energy          :    -39.6451249587223    
+ Total MCSCF energy       :          -224.518754341665755  (MACRO    5)
 
- Norm of total gradient   :        0.002565382486
- -    of CI gradient      :        0.002036582210
- -    of orbital gradient :        0.001559974424
-      Virial theorem: -V/T =      2.000018
-      MULPOP  OS      0.28; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.302349100310920
+ - Inactive energy        :          -253.175978483320790
+ - Active energy          :           -39.645124958655892
+
+ Norm of total gradient   :             0.002565382477
+ -    of CI gradient      :             0.002036582202
+ -    of orbital gradient :             0.001559974419
+      Virial theorem: -V/T =      1.988471
+@      MULPOP OS     -0.63; OP  _1  0.31; OP  _2  0.31; 
 
  Residual norm when dim(red L) =  24
  NEO root     CSF        orbital          total
@@ -3114,17 +3276,19 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518756467310           (MACRO    6)
+ Integral transformation: Total CPU and WALL times (sec)       0.160       0.162
 
- - Nuclear repulsion      :     68.3023491004875    
- - Inactive energy        :    -253.175018608603    
- - Active energy          :    -39.6460869591951    
+ Total MCSCF energy       :          -224.518756467314006  (MACRO    6)
 
- Norm of total gradient   :        0.000043024364
- -    of CI gradient      :        0.000019784603
- -    of orbital gradient :        0.000038205568
-      Virial theorem: -V/T =      2.000021
-      MULPOP  OS      0.28; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.302349100310920
+ - Inactive energy        :          -253.175018608513568
+ - Active energy          :           -39.646086959111358
+
+ Norm of total gradient   :             0.000043024364
+ -    of CI gradient      :             0.000019784603
+ -    of orbital gradient :             0.000038205568
+      Virial theorem: -V/T =      1.988461
+@      MULPOP OS     -0.63; OP  _1  0.31; OP  _2  0.31; 
 
 
  >>> step control for geometry walk (ABACUS interface)
@@ -3168,29 +3332,31 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  7 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518756467901           (MACRO    7)
+ Integral transformation: Total CPU and WALL times (sec)       0.159       0.161
 
- - Nuclear repulsion      :     68.3023491004875    
- - Inactive energy        :    -253.175043765731    
- - Active energy          :    -39.6460618026578    
+ Total MCSCF energy       :          -224.518756467904723  (MACRO    7)
 
- Norm of total gradient   :        0.000009010409
- -    of CI gradient      :        0.000006339106
- -    of orbital gradient :        0.000006403374
-      Virial theorem: -V/T =      2.000021
-      MULPOP  OS      0.28; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.302349100310920
+ - Inactive energy        :          -253.175043765641931
+ - Active energy          :           -39.646061802573712
+
+ Norm of total gradient   :             0.000009010409
+ -    of CI gradient      :             0.000006339106
+ -    of orbital gradient :             0.000006403374
+      Virial theorem: -V/T =      1.988461
+@      MULPOP OS     -0.63; OP  _1  0.31; OP  _2  0.31; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -5.90603D-10   -5.90289D-10
+ Energy difference; actual and predicted:   -5.90717D-10   -5.90289D-10
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    1.00053D+00
+ Energy difference; actual and predicted:    1.00072D+00
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            7
      Number of micro iterations used           46
-     Total number of CPU seconds used         2.87
+     Total number of CPU seconds used         2.56
 
 
  Check ratio for geometry walk with converged MC :
@@ -3207,6 +3373,10 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  *** GEOMETRY WALK STEP ACCEPTED.
 
 
+ Integral transformation: Total CPU and WALL times (sec)       0.191       0.193
+
+ >>>> CPU and wall time for MCSCF :       2.752       2.886
+
 
                      .----------------------------------------.
                      | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
@@ -3214,22 +3384,22 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:02 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:21 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    3   -224.202398535487   4.8032811738  0.000000   0.2634129540
-    2    5   -224.512080726030   0.3886037261  0.943997   0.6988134930
-    3    0   -224.151698766942   3.1567502205 -8.619122   0.0000000000
-    3    0   -224.431221703772   1.1321485687 -3.353039   0.0000000000
-    3    0   -224.501368439899   0.3768165488 -0.714910   0.0000000000
-    3    3   -224.516044812044   0.1340106380  0.393913   0.0421779393
-    4   10   -224.518561809812   0.0252879886  1.046025   0.0262420310
-    5   22   -224.518754341662   0.0025653825  1.045191   0.0033432066
-    6    3   -224.518756467310   0.0000430244  1.009605   0.0000578955
-    7    0   -224.518756467901   0.0000090104  1.000000   0.0000000000
+    1    3   -224.202398535410   4.8032811743  0.000000   0.2634129541
+    2    5   -224.512080726026   0.3886037264  0.943997   0.6988134930
+    3    0   -224.151698767066   3.1567502197 -8.619122   0.0000000000
+    3    0   -224.431221703826   1.1321485682 -3.353039   0.0000000000
+    3    0   -224.501368439920   0.3768165486 -0.714910   0.0000000000
+    3    3   -224.516044812052   0.1340106380  0.393913   0.0421779392
+    4   10   -224.518561809816   0.0252879886  1.046025   0.0262420309
+    5   22   -224.518754341666   0.0025653825  1.045191   0.0033432066
+    6    3   -224.518756467314   0.0000430244  1.009605   0.0000578955
+    7    0   -224.518756467905   0.0000090104  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -3249,71 +3419,71 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     3     0     3      0.31      0.22      0.07      0.07      0.02
-    2     5     2     3      0.29      0.18      0.10      0.09      0.02
-    3     0     0     0      0.20      0.18      0.00      0.00
-    3     0     0     0      0.20      0.18      0.00      0.00
-    3     0     0     0      0.20      0.18      0.00      0.00
-    3     3     2     2      0.26      0.18      0.07      0.06      0.02
-    4    10     7     4      0.37      0.18      0.18      0.17      0.02
-    5    22    16     7      0.55      0.18      0.36      0.34      0.02
-    6     3     3     1      0.25      0.18      0.06      0.05      0.02
-    7     0     0     0      0.19      0.18      0.00      0.00
+    1     3     0     3      0.27      0.18      0.07      0.07      0.02
+    2     5     2     3      0.27      0.16      0.09      0.09      0.02
+    3     0     0     0      0.18      0.16      0.00      0.00
+    3     0     0     0      0.18      0.16      0.00      0.00
+    3     0     0     0      0.17      0.16      0.00      0.00
+    3     3     2     2      0.24      0.16      0.07      0.06      0.02
+    4    10     7     4      0.33      0.16      0.16      0.15      0.02
+    5    22    16     7      0.50      0.16      0.33      0.31      0.01
+    6     3     3     1      0.23      0.16      0.05      0.05      0.02
+    7     0     0     0      0.17      0.16      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -252.780002612538    -39.724745023436   -224.202398535487
-    2   -251.954985458870    -40.859444367648   -224.512080726030
-    3   -246.514041687117    -45.940006180312   -224.151698766942
-    3   -250.639299389103    -42.094271415157   -224.431221703772
-    3   -252.507668502742    -40.296049037645   -224.501368439899
-    3   -253.076332541181    -39.742061371351   -224.516044812044
-    4   -253.133012952746    -39.687897957553   -224.518561809812
-    5   -253.175978483428    -39.645124958722   -224.518754341662
-    6   -253.175018608603    -39.646086959195   -224.518756467310
-    7   -253.175043765731    -39.646061802658   -224.518756467901
+    1   -252.780002612322    -39.724745023399   -224.202398535410
+    2   -251.954985457467    -40.859444368869   -224.512080726026
+    3   -246.514041688772    -45.940006178605   -224.151698767066
+    3   -250.639299390343    -42.094271413794   -224.431221703826
+    3   -252.507668503385    -40.296049036846   -224.501368439920
+    3   -253.076332541236    -39.742061371127   -224.516044812052
+    4   -253.133012952789    -39.687897957338   -224.518561809816
+    5   -253.175978483321    -39.645124958656   -224.518754341666
+    6   -253.175018608514    -39.646086959111   -224.518756467314
+    7   -253.175043765642    -39.646061802574   -224.518756467905
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.328054232807     -0.309682190544      0.943996935793
-    3     -0.041811911435      0.360381959089     -8.619121841665
-    3     -0.024115145684      0.080859022258     -3.353038928996
-    3     -0.014984106382      0.010712286131     -0.714909909053
-    3     -0.010063363804     -0.003964086014      0.393912621211
-    4     -0.002406251251     -0.002516997767      1.046024502150
-    5     -0.000184207257     -0.000192531851      1.045191454278
-    6     -0.000002105426     -0.000002125648      1.009604524099
+    2     -0.328054232900     -0.309682190615      0.943996935744
+    3     -0.041811911500      0.360381958959     -8.619121825103
+    3     -0.024115145715      0.080859022199     -3.353038922262
+    3     -0.014984106398      0.010712286105     -0.714909906559
+    3     -0.010063363813     -0.003964086027      0.393912622096
+    4     -0.002406251248     -0.002516997764      1.046024502033
+    5     -0.000184207256     -0.000192531850      1.045191451497
+    6     -0.000002105426     -0.000002125648      1.009604732993
     7     -0.000000000590     -0.000000000591      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.263412953976      0.700000000000
-    2      2.32026773  1.00000000      0.698813492971      0.700000000000
-    3      0.00000000  0.00000000      0.000000000000      0.468205040290
-    3      0.00000000  0.00000000      0.000000000000      0.312693538986
-    3      0.00000000  0.00000000      0.000000000000      0.208820140250
-    3      0.20000000  1.00000000      0.042177939262      0.139909493967
-    4      0.20000000  1.00000000      0.026242030954      0.201469671313
-    5      0.20000000  1.00000000      0.003343206628      0.290116326690
-    6      0.20000000  1.00000000      0.000057895470      0.417767510434
-    7      0.00000000  0.00000000      0.000000000000      0.601585215025
+    1      0.20000000  1.00000000      0.263412954097      0.700000000000
+    2      2.32026774  1.00000000      0.698813492967      0.700000000000
+    3      0.00000000  0.00000000      0.000000000000      0.468205040288
+    3      0.00000000  0.00000000      0.000000000000      0.312693538982
+    3      0.00000000  0.00000000      0.000000000000      0.208820140245
+    3      0.20000000  1.00000000      0.042177939226      0.139909493964
+    4      0.20000000  1.00000000      0.026242030915      0.201469671309
+    5      0.20000000  1.00000000      0.003343206624      0.290116326684
+    6      0.20000000  1.00000000      0.000057895470      0.417767510425
+    7      0.00000000  0.00000000      0.000000000000      0.601585215013
 
 
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.026171700238    0.998615154331   -0.027206263709   -0.029790523892
-    2   -0.124054729299   -0.524932610252    0.790202595906    0.043259852786
+    1   -0.026171700246    0.998615154329   -0.027206263714   -0.029790523908
+    2   -0.124054729554   -0.524932609920    0.790202596143    0.043259852872
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
-    3   -0.000192486403    0.999964422328   -0.006939900916   -0.003186875391
-    4   -0.000014736175    0.999986227401   -0.002105677298   -0.004313599542
-    5   -0.000000168434    0.999999776459   -0.000257820110   -0.000477985308
+    3   -0.000192486403    0.999964422328   -0.006939900914   -0.003186875385
+    4   -0.000014736175    0.999986227401   -0.002105677298   -0.004313599533
+    5   -0.000000168434    0.999999776459   -0.000257820109   -0.000477985308
     6   -0.000000000047    0.999999999933   -0.000002409815   -0.000011289485
     7    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
@@ -3323,21 +3493,20 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
-     State number:                1
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
+@    State number:                1
 
-     Final MCSCF energy:         -224.518756467901                 
-     Nuclear repulsion:            68.302349100488
-     Electronic energy:          -292.821105568388
+@    Final MCSCF energy:         -224.518756467905                 
+@    Nuclear repulsion:            68.302349100311
+@    Electronic energy:          -292.821105568216
 
-     Final gradient norm:           0.000009010409
+@    Final gradient norm:           0.000009010409
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:02 2011 
-     Host name              : fe6                                     
-
+     Date and time (Linux)  : Sun Sep  8 20:50:21 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Occupancies of natural orbitals
  -------------------------------
@@ -3361,12 +3530,12 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
 
- >>>> Total CPU  time used in SIRIUS :      3.08 seconds
- >>>> Total wall time used in SIRIUS :      4.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.76 seconds
+ >>>> Total wall time used in SIRIUS :      2.89 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:02 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:21 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -3376,6 +3545,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  Center of mass dipole origin  :    0.842300    0.000000    0.000000
 
+ Center of mass gauge origin   :    0.842300    0.000000    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -3383,8 +3554,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:03 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:21 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Old LUGDR file opened in ORTREL.
 
@@ -3395,8 +3566,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:12 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:29 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -3544,8 +3715,10 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  OP  _2:    1.283286    2.182157    0.000000
 
 
-  Max interatomic separation is    2.1822 Angstrom (    4.1237 Bohr)
+  Max    interatomic separation is    2.1822 Angstrom (    4.1237 Bohr)
   between atoms    3 and    2, "OP  _2" and "OP  _1".
+
+  Min YX interatomic separation is    1.2833 Angstrom (    2.4251 Bohr)
 
 
   Bond distances (Angstrom):
@@ -3573,7 +3746,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  Walk type:     1
 
- Norm of gradient   8.032423D-04
+ Norm of gradient   8.032422D-04
  Totally sym.  index    0
  Total Hessian index    0
  Number of steps        0
@@ -3586,7 +3759,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
      Actual           /  Predicted        =  Ratio 
 
-       -0.0002325577  /    -0.0002257667  =     1.0300794561
+       -0.0002325577  /    -0.0002257667  =     1.0300794900
 
  Iteration in WLKGEO:  1
  Trust radius:     0.50000000
@@ -3596,23 +3769,25 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  Newton step taken.
 
 
- Predicted energy change       -0.000000493890111
+ Predicted energy change       -0.000000493890102
 
 
   Step in diagonal representation (eigenvalue order)
   --------------------------------------------------
 
 
-              Column   1    Column   2
-       1      0.00075395   -0.00105843
+               Column   1     Column   2
+       1       0.00075395    -0.00105843
+    ==== End of matrix output ====
 
 
                       Scaled Cartesian symmetry step vector
                       -------------------------------------
 
 
-              Column   1    Column   2    Column   3
-       1     -0.00040341    0.00028525    0.00120192
+               Column   1     Column   2     Column   3
+       1      -0.00040341     0.00028525     0.00120192
+    ==== End of matrix output ====
 
  Norm of scaled step:   0.0012995073
 
@@ -3622,8 +3797,9 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
                           ------------------------------
 
 
-              Column   1    Column   2    Column   3
-       1     -0.00040341    0.00028525    0.00120192
+               Column   1     Column   2     Column   3
+       1      -0.00040341     0.00028525     0.00120192
+    ==== End of matrix output ====
 
  Norm of unscaled step:   0.0012995073
 
@@ -3644,7 +3820,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  Acceptable step has been obtained.
 
- Largest deviation from orthonormality of OMOs:0.137002E-12
+ Largest deviation from orthonormality of OMOs:0.135003E-12
  - found for element    2   2
 
 
@@ -3657,7 +3833,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  Iteration number:  1
 
-  Norm of molecular gradient:     0.0008032423
+  Norm of molecular gradient:     0.0008032422
 
 @ Energy at current point:  -224.5187564679
   Energy at initial point:  -224.5185239102
@@ -3676,7 +3852,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           2           1       8.032423D-04    0          2.39D+00
+    1           2           1       8.032422D-04    0          2.39D+00
     2           1           2       0.000000D+00    0          1.00D+00
     3           0           2
     4           0           1
@@ -3784,8 +3960,10 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  OP  _2:    1.283837    2.183056    0.000000
 
 
-  Max interatomic separation is    2.1831 Angstrom (    4.1254 Bohr)
+  Max    interatomic separation is    2.1831 Angstrom (    4.1254 Bohr)
   between atoms    3 and    2, "OP  _2" and "OP  _1".
+
+  Min YX interatomic separation is    1.2838 Angstrom (    2.4261 Bohr)
 
 
   Bond distances (Angstrom):
@@ -3810,15 +3988,15 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:02      36 %
- RHSIDE     00:00:01      21 %
- RESPON     00:00:03      42 %
+ TWOTEX     00:00:03      35 %
+ RHSIDE     00:00:01      20 %
+ RESPON     00:00:03      43 %
 
  TOTAL      00:00:07     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   6.63 seconds
- >>>> Total wall time used in ABACUS:   9.00 seconds
+ >>>> Total CPU  time used in ABACUS:   7.24 seconds
+ >>>> Total wall time used in ABACUS:   7.73 seconds
 
 
                    .-------------------------------------------.
@@ -3850,14 +4028,14 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:      672537 ( 23.1% )
  Megabytes written:                              7.702
 
- >>> Time used in TWOINT is   0.31 seconds
- >>>> Total CPU  time used in HERMIT:   0.34 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>  Time used in TWOINT     is   0.30 seconds
+ >>>> Total CPU  time used in HERMIT:   0.33 seconds
+ >>>> Total wall time used in HERMIT:   0.33 seconds
 
 
                         .----------------------------------.
@@ -3884,9 +4062,9 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  (OPTST) Geometry walk
-               Old MCSCF energy:            -224.518756467900801
-               Predicted energy change:       -0.000000493890111
-               Predicted new energy:        -224.518756961790899
+               Old MCSCF energy:                 -224.518756467904723
+               Predicted energy change:            -0.000000493890102
+               Predicted new energy:             -224.518756961794821
 
                Ratios for rejecting walk,
                  Minimum :       0.10000
@@ -3895,7 +4073,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
+      Threshold for discarding integrals :  1.00D-12 )
 
  Occupations of CAS natural orbitals:
 
@@ -3919,17 +4097,19 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518010148821           (MACRO    1)
+ Integral transformation: Total CPU and WALL times (sec)       0.186       0.188
 
- - Nuclear repulsion      :     68.2733033779948    
- - Inactive energy        :    -253.155867170352    
- - Active energy          :    -39.6354463564639    
+ Total MCSCF energy       :          -224.518010148840119  (MACRO    1)
 
- Norm of total gradient   :        0.234449797397
- -    of CI gradient      :        0.001299602880
- -    of orbital gradient :        0.234446195388
-      Virial theorem: -V/T =      1.999910
-      MULPOP  OS      0.18; OP  _1 -0.09; OP  _2 -0.09; 
+ - Nuclear repulsion      :            68.273303378064668
+ - Inactive energy        :          -253.155867170430497
+ - Active energy          :           -39.635446356474276
+
+ Norm of total gradient   :             0.234449794834
+ -    of CI gradient      :             0.001299602864
+ -    of orbital gradient :             0.234446192825
+      Virial theorem: -V/T =      1.988397
+@      MULPOP OS     -0.53; OP  _1  0.26; OP  _2  0.26; 
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -3962,17 +4142,19 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518756579379           (MACRO    2)
+ Integral transformation: Total CPU and WALL times (sec)       0.160       0.161
 
- - Nuclear repulsion      :     68.2733033779948    
- - Inactive energy        :    -253.153713679525    
- - Active energy          :    -39.6383462778492    
+ Total MCSCF energy       :          -224.518756579382227  (MACRO    2)
 
- Norm of total gradient   :        0.001342357368
- -    of CI gradient      :        0.001247902580
- -    of orbital gradient :        0.000494633658
-      Virial theorem: -V/T =      2.000042
-      MULPOP  OS      0.28; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.273303378064668
+ - Inactive energy        :          -253.153713679591959
+ - Active energy          :           -39.638346277854950
+
+ Norm of total gradient   :             0.001342357358
+ -    of CI gradient      :             0.001247902571
+ -    of orbital gradient :             0.000494633650
+      Virial theorem: -V/T =      1.988500
+@      MULPOP OS     -0.63; OP  _1  0.31; OP  _2  0.31; 
 
  Residual norm when dim(red L) =  19
  NEO root     CSF        orbital          total
@@ -4005,24 +4187,26 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518756963749           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.159       0.161
 
- - Nuclear repulsion      :     68.2733033779948    
- - Inactive energy        :    -253.156647108835    
- - Active energy          :    -39.6354132329088    
+ Total MCSCF energy       :          -224.518756963751940  (MACRO    3)
 
- Norm of total gradient   :        0.000010852916
- -    of CI gradient      :        0.000004108448
- -    of orbital gradient :        0.000010045220
-      Virial theorem: -V/T =      2.000032
-      MULPOP  OS      0.28; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.273303378064668
+ - Inactive energy        :          -253.156647108899477
+ - Active energy          :           -39.635413232917124
+
+ Norm of total gradient   :             0.000010852916
+ -    of CI gradient      :             0.000004108448
+ -    of orbital gradient :             0.000010045220
+      Virial theorem: -V/T =      1.988511
+@      MULPOP OS     -0.63; OP  _1  0.31; OP  _2  0.31; 
 
 
  >>> step control for geometry walk (ABACUS interface)
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0000004958  -0.0000004939    1.003964
+ actual, predicted and ratio:  -0.0000004958  -0.0000004939    1.003963
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
@@ -4059,29 +4243,31 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.518756963760           (MACRO    4)
+ Integral transformation: Total CPU and WALL times (sec)       0.160       0.162
 
- - Nuclear repulsion      :     68.2733033779948    
- - Inactive energy        :    -253.156650130330    
- - Active energy          :    -39.6354102114239    
+ Total MCSCF energy       :          -224.518756963762797  (MACRO    4)
 
- Norm of total gradient   :        0.000004334103
- -    of CI gradient      :        0.000004126477
- -    of orbital gradient :        0.000001325384
-      Virial theorem: -V/T =      2.000032
-      MULPOP  OS      0.28; OP  _1 -0.14; OP  _2 -0.14; 
+ - Nuclear repulsion      :            68.273303378064668
+ - Inactive energy        :          -253.156650130393842
+ - Active energy          :           -39.635410211433616
+
+ Norm of total gradient   :             0.000004334103
+ -    of CI gradient      :             0.000004126477
+ -    of orbital gradient :             0.000001325384
+      Virial theorem: -V/T =      1.988511
+@      MULPOP OS     -0.63; OP  _1  0.31; OP  _2  0.31; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -1.07718D-11   -1.05723D-11
+ Energy difference; actual and predicted:   -1.08571D-11   -1.05723D-11
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    1.01888D+00
+ Energy difference; actual and predicted:    1.02694D+00
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            4
      Number of micro iterations used           22
-     Total number of CPU seconds used         1.30
+     Total number of CPU seconds used         1.14
 
 
  Check ratio for geometry walk with converged MC :
@@ -4092,11 +4278,15 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0000004959  -0.0000004939    1.003986
+ actual, predicted and ratio:  -0.0000004959  -0.0000004939    1.003985
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
 
+
+ Integral transformation: Total CPU and WALL times (sec)       0.189       0.192
+
+ >>>> CPU and wall time for MCSCF :       1.328       1.343
 
 
                      .----------------------------------------.
@@ -4105,16 +4295,16 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:15 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:31 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    3   -224.518010148821   0.2344497974  0.000000   0.0096230229
-    2   17   -224.518756579379   0.0013423574  0.999736   0.0011379124
-    3    2   -224.518756963749   0.0000108529  0.999955   0.0000164843
-    4    0   -224.518756963760   0.0000043341  1.000000   0.0000000000
+    1    3   -224.518010148840   0.2344497948  0.000000   0.0096230228
+    2   17   -224.518756579382   0.0013423574  0.999736   0.0011379124
+    3    2   -224.518756963752   0.0000108529  0.999955   0.0000164843
+    4    0   -224.518756963763   0.0000043341  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -4128,32 +4318,32 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     3     0     3      0.34      0.24      0.08      0.08      0.03
-    2    17    12     6      0.47      0.18      0.28      0.27      0.02
-    3     2     1     2      0.25      0.18      0.06      0.05      0.03
-    4     0     0     0      0.19      0.18      0.00      0.00
+    1     3     0     3      0.27      0.19      0.08      0.07      0.03
+    2    17    12     6      0.43      0.16      0.26      0.25      0.02
+    3     2     1     2      0.23      0.16      0.06      0.05      0.03
+    4     0     0     0      0.17      0.16      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -253.155867170352    -39.635446356464   -224.518010148821
-    2   -253.153713679525    -39.638346277849   -224.518756579379
-    3   -253.156647108835    -39.635413232909   -224.518756963749
-    4   -253.156650130330    -39.635410211424   -224.518756963760
+    1   -253.155867170430    -39.635446356474   -224.518010148840
+    2   -253.153713679592    -39.638346277855   -224.518756579382
+    3   -253.156647108899    -39.635413232917   -224.518756963752
+    4   -253.156650130394    -39.635410211434   -224.518756963763
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000746627992     -0.000746430558      0.999735566321
-    3     -0.000000384387     -0.000000384370      0.999955050634
+    2     -0.000746627975     -0.000746430542      0.999735566632
+    3     -0.000000384387     -0.000000384370      0.999955354897
     4     -0.000000000011     -0.000000000011      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.009623022935      0.601585215025
-    2      0.20000000  1.00000000      0.001137912450      0.700000000000
+    1      0.20000000  1.00000000      0.009623022827      0.601585215013
+    2      0.20000000  1.00000000      0.001137912447      0.700000000000
     3      0.20000000  1.00000000      0.000016484315      0.700000000000
     4      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -4161,9 +4351,9 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.000059730018    0.999998147954   -0.001900776221   -0.000281528041
-    2   -0.000000030751    0.999999974103   -0.000117355254   -0.000135506361
-    3   -0.000000000001    0.999999999995   -0.000000302768   -0.000003246259
+    1   -0.000059730017    0.999998147954   -0.001900776200   -0.000281528039
+    2   -0.000000030751    0.999999974103   -0.000117355254   -0.000135506362
+    3   -0.000000000001    0.999999999995   -0.000000302768   -0.000003246260
     4    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
@@ -4172,21 +4362,20 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
-     State number:                1
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
+@    State number:                1
 
-     Final MCSCF energy:         -224.518756963760                 
-     Nuclear repulsion:            68.273303377995
-     Electronic energy:          -292.792060341754
+@    Final MCSCF energy:         -224.518756963763                 
+@    Nuclear repulsion:            68.273303378065
+@    Electronic energy:          -292.792060341827
 
-     Final gradient norm:           0.000004334103
+@    Final gradient norm:           0.000004334103
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:15 2011 
-     Host name              : fe6                                     
-
+     Date and time (Linux)  : Sun Sep  8 20:50:31 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Occupancies of natural orbitals
  -------------------------------
@@ -4210,12 +4399,12 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.52 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.33 seconds
+ >>>> Total wall time used in SIRIUS :      1.35 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:15 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:31 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -4225,6 +4414,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  Center of mass dipole origin  :    0.842300    0.000000    0.000000
 
+ Center of mass gauge origin   :    0.842300    0.000000    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -4232,8 +4423,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:15 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:31 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Old LUGDR file opened in ORTREL.
 
@@ -4244,8 +4435,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:23 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:37 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -4393,8 +4584,10 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  OP  _2:    1.283837    2.183056    0.000000
 
 
-  Max interatomic separation is    2.1831 Angstrom (    4.1254 Bohr)
+  Max    interatomic separation is    2.1831 Angstrom (    4.1254 Bohr)
   between atoms    3 and    2, "OP  _2" and "OP  _1".
+
+  Min YX interatomic separation is    1.2838 Angstrom (    2.4261 Bohr)
 
 
   Bond distances (Angstrom):
@@ -4422,7 +4615,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  Walk type:     1
 
- Norm of gradient   4.067974D-06
+ Norm of gradient   4.067968D-06
  Totally sym.  index    0
  Total Hessian index    0
  Number of steps        1
@@ -4457,7 +4650,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           2           1       4.067974D-06    0          2.38D+00
+    1           2           1       4.067968D-06    0          2.38D+00
     2           1           2       0.000000D+00    0          1.00D+00
     3           0           2
     4           0           1
@@ -4523,8 +4716,10 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  OP  _2:    1.283837    2.183056    0.000000
 
 
-  Max interatomic separation is    2.1831 Angstrom (    4.1254 Bohr)
+  Max    interatomic separation is    2.1831 Angstrom (    4.1254 Bohr)
   between atoms    3 and    2, "OP  _2" and "OP  _1".
+
+  Min YX interatomic separation is    1.2838 Angstrom (    2.4261 Bohr)
 
 
   Bond distances (Angstrom):
@@ -4549,15 +4744,15 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:02      43 %
- RHSIDE     00:00:01      25 %
- RESPON     00:00:02      31 %
+ TWOTEX     00:00:03      42 %
+ RHSIDE     00:00:01      24 %
+ RESPON     00:00:02      32 %
 
  TOTAL      00:00:06     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   5.53 seconds
- >>>> Total wall time used in ABACUS:   8.00 seconds
+ >>>> Total CPU  time used in ABACUS:   6.06 seconds
+ >>>> Total wall time used in ABACUS:   6.51 seconds
 
 
                    .-------------------------------------------.
@@ -4604,6 +4799,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  Center of mass dipole origin  :    0.842300    0.000000    0.000000
 
+ Center of mass gauge origin   :    0.842300    0.000000    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -4611,8 +4808,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:23 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:37 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Old LUGDR file opened in ORTREL.
 
@@ -4623,120 +4820,120 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  TRACTL_1: Integral transformation abandoned,
- the required MO integrals are already available.
+           the required MO integrals are already available.
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   24 linear transformations is     10.19506250
  INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
  Determinant of reduced matrix is -2.08 * 10 **  0.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   27 linear transformations is     10.20137683
  INERTIA (POS,ZER,NEG) of reduced matrix is   53    0    1
  Determinant of reduced matrix is -1.32 * 10 **  0.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   30 linear transformations is     10.20202109
  INERTIA (POS,ZER,NEG) of reduced matrix is   59    0    1
  Determinant of reduced matrix is -7.26 * 10 **  1.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   33 linear transformations is     10.20292859
  INERTIA (POS,ZER,NEG) of reduced matrix is   65    0    1
  Determinant of reduced matrix is -1.53 * 10 **  1.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   36 linear transformations is     10.20309118
  INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
  Determinant of reduced matrix is -1.56 * 10 **  3.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   39 linear transformations is     10.20322546
  INERTIA (POS,ZER,NEG) of reduced matrix is   77    0    1
  Determinant of reduced matrix is -2.12 * 10 **  4.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   42 linear transformations is     10.20327819
  INERTIA (POS,ZER,NEG) of reduced matrix is   83    0    1
  Determinant of reduced matrix is -1.41 * 10 **  5.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   45 linear transformations is     10.20329159
  INERTIA (POS,ZER,NEG) of reduced matrix is   89    0    1
  Determinant of reduced matrix is -2.64 * 10 **  6.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   48 linear transformations is     10.20330044
  INERTIA (POS,ZER,NEG) of reduced matrix is   95    0    1
  Determinant of reduced matrix is -4.04 * 10 **  7.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   51 linear transformations is     10.20330164
  INERTIA (POS,ZER,NEG) of reduced matrix is  101    0    1
  Determinant of reduced matrix is -4.15 * 10 **  9.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   54 linear transformations is     10.20330328
  INERTIA (POS,ZER,NEG) of reduced matrix is  107    0    1
  Determinant of reduced matrix is -1.87 * 10 ** 10.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   57 linear transformations is     10.20330417
  INERTIA (POS,ZER,NEG) of reduced matrix is  113    0    1
  Determinant of reduced matrix is -5.33 * 10 ** 11.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   59 linear transformations is     10.20330432
  INERTIA (POS,ZER,NEG) of reduced matrix is  117    0    1
  Determinant of reduced matrix is -1.62 * 10 ** 13.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   61 linear transformations is     10.20330445
  INERTIA (POS,ZER,NEG) of reduced matrix is  121    0    1
  Determinant of reduced matrix is -5.44 * 10 ** 14.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   63 linear transformations is     10.20330450
  INERTIA (POS,ZER,NEG) of reduced matrix is  125    0    1
  Determinant of reduced matrix is -4.49 * 10 ** 15.0
 
- *** INFO, negative eigenvalues in reduced matrix.
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
 
  GP * SOLUTION vector at frequency     0.09600 a.u.
  after   65 linear transformations is     10.20330452
  INERTIA (POS,ZER,NEG) of reduced matrix is  129    0    1
  Determinant of reduced matrix is -2.25 * 10 ** 16.0
- >>> Time used in LNRABA is   2.50 seconds
+ >>>  Time used in LNRABA     is   2.84 seconds
 
 
    ***************************************************************************
@@ -4745,8 +4942,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:38 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:48 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -4946,8 +5143,10 @@ Isotropic polarizability:   18.02241
  OP  _2:    1.283837    2.183056    0.000000
 
 
-  Max interatomic separation is    2.1831 Angstrom (    4.1254 Bohr)
+  Max    interatomic separation is    2.1831 Angstrom (    4.1254 Bohr)
   between atoms    3 and    2, "OP  _2" and "OP  _1".
+
+  Min YX interatomic separation is    1.2838 Angstrom (    2.4261 Bohr)
 
 
   Bond distances (Angstrom):
@@ -5054,16 +5253,16 @@ Isotropic polarizability:   18.02241
                 1  1094     2  1022     3   708 
   ----------------------------------------------
 
-    OS     x    0.172917   -0.000000   -0.108533
+    OS     x    0.172917   -0.000000    0.108533
     OS     y    0.000000    0.192241   -0.000000
     OS     z    0.000000    0.000000    0.000000
 
-    OP  _1 x   -0.086459   -0.059518    0.054267
-    OP  _1 y   -0.093993   -0.096121   -0.149751
+    OP  _1 x   -0.086459   -0.059518   -0.054267
+    OP  _1 y   -0.093993   -0.096121    0.149751
     OP  _1 z    0.000000    0.000000    0.000000
 
-    OP  _2 x   -0.086459    0.059518    0.054267
-    OP  _2 y    0.093993   -0.096121    0.149751
+    OP  _2 x   -0.086459    0.059518   -0.054267
+    OP  _2 y    0.093993   -0.096121   -0.149751
     OP  _2 z    0.000000    0.000000    0.000000
 
 
@@ -5076,8 +5275,8 @@ Isotropic polarizability:   18.02241
   mode           dMA/dQi        dMB/dQi        dMC/dQi
   ----------------------------------------------------
    1           -0.137138       0.000000       0.000000
-   2            0.000000       1.451328       0.000000
-   3           -0.326195      -0.000000       0.000000
+   2           -0.000000       1.451328       0.000000
+   3            0.326195      -0.000000       0.000000
 
 
 
@@ -5134,8 +5333,8 @@ Isotropic polarizability:   18.02241
 
                          Ex          Ey          Ez
 
-            Ex       0.260832    0.000000    0.000000
-            Ey       0.000000    2.310170    0.000000
+            Ex       0.260832   -0.000000    0.000000
+            Ey      -0.000000    2.310170    0.000000
             Ez       0.000000    0.000000    0.000000
 
 
@@ -5145,8 +5344,8 @@ Isotropic polarizability:   18.02241
 
                          Ex          Ey          Ez
 
-            Ex       0.038651    0.000000    0.000000
-            Ey       0.000000    0.342332    0.000000
+            Ex       0.038651   -0.000000    0.000000
+            Ey      -0.000000    0.342332    0.000000
             Ez       0.000000    0.000000    0.000000
 
 
@@ -5158,8 +5357,8 @@ Isotropic polarizability:   18.02241
 
                          EA          EB          EC
 
-            EA       0.342332    0.000000    0.000000
-            EB       0.000000    0.038651    0.000000
+            EA       0.342332   -0.000000    0.000000
+            EB      -0.000000    0.038651    0.000000
             EC       0.000000    0.000000    0.000000
 
 
@@ -5187,8 +5386,8 @@ Isotropic polarizability:   18.02241
 
                          EA          EB          EC
 
-            EA       4.539918    0.000000    0.000000
-            EB       0.000000    1.835289    0.000000
+            EA       4.539918   -0.000000    0.000000
+            EB      -0.000000    1.835289    0.000000
             EC       0.000000    0.000000    1.493103
 
 
@@ -5196,16 +5395,16 @@ Isotropic polarizability:   18.02241
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:01      15 %
+ TWOTEX     00:00:01      14 %
  RHSIDE     00:00:02      17 %
  RESPON     00:00:04      41 %
- LNRABA     00:00:02      26 %
+ LNRABA     00:00:03      28 %
 
  TOTAL      00:00:10     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   9.55 seconds
- >>>> Total wall time used in ABACUS:  15.00 seconds
+ >>>> Total CPU  time used in ABACUS:  10.28 seconds
+ >>>> Total wall time used in ABACUS:  10.81 seconds
 
 
                    .-------------------------------------------.
@@ -5252,13 +5451,13 @@ Isotropic polarizability:   18.02241
           ZDIPLEN 
 
  TRACTL_1: Integral transformation abandoned,
- the required MO integrals are already available.
+           the required MO integrals are already available.
 
 
- MCSCF energy         :     -224.518756963759557
- -- inactive part     :     -253.156650130330490
- --   active part     :      -39.635410211423896
- -- nuclear repulsion :       68.273303377994836
+ MCSCF energy         :     -224.518756963762797
+ -- inactive part     :     -253.156650130393842
+ --   active part     :      -39.635410211433616
+ -- nuclear repulsion :       68.273303378064668
 
 
                         **********************************
@@ -5284,8 +5483,9 @@ Isotropic polarizability:   18.02241
 
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : XDIPLEN 
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000  0.059200
- FREQ 2    0.0000000000000000       5.92000000000000026E-002
+ FREQ 2    0.0000000000000000        5.9200000000000003E-002
 
  Converged solution vector already on file
     XDIPLEN       freq              0.000000
@@ -5307,13 +5507,13 @@ Isotropic polarizability:   18.02241
  A operator, symmetry, frequency:   XDIPLEN    1 -0.000000
  B operator, symmetry, frequency:   XDIPLEN    1  0.000000
 
- Value of linear response -<<A;B>(omega):      12.124314933806
+ Value of linear response -<<A;B>>(omega):      12.124314933614
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   XDIPLEN    1 -0.059200
  B operator, symmetry, frequency:   XDIPLEN    1  0.059200
 
- Value of linear response -<<A;B>(omega):      12.217328312064
+ Value of linear response -<<A;B>>(omega):      12.217328311871
 
 
  >>>>>>>>>> Linear response calculation
@@ -5326,8 +5526,9 @@ Isotropic polarizability:   18.02241
 
  RSPLR -- linear response calculation for symmetry  2
  RSPLR -- operator label : YDIPLEN 
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000  0.059200
- FREQ 2    0.0000000000000000       5.92000000000000026E-002
+ FREQ 2    0.0000000000000000        5.9200000000000003E-002
 
  Converged solution vector already on file
     YDIPLEN       freq              0.000000
@@ -5349,13 +5550,13 @@ Isotropic polarizability:   18.02241
  A operator, symmetry, frequency:   YDIPLEN    2 -0.000000
  B operator, symmetry, frequency:   YDIPLEN    2  0.000000
 
- Value of linear response -<<A;B>(omega):      28.326713299357
+ Value of linear response -<<A;B>>(omega):      28.326713299526
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   YDIPLEN    2 -0.059200
  B operator, symmetry, frequency:   YDIPLEN    2  0.059200
 
- Value of linear response -<<A;B>(omega):      29.354188101565
+ Value of linear response -<<A;B>>(omega):      29.354188101733
 
 
  >>>>>>>>>> Linear response calculation
@@ -5368,8 +5569,9 @@ Isotropic polarizability:   18.02241
 
  RSPLR -- linear response calculation for symmetry  3
  RSPLR -- operator label : ZDIPLEN 
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000  0.059200
- FREQ 2    0.0000000000000000       5.92000000000000026E-002
+ FREQ 2    0.0000000000000000        5.9200000000000003E-002
 
  Converged solution vector already on file
     ZDIPLEN       freq              0.000000
@@ -5391,25 +5593,25 @@ Isotropic polarizability:   18.02241
  A operator, symmetry, frequency:   ZDIPLEN    3 -0.000000
  B operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
- Value of linear response -<<A;B>(omega):      10.075960406158
+ Value of linear response -<<A;B>>(omega):      10.075960406170
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   ZDIPLEN    3 -0.059200
  B operator, symmetry, frequency:   ZDIPLEN    3  0.059200
 
- Value of linear response -<<A;B>(omega):      10.130889427685
+ Value of linear response -<<A;B>>(omega):      10.130889427696
 
- >>>> Total CPU  time used in RESPONSE:   0.09 seconds
- >>>> Total wall time used in RESPONSE:   0.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.10 seconds
+ >>>> Total wall time used in RESPONSE:   0.10 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  37.23 seconds
- >>>> Total wall time used in DALTON:  56.00 seconds
+ >>>> Total CPU  time used in DALTON:  39.06 seconds
+ >>>> Total wall time used in DALTON:  40.83 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:15:38 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:50:48 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

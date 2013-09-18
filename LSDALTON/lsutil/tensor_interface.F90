@@ -601,15 +601,20 @@ contains
   !> \author Patrick Ettenhuber
   !> \date January 2013
   !> \brief initializes a tiled dist matrix from master, wrapper for use without mpi
-  function array_minit_td(dims,nmodes)result(arr)
+  function array_minit_td(dims,nmodes,local)result(arr)
     !> the output array
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in) :: nmodes, dims(nmodes)
+    logical, intent(in) :: local
 #ifdef VAR_MPI
-    arr=array_init_tiled(dims,nmodes,MASTER_INIT)
-    CreatedPDMArrays = CreatedPDMArrays+1
-    arr%atype=TILED_DIST
+    if( local )then
+      arr=array_init(dims,nmodes)
+    else
+      arr=array_init_tiled(dims,nmodes,MASTER_INIT)
+      CreatedPDMArrays = CreatedPDMArrays+1
+      arr%atype=TILED_DIST
+    endif
 #else
     arr=array_init(dims,nmodes)
 #endif
@@ -618,16 +623,21 @@ contains
   !> \date January 2013
   !> \brief initializes a tiled dist matrix wich has local dense memory 
   !>  allocated from master, wrapper for use without mpi
-  function array_minit_tdpseudo_dense(dims,nmodes)result(arr)
+  function array_minit_tdpseudo_dense(dims,nmodes,local)result(arr)
     !> the output array
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in) :: nmodes, dims(nmodes)
+    logical, intent(in) :: local
 #ifdef VAR_MPI
-    arr=array_init_tiled(dims,nmodes,MASTER_INIT)
-    CreatedPDMArrays = CreatedPDMArrays+1
-    call memory_allocate_array_dense(arr)
-    arr%atype=DENSE
+    if( local )then
+      arr=array_init(dims,nmodes)
+    else
+      arr=array_init_tiled(dims,nmodes,MASTER_INIT)
+      CreatedPDMArrays = CreatedPDMArrays+1
+      call memory_allocate_array_dense(arr)
+      arr%atype=DENSE
+    endif
 #else
     arr=array_init(dims,nmodes)
 #endif
@@ -636,15 +646,20 @@ contains
   !> \date January 2013
   !> \brief initializes a rep matrix wich has type dense, wrapper for use
   !> without mpi
-  function array_minit_rpseudo_dense(dims,nmodes)result(arr)
+  function array_minit_rpseudo_dense(dims,nmodes,local)result(arr)
     !> the output array
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in) :: nmodes, dims(nmodes)
+    logical, intent(in) :: local
 #ifdef VAR_MPI
-    arr=array_init_replicated(dims,nmodes,MASTER_INIT)
-    CreatedPDMArrays = CreatedPDMArrays+1
-    arr%atype=DENSE
+    if(local)then
+      arr=array_init(dims,nmodes)
+    else
+      arr=array_init_replicated(dims,nmodes,MASTER_INIT)
+      CreatedPDMArrays = CreatedPDMArrays+1
+      arr%atype=DENSE
+    endif
 #else
     arr=array_init(dims,nmodes)
 #endif
@@ -655,11 +670,14 @@ contains
   !> \brief free a replicated matrix wich is pseudo dense for the routines,
   !> wrapper for use without mpi
   !> without mpi
-  subroutine array_free_rpseudo_dense(arr)
+  subroutine array_free_rpseudo_dense(arr,local)
     !> the array to free
     type(array) :: arr
+    logical, intent(in) :: local
 #ifdef VAR_MPI
-    arr%atype=REPLICATED
+    if(.not.local)then
+      arr%atype=REPLICATED
+    endif
 #endif
     call array_free(arr)
   end subroutine array_free_rpseudo_dense
@@ -669,11 +687,14 @@ contains
   !> \brief free a td matrix wich is pseudo dense for the routines,
   !> wrapper for use without mpi
   !> without mpi
-  subroutine array_free_tdpseudo_dense(arr)
+  subroutine array_free_tdpseudo_dense(arr,local)
     !> the array to free
     type(array) :: arr
+    logical, intent(in) :: local
 #ifdef VAR_MPI
-    arr%atype=TILED_DIST
+    if( .not. local ) then
+      arr%atype=TILED_DIST
+    endif
 #endif
     call array_free(arr)
   end subroutine array_free_tdpseudo_dense
@@ -799,15 +820,18 @@ contains
   !so that implementations still run
   !> \author Patrick Ettenhuber
   !> \date January 2013
-  subroutine array_change_atype_to_td(arr)
+  subroutine array_change_atype_to_td(arr,local)
     implicit none
     !> array to change the array type
     type(array),intent(inout) :: arr
+    logical, intent(in) :: local
 #ifdef VAR_MPI
-    arr%atype=TILED_DIST
-    if(associated(arr%elm1))then
-      call memory_deallocate_array_dense(arr)
-    endif 
+    if( .not. local )then
+      arr%atype=TILED_DIST
+      if(associated(arr%elm1))then
+        call memory_deallocate_array_dense(arr)
+      endif
+    endif
 #else
     return
 #endif
@@ -817,12 +841,15 @@ contains
   !non-mpi-build
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  subroutine array_change_atype_to_rep(arr)
+  subroutine array_change_atype_to_rep(arr,local)
     implicit none
     !> array to change the array type
     type(array),intent(inout) :: arr
+    logical, intent(in) :: local
 #ifdef VAR_MPI
-    arr%atype=REPLICATED
+    if(.not.local)then
+      arr%atype=REPLICATED
+    endif
 #else
     return
 #endif

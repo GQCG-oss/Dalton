@@ -76,8 +76,8 @@ intensity}.
 \item[\Key{DIPORG}]\verb| |\newline
 \verb|READ (LUCMD, *) (DIPORG(ICOOR), ICOOR = 1, 3)|
 
-Reads in a user defined dipole origin\index{dipole origin}\index{origin!dipole, second order, quadrupole, third order} in bohrs.
-It is also used for second order (.SECMOM), quadrupole (.QUADRU),
+Reads in a user defined dipole origin\index{dipole origin}\index{origin!dipole, second order, quadrupole, third order}
+in \bohr{}. It is also used for second order (.SECMOM), quadrupole (.QUADRU),
 and third order (.THIRDM) moments.  This may affect properties in
 which changes in the dipole origin\index{dipole origin} is canceled by
 similar changes in the nuclear part.
@@ -1745,7 +1745,7 @@ Calculates all coupling constants in a molecule to a selected number
 of nuclei only. The first number \verb|NUCSPI| is the number of nuclei
 to which couplings shall be calculated, and the next line reads in
 the number of the symmetry-independent nucleus as given in the
-\verb|MOLECULE.INP| file.
+\molinp\ file.
 
 \item[\Key{ISOTOP}]\verb| |\newline
 \verb|READ (LUCMD,*) (ISOTPS(IS), IS=1, NATOMS)|

@@ -90,11 +90,13 @@ fi
 
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
+CRIT1b=`$GREP "Calculation of one\-electron Hamiltonian integrals\." $log | wc -l`
 CRIT2=`$GREP "two-electron integrals are transformed to P-supermatrix elements" $log | wc -l`
+CRIT2b=`$GREP "Fock matrices are calculated directly and in parallel without use of integrals on disk" $log |wc -l`
 CRIT3=`$GREP "One\-electron RLM integrals calculated\." $log | wc -l`
 CRIT4=`$GREP "Maximum L quantum number\: * 7" $log | wc -l`
 CRIT5=`$GREP "All symmetries saved on file\." $log | wc -l`
-TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT1b \+ $CRIT2b`
 CTRL[1]=5
 ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
@@ -206,7 +208,7 @@ ERROR[10]="FIRST HYPERPOLARIZABILITIES NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

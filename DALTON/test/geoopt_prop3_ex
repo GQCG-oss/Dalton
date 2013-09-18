@@ -176,11 +176,11 @@ CRIT9=`$GREP "OP * z * \-0*\.1111" $log | wc -l`
 #TEST[9]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
 #              $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
 TEST[9]=`expr $CRIT1  \+ $CRIT9 `
-CTRL[9]=2
+CTRL[9]=3
 ERROR[9]="INITIAL HESSIAN NOT CORRECT"
 
 # Dipole moment, 1st iteration:
-CRIT1=`$GREP "0*\.0705" $log | wc -l`
+CRIT1=`$GREP "( |0)\.070581 * ( | 0)\.179399 * ( |0)\.598411" $log | wc -l`
 TEST[10]=`expr $CRIT1 `
 CTRL[10]=1
 ERROR[10]="INITIAL DIPOLE MOMENT NOT CORRECT"
@@ -203,7 +203,7 @@ ERROR[12]="SECOND ITERATION NOT CORRECT"
 
 # 3rd iteration:
 CRIT1=`$GREP "Energy at this geometry is * \: * \-224\.415644" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.056" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.0567" $log | wc -l`
 CRIT3=`$GREP "Norm of step * \: * (0| )\.302" $log | wc -l`
 TEST[13]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[13]=3
@@ -253,7 +253,7 @@ CRIT9=`$GREP "S parameter\: * 878\.9" $log | wc -l`
 CRIT10=`$GREP "A parameter\: * 0*\.02" $log | wc -l`
 TEST[18]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
                $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 `
-CTRL[18]=15
+CTRL[18]=24
 ERROR[18]="SHIELDINGS NOT CORRECT"
 
 # Vibrational frequencies:
@@ -275,7 +275,7 @@ ERROR[20]="GEOMETRY OPTIMIZATION FAILED"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi

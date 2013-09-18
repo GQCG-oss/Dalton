@@ -198,6 +198,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # MM/MM interaction energy compared:
 CRIT1=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n - R_s\| \]        \| * (\-|\-0)\.03220417" $log | wc -l`
 CRIT2=`$GREP "Epol  \= - 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * (\-|\-0)\.00995104" $log | wc -l`
@@ -238,7 +243,7 @@ ERROR[4]="THE FIRST HYPERPOLARIZABILITY VECTOR COMPONENTS ARE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

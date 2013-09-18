@@ -118,14 +118,14 @@ CRIT9=`$GREP "Asymmetry\: * (0| )\.000." $log | wc -l`
 TEST[3]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ $CRIT6  \
            \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
 
-CTRL[3]=9
+CTRL[3]=39
 ERROR[3]="SHILEDINGS NOT CORRECT"
 
 
 PASSED=1
 for i in 1 2 3
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
