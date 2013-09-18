@@ -906,7 +906,7 @@ C
          if (peqm) then
            call memget2('REAL','fpe', kfpe, nnbasx, wrk, kfree, lfree)
            call memget2('REAL','epe', kepe, 1, wrk, kfree, lfree)
-           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+           if (nasht == 0 .or. hsfock) then
              call pe_master(runtype='fock', denmats=daosav(:,1),
      &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
      &                      energies=wrk(kepe:kepe),
@@ -1555,7 +1555,7 @@ C
       END IF
 #if defined (BUILD_PELIB)
       if (peqm) then
-        if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+        if (nasht == 0 .or. hsfock) then
            call pe_master(runtype='energy',
      &                    denmats=daosav(:,1), nmats=1,
      &                    dalwrk=wrk(kfree:lfree))

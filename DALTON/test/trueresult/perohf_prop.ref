@@ -128,48 +128,37 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Sep  9 13:31:42 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Tue Sep 17 22:39:24 2013
+     Host name              : TheSocialist                            
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407
-   2) /people/disk2/magnus/Projects/dalton_devel/dalton/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-17T22_38-testjob-pid-10519
+   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
 
 
 Compilation information
 -----------------------
 
  Who compiled             | magnus
- Host                     | fe8
- System                   | Linux-2.6.32-279.el6.x86_64
+ Host                     | TheSocialist
+ System                   | Linux-3.10.11-200.fc19.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
-                          | if90
- Fortran compiler version | ifort (IFORT) 13.1.3 20130607
- C compiler               | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
-                          | icc
- C compiler version       | icc (ICC) 13.1.3 20130607
- C++ compiler             | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
-                          | icxx
- C++ compiler version     | unknown
- BLAS                     | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
-                          | ib/intel64/libmkl_core.so;/people/disk2/magnus/int
-                          | el/mkl/lib/intel64/libmkl_intel_lp64.so;/people/di
-                          | sk2/magnus/intel/mkl/lib/intel64/libmkl_sequential
-                          | .so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-o
-                          | penmp;-Wl,--end-group
- LAPACK                   | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
-                          | ib/intel64/libmkl_lapack95_lp64.a;/people/disk2/ma
-                          | gnus/intel/mkl/lib/intel64/libmkl_intel_lp64.so;-o
-                          | penmp;-Wl,--end-group
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
+ C compiler               | /usr/lib64/ccache/gcc
+ C compiler version       | gcc (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
+ C++ compiler             | /usr/lib64/ccache/g++
+ C++ compiler version     | g++ (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
+ BLAS                     | /lib64/libblas.so
+ LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | 72792444bfcf70cffefbb31f508f6872a0f88620
- Configuration time       | 2013-09-09 13:03:34.480961
+ Last Git revision        | 125c293ec00a6e285dc76690c5a7c9e35d3b061c
+ Configuration time       | 2013-09-17 22:19:49.616906
 
 
    Content of the .dal input file
@@ -177,6 +166,7 @@ Compilation information
 
 **DALTON                                          
 .RUN PROPERTIES                                   
+.DIRECT                                           
 .PEQM                                             
 *PEQM                                             
 .VERBOSE                                          
@@ -221,6 +211,7 @@ H           -2.508043   -1.382001     .040282
    Overall default print level:    0
    Print level for DALTON.STAT:    1
 
+    AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
     Wave function sections will be executed (SIRIUS module)
@@ -249,7 +240,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -257,7 +248,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -265,7 +256,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -381,7 +372,7 @@ Point group: C1
 @  Nuclear repulsion energy :   31.249215315972 Hartree
 
   Reading potential input file
- 
+
   Polarizable embedding information
   ---------------------------------
 
@@ -411,13 +402,8 @@ Point group: C1
      ************************** Output from HERINT **************************
      ************************************************************************
 
-
- Threshold for neglecting two-electron integrals:  1.00D-12
- Number of two-electron integrals written:        2907 ( 94.4% )
- Megabytes written:                              0.034
-
  >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.06 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -451,8 +437,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Sep  9 13:31:42 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Tue Sep 17 22:39:24 2013
+     Host name              : TheSocialist                            
 
  Title lines from ".mol" input file:
      Formaldehyde                                                            
@@ -462,6 +448,7 @@ Point group: C1
  Print level on unit LUW4  =   2 is   5
 
 @    Restricted, one open shell Hartree-Fock calculation.
+ Fock matrices are calculated directly without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option
@@ -507,161 +494,72 @@ Point group: C1
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
-     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-12 )
+   1  Screening settings (-IFTHRS, DIFDEN)   -6    F
       Induced dipole moments converged in  8 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2141
-         permanent dipole magnitude:    0.1904
-@  1  -111.859491213     -2.141707843867E-02    1.53324D+00   -1.12D+02
+@  1  -111.859491255     -2.141707843867E-02    1.53324D+00   -1.12D+02
       Virial theorem: -V/T =      2.018564
 @      MULPOP C       1.20; O      -0.23; H       0.01; H       0.02; 
  -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)   -6    F
       Induced dipole moments converged in  7 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.1985
-         permanent dipole magnitude:    0.1904
-@  2  -112.008124188     -4.385589684751E-03    1.01753D+00   -1.49D-01
+@  2  -112.008124217     -4.385589082266E-03    1.01753D+00   -1.49D-01
       Virial theorem: -V/T =      2.024713
 @      MULPOP C      -0.24; O       0.65; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)   -7    F
       Induced dipole moments converged in  7 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2055
-         permanent dipole magnitude:    0.1904
-@  3  -112.084776534     -1.558786392040E-02    1.46966D-01   -7.67D-02
-      Virial theorem: -V/T =      2.020249
-@      MULPOP C       0.27; O       0.15; H       0.31; H       0.27; 
+@  3  -112.082470128     -1.625960395274E-02    1.58523D-01   -7.43D-02
+      Virial theorem: -V/T =      2.020032
+@      MULPOP C       0.27; O       0.13; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)   -7    F
       Induced dipole moments converged in  7 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2046
-         permanent dipole magnitude:    0.1904
-@  4  -112.091769327     -1.428403242259E-02    6.37265D-02   -6.99D-03
-      Virial theorem: -V/T =      2.019965
-@      MULPOP C       0.22; O       0.18; H       0.32; H       0.27; 
+@  4  -112.091343408     -1.409867094395E-02    8.21769D-02   -8.87D-03
+      Virial theorem: -V/T =      2.020115
+@      MULPOP C       0.21; O       0.19; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-      Induced dipole moments converged in  6 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@  5  -112.092631694     -1.514752259690E-02    2.17362D-02   -8.62D-04
-      Virial theorem: -V/T =      2.019367
+   5  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      Induced dipole moments converged in  7 iterations.
+@  5  -112.092629848     -1.509521587014E-02    2.22060D-02   -1.29D-03
+      Virial theorem: -V/T =      2.019394
 @      MULPOP C       0.25; O       0.15; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-      Induced dipole moments converged in  4 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@  6  -112.092707413     -1.513943588787E-02    5.63659D-03   -7.57D-05
-      Virial theorem: -V/T =      2.019354
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
+   6  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      Induced dipole moments converged in  6 iterations.
+@  6  -112.092707727     -1.516679186053E-02    6.19164D-03   -7.79D-05
+      Virial theorem: -V/T =      2.019353
+@      MULPOP C       0.25; O       0.15; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)   -9    F
       Induced dipole moments converged in  5 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@  7  -112.092712866     -1.514755471530E-02    6.67866D-04   -5.45D-06
-      Virial theorem: -V/T =      2.019352
+@  7  -112.092713088     -1.515804498975E-02    6.60180D-04   -5.36D-06
+      Virial theorem: -V/T =      2.019347
 @      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -10    F
       Induced dipole moments converged in  4 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@  8  -112.092713074     -1.514964057951E-02    2.93936D-04   -2.09D-07
-      Virial theorem: -V/T =      2.019351
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
- -----------------------------------------------------------------------------
-      Induced dipole moments converged in  4 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@  9  -112.092713132     -1.515306336204E-02    1.71432D-04   -5.75D-08
+@  8  -112.092713160     -1.515618974710E-02    8.85179D-05   -7.15D-08
       Virial theorem: -V/T =      2.019350
 @      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -10    F
       Induced dipole moments converged in  4 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@ 10  -112.092713152     -1.515511128311E-02    1.24204D-04   -1.99D-08
+@  9  -112.092713164     -1.515677174914E-02    3.42461D-05   -3.85D-09
       Virial theorem: -V/T =      2.019350
 @      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -10    F
       Induced dipole moments converged in  4 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@ 11  -112.092713160     -1.515617491656E-02    7.63586D-05   -8.06D-09
-      Virial theorem: -V/T =      2.019350
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
- -----------------------------------------------------------------------------
-      Induced dipole moments converged in  4 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@ 12  -112.092713163     -1.515656747409E-02    4.88152D-05   -2.82D-09
+@ 10  -112.092713165     -1.515739663036E-02    1.27597D-05   -1.21D-09
       Virial theorem: -V/T =      2.019351
 @      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-      Induced dipole moments converged in  4 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@ 13  -112.092713164     -1.515693342268E-02    3.22669D-05   -1.24D-09
-      Virial theorem: -V/T =      2.019351
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
- -----------------------------------------------------------------------------
-      Induced dipole moments converged in  4 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@ 14  -112.092713164     -1.515714701313E-02    2.33059D-05   -4.94D-10
-      Virial theorem: -V/T =      2.019351
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
- -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -10    F
       Induced dipole moments converged in  3 iterations.
+@ 11  -112.092713165     -1.515755673816E-02    4.63213D-06   -1.35D-10
 
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@ 15  -112.092713165     -1.515727640574E-02    1.55900D-05   -2.75D-10
-      Virial theorem: -V/T =      2.019351
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
- -----------------------------------------------------------------------------
-      Induced dipole moments converged in  3 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@ 16  -112.092713165     -1.515738693528E-02    1.16276D-05   -1.16D-10
-      Virial theorem: -V/T =      2.019351
-@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
- -----------------------------------------------------------------------------
-      Induced dipole moments converged in  3 iterations.
-
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-@ 17  -112.092713165     -1.515743629506E-02    8.42920D-06   -6.92D-11
-
-@ *** DIIS converged in  17 iterations !
-@     Converged SCF energy, gradient:   -112.092713164932    8.43D-06
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:   -112.092713164991    4.63D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -680,60 +578,56 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.92156858   -11.59705207    -1.81577894    -1.18995589    -0.99580928
-        -0.99369732    -0.92817820    -0.55638663    -0.14986642     0.27085097
-         0.36168787     0.44616991
+  1    -20.92156866   -11.59705219    -1.81577903    -1.18995596    -0.99581014
+        -0.99369644    -0.92817837    -0.55638684    -0.14986650     0.27085102
+         0.36168776     0.44616983
 
-    E(LUMO) :    -0.14986642 au (symmetry 1)
-  - E(HOMO) :    -0.92817820 au (symmetry 1)
+    E(LUMO) :    -0.14986650 au (symmetry 1)
+  - E(HOMO) :    -0.92817837 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.77831178 au
+    gap     :     0.77831187 au
 
-and E(SOMO) :    -0.55638663 au (symmetry 1)
+and E(SOMO) :    -0.55638684 au (symmetry 1)
 
  NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
 
  Largest off-diagonal Fock matrix element is  4.83D-02
 
-WARNING: induced dipole is larger than the permanent dipole at site:      1
-         induced dipole magnitude:    0.2054
-         permanent dipole magnitude:    0.1904
-
       Polarizable embedding energy contributions:
      ---------------------------------------------
 
        Electrostatic contributions:
-         Monopoles                 -0.004099606319
-         Dipoles                   -0.000603817255
-         Quadrupoles                0.002062557063
+         Monopoles                 -0.004099708603
+         Dipoles                   -0.000603765764
+         Quadrupoles                0.002062461586
 
        Polarization contributions:
-         Electronic                 0.107235689703
-         Nuclear                   -0.115487917065
-         Multipole                 -0.004264342424
+         Electronic                 0.107235161013
+         Nuclear                   -0.115487353188
+         Multipole                 -0.004264351787
 
-       Total PE energy:            -0.015157436296
+       Total PE energy:            -0.015157556743
 
       Polarizable embedding information
      -----------------------------------
 
                          Induced dipole moments
          site          X              Y              Z
-            1     0.01015140     0.20477394    -0.01183206
-            2     0.05684730     0.06753920    -0.01669247
-            3     0.01151284     0.05669990     0.04021641
-            4     0.17140845     0.04844526    -0.01443039
-            5     0.02820601     0.16195295    -0.00352960
-            6     0.04501471    -0.00075297     0.01257183
+            1     0.01015097     0.20477387    -0.01183210
+            2     0.05684625     0.06753891    -0.01669246
+            3     0.01151279     0.05669984     0.04021633
+            4     0.17140853     0.04844542    -0.01443040
+            5     0.02820599     0.16195314    -0.00352959
+            6     0.04501472    -0.00075295     0.01257182
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.32314071     0.53865829     0.00630371
+                  0.32313925     0.53865823     0.00630360
 
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.124       0.139
+ >>>> CPU and wall time for SCF :       0.361       0.362
 
 
                        .-----------------------------------.
@@ -745,16 +639,16 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
 @    Spatial symmetry:            1
 @    Total charge of molecule:    1
 
-@    Final HF energy:            -112.092713164932                 
+@    Final HF energy:            -112.092713164991                 
 @    Nuclear repulsion:            31.249215315972
-@    Electronic energy:          -143.326771044609
-@    Embedding energy:             -0.015157436295
+@    Electronic energy:          -143.326770924225
+@    Embedding energy:             -0.015157556738
 
-@    Final gradient norm:           0.000008429204
+@    Final gradient norm:           0.000004632134
 
  
-     Date and time (Linux)  : Mon Sep  9 13:31:42 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Tue Sep 17 22:39:25 2013
+     Host name              : TheSocialist                            
 
  (Only coefficients >0.0100 are printed.)
 
@@ -764,16 +658,16 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
     Orbital         1        2        3        4        5        6        7
    1 C   :1s    -0.0005  -0.9928  -0.1158   0.1970   0.0190   0.0119  -0.0002
    2 C   :1s     0.0072  -0.0322   0.2414  -0.6348  -0.0844  -0.0635   0.0005
-   3 C   :2px   -0.0004   0.0002  -0.0104   0.0092  -0.5569   0.3328   0.0018
-   4 C   :2py    0.0062  -0.0017   0.1532   0.1502   0.2378   0.4046  -0.0142
+   3 C   :2px   -0.0004   0.0002  -0.0104   0.0092  -0.5568   0.3329   0.0018
+   4 C   :2py    0.0062  -0.0017   0.1532   0.1502   0.2379   0.4045  -0.0142
    5 C   :2pz   -0.0002   0.0001  -0.0047  -0.0057  -0.0124  -0.0112  -0.4180
    6 O   :1s    -0.9944  -0.0002  -0.2214  -0.1117   0.0379   0.0644  -0.0001
-   7 O   :1s    -0.0254   0.0061   0.7842   0.5090  -0.2055  -0.3426   0.0006
-   8 O   :2px   -0.0003   0.0001   0.0168  -0.0002  -0.1515   0.1170   0.0084
-   9 O   :2py    0.0057  -0.0018  -0.2064   0.2947  -0.3612  -0.5526  -0.0253
-  10 O   :2pz   -0.0002   0.0001   0.0069  -0.0096   0.0114   0.0162  -0.8236
-  11 H   :1s    -0.0002   0.0061   0.0218  -0.1838  -0.3439   0.0309  -0.0006
-  12 H   :1s    -0.0003   0.0062   0.0236  -0.2106   0.1623  -0.3218   0.0018
+   7 O   :1s    -0.0254   0.0061   0.7842   0.5090  -0.2056  -0.3426   0.0006
+   8 O   :2px   -0.0003   0.0001   0.0168  -0.0002  -0.1514   0.1170   0.0084
+   9 O   :2py    0.0057  -0.0018  -0.2064   0.2947  -0.3614  -0.5525  -0.0253
+  10 O   :2pz   -0.0002   0.0001   0.0069  -0.0096   0.0115   0.0162  -0.8236
+  11 H   :1s    -0.0002   0.0061   0.0218  -0.1838  -0.3439   0.0310  -0.0006
+  12 H   :1s    -0.0003   0.0062   0.0236  -0.2106   0.1622  -0.3218   0.0018
 
     Orbital         8        9       10
    1 C   :1s    -0.0004   0.0000   0.2033
@@ -791,12 +685,12 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.13 seconds
- >>>> Total wall time used in SIRIUS :      0.16 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.36 seconds
+ >>>> Total wall time used in SIRIUS :      0.37 seconds
 
  
-     Date and time (Linux)  : Mon Sep  9 13:31:42 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Tue Sep 17 22:39:25 2013
+     Host name              : TheSocialist                            
 
 
                      .---------------------------------------.
@@ -816,6 +710,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
 
  Default print level:        0
 
+      Direct calculation - no two-electron integrals written or read.
       Dynamic electric dipole polarizability
       Natural orbital connection is used
       for perturbation dependent basis sets.
@@ -843,16 +738,14 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
 
 
  
-     Date and time (Linux)  : Mon Sep  9 13:31:42 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Tue Sep 17 22:39:25 2013
+     Host name              : TheSocialist                            
 
 
      ***********************************************************************
      ****************** Solving Linear Response Equations ******************
      ***********************************************************************
 
-
- Integral transformation: Total CPU and WALL times (sec)       0.002       0.005
       Induced dipole moments converged in  7 iterations.
       Induced dipole moments converged in  6 iterations.
       Induced dipole moments converged in  7 iterations.
@@ -905,7 +798,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
       Induced dipole moments converged in  6 iterations.
       Induced dipole moments converged in  6 iterations.
       Induced dipole moments converged in  6 iterations.
- >>>  Time used in LNRABA     is   0.15 seconds
+ >>>  Time used in LNRABA     is   0.82 seconds
 
 
    ***************************************************************************
@@ -914,8 +807,8 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
 
 
  
-     Date and time (Linux)  : Mon Sep  9 13:31:42 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Tue Sep 17 22:39:26 2013
+     Host name              : TheSocialist                            
 
 
                              Molecular geometry (au)
@@ -935,7 +828,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
 
      Spin multiplicity  2     State number       1     Total charge       1
 
-     Total energy       -112.0927131649 au (Hartrees)
+     Total energy       -112.0927131650 au (Hartrees)
                          -3050.19788507 eV
                            -294299.3730 kJ/mol
 
@@ -943,11 +836,11 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1685880338 au
-     Mass-velocity correction:                  -0.2162438287 au
+     Darwin correction:                          0.1685880327 au
+     Mass-velocity correction:                  -0.2162438272 au
 
-     Total relativistic correction:             -0.0476557950 au (0.0425%)
-     Non-relativistic + relativistic energy:  -112.1403689599 au
+     Total relativistic correction:             -0.0476557945 au (0.0425%)
+     Non-relativistic + relativistic energy:  -112.1403689595 au
 
 
 
@@ -956,7 +849,7 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              1.291733           3.283257          10.951768
+              1.291732           3.283256          10.951762
 
 
                              Dipole moment components
@@ -964,9 +857,9 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.11513926         0.29265479         0.97619131
-      y     -1.28598416        -3.26864550       -10.90302778
-      z      0.03951770         0.10044397         0.33504501
+      x      0.11513603         0.29264659         0.97616394
+      y     -1.28598380        -3.26864459       -10.90302474
+      z      0.03951754         0.10044356         0.33504367
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -984,21 +877,21 @@ WARNING: induced dipole is larger than the permanent dipole at site:      1
           ----------------------------------------------------
                             Ex             Ey             Ez
 
-                Ex    6.428385     -0.1580376      3.8442700E-02
-                Ey  -0.1580560       9.495680     -0.2177929    
-                Ez   3.8442915E-02 -0.2177905       2.570058    
+                Ex    6.428384     -0.1580497      3.8440017E-02
+                Ey  -0.1580689       9.495670     -0.2177928    
+                Ez   3.8442154E-02 -0.2177897       2.570059    
 
-Isotropic polarizability:   6.164707    
+Isotropic polarizability:   6.164704    
 
           Polarizability tensor for frequency     0.040000 au
           ----------------------------------------------------
                             Ex             Ey             Ez
 
-                Ex    6.453574     -0.1585176      3.8603515E-02
-                Ey  -0.1585345       9.530992     -0.2186085    
-                Ez   3.8604014E-02 -0.2186053       2.578817    
+                Ex    6.453574     -0.1585300      3.8600878E-02
+                Ey  -0.1585477       9.530983     -0.2186084    
+                Ez   3.8603317E-02 -0.2186044       2.578817    
 
-Isotropic polarizability:   6.187795    
+Isotropic polarizability:   6.187791    
 
 
    Interatomic separations (in Angstrom):
@@ -1048,17 +941,17 @@ Isotropic polarizability:   6.187795
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.16 seconds
- >>>> Total wall time used in ABACUS:   0.34 seconds
+ >>>> Total CPU  time used in ABACUS:   0.83 seconds
+ >>>> Total wall time used in ABACUS:   0.84 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.32 seconds
- >>>> Total wall time used in DALTON:   0.59 seconds
+ >>>> Total CPU  time used in DALTON:   1.23 seconds
+ >>>> Total wall time used in DALTON:   1.23 seconds
 
  
-     Date and time (Linux)  : Mon Sep  9 13:31:42 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Tue Sep 17 22:39:26 2013
+     Host name              : TheSocialist                            
