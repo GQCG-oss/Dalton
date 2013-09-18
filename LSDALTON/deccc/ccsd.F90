@@ -2571,7 +2571,6 @@ contains
        !contribution 3: preOmC [a j b i] -> =+ Omega [a b i j]
        call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,4,2],1.0E0_realk,omega2%elm1)
      elseif(s==2)then
-       print *,omega2%addr_p_arr
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(omega2,'s',mode)
        call array_two_dim_1batch(omega2,[1,3,4,2],'a',w3,2,fai,tl,lock_outside,debug=.true.)
