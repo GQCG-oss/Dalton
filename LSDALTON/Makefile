@@ -1,11 +1,13 @@
 include ./Makefile.config
-
 # DALTON_LIBS, MODULES and SUBDIRS must be modified at the same time!
+
+# VAR_RSP
+#-L../external/openrsp/src -lopenrsp 
+#-L../external/matrix-defop/src -lmatrix-defop 
+
 DALTON_LIBS =             \
 -Llsdaltonsrc -llsdaltonsrc\
 -Llinears -llinears       \
--L../external/openrsp/src -lopenrsp \
--L../external/matrix-defop/src -lmatrix-defop \
 -Lddynam -lddynam         \
 -Lgeomopt -lgeomopt       \
 -Ldeccc -ldeccc           \
@@ -21,12 +23,13 @@ DALTON_LIBS =             \
 -Lxcfun_host -lxcfun_host  \
 -Llsutil -llsutil      
 
-
+# VAR_RSP needs MDO_OBJ ORS_OBJ 
 MODULES = LSU_OBJ XFH_OBJ PD_OBJ INT_OBJ FMM_OBJ LSI_OBJ PBC_OBJ2 DFT_OBJ \
-	SOU_OBJ RSO_OBJ RSP_OBJ DEC_OBJ GEO_OBJ DYN_OBJ MDO_OBJ ORS_OBJ LIN_OBJ LSD_OBJ 	
+	SOU_OBJ RSO_OBJ RSP_OBJ DEC_OBJ GEO_OBJ DYN_OBJ LIN_OBJ LSD_OBJ 	
+
+# VAR_RSP needs ../external/matrix-defop/src ../external/openrsp/src
 SUBDIRS = lsutil xcfun_host pdpack interest/lib $(FMMDIR) LSint pbc2 dft SolverUtilities \
-	responsesolver rsp_properties deccc geomopt ddynam ../external/matrix-defop/src \
-	../external/openrsp/src linears lsdaltonsrc
+	responsesolver rsp_properties deccc geomopt ddynam linears lsdaltonsrc
 
 PDLIB = pdpack/pdlib.a
 
@@ -167,13 +170,15 @@ INT_OBJ :
 SOU_OBJ : LSU_OBJ LSI_OBJ
 	cd SolverUtilities && $(MAKE) all
 
-MDO_OBJ : LSU_OBJ
-	cd ../external/matrix-defop/src && $(MAKE) all
-
-ORS_OBJ : LSU_OBJ MDO_OBJ LSI_OBJ SOU_OBJ RSO_OBJ
-	cd ../external/openrsp/src && $(MAKE) all
-
-LIN_OBJ : LSU_OBJ LSI_OBJ SOU_OBJ RSO_OBJ ORS_OBJ MDO_OBJ
+# VAR_RSP needs 
+#MDO_OBJ : LSU_OBJ
+#	cd ../external/matrix-defop/src && $(MAKE) all
+#
+#ORS_OBJ : LSU_OBJ MDO_OBJ LSI_OBJ SOU_OBJ RSO_OBJ
+#	cd ../external/openrsp/src && $(MAKE) all
+#
+# FOR VAR_RSP LIN_OBJ depends on ORS_OBJ MDO_OBJ
+LIN_OBJ : LSU_OBJ LSI_OBJ SOU_OBJ RSO_OBJ 
 	cd linears && $(MAKE) all
 
 FMM_OBJ : LSU_OBJ

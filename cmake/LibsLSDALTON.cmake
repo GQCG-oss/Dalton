@@ -88,14 +88,14 @@ set(ExternalProjectCMakeArgs
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     )
-add_external(matrix-defop)
+add_external(ls-matrix-defop)
 set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libmatrix-defop.a
     ${EXTERNAL_LIBS}
     )
 
-add_dependencies(matrix-defop matrixmlib)
-add_dependencies(matrix-defop matrixolib)
+add_dependencies(ls-matrix-defop matrixmlib)
+add_dependencies(ls-matrix-defop matrixolib)
 
 add_library(
     pdpacklib
@@ -241,15 +241,15 @@ set(ExternalProjectCMakeArgs
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     )
-add_external(openrsp)
+add_external(ls-openrsp)
 set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libopenrsp.a
     ${EXTERNAL_LIBS}
     )
 
-add_dependencies(openrsp matrix-defop)
-add_dependencies(openrsp solverutillib)
-add_dependencies(openrsp rspsolverlib)
+add_dependencies(ls-openrsp ls-matrix-defop)
+add_dependencies(ls-openrsp solverutillib)
+add_dependencies(ls-openrsp rspsolverlib)
 
 add_library(
     linearslib
@@ -257,8 +257,8 @@ add_library(
     )
 
 target_link_libraries(linearslib rspsolverlib)
-add_dependencies(linearslib openrsp)
-add_dependencies(linearslib matrix-defop)
+add_dependencies(linearslib ls-openrsp)
+add_dependencies(linearslib ls-matrix-defop)
 
 if(DEVELOPMENT_CODE)
     add_library(

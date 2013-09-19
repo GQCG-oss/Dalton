@@ -3484,6 +3484,15 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       IF(ls%setting%scheme%MEMDIST)call lsquit('.MEMDIST require .SCALAPACK',-1)
    endif
 
+!Response requires the VAR_RSP
+   if(config%response%tasks%doResponse) then
+#ifdef VAR_RSP
+      !everything is fine
+#else
+      call lsquit('Response Calculations require compilation with -DVAR_RSP',-1)
+#endif
+   end if
+
 !Local Excited state geometry optimization check:
 !================================================
 
