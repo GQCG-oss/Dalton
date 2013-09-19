@@ -273,6 +273,7 @@ C
 #include "abslrs.h"
 #include "gnrinf.h"
 #include "infpar.h"
+#include "scbrhf.h"
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -317,7 +318,8 @@ C hj end TODO Mar 2004
 C
 C ov rsp_solvhyper passes with Q3FOCK  Sep 2004
 C
-      IF (TDHF.AND.NASHT.EQ.0.OR.HSROHF.OR.DFTRUN) THEN
+
+      IF (TDHF.AND.NASHT.EQ.0.OR.HSFOCK) THEN
          IF (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) THEN
             CALL C3FOCK(IBEQC,WRK(KFC),VECB,VECC,
      &                 WRK(KZYMB),WRK(KZYMC),

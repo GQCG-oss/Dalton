@@ -85,6 +85,7 @@ C  INFINP : DIRFCK
 C  INFRSP : ?
 C  INFSOP : A2EXIST,KABSAD,KABTAD,...
 C
+#include "gnrinf.h"
 #include "maxorb.h"
 #include "maxash.h"
 #include "priunit.h"
@@ -100,6 +101,7 @@ C
 #include "wrkrsp.h"
 #include "infsop.h"
 #include "dftcom.h"
+#include "scbrhf.h"
 
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
 #include "grdccpt.h"
@@ -109,13 +111,12 @@ C
 C -- local constants
 C
       PARAMETER ( D1 = 1D0, DP5 = 0.5D0, D2 = 2.0D0, DM1 = -1.0D0 )
-      LOGICAL   DFTADX, ROKS
+      LOGICAL   DFTADX
       LOGICAL   DOFXC, DOFXV, DOFTC, DOFTV
       integer, allocatable ::  ISYMDM(:), IFCTYP(:)
       DIMENSION NEEDMU(-4:6),NEEDDI(-4:6)
       CALL QENTER('RSPOLI')
 C
-      ROKS = NASHT.GT.0 .AND. DODFT
 C
       NEEDMU(-4:6) = 0
       NEEDDI(-4:6) = 0
@@ -716,7 +717,7 @@ C
       allocate(ifctyp(nfmat))
 
       JDXCAO = KDXCAO
-      IF (ROKS .OR. HSROHF) THEN
+      IF (HSFOCK) THEN
          CALL DAXPY(NOSIM*N2BASX,D1,WRK(KDXVAO),1,WRK(KDXCAO),1)
          CALL DSCAL(NOSIM*N2BASX,-D1,WRK(KDXVAO),1)
       END IF
@@ -799,7 +800,7 @@ C
 #endif
 C
 C
-      IF (ROKS.OR.HSROHF) THEN
+      IF (HSFOCK) THEN
 C     Change IFCTYP for all Fa matrices
         DO I=1,NOSIM
           IF (TRPLET) THEN
@@ -897,7 +898,7 @@ C     Change IFCTYP for all Fa matrices
       END IF
 #endif
       DFTADD = DFTADX
-      IF (ROKS.OR.HSROHF) THEN
+      IF (HSFOCK) THEN
 C
 C Calculated matrices are (FC+FV,-FV(exch)=FV-Q)
 C Input fock matrices (form SIRIFC) are of the form

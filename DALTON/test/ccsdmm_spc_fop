@@ -183,7 +183,7 @@ CRIT1=`$GREP "1 *  1\.5423853. * 0*\.0024569. * 0*\.1206151." $log | wc -l`
 CRIT2=`$GREP "2 * 0*\.0024569. * -1\.6619666. * 0*\.0067071." $log | wc -l`
 CRIT3=`$GREP "3 * 0*\.1206151. * 0*\.0067071. * 0*\.1195813." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[3]=5
+CTRL[3]=6
 ERROR[3]="QUADRUPOLE MOMENT NOT CORRECT"
 
 # Second order electric moment components compared:
@@ -197,7 +197,7 @@ ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

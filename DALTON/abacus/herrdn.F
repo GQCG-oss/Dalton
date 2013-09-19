@@ -2576,7 +2576,7 @@ C     ******************************************
 C     ***** Printing of atomic coordinates *****
 C     ******************************************
 C
-      CALL PRICAR(WORK,LWORK)
+      IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
 C
  1010 FORMAT(I14,' large AO-blocks of ',A1,' type')
  1020 FORMAT(I14,' small AO-blocks of ',A1,' type')

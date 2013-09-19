@@ -1327,7 +1327,7 @@ C  /* Deck optmin */
 #include "inftap.h"
 #include "nuclei.h"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
+#include "mpif.h"
 #endif
 #include "gnrinf.h"
 #include "cbirea.h"
@@ -1529,6 +1529,10 @@ C
       ACTIVE = .FALSE.
       KEPTIT = 0
       GEINFO(0,5) = TRSTRA
+C     Save original print levels, to be used when change of basis or
+C     break symmetry
+      IPRUSR_orig = IPRUSR
+      IPREAD_orig = IPREAD
 C
 C     Perform preoptimization if requested.
 C
@@ -1617,12 +1621,10 @@ C
 C     aug 99 - hjaaj
 C     cut down on hermit and abacus output after initial iteration
 C
-      IPRUSR_orig = IPRUSR
-      IPREAD_orig = IPREAD
       IF (USRIPR) THEN
 C        if user has asked for higher print level, no change
-         IPRUSR_reduced = IPRUSR
-         IPREAD_reduced = IPREAD
+         IPRUSR_reduced = IPRUSR_orig
+         IPREAD_reduced = IPREAD_orig
       ELSE
          IPRUSR_reduced = -2
          IPREAD_reduced = -2

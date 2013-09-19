@@ -8,6 +8,8 @@ MODULE BUILDBASISSET
   use memory_handling
   use AO_TypeType, only: ExpThr
   use molecule_type
+  use files
+  use molecule_module
 contains
 !> \brief builds the basis structure
 !> \author T. Kjaergaard
@@ -39,9 +41,6 @@ contains
 !>
 SUBROUTINE Build_BASIS(LUPRI,IPRINT,MOLECULE,BASINFO,BASISSETLIBRARY,&
      &BASISLABEL,UNCONTRACTED,SINGLESEGMENT,doprint,DOSPHERICAL,BASISSETNAME)
-use files
-use molecule_type
-use molecule_module
 implicit none
 !> the logical unit number for the output file
 INTEGER            :: LUPRI
@@ -268,6 +267,7 @@ END SUBROUTINE Build_BASIS
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE DETERMINE_FAMILYTYPEBASISSET(LUPRI,IPRINT,BASINFO)
+implicit none
 !> the logical unit number for the output file
 INTEGER :: LUPRI
 !> the printlevel integer, determining how much output should be generated
@@ -313,6 +313,7 @@ END SUBROUTINE DETERMINE_FAMILYTYPEBASISSET
 !> \author T. Kjaergaard
 !> \date 2011
 SUBROUTINE DETERMINE_GENERALCONTRACTED(LUPRI,IPRINT,BASINFO,GCONT)
+implicit none
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
 !> the printlevel integer, determining how much output should be generated
@@ -465,7 +466,6 @@ END SUBROUTINE GET_BASISSET_LIB
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE UNIQUE_BASISSETS(LUPRI,MOLECULE,BASISLABEL,BINDEX,b)
-use molecule_type
 implicit none
 TYPE(MOLECULEINFO) :: MOLECULE
 CHARACTER(len=9)   :: BASISLABEL
@@ -1228,6 +1228,8 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                        ENDIF
                     ENDIF
                     NUMNUMOLD = NUMNUM
+                    !just in case NUMBER_OF_LINES was wrong
+                    IF(KNTORB.EQ.nOrbital)EXIT
                  ENDDO
               ENDIF
            ENDIF

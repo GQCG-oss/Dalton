@@ -1,5 +1,7 @@
 include(CheckFortranSourceCompiles)
 
+set(MPI_FOUND FALSE)
+
 if(ENABLE_SGI_MPT)
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -lmpi")
     set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}       -lmpi")

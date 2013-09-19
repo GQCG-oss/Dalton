@@ -3,7 +3,7 @@
 \section{Hardware/software
 supported}\label{sec:hardsoft}\index{hardware/software support}
 
-The {\lsdalton} program from the Dalton2013 suite
+The {\lsdalton} program from the {\latestrelease} suite
 can be run on a variety of systems running the UNIX
 operating system. The current release of the program 
 has been tested on 
@@ -17,9 +17,9 @@ exchange-correlation part, which are written in C.
 
 \section{Source files}\label{sec:source}
 
-{\lsdalton} is distributed in the Dalton2013 \verb|tar| file obtainable from
+{\lsdalton} is distributed in the {\latestrelease} \verb|tar| file obtainable from
 (\verb|http://daltonprogram.org|) provided the appropriate
-licence agreement for the Dalton2013 program suite has first been
+licence agreement for the {\latestrelease} program suite has first been
 completed and submitted.
 If you have accessed this documentation off the
 \verb|tar|\index{tar-file} file you will
@@ -32,10 +32,10 @@ tar -x -z -f dalton2013.tar.gz
 will produce the following subdirectory structure in the current
 directory:
 \begin{verbatim}
-lsdalton/basis         lsdalton/LSint     lsdalton/mm
-lsdalton/dft           lsdalton/linears   lsdalton/pdpack               
-lsdalton/doc_LSDALTON  lsdalton/lsutil    lsdalton/test            
-lsdalton/geomopt
+LSDALTON/basis         LSDALTON/LSint     LSDALTON/mm
+LSDALTON/dft           LSDALTON/linears   LSDALTON/pdpack               
+LSDALTON/doc_LSDALTON  LSDALTON/lsutil    LSDALTON/test            
+LSDALTON/geomopt
 \end{verbatim}
 Most of the subdirectories contain source code for the different sections
 constituting the {\lsdalton} program (\verb|dft|, \verb|linears|, 
@@ -47,7 +47,7 @@ all the basis sets supplied with this distribution (\verb|basis|), a
 fairly large set of test jobs including reference output files
 (\verb|test|), and finally this documentation (\verb|doc_LSDALTON|). 
 
-In addition to the directories, the main \verb|.../lsdalton| directory will
+In addition to the directories, the main \verb|.../LSDALTON| directory will
 contain several files including a shell script (\verb|configure|)
 which will attempt to build a suitable \verb|Makefile.config| for use when
 installing the program. The configure script will also create a
@@ -174,7 +174,7 @@ In order to ensure that your basis set is read correctly we recommend to use the
 6
 \end{verbatim}
 Which will print the exponents and contraction coefficients read from file as 
-well as the normalized basis used in LSDALTON.  
+well as the normalized basis used in {\lsdalton}.  
 
 \item {\bf Default scratch space}
 \index{scratch space}

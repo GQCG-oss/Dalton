@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,253 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:41:35 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 18:33:42 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_cc2mm_spc_exci
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON                                          
+.RUN WAVEFUNCTION                                 
+*QM3                                              
+.QM3                                              
+.THRDIP                                           
+ 1.0D-9                                           
+.MAXDIP                                           
+ 80                                               
+**INTEGRALS                                       
+.DIPLEN                                           
+.NUCPOT                                           
+.NELFLD                                           
+**WAVE FUNCTIONS                                  
+.CC                                               
+*SCF INPUT                                        
+.THRESH                                           
+1.0D-10                                           
+*CC INP                                           
+.CC2                                              
+.FREEZE                                           
+ 6 0                                              
+.THRLEQ                                           
+ 1.0D-09                                          
+.THRENR                                           
+ 1.0D-09                                          
+.MAX IT                                           
+ 150                                              
+.MAXRED                                           
+ 250                                              
+.MXLRV                                            
+ 200                                              
+*CCSLV                                            
+.CCMM                                             
+.ETOLSL                                           
+ 1.0D-08                                          
+.TTOLSL                                           
+ 1.0D-08                                          
+.LTOLSL                                           
+ 1.0D-08                                          
+.MXSLIT                                           
+ 200                                              
+*CCFOP                                            
+.DIPMOM                                           
+.NONREL                                           
+*CCEXCI                                           
+.NCCEXCI                                          
+ 4                                                
+*CCLRSD                                           
+.DIPOLE                                           
+**END OF                                          
+
+
+   Content of the .mol file
+ ----------------------------
+
+ATOMBASIS                                                                      
+The Alanine zwitter ion micro solvated by 9 water molecules:                   
+------------------------------------------------------------                   
+    6    0         1 1.00D-15                                                  
+        8.0   2    Bas=STO-3G                                                  
+O         -0.535052   -1.049239    1.439280 0 1                                
+O         -1.690722    0.868759    1.230476 0 2                                
+        7.0   1    Bas=STO-3G                                                  
+N          0.979949    0.887748   -0.447468 0 3                                
+        6.0   3    Bas=STO-3G                                                  
+C          0.716909    0.948281    1.040486 0 4                                
+C         -0.622273    0.202228    1.279580 0 5                                
+C          0.727240    2.396469    1.508740 0 6                                
+        1.0   7    Bas=STO-3G                                                  
+H          1.523271    0.378290    1.507999 0 7                                
+H         -0.053285    2.973117    1.003943 0 8                                
+H          0.537206    2.439982    2.585183 0 9                                
+H          1.700364    2.861447    1.316727 0 10                               
+H          0.849881   -0.097082   -0.776576 0 11                               
+H          1.988137    1.127307   -0.664389 0 12                               
+H          0.333048    1.516821   -0.980800 0 13                               
+   -0.8340    9    Bas=MM                                                      
+O        -1.770350   -2.391881   -1.595783 1 1                                 
+O        -3.109854    2.454522   -0.538636 2 1                                 
+O        -0.775857    2.529871   -1.917205 3 1                                 
+O        -3.437579   -0.384443   -0.418053 4 1                                 
+O         0.755009   -1.889071   -0.816915 5 1                                 
+O         3.456239   -1.758465   -1.038230 6 1                                 
+O        -2.668612   -2.685616    1.028629 7 1                                 
+O         3.670963    1.117386   -0.977135 8 1                                 
+O         3.884408   -0.356039    1.305153 9 1                                 
+    0.4170   18    Bas=MM                                                      
+H        -2.044856   -2.852711   -0.773158 1 2                                 
+H        -2.249438   -1.541978   -1.481445 1 3                                 
+H        -2.612599    2.181714    0.263113 2 2                                 
+H        -3.569730    1.622300   -0.766070 2 3                                 
+H        -1.686600    2.504299   -1.513508 3 2                                 
+H        -0.527321    3.465821   -1.903363 3 3                                 
+H        -2.837130   -0.031695    0.289116 4 2                                 
+H        -3.800875   -1.181581    0.008998 4 3                                 
+H         0.488698   -1.855071    0.131375 5 2                                 
+H        -0.101507   -2.132535   -1.275101 5 3                                 
+H         2.493337   -1.986469   -1.060704 6 2                                 
+H         3.929366   -2.537608   -1.366655 6 3                                 
+H        -1.937918   -2.065641    1.304088 7 2                                 
+H        -2.648266   -3.405036    1.677042 7 3                                 
+H         3.988723    0.875445   -0.076166 8 2                                 
+H         3.763338    0.259400   -1.437031 8 3                                 
+H         4.626413   -0.576312    1.888538 9 2                                 
+H         3.828102   -1.084600    0.645628 9 3                                 
 
 
        *******************************************************************
@@ -105,7 +275,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -124,6 +294,7 @@
  +------------------+
   Settings for determination of induced dipoles:
   Iterative Method is used
+ +------------------+
 
 
     *************************************************************************
@@ -168,8 +339,8 @@
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -177,8 +348,8 @@
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
-  Used basis set file for basis set for elements with Z =   7 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
+  Basis set file used for this atomic type with Z =   7 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -186,8 +357,8 @@
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
-  Used basis set file for basis set for elements with Z =   6 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
 
   Atomic type no.    4
   --------------------
@@ -195,8 +366,8 @@
   Number of symmetry independent centers:    7
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
 
   Atomic type no.    5
   --------------------
@@ -261,13 +432,36 @@ Point group: C1
   total:     40   48.0000   111    37
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-15
 
-  Max interatomic separation is    4.5062 Angstrom (    8.5154 Bohr)
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:  120
+  O       :     1  x  -1.0111017426    2  y  -1.9827743497    3  z   2.7198450172
+  O       :     4  x  -3.1950015335    5  y   1.6417165786    6  z   2.3252626434
+  N       :     7  x   1.8518352265    8  y   1.6776005880    9  z  -0.8455919697
+  C       :    10  x   1.3547616665   11  y   1.7919913795   12  z   1.9662335769
+  C       :    13  x  -1.1759255450   14  y   0.3821555348   15  z   2.4180557550
+  C       :    16  x   1.3742844271   17  y   4.5286700770   18  z   2.8511053938
+  H       :    19  x   2.8785650041   20  y   0.7148644958   21  z   2.8497051068
+  H       :    22  x  -0.1006940566   23  y   5.6183768676   24  z   1.8971773151
+  H       :    25  x   1.0151722127   26  y   4.6108977299   27  z   4.8852878530
+  H       :    28  x   3.2132222728   29  y   5.4073511512   30  z   2.4882534114
+  H       :    31  x   1.6060423288   32  y  -0.1834583917   33  z  -1.4675159552
+  H       :    34  x   3.7570344290   35  y   2.1303014888   36  z  -1.2555132505
+  H       :    37  x   0.6293695065   38  y   2.8663762706   39  z  -1.8534433834
+
+  Max    interatomic separation is    4.5062 Angstrom (    8.5154 Bohr)
   between atoms   10 and    1, "H     " and "O     ".
 
+  Min HX interatomic separation is    1.0465 Angstrom (    1.9776 Bohr)
+
+  Min YX interatomic separation is    1.2603 Angstrom (    2.3815 Bohr)
+
   Max QM+MM interatomic separation is    8.8914 Angstrom (   16.8024 Bohr)
-  between the QM+MM centers    39 and   26, "H     " and "H     ".
+  between the QM+MM centers   39 and   26, "H     " and "H     ".
 
 
 
@@ -289,7 +483,7 @@ Point group: C1
             0.165124            0.098158            0.078885 cm-1
 
 
-@  Nuclear repulsion energy :  247.309428835122
+@  Nuclear repulsion energy :  247.309428835122 Hartree
 
 All MM models are SPC
 
@@ -359,14 +553,14 @@ All MM models are SPC
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:      239888 ( 96.9% )
  Megabytes written:                              2.748
 
- >>> Time used in TWOINT is   0.69 seconds
- >>>> Total CPU  time used in HERMIT:   0.79 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>  Time used in TWOINT     is   0.59 seconds
+ >>>> Total CPU  time used in HERMIT:   0.68 seconds
+ >>>> Total wall time used in HERMIT:   0.68 seconds
 
 
                         .----------------------------------.
@@ -402,8 +596,8 @@ All MM models are SPC
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 18:33:43 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:41:35 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      The Alanine zwitter ion micro solvated by 9 water molecules:            
@@ -412,63 +606,53 @@ All MM models are SPC
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
-
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
+
+@    QM part is embedded in an environment :
+
+@         Model: QM3
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         48
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          48
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                1
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 1
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1
                                        --- |  ---
-     Occupied SCF orbitals              24 |   24
+@    Occupied SCF orbitals              24 |   24
      Secondary orbitals                 13 |   13
      Total number of orbitals           37 |   37
      Number of basis functions          37 |   37
 
      Optimization information
      ========================
-     Number of configurations                 1
-     Number of orbital rotations            312
+@    Number of configurations                 1
+@    Number of orbital rotations            312
      ------------------------------------------
-     Total number of variables              313
+@    Total number of variables              313
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-10
-
-
- Changes of defaults for CC:
- ---------------------------
-
-
- -Implicit frozen core calculation
- -Excitation energies calculated
- -One-photon absorption strengths will be calculated
- -Oscillator strengths calculated
- -Dipole moment calculated
-  
 
 
  Changes of defaults for CC:
@@ -491,115 +675,116 @@ All MM models are SPC
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
-   1  -317.720531435       0.00000000000        4.10280D+00   -3.18D+02
+@  1  -317.720531435       0.00000000000        4.10280D+00   -3.18D+02
       Virial theorem: -V/T =      2.002965
-      MULPOP  O      -1.05; O      -1.04; N       0.53; C       0.53; C       1.00; C       0.35; H      -0.15; H      -0.12; H      -0.11; H      -0.12; 
-              H       0.06; H       0.06; H       0.06; 
+@      MULPOP O      -1.05; O      -1.04; N       0.53; C       0.53; C       1.00; C       0.35; H      -0.15; H      -0.12; H      -0.11; H      -0.12; 
+@             H       0.06; H       0.06; H       0.06; 
  -----------------------------------------------------------------------------
-   2  -318.421320913       0.00000000000        1.21883D+00   -7.01D-01
+@  2  -318.421320913       0.00000000000        1.21883D+00   -7.01D-01
       Virial theorem: -V/T =      2.007770
-      MULPOP  O      -0.23; O      -0.22; N      -0.62; C      -0.15; C      -0.27; C      -0.26; H       0.18; H       0.12; H       0.13; H       0.10; 
-              H       0.40; H       0.41; H       0.41; 
+@      MULPOP O      -0.23; O      -0.22; N      -0.62; C      -0.15; C      -0.27; C      -0.26; H       0.18; H       0.12; H       0.13; H       0.10; 
+@             H       0.40; H       0.41; H       0.41; 
  -----------------------------------------------------------------------------
-   3  -318.523919885       0.00000000000        3.31068D-01   -1.03D-01
+@  3  -318.523919885       0.00000000000        3.31068D-01   -1.03D-01
       Virial theorem: -V/T =      2.008547
-      MULPOP  O      -0.60; O      -0.58; N      -0.33; C       0.09; C       0.38; C      -0.19; H       0.08; H       0.07; H       0.08; H       0.06; 
-              H       0.31; H       0.32; H       0.32; 
+@      MULPOP O      -0.60; O      -0.58; N      -0.33; C       0.09; C       0.38; C      -0.19; H       0.08; H       0.07; H       0.08; H       0.06; 
+@             H       0.31; H       0.32; H       0.32; 
  -----------------------------------------------------------------------------
-   4  -318.532228191       0.00000000000        5.47572D-02   -8.31D-03
+@  4  -318.532228191       0.00000000000        5.47572D-02   -8.31D-03
       Virial theorem: -V/T =      2.008611
-      MULPOP  O      -0.52; O      -0.50; N      -0.35; C       0.03; C       0.22; C      -0.17; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.35; C       0.03; C       0.22; C      -0.17; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-   5  -318.532620853       0.00000000000        1.76360D-02   -3.93D-04
+@  5  -318.532620853       0.00000000000        1.76360D-02   -3.93D-04
       Virial theorem: -V/T =      2.008424
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.24; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.24; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-   6  -318.532658420       0.00000000000        4.54133D-03   -3.76D-05
+@  6  -318.532658420       0.00000000000        4.54133D-03   -3.76D-05
       Virial theorem: -V/T =      2.008441
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-   7  -318.532662044       0.00000000000        1.18962D-03   -3.62D-06
+@  7  -318.532662044       0.00000000000        1.18962D-03   -3.62D-06
       Virial theorem: -V/T =      2.008437
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-   8  -318.532662270       0.00000000000        3.77428D-04   -2.26D-07
+@  8  -318.532662270       0.00000000000        3.77428D-04   -2.26D-07
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-   9  -318.532662302       0.00000000000        9.67842D-05   -3.16D-08
+@  9  -318.532662302       0.00000000000        9.67842D-05   -3.16D-08
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  10  -318.532662303       0.00000000000        3.54923D-05   -1.26D-09
+@ 10  -318.532662303       0.00000000000        3.54923D-05   -1.26D-09
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  11  -318.532662304       0.00000000000        1.97539D-05   -3.71D-10
+@ 11  -318.532662304       0.00000000000        1.97539D-05   -3.71D-10
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  12  -318.532662304       0.00000000000        4.16575D-06   -1.07D-10
+@ 12  -318.532662304       0.00000000000        4.16575D-06   -1.06D-10
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  13  -318.532662304       0.00000000000        1.11605D-06   -5.68D-12
+@ 13  -318.532662304       0.00000000000        1.11605D-06   -6.25D-12
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  14  -318.532662304       0.00000000000        6.01284D-07    1.14D-13
+@ 14  -318.532662304       0.00000000000        6.01284D-07   -3.41D-13
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  15  -318.532662304       0.00000000000        2.22104D-07   -3.41D-13
+@ 15  -318.532662304       0.00000000000        2.22104D-07   -2.27D-13
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  16  -318.532662304       0.00000000000        6.19884D-08    0.00D+00
+@ 16  -318.532662304       0.00000000000        6.19885D-08   -2.27D-13
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  17  -318.532662304       0.00000000000        1.30638D-08    4.55D-13
+@ 17  -318.532662304       0.00000000000        1.30639D-08   -1.14D-13
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  18  -318.532662304       0.00000000000        3.86344D-09   -3.41D-13
+@ 18  -318.532662304       0.00000000000        3.86345D-09    2.27D-13
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  19  -318.532662304       0.00000000000        1.80084D-09    0.00D+00
+@ 19  -318.532662304       0.00000000000        1.80080D-09    3.41D-13
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  20  -318.532662304       0.00000000000        8.93813D-10   -3.41D-13
+@ 20  -318.532662304       0.00000000000        8.93813D-10   -1.14D-13
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  21  -318.532662304       0.00000000000        1.69013D-10    0.00D+00
+@ 21  -318.532662304       0.00000000000        1.68957D-10    5.68D-13
       Virial theorem: -V/T =      2.008436
-      MULPOP  O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
-              H       0.32; H       0.33; H       0.34; 
+@      MULPOP O      -0.52; O      -0.50; N      -0.37; C       0.03; C       0.23; C      -0.18; H       0.10; H       0.07; H       0.08; H       0.06; 
+@             H       0.32; H       0.33; H       0.34; 
  -----------------------------------------------------------------------------
-  22  -318.532662304       0.00000000000        6.97844D-11    0.00D+00
+@ 22  -318.532662304       0.00000000000        6.98094D-11    0.00D+00
 
- *** DIIS converged in  22 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  22 iterations !
+@     Converged SCF energy, gradient:   -318.532662303676    6.98D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -626,32 +811,34 @@ All MM models are SPC
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.090       0.090
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     QM/MM calculation converged :
+     QM/MM "QM3" calculation converged :
 
         Electrostatic energy:       0.000000000000
         Polarization energy:        0.000000000000
         van der Waals energy:      -0.001430158869
         Total QM/MM energy:         0.000000000000
 
-     Final HF energy:            -318.532662303684                 
-     Nuclear repulsion:           247.309428835122
-     Electronic energy:          -565.842091138806
+@    Final HF energy:            -318.532662303676                 
+@    Nuclear repulsion:           247.309428835122
+@    Electronic energy:          -565.842091138798
 
-     Final gradient norm:           0.000000000070
+@    Final gradient norm:           0.000000000070
 
  
-     Date and time (Linux)  : Wed Mar 16 18:33:43 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:41:35 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -699,12 +886,12 @@ All MM models are SPC
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.09 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total wall time used in SIRIUS :      0.10 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:33:43 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:41:35 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  NOTE:    1 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -767,27 +954,27 @@ All MM models are SPC
           Number of t2 amplitudes                 :     27495
           Total number of amplitudes in ccsd      :     27729
 
- Iter.  1: Coupled cluster MP2   energy :    -318.8454733304621413
- Iter.  1: Coupled cluster CC2   energy :    -318.8444052709027687
- Iter.  2: Coupled cluster CC2   energy :    -318.8536074303037822
- Iter.  3: Coupled cluster CC2   energy :    -318.8564170924380505
- Iter.  4: Coupled cluster CC2   energy :    -318.8565481562064292
- Iter.  5: Coupled cluster CC2   energy :    -318.8565779526420556
- Iter.  6: Coupled cluster CC2   energy :    -318.8565817220178928
- Iter.  7: Coupled cluster CC2   energy :    -318.8565828823743118
- Iter.  8: Coupled cluster CC2   energy :    -318.8565832894939831
- Iter.  9: Coupled cluster CC2   energy :    -318.8565832530697435
- Iter. 10: Coupled cluster CC2   energy :    -318.8565833208233471
- Iter. 11: Coupled cluster CC2   energy :    -318.8565833228286124
- Iter. 12: Coupled cluster CC2   energy :    -318.8565833056916858
- Iter. 13: Coupled cluster CC2   energy :    -318.8565833192798209
- Iter. 14: Coupled cluster CC2   energy :    -318.8565833136225933
- Iter. 15: Coupled cluster CC2   energy :    -318.8565833151923812
- Iter. 16: Coupled cluster CC2   energy :    -318.8565833154656843
+ Iter.  1: Coupled cluster MP2   energy :    -318.8454733304541833
+ Iter.  1: Coupled cluster CC2   energy :    -318.8444052708933327
+ Iter.  2: Coupled cluster CC2   energy :    -318.8536074302970178
+ Iter.  3: Coupled cluster CC2   energy :    -318.8564170924300356
+ Iter.  4: Coupled cluster CC2   energy :    -318.8565481561963679
+ Iter.  5: Coupled cluster CC2   energy :    -318.8565779526344386
+ Iter.  6: Coupled cluster CC2   energy :    -318.8565817220107306
+ Iter.  7: Coupled cluster CC2   energy :    -318.8565828823662400
+ Iter.  8: Coupled cluster CC2   energy :    -318.8565832894852861
+ Iter.  9: Coupled cluster CC2   energy :    -318.8565832530611601
+ Iter. 10: Coupled cluster CC2   energy :    -318.8565833208157869
+ Iter. 11: Coupled cluster CC2   energy :    -318.8565833228201996
+ Iter. 12: Coupled cluster CC2   energy :    -318.8565833056850920
+ Iter. 13: Coupled cluster CC2   energy :    -318.8565833192709533
+ Iter. 14: Coupled cluster CC2   energy :    -318.8565833136141805
+ Iter. 15: Coupled cluster CC2   energy :    -318.8565833151853894
+ Iter. 16: Coupled cluster CC2   energy :    -318.8565833154585221
 
- CC2   energy converged to within   0.10D-08 is   -318.856583315
- Final 2-norm of the CC vector function:  8.00857024D-09
-  Change in norm^2 of T-amplitudes in this solvent it.:  9.16115568615434583E-002
+ CC2   energy converged to within   0.10D-08 is         -318.856583315459
+ Final 2-norm of the CC vector function:  8.00855840D-09
+  Change in norm^2 of T-amplitudes in this solvent it.:   9.1611556861578430E-002
 
 
 
@@ -818,11 +1005,13 @@ All MM models are SPC
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
-  Change in norm^2 of L-amplitudes in this ccmm it.:  0.56167008393920226     
- >>> Time used in LR=R is   6.21 seconds
- Total <Lambda|H|CC> energy:   -318.85658331543925     
+ RPA: call cceq_str
+ RPA: exit cceq_str
+  Change in norm^2 of L-amplitudes in this ccmm it.:  0.56167008393968976     
+ Total <Lambda|H|CC> energy:   -318.85658331543215     
             The singles contribution is:             0.0000000002
             The doubles contribution is:            -0.0000000002
+ CCFOP: call CC_D1AO to recalc the 1e Density
    
 
  *****************************************************************
@@ -889,12 +1078,12 @@ All MM models are SPC
           Number of t2 amplitudes                 :     27495
           Total number of amplitudes in ccsd      :     27729
 
- Iter.  1: Coupled cluster RSTAR energy :    -318.8565833154656843
- Iter.  1: Coupled cluster CC2   energy :    -318.8565833152657092
+ Iter.  1: Coupled cluster RSTAR energy :    -318.8565833154585221
+ Iter.  1: Coupled cluster CC2   energy :    -318.8565833152588880
 
- CC2   energy converged to within   0.10D-08 is   -318.856583315
- Final 2-norm of the CC vector function:  2.97345776D-09
-  Change in norm^2 of T-amplitudes in this solvent it.: -2.96795130139138053E-010
+ CC2   energy converged to within   0.10D-08 is         -318.856583315259
+ Final 2-norm of the CC vector function:  2.97345580D-09
+  Change in norm^2 of T-amplitudes in this solvent it.:  -2.9679669832916034E-010
 
 
 
@@ -925,13 +1114,15 @@ All MM models are SPC
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
-  Change in norm^2 of L-amplitudes in this ccmm it.: -1.41666678388219225E-011
- >>> Time used in LR=R is   0.61 seconds
- Total <Lambda|H|CC> energy:   -318.85658331486087     
+ RPA: exit cceq_str
+  Change in norm^2 of L-amplitudes in this ccmm it.:  -1.4164780459680060E-011
+ Total <Lambda|H|CC> energy:   -318.85658331485405     
             The singles contribution is:             0.0000000001
             The doubles contribution is:             0.0000000003
+ CCFOP: call CC_D1AO to recalc the 1e Density
    
 
  *****************************************************************
@@ -948,7 +1139,7 @@ All MM models are SPC
  E(QM/MM) contribution in iteration  1:           -0.1569602884
  CC energy in the  current CCMM iteration:      -318.0255104150
  CC energy in the previous CCMM iteration:      -318.0255104156
- Change in Total energy in this CCMM it.:          0.578325E-09
+ Change in Total energy in this CCMM it.:          0.578154E-09
 
 
 
@@ -979,7 +1170,7 @@ All MM models are SPC
  +----------------------------------------------------------------------+
  |  <L|H(vac)|CC>  | <H(qm)+H(qmmm)> | Delta E(mm/mm)  | E_rep          |
  +----------------------------------------------------------------------+
- | -317.8685501267 | -318.0255104150 |    0.0000000000 |   0.0000000000 |
+ | -317.8685501266 | -318.0255104150 |    0.0000000000 |   0.0000000000 |
  +======================================================================+
 
 
@@ -1071,10 +1262,10 @@ All MM models are SPC
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1          -318.658203246349956
-@@    1    2          -318.633012289609951
-@@    1    3          -318.554976990082992
-@@    1    4          -318.495654293859104
+@@    1    1          -318.658203246343476
+@@    1    2          -318.633012289603585
+@@    1    3          -318.554976990076966
+@@    1    4          -318.495654293853875
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1112,9 +1303,7 @@ All MM models are SPC
 
           Norm of Printed Amplitude Vector :             0.9621
 
-
           Printed all single excitations greater than 0.193519
-
 
           Printed all double excitations greater than 0.050501
 
@@ -1154,9 +1343,7 @@ All MM models are SPC
 
           Norm of Printed Amplitude Vector :             0.9623
 
-
           Printed all single excitations greater than 0.193445
-
 
           Printed all double excitations greater than 0.050783
 
@@ -1193,9 +1380,7 @@ All MM models are SPC
 
           Norm of Printed Amplitude Vector :             0.9349
 
-
           Printed all single excitations greater than 0.191943
-
 
           Printed all double excitations greater than 0.056194
 
@@ -1235,9 +1420,7 @@ All MM models are SPC
 
           Norm of Printed Amplitude Vector :             0.9292
 
-
           Printed all single excitations greater than 0.190629
-
 
           Printed all double excitations greater than 0.060503
 
@@ -1301,18 +1484,18 @@ Try to use right eigenvector as start for a left eigenvector.
  Excitation no.       Hartree               eV 
  --------------       -------               --
          1            0.1983801463        5.3981983812
-         2            0.2235708165        6.0836713872
+         2            0.2235708165        6.0836713871
          3            0.3016062336        8.2071231029
-         4            0.3609288307        9.8213730836
+         4            0.3609288307        9.8213730835
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1          -318.658203168537341
-@@    1    2          -318.633012498315054
-@@    1    3          -318.554977081248353
-@@    1    4          -318.495654484200259
+@@    1    1          -318.658203168530918
+@@    1    2          -318.633012498308744
+@@    1    3          -318.554977081242384
+@@    1    4          -318.495654484194972
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1352,9 +1535,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9441
 
-
           Printed all single excitations greater than 0.188510
-
 
           Printed all double excitations greater than 0.066812
 
@@ -1396,9 +1577,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9466
 
-
           Printed all single excitations greater than 0.189208
-
 
           Printed all double excitations greater than 0.064809
 
@@ -1436,9 +1615,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9090
 
-
           Printed all single excitations greater than 0.184594
-
 
           Printed all double excitations greater than 0.076975
 
@@ -1479,9 +1656,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.8550
 
-
           Printed all single excitations greater than 0.172459
-
 
           Printed all double excitations greater than 0.101282
 
@@ -1633,10 +1808,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
   Solvent 1-order response equations converged in           0  solvent iterations
+ RPA: call cceq_str
  Vector nr.  1 of type M1  and symmetry  1 was not found on file.
  Vector nr.  2 of type M1  and symmetry  1 was not found on file.
  Vector nr.  3 of type M1  and symmetry  1 was not found on file.
  Vector nr.  4 of type M1  and symmetry  1 was not found on file.
+ RPA: exit cceq_str
 
  Solution of CC response equations completed.
 
@@ -1737,35 +1914,38 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Gauge: length
 
-              Column   1    Column   2    Column   3
-       1    6.175652D-05 -9.275052D-05  2.768310D-05
-       2   -9.275052D-05  1.391347D-04 -4.170797D-05
-       3    2.768310D-05 -4.170797D-05  1.230454D-05
+               Column   1     Column   2     Column   3
+       1     6.175652D-05  -9.275052D-05   2.768310D-05
+       2    -9.275052D-05   1.391347D-04  -4.170797D-05
+       3     2.768310D-05  -4.170797D-05   1.230454D-05
+    ==== End of matrix output ====
 
  Principal values of diagonalized transition strength matrix:
 
              a.u.               
  1      -0.00000021
- 2      -0.00000000
+ 2       0.00000000
  3       0.00021340
 
  Principal axis of diagonalized transition strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1      0.29519808    0.78954685   -0.53802775
-       2      0.44893887    0.38246198    0.80757459
-       3      0.84339314   -0.47993604   -0.24155623
+               Column   1     Column   2     Column   3
+       1       0.29519808     0.78954685    -0.53802775
+       2       0.44893887     0.38246198     0.80757459
+       3       0.84339314    -0.47993604    -0.24155623
+    ==== End of matrix output ====
 
 
  CC2    oscillator strength matrix for state nr.  1 of symmetry 1
  CC2   excitation energy: 0.19838007
 
 
-              Column   1    Column   2    Column   3
-       1    8.167508D-06 -1.226657D-05  3.661184D-06
-       2   -1.226657D-05  1.840103D-05 -5.516020D-06
-       3    3.661184D-06 -5.516020D-06  1.627317D-06
+               Column   1     Column   2     Column   3
+       1     8.167508D-06  -1.226657D-05   3.661184D-06
+       2    -1.226657D-05   1.840103D-05  -5.516020D-06
+       3     3.661184D-06  -5.516020D-06   1.627317D-06
+    ==== End of matrix output ====
 
  Principal values of diagonalized oscillator strength matrix:
 
@@ -1777,10 +1957,11 @@ Try to use right eigenvector as start for a left eigenvector.
  Principal axis of diagonalized oscillator strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1      0.29519808    0.78954685   -0.53802775
-       2      0.44893887    0.38246198    0.80757459
-       3      0.84339314   -0.47993604   -0.24155623
+               Column   1     Column   2     Column   3
+       1       0.29519808     0.78954685    -0.53802775
+       2       0.44893887     0.38246198     0.80757459
+       3       0.84339314    -0.47993604    -0.24155623
+    ==== End of matrix output ====
 
 
  CC2   Transition strength matrix for state nr.  2 of symmetry 1
@@ -1788,10 +1969,11 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Gauge: length
 
-              Column   1    Column   2    Column   3
-       1      0.00046351    0.00028086    0.00137853
-       2      0.00028086    0.00015886    0.00081419
-       3      0.00137853    0.00081419    0.00406054
+               Column   1     Column   2     Column   3
+       1       0.00046351     0.00028086     0.00137853
+       2       0.00028086     0.00015886     0.00081419
+       3       0.00137853     0.00081419     0.00406054
+    ==== End of matrix output ====
 
  Principal values of diagonalized transition strength matrix:
 
@@ -1803,35 +1985,38 @@ Try to use right eigenvector as start for a left eigenvector.
  Principal axis of diagonalized transition strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1     -0.68443843    0.65716844    0.31571138
-       2      0.72385735    0.66421920    0.18666382
-       3      0.08703199   -0.35628990    0.93031336
+               Column   1     Column   2     Column   3
+       1      -0.68443843     0.65716844     0.31571138
+       2       0.72385735     0.66421920     0.18666382
+       3       0.08703199    -0.35628990     0.93031336
+    ==== End of matrix output ====
 
 
  CC2    oscillator strength matrix for state nr.  2 of symmetry 1
  CC2   excitation energy: 0.22357103
 
 
-              Column   1    Column   2    Column   3
-       1    6.908516D-05  4.186138D-05  2.054667D-04
-       2    4.186138D-05  2.367712D-05  1.213528D-04
-       3    2.054667D-04  1.213528D-04  6.052125D-04
+               Column   1     Column   2     Column   3
+       1     6.908516D-05   4.186138D-05   2.054667D-04
+       2     4.186138D-05   2.367712D-05   1.213528D-04
+       3     2.054667D-04   1.213528D-04   6.052125D-04
+    ==== End of matrix output ====
 
  Principal values of diagonalized oscillator strength matrix:
 
              a.u.               
  1      -0.00000131
- 2      -0.00000000
+ 2       0.00000000
  3       0.00069929
 
  Principal axis of diagonalized oscillator strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1     -0.68443843    0.65716844    0.31571138
-       2      0.72385735    0.66421920    0.18666382
-       3      0.08703199   -0.35628990    0.93031336
+               Column   1     Column   2     Column   3
+       1      -0.68443843     0.65716844     0.31571138
+       2       0.72385735     0.66421920     0.18666382
+       3       0.08703199    -0.35628990     0.93031336
+    ==== End of matrix output ====
 
 
  CC2   Transition strength matrix for state nr.  3 of symmetry 1
@@ -1839,10 +2024,11 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Gauge: length
 
-              Column   1    Column   2    Column   3
-       1      0.17284371   -0.28419325    0.03383697
-       2     -0.28419325    0.46725095   -0.05563796
-       3      0.03383697   -0.05563796    0.00662389
+               Column   1     Column   2     Column   3
+       1       0.17284371    -0.28419325     0.03383697
+       2      -0.28419325     0.46725095    -0.05563796
+       3       0.03383697    -0.05563796     0.00662389
+    ==== End of matrix output ====
 
  Principal values of diagonalized transition strength matrix:
 
@@ -1854,20 +2040,22 @@ Try to use right eigenvector as start for a left eigenvector.
  Principal axis of diagonalized transition strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1      0.78796954   -0.33442059   -0.51697861
-       2      0.51874710   -0.09171608    0.84999389
-       3      0.33167070    0.93795044   -0.10121023
+               Column   1     Column   2     Column   3
+       1       0.78796954    -0.33442059    -0.51697861
+       2       0.51874710    -0.09171608     0.84999389
+       3       0.33167070     0.93795044    -0.10121023
+    ==== End of matrix output ====
 
 
  CC2    oscillator strength matrix for state nr.  3 of symmetry 1
  CC2   excitation energy: 0.30160632
 
 
-              Column   1    Column   2    Column   3
-       1      0.03475384   -0.05714299    0.00680363
-       2     -0.05714299    0.09395056   -0.01118717
-       3      0.00680363   -0.01118717    0.00133187
+               Column   1     Column   2     Column   3
+       1       0.03475384    -0.05714299     0.00680363
+       2      -0.05714299     0.09395056    -0.01118717
+       3       0.00680363    -0.01118717     0.00133187
+    ==== End of matrix output ====
 
  Principal values of diagonalized oscillator strength matrix:
 
@@ -1879,10 +2067,11 @@ Try to use right eigenvector as start for a left eigenvector.
  Principal axis of diagonalized oscillator strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1      0.78796954   -0.33442059   -0.51697861
-       2      0.51874710   -0.09171608    0.84999389
-       3      0.33167070    0.93795044   -0.10121023
+               Column   1     Column   2     Column   3
+       1       0.78796954    -0.33442059    -0.51697861
+       2       0.51874710    -0.09171608     0.84999389
+       3       0.33167070     0.93795044    -0.10121023
+    ==== End of matrix output ====
 
 
  CC2   Transition strength matrix for state nr.  4 of symmetry 1
@@ -1890,10 +2079,11 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Gauge: length
 
-              Column   1    Column   2    Column   3
-       1      0.00505452   -0.00327869    0.00264295
-       2     -0.00327869    0.00212675   -0.00171448
-       3      0.00264295   -0.00171448    0.00138125
+               Column   1     Column   2     Column   3
+       1       0.00505452    -0.00327869     0.00264295
+       2      -0.00327869     0.00212675    -0.00171448
+       3       0.00264295    -0.00171448     0.00138125
+    ==== End of matrix output ====
 
  Principal values of diagonalized transition strength matrix:
 
@@ -1905,37 +2095,40 @@ Try to use right eigenvector as start for a left eigenvector.
  Principal axis of diagonalized transition strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1     -0.26914189    0.58077042    0.76828924
-       2      0.31787852    0.80658882   -0.49836504
-       3      0.90912919   -0.11009174    0.40170128
+               Column   1     Column   2     Column   3
+       1      -0.26914189     0.58077042     0.76828924
+       2       0.31787852     0.80658882    -0.49836504
+       3       0.90912919    -0.11009174     0.40170128
+    ==== End of matrix output ====
 
 
  CC2    oscillator strength matrix for state nr.  4 of symmetry 1
  CC2   excitation energy: 0.36092902
 
 
-              Column   1    Column   2    Column   3
-       1      0.00121622   -0.00078892    0.00063594
-       2     -0.00078892    0.00051174   -0.00041254
-       3      0.00063594   -0.00041254    0.00033236
+               Column   1     Column   2     Column   3
+       1       0.00121622    -0.00078892     0.00063594
+       2      -0.00078892     0.00051174    -0.00041254
+       3       0.00063594    -0.00041254     0.00033236
+    ==== End of matrix output ====
 
  Principal values of diagonalized oscillator strength matrix:
 
              a.u.               
  1      -0.00000016
- 2      -0.00000000
+ 2       0.00000000
  3       0.00206047
 
  Principal axis of diagonalized oscillator strength matrix:
 
 
-              Column   1    Column   2    Column   3
-       1     -0.26914189    0.58077042    0.76828924
-       2      0.31787852    0.80658882   -0.49836504
-       3      0.90912919   -0.11009174    0.40170128
+               Column   1     Column   2     Column   3
+       1      -0.26914189     0.58077042     0.76828924
+       2       0.31787852     0.80658882    -0.49836504
+       3       0.90912919    -0.11009174     0.40170128
+    ==== End of matrix output ====
 
- >>> Total time for     36 linear response residues:       0.08 seconds.
+ >>> Total time for     36 linear response residues:       0.06 seconds.
   
 
  *******************************************************************************
@@ -1998,14 +2191,20 @@ Try to use right eigenvector as start for a left eigenvector.
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :      44.971      46.351
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:42:22 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  32.76 seconds
- >>>> Total wall time used in DALTON:  42.00 seconds
+ >>>> Total CPU  time used in DALTON:  45.76 seconds
+ >>>> Total wall time used in DALTON:  47.15 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:34:24 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:42:22 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

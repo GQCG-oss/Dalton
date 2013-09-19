@@ -86,7 +86,7 @@ CRIT2=`$GREP "Final * HF energy\: * \-111\.2254495137" $log | wc -l`
 CRIT3=`$GREP "Nuclear repulsion\: *    22\.17429882833" $log | wc -l`
 CRIT4=`$GREP "Electronic energy\: * \-133\.3997483420" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[1]=13
+CTRL[1]=14
 ERROR[1]="INITIAL ENERGY/GEOMETRY NOT CORRECT"
 
 # Symmetry input
@@ -173,7 +173,7 @@ ERROR[5]="EFFECTIVE GEOMETRY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5  
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

@@ -7,4 +7,3 @@
 [submodule "external/pelib"]
 	path = external/pelib
 	url = git@repo.ctcc.no:pelib.git
-	branch = release-1.0
