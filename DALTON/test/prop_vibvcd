@@ -166,12 +166,12 @@ CTRL[4]=3
 ERROR[4]="ENERGY NOT CORRECT"
 
 # Gradient:
-CRIT1=`$GREP "O\#1 * z * \-0*\.034767" $log | wc -l`
-CRIT2=`$GREP "C\#2 * y *   0*\.058664" $log | wc -l`
-CRIT3=`$GREP "C\#2 * z *   0*\.037775" $log | wc -l`
-CRIT4=`$GREP "H\#4 * x * \-0*\.044054" $log | wc -l`
-CRIT5=`$GREP "H\#4 * y * \-0*\.010347" $log | wc -l`
-CRIT6=`$GREP "H\#4 * z * \-0*\.003008" $log | wc -l`
+CRIT1=`$GREP "O\#1 * z * \-0*\.03476." $log | wc -l`
+CRIT2=`$GREP "C\#2 * y *   0*\.05866." $log | wc -l`
+CRIT3=`$GREP "C\#2 * z *   0*\.03777." $log | wc -l`
+CRIT4=`$GREP "H\#4 * x * \-0*\.04405." $log | wc -l`
+CRIT5=`$GREP "H\#4 * y * \-0*\.01034." $log | wc -l`
+CRIT6=`$GREP "H\#4 * z * \-0*\.00300." $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[5]=6
 ERROR[5]="GRADIENT NOT CORRECT"
