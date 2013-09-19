@@ -1092,6 +1092,7 @@ C     Reason: DIIS tries to minimize gradient norm, not energy.
 C   - hjaaj mar 2004: only remove entries with lower gradient and
 C     higher energy, not "earlier entries"
 C
+         J_removed = 0
          IF (INDEVC.EQ.NEVC .AND. ITDIIS .GT. 3 .AND.
      &       GRDNRM .LE. 10.0D0) THEN
 C        ... no wrap around yet - INDEVC .lt. NEVC requires more programming
@@ -1099,13 +1100,12 @@ C        ITDIIS/GRDNRM check: give initial oscillations a chance to settle down
 C          before checking ... experience shows this will often be advantageous
 C          (see below) /hjaaj
             IEND = NEVC - 1
-            J = 0
             DO I = 1,IEND
 C           IF (I .NE. INDEVC) THEN
                IF (EGSAV(1,I) .GT. EMCSCF + EMCDIFERR .AND.
      &             EGSAV(2,I) .LT. GRDNRM) THEN
 C                  ... Oops! a previous iter with higher E and lower grd
-                  J = J + 1
+                  J_removed = J_removed + 1
                   EGSAV(1,I) = D0
                END IF
 C           END IF
@@ -1113,10 +1113,11 @@ C           END IF
 C
 C           remove entries with higher E and lower grd, if any
 C
-            IF (J .GT. 0) THEN
+            IF (J_removed .GT. 0) THEN
                WRITE(LUPRI,'(/A/A,I3,A)')
      &   'Info: SCF gradient has been lower than now,',
-     &   '      therefore',J,' old iterations are removed from DIIS.'
+     &   '      therefore',J_removed,
+     &   ' old iterations are removed from DIIS.'
                K = 0
                DO J = 1, NEVC
                   IF (EGSAV(1,J) .NE. D0) THEN
@@ -1175,7 +1176,7 @@ C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
           END IF
 C        Do not try that with open-shell - it does not work./pawsa
 !         IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND. J_removed.EQ.0 .AND.
      &        GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
