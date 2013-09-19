@@ -12,7 +12,6 @@ set(DART_TESTING_TIMEOUT
     "Set timeout in seconds for every single test"
     )
 
-include(TestsCommon)
 include(TestsDALTON)
 include(TestsLSDALTON)
 
