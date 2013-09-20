@@ -480,6 +480,7 @@ C
       IF ( (DORHF .OR. DOMP2) .AND.
      &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) ) THEN
          HSROHF = .FALSE.
+         HSFOCK = .FALSE.
 C        ... otherwise error in some MCSCF routines
 C            where HSROHF specifications erroneously will be used
          FLAG(25)   = FLAGSV(25)
