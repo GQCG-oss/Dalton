@@ -279,7 +279,7 @@ C
       ELSE
          LUPRIN = 6
       END IF
-      WRITE (LUPRIN,*) 'ERROR: ',TEXT,
+      WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,
      & ' not implemented for parallel calculations!'
       CALL QUIT(TEXT)
       RETURN
