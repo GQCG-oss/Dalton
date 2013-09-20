@@ -55,6 +55,7 @@ C
 #include "infsmo.h"
 #include "infspi.h"
 #include "inftap.h"
+#include "infpar.h"
 C
       CALL QENTER('QRCALC')
       IF (SOPPA) THEN
@@ -63,6 +64,12 @@ C
          CALL QUIT(
      &   'QRCALC ERROR: quadratic response not implemented for SOPPA')
       END IF
+      IF (DODFT.AND.(NASHT.GT.0).AND.(NODTOT.GT.0)) THEN
+          WRITE (LUPRI,*)
+     &   'QRCALC ERROR: parallel quadratic response is not supported'
+         CALL QUIT(
+     &   'QRCALC ERROR: parallel quadratic response is not supported')  
+      END IF 
 C
 C DETERMINE SOLUTION VECTORS FOR EIGENVALUE AND LINEAR EQUATIONS
 C WHICH ARE USED IN QUADRATIC RESPONSE
