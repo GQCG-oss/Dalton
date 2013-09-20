@@ -132,10 +132,13 @@ CHJMAERKE: define IPR_DIIS separately?
 C
       MXERRV = MAXEVC
       IF (MXERRV .LE. 0) THEN
-         MXERRV = MIN(NWOPT,10)
+         MXERRV = MIN(NWOPT,5)
 C        ... fixes linear dependency problem for very small debug runs
 C            MXERRV=10 gave lin.dep. for 2 el. in 2 orbitals,
 C            MXERRV=2 gave quadratic convergence ! (940701-hjaaj)
+C        (130919-hjaaj: decreased default from 10 to 5, because
+C         with 10 the span of BMAT may be >1.D15, giving problems
+C         in the DIIS solver - an example has been seen !!!)
          MXERRV = MAX(2,MXERRV)
       END IF
       IPR_DIIS = IPRRHF
@@ -1191,7 +1194,7 @@ C                 to avoid round-off problems here /hjaaj Sep 2005
      &       ' - or strange C vector coeff. for current index (=',
      &       INDEVC,') :'
              WRITE (LUPRI,'(10F12.6)') (CVEC(I),I=1,NEVC)
-             IF (EMCDIF .LT. D0) THEN
+             IF (EMCDIF .LE. ABS(EMCSCF)*1.0D-12) THEN
                 JNDEVC = INDEVC
              ELSE
 C               ... use previous Fock matrix if energy increased
