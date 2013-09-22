@@ -213,16 +213,16 @@ CTRL[13]=14
 ERROR[13]="SYMMETRY-BROKEN GEOMETRY NOT CORRECT"
 
 # Final energy
-CRIT1=`$GREP "Final * HF energy\: * \-150\.786766850" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-150\.7867668(4|5)....." $log | wc -l`
 TEST[14]=`expr	$CRIT1`
 CTRL[14]=1
 ERROR[14]="FINAL ENERGY NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "O *_1 *    1\.3120184... *    0*\.0988915... * \-0*\.2496655..." $log | wc -l`
-CRIT2=`$GREP "O *_2 * \-*1\.3120184... * \-*0*\.0988915... * \-0*\.2496655..." $log | wc -l`
-CRIT3=`$GREP "H *_1 *    1\.5832951... *     1\.6000764... *   0*\.6903912..." $log | wc -l`
-CRIT4=`$GREP "H *_2 * \-*1\.5832951... *  \-*1\.6000764... *   0*\.6903912..." $log | wc -l`
+CRIT1=`$GREP "O *_1 *    1\.312018.... *    0*\.098891.... * \-0*\.249665...." $log | wc -l`
+CRIT2=`$GREP "O *_2 * \-*1\.312018.... * \-*0*\.098891.... * \-0*\.249665...." $log | wc -l`
+CRIT3=`$GREP "H *_1 *    1\.583295.... *     1\.600076.... *   0*\.690391...." $log | wc -l`
+CRIT4=`$GREP "H *_2 * \-*1\.583295.... *  \-*1\.600076.... *   0*\.690391...." $log | wc -l`
 TEST[15]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[15]=16
 ERROR[15]="FINAL GEOMETRY NOT CORRECT"

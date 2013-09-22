@@ -347,11 +347,11 @@ CTRL[12]=30
 ERROR[12]="DIPOLE/ROTATIONAL STRENGTHS NOT CORRECT"
 
 # Vibrational Polarizabilities:
-CRIT1=`$GREP "Ex * (0| )\.32699. * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000" $log | wc -l`
-CRIT2=`$GREP "Ey * (\-0|\-|0| )\.000000 * (0| )\.3852(7|8). * (\-0|\-|0| )\.000000" $log | wc -l`
-CRIT3=`$GREP "Ez * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * 3\.21003." $log | wc -l`
-CRIT4=`$GREP "Ex * (0| )\.42540. * (\-0|\-)\.03775. * (\-0|\-|0| )\.000000" $log | wc -l`
-CRIT5=`$GREP "Ey * (\-0|\-)\.03775. * (0| )\.3629(7|8). * (\-0|\-|0| )\.000000" $log | wc -l`
+CRIT1=`$GREP "Ex * 0*\.32699. * \-*0*\.000000 * \-*0*\.000000" $log | wc -l`
+CRIT2=`$GREP "Ey * \-*0*\.000000 * 0*\.3852(8|9). * \-*0*\.000000" $log | wc -l`
+CRIT3=`$GREP "Ez * \-*0*\.000000 * \-*0*\.000000 * 3\.21003." $log | wc -l`
+CRIT4=`$GREP "Ex * 0*\.42540. * (\-0|\-)\.03775. * \-*0*\.000000" $log | wc -l`
+CRIT5=`$GREP "Ey * (\-0|\-)\.03775. * 0*\.3629(8|9). * \-*0*\.000000" $log | wc -l`
 TEST[13]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
 CTRL[13]=6
 ERROR[13]="VIBRATIONAL POLARIZABILITIES NOT CORRECT"
