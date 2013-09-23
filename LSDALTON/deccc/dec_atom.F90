@@ -1885,21 +1885,13 @@ contains
     !> stuff has already been initialized).
     type(ccatom),intent(inout) :: FragmentPQ
 
-    ! Sanity check
-    if( (fragmentPQ%noccEOS /= fragmentPQ%noccAOS) .or. &
-         & (fragmentPQ%nunoccEOS /= fragmentPQ%nunoccAOS) ) then
-       call lsquit('pair_fragment_adapted_transformation_matrices_justEOS:  &
-            & EOS must be identical to AOS! ',-1)
-    end if
-
-
-    ! Only occ EOS orbitals
-    fragmentPQ%noccFA = fragmentPQ%noccEOS 
+    ! Occupied space
+    fragmentPQ%noccFA = fragmentPQ%noccAOS 
     call mem_alloc(fragmentPQ%CoccFA,fragmentPQ%number_basis,fragmentPQ%noccFA)
     fragmentPQ%CoccFA = fragmentPQ%ypo
 
-    ! Only unocc EOS orbitals
-    fragmentPQ%nunoccFA = fragmentPQ%nunoccEOS 
+    ! Unoccupied space
+    fragmentPQ%nunoccFA = fragmentPQ%nunoccAOS 
     call mem_alloc(fragmentPQ%CunoccFA,fragmentPQ%number_basis,fragmentPQ%nunoccFA)
     fragmentPQ%CunoccFA = fragmentPQ%ypv
 

@@ -4001,7 +4001,7 @@ contains
 
     ! Diagonalize virtual correlation density matrix
     call solve_eigenvalue_problem_unitoverlap(nvirt,MyFragment%VirtMat,eival,U)
-print *, 'HACKeival: ', eival
+
     ! Throw away eigenvalues smaller than rejection threshold
     thr = MyFragment%RejectThr(2)
     
@@ -4032,7 +4032,7 @@ print *, 'HACKeival: ', eival
     call mem_dealloc(eival)
     call mem_dealloc(U)
 
-print *,'HACKnvirt,nvirtFO',nvirt,nvirtFO
+
     ! Transform the two virtual indices
     ! *********************************
     ! We denote the original (probably local) indices by a,b,i,j and the FO indices by A,B.
