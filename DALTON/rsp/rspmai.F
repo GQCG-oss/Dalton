@@ -4376,8 +4376,14 @@ C
 C
 #if defined (BUILD_PELIB)
       if (peqm .and. .not. tdhf) then
-        write(lupri,*) 'Running PE-MCSCF response calculation.'
+        write(lupri,*) '---------------------- Running PE-MCSCF response
+     & calculation -----------------------'
         write(lupri,*) '=> Subtracting PE Fock matrix'
+        write(lupri,*) '=> PE-MCSCF citation:' 
+        write(lupri,*) '=> E. D. Hedegård, N. H. List, H. J. Aa. Jensen
+     & J. Kongsted, JCP 139 (2013), 044101'     
+        write(lupri,*) '-----------------------------------------------
+     &------------------------------------' 
         call mollab('PETMAT  ', lusifc, lupri)
         call readt (lusifc, nnorbt, wrk)
         fc(1:nnorbt) = fc(1:nnorbt) - wrk(1:nnorbt)

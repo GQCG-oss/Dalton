@@ -33,7 +33,7 @@ option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable PE library"                                ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
