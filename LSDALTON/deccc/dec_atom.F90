@@ -309,7 +309,7 @@ contains
     unoccEOS=.false.
     ! Virtual EOS orbitals are those assigned to the central atom
     fragment%nunoccEOS=0
-    do j=1,nunocc
+    UnoccEOSLoop: do j=1,nunocc
        CentralAtom=UnoccOrbitals(j)%centralatom
 
        ! Loop over atoms in pair fragment list (just one atom, Myatom, if it is not a pairfragment)
@@ -318,10 +318,26 @@ contains
           if( CentralAtom==listidx ) then ! Orbital is included in the EOS
              fragment%nunoccEOS = fragment%nunoccEOS + 1
              unoccEOS(j)=.true.
+
+             ! Special case: Only occupied partitioning
+             ! ----------------------------------------
+             ! When we are only interested in the occupied partitioning scheme,
+             ! there are effectively zero virtual EOS orbitals.
+             ! However, setting fragment%nunoccEOS to 0 would cause numerous
+             ! problems many places in the code, since some arrays would have zero size.
+             ! For now, we solve this problem in a pragmatic and dirty manner:
+             ! We simply initialize an unocc EOS containing a single dummy orbital.
+             ! At some point we want to separate out the occ and virt
+             ! partitioning scheme, and when this is done, this temporary solution
+             ! will be superfluous.
+             if(DECinfo%onlyoccpart) then
+                exit UnoccEOSLoop
+             end if
+
           end if
        end do
 
-    end do
+    end do UnoccEOSLoop
 
 
     ! Size of occupied AOS - number of "true" elements in logical occupied vector
@@ -562,11 +578,7 @@ contains
     nocc = LocalFragment%noccAOS
     nvirt = LocalFragment%nunoccAOS
     noccEOS = LocalFragment%noccEOS
-    if(DECinfo%OnlyOccPart) then
-       nvirtEOS = 0
-    else
-       nvirtEOS = LocalFragment%nunoccEOS
-    end if
+    nvirtEOS = LocalFragment%nunoccEOS
     call mem_alloc(OU,nocc,nocc)
     call mem_alloc(VU,nvirt,nvirt)
     call mem_alloc(Oeival,nocc)
@@ -1046,12 +1058,7 @@ contains
 
     ! EOS dimensions
     noccEOS = LocalFragment%noccEOS
-    if(DECinfo%OnlyOccPart) then
-       ! When only occupied partitioning is considered --> no virtual EOS orbitals
-       nvirtEOS = 0
-    else
-       nvirtEOS = LocalFragment%nunoccEOS
-    end if
+    nvirtEOS = LocalFragment%nunoccEOS
    
 
     ! ================================================
