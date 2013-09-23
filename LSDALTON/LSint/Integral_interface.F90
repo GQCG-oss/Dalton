@@ -32,7 +32,8 @@ MODULE IntegralInterfaceMOD
   use molecule_module, only: getMolecularDimensions
   use matrix_operations, only: mat_dotproduct, matrix_type, mtype_unres_dense,&
        & mat_daxpy, mat_init, mat_free, mat_write_to_disk, mat_print, mat_zero,&
-       & mat_scal, mat_mul, mat_assign, mat_trans, mat_copy, mat_add, mat_trAB
+       & mat_scal, mat_mul, mat_assign, mat_trans, mat_copy, mat_add, mat_trAB,&
+       & mat_sqnorm2,mat_tr,mat_max_elm
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify, &
                          util_get_symm_and_antisymm_part_full
   use memory_handling, only: mem_alloc, mem_dealloc
@@ -962,8 +963,55 @@ Real(realk),intent(INOUT)     :: kGrad(3,setting%molecule(1)%p%nAtoms)
 Type(matrixp),intent(IN)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 !
 logical                       :: ADMMexchange
+ Type(matrix),pointer  :: D3x(:),S33x(:)
+Integer                :: n3,nAtoms,i,iX,iAtom
+type(matrix)           :: D3,S33,tmp33
 !
 call time_II_operations1()
+
+
+n3 = DmatLHS(1)%p%nrow
+nAtoms = setting%molecule(1)%p%nAtoms
+! DEBUG
+IF (.TRUE.) THEN
+   call mat_init(D3,n3,n3)
+    call mat_assign(D3,DmatLHS(1)%p)
+   call mem_alloc(S33x,3*nAtoms)
+   call mem_alloc(D3x,3*nAtoms)
+   DO i=1,3*nAtoms
+      call mat_init(S33x(i),n3,n3)
+      call mat_zero(S33x(i))
+      call mat_init(D3x(i),n3,n3)
+      call mat_zero(D3x(i))
+   ENDDO
+   call II_get_geoderivOverlap(S33x,Natoms,setting,lupri,luerr)
+   call mat_init(S33,n3,n3)
+   call II_get_overlap(LUPRI,LUERR,SETTING,S33)
+   write(lupri,*) "S3x matrix(H2,z)", S33x(3+3*(2-1))%elms(1:n3*n3)
+   write(lupri,*) "S3", S33%elms(1:n3*n3)
+
+call mat_init(tmp33,n3,n3)
+   DO iAtom = 1,nAtoms
+      DO iX=1,3
+        call mat_mul(D3,S33x(iX+3*(iAtom-1)),'n','n',-1E0_realk,0E0_realk,tmp33)
+        call mat_mul(tmp33,D3,'n','n',1E0_realk,0E0_realk,D3x(iX+3*(iAtom-1)))
+      ENDDO
+   ENDDO
+
+   write(lupri,*) "D3", D3%elms(1:n3*n3)
+   write(lupri,*) "D3x matrix(H2,z) = -D3 S3x D3", D3x(3+3*(2-1))%elms(1:n3*n3)
+      
+   DO i=1,3*nAtoms
+      call mat_free(S33x(i))
+      call mat_free(D3x(i))
+   ENDDO
+   call mat_free(D3)
+   call mat_free(S33)
+   call mat_free(tmp33)
+   call mem_dealloc(S33x)
+   call mem_dealloc(D3x)
+ENDIF ! END DEBUG
+
 
 ! *********************************************************************************
 ! *                      ADMM exchange
@@ -981,14 +1029,12 @@ IF (ADMMexchange) THEN
       call lsquit('Auxiliary Density Matrix GC-basis type Calculation requires TRILEVEL start guess',-1)
    ENDIF
    CALL II_get_ADMM_K_gradient(kGrad,DmatLHS,DmatRHS,ndlhs,ndrhs,setting,lupri,luerr)
- 
-ELSE
+ ELSE
 ! *********************************************************************************
 ! *                      regular exchange
 ! *********************************************************************************
    CALL II_get_regular_K_gradient(kGrad,DmatLHS,DmatRHS,ndlhs,ndrhs,setting,lupri,luerr)
 ENDIF
-
 call time_II_operations2(JOB_II_GET_K_GRADIENT)
 END SUBROUTINE II_get_K_gradient
 
@@ -3122,6 +3168,9 @@ SUBROUTINE II_get_geoderivOverlap_mixed(Sx,natoms,AO1,AO2,setting,lupri,luerr)
    n1 = Sx(1)%nrow
    n2 = Sx(1)%ncol
    call initIntegralOutputDims(setting%output,n1,n2,1,1,3*nAtoms)
+   write (lupri,*) "Parameters in II_get_geoderivOverlap_mixed"
+   write (lupri,*) AO1,AO2,AOempty,AOempty,&
+        &OverlapOperator,GeoDerivLHSSpec,ContractedInttype,n1,n2
    CALL ls_getIntegrals(AO1,AO2,AOempty,AOempty,&
         &OverlapOperator,GeoDerivLHSSpec,ContractedInttype,SETTING,LUPRI,LUERR)
    CALL retrieve_Output(lupri,setting,Sx,setting%IntegralTransformGC)
@@ -5187,20 +5236,23 @@ type(lssetting),intent(inout) :: setting
 logical,intent(in)            :: dsym
 !
 logical             :: GC3,GC2
-TYPE(Matrix)        :: D2(1),TMP,TMPF,F2(1),F3(1)
+TYPE(Matrix)        :: D2(1),TMP,TMPF,F2(1),F3(1),tmp22,tmp33,k2_xc2,S32,T23,S33
 character(len=80)   :: WORD
 logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
-integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3
+integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
 real(realk)         :: lambda, constrain_factor
 logical             :: const_electrons
+ !
+nelectrons = setting%molecule(1)%p%nelectrons 
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
 ELSE
   GGAXfactor = setting%scheme%exchangeFactor
 ENDIF
+write(lupri,*) "norm D3 beginning ADMM energy", mat_sqnorm2(D)
 IF(ndmat.GT.1) THEN
    WRITE(*,*)     "The ADMM approximation isn't implemented for unrestricted cases yet."
    WRITE(LUPRI,*) "The ADMM approximation isn't implemented for unrestricted cases yet."
@@ -5234,21 +5286,24 @@ ELSE
 ENDIF
 
 nbast2 = getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
-IF (nbast .EQ. nbast2) THEN
-   ! This avoids a simple issue when basis sets have the same size:
-   ! the filename to store the grid will be the same, overwritting the 
-   ! content of the ADMM basis with the regular basis and vice versa.
-   ! this should be fixed by using the actual name of the basis set into the 
-   ! filename storing the grid infos. 
+!IF (nbast .EQ. nbast2) THEN
+!   ! This avoids a simple issue when basis sets have the same size:
+!   ! the filename to store the grid will be the same, overwritting the 
+!   ! content of the ADMM basis with the regular basis and vice versa.
+!   ! this should be fixed by using the actual name of the basis set into the 
+!   ! filename storing the grid infos. 
 
-      call lsquit('II_get_admm_exchange_mat: special forbidden case where the &
-             &regular and ADMM auxiliary basis function &
-             &have the same number of basis function',-1)
-ENDIF
+!      call lsquit('II_get_admm_exchange_mat: special forbidden case where the &
+!             &regular and ADMM auxiliary basis function &
+!             &have the same number of basis function',-1)
+!ENDIF
 
 call mat_init(D2(1),nbast2,nbast2)
 call mat_init(F2(1),nbast2,nbast2)
 call mat_init(TMPF,nbast,nbast)         
+call mat_init(tmp33,nbast,nbast) 
+call mat_init(tmp22,nbast2,nbast2)
+call mat_init(k2_xc2,nbast2,nbast2) 
 
 call mat_zero(dXC)
 
@@ -5271,7 +5326,7 @@ constrain_factor = 1.0E0_realk
 lambda = 0E0_realk  
 const_electrons = setting%scheme%ADMM_CONST_EL
 IF (const_electrons) THEN   
-   call get_Lagrange_multiplier_charge_conservation(lambda,&
+   call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
             &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
 ENDIF
          
@@ -5279,8 +5334,6 @@ ENDIF
 call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
                   & nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,&
                   & GC2,GC3,constrain_factor)
-
-
      
 !Store original AO-indeces (AOdf will not change, but is still stored)
 AORold  = AORdefault
@@ -5294,6 +5347,8 @@ call set_default_AOs(AO2,AOdfold)
 CALL lstimer('AUX-IN',ts,te,lupri)
 call mat_zero(F2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,F2)
+call mat_zero(k2_xc2)
+call mat_daxpy(1E0_realk,F2(1),k2_xc2)
 call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AO2,AO3,GC2,GC3,constrain_factor)
 call mat_daxpy(1E0_realk,TMPF,F)
@@ -5318,6 +5373,7 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 
 !Level 2 XC matrix
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
+call mat_daxpy(-GGAXfactor,F2(1),k2_xc2)
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                           & AO2,AO3,GC2,GC3,constrain_factor)
@@ -5327,9 +5383,7 @@ setting%scheme%dft%testNelectrons = testNelectrons
 !Re-set to default (level 3) grid
 setting%scheme%dft%igrid = Grid_Default
 
-call mat_free(TMPF)
-call mat_free(F2(1))
-call mat_free(D2(1))
+
 
 !****Calculation of Level 3 XC matrix from level 2 Density matrix starts here
 call set_default_AOs(AORold,AOdfold)  !Revert back to original settings and free stuff 
@@ -5339,7 +5393,7 @@ CALL mat_init(F3(1),nbast,nbast)
 CALL mat_zero(F3(1))
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
 CALL mat_daxpy(GGAXfactor,F3(1),dXC)
-CALL mat_free(F3(1))
+
 
 EdXC = (EX3(1)-EX2(1))*GGAXfactor
 
@@ -5356,9 +5410,43 @@ IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_
 !!the remainder =================================================
 !call mat_free(TMPF)
 !call mat_free(TMP)
+write(lupri,*) "norm D3 end ADMM energy", mat_sqnorm2(D)
 
+
+! term of Kadmm coming from dependance of K on lambda: K=[D,lambda(D)]
+CALL mat_init(S32,nbast,nbast2)
+CALL mat_init(S33,nbast,nbast)
+CALL mat_init(T23,nbast2,nbast)
+CALL II_get_mixed_overlap(lupri,luerr,setting,S33,AO3,AO3,GC3,GC3)
+CALL II_get_mixed_overlap(lupri,luerr,setting,S32,AO3,AO2,GC3,GC2)
+CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AO2,AO3,GC2,GC3,constrain_factor)
+CALL mat_mul(S32,T23,'n','n',1E0_realk,0E0_realk,tmp33)
+call mat_scal(constrain_factor, tmp33)
+call mat_daxpy(-1E0_realk,S33,tmp33)
+
+write(*,*) 'debug:',-2E0_realk*constrain_factor*mat_trAB(k2_xc2,D2(1)) / nelectrons
+call mat_scal(-2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons, tmp33)
+
+write(lupri,*) "trans(T) k2 T matrix"
+call mat_print(F,1,nbast,1,nbast,lupri)
+write(lupri,*) "other term in Kadmm dependent on lambda"
+call mat_print(tmp33,1,nbast,1,nbast,lupri)
+IF (const_electrons) THEN
+   call mat_daxpy(1E0_realk,tmp33,F)
+ENDIF 
+
+CALL mat_free(S33)
+CALL mat_free(S32)
+CALL mat_free(T23)
+CALL mat_free(tmp33)
+CALL mat_free(tmp22)
+CALL mat_free(k2_xc2)
+call mat_free(TMPF)
+call mat_free(F2(1))
+call mat_free(D2(1))
+CALL mat_free(F3(1))
 CONTAINS
-   SUBROUTINE get_Lagrange_multiplier_charge_conservation(lambda,&
+   SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
                      & constrain_factor,D3,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3)
       implicit none
@@ -5373,7 +5461,8 @@ CONTAINS
       integer      :: nelectrons
       logical      :: DEBUG_ADMM_CONST
 
-      DEBUG_ADMM_CONST = .FALSE.
+      DEBUG_ADMM_CONST = .TRUE.
+      write(lupri,*) "norm D3 beginning getLambda energy", mat_sqnorm2(D3)
      CALL mat_init(T23,n2,n3)
      CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,1E0_realk)
      
@@ -5385,12 +5474,16 @@ CONTAINS
       CALL mat_mul(S23,T23,'t','n',1E0_realk,0E0_realk,temp)
       CALL mat_free(S23)
       CALL mat_free(T23)
-      
+      write(lupri,*) "norm S23*T23 in energy", mat_sqnorm2(temp)
+      write(lupri,*) "norm D3 in energy", mat_sqnorm2(D3)
       trace = mat_trAB(D3,temp)
       CALL mat_free(temp)
+
       
       nelectrons = setting%molecule(1)%p%nelectrons    
       lambda = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
+      !lambda = 0.0011105299897870E0_realk
+      !write(lupri,*) "FORCED LAMBDA, lambda=",lambda
       
       ! Scaling factor for the constrained reduced density matrix
       constrain_factor = 1.0E0_realk / (1E0_realk - lambda)
@@ -5408,7 +5501,8 @@ CONTAINS
          write(*,*)     "factor = 1/(1-lambda)=", constrain_factor
          write(lupri,*) "factor = 1/(1-lambda)=", constrain_factor
       endif
-   END SUBROUTINE get_Lagrange_multiplier_charge_conservation
+      write(lupri,*) "norm D3 end getLambda energy", mat_sqnorm2(D3)
+   END SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients
    
    SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,luerr,n2,n3,AO2,AO3,&
                                  & McWeeny,GCAO2,GCAO3,constrain_factor)
@@ -5488,7 +5582,8 @@ CONTAINS
    
    onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
    
-   IF (io_file_exist(Filename,setting%IO)) THEN
+   !IF (io_file_exist(Filename,setting%IO)) THEN
+   IF (.FALSE.) THEN
      call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
    ELSE
      CALL mat_init(S22,n2,n2)
@@ -5497,15 +5592,16 @@ CONTAINS
      
      CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
      CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-     
+      write(lupri,*) "S23 in T23",S23%elms(1+(8-1)*n2)
+    
      CALL mat_inv(S22,S22inv)
      CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
      
      CALL mat_free(S22inv)
      CALL mat_free(S23)
      CALL mat_free(S22)
-     call io_add_filename(setting%IO,Filename,LUPRI)
-     call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+     !call io_add_filename(setting%IO,Filename,LUPRI)
+     !call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
    ENDIF
    ! IF constraining the total charge
    ! Lagrangian multiplier for conservation of the total nb. of electrons
@@ -5537,7 +5633,8 @@ real(realk),intent(inout)     :: admm_Kgrad(3,setting%molecule(1)%p%nAtoms)
 integer,intent(in)            :: lupri,luerr,ndlhs,ndrhs
 type(MatrixP),intent(in)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 !
-real(realk),pointer :: grad_k2(:,:),grad_xc2(:,:),grad_XC3(:,:),ADMM_proj(:,:)
+real(realk),pointer :: grad_k2(:,:),grad_xc2(:,:),grad_XC3(:,:)
+real(realk),pointer :: ADMM_proj(:,:),ADMM_charge_term(:,:)
 integer             :: nbast,nbast2,AO2,AO3,idmat,nAtoms
 real(realk)         :: ts,te,hfweight
 real(realk)         :: Exc2(1)
@@ -5555,7 +5652,7 @@ integer             :: iAtom,iX
 !
 DEBUG_ADMM_CONST = .FALSE.
 call lstimer('START',ts,te,lupri)
-
+write(lupri,*) "norm D3 beginning ADMM Kgradient", mat_sqnorm2(DmatLHS(1)%p)
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
 ELSE
@@ -5595,7 +5692,7 @@ DO idmat=1,ndrhs
    lambda = 0E0_realk  
    const_electrons = setting%scheme%ADMM_CONST_EL
    IF (const_electrons) THEN   
-      call get_Lagrange_multiplier_charge_conservation(lambda,&
+      call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
                & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
                & nbast2,nbast,AO2,AO3,GC2,GC3)
    ENDIF
@@ -5629,6 +5726,7 @@ DO idmat=1,ndrhs
    call II_get_regular_K_gradient(grad_k2,D2p,D2p,1,1,setting,lupri,luerr)
    call DSCAL(3*nAtoms,4E0_realk,grad_k2,1) !Include factor 4 to use D instead of 2D
    call DAXPY(3*nAtoms,1E0_realk,grad_k2,1,admm_Kgrad,1) 
+   CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_k2,nAtoms,'grad_k2')
    call mem_dealloc(grad_k2)
    
    ! XC-correction
@@ -5655,6 +5753,7 @@ DO idmat=1,ndrhs
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast2,D2,grad_xc2,nAtoms)
    call DSCAL(3*nAtoms,-GGAXfactor,grad_xc2,1) !Include -GGAfactor
    call DAXPY(3*nAtoms,1E0_realk,grad_xc2,1,admm_Kgrad,1)
+   CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_xc2,nAtoms,'grad_xc2')
    call mem_dealloc(grad_xc2)
    
    !Re-set to level 3 grid
@@ -5669,6 +5768,7 @@ DO idmat=1,ndrhs
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast,DmatLHS(idmat)%p,grad_XC3,nAtoms)
    call DSCAL(3*nAtoms,GGAXfactor,grad_XC3,1) !Include -GGAfactor
    call DAXPY(3*nAtoms,1E0_realk,grad_XC3,1,admm_Kgrad,1)
+   CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_XC3,nAtoms,'grad_XC3')
    call mem_dealloc(grad_XC3)
 
    
@@ -5680,30 +5780,28 @@ DO idmat=1,ndrhs
    ! calculating Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
    call mem_alloc(ADMM_proj,3,nAtoms)
    call ls_dzero(ADMM_proj,3*nAtoms)
+   call mem_alloc(ADMM_charge_term,3,nAtoms)
+   call ls_dzero(ADMM_charge_term,3*nAtoms)
+   
+!   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,&
+!               & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
+!               & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
+!               & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
+!   call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1) !to be moved/changed later on
+!   call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_proj,nAtoms,'ADMM_proj')
+!   call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)   
 
-   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,&
+   call get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,k2,xc2,&
                & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
-               & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
-   if(DEBUG_ADMM_CONST) then
-      nrm = 0E0_realk
-      DO iAtom = 1,nAtoms
-         DO iX=1,3
-            nrm = nrm + ADMM_proj(iX,iAtom)*ADMM_proj(iX,iAtom)
-         ENDDO
-      ENDDO
-      nrm = sqrt(nrm/3/nAtoms)
-      write(lupri,*)
-      write(lupri,'(1X,A24,F23.16)') 'RMS ADMM gradient projection term norm (au): ',nrm
-      write(lupri,*) 
-      write(lupri,*) 
-   end if
- 
-   call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1) !to be moved/changed later on
-   call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)
+               & lambda) ! LAMBDA (S - TsT/(1-lambda**2))
+                  
+   call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM_chg2')  
+   !call DAXPY(3*nAtoms,1E0_realk,ADMM_charge_term,1,admm_Kgrad,1)
 
    !FREE MEMORY
    call mem_dealloc(ADMM_proj)
+   call mem_dealloc(ADMM_charge_term)
    call mat_free(k2)
    call mat_free(xc2)
    call mat_free(D2)
@@ -5713,9 +5811,10 @@ call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)
 
 !Restore dft functional to original
 IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
-
+write(lupri,*) "norm D3 end ADMM Kgradient", mat_sqnorm2(DmatLHS(1)%p)
+!
 CONTAINS
-   SUBROUTINE get_Lagrange_multiplier_charge_conservation(lambda,&
+   SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
                      & constrain_factor,D3,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3)
       implicit none
@@ -5725,12 +5824,12 @@ CONTAINS
       integer                    :: n2,n3,AO3,AO2,lupri,luerr
       logical                    :: GCAO2,GCAO3
       !
-      TYPE(MATRIX) :: temp,S23,T23
+      TYPE(MATRIX) :: temp,S23,T23,S22,D2,tmp22
       real(realk)  :: trace
       integer      :: nelectrons
       logical      :: DEBUG_ADMM_CONST
 
-      DEBUG_ADMM_CONST = .FALSE.
+      DEBUG_ADMM_CONST = .TRUE.
      CALL mat_init(T23,n2,n3)
      CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,1E0_realk)
      
@@ -5742,13 +5841,18 @@ CONTAINS
       CALL mat_mul(S23,T23,'t','n',1E0_realk,0E0_realk,temp)
       CALL mat_free(S23)
       CALL mat_free(T23)
-      
+      write(lupri,*) "norm S23*T23 in Kgrad", mat_sqnorm2(temp)
+      write(lupri,*) "norm D3 in Kgrad", mat_sqnorm2(D3)
+      write(lupri,*) "D3 in lagrang", D3%elms(1:n3*n3)
+         
       trace = mat_trAB(D3,temp)
       CALL mat_free(temp)
       
       nelectrons = setting%molecule(1)%p%nelectrons
       
       lambda = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
+      !lambda = 0.0011105299897870E0_realk
+      !write(lupri,*) "FORCED LAMBDA, lambda=",lambda
       
       ! Scaling factor for the constrained reduced density matrix
       constrain_factor = 1.0E0_realk / (1E0_realk - lambda)
@@ -5765,9 +5869,97 @@ CONTAINS
          write(lupri,*) "1/[(1-lambda)^2]=", constrain_factor**2
          write(*,*)     "factor = 1/(1-lambda)=", constrain_factor
          write(lupri,*) "factor = 1/(1-lambda)=", constrain_factor
+        CALL mat_init(D2,n2,n2)
+        CALL mat_init(S22,n2,n2)
+        CALL mat_init(tmp22,n2,n2)
+     CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+     write(lupri,*) 'Trace(d2 S22)=N? ', mat_trAB(D2,S22)
+           CALL mat_free(D2)
+         CALL mat_free(S22)
+         CALL mat_free(tmp22)
       endif
+   END SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients
+
+   ! LAMBDA = (2/N) sqrt([k2-xc2]d2)
+   SUBROUTINE get_Lagrange_multiplier_charge_conservation_in_Energy(LAMBDA,&
+                     & D2,k2,xc2,setting,lupri,luerr,n2,n3,&
+                     & AO2,AO3,GCAO2,GCAO3)
+      implicit none
+      type(matrix),intent(in)    :: D2  !level 2 ADMM projected matrix 
+      type(matrix),intent(in)    :: k2  !ADMM exchange matrix k2(d2)
+      type(matrix),intent(in)    :: xc2 !ADMM XC matrix xc2(d2)
+      real(realk),intent(inout)  :: lambda
+      type(lssetting)            :: setting
+      integer                    :: n2,n3,AO3,AO2,lupri,luerr
+      logical                    :: GCAO2,GCAO3
+      !
+      TYPE(MATRIX) :: tmp22
+      real(realk)  :: trace
+      integer      :: NbEl
+      !
+      NbEl = setting%molecule(1)%p%nelectrons
+      call mat_init(tmp22,n2,n2)
+      call mat_zero(tmp22)
+      call mat_daxpy( 1E0_realk,k2 ,tmp22)
+      call mat_daxpy(-1E0_realk,xc2,tmp22)
+      trace = mat_trAB(tmp22,D2)
+      LAMBDA = 2E0_realk/NbEl*trace
+      write(lupri,*) "Tr([k2-xc2]d2)=", trace
+      write(lupri,*) "LAMBDA in Energy", LAMBDA
+      CALL mat_free(tmp22)
+   END SUBROUTINE get_Lagrange_multiplier_charge_conservation_in_Energy
+   
+   ! LAMBDA (S - TsT/(1-lambda**2))
+   SUBROUTINE get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,&
+                                 & k2,xc2,D3,D2,n2,n3,&
+                                 & nAtoms,GGAXfactor,AO2,AO3,GCAO2,GCAO3,&
+                                 & setting,lupri,luerr,lambda)
+      implicit none
+      type(lssetting),intent(inout) :: setting
+      real(realk),intent(inout)  :: ADMM_charge_term(3,nAtoms)
+      type(matrix),intent(in),target    :: D3 !Regular density matrix
+      type(matrix),intent(in),target    :: D2 !ADMM projected density matrix
+      type(matrix),intent(in)    :: k2 !ADMM exchange matrix k2(d2)
+      type(matrix),intent(in)    :: xc2 !ADMM XC matrix xc2(d2)
+      integer,intent(in)         :: nAtoms
+      integer,intent(in)         :: n2,n3,lupri,luerr
+      integer,intent(in)         :: AO2,AO3
+      logical,intent(in)         :: GCAO2,GCAO3
+      real(realk),intent(in)     :: GGAXfactor
+      real(realk),intent(IN)     :: lambda
+      !
+      real(realk)                :: LambdaEnergy
+      type(matrixp)              :: tmpDFD(1)
+      real(realk),pointer        :: reOrtho_D3(:,:),reOrtho_d2(:,:)
+      !
+      call ls_dzero(ADMM_charge_term,3*nAtoms)
+
+      tmpDFD(1)%p => D3
+      call mem_alloc(reOrtho_D3,3,nAtoms)
+      call ls_dzero(reOrtho_D3,3*nAtoms)
+      call II_get_reorthoNormalization(reOrtho_D3,tmpDFD,1,setting,lupri,luerr)
+      call DAXPY(3*nAtoms, 1E0_realk,reOrtho_D3,1,ADMM_charge_term,1)
       
-   END SUBROUTINE get_Lagrange_multiplier_charge_conservation
+      tmpDFD(1)%p => D2
+      call mem_alloc(reOrtho_d2,3,nAtoms)
+      call ls_dzero(reOrtho_d2,3*nAtoms)
+      call II_get_reorthoNormalization_mixed(reOrtho_d2,tmpDFD,1,AO2,AO2,&
+                                       & GCAO2,GCAO2,setting,lupri,luerr)
+      call DAXPY(3*nAtoms,-1E0_realk,reOrtho_d2,1,ADMM_charge_term,1)
+
+      call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaEnergy,&
+                     & D2,k2,xc2,setting,lupri,luerr,n2,n3,&
+                     & AO2,AO3,GCAO2,GCAO3)
+      call DSCAL(3*nAtoms,LambdaEnergy,ADMM_charge_term,1)   
+      
+      call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,&
+                              & ADMM_charge_term,nAtoms,'ADMM-Chrg')      
+      ! free memory                                 
+      call mem_dealloc(reOrtho_D3)
+      call mem_dealloc(reOrtho_d2)
+   END SUBROUTINE get_ADMM_K_gradient_constrained_charge_term
+
+   
    SUBROUTINE get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,D3,D2,n2,n3,&
                                  & nAtoms,GGAXfactor,AO2,AO3,GCAO2,GCAO3,&
                                  & setting,lupri,luerr,lambda,constrain_factor)
@@ -5786,22 +5978,25 @@ CONTAINS
       real(realk),intent(IN)     :: lambda,constrain_factor
       !
       type(matrix),target        :: A22,B32,C22
-      type(matrix),target        :: tmp33,tmp23,tmp22,tmp32b
-      type(matrix)               :: S22,S22inv,T23,tmp32,S32
+      type(matrix),target        :: tmp33,tmp23,tmp22,tmp22b,tmp33c,tmp33d,tmp33e
+      type(matrix)               :: S22,S22inv,T23,tmp32,S32,tmp33x,tmpS32
+      type(matrix)               :: S23,S33,S33o,tr_D3
       type(matrixp)              :: tmpDFD(1)
       real(realk),pointer        :: reOrtho1(:,:),reOrtho2(:,:)
-      real(realk),pointer        :: lambda_x(:,:),xtraTerm(:,:)
+      real(realk),pointer        :: lambda_x(:,:),xtraTerm(:,:),xtra1_debug(:,:)
+      real(realk),pointer        :: tr_D3x(:,:)
       real(realk),pointer        :: xtra1(:,:),xtra2(:,:),xtra3(:,:),xtra4(:,:)
-      real(realk)                :: Tr_d2A22,nrm
+      real(realk)                :: Tr_d2A22,nrm, val
       integer                    :: NbEl ! nb. electrons
       integer                    :: i,j,iAtom,iX
       logical                    :: DEBUG_ADMM_CONST
       CHARACTER(LEN=30)          :: FMT_real,FMT_int
-      Type(matrix),pointer       :: Sa(:),S32x(:) ! derivative along x,y and z for each atom
+      Type(matrix),pointer       :: Sa(:),S32x(:),S23x(:),S33x(:),S22x(:) ! derivative along x,y and z for each atom
+      Type(matrix),pointer       :: D3x(:),D3x1(:),D3x3(:)
       !
       FMT_real = "(5X, A35, F23.16)"
       FMT_int  = "(5X, A35, I2.3)"
-      DEBUG_ADMM_CONST = .FALSE.
+      DEBUG_ADMM_CONST = .TRUE.
       const_electrons = setting%scheme%ADMM_CONST_EL
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(T23,n2,n3)
@@ -5813,6 +6008,8 @@ CONTAINS
       call mat_init(A22,n2,n2)
       call mat_zero(A22)
       call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
+      !call mat_add(2E0_realk,k2,0E0_realk, xc2, A22) ! TO BE REMOVED...DEBUG ONLY
+
 
       ! S22^(-1)
       call mat_init(S22,n2,n2)
@@ -5852,8 +6049,17 @@ CONTAINS
                                        & GCAO3,GCAO2,setting,lupri,luerr)
 
       call ls_dzero(ADMM_proj,3*nAtoms)
+      
       call DAXPY(3*nAtoms, 1E0_realk,reOrtho1,1,ADMM_proj,1)
-      call DAXPY(3*nAtoms,-1E0_realk,reOrtho2,1,ADMM_proj,1)
+      CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,reOrtho1,nAtoms,'reOrtho1')
+      
+      call DSCAL(3*nAtoms,-1E0_realk,reOrtho2,1)   
+      CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,reOrtho2,nAtoms,'reOrtho2')
+      
+      call DAXPY(3*nAtoms,1E0_realk,reOrtho2,1,ADMM_proj,1)
+      
+      
+      CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_proj,nAtoms,'reOrtho1-r..2')
       
       if(DEBUG_ADMM_CONST) then
          write(lupri,FMT_real) 'RMS ADMM gradient projection contributions '
@@ -5888,7 +6094,8 @@ CONTAINS
       ! xtraTerm = -2 Tr(d2~ A) /(1-lambda) lambda_x
       ! with lambda_x= -1 /[N (1-lambda)] [ Tr(D3 S32 T23) ]_x
       ! note here T23 is not T23~ (i.e. not scaled)
-      IF (const_electrons) THEN
+      !IF (const_electrons) THEN
+      IF (.TRUE.) THEN
          call get_T23(setting,lupri,luerr,T23,n2,n3,&
                         & AO2,AO3,GCAO2,GCAO3,1E0_realk)
          Tr_d2A22 = mat_trAB(D2,A22)
@@ -5904,8 +6111,14 @@ CONTAINS
          call ls_dzero(xtra1,3*nAtoms)
          call ls_dzero(xtra2,3*nAtoms)
          call ls_dzero(xtra3,3*nAtoms)
-         call ls_dzero(xtra4,3*nAtoms)         
-         ! Tr(D3_x S32 T23) = Tr( -S33_x D3 S32 T23 D3) 
+         call ls_dzero(xtra4,3*nAtoms)
+         
+         call mem_alloc(xtra1_debug,3,nAtoms)
+         call ls_dzero(xtra1_debug,3*nAtoms) 
+         call mem_alloc(tr_D3x,3,nAtoms)
+         call ls_dzero(tr_D3x,3*nAtoms)
+
+         ! Tr( -S33_x D3 S32 T23 D3) 
          call mat_init(tmp23,n2,n3)
          call mat_init(tmp33,n3,n3)
          call mat_init(S32,n3,n2)
@@ -5917,7 +6130,7 @@ CONTAINS
          call II_get_reorthoNormalization_mixed(xtra1,tmpDFD,1,AO3,AO3,&
                                        & GCAO3,GCAO3,setting,lupri,luerr)
          call DSCAL(3*nAtoms,-1E0_realk,xtra1,1)
-         call DAXPY(3*nAtoms,1E0_realk,xtra1,1,lambda_x,1)
+         !call DAXPY(3*nAtoms,1E0_realk,xtra1,1,lambda_x,1)
          
          if(DEBUG_ADMM_CONST) then
             nrm = 0E0_realk
@@ -5928,15 +6141,267 @@ CONTAINS
             ENDDO
             nrm = sqrt(nrm/3.0/nAtoms)
             CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,xtra1,nAtoms,'TrD3_xS32T23')
-                        write(lupri,FMT_real) 'Tr(D3_x S32 T23) norm (au): ',nrm
+            write(lupri,FMT_real) 'Tr(D3_x S32 T23) norm (au): ',nrm
          end if
+               
+!         !!!!! DEBUG reortho 1111  STARTTTTTTTTTTTTTTTTTTTTTTTTTTT
+!         call mem_alloc(Sa,3*nAtoms)
+!         DO i=1,3*nAtoms
+!           call mat_init(Sa(i),n3,n3)
+!           call mat_zero(Sa(i))
+!         ENDDO
+!         call II_get_geoderivOverlap(Sa,Natoms,setting,lupri,luerr)
+!         DO iAtom = 1,nAtoms
+!            DO iX=1,3
+!               xtra1_debug(iX,iAtom) = mat_trAB(Sa(iX+3*(iAtom-1)),tmp33)
+!            ENDDO
+!         ENDDO
+!         call DSCAL(3*nAtoms,-1E0_realk,xtra1_debug,1)
+         
+!         if(DEBUG_ADMM_CONST) then
+!            nrm = 0E0_realk
+!            DO iAtom = 1,nAtoms
+!               DO iX=1,3
+!                  nrm = nrm + xtra1_debug(iX,iAtom)*xtra1_debug(iX,iAtom)
+!               ENDDO
+!            ENDDO
+!            nrm = sqrt(nrm/3.0/nAtoms)
+            
+!            CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,xtra1_debug,nAtoms,'TrD3_x.DEBUG')
+!            write(lupri,FMT_real) 'Tr(D3_x S32 T23) BIS  (au): ',nrm
+!         end if
+!         DO i=1,3*Natoms
+!           call mat_free(Sa(i))
+!         ENDDO
+!         call mem_dealloc(Sa)
+!         !!!!! DEBUG reortho 1111 ENDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+               
                
          ! Tr(D3 S32_x T23) = Tr(S32_x T23 D3)
          tmpDFD(1)%p => tmp23
          call II_get_reorthoNormalization_mixed(xtra2,tmpDFD,1,AO2,AO3,&
                                        & GCAO2,GCAO3,setting,lupri,luerr)
-         call DSCAL(3*nAtoms,1E0_realk,xtra2,1)
-         call DAXPY(3*nAtoms,1E0_realk,xtra2,1,lambda_x,1)
+         call DSCAL(3*nAtoms,2E0_realk,xtra2,1)
+         ! x2 because two of the terms are identical
+         
+         call DAXPY(3*nAtoms,1E0_realk,xtra2,1,lambda_x,1) 
+         
+         
+         !!!!! DEBUG reortho 2222 STARTTTTTTTTTTTTTTTTTTTTTTTTTTT
+         call mat_init(S23,n2,n3)
+         call mat_init(S22,n2,n2)
+         call mat_init(S33,n3,n3)
+         call mat_init(S33o,n3,n3)
+         call mat_init(tmp33c,n3,n3)
+         call mat_init(tmp33d,n3,n3)
+         call mat_init(tmp33e,n3,n3)
+         call II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+         call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+         call II_get_mixed_overlap(lupri,luerr,setting,S33,AO3,AO3,GCAO3,GCAO3)
+         call II_get_overlap(LUPRI,LUERR,SETTING,S33o)
+         call mem_alloc(S23x,3*nAtoms)
+         call mem_alloc(S22x,3*nAtoms)
+         call mem_alloc(S33x,3*nAtoms)
+         call mem_alloc(D3x1,3*nAtoms)
+         call mem_alloc(D3x3,3*nAtoms)
+         call mem_alloc(D3x,3*nAtoms)
+         DO i=1,3*nAtoms
+           call mat_init(S23x(i),n2,n3)
+           call mat_zero(S23x(i))
+           call mat_init(S22x(i),n2,n2)
+           call mat_zero(S22x(i))
+           call mat_init(S33x(i),n3,n3)
+           call mat_zero(S33x(i))
+             call mat_init(D3x(i),n3,n3)
+           call mat_zero(D3x(i))
+             call mat_init(D3x1(i),n3,n3)
+           call mat_zero(D3x1(i))
+           call mat_init(D3x3(i),n3,n3)
+           call mat_zero(D3x3(i))
+         ENDDO
+         call II_get_geoderivOverlap_mixed(S23x,natoms,AO2,AO3,setting,lupri,luerr)
+         call II_get_geoderivOverlap_mixed(S22x,natoms,AO2,AO2,setting,lupri,luerr)
+         call II_get_geoderivOverlap_mixed(S33x,natoms,AO3,AO3,setting,lupri,luerr)
+         write(lupri,*) "S3x matrix(H2,z)", S33x(3+3*(2-1))%elms(1:n3*n3)
+         write(lupri,*) "S3", S33%elms(1:n3*n3)
+                  
+         ! D3x = -D3 S3x D3
+        DO iAtom = 1,nAtoms
+            DO iX=1,3
+              call mat_mul(D3,S33x(iX+3*(iAtom-1)),'n','n',-1E0_realk,0E0_realk,tmp33c)
+              call mat_mul(tmp33c,D3,'n','n',1E0_realk,0E0_realk,D3x(iX+3*(iAtom-1)))
+              call mat_mul(D3x(iX+3*(iAtom-1)),S33,'n','n',1E0_realk,0E0_realk,tmp33c)
+              call mat_mul(tmp33c,D3,'n','n',1E0_realk,0E0_realk,D3x1(iX+3*(iAtom-1)))
+              call mat_mul(D3,S33,'n','n',1E0_realk,0E0_realk,tmp33c)
+              call mat_mul(tmp33c,D3x(iX+3*(iAtom-1)),'n','n',1E0_realk,0E0_realk,D3x3(iX+3*(iAtom-1)))
+            ENDDO
+         ENDDO
+         write(lupri,*) "D3", D3%elms(1:n3*n3)
+         write(lupri,*) "D3x matrix(H2,z) = -D3 S3x D3", D3x(3+3*(2-1))%elms(1:n3*n3)
+         write(lupri,*) "D3x1 = +D3x S3 D3", D3x1(3+3*(2-1))%elms(1:n3*n3)
+         write(lupri,*) "D3x3 = +D3 S3 D3x", D3x3(3+3*(2-1))%elms(1:n3*n3)
+         
+         call mem_alloc(S32x,3*nAtoms)
+         call mat_init(tmp33x,n3,n3)
+         call mat_zero(tmp33x)
+         DO i=1,3*nAtoms
+           call mat_init(S32x(i),n3,n2)
+           call mat_zero(S32x(i))
+         ENDDO
+         call II_get_geoderivOverlap_mixed(S32x,natoms,AO3,AO2,setting,lupri,luerr)
+         DO iAtom = 1,nAtoms
+            DO iX=1,3
+               call mat_mul(S32x(iX+3*(iAtom-1)),tmp23,'n','n',1E0_realk,0E0_realk,tmp33x)
+               xtra1_debug(iX,iAtom) = mat_tr(tmp33x)
+            ENDDO
+         ENDDO
+         iAtom = 1
+         call mat_init(tmpS32,n3,n2)
+         write(lupri,*) 'S32(1,n3)=', S32%elms(1:n3)
+         write(lupri,*) 'S32(8)=', S32%elms(8)
+         DO iX=1,3
+            call mat_zero(tmpS32)
+            write(lupri,*) 'atom:1, index:',iX
+            call mat_assign(tmpS32,S32x(iX))
+            write(lupri,*) 'S32x(1,index)(1,n3)=', tmpS32%elms(1:n3)
+         ENDDO
+         DO iX=1,3
+            write(lupri,*) 'atom:1, index:',iX
+            write(lupri,*) 'S33x(1,index)(1,n3)=', S33x(iX)%elms(1:n3)
+         ENDDO
+         DO iX=1,3
+            write(lupri,*) 'atom:1, index:',iX
+            write(lupri,*) 'S22x(1,index)(1,n3)=', S22x(iX)%elms(1:n3)
+         ENDDO
+         DO iX=1,3
+            write(lupri,*) 'atom:1, index:',iX
+            write(lupri,*) 'S23x(1,index)(1,n3)=', S23x(iX)%elms(1:n3)
+         ENDDO
+         
+         call mat_free(tmpS32)
+         call DSCAL(3*nAtoms,2E0_realk,xtra1_debug,1)
+         
+         write(lupri,*) 'S23(1+(8-1)*n2)=', S23%elms(1+(8-1)*n2)
+         DO iX=1,3
+            write(lupri,*) 'S23x for atom:1, index:',iX
+            write(lupri,*) 'S23x(1+(8-1)*n2)=', S23x(iX)%elms(1+(8-1)*n2)
+         ENDDO
+         write(lupri,*) 'S32(8)=', S32%elms(8)
+         DO iX=1,3
+            write(lupri,*) 'S32x for atom:1, index:',iX
+            write(lupri,*) 'S32x(8)=', S32x(iX)%elms(8)
+         ENDDO
+         write(lupri,*) 'S22(8)=', S22%elms(8)
+         DO iX=1,3
+            write(lupri,*) 'S22x for atom:1, index:',iX
+            write(lupri,*) 'S22x(8)=', S22x(iX)%elms(8)
+         ENDDO
+         write(lupri,*) 'S33o(8)=', S33o%elms(8)
+         write(lupri,*) 'S33 (8)=', S33%elms(8)
+         DO iX=1,3
+            write(lupri,*) 'S33x for atom:1, index:',iX
+            write(lupri,*) 'S33x(8)=', S33x(iX)%elms(8)
+         ENDDO
+         
+         if(DEBUG_ADMM_CONST) then
+            nrm = 0E0_realk
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                  nrm = nrm + xtra1_debug(iX,iAtom)*xtra1_debug(iX,iAtom)
+               ENDDO
+            ENDDO
+            nrm = sqrt(nrm/3.0/nAtoms)
+            
+            CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,xtra1_debug,nAtoms,'2*TrS23_x..')
+            write(lupri,FMT_real) '2*TrS23_x..  (au): ',nrm  
+          end if
+         DO i=1,3*Natoms
+           call mat_free(S32x(i))
+         ENDDO
+         
+            ! testing (Tr[S3S3])^x
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                 call mat_mul(S33,S33x(iX+3*(iAtom-1)),'n','n',1E0_realk,0E0_realk,tmp33c)
+                 call mat_mul(S33x(iX+3*(iAtom-1)),S33,'n','n',1E0_realk,1E0_realk,tmp33c)
+                 tr_D3x(iX,iAtom) = mat_tr(tmp33c)
+               ENDDO
+            ENDDO
+            CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,tr_D3x,nAtoms,&
+                     &'Tr[S3S3]x')
+         write(lupri,*) "Tr[S3S3]=", mat_trAB(S33,S33)
+         
+         ! testing (Tr[D3])^x
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                 call mat_mul(D3,S33x(iX+3*(iAtom-1)),'n','n',-1E0_realk,0E0_realk,tmp33c)
+                 tr_D3x(iX,iAtom) = mat_trAB(tmp33c,D3)
+               ENDDO
+            ENDDO
+            CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,tr_D3x,nAtoms,&
+                     &'Tr[D3]x')
+         write(lupri,*) "Tr[D3]=", mat_tr(D3)
+         
+                  ! testing (Tr[D3])^x bis
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+                 call mat_mul(D3,D3,'n','n',-1E0_realk,0E0_realk,tmp33c)
+                          tmpDFD(1)%p => tmp33c
+          !call II_get_reorthoNormalization_mixed(tr_D3x,tmpDFD,1,AO3,AO3,&
+          !                             & GCAO3,GCAO3,setting,lupri,luerr)
+          call II_get_reorthoNormalization(tr_D3x,tmpDFD,1,setting,lupri,luerr)
+               ENDDO
+            ENDDO
+            CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,tr_D3x,nAtoms,&
+                     &'Tr[D3]bx')
+
+                        ! testing (Tr[D3SD3])
+                 call mat_mul(D3,S33,'n','n',1E0_realk,0E0_realk,tmp33c)
+              write(lupri,*) "Tr[D3S3D3]=", mat_trAB(tmp33c,D3)
+
+         ! testing PdxQ =? 0
+          call mat_mul(D3,S33,'n','n',1E0_realk,0E0_realk,tmp33c) ! DS
+            DO iAtom = 1,nAtoms
+               DO iX=1,3
+           call mat_mul(tmp33c,D3x(iX+3*(iAtom-1)),'n','n',-1E0_realk,0E0_realk,tmp33d) ! D S Dx
+           call mat_mul(tmp33d,tmp33c,'n','t',1E0_realk,0E0_realk,tmp33e) ! D S Dx S D
+           call  mat_daxpy(-1E0_realk,tmp33e,tmp33d)
+               ENDDO
+            ENDDO
+            call mat_max_elm(tmp33d, val)
+            write(lupri,*) "norm( P Dx trans(Q) )", mat_sqnorm2(tmp33d)
+            write(lupri,*) "max[ P Dx trans(Q) ]", val
+            write(lupri,*) "P Dx trans(Q)", tmp33d%elms(1:n3*n3)
+
+       ! testing P Dx trans(P) =? Dx = -D Sx D
+       call mat_max_elm(tmp33e, val)
+            write(lupri,*) "norm( P Dx trans(P) )", mat_sqnorm2(tmp33e)
+            write(lupri,*) "max[ P Dx trans(P) ]", val
+            write(lupri,*) "P Dx trans(P) =? Dx", tmp33e%elms(1:n3*n3)
+            
+         DO i=1,3*nAtoms
+           call mat_free(S23x(i))
+           call mat_free(S22x(i))
+           call mat_free(S33x(i))
+           call mat_free(D3x(i))
+           call mat_free(D3x1(i))
+           call mat_free(D3x3(i))
+         ENDDO
+         call mat_free(tmp33x)
+         call mem_dealloc(S32x)
+         call mem_dealloc(S23x)
+         call mem_dealloc(S22x)
+         call mem_dealloc(S33x)
+         call mem_dealloc(D3x)
+         call mem_dealloc(D3x1)
+         call mem_dealloc(D3x3)
+         call mat_free(S23)
+         call mat_free(S33)
+         call mat_free(S33o)
+         call mat_free(tmp33c)
+         call mat_free(tmp33d)
+         call mat_free(tmp33e)
+         !!!!! DEBUG reortho 2222 ENDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
          if(DEBUG_ADMM_CONST) then
             nrm = 0E0_realk
             DO iAtom = 1,nAtoms
@@ -5945,21 +6410,19 @@ CONTAINS
                ENDDO
             ENDDO
             nrm = sqrt(nrm/3.0/nAtoms)
-            
             CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,xtra2,nAtoms,'TrD3S23_xT23')
             write(lupri,FMT_real) 'Tr(D3 S23_x T23) norm (au): ',nrm
          end if
 
          
-         ! Tr(D3 S32 T23_x) = Tr(T23_x D3 S32) = ...
-         !                  =  Tr(S23_x            D3 S32 S22inv)
-         !                   - Tr(S22_x S22inv S23 D3 S32 S22inv)
-         call mat_init(tmp32b,n3,n2)
-         call mat_mul(tmp32 ,S22inv ,'n','n',1E0_realk,0E0_realk,tmp32b)
-         tmpDFD(1)%p => tmp32b ! D3 S32 S22inv
-         call II_get_reorthoNormalization_mixed(xtra3,tmpDFD,1,AO3,AO2,&
-                                       & GCAO3,GCAO2,setting,lupri,luerr)
-         call DSCAL(3*nAtoms,1E0_realk,xtra3,1)
+         ! - Tr(S22_x S22inv S23 D3 S32 S22inv)
+         call mat_mul(tmp23 ,S32  ,'n','n',1E0_realk,0E0_realk,tmp22)
+         call mat_init(tmp22b,n2,n2)
+         call mat_mul(tmp22,S22inv,'n','n',1E0_realk,0E0_realk,tmp22b)
+         tmpDFD(1)%p => tmp22b
+         call II_get_reorthoNormalization_mixed(xtra3,tmpDFD,1,AO2,AO2,&
+                                       & GCAO2,GCAO2,setting,lupri,luerr)
+         call DSCAL(3*nAtoms,-1E0_realk,xtra3,1)
          call DAXPY(3*nAtoms,1E0_realk,xtra3,1,lambda_x,1)
          
          if(DEBUG_ADMM_CONST) then
@@ -5970,34 +6433,54 @@ CONTAINS
                ENDDO
             ENDDO
             nrm = sqrt(nrm/3/nAtoms)
-            
-            CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,xtra3,nAtoms,'TrS23_xtemp32b')
-            write(lupri,FMT_real) 'Tr(S23_x D3 S32 S22inv) norm (au): ',nrm
+            CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,xtra3,nAtoms,'-TrS22_xtemp2b')
+            write(lupri,FMT_real) 'Tr(S22_xTmp23 S32 S2inv) norm (au): ',nrm
          end if
-         call mat_mul(S22inv,S32  ,'n','t',1E0_realk,0E0_realk,tmp23)
-         call mat_mul(tmp23,tmp32b,'n','n',1E0_realk,0E0_realk,tmp22)
-         tmpDFD(1)%p => tmp22 ! S22inv S23 D3 S32 S22inv
-         call II_get_reorthoNormalization_mixed(xtra4,tmpDFD,1,AO2,AO2,&
-                                       & GCAO2,GCAO2,setting,lupri,luerr)
-         call DSCAL(3*nAtoms,-1E0_realk,xtra4,1)
-         call DAXPY(3*nAtoms,1E0_realk,xtra4,1,lambda_x,1)
-         if(DEBUG_ADMM_CONST) then
-            nrm = 0E0_realk
-            DO iAtom = 1,nAtoms
-               DO iX=1,3
-                  nrm = nrm + xtra4(iX,iAtom)*xtra4(iX,iAtom)
-               ENDDO
-            ENDDO
-            nrm = sqrt(nrm/3/nAtoms)
-            
-            CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,xtra4,nAtoms,&
-                     &'TrS22_xtmp22')
-            write(lupri,FMT_real) 'Tr(S22_x S22inv S23 D3 S32 S22inv) norm (au): ',nrm
-         end if
+!         !!!!! DEBUG reortho 3333  STARTTTTTTTTTTTTTTTTTTTTTTTTTTT
+!         call mem_alloc(Sa,3*nAtoms)
+!         DO i=1,3*nAtoms
+!           call mat_init(Sa(i),n2,n2)
+!           call mat_zero(Sa(i))
+!         ENDDO
+!         call II_get_geoderivOverlap_mixed(Sa,natoms,AO2,AO2,setting,lupri,luerr)
+!         DO iAtom = 1,nAtoms
+!            DO iX=1,3
+!               xtra1_debug(iX,iAtom) = mat_trAB(Sa(iX+3*(iAtom-1)),tmp22b)
+!            ENDDO
+!         ENDDO
+!         call DSCAL(3*nAtoms,-1E0_realk,xtra1_debug,1)
+!         if(DEBUG_ADMM_CONST) then
+!            nrm = 0E0_realk
+!            DO iAtom = 1,nAtoms
+!               DO iX=1,3
+!                  nrm = nrm + xtra1_debug(iX,iAtom)*xtra1_debug(iX,iAtom)
+!               ENDDO
+!            ENDDO
+!            nrm = sqrt(nrm/3.0/nAtoms)
+!            CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,xtra1_debug,nAtoms,'TrS22_x DEBUG')
+!            write(lupri,FMT_real) 'Tr(TrS22_x) BIS  (au): ',nrm
+!         end if
+!         DO i=1,3*Natoms
+!           call mat_free(Sa(i))
+!         ENDDO
+!         call mem_dealloc(Sa)
+!         !!!!! DEBUG reortho 3333 ENDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+         
+         
          CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,lambda_x,nAtoms,&
                      &'Tr[]_x')
 
-         call DSCAL(3*nAtoms,-1E0_realk / NbEl * constrain_factor,lambda_x,1)
+         call DSCAL(3*nAtoms,-1.0E0_realk / NbEl * constrain_factor,lambda_x,1)
+!!----START DEBUG FORCE VALUE OF LAMBDA_X
+!            DO iAtom = 1,nAtoms
+!               DO iX=1,3
+!                  lambda_x(iX,iAtom)= 0E0_realk
+!               ENDDO
+!            ENDDO
+!            lambda_x(3,1)= -1.2689253370496215E-5_realk
+!            lambda_x(3,2)=  1.2689253800057115E-5_realk
+!!----END DEBUG FORCE VALUE OF LAMBDA_X
+
          if(DEBUG_ADMM_CONST) then
             call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,lambda_x,nAtoms,&
                      &'lambda_x')
@@ -6011,6 +6494,8 @@ CONTAINS
             write(lupri,FMT_real) 'lambda_x norm (au): ',nrm
          end if
 
+
+
          write(lupri,FMT_int) 'Nb electrons: ',NbEl
          write(lupri,FMT_real) 'lambda: ',lambda
          write(lupri,FMT_real) 'constrain_factor: ',constrain_factor
@@ -6022,8 +6507,10 @@ CONTAINS
                      & 1,xtraTerm,1)
          CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,xtraTerm,nAtoms,&
                      &'scaled xterm')
-         call DAXPY(3*nAtoms,1E0_realk,xtraTerm,1,ADMM_proj,1)
-         
+      
+         IF (const_electrons) THEN
+            call DAXPY(3*nAtoms,1E0_realk,xtraTerm,1,ADMM_proj,1)
+         endif
          if(DEBUG_ADMM_CONST) then
             nrm = 0E0_realk
             DO iAtom = 1,nAtoms
@@ -6034,6 +6521,7 @@ CONTAINS
             nrm = sqrt(nrm/3/nAtoms)
             write(lupri,FMT_real) 'scaled xtraTerm norm (au): ',nrm
             nrm = 0E0_realk
+      
             DO iAtom = 1,nAtoms
                DO iX=1,3
                   nrm = nrm + ADMM_proj(iX,iAtom)*ADMM_proj(iX,iAtom)
@@ -6045,13 +6533,15 @@ CONTAINS
          
          call mem_dealloc(xtraTerm)
          call mem_dealloc(xtra1)
+         call mem_dealloc(xtra1_debug)
+         call mem_dealloc(tr_D3x)
          call mem_dealloc(xtra2)
          call mem_dealloc(xtra3)
          call mem_dealloc(xtra4)
          call mat_free(tmp33)
          call mat_free(tmp23)
-         call mat_free(tmp32b)
          call mat_free(S32)
+          call mat_free(tmp22b)
       ENDIF
       
       ! -- free memory --
@@ -6064,6 +6554,7 @@ CONTAINS
       call mat_free(B32)
       call mat_free(C22)
       call mat_free(tmp22)
+     
       call mat_free(tmp32)
       !
    END SUBROUTINE get_ADMM_K_gradient_projection_term
@@ -6121,7 +6612,8 @@ CONTAINS
    
    onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
    
-   IF (io_file_exist(Filename,setting%IO)) THEN
+   !IF (io_file_exist(Filename,setting%IO)) THEN
+   IF (.FALSE.) THEN
      call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
    ELSE
      CALL mat_init(S22,n2,n2)
@@ -6130,15 +6622,15 @@ CONTAINS
      
      CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
      CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-     
+     write(lupri,*) "S23 in T23",S23%elms(1+(8-1)*n2)
      CALL mat_inv(S22,S22inv)
      CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
      
      CALL mat_free(S22inv)
      CALL mat_free(S23)
      CALL mat_free(S22)
-     call io_add_filename(setting%IO,Filename,LUPRI)
-     call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+     !call io_add_filename(setting%IO,Filename,LUPRI)
+     !call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
    ENDIF
    ! IF constraining the total charge
    ! Lagrangian multiplier for conservation of the total nb. of electrons
