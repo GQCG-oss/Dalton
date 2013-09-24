@@ -5726,7 +5726,7 @@ DO idmat=1,ndrhs
                   & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                   & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
                   & lambda) ! LAMBDA (S - TsT/(1-lambda**2))
-      call DSCAL(3*nAtoms,2E0_realk,ADMM_charge_term,1)
+      call DSCAL(3*nAtoms,1E0_realk,ADMM_charge_term,1)
       call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM-Chrg')  
       call DAXPY(3*nAtoms,1E0_realk,ADMM_charge_term,1,admm_Kgrad,1)
    ELSE
