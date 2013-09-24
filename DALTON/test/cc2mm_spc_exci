@@ -220,7 +220,7 @@ CRIT1=` $GREP "x * 3\.4511331. * 8\.7719048." $log | wc -l`
 CRIT2=` $GREP "y * 1\.6383919. * 4\.1643767." $log | wc -l`
 CRIT3=` $GREP "z * \-2\.8903169. * \-7\.3464523." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[2]=4
+CTRL[2]=6
 ERROR[2]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
 
 # First ground state excitation energy compared:
@@ -244,7 +244,7 @@ ERROR[4]="OSCILLATOR STRENGTH NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

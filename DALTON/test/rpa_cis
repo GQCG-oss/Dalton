@@ -96,7 +96,7 @@ ERROR[2]="CIS (RPA/TDA) EXCITATION ENERGIES NOT CORRECT"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

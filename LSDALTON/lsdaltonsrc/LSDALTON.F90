@@ -37,7 +37,9 @@ SUBROUTINE lsdalton
   ! DEC 
   use DEC_typedef_module, only: DECinfo  
   ! PROPERTIES SECTION
+#ifdef VAR_RSP
   use lsdalton_rsp_mod, only: lsdalton_response, get_excitation_energy
+#endif
   ! DYNAMICS
   use dynamics_driver, only: LS_dyn_run
   ! SOEO
@@ -400,6 +402,7 @@ SUBROUTINE lsdalton
         !
         if (config%optinfo%optimize) then
            if(config%doESGopt)then
+#ifdef VAR_RSP
               call get_excitation_energy(ls,config,F(1),D(1),S,ExcitE,&
             & config%decomp%cfg_rsp_nexcit)
               Write(lupri,'(A,ES20.9)')'Ground state SCF Energy:',E(1)
@@ -408,6 +411,9 @@ SUBROUTINE lsdalton
               Write(lupri,*)'==============================================='
               Write(lupri,'(A,ES20.9)')'Exicted state Energy   :',E(1)
               Write(lupri,*)'==============================================='
+#else
+              call lsquit('Exicted state Energy requires VAR_RSP',lupri)
+#endif
            endif
            CALL LS_runopt(E,config,H1,F,D,S,CMO,ls)
            ! Vladimir Rybkin: We free CMO if we have used them
@@ -425,7 +431,9 @@ SUBROUTINE lsdalton
            call get_oao_transformed_matrices(config%decomp,F(1),D(1))
         endif
 
+#ifdef VAR_RSP
         call lsdalton_response(ls,config,F(1),D(1),S)
+#endif
         
         call config_shutdown(config)
 

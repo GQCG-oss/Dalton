@@ -56,6 +56,8 @@ TRILEVEL
 **INFO
 .DEBUG_MPI_MEM
 **CC
+.DECPRINT
+3
 .FrozenCore
 .CCSDforce_scheme
 2

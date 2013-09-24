@@ -605,8 +605,6 @@ contains
     CALL ls_mpi_buffer(MyFragment%ncore,master)
     CALL ls_mpi_buffer(MyFragment%nocctot,master)
     CALL ls_mpi_buffer(MyFragment%nunoccAOS,master)
-    CALL ls_mpi_buffer(MyFragment%REDnoccAOS,master)
-    CALL ls_mpi_buffer(MyFragment%REDnunoccAOS,master)
     CALL ls_mpi_buffer(MyFragment%nEOSatoms,master)
     CALL ls_mpi_buffer(MyFragment%ntasks,master)
     CALL ls_mpi_buffer(MyFragment%t1dims,2,master)
@@ -654,10 +652,6 @@ contains
        if(MyFragment%ncore>0) then
           call mem_alloc(MyFragment%coreidx,MyFragment%ncore)
        end if
-       nullify(MyFragment%REDoccAOSidx)
-       call mem_alloc(MyFragment%REDoccAOSidx,MyFragment%REDnoccAOS)
-       nullify(MyFragment%REDunoccAOSidx)
-       call mem_alloc(MyFragment%REDunoccAOSidx,MyFragment%REDnunoccAOS)
        nullify(MyFragment%idxo)
        call mem_alloc(MyFragment%idxo,MyFragment%noccEOS)
        nullify(MyFragment%idxu)
@@ -685,10 +679,6 @@ contains
     if(MyFragment%ncore>0) then
        call ls_mpi_buffer(MyFragment%coreidx,MyFragment%ncore,master)
     end if
-    call ls_mpi_buffer(MyFragment%REDoccAOSidx,&
-         & MyFragment%REDnoccAOS,master)
-    call ls_mpi_buffer(MyFragment%REDunoccAOSidx,&
-         MyFragment%REDnunoccAOS,master)
     call ls_mpi_buffer(MyFragment%idxo,MyFragment%noccEOS,master)
     call ls_mpi_buffer(MyFragment%idxu,MyFragment%nunoccEOS,master)
     call ls_mpi_buffer(MyFragment%EOSatoms,MyFragment%nEOSatoms,master)
@@ -881,7 +871,7 @@ contains
   !> \brief MPI communcation where CCSD and CC2 data is transferred
   !> \author Patrick Ettenhuber
   !> \date March 2012
-  subroutine mpi_communicate_ccsd_calcdata(om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,s,p)
+  subroutine mpi_communicate_ccsd_calcdata(om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,s,loc)
     implicit none
     type(mp2_batch_construction) :: bat
     integer            :: nbas,nocc,nvirt,ierr,iter,s
@@ -895,7 +885,7 @@ contains
     integer :: gaddr(infpar%lg_nodtot)
     integer :: taddr(infpar%lg_nodtot)
     integer :: oaddr(infpar%lg_nodtot)
-    logical :: p
+    logical :: loc
     character(ARR_MSG_LEN) :: msg
     logical :: master
     master=(infpar%lg_mynum==infpar%master)
@@ -907,8 +897,8 @@ contains
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(iter,infpar%master)
     call ls_mpi_buffer(s,infpar%master)
-    call ls_mpi_buffer(p,infpar%master)
-    if(p)then
+    call ls_mpi_buffer(loc,infpar%master)
+    if(.not.loc)then
       if(master)gaddr=govov%addr_p_arr
       call ls_mpi_buffer(gaddr,infpar%lg_nodtot,infpar%master)
       if(master)taddr=t2%addr_p_arr
@@ -941,7 +931,7 @@ contains
         call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
       endif
     else
-      if(p)then
+      if(.not.loc)then
         govov = get_arr_from_parr(gaddr(infpar%lg_mynum+1))
         t2    = get_arr_from_parr(taddr(infpar%lg_mynum+1))
         om2   = get_arr_from_parr(oaddr(infpar%lg_mynum+1))
@@ -1672,7 +1662,7 @@ contains
     call ls_mpi_buffer(DECitem%solver_par,Master)
     call ls_mpi_buffer(DECitem%force_scheme,Master)
     call ls_mpi_buffer(DECitem%dyn_load,Master)
-    call ls_mpi_buffer(DECitem%ccsd_old,Master)
+    call ls_mpi_buffer(DECitem%CCDEBUG,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_MPICH,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
@@ -1699,13 +1689,13 @@ contains
     call ls_mpi_buffer(DECitem%ccsdGbatch,Master)
     call ls_mpi_buffer(DECitem%hack,Master)
     call ls_mpi_buffer(DECitem%hack2,Master)
-    call ls_mpi_buffer(DECitem%mp2energydebug,Master)
     call ls_mpi_buffer(DECitem%SkipReadIn,Master)
     call ls_mpi_buffer(DECitem%array_test,Master)
     call ls_mpi_buffer(DECitem%reorder_test,Master)
     call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
+    call ls_mpi_buffer(DECitem%full_print_frag_energies,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%FitOrbitals,Master)
@@ -1725,9 +1715,11 @@ contains
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
     call ls_mpi_buffer(DECitem%HybridScheme,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
-    call ls_mpi_buffer(DECitem%use_mp2_frag,Master)
+    call ls_mpi_buffer(DECitem%fragopt_exp_mp2,Master)
+    call ls_mpi_buffer(DECitem%fragopt_red_mp2,Master)
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
+    call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%paircut_set,Master)
     call ls_mpi_buffer(DECitem%PairReductionDistance,Master)

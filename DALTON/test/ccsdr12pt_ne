@@ -212,7 +212,7 @@ ERROR[6]="CCSD(R12)(T) ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

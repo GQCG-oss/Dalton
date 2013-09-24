@@ -1933,7 +1933,7 @@ IF(setting%Output%memdistResultTensor)then
    call memdist_lstensor_BuildToScalapack(setting%Output%resultTensor,&
         & setting%comm,setting%node,setting%numnodes,singleMAT)
 ELSE
-    call Build_mat_from_lst(lupri,setting%Output%resultTensor,singleMAT)
+   call Build_mat_from_lst(lupri,setting%Output%resultTensor,singleMAT)
 ENDIF
 call retrieve_postprocess(setting%Output%postprocess(1),singleMAT,lupri)
 call lstensor_free(setting%Output%resultTensor)
@@ -1946,6 +1946,7 @@ call mem_dealloc(setting%Output%postprocess)
 END SUBROUTINE retrieve_output_mat_single
 
 subroutine retrieve_postprocess(postprocess,MAT,lupri)
+implicit none
 integer :: postprocess,lupri
 type(matrix) :: MAT
 !
@@ -2155,6 +2156,7 @@ END SUBROUTINE retrieve_output_4dim
 
 !call retrieve_postprocess_full(setting%Output%postprocess(1),singleMAT,lupri)
 subroutine retrieve_postprocess_full(postprocess,MAT,ndim,lupri)
+implicit none
 integer :: postprocess,lupri,ndim
 real(realk) :: MAT(ndim,ndim)
 !
@@ -3381,6 +3383,7 @@ ENDIF
 END SUBROUTINE print_aoAtomInfo
 
 SUBROUTINE print_aoBatchInfo(batch,iprint,iunit)
+implicit none
 TYPE(aoBatchInfo),intent(IN) :: batch
 Integer,intent(IN)          :: iprint,iunit
 !

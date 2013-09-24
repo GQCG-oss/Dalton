@@ -93,7 +93,8 @@ C
          XGAMMA = DAMPING(IDAMP)
 
          WRITE (LUPRI,*) " FOR OPERATOR LABEL = ", LABEL
-         WRITE (LUPRI,*) " Response fun with gamma = ",XGAMMA, 'J=',J
+         WRITE (LUPRI,'(1X,A27,F12.8,A3,I10)') 
+     *               " Response fun with gamma = ",XGAMMA, ' J=',J
          WRITE(LUPRI,*)  " Frequency (eV)  & Real  (au)& Imaginary(au)",
      &                   "&  sigma^I (au)"
          WRITE(LUPRI,'(X,"---------------------------")')
@@ -101,7 +102,8 @@ C
 !Also on file LUSPEC
 !
          WRITE (LUSPEC,*) " FOR OPERATOR LABEL = ", LABEL
-         WRITE (LUSPEC,*) " Response fun with gamma = ",XGAMMA, 'J=',J
+         WRITE (LUSPEC,'(1X,A27,F12.8,A3,I10)')
+     *               " Response fun with gamma = ",XGAMMA, ' J=',J
          WRITE(LUSPEC,*) " Frequency (eV)  & Real  (au)& Imaginary(au)",
      &                   "&  sigma^I (au)"
          WRITE(LUSPEC,'(X,"---------------------------")')

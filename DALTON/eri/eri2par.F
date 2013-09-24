@@ -1077,7 +1077,7 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
-         else if (iprtyp == PE) then
+         else if (iprtyp == POLARIZABLE_EMBEDDING) then
             call pe_mpi(work(1:mwork), iprint)
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012

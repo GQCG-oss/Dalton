@@ -6,8 +6,8 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
   USE matrix_module
   USE lattice_vectors
   USE lattice_type
-  USE multipole_pbc
-  USE harmonics_pbc
+!  USE multipole_pbc
+!  USE harmonics_pbc
   USE pbcffdata
   USE PBC_MSC
   USE pbc_interactions
@@ -404,8 +404,8 @@ SUBROUTINE COMPARE_MATRICES(lupri,ndim,numrealvec,nfsze,lmax,ll)
   USE matrix_module
   USE lattice_vectors
   USE lattice_type
-  USE multipole_pbc
-  USE harmonics_pbc
+!  USE multipole_pbc
+!  USE harmonics_pbc
   USE pbcffdata
   USE PBC_MSC
   USE pbc_interactions

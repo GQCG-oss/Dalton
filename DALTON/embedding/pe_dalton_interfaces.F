@@ -44,7 +44,7 @@
         call qenter('pe_rsplin')
 
         if (.not. tdhf) then
-            write(lupri,*) 'ERROR: PE-MCSCF response not implemented.'
+            write(lupri, *) 'ERROR: PE-MCSCF response not implemented.'
             call quit('ERROR: PE-MCSCF response not implemented.')
         end if
 

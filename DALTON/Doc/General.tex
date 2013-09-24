@@ -1001,7 +1001,28 @@ Use the iterative solver to determine the induced dipole moments. This is the de
 \item[\Key{BORDER}]\verb| |\newline
 1) \verb|READ (LUCMD, *) BORDER_TYPE, RMIN, AUORAA|\verb| |\newline
 2) \verb|READ (LUCMD, *) BORDER_TYPE, REDIST_ORDER, RMIN, AUORAA, NREDIST|\verb| |\newline
-Controls the handling of the border between the core molecular system and its environment described by the embedding potential. There are two mutually exclusive schemes: 1) \verb|BORDER_TYPE = REMOVE| and 2) \verb|BORDER_TYPE = REDIST|. The first option will remove all multipoles and polarizabilities that are within the given distance \verb|RMIN| from any atom in the core molecular system. The \verb|AUORAA| variable specifies whether the distance threshold is given in \AA{}ngstr\"{o}m (AA) or bohr (AU). The second option will redistribute parameters that are within the given threshold \verb|RMIN| from any atom in the core system to nearest sites in the environment. The order of multipoles up to which will be redistributed is determined by the \verb|REDIST_ORDER| variable, e.g. \verb|REDIST_ORDER = 1| means that only charges will be redistributed and all other parameters removed, \verb|REDIST_ORDER = 2| means charges and dipoles are redistributed and so on. The sign of \verb|REDIST_ORDER| specifies if the polarizabilities are redistributed. Positive means that the polarizabilities are removed and negative means redistributed. The number of sites that parameters on a given site are redistributed to is determined by the \verb|NREDIST| variable which can be between 1 and 3. The default is to redistribute charges within 2.2 bohr to its nearest site and removing all other parameters.
+Controls the handling of the border between the core molecular system
+and its environment described by the embedding potential. There are
+two mutually exclusive schemes: 1) \verb|BORDER_TYPE = REMOVE| and 2)
+\verb|BORDER_TYPE = REDIST|. The first option will remove all
+multipoles and polarizabilities that are within the given distance
+\verb|RMIN| from any atom in the core molecular system. The
+\verb|AUORAA| variable specifies whether the distance threshold is
+given in \angstrom{} (AA) or \bohr{} (AU). The second option will
+redistribute parameters that are within the given threshold
+\verb|RMIN| from any atom in the core system to nearest sites in the
+environment. The order of multipoles up to which will be redistributed
+is determined by the \verb|REDIST_ORDER| variable,
+e.g. \verb|REDIST_ORDER = 1| means that only charges will be
+redistributed and all other parameters removed,
+\verb|REDIST_ORDER = 2| means charges and dipoles are redistributed
+and so on. The sign of \verb|REDIST_ORDER| specifies if the
+polarizabilities are redistributed. Positive means that the
+polarizabilities are removed and negative means redistributed. The
+number of sites that parameters on a given site are redistributed to
+is determined by the \verb|NREDIST| variable which can be between 1
+and 3. The default is to redistribute charges within 2.2 \bohr{} to its
+nearest site and removing all other parameters.
 
 \item[\Key{DAMP}]\verb| |\newline
 \verb|READ (LUCMD, *) damp| (optional)\verb| |\newline
@@ -1024,7 +1045,19 @@ Use any existing files to restart calculation.
 \verb|    END IF| \verb| |\newline
 \verb|    IF (OPTION == '.' .OR. OPTION == '*') EXIT| \newline
 \verb|END DO|\verb| |\newline
-Create cube file for the core molecular system containing the electrostatic potential due to the final converged polarizable embedding potential. The grid density can be either \verb|COARSE| (3 points/Bohr), \verb|MEDIUM| (6 points/Bohr) or \verb|FINE| (12 points/bohr). The default grid density is \verb|MEDIUM| and default cube size is the extent of the molecule plus 8.0 Bohr in plus and minus each Cartesian coordinate. If the \verb|FIELD| option is given then also cube files containing the electric field from the embedding potential will be created. The \verb|GRID| option gives full control of the cube size and density, and requires an additional input line specifying the size (in Bohr) and density (in points/Bohr) in each Cartesian direction. Here the size again specifies the amount to add to the extent of the core molecular system.
+Create cube file for the core molecular system containing the
+electrostatic potential due to the final converged polarizable
+embedding potential. The grid density can be either \verb|COARSE| (3
+points/\bohr{}), \verb|MEDIUM| (6 points/\bohr{}) or \verb|FINE| (12
+points/\bohr{}). The default grid density is \verb|MEDIUM| and default
+cube size is the extent of the molecule plus 8.0 \bohr{} in plus and
+minus each Cartesian coordinate. If the \verb|FIELD| option is given
+then also cube files containing the electric field from the embedding
+potential will be created. The \verb|GRID| option gives full control
+of the cube size and density, and requires an additional input line
+specifying the size (in \bohr{}) and density (in points/\bohr{}) in each
+Cartesian direction. Here the size again specifies the amount to add
+to the extent of the core molecular system.
 
 \item[\Key{VERBOSE}]\verb| |\newline
 Verbose output. Currently this will print the final converged induced dipole moments.
@@ -1043,10 +1076,10 @@ Not documented. Examples can be found by grepping for "QM3" in the "DALTON/test"
 \subsection{PCM environment model: \Sec{PCM}}
 \label{subsec:pcm}
 
-This input section, together with the \Sec{PCMCAV} input section, controls
-the polarizable continuum model to describe the environment
-effects. See Section~\ref{sec:pcm} for an introduction to calculations
-using PCM in {\dalton}\index{PCM}.
+This input section, together with the \Sec{PCMCAV} input section,
+controls the polarizable continuum model (PCM) to describe the
+environment effects. See Section~\ref{sec:pcm} for an introduction to
+calculations using PCM in {\dalton}\index{PCM}.
 
 \begin{description}
 
@@ -1079,7 +1112,7 @@ CH3CN    & ACETONIT \\
 \hline
 \end{tabular}\newline
 
-It is also possible to define solvent by the keywords \Key{EPS},
+It is also possible to define a solvent by the keywords \Key{EPS},
 \Key{EPSINF} and \Key{RSOLV}.
 
 \item[\Key{NEQRSP}]\verb| |\newline
@@ -1089,14 +1122,14 @@ calculation.
 
 \item[\Key{ICESPH}]\verb| |\newline
 \verb|READ (LUCMD, *) ICESPH|\verb| |\newline
-Define how to put the spheres when generating the PCM cavity. ICESPH can either be 0, 1 or 2.
+Define how to put the spheres when generating the PCM cavity. ICESPH
+can either be 0, 1 or 2.
 \begin{itemize}
 \item[0] automatic assignment of spheres on all atoms following the
   tabulated radii values. This is the default.
-\item[1] reading the sphere centers coordinates in the MOLECULE
-  geometry file, as (X,Y,Z,R), with R the radius of the sphere. Be
-  aware that this option is not working if molecular symmetry is
-  detected.
+\item[1] reading the sphere centers coordinates in the \molinp\ file,
+  as (X,Y,Z,R), with R the radius of the sphere. Be aware that this
+  option is not working if molecular symmetry is detected.
 \item[2] specifying the nuclei associated with the sphere. This is
   used together with the \Key{NESFP} keyword and, from the
   \Sec{PCMCAV} section (see below), the \Key{INA} and \Key{RIN}
@@ -1121,7 +1154,7 @@ Defines the solvent radius.
 
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRPCM|\verb| |\newline
-Print level for the pcm calculation (default 0).
+Print level for the PCM calculation (default 0).
 
 \end{description}
 
@@ -1142,13 +1175,13 @@ sphere. (default 0.4)
 \verb|DO I = 1, NESFP|\newline
 \verb|  READ (LUCMD, *) INA(I)|\verb| |\newline
 \verb|END DO|\newline
-List of which atoms to put a sphere on
+List of atoms to put a sphere on
 
 \item[\Key{RIN}]\verb| |\newline
 \verb|DO I = 1, NESFP|\newline
 \verb|  READ (LUCMD, *) RIN(I)|\verb| |\newline
 \verb|END DO|\newline
-The radii of each sphere, given in angstrom.
+The radii of each sphere, given in \angstrom{}.
 
 \item[\Key{ALPHA}]\verb| |\newline
 \verb|DO I = 1, NESFP|\newline
@@ -1158,13 +1191,13 @@ Scaling factor for the sphere radii (default 1.2). If parameter
 ALPHA(I) is greater than 0 the I-th radius RIN(I) is multiplied by
 ALPHA(I). This allows to use radii=R(van der Waals)*ALPHA in the
 calculation of electrostatic (and eventually SCF disp-rep)
-contribution, and radii = RvdW for the cavitation.
+contribution, and radii = R(van der Waals) for the cavitation.
 
 \item[\Key{CENTER}]\verb| |\newline
 \verb|DO I = 1, NESFP|\newline
 \verb|  READ (LUCMD, *) XE(I),YE(I),ZE(I)|\verb| |\newline
 \verb|END DO|\newline
-xyz coordinates of the center of cavity spheres, given in angstrom.
+xyz coordinates of the center of cavity spheres, given in \angstrom{}.
 
 \end{description}
 
@@ -1220,7 +1253,7 @@ Ref.~\cite{theuhjajcpl173} as well as in Section~\ref{sec:dynamic}.
 During a vibrational averaging, ensure that the properties are
 transformed to the appropriate Eckart axis system.  The coordinate
 system given should be that of the equilibrium geometry of the
-molecule. The coordinates should be given in bohr, and should be given
+molecule. The coordinates should be given in \bohr{}, and should be given
 for all symmetry generated atoms in the order given in the input.
 
 \item[\Key{EIGEN}] Take a step to the boundary of the trust
@@ -1514,9 +1547,9 @@ for all quantum up to and including \verb|LCMMAX| will be generated
 (s=0, p=1 etc.) \verb|CMSTR| and \verb|CMEND| are the half-integer
 start- and ending quantum number for the Rydberg basis functions. The
 basis functions will be placed at the position of a dummy center
-indicated as \verb|X| in the \verb|MOLECULE.INP| file. The charge of
+indicated as \verb|X| in the \molinp\ file. The charge of
 the ion-core is determined by the keyword \Key{ZCMVAL} (default: +1).
-If no center named \verb|X| is present in the \verb|MOLECULE.INP| file,
+If no center named \verb|X| is present in the \molinp\ file,
 this input will be ignored.
 
 \item[\Key{CONTINUUM}]\verb| |\newline
@@ -1533,9 +1566,9 @@ for all quantum up to and including \verb|LCNTMAX| will be generated
 (s=0, p=1 etc.) \verb|CNTSTR| and \verb|CNTEND| are the integer
 start- and ending quantum number for the continuum basis functions. The
 basis functions will be placed at the position of a dummy center
-indicated as \verb|X| in the \verb|MOLECULE.INP| file. 
+indicated as \verb|X| in the \molinp\ file. 
 No charge of the ion-core is required for these functions.
-If no center named \verb|X| is present in the \verb|MOLECULE.INP| file,
+If no center named \verb|X| is present in the \molinp\ file,
 this input will be ignored.
 
 \item[\Key{MAXPRI}]\verb| |\newline
@@ -1565,7 +1598,7 @@ module.
 
 \item[\Key{R12AUX}] An auxiliary basis is used.
 Basis sets must be identified as either orbital basis or
-auxiliary basis in the \verb|MOLECULE.INP| file (line 5).
+auxiliary basis in the \molinp\ file (line 5).
 See Sec.~\ref{sec:r12aux} on page~\pageref{sec:r12aux}.
 
 \item[\Key{SYMTHR}]\verb| |\newline
@@ -1578,8 +1611,8 @@ in the automatic symmetry detection routines. Default is $5.0\cdot
 \item[\Key{UNCONT}] Force the program to use all input basis sets as primitive (completely decontracted) sets.
 
 \item[\Key{WRTLIN}] Write out the lines read in during the input
-  processing of the \verb|MOLECULE.INP| file. Primarily for debugging
-  purposes or for analyzing input errors in the \verb|MOLECULE.INP|
+  processing of the \molinp\ file. Primarily for debugging
+  purposes or for analyzing input errors in the \molinp\
   file.
 
 \item[\Key{ZCMVAL}]\verb| |\newline

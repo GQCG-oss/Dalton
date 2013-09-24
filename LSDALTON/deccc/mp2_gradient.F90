@@ -28,7 +28,7 @@ module mp2_gradient_module
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use dec_fragment_utils
-  use crop
+  use crop_tools_module
   use array2_simple_operations!,only: array2_init, array2_transpose, array2_free,&
  !      & extract_occupied_EOS_MO_indices
   use array4_simple_operations!,only: array4_init, array4_contract1, array4_free,&
@@ -3183,7 +3183,7 @@ call mem_TurnOffThread_Memory()
        call lsquit('dec_solve_kappabar_equation: Not implemented for full equation AND frozen core!',-1)
     end if
 
-    if(DECinfo%ccModel /= 1) then
+    if(DECinfo%ccModel /= MODEL_MP2) then
        print *, 'CC model: ', DECinfo%ccModel
        call lsquit('dec_solve_kappabar_equation:&
             & kappabar multiplier equation is only implemented for MP2',-1)

@@ -676,6 +676,7 @@ C
 #include "dftcom.h"
 #include "gnrinf.h"
 #include "priunit.h"
+#include "scbrhf.h"
 C
       DIMENSION ISYMDM(3), IFCTYP(3)    !JT Aug 09
 C
@@ -743,7 +744,7 @@ C        (except for RO-DFT and srDFT we need FCAO for VxcAO)
 C           ... off-set to FVAO,DVAO in FCAO,DCAO
          END IF
       END IF
-      IF (HSROHF .OR. (DODFT .AND. NASHT .EQ. 1)) THEN
+      IF (HSFOCK) THEN
 C
 C This gives the exchange part of the active Fock matrix;
 C we need only the difference between Fa and Q which is
@@ -755,7 +756,7 @@ C
 C     ... note: NDMAT = # of FCAO matrices; NFMAT = # of non-zero FCAO matrices
       IF (NFMAT .GT. 0) THEN
       IF (LUSUPM .NE. -1 .AND.
-     &   .NOT. (HSROHF .OR. DODFT .OR.
+     &   .NOT. (HSFOCK .OR. DODFT .OR.
      &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE
