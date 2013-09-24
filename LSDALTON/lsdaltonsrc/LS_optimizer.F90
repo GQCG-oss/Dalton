@@ -5,7 +5,7 @@ module LS_optimizer_mod
   use configurationType!, only: configitem
   use optimization_input!, only: opt_setting, MXCOOR, MXCENT
   use memory_handling!, only: mem_alloc, mem_dealloc
-  use ls_util!, only: lsheader
+  use ls_util!, only: lsheader, ls_print_gradient
   use files!, only: lsopen, lsclose
   use molecule_module!, only: print_geometry
   use lstiming!, only: lstimer
@@ -1675,6 +1675,8 @@ Type(lsitem) :: ls
 Type(ConfigItem), intent(inout) :: Config ! General information
 Real(realk), pointer :: Gradient(:,:)
 Real(realk) :: h,Eerr,E ! Energy
+Real(realk), pointer :: anaGrad(:,:)
+logical    :: DEBUG_PAT
 ! Allocate gradient
 Call mem_alloc(Gradient,3,NAtoms)
 
@@ -1684,6 +1686,21 @@ if( optinfo%doNumGradGeomOpt )then
 	h = optinfo%findif_mesh
 	write(lupri,*) "h: ",h
       call get_num_grad(h,lupri,config%luerr,ls,S,F,D,C,config,Gradient)
+      DEBUG_PAT = .TRUE.
+      IF (DEBUG_PAT) THEN
+         Call mem_alloc(anaGrad,3,NAtoms)
+         Call Get_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,anaGrad)
+         CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,anaGrad,nAtoms,'Ana grad')
+         CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,Gradient,nAtoms,'Num grad')
+         Do i = 1,NAtoms
+               anaGrad(:,i) = Gradient(:,i) - anaGrad(:,i)
+         Enddo
+         write (*,*) "print difference AnaGradient - NumGradient"
+         write (lupri,*) "print difference AnaGradient - NumGradient"
+         CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,anaGrad,nAtoms,'Ana-Num grad')
+
+         Call mem_dealloc(anaGrad)
+      ENDIF
 else
 	! Calculate analytical gradient
 	Call Get_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,Gradient)
