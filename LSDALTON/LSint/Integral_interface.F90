@@ -5522,8 +5522,7 @@ CONTAINS
    
    onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
    
-   !IF (io_file_exist(Filename,setting%IO)) THEN
-   IF (.FALSE.) THEN
+   IF (io_file_exist(Filename,setting%IO)) THEN
      call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
    ELSE
      CALL mat_init(S22,n2,n2)
@@ -5532,7 +5531,6 @@ CONTAINS
      
      CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
      CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-!      write(lupri,*) "S23 in T23",S23%elms(1+(8-1)*n2)
     
      CALL mat_inv(S22,S22inv)
      CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
