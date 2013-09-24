@@ -5376,6 +5376,8 @@ IF (const_electrons) THEN
   call mat_scal(constrain_factor, tmp33)
   call mat_daxpy(1E0_realk,S33,tmp33)
   
+  write(lupri,*) 'debug:LAMBDA ',2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
+  write(lupri,*) 'debug:constrain_factor ',constrain_factor
   call mat_scal(2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons, tmp33)
   call mat_daxpy(1E0_realk,tmp33,dXC)
   
@@ -5886,6 +5888,7 @@ CONTAINS
       call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaEnergy,&
                      & GGAXfactor,D2,k2,xc2,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3)
+      write(lupri,*) 'debug:CONSTRAIN FACTOR',1E0_realk/(1E0_realk-lambda)
       call DSCAL(3*nAtoms,LambdaEnergy,ADMM_charge_term,1)   
       
       ! free memory                                 
