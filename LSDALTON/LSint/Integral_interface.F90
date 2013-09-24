@@ -967,10 +967,6 @@ logical                       :: ADMMexchange
 call time_II_operations1()
 
 
-n3 = DmatLHS(1)%p%nrow
-nAtoms = setting%molecule(1)%p%nAtoms
-
-
 ! *********************************************************************************
 ! *                      ADMM exchange
 ! *********************************************************************************
