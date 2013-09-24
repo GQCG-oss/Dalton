@@ -5424,15 +5424,17 @@ CALL mat_mul(S32,T23,'n','n',1E0_realk,0E0_realk,tmp33)
 call mat_scal(constrain_factor, tmp33)
 call mat_daxpy(-1E0_realk,S33,tmp33)
 
-write(*,*) 'debug:',-2E0_realk*constrain_factor*mat_trAB(k2_xc2,D2(1)) / nelectrons
-call mat_scal(-2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons, tmp33)
+write(lupri,*) 'debug:Lambda Energy',2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
+call mat_scal(2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons, tmp33)
 
+write(lupri,*) "FADMM without correction"
+call mat_print(F,1,nbast,1,nbast,lupri)
 write(lupri,*) "trans(T) k2 T matrix"
 call mat_print(F,1,nbast,1,nbast,lupri)
 write(lupri,*) "other term in Kadmm dependent on lambda"
 call mat_print(tmp33,1,nbast,1,nbast,lupri)
 IF (const_electrons) THEN
-   call mat_daxpy(1E0_realk,tmp33,F)
+   call mat_daxpy(1E0_realk,tmp33,dXC)
 ENDIF 
 
 CALL mat_free(S33)
@@ -5592,7 +5594,7 @@ CONTAINS
      
      CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
      CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-      write(lupri,*) "S23 in T23",S23%elms(1+(8-1)*n2)
+!      write(lupri,*) "S23 in T23",S23%elms(1+(8-1)*n2)
     
      CALL mat_inv(S22,S22inv)
      CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
@@ -5783,21 +5785,23 @@ DO idmat=1,ndrhs
    call mem_alloc(ADMM_charge_term,3,nAtoms)
    call ls_dzero(ADMM_charge_term,3*nAtoms)
    
-!   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,&
-!               & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
-!               & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
-!               & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
-!   call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1) !to be moved/changed later on
-!   call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_proj,nAtoms,'ADMM_proj')
-!   call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)   
+   IF (const_electrons) THEN
+      call get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,k2,xc2,&
+                  & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
+                  & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
+                  & lambda) ! LAMBDA (S - TsT/(1-lambda**2))
+      call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM_chg2')  
+      !call DAXPY(3*nAtoms,1E0_realk,ADMM_charge_term,1,admm_Kgrad,1)
+   ELSE
+      call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,&
+                  & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
+                  & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
+                  & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
+      call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1) !to be moved/changed later on
+      call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_proj,nAtoms,'ADMM_proj')
+      call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)   
+   ENDIF                  
 
-   call get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,k2,xc2,&
-               & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
-               & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
-               & lambda) ! LAMBDA (S - TsT/(1-lambda**2))
-                  
-   call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM_chg2')  
-   !call DAXPY(3*nAtoms,1E0_realk,ADMM_charge_term,1,admm_Kgrad,1)
 
    !FREE MEMORY
    call mem_dealloc(ADMM_proj)
@@ -5882,13 +5886,14 @@ CONTAINS
 
    ! LAMBDA = (2/N) sqrt([k2-xc2]d2)
    SUBROUTINE get_Lagrange_multiplier_charge_conservation_in_Energy(LAMBDA,&
-                     & D2,k2,xc2,setting,lupri,luerr,n2,n3,&
+                     & GGAXfactor,D2,k2,xc2,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3)
       implicit none
       type(matrix),intent(in)    :: D2  !level 2 ADMM projected matrix 
       type(matrix),intent(in)    :: k2  !ADMM exchange matrix k2(d2)
       type(matrix),intent(in)    :: xc2 !ADMM XC matrix xc2(d2)
       real(realk),intent(inout)  :: lambda
+      real(realk),intent(in)     :: GGAXfactor
       type(lssetting)            :: setting
       integer                    :: n2,n3,AO3,AO2,lupri,luerr
       logical                    :: GCAO2,GCAO3
@@ -5901,7 +5906,7 @@ CONTAINS
       call mat_init(tmp22,n2,n2)
       call mat_zero(tmp22)
       call mat_daxpy( 1E0_realk,k2 ,tmp22)
-      call mat_daxpy(-1E0_realk,xc2,tmp22)
+      call mat_daxpy(-GGAXfactor,xc2,tmp22)
       trace = mat_trAB(tmp22,D2)
       LAMBDA = 2E0_realk/NbEl*trace
       write(lupri,*) "Tr([k2-xc2]d2)=", trace
@@ -5948,7 +5953,7 @@ CONTAINS
       call DAXPY(3*nAtoms,-1E0_realk,reOrtho_d2,1,ADMM_charge_term,1)
 
       call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaEnergy,&
-                     & D2,k2,xc2,setting,lupri,luerr,n2,n3,&
+                     & GGAXfactor,D2,k2,xc2,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3)
       call DSCAL(3*nAtoms,LambdaEnergy,ADMM_charge_term,1)   
       
@@ -6508,9 +6513,9 @@ CONTAINS
          CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,xtraTerm,nAtoms,&
                      &'scaled xterm')
       
-         IF (const_electrons) THEN
-            call DAXPY(3*nAtoms,1E0_realk,xtraTerm,1,ADMM_proj,1)
-         endif
+!         IF (const_electrons) THEN
+!            call DAXPY(3*nAtoms,1E0_realk,xtraTerm,1,ADMM_proj,1)
+!         endif
          if(DEBUG_ADMM_CONST) then
             nrm = 0E0_realk
             DO iAtom = 1,nAtoms
