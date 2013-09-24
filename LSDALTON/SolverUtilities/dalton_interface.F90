@@ -2135,25 +2135,7 @@ CONTAINS
       logical :: Dsym,ADMMexchange
       TYPE(Matrix) :: K(ndmat),dXC(ndmat)
       !
-! DEBUG
- real(realk),pointer        :: tr_DxK(:,:)
- type(matrixp)              :: tmpDFD(1)
- type(matrix),target           :: DKD,tmp3,k2_dXC
- TYPE(Matrix):: h(ndmat),J(ndmat),xc(ndmat)
- integer             :: natoms,kk
- !
       nbast = D(1)%nrow
-!!!-------------------------------------------------------------------
-! start DEBUG: reotho contribution from full exact exchange (toto)
-   nAtoms = ls%setting%molecule(1)%p%nAtoms
-   do idmat=1,ndmat
-      call mat_init(h(idmat) ,nbast,nbast)
-      call mat_init(J(idmat) ,nbast,nbast)
-      call mat_init(xc(idmat),nbast,nbast)
-   enddo
-   call mat_init(k2_dXC,nbast,nbast)
-! END DEBUG
-!!!-------------------------------------------------------------------
       fac = 2E0_realk
       IF(matrix_type .EQ. mtype_unres_dense)fac = 1E0_realk
       Dsym = .TRUE. !symmetric Density matrix
@@ -2186,29 +2168,6 @@ CONTAINS
          do idmat=1,ndmat
             WRITE(lupri,*)'The Coulomb energy contribution ',fac*0.5E0_realk*mat_dotproduct(D(idmat),F(idmat))
          enddo
-!!!-------------------------------------------------------------------
-   ! start DEBUG: reotho contribution from full Coulomb
-   nAtoms = ls%setting%molecule(1)%p%nAtoms
-      call mat_init(DKD,nbast,nbast)
-      do idmat=1,ndmat
-            call mat_assign(J(idmat),F(idmat))
-      enddo
-    
-      call mat_init(tmp3,nbast,nbast)
-      call mat_mul(D(1),J(1),'n','n',-1E0_realk,0E0_realk,tmp3)
-      call mat_mul(tmp3,D(1)  ,'n','n', 2E0_realk,0E0_realk,DKD)
-
-      call mem_alloc(tr_DxK,3,nAtoms)
-      call ls_dzero(tr_DxK,3*nAtoms)
-      tmpDFD(1)%p => DKD
-      call II_get_reorthoNormalization(tr_DxK,tmpDFD,1,ls%setting,lupri,lupri)
-     CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,tr_DxK,nAtoms,'%%% 2*tr(Dx J)')
-   call mat_free(DKD)
-   call mat_free(tmp3)
-   call mem_dealloc(tr_DxK)
-   ! end DEBUG: 
-!!!-------------------------------------------------------------------
-         !Then we build the ADMM exact exchange matrix K and the XC correction dXC
          do idmat=1,ndmat
             call mat_init(K(idmat),nbast,nbast)
             call mat_init(dXC(idmat),nbast,nbast)
@@ -2223,33 +2182,6 @@ CONTAINS
             call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
             
                      
-!!!-------------------------------------------------------------------
-   ! start DEBUG: reotho contribution from full exact exchange (toto)
-   nAtoms = ls%setting%molecule(1)%p%nAtoms
-      do kk=1,ndmat
-            call mat_assign(K(kk),F(kk))
-            call mat_daxpy(-1E0_realk,J(kk),K(kk))
-      enddo
-      call mat_init(DKD,nbast,nbast)
-      call mat_zero(k2_dXC)
-      CALL mat_daxpy(1E0_realk,K(1)  ,k2_dXC)
-      CALL mat_daxpy(1E0_realk,dXC(1),k2_dXC)
-      
-      call mat_init(tmp3,nbast,nbast)
-      call mat_mul(D(1),k2_dXC,'n','n',-1E0_realk,0E0_realk,tmp3)
-      call mat_mul(tmp3,D(1)  ,'n','n', 2E0_realk,0E0_realk,DKD)
-
-      call mem_alloc(tr_DxK,3,nAtoms)
-      call ls_dzero(tr_DxK,3*nAtoms)
-      tmpDFD(1)%p => DKD
-      call II_get_reorthoNormalization(tr_DxK,tmpDFD,1,ls%setting,lupri,lupri)
-     CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,tr_DxK,nAtoms,'%%% 2*tr(Dx K)')
-   call mat_free(DKD)
-   call mat_free(tmp3)
-   call mem_dealloc(tr_DxK)
-   ! end DEBUG: 
-!!!-------------------------------------------------------------------
-
             call mat_free(K(idmat))
             call mat_free(dXC(idmat))
          enddo
@@ -2267,29 +2199,6 @@ CONTAINS
       IF(ls%setting%do_dft) THEN
          nbast = D(1)%nrow
          call II_get_xc_fock_mat(lupri,luerr,ls%setting,nbast,D,F,Edfty,ndmat)
-!!!-------------------------------------------------------------------
-!   ! start DEBUG: reotho contribution from XC energy contribution
-!   nAtoms = ls%setting%molecule(1)%p%nAtoms
-!      call mat_init(DKD,nbast,nbast)
-!      do idmat=1,ndmat
-!            call mat_zero(xc(idmat))
-!            CALL mat_daxpy(1E0_realk, F(idmat),xc(idmat))
-!            CALL mat_daxpy(-1E0_realk,J(idmat),xc(idmat))
-!            CALL mat_daxpy(-1E0_realk,k2_dXC  ,xc(idmat))
-!      enddo
-!      call mat_init(tmp3,nbast,nbast)
-!      call mat_mul(D(1),xc(1),'n','n',-1E0_realk,0E0_realk,tmp3)
-!      call mat_mul(tmp3,D(1)  ,'n','n', 2E0_realk,0E0_realk,DKD)
-!      call mem_alloc(tr_DxK,3,nAtoms)
-!      call ls_dzero(tr_DxK,3*nAtoms)
-!      tmpDFD(1)%p => DKD
-!      call II_get_reorthoNormalization(tr_DxK,tmpDFD,1,ls%setting,lupri,lupri)
-!     CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,tr_DxK,nAtoms,'%%% 2*tr(DxXC3)')
-!   call mat_free(DKD)
-!   call mat_free(tmp3)
-!   call mem_dealloc(tr_DxK)
-!   ! end DEBUG: 
-!!!-------------------------------------------------------------------
          do idmat=1,ndmat
             Etotal(idmat) = Etotal(idmat) + Edfty(idmat)
          enddo
@@ -2298,39 +2207,6 @@ CONTAINS
       do idmat=1,ndmat
          call mat_daxpy(1E0_realk,H1,F(idmat))
       enddo
-!!!-------------------------------------------------------------------
-   ! start DEBUG: reotho contribution from H1 energy contribution
-   nAtoms = ls%setting%molecule(1)%p%nAtoms
-      call mat_init(DKD,nbast,nbast)
-      do idmat=1,ndmat
-            call mat_zero(h(idmat))
-            CALL mat_daxpy(1E0_realk, H1,h(idmat))
-      enddo
-      call mat_init(tmp3,nbast,nbast)
-      call mat_mul(D(1),h(1),'n','n',-1E0_realk,0E0_realk,tmp3)
-      call mat_mul(tmp3,D(1)  ,'n','n', 2E0_realk,0E0_realk,DKD)
-      call mem_alloc(tr_DxK,3,nAtoms)
-      call ls_dzero(tr_DxK,3*nAtoms)
-      tmpDFD(1)%p => DKD
-      call II_get_reorthoNormalization(tr_DxK,tmpDFD,1,ls%setting,lupri,lupri)
-     CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,tr_DxK,nAtoms,'%%% 2*tr(DxH1)')
-   call mat_free(DKD)
-   call mat_free(tmp3)
-   call mem_dealloc(tr_DxK)
-   ! end DEBUG: 
-!!!-------------------------------------------------------------------
-
-      !!!-------------------------------------------------------------------
-! start DEBUG: 
-
-   do idmat=1,ndmat
-      call mat_free(h(idmat))
-      call mat_free(J(idmat))
-      call mat_free(xc(idmat))
-   enddo
-   call mat_free(k2_dXC)
-! END DEBUG
-!!!-------------------------------------------------------------------
    END SUBROUTINE di_get_fock_LSDALTON
 
    real(realk) function fockenergy_F(F,D,H1,unres,pot_nuc,lupri)

@@ -1681,29 +1681,27 @@ logical    :: DEBUG_PAT
 Call mem_alloc(Gradient,3,NAtoms)
 
 if( optinfo%doNumGradGeomOpt )then
-      ! Calculate numerical gradient
-      !h = 1.0E-5_realk !1.0E-7_realk !1.0E-5_realk
-	h = optinfo%findif_mesh
-	write(lupri,*) "h: ",h
-      call get_num_grad(h,lupri,config%luerr,ls,S,F,D,C,config,Gradient)
-      DEBUG_PAT = .TRUE.
-      IF (DEBUG_PAT) THEN
-         Call mem_alloc(anaGrad,3,NAtoms)
-         Call Get_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,anaGrad)
-         CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,anaGrad,nAtoms,'Ana grad')
-         CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,Gradient,nAtoms,'Num grad')
-         Do i = 1,NAtoms
-               anaGrad(:,i) = Gradient(:,i) - anaGrad(:,i)
-         Enddo
-         write (*,*) "print difference AnaGradient - NumGradient"
-         write (lupri,*) "print difference AnaGradient - NumGradient"
-         CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,anaGrad,nAtoms,'Ana-Num grad')
+   ! Calculate numerical gradient
+   h = optinfo%findif_mesh
+   call get_num_grad(h,lupri,config%luerr,ls,S,F,D,C,config,Gradient)
+   DEBUG_PAT = .TRUE.
+   IF (DEBUG_PAT) THEN
+      Call mem_alloc(anaGrad,3,NAtoms)
+      Call Get_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,anaGrad)
+      CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,anaGrad,nAtoms,'Ana grad')
+      CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,Gradient,nAtoms,'Num grad')
+      Do i = 1,NAtoms
+            anaGrad(:,i) = Gradient(:,i) - anaGrad(:,i)
+      Enddo
+      write (*,*) "print difference AnaGradient - NumGradient"
+      write (lupri,*) "print difference AnaGradient - NumGradient"
+      CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,anaGrad,nAtoms,'Ana-Num grad')
 
-         Call mem_dealloc(anaGrad)
-      ENDIF
+      Call mem_dealloc(anaGrad)
+   ENDIF
 else
-	! Calculate analytical gradient
-	Call Get_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,Gradient)
+   ! Calculate analytical gradient
+   Call Get_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,Gradient)
 endif
 
 
