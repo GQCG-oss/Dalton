@@ -2,7 +2,7 @@ all: libLSint.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../mm -I../xcfun_host -I../dft
+INCLUDES := $(INCLUDES) -I../lsutil -I../mm -I../xcfun_host -I../dft -I../IchorIntegrals
 
 # Keep the file lists sorted for easier modification.
 
@@ -15,6 +15,7 @@ F90_OBJS = \
 	gridgeneration_boxify.o\
 	MBIE.o\
 	Molecule.o\
+	IchorInterface.o\
 	Integral_interfaceDEC.o\
 	Integral_interface.o\
 	Integral_interfaceDF.o\
@@ -52,7 +53,7 @@ clean :
 
 
 Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../xcfun_host -M../dft -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../xcfun_host -M../dft -M../IchorIntegrals -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

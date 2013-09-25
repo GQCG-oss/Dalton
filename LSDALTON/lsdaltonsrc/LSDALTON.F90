@@ -63,6 +63,7 @@ SUBROUTINE lsdalton
 #endif
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
        & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter
+  use integralinterfaceIchorMod, only: II_Unittest_Ichor
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
   implicit none
@@ -113,6 +114,12 @@ SUBROUTINE lsdalton
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
+  IF(config%integral%debugIchor)THEN
+     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING)
+     !the return statement leads to memory leaks but I do not care about this
+     !for now atleast
+     RETURN
+  ENDIF
 
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 

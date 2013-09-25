@@ -585,7 +585,10 @@ DO ItypeA=1,nTypesA
                & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
                & reducedExponents,integralPrefactor,PQorder,CDAB)
        ELSE
+
+
 !!$          WRITE(lupri,*)'IchorCoulombIntegral_McM_general'
+                call IchorQuit('IchorCoulombIntegral_McM_general',-1)
 !!$             call IchorCoulombIntegral_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
 !!$                  & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
 !!$                  & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
@@ -754,15 +757,16 @@ DO ItypeA=1,nTypesA
                      & CDAB,nOrbA,nOrbB,nOrbC,nOrbD,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
 
              ELSE
+                call IchorQuit('IchorCoulombIntegral_McM_general',-1)
                 !             ELSEIF(McM)THEN
-                call IchorCoulombIntegral_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-                     & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
-                     & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
-                     & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
-                     & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-                     & Qiprim1,Qiprim2,Piprim1,Piprim2,expA,expB,expC,expD,&
-                     & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-                     & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB)
+!!$                call IchorCoulombIntegral_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+!!$                     & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+!!$                     & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
+!!$                     & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+!!$                     & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+!!$                     & Qiprim1,Qiprim2,Piprim1,Piprim2,expA,expB,expC,expD,&
+!!$                     & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+!!$                     & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB)
 
                 ndimPass = nOrbCompA*nContA*nOrbCompB*nContB*nOrbCompC*nContC*nOrbCompD*nContD
                 !             write(lupri,*)'CDAB'
