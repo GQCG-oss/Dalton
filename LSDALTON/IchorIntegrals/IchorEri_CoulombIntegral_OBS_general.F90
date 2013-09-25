@@ -96,14 +96,14 @@ CONTAINS
     call mem_ichor_alloc(RJ000,(AngmomPQ+1)*nPasses*nPrimQP)
     call buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
          & TABFJW,RJ000,AngmomPQ,Pcent,Qcent)
-    !IF (INTPRINT .GE. 10) THEN
+    IF (INTPRINT .GE. 10) THEN
     WRITE(lupri,*)'Output from W000'
     DO I=1,nPrimQ*nPrimP*nPasses
        DO J=0,AngmomPQ
           WRITE(LUPRI,'(2X,A6,I4,A1,I4,A2,ES16.8)')'RJ000(',J,',',I,')=',RJ000(1+J+(I-1)*(AngmomPQ+1))
        ENDDO
     ENDDO
-    !END IF
+    END IF
 !    nTUV = (AngmomPQ+1)*(AngmomPQ+2)*(AngmomPQ+3)/6
 !    nTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6
 !    nTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6

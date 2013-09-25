@@ -432,7 +432,7 @@ DO ItypeA=1,nTypesA
        enddo
     END IF
 
-    IF (INTPRINT .GE. 0) THEN
+    IF (INTPRINT .GT. 0) THEN
        WRITE(lupri,'(2X,A,I1,A,I1,A,I1,A,I1,A)')'Angmom = (',AngmomA,',',AngmomB,',',AngmomC,',',AngmomD,')'
        WRITE(lupri,'(2X,A,I3,A,I3,A,I3,A,I3,A)')'nPrimitives = (',nPrimA,',',nPrimB,',',nPrimC,',',nPrimD,')'
        WRITE(lupri,'(2X,A,I3,A,I3,A,I3,A,I3,A)')'nContracted = (',nContA,',',nContB,',',nContC,',',nContD,')'
@@ -519,7 +519,6 @@ DO ItypeA=1,nTypesA
        !MAKE LIST 
        nPasses = nAtomsC*nAtomsD
        !
-       print*,'ALLOC:  nContA*nContB*ndimC*ndimD'
        CALL MEM_ICHOR_ALLOC(CDAB,nContA*nContB*ndimC*ndimD)      
        !make qcenter 
        !make QpreExpFac
@@ -580,7 +579,6 @@ DO ItypeA=1,nTypesA
        END IF
 
        IF (Psegmented.AND.Qsegmented) THEN
-          WRITE(lupri,*)'IchorCoulombIntegral_seg_seg_SSSS'
           call IchorCoulombIntegral_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,&
                & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
                & reducedExponents,integralPrefactor,PQorder,CDAB)
@@ -610,7 +608,6 @@ DO ItypeA=1,nTypesA
         
       !must be written out so to vectorize
       !CDAB(IC,ID) = CDAB(IC,ID,StartA+IA,startB+IB)
-      print*,'CDAB',CDAB
       DO IatomC = 1,nAtomsC
        DO IatomD = 1,nAtomsD
         OutputStorage(IatomA,IatomB,IatomC,IatomD,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
@@ -670,7 +667,6 @@ DO ItypeA=1,nTypesA
              !MAKE LIST 
              nPasses = nAtomsC*nAtomsD
              CALL MEM_ICHOR_ALLOC(CDAB,nOrbA*nOrbB*ndimC*ndimD)      
-             print*,'nOrbA,nOrbB,ndimC*ndimD',nOrbA,nOrbB,ndimC,ndimD
 
              !make qcenter 
              !make QpreExpFac
@@ -751,7 +747,7 @@ DO ItypeA=1,nTypesA
                 
 
                 call IchorDistribute(nAtomsC,nAtomsD,startOrbitalOfTypeD(1:nAtomsD,ItypeD),&
-                     & startOrbitalOfTypeD(1:nAtomsC,ItypeD),startA,startB,&
+                     & startOrbitalOfTypeC(1:nAtomsC,ItypeC),startA,startB,&
                      & AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&
                      & OutputStorage,Outputdim1,Outputdim2,Outputdim3,Outputdim4,&
                      & CDAB,nOrbA,nOrbB,nOrbC,nOrbD,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
@@ -884,8 +880,6 @@ subroutine IchorDistribute(nAtomsC,nAtomsD,startorbitalD,&
  !   ENDIF
  !  ENDIF
 !  ELSE
-   print*,'nOrbA,nOrbB,nOrbC,nOrbD,nAtomsC,nAtomsD',nOrbA,nOrbB,nOrbC,nOrbD,nAtomsC,nAtomsD
-   print*,'startA',startA,'startB',startB
    DO IatomD = 1,nAtomsD
     startD = startorbitalD(iAtomD)
     DO IatomC = 1,nAtomsC
@@ -909,7 +903,7 @@ subroutine IchorDistribute(nAtomsC,nAtomsD,startorbitalD,&
             DO iAngA = 1,nOrbCompA
              I1 = startA + iAngA + (iContA-1)*nOrbCompA
              integrals(I1,I2,I3,I4) = CDAB(iAngA,iAngB,iAngC,iAngD,iContQ,iContP,IpassQ)
-             write(6,'(A,I2,A,I2,A,I2,A,I2,A,F22.10)')'integrals(',I1,',',I2,',',I3,',',I4,')',integrals(I1,I2,I3,I4)
+!             write(6,'(A,I2,A,I2,A,I2,A,I2,A,F22.10)')'integrals(',I1,',',I2,',',I3,',',I4,')',integrals(I1,I2,I3,I4)
             ENDDO
            ENDDO
           ENDDO

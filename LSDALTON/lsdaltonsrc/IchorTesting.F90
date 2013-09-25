@@ -42,7 +42,7 @@ INTEGER               :: LUPRI,LUERR
 !
 real(realk),pointer   :: integralsII(:,:,:,:),integralsIchor(:,:,:,:)
 integer :: dim1,dim2,dim3,dim4,A,B,C,D,iprint,nbast(4),ibasiselm(4)
-integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass
+integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass,itest
 logical :: dirac,doprint,debug
 TYPE(MOLECULEINFO),pointer :: Originalmolecule
 TYPE(MOLECULEINFO),pointer :: atomicmolecule(:)
@@ -88,6 +88,7 @@ dirac = .FALSE.
 iprint=0
 setting%scheme%intprint = 0
 doprint = .FALSE.!.TRUE.
+itest = 1
 do Ipass = 1,2
    WRITE(lupri,*)'Number of Passes',Ipass
    !=========================================================================================================
@@ -160,7 +161,7 @@ do Ipass = 1,2
        
        write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
        
-       write(lupri,*)'dim:',dim1,dim2,dim3,dim4
+!       write(lupri,*)'dim:',dim1,dim2,dim3,dim4
        
        Setting%sameMol = .FALSE.
        Setting%sameFrag = .FALSE.
@@ -174,7 +175,7 @@ do Ipass = 1,2
        setting%scheme%OD_SCREEN = .FALSE.
        setting%scheme%CS_SCREEN = .FALSE.
        setting%scheme%PS_SCREEN = .FALSE.
-       WRITE(lupri,*)'ThermiteDriver'
+!       WRITE(lupri,*)'ThermiteDriver'
        call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
        !   print*,'integralsII',integralsII
        setting%scheme%dospherical = savedospherical
@@ -185,11 +186,11 @@ do Ipass = 1,2
        Setting%sameMol = .TRUE.
        Setting%sameFrag = .TRUE.
        
-       print*,'dim1,dim2,dim3,dim4',dim1,dim2,dim3,dim4
+!       print*,'dim1,dim2,dim3,dim4',dim1,dim2,dim3,dim4
        call mem_alloc(integralsIchor,dim1,dim2,dim3,dim4)
        integralsIchor = 0.0E0_realk
        !   setting%scheme%intprint = 1000
-       WRITE(lupri,*)'IchorDriver'
+!       WRITE(lupri,*)'IchorDriver'
        call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integralsIchor,spherical)
        !   setting%scheme%intprint = 0
        write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
@@ -204,9 +205,9 @@ do Ipass = 1,2
                       write(lupri,'(A,ES16.8)')'integralsII(A,B,C,D)   ',integralsII(A,B,C,D)
                       write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
                       write(lupri,'(A,ES16.8)')'DIFF                   ',ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
-                   ELSE
-                      write(lupri,'(A,I2,A,I2,A,I2,A,I2,A,ES16.8,A,ES16.8)')&
-                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+!                   ELSE
+!                      write(lupri,'(A,I2,A,I2,A,I2,A,I2,A,ES16.8,A,ES16.8)')&
+!                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                    ENDIF
                 ENDDO
              ENDDO
@@ -236,6 +237,11 @@ do Ipass = 1,2
         write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',BASISTYPE(iBasis4)(10:15),',',ipass,') SUCCESSFUL'
      ENDIF
 
+!     write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'CRIT1=`$GREP "BASIS\(',BASISTYPE(iBasis1)(10:15),',',BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',BASISTYPE(iBasis4)(10:15),',',ipass,'\) SUCCESSFUL" $log | wc -l`'
+!     write(lupri,'(A,I3,A)')'TEST[',itest,']=`expr  $CRIT1`'
+!     write(lupri,'(A,I3,A)')'CTRL[',itest,']=1'
+!     write(lupri,'(A,I3,A,A,A,A,A,A,A,A,A,I1,A)')'ERROR[',itest,']="BASIS(',BASISTYPE(iBasis1)(10:15),',',BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',BASISTYPE(iBasis4)(10:15),',',ipass,') NOT CORRECT -"'
+!     itest = itest + 1
     enddo
    enddo
   enddo
