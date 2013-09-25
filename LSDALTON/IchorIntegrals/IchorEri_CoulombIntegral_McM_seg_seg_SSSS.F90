@@ -1,5 +1,6 @@
 module IchorCoulombIntegral_seg_seg_SSSS_mod
 use IchorprecisionModule
+use IchorCommonModule
 private 
 public :: IchorCoulombIntegral_seg_seg_SSSS
 CONTAINS
@@ -35,7 +36,7 @@ CONTAINS
     real(realk) :: WVAL,R,RWVAL,REXPW,GVAL,WDIFF,W2,W3,tmp
 !ifdef VAR_DEBUG
     IF(.NOT.PQorder)THEN
-       call lsquit('IchorCoulombIntegral_seg_seg_SSSS expect to get PQ ordering')
+       call Ichorquit('IchorCoulombIntegral_seg_seg_SSSS expect to get PQ ordering',-1)
     ENDIF
     !nested OMP parallel or GPU/MIC
     !reducedExponents, integralPrefactor as input

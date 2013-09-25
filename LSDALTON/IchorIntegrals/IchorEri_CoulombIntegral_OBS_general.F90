@@ -1,6 +1,7 @@
 MODULE IchorEriCoulombintegralOBSGeneralMod
 !Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory
 use IchorprecisionModule
+use IchorCommonModule
 use IchorMemory
 use AGC_OBS_VERTICALRECURRENCEMOD
 use AGC_OBS_TRANSFERRECURRENCEMOD
@@ -57,7 +58,7 @@ CONTAINS
     integer :: AngmomPQ,AngmomP,AngmomQ,I,J,nContQP,la,lb,lc,ld,nsize
     real(realk),pointer :: RJ000(:),TMParray1(:),TMParray2(:),OUTPUTinterest(:)
   
- IF(nAtomsC*nAtomsD.NE.nPasses)Call lsquit('nPass error')
+ IF(nAtomsC*nAtomsD.NE.nPasses)Call ichorquit('nPass error',-1)
   
 !IF(.TRUE.)THEN
 !    call interest_initialize()
@@ -83,7 +84,7 @@ CONTAINS
  
     
     IF(PQorder)THEN
-       call lsquit('PQorder OBS general expect to get QP ordering',-1)
+       call IchorQuit('PQorder OBS general expect to get QP ordering',-1)
     ENDIF
     
     
@@ -91,19 +92,6 @@ CONTAINS
     AngmomP = AngmomA+AngmomB
     AngmomQ = AngmomC+AngmomD
     AngmomPQ  = AngmomP + AngmomQ
-    !Build the Boys Functions for argument squaredDistance*reducedExponents
-    !save in RJ000 ordering (AngmomPQ+1),nPrimQ,nPrimP,nPasses
-    call mem_ichor_alloc(RJ000,(AngmomPQ+1)*nPasses*nPrimQP)
-    call buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
-         & TABFJW,RJ000,AngmomPQ,Pcent,Qcent)
-    IF (INTPRINT .GE. 10) THEN
-    WRITE(lupri,*)'Output from W000'
-    DO I=1,nPrimQ*nPrimP*nPasses
-       DO J=0,AngmomPQ
-          WRITE(LUPRI,'(2X,A6,I4,A1,I4,A2,ES16.8)')'RJ000(',J,',',I,')=',RJ000(1+J+(I-1)*(AngmomPQ+1))
-       ENDDO
-    ENDDO
-    END IF
 !    nTUV = (AngmomPQ+1)*(AngmomPQ+2)*(AngmomPQ+3)/6
 !    nTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6
 !    nTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6
@@ -120,8 +108,8 @@ CONTAINS
         !This is the Angmom(A= 0,B= 0,C= 0,D= 0) combi
         call mem_ichor_alloc(TMParray2,1*nPrimQP*nPasses)
         call VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&
-               & RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&
+               & PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
         call mem_ichor_alloc(TMParray1,1*nContQP*nPasses)
@@ -133,11 +121,84 @@ CONTAINS
               & nContC,nPrimD,nContD)
         ENDIF
         call mem_ichor_dealloc(TMParray2)
-!no need for LHS Horizontal recurrence relations a simply copy
+        !no need for LHS Horizontal recurrence relations a simply copy
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
         CDAB = TMParray1
+        call mem_ichor_dealloc(TMParray1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 0,C= 0,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 0,C= 0,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ELSEIF(AngmomC.EQ.  1)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 0,C= 1,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 0,C= 1,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 0,C= 1,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ELSEIF(AngmomC.EQ.  2)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 0,C= 2,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 0,C= 2,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 0,C= 2,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ENDIF ! C if statement
+     ELSEIF(AngmomB.EQ.  1)THEN
+      IF(AngmomC.EQ.  0)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 1,C= 0,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 1,C= 0,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 1,C= 0,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ELSEIF(AngmomC.EQ.  1)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 1,C= 1,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 1,C= 1,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 1,C= 1,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ELSEIF(AngmomC.EQ.  2)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 1,C= 2,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 1,C= 2,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 1,C= 2,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ENDIF ! C if statement
+     ELSEIF(AngmomB.EQ.  2)THEN
+      IF(AngmomC.EQ.  0)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 2,C= 0,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 2,C= 0,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 2,C= 0,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ELSEIF(AngmomC.EQ.  1)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 2,C= 1,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 2,C= 1,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 2,C= 1,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ELSEIF(AngmomC.EQ.  2)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 2,C= 2,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 2,C= 2,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 0,B= 2,C= 2,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ENDIF ! C if statement
      ENDIF ! B if statement
@@ -148,8 +209,7 @@ CONTAINS
         !This is the Angmom(A= 1,B= 0,C= 0,D= 0) combi
         call mem_ichor_alloc(TMParray2,4*nPrimQP*nPasses)
         call VerticalRecurrence1(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
         call mem_ichor_alloc(TMParray1,4*nContQP*nPasses)
@@ -169,14 +229,18 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 0,C= 0,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 0,C= 0,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ELSEIF(AngmomC.EQ.  1)THEN
        IF(AngmomD.EQ.  0)THEN
         !This is the Angmom(A= 1,B= 0,C= 1,D= 0) combi
         call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
         call VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,16*nPrimQP*nPasses)
         call TransferRecurrenceP1Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -204,7 +268,19 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
        ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 0,C= 1,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 0,C= 1,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ELSEIF(AngmomC.EQ.  2)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 0,C= 2,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 0,C= 2,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 0,C= 2,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ENDIF ! C if statement
      ELSEIF(AngmomB.EQ.  1)THEN
@@ -213,8 +289,7 @@ CONTAINS
         !This is the Angmom(A= 1,B= 1,C= 0,D= 0) combi
         call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
         call VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
         call mem_ichor_alloc(TMParray1,10*nContQP*nPasses)
@@ -234,14 +309,18 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 1,C= 0,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 1,C= 0,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ELSEIF(AngmomC.EQ.  1)THEN
        IF(AngmomD.EQ.  0)THEN
         !This is the Angmom(A= 1,B= 1,C= 1,D= 0) combi
         call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
         call VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
         call TransferRecurrenceP2Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -269,12 +348,12 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
        ELSEIF(AngmomD.EQ.  1)THEN
         !This is the Angmom(A= 1,B= 1,C= 1,D= 1) combi
         call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
         call VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
         call TransferRecurrenceP2Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -302,6 +381,43 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 1,C= 1,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ELSEIF(AngmomC.EQ.  2)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 1,C= 2,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 1,C= 2,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 1,C= 2,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ENDIF ! C if statement
+     ELSEIF(AngmomB.EQ.  2)THEN
+      IF(AngmomC.EQ.  0)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 2,C= 0,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 2,C= 0,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 2,C= 0,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ELSEIF(AngmomC.EQ.  1)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 2,C= 1,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 2,C= 1,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 2,C= 1,D= 2 combi not implemented",-1)
+       ENDIF ! D if statement
+      ELSEIF(AngmomC.EQ.  2)THEN
+       IF(AngmomD.EQ.  0)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 2,C= 2,D= 0 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 2,C= 2,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 1,B= 2,C= 2,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ENDIF ! C if statement
      ENDIF ! B if statement
@@ -313,8 +429,7 @@ CONTAINS
         !This is the Angmom(A= 2,B= 0,C= 0,D= 0) combi
         call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
         call VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
         call mem_ichor_alloc(TMParray1,10*nContQP*nPasses)
@@ -337,12 +452,12 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
         CDAB = TMParray1
+        call mem_ichor_dealloc(TMParray1)
         ELSE
         !This is the Angmom(A= 2,B= 0,C= 0,D= 0) combi
         call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
         call VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
         call mem_ichor_alloc(TMParray1,10*nContQP*nPasses)
@@ -362,7 +477,12 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 0,C= 0,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 0,C= 0,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ELSEIF(AngmomC.EQ.  1)THEN
        IF(AngmomD.EQ.  0)THEN
@@ -370,8 +490,7 @@ CONTAINS
         !This is the Angmom(A= 2,B= 0,C= 1,D= 0) combi
         call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
         call VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
         call TransferRecurrenceP2Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -402,12 +521,12 @@ CONTAINS
         call mem_ichor_dealloc(TMParray2)
         !no Spherical Transformation RHS needed
         CDAB = TMParray1
+        call mem_ichor_dealloc(TMParray1)
         ELSE
         !This is the Angmom(A= 2,B= 0,C= 1,D= 0) combi
         call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
         call VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
         call TransferRecurrenceP2Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -435,14 +554,14 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
        ELSEIF(AngmomD.EQ.  1)THEN
         IF(spherical)THEN
         !This is the Angmom(A= 2,B= 0,C= 1,D= 1) combi
         call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
         call VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
         call TransferRecurrenceP2Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -473,12 +592,12 @@ CONTAINS
         call mem_ichor_dealloc(TMParray2)
         !no Spherical Transformation RHS needed
         CDAB = TMParray1
+        call mem_ichor_dealloc(TMParray1)
         ELSE
         !This is the Angmom(A= 2,B= 0,C= 1,D= 1) combi
         call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
         call VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
         call TransferRecurrenceP2Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -506,7 +625,10 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 0,C= 1,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ELSEIF(AngmomC.EQ.  2)THEN
        IF(AngmomD.EQ.  0)THEN
@@ -514,8 +636,7 @@ CONTAINS
         !This is the Angmom(A= 2,B= 0,C= 2,D= 0) combi
         call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
         call VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
         call TransferRecurrenceP2Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -549,12 +670,12 @@ CONTAINS
         call SphericalContractOBS2_maxAngQ2_maxAngC2(   5,nContQP*nPasses,TMParray1,TMParray2)
         call mem_ichor_dealloc(TMParray1)
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ELSE
         !This is the Angmom(A= 2,B= 0,C= 2,D= 0) combi
         call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
         call VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
         call TransferRecurrenceP2Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -582,9 +703,12 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
        ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 0,C= 2,D= 1 combi not implemented",-1)
        ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 0,C= 2,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ENDIF ! C if statement
      ELSEIF(AngmomB.EQ.  1)THEN
@@ -594,8 +718,7 @@ CONTAINS
         !This is the Angmom(A= 2,B= 1,C= 0,D= 0) combi
         call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
         call VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
         call mem_ichor_alloc(TMParray1,20*nContQP*nPasses)
@@ -618,12 +741,12 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
         CDAB = TMParray1
+        call mem_ichor_dealloc(TMParray1)
         ELSE
         !This is the Angmom(A= 2,B= 1,C= 0,D= 0) combi
         call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
         call VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
         call mem_ichor_alloc(TMParray1,20*nContQP*nPasses)
@@ -643,7 +766,12 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 1,C= 0,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 1,C= 0,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ELSEIF(AngmomC.EQ.  1)THEN
        IF(AngmomD.EQ.  0)THEN
@@ -651,8 +779,7 @@ CONTAINS
         !This is the Angmom(A= 2,B= 1,C= 1,D= 0) combi
         call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
         call VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,80*nPrimQP*nPasses)
         call TransferRecurrenceP3Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -683,12 +810,12 @@ CONTAINS
         call mem_ichor_dealloc(TMParray2)
         !no Spherical Transformation RHS needed
         CDAB = TMParray1
+        call mem_ichor_dealloc(TMParray1)
         ELSE
         !This is the Angmom(A= 2,B= 1,C= 1,D= 0) combi
         call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
         call VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,80*nPrimQP*nPasses)
         call TransferRecurrenceP3Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -716,14 +843,14 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
        ELSEIF(AngmomD.EQ.  1)THEN
         IF(spherical)THEN
         !This is the Angmom(A= 2,B= 1,C= 1,D= 1) combi
         call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
         call VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
         call TransferRecurrenceP3Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -754,12 +881,12 @@ CONTAINS
         call mem_ichor_dealloc(TMParray2)
         !no Spherical Transformation RHS needed
         CDAB = TMParray1
+        call mem_ichor_dealloc(TMParray1)
         ELSE
         !This is the Angmom(A= 2,B= 1,C= 1,D= 1) combi
         call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
         call VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
         call TransferRecurrenceP3Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -787,7 +914,10 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 1,C= 1,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ELSEIF(AngmomC.EQ.  2)THEN
        IF(AngmomD.EQ.  0)THEN
@@ -795,8 +925,7 @@ CONTAINS
         !This is the Angmom(A= 2,B= 1,C= 2,D= 0) combi
         call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
         call VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
         call TransferRecurrenceP3Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -830,12 +959,12 @@ CONTAINS
         call SphericalContractOBS2_maxAngQ2_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
         call mem_ichor_dealloc(TMParray1)
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ELSE
         !This is the Angmom(A= 2,B= 1,C= 2,D= 0) combi
         call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
         call VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
         call TransferRecurrenceP3Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -863,14 +992,14 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
        ELSEIF(AngmomD.EQ.  1)THEN
         IF(spherical)THEN
         !This is the Angmom(A= 2,B= 1,C= 2,D= 1) combi
         call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
         call VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,400*nPrimQP*nPasses)
         call TransferRecurrenceP3Q3(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -904,12 +1033,12 @@ CONTAINS
         call SphericalContractOBS2_maxAngQ3_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
         call mem_ichor_dealloc(TMParray1)
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ELSE
         !This is the Angmom(A= 2,B= 1,C= 2,D= 1) combi
         call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
         call VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,400*nPrimQP*nPasses)
         call TransferRecurrenceP3Q3(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -937,8 +1066,10 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
        ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 1,C= 2,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ENDIF ! C if statement
      ELSEIF(AngmomB.EQ.  2)THEN
@@ -948,8 +1079,7 @@ CONTAINS
         !This is the Angmom(A= 2,B= 2,C= 0,D= 0) combi
         call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
         call VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
         call mem_ichor_alloc(TMParray1,35*nContQP*nPasses)
@@ -972,12 +1102,12 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
         CDAB = TMParray1
+        call mem_ichor_dealloc(TMParray1)
         ELSE
         !This is the Angmom(A= 2,B= 2,C= 0,D= 0) combi
         call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
         call VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
         call mem_ichor_alloc(TMParray1,35*nContQP*nPasses)
@@ -997,7 +1127,12 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
+       ELSEIF(AngmomD.EQ.  1)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 2,C= 0,D= 1 combi not implemented",-1)
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 2,C= 0,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ELSEIF(AngmomC.EQ.  1)THEN
        IF(AngmomD.EQ.  0)THEN
@@ -1005,8 +1140,7 @@ CONTAINS
         !This is the Angmom(A= 2,B= 2,C= 1,D= 0) combi
         call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
         call VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,140*nPrimQP*nPasses)
         call TransferRecurrenceP4Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1037,12 +1171,12 @@ CONTAINS
         call mem_ichor_dealloc(TMParray2)
         !no Spherical Transformation RHS needed
         CDAB = TMParray1
+        call mem_ichor_dealloc(TMParray1)
         ELSE
         !This is the Angmom(A= 2,B= 2,C= 1,D= 0) combi
         call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
         call VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,140*nPrimQP*nPasses)
         call TransferRecurrenceP4Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1070,14 +1204,14 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
        ELSEIF(AngmomD.EQ.  1)THEN
         IF(spherical)THEN
         !This is the Angmom(A= 2,B= 2,C= 1,D= 1) combi
         call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
         call VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
         call TransferRecurrenceP4Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1108,12 +1242,12 @@ CONTAINS
         call mem_ichor_dealloc(TMParray2)
         !no Spherical Transformation RHS needed
         CDAB = TMParray1
+        call mem_ichor_dealloc(TMParray1)
         ELSE
         !This is the Angmom(A= 2,B= 2,C= 1,D= 1) combi
         call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
         call VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
         call TransferRecurrenceP4Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1141,7 +1275,10 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
+       ELSEIF(AngmomD.EQ.  2)THEN
+        CALL ICHORQUIT("Angmom A= 2,B= 2,C= 1,D= 2 combi not implemented",-1)
        ENDIF ! D if statement
       ELSEIF(AngmomC.EQ.  2)THEN
        IF(AngmomD.EQ.  0)THEN
@@ -1149,8 +1286,7 @@ CONTAINS
         !This is the Angmom(A= 2,B= 2,C= 2,D= 0) combi
         call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
         call VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
         call TransferRecurrenceP4Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1184,12 +1320,12 @@ CONTAINS
         call SphericalContractOBS2_maxAngQ2_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
         call mem_ichor_dealloc(TMParray1)
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ELSE
         !This is the Angmom(A= 2,B= 2,C= 2,D= 0) combi
         call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
         call VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
         call TransferRecurrenceP4Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1217,14 +1353,14 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
        ELSEIF(AngmomD.EQ.  1)THEN
         IF(spherical)THEN
         !This is the Angmom(A= 2,B= 2,C= 2,D= 1) combi
         call mem_ichor_alloc(TMParray2,120*nPrimQP*nPasses)
         call VerticalRecurrence7(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,700*nPrimQP*nPasses)
         call TransferRecurrenceP4Q3(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1258,12 +1394,12 @@ CONTAINS
         call SphericalContractOBS2_maxAngQ3_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
         call mem_ichor_dealloc(TMParray1)
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ELSE
         !This is the Angmom(A= 2,B= 2,C= 2,D= 1) combi
         call mem_ichor_alloc(TMParray2,120*nPrimQP*nPasses)
         call VerticalRecurrence7(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,700*nPrimQP*nPasses)
         call TransferRecurrenceP4Q3(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1291,14 +1427,14 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
        ELSEIF(AngmomD.EQ.  2)THEN
         IF(spherical)THEN
         !This is the Angmom(A= 2,B= 2,C= 2,D= 2) combi
         call mem_ichor_alloc(TMParray2,165*nPrimQP*nPasses)
         call VerticalRecurrence8(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,1225*nPrimQP*nPasses)
         call TransferRecurrenceP4Q4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1332,12 +1468,12 @@ CONTAINS
         call SphericalContractOBS2_maxAngQ4_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
         call mem_ichor_dealloc(TMParray1)
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ELSE
         !This is the Angmom(A= 2,B= 2,C= 2,D= 2) combi
         call mem_ichor_alloc(TMParray2,165*nPrimQP*nPasses)
         call VerticalRecurrence8(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        call mem_ichor_dealloc(RJ000)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !Electron Transfer Recurrence Relation 
         call mem_ichor_alloc(TMParray1,1225*nPrimQP*nPasses)
         call TransferRecurrenceP4Q4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1365,6 +1501,7 @@ CONTAINS
         call mem_ichor_dealloc(TMParray1)
         !no Spherical Transformation RHS needed
         CDAB = TMParray2
+        call mem_ichor_dealloc(TMParray2)
         ENDIF
        ENDIF ! D if statement
       ENDIF ! C if statement
@@ -1476,7 +1613,7 @@ CONTAINS
        & TABFJW,RJ000,JMAX,Pcent,Qcent)
     IMPLICIT NONE
     INTEGER,intent(in)         :: nPrimP,nPrimQ,Jmax,nTABFJW1,nTABFJW2,nPasses
-    REAL(REALK),intent(in)     :: reducedExponents(nPrimQ*nPrimP)
+    REAL(REALK),intent(in)     :: reducedExponents(nPrimQ,nPrimP)
     REAL(REALK),intent(in)     :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
     REAL(REALK),intent(in)     :: TABFJW(0:nTABFJW1,0:nTABFJW2)
     REAL(REALK),intent(inout)  :: RJ000(0:Jmax,nPrimQ*nPrimP,nPasses)
@@ -1515,7 +1652,7 @@ CONTAINS
           pqy = py - Qcent(2,iPrimQ,iPassQ)
           pqz = pz - Qcent(3,iPrimQ,iPassQ)
           squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz
-          WVAL = reducedExponents(ipq)*squaredDistance
+          WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
           !  0 < WVAL < 0.000001
           IF (ABS(WVAL) .LT. SMALL) THEN
              RJ000(0,ipq,ipassq) = D1
