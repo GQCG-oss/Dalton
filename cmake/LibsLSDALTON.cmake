@@ -181,6 +181,11 @@ if(ENABLE_INTEREST)
 endif()
 
 add_library(
+    ichorintlib
+    ${ICHORINT_SOURCES}
+    )
+
+add_library(
     dftfunclib
     ${DFTFUNC_SOURCES}
     ${DFTFUNC_F_SOURCES}
@@ -197,6 +202,7 @@ target_link_libraries(lsintlib dftfunclib)
 add_dependencies(lsintlib pdpacklib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)
+add_dependencies(lsintlib ichorintlib)
 
 add_library(
     pbclib
@@ -338,6 +344,7 @@ set(LIBS_TO_MERGE
     lsutillib
     fmmlib
     dftfunclib
+    ichorintlib
     lsint
     pbclib
     ddynamlib

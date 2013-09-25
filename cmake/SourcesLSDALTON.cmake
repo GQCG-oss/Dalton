@@ -50,6 +50,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     LSDALTON/lsdaltonsrc/configuration.F90
     LSDALTON/lsdaltonsrc/LSlib.F90
     LSDALTON/lsdaltonsrc/Profile.F90
+    LSDALTON/lsdaltonsrc/IchorTesting.F90
     )
 set(DDYNAM_SOURCES
     LSDALTON/ddynam/LSinput.F90
@@ -218,7 +219,24 @@ set(INTERESTLIB_SOURCES
     LSDALTON/interest/src/module_interest_hrr.f90
     LSDALTON/interest/src/module_interest_osr.f90
     )
+set(ICHORINT_SOURCES
+    LSDALTON/IchorIntegrals/IchorPresicion.F90
+    LSDALTON/IchorIntegrals/IchorCommon.F90
+    LSDALTON/IchorIntegrals/IchorMem.F90
+    LSDALTON/IchorIntegrals/IchorGammaTabulation.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_general.F90
+    LSDALTON/IchorIntegrals/IchorEri.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQP.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceP.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQ.F90
+    LSDALTON/IchorIntegrals/AGC_SphContractOBS1.F90
+    LSDALTON/IchorIntegrals/AGC_SphContractOBS2.F90
+    )
+#    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_SSSS.F90
 set(LSINT_SOURCES
+    LSDALTON/LSint/IchorInterface.F90
     LSDALTON/LSint/dft_gridLL.F90
     LSDALTON/LSint/BuildBasis.F90
     LSDALTON/LSint/BuildMolFile.F90
@@ -399,6 +417,7 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${FMM_SOURCES}
     ${INTERESTLIB_SOURCES}
     ${LSINT_SOURCES}
+    ${ICHORINT_SOURCES}
     ${LSUTIL_PRECISION_SOURCES}
     ${LSUTIL_MATRIXM_SOURCES}
     ${LSUTIL_COMMON_SOURCES}
@@ -408,4 +427,5 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${LSUTIL_TYPE_SOURCES}
     ${LSUTILLIB_SOURCES}
     ${LSLIB_SOURCES}
+    ${ICHORLIB_SOURCES}
  )
