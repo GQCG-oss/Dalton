@@ -153,7 +153,7 @@ endif()
     add_lsdalton_test(LSint/LSDALTON_LSlib                           "linsca")
 
     add_lsdalton_test(LSresponse/LSresponse_HF_alpha                 "linsca")
-    add_lsdalton_test(LSresponse/LSresponse_HF_alpha_aK              "linsca")
+#    add_lsdalton_test(LSresponse/LSresponse_HF_alpha_aK              "linsca")
     add_lsdalton_test(LSresponse/LSresponse_HF_alpha_astv            "linsca")
     add_lsdalton_test(LSresponse/LSresponse_HF_beta                  "linsca")
     add_lsdalton_test(LSresponse/LSresponse_HF_dipole                "linsca")

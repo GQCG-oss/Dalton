@@ -2336,6 +2336,7 @@ CONTAINS
             ADMMexchange = .FALSE.
         ENDIF
         IF (ADMMexchange) THEN 
+            call lsquit('ADMM is not fully tested yet for RESPONSE',-1)
             ! GdBs = J(B) + K(b) + X(B) - X(b)
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
         ELSE 
