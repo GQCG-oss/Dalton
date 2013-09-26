@@ -608,6 +608,9 @@ C
 
 !           call main co-workers driver routine
             call nodedriver(lmwork,wrkdlm)
+
+!           close slave DALTON.OUT
+            CALL GPCLOSE(LUPRI,'KEEP')
          END IF
       END IF
 
