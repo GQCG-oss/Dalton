@@ -4,46 +4,109 @@ MODULE AGC_OBS_VERTICALRECURRENCEMOD
  CONTAINS
 
 subroutine VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&
-         & RJ000,integralPrefactor,PpreExpFac,QpreExpFac,&
+         & reducedExponents,TABFJW,&
+         & Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  REAL(REALK),intent(in) :: RJ000(nPrimQ,nPrimP,nPasses)
+  REAL(REALK),intent(in) :: reducedExponents(nPrimQ,nPrimP)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
+  REAL(REALK),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
+  REAL(REALK),intent(in) :: TABFJW(0:3,0:1200)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(nPrimQ,nPrimP,nPasses)
-  !
-  integer :: iPassQ,iPrimP,iPrimQ
-  real(realk) :: Pexpfac
-  !Simple scaling of RJ000 
-  !loop unroll inner most loop
+  !local variables
+  REAL(REALK),PARAMETER :: D2JP36=  3.6000000000000000E+01_realk
+  real(realk),parameter :: D2=2.0E0_realk
+  REAL(REALK),PARAMETER :: D05 =0.5E0_realk,D1=1E0_realk
+  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
+  Real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk
+  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK),PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk
+  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk),parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk
+  Real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL,Pexpfac
+  Real(realk) :: W2,W3,PX,PY,PZ,PQX,PQY,PQZ,squaredDistance,RJ000
+  Integer :: IPNT,iPassQ,iPrimP,iPrimQ,iPQ
   DO iPassQ = 1,nPasses
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
+    px = Pcent(1,iPrimP)
+    py = Pcent(2,iPrimP)
+    pz = Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
+     pqx = px - Qcent(1,iPrimQ,iPassQ)
+     pqy = py - Qcent(2,iPrimQ,iPassQ)
+     pqz = pz - Qcent(3,iPrimQ,iPassQ)
+     squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz
+     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN
+      RJ000 = D1
+     !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+      IPNT = NINT(D100*WVAL)
+      WDIFF = WVAL - TENTH*IPNT
+      W2    = WDIFF*WDIFF
+      W3    = W2*WDIFF
+      W2    = W2*D05
+      W3    = W3*COEF3
+      RJ000 = TABFJW(0,IPNT)-TABFJW(1,IPNT)*WDIFF+TABFJW(2,IPNT)*W2+TABFJW(3,IPNT)*W3
+     !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+      REXPW = D05*EXP(-WVAL)
+      RWVAL = D1/WVAL
+      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
+      RJ000 = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+     !  (2J+36) < WVAL 
+     ELSE
+      RJ000 = SQRT(PID4/WVAL)
+     ENDIF
      AUXarray(iPrimQ,iPrimP,iPassQ)=integralPrefactor(iPrimQ,iPrimP)*&
-          & QpreExpFac(iPrimQ,iPassQ)*Pexpfac*RJ000(iPrimQ,iPrimP,iPassQ)
+          & QpreExpFac(iPrimQ,iPassQ)*Pexpfac*RJ000
     enddo
    enddo
   enddo
 end subroutine VerticalRecurrence0
 
 subroutine VerticalRecurrence1(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&
+         & QpreExpFac,AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
+  REAL(REALK),intent(in) :: TABFJW(0:4,0:1200)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)
-  REAL(REALK),intent(in) :: RJ000(0:1,nPrimQ,nPrimP,nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses),Acenter(3)
   real(realk),intent(inout) :: AUXarray(4,nPrimQ,nPrimP,nPasses)
-  !
-  integer :: iPassQ,iPrimP,iPrimQ
-  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,mPX,mPY,mPZ,Xpa,Ypa,Zpa
+  !local variables
+  integer :: iPassQ,iPrimP,iPrimQ,ipnt
+  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,mPX,mPY,mPZ,Xpa,Ypa,Zpa,RJ000(0:1)
   real(realk) :: PREF,TMP1,TMP2,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
-  real(realk),parameter :: D1=1.0E0_realk
+  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
+  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  real(realk),parameter :: D2=2.0E0_realk
+  REAL(REALK),PARAMETER :: D2JP36=  3.8000000000000000E+01_realk
+  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
+  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
+  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !ThetaAux(n,1,0,0) = Xpa*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)
   !i = 0 last 2 term vanish
   !We include scaling of RJ000 
@@ -61,16 +124,46 @@ subroutine VerticalRecurrence1(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Ypa = Pcent(2,iPrimP) + Ay
     Zpa = Pcent(3,iPrimP) + Az
     DO iPrimQ=1, nPrimQ
-     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
-     TMP1 = PREF*RJ000(0,iPrimQ,iPrimP,iPassQ)
-     TMP2 = PREF*RJ000(1,iPrimQ,iPrimP,iPassQ)
-     alphaP = reducedExponents(iPrimQ,iPrimP)*invexpP
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
+     alphaP = reducedExponents(iPrimQ,iPrimP)*invexpP
      alphaXpq = alphaP*Xpq
      alphaYpq = alphaP*Ypq
      alphaZpq = alphaP*Zpq
+     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
+     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN
+      RJ000(0) = D1
+      RJ000(1)= D03333 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+     !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+      IPNT = NINT(D100*WVAL)
+      WDIFF = WVAL - TENTH*IPNT
+      W2    = WDIFF*WDIFF
+      W3    = W2*WDIFF
+      W2    = W2*D05
+      W3    = W3*COEF3
+      RJ000(0)=TABFJW(0,IPNT)-TABFJW(1,IPNT)*WDIFF+TABFJW(2,IPNT)*W2+TABFJW(3,IPNT)*W3
+      RJ000(1)=TABFJW(1,IPNT)-TABFJW(2,IPNT)*WDIFF+TABFJW(3,IPNT)*W2+TABFJW(4,IPNT)*W3
+     !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+      REXPW = D05*EXP(-WVAL)
+      RWVAL = D1/WVAL
+      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
+      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+      RJ000(1) = RWVAL*(D05*RJ000(0)-REXPW)
+     !  (2J+36) < WVAL 
+     ELSE
+      RWVAL = PID4/WVAL
+      RJ000(0) = SQRT(RWVAL)
+      RWVAL = RWVAL*PID4I
+      RJ000(1) = RWVAL*D05*RJ000(0)
+     ENDIF
+     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
+     TMP1 = PREF*RJ000(0)
+     TMP2 = PREF*RJ000(1)
      AUXarray(1,iPrimQ,iPrimP,iPassQ) = TMP1
      AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xpa*TMP1 + alphaXpq*TMP2
      AUXarray(3,iPrimQ,iPrimP,iPassQ) = Ypa*TMP1 + alphaYpq*TMP2
@@ -81,24 +174,40 @@ subroutine VerticalRecurrence1(nPasses,nPrimP,nPrimQ,reducedExponents,&
 end subroutine VerticalRecurrence1
 
 subroutine VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,&
+         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)
-  REAL(REALK),intent(in) :: RJ000(0:2,nPrimQ*nPrimP*nPasses)
+!  REAL(REALK),intent(in) :: RJ000(0:2,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(   10,nPrimQ*nPrimP*nPasses)
   real(realk),intent(in) :: Pcent(3,nPrimP),Acenter(3),Qcent(3,nPrimQ,nPasses)
+  REAL(REALK),intent(in) :: TABFJW(0: 5,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IP
-  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa
-  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
+  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa,WVAL
+  real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
+  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(   1)
+  real(realk) :: RJ000(0: 2)
   real(realk) :: TMParray1(  1:  1,2:3)
   real(realk) :: TMParray2(  2:  4,2:2)
-  real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
+  real(realk),parameter :: D2=2.0E0_realk,D4 = 4E0_realk, D100=100E0_realk
+  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  REAL(REALK),PARAMETER :: D2JP36=  4.0000000000000000E+01_realk
+  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk),parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
@@ -119,10 +228,6 @@ subroutine VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Zpa = Pcent(3,iPrimP) + Az
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
-     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
-     Auxarray(1,IP) = PREF*RJ000(0,IP)
-     TMParray1(1, 2) = PREF*RJ000( 1,IP)
-     TMParray1(1, 3) = PREF*RJ000( 2,IP)
      alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
@@ -130,6 +235,44 @@ subroutine VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
+     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
+     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN
+      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+      RJ000(1)=  3.3333333333333331E-01
+      RJ000(2)=  2.0000000000000001E-01
+     !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+      IPNT = NINT(D100*WVAL)
+      WDIFF = WVAL - TENTH*IPNT
+      W2    = WDIFF*WDIFF
+      W3    = W2*WDIFF
+      W2    = W2*D05
+      W3    = W3*COEF3
+      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
+      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
+      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
+     !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+      REXPW = D05*EXP(-WVAL)
+      RWVAL = D1/WVAL
+      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
+      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
+      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
+     !  (2J+36) < WVAL 
+     ELSE
+      RWVAL = PID4/WVAL
+      RJ000(0) = SQRT(RWVAL)
+      RWVAL = RWVAL*PID4I
+      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
+      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
+     ENDIF
+     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
+     Auxarray(1,IP) = PREF*RJ000(0)
+     TMParray1(1, 2) = PREF*RJ000( 1)
+     TMParray1(1, 3) = PREF*RJ000( 2)
      AuxArray(   2,IP) = Xpa*AuxArray(   1,IP) + alphaXpq*TmpArray1(   1,2)
      AuxArray(   3,IP) = Ypa*AuxArray(   1,IP) + alphaYpq*TmpArray1(   1,2)
      AuxArray(   4,IP) = Zpa*AuxArray(   1,IP) + alphaZpq*TmpArray1(   1,2)
@@ -149,25 +292,41 @@ subroutine VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
 end subroutine VerticalRecurrence2
 
 subroutine VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,&
+         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)
-  REAL(REALK),intent(in) :: RJ000(0:3,nPrimQ*nPrimP*nPasses)
+!  REAL(REALK),intent(in) :: RJ000(0:3,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(   20,nPrimQ*nPrimP*nPasses)
   real(realk),intent(in) :: Pcent(3,nPrimP),Acenter(3),Qcent(3,nPrimQ,nPasses)
+  REAL(REALK),intent(in) :: TABFJW(0: 6,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IP
-  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa
-  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
+  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa,WVAL
+  real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
+  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(   3)
+  real(realk) :: RJ000(0: 3)
   real(realk) :: TMParray1(  1:  1,2:4)
   real(realk) :: TMParray2(  2:  4,2:3)
   real(realk) :: TMParray3(  5: 10,2:2)
-  real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
+  real(realk),parameter :: D2=2.0E0_realk,D4 = 4E0_realk, D100=100E0_realk
+  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  REAL(REALK),PARAMETER :: D2JP36=  4.2000000000000000E+01_realk
+  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk),parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
@@ -188,11 +347,6 @@ subroutine VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Zpa = Pcent(3,iPrimP) + Az
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
-     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
-     Auxarray(1,IP) = PREF*RJ000(0,IP)
-     TMParray1(1, 2) = PREF*RJ000( 1,IP)
-     TMParray1(1, 3) = PREF*RJ000( 2,IP)
-     TMParray1(1, 4) = PREF*RJ000( 3,IP)
      alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
@@ -200,6 +354,49 @@ subroutine VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
+     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
+     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN
+      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+      RJ000(1)=  3.3333333333333331E-01
+      RJ000(2)=  2.0000000000000001E-01
+      RJ000(3)=  1.4285714285714285E-01
+     !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+      IPNT = NINT(D100*WVAL)
+      WDIFF = WVAL - TENTH*IPNT
+      W2    = WDIFF*WDIFF
+      W3    = W2*WDIFF
+      W2    = W2*D05
+      W3    = W3*COEF3
+      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
+      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
+      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
+      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
+     !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+      REXPW = D05*EXP(-WVAL)
+      RWVAL = D1/WVAL
+      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
+      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
+      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
+      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
+     !  (2J+36) < WVAL 
+     ELSE
+      RWVAL = PID4/WVAL
+      RJ000(0) = SQRT(RWVAL)
+      RWVAL = RWVAL*PID4I
+      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
+      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
+      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
+     ENDIF
+     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
+     Auxarray(1,IP) = PREF*RJ000(0)
+     TMParray1(1, 2) = PREF*RJ000( 1)
+     TMParray1(1, 3) = PREF*RJ000( 2)
+     TMParray1(1, 4) = PREF*RJ000( 3)
      AuxArray(   2,IP) = Xpa*AuxArray(   1,IP) + alphaXpq*TmpArray1(   1,2)
      AuxArray(   3,IP) = Ypa*AuxArray(   1,IP) + alphaYpq*TmpArray1(   1,2)
      AuxArray(   4,IP) = Zpa*AuxArray(   1,IP) + alphaZpq*TmpArray1(   1,2)
@@ -242,26 +439,42 @@ subroutine VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
 end subroutine VerticalRecurrence3
 
 subroutine VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,&
+         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)
-  REAL(REALK),intent(in) :: RJ000(0:4,nPrimQ*nPrimP*nPasses)
+!  REAL(REALK),intent(in) :: RJ000(0:4,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(   35,nPrimQ*nPrimP*nPasses)
   real(realk),intent(in) :: Pcent(3,nPrimP),Acenter(3),Qcent(3,nPrimQ,nPasses)
+  REAL(REALK),intent(in) :: TABFJW(0: 7,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IP
-  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa
-  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
+  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa,WVAL
+  real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
+  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(   6)
+  real(realk) :: RJ000(0: 4)
   real(realk) :: TMParray1(  1:  1,2:5)
   real(realk) :: TMParray2(  2:  4,2:4)
   real(realk) :: TMParray3(  5: 10,2:3)
   real(realk) :: TMParray4( 11: 20,2:2)
-  real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
+  real(realk),parameter :: D2=2.0E0_realk,D4 = 4E0_realk, D100=100E0_realk
+  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  REAL(REALK),PARAMETER :: D2JP36=  4.4000000000000000E+01_realk
+  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk),parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
@@ -282,12 +495,6 @@ subroutine VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Zpa = Pcent(3,iPrimP) + Az
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
-     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
-     Auxarray(1,IP) = PREF*RJ000(0,IP)
-     TMParray1(1, 2) = PREF*RJ000( 1,IP)
-     TMParray1(1, 3) = PREF*RJ000( 2,IP)
-     TMParray1(1, 4) = PREF*RJ000( 3,IP)
-     TMParray1(1, 5) = PREF*RJ000( 4,IP)
      alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
@@ -295,6 +502,54 @@ subroutine VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
+     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
+     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN
+      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+      RJ000(1)=  3.3333333333333331E-01
+      RJ000(2)=  2.0000000000000001E-01
+      RJ000(3)=  1.4285714285714285E-01
+      RJ000(4)=  1.1111111111111110E-01
+     !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+      IPNT = NINT(D100*WVAL)
+      WDIFF = WVAL - TENTH*IPNT
+      W2    = WDIFF*WDIFF
+      W3    = W2*WDIFF
+      W2    = W2*D05
+      W3    = W3*COEF3
+      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
+      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
+      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
+      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
+      RJ000( 4) = TABFJW( 4,IPNT)-TABFJW( 5,IPNT)*WDIFF+TABFJW( 6,IPNT)*W2+TABFJW( 7,IPNT)*W3
+     !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+      REXPW = D05*EXP(-WVAL)
+      RWVAL = D1/WVAL
+      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
+      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
+      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
+      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
+      RJ000( 4) = RWVAL*(( 4 - D05)*RJ000( 3)-REXPW)
+     !  (2J+36) < WVAL 
+     ELSE
+      RWVAL = PID4/WVAL
+      RJ000(0) = SQRT(RWVAL)
+      RWVAL = RWVAL*PID4I
+      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
+      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
+      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
+      RJ000( 4) = RWVAL*( 4 - D05)*RJ000( 3)
+     ENDIF
+     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
+     Auxarray(1,IP) = PREF*RJ000(0)
+     TMParray1(1, 2) = PREF*RJ000( 1)
+     TMParray1(1, 3) = PREF*RJ000( 2)
+     TMParray1(1, 4) = PREF*RJ000( 3)
+     TMParray1(1, 5) = PREF*RJ000( 4)
      AuxArray(   2,IP) = Xpa*AuxArray(   1,IP) + alphaXpq*TmpArray1(   1,2)
      AuxArray(   3,IP) = Ypa*AuxArray(   1,IP) + alphaYpq*TmpArray1(   1,2)
      AuxArray(   4,IP) = Zpa*AuxArray(   1,IP) + alphaZpq*TmpArray1(   1,2)
@@ -381,27 +636,43 @@ subroutine VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
 end subroutine VerticalRecurrence4
 
 subroutine VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,&
+         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)
-  REAL(REALK),intent(in) :: RJ000(0:5,nPrimQ*nPrimP*nPasses)
+!  REAL(REALK),intent(in) :: RJ000(0:5,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(   56,nPrimQ*nPrimP*nPasses)
   real(realk),intent(in) :: Pcent(3,nPrimP),Acenter(3),Qcent(3,nPrimQ,nPasses)
+  REAL(REALK),intent(in) :: TABFJW(0: 8,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IP
-  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa
-  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
+  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa,WVAL
+  real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
+  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(  10)
+  real(realk) :: RJ000(0: 5)
   real(realk) :: TMParray1(  1:  1,2:6)
   real(realk) :: TMParray2(  2:  4,2:5)
   real(realk) :: TMParray3(  5: 10,2:4)
   real(realk) :: TMParray4( 11: 20,2:3)
   real(realk) :: TMParray5( 21: 35,2:2)
-  real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
+  real(realk),parameter :: D2=2.0E0_realk,D4 = 4E0_realk, D100=100E0_realk
+  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  REAL(REALK),PARAMETER :: D2JP36=  4.6000000000000000E+01_realk
+  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk),parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
@@ -422,13 +693,6 @@ subroutine VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Zpa = Pcent(3,iPrimP) + Az
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
-     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
-     Auxarray(1,IP) = PREF*RJ000(0,IP)
-     TMParray1(1, 2) = PREF*RJ000( 1,IP)
-     TMParray1(1, 3) = PREF*RJ000( 2,IP)
-     TMParray1(1, 4) = PREF*RJ000( 3,IP)
-     TMParray1(1, 5) = PREF*RJ000( 4,IP)
-     TMParray1(1, 6) = PREF*RJ000( 5,IP)
      alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
@@ -436,6 +700,59 @@ subroutine VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
+     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
+     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN
+      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+      RJ000(1)=  3.3333333333333331E-01
+      RJ000(2)=  2.0000000000000001E-01
+      RJ000(3)=  1.4285714285714285E-01
+      RJ000(4)=  1.1111111111111110E-01
+      RJ000(5)=  9.0909090909090912E-02
+     !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+      IPNT = NINT(D100*WVAL)
+      WDIFF = WVAL - TENTH*IPNT
+      W2    = WDIFF*WDIFF
+      W3    = W2*WDIFF
+      W2    = W2*D05
+      W3    = W3*COEF3
+      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
+      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
+      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
+      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
+      RJ000( 4) = TABFJW( 4,IPNT)-TABFJW( 5,IPNT)*WDIFF+TABFJW( 6,IPNT)*W2+TABFJW( 7,IPNT)*W3
+      RJ000( 5) = TABFJW( 5,IPNT)-TABFJW( 6,IPNT)*WDIFF+TABFJW( 7,IPNT)*W2+TABFJW( 8,IPNT)*W3
+     !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+      REXPW = D05*EXP(-WVAL)
+      RWVAL = D1/WVAL
+      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
+      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
+      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
+      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
+      RJ000( 4) = RWVAL*(( 4 - D05)*RJ000( 3)-REXPW)
+      RJ000( 5) = RWVAL*(( 5 - D05)*RJ000( 4)-REXPW)
+     !  (2J+36) < WVAL 
+     ELSE
+      RWVAL = PID4/WVAL
+      RJ000(0) = SQRT(RWVAL)
+      RWVAL = RWVAL*PID4I
+      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
+      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
+      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
+      RJ000( 4) = RWVAL*( 4 - D05)*RJ000( 3)
+      RJ000( 5) = RWVAL*( 5 - D05)*RJ000( 4)
+     ENDIF
+     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
+     Auxarray(1,IP) = PREF*RJ000(0)
+     TMParray1(1, 2) = PREF*RJ000( 1)
+     TMParray1(1, 3) = PREF*RJ000( 2)
+     TMParray1(1, 4) = PREF*RJ000( 3)
+     TMParray1(1, 5) = PREF*RJ000( 4)
+     TMParray1(1, 6) = PREF*RJ000( 5)
      AuxArray(   2,IP) = Xpa*AuxArray(   1,IP) + alphaXpq*TmpArray1(   1,2)
      AuxArray(   3,IP) = Ypa*AuxArray(   1,IP) + alphaYpq*TmpArray1(   1,2)
      AuxArray(   4,IP) = Zpa*AuxArray(   1,IP) + alphaZpq*TmpArray1(   1,2)
@@ -597,28 +914,44 @@ subroutine VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
 end subroutine VerticalRecurrence5
 
 subroutine VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,&
+         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)
-  REAL(REALK),intent(in) :: RJ000(0:6,nPrimQ*nPrimP*nPasses)
+!  REAL(REALK),intent(in) :: RJ000(0:6,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(   84,nPrimQ*nPrimP*nPasses)
   real(realk),intent(in) :: Pcent(3,nPrimP),Acenter(3),Qcent(3,nPrimQ,nPasses)
+  REAL(REALK),intent(in) :: TABFJW(0: 9,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IP
-  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa
-  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
+  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa,WVAL
+  real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
+  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(  15)
+  real(realk) :: RJ000(0: 6)
   real(realk) :: TMParray1(  1:  1,2:7)
   real(realk) :: TMParray2(  2:  4,2:6)
   real(realk) :: TMParray3(  5: 10,2:5)
   real(realk) :: TMParray4( 11: 20,2:4)
   real(realk) :: TMParray5( 21: 35,2:3)
   real(realk) :: TMParray6( 36: 56,2:2)
-  real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
+  real(realk),parameter :: D2=2.0E0_realk,D4 = 4E0_realk, D100=100E0_realk
+  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  REAL(REALK),PARAMETER :: D2JP36=  4.8000000000000000E+01_realk
+  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk),parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
@@ -639,14 +972,6 @@ subroutine VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Zpa = Pcent(3,iPrimP) + Az
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
-     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
-     Auxarray(1,IP) = PREF*RJ000(0,IP)
-     TMParray1(1, 2) = PREF*RJ000( 1,IP)
-     TMParray1(1, 3) = PREF*RJ000( 2,IP)
-     TMParray1(1, 4) = PREF*RJ000( 3,IP)
-     TMParray1(1, 5) = PREF*RJ000( 4,IP)
-     TMParray1(1, 6) = PREF*RJ000( 5,IP)
-     TMParray1(1, 7) = PREF*RJ000( 6,IP)
      alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
@@ -654,6 +979,64 @@ subroutine VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
+     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
+     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN
+      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+      RJ000(1)=  3.3333333333333331E-01
+      RJ000(2)=  2.0000000000000001E-01
+      RJ000(3)=  1.4285714285714285E-01
+      RJ000(4)=  1.1111111111111110E-01
+      RJ000(5)=  9.0909090909090912E-02
+      RJ000(6)=  7.6923076923076927E-02
+     !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+      IPNT = NINT(D100*WVAL)
+      WDIFF = WVAL - TENTH*IPNT
+      W2    = WDIFF*WDIFF
+      W3    = W2*WDIFF
+      W2    = W2*D05
+      W3    = W3*COEF3
+      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
+      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
+      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
+      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
+      RJ000( 4) = TABFJW( 4,IPNT)-TABFJW( 5,IPNT)*WDIFF+TABFJW( 6,IPNT)*W2+TABFJW( 7,IPNT)*W3
+      RJ000( 5) = TABFJW( 5,IPNT)-TABFJW( 6,IPNT)*WDIFF+TABFJW( 7,IPNT)*W2+TABFJW( 8,IPNT)*W3
+      RJ000( 6) = TABFJW( 6,IPNT)-TABFJW( 7,IPNT)*WDIFF+TABFJW( 8,IPNT)*W2+TABFJW( 9,IPNT)*W3
+     !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+      REXPW = D05*EXP(-WVAL)
+      RWVAL = D1/WVAL
+      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
+      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
+      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
+      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
+      RJ000( 4) = RWVAL*(( 4 - D05)*RJ000( 3)-REXPW)
+      RJ000( 5) = RWVAL*(( 5 - D05)*RJ000( 4)-REXPW)
+      RJ000( 6) = RWVAL*(( 6 - D05)*RJ000( 5)-REXPW)
+     !  (2J+36) < WVAL 
+     ELSE
+      RWVAL = PID4/WVAL
+      RJ000(0) = SQRT(RWVAL)
+      RWVAL = RWVAL*PID4I
+      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
+      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
+      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
+      RJ000( 4) = RWVAL*( 4 - D05)*RJ000( 3)
+      RJ000( 5) = RWVAL*( 5 - D05)*RJ000( 4)
+      RJ000( 6) = RWVAL*( 6 - D05)*RJ000( 5)
+     ENDIF
+     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
+     Auxarray(1,IP) = PREF*RJ000(0)
+     TMParray1(1, 2) = PREF*RJ000( 1)
+     TMParray1(1, 3) = PREF*RJ000( 2)
+     TMParray1(1, 4) = PREF*RJ000( 3)
+     TMParray1(1, 5) = PREF*RJ000( 4)
+     TMParray1(1, 6) = PREF*RJ000( 5)
+     TMParray1(1, 7) = PREF*RJ000( 6)
      AuxArray(   2,IP) = Xpa*AuxArray(   1,IP) + alphaXpq*TmpArray1(   1,2)
      AuxArray(   3,IP) = Ypa*AuxArray(   1,IP) + alphaYpq*TmpArray1(   1,2)
      AuxArray(   4,IP) = Zpa*AuxArray(   1,IP) + alphaZpq*TmpArray1(   1,2)
@@ -933,21 +1316,24 @@ subroutine VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
 end subroutine VerticalRecurrence6
 
 subroutine VerticalRecurrence7(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,&
+         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)
-  REAL(REALK),intent(in) :: RJ000(0:7,nPrimQ*nPrimP*nPasses)
+!  REAL(REALK),intent(in) :: RJ000(0:7,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(  120,nPrimQ*nPrimP*nPasses)
   real(realk),intent(in) :: Pcent(3,nPrimP),Acenter(3),Qcent(3,nPrimQ,nPasses)
+  REAL(REALK),intent(in) :: TABFJW(0:10,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IP
-  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa
-  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
+  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa,WVAL
+  real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
+  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(  21)
+  real(realk) :: RJ000(0: 7)
   real(realk) :: TMParray1(  1:  1,2:8)
   real(realk) :: TMParray2(  2:  4,2:7)
   real(realk) :: TMParray3(  5: 10,2:6)
@@ -955,7 +1341,20 @@ subroutine VerticalRecurrence7(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk) :: TMParray5( 21: 35,2:4)
   real(realk) :: TMParray6( 36: 56,2:3)
   real(realk) :: TMParray7( 57: 84,2:2)
-  real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
+  real(realk),parameter :: D2=2.0E0_realk,D4 = 4E0_realk, D100=100E0_realk
+  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  REAL(REALK),PARAMETER :: D2JP36=  5.0000000000000000E+01_realk
+  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk),parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
@@ -976,15 +1375,6 @@ subroutine VerticalRecurrence7(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Zpa = Pcent(3,iPrimP) + Az
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
-     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
-     Auxarray(1,IP) = PREF*RJ000(0,IP)
-     TMParray1(1, 2) = PREF*RJ000( 1,IP)
-     TMParray1(1, 3) = PREF*RJ000( 2,IP)
-     TMParray1(1, 4) = PREF*RJ000( 3,IP)
-     TMParray1(1, 5) = PREF*RJ000( 4,IP)
-     TMParray1(1, 6) = PREF*RJ000( 5,IP)
-     TMParray1(1, 7) = PREF*RJ000( 6,IP)
-     TMParray1(1, 8) = PREF*RJ000( 7,IP)
      alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
@@ -992,6 +1382,69 @@ subroutine VerticalRecurrence7(nPasses,nPrimP,nPrimQ,reducedExponents,&
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
+     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
+     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN
+      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+      RJ000(1)=  3.3333333333333331E-01
+      RJ000(2)=  2.0000000000000001E-01
+      RJ000(3)=  1.4285714285714285E-01
+      RJ000(4)=  1.1111111111111110E-01
+      RJ000(5)=  9.0909090909090912E-02
+      RJ000(6)=  7.6923076923076927E-02
+      RJ000(7)=  6.6666666666666666E-02
+     !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+      IPNT = NINT(D100*WVAL)
+      WDIFF = WVAL - TENTH*IPNT
+      W2    = WDIFF*WDIFF
+      W3    = W2*WDIFF
+      W2    = W2*D05
+      W3    = W3*COEF3
+      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
+      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
+      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
+      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
+      RJ000( 4) = TABFJW( 4,IPNT)-TABFJW( 5,IPNT)*WDIFF+TABFJW( 6,IPNT)*W2+TABFJW( 7,IPNT)*W3
+      RJ000( 5) = TABFJW( 5,IPNT)-TABFJW( 6,IPNT)*WDIFF+TABFJW( 7,IPNT)*W2+TABFJW( 8,IPNT)*W3
+      RJ000( 6) = TABFJW( 6,IPNT)-TABFJW( 7,IPNT)*WDIFF+TABFJW( 8,IPNT)*W2+TABFJW( 9,IPNT)*W3
+      RJ000( 7) = TABFJW( 7,IPNT)-TABFJW( 8,IPNT)*WDIFF+TABFJW( 9,IPNT)*W2+TABFJW(10,IPNT)*W3
+     !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+      REXPW = D05*EXP(-WVAL)
+      RWVAL = D1/WVAL
+      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
+      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
+      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
+      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
+      RJ000( 4) = RWVAL*(( 4 - D05)*RJ000( 3)-REXPW)
+      RJ000( 5) = RWVAL*(( 5 - D05)*RJ000( 4)-REXPW)
+      RJ000( 6) = RWVAL*(( 6 - D05)*RJ000( 5)-REXPW)
+      RJ000( 7) = RWVAL*(( 7 - D05)*RJ000( 6)-REXPW)
+     !  (2J+36) < WVAL 
+     ELSE
+      RWVAL = PID4/WVAL
+      RJ000(0) = SQRT(RWVAL)
+      RWVAL = RWVAL*PID4I
+      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
+      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
+      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
+      RJ000( 4) = RWVAL*( 4 - D05)*RJ000( 3)
+      RJ000( 5) = RWVAL*( 5 - D05)*RJ000( 4)
+      RJ000( 6) = RWVAL*( 6 - D05)*RJ000( 5)
+      RJ000( 7) = RWVAL*( 7 - D05)*RJ000( 6)
+     ENDIF
+     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
+     Auxarray(1,IP) = PREF*RJ000(0)
+     TMParray1(1, 2) = PREF*RJ000( 1)
+     TMParray1(1, 3) = PREF*RJ000( 2)
+     TMParray1(1, 4) = PREF*RJ000( 3)
+     TMParray1(1, 5) = PREF*RJ000( 4)
+     TMParray1(1, 6) = PREF*RJ000( 5)
+     TMParray1(1, 7) = PREF*RJ000( 6)
+     TMParray1(1, 8) = PREF*RJ000( 7)
      AuxArray(   2,IP) = Xpa*AuxArray(   1,IP) + alphaXpq*TmpArray1(   1,2)
      AuxArray(   3,IP) = Ypa*AuxArray(   1,IP) + alphaYpq*TmpArray1(   1,2)
      AuxArray(   4,IP) = Zpa*AuxArray(   1,IP) + alphaZpq*TmpArray1(   1,2)
@@ -1446,21 +1899,24 @@ subroutine VerticalRecurrence7(nPasses,nPrimP,nPrimQ,reducedExponents,&
 end subroutine VerticalRecurrence7
 
 subroutine VerticalRecurrence8(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,&
+         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)
-  REAL(REALK),intent(in) :: RJ000(0:8,nPrimQ*nPrimP*nPasses)
+!  REAL(REALK),intent(in) :: RJ000(0:8,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(  165,nPrimQ*nPrimP*nPasses)
   real(realk),intent(in) :: Pcent(3,nPrimP),Acenter(3),Qcent(3,nPrimQ,nPasses)
+  REAL(REALK),intent(in) :: TABFJW(0:11,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IP
-  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa
-  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
+  real(realk) :: Ax,Ay,Az,Pexpfac,invexpP,inv2expP,mPX,mPY,mPZ,Xpa,Ypa,Zpa,WVAL
+  real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
+  real(realk) :: PREF,alphaP,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(  28)
+  real(realk) :: RJ000(0: 8)
   real(realk) :: TMParray1(  1:  1,2:9)
   real(realk) :: TMParray2(  2:  4,2:8)
   real(realk) :: TMParray3(  5: 10,2:7)
@@ -1469,7 +1925,20 @@ subroutine VerticalRecurrence8(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk) :: TMParray6( 36: 56,2:4)
   real(realk) :: TMParray7( 57: 84,2:3)
   real(realk) :: TMParray8( 85:120,2:2)
-  real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
+  real(realk),parameter :: D2=2.0E0_realk,D4 = 4E0_realk, D100=100E0_realk
+  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  REAL(REALK),PARAMETER :: D2JP36=  5.2000000000000000E+01_realk
+  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk),parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
@@ -1490,16 +1959,6 @@ subroutine VerticalRecurrence8(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Zpa = Pcent(3,iPrimP) + Az
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
-     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
-     Auxarray(1,IP) = PREF*RJ000(0,IP)
-     TMParray1(1, 2) = PREF*RJ000( 1,IP)
-     TMParray1(1, 3) = PREF*RJ000( 2,IP)
-     TMParray1(1, 4) = PREF*RJ000( 3,IP)
-     TMParray1(1, 5) = PREF*RJ000( 4,IP)
-     TMParray1(1, 6) = PREF*RJ000( 5,IP)
-     TMParray1(1, 7) = PREF*RJ000( 6,IP)
-     TMParray1(1, 8) = PREF*RJ000( 7,IP)
-     TMParray1(1, 9) = PREF*RJ000( 8,IP)
      alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
@@ -1507,6 +1966,74 @@ subroutine VerticalRecurrence8(nPasses,nPrimP,nPrimQ,reducedExponents,&
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
+     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
+     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN
+      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+      RJ000(1)=  3.3333333333333331E-01
+      RJ000(2)=  2.0000000000000001E-01
+      RJ000(3)=  1.4285714285714285E-01
+      RJ000(4)=  1.1111111111111110E-01
+      RJ000(5)=  9.0909090909090912E-02
+      RJ000(6)=  7.6923076923076927E-02
+      RJ000(7)=  6.6666666666666666E-02
+      RJ000(8)=  5.8823529411764705E-02
+     !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+      IPNT = NINT(D100*WVAL)
+      WDIFF = WVAL - TENTH*IPNT
+      W2    = WDIFF*WDIFF
+      W3    = W2*WDIFF
+      W2    = W2*D05
+      W3    = W3*COEF3
+      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
+      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
+      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
+      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
+      RJ000( 4) = TABFJW( 4,IPNT)-TABFJW( 5,IPNT)*WDIFF+TABFJW( 6,IPNT)*W2+TABFJW( 7,IPNT)*W3
+      RJ000( 5) = TABFJW( 5,IPNT)-TABFJW( 6,IPNT)*WDIFF+TABFJW( 7,IPNT)*W2+TABFJW( 8,IPNT)*W3
+      RJ000( 6) = TABFJW( 6,IPNT)-TABFJW( 7,IPNT)*WDIFF+TABFJW( 8,IPNT)*W2+TABFJW( 9,IPNT)*W3
+      RJ000( 7) = TABFJW( 7,IPNT)-TABFJW( 8,IPNT)*WDIFF+TABFJW( 9,IPNT)*W2+TABFJW(10,IPNT)*W3
+      RJ000( 8) = TABFJW( 8,IPNT)-TABFJW( 9,IPNT)*WDIFF+TABFJW(10,IPNT)*W2+TABFJW(11,IPNT)*W3
+     !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+      REXPW = D05*EXP(-WVAL)
+      RWVAL = D1/WVAL
+      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
+      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
+      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
+      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
+      RJ000( 4) = RWVAL*(( 4 - D05)*RJ000( 3)-REXPW)
+      RJ000( 5) = RWVAL*(( 5 - D05)*RJ000( 4)-REXPW)
+      RJ000( 6) = RWVAL*(( 6 - D05)*RJ000( 5)-REXPW)
+      RJ000( 7) = RWVAL*(( 7 - D05)*RJ000( 6)-REXPW)
+      RJ000( 8) = RWVAL*(( 8 - D05)*RJ000( 7)-REXPW)
+     !  (2J+36) < WVAL 
+     ELSE
+      RWVAL = PID4/WVAL
+      RJ000(0) = SQRT(RWVAL)
+      RWVAL = RWVAL*PID4I
+      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
+      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
+      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
+      RJ000( 4) = RWVAL*( 4 - D05)*RJ000( 3)
+      RJ000( 5) = RWVAL*( 5 - D05)*RJ000( 4)
+      RJ000( 6) = RWVAL*( 6 - D05)*RJ000( 5)
+      RJ000( 7) = RWVAL*( 7 - D05)*RJ000( 6)
+      RJ000( 8) = RWVAL*( 8 - D05)*RJ000( 7)
+     ENDIF
+     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
+     Auxarray(1,IP) = PREF*RJ000(0)
+     TMParray1(1, 2) = PREF*RJ000( 1)
+     TMParray1(1, 3) = PREF*RJ000( 2)
+     TMParray1(1, 4) = PREF*RJ000( 3)
+     TMParray1(1, 5) = PREF*RJ000( 4)
+     TMParray1(1, 6) = PREF*RJ000( 5)
+     TMParray1(1, 7) = PREF*RJ000( 6)
+     TMParray1(1, 8) = PREF*RJ000( 7)
+     TMParray1(1, 9) = PREF*RJ000( 8)
      AuxArray(   2,IP) = Xpa*AuxArray(   1,IP) + alphaXpq*TmpArray1(   1,2)
      AuxArray(   3,IP) = Ypa*AuxArray(   1,IP) + alphaYpq*TmpArray1(   1,2)
      AuxArray(   4,IP) = Zpa*AuxArray(   1,IP) + alphaZpq*TmpArray1(   1,2)

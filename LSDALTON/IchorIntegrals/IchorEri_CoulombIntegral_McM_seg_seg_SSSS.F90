@@ -1,5 +1,6 @@
 module IchorCoulombIntegral_seg_seg_SSSS_mod
 use IchorprecisionModule
+use IchorCommonModule
 private 
 public :: IchorCoulombIntegral_seg_seg_SSSS
 CONTAINS
@@ -12,13 +13,14 @@ CONTAINS
     real(realk),intent(in) :: pcent(3,nPrimP),qcent(3,nPrimQ,nPasses)
     real(realk),target,intent(in) :: QpreExpFac(nPrimQ,nPasses)
     real(realk),target,intent(in) :: PpreExpFac(nPrimP)
-    real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2)
+!    real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2)
+    real(realk),intent(in) :: TABFJW(0:3,0:1200)
     real(realk),intent(inout) :: CDAB(nPasses)
-    real(realk),intent(in) :: integralPrefactor(nPrimP*nPrimQ)
-    real(realk),intent(in) :: reducedExponents(nPrimP*nPrimQ)
+    real(realk),intent(in) :: integralPrefactor(nPrimP,nPrimQ)
+    real(realk),intent(in) :: reducedExponents(nPrimP,nPrimQ)
     logical :: PQorder
     !
-    real(realk) :: RJ000(nPrimP*nPrimQ),squaredDistance(nPrimP*nPrimQ)
+    real(realk) :: RJ000,squaredDistance
     real(realk) :: px,py,pz,qx,qy,qz,pqx,pqy,pqz,tmpQ
     integer :: nPrimPQ,offset,IPNT,ipq,iPrimQ,iPrimP,IPASSQ
     REAL(REALK), PARAMETER :: D2 = 2.0E0_realk,D4 = 4.0E0_realk,D1 = 1.0E0_realk
@@ -35,7 +37,7 @@ CONTAINS
     real(realk) :: WVAL,R,RWVAL,REXPW,GVAL,WDIFF,W2,W3,tmp
 !ifdef VAR_DEBUG
     IF(.NOT.PQorder)THEN
-       call lsquit('IchorCoulombIntegral_seg_seg_SSSS expect to get PQ ordering')
+       call Ichorquit('IchorCoulombIntegral_seg_seg_SSSS expect to get PQ ordering',-1)
     ENDIF
     !nested OMP parallel or GPU/MIC
     !reducedExponents, integralPrefactor as input
@@ -54,60 +56,43 @@ CONTAINS
 !$OMP nPrimQ,nPrimP,nPrimPQ)
     DO IPASSQ = 1,nPasses
        !build squaredDistance(nPrimP,nPrimQ,nPasses)
+       tmp = 0.0E0_realk
        DO iPrimQ=1, nPrimQ
           qx = -Qcent(1,iPrimQ,iPassQ)
           qy = -Qcent(2,iPrimQ,iPassQ)
           qz = -Qcent(3,iPrimQ,iPassQ)
-          offset = (iPrimQ-1)*nPrimP
+          TMPQ = QpreExpFac(iPrimQ,iPassQ)
           DO iPrimP=1, nPrimP
              pqx = Pcent(1,iPrimP) + qx
              pqy = Pcent(2,iPrimP) + qy
              pqz = Pcent(3,iPrimP) + qz          
              !(nPrimP,nPrimQ)
-             squaredDistance(iPrimP+offset) = pqx*pqx+pqy*pqy+pqz*pqz
-          ENDDO
-       ENDDO
-       !build RJ000(nPrimP,nPrimQ)
-       DO ipq=1, nPrimPQ
-          !(nPrimP,nPrimQ)*(nPrimP,nPrimQ)
-          WVAL = reducedExponents(ipq)*squaredDistance(ipq)
-          IF (WVAL .LT. D12) THEN
-             IPNT = NINT(D100*WVAL)
-             WDIFF = WVAL - TENTH*IPNT
-             W2    = WDIFF*WDIFF
-             W3    = W2*WDIFF
-             W2    = W2*COEF2
-             W3    = W3*COEF3
-             R = TABFJW(0,IPNT)
-             R = R -TABFJW(1,IPNT)*WDIFF
-             R = R + TABFJW(2,IPNT)*W2
-             R = R + TABFJW(3,IPNT)*W3
-             RJ000(ipq) = R
+             squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz
+             !(nPrimP,nPrimQ)*(nPrimP,nPrimQ)
+             WVAL = reducedExponents(iPrimP,iPrimQ)*squaredDistance
+             IF (WVAL .LT. D12) THEN
+                IPNT = NINT(D100*WVAL)
+                WDIFF = WVAL - TENTH*IPNT
+                W2    = WDIFF*WDIFF
+                W3    = W2*WDIFF
+                W2    = W2*COEF2
+                W3    = W3*COEF3
+                RJ000 = TABFJW(0,IPNT)-TABFJW(1,IPNT)*WDIFF+TABFJW(2,IPNT)*W2+TABFJW(3,IPNT)*W3
              !  12 < WVAL <= (2J+36) 
-          ELSE IF (WVAL.LE.D36) THEN
-             REXPW = HALF*EXP(-WVAL)
-             RWVAL = D1/WVAL
-             GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
-             RJ000(ipq) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
-             !  (2J+36) < WVAL 
-          ELSE
-             RWVAL = PID4/WVAL
-             RJ000(ipq) = SQRT(RWVAL)
-             RWVAL = RWVAL*PID4I
-          END IF
-          !scale RJ000
-          RJ000(ipq) = integralPrefactor(Ipq)*RJ000(ipq)
-       ENDDO
-       !Ecoeff
-       tmp = 0.0E0_realk
-       DO iPrimQ =1,nPrimQ
-          TMPQ = QpreExpFac(iPrimQ,iPassQ)
-          offset = (iPrimQ-1)*nPrimP
-          DO iPrimP = 1, nPrimP
-             tmp = tmp + PpreExpFac(iPrimP)*RJ000(iPrimP+offset)*TMPQ
+             ELSE IF (WVAL.LE.D36) THEN
+                REXPW = HALF*EXP(-WVAL)
+                RWVAL = D1/WVAL
+                GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
+                RJ000 = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+                !  (2J+36) < WVAL 
+             ELSE
+                RWVAL = PID4/WVAL
+                RJ000 = SQRT(RWVAL)
+             END IF
+             !scale RJ000
+             tmp = tmp + PpreExpFac(iPrimP)*integralPrefactor(IPrimP,iPrimQ)*RJ000*TMPQ
           ENDDO
        ENDDO
-!$OMP ATOMIC
        CDAB(iPassQ) = tmp
     ENDDO
 !$OMP END PARALLEL DO

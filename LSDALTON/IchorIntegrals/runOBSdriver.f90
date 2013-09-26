@@ -25,7 +25,7 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'MODULE IchorEriCoulombintegralOBSGeneralMod'
   WRITE(LUMOD3,'(A)')'!Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory'
   WRITE(LUMOD3,'(A)')'use IchorprecisionModule'
-!  WRITE(LUMOD3,'(A)')'use ThermiteMem_module'
+  WRITE(LUMOD3,'(A)')'use IchorCommonModule'
   WRITE(LUMOD3,'(A)')'use IchorMemory'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMOD'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMOD'
@@ -84,7 +84,7 @@ PROGRAM TUV
 
 
   WRITE(LUMOD3,'(A)')'  '
-  WRITE(LUMOD3,'(A)')' IF(nAtomsC*nAtomsD.NE.nPasses)Call lsquit(''nPass error'')'
+  WRITE(LUMOD3,'(A)')' IF(nAtomsC*nAtomsD.NE.nPasses)Call ichorquit(''nPass error'',-1)'
   WRITE(LUMOD3,'(A)')'  '
   WRITE(LUMOD3,'(A)')'!IF(.TRUE.)THEN'
   WRITE(LUMOD3,'(A)')'!    call interest_initialize()'
@@ -118,7 +118,7 @@ PROGRAM TUV
 !  WRITE(LUMOD3,'(A)')'    call build_Rpa(nPrimQ,Qcent,Ccenter,Rqc)'
   WRITE(LUMOD3,'(A)')'    '
   WRITE(LUMOD3,'(A)')'    IF(PQorder)THEN'
-  WRITE(LUMOD3,'(A)')'       call lsquit(''PQorder OBS general expect to get QP ordering'',-1)'
+  WRITE(LUMOD3,'(A)')'       call IchorQuit(''PQorder OBS general expect to get QP ordering'',-1)'
   WRITE(LUMOD3,'(A)')'    ENDIF'
   WRITE(LUMOD3,'(A)')'    '
 !  WRITE(LUMOD3,'(A)')'    call mem_ichor_alloc(squaredDistance,nPasses*nPrimQP)'
@@ -132,19 +132,19 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'    AngmomP = AngmomA+AngmomB'
   WRITE(LUMOD3,'(A)')'    AngmomQ = AngmomC+AngmomD'
   WRITE(LUMOD3,'(A)')'    AngmomPQ  = AngmomP + AngmomQ'
-  WRITE(LUMOD3,'(A)')'    !Build the Boys Functions for argument squaredDistance*reducedExponents'
-  WRITE(LUMOD3,'(A)')'    !save in RJ000 ordering (AngmomPQ+1),nPrimQ,nPrimP,nPasses'
-  WRITE(LUMOD3,'(A)')'    call mem_ichor_alloc(RJ000,(AngmomPQ+1)*nPasses*nPrimQP)'
-  WRITE(LUMOD3,'(A)')'    call buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&'
-  WRITE(LUMOD3,'(A)')'         & TABFJW,RJ000,AngmomPQ,Pcent,Qcent)'
-  WRITE(LUMOD3,'(A)')'    IF (INTPRINT .GE. 10) THEN'
-  WRITE(LUMOD3,'(A)')'    WRITE(lupri,*)''Output from W000'''
-  WRITE(LUMOD3,'(A)')'    DO I=1,nPrimQ*nPrimP*nPasses'
-  WRITE(LUMOD3,'(A)')'       DO J=0,AngmomPQ'
-  WRITE(LUMOD3,'(A)')'          WRITE(LUPRI,''(2X,A6,I4,A1,I4,A2,ES16.8)'')''RJ000('',J,'','',I,'')='',RJ000(1+J+(I-1)*(AngmomPQ+1))'
-  WRITE(LUMOD3,'(A)')'       ENDDO'
-  WRITE(LUMOD3,'(A)')'    ENDDO'
-  WRITE(LUMOD3,'(A)')'    END IF'
+!  WRITE(LUMOD3,'(A)')'    !Build the Boys Functions for argument squaredDistance*reducedExponents'
+!  WRITE(LUMOD3,'(A)')'    !save in RJ000 ordering (AngmomPQ+1),nPrimQ,nPrimP,nPasses'
+!  WRITE(LUMOD3,'(A)')'    call mem_ichor_alloc(RJ000,(AngmomPQ+1)*nPasses*nPrimQP)'
+!  WRITE(LUMOD3,'(A)')'    call buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&'
+!  WRITE(LUMOD3,'(A)')'         & TABFJW,RJ000,AngmomPQ,Pcent,Qcent)'
+!  WRITE(LUMOD3,'(A)')'    IF (INTPRINT .GE. 10) THEN'
+!  WRITE(LUMOD3,'(A)')'     WRITE(lupri,*)''Output from W000'''
+!  WRITE(LUMOD3,'(A)')'     DO I=1,nPrimQ*nPrimP*nPasses'
+!  WRITE(LUMOD3,'(A)')'       DO J=0,AngmomPQ'
+!  WRITE(LUMOD3,'(A)')'          WRITE(LUPRI,''(2X,A6,I4,A1,I4,A2,ES16.8)'')''RJ000('',J,'','',I,'')='',RJ000(1+J+(I-1)*(AngmomPQ+1))'
+!  WRITE(LUMOD3,'(A)')'       ENDDO'
+!  WRITE(LUMOD3,'(A)')'     ENDDO'
+!  WRITE(LUMOD3,'(A)')'    END IF'
   WRITE(LUMOD3,'(A)')'!    nTUV = (AngmomPQ+1)*(AngmomPQ+2)*(AngmomPQ+3)/6'
   WRITE(LUMOD3,'(A)')'!    nTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6'
   WRITE(LUMOD3,'(A)')'!    nTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6'
@@ -161,19 +161,19 @@ PROGRAM TUV
    ELSE
       WRITE(LUMOD3,'(A,I3,A)')'    ELSEIF(AngmomA.EQ.',AngmomA,')THEN'
    ENDIF
-   DO AngmomB = 0,AngmomA
+   DO AngmomB = 0,2!AngmomA
     IF(AngmomB.EQ.0)THEN
        WRITE(LUMOD3,'(A,I3,A)')'     IF(AngmomB.EQ.',AngmomB,')THEN'
     ELSE
        WRITE(LUMOD3,'(A,I3,A)')'     ELSEIF(AngmomB.EQ.',AngmomB,')THEN'
     ENDIF
-    DO AngmomC = 0,AngmomA
+    DO AngmomC = 0,2!AngmomA
      IF(AngmomC.EQ.0)THEN
         WRITE(LUMOD3,'(A,I3,A)')'      IF(AngmomC.EQ.',AngmomC,')THEN'
      ELSE
         WRITE(LUMOD3,'(A,I3,A)')'      ELSEIF(AngmomC.EQ.',AngmomC,')THEN'
      ENDIF
-     DO AngmomD = 0,AngmomC
+     DO AngmomD = 0,2!AngmomC
       IF(AngmomD.EQ.0)THEN
          WRITE(LUMOD3,'(A,I3,A)')'       IF(AngmomD.EQ.',AngmomD,')THEN'
       ELSE
@@ -181,7 +181,7 @@ PROGRAM TUV
       ENDIF
       AngmomP = AngmomA + AngmomB
       AngmomQ = AngmomC + AngmomD
-      IF(AngmomQ.GT.AngmomP)CYCLE
+!      IF(AngmomQ.GT.AngmomP)CYCLE
       AngmomPQ = AngmomA + AngmomB + AngmomC + AngmomD
       nTUV = (AngmomPQ+1)*(AngmomPQ+2)*(AngmomPQ+3)/6
       nTUVP = (AngmomP+1)*(AngmomP+2)*(AngmomP+3)/6
@@ -195,7 +195,6 @@ PROGRAM TUV
       nTUVC = (AngmomC+1)*(AngmomC+2)*(AngmomC+3)/6
       nTUVD = (AngmomD+1)*(AngmomD+2)*(AngmomD+3)/6
       IF((AngmomA.GT.1.OR.AngmomB.GT.1).OR.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
-         WRITE(LUMOD3,'(A)')'        IF(spherical)THEN'
          spherical = .TRUE.
          nlmA = 2*AngmomA+1
          nlmB = 2*AngmomB+1
@@ -204,10 +203,25 @@ PROGRAM TUV
          STRINGIN(1:9)  = 'TMParray1'
          STRINGOUT(1:9) = 'TMParray2'
          TMPSTRING(1:9) = '         '
-         call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-              & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
-         
-         WRITE(LUMOD3,'(A)')'        ELSE'
+
+         IF(AngmomB.GT.AngmomA)THEN
+            WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I2,A)')'        CALL ICHORQUIT("Angmom A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,' combi not implemented",-1)'
+            CYCLE
+         ELSEIF(AngmomC.GT.AngmomA)THEN
+            WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I2,A)')'        CALL ICHORQUIT("Angmom A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,' combi not implemented",-1)'
+            CYCLE
+         ELSEIF(AngmomD.GT.AngmomC)THEN
+            WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I2,A)')'        CALL ICHORQUIT("Angmom A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,' combi not implemented",-1)'
+            CYCLE
+         ELSEIF(AngmomQ.GT.AngmomP)THEN
+            WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I2,A)')'        CALL ICHORQUIT("Angmom A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,' combi not implemented",-1)'
+            CYCLE
+         ELSE
+            WRITE(LUMOD3,'(A)')'        IF(spherical)THEN'
+            call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+                 & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
+            WRITE(LUMOD3,'(A)')'        ELSE'
+         ENDIF
          spherical = .FALSE.
          nlmA = nTUVAspec
          nlmB = nTUVBspec
@@ -218,7 +232,6 @@ PROGRAM TUV
          TMPSTRING(1:9) = '         '
          call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
               & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
-         
          WRITE(LUMOD3,'(A)')'        ENDIF'
       ELSE
          spherical = .TRUE.
@@ -229,8 +242,22 @@ PROGRAM TUV
          STRINGIN(1:9)  = 'TMParray1'
          STRINGOUT(1:9) = 'TMParray2'
          TMPSTRING(1:9) = '         '
-         call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-              & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
+         IF(AngmomB.GT.AngmomA)THEN
+            WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I2,A)')'        CALL ICHORQUIT("Angmom A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,' combi not implemented",-1)'
+            CYCLE
+         ELSEIF(AngmomC.GT.AngmomA)THEN
+            WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I2,A)')'        CALL ICHORQUIT("Angmom A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,' combi not implemented",-1)'
+            CYCLE
+         ELSEIF(AngmomD.GT.AngmomC)THEN
+            WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I2,A)')'        CALL ICHORQUIT("Angmom A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,' combi not implemented",-1)'
+            CYCLE
+         ELSEIF(AngmomQ.GT.AngmomP)THEN
+            WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I2,A)')'        CALL ICHORQUIT("Angmom A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,' combi not implemented",-1)'
+            CYCLE
+         ELSE
+            call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+                 & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
+         ENDIF
       ENDIF
      ENDDO
      WRITE(LUMOD3,'(A)')'       ENDIF ! D if statement'
@@ -394,7 +421,7 @@ WRITE(LUMOD3,'(A)')'  SUBROUTINE buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJ
 WRITE(LUMOD3,'(A)')'       & TABFJW,RJ000,JMAX,Pcent,Qcent)'
 WRITE(LUMOD3,'(A)')'    IMPLICIT NONE'
 WRITE(LUMOD3,'(A)')'    INTEGER,intent(in)         :: nPrimP,nPrimQ,Jmax,nTABFJW1,nTABFJW2,nPasses'
-WRITE(LUMOD3,'(A)')'    REAL(REALK),intent(in)     :: reducedExponents(nPrimQ*nPrimP)'
+WRITE(LUMOD3,'(A)')'    REAL(REALK),intent(in)     :: reducedExponents(nPrimQ,nPrimP)'
 WRITE(LUMOD3,'(A)')'    REAL(REALK),intent(in)     :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)'
 WRITE(LUMOD3,'(A)')'    REAL(REALK),intent(in)     :: TABFJW(0:nTABFJW1,0:nTABFJW2)'
 WRITE(LUMOD3,'(A)')'    REAL(REALK),intent(inout)  :: RJ000(0:Jmax,nPrimQ*nPrimP,nPasses)'
@@ -433,7 +460,7 @@ WRITE(LUMOD3,'(A)')'          pqx = px - Qcent(1,iPrimQ,iPassQ)'
 WRITE(LUMOD3,'(A)')'          pqy = py - Qcent(2,iPrimQ,iPassQ)'
 WRITE(LUMOD3,'(A)')'          pqz = pz - Qcent(3,iPrimQ,iPassQ)'
 WRITE(LUMOD3,'(A)')'          squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz'
-WRITE(LUMOD3,'(A)')'          WVAL = reducedExponents(ipq)*squaredDistance'
+WRITE(LUMOD3,'(A)')'          WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
 WRITE(LUMOD3,'(A)')'          !  0 < WVAL < 0.000001'
 WRITE(LUMOD3,'(A)')'          IF (ABS(WVAL) .LT. SMALL) THEN'         
 WRITE(LUMOD3,'(A)')'             RJ000(0,ipq,ipassq) = D1'
@@ -502,16 +529,17 @@ contains
     ENDIF
     IF(AngmomPQ.EQ.0)THEN
        WRITE(LUMOD3,'(A)')'        call VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMOD3,'(A,A,A)')'               & RJ000,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
+       WRITE(LUMOD3,'(A)')'               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&'
+       WRITE(LUMOD3,'(A,A,A)')'               & PpreExpFac,QpreExpFac,',STRINGOUT,')'
     ELSE
        IF(AngmomPQ.LT.10)THEN
           WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        ELSE
           WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'               & Pexp,Acenter,Pcent,Qcent,RJ000,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
+       WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
     ENDIF
-    WRITE(LUMOD3,'(A,I4,A)')'        call mem_ichor_dealloc(RJ000)'
+!    WRITE(LUMOD3,'(A,I4,A)')'        call mem_ichor_dealloc(RJ000)'
 
     !swap 
     TMPSTRING = STRINGIN
@@ -580,7 +608,7 @@ contains
     STRINGOUT  = TMPSTRING
     !     The horizontal recurrence also extract nTUVspec from nTUV       
     IF(AngmomP.EQ.0)THEN
-       WRITE(LUMOD3,'(A)')'!no need for LHS Horizontal recurrence relations a simply copy'
+       WRITE(LUMOD3,'(A)')'        !no need for LHS Horizontal recurrence relations a simply copy'
     ELSE
      WRITE(LUMOD3,'(A)')'        !LHS Horizontal recurrence relations '
      IF(nTUVAspec*nTUVBspec*nTUVQ.LT.10)THEN
@@ -763,6 +791,7 @@ contains
     ENDIF
 
     WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
+    WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
   end subroutine subroutineMain
 END PROGRAM TUV
 

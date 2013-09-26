@@ -154,13 +154,13 @@ Integer,intent(in) :: lupri
 integer :: nPrimP,nContP,nPrimQ,nContQ
 integer :: nTABFJW1,nTABFJW2,i1,i2,i3,i4,TotalAngmomABC,TotalAngmomAB,TotalAngmom
 integer :: i12,nPasses,offset,K,I,iPass,MaxPasses,iPrimQ,iPrimP,icont
-integer :: maxangmomA,maxangmomB,maxangmomC,maxangmomD,maxangmomABCD,ndimPass
+integer :: ndimPass,oldmaxangmomABCD
 integer :: ItypeA,ItypeB,itypeC,itypeD,AngmomA,AngmomB,AngmomC,AngmomD
 integer :: nPrimA,nPrimB,nContA,nAtomsA,nAtomsB,nAtomsC,nAtomsD,nOrbA
 integer :: nDimA,nOrbCompA,iPrimA,iContA,iAtomA,iPrimB,iContB,iAtomB
 integer :: iPrimC,iContC,iAtomC,iPrimD,iContD,iAtomD,nContB,nOrbB,nDimB
 integer :: nPrimC,nContC,nPrimD,nContD,nOrbC,nOrbD,nOrbCompB,nOrbCompC,nDimC
-integer :: nDimD,nOrbCompD,INTPRINT,startA,startB,startC,startD
+integer :: nDimD,nOrbCompD,INTPRINT,startA,startB,startC,startD,maxangmomABCD
 integer,pointer :: Piprim1(:),Piprim2(:),Qiprim1(:),Qiprim2(:)
 logical :: Psegmented,Qsegmented,PQorder,Spherical
 real(realk),pointer :: expP(:),Pcent(:),PpreExpFac(:),Qdistance12(:,:),CDAB(:)
@@ -174,34 +174,11 @@ real(realk),pointer :: expC(:),ContractCoeffC(:,:),Ccenter(:,:)
 real(realk),pointer :: expD(:),ContractCoeffD(:,:),Dcenter(:,:)
 INTPRINT=0
 
-maxangmomA = 0
-DO ItypeA=1,nTypesA
-   maxangmomA = MAX(maxangmomA,AngmomOfTypeA(ItypeA))
-ENDDO
-maxangmomB = 0
-DO ItypeB=1,nTypesB
-   maxangmomB = MAX(maxangmomB,AngmomOfTypeB(ItypeB))
-ENDDO
-maxangmomC = 0
-DO ItypeC=1,nTypesC
-   maxangmomC = MAX(maxangmomC,AngmomOfTypeC(ItypeC))
-ENDDO
-maxangmomD = 0
-DO ItypeD=1,nTypesD
-   maxangmomD = MAX(maxangmomD,AngmomOfTypeD(ItypeD))
-ENDDO
-maxangmomABCD = maxangmomA + maxangmomB + maxangmomC + maxangmomD 
-
 ! GAMMATABULATION 
 !     is this needed for (SSSS) ? is it better to build it several times for 
 !     different Angmom combis ? 
 Spherical = SphericalSpec.EQ.SphericalParam
-nTABFJW1 = maxangmomABCD + 3 !only need + 3 after Branos change in BUILD_RJ000 
-nTABFJW2 = 1200
-!TABFJW(0:nTABFJW1,0:nTABFJW2)
-call mem_ichor_alloc(TABFJW,nTABFJW1,nTABFJW2,.TRUE.,.TRUE.)
-CALL GAMMATABULATION(lupri,maxangmomABCD,nTABFJW1,nTABFJW2,TABFJW)  
-
+oldmaxangmomABCD = -25
 DO ItypeA=1,nTypesA
  AngmomA = AngmomOfTypeA(ItypeA)
  nPrimA = nPrimOfTypeA(ItypeA)
@@ -325,6 +302,20 @@ DO ItypeA=1,nTypesA
 
    DO ItypeD=1,nTypesD
     AngmomD = AngmomOfTypeD(ItypeD)
+
+    maxangmomABCD = AngmomA + AngmomB + AngmomC + AngmomD
+    IF(maxangmomABCD.NE.oldmaxangmomABCD)THEN
+       IF(oldmaxangmomABCD.NE.-25)THEN
+          call mem_ichor_dealloc(TABFJW)
+       ENDIF
+       nTABFJW1 = AngmomA + AngmomB + AngmomC + AngmomD + 3 
+       !only need + 3 after Branos change in BUILD_RJ000 
+       nTABFJW2 = 1200
+       !TABFJW(0:nTABFJW1,0:nTABFJW2)
+       call mem_ichor_alloc(TABFJW,nTABFJW1,nTABFJW2,.TRUE.,.TRUE.)
+       CALL GAMMATABULATION(lupri,maxangmomABCD,nTABFJW1,nTABFJW2,TABFJW)  
+       oldmaxangmomABCD = maxangmomABCD
+    ENDIF
     nPrimD = nPrimOfTypeD(ItypeD)
     nContD = nContOfTypeD(ItypeD)
     IF (spherical) THEN
@@ -845,6 +836,7 @@ DO ItypeA=1,nTypesA
  call mem_ichor_dealloc(ContractCoeffA)
  call mem_ichor_dealloc(Acenter)
 ENDDO !typeA
+call mem_ichor_dealloc(TABFJW)
 end subroutine IchorEri
 
 subroutine IchorDistribute(nAtomsC,nAtomsD,startorbitalD,&
