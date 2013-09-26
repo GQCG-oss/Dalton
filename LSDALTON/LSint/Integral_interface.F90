@@ -5271,11 +5271,6 @@ ELSE
   CALL LSQUIT('II_get_admm_exchange_mat:Error in ADMM, unknown optlevel',-1)
 ENDIF
        
-!We transform the full Density to a level 2 density D2
-call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
-                  & nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,&
-                  & GC2,GC3,constrain_factor)
-
 ! Get the scaling factor derived from constraining the total charge
 constrain_factor = 1.0E0_realk
 lambda = 0E0_realk  
@@ -5284,6 +5279,11 @@ IF (const_electrons) THEN
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
             &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
 ENDIF
+
+!We transform the full Density to a level 2 density D2
+call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
+                  & nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,&
+                  & GC2,GC3,constrain_factor)
      
 !Store original AO-indeces (AOdf will not change, but is still stored)
 AORold  = AORdefault
@@ -5728,7 +5728,7 @@ DO idmat=1,ndrhs
                   & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                   & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
                   & lambda)
-      call DSCAL(3*nAtoms,1E0_realk,ADMM_charge_term,1)
+      call DSCAL(3*nAtoms,2E0_realk,ADMM_charge_term,1)
       call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM-Chrg')  
       call DAXPY(3*nAtoms,1E0_realk,ADMM_charge_term,1,admm_Kgrad,1)
    ENDIF
@@ -5955,7 +5955,7 @@ CONTAINS
          call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaE,&
                      & GGAXfactor,D2,k2,xc2,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3)
-      call mat_daxpy(-1E0_realk*LambdaE,S22,A22)
+      call mat_daxpy(-2E0_realk*LambdaE,S22,A22)
       ENDIF
 
       ! B32 = D33 T32 A22 S22inv
@@ -5985,7 +5985,7 @@ CONTAINS
 
       call ls_dzero(ADMM_proj,3*nAtoms)
       
-      call DAXPY(3*nAtoms, 1E0_realk,reOrtho1,1,ADMM_proj,1)
+      call DAXPY(3*nAtoms,constrain_factor,reOrtho1,1,ADMM_proj,1)
       call DAXPY(3*nAtoms,-1E0_realk,reOrtho2,1,ADMM_proj,1)
       
       ! -- free memory --
