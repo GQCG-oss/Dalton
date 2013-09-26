@@ -5236,17 +5236,17 @@ ELSE
 ENDIF
 
 nbast2 = getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
-!IF (nbast .EQ. nbast2) THEN
-!   ! This avoids a simple issue when basis sets have the same size:
-!   ! the filename to store the grid will be the same, overwritting the 
-!   ! content of the ADMM basis with the regular basis and vice versa.
-!   ! this should be fixed by using the actual name of the basis set into the 
-!   ! filename storing the grid infos. 
+IF (nbast .EQ. nbast2) THEN
+   ! This avoids a simple issue when basis sets have the same size:
+   ! the filename to store the grid will be the same, overwritting the 
+   ! content of the ADMM basis with the regular basis and vice versa.
+   ! this should be fixed by using the actual name of the basis set into the 
+   ! filename storing the grid infos. 
 
-!      call lsquit('II_get_admm_exchange_mat: special forbidden case where the &
-!             &regular and ADMM auxiliary basis function &
-!             &have the same number of basis function',-1)
-!ENDIF
+      call lsquit('II_get_admm_exchange_mat: special forbidden case where the &
+             &regular and ADMM auxiliary basis function &
+             &have the same number of basis function',-1)
+ENDIF
 
 call mat_init(D2(1),nbast2,nbast2)
 call mat_init(F2(1),nbast2,nbast2)
@@ -5270,6 +5270,11 @@ ELSEIF (optlevel.EQ.2) THEN
 ELSE
   CALL LSQUIT('II_get_admm_exchange_mat:Error in ADMM, unknown optlevel',-1)
 ENDIF
+       
+!We transform the full Density to a level 2 density D2
+call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
+                  & nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,&
+                  & GC2,GC3,constrain_factor)
 
 ! Get the scaling factor derived from constraining the total charge
 constrain_factor = 1.0E0_realk
@@ -5279,11 +5284,6 @@ IF (const_electrons) THEN
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
             &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
 ENDIF
-         
-!We transform the full Density to a level 2 density D2
-call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
-                  & nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,&
-                  & GC2,GC3,constrain_factor)
      
 !Store original AO-indeces (AOdf will not change, but is still stored)
 AORold  = AORdefault
@@ -5540,8 +5540,8 @@ CONTAINS
      CALL mat_free(S22inv)
      CALL mat_free(S23)
      CALL mat_free(S22)
-     !call io_add_filename(setting%IO,Filename,LUPRI)
-     !call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+     ! call io_add_filename(setting%IO,Filename,LUPRI)
+     ! call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
    ENDIF
    ! IF constraining the total charge
    ! Lagrangian multiplier for conservation of the total nb. of electrons
@@ -5727,19 +5727,19 @@ DO idmat=1,ndrhs
       call get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,k2,xc2,&
                   & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                   & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
-                  & lambda) ! LAMBDA (S - TsT/(1-lambda**2))
+                  & lambda)
       call DSCAL(3*nAtoms,1E0_realk,ADMM_charge_term,1)
       call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM-Chrg')  
       call DAXPY(3*nAtoms,1E0_realk,ADMM_charge_term,1,admm_Kgrad,1)
-   ELSE
-      call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,&
-                  & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
-                  & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
-                  & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
-      call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1)
-      call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_proj,nAtoms,'ADMM_proj')  
-      call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)   
-   ENDIF                  
+   ENDIF
+   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,&
+               & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
+               & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
+               & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
+   call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1)
+   call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_proj,nAtoms,'ADMM_proj')  
+   call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)   
+                     
 
 
    !FREE MEMORY
@@ -5847,7 +5847,7 @@ CONTAINS
       CALL mat_free(tmp22)
    END SUBROUTINE get_Lagrange_multiplier_charge_conservation_in_Energy
    
-   ! LAMBDA (S - TsT/(1-lambda**2))
+   
    SUBROUTINE get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,&
                                  & k2,xc2,D3,D2,n2,n3,&
                                  & nAtoms,GGAXfactor,AO2,AO3,GCAO2,GCAO3,&
@@ -5912,9 +5912,10 @@ CONTAINS
       integer,intent(in)         :: AO2,AO3
       logical,intent(in)         :: GCAO2,GCAO3
       real(realk),intent(in)     :: GGAXfactor
-      real(realk),intent(IN)     :: lambda,constrain_factor
+      real(realk),intent(IN)     :: constrain_factor,lambda ! Lagrange Mult. for coeff.
       !
       type(matrix),target        :: A22,B32,C22
+      real(realk)                :: LambdaE ! Lagrange Mult. for energy chg. const.
       type(matrix),target        :: tmp33,tmp23,tmp22,tmp22b,tmp33c,tmp33d,tmp33e
       type(matrix)               :: S22,S22inv,T23,tmp32,S32,tmp33x,tmpS32
       type(matrix)               :: S23,S33,S33o,tr_D3
@@ -5929,26 +5930,33 @@ CONTAINS
       logical                    :: DEBUG_ADMM_CONST
       Type(matrix),pointer       :: Sa(:),S32x(:),S23x(:),S33x(:),S22x(:) ! derivative along x,y and z for each atom
       Type(matrix),pointer       :: D3x(:),D3x1(:),D3x3(:)
+      Logical                    :: const_electrons
       !
       DEBUG_ADMM_CONST = .FALSE.
+      const_electrons = setting%scheme%ADMM_CONST_EL
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(T23,n2,n3)
       call mat_zero(T23)
       call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,&
                   & constrain_factor)
-                  
-      ! A22 = 2*[ k2(d2) - xc2(d2) ]
-      call mat_init(A22,n2,n2)
-      call mat_zero(A22)
-      call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
-
-
       ! S22^(-1)
       call mat_init(S22,n2,n2)
       call mat_zero(S22)
       call mat_init(S22inv,n2,n2)       
       call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
       call mat_inv(S22,S22inv)
+      
+      !    A22 = 2*[ k2(d2) - xc2(d2) ]
+      ! or A22 = 2*[ k2(d2) - xc2(d2) ] - LAMBDA_energy S22
+      call mat_init(A22,n2,n2)
+      call mat_zero(A22)
+      call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
+      IF (const_electrons) THEN
+         call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaE,&
+                     & GGAXfactor,D2,k2,xc2,setting,lupri,luerr,n2,n3,&
+                     & AO2,AO3,GCAO2,GCAO3)
+      call mat_daxpy(-1E0_realk*LambdaE,S22,A22)
+      ENDIF
 
       ! B32 = D33 T32 A22 S22inv
       call mat_init(B32,n3,n2)
