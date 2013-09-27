@@ -2456,6 +2456,8 @@ end subroutine atomic_fragment_basis
     if(fragment%FAset) then
        write(wunit) fragment%CoccFA
        write(wunit) fragment%CunoccFA
+       write(wunit) fragment%CDocceival
+       write(wunit) fragment%CDunocceival
     end if
 
   end subroutine fragment_write_data
@@ -2739,8 +2741,12 @@ end subroutine atomic_fragment_basis
     if(fragment%FAset) then
        call mem_alloc(Fragment%CoccFA,Fragment%number_basis,Fragment%noccFA)
        call mem_alloc(Fragment%CunoccFA,Fragment%number_basis,Fragment%nunoccFA)
+       call mem_alloc(Fragment%CDocceival,Fragment%noccFA)
+       call mem_alloc(Fragment%CDunocceival,Fragment%nunoccFA)
        read(runit) fragment%CoccFA
        read(runit) fragment%CunoccFA
+       read(runit) fragment%CDocceival
+       read(runit) fragment%CDunocceival
     end if
 
 

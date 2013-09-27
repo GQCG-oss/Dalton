@@ -138,7 +138,7 @@ SUBROUTINE lsdalton
   ! (i)   localize orbitals
   ! (ii)  carry out DEC calculation 
   ! (iii) Construct PLT file
-  if(config%davidOrbLoc%OnlyLocalize .or. (DECinfo%doDEC .and. DECinfo%restart) &
+  if(config%davidOrbLoc%OnlyLocalize .or. (DECinfo%doDEC .and. DECinfo%HFrestart) &
        & .or. config%doplt) then
      skipHFpart=.true.
   else
@@ -540,7 +540,7 @@ SUBROUTINE lsdalton
 
 
   ! Single point DEC calculation using HF restart files
-  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. DECinfo%restart) ) then
+  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. DECinfo%HFrestart) ) then
      call dec_main_prog_file(ls)
   endif DECcalculationHFrestart
 

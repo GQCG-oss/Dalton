@@ -68,8 +68,10 @@ module dec_typedef_module
 
      !> Restart options
      !> ***************
-     !> Restart calculation if some of the fragments were calculated in a previous calculation
-     logical :: restart
+     !> Use HF info generated in previous run (does not necessarily require DECrestart to be true)
+     logical :: HFrestart
+     !> Restart DEC calculation using fragment info files (requires HFrestart to be true)
+     logical :: DECrestart
      !> Creating files for restart: Time (in seconds) passing before backing up restart files
      real(realk) :: TimeBackup
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)

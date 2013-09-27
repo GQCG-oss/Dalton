@@ -867,10 +867,11 @@ subroutine DEC_meaningful_input(config)
         config%optinfo%dynopt=.true.
 
         ! DEC restart for geometry optimizations not implemented
-        if(DECinfo%restart) then
+        if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
            write(config%lupri,*) 'Warning: DEC restart not implemented for geometry optimization...'
            write(config%lupri,*) '--> I turn off DEC restart!'
-           DECinfo%restart=.false.
+           DECinfo%HFrestart=.false.
+           DECinfo%DECrestart=.false.
         end if
      end if GeoOptCheck
 
