@@ -642,6 +642,10 @@ module dec_typedef_module
      logical :: FAset
      real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: number_basis,noccFA
      real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: number_basis,nunoccFA
+     !> Eigenvalues for correlation density matrices 
+     !> --> only set for atomic fragments (pairfrag=.false.) and when FAset=.true.
+     real(realk),pointer :: CDocceival(:) => null()    ! dimension noccFA
+     real(realk),pointer :: CDunocceival(:) => null()  ! dimension nunoccFA
 
 
      !> Information used only for the CC2 and CCSD models to describe

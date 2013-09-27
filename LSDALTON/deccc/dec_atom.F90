@@ -77,6 +77,11 @@ contains
     fragment%OccMat => null()
     fragment%VirtMat => null()
 
+    fragment%CoccFA => null()
+    fragment%CunoccFA => null()
+    fragment%CDocceival => null()
+    fragment%CDunocceival => null()
+
     fragment%basisinfoisset=.false.
     fragment%atomic_number = 0
     fragment%noccEOS = 0
@@ -568,7 +573,7 @@ contains
     implicit none
     !> Atomic fragment where all quantities are expressed in local basis
     type(ccatom), intent(inout) :: LocalFragment
-    real(realk),pointer :: VirtMat(:,:),OccMat(:,:),tmpeival(:),tmpU(:,:)
+    real(realk),pointer :: VirtMat(:,:),OccMat(:,:),tmpU(:,:),occeival(:),virteival(:)
     integer :: i,j,ix,jx
     integer :: noccTRANS,nvirtTRANS,noccEOS,nvirtEOS,offset,nocc,nvirt
     real(realk),pointer :: OU(:,:),VU(:,:),Oeival(:),Veival(:),OUred(:,:),VUred(:,:)
@@ -619,8 +624,8 @@ contains
 
     ! Virtual correlation density matrix
     call mem_alloc(VirtMat,nvirtTRANS,nvirtTRANS)
-    call mem_alloc(tmpeival,nvirtTRANS)
     call mem_alloc(tmpU,nvirtTRANS,nvirtTRANS)
+    call mem_alloc(virteival,nvirtTRANS)  
 
     if(LocalFragment%nunoccEOS ==LocalFragment%nunoccAOS) then
        ! Transform all orbitals
@@ -644,7 +649,7 @@ contains
     end if
 
     ! Diagonalize virtual correlation density matrix to define fragment-adapted virtual AOS orbitals
-    call solve_eigenvalue_problem_unitoverlap(nvirtTRANS,VirtMat,tmpeival,tmpU)
+    call solve_eigenvalue_problem_unitoverlap(nvirtTRANS,VirtMat,virteival,tmpU)
 
     ! Now the fragment-adapted orbitals (psi) are given from local orbitals (phi) as:
     ! psi(c) = sum_a tmpU(a,c) phi(a)
@@ -692,7 +697,7 @@ contains
     ! ------------------------------------
     offset = nvirt-nvirtTRANS    ! offset to put all non-EOS orbitals after the EOS orbitals
     do j=1,nvirtTRANS  ! loop over fragment-adapted orbital indices
-       Veival(j+offset) = tmpeival(j)
+       Veival(j+offset) = virteival(j)
        ix=0
        localloop1: do i=1,nvirt  ! loop over local orbital indices
           if(virtEOS(i)) cycle localloop1   ! not consider local EOS, which have already been set
@@ -701,8 +706,6 @@ contains
        end do localloop1
     end do
 
-
-    call mem_dealloc(tmpeival)
     call mem_dealloc(tmpU)
 
 
@@ -722,7 +725,7 @@ contains
 
     ! Occupied correlation density matrix
     call mem_alloc(OccMat,noccTRANS,noccTRANS)
-    call mem_alloc(tmpeival,noccTRANS)
+    call mem_alloc(occeival,noccTRANS)
     call mem_alloc(tmpU,noccTRANS,noccTRANS)
 
     if(LocalFragment%noccEOS ==LocalFragment%noccAOS) then
@@ -747,7 +750,7 @@ contains
     end if
 
     ! Diagonalize occupied correlation density matrix to define fragment-adapted occupied AOS orbitals
-    call solve_eigenvalue_problem_unitoverlap(noccTRANS,OccMat,tmpeival,tmpU)
+    call solve_eigenvalue_problem_unitoverlap(noccTRANS,OccMat,occeival,tmpU)
 
     ! Set blocks of OU in the same way as for VU above.
     OU = 0.0_realk
@@ -759,7 +762,7 @@ contains
 
     offset = nocc-noccTRANS
     do j=1,noccTRANS  ! loop over fragment-adapted orbital indices
-       Oeival(j+offset) = tmpeival(j)
+       Oeival(j+offset) = occeival(j)
        ix=0
        localloop2: do i=1,nocc  ! loop over local orbital indices
           if(occEOS(i)) cycle localloop2
@@ -768,7 +771,6 @@ contains
        end do localloop2
     end do
 
-    call mem_dealloc(tmpeival)
     call mem_dealloc(tmpU)
     call mem_dealloc(VirtMat)
     call mem_dealloc(OccMat)
@@ -809,11 +811,16 @@ contains
     ! In general dimension 1 is larger than dimension 2.
     LocalFragment%noccFA = count(OccOrbs)
     call mem_alloc(OUred,LocalFragment%noccAOS,LocalFragment%noccFA)
+    if(associated(LocalFragment%CDocceival)) then
+       call mem_dealloc(LocalFragment%CDocceival)
+    end if
+    call mem_alloc(LocalFragment%CDocceival,LocalFragment%noccFA)
     ix=0
     do i=1,nocc
        if(OccOrbs(i)) then
           ix=ix+1
           OUred(:,ix) = OU(:,i)
+          LocalFragment%CDocceival(ix) = Oeival(i)
        end if
     end do
 
@@ -821,13 +828,21 @@ contains
     ! Same for virtual space
     LocalFragment%nunoccFA = count(VirtOrbs)
     call mem_alloc(VUred,LocalFragment%nunoccAOS,LocalFragment%nunoccFA)
+    if(associated(LocalFragment%CDunocceival)) then
+       call mem_dealloc(LocalFragment%CDunocceival)
+    end if
+    call mem_alloc(LocalFragment%CDunocceival,LocalFragment%nunoccFA)
     ix=0
     do i=1,nvirt
        if(VirtOrbs(i)) then
           ix=ix+1
           VUred(:,ix) = VU(:,i)
+          LocalFragment%CDunocceival(ix) = Veival(i)
        end if
     end do
+
+    call mem_dealloc(occeival)
+    call mem_dealloc(virteival)
 
 
     ! Set fragment-adapted (FA) orbital coefficients: AO-->FA basis

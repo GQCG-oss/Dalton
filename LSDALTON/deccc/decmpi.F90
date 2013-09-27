@@ -711,6 +711,12 @@ contains
           call mem_alloc(MyFragment%CoccFA,MyFragment%number_basis,MyFragment%noccFA)
           nullify(MyFragment%CunoccFA)
           call mem_alloc(MyFragment%CunoccFA,MyFragment%number_basis,MyFragment%nunoccFA)
+          if(.not. MyFragment%pairfrag) then
+             nullify(MyFragment%CDocceival)
+             call mem_alloc(MyFragment%CDocceival,MyFragment%noccFA)
+             nullify(MyFragment%CDunocceival)
+             call mem_alloc(MyFragment%CDunocceival,MyFragment%nunoccFA)
+          end if
        end if
 
        if (MyFragment%t1_stored) then ! only used for CC singles effects
@@ -728,6 +734,10 @@ contains
     if(MyFragment%FAset) then
        call ls_mpi_buffer(MyFragment%CoccFA,MyFragment%number_basis,MyFragment%noccFA,master)
        call ls_mpi_buffer(MyFragment%CunoccFA,MyFragment%number_basis,MyFragment%nunoccFA,master)
+       if(.not. MyFragment%pairfrag) then
+          call ls_mpi_buffer(MyFragment%CDocceival,MyFragment%noccFA,master)
+          call ls_mpi_buffer(MyFragment%CDunocceival,MyFragment%nunoccFA,master)
+       end if
     end if
     if (MyFragment%t1_stored) then ! only used for CC singles effects
        call ls_mpi_buffer(MyFragment%t1,MyFragment%t1dims(1),MyFragment%t1dims(2),master)
