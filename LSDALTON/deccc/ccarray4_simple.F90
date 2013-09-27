@@ -4056,7 +4056,6 @@ contains
     dims(3) = nvirtFO
     dims(4) = nocc
     t2 = array4_init(dims)
-    call mem_alloc(t2%val,nvirtFO,nocc,nvirtFO,nocc)
     call dgemm('t','n',nvirtFO,nocc*nvirtFO*nocc,nvirt,1.0E0_realk,Ured,nvirt,tmp2,nvirt,&
          & 0.0E0_realk,t2%val,nvirtFO)
     call mem_dealloc(tmp2)

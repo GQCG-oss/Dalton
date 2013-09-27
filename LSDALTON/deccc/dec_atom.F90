@@ -728,6 +728,7 @@ contains
     call mem_alloc(occeival,noccTRANS)
     call mem_alloc(tmpU,noccTRANS,noccTRANS)
 
+
     if(LocalFragment%noccEOS ==LocalFragment%noccAOS) then
        ! Transform all orbitals
        OccMat = LocalFragment%OccMat
