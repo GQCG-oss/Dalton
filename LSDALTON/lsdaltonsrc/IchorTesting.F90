@@ -159,7 +159,8 @@ do Ipass = 1,2
        IF(dim4.GT.dim3/nPass)CYCLE
        IF(dim3/nPass+dim4.GT.dim1+dim2)CYCLE
        
-       write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
+       write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),&
+            & ',',BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
        
 !       write(lupri,*)'dim:',dim1,dim2,dim3,dim4
        
@@ -193,18 +194,21 @@ do Ipass = 1,2
 !       WRITE(lupri,*)'IchorDriver'
        call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integralsIchor,spherical)
        !   setting%scheme%intprint = 0
-       write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
+       write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
+            & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
        DO D=1,dim4
           DO C=1,dim3
              DO B=1,dim2
                 DO A=1,dim1
-                   IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT.1.0E-10_realk/(ABS(integralsII(A,B,C,D))))THEN
+                   IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
+                        & 1.0E-10_realk/(ABS(integralsII(A,B,C,D))))THEN
                       FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
                       write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,B,C,D)))
                       write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
                       write(lupri,'(A,ES16.8)')'integralsII(A,B,C,D)   ',integralsII(A,B,C,D)
                       write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
-                      write(lupri,'(A,ES16.8)')'DIFF                   ',ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                      write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
 !                   ELSE
 !                      write(lupri,'(A,I2,A,I2,A,I2,A,I2,A,ES16.8,A,ES16.8)')&
 !                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
@@ -231,10 +235,14 @@ do Ipass = 1,2
      IF(iBasis4.GT.iBasis3)CYCLE
      IF(iBasis3+iBasis4.GT.iBasis1+iBasis2)CYCLE  
 
-     IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4))THEN
-        write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',BASISTYPE(iBasis4)(10:15),',',ipass,') FAILED'
+     IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4)) THEN
+        write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
+             & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
+             & BASISTYPE(iBasis4)(10:15),',',ipass,') FAILED'
      ELSE
-        write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',BASISTYPE(iBasis4)(10:15),',',ipass,') SUCCESSFUL'
+        write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
+             & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
+             & BASISTYPE(iBasis4)(10:15),',',ipass,') SUCCESSFUL'
      ENDIF
 
 !     write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'CRIT1=`$GREP "BASIS\(',BASISTYPE(iBasis1)(10:15),',',BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',BASISTYPE(iBasis4)(10:15),',',ipass,'\) SUCCESSFUL" $log | wc -l`'

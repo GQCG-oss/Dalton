@@ -765,7 +765,8 @@ DO ItypeA=1,nTypesA
                     DO I3 = 1,nOrbCompC*nContC
                      DO I4 = 1,nOrbCompD*nContD
                       OutputStorage(startA+I1,startB+I2,I3+(IatomC-1)*nOrbC,I4+(IatomD-1)*nOrbD,1)=&
-                        & CDAB(I3+(I4-1)*nOrbC+(I1-1)*nOrbC*nOrbD+(I2-1)*nOrbC*nOrbD*nOrbA+(IatomC-1)*ndimPass+(IatomD-1)*ndimPass*nAtomsC)
+                        & CDAB(I3+(I4-1)*nOrbC+(I1-1)*nOrbC*nOrbD+(I2-1)*nOrbC*nOrbD*nOrbA+&
+                        & (IatomC-1)*ndimPass+(IatomD-1)*ndimPass*nAtomsC)
                      ENDDO
                     ENDDO
                    ENDDO
