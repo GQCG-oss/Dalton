@@ -184,6 +184,9 @@ Functional* available_functionals[] = {
     NULL
 };
 
+integer
+clear_funclist();
+
 static integer my_printf(const char *fmt, ...)
 {
     integer i;va_list ap; va_start(ap, fmt); i= vprintf(fmt, ap); va_end(ap);
