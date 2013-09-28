@@ -253,8 +253,8 @@ call mat_assign(Fmat(1),F)
 
 do i=1,ls%INPUT%MOLECULE%nAtoms
    do j=1, 3
-write (*,*) "atom index:",i,"  coord:",j
-write (lupri,*) "atom index:",i,"  coord:",j
+      write (*,*) "atom index:",i,"  coord:",j
+      write (lupri,*) "atom index:",i,"  coord:",j
       ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)-h 
       CALL get_energy(E,Eerr,config,H1,Fmat,Dmat,S,ls,C,nAtoms,lupri,luerr)
       Emin=E(1)
@@ -268,9 +268,7 @@ write (lupri,*) "atom index:",i,"  coord:",j
       numerical_gradient(j,i)=(Eplus-Emin)/(2*h)
     enddo
 enddo
-write (*,*) "print gradient"
-write (lupri,*) "print gradient"
-CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,numerical_gradient,nAtoms,'TOTAL')
+CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,numerical_gradient,nAtoms,'NUM_GRAD')
 end subroutine get_num_grad
 
 End module Energy_and_deriv

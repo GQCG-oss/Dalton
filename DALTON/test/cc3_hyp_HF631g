@@ -114,7 +114,7 @@ CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 # CC3 hyperpolarizability :
-CRIT1=`$GREP  "XDIPLEN *\(unrel\.\) *(-|-0)\.2000 *ZDIPLEN *\(unrel\.\) *(|0)\.1000 *XDIPLEN *\(unrel\.\) *(|0)\.1000 *-1\.7420603" $log | wc -l`
+CRIT1=`$GREP  "XDIPLEN *\(unrel\.\) *(-|-0)\.2000 *ZDIPLEN *\(unrel\.\) *( |0)\.1000 *XDIPLEN *\(unrel\.\) *( |0)\.1000 *-1\.7420603" $log | wc -l`
 TEST[2]=$CRIT1
 CTRL[2]=1
 ERROR[2]="CC3 HYPERPOLARIZABILITY NOT CORRECT"

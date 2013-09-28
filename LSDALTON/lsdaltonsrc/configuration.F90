@@ -37,7 +37,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input
-use dec_typedef_module,only: DECinfo
+use dec_typedef_module,only: DECinfo,MODEL_MP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
@@ -840,12 +840,12 @@ subroutine DEC_meaningful_input(config)
   DECcalculation: if(config%doDEC) then
 
      ! CCSD does not work for SCALAPACK, Hubi please fix!
-     if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=1) ) then
+     if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .SCALAPACK!',-1)
      end if
      ! CCSD does not work for CSR, Thomas/Hubi please fix - make not matrix type
      ! subroutines
-     if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=1) ) then
+     if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .CSR!',-1)
      end if
 
@@ -867,10 +867,11 @@ subroutine DEC_meaningful_input(config)
         config%optinfo%dynopt=.true.
 
         ! DEC restart for geometry optimizations not implemented
-        if(DECinfo%restart) then
+        if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
            write(config%lupri,*) 'Warning: DEC restart not implemented for geometry optimization...'
            write(config%lupri,*) '--> I turn off DEC restart!'
-           DECinfo%restart=.false.
+           DECinfo%HFrestart=.false.
+           DECinfo%DECrestart=.false.
         end if
      end if GeoOptCheck
 
@@ -905,7 +906,7 @@ subroutine DEC_meaningful_input(config)
 
         ! For the release we only include DEC-MP2
 #ifndef MOD_UNRELEASED
-        if(DECinfo%ccmodel/=1 .and. (.not. DECinfo%full_molecular_cc) ) then
+        if(DECinfo%ccmodel/=MODEL_MP2 .and. (.not. DECinfo%full_molecular_cc) ) then
            print *, 'Note that you may run a full molecular CC calculation (not linear-scaling)'
            print *, 'using the **CC section rather than the **DEC section.'
            call lsquit('DEC is currently only available for the MP2 model!',-1)
@@ -1070,6 +1071,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.4CENTERERI');  INTEGRAL%DO4CENTERERI = .TRUE.
         CASE ('.AOPRINT');  READ(LUCMD,*) INTEGRAL%AOPRINT
         CASE ('.BASPRINT');  READ(LUCMD,*) INTEGRAL%BASPRINT
+        CASE ('.DEBUGICHOR');  INTEGRAL%DEBUGICHOR = .TRUE.
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
 #ifdef BUILD_GEN1INT_LSDALTON
@@ -3483,6 +3485,15 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       IF(config%integral%MEMDIST)call lsquit('.MEMDIST require .SCALAPACK',-1)
       IF(ls%setting%scheme%MEMDIST)call lsquit('.MEMDIST require .SCALAPACK',-1)
    endif
+
+!Response requires the VAR_RSP
+   if(config%response%tasks%doResponse) then
+#ifdef VAR_RSP
+      !everything is fine
+#else
+      call lsquit('Response Calculations require compilation with -DVAR_RSP',-1)
+#endif
+   end if
 
 !Local Excited state geometry optimization check:
 !================================================

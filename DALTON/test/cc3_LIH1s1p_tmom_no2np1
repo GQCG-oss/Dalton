@@ -126,7 +126,7 @@ CTRL[2]=1
 ERROR[2]="CC3 TRANSITION MOMENT NOT CORRECT"
 
 # CC3 excitation energies:
-CRIT1=`$GREP  " *\| *\^1B1 *\| *1 *\| *(|0)\.1144759 *\| *3\.11505 *\| *25124\.5(5|6). *\| *72\... *\|" $log | wc -l`
+CRIT1=`$GREP  " *\| *\^1B1 *\| *1 *\| *( |0)\.1144759 *\| *3\.11505 *\| *25124\.5(5|6). *\| *72\... *\|" $log | wc -l`
 TEST[3]=$CRIT1
 CTRL[3]=1
 ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT"

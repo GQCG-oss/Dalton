@@ -4,13 +4,14 @@ USE precision
 USE TYPEDEF
 USE lattice_type
 USE lattice_vectors
-USE multipole_pbc
+!USE multipole_pbc
 USE matrix_module
 USE matrix_operations
 USE pbc_MSC
 USE pbc_matrix_operations
 use ls_util
 use integralinterfaceMod
+use lstiming
 contains
 
 SUBROUTINE pbc_controlmm(num_its,Tlat,Tlmax,lmax,square_intermed,latvec,&
@@ -671,6 +672,7 @@ REAL(realk) :: multfull(nbast,nbast), Dfull(nbast,nbast)
 REAL(realk) :: Coulombf2,Coulombfst,Coulomb2,Coulombst
 !REAL(realk) :: PI=3.14159265358979323846D0
 real(realk) :: tlatlm((lmax+1)**2),tlatlmnu((lmax+1)**2)
+real(realk) :: debugsumt
 complex(complexk) :: phase
 character(len=12) :: diis,stiter
 !TYPE(matrix) :: debug_tm !FOR debug only
@@ -768,11 +770,27 @@ ENDDO
 
 !call pbc_redefine_q(rhojk,lmax)
 !call pbc_multipl_moment_order(rhojk,lmax)
-!debugsumT=0d0
+debugsumT=0d0
 !write(lupri,*) 'electronic moments'
-!do jk=1,256
-!   write(lupri,*) rhojk(jk)
-!enddo
+do jk=1,(lmax+1)**2
+   debugsumt=debugsumt+rhojk(jk)**2
+enddo
+write(lupri,*) 'debugsum rhojk^2', debugsumt
+write(*,*) 'debugsumt rhojk^2', debugsumt
+
+DO lm=1,(lmax+1)**2
+  tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
+  tlatlmnu(lm)=dot_product(tlat(lm,1:nrlm),nucmom)
+ENDDO
+
+debugsumT=0d0
+do jk=1,(lmax+1)**2
+   debugsumt=debugsumt+tlatlm(jk)**2
+!   write(lupri,*) rhojk(jk)+nucmom(jk)
+enddo
+write(lupri,*) 'debugsum tlatlm^2', debugsumt
+write(*,*) 'debugsumt tlatlm^2', debugsumt
+
 !
 !write(lupri,*) 'total moments'
 !do jk=1,256
@@ -808,8 +826,8 @@ DO lm=1,(lmax+1)**2
       !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),rhojk)+&
                 ! dot_product(tlat(lm,1:nrlm),nucmom)
       !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),rhojk)!+&
-      tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
-      tlatlmnu(lm)=dot_product(tlat(lm,1:nrlm),nucmom)
+      !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
+      !tlatlmnu(lm)=dot_product(tlat(lm,1:nrlm),nucmom)
 
       !Construct fock matrix
       ll%lvec(nk)%fck_vec(delta)=ll%lvec(nk)%fck_vec(delta)&
@@ -861,6 +879,7 @@ ENDDO !delta
       if(.not. ll%store_mats) then
         if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
           call mat_daxpy(1._realk,farfieldtmp,g_2(nk))
+
 #ifdef DEBUGPBC
           write(lupri,*) 'Near field coul',nk
           call mat_print(ll%lvec(nk)%oper(2),1,4,1,4,lupri)
@@ -872,6 +891,7 @@ ENDDO !delta
         if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
           call mat_daxpy(1._realk,farfieldtmp,ll%lvec(nk)%oper(2))
           call pbc_get_file_and_write(ll,nbast,nbast,nk,4,2,'            ')! 4 and 2 Coul J
+
      !for debugging only
      !call mat_to_full(debug_tm,1D0,debug_mat)
      !write(lupri,*) 'far-field',x2,y2,z2
@@ -1322,6 +1342,325 @@ contains
 
 end subroutine pbc_mat_redefine_q
 
+
+SUBROUTINE READ_multipole_files(il1,il2,il3,maxmultmom,sphermom,nbast,lupri)
+  IMPLICIT NONE
+  !TYPE(lvec_list_t), INTENT(IN) :: ll
+  INTEGER, INTENT(IN) :: il1,il2,il3, maxmultmom,nbast,lupri
+  TYPE(lattice_cell_info_t), INTENT(INOUT) :: sphermom!(:)
+  !LOCAL VARIABLES
+  INTEGER :: fileunit,totalmom !For file detection
+  INTEGER :: i,j,stat
+  INTEGER :: sphermoms,ii, debdum
+  CHARACTER(len=10) :: numtostring1,numtostring2,numtostring3
+  CHARACTER(LEN=20) :: filename
+  REAL(realk) :: testread
+  !For debugging
+  !REAL(realk) :: debugsumT
+
+  fileunit=9950
+
+  
+  totalmom=(maxmultmom+1)**2
+  !numnn=0
+!  DO dummy=1,numvecs
+
+!     call find_latt_vectors(dummy,il1,il2,il3,fdim,ll)
+
+     if(abs(il1) .gt. n_neighbour) call lsquit('ERROR in READ_multipole_files&
+     & vector not in NF',lupri)
+     if(abs(il2) .gt. n_neighbour) call lsquit('ERROR in READ_multipole_files&
+     & vector not in NF',lupri)
+     if(abs(il3) .gt. n_neighbour) call lsquit('ERROR in READ_multipole_files&
+     & vector not in NF',lupri)
+!     numnn=numnn+1
+
+!  ENDDO
+  !allocate(sphermom(numnn))
+
+  !DO dummy=1,numnn
+  !   allocate(sphermom(dummy)%getmultipole(totalmom))
+  !   DO ii=1,totalmom
+  !   call Mat_init(sphermom(dummy)%getmultipole(ii),nbast,nbast)
+  !   call Mat_zero(sphermom(dummy)%getmultipole(ii))
+  !   ENDDO
+  !ENDDO
+  call mem_alloc(sphermom%getmultipole,totalmom)
+  DO ii=1,totalmom
+     call Mat_init(sphermom%getmultipole(ii),nbast,nbast)
+     call Mat_zero(sphermom%getmultipole(ii))
+  ENDDO
+
+  !numnn=0
+  !DO dummy=1,numvecs
+
+     !call find_latt_vectors(dummy,il1,il2,il3,fdim,ll)
+
+!     if(abs(il1) .gt. ll%nneighbour) CYCLE
+!     if(abs(il2) .gt. ll%nneighbour) CYCLE
+!     if(abs(il3) .gt. ll%nneighbour) CYCLE
+     !numnn=numnn+1
+     write(numtostring1,'(I5)')  il1
+     write(numtostring2,'(I5)')  il2
+     write(numtostring3,'(I5)')  il3
+     numtostring1=adjustl(numtostring1)
+     numtostring2=adjustl(numtostring2)
+     numtostring3=adjustl(numtostring3)
+  !ENDDO
+     !filename='Qcdlm.dat'!&
+     filename='Qcdlm'//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)//'.dat'
+     !filename2=&
+     !&'kopi'//trim(numtostring1)//trim(numtostring2)//trim(numtostring2)//'.dat'
+
+     call LSOPEN(fileunit,filename, 'old','unformatted')
+!     read(fileunit,IOSTAT=stat) testread
+     !write(*,*) testread,stat
+!    BACKSPACE(fileunit)
+!     if(stat .ne. 0) then
+       rewind(fileunit) 
+!     endif
+     !OPEN(UNIT=9998,FILE=filename2)
+     debdum=0
+     !write(lupri,*) 'Debug 1: ', fileunit
+     DO sphermoms=1,totalmom
+        
+        !DO ii=1,nbast*nbast
+        debdum=debdum+1
+
+        call mat_read_from_disk(fileunit,sphermom%getmultipole(sphermoms),.true.)
+        !READ(fileunit,*) sphermom(numnn)%getmultipole(sphermoms)%elms!(ii)  
+        !do j=1,nbast
+        !READ(fileunit) (sphermom%getmultipole(sphermoms)%elms(i+(j-1)*nbast),&
+        !i=1,nbast)
+        !enddo
+
+        !debugsumT=0d0
+        !do j=1,nbast*nbast
+        !  debugsumT=debugsumT+sphermom%getmultipole(sphermoms)%elms(j)
+        !enddo
+        !if(debugsumT .gt. 0d0) then
+        !  write(*,*) 'debugsumT > 0d0',il1
+        !  write(*,*) debugsumT , sphermoms
+        !  write(*,*) sphermom%getmultipole(sphermoms)%elms
+        !  stop
+        !endif
+        !write(9998,*) sphermom(dummy)%getmultipole(sphermoms)%elms!(ii)
+        !write(*,*) 'Debug 2: ', dummy, ii,nbast*nbast
+        !ENDDO
+     ENDDO
+        !write(*,*) 'Debug 3: ', filename
+     !stop
+     call LSCLOSE(fileunit,'KEEP') 
+
+  !ENDDO
+
+!  write(*,*) 'Debug 4: ', numnn
+!  stop
+  !DO ii=1,totalmom
+  !   call Mat_free(sphermom%getmultipole(ii))
+  !enddo
+
+
+END SUBROUTINE READ_multipole_files
+
+SUBROUTINE pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,refcell,numvecs,maxmultmom)
+  IMPLICIT NONE
+  INTEGER,INTENT(IN) :: lupri,luerr,numvecs,nbast
+  INTEGER,intent(in) :: maxmultmom
+  TYPE(lvec_list_t),intent(in) ::lattice
+  !REAL(realk), INTENT(IN) :: kvec(3)
+  TYPE(LSSETTING),intent(inout)   :: SETTING 
+  TYPE(moleculeinfo),intent(inout) :: refcell
+  TYPE(moleculeinfo),intent(in) :: latt_cell(numvecs)
+
+  INTEGER, DIMENSION(3) :: fdim
+  Integer :: refindex,index,il1,il2,il3,nSpherMom,l
+  TYPE(matrix),pointer :: spherMom(:)
+  CHARACTER(len=20) ::filename
+  CHARACTER(len=10) :: numtostring1,numtostring2,numtostring3
+  INTEGER :: wunit,I,j
+  
+  wunit=9910
+  nSpherMom=(maxMultmom+1)**2
+  call set_lstime_print(.false.)
+  
+  write(lupri,*) 'PBC_MULTIPOLE, maxMultmom,nspherMom', maxMultmom,nspherMom
+  write(lupri,*) 'DEBUG INSIDE PBC_MULTIPOLE'
+  
+  call mem_Alloc(spherMom,nSpherMom)
+
+  DO l=1,nSpherMom
+     call Mat_init(spherMom(l),nbast,nbast)
+     call Mat_zero(spherMom(l))
+  ENDDO
+  call find_latt_index(refindex,0,0,0,fdim,lattice,lattice%max_layer)
+
+  DO index=1,numvecs
+     
+
+     call find_latt_vectors(index,il1,il2,il3,fdim,lattice)
+     if(abs(il1) .gt. abs(lattice%nneighbour)) CYCLE
+     if(abs(il2) .gt. abs(lattice%nneighbour)) CYCLE
+     if(abs(il3) .gt. abs(lattice%nneighbour)) CYCLE
+     !input%Basis%regular%atomtype(:)%shell(:)%segment(1)%exponents(:)
+     !phase=cmplx(0,k1*il1+k2*il2+k3*il3)
+
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2)
+     !call TYPEDEF_setmolecules(setting,refcell,1,refcell,2)
+
+     call II_get_sphmom(LUPRI,LUERR,SETTING,spherMom,nSpherMom,maxMultmom,&
+     0.0_realk,0.0_realk,0.0_realk)
+
+!       call pbc_readopmat2(il1,il2,il3,matris,nbast,'OVERLAP',.true.,.false.)
+!       call write_matrix(matris,nbast,nbast)
+
+    write(numtostring1,'(I5)')  il1
+    write(numtostring2,'(I5)')  il2
+    write(numtostring3,'(I5)')  il3
+                                      !numstring
+    numtostring1=adjustl(numtostring1)
+    numtostring2=adjustl(numtostring2)
+    numtostring3=adjustl(numtostring3)
+    filename='Qcdlm'//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)//'.dat'
+!     write(lupri,*) filename
+     call LSOPEN(wunit,filename,'unknown','unformatted')
+
+     !write(lupri,*) 'sphermom 0',il1
+     !call mat_print(spherMom(1), 1, nbast, 1,nbast, lupri)
+
+     DO l=1,nSpherMom
+       ! DO j=1,nbast
+       ! write(wunit) (spherMom(l)%elms(i+(j-1)*nbast),i=1,nbast)
+       ! enddo
+        call mat_write_to_disk(wunit,spherMom(l),.true.)
+        call mat_free(spherMom(l))
+        call Mat_init(spherMom(l),nbast,nbast)
+        call Mat_zero(spherMom(l))
+     ENDDO
+
+
+
+     call LSCLOSE(wunit,'KEEP')
+     wunit=wunit+1
+
+  ENDDO
+
+!  filename='Qcdlm.dat'
+!  call LSOPEN(wunit,filename,'unknown','formatted')
+  DO l=1,nSpherMom
+!     !call mat_print(spherMom(l),1,SpherMom(l)%nrow,1,SpherMom(l)%ncol,wunit)
+!     write(wunit,*) spherMomt(l)%elms
+     call mat_free(sphermom(l))
+!     call mat_free(sphermomt(l))
+  ENDDO
+
+!  call LSCLOSE(wunit,'KEEP')
+  call mem_dealloc(sphermom)
+  call set_lstime_print(.true.)
+  !deallocate(sphermomt)
+  write(lupri,*) 'Finished PBC_multipole'
+
+END SUBROUTINE pbc_multipole_expan_k
+
+
+SUBROUTINE pbc_charge_density(lattice)
+  IMPLICIT NONE
+  TYPE(lvec_list_t),intent(in) ::lattice
+  INTEGER :: nlatvecs
+  !INTEGER,INTENT(IN) :: lmax
+  !lattice%lvec(j)%std_coord(123)
+
+  nlatvecs=size(lattice%lvec)
+  
+
+END SUBROUTINE pbc_charge_density
+
+SUBROUTINE pbc_local_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,refcell,numvecs,maxmultmom)
+  IMPLICIT NONE
+  INTEGER,INTENT(IN) :: lupri,luerr,numvecs,maxmultmom,nbast
+  TYPE(lvec_list_t),intent(in) ::lattice
+  TYPE(LSSETTING),intent(inout)   :: SETTING 
+  TYPE(moleculeinfo),intent(inout) :: refcell
+  TYPE(moleculeinfo),intent(in) :: latt_cell(numvecs)
+
+  INTEGER, DIMENSION(3) :: fdim
+  Integer :: refindex,index,il1,il2,il3,nSpherMom,l
+  TYPE(matrix),pointer :: spherMom(:)
+  CHARACTER(len=20) ::filename
+  CHARACTER(len=10) :: numtostring1,numtostring2,numtostring3
+  INTEGER :: wunit
+  
+  wunit=9910
+  nSpherMom=0
+  call set_lstime_print(.false.)
+
+  DO l=0,maxmultmom
+      nSpherMom=nSpherMom+2*l+1
+  ENDDO
+  
+  write(lupri,*) 'PBC_MULTIPOLE, maxMultmom,nspherMom', maxMultmom,nspherMom
+  !write(lupri,*) 'DEBUG INSIDE PBC_MULTIPOLE'
+  
+  call mem_Alloc(spherMom,nSpherMom)
+  DO l=1,nSpherMom
+     call Mat_init(spherMom(l),nbast,nbast)
+     call Mat_zero(spherMom(l))
+  ENDDO
+  call find_latt_index(refindex,0,0,0,fdim,lattice,lattice%max_layer)
+  DO index=1,numvecs
+     
+     !phase1 = kvec(1)*lattice%lvec(index)%std_coord(1)
+     !phase2 = kvec(2)*lattice%lvec(index)%std_coord(2)
+     !phase3 = kvec(3)*lattice%lvec(index)%std_coord(3)
+     !phase=CMPLX(0.,phase1+phase2+phase3)
+     !phase=exp(phase)
+
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2)
+
+     call find_latt_vectors(index,il1,il2,il3,fdim,lattice)
+     !if(abs(il1) .le. abs(lattice%nneighbour)) CYCLE
+     !if(abs(il2) .le. abs(lattice%nneighbour)) CYCLE
+     !if(abs(il3) .le. abs(lattice%nneighbour)) CYCLE
+     !input%Basis%regular%atomtype(:)%shell(:)%segment(1)%exponents(:)
+
+
+     call II_get_sphmom(LUPRI,LUERR,SETTING,spherMom,nSpherMom,maxMultmom,0E0_realk,0E0_realk,0E0_realk)
+
+!       call pbc_readopmat2(il1,il2,il3,matris,nbast,'OVERLAP',.true.,.false.)
+!       call write_matrix(matris,nbast,nbast)
+!
+    write(numtostring1,'(I5)')  il1
+    write(numtostring2,'(I5)')  il2
+    write(numtostring3,'(I5)')  il3
+                                      !numstring
+    numtostring1=adjustl(numtostring1)
+    numtostring2=adjustl(numtostring2)
+    numtostring3=adjustl(numtostring3)
+    filename='Qcdlm'//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)//'.dat'
+     write(lupri,*) filename
+     call LSOPEN(wunit,filename,'unknown','formatted')
+
+     write(wunit,*) index
+     DO l=1,nSpherMom
+     !call mat_print(spherMom(l),1,SpherMom(l)%nrow,1,SpherMom(l)%ncol,wunit)
+     write(wunit,*) spherMom(l)%elms
+     ENDDO
+
+
+     call LSCLOSE(wunit,'KEEP')
+     !wunit=wunit+1
+
+  END DO
+
+  DO l=1,nSpherMom
+     call mat_free(sphermom(l))
+  ENDDO
+  call mem_dealloc(sphermom)
+  call set_lstime_print(.true.)
+
+ 
+
+END SUBROUTINE pbc_local_expan_k
 
 
 

@@ -508,9 +508,8 @@ C------------------
       DODIFDEN = .NOT.FLAG(49) .AND. .NOT.HSFOCK
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
-     &     .AND. .NOT.QM3      .AND. .NOT. QMMM
-     &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
-     &     .AND. .NOT.QMNPMM
+     &     .AND. .NOT.QM3      .AND. .NOT.QMMM
+     &     .AND. .NOT.AOSAVE   .AND. .NOT.CHOINT
      &     .AND. .NOT.QMNPMM   
 C
 #if defined (BUILD_PELIB)
@@ -528,7 +527,7 @@ C-tbp: turn off DIFDEN for Cholesky decomposition (CHOINT true)
 C------------------
       IF (.NOT. USRSCR) THEN
 C        AOSAVE or Cholesky (CHOINT): No screening.
-         IF (AOSAVE .OR. CHOINT) THEN
+         IF (AOSAVE .OR. CHOINT .OR. .NOT. DIRFCK) THEN
             IFTHRS = 20 ! code for no screening
          ELSE IF (FLAG(13)) THEN
 Chj-aug99: MO's read from input, assume good guess
@@ -697,10 +696,6 @@ C
 C  ***** Calculate 2-electron part of Fock matrix with
 C        differential density
 C
-Cef begin
-C         write(lupri,*) 'DCAO: '
-C         call output(DCAO,1,nbast,1,nbast,nbast,nbast,-1,lupri)
-Cef end
          CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
          IF (HSFOCK) THEN
 C
@@ -908,7 +903,7 @@ C
          if (peqm) then
            call memget2('REAL','fpe', kfpe, nnbasx, wrk, kfree, lfree)
            call memget2('REAL','epe', kepe, 1, wrk, kfree, lfree)
-           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+           if (nasht == 0 .or. hsfock) then
              call pe_master(runtype='fock', denmats=daosav(:,1),
      &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
      &                      energies=wrk(kepe:kepe),
@@ -1234,32 +1229,29 @@ C           is higher in energy with lower gradient, especially if MOSTART H1DIA
 C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
-C        Do not try that with open-shell - it does not work./pawsa
-#if 0 /* I am not sure what the test for stalling detection should be */
-         IF (JTDIIS.GT.1 .AND.
-     &       EMCDIF.GT.5D-5) THEN
-#else
 !  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT 
-          IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-     &        GRDNRM .LE. 10.0D0 .AND. ABS(EMCDIF) .GT. 1.0D-5 .AND.
+          IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
+              EMCDIF_test = 0.0D0
+          ELSE
+              EMCDIF_test = EMCDIF
+          END IF
+C        Do not try that with open-shell - it does not work./pawsa
+!         IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+     &        GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
-     &         EMCDIF*(GRDNRM-GNRMSV) .LT. -1.0D-10) .AND. BCKSTP)
+     &         EMCDIF_test*(GRDNRM-GNRMSV) .LT. -1.0D-10) .AND. BCKSTP)
      &       THEN
 C              .. test EMCDIF*grddif against -1.0D-10 instead of 0.0D0
 C                 to avoid round-off problems here /hjaaj Sep 2005
-#endif
-c        IF (ITDIIS.GT.1 .AND. 
-c    &       ( ABS(CVEC(INDEVC)) .LT. 0.2D0 .OR.
-c    &         ABS(CVEC(INDEVC)) .GT. 2.0D0 ) .AND.
-c    &       EMCDIF .LT. D0 .AND. GRDNRM .GT. GNRMSV) THEN
              WRITE(LUPRI,'(1P/A,2(/A,G11.3),/A,I3,A)')
      &       '!!! Info: DIIS restarted because it was stalled ...',
      &       ' - energy changed by  ',EMCDIF,
      &       ' - gradient changed by',GRDNRM - GNRMSV,
      &       ' - or strange C vector coeff. for current index (=',
      &       INDEVC,') :'
-             WRITE (LUPRI,'(6F12.6)') (CVEC(I),I=1,NEVC)
+             WRITE (LUPRI,'(10F12.6)') (CVEC(I),I=1,NEVC)
              IF (EMCDIF .LT. D0) THEN
                 JNDEVC = INDEVC
              ELSE
@@ -1288,6 +1280,8 @@ C
              CVEC(1) = D1
              JTDIIS  = 1
              NEVC    = 1
+             INDEVC  = 1
+             BMAT(1) = BMAT( (JNDEVC*(JNDEVC+1))/2 )
 C            also restrict orbital rotation with a level shift
 c            the formula is empirical EMCDIF is positive here.
              SHFTLVL = MAX(-12D0,SHFTLVL - MIN(4.0D0,ABS(EMCDIF)*10.D0))
@@ -1298,11 +1292,11 @@ c            and slow down  the level shifting annealing...
 c            make sure we get right HOMO-LUMO gap in the end.
              IF(ITDIIS.GT.1.AND.ABS(EMCDIF).LE.5.D-5) SHFTLVL = 0.D0
          END IF
-C hjaaj 22-Jun-20005-B
+C hjaaj 22-Jun-2005-B
 C        Level shift is only working for closed shell calculations ...
 C          (open shell problems reported by users ...)
          IF (NASHT .GT. 0) SHFTLVL = 0.0D0
-C hjaaj 22-Jun-20005-E
+C hjaaj 22-Jun-2005-E
          GNRMSV = GRDNRM
 C
 C        Iteration accepted; save current CMO for restart
@@ -1557,7 +1551,7 @@ C
       END IF
 #if defined (BUILD_PELIB)
       if (peqm) then
-        if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+        if (nasht == 0 .or. hsfock) then
            call pe_master(runtype='energy',
      &                    denmats=daosav(:,1), nmats=1,
      &                    dalwrk=wrk(kfree:lfree))

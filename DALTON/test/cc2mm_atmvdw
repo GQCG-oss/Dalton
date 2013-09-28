@@ -255,7 +255,7 @@ CRIT1=` $GREP "1 * \-2\.995115.. * ( |0)\.0116340. * ( |0)\.0036497." $log | wc 
 CRIT2=` $GREP "2 * ( |0)\.0116340. * 1\.800341.. * \-3\.7964021." $log | wc -l`
 CRIT3=` $GREP "3 * ( |0)\.0036497. * \-3\.7964021. * 1\.194773.." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[4]=3
+CTRL[4]=4
 ERROR[4]="QUADRUPOLE MOMENT COMPONENTS ARE NOT CORRECT"
 
 # Lowest excitation energies compared:
@@ -268,7 +268,7 @@ ERROR[5]="LOWEST EXCITATION ENERGIES ARE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

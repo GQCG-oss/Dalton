@@ -128,48 +128,37 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Sep  9 13:31:22 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Tue Sep 17 22:39:05 2013
+     Host name              : TheSocialist                            
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-09T13_31-testjob-pid-33407
-   2) /people/disk2/magnus/Projects/dalton_devel/dalton/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-17T22_38-testjob-pid-10519
+   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
 
 
 Compilation information
 -----------------------
 
  Who compiled             | magnus
- Host                     | fe8
- System                   | Linux-2.6.32-279.el6.x86_64
+ Host                     | TheSocialist
+ System                   | Linux-3.10.11-200.fc19.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
-                          | if90
- Fortran compiler version | ifort (IFORT) 13.1.3 20130607
- C compiler               | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
-                          | icc
- C compiler version       | icc (ICC) 13.1.3 20130607
- C++ compiler             | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
-                          | icxx
- C++ compiler version     | unknown
- BLAS                     | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
-                          | ib/intel64/libmkl_core.so;/people/disk2/magnus/int
-                          | el/mkl/lib/intel64/libmkl_intel_lp64.so;/people/di
-                          | sk2/magnus/intel/mkl/lib/intel64/libmkl_sequential
-                          | .so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-o
-                          | penmp;-Wl,--end-group
- LAPACK                   | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
-                          | ib/intel64/libmkl_lapack95_lp64.a;/people/disk2/ma
-                          | gnus/intel/mkl/lib/intel64/libmkl_intel_lp64.so;-o
-                          | penmp;-Wl,--end-group
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
+ C compiler               | /usr/lib64/ccache/gcc
+ C compiler version       | gcc (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
+ C++ compiler             | /usr/lib64/ccache/g++
+ C++ compiler version     | g++ (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
+ BLAS                     | /lib64/libblas.so
+ LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | 72792444bfcf70cffefbb31f508f6872a0f88620
- Configuration time       | 2013-09-09 13:03:34.480961
+ Last Git revision        | 125c293ec00a6e285dc76690c5a7c9e35d3b061c
+ Configuration time       | 2013-09-17 22:19:49.616906
 
 
    Content of the .dal input file
@@ -281,7 +270,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -289,7 +278,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -297,7 +286,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   7 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    4
   --------------------
@@ -305,7 +294,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    5
   --------------------
@@ -313,7 +302,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    6
   --------------------
@@ -321,7 +310,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   7 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    7
   --------------------
@@ -329,7 +318,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    8
   --------------------
@@ -337,7 +326,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    9
   --------------------
@@ -345,7 +334,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    7
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.   10
   --------------------
@@ -353,7 +342,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.   11
   --------------------
@@ -361,7 +350,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   7 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.   12
   --------------------
@@ -369,7 +358,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.   13
   --------------------
@@ -377,7 +366,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.   14
   --------------------
@@ -385,7 +374,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   7 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.   15
   --------------------
@@ -393,7 +382,7 @@ H    7.319000   67.822000  -10.702000
   Number of symmetry independent centers:   16
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -680,7 +669,7 @@ Point group: C1
 @  Nuclear repulsion energy : 2019.947945082255 Hartree
 
   Reading potential input file
- 
+
   Polarizable embedding information
   ---------------------------------
 
@@ -768,9 +757,9 @@ Point group: C1
        H      38     4.6288  -0.9651   1.2769   4.2356   0.2819   2.5813
        H      41     2.3791   1.6953  -0.3538   4.6384   0.2247   0.7171
        H      42     3.1705  -0.3775   1.7604   0.7385   0.0429   2.9944
- >>>> Total CPU  time used in DALTON:   0.03 seconds
- >>>> Total wall time used in DALTON:   0.05 seconds
+ >>>> Total CPU  time used in DALTON:   0.02 seconds
+ >>>> Total wall time used in DALTON:   0.03 seconds
 
  
-     Date and time (Linux)  : Mon Sep  9 13:31:22 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Tue Sep 17 22:39:05 2013
+     Host name              : TheSocialist                            
