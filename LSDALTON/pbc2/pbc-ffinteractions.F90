@@ -297,7 +297,7 @@ SUBROUTINE &
   enddo
   write(*,*) 'Norm for Tlat matrix restore = ', normsq
   write(lupri,*) 'Norm for Tlat matrix invsym = ', normsq
-  call pbc_Tmatrix_print(Tlat,siz,'Tlattice',lupri)
+ ! call pbc_Tmatrix_print(Tlat,siz,'Tlattice',lupri)
 #endif
   
 !  call pbc_matlab_print(Tlat,256,256,'Tlattice after',lupri)
@@ -1091,20 +1091,21 @@ ENDIF !compare
 #endif
 
 #ifdef DEBUGPBC
-  normsq = 0
-  do j =1,nrlm
-    normsq=normsq+(rhojk(j)+nucmom(j))**2
-    write(*,*) 'qab(',j,')',rhojk(j)+nucmom(j)
-    write(*,*) 'tlatlm(',j,')',tlatlm(j)
-  enddo
-  write(*,*) 'Norm for cell moments = ', normsq
-  write(lupri,*) 'Norm for cell mom = ', normsq
+!  normsq = 0
+!  do j =1,nrlm
+!    normsq=normsq+(rhojk(j)+nucmom(j))**2
+!    write(*,*) 'qab(',j,')',rhojk(j)+nucmom(j)
+!    write(*,*) 'tlatlm(',j,')',tlatlm(j)
+!  enddo
+!  write(*,*) 'Norm for cell moments = ', normsq
+!  write(lupri,*) 'Norm for cell mom = ', normsq
 #endif
 
 !E_ff= ddot(nrlm,rhojk,nrlm,tlatlm,nrlm)
 E_ff= dot_product(rhojk+nucmom,tlatlm)
 E_ff=E_ff/2D0
-E_nn=ddot(nrlm,nucmom,nrlm,tlatlmnu,nrlm)
+!E_nn=ddot(nrlm,nucmom,nrlm,tlatlmnu,nrlm)
+E_nn= dot_product(nucmom,tlatlmnu)
 
 #ifdef DEBUGPBC
 write(lupri,*) 'Farfield energy', E_ff

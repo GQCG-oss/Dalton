@@ -202,6 +202,7 @@ SUBROUTINE lsdalton
 
         endif
 
+        write(*,*) 'nearest neighbour = ',config%latt_config%nneighbour
         Call set_pbc_molecules(ls%input,ls%setting,lupri,luerr,nbast,&
         D(1),config%latt_config)!,config%lib)
         call config_shutdown(config)
