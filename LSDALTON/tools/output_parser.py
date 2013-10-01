@@ -1,5 +1,6 @@
 #/usr/bin/python
 from decinfoclass import *
+from ccinfoclass import *
 
 # EXTENDABLE LSDALTON.OUT PARSER FOR SIMPLE DATA COLLECTION
 # AUTHOR: PATRICK ETTENHUBER
@@ -38,10 +39,15 @@ class lsoutput:
       ########################################### 
       self.molinp = []
       self.dalinp = []
+
       #A CHARACTERISTIC STRING THAT CONTAINS THE ESSENTIALS
       self.calctype = [""]*2
+
       #DEC SPECIFIC CALULATION INFO AND OPERATIONS
       self.decinfo = decinfo_class()
+      #CCC SPECIFIC CALULATION INFO AND OPERATIONS
+      self.ccinfo  = ccinfo_class()
+
       #NUMBER OF BASIS FUNCTIONS
       self.nb = 0
       #NUMBER OF VIRTUAL ORBITALS
@@ -210,9 +216,13 @@ class lsoutput:
       if("DEC"==self.calctype[0] and not "MP2DEBUG" in self.calctype):
         self.decinfo.get_dec_info(self.lines,self.calctype[1],True)
 
-      #Read DEC fragments from full CC calculation if specified
-      if("CC"==self.calctype[0] and self.decinfo.enable_fragread):
-        self.decinfo.get_dec_info(self.lines,self.calctype[1],False)
+      #Read CC information
+      if("CC"==self.calctype[0]):
+        self.ccinfo.get_cc_info(self.lines,self.calctype[1])
+
+        #Read fragment info if availale
+        if self.decinfo.enable_fragread:
+           self.decinfo.get_dec_info(self.lines,self.calctype[1],False)
 
 
    ############################################################
