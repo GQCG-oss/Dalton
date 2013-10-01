@@ -1188,7 +1188,8 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,lupri)
 
 END SUBROUTINE pbc_get_kdensity
 
-SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fock,numrealvec,errortest,error,diis_exit,errdim,nelectrons,lupri)
+SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fock,&
+                numrealvec,errortest,error,diis_exit,errdim,nelectrons,lupri)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: ndim,lupri,numrealvec,its,tol,errdim
   INTEGER,INTENT(IN) :: nelectrons
@@ -1504,8 +1505,8 @@ SUBROUTINE pbc_trans_k_energy(lattice,cenergies,nvecsrs,nbast,nelectrons,bz)
 
   lattindex(1)=0
   cenergies =0.d0
-  ehomo=-100e100
-  elumo= 100e100
+  ehomo=-100e5
+  elumo= 100e5
   !write(*,*) lattice%ldef%is_active(1)
   !write(*,*) lattice%ldef%is_active(2)
   !write(*,*) lattice%ldef%is_active(3)
