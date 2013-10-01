@@ -15,7 +15,7 @@ CONTAINS
     integer :: nTUVLIST,nTUVLISTactual
     integer,pointer :: TwoTermTUVLIST(:)
     
-    WRITE(*,'(A)')'MODULE AGC_OBS_VERTICALRECURRENCEMOD'
+    WRITE(*,'(A)')'MODULE AGC_OBS_VERTICALRECURRENCEMODA'
     WRITE(*,'(A)')' use IchorPrecisionModule'
     WRITE(*,'(A)')'  '
     WRITE(*,'(A)')' CONTAINS'
@@ -50,7 +50,7 @@ CONTAINS
     WRITE(*,'(A)')'  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
     WRITE(*,'(A)')'  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2'
     WRITE(*,'(A)')'  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
-    WRITE(*,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk'
+    WRITE(*,'(A)')'!  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk'
     WRITE(*,'(A)')'  Real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL,Pexpfac'
     WRITE(*,'(A)')'  Real(realk) :: W2,W3,PX,PY,PZ,PQX,PQY,PQZ,squaredDistance,RJ000'
     WRITE(*,'(A)')'  Integer :: IPNT,iPassQ,iPrimP,iPrimQ,iPQ'
@@ -67,10 +67,10 @@ CONTAINS
     WRITE(*,'(A)')'     squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz'
     WRITE(*,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
     WRITE(*,'(A)')'     !  0 < WVAL < 0.000001'
-    WRITE(*,'(A)')'     IF (ABS(WVAL) .LT. SMALL) THEN'     
-    WRITE(*,'(A)')'      RJ000 = D1'
-    WRITE(*,'(A)')'     !  0 < WVAL < 12 '
-    WRITE(*,'(A)')'     ELSE IF (WVAL .LT. D12) THEN'
+    WRITE(*,'(A)')'!     IF (ABS(WVAL) .LT. SMALL) THEN'     
+    WRITE(*,'(A)')'!      RJ000 = D1'
+    WRITE(*,'(A)')'!     !  0 < WVAL < 12 '
+    WRITE(*,'(A)')'     IF (WVAL .LT. D12) THEN'
     WRITE(*,'(A)')'      IPNT = NINT(D100*WVAL)'
     WRITE(*,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
     WRITE(*,'(A)')'      W2    = WDIFF*WDIFF'
@@ -95,7 +95,7 @@ CONTAINS
     WRITE(*,'(A)')'  enddo'
     WRITE(*,'(A)')'end subroutine VerticalRecurrence0'
     WRITE(*,'(A)')''
-    WRITE(*,'(A)')'subroutine VerticalRecurrence1(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+    WRITE(*,'(A)')'subroutine VerticalRecurrence1A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
     WRITE(*,'(A)')'         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&'
     WRITE(*,'(A)')'         & QpreExpFac,AUXarray)'
     WRITE(*,'(A)')'  implicit none'
@@ -154,11 +154,11 @@ CONTAINS
     WRITE(*,'(A)')'     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq'
     WRITE(*,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
     WRITE(*,'(A)')'     !  0 < WVAL < 0.000001'
-    WRITE(*,'(A)')'     IF (ABS(WVAL) .LT. SMALL) THEN'     
-    WRITE(*,'(A)')'      RJ000(0) = D1'
-    WRITE(*,'(A)')'      RJ000(1)= D03333 !THE BOYS FUNCTION FOR ZERO ARGUMENT'
-    WRITE(*,'(A)')'     !  0 < WVAL < 12 '
-    WRITE(*,'(A)')'     ELSE IF (WVAL .LT. D12) THEN'
+    WRITE(*,'(A)')'!     IF (ABS(WVAL) .LT. SMALL) THEN'     
+    WRITE(*,'(A)')'!      RJ000(0) = D1'
+    WRITE(*,'(A)')'!      RJ000(1)= D03333 !THE BOYS FUNCTION FOR ZERO ARGUMENT'
+    WRITE(*,'(A)')'!     !  0 < WVAL < 12 '
+    WRITE(*,'(A)')'     IF (WVAL .LT. D12) THEN'
     WRITE(*,'(A)')'      IPNT = NINT(D100*WVAL)'
     WRITE(*,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
     WRITE(*,'(A)')'      W2    = WDIFF*WDIFF'
@@ -191,7 +191,7 @@ CONTAINS
     WRITE(*,'(A)')'    enddo'
     WRITE(*,'(A)')'   enddo'
     WRITE(*,'(A)')'  enddo'
-    WRITE(*,'(A)')'end subroutine VerticalRecurrence1'
+    WRITE(*,'(A)')'end subroutine VerticalRecurrence1A'
 
     DO JMAX=2,MaxAngmomQP
        nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
@@ -223,7 +223,7 @@ CONTAINS
        ENDDO
 
        WRITE(*,'(A)')''
-       WRITE(*,'(A,I1,A)')'subroutine VerticalRecurrence',JMAX,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+       WRITE(*,'(A,I1,A)')'subroutine VerticalRecurrence',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        WRITE(*,'(A)')'         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
        WRITE(*,'(A)')'         & AUXarray)'
        WRITE(*,'(A)')'  implicit none'
@@ -298,13 +298,13 @@ CONTAINS
        WRITE(*,'(A)')'     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq'
        WRITE(*,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
        WRITE(*,'(A)')'     !  0 < WVAL < 0.000001'
-       WRITE(*,'(A)')'     IF (ABS(WVAL) .LT. SMALL) THEN'     
-       WRITE(*,'(A)')'      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT'
+       WRITE(*,'(A)')'!     IF (ABS(WVAL) .LT. SMALL) THEN'     
+       WRITE(*,'(A)')'!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT'
        DO J=1,JMAX
-       WRITE(*,'(A,I1,A,ES23.16)')'      RJ000(',J,')= ',1.0d0/(2*J + 1)
+       WRITE(*,'(A,I1,A,ES23.16,A)')'!      RJ000(',J,')= ',1.0d0/(2*J + 1),'_realk'
        ENDDO
        WRITE(*,'(A)')'     !  0 < WVAL < 12 '
-       WRITE(*,'(A)')'     ELSE IF (WVAL .LT. D12) THEN'
+       WRITE(*,'(A)')'     IF (WVAL .LT. D12) THEN'
        WRITE(*,'(A)')'      IPNT = NINT(D100*WVAL)'
        WRITE(*,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
        WRITE(*,'(A)')'      W2    = WDIFF*WDIFF'
@@ -438,7 +438,7 @@ CONTAINS
        WRITE(*,'(A)')'    ENDDO'
        WRITE(*,'(A)')'   ENDDO'
        WRITE(*,'(A)')'  ENDDO'
-       WRITE(*,'(A,I1)')'end subroutine VerticalRecurrence',JMAX
+       WRITE(*,'(A,I1,A)')'end subroutine VerticalRecurrence',JMAX,'A'
        deallocate(TUVINDEX)
        deallocate(TINDEX)
        deallocate(UINDEX)

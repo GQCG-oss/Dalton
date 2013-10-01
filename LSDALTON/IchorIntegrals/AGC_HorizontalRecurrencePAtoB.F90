@@ -1,9 +1,9 @@
-MODULE AGC_OBS_HorizontalRecurrenceLHSMod
+MODULE AGC_OBS_HorizontalRecurrenceLHSModAtoB
  use IchorPrecisionModule
   
  CONTAINS
 
-subroutine HorizontalRR_LHS_P0A0B0(nContPasses,nTUVQ,&
+subroutine HorizontalRR_LHS_P0A0B0AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
@@ -25,9 +25,9 @@ subroutine HorizontalRR_LHS_P0A0B0(nContPasses,nTUVQ,&
      ENDDO
    ENDDO
   ENDDO
-end subroutine HorizontalRR_LHS_P0A0B0
+end subroutine HorizontalRR_LHS_P0A0B0AtoB
 
-subroutine HorizontalRR_LHS_P1A1B0(nContPasses,nTUVQ,&
+subroutine HorizontalRR_LHS_P1A1B0AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
@@ -49,9 +49,9 @@ subroutine HorizontalRR_LHS_P1A1B0(nContPasses,nTUVQ,&
      ENDDO
    ENDDO
   ENDDO
-end subroutine HorizontalRR_LHS_P1A1B0
+end subroutine HorizontalRR_LHS_P1A1B0AtoB
 
-subroutine HorizontalRR_LHS_P2A1B1(nContPasses,nTUVQ,&
+subroutine HorizontalRR_LHS_P2A1B1AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
@@ -79,9 +79,9 @@ subroutine HorizontalRR_LHS_P2A1B1(nContPasses,nTUVQ,&
      ThetaP( 4, 4,iTUVQ,IP) = AuxCont(10,iTUVQ,IP) + Zab*AuxCont( 4,iTUVQ,IP) 
    ENDDO
   ENDDO
-end subroutine HorizontalRR_LHS_P2A1B1
+end subroutine HorizontalRR_LHS_P2A1B1AtoB
 
-subroutine HorizontalRR_LHS_P2A2B0(nContPasses,nTUVQ,&
+subroutine HorizontalRR_LHS_P2A2B0AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
@@ -103,9 +103,9 @@ subroutine HorizontalRR_LHS_P2A2B0(nContPasses,nTUVQ,&
      ENDDO
    ENDDO
   ENDDO
-end subroutine HorizontalRR_LHS_P2A2B0
+end subroutine HorizontalRR_LHS_P2A2B0AtoB
 
-subroutine HorizontalRR_LHS_P3A2B1(nContPasses,nTUVQ,&
+subroutine HorizontalRR_LHS_P3A2B1AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
@@ -142,9 +142,9 @@ subroutine HorizontalRR_LHS_P3A2B1(nContPasses,nTUVQ,&
      ThetaP(10, 4,iTUVQ,IP) = AuxCont(20,iTUVQ,IP) + Zab*AuxCont(10,iTUVQ,IP) 
    ENDDO
   ENDDO
-end subroutine HorizontalRR_LHS_P3A2B1
+end subroutine HorizontalRR_LHS_P3A2B1AtoB
 
-subroutine HorizontalRR_LHS_P3A3B0(nContPasses,nTUVQ,&
+subroutine HorizontalRR_LHS_P3A3B0AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
@@ -166,9 +166,9 @@ subroutine HorizontalRR_LHS_P3A3B0(nContPasses,nTUVQ,&
      ENDDO
    ENDDO
   ENDDO
-end subroutine HorizontalRR_LHS_P3A3B0
+end subroutine HorizontalRR_LHS_P3A3B0AtoB
 
-subroutine HorizontalRR_LHS_P4A2B2(nContPasses,nTUVQ,&
+subroutine HorizontalRR_LHS_P4A2B2AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
@@ -272,9 +272,9 @@ subroutine HorizontalRR_LHS_P4A2B2(nContPasses,nTUVQ,&
      ThetaP(10,10,iTUVQ,IP) = Tmp1(20, 4) + Zab*Tmp1(10, 4) 
    ENDDO
   ENDDO
-end subroutine HorizontalRR_LHS_P4A2B2
+end subroutine HorizontalRR_LHS_P4A2B2AtoB
 
-subroutine HorizontalRR_LHS_P4A3B1(nContPasses,nTUVQ,&
+subroutine HorizontalRR_LHS_P4A3B1AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
@@ -323,9 +323,9 @@ subroutine HorizontalRR_LHS_P4A3B1(nContPasses,nTUVQ,&
      ThetaP(20, 4,iTUVQ,IP) = AuxCont(35,iTUVQ,IP) + Zab*AuxCont(20,iTUVQ,IP) 
    ENDDO
   ENDDO
-end subroutine HorizontalRR_LHS_P4A3B1
+end subroutine HorizontalRR_LHS_P4A3B1AtoB
 
-subroutine HorizontalRR_LHS_P5A3B2(nContPasses,nTUVQ,&
+subroutine HorizontalRR_LHS_P5A3B2AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
@@ -480,9 +480,9 @@ subroutine HorizontalRR_LHS_P5A3B2(nContPasses,nTUVQ,&
      ThetaP(20,10,iTUVQ,IP) = Tmp1(35, 4) + Zab*Tmp1(20, 4) 
    ENDDO
   ENDDO
-end subroutine HorizontalRR_LHS_P5A3B2
+end subroutine HorizontalRR_LHS_P5A3B2AtoB
 
-subroutine HorizontalRR_LHS_P6A3B3(nContPasses,nTUVQ,&
+subroutine HorizontalRR_LHS_P6A3B3AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
@@ -891,5 +891,5 @@ subroutine HorizontalRR_LHS_P6A3B3(nContPasses,nTUVQ,&
      ThetaP(20,20,iTUVQ,IP) = Tmp2(35,10) + Zab*Tmp2(20,10) 
    ENDDO
   ENDDO
-end subroutine HorizontalRR_LHS_P6A3B3
+end subroutine HorizontalRR_LHS_P6A3B3AtoB
 end module

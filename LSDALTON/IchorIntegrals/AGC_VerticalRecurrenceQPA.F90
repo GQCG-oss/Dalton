@@ -1,4 +1,4 @@
-MODULE AGC_OBS_VERTICALRECURRENCEMOD
+MODULE AGC_OBS_VERTICALRECURRENCEMODA
  use IchorPrecisionModule
   
  CONTAINS
@@ -31,7 +31,7 @@ subroutine VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&
   REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk
+!  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk
   Real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL,Pexpfac
   Real(realk) :: W2,W3,PX,PY,PZ,PQX,PQY,PQZ,squaredDistance,RJ000
   Integer :: IPNT,iPassQ,iPrimP,iPrimQ,iPQ
@@ -48,10 +48,10 @@ subroutine VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&
      squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz
      WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
      !  0 < WVAL < 0.000001
-     IF (ABS(WVAL) .LT. SMALL) THEN
-      RJ000 = D1
-     !  0 < WVAL < 12 
-     ELSE IF (WVAL .LT. D12) THEN
+!     IF (ABS(WVAL) .LT. SMALL) THEN
+!      RJ000 = D1
+!     !  0 < WVAL < 12 
+     IF (WVAL .LT. D12) THEN
       IPNT = NINT(D100*WVAL)
       WDIFF = WVAL - TENTH*IPNT
       W2    = WDIFF*WDIFF
@@ -76,7 +76,7 @@ subroutine VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&
   enddo
 end subroutine VerticalRecurrence0
 
-subroutine VerticalRecurrence1(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrence1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&
          & QpreExpFac,AUXarray)
   implicit none
@@ -134,11 +134,11 @@ subroutine VerticalRecurrence1(nPasses,nPrimP,nPrimQ,reducedExponents,&
      squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
      WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
      !  0 < WVAL < 0.000001
-     IF (ABS(WVAL) .LT. SMALL) THEN
-      RJ000(0) = D1
-      RJ000(1)= D03333 !THE BOYS FUNCTION FOR ZERO ARGUMENT
-     !  0 < WVAL < 12 
-     ELSE IF (WVAL .LT. D12) THEN
+!     IF (ABS(WVAL) .LT. SMALL) THEN
+!      RJ000(0) = D1
+!      RJ000(1)= D03333 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+!     !  0 < WVAL < 12 
+     IF (WVAL .LT. D12) THEN
       IPNT = NINT(D100*WVAL)
       WDIFF = WVAL - TENTH*IPNT
       W2    = WDIFF*WDIFF
@@ -171,9 +171,9 @@ subroutine VerticalRecurrence1(nPasses,nPrimP,nPrimQ,reducedExponents,&
     enddo
    enddo
   enddo
-end subroutine VerticalRecurrence1
+end subroutine VerticalRecurrence1A
 
-subroutine VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -238,12 +238,12 @@ subroutine VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
      squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
      WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
      !  0 < WVAL < 0.000001
-     IF (ABS(WVAL) .LT. SMALL) THEN
-      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
-      RJ000(1)=  3.3333333333333331E-01
-      RJ000(2)=  2.0000000000000001E-01
+!     IF (ABS(WVAL) .LT. SMALL) THEN
+!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+!      RJ000(1)=  3.3333333333333331E-01_realk
+!      RJ000(2)=  2.0000000000000001E-01_realk
      !  0 < WVAL < 12 
-     ELSE IF (WVAL .LT. D12) THEN
+     IF (WVAL .LT. D12) THEN
       IPNT = NINT(D100*WVAL)
       WDIFF = WVAL - TENTH*IPNT
       W2    = WDIFF*WDIFF
@@ -289,9 +289,9 @@ subroutine VerticalRecurrence2(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine VerticalRecurrence2
+end subroutine VerticalRecurrence2A
 
-subroutine VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -357,13 +357,13 @@ subroutine VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
      squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
      WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
      !  0 < WVAL < 0.000001
-     IF (ABS(WVAL) .LT. SMALL) THEN
-      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
-      RJ000(1)=  3.3333333333333331E-01
-      RJ000(2)=  2.0000000000000001E-01
-      RJ000(3)=  1.4285714285714285E-01
+!     IF (ABS(WVAL) .LT. SMALL) THEN
+!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+!      RJ000(1)=  3.3333333333333331E-01_realk
+!      RJ000(2)=  2.0000000000000001E-01_realk
+!      RJ000(3)=  1.4285714285714285E-01_realk
      !  0 < WVAL < 12 
-     ELSE IF (WVAL .LT. D12) THEN
+     IF (WVAL .LT. D12) THEN
       IPNT = NINT(D100*WVAL)
       WDIFF = WVAL - TENTH*IPNT
       W2    = WDIFF*WDIFF
@@ -436,9 +436,9 @@ subroutine VerticalRecurrence3(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine VerticalRecurrence3
+end subroutine VerticalRecurrence3A
 
-subroutine VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -505,14 +505,14 @@ subroutine VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
      squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
      WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
      !  0 < WVAL < 0.000001
-     IF (ABS(WVAL) .LT. SMALL) THEN
-      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
-      RJ000(1)=  3.3333333333333331E-01
-      RJ000(2)=  2.0000000000000001E-01
-      RJ000(3)=  1.4285714285714285E-01
-      RJ000(4)=  1.1111111111111110E-01
+!     IF (ABS(WVAL) .LT. SMALL) THEN
+!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+!      RJ000(1)=  3.3333333333333331E-01_realk
+!      RJ000(2)=  2.0000000000000001E-01_realk
+!      RJ000(3)=  1.4285714285714285E-01_realk
+!      RJ000(4)=  1.1111111111111110E-01_realk
      !  0 < WVAL < 12 
-     ELSE IF (WVAL .LT. D12) THEN
+     IF (WVAL .LT. D12) THEN
       IPNT = NINT(D100*WVAL)
       WDIFF = WVAL - TENTH*IPNT
       W2    = WDIFF*WDIFF
@@ -633,9 +633,9 @@ subroutine VerticalRecurrence4(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine VerticalRecurrence4
+end subroutine VerticalRecurrence4A
 
-subroutine VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -703,15 +703,15 @@ subroutine VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
      squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
      WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
      !  0 < WVAL < 0.000001
-     IF (ABS(WVAL) .LT. SMALL) THEN
-      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
-      RJ000(1)=  3.3333333333333331E-01
-      RJ000(2)=  2.0000000000000001E-01
-      RJ000(3)=  1.4285714285714285E-01
-      RJ000(4)=  1.1111111111111110E-01
-      RJ000(5)=  9.0909090909090912E-02
+!     IF (ABS(WVAL) .LT. SMALL) THEN
+!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+!      RJ000(1)=  3.3333333333333331E-01_realk
+!      RJ000(2)=  2.0000000000000001E-01_realk
+!      RJ000(3)=  1.4285714285714285E-01_realk
+!      RJ000(4)=  1.1111111111111110E-01_realk
+!      RJ000(5)=  9.0909090909090912E-02_realk
      !  0 < WVAL < 12 
-     ELSE IF (WVAL .LT. D12) THEN
+     IF (WVAL .LT. D12) THEN
       IPNT = NINT(D100*WVAL)
       WDIFF = WVAL - TENTH*IPNT
       W2    = WDIFF*WDIFF
@@ -911,9 +911,9 @@ subroutine VerticalRecurrence5(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine VerticalRecurrence5
+end subroutine VerticalRecurrence5A
 
-subroutine VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -982,16 +982,16 @@ subroutine VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
      squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
      WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
      !  0 < WVAL < 0.000001
-     IF (ABS(WVAL) .LT. SMALL) THEN
-      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
-      RJ000(1)=  3.3333333333333331E-01
-      RJ000(2)=  2.0000000000000001E-01
-      RJ000(3)=  1.4285714285714285E-01
-      RJ000(4)=  1.1111111111111110E-01
-      RJ000(5)=  9.0909090909090912E-02
-      RJ000(6)=  7.6923076923076927E-02
+!     IF (ABS(WVAL) .LT. SMALL) THEN
+!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+!      RJ000(1)=  3.3333333333333331E-01_realk
+!      RJ000(2)=  2.0000000000000001E-01_realk
+!      RJ000(3)=  1.4285714285714285E-01_realk
+!      RJ000(4)=  1.1111111111111110E-01_realk
+!      RJ000(5)=  9.0909090909090912E-02_realk
+!      RJ000(6)=  7.6923076923076927E-02_realk
      !  0 < WVAL < 12 
-     ELSE IF (WVAL .LT. D12) THEN
+     IF (WVAL .LT. D12) THEN
       IPNT = NINT(D100*WVAL)
       WDIFF = WVAL - TENTH*IPNT
       W2    = WDIFF*WDIFF
@@ -1313,9 +1313,9 @@ subroutine VerticalRecurrence6(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine VerticalRecurrence6
+end subroutine VerticalRecurrence6A
 
-subroutine VerticalRecurrence7(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -1385,17 +1385,17 @@ subroutine VerticalRecurrence7(nPasses,nPrimP,nPrimQ,reducedExponents,&
      squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
      WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
      !  0 < WVAL < 0.000001
-     IF (ABS(WVAL) .LT. SMALL) THEN
-      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
-      RJ000(1)=  3.3333333333333331E-01
-      RJ000(2)=  2.0000000000000001E-01
-      RJ000(3)=  1.4285714285714285E-01
-      RJ000(4)=  1.1111111111111110E-01
-      RJ000(5)=  9.0909090909090912E-02
-      RJ000(6)=  7.6923076923076927E-02
-      RJ000(7)=  6.6666666666666666E-02
+!     IF (ABS(WVAL) .LT. SMALL) THEN
+!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+!      RJ000(1)=  3.3333333333333331E-01_realk
+!      RJ000(2)=  2.0000000000000001E-01_realk
+!      RJ000(3)=  1.4285714285714285E-01_realk
+!      RJ000(4)=  1.1111111111111110E-01_realk
+!      RJ000(5)=  9.0909090909090912E-02_realk
+!      RJ000(6)=  7.6923076923076927E-02_realk
+!      RJ000(7)=  6.6666666666666666E-02_realk
      !  0 < WVAL < 12 
-     ELSE IF (WVAL .LT. D12) THEN
+     IF (WVAL .LT. D12) THEN
       IPNT = NINT(D100*WVAL)
       WDIFF = WVAL - TENTH*IPNT
       W2    = WDIFF*WDIFF
@@ -1896,9 +1896,9 @@ subroutine VerticalRecurrence7(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine VerticalRecurrence7
+end subroutine VerticalRecurrence7A
 
-subroutine VerticalRecurrence8(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrence8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -1969,18 +1969,18 @@ subroutine VerticalRecurrence8(nPasses,nPrimP,nPrimQ,reducedExponents,&
      squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
      WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
      !  0 < WVAL < 0.000001
-     IF (ABS(WVAL) .LT. SMALL) THEN
-      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
-      RJ000(1)=  3.3333333333333331E-01
-      RJ000(2)=  2.0000000000000001E-01
-      RJ000(3)=  1.4285714285714285E-01
-      RJ000(4)=  1.1111111111111110E-01
-      RJ000(5)=  9.0909090909090912E-02
-      RJ000(6)=  7.6923076923076927E-02
-      RJ000(7)=  6.6666666666666666E-02
-      RJ000(8)=  5.8823529411764705E-02
+!     IF (ABS(WVAL) .LT. SMALL) THEN
+!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT
+!      RJ000(1)=  3.3333333333333331E-01_realk
+!      RJ000(2)=  2.0000000000000001E-01_realk
+!      RJ000(3)=  1.4285714285714285E-01_realk
+!      RJ000(4)=  1.1111111111111110E-01_realk
+!      RJ000(5)=  9.0909090909090912E-02_realk
+!      RJ000(6)=  7.6923076923076927E-02_realk
+!      RJ000(7)=  6.6666666666666666E-02_realk
+!      RJ000(8)=  5.8823529411764705E-02_realk
      !  0 < WVAL < 12 
-     ELSE IF (WVAL .LT. D12) THEN
+     IF (WVAL .LT. D12) THEN
       IPNT = NINT(D100*WVAL)
       WDIFF = WVAL - TENTH*IPNT
       W2    = WDIFF*WDIFF
@@ -2733,5 +2733,5 @@ subroutine VerticalRecurrence8(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine VerticalRecurrence8
+end subroutine VerticalRecurrence8A
 end module
