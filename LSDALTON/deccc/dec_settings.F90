@@ -67,6 +67,7 @@ contains
     DECinfo%solver_par           = .false.
     DECinfo%CCSDpreventcanonical = .false.
     DECinfo%CCSD_MPICH           = .false.
+    DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
@@ -405,6 +406,7 @@ contains
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
        case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.
+       case('.SPAWN_COMM_PROC'); DECinfo%spawn_comm_proc=.true.
        case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=MODEL_CCSD; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.

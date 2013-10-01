@@ -5003,6 +5003,51 @@ contains
 
     end subroutine lsmpi_default_mpi_group
 
+    !> \brief make a new communicator for the child and parent process(es)
+    !> \author Patrick Ettenhuber
+    !> \date 2013
+    subroutine get_parent_child_relation
+      implicit none
+      integer(kind=ls_mpik) :: ierr
+      logical(kind=ls_mpik) :: have_priority
+#ifdef VAR_MPI
+
+      if( infpar%parent_comm == MPI_COMM_NULL ) then
+        ! if i am a parent 
+        have_priority = .true.
+        call MPI_INTERCOMM_MERGE( infpar%child_comm, have_priority, infpar%pc_comm, ierr )
+      else
+        ! if i am a child
+        have_priority = .false.
+        call MPI_INTERCOMM_MERGE( infpar%parent_comm, have_priority, infpar%pc_comm, ierr )
+      endif
+
+      call MPI_COMM_RANK( infpar%pc_comm, infpar%pc_mynum, ierr )
+      call MPI_COMM_SIZE( infpar%pc_comm, infpar%pc_nodtot, ierr )
+
+      if( infpar%parent_comm == MPI_COMM_NULL ) print *,"old",infpar%mynum,infpar%pc_mynum
+      if( infpar%parent_comm /= MPI_COMM_NULL ) print *,"new",infpar%mynum,infpar%pc_mynum
+      call mpi_barrier(infpar%pc_comm,ierr)
+      stop 0
+#endif
+    end subroutine get_parent_child_relation
+
+
+    subroutine give_birth_to_child_process
+      implicit none
+      integer(kind=ls_mpik) :: procs_to_spawn,root,errorcode(1),ierr
+#ifdef VAR_MPI
+
+          procs_to_spawn = int(1,kind=ls_mpik)
+          root           = int(0,kind=ls_mpik)
+
+          call MPI_COMM_SPAWN('./lsdalton.x',MPI_ARGV_NULL,procs_to_spawn,MPI_INFO_NULL,&
+             &root,MPI_COMM_SELF,infpar%child_comm,errorcode,ierr)
+
+          call get_parent_child_relation
+#endif
+    end subroutine give_birth_to_child_process
+
 
     subroutine lsmpi_finalize(lupri,doprint)
     implicit none

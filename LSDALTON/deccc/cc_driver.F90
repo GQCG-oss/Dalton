@@ -2094,9 +2094,15 @@ contains
     safefilet21='t21'
     safefilet22='t22'
 
+
+    
+
     nnodes=1
 #ifdef VAR_MPI
     nnodes=infpar%lg_nodtot
+    if ( DECinfo%spawn_comm_proc ) then
+      call give_birth_to_child_process
+    endif
 #ifndef COMPILER_UNDERSTANDS_FORTRAN_2003
     call lsquit("ERROR(ccsolver_par):Your compiler does not support certain&
     & features needed to run that part of the code. Use a compiler supporting&

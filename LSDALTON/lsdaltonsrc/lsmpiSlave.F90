@@ -26,20 +26,25 @@
     LSMPIASYNCP = .false.
     call ls_getenv(varname="LSMPI_ASYNC_PROGRESS",leng=20,output_bool=LSMPIASYNCP)
 #endif
-
+    call MPI_COMM_GET_PARENT( infpar%parent_comm, ierr )
     call MPI_COMM_RANK( MPI_COMM_LSDALTON, infpar%mynum, ierr )
     call MPI_COMM_SIZE( MPI_COMM_LSDALTON, infpar%nodtot, ierr )
-    infpar%master = 0;
+    infpar%master = int(0,kind=ls_mpik);
     
     ! Set rank, sizes and communcators for local groups
     ! to be identical to those for world group by default.
     call lsmpi_default_mpi_group
+    if( infpar%parent_comm /= MPI_COMM_NULL )  call get_parent_child_relation
     ! Assume that there will be local jobs
     infpar%lg_morejobs=.true.
 
     if (infpar%mynum.ne.infpar%master) then
 
       call lsmpi_slave(MPI_COMM_LSDALTON)
+    
+    elseif( infpar%parent_comm /= MPI_COMM_NULL )then
+
+      call lsmpi_slave(infpar%pc_comm)
 
     endif
 #endif
