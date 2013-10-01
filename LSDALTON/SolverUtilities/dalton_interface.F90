@@ -2735,7 +2735,8 @@ CONTAINS
 
             onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
 
-            IF (io_file_exist(Filename,setting%IO)) THEN
+!           IF (io_file_exist(Filename,setting%IO)) THEN
+            IF (.FALSE.) THEN
                 call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
             ELSE
                 call mat_init(S22,n2,n2)

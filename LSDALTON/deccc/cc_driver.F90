@@ -2765,7 +2765,7 @@ contains
     readfile2=.false.
     
     !this can be skipped by input, but restart is default
-    if(DECinfo%restart)then
+    if(DECinfo%DECrestart)then
       if(DECinfo%use_singles.and.all_singles)then
         fullname11=safefilet11//'.restart'
         fullname12=safefilet12//'.restart'

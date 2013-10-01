@@ -1901,6 +1901,22 @@ retval=0
              write(DECinfo%output,*) i, MyFragment%CunoccFA(:,i)
           end do
           write(DECinfo%output,*)
+
+          if(.not. MyFragment%pairfrag) then
+             write(DECinfo%output,*) 'Occupied corrdens eigenvalues'
+             do i=1,MyFragment%noccFA
+                write(DECinfo%output,*) i, MyFragment%CDocceival(i)
+             end do
+             write(DECinfo%output,*)
+
+             write(DECinfo%output,*) 'Unoccupied corrdens eigenvalues'
+             do i=1,MyFragment%nunoccFA
+                write(DECinfo%output,*) i, MyFragment%CDunocceival(i)
+             end do
+             write(DECinfo%output,*)
+
+          end if
+
        end if
 
     end if
@@ -2004,6 +2020,10 @@ retval=0
     if(fragment%FAset) then
        call mem_dealloc(fragment%CoccFA)
        call mem_dealloc(fragment%CunoccFA)
+       if(.not. fragment%pairfrag) then
+          call mem_dealloc(fragment%CDocceival)
+          call mem_dealloc(fragment%CDunocceival)
+       end if
        fragment%FAset=.false.
     end if
 

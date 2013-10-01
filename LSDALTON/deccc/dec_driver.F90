@@ -235,7 +235,7 @@ contains
     ! Restart option: In case some fragments are already done and stored in atomicfragments.info.
     fragdone=.false.
     post_fragopt_restart=.false.
-    if(DECinfo%restart) then
+    if(DECinfo%DECrestart) then
        call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
             & UnoccOrbitals,.false.,AtomicFragments,jobs,atomic_fragment_restart)
 

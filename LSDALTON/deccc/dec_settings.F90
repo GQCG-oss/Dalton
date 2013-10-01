@@ -40,7 +40,8 @@ contains
     DECinfo%SinglesThr        = 0.2E0_realk   ! this is completely random, currently under investigation
     DECinfo%convert64to32     = .false.
     DECinfo%convert32to64     = .false.
-    DECinfo%restart           = .false.
+    DECinfo%HFrestart         = .false.
+    DECinfo%DECrestart        = .false.
     DECinfo%TimeBackup        = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals = .false.
     DECinfo%CheckPairs        = .false.
@@ -117,6 +118,7 @@ contains
     ! Pair reduction distance - set high to avoid using in practice right now...
     DECinfo%PairReductionDistance = 1000000.0E0_realk
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
+    DECinfo%pairFOthr = 0.0_realk
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory=0E0_realk
@@ -308,7 +310,14 @@ contains
           ! ===============
 
           ! Restart DEC calculation (only for single point calculations, not geometry optimization)
-       case('.RESTART'); DECinfo%restart=.true.           
+       case('.RESTART') 
+          DECinfo%HFrestart=.true.           
+          DECinfo%DECrestart=.true.           
+
+          ! Use HF info generated from previous calculation but run DEC calculation from scratch
+       case('.HFRESTART') 
+          DECinfo%HFrestart=.true.           
+          DECinfo%DECrestart=.false.           
 
           ! Do not absorb H atoms when assigning orbitals
        case('.NOTABSORBH'); DECinfo%AbsorbHatoms=.false.
@@ -437,6 +446,7 @@ contains
           read(input,*) DECinfo%PairReductionDistance 
           DECinfo%PairReductionDistance = DECinfo%PairReductionDistance/bohr_to_angstrom
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
+       case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
@@ -553,7 +563,7 @@ contains
     end if SimulateFullCalc
 
 
-    if(DECinfo%ccmodel==MODEL_CCSDpT .and. DECinfo%restart) then
+    if(DECinfo%ccmodel==MODEL_CCSDpT .and. DECinfo%DECrestart) then
        call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
     end if
 
@@ -632,7 +642,8 @@ end if
     write(lupri,*) 'cc_models ', DECitem%cc_models
     write(lupri,*) 'ccModel ', DECitem%ccModel
     write(lupri,*) 'use_singles ', DECitem%use_singles
-    write(lupri,*) 'restart ', DECitem%restart
+    write(lupri,*) 'HFrestart ', DECitem%HFrestart
+    write(lupri,*) 'DECrestart ', DECitem%HFrestart
     write(lupri,*) 'TimeBackup ', DECitem%TimeBackup
     write(lupri,*) 'read_dec_orbitals ', DECitem%read_dec_orbitals
     write(lupri,*) 'memory ', DECitem%memory
@@ -703,6 +714,7 @@ end if
     write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
+    write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'MP2density ', DECitem%MP2density
     write(lupri,*) 'gradient ', DECitem%gradient

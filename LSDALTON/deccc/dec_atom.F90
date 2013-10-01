@@ -77,6 +77,11 @@ contains
     fragment%OccMat => null()
     fragment%VirtMat => null()
 
+    fragment%CoccFA => null()
+    fragment%CunoccFA => null()
+    fragment%CDocceival => null()
+    fragment%CDunocceival => null()
+
     fragment%basisinfoisset=.false.
     fragment%atomic_number = 0
     fragment%noccEOS = 0
@@ -568,7 +573,7 @@ contains
     implicit none
     !> Atomic fragment where all quantities are expressed in local basis
     type(ccatom), intent(inout) :: LocalFragment
-    real(realk),pointer :: VirtMat(:,:),OccMat(:,:),tmpeival(:),tmpU(:,:)
+    real(realk),pointer :: VirtMat(:,:),OccMat(:,:),tmpU(:,:),occeival(:),virteival(:)
     integer :: i,j,ix,jx
     integer :: noccTRANS,nvirtTRANS,noccEOS,nvirtEOS,offset,nocc,nvirt
     real(realk),pointer :: OU(:,:),VU(:,:),Oeival(:),Veival(:),OUred(:,:),VUred(:,:)
@@ -619,8 +624,8 @@ contains
 
     ! Virtual correlation density matrix
     call mem_alloc(VirtMat,nvirtTRANS,nvirtTRANS)
-    call mem_alloc(tmpeival,nvirtTRANS)
     call mem_alloc(tmpU,nvirtTRANS,nvirtTRANS)
+    call mem_alloc(virteival,nvirtTRANS)  
 
     if(LocalFragment%nunoccEOS ==LocalFragment%nunoccAOS) then
        ! Transform all orbitals
@@ -644,7 +649,7 @@ contains
     end if
 
     ! Diagonalize virtual correlation density matrix to define fragment-adapted virtual AOS orbitals
-    call solve_eigenvalue_problem_unitoverlap(nvirtTRANS,VirtMat,tmpeival,tmpU)
+    call solve_eigenvalue_problem_unitoverlap(nvirtTRANS,VirtMat,virteival,tmpU)
 
     ! Now the fragment-adapted orbitals (psi) are given from local orbitals (phi) as:
     ! psi(c) = sum_a tmpU(a,c) phi(a)
@@ -692,7 +697,7 @@ contains
     ! ------------------------------------
     offset = nvirt-nvirtTRANS    ! offset to put all non-EOS orbitals after the EOS orbitals
     do j=1,nvirtTRANS  ! loop over fragment-adapted orbital indices
-       Veival(j+offset) = tmpeival(j)
+       Veival(j+offset) = virteival(j)
        ix=0
        localloop1: do i=1,nvirt  ! loop over local orbital indices
           if(virtEOS(i)) cycle localloop1   ! not consider local EOS, which have already been set
@@ -701,8 +706,6 @@ contains
        end do localloop1
     end do
 
-
-    call mem_dealloc(tmpeival)
     call mem_dealloc(tmpU)
 
 
@@ -722,8 +725,9 @@ contains
 
     ! Occupied correlation density matrix
     call mem_alloc(OccMat,noccTRANS,noccTRANS)
-    call mem_alloc(tmpeival,noccTRANS)
+    call mem_alloc(occeival,noccTRANS)
     call mem_alloc(tmpU,noccTRANS,noccTRANS)
+
 
     if(LocalFragment%noccEOS ==LocalFragment%noccAOS) then
        ! Transform all orbitals
@@ -747,7 +751,7 @@ contains
     end if
 
     ! Diagonalize occupied correlation density matrix to define fragment-adapted occupied AOS orbitals
-    call solve_eigenvalue_problem_unitoverlap(noccTRANS,OccMat,tmpeival,tmpU)
+    call solve_eigenvalue_problem_unitoverlap(noccTRANS,OccMat,occeival,tmpU)
 
     ! Set blocks of OU in the same way as for VU above.
     OU = 0.0_realk
@@ -759,7 +763,7 @@ contains
 
     offset = nocc-noccTRANS
     do j=1,noccTRANS  ! loop over fragment-adapted orbital indices
-       Oeival(j+offset) = tmpeival(j)
+       Oeival(j+offset) = occeival(j)
        ix=0
        localloop2: do i=1,nocc  ! loop over local orbital indices
           if(occEOS(i)) cycle localloop2
@@ -768,7 +772,6 @@ contains
        end do localloop2
     end do
 
-    call mem_dealloc(tmpeival)
     call mem_dealloc(tmpU)
     call mem_dealloc(VirtMat)
     call mem_dealloc(OccMat)
@@ -809,11 +812,16 @@ contains
     ! In general dimension 1 is larger than dimension 2.
     LocalFragment%noccFA = count(OccOrbs)
     call mem_alloc(OUred,LocalFragment%noccAOS,LocalFragment%noccFA)
+    if(associated(LocalFragment%CDocceival)) then
+       call mem_dealloc(LocalFragment%CDocceival)
+    end if
+    call mem_alloc(LocalFragment%CDocceival,LocalFragment%noccFA)
     ix=0
     do i=1,nocc
        if(OccOrbs(i)) then
           ix=ix+1
           OUred(:,ix) = OU(:,i)
+          LocalFragment%CDocceival(ix) = Oeival(i)
        end if
     end do
 
@@ -821,13 +829,21 @@ contains
     ! Same for virtual space
     LocalFragment%nunoccFA = count(VirtOrbs)
     call mem_alloc(VUred,LocalFragment%nunoccAOS,LocalFragment%nunoccFA)
+    if(associated(LocalFragment%CDunocceival)) then
+       call mem_dealloc(LocalFragment%CDunocceival)
+    end if
+    call mem_alloc(LocalFragment%CDunocceival,LocalFragment%nunoccFA)
     ix=0
     do i=1,nvirt
        if(VirtOrbs(i)) then
           ix=ix+1
           VUred(:,ix) = VU(:,i)
+          LocalFragment%CDunocceival(ix) = Veival(i)
        end if
     end do
+
+    call mem_dealloc(occeival)
+    call mem_dealloc(virteival)
 
 
     ! Set fragment-adapted (FA) orbital coefficients: AO-->FA basis
@@ -950,8 +966,8 @@ contains
     if(FOfragment%pairfrag) FOfragment%pairdist = LocalFragment%pairdist
 
 
-    ! Reset information for site fragment that differs from local fragment
-    ! ********************************************************************
+    ! Reset information for FO fragment that differs from local fragment
+    ! ******************************************************************
     ! AOS dimensions
     FOfragment%noccAOS = LocalFragment%noccFA
     FOfragment%nunoccAOS = LocalFragment%nunoccFA
@@ -1515,6 +1531,7 @@ contains
     integer :: noccPQ,nunoccPQ,nbasisPQ,noccPQ_FA, nunoccPQ_FA,i,mu,idx, EOSidx,j
     logical :: debugprint,keepon  ! temporary debug prints
     real(realk) :: diagdev, nondiagdev
+    logical,pointer :: WhichOccP(:), WhichOccQ(:), WhichUnoccP(:), WhichUnoccQ(:)
 
     if(DECinfo%PL>0) then
        debugprint=.true.
@@ -1523,12 +1540,19 @@ contains
     end if
     lambdathr_default = 1.0e-3_realk
 
-    ! Initial dimensions for FA space (remove EOS)
-    noccPQ = fragmentP%noccFA + fragmentQ%noccFA &
-         & - fragmentP%noccEOS - fragmentQ%noccEOS
-    nunoccPQ = fragmentP%nunoccFA + fragmentQ%nunoccFA &
-         & - fragmentP%nunoccEOS - fragmentQ%nunoccEOS
-    nbasisPQ = fragmentPQ%number_basis
+    ! Threshold used to remove certain FOs
+    FragmentPQ%RejectThr = set_pairFOthr(FragmentPQ%pairdist)
+
+    ! Dimensions of pair fragment PQ as union of spaces for atomic fragments P and Q,
+    ! where only FOs with eigenvalues larger than pairFOthr in the original atomic
+    ! fragments are kept.
+    call mem_alloc(WhichOccP,fragmentP%noccFA)
+    call mem_alloc(WhichOccQ,fragmentQ%noccFA)
+    call mem_alloc(WhichUnoccP,fragmentP%nunoccFA)
+    call mem_alloc(WhichUnoccQ,fragmentQ%nunoccFA)
+    call get_pairFO_union(fragmentP,fragmentQ,fragmentPQ,noccPQ,nunoccPQ,nbasisPQ,&
+         & WhichOccP, WhichOccQ, WhichUnoccP, WhichUnoccQ)
+
 
     ! Sanity checks
     if( (.not. fragmentP%FAset) .or. (.not. fragmentQ%FAset) ) then
@@ -1539,6 +1563,10 @@ contains
          & (fragmentPQ%nunoccEOS == fragmentPQ%nunoccAOS) ) then
        ! Special case: No FA orbitals to consider.
        call pair_fragment_adapted_transformation_matrices_justEOS(fragmentP,fragmentQ,fragmentPQ)
+       call mem_dealloc(WhichOccP)
+       call mem_dealloc(WhichOccQ)
+       call mem_dealloc(WhichUnoccP)
+       call mem_dealloc(WhichUnoccQ)
        return
     end if
 
@@ -1547,7 +1575,9 @@ contains
     ! *    Fragment-adapted orbitals (FOs) for pair PQ are set by the following procedure:   *
     ! *****************************************************************************************
     !
-    ! 1. Set up MO coefficient matrix using union of existing FOs for atomic fragments P and Q.
+    ! 1. Set up MO coefficient matrix using union of existing FOs for atomic fragments P and Q
+    !    (but where only atomic fragment FOs with eigenvalues larger than fragmentPQ%rejecthr
+    !     are kept as described above).
     ! 2. Project onto local AOS for pair (cleanup).
     ! 3. Project out orbitals assignsed to P or Q.
     ! 4. Setup MO overlap matrix for resulting orbitals.
@@ -1565,7 +1595,7 @@ contains
     call mem_alloc(CoccPQ,NbasisPQ,noccPQ)
     call mem_alloc(CunoccPQ,NbasisPQ,nunoccPQ)
     call set_pair_fragment_adapted_redundant_orbitals(MyMolecule,FragmentP,FragmentQ,&
-         & FragmentPQ,noccPQ,nunoccPQ,CoccPQ,CunoccPQ)
+         & FragmentPQ,noccPQ,nunoccPQ,WhichOccP,WhichOccQ,WhichUnoccP,WhichUnoccQ,CoccPQ,CunoccPQ)
     ! Note: At this stage the PQ orbitals are redundant and not orthogonal.
     !       Furthermore, the EOS orbitals have been taken out of the orbital pool.
     !       However, FOs originally used for fragment P may still contain
@@ -1859,6 +1889,10 @@ contains
     call mem_dealloc(whichorbitals)
     call mem_dealloc(moS)
     call mem_dealloc(CunoccPQ)
+    call mem_dealloc(WhichOccP)
+    call mem_dealloc(WhichOccQ)
+    call mem_dealloc(WhichUnoccP)
+    call mem_dealloc(WhichUnoccQ)
 
 
     ! Transformation matrices have been set!
@@ -2440,6 +2474,8 @@ end subroutine atomic_fragment_basis
     if(fragment%FAset) then
        write(wunit) fragment%CoccFA
        write(wunit) fragment%CunoccFA
+       write(wunit) fragment%CDocceival
+       write(wunit) fragment%CDunocceival
     end if
 
   end subroutine fragment_write_data
@@ -2723,8 +2759,12 @@ end subroutine atomic_fragment_basis
     if(fragment%FAset) then
        call mem_alloc(Fragment%CoccFA,Fragment%number_basis,Fragment%noccFA)
        call mem_alloc(Fragment%CunoccFA,Fragment%number_basis,Fragment%nunoccFA)
+       call mem_alloc(Fragment%CDocceival,Fragment%noccFA)
+       call mem_alloc(Fragment%CDunocceival,Fragment%nunoccFA)
        read(runit) fragment%CoccFA
        read(runit) fragment%CunoccFA
+       read(runit) fragment%CDocceival
+       read(runit) fragment%CDunocceival
     end if
 
 
@@ -4710,9 +4750,10 @@ if(DECinfo%PL>0) then
   end subroutine get_nbasis_for_fragment
 
 
-  !> \brief Set pair fragment-adapted MO coefficients, simply by
-  !> taking the union of fragment-adapted orbitals
-  !> for the incoming atomic fragments.
+  !> \brief Set pair fragment-adapted MO coefficients by
+  !> taking the union of fragment-adapted orbitals for the incoming atomic fragments,
+  !> but where only FOs in the original atomic fragments with eigenvalues larger than some 
+  !> threshold are kept (see get_pairFO_union).
   !> Note 1: These orbitals are NOT orthogonal, and they
   !> are also redundant! Redundancies need to be removed
   !> and orbitals must be orthogonalized before they can be used
@@ -4722,7 +4763,7 @@ if(DECinfo%PL>0) then
   !> \author Kasper Kristensen
   !> \date March 2013
   subroutine set_pair_fragment_adapted_redundant_orbitals(MyMolecule,FragmentP,FragmentQ,&
-       & FragmentPQ,noccPQ,nunoccPQ,CoccPQ,CunoccPQ)
+       & FragmentPQ,noccPQ,nunoccPQ,WhichOccP,WhichOccQ,WhichUnoccP,WhichUnoccQ,CoccPQ,CunoccPQ)
     implicit none
 
     !> Full molecule info
@@ -4733,32 +4774,22 @@ if(DECinfo%PL>0) then
     type(ccatom),intent(inout) :: fragmentQ
     !> Pair Fragment PQ
     type(ccatom),intent(inout) :: FragmentPQ
-    !> Number of occupied redundant pair orbitals
-    !> (should be sum of fragmentP%noccFA and fragmentQ%noccFA)
+    !> Number of occupied redundant pair orbitals (see get_pairFO_union)
     integer,intent(in) :: noccPQ
-    !> Number of unoccupied redundant pair orbitals
-    !> (should be sum of fragmentP%nunoccFA and fragmentQ%nunoccFA)
+    !> Number of unoccupied redundant pair orbitals (see get_pairFO_union)
     integer,intent(in) :: nunoccPQ
+    !> Which occupied FOs to include from atomic fragments P and Q (see get_pairFO_union)
+    logical,intent(in) :: WhichOccP(fragmentP%noccFA), WhichOccQ(fragmentQ%noccFA)
+    !> Which unoccupied FOs to include from atomic fragments P and Q (see get_pairFO_union)
+    logical,intent(in) :: WhichUnoccP(fragmentP%nunoccFA), WhichUnoccQ(fragmentQ%nunoccFA)
     !> Occupied MO coefficients
     real(realk),intent(inout) :: CoccPQ(FragmentPQ%number_basis,noccPQ)
     !> Unoccupied MO coefficients
     real(realk),intent(inout) :: CunoccPQ(FragmentPQ%number_basis,nunoccPQ)
-    integer :: i,j,ix,jx,offset,orbidx,nP,nQ
+    integer :: i,j,ix,jx,orbidx
     integer,pointer :: Pbasis(:), Qbasis(:), PQbasis(:)
     integer,pointer :: fragP_in_pair(:),fragQ_in_pair(:)
 
-    ! Sanity check
-    if( (noccPQ /= fragmentP%noccFA + fragmentQ%noccFA - fragmentP%noccEOS - fragmentQ%noccEOS) .or. &
-         & (nunoccPQ /= fragmentP%nunoccFA + fragmentQ%nunoccFA &
-         & - fragmentP%nunoccEOS - fragmentQ%nunoccEOS) ) then
-       print *, 'noccP: ', fragmentP%noccFA - fragmentP%noccEOS
-       print *, 'noccQ: ', fragmentQ%noccFA - fragmentQ%noccEOS
-       print *, 'noccPQ: ', noccPQ
-       print *, 'nunoccP: ', fragmentP%nunoccFA - fragmentP%nunoccEOS
-       print *, 'nunoccQ: ', fragmentQ%nunoccFA - fragmentQ%nunoccEOS
-       print *, 'nunoccPQ: ', nunoccPQ
-       call lsquit('set_pair_fragment_adapted_redundant_orbitals: Dimension mismatch',-1)
-    end if
 
     ! Set list of orbitals in full molecular list
     call mem_alloc(Pbasis,FragmentP%number_basis)
@@ -4768,7 +4799,7 @@ if(DECinfo%PL>0) then
     call which_orbitals_in_atomic_extents(MyMolecule,FragmentQ,Qbasis)
     call which_orbitals_in_atomic_extents(MyMolecule,FragmentPQ,PQbasis)
 
-    ! Set list of atomic orbital extent in pair orbital extent list
+    ! Set list of atomic fragment extent in pair fragment extent list
     call mem_alloc(fragP_in_pair,FragmentP%number_basis)
     call mem_alloc(fragQ_in_pair,FragmentQ%number_basis)
     call atomicfragAE_in_pairfragAE(FragmentP%number_basis,FragmentPQ%number_basis,&
@@ -4784,7 +4815,9 @@ if(DECinfo%PL>0) then
     !
     ! C_PQ  =  ( C_P C_Q )     (*)
     ! 
-    ! i.e. with fragment P orbitals before fragment Q orbitals.
+    ! i.e. with fragment P orbitals before fragment Q orbitals and where orbitals
+    ! in the original P and Q atomic fragments are only included if they have eigenvalues 
+    ! below threshold (see get_pairFO_union)
 
     ! Note: Atomic extent for pair is in union of atomic extent for P and Q.
     !       Therefore atomic extent for pair is (in general) larger than atomic extent 
@@ -4799,26 +4832,28 @@ if(DECinfo%PL>0) then
     !       that EOS orbitals are listed before the remaining FA orbitals.
     !       (See fragment_adapted_transformation_matrices).
     CoccPQ=0.0_realk
-    offset=fragmentP%noccEOS
-    nP = fragmentP%noccFA - fragmentP%noccEOS
-    do j=1,nP
-       orbidx = j
-       do i=1,FragmentP%number_basis
-          ix = fragP_in_pair(i)
-          CoccPQ(ix,orbidx) = FragmentP%CoccFA(i,j+offset)
-       end do
+    orbidx=0
+    do j=1,fragmentP%noccFA
+       if(WhichOccP(j)) then ! "j" is XOS orbital that we want to include
+          orbidx = orbidx+1  ! Orbital index for pair MOs
+          do i=1,FragmentP%number_basis
+             ix = fragP_in_pair(i)
+             CoccPQ(ix,orbidx) = FragmentP%CoccFA(i,j)
+          end do
+       end if
     end do
 
     ! Put FA orbitals for Q into pair fragment orbital matrix
-    offset=fragmentQ%noccEOS
-    nQ = fragmentQ%noccFA - fragmentQ%noccEOS
-    do j=1,nQ
-       orbidx = j + nP
-       do i=1,FragmentQ%number_basis
-          ix = fragQ_in_pair(i)
-          CoccPQ(ix,orbidx) = FragmentQ%CoccFA(i,j+offset)
-       end do
+    do j=1,fragmentQ%noccFA
+       if(WhichOccQ(j)) then ! "j" is XOS orbital that we want to include
+          orbidx = orbidx +1   ! Orbital index for pair MOs
+          do i=1,FragmentQ%number_basis
+             ix = fragQ_in_pair(i)
+             CoccPQ(ix,orbidx) = FragmentQ%CoccFA(i,j)
+          end do
+       end if
     end do
+
 
 
     ! Set unoccupied FA-orbitals for pair
@@ -4826,25 +4861,28 @@ if(DECinfo%PL>0) then
     ! Same strategy as for occupied space.
 
 
+    ! Put FA occupied orbitals for P into pair fragment orbital matrix
     CunoccPQ=0.0_realk
-    offset=fragmentP%nunoccEOS
-    nP = fragmentP%nunoccFA - fragmentP%nunoccEOS
-    do j=1,nP
-       orbidx = j
-       do i=1,FragmentP%number_basis
-          ix = fragP_in_pair(i)
-          CunoccPQ(ix,orbidx) = FragmentP%CunoccFA(i,j+offset)
-       end do
+    orbidx=0
+    do j=1,fragmentP%nunoccFA
+       if(WhichUnoccP(j)) then ! "j" is XOS orbital that we want to include
+          orbidx = orbidx+1  ! Orbital index for pair MOs
+          do i=1,FragmentP%number_basis
+             ix = fragP_in_pair(i)
+             CunoccPQ(ix,orbidx) = FragmentP%CunoccFA(i,j)
+          end do
+       end if
     end do
 
-    offset=fragmentQ%nunoccEOS
-    nQ = fragmentQ%nunoccFA - fragmentQ%nunoccEOS
-    do j=1,nQ
-       orbidx = j + nP
-       do i=1,FragmentQ%number_basis
-          ix = fragQ_in_pair(i)
-          CunoccPQ(ix,orbidx) = FragmentQ%CunoccFA(i,j+offset)
-       end do
+    ! Put FA unoccupied orbitals for Q into pair fragment orbital matrix
+    do j=1,fragmentQ%nunoccFA
+       if(WhichUnoccQ(j)) then ! "j" is XOS orbital that we want to include
+          orbidx = orbidx +1   ! Orbital index for pair MOs
+          do i=1,FragmentQ%number_basis
+             ix = fragQ_in_pair(i)
+             CunoccPQ(ix,orbidx) = FragmentQ%CunoccFA(i,j)
+          end do
+       end if
     end do
 
 
@@ -5493,5 +5531,164 @@ if(DECinfo%PL>0) then
 
   end subroutine calculate_corrdens_AOS_virtvirt
 
+  !> \brief Set threshold for removing individual FOs from atomic fragments P and Q
+  !> before merging the atomic fragments to generate pair fragment PQ.
+  !> This is an active research area, and the optimal procedure is yet unknown!
+  !> \author Kasper Kristensen
+  !> \date September 2013
+  function set_pairFOthr(pairdist) result(pairFOthr)
+    implicit none
+    !> Distance between atoms P and Q (a.u.)
+    real(realk), intent(in) :: pairdist
+    !> Threshold for removing FOs on atomic fragments P and Q for occupied (first entry)
+    !> and virtual (second entry) FOs.
+    real(realk) :: pairFOthr(2)
+    
+    ! In the long run, pairdist and the FOT should be used to dictate
+    ! the value of pairFOthr. For now, we simply set using input keyword for virtual space
+    ! and 0 for occupied space
+    pairFOthr(1) = 0.0_realk
+    pairFOthr(2) = DECinfo%pairFOthr
+    write(DECinfo%output,'(a,2g20.5)') 'Setting pairFOthr to ', pairFOthr 
+
+  end function set_pairFOthr
+
+
+  !> \brief When using fragment-adapted orbitals: Get dimensions of pair fragment PQ as unions
+  !> of spaces for atomic fragments P and Q,
+  !> where only FOs in the original atomic fragments with eigenvalues larger than pairFOthr are kept.
+  !> NOTE: We take the EOS orbitals completely out of the treatment at this stage since they are not 
+  !> allowed to mix with the XOS orbitals at later stages. Thus, the dimensions do NOT include EOS
+  !> orbitals and the logical vectors are false for the EOS orbitals.
+  !> \author Kasper Kristensen
+  !> \date September 2013
+  subroutine get_pairFO_union(fragmentP,fragmentQ,fragmentPQ,noccPQ,nunoccPQ,nbasisPQ,&
+       & WhichOccP, WhichOccQ, WhichUnoccP, WhichUnoccQ)
+    implicit none
+    !> Fragment P
+    type(ccatom),intent(in) :: fragmentP
+    !> Fragment Q
+    type(ccatom),intent(in) :: fragmentQ
+    !> Pair fragment PQ using local orbitals
+    type(ccatom),intent(in) :: FragmentPQ
+    !> Number of occupied, unoccupied MOs and number of atomic basis functions for pair fragment
+    integer,intent(inout) :: noccPQ,nunoccPQ,nbasisPQ
+    !> Which occupied FOs to include from atomic fragments P and Q
+    logical,intent(inout) :: WhichOccP(fragmentP%noccFA), WhichOccQ(fragmentQ%noccFA)
+    !> Which unoccupied FOs to include from atomic fragments P and Q
+    logical,intent(inout) :: WhichUnoccP(fragmentP%nunoccFA), WhichUnoccQ(fragmentQ%nunoccFA)
+    integer :: i, noccP,noccQ,nunoccP,nunoccQ,maxidx
+    real(realk) :: themax
+
+
+    ! Number of FOs for atomic fragment P with eigenvalues below threshold
+    ! ********************************************************************
+
+    ! Threshold is stored in FragmentPQ%RejectThr (first/second entry refer to occ/unocc threshold)
+
+
+    ! OCCUPIED
+    ! ========
+
+    ! Fragment P, occupied
+    noccP=0
+    WhichOccP=.false.
+    themax = 0.0_realk
+    do i=fragmentP%noccEOS+1,fragmentP%noccFA  ! Skip EOS orbitals in loop (first noccEOS orbitals)
+       if( abs(fragmentP%CDocceival(i)) > fragmentPQ%rejectthr(1) ) then
+          noccP = noccP + 1
+          WhichOccP(i) = .true.
+       end if
+       ! Find max eigenvalue in case sanity check below needs to be invoked
+       if( abs(fragmentP%CDocceival(i)) > themax ) then
+          themax = abs(fragmentP%CDocceival(i))
+          maxidx = i
+       end if
+    end do
+    ! Sanity check, ensure that we have at least one pair FO, choose the one with largest eigenvalue
+    if(count(WhichOccP)==0) then
+       WhichOccP(maxidx) = .true.
+    end if
+
+    ! Fragment Q, occupied
+    noccQ=0
+    WhichOccQ=.false.
+    themax = 0.0_realk
+    do i=fragmentQ%noccEOS+1,fragmentQ%noccFA
+       if( abs(fragmentQ%CDocceival(i)) > fragmentPQ%rejectthr(1) ) then
+          noccQ = noccQ + 1
+          WhichOccQ(i) = .true.
+       end if
+       ! Find max eigenvalue in case sanity check below needs to be invoked
+       if( abs(fragmentQ%CDocceival(i)) > themax ) then
+          themax = abs(fragmentQ%CDocceival(i))
+          maxidx = i
+       end if
+    end do
+    ! Sanity check, ensure that we have at least one pair FO, choose the one with largest eigenvalue
+    if(count(WhichOccQ)==0) then
+       WhichOccQ(maxidx) = .true.
+    end if
+
+    ! Number of occupied PQ XOS orbitals is the union of XOS orbitals above threshold for P and Q.
+    noccPQ = count(WhichOccP) + count(WhichOccQ)
+
+
+    
+    ! UNOCCUPIED
+    ! ==========
+
+    ! Fragment P, unoccupied
+    nunoccP=0
+    WhichUnoccP=.false.
+    themax = 0.0_realk
+    do i=fragmentP%nunoccEOS+1,fragmentP%nunoccFA  ! Skip EOS orbitals in loop (first nunoccEOS orbitals)
+       if( abs(fragmentP%CDunocceival(i)) > fragmentPQ%rejectthr(2) ) then
+          nunoccP = nunoccP + 1
+          WhichUnoccP(i) = .true.
+       end if
+       ! Find max eigenvalue in case sanity check below needs to be invoked
+       if( abs(fragmentP%CDunocceival(i)) > themax ) then
+          themax = abs(fragmentP%CDunocceival(i))
+          maxidx = i
+       end if
+    end do
+    ! Sanity check, ensure that we have at least one pair FO, choose the one with largest eigenvalue
+    if(count(WhichUnoccP)==0) then
+       WhichUnoccP(maxidx) = .true.
+    end if
+
+    ! Fragment Q, unoccupied
+    nunoccQ=0
+    WhichUnoccQ=.false.
+    themax = 0.0_realk
+    do i=fragmentQ%nunoccEOS+1,fragmentQ%nunoccFA
+       if( abs(fragmentQ%CDunocceival(i)) > fragmentPQ%rejectthr(2) ) then
+          nunoccQ = nunoccQ + 1
+          WhichUnoccQ(i) = .true.
+       end if
+       ! Find max eigenvalue in case sanity check below needs to be invoked
+       if( abs(fragmentQ%CDunocceival(i)) > themax ) then
+          themax = abs(fragmentQ%CDunocceival(i))
+          maxidx = i
+       end if
+    end do
+    ! Sanity check, ensure that we have at least one pair FO, choose the one with largest eigenvalue
+    if(count(WhichUnoccQ)==0) then
+       WhichUnoccQ(maxidx) = .true.
+    end if
+
+
+    ! Number of unoccupied PQ XOS orbitals is the union of XOS orbitals above threshold for P and Q.
+    nunoccPQ = count(WhichUnoccP) + count(WhichUnoccQ)
+
+
+
+    ! Number of basis functions
+    ! --> same as for local fragment, simply copy dimension
+    nbasisPQ = fragmentPQ%number_basis
+
+
+  end subroutine get_pairFO_union
 
 end module atomic_fragment_operations
