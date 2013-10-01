@@ -159,9 +159,8 @@ class lsoutput:
                  elif(".CC2" == lineparser2):
                    self.calctype[1] = "CC2"
                    found = True
-                 elif(".DECPRINT" == lineparser2):
-                   if(int(self.lines[k+1])>1):
-                     self.decinfo.enable_fragread = True
+                 elif(".PRINTFRAGS"):
+                   self.decinfo.enable_fragread = True
                  k+=1
                if(not found):
                  self.calctype[1] = " NONE"
@@ -192,6 +191,7 @@ class lsoutput:
 
 
       if(found_nb and found_no):
+        print "ATTENTION: CALCULATION OF N_VIRTUAL = N_BASIS - N_OCCUPIED"
         self.nv = self.nb - self.no
 
       #REMOVE ALL TRAILING BLANK LINES FROM THE INPUT FILES
@@ -205,8 +205,14 @@ class lsoutput:
         del self.dalinp[-1]
 
       #FIND MORE SPECIFIC INFORMATION ACCORDING TO THE JOB STRING
+      
+      #Read DEC fragments from DEC calculation
       if("DEC"==self.calctype[0] and not "MP2DEBUG" in self.calctype):
         self.decinfo.get_dec_info(self.lines,self.calctype[1],True)
+
+      #Read DEC fragments from full CC calculation if specified
+      if("CC"==self.calctype[0] and self.decinfo.enable_fragread):
+        self.decinfo.get_dec_info(self.lines,self.calctype[1],False)
 
 
    ############################################################
@@ -215,6 +221,7 @@ class lsoutput:
    #GET FRAGMENT ENERGIES FROM FULL CALCULATION
    def get_fraginfo_from_full(self):
       if(("DEC"==self.calctype[0] and "MP2DEBUG" in self.calctype)or self.decinfo.enable_fragread):
+        print "reading fragment info"
         self.decinfo.get_dec_info(self.lines,self.calctype[1],False)
       else:
         print "ERROR(get_frag_from_full): cannot be performed for this type of calculation"
