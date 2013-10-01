@@ -60,7 +60,7 @@ module ccsd_module
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, getsinglesresidualccsd,fullmolecular_get_aot1fock,calculate_E2_and_permute, &
-         & get_max_batch_sizes
+         & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ
     private
 
   interface Get_AOt1Fock
@@ -82,11 +82,12 @@ module ccsd_module
     
 
 contains
-  function precondition_doubles_newarr(omega2,ppfock,qqfock) result(prec)
+  function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
 
     integer none
     type(array), intent(in) :: omega2
     type(array), intent(inout) :: ppfock, qqfock
+    logical, intent(in) :: loc
     type(array) :: prec
     integer, dimension(4) :: dims
     integer :: a,i,b,j
@@ -97,9 +98,8 @@ contains
     endif
     dims = omega2%dims
 
-    if(omega2%atype==DENSE.and.&
-    &(ppfock%atype==DENSE.or.ppfock%atype==REPLICATED).and.&
-    &(qqfock%atype==DENSE.or.qqfock%atype==REPLICATED))then
+    !make sure all data is local
+    if(loc)then
       prec = array_init(dims,4)
      
       !$OMP PARALLEL DEFAULT(NONE) SHARED(prec,dims,omega2,ppfock,qqfock) &
@@ -122,18 +122,16 @@ contains
       !$OMP END DO
       !$OMP END PARALLEL
 
-    elseif(omega2%atype==TILED_DIST.and.&
-          &associated(ppfock%addr_p_arr).and.associated(qqfock%addr_p_arr))then
+    else
+    !make sure all data is in the correct for this routine, that is omega2 is
+    !TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
+
       prec = array_init(dims,4,TILED_DIST,MASTER_INIT,omega2%tdim)
-      call array_change_atype_to_rep(ppfock)
-      call array_change_atype_to_rep(qqfock)
+      call array_change_atype_to_rep(ppfock,loc)
+      call array_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
       call array_change_atype_to_d(ppfock)
       call array_change_atype_to_d(qqfock)
-
-    else
-      call lsquit("ERROR(precondition_doubles_newarr):No preconditioning routine&
-      & available for your choice of arrays",DECinfo%output)
     endif
 
   end function precondition_doubles_newarr
@@ -595,77 +593,122 @@ contains
 
 
 
-  subroutine get_ccsd_residual_integral_driven_oldarray_wrapper(deltafock,omega2,t2,fock,govov,nocc,nvirt,&
-       & ppfock,qqfock,pqfock,qpfock,xocc,xvirt,yocc,yvirt,nbas,MyLsItem, omega1,iter)
-       implicit none
-       type(array2),intent(in) :: deltafock
-       type(array4), intent(inout) :: omega2,t2
-       type(array2), intent(inout) :: ppfock, qqfock,pqfock,qpfock,omega1,fock
-       type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
-       type(lsitem), intent(inout) :: MyLsItem
-       integer,intent(in) :: nbas
-       integer,intent(in) :: nocc
-       integer,intent(in) :: nvirt
-       integer,intent(in) :: iter
-       real(realk),target,intent(inout) :: govov(nvirt*nocc*nvirt*nocc)
-       real(realk),pointer :: t2_p(:),xo_p(:),xv_p(:),yo_p(:),yv_p(:)
-       type(array) :: t2a,ga,o2
+  !subroutine get_ccsd_residual_integral_driven_oldarray_wrapper(deltafock,omega2,t2,fock,govov,nocc,nvirt,&
+  !     & ppfock,qqfock,pqfock,qpfock,xocc,xvirt,yocc,yvirt,nbas,MyLsItem, omega1,iter)
+  !     implicit none
+  !     type(array2),intent(in) :: deltafock
+  !     type(array4), intent(inout) :: omega2,t2
+  !     type(array2), intent(inout) :: ppfock, qqfock,pqfock,qpfock,omega1,fock
+  !     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
+  !     type(lsitem), intent(inout) :: MyLsItem
+  !     integer,intent(in) :: nbas
+  !     integer,intent(in) :: nocc
+  !     integer,intent(in) :: nvirt
+  !     integer,intent(in) :: iter
+  !     real(realk),target,intent(inout) :: govov(nvirt*nocc*nvirt*nocc)
+  !     real(realk),pointer :: t2_p(:),xo_p(:),xv_p(:),yo_p(:),yv_p(:)
+  !     type(array) :: t2a,ga,o2
 
-      ! get t2 and omega2 into the correct order
-      call array4_reorder(t2,[1,3,2,4])
-      call ass_D4to1(t2%val,t2_p,t2%dims)
-      t2a=array_init(t2%dims,4)
-      call memory_deallocate_array_dense(t2a)
-      call ass_D4to1(t2%val,t2a%elm1,t2%dims)
-      call assoc_ptr_arr(t2a)
+  !    ! get t2 and omega2 into the correct order
+  !    call array4_reorder(t2,[1,3,2,4])
+  !    call ass_D4to1(t2%val,t2_p,t2%dims)
+  !    t2a=array_init(t2%dims,4)
+  !    call memory_deallocate_array_dense(t2a)
+  !    call ass_D4to1(t2%val,t2a%elm1,t2%dims)
+  !    call assoc_ptr_arr(t2a)
 
-      call array4_reorder(omega2,[1,3,2,4])
-      o2=array_init(omega2%dims,4)
-      call memory_deallocate_array_dense(o2)
-      call ass_D4to1(omega2%val,o2%elm1,omega2%dims)
-      call assoc_ptr_arr(o2)
-  
-      ga=array_init([nocc,nvirt,nocc,nvirt],4)
-      call memory_deallocate_array_dense(ga)
-      ga%elm1 => govov
-      call assoc_ptr_arr(ga)
+  !    call array4_reorder(omega2,[1,3,2,4])
+  !    o2=array_init(omega2%dims,4)
+  !    call memory_deallocate_array_dense(o2)
+  !    call ass_D4to1(omega2%val,o2%elm1,omega2%dims)
+  !    call assoc_ptr_arr(o2)
+  !
+  !    ga=array_init([nocc,nvirt,nocc,nvirt],4)
+  !    call memory_deallocate_array_dense(ga)
+  !    ga%elm1 => govov
+  !    call assoc_ptr_arr(ga)
 
-      call ass_D2to1(xocc%val,xo_p,xocc%dims)
-      call ass_D2to1(xvirt%val,xv_p,xvirt%dims)
-      call ass_D2to1(yocc%val,yo_p,yocc%dims)
-      call ass_D2to1(yvirt%val,yv_p,yvirt%dims)
-      !call get_ccsd_residual_integral_driven(deltafock%val,omega2%val,t2_p,fock%val,govov,nocc,nvirt,&
-      ! & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
-      ! & omega1%val,iter)
-      call get_ccsd_residual_integral_driven(deltafock%val,o2,t2a,fock%val,ga,nocc,nvirt,&
-       & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
-       & omega1%val,iter)
+  !    call ass_D2to1(xocc%val,xo_p,xocc%dims)
+  !    call ass_D2to1(xvirt%val,xv_p,xvirt%dims)
+  !    call ass_D2to1(yocc%val,yo_p,yocc%dims)
+  !    call ass_D2to1(yvirt%val,yv_p,yvirt%dims)
+  !    !call get_ccsd_residual_integral_driven(deltafock%val,omega2%val,t2_p,fock%val,govov,nocc,nvirt,&
+  !    ! & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
+  !    ! & omega1%val,iter)
+  !    call get_ccsd_residual_integral_driven(deltafock%val,o2,t2a,fock%val,ga,nocc,nvirt,&
+  !     & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
+  !     & omega1%val,iter,.true.)
 
-      nullify(t2a%elm1)
-      nullify(t2a%elm4)
-      call array_free(t2a)
-      nullify(o2%elm1)
-      nullify(o2%elm4)
-      call array_free(o2)
-      nullify(ga%elm1)
-      nullify(ga%elm4)
-      call array_free(ga)
+  !    nullify(t2a%elm1)
+  !    nullify(t2a%elm4)
+  !    call array_free(t2a)
+  !    nullify(o2%elm1)
+  !    nullify(o2%elm4)
+  !    call array_free(o2)
+  !    nullify(ga%elm1)
+  !    nullify(ga%elm4)
+  !    call array_free(ga)
 
-      !reorder ampitudes and residuals for use within the solver
-      call array4_reorder(t2,[1,3,2,4])
-      call array4_reorder(omega2,[1,3,2,4])
-      nullify(xo_p)
-      nullify(yo_p)
-      nullify(xv_p)
-      nullify(yv_p)
-  end subroutine get_ccsd_residual_integral_driven_oldarray_wrapper
+  !    !reorder ampitudes and residuals for use within the solver
+  !    call array4_reorder(t2,[1,3,2,4])
+  !    call array4_reorder(omega2,[1,3,2,4])
+  !    nullify(xo_p)
+  !    nullify(yo_p)
+  !    nullify(xv_p)
+  !    nullify(yv_p)
+  !end subroutine get_ccsd_residual_integral_driven_oldarray_wrapper
 
 
   !> \brief Get CCSD residual in an integral direct fashion.
   !> \author Patrick Ettenhuber
   !> \date December 2012
+  !
+  !deltafock = on input deltafock is the difference fock matrix of one fragment with
+  !respect to the fock matrix of the full molecule, this only has relevance for
+  !DEC calculations, else it is 0
+  !
+  !omega2 = is the residual defined as type array. if local = .true. the array
+  !is assumed to be in local memory stored in the elms1 variable, else it is
+  !assumed to be in parallel distributed memory. the order is [a,b,i,j]
+  !
+  !t2 = are the amplitudes as array type, the "local" variable gives the assumed
+  !data distribution as for omega2, the order is [a,b,i,j]
+  !
+  !fock = is the ao Fock matrix which is only needed in case of a CC2
+  !calculation
+  !
+  !govov = is an mo-integral matrix in the distribution dictated by "local" as
+  !t2 and omega2
+  !
+  !no = number of occupied orbitals in the system
+  !
+  !nv = number of virtual orbitals in the system
+  !
+  !nb = number of basis functions in the system
+  !
+  !ppfock = is the t1 transformed occ occ fock matrix on output
+  !
+  !qqfock = is the t1 transformed virt virt fock matrix on output
+  !
+  !pqfock = is the t1 transformed occ virt fock matrix on output
+  !
+  !qpfock = is the t1 transformed virt occ fock matrix on output
+  !
+  !xo,xv,yo,yv = are the lambda particle and hole matrices for the occupied and
+  !virtual parts
+  !
+  !MyLSITEM = integral information
+  !
+  !omega1 = is the singles residual as [a,i]
+  !
+  !iter = the iteration number of the current cc iteration
+  !
+  !local = tells the routine (how) to handle the memory distriution
+  !
+  !rest = tells the routine wheter the calculation has been restarted from
+  !amplitude files
   subroutine get_ccsd_residual_integral_driven(deltafock,omega2,t2,fock,govov,no,nv,&
-       ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,rest)
+       ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
 #ifdef VAR_OMP
     use omp_lib,only:omp_get_wtime
 #endif
@@ -715,6 +758,7 @@ contains
     integer,intent(in) :: iter
     !real(realk),intent(inout) :: govov(nv*no*nv*no)
     type(array),intent(inout) :: govov
+    logical, intent(in) :: local
     !logical that specifies whether the amplitudes were read
     logical, optional, intent(inout) :: rest
 
@@ -915,7 +959,7 @@ contains
       call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
       call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add)
+           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local)
 
       !SOME WORDS ABOUT THE CHOSEN SCHEME:
       ! Depending on the availability of memory on the nodes a certain scheme
@@ -950,7 +994,7 @@ contains
     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
       call ls_mpibcast(CCSDDATA,infpar%master,infpar%lg_comm)
       call mpi_communicate_ccsd_calcdata(omega2,t2,govov,xo,xv,yo,&
-      &yv,MyLsItem,nb,nv,no,iter,scheme,DECinfo%solver_par)
+      &yv,MyLsItem,nb,nv,no,iter,scheme,local)
     endif StartUpSlaves
       
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -966,7 +1010,6 @@ contains
 
     hstatus = 80
     CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
-
 
     !dense part was allocated in the communicate subroutine
 
@@ -1096,7 +1139,7 @@ contains
     call mem_alloc(Gbi,nb*no)
 
 
-    if(DECinfo%ccModel>2)then
+    if( DECinfo%ccModel > MODEL_CC2 )then
 
 #ifdef VAR_MPI
       call mem_alloc(sio4,sio4_c,int(i8*nor*no2,kind=long))
@@ -1157,7 +1200,7 @@ contains
     !      &(8.0E0_realk*o2v*MaxActualDimGamma*2)/(1024.0E0_realk*1024.0E0_realk*1024.0E0_realk)
     call mem_alloc(uigcj,int((i8*o2v)*MaxActualDimGamma,kind=8))
 
-    if(DECinfo%ccModel>2)then
+    if( DECinfo%ccModel > MODEL_CC2 )then
       sio4=0.0E0_realk
     endif
 
@@ -1329,7 +1372,7 @@ contains
        call lsmpi_poke()
 
        !VVOO
-       if (DECinfo%ccModel>2) then
+       if ( DECinfo%ccModel > MODEL_CC2 ) then
         !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
         call dgemm('n','n',la*no*lg,no,nb,1.0E0_realk,w1,la*no*lg,yo,nb,0.0E0_realk,w3,la*no*lg)
         call lsmpi_poke()
@@ -1388,7 +1431,7 @@ contains
        endif
 
 
-       if (DECinfo%ccModel>2.and.(iter/=1.or.restart)) then
+       if ( DECinfo%ccModel > MODEL_CC2 .and. ( iter/=1.or.restart ) ) then
         ! gvoov = (vo|ov) constructed from w2               = I [alpha j b  gamma]
         !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
         call dgemm('n','n',la*no*nv,no,lg,1.0E0_realk,w2,la*no*nv,yo(fg),nb,0.0E0_realk,w1,la*no*nv)
@@ -1417,13 +1460,13 @@ contains
 
 #ifdef VAR_MPI
        if(scheme/=4.and.iter==1.and.lock_outside) call arr_unlock_wins(govov,.true.)
-       if((scheme==2.or.scheme==3).and.DECinfo%ccModel>2.and.lock_outside) call arr_unlock_wins(gvvooa,.true.)
-       if (DECinfo%ccModel>2.and.(iter/=1.or.restart).and.(scheme==2.or.scheme==3).and.lock_outside) then
+       if((scheme==2.or.scheme==3).and.DECinfo%ccModel>MODEL_CC2.and.lock_outside) call arr_unlock_wins(gvvooa,.true.)
+       if (DECinfo%ccModel>MODEL_CC2.and.(iter/=1.or.restart).and.(scheme==2.or.scheme==3).and.lock_outside) then
          call arr_unlock_wins(gvoova,.true.)
        endif
 #endif
 
-      if(DECinfo%ccmodel>2)then
+      if( DECinfo%ccmodel > MODEL_CC2 )then
         if(fa<=fg+lg-1)then
         !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
         !element in the alpha batch has a smaller index as the last element in
@@ -1448,7 +1491,7 @@ contains
       call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2,no*lg*la,yo,nb,0.0E0_realk,w0,no*lg*la)
       call lsmpi_poke()
       ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
-      if(DECinfo%ccModel>2)call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
+      if( DECinfo%ccModel > MODEL_CC2 )call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
       call lsmpi_poke()
 
 
@@ -1530,7 +1573,7 @@ contains
     wait_time = stopp - startt
     max_wait_time = wait_time
 
-    if(DECinfo%ccmodel>2.and.scheme==3)then
+    if( DECinfo%ccmodel>MODEL_CC2 .and. scheme==3 )then
 #if VAR_MPI
       if(lock_outside)then
         call arr_lock_wins(gvoova,'s',mode)
@@ -1568,7 +1611,7 @@ contains
 
        ! The following block is structured like this due to performance reasons
        !***********************************************************************
-       if(DECinfo%ccModel>2)then
+       if(DECinfo%ccModel > MODEL_CC2)then
 
          call lsmpi_local_allreduce_chunks(sio4,int((i8*nor)*no2,kind=8),double_2G_nel)
 
@@ -1656,7 +1699,7 @@ contains
       call array_reorder_4d(1.0E0_realk,govov%elm1,no,no,nv,nv,[1,4,2,3],0.0E0_realk,w1)
       govov%elm1(1:o2v2) = w1(1:o2v2)
 #ifdef VAR_MPI
-      if(DECinfo%solver_par)then
+      if(.not.local)then
         govov%atype     = TILED_DIST
       endif
       call array_convert(w1,govov)
@@ -1664,7 +1707,7 @@ contains
 #endif
     endif
 
-    if(DECinfo%ccModel>2)then
+    if(DECinfo%ccModel>MODEL_CC2)then
 
       !get B2.2 contributions
       !**********************
@@ -1679,7 +1722,7 @@ contains
 #ifdef VAR_LSDEBUG
       if(print_debug)then
 #ifdef VAR_MPI
-        call arr_unlock_wins(omega2,.true.)
+        if(.not.local)call arr_unlock_wins(omega2,.true.)
 #endif
         write(msg,*)"NORM(omega2 after B2.2):"
         if(scheme==4.or.scheme==3)then
@@ -1723,7 +1766,7 @@ contains
 #ifdef VAR_LSDEBUG
       if(print_debug)then
 #ifdef VAR_MPI
-        call arr_unlock_wins(omega2,.true.)
+        if(.not.local)call arr_unlock_wins(omega2,.true.)
 #endif
         write(msg,*)"NORM(omega2 after CND):"
         if(scheme==4)then
@@ -1777,7 +1820,7 @@ contains
     endif
     !convert stuff
     !set for correct access again, save as i a j b
-    if(DECinfo%solver_par)then
+    if(.not.local)then
       if((master.and..not.(scheme==2)).or.scheme==3)&
       &call memory_deallocate_array_dense(govov)
       govov%atype      = TILED_DIST
@@ -1854,7 +1897,7 @@ contains
 
 
     !Transform inactive Fock matrix into the different mo subspaces
-    if (DECinfo%ccModel>2) then
+    if (DECinfo%ccModel>MODEL_CC2) then
       ! -> Foo
       call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1,no)
       call dgemm('n','n',no,no,nb,1.0E0_realk,w1,no,yo,nb,0.0E0_realk,ppfock,no)
@@ -1957,7 +2000,7 @@ contains
 
 
 #ifdef VAR_MPI
-    if(DECinfo%solver_par.and.(scheme==4.or.scheme==3))then
+    if((.not.local).and.(scheme==4.or.scheme==3))then
       call array_mv_dense2tiled(omega2,.true.)
       call array_mv_dense2tiled(t2,.true.)
     endif
@@ -2030,14 +2073,14 @@ contains
       !calculate first part of doubles E term and its permutation
       ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
       call dcopy(no2,ppf,1,w1,1)
-      if (DECinfo%ccModel>2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w1,no)
+      if (DECinfo%ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w1,no)
       ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
       call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,w1,no,1.0E0_realk,omega2%elm1,v2o)
      
       !calculate second part of doubles E term
       ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
       call dcopy(nv2,qqf,1,w1,1)
-      if (DECinfo%ccModel>2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w1,nv)
+      if (DECinfo%ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w1,nv)
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       call dgemm('n','n',nv,o2v,nv,1.0E0_realk,w1,nv,t2%elm1,nv,1.0E0_realk,omega2%elm1,nv)
      
@@ -2087,7 +2130,7 @@ contains
       !calculate first part of doubles E term and its permutation
       ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
       call dcopy(no2,ppf,1,w2,1)
-      if (DECinfo%ccModel>2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
+      if (DECinfo%ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
       ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
       !if(me==0) call array_convert(t2,w1,t2%nelms)
       if(.not.lock_outside)then
@@ -2133,7 +2176,7 @@ contains
       !calculate second part of doubles E term
       ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
       call dcopy(nv2,qqf,1,w2,1)
-      if (DECinfo%ccModel>2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
+      if (DECinfo%ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
 
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       if(.not.lock_outside)then
@@ -2528,7 +2571,6 @@ contains
        !contribution 3: preOmC [a j b i] -> =+ Omega [a b i j]
        call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,4,2],1.0E0_realk,omega2%elm1)
      elseif(s==2)then
-       print *,omega2%addr_p_arr
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(omega2,'s',mode)
        call array_two_dim_1batch(omega2,[1,3,4,2],'a',w3,2,fai,tl,lock_outside,debug=.true.)
@@ -3774,7 +3816,7 @@ contains
   !> \author Patrick Ettenhuber
   !> \date January 2012
   recursive subroutine get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,&
-  &minbsize,manual,iter,MemFree,first,e2a)
+  &minbsize,manual,iter,MemFree,first,e2a,local)
     implicit none
     integer, intent(inout) :: scheme
     integer, intent(in)    :: nb,nv,no
@@ -3784,6 +3826,7 @@ contains
     real(realk)            :: mem_used,frac_of_total_mem,m
     logical,intent(in)     :: manual,first
     integer(kind=8), intent(inout) :: e2a
+    logical, intent(in)    :: local
     integer :: nnod,magic
 
     frac_of_total_mem=0.80E0_realk
@@ -3832,10 +3875,10 @@ contains
     if(DECinfo%force_scheme)then
       scheme=DECinfo%en_mem
       print *,"!!FORCING CCSD!!"
-      if(.not.DECinfo%solver_par)then
+      if(local)then
         if(scheme==3.or.scheme==2)then
           print *,"CHOSEN SCHEME DOES NOT WORK WITHOUT PARALLEL SOLVER, USE&
-          & .CCSDsolver_par IN LSDALTON.INP"
+          & MORE THAN ONE NODE"
           call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme",-1)
         endif
       endif
@@ -3846,6 +3889,7 @@ contains
       elseif(scheme==2)then
         print *,"SCHEME WITH LOW MEMORY REQUIREMENTS (PDM)"
       else
+        print *,"SCHEME ",scheme," DOES NOT EXIST"
         call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme2",-1)
       !elseif(scheme==1)then
       !  print *,"SCHEME WITH LOW MEMORY REQUIREMENTS (PDM), HIGH SCALING LOW COMM"
@@ -3870,7 +3914,7 @@ contains
       ! KK and PE hacks -> only for debugging
       ! extended to mimic the behaviour of the mem estimation routine when memory is filled up
       if((DECinfo%ccsdGbatch==0).and.(DECinfo%ccsdAbatch==0)) then
-        call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree,.false.,e2a)
+        call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree,.false.,e2a,local)
       else
         nba=DECinfo%ccsdAbatch - iter *0
         nbg=DECinfo%ccsdGbatch - iter *0
@@ -4941,6 +4985,153 @@ contains
 
   end subroutine get_fock_matrix_for_dec_oa
 
+
+  !> \brief: calculate atomic and pair fragment contributions to CCSD
+  !> correlation energy for full molecule calculation.
+  !> Currently, only for occupied partitioning scheme.
+  !> \author: Janus Juul Eriksen
+  !> \date: February 2013
+  subroutine ccsd_energy_full_occ(nocc,nvirt,natoms,offset,ccsd_doubles,ccsd_singles,integral,occ_orbitals,&
+                           & eccsdpt_matrix_cou,eccsdpt_matrix_exc)
+
+    implicit none
+
+    !> ccsd doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
+    type(array4), intent(inout) :: ccsd_doubles, integral
+    !> ccsd singles amplitudes
+    type(array2), intent(inout) :: ccsd_singles
+    !> dimensions
+    integer, intent(in) :: nocc, nvirt, natoms, offset
+    !> occupied orbital information
+    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    !> etot
+    real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
+    !> integers
+    integer :: i,j,a,b,atomI,atomJ
+    !> energy reals
+    real(realk) :: energy_tmp_1, energy_tmp_2, energy_res_cou, energy_res_exc
+
+    ! *************************************************************
+    ! ************** do energy for full molecule ******************
+    ! *************************************************************
+
+    ! ***********************
+    !   do CCSD energy part
+    ! ***********************
+
+    energy_res_cou = 0.0E0_realk
+    energy_res_exc = 0.0E0_realk
+
+    ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
+    ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
+
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
+    !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:eccsdpt_matrix_cou),&
+    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
+    do j=1,nocc
+    atomJ = occ_orbitals(j+offset)%CentralAtom
+       do i=1,nocc
+       atomI = occ_orbitals(i+offset)%CentralAtom
+
+          do b=1,nvirt
+             do a=1,nvirt
+
+                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
+                energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
+                                        & + energy_tmp_1 + energy_tmp_2
+
+             end do
+          end do
+
+       end do
+    end do
+    !$OMP END PARALLEL DO
+
+    ! reorder from (a,b,i,j) to (a,b,j,i)
+    call array4_reorder(integral,[1,2,4,3])
+
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
+    !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
+    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
+    do j=1,nocc
+    atomJ = occ_orbitals(j+offset)%CentralAtom
+       do i=1,nocc
+       atomI = occ_orbitals(i+offset)%CentralAtom
+
+          do b=1,nvirt
+             do a=1,nvirt
+
+                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
+                energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) &
+                                        & + energy_tmp_1 + energy_tmp_2
+
+             end do
+          end do
+
+       end do
+    end do
+    !$OMP END PARALLEL DO
+
+    ! get total fourth--order energy contribution
+    eccsdpt_matrix_cou = 2.0E0_realk * eccsdpt_matrix_cou - eccsdpt_matrix_exc
+
+    ! for the pair fragment energy matrix,
+    ! we only consider pairs IJ where J>I; thus, move contributions and set J<I contribs to zero.
+    ! (must be consistent with printout in print_pair_fragment_energies)
+
+    do AtomI=1,natoms
+       do AtomJ=AtomI+1,natoms
+
+          eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
+                                              & + eccsdpt_matrix_cou(AtomJ,AtomI)
+          eccsdpt_matrix_cou(AtomJ,AtomI) = 0.0_realk
+       end do
+    end do
+
+
+    ! ******************************************************************
+    ! ************** done w/ energy for full molecule ******************
+    ! ******************************************************************
+
+  end subroutine ccsd_energy_full_occ
+
+
+  !> \brief: print out CCSD fragment and pair interaction energies for full molecule calculation 
+  !> Only for occupied partitioning scheme.
+  !> \author: Janus Juul Eriksen
+  !> \date: February 2013
+  subroutine print_ccsd_full_occ(natoms,ccsd_matrix,orbitals_assigned,distance_table)
+
+    implicit none
+
+    !> number of atoms in molecule
+    integer, intent(in) :: natoms
+    !> matrices containing E[4] energies and interatomic distances
+    real(realk), dimension(natoms,natoms), intent(inout) :: ccsd_matrix, distance_table
+    !> vector handling how the orbitals are assigned?
+    logical, dimension(natoms), intent(inout) :: orbitals_assigned
+    !> loop counters
+    integer :: i,j
+
+
+    if(.not.DECinfo%CCDhack)then
+       call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+            & 'CCSD occupied single energies','AF_CCSD_OCC')
+       call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+            & Distance_table, 'CCSD occupied pair energies','PF_CCSD_OCC')
+    else
+       call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+            & 'CCD occupied single energies','AF_CCD_OCC')
+       call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+            & Distance_table, 'CCD occupied pair energies','PF_CCD_OCC')
+    endif
+
+  end subroutine print_ccsd_full_occ
+
+
+
 end module ccsd_module
 
 
@@ -4971,7 +5162,7 @@ subroutine ccsd_data_preparation()
     type(array2) :: xocc,xvirt,yocc,yvirt
     type(array)  :: om2,t2,govov
     type(lsitem) :: MyLsItem
-    logical :: solver_par
+    logical :: local
     integer :: nbas,nocc,nvirt,scheme
     integer(kind=long) :: nelms
     integer      :: iter,k,n4,i
@@ -4984,16 +5175,14 @@ subroutine ccsd_data_preparation()
     !note that for the slave all allocatable arguments are just dummy indices
     !the allocation and broadcasting happens in here
     call mpi_communicate_ccsd_calcdata(om2,t2,govov,xodata,xvdata,yodata,yvdata,&
-    &MyLsItem,nbas,nvirt,nocc,iter,scheme,solver_par)
-   
-    DECinfo%solver_par=solver_par
-    if(solver_par)then
+    &MyLsItem,nbas,nvirt,nocc,iter,scheme,local)
+    
+    if(.not.local)then
       call memory_allocate_array_dense(t2)
       if(scheme==4)then
         call memory_allocate_array_dense(govov)
       endif
     else
-      !for not solver_par there is only the option 0 or 4
       t2   =array_init([nvirt,nvirt,nocc,nocc],4)
       govov=array_init([nocc,nvirt,nocc,nvirt],4)
       om2  =array_init([nvirt,nvirt,nocc,nocc],4)
@@ -5047,34 +5236,34 @@ subroutine ccsd_data_preparation()
     ! Calculate contribution to integrals/amplitudes for slave
     ! ********************************************************
     call get_ccsd_residual_integral_driven(df,om2,t2,f,govov,nocc,nvirt,&
-                    ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter)
+         ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
 
     ! FREE EVERYTHING
     ! ***************
-        if(solver_par)then
-        call memory_deallocate_array_dense(om2)
-call memory_deallocate_array_dense(t2)
-        if(scheme==4)then
-call memory_deallocate_array_dense(govov)
-        endif
-        else
-        call array_free(om2)
-        call array_free(t2)
-call array_free(govov)
-        endif
-        call mem_dealloc(df)
-        call mem_dealloc(f)
-        call mem_dealloc(ppf)
-        call mem_dealloc(pqf)
-        call mem_dealloc(qpf)
-        call mem_dealloc(qqf)
-        call mem_dealloc(om1)
-        call mem_dealloc(xodata)
-        call mem_dealloc(yodata)
-        call mem_dealloc(yvdata)
-        call mem_dealloc(xvdata)
-call ls_free(MyLsItem)
-        end subroutine ccsd_data_preparation
+    if(.not.local)then
+      call memory_deallocate_array_dense(om2)
+      call memory_deallocate_array_dense(t2)
+      if(scheme==4)then
+        call memory_deallocate_array_dense(govov)
+      endif
+    else
+      call array_free(om2)
+      call array_free(t2)
+      call array_free(govov)
+    endif
+    call mem_dealloc(df)
+    call mem_dealloc(f)
+    call mem_dealloc(ppf)
+    call mem_dealloc(pqf)
+    call mem_dealloc(qpf)
+    call mem_dealloc(qqf)
+    call mem_dealloc(om1)
+    call mem_dealloc(xodata)
+    call mem_dealloc(yodata)
+    call mem_dealloc(yvdata)
+    call mem_dealloc(xvdata)
+    call ls_free(MyLsItem)
+end subroutine ccsd_data_preparation
 
 subroutine calculate_E2_and_permute_slave()
         use precision
@@ -5084,7 +5273,7 @@ subroutine calculate_E2_and_permute_slave()
         use lsmpi_type, only:ls_mpibcast
         use daltoninfo, only:ls_free
         use memory_handling, only: mem_alloc, mem_dealloc
-! DEC DEPENDENCIES (within deccc directory) 
+        ! DEC DEPENDENCIES (within deccc directory) 
         ! *****************************************
         use decmpi_module, only: share_E2_with_slaves
         use ccsd_module, only:calculate_E2_and_permute
@@ -5109,6 +5298,6 @@ subroutine calculate_E2_and_permute_slave()
         call mem_dealloc(yv)
         call mem_dealloc(Gbi)
         call mem_dealloc(Had)
-call mem_dealloc(w1)
+        call mem_dealloc(w1)
         end subroutine calculate_E2_and_permute_slave
 #endif

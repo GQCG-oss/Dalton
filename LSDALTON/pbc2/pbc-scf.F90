@@ -80,6 +80,7 @@ MODULE pbc_scfdiis
   !deallocate(work)
   call mem_dealloc(work)
   call mem_dealloc(rwork)
+  call mem_dealloc(dwork)
 
 
 END SUBROUTINE pbc_zeigsolve
@@ -330,6 +331,8 @@ SUBROUTINE  pbc_geterrorvec(error,fockMO,ndim,errlm,nelectrons)
    DO j=nelectrons/2+1,ndim
     k=k+1
     error(k)=abs(real(fockMO(i,j),realk))
+    error(k)=error(k)+abs(real(fockMO(j,i),realk))
+    error(k)=error(k)*0.5
     !write(*,*) error(k)
    ENDDO
  ENDDO
@@ -349,9 +352,9 @@ SUBROUTINE pbc_dcomputeenergy()
 END SUBROUTINE pbc_dcomputeenergy
 
 
-SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,eigv,lupri)
+SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,eigv,kindex,lupri)
   IMPLICIT NONE
-  INTEGER,INTENT(IN) :: ndim,lupri
+  INTEGER,INTENT(IN) :: ndim,lupri,kindex
   LOGICAL,INTENT(IN) :: is_gamma
   COMPLEX(COMPLEXK),INTENT(IN) :: fock_old(ndim,ndim)
   COMPLEX(COMPLEXK), INTENT(IN) :: Sabk(ndim,ndim)
@@ -359,7 +362,7 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,eigv,lupri)
   REAL(realk),intent(INOUT) :: eigv(ndim)
   !LOCAL VARIABLES
   INTEGER :: i,j
-  COMPLEX(COMPLEXK) :: Sabk_tmp(ndim,ndim)
+  COMPLEX(COMPLEXK) :: Sabk_tmp(ndim,ndim),sabk2(ndim,ndim)
 
 
   DO i=1,ndim
@@ -367,6 +370,7 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,eigv,lupri)
    DO j=1,ndim
    C_tmp(i,j)=fock_old(i,j)
    Sabk_tmp(i,j)=Sabk(i,j)
+   Sabk2(i,j)=Sabk(i,j)
   ! fock_old(1,i,j)=fock(i,j)
    ENDDO
   ENDDO
@@ -379,7 +383,7 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,eigv,lupri)
 !#endif
 
     call pbc_zeigsolve(c_tmp,Sabk_tmp,ndim,ndim,eigv,is_gamma,lupri)
-    !call pbc_zggeigsolve(kindex,c_tmp,Sabk_tmp,Sabk,ndim,ndim,eigv,lupri)
+    !call pbc_zggeigsolve(kindex,c_tmp,Sabk_tmp,Sabk2,ndim,ndim,eigv,lupri)
 
  ! write(*,*) 'fock before transformation'
 !  call write_zmatrix(C_tmp,ndim,ndim)
@@ -564,7 +568,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       call pbc_zdevectorize_mat(smatk,ndim,ndim,bz%smat%zelms)
 
       call solve_kfcsc_mat(bz%kpnt(k)%is_gamma,ndim,fock,smatk,&
-      C_k,bz%keigv((k-1)*ndim+1:k*ndim),lupri)
+      C_k,bz%keigv((k-1)*ndim+1:k*ndim),k,lupri)
       
       !write(*,*) bz%keigv((k-1)*ndim+1:k*ndim)
 
@@ -871,7 +875,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
       !solves F(k)C(k)=eps(k)S(k)C(k)
       call solve_kfcsc_mat(bz%kpnt(kpt)%is_gamma,ndim,fock,smatk,&
-      C_k,bz%keigv((kpt-1)*ndim+1:kpt*ndim),lupri)
+      C_k,bz%keigv((kpt-1)*ndim+1:kpt*ndim),kpt,lupri)
 
       !write(*,*) bz%keigv((k-1)*ndim+1:k*ndim)
       
@@ -1624,7 +1628,7 @@ subroutine pbc_fixzggevnorm(siz,cocoeff,metric,alphavec,betavec,lupri)
      coeff_sum = 0.0D0
      coeff_max = 0.0D0
      do i = 1,siz
-        call lsquit('FIXME: coeff_max real while cocoeff(i,ivec) is complex',-1)
+!        call lsquit('FIXME: coeff_max real while cocoeff(i,ivec) is complex',-1)
 !        maybe but abs(cocoeff(i,ivec)) into a real(realk) before calling max
 !        coeff_max = max(coeff_max, abs(cocoeff(i,ivec)))
         do j = 1,siz

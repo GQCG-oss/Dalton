@@ -178,7 +178,7 @@ fi
  CRIT7=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-5\.5.......E\-05 * \*ENERGY\(eV\)\: * 9\.7637..." $log | wc -l`
  CRIT8=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-3\.........E\-06 * \*ENERGY\(eV\)\: * 9\.8832..." $log | wc -l`
  CRIT9=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: *  5\.94......E\-04 * \*ENERGY\(eV\)\: * 3\.2366..." $log | wc -l`
-CRIT10=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * (|0)\.295972.. * \*ENERGY\(eV\)\: * 7\.2850..." $log | wc -l`
+CRIT10=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * ( |0)\.295972.. * \*ENERGY\(eV\)\: * 7\.2850..." $log | wc -l`
 CRIT11=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-4\.1890....E\-02 * \*ENERGY\(eV\)\: * 9\.7637..." $log | wc -l`
 CRIT12=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * (\-|\-0)\.133875.. * \*ENERGY\(eV\)\: * 9\.8832..." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 `

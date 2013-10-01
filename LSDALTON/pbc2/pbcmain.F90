@@ -150,6 +150,8 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
 
   write(*,*) 'lattice%nneighbour', lattice%nneighbour
   write(*,*) 'lattice%nf', lattice%nf
+  write(*,*) 'Number of k points', Bz%nk
+  write(lupri,*) 'Number of k points', Bz%nk
 
   call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
   nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)

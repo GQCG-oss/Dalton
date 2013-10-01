@@ -197,13 +197,13 @@ CRIT1=`$GREP "1 * 7\.193965.. * (\-|\-0)\.00071420 * (\-|\-0)\.10489065" $log | 
 CRIT2=`$GREP "2 * (\-|\-0)\.00071420 * 5\.2614165. * (\-|\-0)\.00373052" $log | wc -l`
 CRIT3=`$GREP "3 * (\-|\-0)\.10489065 * (\-|\-0)\.00373052 * 6\.513933.." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[4]=8
+CTRL[4]=9
 ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

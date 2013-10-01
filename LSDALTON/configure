@@ -860,6 +860,9 @@ case "$WHICH" in
           fi;;
 esac
 
+#        git clone git@repo.ctcc.no:matrix-defop.git matrix-defop
+
+
 # add OpenMP compiler flag and library
 if [ $useOMP = "true" ]; then
     #find out install root of F90

@@ -37,7 +37,9 @@ SUBROUTINE lsdalton
   ! DEC 
   use DEC_typedef_module, only: DECinfo  
   ! PROPERTIES SECTION
+#ifdef VAR_RSP
   use lsdalton_rsp_mod, only: lsdalton_response, get_excitation_energy
+#endif
   ! DYNAMICS
   use dynamics_driver, only: LS_dyn_run
   ! SOEO
@@ -61,6 +63,7 @@ SUBROUTINE lsdalton
 #endif
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
        & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter
+  use integralinterfaceIchorMod, only: II_Unittest_Ichor
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
   implicit none
@@ -111,6 +114,12 @@ SUBROUTINE lsdalton
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
+  IF(config%integral%debugIchor)THEN
+     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING)
+     !the return statement leads to memory leaks but I do not care about this
+     !for now atleast
+     RETURN
+  ENDIF
 
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
@@ -129,7 +138,7 @@ SUBROUTINE lsdalton
   ! (i)   localize orbitals
   ! (ii)  carry out DEC calculation 
   ! (iii) Construct PLT file
-  if(config%davidOrbLoc%OnlyLocalize .or. (DECinfo%doDEC .and. DECinfo%restart) &
+  if(config%davidOrbLoc%OnlyLocalize .or. (DECinfo%doDEC .and. DECinfo%HFrestart) &
        & .or. config%doplt) then
      skipHFpart=.true.
   else
@@ -401,6 +410,7 @@ SUBROUTINE lsdalton
         !
         if (config%optinfo%optimize) then
            if(config%doESGopt)then
+#ifdef VAR_RSP
               call get_excitation_energy(ls,config,F(1),D(1),S,ExcitE,&
             & config%decomp%cfg_rsp_nexcit)
               Write(lupri,'(A,ES20.9)')'Ground state SCF Energy:',E(1)
@@ -409,6 +419,9 @@ SUBROUTINE lsdalton
               Write(lupri,*)'==============================================='
               Write(lupri,'(A,ES20.9)')'Exicted state Energy   :',E(1)
               Write(lupri,*)'==============================================='
+#else
+              call lsquit('Exicted state Energy requires VAR_RSP',lupri)
+#endif
            endif
            CALL LS_runopt(E,config,H1,F,D,S,CMO,ls)
            ! Vladimir Rybkin: We free CMO if we have used them
@@ -426,7 +439,9 @@ SUBROUTINE lsdalton
            call get_oao_transformed_matrices(config%decomp,F(1),D(1))
         endif
 
+#ifdef VAR_RSP
         call lsdalton_response(ls,config,F(1),D(1),S)
+#endif
         
         call config_shutdown(config)
 
@@ -526,7 +541,7 @@ SUBROUTINE lsdalton
 
 
   ! Single point DEC calculation using HF restart files
-  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. DECinfo%restart) ) then
+  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. DECinfo%HFrestart) ) then
      call dec_main_prog_file(ls)
   endif DECcalculationHFrestart
 

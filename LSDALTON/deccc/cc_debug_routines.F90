@@ -168,6 +168,8 @@ module cc_debug_routines_module
      character(ARR_MSG_LEN) :: msg
      integer :: ii,aa
      integer :: MaxSubSpace
+     logical :: restart
+     
 
 
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
@@ -326,7 +328,7 @@ module cc_debug_routines_module
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
      ! special MP2 things
-     MP2Special : if(DECinfo%ccModel == 1 .or. DECinfo%ccModel == 5) then
+     MP2Special : if(DECinfo%ccModel == MODEL_MP2 .or. DECinfo%ccModel == MODEL_RPA) then
 
         write(DECinfo%output,*)
         write(DECinfo%output,*) ' ********************  WARNING  **********************'
@@ -369,7 +371,7 @@ module cc_debug_routines_module
      call mem_alloc(omega2,DECinfo%ccMaxIter)
 
      ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-     if(DECinfo%ccModel /= 1) then
+     if(DECinfo%ccModel /= MODEL_MP2) then
         xocc = array2_init(occ_dims)
         yocc = array2_init(occ_dims)
         xvirt = array2_init(virt_dims)
@@ -396,16 +398,6 @@ module cc_debug_routines_module
 
 
 
-     print *
-     print *, '### Starting CC iterations'
-     print *, '### ----------------------'
-     print '(1X,a)',  '###  Iteration     Residual norm          CC energy'
-
-     write(DECinfo%output,*)
-     write(DECinfo%output,*) '### Starting CC iterations'
-     write(DECinfo%output,*) '### ----------------------'
-     write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm          CC energy'
-     
 
      CCIteration : do iter=1,DECinfo%ccMaxIter
 
@@ -439,37 +431,10 @@ module cc_debug_routines_module
 
         ! get new amplitude vectors
         GetGuessVectors : if(iter == 1) then
-           if(DECinfo%use_singles)then
-              if(get_mult)then
-                fockguess=array2_init(ao2_dims)
-                call Get_AOt1Fock(mylsitem,t1_final,fockguess,nocc,nvirt,nbasis,ypo,yho,yhv)
-                t1tmp = array2_similarity_transformation(xocc,fockguess,yvirt,[nocc,nvirt]) 
-                call array2_free(fockguess)
-                t1(iter) = array2_init([nvirt,nocc])
-                call mat_transpose(nocc,nvirt,1.0E0_realk,t1tmp%val,0.0E0_realk,t1(iter)%val)
-                call array2_free(t1tmp)
-                call dscal(nocc*nvirt,2.0E0_realk,t1(iter)%val,1)
-              else
-                t1(iter) = array2_init(ampl2_dims)
-              endif
-           endif
-           if(DECinfo%array4OnFile) then
-              ! Initialize t2(iter) using storing type 2
-              t2(iter) = array4_init(ampl4_dims,2,.true.)
-           else
-              if(get_mult)then
-                iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
-                t2(iter) = array4_init(ampl4_dims)
-                call array4_reorder(iajb,[2,1,4,3])
-                call daxpy(nocc**2*nvirt**2,4.0E0_realk,iajb%val,1,t2(iter)%val,1)
-                call array4_reorder(iajb,[1,4,3,2])
-                call daxpy(nocc**2*nvirt**2,-2.0E0_realk,iajb%val,1,t2(iter)%val,1)
-                call array4_reorder(iajb,[4,1,2,3])
-                call array4_free(iajb)
-              else
-                t2(iter) = array4_init(ampl4_dims)
-              endif
-           end if
+
+           call get_guess_vectors_simple(mylsitem,t2(iter),t1(iter),&
+           &t1_final,gao,get_mult,ypo,yho,yhv,nocc,nvirt,nbasis,xocc,yvirt,restart)
+
         end if GetGuessVectors
 
         ! Initialize residual vectors
@@ -517,11 +482,11 @@ module cc_debug_routines_module
            call array2_add_to(ifock,1.0E0_realk,delta_fock)
 
            ! readme : this should be done in a more clear way
-           if(DECinfo%ccModel == 2) then
+           if(DECinfo%ccModel == MODEL_CC2) then
               ! CC2
               ppfock = array2_similarity_transformation(xocc,fock,yocc,[nocc,nocc])
               qqfock = array2_similarity_transformation(xvirt,fock,yvirt,[nvirt,nvirt])
-           else if(DECinfo%ccModel >= 3) then
+           else if(DECinfo%ccModel >= MODEL_CCSD) then
               ! CCSD
               ppfock = array2_similarity_transformation(xocc,ifock,yocc,[nocc,nocc])
               qqfock = array2_similarity_transformation(xvirt,ifock,yvirt,[nvirt,nvirt])
@@ -540,12 +505,12 @@ module cc_debug_routines_module
 
         ! MODIFY FOR NEW MODEL
         ! If you implement a new model, please insert call to your own residual routine here!
-        SelectCoupledClusterModel : if(DECinfo%ccModel==1) then
+        SelectCoupledClusterModel : if(DECinfo%ccModel==MODEL_MP2) then
 
            call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
                 & nocc,nvirt)
 
-        elseif(DECinfo%ccModel==2) then
+        elseif(DECinfo%ccModel==MODEL_CC2) then
            u = get_u(t2(iter))
            call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock, &
                 xocc,xvirt,yocc,yvirt,nocc,nvirt)
@@ -557,15 +522,13 @@ module cc_debug_routines_module
            call array4_free(gmo)
 
 
-        elseif(DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4) then  ! CCSD or CCSD(T)
+        elseif(DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT) then  ! CCSD or CCSD(T)
 
            if(get_mult)then
 
-              call array4_read(gao)
               call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
               &,t2_final%val,t1(iter)%val,t2(iter)%val,gao,xocc%val,yocc%val,xvirt%val,yvirt%val&
               &,nocc,nvirt,nbasis,MyLsItem)
-              call array4_dealloc(gao)
 
            else
 
@@ -581,7 +544,7 @@ module cc_debug_routines_module
            call array4_free(u)
 
 
-        elseif(DECinfo%ccmodel==5) then
+        elseif(DECinfo%ccmodel==MODEL_RPA) then
 
            call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
 
@@ -722,17 +685,19 @@ module cc_debug_routines_module
         ! MODIFY FOR NEW MODEL
         ! If you implement a new model, please insert call to energy routine here,
         ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
-        EnergyForCCmodel: if(DECinfo%ccmodel==1) then  
-           ! MP2
-           ccenergy = get_mp2_energy(t2(iter),Lmo)
-        elseif(DECinfo%ccmodel==2 .or. DECinfo%ccmodel==3 .or. DECinfo%ccmodel==4 ) then
-           ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
-           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
-        elseif(DECinfo%ccmodel==5) then
-           ccenergy = RPA_energy(t2(iter),gmo)
-           sosex = SOSEX_contribution(t2(iter),gmo)
-           ccenergy=ccenergy+sosex
-        end if EnergyForCCmodel
+        if(.not. get_mult)then
+           EnergyForCCmodel: if(DECinfo%ccmodel==MODEL_MP2) then  
+              ! MP2
+              ccenergy = get_mp2_energy(t2(iter),Lmo)
+           elseif(DECinfo%ccmodel==MODEL_CC2 .or. DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT )then
+              ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
+              ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
+           elseif(DECinfo%ccmodel==MODEL_RPA) then
+              ccenergy = RPA_energy(t2(iter),gmo)
+              sosex = SOSEX_contribution(t2(iter),gmo)
+              ccenergy=ccenergy+sosex
+           end if EnergyForCCmodel
+        endif
 
 
         if(DECinfo%PL>1) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
@@ -762,6 +727,9 @@ module cc_debug_routines_module
               if(DECinfo%use_singles) t1(iter+1) = t1_opt + omega1_opt
               t2(iter+1) = t2_opt + omega2_opt
            end if
+           
+           if(.not.DECinfo%CCSDnosaferun)&
+             &call save_current_guess_simple(iter,t2(iter),t1(iter),get_mult)
         end if
 
         if(DECinfo%PL>1) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
@@ -796,10 +764,12 @@ module cc_debug_routines_module
 #ifdef __GNUC__
         call flush(DECinfo%output)
 #endif
+    
 
-       print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',iter, two_norm_total,ccenergy
-       write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
-             &   '### ',iter, two_norm_total,ccenergy
+        !Print Iter info
+        !---------------
+        call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,get_mult)
+
         last_iter = iter
         if(break_iterations) exit
 
@@ -807,28 +777,6 @@ module cc_debug_routines_module
 
      call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
 
-
-
-     write(DECinfo%output,*)
-     write(DECinfo%output,'(/,a)') '-------------------------------'
-     write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '
-     write(DECinfo%output,'(a,/)') '-------------------------------'
-     if(break_iterations) then
-        write(DECinfo%output,'(a)')     'Hooray! CC equation is solved!'
-     else
-        write(DECinfo%output,'(a,i4,a)')  'CC equation not solved in ', &
-             & DECinfo%ccMaxIter, ' iterations!'
-        call lsquit('CC equation not solved!',DECinfo%output)
-     end if
-     write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total cpu time    = ',ttotend_cpu-ttotstart_cpu,' s'
-     write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total wall time   = ',ttotend_wall-ttotstart_wall,' s'
-
-     if(fragment_job) then
-        write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ccenergy
-     else
-        write(DECinfo%output,'(a,f16.10)')  'Corr. energy       = ',ccenergy
-     end if
-     write(DECinfo%output,'(a,i5)') 'Number of CC iterations =', last_iter
 
 
      ! Free memory and save final amplitudes
@@ -881,9 +829,14 @@ module cc_debug_routines_module
 
      end do
 
+     ! Write finalization message
+     !---------------------------
+     call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,&
+     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
+
 
      ! Save two-electron integrals in the order (virt,occ,virt,occ)
-     if(DECinfo%ccModel == 1) then
+     if(DECinfo%ccModel == MODEL_MP2) then
         call array4_free(lmo) ! also free lmo integrals
         VOVO = array4_duplicate(gmo)
         call array4_free(gmo)
@@ -953,6 +906,9 @@ module cc_debug_routines_module
 
 
    end subroutine ccsolver_debug
+
+
+
 
    !> \brief Simple double residual for CCSD
    subroutine getDoublesResidualCCSD_simple(omega2,t2,u,gao,aibj,iajb,nocc,nvirt, &
@@ -1162,15 +1118,15 @@ module cc_debug_routines_module
 
      type(lsitem), intent(inout) :: MyLsItem
      real(realk),intent(inout) :: rho1(:,:),rho2(:,:,:,:)
-     type(array4),intent(in)   :: gao
-     real(realk),intent(inout)    :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:)
+     type(array4),intent(inout):: gao
+     real(realk),intent(inout) :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:)
      real(realk),intent(in)    :: xo(:,:),yo(:,:),xv(:,:),yv(:,:)
      integer, intent(in)       :: no,nv,nb
      real(realk), pointer      :: w1(:), w2(:), w3(:), w4(:)
-     real(realk), pointer      :: Loooo(:),Lovov(:),Lvoov(:),Lvvov(:),Looov(:),Lovvv(:), Lovoo(:)
-     real(realk), pointer      :: gvovv(:), gvooo(:), govvv(:), gooov(:), goooo(:), gvvvv(:), govov(:)
+     real(realk), pointer      :: Lovov(:),Lvoov(:), Lovoo(:)
+     real(realk), pointer      :: gvovv(:), gvooo(:), govvv(:), gooov(:), govov(:)
      real(realk), pointer      :: goovv(:)
-     real(realk), pointer      :: u2(:),oof(:),ovf(:),vof(:),vvf(:)
+     real(realk), pointer      :: oof(:),ovf(:),vof(:),vvf(:)
      character(ARR_MSG_LEN)    :: msg
      integer                   :: v4,o4,o3v,ov3,o2v2,ov,b2,v2,o2
      type(matrix)              :: iFock, Dens
@@ -1220,10 +1176,8 @@ module cc_debug_routines_module
         print *,msg,norm,sqrt(norm),nrmm2,sqrt(nrmm2)
      endif
 
-     call mem_alloc(w1,nb**4)
-     call mem_alloc(w2,max(no,nv)*nb**3)
+     call mem_alloc(w2,max(max(no,nv)*nb**3,max(max(max(max(o2v2,ov3),v4),o2*v2),o4)))
 
-     call mem_alloc(u2,o2v2)
      call mem_alloc(oof,o2)
      call mem_alloc(ovf,ov)
      call mem_alloc(vof,ov)
@@ -1235,96 +1189,79 @@ module cc_debug_routines_module
      call mem_alloc(Lvoov,o2v2)
 
 
-     call mem_alloc(Lvvov,ov3)
-     call mem_alloc(Lovvv,ov3)
      call mem_alloc(gvovv,ov3)
      call mem_alloc(govvv,ov3)
 
-     call mem_alloc(Looov,o3v)
      call mem_alloc(Lovoo,o3v)
      call mem_alloc(gvooo,o3v)
      call mem_alloc(gooov,o3v)
-
-     call mem_alloc(goooo,o4)
-
-     call mem_alloc(gvvvv,v4)
-
-     !get u2
-     call array_reorder_4d(2.0E0_realk,t2f,nv,no,nv,no,[1,2,3,4],0.0E0_realk,u2)
-     call array_reorder_4d(-1.0E0_realk,t2f,nv,no,nv,no,[1,4,3,2],1.0E0_realk,u2)
 
 
      !construct Ls from gs
 
      !govov
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2)
-     call dcopy(o2v2,w1,1,govov,1)
+     call array4_read(gao)
+     call successive_4ao_mo_trafo(nb,gao%val,xo,no,yv,nv,xo,no,yv,nv,w2)
+     call dcopy(o2v2,gao%val,1,govov,1)
 
-     call array_reorder_4d(2.0E0_realk,w1,no,nv,no,nv,[1,2,3,4],0.0E0_realk,Lovov)
-     call array_reorder_4d(-1.0E0_realk,w1,no,nv,no,nv,[1,4,3,2],1.0E0_realk,Lovov)
+     call array_reorder_4d(2.0E0_realk,gao%val,no,nv,no,nv,[1,2,3,4],0.0E0_realk,Lovov)
+     call array_reorder_4d(-1.0E0_realk,gao%val,no,nv,no,nv,[1,4,3,2],1.0E0_realk,Lovov)
+
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gvoov
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yo,no,xo,no,yv,nv,w2)
      !Lvoov (a i j b) += gvoov (a i j b)
-     call array_reorder_4d(2.0E0_realk,w1,nv,no,no,nv,[1,2,3,4],0.0E0_realk,Lvoov)
+     call array_reorder_4d(2.0E0_realk,gao%val,nv,no,no,nv,[1,2,3,4],0.0E0_realk,Lvoov)
+
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gvvoo
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yo,no,w2)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yv,nv,xo,no,yo,no,w2)
      !write (msg,*)"gvvoo"
-     !call print_norm(w1,int(no**2*nv**2,kind=8),msg)
+     !call print_norm(gao%val,int(no**2*nv**2,kind=8),msg)
      !Lvoov (a i j b) += gvvoo (a b i j)
-     call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,no,[1,4,3,2],1.0E0_realk,Lvoov)
+     call array_reorder_4d(-1.0E0_realk,gao%val,nv,nv,no,no,[1,4,3,2],1.0E0_realk,Lvoov)
 
-     call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,[3,4,1,2],0.0E0_realk,goovv)
+     call array_reorder_4d(1.0E0_realk,gao%val,nv,nv,no,no,[3,4,1,2],0.0E0_realk,goovv)
+
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gvvov
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2)
-     call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,govvv)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yv,nv,xo,no,yv,nv,w2)
+     call array_reorder_4d(1.0E0_realk,gao%val,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,govvv)
 
-     call array_reorder_4d(2.0E0_realk,w1,nv,nv,no,nv,[1,2,3,4],0.0E0_realk,Lvvov)
-     call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,nv,[1,4,3,2],1.0E0_realk,Lvvov)
-
-     call array_reorder_4d(2.0E0_realk,w1,nv,nv,no,nv,[3,4,1,2],0.0E0_realk,Lovvv)
-     call array_reorder_4d(-1.0E0_realk,w1,nv,nv,no,nv,[3,2,1,4],1.0E0_realk,Lovvv)
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gvovv
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xv,nv,yv,nv,w2)
-     call dcopy(no*nv**3,w1,1,gvovv,1)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yo,no,xv,nv,yv,nv,w2)
+     call dcopy(no*nv**3,gao%val,1,gvovv,1)
+
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gooov
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2)
+     call successive_4ao_mo_trafo(nb,gao%val,xo,no,yo,no,xo,no,yv,nv,w2)
 
-     call dcopy(nv*no**3,w1,1,gooov,1)
+     call dcopy(nv*no**3,gao%val,1,gooov,1)
 
-     call array_reorder_4d(2.0E0_realk,w1,no,no,no,nv,[1,2,3,4],0.0E0_realk,Looov)
-     call array_reorder_4d(-1.0E0_realk,w1,no,no,no,nv,[3,2,1,4],1.0E0_realk,Looov)
 
-     call array_reorder_4d(2.0E0_realk,w1,no,no,no,nv,[3,4,1,2],0.0E0_realk,Lovoo)
-     call array_reorder_4d(-1.0E0_realk,w1,no,no,no,nv,[1,4,3,2],1.0E0_realk,Lovoo)
+     call array_reorder_4d(2.0E0_realk,gao%val,no,no,no,nv,[3,4,1,2],0.0E0_realk,Lovoo)
+     call array_reorder_4d(-1.0E0_realk,gao%val,no,no,no,nv,[1,4,3,2],1.0E0_realk,Lovoo)
+
+     call array4_dealloc(gao)
+     call array4_read(gao)
 
      !gvooo
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yo,no,w2)
-     call dcopy(nv*no**3,w1,1,gvooo,1)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yo,no,xo,no,yo,no,w2)
+     call dcopy(nv*no**3,gao%val,1,gvooo,1)
 
-     !goooo
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yo,no,w2)
-     call dcopy(o4,w1,1,goooo,1)
+     call array4_dealloc(gao)
 
-     !gvvvv
-     call dcopy(nb**4,gao%val,1,w1,1)
-     call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xv,nv,yv,nv,w2)
-     call dcopy(v4,w1,1,gvvvv,1)
-
-     call mem_dealloc(w1)
-     call mem_dealloc(w2)
 
      !allocate the density matrix
      call mat_init(iFock,nb,nb)
@@ -1358,7 +1295,6 @@ module cc_debug_routines_module
 
      call mat_free(iFock)
 
-     call mem_alloc(w2,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
      call mem_alloc(w3,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
      call mem_alloc(w4,max(max(ov3,o3v),o2v2))
 
@@ -1377,7 +1313,9 @@ module cc_debug_routines_module
      !sort amps(dkfj) -> dkjf
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
      ! w3 : \sum_{fj} t^{df}_{kj} (d k f j) Lovvv (j f e a)
-     call dgemm('n','n',ov,v2,ov,1.0E0_realk,w2,ov,Lovvv,ov,0.0E0_realk,w3,ov)
+     call array_reorder_4d(2.0E0_realk,govvv,no,nv,nv,nv,[1,2,3,4],0.0E0_realk,w1)
+     call array_reorder_4d(-1.0E0_realk,govvv,no,nv,nv,nv,[1,4,3,2],1.0E0_realk,w1)
+     call dgemm('n','n',ov,v2,ov,1.0E0_realk,w2,ov,w1,ov,0.0E0_realk,w3,ov)
      !write(msg,*)"rho f 1"
      !call print_norm(w3,int(ov3,kind=8),msg)
      ! part2
@@ -1419,7 +1357,9 @@ module cc_debug_routines_module
      ! w3 : \sum_{dkl} w1 (f d k l) w2 (d k l e)
      call dgemm('n','n',nv,nv,no*no*nv,1.0E0_realk,w1,nv,w2,nv*no*no,0.0E0_realk,w3,nv)
      ! w1 : \sum_{fe} w3 (fe) L_{feia} (f e i a)
-     call dgemv('t',v2,ov,1.0E0_realk,Lvvov,v2,w3,1,0.0E0_realk,w2,1)
+     call array_reorder_4d(2.0E0_realk,govvv,no,nv,nv,nv,[3,4,1,2],0.0E0_realk,w1)
+     call array_reorder_4d(-1.0E0_realk,govvv,no,nv,nv,nv,[3,2,1,4],1.0E0_realk,w1)
+     call dgemv('t',v2,ov,1.0E0_realk,w1,v2,w3,1,0.0E0_realk,w2,1)
      !write(msg,*)"rho c - 1(LT21A)"
      !call print_norm(w2,int(ov,kind=8),msg)
      !rho1 += w2(i a)^T
@@ -1546,7 +1486,8 @@ module cc_debug_routines_module
      ! sort \hat{L}_{bkia} (b k i a) -> w1
      call dcopy(o2v2,Lvoov,1,w1,1)
      ! sort u2^{bd}_{kl} (b k d l) -[1,2,4,3]> (b k l d)
-     call array_reorder_4d(1.0E0_realk,u2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+     call array_reorder_4d(2.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
+     call array_reorder_4d(-1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],1.0E0_realk,w2)
      ! w1 : \sum_{dl} u^{bd}_{kl}(b k l d) \hat{L}_{ldia} (l d i a) + \hat{L}_{bkia} (b k i a)
      call dgemm('n','n',ov,ov,ov,1.0E0_realk,w2,ov,Lovov,ov,1.0E0_realk,w1,ov)
      ! w2 : \sum_{bk}  w1(b k , i a)^T \zeta_k^b (b k)
@@ -1600,7 +1541,9 @@ module cc_debug_routines_module
      ! w3 : \sum_{dke} t^{de}_{kl} (d k e ,l)^T \zeta^{de}_{kj} (d k e j)
      call dgemm('t','n',no,no,no*v2,1.0E0_realk,t2f,v2*no,m2,v2*no,0.0E0_realk,w3,no)
      ! w1 : \sum_{lj} w3 (lj) L_{l j i a} (l j i a)
-     call dgemv('t',o2,ov,1.0E0_realk,Looov,o2,w3,1,0.0E0_realk,w2,1)
+     call array_reorder_4d(2.0E0_realk,gooov,no,no,no,nv,[1,2,3,4],0.0E0_realk,w1)
+     call array_reorder_4d(-1.0E0_realk,gooov,no,no,no,nv,[3,2,1,4],1.0E0_realk,w1)
+     call dgemv('t',o2,ov,1.0E0_realk,w1,o2,w3,1,0.0E0_realk,w2,1)
      !rho1 += w2(i a)^T
      call mat_transpose(no,nv,-1.0E0_realk,w2,1.0E0_realk,rho1)
 
@@ -1651,8 +1594,12 @@ module cc_debug_routines_module
      !rho B
      !-----
      rho2 = 0.0E0_realk
+     !gvvvv
+     call array4_read(gao)
+     call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yv,nv,xv,nv,yv,nv,w2)
      ! sort gvvvv_{cadb} (cadb) -> (cd ab)
-     call array_reorder_4d(1.0E0_realk,gvvvv,nv,nv,nv,nv,[1,3,2,4],0.0E0_realk,w1)
+     call array_reorder_4d(1.0E0_realk,gao%val,nv,nv,nv,nv,[1,3,2,4],0.0E0_realk,w1)
+     call array4_dealloc(gao)
      ! sort \zeta^{cd}_{ij} (c i d j) -> (i j c d)
      call array_reorder_4d(1.0E0_realk,m2,nv,no,nv,no,[2,4,1,3],0.0E0_realk,w2)
      ! \sum_{cd} \zeta{cd}_{ij} (ij cd) gvvvv_{cadb} (cd ab)
@@ -1664,7 +1611,9 @@ module cc_debug_routines_module
 
      !rho 2. H part 
      ! \sum_{c} \zeta_{j}^{c} (c,j)^T Lvvov_{cbia} (cbia)
-     call dgemm('t','n',no,v2*no,nv,1.0E0_realk,m1,nv,Lvvov,nv,0.0E0_realk,w1,no)
+     call array_reorder_4d(2.0E0_realk,govvv,no,nv,nv,nv,[3,4,1,2],0.0E0_realk,w2)
+     call array_reorder_4d(-1.0E0_realk,govvv,no,nv,nv,nv,[3,2,1,4],1.0E0_realk,w2)
+     call dgemm('t','n',no,v2*no,nv,1.0E0_realk,m1,nv,w2,nv,0.0E0_realk,w1,no)
      !write(msg,*)"rho H - 2"
      !call print_norm(w1,int(o2v2,kind=8),msg)
      ! order w1(j b i a) and add to residual rho2 (a i b j)
@@ -1775,7 +1724,11 @@ module cc_debug_routines_module
      !rho A
      !-----
      ! copy goooo[j n i m ]  -[2,4,3,1]> w1[n m i j]
-     call array_reorder_4d(1.0E0_realk,goooo,no,no,no,no,[2,4,3,1],0.0E0_realk,w1)
+     !goooo
+     call array4_read(gao)
+     call successive_4ao_mo_trafo(nb,gao%val,xo,no,yo,no,xo,no,yo,no,w2)
+     call array_reorder_4d(1.0E0_realk,gao%val,no,no,no,no,[2,4,3,1],0.0E0_realk,w1)
+     call array4_dealloc(gao)
      ! sort govov{jfie}(jfie) -[4,2,3,1]> (e f i j)
      call array_reorder_4d(1.0E0_realk,govov,no,nv,no,nv,[4,2,3,1],0.0E0_realk,w2)
      ! sort t^{fe}_{nm} (f n e m) -[2,4,3,1]> (n m e f)
@@ -1801,7 +1754,8 @@ module cc_debug_routines_module
      ! copy Lvoov in w3 
      call dcopy(o2v2,Lvoov,1,w3,1)
      ! sort u2^{ef}_{mn} (emfn) -> em nf
-     call array_reorder_4d(1.0E0_realk,u2,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w1)
+     call array_reorder_4d(2.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w1)
+     call array_reorder_4d(-1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],1.0E0_realk,w1)
      ! \sum_{fn} u2^{ef}_{mn} (emnf) Lovov_{nfjb} (nfjb) + Lvoov_{emjb} (emjb)
      call dgemm('n','n',ov,ov,ov,1.0E0_realk,w1,ov,Lovov,ov,1.0E0_realk,w3,ov)
      ! \sum_{em} \zeta^{ae}_{im} (a i e m) w3 (e m j b)
@@ -1890,7 +1844,6 @@ module cc_debug_routines_module
      call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
      call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
 
-     call mem_dealloc(u2)
      call mem_dealloc(oof)
      call mem_dealloc(ovf)
      call mem_dealloc(vof)
@@ -1902,19 +1855,12 @@ module cc_debug_routines_module
      call mem_dealloc(Lvoov)
 
 
-     call mem_dealloc(Lvvov)
-     call mem_dealloc(Lovvv)
      call mem_dealloc(gvovv)
      call mem_dealloc(govvv)
 
-     call mem_dealloc(Looov)
      call mem_dealloc(Lovoo)
      call mem_dealloc(gvooo)
      call mem_dealloc(gooov)
-
-     call mem_dealloc(goooo)
-
-     call mem_dealloc(gvvvv)
 
      call mem_dealloc(w1)
      call mem_dealloc(w2)
@@ -1962,5 +1908,360 @@ module cc_debug_routines_module
       ! WRKWXYZ(ao, w x y)^T ZZ(ao,z)^T   -> WXYZ (wxyz)
       call dgemm('t','n',w*x*y,z,ao,1.0E0_realk,WRKWXYZ,ao,ZZ,ao,0.0E0_realk,WXYZ,w*x*y)
     end subroutine successive_4ao_mo_trafo
+
+    !> \brief should be a general subroutine to get the guess amplitudes when
+    !starting up a CCSD or CC2 calculation and checks for files which contain
+    !amplitudes of a previous calculation. If none are found the usual zero guess
+    !is returned
+    !> \author Patrick Ettenhuber
+    !> \date December 2012
+   subroutine get_guess_vectors_simple(mylsitem,t2,t1,t1_final,gao,&
+   &get_mult,ypo,yho,yhv,no,nv,nb,xocc,yvirt,restart)
+     implicit none
+     type(lsitem),intent(inout) :: mylsitem
+     !> contains the guess doubles amplitudes on output
+     type(array4),intent(inout) :: t2
+     !> contains the singles amplitudes on output
+     type(array2),intent(inout) :: t1
+     type(array2),intent(inout) :: t1_final,ypo,yho,yhv,xocc,yvirt
+     type(array4),intent(inout) :: gao
+     integer, intent(in)        :: no,nv,nb
+     logical,intent(in)         :: get_mult
+     integer                    :: d2(4), d1(2)
+     type(array2) :: fockguess,t1tmp
+     type(array4) :: iajb
+     logical,intent(out) :: restart
+     !> the filenames to check for valid singles amplitudes
+     character(3):: safefilet11,safefilet12
+     !> the filenames to check for valid doubles amplitudes
+     character(3):: safefilet21,safefilet22
+     integer :: fu_t11,fu_t12,fu_t21,fu_t22,fu_t1,fu_t2
+     logical :: file_exists11,file_exists12,file_exists21,file_exists22
+     logical :: file_status11,file_status12,file_status21,file_status22
+     logical :: readfile1, readfile2
+     integer :: saved_iter11,saved_iter12,saved_iter21,saved_iter22,iter_start
+     integer :: saved_nel11,saved_nel12,saved_nel21,saved_nel22
+     character(11) :: fullname11, fullname12, fullname21, fullname22
+     character(ARR_MSG_LEN) :: msg
+     if(get_mult)then
+       safefilet21 = 'm21'
+       safefilet22 = 'm22'
+       safefilet11 = 'm11'
+       safefilet12 = 'm12'
+     else
+       safefilet21 = 't21'
+       safefilet22 = 't22'
+       safefilet11 = 't11'
+       safefilet12 = 't12'
+     endif
+
+
+     !print *,"CHECK INPUT",safefilet11,safefilet12,all_singles,DECinfo%use_singles
+     fu_t11=111
+     fu_t12=112
+     fu_t21=121
+     fu_t22=122
+
+     d1 = [nv,no]
+     d2 = [nv,no,nv,no]
+     if(DECinfo%use_singles)then
+       t1 = array2_init(d1)
+     endif
+     t2 = array4_init(d2)
+
+     
+
+
+      iter_start=0
+      !check for safe files of the amplitudes in the current directory and read
+      !them if they exist and ok
+      readfile1=.false.
+      readfile2=.false.
+      
+      !this can be skipped by input, but restart is default
+      if(DECinfo%DECrestart)then
+        if(DECinfo%use_singles)then
+          fullname11=safefilet11//'.restart'
+          fullname12=safefilet12//'.restart'
+
+          file_status11=.false.
+          INQUIRE(FILE=fullname11,EXIST=file_exists11)
+          if(file_exists11)then
+            file_status11=.true.
+            OPEN(fu_t11,FILE=fullname11,STATUS='OLD',FORM='UNFORMATTED')
+            READ(fu_t11)saved_iter11
+            READ(fu_t11)saved_nel11
+            if(saved_nel11/=no*nv)then
+              call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
+              &file",DECinfo%output)
+            endif
+          endif
+         
+          file_status12=.false.
+          INQUIRE(FILE=fullname12,EXIST=file_exists12)
+          if(file_exists12)then
+            file_status12=.true.
+            OPEN(fu_t12,FILE=fullname12,STATUS='OLD',FORM='UNFORMATTED')
+            READ(fu_t12)saved_iter12
+            READ(fu_t12)saved_nel12
+            if(saved_nel12/=no*nv)then
+              call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
+              &file",DECinfo%output)
+            endif
+          endif
+         
+          !CHECK WHICH IS THE PREFERRED FILE TO READ
+          if(file_status11.and.file_status12)then
+            if(saved_iter11>saved_iter12)then
+              fu_t1=fu_t11
+              CLOSE(fu_t12)
+              readfile1=.true.
+            else
+              fu_t1=fu_t12
+              CLOSE(fu_t11)
+              readfile1=.true.
+            endif
+          elseif(file_status11)then
+            fu_t1=fu_t11
+            readfile1=.true.
+          elseif(file_status12)then
+            fu_t1=fu_t12
+            readfile1=.true.
+          endif  
+        endif
+
+        fullname21=safefilet21//'.restart'
+        fullname22=safefilet22//'.restart'
+       
+        file_status21=.false.
+        INQUIRE(FILE=fullname21,EXIST=file_exists21)
+        if(file_exists21)then
+          file_status21=.true.
+          OPEN(fu_t21,FILE=fullname21,STATUS='OLD',FORM='UNFORMATTED')
+          READ(fu_t21)saved_iter21
+          READ(fu_t21)saved_nel21
+          if(saved_nel21/=no*no*nv*nv)then
+            call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
+            &file",DECinfo%output)
+          endif
+        endif
+       
+        file_status22=.false.
+        INQUIRE(FILE=fullname22,EXIST=file_exists22)
+        if(file_exists22)then
+          file_status22=.true.
+          OPEN(fu_t22,FILE=fullname22,STATUS='OLD',FORM='UNFORMATTED')
+          READ(fu_t22)saved_iter22
+          READ(fu_t22)saved_nel22
+          if(saved_nel22/=no*no*nv*nv)then
+            call lsquit("ERROR(ccsolver_debug):wrong dimensions in amplitude &
+            &file",DECinfo%output)
+          endif
+        endif
+       
+        !CHECK WHICH IS THE PREFERRED FILE TO READ
+        if(file_status21.and.file_status22)then
+          if(saved_iter21>saved_iter22)then
+            iter_start=saved_iter21
+            fu_t2=fu_t21
+            CLOSE(fu_t22)
+            readfile2=.true.
+          else
+            iter_start=saved_iter22
+            fu_t2=fu_t22
+            CLOSE(fu_t21)
+            readfile2=.true.
+          endif
+          WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
+        elseif(file_status21)then
+          iter_start=saved_iter21
+          fu_t2=fu_t21
+          WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
+          readfile2=.true.
+        elseif(file_status22)then
+          iter_start=saved_iter22
+          fu_t2=fu_t22
+          WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
+          readfile2=.true.
+        else
+          iter_start=1
+        endif  
+      endif
+
+
+      if(readfile1)then
+        READ(fu_t1)t1%val
+        CLOSE(fu_t1)
+        restart = .true.
+      else
+        restart = .false.
+        if(get_mult)then
+          fockguess=array2_init([nb,nb])
+          call Get_AOt1Fock(mylsitem,t1_final,fockguess,no,nv,nb,ypo,yho,yhv)
+          t1tmp = array2_similarity_transformation(xocc,fockguess,yvirt,[no,nv]) 
+          call array2_free(fockguess)
+          call mat_transpose(no,nv,-1.0E0_realk,t1tmp%val,0.0E0_realk,t1%val)
+          call array2_free(t1tmp)
+          call dscal(no*nv,2.0E0_realk,t1%val,1)
+        endif 
+      endif
+      if(readfile2)then
+        READ(fu_t2) t2%val
+        CLOSE(fu_t2)
+        restart = .true.
+      else
+        restart = .false.
+        if(get_mult)then
+          iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
+          call array4_reorder(iajb,[2,1,4,3])
+          call daxpy(no**2*nv**2,-4.0E0_realk,iajb%val,1,t2%val,1)
+          call array4_reorder(iajb,[1,4,3,2])
+          call daxpy(no**2*nv**2,2.0E0_realk,iajb%val,1,t2%val,1)
+          call array4_reorder(iajb,[4,1,2,3])
+          call array4_free(iajb)
+        endif
+      endif
+   end subroutine get_guess_vectors_simple
+   !> \brief Subroutine to save the current guess amplitudes for the next
+   !iteration
+   !> \author Patrick Ettenhuber
+   !> \date Dezember 2012
+   subroutine save_current_guess_simple(iter,t2,t1,get_mult)
+    implicit none
+    !> iteration number
+    integer,intent(in) :: iter
+    !> doubles guess amplitudes for the next iteration
+    type(array4), intent(in) :: t2
+    !> singles guess amplitudes for the next iteration
+    type(array2), intent(in) :: t1
+    logical, intent(in) :: get_mult
+    !> alternating filenames for the doubles amplitudes
+    character(3) :: safefilet21,safefilet22
+    !> alternating filenames for the singles amplitudes
+    character(3) :: safefilet11,safefilet12
+    integer :: fu_t21,fu_t22
+    integer :: fu_t11,fu_t12
+    logical :: file_status11,file_status12,file_status21,file_status22
+    logical :: all_singles
+    character(ARR_MSG_LEN) :: msg
+#ifdef SYS_AIX
+    character(12) :: fullname11,  fullname12,  fullname21,  fullname22
+    character(12) :: fullname11D, fullname12D, fullname21D, fullname22D
+#else
+    character(11) :: fullname11, fullname12, fullname21, fullname22
+    character(11) :: fullname11D, fullname12D, fullname21D, fullname22D
+#endif
+    if(get_mult)then
+      safefilet21 = 'm21'
+      safefilet22 = 'm22'
+      safefilet11 = 'm11'
+      safefilet12 = 'm12'
+    else
+      safefilet21 = 't21'
+      safefilet22 = 't22'
+      safefilet11 = 't11'
+      safefilet12 = 't12'
+    endif
+    fu_t11=111
+    fu_t12=112
+    fu_t21=121
+    fu_t22=122
+    if(DECinfo%use_singles)then
+      !msg="singles norm save"
+      !call print_norm(t1,msg)
+#ifdef SYS_AIX
+      fullname11=safefilet11//'.writing\0'
+      fullname12=safefilet12//'.writing\0'
+#else
+      fullname11=safefilet11//'.writing'
+      fullname12=safefilet12//'.writing'
+#endif
+
+      if(mod(iter,2)==1)then
+        file_status11=.false. 
+        OPEN(fu_t11,FILE=fullname11,STATUS='REPLACE',FORM='UNFORMATTED')
+        WRITE(fu_t11)iter
+        WRITE(fu_t11)t1%dims(1) * t1%dims(2)
+        WRITE(fu_t11)t1%val
+        file_status11=.true.
+        WRITE(fu_t11)file_status11
+        ENDFILE(fu_t11)
+        CLOSE(fu_t11)
+#ifdef SYS_AIX
+        fullname11D=safefilet11//'.restart\0'
+        fullname11=safefilet11//'\0'
+#else
+        fullname11D=safefilet11//'.restart'
+#endif
+       if(file_status11)call rename(fullname11,fullname11D)
+
+      elseif(mod(iter,2)==0)then
+        file_status12=.false. 
+        OPEN(fu_t12,FILE=fullname12,STATUS='REPLACE',FORM='UNFORMATTED')
+        WRITE(fu_t12)iter
+        WRITE(fu_t12)t1%dims(1) * t1%dims(2)
+        WRITE(fu_t12)t1%val
+        file_status12=.true.
+        WRITE(fu_t12)file_status12
+        ENDFILE(fu_t12)
+        CLOSE(fu_t12)
+#ifdef SYS_AIX
+        fullname12D=safefilet12//'.restart\0'
+        fullname12=safefilet12//'\0'
+#else
+        fullname12D=safefilet12//'.restart'
+#endif
+        if(file_status12)call rename(fullname12,fullname12D)
+
+      else
+        call lsquit("ERROR(ccdriver_par):impossible iteration&
+        &number)",DECinfo%output)
+      endif
+    endif
+
+    !msg="doubles norm save"
+    !call print_norm(t2,msg)
+    fullname21=safefilet21//'.writing'
+    fullname22=safefilet22//'.writing'
+    if(mod(iter,2)==1)then
+      file_status21=.false. 
+      OPEN(fu_t21,FILE=fullname21,STATUS='REPLACE',FORM='UNFORMATTED')
+      WRITE(fu_t21)iter
+      WRITE(fu_t21)t2%dims(1) * t2%dims(2) * t2%dims(3) * t2%dims(4)
+      WRITE(fu_t21)t2%val
+      file_status21=.true. 
+      WRITE(fu_t22)file_status21
+      ENDFILE(fu_t21)
+      CLOSE(fu_t21)
+#ifdef SYS_AIX
+      fullname21D=safefilet21//'.restart\0'
+      fullname21=safefilet21//'\0'
+#else
+      fullname21D=safefilet21//'.restart'
+#endif
+      if(file_status21)call rename(fullname21,fullname21D)
+
+    elseif(mod(iter,2)==0)then
+      file_status22=.false. 
+      OPEN(fu_t22,FILE=fullname22,STATUS='REPLACE',FORM='UNFORMATTED')
+      WRITE(fu_t22)iter
+      WRITE(fu_t22)t2%dims(1) * t2%dims(2) * t2%dims(3) * t2%dims(4)
+      WRITE(fu_t22)t2%val
+      file_status22=.true.
+      WRITE(fu_t22)file_status22
+      ENDFILE(fu_t22)
+      CLOSE(fu_t22)
+#ifdef SYS_AIX
+      fullname22D=safefilet22//'.restart\0'
+      fullname22=safefilet22//'\0'
+#else
+      fullname22D=safefilet22//'.restart'
+#endif
+      if(file_status22)call rename(fullname22,fullname22D)
+    else
+      call lsquit("ERROR(ccdriver_par):impossible iteration&
+      &number)",DECinfo%output)
+    endif
+  end subroutine save_current_guess_simple
 
 end module cc_debug_routines_module
