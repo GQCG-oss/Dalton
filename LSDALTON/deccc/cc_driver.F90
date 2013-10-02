@@ -2038,10 +2038,8 @@ contains
     real(realk),intent(inout)                 :: ccenergy
     !> Final singles amplitudes
     type(array2),intent(inout)                :: t1_final
-    type(array)                               :: t1_final_work
     !> Final doubles amplitudes
     type(array4),intent(inout)                :: t2_final
-    type(array)                               :: t2_final_work
     !> Two electron integrals (a i | b j) stored as (a,i,b,j)
     type(array4),intent(inout)                :: VOVO
     !> Include long-range singles effects using singles amplitudes
@@ -2056,11 +2054,10 @@ contains
     real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:),Uocc(:,:),Uvirt(:,:)
     integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims
     integer, dimension(4) :: ampl4_dims
-    type(array) :: fock,ypo,ypv,yho,yhv
-    type(array) :: ppfock,qqfock,pqfock,qpfock
-    type(array) :: ifock,delta_fock
-    type(array4) :: gao,gmo
-    type(array) :: aibj,iajb
+    type(array)  :: fock,ypo,ypv,yho,yhv
+    type(array)  :: ppfock,qqfock,pqfock,qpfock
+    type(array)  :: ifock,delta_fock
+    type(array)  :: aibj,iajb
     type(array), pointer :: t2(:),omega2(:)
     type(array), pointer :: t1(:),omega1(:)
     type(array) :: omega1_opt, t1_opt, omega1_prec
@@ -2068,25 +2065,25 @@ contains
     type(array) :: xo,yo,xv,yv,h1
     type(array) :: Lmo
     !type(array2) :: xocc,yocc,xvirt,yvirt,h1
-    real(realk) :: two_norm_total, one_norm_total, one_norm1, one_norm2, &
-         prev_norm
-    real(realk), pointer :: B(:,:),c(:)
-    integer :: iter,last_iter,i,j,k,l
-    logical :: crop_ok,break_iterations,saferun
-    type(ri) :: l_ao
-    type(array) :: ppfock_prec, qqfock_prec
-    real(realk) :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
-    real(realk) :: iter_cpu,iter_wall
-    integer :: nnodes
-    real(realk), external :: ddot
-    character(3) :: safefilet11,safefilet12,safefilet21,safefilet22
+    real(realk)            :: two_norm_total, one_norm_total, &
+                              &one_norm1, one_norm2, prev_norm
+    real(realk), pointer   :: B(:,:),c(:)
+    integer                :: iter,last_iter,i,j,k,l
+    logical                :: crop_ok,break_iterations,saferun
+    type(ri)               :: l_ao
+    type(array)            :: ppfock_prec, qqfock_prec
+    real(realk)            :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
+    real(realk)            :: iter_cpu,iter_wall
+    integer                :: nnodes
+    character(3)           :: safefilet11, safefilet12, safefilet21, safefilet22
     !SOME DUMMIES FOR TESTING
-    type(array) :: tmp
+    type(array)            :: tmp
     character(ARR_MSG_LEN) :: msg
-    integer :: ii,jj,aa,bb
-    logical :: restart
+    integer                :: ii, jj, aa, bb
+    logical                :: restart, w_cp
 
     restart = .false.
+    w_cp    = .false.
     saferun = (.not.DECinfo%CCSDnosaferun)
     
     safefilet11='t11'
@@ -2101,7 +2098,7 @@ contains
 #ifdef VAR_MPI
     nnodes=infpar%lg_nodtot
 
-    if ( DECinfo%spawn_comm_proc ) then
+    if ( w_cp ) then
       print *,"STARTING UP THE COMMUNICATION PROCESSES"
       !impregnate the slaves
       call ls_mpibcast(GIVE_BIRTH,infpar%master,infpar%lg_comm)
@@ -2138,16 +2135,17 @@ contains
 
 
     ! go to a (pseudo) canonical basis
-    call mem_alloc(focc,no)
-    call mem_alloc(fvirt,nv)
-    call mem_alloc(ypo_d,nb,no)
-    call mem_alloc(ypv_d,nb,nv)
-    call mem_alloc(yho_d,nb,no)
-    call mem_alloc(yhv_d,nb,nv)
-    call mem_alloc(ppfock_d,no,no)
-    call mem_alloc(qqfock_d,nv,nv)
-    call mem_alloc(Uocc,no,no)
-    call mem_alloc(Uvirt,nv,nv)
+    call mem_alloc( focc,     no     )
+    call mem_alloc( fvirt,    nv     )
+    call mem_alloc( ypo_d,    nb, no )
+    call mem_alloc( ypv_d,    nb, nv )
+    call mem_alloc( yho_d,    nb, no )
+    call mem_alloc( yhv_d,    nb, nv )
+    call mem_alloc( ppfock_d, no, no )
+    call mem_alloc( qqfock_d, nv, nv )
+    call mem_alloc( Uocc,     no, no )
+    call mem_alloc( Uvirt,    nv, nv )
+
     if(DECinfo%CCSDpreventcanonical)then
       !no diagonalization
       ypo_d   = ypo_f
@@ -2174,8 +2172,9 @@ contains
         qqfock_d(aa,aa) = fvirt(aa)
       enddo
     endif
-    call mem_dealloc(focc)
-    call mem_dealloc(fvirt)
+
+    call mem_dealloc( focc  )
+    call mem_dealloc( fvirt )
 
     ! Copy MO coeffcients. It is very convenient to store them twice to handle transformation
     ! (including transposed MO matrices) efficiently. 
@@ -2193,22 +2192,22 @@ contains
     ampl2_dims = [nv,no]
 
     ! create transformation matrices in array form
-    ypo  = array_init(occ_dims,2)
-    ypv  = array_init(virt_dims,2)
-    yho  = array_init(occ_dims,2)
-    yhv  = array_init(virt_dims,2)
-    fock = array_init(ao2_dims,2)
+    ypo  = array_init( occ_dims, 2 )
+    ypv  = array_init( virt_dims,2 )
+    yho  = array_init( occ_dims, 2 )
+    yhv  = array_init( virt_dims,2 )
+    fock = array_init( ao2_dims, 2 )
 
-    call array_convert(ypo_d,ypo)
-    call array_convert(ypv_d,ypv)
-    call array_convert(yho_d,yho)
-    call array_convert(yhv_d,yhv)
-    call array_convert(fock_f,fock)
+    call array_convert( ypo_d,  ypo  )
+    call array_convert( ypv_d,  ypv  )
+    call array_convert( yho_d,  yho  )
+    call array_convert( yhv_d,  yhv  )
+    call array_convert( fock_f, fock )
 
-    call mem_dealloc(ypo_d)
-    call mem_dealloc(ypv_d)
-    call mem_dealloc(yho_d)
-    call mem_dealloc(yhv_d)
+    call mem_dealloc( ypo_d )
+    call mem_dealloc( ypv_d )
+    call mem_dealloc( yho_d )
+    call mem_dealloc( yhv_d )
     ! Get Fock matrix correction (for fragment and/or frozen core)
     ! ************************************************************
     ! Full molecule/frozen core: The correction corresponds to difference between actual Fock matrix
@@ -2273,16 +2272,19 @@ contains
     if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
     if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+
     ! get fock matrices for preconditioning
     Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
-       ppfock_prec = array_minit_rpseudo_dense([no,no],2,local)
-       qqfock_prec = array_minit_rpseudo_dense([nv,nv],2,local)
 
-       call array_change_atype_to_rep(ppfock_prec,local)
-       call array_change_atype_to_rep(qqfock_prec,local)
+       ppfock_prec = array_minit_rpseudo_dense( [no,no], 2, local )
+       qqfock_prec = array_minit_rpseudo_dense( [nv,nv], 2, local )
+
+       call array_change_atype_to_rep( ppfock_prec, local )
+       call array_change_atype_to_rep( qqfock_prec, local )
+
        if(DECinfo%precondition_with_full) then
-          call array_convert(ppfock_d,ppfock_prec)
-          call array_convert(qqfock_d,qqfock_prec)
+          call array_convert( ppfock_d, ppfock_prec )
+          call array_convert( qqfock_d, qqfock_prec )
        else
           tmp = array_init([nb,no],2)
           call array_contract_outer_indices_rl(1.0E0_realk,fock,yho,0.0E0_realk,tmp)
@@ -2294,21 +2296,23 @@ contains
           call array_contract_outer_indices_ll(1.0E0_realk,ypv,tmp,0.0E0_realk,qqfock_prec)
           call array_free(tmp)
        end if
-       call array_change_atype_to_d(ppfock_prec)
-       call array_change_atype_to_d(qqfock_prec)
+
+       call array_change_atype_to_d( ppfock_prec )
+       call array_change_atype_to_d( qqfock_prec )
+
     end if Preconditioner
 
-    call mem_dealloc(ppfock_d)
-    call mem_dealloc(qqfock_d)
+    call mem_dealloc( ppfock_d )
+    call mem_dealloc( qqfock_d )
 
     ! allocate things
     if(DECinfo%use_singles) then
-       call mem_alloc(t1,DECinfo%ccMaxIter)
-       call mem_alloc(omega1,DECinfo%ccMaxIter)
-       ppfock=array_init([no,no],2)
-       pqfock=array_init([no,nv],2)
-       qpfock=array_init([nv,no],2)
-       qqfock=array_init([nv,nv],2)
+       call mem_alloc( t1,     DECinfo%ccMaxIter )
+       call mem_alloc( omega1, DECinfo%ccMaxIter )
+       ppfock=array_init( [no,no], 2 )
+       pqfock=array_init( [no,nv], 2 )
+       qpfock=array_init( [nv,no], 2 )
+       qqfock=array_init( [nv,nv], 2 )
     end if
     call mem_alloc(t2,DECinfo%ccMaxIter)
     call mem_alloc(omega2,DECinfo%ccMaxIter)
@@ -2316,17 +2320,17 @@ contains
 
     ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
     if(DECinfo%ccModel /= MODEL_MP2) then
-       xo = array_init(occ_dims,2)
-       yo = array_init(occ_dims,2)
-       xv = array_init(virt_dims,2)
-       yv = array_init(virt_dims,2)
+       xo = array_init( occ_dims, 2 )
+       yo = array_init( occ_dims, 2 )
+       xv = array_init( virt_dims,2 )
+       yv = array_init( virt_dims,2 )
     end if
     !iajb=array_minit_tdpseudo_dense([no,nv,no,nv],4)
-    iajb=array_minit_td([no,nv,no,nv],4,local)
+    iajb=array_minit_td( [no,nv,no,nv], 4, local )
     call array_zero(iajb)
 
-    call mem_alloc(B,DECinfo%ccMaxIter,DECinfo%ccMaxIter)
-    call mem_alloc(c,DECinfo%ccMaxIter)
+    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
+    call mem_alloc( c, DECinfo%ccMaxIter                    )
 
 
 
@@ -2431,24 +2435,25 @@ contains
              if(DECinfo%use_singles) then
                 if(DECinfo%use_preconditioner_in_b) then
 
-                   omega1_prec = precondition_singles(omega1(j),ppfock_prec,qqfock_prec)
-                   omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec,local)
-                   B(i,j) = array_ddot(omega1(i),omega1_prec) 
-                   B(i,j) = B(i,j) + array_ddot(omega2(i),omega2_prec)
-                   call array_free(omega1_prec)
-                   call array_free(omega2_prec)
+                   omega1_prec = precondition_singles( omega1(j), ppfock_prec, qqfock_prec        )
+                   omega2_prec = precondition_doubles( omega2(j), ppfock_prec, qqfock_prec, local )
+                   B(i,j) =          array_ddot( omega1(i), omega1_prec ) 
+                   B(i,j) = B(i,j) + array_ddot( omega2(i), omega2_prec )
+
+                   call array_free( omega1_prec )
+                   call array_free( omega2_prec )
                 else
-                   B(i,j) = array_ddot(omega1(i),omega1(j)) 
-                   B(i,j) = B(i,j) + array_ddot(omega2(i),omega2(j))
+                   B(i,j) =          array_ddot( omega1(i), omega1(j) ) 
+                   B(i,j) = B(i,j) + array_ddot( omega2(i), omega2(j) )
                 end if
             else
                 ! just doubles
                 if(DECinfo%use_preconditioner_in_b) then
                    omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec,local)
-                   B(i,j) = array_ddot(omega2(i),omega2_prec)
-                   call array_free(omega2_prec)
+                   B(i,j) = array_ddot( omega2(i), omega2_prec )
+                   call array_free( omega2_prec )
                 else
-                   B(i,j) = array_ddot(omega2(i),omega2(j))
+                   B(i,j) = array_ddot( omega2(i), omega2(j) )
                 end if
              end if
              B(j,i) = B(i,j)
@@ -2470,22 +2475,29 @@ contains
        
        ! mixing omega to get optimal
        if(DECinfo%use_singles) then
-          t1_opt     = array_init(ampl2_dims,2)
-          omega1_opt = array_init(ampl2_dims,2)
+          t1_opt     = array_init( ampl2_dims, 2 )
+          omega1_opt = array_init( ampl2_dims, 2 )
+          call array_zero(t1_opt    )
+          call array_zero(omega1_opt)
        end if
-       omega2_opt  = array_minit_td(ampl4_dims,4,local)
-       call array_zero(omega2_opt)
-       t2_opt = array_minit_td(ampl4_dims,4,local)
-       call array_zero(t2_opt)
+
+       omega2_opt  = array_minit_td( ampl4_dims, 4, local )
+       t2_opt      = array_minit_td( ampl4_dims, 4, local )
+       call array_zero( omega2_opt )
+       call array_zero( t2_opt     )
+
        do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
+
           ! mix singles
           if(DECinfo%use_singles) then
-            call array_add(omega1_opt,c(i),omega1(i))
-            call array_add(t1_opt,c(i),t1(i))
+            call array_add( omega1_opt, c(i), omega1(i) )
+            call array_add( t1_opt,     c(i), t1(i)     )
           end if
+
           ! mix doubles
-          call array_add(omega2_opt,c(i),omega2(i))
-          call array_add(t2_opt,c(i),t2(i))
+          call array_add( omega2_opt, c(i), omega2(i) )
+          call array_add( t2_opt,     c(i), t2(i)     )
+
        end do
 
 
@@ -2495,11 +2507,11 @@ contains
        ! if crop, put the optimal in place of trial (not for diis)
        if(DECinfo%use_crop) then
           if(DECinfo%use_singles) then
-             call array_cp_data(omega1_opt,omega1(iter))
-             call array_cp_data(t1_opt,t1(iter))
+             call array_cp_data( omega1_opt, omega1(iter) )
+             call array_cp_data( t1_opt,     t1(iter)     )
           end if
-          call array_cp_data(omega2_opt,omega2(iter))
-          call array_cp_data(t2_opt,t2(iter))
+          call array_cp_data( omega2_opt, omega2(iter) )
+          call array_cp_data( t2_opt,     t2(iter)     )
        end if
 
        if(DECinfo%PL>1) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
@@ -2617,7 +2629,7 @@ contains
     end do CCIteration
 
 #ifdef VAR_MPI
-    if ( DECinfo%spawn_comm_proc ) then
+    if ( w_cp ) then
       print *,"SHUTTING DOWN THE COMMUNICATION PROCESSES"
       !kill the babies of the slaves
       call ls_mpibcast(SLAVES_SHUT_DOWN_CHILD,infpar%master,infpar%lg_comm)

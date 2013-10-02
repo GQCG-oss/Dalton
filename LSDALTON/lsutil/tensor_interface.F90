@@ -777,9 +777,7 @@ contains
     enddo
 
     arr%nelms=nelms
-    ! allocate the dense array 
     call memory_allocate_array_dense(arr)
-    call ls_dzero(arr%elm1,size(arr%elm1))
 
   end function array_init_standard
 
