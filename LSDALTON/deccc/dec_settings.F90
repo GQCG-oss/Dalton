@@ -67,6 +67,7 @@ contains
     DECinfo%solver_par           = .false.
     DECinfo%CCSDpreventcanonical = .false.
     DECinfo%CCSD_MPICH           = .false.
+    DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
@@ -118,6 +119,7 @@ contains
     ! Pair reduction distance - set high to avoid using in practice right now...
     DECinfo%PairReductionDistance = 1000000.0E0_realk
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
+    DECinfo%pairFOthr = 0.0_realk
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory=0E0_realk
@@ -404,6 +406,7 @@ contains
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
        case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.
+       case('.SPAWN_COMM_PROC'); DECinfo%spawn_comm_proc=.true.
        case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=MODEL_CCSD; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
@@ -445,6 +448,7 @@ contains
           read(input,*) DECinfo%PairReductionDistance 
           DECinfo%PairReductionDistance = DECinfo%PairReductionDistance/bohr_to_angstrom
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
+       case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
@@ -712,6 +716,7 @@ end if
     write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
+    write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'MP2density ', DECitem%MP2density
     write(lupri,*) 'gradient ', DECitem%gradient

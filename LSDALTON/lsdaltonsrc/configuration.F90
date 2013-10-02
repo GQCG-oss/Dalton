@@ -729,6 +729,7 @@ DO
      config%latt_config%comp_pbc= .true.
      config%latt_config%wannier_direct= 'indirectly'
      config%latt_config%testcase= .false.
+     config%latt_config%compare_elmnts= .false.
      config%latt_config%lmax=15
      config%latt_config%Tlmax=15
      config%latt_config%num_its=21

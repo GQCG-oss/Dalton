@@ -2094,15 +2094,28 @@ contains
     safefilet21='t21'
     safefilet22='t22'
 
+
+    
+
     nnodes=1
 #ifdef VAR_MPI
     nnodes=infpar%lg_nodtot
+
+    if ( DECinfo%spawn_comm_proc ) then
+      print *,"STARTING UP THE COMMUNICATION PROCESSES"
+      !impregnate the slaves
+      call ls_mpibcast(GIVE_BIRTH,infpar%master,infpar%lg_comm)
+      !just to find, that the master is also fertile
+      call give_birth_to_child_process
+    endif
+
 #ifndef COMPILER_UNDERSTANDS_FORTRAN_2003
     call lsquit("ERROR(ccsolver_par):Your compiler does not support certain&
     & features needed to run that part of the code. Use a compiler supporting&
     & Fortran 2003 features",-1)
 #endif
 #endif
+
 
     call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
     if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -2601,9 +2614,20 @@ contains
        last_iter = iter
        if(break_iterations) exit
          
-   end do CCIteration
+    end do CCIteration
 
-   call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
+#ifdef VAR_MPI
+    if ( DECinfo%spawn_comm_proc ) then
+      print *,"SHUTTING DOWN THE COMMUNICATION PROCESSES"
+      !kill the babies of the slaves
+      call ls_mpibcast(SLAVES_SHUT_DOWN_CHILD,infpar%master,infpar%lg_comm)
+      !kill own baby
+      call shut_down_child_process
+    endif
+#endif
+
+
+    call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
 
 
 
