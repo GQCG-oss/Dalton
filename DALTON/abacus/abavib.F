@@ -948,21 +948,19 @@ C     *********************************************
 C     ***** Print Frequencies and Intensities *****
 C     *********************************************
 C
-      WRITE(LUPRI,'()')
       IF (INTENS) THEN
          CALL HEADER('Vibrational Frequencies and IR Intensities',1)
-         WRITE (LUPRI,'(//1X,A,/,2X,60A,/,1X,A,/,2X,60A)')
-     &  ' mode   irrep        frequency             IR intensity',
+         WRITE (LUPRI,'(A/2X,60A/A/2X,60A)')
+     &  '  mode   irrep        frequency             IR intensity',
      &      ('=',I=1,60), '                ' //
-     &  'cm-1       hartrees     km/mol   (D/A)**2/amu',
+     &  '  cm-1       hartrees     km/mol   (D/A)**2/amu',
      &      ('-',I=1,60)
       ELSE
          CALL HEADER('Vibrational Frequencies',1)
-            WRITE (LUPRI,'(2X,A,/,2X,A)')
-     &    ' mode   irrep     cm-1     hartrees ',
-     &    '------------------------------------'
+            WRITE (LUPRI,'(A/A)')
+     &    '   mode   irrep     cm-1     hartrees ',
+     &    '  ------------------------------------'
       END IF
-      WRITE (LUPRI,'()')
       IFREQ = 0
       DO 250 IRP = -1, MAXREP
          CNTAIN = .FALSE.
@@ -1001,7 +999,6 @@ C     ************************************
 C     ***** Print normal coordinates *****
 C     ************************************
 C
-      WRITE (LUPRI,'(//)')
       CALL HEADER('Normal Coordinates (bohrs*amu**(1/2)):',1)
       SXFAMU = SQRT(XFAMU)
       ISTR = 1
