@@ -28,17 +28,18 @@ MODULE pbc_scfdiis
   REAL(realk), pointer :: dwork(:)
   REAL(realk) :: A_tmp(N,M)
   real(realk),pointer :: rwork(:)
-  INTEGER :: info,lwork,ldwork,i,j
+  INTEGER :: info,lwork,ldwork,i,j,lrwork
+  INTEGER :: iwork,liwork
   INTEGER,save :: ncalls=0
   ncalls=ncalls+1
   lwork=2*n-1
-  ldwork = max(1,3*N-1)
+  lwork=2*n+n*n
+  lrwork=1+5*n+2*n*n
+  liwork=3+5*n
+  
 
 !(c_tmp,Sabk_tmp,ndim,ndim,eigv,lupri)
 !  allocate(work(lwork))
-  call mem_alloc(work,lwork)
-  call mem_alloc(rwork,3*N-2)
-  call mem_alloc(dwork,ldwork)
   
   !call zheev('V','U',N,A,N,eig,work,3*N+1,rwork,INFO)
 
@@ -47,28 +48,35 @@ MODULE pbc_scfdiis
   !endif
 
 !  write(*,*) 'just calling to solve eigenvalue equation'
-  if(is_gamma) then
-    A_tmp(:,:)=real(A(:,:))
-    call dsygv(1,'V','U',n,A_tmp,n,real(B),n,eigv,dwork,ldwork,info)
-    A(:,:)=CMPLX(0D0,0D0)
-    do i=1,N
-     do j=1,M
-      A(i,j)=A_tmp(i,j)
-     enddo
-    enddo
-#ifdef DEBUGPBC
-    write(*,*) 'eigenvalues',eigv
-#endif
-  else
-    call zhegv(1,'V','U',n,A,n,B,n,eigv,work,lwork,rwork,info)
-  endif
-#ifdef DEBUGPBC
+!  if(is_gamma) then
+!    ldwork = max(1,3*N-1)
+!    call mem_alloc(dwork,ldwork)
+!    A_tmp(:,:)=real(A(:,:))
+!    call dsygv(1,'V','U',n,A_tmp,n,real(B),n,eigv,dwork,ldwork,info)
+!    A(:,:)=CMPLX(0D0,0D0)
+!    do i=1,N
+!     do j=1,M
+!      A(i,j)=A_tmp(i,j)
+!     enddo
+!    enddo
+!!#ifdef DEBUGPBC
+!!    write(*,*) 'eigenvalues',eigv
+!!#endif
+!  else
+    call mem_alloc(work,lwork)
+    !call mem_alloc(rwork,3*N-2)
+    call mem_alloc(rwork,lrwork)
+!    call zhegv(1,'V','U',n,A,n,B,n,eigv,work,lwork,rwork,info)
+    call zhegvd(1,'V','U',n,A,n,B,n,eigv,work,lwork,rwork,lrwork,iwork,liwork,info)
+!  endif
+!#ifdef DEBUGPBC
 !    write(*,*) 'eigenvalues',eigv
-  !if(.not. is_gamma) call write_zmatrix(A,n,n)
-  !if(is_gamma) call write_matrix(A_tmp,n,n)
-   call write_zmatrix(A,n,n)
-
-#endif
+!  !if(.not. is_gamma) call write_zmatrix(A,n,n)
+!  !if(is_gamma) call write_matrix(A_tmp,n,n)
+!    write(lupri,*) 'eigenvectors'
+!   call write_zmatrix(A,n,n,lupri)
+!
+!#endif
 
   if(info .ne. 0) THEN
     write(lupri,*) 'ERROR: zhegv problems, info=', info
@@ -78,10 +86,12 @@ MODULE pbc_scfdiis
   endif
 
   !deallocate(work)
+!  if(is_gamma) then
+!  call mem_dealloc(dwork)
+!  else
   call mem_dealloc(work)
   call mem_dealloc(rwork)
-  call mem_dealloc(dwork)
-
+!  endif
 
 END SUBROUTINE pbc_zeigsolve
 
@@ -119,6 +129,8 @@ SUBROUTINE pbc_zggeigsolve(kindex,A,B,smatk,N,M,eigv,lupri)
   if(info .ne. 0) THEN
     write(lupri,*) 'ERROR: zggev problems, info=', info
     write(*,*) 'ERROR: zggev problems, info=', info
+    write(*,*) 'ERROR: zggev problems, for kindex = ', kindex
+    write(lupri,*) 'ERROR: zggev problems, for kindex = ', kindex
     call LSQUIT('pbc_zggeigsolve: INFO not zero, while solving eigenvalue',lupri)
   endif
 
@@ -375,12 +387,12 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,eigv,kindex,lupri)
    ENDDO
   ENDDO
          
-!#ifdef DEBUGPBC
-!    write(*,*) 'fock matrix'
-!    call write_zmatrix(c_tmp,ndim,ndim)
-!    write(*,*) 'overlap matrix'
-!    call write_zmatrix(Sabk_tmp,ndim,ndim)
-!#endif
+#ifdef DEBUGPBC
+    write(lupri,*) 'fock matrix', kindex
+    call write_zmatrix(c_tmp,ndim,ndim,lupri)
+    write(lupri,*) 'overlap matrix'
+    call write_zmatrix(Sabk_tmp,ndim,ndim,lupri)
+#endif
 
     call pbc_zeigsolve(c_tmp,Sabk_tmp,ndim,ndim,eigv,is_gamma,lupri)
     !call pbc_zggeigsolve(kindex,c_tmp,Sabk_tmp,Sabk2,ndim,ndim,eigv,lupri)
@@ -1504,8 +1516,8 @@ SUBROUTINE pbc_trans_k_energy(lattice,cenergies,nvecsrs,nbast,nelectrons,bz)
 
   lattindex(1)=0
   cenergies =0.d0
-  ehomo=-100e100
-  elumo= 100e100
+  ehomo=-100e5
+  elumo= 100e5
   !write(*,*) lattice%ldef%is_active(1)
   !write(*,*) lattice%ldef%is_active(2)
   !write(*,*) lattice%ldef%is_active(3)
