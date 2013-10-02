@@ -236,6 +236,7 @@ WRITE(LUN) DALTON%DASCREEN_THRLOG
 WRITE(LUN) DALTON%DEBUGOVERLAP
 WRITE(LUN) DALTON%DEBUG4CENTER
 WRITE(LUN) DALTON%DEBUGPROP
+WRITE(LUN) DALTON%DEBUGICHOR
 WRITE(LUN) DALTON%DEBUGGEN1INT
 WRITE(LUN) DALTON%DEBUGCGTODIFF
 WRITE(LUN) DALTON%DEBUGEP
@@ -389,6 +390,7 @@ READ(LUN) DALTON%DASCREEN_THRLOG
 READ(LUN) DALTON%DEBUGOVERLAP
 READ(LUN) DALTON%DEBUG4CENTER
 READ(LUN) DALTON%DEBUGPROP
+READ(LUN) DALTON%DEBUGICHOR
 READ(LUN) DALTON%DEBUGGEN1INT
 READ(LUN) DALTON%DEBUGCGTODIFF
 READ(LUN) DALTON%DEBUGEP
@@ -577,6 +579,7 @@ DALTON%nonSphericalETUV = .FALSE.
 DALTON%DEBUGOVERLAP = .FALSE.
 DALTON%DEBUG4CENTER = .FALSE.
 DALTON%DEBUGPROP = .FALSE.
+DALTON%DEBUGICHOR = .FALSE.
 DALTON%DEBUGGEN1INT = .FALSE.
 DALTON%DEBUGCGTODIFF = .FALSE.
 DALTON%DEBUGEP = .FALSE.
@@ -1162,6 +1165,7 @@ WRITE(LUPRI,'(2X,A35,I8)')'INTPRINT',DALTON%INTPRINT
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGOVERLAP',DALTON%DEBUGOVERLAP
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUG4CENTER',DALTON%DEBUG4CENTER
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGPROP',DALTON%DEBUGPROP
+WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGICHOR',DALTON%DEBUGICHOR
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGGEN1INT',DALTON%DEBUGGEN1INT
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGCGTODIFF',DALTON%DEBUGCGTODIFF
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGEP',DALTON%DEBUGEP
@@ -1933,7 +1937,7 @@ IF(setting%Output%memdistResultTensor)then
    call memdist_lstensor_BuildToScalapack(setting%Output%resultTensor,&
         & setting%comm,setting%node,setting%numnodes,singleMAT)
 ELSE
-    call Build_mat_from_lst(lupri,setting%Output%resultTensor,singleMAT)
+   call Build_mat_from_lst(lupri,setting%Output%resultTensor,singleMAT)
 ENDIF
 call retrieve_postprocess(setting%Output%postprocess(1),singleMAT,lupri)
 call lstensor_free(setting%Output%resultTensor)
@@ -1946,6 +1950,7 @@ call mem_dealloc(setting%Output%postprocess)
 END SUBROUTINE retrieve_output_mat_single
 
 subroutine retrieve_postprocess(postprocess,MAT,lupri)
+implicit none
 integer :: postprocess,lupri
 type(matrix) :: MAT
 !
@@ -2155,6 +2160,7 @@ END SUBROUTINE retrieve_output_4dim
 
 !call retrieve_postprocess_full(setting%Output%postprocess(1),singleMAT,lupri)
 subroutine retrieve_postprocess_full(postprocess,MAT,ndim,lupri)
+implicit none
 integer :: postprocess,lupri,ndim
 real(realk) :: MAT(ndim,ndim)
 !
@@ -3381,6 +3387,7 @@ ENDIF
 END SUBROUTINE print_aoAtomInfo
 
 SUBROUTINE print_aoBatchInfo(batch,iprint,iunit)
+implicit none
 TYPE(aoBatchInfo),intent(IN) :: batch
 Integer,intent(IN)          :: iprint,iunit
 !

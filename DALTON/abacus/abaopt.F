@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1327,7 +1327,7 @@ C  /* Deck optmin */
 #include "inftap.h"
 #include "nuclei.h"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
+#include "mpif.h"
 #endif
 #include "gnrinf.h"
 #include "cbirea.h"
@@ -1365,10 +1365,10 @@ C
          IPRUSR_SAV = IPRUSR
          IPREAD_SAV = IPREAD
          IPRUSR = -10
-         IPREAD = -10
+         IPREAD = -1000
 C        Third parameter .FALSE. in call indicates that LUONEL will NOT be written.
-         write (lupri,'(A)')
-     &      ' Reading .mol file to determine number of atoms:'
+         write (lupri,'(A)') ' Reading .mol file'//
+     &      ' to determine number of atoms for parallel runs.'
          CALL READIN(WORK(2),LWORK-2,.FALSE.)
          INPTST = TSTIN
          IPRUSR = IPRUSR_SAV
@@ -1529,6 +1529,10 @@ C
       ACTIVE = .FALSE.
       KEPTIT = 0
       GEINFO(0,5) = TRSTRA
+C     Save original print levels, to be used when change of basis or
+C     break symmetry
+      IPRUSR_orig = IPRUSR
+      IPREAD_orig = IPREAD
 C
 C     Perform preoptimization if requested.
 C
@@ -1617,12 +1621,10 @@ C
 C     aug 99 - hjaaj
 C     cut down on hermit and abacus output after initial iteration
 C
-      IPRUSR_orig = IPRUSR
-      IPREAD_orig = IPREAD
       IF (USRIPR) THEN
 C        if user has asked for higher print level, no change
-         IPRUSR_reduced = IPRUSR
-         IPREAD_reduced = IPREAD
+         IPRUSR_reduced = IPRUSR_orig
+         IPREAD_reduced = IPREAD_orig
       ELSE
          IPRUSR_reduced = -2
          IPREAD_reduced = -2

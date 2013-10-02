@@ -1,14 +1,14 @@
-\chapter{\mol\ input style}\label{ch:molinp}
+\chapter{Molecule input format}\label{ch:molinp}
 \index{geometry!Cartesian coordinate input}
 \index{Cartesian coordinate input}
 \index{geometry!Z-matrix input}
 \index{Z-matrix input}
 
-The {\mol}-style input is originally based on the input for the \mol\
+The molecule input format is originally based on the input for the \mol\
 integral program by Alml\"{o}f~\cite{moleculeref}. However, there are
 few remnants of the original input structure. For users of earlier
 releases of the \dalton\ program, note should be taken of the fact that
-the input structure for the \mol\ file has undergone major changes,
+the input structure for the \molinp\ file has undergone major changes,
 however, backward compatibility has in most cases been
 retained\footnote{The two exceptions to the backward are that when
 using the {\tt ATOMBASIS} keyword, the basis set name has to be
@@ -105,7 +105,7 @@ the full name (or any intermediate option). The order of the keywords
 is arbitrary. The following keywords are recognized for this line:
 \begin{description}
 \item[Angstrom] Indicates that the atomic Cartesian coordinates are
-  given in \AA ngstr\"{o}m, and not in bohr (atomic units) which is
+  given in \angstrom{}, and not in \bohr{} (atomic units) which is
   the default.
 \item[Atomtypes] \verb|(Integer)|. {\em This keyword is
   required\/}. Number of atom types (number of atoms specified 
@@ -343,7 +343,7 @@ integral\index{performance of integral program} calculation.
 each atom of the same type, although this is not required. Note that
 only the first four characters of the atom name will be used by the
 program.
-\item[X] $x$-coordinate (in atomic units, unless \AA ngstr\"{o}m
+\item[X] $x$-coordinate (in atomic units, unless \angstrom{}
 has been requested on line 4 of the input).
 \item[Y] $y$-coordinate.
 \item[Z] $z$-coordinate.
@@ -463,9 +463,9 @@ ease of reference to a given atom, and is actually not used within the
 program, where any reference to an atom, is the number of the
 atom consecutively in the input list.
 
-The second Z-matrix line consists of the atom name, a running number, the
-number of the atom to which this atom is bonded with a given bond
-length in {\AA}ngstr{\"o}ms, and then finally the charge of this atom.
+The second Z-matrix line consists of the atom name, a running number,
+the number of the atom to which this atom is bonded with a given bond
+length in \angstrom{}, and then finally the charge of this atom.
 
 The third Z-matrix line is identical to the second, except that an extra atom
 number, to which the two first atoms on this line is bonded to with a
@@ -524,7 +524,7 @@ to:
 \end{verbatim}
 
 The use of the basis set library is indicated by the presence of the
-\verb|BASIS| word in the beginning of \mol-file instead of
+\verb|BASIS| word in the beginning of \molinp\ file instead of
 \verb|INTGRL|.
 
 An alternative approach would be to use different basis sets for

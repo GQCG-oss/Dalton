@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -365,7 +365,7 @@ C
       PARAMETER (THREVC = 0.01D0, THRINC = 1.0D-10, CNVFAC = 0.8D0)
 C
       LOGICAL   ONLYFC, C2DIIS, DIFDEN, DODIFDEN, NEWTHR, RHFWOP, OLDWOP
-      LOGICAL   HSFOCK, LCONV, LNEWOCC
+      LOGICAL   LCONV, LNEWOCC
       DIMENSION MISH(8)
       CHARACTER*8 CMOLBL
 C
@@ -504,11 +504,11 @@ C       keep vectors until GRDNRM fallen a factor 100
 C     if (LNEWOCC) then write new BASINFO to SIRIUS.RST in NEWORB
       NOSCIL = 0
 C------------------
-      DODIFDEN = .NOT.FLAG(49) .AND. .NOT.HSROHF
+      DODIFDEN = .NOT.FLAG(49) .AND. .NOT.HSFOCK
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
-     &     .AND. .NOT.QM3      .AND. .NOT. QMMM
-     &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
+     &     .AND. .NOT.QM3      .AND. .NOT.QMMM
+     &     .AND. .NOT.AOSAVE   .AND. .NOT.CHOINT
      &     .AND. .NOT.QMNPMM   
 C
 #if defined (BUILD_PELIB)
@@ -526,7 +526,7 @@ C-tbp: turn off DIFDEN for Cholesky decomposition (CHOINT true)
 C------------------
       IF (.NOT. USRSCR) THEN
 C        AOSAVE or Cholesky (CHOINT): No screening.
-         IF (AOSAVE .OR. CHOINT) THEN
+         IF (AOSAVE .OR. CHOINT .OR. .NOT. DIRFCK) THEN
             IFTHRS = 20 ! code for no screening
          ELSE IF (FLAG(13)) THEN
 Chj-aug99: MO's read from input, assume good guess
@@ -542,6 +542,53 @@ Chj      ... if (GEOWLK) then
          DEPGEO = DEPRED
       END IF
 C
+C Projection operators for removing non-rotated orbitals (.FREEZE option)
+C A -> P_f*A*P_f(T), P_f = 1-S*D_f
+C
+      IF (LNOROT) THEN
+         CALL MEMGET('REAL',KPFROZ,N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KDFROZ,N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KS,N2BASX,WRK,KFREE,LFREE)
+         CALL GET_H1(WRK(KS),'OVERLAP',WRK(KFREE),LFREE)
+         CALL DUNIT(WRK(KPFROZ),NBAST)
+         CALL DZERO(WRK(KDFROZ),N2BASX)
+         KDFI=KDFROZ
+         DO ISYM=1,NSYM
+            IORBI=IORB(ISYM)
+            NORBI=NORB(ISYM)
+            DO I=1,NORBI
+               IF (NOROT(IORBI+I).NE.0) THEN
+                  NBASI=NBAS(ISYM)
+                  ICMOI=ICMO(ISYM)+NBASI*(I-1)+1
+                  ! C*C.T()
+                  CALL DGEMM(
+     &               'N','T',NBASI,NBASI,1,
+     &               D1,CMO(ICMOI),NBASI,
+     &                  CMO(ICMOI),NBASI,
+     &               D1,WRK(KDFI),NBAST
+     &               )
+               END IF
+            END DO
+            KDFI=KDFI+NBAST*NBAS(ISYM)+NBAS(ISYM)
+         END DO
+         CALL DGEMM('N','N',NBAST,NBAST,NBAST,
+     &      DM1,WRK(KS),NBAST,
+     &          WRK(KDFROZ),NBAST,
+     &      D1, WRK(KPFROZ),NBAST
+     &      )
+C        IF (IPRDIS.GT.10) THEN
+            CALL HEADER('Start orbitals',-1)
+            CALL PRORB(CMO,.FALSE.,LUPRI)
+            CALL HEADER('Frozen orbital density',-1)
+            CALL OUTPUT(
+     &         WRK(KDFROZ),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI
+     &         )
+            CALL HEADER('Frozen orbital projector',-1)
+            CALL OUTPUT(
+     &         WRK(KPFROZ),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI
+     &         )
+C        END IF
+      END IF
   100 CONTINUE
          ITDIIS = ITDIIS + 1
          JTDIIS = JTDIIS + 1
@@ -566,7 +613,6 @@ C
             END IF
          END IF
          CALL FLSHFO(LUPRI)
-         HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
 C
 C  ***** Construct folded inactive and active parts of the one-electron
 C        density matrix in AO-basis (DCAO and DVAO). DV is the active
@@ -649,10 +695,6 @@ C
 C  ***** Calculate 2-electron part of Fock matrix with
 C        differential density
 C
-Cef begin
-C         write(lupri,*) 'DCAO: '
-C         call output(DCAO,1,nbast,1,nbast,nbast,nbast,-1,lupri)
-Cef end
          CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
          IF (HSFOCK) THEN
 C
@@ -701,7 +743,7 @@ C           .. subtract DCOVLP*FVAO_previous to get DCOVLP*FCAO_previous
 C
          IF (ONLYFC) THEN
             EACTIV = D0
-         ELSE
+         ELSE 
 C           EACTIV = DV(u,u)FC(u,u) = FC(u,u)
 C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
             IF (HSFOCK) THEN
@@ -860,7 +902,7 @@ C
          if (peqm) then
            call memget2('REAL','fpe', kfpe, nnbasx, wrk, kfree, lfree)
            call memget2('REAL','epe', kepe, 1, wrk, kfree, lfree)
-           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+           if (nasht == 0 .or. hsfock) then
              call pe_master(runtype='fock', denmats=daosav(:,1),
      &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
      &                      energies=wrk(kepe:kepe),
@@ -902,6 +944,10 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
             WRITE (LUPRI,*) ' Error vector, DIIS iteration',ITDIIS
             CALL OUTPKB(EVCSAV(1,INDEVC),NORB,NSYM,-1,LUPRI)
          END IF
+C
+C Project out .FREEZE'ed orbitals from the gradient matrix
+C
+         IF (LNOROT) CALL PHPT(WRK(KPFROZ),WRK(KTMP1),NBAST)
          GRDNRM = DNRM2(NNORBT,EVCSAV(1,INDEVC),1)
          EGSAV(2,INDEVC) = GRDNRM
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .GT. 1) THEN
@@ -1182,32 +1228,29 @@ C           is higher in energy with lower gradient, especially if MOSTART H1DIA
 C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
-C        Do not try that with open-shell - it does not work./pawsa
-#if 0 /* I am not sure what the test for stalling detection should be */
-         IF (JTDIIS.GT.1 .AND.
-     &       EMCDIF.GT.5D-5) THEN
-#else
 !  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT 
-          IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-     &        GRDNRM .LE. 10.0D0 .AND. ABS(EMCDIF) .GT. 1.0D-5 .AND.
+          IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
+              EMCDIF_test = 0.0D0
+          ELSE
+              EMCDIF_test = EMCDIF
+          END IF
+C        Do not try that with open-shell - it does not work./pawsa
+!         IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+     &        GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
-     &         EMCDIF*(GRDNRM-GNRMSV) .LT. -1.0D-10) .AND. BCKSTP)
+     &         EMCDIF_test*(GRDNRM-GNRMSV) .LT. -1.0D-10) .AND. BCKSTP)
      &       THEN
 C              .. test EMCDIF*grddif against -1.0D-10 instead of 0.0D0
 C                 to avoid round-off problems here /hjaaj Sep 2005
-#endif
-c        IF (ITDIIS.GT.1 .AND. 
-c    &       ( ABS(CVEC(INDEVC)) .LT. 0.2D0 .OR.
-c    &         ABS(CVEC(INDEVC)) .GT. 2.0D0 ) .AND.
-c    &       EMCDIF .LT. D0 .AND. GRDNRM .GT. GNRMSV) THEN
              WRITE(LUPRI,'(1P/A,2(/A,G11.3),/A,I3,A)')
      &       '!!! Info: DIIS restarted because it was stalled ...',
      &       ' - energy changed by  ',EMCDIF,
      &       ' - gradient changed by',GRDNRM - GNRMSV,
      &       ' - or strange C vector coeff. for current index (=',
      &       INDEVC,') :'
-             WRITE (LUPRI,'(6F12.6)') (CVEC(I),I=1,NEVC)
+             WRITE (LUPRI,'(10F12.6)') (CVEC(I),I=1,NEVC)
              IF (EMCDIF .LT. D0) THEN
                 JNDEVC = INDEVC
              ELSE
@@ -1236,6 +1279,8 @@ C
              CVEC(1) = D1
              JTDIIS  = 1
              NEVC    = 1
+             INDEVC  = 1
+             BMAT(1) = BMAT( (JNDEVC*(JNDEVC+1))/2 )
 C            also restrict orbital rotation with a level shift
 c            the formula is empirical EMCDIF is positive here.
              SHFTLVL = MAX(-12D0,SHFTLVL - MIN(4.0D0,ABS(EMCDIF)*10.D0))
@@ -1246,11 +1291,11 @@ c            and slow down  the level shifting annealing...
 c            make sure we get right HOMO-LUMO gap in the end.
              IF(ITDIIS.GT.1.AND.ABS(EMCDIF).LE.5.D-5) SHFTLVL = 0.D0
          END IF
-C hjaaj 22-Jun-20005-B
+C hjaaj 22-Jun-2005-B
 C        Level shift is only working for closed shell calculations ...
 C          (open shell problems reported by users ...)
          IF (NASHT .GT. 0) SHFTLVL = 0.0D0
-C hjaaj 22-Jun-20005-E
+C hjaaj 22-Jun-2005-E
          GNRMSV = GRDNRM
 C
 C        Iteration accepted; save current CMO for restart
@@ -1505,7 +1550,7 @@ C
       END IF
 #if defined (BUILD_PELIB)
       if (peqm) then
-        if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+        if (nasht == 0 .or. hsfock) then
            call pe_master(runtype='energy',
      &                    denmats=daosav(:,1), nmats=1,
      &                    dalwrk=wrk(kfree:lfree))
@@ -1634,12 +1679,14 @@ C  INFINP : LNOROT,NOROT()
 C  INFORB : N2BAST, NNBAST, NCMOT, NSYM, ..., NFROT, ...
 C  INFDIM : N2BASM
 C
+#include "gnrinf.h"
 #include "maxorb.h"
 #include "priunit.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infdim.h"
 #include "infpri.h"
+#include "scbrhf.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
 C
@@ -1649,7 +1696,7 @@ C
       CALL MEMGET2('REAL','TMP1',KTMP1,N2BASM,WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','TMP2',KTMP2,N2BASM,WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','TMP3',KTMP3,N2BASM,WRK,KFREE,LFREE)
-      IF (HSROHF.OR.(DODFT.AND.NASHT.GE.1)) THEN
+      IF (HSFOCK) THEN
          CALL DAXPY(NNBAST,D1,DVAO,1,DCAO,1)
          CALL DSCAL(NNBAST,DM1,DVAO,1)
       END IF
@@ -1765,7 +1812,7 @@ C
             CALL OUTPUT(WRK(KTMP1),1,NORBI,1,NORBI,NORBI,NORBI,-1,LUPRI)
          END IF
   800 CONTINUE
-      IF (HSROHF.OR.(DODFT.AND.NASHT.GE.1)) THEN
+      IF (HSFOCK) THEN
          CALL DAXPY(NNBAST,D1,DVAO,1,DCAO,1)
          CALL DSCAL(NNBAST,DM1,DVAO,1)
       END IF
@@ -2082,6 +2129,7 @@ C
 #include "mxcent.h"
 #include "dftcom.h"
 #include "dftacb.h"
+#include "dummy.h"
 C
       LOGICAL LSAVE4,LSAVE6
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -2129,22 +2177,33 @@ C        zero rows and columns corresponding to frozen orbitals
          IF (NFRZI .GT. 0 .OR. LNOROT) THEN
             JNFRZ = 0
             DO 130 K = 1,NORBI
-            IF (K .LE. NFRZI .OR. NOROT(K) .NE. 0) THEN
-               IF (JNFRZ .GT. 0) GO TO 9000
+               IK=IORBI+K
+               IF (K .LE. NFRZI .OR. NOROT(IK) .NE. 0) THEN
+                  IF (IOBTYP(IK).NE.JTACT) THEN
+C              ... enable freezing an active orbital
+                     IF (JNFRZ .GT. 0) GO TO 9000
 C              ... exit if free orbital below this frozen orbital
 C                  because then ORDRSS cannot be called
-               JFRZI = JFRZI + 1
-               KROW  = IROW(K)
-               DO 110 L = 1,K-1
-                  FC(IFSYM+KROW+L) = D0
-  110          CONTINUE
-               DO 120 L = K+1,NORBI
-                  KL = (IFSYM+K)+IROW(L)
-                  FC(KL) = D0
-  120          CONTINUE
-            ELSE
-               JNFRZ = JNFRZ + 1
-            END IF
+                     JFRZI = JFRZI + 1
+                  END IF
+                  KROW  = IROW(K)
+                  DO 110 L = 1,K-1
+                     FC(IFSYM+KROW+L) = D0
+  110             CONTINUE
+                  DO 120 L = K+1,NORBI
+                     KL = (IFSYM+K)+IROW(L)
+                     FC(KL) = D0
+  120             CONTINUE
+                  IF (NOROT(IK).NE.0 .AND. IOBTYP(IK).EQ.JTACT) THEN
+                     KK = (IFSYM+K)+IROW(K)
+                     FC(KK) = DUMMY 
+C
+C This assignment puts it last in the sorting  - put back in place later
+C
+                  END IF
+               ELSE
+                  JNFRZ = JNFRZ + 1
+               END IF
   130       CONTINUE
          END IF
 C
@@ -2168,10 +2227,34 @@ C
          JORBI = IORBI + JFRZI + 1
          NNOTFR= NORBI - JFRZI
          CALL ORDRSS(CMO(JCSYM),FC(JORBI),ISSMO(JORBI),NNOTFR,NBASI)
+C 
+C         CALL HEADER('Sorted orbitals',-1)
+C         CALL PRORB(CMO,.FALSE.,LUPRI)
+C
+C If there are frozen open shell orbitals they are last - put back in place
 C
          IF (IPR_DIIS .GE. 4) WRITE (LUPRI,'(/A,I2/,(5F15.5))')
      &      ' DIIS Fock eigenvalues in symmetry',ISYM,
      &      (FC(IORBI+I), I = 1,NORBI)
+
+         IF (LNOROT) THEN
+            NISHI=NISH(ISYM)
+            NASHI=NASH(ISYM)
+            JA=NISHI+1
+            KA=IORBI+NISHI+1
+            DO IA=1,NASHI
+
+               JA=IA+NISHI
+               KA=JA+IORBI
+               IF (NOROT(KA).NE.0) THEN
+                  CALL ROTCOL(CMO(ICSYM),NBASI,NORBI,JA,NORBI)
+               END IF
+            END DO
+         END IF
+C
+C         CALL HEADER('Reordered orbitals',-1)
+C         CALL PRORB(CMO,.FALSE.,LUPRI)
+
   200 CONTINUE
       IF (SUPSYM) CALL AVEORD()
 C     ... remake ISSORD() as ISSMO() may have changed in ORDRSS
@@ -2228,6 +2311,30 @@ C
       CALL QTRACE(LUPRI)
       CALL QUIT('FCKEIG error, cannot handle orbitals '//
      &          'frozen with ".FREEZE"')
+      CONTAINS
+      SUBROUTINE ROTCOL(A,NR,NC,I1,I2)
+C
+C Cyclic permutation of columns in A
+C I2>I1 is moved to I1 and rest shifted right
+C
+      IMPLICIT NONE
+      DOUBLE PRECISION A,B
+      INTEGER NR,NC,I1,I2
+      DIMENSION A(NR,NC),B(NR)
+
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TMP
+      INTEGER I,MC
+      IF (I2.LE.I1) CALL QEXIT('ROTCOL ERROR: I1<I2 not fulfilled')
+      IF (I1.LE.0 .OR. I2.LE.0 .OR. I1.GT.NC.OR.I2.GT.NC)
+     &   CALL QEXIT('ROTCOL ERROR: I1 or I2 out of bounds')
+      MC=(I2-I1+1)
+      ALLOCATE(TMP(NR,MC))
+      TMP(:,1)=A(:,I2)
+      TMP(:,2:)=A(:,I1:I2-1)
+      A(:,I1:I2)=TMP(:,:)
+      DEALLOCATE(TMP)
+      RETURN
+      END SUBROUTINE ROTCOL
       END
 #ifdef MOD_DFTASC
  -- hjaaj: DFTASC is not active (June 09)
@@ -2410,3 +2517,45 @@ C
       RETURN
       END
 
+      SUBROUTINE SDFCOMM(F,D,SAOUNP,COMM,KFRSAV,LFRSAV,WRK)
+C     In: F apk,D apk and S unp
+C     Out: SDF-FDS
+
+#include <implicit.h>
+#include <inforb.h>
+      DOUBLE PRECISION F(NNBAST),D(NNBAST),SAOUNP(NBAST,NBAST)
+      DOUBLE PRECISION COMM(NBAST,NBAST),WRK(*)
+      PARAMETER (D1=1.0D0, D0=0.0D0, DM1=-1.0D0)
+ 
+      KFREE = KFRSAV
+      LFREE = LFRSAV
+      CALL MEMGET('REAL',KFTMP2,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDTMP2,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDForFD,N2BASX,WRK,KFREE,LFREE)
+
+      IF (NSYM.GT.1) THEN
+         CALL MEMGET('REAL',KFTMP,NNBASX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KDTMP,NNBASX,WRK,KFREE,LFREE)
+      ENDIF
+
+      IF (NSYM.GT.1) THEN
+         CALL PKSYM1(WRK(KFTMP),F,NBAS,NSYM,-1)
+         CALL DSPTSI(NBAST,WRK(KFTMP),WRK(KFTMP2))
+         CALL PKSYM1(WRK(KDTMP),D,NBAS,NSYM,-1)
+         CALL DUNFLD(NBAST,WRK(KDTMP),WRK(KDTMP2))
+      ELSE
+         CALL DSPTSI(NBAST,F,WRK(KFTMP2))
+         CALL DUNFLD(NBAST,D,WRK(KDTMP2))
+      ENDIF
+
+      CALL DGEMM('N','N',NBAST,NBAST,NBAST,D1,WRK(KFTMP2),NBAST,
+     &     WRK(KDTMP2),NBAST,D0,WRK(KDForFD),NBAST)
+      CALL DGEMM('N','N',NBAST,NBAST,NBAST,D1,WRK(KDForFD),NBAST,
+     &     SAOUNP,NBAST,D0,COMM,NBAST)
+           CALL DGEMM('N','N',NBAST,NBAST,NBAST,D1,WRK(KDTMP2),NBAST,
+     &     WRK(KFTMP2),NBAST,D0,WRK(KDForFD),NBAST)
+      CALL DGEMM('N','N',NBAST,NBAST,NBAST,D1,SAOUNP,NBAST,
+     &     WRK(KDForFD),NBAST,DM1,COMM,NBAST)
+
+      CALL MEMREL('SDFCOMM',WRK,KFRSAV,KFTMP2,KFREE,LFREE)      
+      END

@@ -1,0 +1,29 @@
+#!/bin/bash
+
+if [[ $# == 0 ]]; then
+    echo "you have to give the branch name as argument to this script"
+    echo "example: $0 master"
+    echo "quitting"
+    exit -1
+fi
+
+BRANCH=$1
+BUILDNAME="$BRANCH-$(basename $0)"
+
+CTEST_TEMP_DIR=/tmp/cdash-scratch
+mkdir -p $CTEST_TEMP_DIR
+
+export DALTON_TMPDIR=$CTEST_TEMP_DIR/run
+
+git clone git@repo.ctcc.no:dalton $CTEST_TEMP_DIR/compile
+
+cd $CTEST_TEMP_DIR/compile
+git checkout $BRANCH &> /dev/null
+./setup --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME=$BUILDNAME
+cd build
+make -j12 dalton.x
+ctest -D Nightly -j12 -L dalton
+
+rm -rf $CTEST_TEMP_DIR
+
+exit 0

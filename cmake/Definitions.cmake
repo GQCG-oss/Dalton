@@ -50,3 +50,7 @@ endif()
 if(ENABLE_DEBUGPBC)
     add_definitions(-DDEBUGPBC)
 endif()
+
+if(ENABLE_RSP)
+    add_definitions(-DVAR_RSP)
+endif()

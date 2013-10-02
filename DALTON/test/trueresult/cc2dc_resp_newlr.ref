@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,203 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:45:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 18:25:58 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_cc2dc_resp_newlr
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVEFUNCTION                                 
+**INTEGRALS                                       
+.DIPLEN                                           
+*ONEINT                                           
+.SOLVENT                                          
+ 10                                               
+**WAVE FUNCTIONS                                  
+.CC                                               
+*SCF INPUT                                        
+.THRESH                                           
+1.0D-11                                           
+*CC INP                                           
+.CC2                                              
+.THRLEQ                                           
+ 1.0D-7                                           
+.THRENR                                           
+ 1.0D-7                                           
+.MAX IT                                           
+ 90                                               
+.MXLRV                                            
+ 60                                               
+*CCSLV                                            
+.SOLVAT                                           
+ 1                                                
+10 4.00  78.54  1.778                             
+.ETOLSL                                           
+ 1.0D-6                                           
+.TTOLSL                                           
+ 1.0D-6                                           
+.LTOLSL                                           
+ 1.0D-6                                           
+.MXSLIT                                           
+ 60                                               
+*CCFOP                                            
+.DIPMOM                                           
+.NONREL                                           
+*CCLR                                             
+.DIPOLE                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+cc-pVDZ                                                                        
+H2O i H2O(DC)                                                                  
+------------------------                                                       
+    2    0         1 1.00D-12                                                  
+        8.0   1                                                                
+O            0.000000        0.000000        0.000000                          
+        1.0   2                                                                
+H           -0.756799        0.000000        0.586007                          
+H            0.756799        0.000000        0.586007                          
 
 
        *******************************************************************
@@ -105,7 +225,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -132,16 +252,16 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
 
                          SYMGRP: Point group information
@@ -180,7 +300,7 @@ Point group: C1
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-12
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -202,8 +322,10 @@ Point group: C1
  H     :    0.957157    1.513598    0.000000
 
 
-  Max interatomic separation is    1.5136 Angstrom (    2.8603 Bohr)
+  Max    interatomic separation is    1.5136 Angstrom (    2.8603 Bohr)
   between atoms    3 and    2, "H     " and "H     ".
+
+  Min HX interatomic separation is    0.9572 Angstrom (    1.8088 Bohr)
 
 
   Bond distances (Angstrom):
@@ -244,7 +366,7 @@ Point group: C1
            27.423392           14.602267            9.528552 cm-1
 
 
-@  Nuclear repulsion energy :    9.195434983361
+@  Nuclear repulsion energy :    9.195434983361 Hartree
 
 
                      .---------------------------------------.
@@ -288,13 +410,13 @@ Point group: C1
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-12
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:       21643 ( 47.9% )
  Megabytes written:                              0.254
 
- >>>> Total CPU  time used in HERMIT:   0.06 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
+ >>>> Total wall time used in HERMIT:   0.05 seconds
 
 
                         .----------------------------------.
@@ -327,8 +449,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 18:25:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:45:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O i H2O(DC)                                                           
@@ -337,59 +459,49 @@ Point group: C1
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
-
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EWMO  " input option.
+ ".MOSTART EWMO  " input option
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                1
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 1
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1
                                        --- |  ---
-     Occupied SCF orbitals               5 |    5
+@    Occupied SCF orbitals               5 |    5
      Secondary orbitals                 19 |   19
      Total number of orbitals           24 |   24
      Number of basis functions          24 |   24
 
      Optimization information
      ========================
-     Number of configurations                 1
-     Number of orbital rotations             95
+@    Number of configurations                 1
+@    Number of orbital rotations             95
      ------------------------------------------
-     Total number of variables               96
+@    Total number of variables               96
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-11
-
-
- Changes of defaults for CC:
- ---------------------------
-
- -Linear response properties calculated
- -Dipole moment calculated
-  
 
 
  Changes of defaults for CC:
@@ -408,66 +520,67 @@ Point group: C1
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-   1    -75.8496911503        1.64463D+00   -7.58D+01    1
+@  1    -75.8496911503        1.64463D+00   -7.58D+01    1
       Virial theorem: -V/T =      2.000031
-      MULPOP  O      -0.55; H       0.28; H       0.28; 
+@      MULPOP O      -0.55; H       0.28; H       0.28; 
  -----------------------------------------------------------------------------
-   2    -76.0207798604        3.17728D-01   -1.71D-01    2
+@  2    -76.0207798604        3.17728D-01   -1.71D-01    2
       Virial theorem: -V/T =      2.001328
-      MULPOP  O      -0.26; H       0.13; H       0.13; 
+@      MULPOP O      -0.26; H       0.13; H       0.13; 
  -----------------------------------------------------------------------------
-   3    -76.0262715963        7.02511D-02   -5.49D-03    3
+@  3    -76.0262715963        7.02511D-02   -5.49D-03    3
       Virial theorem: -V/T =      2.000220
-      MULPOP  O      -0.29; H       0.15; H       0.15; 
+@      MULPOP O      -0.29; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-   4    -76.0267731590        1.85957D-02   -5.02D-04    4
+@  4    -76.0267731590        1.85957D-02   -5.02D-04    4
       Virial theorem: -V/T =      2.000749
-      MULPOP  O      -0.30; H       0.15; H       0.15; 
+@      MULPOP O      -0.30; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-   5    -76.0267962922        6.86412D-03   -2.31D-05    5
+@  5    -76.0267962922        6.86412D-03   -2.31D-05    5
       Virial theorem: -V/T =      2.000377
-      MULPOP  O      -0.30; H       0.15; H       0.15; 
+@      MULPOP O      -0.30; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-   6    -76.0268007108        1.38078D-03   -4.42D-06    6
+@  6    -76.0268007108        1.38078D-03   -4.42D-06    6
       Virial theorem: -V/T =      2.000481
-      MULPOP  O      -0.31; H       0.15; H       0.15; 
+@      MULPOP O      -0.31; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-   7    -76.0268010490        1.80943D-04   -3.38D-07    7
+@  7    -76.0268010489        1.80943D-04   -3.38D-07    7
       Virial theorem: -V/T =      2.000496
-      MULPOP  O      -0.31; H       0.15; H       0.15; 
+@      MULPOP O      -0.31; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-   8    -76.0268010542        2.83317D-05   -5.26D-09    8
+@  8    -76.0268010542        2.83317D-05   -5.26D-09    8
       Virial theorem: -V/T =      2.000496
-      MULPOP  O      -0.31; H       0.15; H       0.15; 
+@      MULPOP O      -0.31; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-   9    -76.0268010543        5.29848D-06   -9.90D-11    9
+@  9    -76.0268010543        5.29848D-06   -9.89D-11    9
       Virial theorem: -V/T =      2.000496
-      MULPOP  O      -0.31; H       0.15; H       0.15; 
+@      MULPOP O      -0.31; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-  10    -76.0268010543        3.07334D-07   -3.33D-12   10
+@ 10    -76.0268010543        3.07334D-07   -3.25D-12   10
       Virial theorem: -V/T =      2.000496
-      MULPOP  O      -0.31; H       0.15; H       0.15; 
+@      MULPOP O      -0.31; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-  11    -76.0268010543        3.08931D-08    1.14D-13   10
+@ 11    -76.0268010543        3.08932D-08   -8.53D-14   10
       Virial theorem: -V/T =      2.000496
-      MULPOP  O      -0.31; H       0.15; H       0.15; 
+@      MULPOP O      -0.31; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-  12    -76.0268010543        3.30635D-09   -7.11D-14   10
+@ 12    -76.0268010543        3.30631D-09    2.84D-14   10
       Virial theorem: -V/T =      2.000496
-      MULPOP  O      -0.31; H       0.15; H       0.15; 
+@      MULPOP O      -0.31; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-  13    -76.0268010543        6.46769D-10    7.11D-14   10
+@ 13    -76.0268010543        6.46763D-10    0.00D+00   10
       Virial theorem: -V/T =      2.000496
-      MULPOP  O      -0.31; H       0.15; H       0.15; 
+@      MULPOP O      -0.31; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-  14    -76.0268010543        5.24848D-11   -2.84D-14   10
+@ 14    -76.0268010543        5.24992D-11    1.42D-14   10
       Virial theorem: -V/T =      2.000496
-      MULPOP  O      -0.31; H       0.15; H       0.15; 
+@      MULPOP O      -0.31; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-  15    -76.0268010543        4.30042D-12    2.84D-14   10
+@ 15    -76.0268010543        4.27645D-12   -2.84D-14   10
 
- *** DIIS converged in  15 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  15 iterations !
+@     Converged SCF energy, gradient:    -76.026801054310    4.28D-12
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -489,25 +602,27 @@ Point group: C1
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.014       0.015
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -76.026801054312                 
-     Nuclear repulsion:             9.195434983361
-     Electronic energy:           -85.222236037672
+@    Final HF energy:             -76.026801054310                 
+@    Nuclear repulsion:             9.195434983361
+@    Electronic energy:           -85.222236037670
 
-     Final gradient norm:           0.000000000004
+@    Final gradient norm:           0.000000000004
 
  
-     Date and time (Linux)  : Wed Mar 16 18:25:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:45:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -515,37 +630,37 @@ Point group: C1
  ------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
-   1 O   :1s    -1.0004   0.0082  -0.0000  -0.0022  -0.0000   0.0520   0.0000
-   2 O   :1s    -0.0023  -0.8703  -0.0000   0.2956  -0.0000  -0.1427   0.0000
-   3 O   :1s     0.0014   0.1229   0.0000   0.1806  -0.0000  -0.9210  -0.0000
-   4 O   :2px   -0.0000  -0.0000  -0.7140   0.0000   0.0000   0.0000   0.4125
-   5 O   :2py   -0.0000  -0.0000   0.0000   0.0000   0.9196  -0.0000  -0.0000
-   6 O   :2pz   -0.0026  -0.1149  -0.0000  -0.7948   0.0000  -0.2775   0.0000
-   7 O   :2px   -0.0000   0.0000   0.1069   0.0000  -0.0000   0.0000   0.4810
-   8 O   :2py   -0.0000  -0.0000   0.0000   0.0000   0.0721  -0.0000  -0.0000
-   9 O   :2pz    0.0017   0.0660   0.0000   0.0007   0.0000  -0.2091   0.0000
-  11 O   :3d1-  -0.0000  -0.0000   0.0000   0.0000   0.0182  -0.0000  -0.0000
-  12 O   :3d0   -0.0000  -0.0012   0.0000  -0.0179   0.0000  -0.0075  -0.0000
-  13 O   :3d1+  -0.0000   0.0000  -0.0268   0.0000  -0.0000  -0.0000   0.0213
+   1 O   :1s    -1.0004   0.0082   0.0000  -0.0022   0.0000   0.0520   0.0000
+   2 O   :1s    -0.0023  -0.8703   0.0000   0.2956   0.0000  -0.1427  -0.0000
+   3 O   :1s     0.0014   0.1229  -0.0000   0.1806   0.0000  -0.9210  -0.0000
+   4 O   :2px   -0.0000  -0.0000  -0.7140   0.0000  -0.0000  -0.0000   0.4125
+   5 O   :2py   -0.0000   0.0000  -0.0000  -0.0000   0.9196   0.0000  -0.0000
+   6 O   :2pz   -0.0026  -0.1149  -0.0000  -0.7948  -0.0000  -0.2775  -0.0000
+   7 O   :2px   -0.0000  -0.0000   0.1069  -0.0000   0.0000  -0.0000   0.4810
+   8 O   :2py   -0.0000   0.0000  -0.0000  -0.0000   0.0721   0.0000  -0.0000
+   9 O   :2pz    0.0017   0.0660  -0.0000   0.0007  -0.0000  -0.2091  -0.0000
+  11 O   :3d1-  -0.0000   0.0000  -0.0000  -0.0000   0.0182   0.0000  -0.0000
+  12 O   :3d0   -0.0000  -0.0012  -0.0000  -0.0179  -0.0000  -0.0075  -0.0000
+  13 O   :3d1+  -0.0000  -0.0000  -0.0268  -0.0000   0.0000  -0.0000   0.0213
   15 H   :1s     0.0004  -0.3296   0.5582  -0.3512   0.0000   0.1002   0.0441
   16 H   :1s    -0.0006   0.1551  -0.1900   0.1358  -0.0000   0.7791   1.4227
-  17 H   :2px    0.0006  -0.0373   0.0233  -0.0318  -0.0000   0.0176   0.0208
-  18 H   :2py    0.0000   0.0000  -0.0000  -0.0000   0.0311   0.0000   0.0000
+  17 H   :2px    0.0006  -0.0373   0.0233  -0.0318   0.0000   0.0176   0.0208
+  18 H   :2py    0.0000  -0.0000   0.0000   0.0000   0.0311  -0.0000   0.0000
   19 H   :2pz   -0.0005   0.0205  -0.0327  -0.0075   0.0000  -0.0163  -0.0172
-  20 H   :1s     0.0004  -0.3296  -0.5582  -0.3512   0.0000   0.1002  -0.0441
-  21 H   :1s    -0.0006   0.1551   0.1900   0.1358   0.0000   0.7791  -1.4227
+  20 H   :1s     0.0004  -0.3296  -0.5582  -0.3512  -0.0000   0.1002  -0.0441
+  21 H   :1s    -0.0006   0.1551   0.1900   0.1358  -0.0000   0.7791  -1.4227
   22 H   :2px   -0.0006   0.0373   0.0233   0.0318  -0.0000  -0.0176   0.0208
-  23 H   :2py    0.0000   0.0000  -0.0000  -0.0000   0.0311   0.0000   0.0000
-  24 H   :2pz   -0.0005   0.0205   0.0327  -0.0075  -0.0000  -0.0163   0.0172
+  23 H   :2py    0.0000  -0.0000   0.0000   0.0000   0.0311  -0.0000   0.0000
+  24 H   :2pz   -0.0005   0.0205   0.0327  -0.0075   0.0000  -0.0163   0.0172
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.02 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:25:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:45:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -595,18 +710,18 @@ Point group: C1
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster MP2   energy :     -76.2307602936379993
- Iter.  1: Coupled cluster CC2   energy :     -76.2307527872844162
- Iter.  2: Coupled cluster CC2   energy :     -76.2315500934254544
- Iter.  3: Coupled cluster CC2   energy :     -76.2316174218164804
- Iter.  4: Coupled cluster CC2   energy :     -76.2316035572573867
- Iter.  5: Coupled cluster CC2   energy :     -76.2316046518252932
- Iter.  6: Coupled cluster CC2   energy :     -76.2316052615357336
- Iter.  7: Coupled cluster CC2   energy :     -76.2316052683960663
+ Iter.  1: Coupled cluster MP2   energy :     -76.2307602936362514
+ Iter.  1: Coupled cluster CC2   energy :     -76.2307527872824409
+ Iter.  2: Coupled cluster CC2   energy :     -76.2315500934232517
+ Iter.  3: Coupled cluster CC2   energy :     -76.2316174218143914
+ Iter.  4: Coupled cluster CC2   energy :     -76.2316035572554966
+ Iter.  5: Coupled cluster CC2   energy :     -76.2316046518230479
+ Iter.  6: Coupled cluster CC2   energy :     -76.2316052615336019
+ Iter.  7: Coupled cluster CC2   energy :     -76.2316052683936931
 
- CC2   energy converged to within   0.10D-06 is    -76.231605268
- Final 2-norm of the CC vector function:  5.06562134D-06
-  Change in norm^2 of T-amplitudes in this solvent it.:  2.46003257364456884E-002
+ CC2   energy converged to within   0.10D-06 is          -76.231605268394
+ Final 2-norm of the CC vector function:  5.06562133D-06
+  Change in norm^2 of T-amplitudes in this solvent it.:   2.4600325736466429E-002
 
 
 
@@ -653,10 +768,13 @@ Point group: C1
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
-  Change in norm^2 of L-amplitudes in this solvent it.:  0.19994468002136209     
- Total <Lambda|H|CC> energy:   -76.231605290784415     
+ RPA: call cceq_str
+ RPA: exit cceq_str
+  Change in norm^2 of L-amplitudes in this solvent it.:  0.19994468002150773     
+ Total <Lambda|H|CC> energy:   -76.231605290782056     
             The singles contribution is:            -0.0000000101
             The doubles contribution is:            -0.0000000123
+ CCFOP: call CC_D1AO to recalc the 1e Density
 
 
                             +--------------------------+
@@ -701,7 +819,7 @@ Point group: C1
  CC energy in the  current solvent iteration:       -76.2380685621
  CC energy in the previous solvent iteration:         0.0000000000
  LSLECVG:  F
-  Change in Total energy in this solvent it.:  -76.238068562139247     
+  Change in Total energy in this solvent it.:  -76.238068562136874     
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -726,7 +844,7 @@ Point group: C1
                  au               Debye          C m (/(10**-30)
 
       x      0.00000000         0.00000000         0.00000000
-      y      0.00000000         0.00000000         0.00000000
+      y     -0.00000000        -0.00000000        -0.00000000
       z      0.76671279         1.94878940         6.50046172
 
 
@@ -749,19 +867,19 @@ Point group: C1
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.2316052683960663
- Iter.  1: Coupled cluster CC2   energy :     -76.2314459320902102
- Iter.  2: Coupled cluster CC2   energy :     -76.2311761573262743
- Iter.  3: Coupled cluster CC2   energy :     -76.2311576670350064
- Iter.  4: Coupled cluster CC2   energy :     -76.2311627674184962
- Iter.  5: Coupled cluster CC2   energy :     -76.2311631275741917
- Iter.  6: Coupled cluster CC2   energy :     -76.2311628342294227
- Iter.  7: Coupled cluster CC2   energy :     -76.2311625890725963
- Iter.  8: Coupled cluster CC2   energy :     -76.2311625757015889
+ Iter.  1: Coupled cluster RSTAR energy :     -76.2316052683936931
+ Iter.  1: Coupled cluster CC2   energy :     -76.2314459320878797
+ Iter.  2: Coupled cluster CC2   energy :     -76.2311761573242848
+ Iter.  3: Coupled cluster CC2   energy :     -76.2311576670326758
+ Iter.  4: Coupled cluster CC2   energy :     -76.2311627674161087
+ Iter.  5: Coupled cluster CC2   energy :     -76.2311631275718327
+ Iter.  6: Coupled cluster CC2   energy :     -76.2311628342270495
+ Iter.  7: Coupled cluster CC2   energy :     -76.2311625890703652
+ Iter.  8: Coupled cluster CC2   energy :     -76.2311625756996989
 
- CC2   energy converged to within   0.10D-06 is    -76.231162576
+ CC2   energy converged to within   0.10D-06 is          -76.231162575700
  Final 2-norm of the CC vector function:  1.05941711D-06
-  Change in norm^2 of T-amplitudes in this solvent it.: -3.40316703282331906E-004
+  Change in norm^2 of T-amplitudes in this solvent it.:  -3.4031670327886940E-004
 
 
 
@@ -808,12 +926,15 @@ Point group: C1
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
-  Change in norm^2 of L-amplitudes in this solvent it.: -2.04972010091014623E-003
- Total <Lambda|H|CC> energy:   -76.231084080992645     
+ RPA: exit cceq_str
+  Change in norm^2 of L-amplitudes in this solvent it.:  -2.0497201008912724E-003
+ Total <Lambda|H|CC> energy:   -76.231084080990755     
             The singles contribution is:             0.0002323090
             The doubles contribution is:            -0.0001538143
+ CCFOP: call CC_D1AO to recalc the 1e Density
 
 
                             +--------------------------+
@@ -858,7 +979,7 @@ Point group: C1
  CC energy in the  current solvent iteration:       -76.2386428940
  CC energy in the previous solvent iteration:       -76.2380685621
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -5.74331886781465073E-004
+  Change in Total energy in this solvent it.:  -5.7433188726463413E-004
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -883,7 +1004,7 @@ Point group: C1
                  au               Debye          C m (/(10**-30)
 
       x      0.00000000         0.00000000         0.00000000
-      y      0.00000000         0.00000000         0.00000000
+      y     -0.00000000        -0.00000000        -0.00000000
       z      0.83907107         2.13270580         7.11394079
 
 
@@ -906,16 +1027,16 @@ Point group: C1
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.2311625757015889
- Iter.  1: Coupled cluster CC2   energy :     -76.2311468465188113
- Iter.  2: Coupled cluster CC2   energy :     -76.2311246718021351
- Iter.  3: Coupled cluster CC2   energy :     -76.2311230687347177
- Iter.  4: Coupled cluster CC2   energy :     -76.2311233229460328
- Iter.  5: Coupled cluster CC2   energy :     -76.2311233702960038
+ Iter.  1: Coupled cluster RSTAR energy :     -76.2311625756996989
+ Iter.  1: Coupled cluster CC2   energy :     -76.2311468465165802
+ Iter.  2: Coupled cluster CC2   energy :     -76.2311246718000319
+ Iter.  3: Coupled cluster CC2   energy :     -76.2311230687331829
+ Iter.  4: Coupled cluster CC2   energy :     -76.2311233229437590
+ Iter.  5: Coupled cluster CC2   energy :     -76.2311233702937443
 
- CC2   energy converged to within   0.10D-06 is    -76.231123370
+ CC2   energy converged to within   0.10D-06 is          -76.231123370294
  Final 2-norm of the CC vector function:  1.12209440D-05
-  Change in norm^2 of T-amplitudes in this solvent it.:  9.01417838760493195E-006
+  Change in norm^2 of T-amplitudes in this solvent it.:   9.0141783873481929E-006
 
 
 
@@ -962,12 +1083,15 @@ Point group: C1
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
-  Change in norm^2 of L-amplitudes in this solvent it.: -5.45653110126942398E-005
- Total <Lambda|H|CC> energy:   -76.230991273197333     
+ RPA: exit cceq_str
+  Change in norm^2 of L-amplitudes in this solvent it.:  -5.4565311013526907E-005
+ Total <Lambda|H|CC> energy:   -76.230991273195087     
             The singles contribution is:             0.0002965633
             The doubles contribution is:            -0.0001644662
+ CCFOP: call CC_D1AO to recalc the 1e Density
 
 
                             +--------------------------+
@@ -1012,7 +1136,7 @@ Point group: C1
  CC energy in the  current solvent iteration:       -76.2386472535
  CC energy in the previous solvent iteration:       -76.2386428940
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -4.35944841115087911E-006
+  Change in Total energy in this solvent it.:  -4.3594480416686565E-006
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -1037,7 +1161,7 @@ Point group: C1
                  au               Debye          C m (/(10**-30)
 
       x     -0.00000000        -0.00000000        -0.00000000
-      y      0.00000000         0.00000000         0.00000000
+      y     -0.00000000        -0.00000000        -0.00000000
       z      0.84536806         2.14871116         7.16732893
 
 
@@ -1060,15 +1184,15 @@ Point group: C1
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.2311233702960038
- Iter.  1: Coupled cluster CC2   energy :     -76.2311220042704605
- Iter.  2: Coupled cluster CC2   energy :     -76.2311201077160945
- Iter.  3: Coupled cluster CC2   energy :     -76.2311199669066610
- Iter.  4: Coupled cluster CC2   energy :     -76.2311199848461882
+ Iter.  1: Coupled cluster RSTAR energy :     -76.2311233702937443
+ Iter.  1: Coupled cluster CC2   energy :     -76.2311220042680588
+ Iter.  2: Coupled cluster CC2   energy :     -76.2311201077143608
+ Iter.  3: Coupled cluster CC2   energy :     -76.2311199669045436
+ Iter.  4: Coupled cluster CC2   energy :     -76.2311199848439998
 
- CC2   energy converged to within   0.10D-06 is    -76.231119985
+ CC2   energy converged to within   0.10D-06 is          -76.231119984844
  Final 2-norm of the CC vector function:  4.75152912D-06
-  Change in norm^2 of T-amplitudes in this solvent it.:  1.04637816114583337E-006
+  Change in norm^2 of T-amplitudes in this solvent it.:   1.0463781611388945E-006
 
 
 
@@ -1115,12 +1239,15 @@ Point group: C1
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
-  Change in norm^2 of L-amplitudes in this solvent it.: -3.72193284359223497E-006
- Total <Lambda|H|CC> energy:   -76.230982908416550     
+ RPA: exit cceq_str
+  Change in norm^2 of L-amplitudes in this solvent it.:  -3.7219328425375231E-006
+ Total <Lambda|H|CC> energy:   -76.230982908414362     
             The singles contribution is:             0.0003023840
             The doubles contribution is:            -0.0001653076
+ CCFOP: call CC_D1AO to recalc the 1e Density
 
 
                             +--------------------------+
@@ -1165,7 +1292,7 @@ Point group: C1
  CC energy in the  current solvent iteration:       -76.2386472389
  CC energy in the previous solvent iteration:       -76.2386472535
  LSLECVG:  T
-  Change in Total energy in this solvent it.:  1.46056038374808850E-008
+  Change in Total energy in this solvent it.:   1.4605546994062024E-008
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -1189,8 +1316,8 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.00000000        -0.00000000        -0.00000000
-      y      0.00000000         0.00000000         0.00000000
+      x      0.00000000         0.00000000         0.00000000
+      y     -0.00000000        -0.00000000        -0.00000000
       z      0.84591009         2.15008885         7.17192442
 
 
@@ -1213,14 +1340,14 @@ Point group: C1
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.2311199848461882
- Iter.  1: Coupled cluster CC2   energy :     -76.2311198726261523
- Iter.  2: Coupled cluster CC2   energy :     -76.2311197112282457
- Iter.  3: Coupled cluster CC2   energy :     -76.2311196974795280
+ Iter.  1: Coupled cluster RSTAR energy :     -76.2311199848439998
+ Iter.  1: Coupled cluster CC2   energy :     -76.2311198726238501
+ Iter.  2: Coupled cluster CC2   energy :     -76.2311197112262988
+ Iter.  3: Coupled cluster CC2   energy :     -76.2311196974773395
 
- CC2   energy converged to within   0.10D-06 is    -76.231119697
- Final 2-norm of the CC vector function:  1.13712966D-06
-  Change in norm^2 of T-amplitudes in this solvent it.:  1.02799007178216995E-007
+ CC2   energy converged to within   0.10D-06 is          -76.231119697477
+ Final 2-norm of the CC vector function:  1.13712967D-06
+  Change in norm^2 of T-amplitudes in this solvent it.:   1.0279900681739451E-007
 
 
 
@@ -1267,12 +1394,15 @@ Point group: C1
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
-  Change in norm^2 of L-amplitudes in this solvent it.: -3.11446901324341496E-007
- Total <Lambda|H|CC> energy:   -76.230982173851956     
+ RPA: exit cceq_str
+  Change in norm^2 of L-amplitudes in this solvent it.:  -3.1144690385009888E-007
+ Total <Lambda|H|CC> energy:   -76.230982173849767     
             The singles contribution is:             0.0003028806
             The doubles contribution is:            -0.0001653570
+ CCFOP: call CC_D1AO to recalc the 1e Density
 
 
                             +--------------------------+
@@ -1317,14 +1447,14 @@ Point group: C1
  CC energy in the  current solvent iteration:       -76.2386472206
  CC energy in the previous solvent iteration:       -76.2386472389
  LSLECVG:  T
-  Change in Total energy in this solvent it.:  1.83001702680485323E-008
+  Change in Total energy in this solvent it.:   1.8300170268048532E-008
 
  Coupled cluster solvent equations are converged in   4 solvent iterations
 
- CC2     converged energy in solvent:            -76.2386472205686658
+ CC2     converged energy in solvent:            -76.2386472205664631
 
 
- CC2     solvation energy:                        -0.0076650467167082
+ CC2     solvation energy:                        -0.0076650467166958
 
  *******************************************************************
  *        End of coupled cluster solvent program                   *
@@ -1349,8 +1479,8 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.00000000         0.00000000         0.00000000
-      y      0.00000000         0.00000000         0.00000000
+      x     -0.00000000        -0.00000000        -0.00000000
+      y     -0.00000000        -0.00000000        -0.00000000
       z      0.84595673         2.15020740         7.17231987
 
 
@@ -1514,12 +1644,16 @@ Point group: C1
    will be performed.
 
 
+ RPA: call cceq_str
  Vector nr.  1 of type R1  and symmetry  1 was not found on file.
  Vector nr.  2 of type R1  and symmetry  1 was not found on file.
  Vector nr.  3 of type R1  and symmetry  1 was not found on file.
+ RPA: exit cceq_str
+ RPA: call cceq_str
  Vector nr.  1 of type L1  and symmetry  1 was not found on file.
  Vector nr.  2 of type L1  and symmetry  1 was not found on file.
  Vector nr.  3 of type L1  and symmetry  1 was not found on file.
+ RPA: exit cceq_str
 
 
  Testing R1 list: 
@@ -1527,59 +1661,67 @@ Point group: C1
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
      1     XDIPLEN      1         0.0000000000   2.4220270539   0.0634573138
      2     YDIPLEN      1         0.0000000000   1.0347226963   0.0288774896
-     3     ZDIPLEN      1         0.0000000000   1.8117751943   0.0480039622
+     3     ZDIPLEN      1         0.0000000000   1.8117751942   0.0480039622
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
      1     XDIPLEN      1         0.0000000000   8.3403912386   0.5081850514
-     2     YDIPLEN      1         0.0000000000   3.8620012682   0.3154812482
-     3     ZDIPLEN      1         0.0000000000   6.3454722904   0.5320765417
+     2     YDIPLEN      1         0.0000000000   3.8620012681   0.3154812482
+     3     ZDIPLEN      1         0.0000000000   6.3454722903   0.5320765417
   Solvent 1-order response equations not converged in           1  solvent iterations
   A New iteration starts 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
  Vector nr.  3 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
+ RPA: exit cceq_str
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
  Vector nr.  3 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
+ RPA: exit cceq_str
 
 
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   2.5199769400   0.0660354842
-     2     YDIPLEN      1         0.0000000000   1.0522142510   0.0293659676
+     1     XDIPLEN      1         0.0000000000   2.5199769399   0.0660354842
+     2     YDIPLEN      1         0.0000000000   1.0522142509   0.0293659676
      3     ZDIPLEN      1         0.0000000000   1.8636717883   0.0493813254
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   8.3078689572   0.5068773485
-     2     YDIPLEN      1         0.0000000000   3.8606400043   0.3154537457
-     3     ZDIPLEN      1         0.0000000000   6.3268656761   0.5310353529
+     1     XDIPLEN      1         0.0000000000   8.3078689571   0.5068773485
+     2     YDIPLEN      1         0.0000000000   3.8606400042   0.3154537457
+     3     ZDIPLEN      1         0.0000000000   6.3268656760   0.5310353529
   Solvent 1-order response equations not converged in           2  solvent iterations
   A New iteration starts 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
  Vector nr.  3 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
+ RPA: exit cceq_str
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
  Vector nr.  3 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
+ RPA: exit cceq_str
 
 
  Testing R1 list: 
@@ -1594,22 +1736,26 @@ Point group: C1
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
      1     XDIPLEN      1         0.0000000000   8.3079513889   0.5068806566
-     2     YDIPLEN      1         0.0000000000   3.8606409344   0.3154537591
-     3     ZDIPLEN      1         0.0000000000   6.3269022275   0.5310373525
+     2     YDIPLEN      1         0.0000000000   3.8606409343   0.3154537591
+     3     ZDIPLEN      1         0.0000000000   6.3269022274   0.5310373525
   Solvent 1-order response equations not converged in           3  solvent iterations
   A New iteration starts 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
  Vector nr.  3 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       R1  vector
+ RPA: exit cceq_str
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
  Vector nr.  3 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L1  vector
+ RPA: exit cceq_str
 
 
  Testing R1 list: 
@@ -1617,15 +1763,15 @@ Point group: C1
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
      1     XDIPLEN      1         0.0000000000   2.5197284389   0.0660289517
      2     YDIPLEN      1         0.0000000000   1.0522043229   0.0293656890
-     3     ZDIPLEN      1         0.0000000000   1.8635702285   0.0493786269
+     3     ZDIPLEN      1         0.0000000000   1.8635702284   0.0493786269
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
      1     XDIPLEN      1         0.0000000000   8.3079511285   0.5068806407
-     2     YDIPLEN      1         0.0000000000   3.8606409330   0.3154537590
-     3     ZDIPLEN      1         0.0000000000   6.3269021474   0.5310373458
+     2     YDIPLEN      1         0.0000000000   3.8606409329   0.3154537590
+     3     ZDIPLEN      1         0.0000000000   6.3269021473   0.5310373458
   Solvent 1-order response equations converged in           3  solvent iterations
 
  Solution of CC response equations completed.
@@ -1652,16 +1798,16 @@ Point group: C1
 
 
 
->>> Time used for    3 F matrix transformations:        0.55 seconds.
+>>> Time used for    3 F matrix transformations:        0.51 seconds.
  +==================================================+
 
 
 
->>> Time used for    3 J matrix transformations:        0.27 seconds.
+>>> Time used for    3 J matrix transformations:        0.25 seconds.
 
 >>> Time used for    3 O1/X1 vector calculation:        0.01 seconds.
 
->>> Total time for   9 linear response function:        0.83 seconds.
+>>> Total time for   9 linear response function:        0.76 seconds.
 
 
              +--------------------------------------------------------+
@@ -1674,19 +1820,19 @@ Point group: C1
 
  XDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000      7.1400572    
 
- XDIPLEN  (unrel.) -0.0000   YDIPLEN  (unrel.)  0.0000     0.43475238E-16
+ XDIPLEN  (unrel.) -0.0000   YDIPLEN  (unrel.)  0.0000     0.47239560E-16
 
- XDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000     0.57063795E-13
+ XDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000    -0.20432441E-13
 
- YDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000     0.43475238E-16
+ YDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000     0.47239560E-16
 
  YDIPLEN  (unrel.) -0.0000   YDIPLEN  (unrel.)  0.0000      3.2131716    
 
- YDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000    -0.44640554E-16
+ YDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000    -0.49409194E-16
 
- ZDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000     0.57063795E-13
+ ZDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000    -0.20432441E-13
 
- ZDIPLEN  (unrel.) -0.0000   YDIPLEN  (unrel.)  0.0000    -0.44640554E-16
+ ZDIPLEN  (unrel.) -0.0000   YDIPLEN  (unrel.)  0.0000    -0.49409194E-16
 
  ZDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000      5.3202736    
 ------------------------------------------------------------------------
@@ -1747,14 +1893,20 @@ Point group: C1
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :      29.364      31.186
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:45:41 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  31.64 seconds
- >>>> Total wall time used in DALTON:  41.00 seconds
+ >>>> Total CPU  time used in DALTON:  29.43 seconds
+ >>>> Total wall time used in DALTON:  31.26 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:26:39 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:45:41 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

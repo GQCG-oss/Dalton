@@ -169,7 +169,9 @@ subroutine get_initial_dens(H1,S,D,ls,config)
      else
         call lsquit('Basis check is messed up!!',config%lupri)
      endif
-     IF (config%diag%CFG_restart .AND. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) THEN
+     IF (config%diag%CFG_restart .AND. &
+          & ((config%optinfo%optimize .OR. config%dynamics%do_dynamics)&
+          & .OR.config%diag%CFG_purifyrestart)) THEN
         !Using the density matrix from the previous geometry iteration in the current
         !geometry iteration speeds up geometry optimization significantly. 
         !Note that in some (early) geometry iterations this might lead to problems in SCF 

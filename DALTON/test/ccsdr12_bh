@@ -192,6 +192,12 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #            Total SCF   energy:                   -25.1264273369
 #            Total MP2-R12/B energy:               -25.2006815211
 #            Total CCSD(R12)/B energy:             -25.2240489668
@@ -211,7 +217,7 @@ ERROR[2]="CCSD(R12)/B ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

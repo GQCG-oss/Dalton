@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -50,7 +50,6 @@ C  /* Deck qmmmfck */
 
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
-      LOGICAL HSFOCK
 
       CALL QENTER('QMMMFCK')
       KDTAO = 1
@@ -59,7 +58,6 @@ C  /* Deck qmmmfck */
       LWRK1 = LWRK - KEND
       IF (LWRK1 .LT. 0) CALL ERRWRK('QMMMFCK',-KEND,LWRK)
 
-      HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
 
 C     Get total density
       IF (NASHT .EQ. 0) THEN
@@ -696,7 +694,6 @@ C     total solvation energy
       ED0MOM = 0.0D0            ! For interaction with point-charges
       ED1MOM = 0.0D0            ! For interaction with permanent dipoles
       ED2MOM = 0.0D0            ! For interaction with quadrupoles
-      ED3MOM = 0.0D0            ! For interaction with octupoles
       EDMULT = 0.0D0            ! For interaction with permanent multipoles
       EPOLT  = 0.0D0            ! Total polarization energy
 
@@ -724,13 +721,12 @@ C     total solvation energy
           ED0MOM = ED0MOM + WRK(KEDALL+2)
           ED1MOM = ED1MOM + WRK(KEDALL+3)
           ED2MOM = ED2MOM + WRK(KEDALL+4)
-          ED3MOM = ED3MOM + WRK(KEDALL+5)
 
           IINIM = IINIM + 3
 
  500    CONTINUE
 
-        EDMULT = ED0MOM + ED1MOM + ED2MOM + ED3MOM
+        EDMULT = ED0MOM + ED1MOM + ED2MOM
 
 #if defined(VAR_MPI)
       ENDIF                     ! IF (NODTOT .GE. 1) ... ELSE
@@ -2628,182 +2624,6 @@ C JK
       RETURN
       END
 C******************************************************************************
-C  /* Deck GET_OCTUPOLE_ELFLD */
-      SUBROUTINE GET_OCTUPOLE_ELFLD(QXXX,QXXY,QXXZ,QXYY,QXYZ,
-     &                              QXZZ,QYYY,QYYZ,QYZZ,QZZZ,
-     &                              XORI,YORI,ZORI,
-     &                              XTAR,YTAR,ZTAR,
-     &                              EFX,EFY,EFZ)
-C
-C     Calculates the electric field strength due to electric ocupoles
-C     moment.
-C
-C     INPUT:
-C
-C       Qij               - the symmetry independent components of the octupole moment
-C       XORI,YORI,ZORI    - position of the octupole moment
-C       XTAR,YTAR,ZTAR    - position of the point where electric field is
-C                           to be calculated
-C       
-C     OUTPUT:
-C
-C       EFX,EFY,EFZ       - components of the electric field strength
-C                           vector
-C
-C JK, 2009 July
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "qmmm.h"
-#include "qm3.h"
-#include "iratdef.h"
-#include "maxash.h"
-#include "maxorb.h"
-#include "inforb.h"
-#include "inftap.h"
-#include "infpri.h"
-#include "scbrhf.h"
-#include "maxaqn.h"
-#include "symmet.h"
-#include "orgcom.h"
-#include "infinp.h"
-#include "nuclei.h"
-#include "codata.h"
-C
-      DOUBLE PRECISION QXXX,QXXY,QXXZ,QXYY,QXYZ
-      DOUBLE PRECISION QXZZ,QYYY,QYYZ,QYZZ,QZZZ
-      DOUBLE PRECISION XORI,YORI,ZORI
-      DOUBLE PRECISION XTAR,YTAR,ZTAR
-      DOUBLE PRECISION EFX,EFY,EFZ
-
-      DOUBLE PRECISION QTENS,ELFVEC,CORDO,CORDT
-      DIMENSION QTENS(3,3,3),ELFVEC(3),CORDO(3),CORDT(3)
-
-      CALL QENTER('GET_OCTUPOLE_ELFLD')
-
-      EFX = 0.0D0
-      EFY = 0.0D0
-      EFZ = 0.0D0
-
-      DIST2  = 0.0D0
-      DIST2  = DIST2 + (XTAR - XORI)**2
-      DIST2  = DIST2 + (YTAR - YORI)**2
-      DIST2  = DIST2 + (ZTAR - ZORI)**2
-      DIST   = SQRT(DIST2)
-      DIST9  = DIST**9
-      DISTI9 = 1.0D0/DIST9
-      DIST7  = DIST**7
-      DISTI7 = 1.0D0/DIST7
-      DIST5  = DIST**5
-      DISTI5 = 1.0D0/DIST5
-
-      QTENS(1,1,1) = QXXX
-      QTENS(1,1,2) = QXXY
-      QTENS(1,1,3) = QXXZ
-      QTENS(1,2,1) = QXXY
-      QTENS(1,2,2) = QXYY
-      QTENS(1,2,3) = QXYZ
-      QTENS(1,3,1) = QXXZ
-      QTENS(1,3,2) = QXYZ
-      QTENS(1,3,3) = QXZZ
-      QTENS(2,1,1) = QXXY
-      QTENS(2,1,2) = QXYY
-      QTENS(2,1,3) = QXYZ
-      QTENS(2,2,1) = QXYY
-      QTENS(2,2,2) = QYYY
-      QTENS(2,2,3) = QYYZ
-      QTENS(2,3,1) = QXYZ
-      QTENS(2,3,2) = QYYZ
-      QTENS(2,3,3) = QYZZ
-      QTENS(3,1,1) = QXXZ
-      QTENS(3,1,2) = QXYZ
-      QTENS(3,1,3) = QXZZ
-      QTENS(3,2,1) = QXYZ
-      QTENS(3,2,2) = QYYZ
-      QTENS(3,2,3) = QYZZ
-      QTENS(3,3,1) = QXZZ
-      QTENS(3,3,2) = QYZZ
-      QTENS(3,3,3) = QZZZ
-
-      CORDO(1) = XORI
-      CORDO(2) = YORI
-      CORDO(3) = ZORI
-
-      CORDT(1) = XTAR
-      CORDT(2) = YTAR
-      CORDT(3) = ZTAR
-
-      ELFVEC(1) = 0.0D0
-      ELFVEC(2) = 0.0D0
-      ELFVEC(3) = 0.0D0
-
-      DO 100 I=1,3
-        DO 110 J=1,3
-          DO 120 K=1,3
-            DO 130 L=1,3
-
-              ELEM = 0.0D0
-              ELEM = (105*(CORDT(L) - CORDO(L))*
-     &                    (CORDT(K) - CORDO(K))*
-     &                    (CORDT(J) - CORDO(J))*
-     &                    (CORDT(I) - CORDO(I)))*
-     &                     DISTI9
-              IF (L .EQ. K) THEN
-                ELEM = ELEM - 15.0D0*DISTI7*(CORDT(I) - CORDO(I))*
-     *                                      (CORDT(J) - CORDO(J))
-              ENDIF
-              IF (L .EQ. J) THEN
-                ELEM = ELEM - 15.0D0*DISTI7*(CORDT(I) - CORDO(I))*
-     *                                      (CORDT(K) - CORDO(K))
-              ENDIF
-              IF (K .EQ. J) THEN
-                ELEM = ELEM - 15.0D0*DISTI7*(CORDT(I) - CORDO(I))*
-     *                                      (CORDT(L) - CORDO(L))
-              ENDIF
-              IF (L .EQ. I) THEN
-                ELEM = ELEM - 15.0D0*DISTI7*(CORDT(J) - CORDO(J))*
-     *                                      (CORDT(K) - CORDO(K))
-              ENDIF
-              IF (K .EQ. I) THEN
-                ELEM = ELEM - 15.0D0*DISTI7*(CORDT(J) - CORDO(J))*
-     *                                      (CORDT(L) - CORDO(L))
-              ENDIF
-              IF (J .EQ. I) THEN
-                ELEM = ELEM - 15.0D0*DISTI7*(CORDT(K) - CORDO(K))*
-     *                                      (CORDT(L) - CORDO(L))
-              ENDIF
-         
-              IF ((I .EQ. J) .AND. (K .EQ. L)) THEN
-                ELEM = ELEM + 3.0D0*DISTI5
-              ENDIF
-              IF ((I .EQ. K) .AND. (J .EQ. L)) THEN
-                ELEM = ELEM + 3.0D0*DISTI5
-              ENDIF
-              IF ((I .EQ. L) .AND. (J .EQ. K)) THEN
-                ELEM = ELEM + 3.0D0*DISTI5
-              ENDIF
-              ELEM = ELEM*QTENS(L,K,J)
-
-              ELFVEC(I) = ELFVEC(I) + ELEM
-
- 130        CONTINUE
- 120      CONTINUE
- 110    CONTINUE
-        ELFVEC(I) = ELFVEC(I)/6.0
- 100  CONTINUE
-
-      EFX = ELFVEC(1)
-      EFY = ELFVEC(2)
-      EFZ = ELFVEC(3)
-
-      CALL QEXIT('GET_OCTUPOLE_ELFLD')
-
-      RETURN
-      END
-
-C******************************************************************************
 C  /* Deck MAKE_QMMM_INVERSE_RESPONSE_MATRIX */
       SUBROUTINE MAKE_QMMM_INVERSE_RESPONSE_MATRIX(INVMAT,POLDIM) ! Construct inverse response matrix
 C
@@ -4076,7 +3896,6 @@ C defined parallel calculation types
       ECHTMP = 0.0D0
       EDITMP = 0.0D0
       EQUTMP = 0.0D0
-      EOCTMP = 0.0D0
 
 C     Wake up slaves (Rock and roll all nite)
 
@@ -4875,7 +4694,6 @@ C defined parallel calculation types
       ED0MOM = 0.0D0            ! For interaction with point-charges
       ED1MOM = 0.0D0            ! For interaction with permanent dipoles
       ED2MOM = 0.0D0            ! For interaction with quadrupoles
-      ED3MOM = 0.0D0            ! For interaction with octupoles
       EDMULT = 0.0D0            ! For interaction with permanent multipoles
 
 C     Beginning of parallel section
@@ -4961,11 +4779,8 @@ C     Collect data from all slaves
       CALL MPI_REDUCE(WRK(KREC+4),ED2MOM,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(WRK(KREC+5),ED3MOM,1, 
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
-     &                   IERR)
 
-      EDMULT = ED0MOM + ED1MOM + ED2MOM + ED3MOM
+      EDMULT = ED0MOM + ED1MOM + ED2MOM
 
       CALL QEXIT('MM_POLAR_CONTR_M')
 
@@ -5064,7 +4879,6 @@ C     total solvation energy
       ED0MOM = 0.0D0            ! For interaction with point-charges
       ED1MOM = 0.0D0            ! For interaction with permanent dipoles
       ED2MOM = 0.0D0            ! For interaction with quadrupoles
-      ED3MOM = 0.0D0            ! For interaction with octupoles
 
  20   CONTINUE
 
@@ -5080,7 +4894,6 @@ C     total solvation energy
          ED0MOM = ED0MOM + WRK(KEDALL + 2)
          ED1MOM = ED1MOM + WRK(KEDALL + 3)
          ED2MOM = ED2MOM + WRK(KEDALL + 4)
-         ED3MOM = ED3MOM + WRK(KEDALL + 5)
          GOTO 20
       ENDIF
 
@@ -5102,9 +4915,6 @@ C     total solvation energy
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
       CALL MPI_REDUCE(ED2MOM,MPI_IN_PLACE,1, 
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
-     &                   IERR)
-      CALL MPI_REDUCE(ED3MOM,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 

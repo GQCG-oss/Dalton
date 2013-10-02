@@ -24,69 +24,72 @@ contains
     !> Unit number for DALTON.OUT
     integer, intent(in) :: output
 
-    DECinfo%doDEC = .false.
+    DECinfo%doDEC             = .false.
     ! Max memory measured in GB. By default set to 2 GB
-    DECinfo%memory=2.0E0_realk
-    DECinfo%memory_defined=.false.
-    DECinfo%frozencore=.false.
-    DECinfo%ncalc = 0
+    DECinfo%memory            = 2.0E0_realk
+    DECinfo%memory_defined    = .false.
+    DECinfo%frozencore        = .false.
+    DECinfo%ncalc             = 0
 
     ! -- Type of calculation
-    DECinfo%full_molecular_cc=.false. ! full molecular cc
-    DECinfo%mp2energydebug=.false.
-    DECinfo%simulate_full=.false.
-    DECinfo%simulate_natoms=1
-    DECinfo%SkipReadIn=.false.
-    DECinfo%SinglesPolari=.false.
-    DECinfo%SinglesThr=0.2E0_realk   ! this is completely random, currently under investigation
-    DECinfo%convert64to32=.false.
-    DECinfo%convert32to64=.false.
-    DECinfo%restart = .false.
-    DECinfo%TimeBackup = 300.0E0_realk   ! backup every 5th minute
+    DECinfo%full_molecular_cc = .false. ! full molecular cc
+    DECinfo%simulate_full     = .false.
+    DECinfo%simulate_natoms   = 1
+    DECinfo%SkipReadIn        = .false.
+    DECinfo%SinglesPolari     = .false.
+    DECinfo%SinglesThr        = 0.2E0_realk   ! this is completely random, currently under investigation
+    DECinfo%convert64to32     = .false.
+    DECinfo%convert32to64     = .false.
+    DECinfo%HFrestart         = .false.
+    DECinfo%DECrestart        = .false.
+    DECinfo%TimeBackup        = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals = .false.
-    DECinfo%CheckPairs=.false.
+    DECinfo%CheckPairs        = .false.
     call dec_set_model_names(DECinfo)
 
 
     ! -- Debug modes
-    DECinfo%cc_driver_debug=.false.
-    DECinfo%ccsd_old=.false.
-    DECinfo%manual_batchsizes=.false.
-    DECinfo%ccsdAbatch=0
-    DECinfo%ccsdGbatch=0
-    DECinfo%hack=.false.
-    DECinfo%hack2=.false.
-    DECinfo%mpisplit=10
-    DECinfo%dyn_load=.false.
-    DECinfo%force_scheme=.false.
-    DECinfo%en_mem=0
-    DECinfo%array_test=.false.
-    DECinfo%reorder_test=.false.
-    DECinfo%CCSDno_restart=.false.
-    DECinfo%CCSDnosaferun=.false.
-    DECinfo%solver_par=.false.
-    DECinfo%CCSDpreventcanonical=.false.
-    DECinfo%CCSD_MPICH=.false.
-    DECinfo%CCDhack = .false.
+    DECinfo%cc_driver_debug      = .false.
+    DECinfo%CCDEBUG              = .false.
+    DECinfo%manual_batchsizes    = .false.
+    DECinfo%ccsdAbatch           = 0
+    DECinfo%ccsdGbatch           = 0
+    DECinfo%hack                 = .false.
+    DECinfo%hack2                = .false.
+    DECinfo%mpisplit             = 10
+    DECinfo%dyn_load             = .false.
+    DECinfo%force_scheme         = .false.
+    DECinfo%en_mem               = 0
+    DECinfo%array_test           = .false.
+    DECinfo%reorder_test         = .false.
+    DECinfo%CCSDno_restart       = .false.
+    DECinfo%CCSDnosaferun        = .false.
+    DECinfo%solver_par           = .false.
+    DECinfo%CCSDpreventcanonical = .false.
+    DECinfo%CCSD_MPICH           = .false.
+    DECinfo%spawn_comm_proc      = .false.
+    DECinfo%CCSDmultipliers      = .false.
+    DECinfo%CCDhack              = .false.
+    DECinfo%full_print_frag_energies = .false.
 
     ! -- Output options 
-    DECinfo%output=output
+    DECinfo%output               = output
 
 
     ! -- Orbital
-    DECinfo%mulliken_threshold=0.01
-    DECinfo%simple_mulliken_threshold=.false.
-    DECinfo%approximated_norm_threshold=0.1E0_realk
-    DECinfo%check_lcm_orbitals=.false.
-    DECinfo%use_canonical=.false.
-    DECinfo%user_defined_orbitals=.false.
-    DECinfo%AbsorbHatoms=.true.  ! reassign H atoms to heavy atom neighbour
-    DECinfo%mulliken=.false.
-    DECinfo%Distance=.false.
-    DECinfo%BoughtonPulay=.false.
-    DECinfo%FitOrbitals=.true.
-    DECinfo%simple_orbital_threshold=0.05E0_realk
-    DECinfo%simple_orbital_threshold_set=.false.
+    DECinfo%mulliken_threshold           = 0.01
+    DECinfo%simple_mulliken_threshold    = .false.
+    DECinfo%approximated_norm_threshold  = 0.1E0_realk
+    DECinfo%check_lcm_orbitals           = .false.
+    DECinfo%use_canonical                = .false.
+    DECinfo%user_defined_orbitals        = .false.
+    DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
+    DECinfo%mulliken                     = .false.
+    DECinfo%Distance                     = .false.
+    DECinfo%BoughtonPulay                = .false.
+    DECinfo%FitOrbitals                  = .true.
+    DECinfo%simple_orbital_threshold     = 0.05E0_realk
+    DECinfo%simple_orbital_threshold_set = .false.
 
 
     ! -- Fragment
@@ -101,18 +104,22 @@ contains
     DECinfo%HybridScheme=.false.
     DECinfo%FragmentExpansionSize = 5
     DECinfo%fragadapt=.false.
-    ! for ccsd(t) calculations, option to use MP2 optimized fragments
-    DECinfo%use_mp2_frag=.true.
+    ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
+    DECinfo%fragopt_exp_mp2=.true.  ! Use MP2 fragments for expansion procedure
+    DECinfo%fragopt_red_mp2=.true.  ! Use MP2 fragments for reduction procedure
     DECinfo%OnlyOccPart=.false.
     ! Repeat atomic fragment calcs after fragment optimization
     DECinfo%RepeatAF=.true.
+    ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
+    DECinfo%CorrDensScheme=1
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set=.false.
-    ! Pair reduction distance - default 5 Angstrom.
-    DECinfo%PairReductionDistance = 5.0E0_realk/bohr_to_angstrom
+    ! Pair reduction distance - set high to avoid using in practice right now...
+    DECinfo%PairReductionDistance = 1000000.0E0_realk
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
+    DECinfo%pairFOthr = 0.0_realk
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory=0E0_realk
@@ -120,22 +127,22 @@ contains
 
     ! -- CC solver options
 
-    DECinfo%ccsd_expl=.false.
-    DECinfo%simulate_eri= .false.
-    DECinfo%fock_with_ri= .false.
-    DECinfo%ccMaxIter=100
-    DECinfo%ccMaxDIIS=3
-    DECinfo%ccModel=1 ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
-    DECinfo%F12=.false.
-    DECinfo%F12debug=.false.
-    DECinfo%ccConvergenceThreshold=1e-5
-    DECinfo%CCthrSpecified=.false.
-    DECinfo%use_singles=.false.
-    DECinfo%use_preconditioner=.true.
-    DECinfo%use_preconditioner_in_b=.true.
-    DECinfo%use_crop=.true.
-    DECinfo%array4OnFile=.false.
-    DECinfo%array4OnFile_specified=.false.
+    DECinfo%ccsd_expl               = .false.
+    DECinfo%simulate_eri            = .false.
+    DECinfo%fock_with_ri            = .false.
+    DECinfo%ccMaxIter               = 100
+    DECinfo%ccMaxDIIS               = 3
+    DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
+    DECinfo%F12                     = .false.
+    DECinfo%F12debug                = .false.
+    DECinfo%ccConvergenceThreshold  = 1e-5
+    DECinfo%CCthrSpecified          = .false.
+    DECinfo%use_singles             = .false.
+    DECinfo%use_preconditioner      = .true.
+    DECinfo%use_preconditioner_in_b = .true.
+    DECinfo%use_crop                = .true.
+    DECinfo%array4OnFile            = .false.
+    DECinfo%array4OnFile_specified  = .false.
 
 
     ! First order properties
@@ -260,9 +267,9 @@ contains
           ! ============
 
           ! CC model
-       case('.MP2'); DECinfo%ccModel=1; DECinfo%use_singles=.false.  ! both DEC and full calc
-       case('.CC2'); DECinfo%ccModel=2; DECinfo%use_singles=.true.   ! only for full calc
-       case('.CCSD'); DECinfo%ccModel=3; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.  ! only for full calc
+       case('.MP2'); DECinfo%ccModel=MODEL_MP2; DECinfo%use_singles=.false.  ! both DEC and full calc
+       case('.CC2'); DECinfo%ccModel=MODEL_CC2; DECinfo%use_singles=.true.   ! only for full calc
+       case('.CCSD'); DECinfo%ccModel=MODEL_CCSD; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.  ! only for full calc
 
 
           ! CC SOLVER INFO
@@ -304,7 +311,14 @@ contains
           ! ===============
 
           ! Restart DEC calculation (only for single point calculations, not geometry optimization)
-       case('.RESTART'); DECinfo%restart=.true.           
+       case('.RESTART') 
+          DECinfo%HFrestart=.true.           
+          DECinfo%DECrestart=.true.           
+
+          ! Use HF info generated from previous calculation but run DEC calculation from scratch
+       case('.HFRESTART') 
+          DECinfo%HFrestart=.true.           
+          DECinfo%DECrestart=.false.           
 
           ! Do not absorb H atoms when assigning orbitals
        case('.NOTABSORBH'); DECinfo%AbsorbHatoms=.false.
@@ -316,6 +330,10 @@ contains
        case('.FOT')  
           read(input,*) FOTlevel
           call set_input_for_fot_level(FOTlevel)
+
+          !> Correlation density for fragment-adapted orbitals, see DECsettings type definition.
+       case('.CORRDENS')  
+          read(input,*) DECinfo%CorrDensScheme
 
           ! Use frozen core approximation
        case('.FROZENCORE') 
@@ -383,21 +401,26 @@ contains
 #endif
 
 #ifdef MOD_UNRELEASED
-       case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
-       case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
+       case('.CCDEBUG'); DECinfo%CCDEBUG=.true.
+       case('.CCSOLVER_LOCAL'); DECinfo%solver_par=.false.
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
        case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.
+       case('.SPAWN_COMM_PROC'); DECinfo%spawn_comm_proc=.true.
+       case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
-       case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=3; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
+       case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=MODEL_CCSD; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
+       case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
-       case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
-       case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
-       case('.NOTUSEMP2FRAG') 
-          DECinfo%use_mp2_frag=.false.
+       case('.CCSD(T)'); DECinfo%ccModel=MODEL_CCSDpT; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
+       case('.RPA'); DECinfo%ccModel=MODEL_RPA; DECinfo%use_singles=.false.; DECinfo%CCDEBUG=.true.
+       case('.NOTMP2EXP') 
+          DECinfo%fragopt_exp_mp2=.false.
+       case('.NOTMP2RED') 
+          DECinfo%fragopt_red_mp2=.false.
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.F12'); DECinfo%F12=.true.
        case('.F12DEBUG'); DECinfo%F12DEBUG=.true.
@@ -425,6 +448,7 @@ contains
           read(input,*) DECinfo%PairReductionDistance 
           DECinfo%PairReductionDistance = DECinfo%PairReductionDistance/bohr_to_angstrom
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
+       case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
@@ -433,7 +457,6 @@ contains
        case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.
        case('.SIMPLEMULLIKENTHRESH'); DECinfo%simple_mulliken_threshold=.true.
        case('.NORMTHRESH'); read(input,*) DECinfo%approximated_norm_threshold
-       case('.MP2DEBUG'); DECinfo%mp2energydebug=.true.
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
        case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
        case('.SKIPREADIN'); DECinfo%SkipReadIn=.true.
@@ -495,7 +518,7 @@ contains
     ArraysOnFile: if(DECinfo%array4OnFile) then
 
        ! Only for MP2 so far
-       if(DECinfo%ccModel /= 1) then
+       if(DECinfo%ccModel /= MODEL_MP2) then
           call lsquit('Storing arrays on file only implemented for MP2. &
                & Suggestion: Remove .array4OnFile keyword!', DECinfo%output)
        end if
@@ -509,7 +532,7 @@ contains
     end if ArraysOnFile
 
 
-    BeyondMp2: if(DECinfo%ccModel /= 1) then
+    BeyondMp2: if(DECinfo%ccModel /= MODEL_MP2) then
 
 
        if(DECinfo%MP2density) then
@@ -542,7 +565,7 @@ contains
     end if SimulateFullCalc
 
 
-    if(DECinfo%ccmodel==4 .and. DECinfo%restart .and. (.not. DECinfo%use_mp2_frag)) then
+    if(DECinfo%ccmodel==MODEL_CCSDpT .and. DECinfo%DECrestart) then
        call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
     end if
 
@@ -558,14 +581,6 @@ contains
        end if
     end if
 
-    ! For special case of full MP2, we simply only accept canonical orbitals!
-    if(DECinfo%user_defined_orbitals .and. DECinfo%ccmodel==1 .and. DECinfo%full_molecular_cc) then
-       write(DECinfo%output,*) 'WARNING! You have requested a full molecular MP2 calculation using'
-       write(DECinfo%output,*) 'local orbitals. This option is currently not available so I will'
-       write(DECinfo%output,*) 'use canonical orbitals instead!'
-       DECinfo%use_canonical = .true.
-    end if
-
 
     ! Set CC residual threshold to be 0.01*FOT
     ! - unless it was specified explicitly in the input.
@@ -574,7 +589,7 @@ contains
     end if
 
     ! Only full molecular for RPA at this stage
-    if(DECinfo%ccmodel==5 .and. .not. DECinfo%full_molecular_cc) then
+    if(DECinfo%ccmodel==MODEL_RPA .and. .not. DECinfo%full_molecular_cc) then
        call lsquit('RPA only implemented for full molecule! Use **CC rather than **DEC.',-1)
     end if
 
@@ -588,17 +603,21 @@ contains
        call lsquit('Full singles polarization has been temporarily disabled!',-1)
     end if
 
+    if(DECinfo%full_print_frag_energies) then
+       if(DECinfo%ccmodel/=MODEL_MP2 .and. DECinfo%ccmodel/=MODEL_CCSD) then
+          print *, 'MODEL: ', DECinfo%cc_models(DECinfo%ccmodel)
+          call lsquit('Printing of fragment energies not implemented for this CC model!',-1)
+       end if
+    end if
 
-    ! FOs do not work with reduced pairs, set reduction distance to 1000000 to
-    ! avoid it from being used in practice
-    ! Also use purification of FOs.
+
+    ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
-       DECinfo%PairReductionDistance = 1.0e6_realk
        DECinfo%purifyMOs=.true.
     end if
 
 #ifdef RELEASE
-if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=1) then
+if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=MODEL_MP2) then
    call lsquit('Error in input: DEC scheme only implemented for MP2 model!',-1)
 end if
 #endif
@@ -625,7 +644,8 @@ end if
     write(lupri,*) 'cc_models ', DECitem%cc_models
     write(lupri,*) 'ccModel ', DECitem%ccModel
     write(lupri,*) 'use_singles ', DECitem%use_singles
-    write(lupri,*) 'restart ', DECitem%restart
+    write(lupri,*) 'HFrestart ', DECitem%HFrestart
+    write(lupri,*) 'DECrestart ', DECitem%HFrestart
     write(lupri,*) 'TimeBackup ', DECitem%TimeBackup
     write(lupri,*) 'read_dec_orbitals ', DECitem%read_dec_orbitals
     write(lupri,*) 'memory ', DECitem%memory
@@ -641,7 +661,7 @@ end if
     write(lupri,*) 'solver_par ', DECitem%solver_par
     write(lupri,*) 'force_scheme ', DECitem%force_scheme
     write(lupri,*) 'dyn_load ', DECitem%dyn_load
-    write(lupri,*) 'ccsd_old ', DECitem%ccsd_old
+    write(lupri,*) 'CCDEBUG ', DECitem%CCDEBUG
     write(lupri,*) 'CCSDno_restart ', DECitem%CCSDno_restart
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
@@ -665,7 +685,6 @@ end if
     write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,DECitem%ccsdGbatch
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
-    write(lupri,*) 'mp2energydebug ', DECitem%mp2energydebug
     write(lupri,*) 'SkipReadIn ', DECitem%SkipReadIn
     write(lupri,*) 'array_test ', DECitem%array_test
     write(lupri,*) 'reorder_test ', DECitem%reorder_test
@@ -690,12 +709,14 @@ end if
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'HybridScheme ', DECitem%HybridScheme
     write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
-    write(lupri,*) 'use_mp2_frag ', DECitem%use_mp2_frag
+    write(lupri,*) 'fragopt_exp_mp2 ', DECitem%fragopt_exp_mp2
+    write(lupri,*) 'fragopt_red_mp2 ', DECitem%fragopt_red_mp2
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
+    write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'MP2density ', DECitem%MP2density
     write(lupri,*) 'gradient ', DECitem%gradient

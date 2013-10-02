@@ -4,7 +4,7 @@
 !> \author Thomas Kjaergaard and Kasper Kristensen
 !> \date 2010-03
 module response_wrapper_module
-
+#ifdef VAR_RSP
   use precision
   use memory_handling, only: mem_alloc, mem_dealloc
   use files, only: lsopen, lsclose
@@ -4895,5 +4895,11 @@ subroutine write_transition_density_matrix(nexci_max,lupri)
      CALL LSCLOSE(luExciTransDensMat,'KEEP')
   enddo
 end subroutine write_transition_density_matrix
+#else
+CONTAINS
+subroutine response_wrapper_dummy_routine()
+implicit none
 
+end subroutine response_wrapper_dummy_routine
+#endif
 end module response_wrapper_module

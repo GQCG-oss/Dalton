@@ -33,7 +33,7 @@ option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable PE library"                                ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
@@ -43,6 +43,7 @@ option(ENABLE_INTEREST       "Enable interest integrals"                        
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
+option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
@@ -80,6 +81,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
 include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/include
     ${CMAKE_SOURCE_DIR}/DALTON/dft
+    ${CMAKE_SOURCE_DIR}/DALTON/abacus
     ${CMAKE_SOURCE_DIR}/LSDALTON/dft
     ${CMAKE_Fortran_MODULE_DIRECTORY}
     )
