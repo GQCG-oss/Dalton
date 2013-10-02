@@ -56,6 +56,9 @@ cat > walk_solvmag.dal <<'%EOF%'
  10
 **WAVE FUNCTIONS
 .HF
+*SCF INP
+.THRESH
+1.0d-6
 *SOLVENT
 .DIELECTRIC
  32.63
@@ -192,7 +195,7 @@ CTRL[6]=6
 ERROR[6]="GEOMETRY STEP NOT CORRECT"
 
 # Second energy
-CRIT1=`$GREP "Final * HF energy\: * \-139\.089307350[1-3][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-139\.0893073(49|50)..." $log | wc -l`
 TEST[7]=`expr	$CRIT1`
 CTRL[7]=1
 ERROR[7]="SECOND ENERGY NOT CORRECT"
@@ -215,7 +218,7 @@ CRIT2=`$GREP "Diamagnetic contribution\: * \-12\.4489 * \-982\.350. * \-59\.1585
 CRIT3=`$GREP "Paramagnetic contribution\: * 8\.4513 * 666\.892. * 40\.1612" $log | wc -l`
 CRIT4=`$GREP "Parallel component\: * \-5\.1168 * \-403\.766. * \-24\.3154" $log | wc -l`
 CRIT5=`$GREP "Perpendicular component\: * \-3\.4381 * \-271\.303. * \-16\.3383" $log | wc -l`
-CRIT6=`$GREP "Anisotropy\: * \-1\.6786 * \-132\.4627 * \-7\.9771" $log | wc -l`
+CRIT6=`$GREP "Anisotropy\: * \-1\.6786 * \-132\.462. * \-7\.9771" $log | wc -l`
 CRIT7=`$GREP "Magnetizability is cylindrical\." $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
@@ -223,9 +226,9 @@ CTRL[9]=7
 ERROR[9]="MAGNETIZABILITIES NOT CORRECT"
 
 # Total magnetizability tensor
-CRIT1=`$GREP "Bx * \-3\.438124...... * (\-0|\-|0| )\.000000000... * (0| )\.0000001....." $log | wc -l`
-CRIT2=`$GREP "By * (\-0|\-|0| )\.000000000... * \-3\.438124...... * (\-0|\-|0| )\.000000000..." $log | wc -l`
-CRIT3=`$GREP "Bz * (0| )\.0000001..... * (\-0|\-|0| )\.000000000... * \-5\.116772......" $log | wc -l`
+CRIT1=`$GREP "Bx * -3.43812....... *  0.00000....... *  0.00000......." $log | wc -l`
+CRIT2=`$GREP "By *  0.00000....... * -3.43812....... *  0.00000......." $log | wc -l`
+CRIT3=`$GREP "Bz *  0.00000....... *  0.00000....... * -5.11677......." $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[10]=3
 ERROR[10]="TOTAL MAGNETIZABILITIES NOT CORRECT"
@@ -239,20 +242,20 @@ CTRL[11]=3
 ERROR[11]="DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Paramagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * 11\.6632(1|2)....... * \-*0*\.000000000... * (0| )\.0000010....." $log | wc -l`
-CRIT2=`$GREP "By * (\-0|\-|0| )\.000000000... * 11\.6632(1|2)....... * (\-0|\-|0| )\.000000000..." $log | wc -l`
-CRIT3=`$GREP "Bz * (0| )\.0000010..... * (\-0|\-|0| )\.000000000... * 2\.027356......" $log | wc -l`
+CRIT1=`$GREP "Bx * 11\.66322....... * \-*0*\.00000....... * 0*\.00000......." $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.00000....... * 11\.66322....... * \-*0*\.00000......." $log | wc -l`
+CRIT3=`$GREP "Bz * 0*\.00000....... * \-*0*\.00000....... * 2\.02736......." $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[12]=3
 ERROR[12]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Molecular g-tensor
-CRIT1=`$GREP "Isotropic g\-tensor * \: * (0| )\.055559.." $log | wc -l`
-CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.7492828." $log | wc -l`
+CRIT1=`$GREP "Isotropic g\-tensor * \: * (0| )\.05555..." $log | wc -l`
+CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.749282.." $log | wc -l`
 CRIT3=`$GREP "Electronic contribution * \: * (\-0|\-)\.689989.." $log | wc -l`
-CRIT4=`$GREP "Parallel component\: * (0| )\.278411.." $log | wc -l`
-CRIT5=`$GREP "Perpendicular component\: * (\-0|\-)\.055866(5|6|7)." $log | wc -l`
-CRIT6=`$GREP "Anisotropy\: * (0| )\.334277.." $log | wc -l`
+CRIT4=`$GREP "Parallel component\: * (0| )\.278410.." $log | wc -l`
+CRIT5=`$GREP "Perpendicular component\: * (\-0|\-)\.055866.." $log | wc -l`
+CRIT6=`$GREP "Anisotropy\: * (0| )\.334276.." $log | wc -l`
 CRIT7=`$GREP "Molecular rotational g\-tensor is cylindrical\." $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
@@ -260,24 +263,24 @@ CTRL[13]=7
 ERROR[13]="MOLECULAR G-TENSOR NOT CORRECT"
 
 # Shielding tensor
-CRIT1=`$GREP "C * x * 95\.6849.... * (\-0|\-|0| )\.0000000. * (\-0|\-)\.00001..." $log | wc -l`
-CRIT2=`$GREP "C * y * (\-0|\-|0| )\.0000000. * 95\.6849.... * (\-0|\-|0| )\.0000000." $log | wc -l`
-CRIT3=`$GREP "C * z * (\-0|\-)\.00001... * (\-0|\-|0| )\.0000000. * 191\.107(3|4)...." $log | wc -l`
-CRIT4=`$GREP "F * x * 515\.1749.... * (\-0|\-|0| )\.0000000. * (0| )\.00000(7|8).." $log | wc -l`
-CRIT5=`$GREP "F * y * (\-0|\-|0| )\.0000000. * 515\.1749.... * (\-0|\-|0| )\.0000000." $log | wc -l`
-CRIT6=`$GREP "F * z * (0| )\.00000(7|8).. * (\-0|\-|0| )\.0000000. * 439\.186(2|3)...." $log | wc -l`
-CRIT7=`$GREP "H * x * 28\.2958.... * (\-0|\-|0| )\.0000000. * \-4\.6769...." $log | wc -l`
-CRIT8=`$GREP "H * y * (\-0|\-|0| )\.0000000. * 25\.2026.... * (\-0|\-|0| )\.0000000." $log | wc -l`
-CRIT9=`$GREP "H * z * \-1\.2223.... * (\-0|\-|0| )\.0000000. * 31\.0365...." $log | wc -l`
-CRIT10=`$GREP "H * x * 25\.9759.... * 1\.339(3|4).... * 2\.3384...." $log | wc -l`
-CRIT11=`$GREP "H * y * 1\.339(3|4).... * 27\.5225.... * 4\.0503...." $log | wc -l`
-CRIT12=`$GREP "H * z * (0| )\.6111.... * 1\.058(5|6).... * 31\.0365...." $log | wc -l`
-CRIT13=`$GREP "H * x * 25\.9759.... * \-1\.339(3|4).... * 2\.3384...." $log | wc -l`
-CRIT14=`$GREP "H * y * \-1\.339(3|4).... * 27\.5225.... * \-4\.0503...." $log | wc -l`
-CRIT15=`$GREP "H * z * (0| )\.6111.... * \-1\.0585.... * 31\.0365...." $log | wc -l`
-CRIT16=`$GREP "cav * x * 48\.7349.... * (\-0|\-|0| )\.0000000. * (\-0|\-)\.000003.." $log | wc -l`
-CRIT17=`$GREP "cav * y * (\-0|\-|0| )\.0000000. * 48\.7349.... * (\-0|\-|0| )\.0000000." $log | wc -l`
-CRIT18=`$GREP "cav * z * (\-0|\-)\.000003.. * (\-0|\-|0| )\.0000000. * 83\.375(1|2)...." $log | wc -l`
+ CRIT1=`$GREP   "C * x * 95\.685..... * \-*0*\.000..... * \-*0*\.000....." $log | wc -l`
+ CRIT2=`$GREP   "C * y * \-*0*\.000..... * 95\.685..... * \-*0*\.000....." $log | wc -l`
+ CRIT3=`$GREP   "C * z * \-*0*\.000..... * \-*0*\.000..... * 191\.107....." $log | wc -l`
+ CRIT4=`$GREP   "F * x * 515\.174..... * \-*0*\.000..... * \-*0*\.000....." $log | wc -l`
+ CRIT5=`$GREP   "F * y * \-*0*\.000..... * 515\.174..... * \-*0*\.000....." $log | wc -l`
+ CRIT6=`$GREP   "F * z * \-*0*\.000..... * \-*0*\.000..... * 439\.186....." $log | wc -l`
+ CRIT7=`$GREP   "H * x * 28\.295..... * \-*0*\.000..... * \-4\.676....." $log | wc -l`
+ CRIT8=`$GREP   "H * y * \-*0*\.000..... * 25\.202..... * \-*0*\.000....." $log | wc -l`
+ CRIT9=`$GREP   "H * z * \-1\.222..... * \-*0*\.000..... * 31\.036....." $log | wc -l`
+CRIT10=`$GREP   "H * x * 25\.975..... * 1\.339..... * 2\.338....." $log | wc -l`
+CRIT11=`$GREP   "H * y * 1\.339..... * 27\.522..... * 4\.050....." $log | wc -l`
+CRIT12=`$GREP   "H * z *  0*\.611..... * 1\.058..... * 31\.036....." $log | wc -l`
+CRIT13=`$GREP   "H * x * 25\.975..... * \-1\.339..... * 2\.338....." $log | wc -l`
+CRIT14=`$GREP   "H * y * \-1\.339..... * 27\.522..... * \-4\.050....." $log | wc -l`
+CRIT15=`$GREP   "H * z *  0*\.611..... * \-1\.058..... * 31\.036....." $log | wc -l`
+CRIT16=`$GREP "cav * x * 48\.735..... * \-*0*\.000..... * \-*0*\.000....." $log | wc -l`
+CRIT17=`$GREP "cav * y * \-*0*\.000..... * 48\.735..... * \-*0*\.000....." $log | wc -l`
+CRIT18=`$GREP "cav * z * \-*0*\.000..... * \-*0*\.000..... * 83\.375....." $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18`
@@ -303,7 +306,7 @@ ERROR[15]="CHEMICAL SHIELDINGS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

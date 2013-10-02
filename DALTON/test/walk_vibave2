@@ -204,7 +204,7 @@ CTRL[13]=1
 ERROR[13]="DIPOLE MOMENT AT EFFECTIVE GEOMETRY NOT CORRECT"
 
 # Energy at first displacement
-CRIT1=`$GREP "Final * HF energy\: * \-100\.05480515574[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-100\.0548051557.." $log | wc -l`
 TEST[14]=`expr	$CRIT1`
 CTRL[14]=1
 ERROR[14]="ENERGY AT FIRST DISPLACEMENT NOT CORRECT"
@@ -264,7 +264,7 @@ ERROR[22]="FINAL ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

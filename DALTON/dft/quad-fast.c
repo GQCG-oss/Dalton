@@ -2,12 +2,12 @@
 
 
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -726,7 +726,7 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
                             symY,symZ, spinY,spinZ); 
 
     if(!msg_printed) {
-        fort_print("DFT-QR uses %s matrix multipication code.\n",
+        fort_print("DFT-QR uses %s matrix multiplication code.\n",
                    mm_code_version);
         msg_printed = 1;
     }
@@ -748,10 +748,12 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
                 &inforb_.norbt, &inforb_.norbt);
     }
     quadfast_data_free(data);
-    times(&endtm);
-    utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("      Electrons: %15.7f. Quadratic response time: %10.2f s\n", 
-               electrons, utm/(double)sysconf(_SC_CLK_TCK));
+    if (*iprint>0) {
+      times(&endtm);
+      utm = endtm.tms_utime-starttm.tms_utime;
+      fort_print("      Electrons: %15.7f. Quadratic response time: %10.2f s\n", 
+                 electrons, utm/(double)sysconf(_SC_CLK_TCK));
+    }
 }
 
 #ifdef FAST_TEST

@@ -1,4 +1,17 @@
-# The script add_lsdalton_test() is defined in TestsCommon.cmake
+macro(add_lsdalton_test _name _labels)
+    add_test(${_name} ${CMAKE_SOURCE_DIR}/LSDALTON/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton ${_name})
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
+macro(add_lslib_test _name _labels)
+    add_test(${_name} ${CMAKE_SOURCE_DIR}/LSDALTON/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton -param "-lslib_test" ${_name})
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
 # ALL tests here should contain the label "linsca"
 # (label "lsdalton" will be matched by "ctest -L dalton" and should
 #  therefore not be used.)

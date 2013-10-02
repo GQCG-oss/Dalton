@@ -2520,8 +2520,6 @@ C
                   FCOORD2(ICNT,3) = FCOORD(ICRX+2)
 
                   ICRX = ICRX + 3
-                  ICRY = ICRY + 3
-                  ICRZ = ICRZ + 3
                   ICNT = ICNT + 1
                END IF
             ENDDO ! ISYMOP  

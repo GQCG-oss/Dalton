@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -176,6 +176,11 @@ C                 '.PRINT '
     2          CONTINUE
 C                 'CONTINUUM': generate continuum functions of Kaufmann
 C                 Sonia, 2012
+                  IF (LCMMAX .GT. -1) THEN
+                     WRITE (LUPRI,'(/A/)')
+     &          ' Input error: .CONTINUUM and .CM FUN not both allowed.'
+                     CALL QUIT('.CONTIN and .CM FUN not both allowed.')
+                  END IF
                   READ (LUCMD,*,IOSTAT=IOS) LCMMAX, CMSTR, CMEND
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .CONTINUUM')
@@ -208,6 +213,11 @@ C                 '.SYMTHR'
                GO TO 100
 C              '.CM FUN'
     7          CONTINUE
+                  IF (LCMMAX .GT. -1) THEN
+                     WRITE (LUPRI,'(/A/)')
+     &          ' Input error: .CONTINUUM and .CM FUN not both allowed.'
+                     CALL QUIT('.CONTIN and .CM FUN not both allowed.')
+                  END IF
                   READ (LUCMD,*,IOSTAT=IOS) LCMMAX, CMSTR, CMEND
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .CM FUN')
@@ -494,7 +504,7 @@ C           ... must close LUCMD again before RETURN, when opened here
          IF (IPREAD .GT.  0) THEN
            CALL TITLER(
      &   'Output of molecule and basis set information','*',115)
-         ELSE
+         ELSE IF (IPREAD .GT. -999) THEN
            CALL TITLER(
      &   'Output of molecule and basis set info suppressed','*',118)
          END IF
@@ -1103,6 +1113,7 @@ C...
 #include "qm3.h"
 #include "infpar.h"
 C
+      LCMMAX_save = LCMMAX
 C     MBSIP = identifier for Previous basis-set identifier MBSI (WK/UniKA/04-11-2002).
       MBSIP     = 0
 C
@@ -1813,6 +1824,7 @@ C
 C
         END IF
       END IF
+      LCMMAX = LCMMAX_save
       RETURN
 C
 C     Error messages:
@@ -1883,12 +1895,12 @@ C
       NQ = NINT(Q)
 C
       IF (GAUNUC.AND.(NQ.GT.0)) THEN
-         IF(Q_EXPONENT.LE.D0) THEN
+         IF (Q_EXPONENT.LE.D0) THEN
             CALL NUCSIZ(NQ,GEXP)
          ELSE
             GEXP = Q_EXPONENT
          ENDIF
-         IF (IPREAD.GE.0) WRITE(LUPRI,'(2X,A2,A,1P,D15.5/)') ASYMB(NQ),
+         IF (IPREAD.GT.0) WRITE(LUPRI,'(2X,A2,A,1P,D15.5/)') ASYMB(NQ),
      &   '  : Exponent for nuclear gaussian charge distribution : ',GEXP
       ELSE
          GEXP = D0
@@ -1970,6 +1982,12 @@ C
      &     ' ERROR: Unable to read Cartesian coordinates of atom no.',
      &     NCTOT,' from line',NMLINE,' in the MOLECULE input file:'
         WRITE(LUPRI,'(A)') MLINE(NMLINE)
+        IF (LUERR .NE. LUPRI) THEN
+           WRITE(LUERR,'(/A,I5/A,I5,A)')
+     &     ' ERROR: Unable to read Cartesian coordinates of atom no.',
+     &     NCTOT,' from line',NMLINE,' in the MOLECULE input file:'
+           WRITE(LUERR,'(A)') MLINE(NMLINE)
+        END IF
         CALL QUIT('ERROR reading atomic coordinates in MOLECULE input')
 C
   104   CONTINUE
@@ -2081,7 +2099,7 @@ C
      &    ' Current limit:',MXCENT
         CALL QUIT('*** ERROR *** MXCENT exceeded in CNTINP')
  5010 CONTINUE
-        WRITE (LUPRI,'(A,E12.6,A/A/A,E12.6)')
+        WRITE (LUPRI,'(A,1P,E12.6,A/A/A,E12.6)')
      &    ' Atomic coordinate ',CORD(J,NCTOT),
      &    ' too large in CNTINP.',
      &    ' Note: Program is unstable for large coordinates.',
@@ -2570,7 +2588,7 @@ C     ******************************************
 C     ***** Printing of atomic coordinates *****
 C     ******************************************
 C
-      CALL PRICAR(WORK,LWORK)
+      IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
 C
  1010 FORMAT(I14,' large AO-blocks of ',A1,' type')
  1020 FORMAT(I14,' small AO-blocks of ',A1,' type')
@@ -2806,6 +2824,10 @@ C
             IF (IOS.NE.0) THEN
                WRITE(LUPRI,*) 'Error in reading .mol input, line',NMLINE
                WRITE(LUPRI,*) 'Read MLINE(NMLINE)=',MLINE(NMLINE)
+               IF (LUERR .NE. LUPRI) THEN
+               WRITE(LUERR,*) 'Error in reading .mol input, line',NMLINE
+               WRITE(LUERR,*) 'Read MLINE(NMLINE)=',MLINE(NMLINE)
+               END IF
                CALL QUIT('Error in reading BN,A,I4,2I5 ... ')
             ENDIF
 
@@ -4177,7 +4199,7 @@ C       Output for multiple basis sets. Determine total numbers of orbital-basis
 C       (MBAS1) and auxiliary-basis (MBAS2) functions (WK/UniKA/04-11-2002).
         COMP(1) = 'M'
         COMP(2) = 'A'
-        IF (IPREAD.GE.0) THEN
+        IF (IPREAD.GT.0) THEN
            WRITE (LUPRI,'(/A,8I5)')
      *          '  Number of main orbitals in each symmetry:       ',
      &          (NCOS(I,1),I=1,MAXREP+1)
@@ -4566,7 +4588,8 @@ C
       IPTEST = MIN(NUCDEP/13,2)
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
-      IF ( (IPREAD .GT. IPTEST) .OR. QMMM .OR. POLEMB )  THEN
+      IF (QMMM .OR. POLEMB) IPTEST = 0
+      IF ( IPREAD .GT. IPTEST )  THEN
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
       END IF
@@ -4593,7 +4616,7 @@ C
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
             IPCMN = IPCMN + 1
-            IF ( (IPREAD .GT. IPTEST) .OR. QMMM .OR. POLEMB ) THEN
+            IF ( IPREAD .GT. IPTEST ) THEN
                WRITE (LUPRI,'(2X,A,3X," : ",3(I5,2X,A,F15.10))')
      &              NAME, ICRX  , CHRXYZ(-1), CORD(1,ICENT),
      &                    ICRX+1, CHRXYZ(-2), CORD(2,ICENT),
@@ -4611,7 +4634,7 @@ C
             DO 200 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                   IPCMN = IPCMN + 1
-                  JATOM  = JATOM + 1
+                  JATOM = JATOM + 1
                   WORK(KMASS + NCENTS) =
      &                 DISOTP(IZATOM(ICENT),ISOTOP(ICENT),'MASS')
                   NCENTS = NCENTS + 1
@@ -4621,7 +4644,7 @@ C
      &                        *CORD(2,ICENT)
                   WORK(ICRX+2) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
      &                        *CORD(3,ICENT)
-                  IF ( (IPREAD .GT. IPTEST) .OR. QMMM )
+                  IF ( IPREAD .GT. IPTEST )
      &            WRITE (LUPRI,'(2X,A,"/",I2," : ",3(I5,2X,A,F15.10))')
      &               NAME,JATOM,ICRX,CHRXYZ(-1),WORK(ICRX),
      &                        ICRX+1,CHRXYZ(-2),WORK(ICRX+1),

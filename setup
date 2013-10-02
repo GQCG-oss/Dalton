@@ -69,6 +69,11 @@ def parse_input():
             action='store_true',
             default=False,
             help='show cmake command and exit [default: %(default)s]')
+    group.add_argument('--cmake',
+            action='store',
+            default='cmake',
+            help='set the cmake command [default: cmake; e.g. --cmake cmake28]',
+            metavar='STRING')
     
     group = parser.add_argument_group('parallelization')
     group.add_argument('--mpi',
@@ -189,8 +194,8 @@ def parse_input():
     return parser.parse_args()
 
 
-def check_cmake_exists():
-    p = subprocess.Popen('cmake --version',
+def check_cmake_exists(cmake_command):
+    p = subprocess.Popen('%s --version' % cmake_command,
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
@@ -223,10 +228,10 @@ def gen_cmake_command(args):
         command += ' CXX=%s' % args.cxx
 
     if sys.platform != "win32":
-        command += ' cmake'
+        command += ' %s' % args.cmake
     else:
         # fix for windows
-        command = ' cmake ' + command
+        command = ' %s ' % args.cmake + command
 
     command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
@@ -239,19 +244,6 @@ def gen_cmake_command(args):
     command += ' -DENABLE_XCFUN=%s'          % translate_cmake(args.xcfun)
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
-
-    if args.mkl != 'none':
-        if args.mkl == None:
-            print('you have to choose between --mkl=[{sequential,parallel,cluster}]')
-            sys.exit(1)
-        command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
-        command += ' -DENABLE_AUTO_BLAS=OFF'
-        command += ' -DENABLE_AUTO_LAPACK=OFF'
-
-    if args.cray:
-        command += ' -DENABLE_CRAY_WRAPPERS=ON'
-        command += ' -DENABLE_AUTO_BLAS=OFF'
-        command += ' -DENABLE_AUTO_LAPACK=OFF'
 
     if args.blas == 'builtin':
         command += ' -DENABLE_BUILTIN_BLAS=ON'
@@ -281,6 +273,19 @@ def gen_cmake_command(args):
             print('--lapack=%s does not exist' % args.lapack)
             sys.exit(1)
         command += ' -DEXPLICIT_LAPACK_LIB=%s' % args.lapack
+        command += ' -DENABLE_AUTO_LAPACK=OFF'
+
+    if args.cray:
+        command += ' -DENABLE_CRAY_WRAPPERS=ON'
+        command += ' -DENABLE_AUTO_BLAS=OFF'
+        command += ' -DENABLE_AUTO_LAPACK=OFF'
+
+    if args.mkl != 'none':
+        if args.mkl == None:
+            print('you have to choose between --mkl=[{sequential,parallel,cluster}]')
+            sys.exit(1)
+        command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
+        command += ' -DENABLE_AUTO_BLAS=OFF'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
 
     if args.explicit_libs:
@@ -366,7 +371,7 @@ def run_cmake(command, build_path):
 
 def main(argv):
     args = parse_input()
-    check_cmake_exists()
+    check_cmake_exists(args.cmake)
     build_path = args.builddir
     if not args.show:
         setup_build_path(build_path)

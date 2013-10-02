@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,195 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:59:00 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 19:10:39 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_r12_prop_n2
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON                                          
+.RUN WAVE FUNCTION                                
+**INTEGRAL                                        
+.THETA                                            
+.SECMOM                                           
+**WAVE FUNCTION                                   
+.CC                                               
+*SCF INP                                          
+.THRESH                                           
+ 1.0D-10                                          
+*CC INP                                           
+.MP2                                              
+.PRINT                                            
+ 3                                                
+.THRENR                                           
+1.0D-10                                           
+.FROIMP                                           
+1 0 0 0 1 0 0 0                                   
+0 0 0 0 0 0 0 0                                   
+.THRLEQ                                           
+1.0D-07                                           
+*CCFOP                                            
+.QUADRU                                           
+.SECMOM                                           
+*R12                                              
+.NO 2                                             
+.R12XXL                                           
+.R12PRP                                           
+.NO RXR                                           
+*ORBITALS                                         
+.MOSTART                                          
+ H1DIAG                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+Ahlrichs-VTZ Ahlrichs-VTZ                                                      
+MP2-R12 first order property calculation on N2                                 
+small basis                                                                    
+    2    3  X  Y  Z   1.00D-15                                                 
+ 1      7.    1                                                                
+N     0.0000000000000000  0.0000000000000000 1.03715750000000000       *       
+ 2      7.    1                                                                
+N     0.0000000000000000  0.0000000000000000 1.03715750000000000       *       
 
 
        *******************************************************************
@@ -105,7 +217,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -133,16 +245,16 @@
   Nuclear charge:   7.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    1
-  Used basis set file for basis set for elements with Z =   7 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Ahlrichs-VTZ"
+  Basis set file used for this atomic type with Z =   7 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/Ahlrichs-VTZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   7.00000
   Number of symmetry independent centers:    1
   This is an auxiliary basis for R12, MBSI:    2
-  Used basis set file for basis set for elements with Z =   7 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Ahlrichs-VTZ"
+  Basis set file used for this atomic type with Z =   7 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/Ahlrichs-VTZ"
 
 
                          SYMGRP: Point group information
@@ -228,7 +340,7 @@ Point group: D2h
   total:           4   14.0000   112    60
   ------------------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-15
 
 
   Cartesian Coordinates (a.u.)
@@ -288,8 +400,14 @@ Point group: D2h
  N   _2:    1.097680    0.000000    1.097680    0.000000
 
 
-  Max interatomic separation is    1.0977 Angstrom (    2.0743 Bohr)
+  Max    interatomic separation is    1.0977 Angstrom (    2.0743 Bohr)
   between atoms    2 and    1, "N   _2" and "N   _1".
+
+  Min YX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    0    2
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -326,7 +444,7 @@ Point group: D2h
                B =        59906.25 MHz     (    1.998257 cm-1)
 
 
-@  Nuclear repulsion energy :   23.622256021867
+@  Nuclear repulsion energy :   23.622256021867 Hartree
 
 
   Symmetry Orbitals
@@ -467,13 +585,13 @@ Point group: D2h
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:       19857 (  1.2% )
  Megabytes written:                              0.234
 
- >>>> Total CPU  time used in HERMIT:   0.07 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total wall time used in HERMIT:   0.06 seconds
 
 
                         .----------------------------------.
@@ -490,16 +608,16 @@ Point group: D2h
  >>>> Detected R12 input:
  Direct Fock matrix formation switched on!
  Scale factors for CC excitations manifolds:
- for bra states (projection manifold):  1.00000000000000000     
- for ket states (operator manifold)  :  1.00000000000000000     
+ for bra states (projection manifold):   1.0000000000000000     
+ for ket states (operator manifold)  :   1.0000000000000000     
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 19:10:39 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:59:00 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      MP2-R12 first order property calculation on N2                          
@@ -508,32 +626,29 @@ Point group: D2h
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
-
-               Fock matrices are calculated directly
-               without use of integrals on disk.
+ Fock matrices are calculated directly without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART H1DIAG" input option.
+ ".MOSTART H1DIAG" input option
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         14
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          14
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                8
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 8
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -546,22 +661,12 @@ Point group: D2h
 
       -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               7 |    2    1    1    0    2    1    0    0
+@    Occupied SCF orbitals               7 |    2    1    1    0    2    1    0    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-10
-
-
- Changes of defaults for CC:
- ---------------------------
-
-
- -Implicit frozen core calculation
- -Traceless quadrupole moment calculated
- -Electronic second moment of charge calculated
-  
 
 
  Changes of defaults for CC:
@@ -580,80 +685,81 @@ Point group: D2h
 
  Automatic occupation of symmetries with  14 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   1  Screening settings (-IFTHRS, DIFDEN)   -6    T
 
-*** WARNING  GETGAB: GABAOXXX not found on AOPROPER. Regenerating.
-   1  -96.7451438344       1.59D+01  -9.67D+01    2  1  1  0  2  1  0  0
+***  INFO  GETGAB: GABAOXXX not found on AOPROPER. Regenerating.
+@  1  -96.7451432033       1.59D+01  -9.67D+01     2   1   1   0   2   1   0   0
       Virial theorem: -V/T =      1.634723
-      MULPOP  N   _1  0.00; N   _2  0.00; 
+@      MULPOP N   _1  0.00; N   _2  0.00; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   2  -102.343577033       8.57D+00  -5.60D+00    3  1  1  0  2  0  0  0
+   2  Screening settings (-IFTHRS, DIFDEN)   -6    T
+@  2  -102.343576040       8.57D+00  -5.60D+00     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      2.096896
-      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+@      MULPOP N   _1 -0.00; N   _2 -0.00; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   3  -108.691878451       2.11D+00  -6.35D+00    3  1  1  0  2  0  0  0
+   3  Screening settings (-IFTHRS, DIFDEN)   -6    T
+@  3  -108.691877706       2.11D+00  -6.35D+00     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      1.967055
-      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+@      MULPOP N   _1 -0.00; N   _2 -0.00; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   4  -108.894419174       2.95D-01  -2.03D-01    3  1  1  0  2  0  0  0
+   4  Screening settings (-IFTHRS, DIFDEN)   -6    T
+@  4  -108.894418377       2.95D-01  -2.03D-01     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      1.996600
-      MULPOP  N   _1  0.00; N   _2  0.00; 
+@      MULPOP N   _1  0.00; N   _2  0.00; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   5  -108.899916895       2.95D-02  -5.50D-03    3  1  1  0  2  0  0  0
+   5  Screening settings (-IFTHRS, DIFDEN)   -8    F
+@  5  -108.899916899       2.95D-02  -5.50D-03     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      2.000556
-      MULPOP  N   _1  0.00; N   _2  0.00; 
+@      MULPOP N   _1 -0.00; N   _2 -0.00; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   6  -108.899999539       4.65D-03  -8.26D-05    3  1  1  0  2  0  0  0
+   6  Screening settings (-IFTHRS, DIFDEN)   -8    T
+@  6  -108.899999543       4.65D-03  -8.26D-05     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      2.000513
-      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+@      MULPOP N   _1  0.00; N   _2  0.00; 
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   7  -108.900001713       5.57D-04  -2.17D-06    3  1  1  0  2  0  0  0
+   7  Screening settings (-IFTHRS, DIFDEN)  -10    F
+@  7  -108.900001713       5.57D-04  -2.17D-06     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      2.000511
-      MULPOP  N   _1  0.00; N   _2  0.00; 
+@      MULPOP N   _1  0.00; N   _2  0.00; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   8  -108.900001741       5.80D-05  -2.79D-08    3  1  1  0  2  0  0  0
+   8  Screening settings (-IFTHRS, DIFDEN)  -10    T
+@  8  -108.900001741       5.80D-05  -2.79D-08     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      2.000517
-      MULPOP  N   _1  0.00; N   _2  0.00; 
+@      MULPOP N   _1 -0.00; N   _2 -0.00; 
  -----------------------------------------------------------------------------
-   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   9  -108.900001741       1.02D-05  -4.60D-10    3  1  1  0  2  0  0  0
+   9  Screening settings (-IFTHRS, DIFDEN)  -12    F
+@  9  -108.900001741       1.02D-05  -4.62D-10     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      2.000518
-      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+@      MULPOP N   _1 -0.00; N   _2 -0.00; 
  -----------------------------------------------------------------------------
-  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  10  -108.900001741       5.42D-07  -6.62D-12    3  1  1  0  2  0  0  0
+  10  Screening settings (-IFTHRS, DIFDEN)  -12    T
+@ 10  -108.900001741       5.43D-07  -6.71D-12     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      2.000517
-      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+@      MULPOP N   _1  0.00; N   _2  0.00; 
  -----------------------------------------------------------------------------
-  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  11  -108.900001741       9.46D-08  -2.84D-14    3  1  1  0  2  0  0  0
+  11  Screening settings (-IFTHRS, DIFDEN)  -15    F
+@ 11  -108.900001741       9.47D-08  -2.84D-14     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      2.000517
-      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+@      MULPOP N   _1 -0.00; N   _2 -0.00; 
  -----------------------------------------------------------------------------
-  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  12  -108.900001741       4.74D-09   2.84D-14    3  1  1  0  2  0  0  0
+  12  Screening settings (-IFTHRS, DIFDEN)  -15    T
+@ 12  -108.900001741       4.74D-09  -2.84D-14     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      2.000517
-      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+@      MULPOP N   _1 -0.00; N   _2 -0.00; 
  -----------------------------------------------------------------------------
-  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  13  -108.900001741       3.02D-10  -2.84D-14    3  1  1  0  2  0  0  0
+  13  Screening settings (-IFTHRS, DIFDEN)  -15    T
+@ 13  -108.900001741       3.03D-10   5.68D-14     3   1   1   0   2   0   0   0
       Virial theorem: -V/T =      2.000517
-      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+@      MULPOP N   _1  0.00; N   _2  0.00; 
  -----------------------------------------------------------------------------
-  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  14  -108.900001741       2.54D-11  -5.68D-14    3  1  1  0  2  0  0  0
+  14  Screening settings (-IFTHRS, DIFDEN)  -15    T
+@ 14  -108.900001741       2.55D-11  -2.84D-14     3   1   1   0   2   0   0   0
 
- *** DIIS converged in  14 iterations !
-   - total time used in SIRFCK :              0.29 seconds
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -108.900001741401    2.55D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -708,25 +814,27 @@ Point group: D2h
    6      0.000000000000
    7      0.000000000000
 
+ >>>> CPU and wall time for SCF :       0.330       0.335
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -108.900001741405                 
-     Nuclear repulsion:            23.622256021867
-     Electronic energy:          -132.522257763272
+@    Final HF energy:            -108.900001741401                 
+@    Nuclear repulsion:            23.622256021867
+@    Electronic energy:          -132.522257763269
 
-     Final gradient norm:           0.000000000025
+@    Final gradient norm:           0.000000000025
 
  
-     Date and time (Linux)  : Wed Mar 16 19:10:40 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:59:01 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -792,12 +900,12 @@ Point group: D2h
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.39 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.33 seconds
+ >>>> Total wall time used in SIRIUS :      0.34 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:10:40 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:59:01 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -861,7 +969,7 @@ Point group: D2h
  Core memory required by CCSD_R12 :          49505  (double words)
 
  Computation of (ip'|r12|jq') integrals done
- >>> Time used in R  [5] is   0.68 seconds
+ >>>  Time used in R  [5]     is   0.55 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of V^aj_kl intermediate done
 
@@ -872,7 +980,7 @@ Point group: D2h
  >>> Time used for V^aj_kl is    0.01 seconds
 
  Computation of (ip'|1/r12|jq') integrals done
- >>> Time used in 1/R[5] is   1.37 seconds
+ >>>  Time used in 1/R[5]     is   1.11 seconds
  Computation of V^aj_kl intermediate done
 
  >>> Time used for V^aj_kl is    0.01 seconds
@@ -887,20 +995,20 @@ Point group: D2h
 
  Computation of V^aj_kl intermediate done
 
- >>> Time used for V^aj_kl is    0.01 seconds
+ >>> Time used for V^aj_kl is    0.00 seconds
 
  Computation of V^aj_kl intermediate done
 
- >>> Time used for V^aj_kl is    0.02 seconds
+ >>> Time used for V^aj_kl is    0.01 seconds
 
  Computation of (i* p'|r12|jq') integrals done
- >>> Time used in R  [5] is   3.45 seconds
+ >>>  Time used in R  [5]     is   2.78 seconds
  Computation of (i'p|r12|jq') integrals done
- >>> Time used in R  [5] is   0.68 seconds
- >>> Time used in TWOINT is   0.30 seconds
- >>> Time used in TWOINT is   0.34 seconds
- >>> Time used in TWOINT is   0.10 seconds
- >>> Time used in TWOINT is   0.12 seconds
+ >>>  Time used in R  [5]     is   0.58 seconds
+ >>>  Time used in TWOINT     is   0.35 seconds
+ >>>  Time used in TWOINT     is   0.43 seconds
+ >>>  Time used in TWOINT     is   0.14 seconds
+ >>>  Time used in TWOINT     is   0.13 seconds
  Computation of V^aj_kl intermediate done
 
  >>> Time used for V^aj_kl is    0.01 seconds
@@ -910,7 +1018,7 @@ Point group: D2h
  >>> Time used for V^aj_kl is    0.01 seconds
 
  Computation of (ip'|[T,r12]|jq') integrals done
- >>> Time used in T,R[5] is   1.60 seconds
+ >>>  Time used in T,R[5]     is   1.66 seconds
 
 
                  +-----------------------------------------------+
@@ -1323,8 +1431,8 @@ Point group: D2h
  Computation of exchange matrix done [4]
 
               MP2-R12/B   correlation energy =   -0.466182934
- Time for MP2-R12 part cpu:   7.8688040971755981     
- Time for MP2-R12 part wall:   8.0000000000000000     
+ Time for MP2-R12 part cpu :   6.7389999999999999     
+ Time for MP2-R12 part wall:   7.2639999985694885     
    
 
  *******************************************************************
@@ -1345,10 +1453,10 @@ Point group: D2h
           Number of t2' amplitudes for R12 part   :        67
           Total number of amplitudes in ccsd      :      1170
 
- Iter.  1: Coupled cluster MP2-R12/ energy :    -109.1581864634346317
-     Conventional correlation energy:    -0.2581847220301228
+ Iter.  1: Coupled cluster MP2-R12/ energy :    -109.1581864634315622
+     Conventional correlation energy:    -0.2581847220304354
      R12 correlation energy         :     0.0000000000000000
-     Total correlation energy       :    -0.2581847220301228
+     Total correlation energy       :    -0.2581847220304354
 
 
 
@@ -1414,9 +1522,7 @@ Point group: D2h
 
           Norm of Printed Amplitude Vector :             0.3684
 
-
           Printed all single excitations greater than 0.010000
-
 
           Printed all double excitations greater than 0.166667
 
@@ -1424,7 +1530,7 @@ Point group: D2h
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
- CC_FOP> Norm of RHS vector:  7.19546717745843251E-002
+ CC_FOP> Norm of RHS vector:   7.1954671774324741E-002
 
 
                       Solving for orbital relaxation vector
@@ -1440,6 +1546,8 @@ Point group: D2h
  Number of operators for singlet linear response equations:     1
  Number of response frequencies:     1
  Convergence threshold:     1.00D-07
+
+ Integral transformation: Total CPU and WALL times (sec)       0.019       0.019
 
 
  >>>>>>>>>> Symmetry of excitation/property operator    1
@@ -1457,13 +1565,14 @@ Point group: D2h
  *** RSPCTL MICROITERATIONS CONVERGED
 
 
- Time used in linear response calculation is      0.13 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.17 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.16 CPU seconds.
+ >>> Total time used in response solver is         0.19 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  5.61339948145465548E-002
+ Norm of zeta-kappa-0:   5.6133994814288136E-002
+ CCFOP: call CC_D1AO to recalc the 1e Density
   
 
 
@@ -1484,10 +1593,11 @@ Point group: D2h
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1      0.95859741    0.00000000    0.00000000
-       2      0.00000000    0.95859741    0.00000000
-       3      0.00000000    0.00000000   -1.91719482
+               Column   1     Column   2     Column   3
+       1       0.95859741     0.00000000     0.00000000
+       2       0.00000000     0.95859741     0.00000000
+       3       0.00000000     0.00000000    -1.91719482
+    ==== End of matrix output ====
 
 
                       +-------------------------------------+
@@ -1496,10 +1606,11 @@ Point group: D2h
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1      7.29328505    0.00000000    0.00000000
-       2      0.00000000    7.29328505    0.00000000
-       3      0.00000000    0.00000000   24.27021939
+               Column   1     Column   2     Column   3
+       1       7.29328505     0.00000000     0.00000000
+       2       0.00000000     7.29328505     0.00000000
+       3       0.00000000     0.00000000    24.27021939
+    ==== End of matrix output ====
 
  Alfa**2 Invariant:                        167.761121
  Beta**2 Invariant:                        288.216300
@@ -1555,9 +1666,7 @@ Point group: D2h
 
           Norm of Printed Amplitude Vector :             0.3684
 
-
           Printed all single excitations greater than 0.010000
-
 
           Printed all double excitations greater than 0.166667
 
@@ -1565,7 +1674,7 @@ Point group: D2h
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
- CC_FOP> Norm of RHS vector:  7.24419498770201287E-002
+ CC_FOP> Norm of RHS vector:   7.2441949876839634E-002
 
 
                       Solving for orbital relaxation vector
@@ -1581,6 +1690,8 @@ Point group: D2h
  Number of operators for singlet linear response equations:     1
  Number of response frequencies:     1
  Convergence threshold:     1.00D-07
+
+ Integral transformation: Total CPU and WALL times (sec)       0.020       0.021
 
 
  >>>>>>>>>> Symmetry of excitation/property operator    1
@@ -1598,13 +1709,14 @@ Point group: D2h
  *** RSPCTL MICROITERATIONS CONVERGED
 
 
- Time used in linear response calculation is      0.13 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.20 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.15 CPU seconds.
+ >>> Total time used in response solver is         0.22 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  5.55048118409239288E-002
+ Norm of zeta-kappa-0:   5.5504811840700163E-002
+ CCFOP: call CC_D1AO to recalc the 1e Density
   
 
 
@@ -1625,10 +1737,11 @@ Point group: D2h
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1      0.96497590    0.00000000    0.00000000
-       2      0.00000000    0.96497590    0.00000000
-       3      0.00000000    0.00000000   -1.92995180
+               Column   1     Column   2     Column   3
+       1       0.96497590     0.00000000     0.00000000
+       2       0.00000000     0.96497590     0.00000000
+       3       0.00000000     0.00000000    -1.92995180
+    ==== End of matrix output ====
 
 
                       +-------------------------------------+
@@ -1637,10 +1750,11 @@ Point group: D2h
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1      7.29162303    0.00000000    0.00000000
-       2      0.00000000    7.29162303    0.00000000
-       3      0.00000000    0.00000000   24.28131434
+               Column   1     Column   2     Column   3
+       1       7.29162303     0.00000000     0.00000000
+       2       0.00000000     7.29162303     0.00000000
+       3       0.00000000     0.00000000    24.28131434
+    ==== End of matrix output ====
 
  Alfa**2 Invariant:                        167.828228
  Beta**2 Invariant:                        288.649611
@@ -1696,9 +1810,7 @@ Point group: D2h
 
           Norm of Printed Amplitude Vector :             0.3684
 
-
           Printed all single excitations greater than 0.010000
-
 
           Printed all double excitations greater than 0.166667
 
@@ -1706,7 +1818,7 @@ Point group: D2h
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
- CC_FOP> Norm of RHS vector:  7.37014173496023384E-002
+ CC_FOP> Norm of RHS vector:   7.3701417350266862E-002
 
 
                       Solving for orbital relaxation vector
@@ -1722,6 +1834,8 @@ Point group: D2h
  Number of operators for singlet linear response equations:     1
  Number of response frequencies:     1
  Convergence threshold:     1.00D-07
+
+ Integral transformation: Total CPU and WALL times (sec)       0.023       0.024
 
 
  >>>>>>>>>> Symmetry of excitation/property operator    1
@@ -1739,13 +1853,14 @@ Point group: D2h
  *** RSPCTL MICROITERATIONS CONVERGED
 
 
- Time used in linear response calculation is      0.13 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.19 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.15 CPU seconds.
+ >>> Total time used in response solver is         0.22 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  4.49210212993208999E-002
+ Norm of zeta-kappa-0:   4.4921021299570374E-002
+ CCFOP: call CC_D1AO to recalc the 1e Density
   
 
 
@@ -1766,10 +1881,11 @@ Point group: D2h
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1      0.98147312    0.00000000    0.00000000
-       2      0.00000000    0.98147312    0.00000000
-       3      0.00000000    0.00000000   -1.96294624
+               Column   1     Column   2     Column   3
+       1       0.98147312     0.00000000     0.00000000
+       2       0.00000000     0.98147312     0.00000000
+       3       0.00000000     0.00000000    -1.96294624
+    ==== End of matrix output ====
 
 
                       +-------------------------------------+
@@ -1778,10 +1894,11 @@ Point group: D2h
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1      7.38346067    0.00000000    0.00000000
-       2      0.00000000    7.38346067    0.00000000
-       3      0.00000000    0.00000000   24.40614642
+               Column   1     Column   2     Column   3
+       1       7.38346067     0.00000000     0.00000000
+       2       0.00000000     7.38346067     0.00000000
+       3       0.00000000     0.00000000    24.40614642
+    ==== End of matrix output ====
 
  Alfa**2 Invariant:                        170.503249
  Beta**2 Invariant:                        289.771830
@@ -1793,7 +1910,7 @@ Point group: D2h
 
  Ground state energy is target 
 
- Ecorr =                   -109.15818646343463171888
+ Ecorr =                   -109.15818646343156217426
 
  *******************************************************************
 
@@ -1827,14 +1944,20 @@ Point group: D2h
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       7.386       7.931
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:59:09 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   8.84 seconds
- >>>> Total wall time used in DALTON:  11.00 seconds
+ >>>> Total CPU  time used in DALTON:   7.78 seconds
+ >>>> Total wall time used in DALTON:   8.33 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:10:50 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:59:09 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

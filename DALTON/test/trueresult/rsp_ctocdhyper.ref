@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,244 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:39:18 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 17:45:59 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_rsp_ctocdhyper
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+**INTEGRALS                                       
+.DIPVEL                                           
+.DIPLEN                                           
+.RANGMO                                           
+**WAVE FUNCTION                                   
+.HF                                               
+**RESPONSE                                        
+*QUADRATIC                                        
+.BPROP                                            
+XDIPLEN                                           
+.BPROP                                            
+YDIPLEN                                           
+.BPROP                                            
+ZDIPLEN                                           
+.APROP                                            
+XDIPVEL                                           
+.APROP                                            
+YDIPVEL                                           
+.APROP                                            
+ZDIPVEL                                           
+.CPROP                                            
+XXRANG                                            
+.CPROP                                            
+XYRANG                                            
+.CPROP                                            
+XZRANG                                            
+.CPROP                                            
+YXRANG                                            
+.CPROP                                            
+YYRANG                                            
+.CPROP                                            
+YZRANG                                            
+.CPROP                                            
+ZXRANG                                            
+.CPROP                                            
+ZYRANG                                            
+.CPROP                                            
+ZZRANG                                            
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+INTGRL                                                                         
+Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability           
+through RESPONSE                                                               
+c   2    2  X  Y      0.10D-15  0.10D-15                                       
+      8.00    1    3    6    5    1                                            
+O   0.00000             0.00000              0.1241444240                      
+F  6    1                                                                      
+31195.6 0.00021                                                                
+4669.38 0.001628                                                               
+1062.62 0.00845                                                                
+301.426 0.034191                                                               
+98.5153 0.110311                                                               
+35.4609 .269493                                                                
+F  1    1                                                                      
+13.6179 .423545                                                                
+F  1    1                                                                      
+5.38618 .283038                                                                
+F  1    1                                                                      
+1.53873 .027484                                                                
+F  1    1                                                                      
+.6055 -.005144                                                                 
+F  1    1                                                                      
+.22054 .00164                                                                  
+F  3    1                                                                      
+114.863 .002266                                                                
+26.8767 0.017192                                                               
+8.32077 0.075341                                                               
+F  1    1                                                                      
+2.97237 .212775                                                                
+F  1    1                                                                      
+1.12848 .370478                                                                
+F  1    1                                                                      
+.4236 .398523                                                                  
+F  1    1                                                                      
+.15074 .184703                                                                 
+F  2    1                                                                      
+1.21879 .357851                                                                
+.36102 .759561                                                                 
+      1.00    1    2    3    1                                                 
+H   0.00000             1.43153              -0.985265576                      
+F  3    1                                                                      
+33.865014 .006068                                                              
+5.094788 0.045316                                                              
+1.158786 0.202846                                                              
+F  1    1                                                                      
+0.32584 0.503709                                                               
+F  1    1                                                                      
+.102741 .383568                                                                
+F  1    1                                                                      
+1.16 1.0                                                                       
 
 
        *******************************************************************
@@ -105,7 +266,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -119,15 +280,10 @@
    ****************************************************************************
 
 
-
- WARNING -- line in ".mol" file truncated, line    2
- Line from file: Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability through RESPONSE                                   
- Truncated line: Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability through RES
-
     The two title cards from your ".mol" input:
     ------------------------------------------------------------------------
- 1: Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability thr
- 2:                                                                         
+ 1: Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability    
+ 2: through RESPONSE                                                        
     ------------------------------------------------------------------------
 
   INFO from READIN: Threshold for discarding integrals was    1.00D-16
@@ -213,7 +369,7 @@ Point group: C2v
   Cartesian basis used.
   (Note that d, f, ... atomic GTOs are not all normalized.)
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-15
 
 
   Cartesian Coordinates (a.u.)
@@ -262,8 +418,10 @@ Point group: C2v
  H   _2:    0.958391    1.515066    0.000000
 
 
-  Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
+  Max    interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9584 Angstrom (    1.8111 Bohr)
 
 
   Bond distances (Angstrom):
@@ -304,7 +462,7 @@ Point group: C2v
            27.323753           14.573981            9.504472 cm-1
 
 
-@  Nuclear repulsion energy :    9.183706230245
+@  Nuclear repulsion energy :    9.183706230245 Hartree
 
 
   Symmetry Orbitals
@@ -405,14 +563,14 @@ Point group: C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:       75206 ( 24.7% )
  Megabytes written:                              0.866
 
- >>> Time used in TWOINT is   0.18 seconds
- >>>> Total CPU  time used in HERMIT:   0.20 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>  Time used in TWOINT     is   0.13 seconds
+ >>>> Total CPU  time used in HERMIT:   0.14 seconds
+ >>>> Total wall time used in HERMIT:   0.14 seconds
 
 
                         .----------------------------------.
@@ -446,34 +604,33 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:18 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
-     Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability thr
-                                                                             
+     Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability    
+     through RESPONSE                                                        
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
-     Time-dependent Hartree-Fock calculation (random phase approximation).
-
+@    Time-dependent Hartree-Fock calculation (random phase approximation).
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -486,7 +643,7 @@ Point group: C2v
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -500,46 +657,47 @@ Point group: C2v
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
-   1  -75.8289971698       2.45D+00  -7.58D+01    3  1  1  0
+@  1  -75.8289971698       2.45D+00  -7.58D+01     3   1   1   0
       Virial theorem: -V/T =      1.995901
-      MULPOP  O      -0.57; H   _1  0.28; H   _2  0.28; 
+@      MULPOP O      -0.57; H   _1  0.28; H   _2  0.28; 
  -----------------------------------------------------------------------------
-   2  -76.0524427034       3.70D-01  -2.23D-01    3  1  1  0
+@  2  -76.0524427034       3.70D-01  -2.23D-01     3   1   1   0
       Virial theorem: -V/T =      2.001342
-      MULPOP  O      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP O      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-   3  -76.0600525846       8.30D-02  -7.61D-03    3  1  1  0
+@  3  -76.0600525846       8.30D-02  -7.61D-03     3   1   1   0
       Virial theorem: -V/T =      2.001274
-      MULPOP  O      -0.81; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.81; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   4  -76.0607501246       1.70D-02  -6.98D-04    3  1  1  0
+@  4  -76.0607501246       1.70D-02  -6.98D-04     3   1   1   0
       Virial theorem: -V/T =      2.000717
-      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   5  -76.0607819964       5.18D-03  -3.19D-05    3  1  1  0
+@  5  -76.0607819964       5.18D-03  -3.19D-05     3   1   1   0
       Virial theorem: -V/T =      2.000873
-      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   6  -76.0607838687       1.92D-03  -1.87D-06    3  1  1  0
+@  6  -76.0607838687       1.92D-03  -1.87D-06     3   1   1   0
       Virial theorem: -V/T =      2.000774
-      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   7  -76.0607842024       3.22D-04  -3.34D-07    3  1  1  0
+@  7  -76.0607842024       3.22D-04  -3.34D-07     3   1   1   0
       Virial theorem: -V/T =      2.000809
-      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
-   8  -76.0607842185       4.12D-05  -1.61D-08    3  1  1  0
+@  8  -76.0607842185       4.12D-05  -1.61D-08     3   1   1   0
       Virial theorem: -V/T =      2.000809
-      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
-   9  -76.0607842187       7.64D-06  -1.83D-10    3  1  1  0
+@  9  -76.0607842187       7.64D-06  -1.83D-10     3   1   1   0
 
- *** DIIS converged in   9 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in   9 iterations !
+@     Converged SCF energy, gradient:    -76.060784218673    7.64D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -569,25 +727,30 @@ Point group: C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.012       0.012
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -76.060784218676                 
-     Nuclear repulsion:             9.183706230245
-     Electronic energy:           -85.244490448921
+@    Final HF energy:             -76.060784218673                 
+@    Nuclear repulsion:             9.183706230245
+@    Electronic energy:           -85.244490448918
 
-     Final gradient norm:           0.000007644696
+@    Final gradient norm:           0.000007644696
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:18 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+ INFO: Sorry, plot of MOs with Molden is only implemented for spherical GTOs
 
  (Only coefficients >0.0100 are printed.)
 
@@ -652,12 +815,15 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.02 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:45:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:18 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ NOTE:    1 informational messages have been issued.
+ Check output, result, and error files for "INFO".
 
 
                      .---------------------------------------.
@@ -744,9 +910,11 @@ Point group: C2v
           YYRANG  
           ZZRANG  
 
+ Integral transformation: Total CPU and WALL times (sec)       0.043       0.043
 
-   SCF energy         :      -76.060784218675622
- -- inactive part     :      -85.244490448920857
+
+   SCF energy         :      -76.060784218672836
+ -- inactive part     :      -85.244490448918071
  -- nuclear repulsion :        9.183706230245228
 
 
@@ -769,6 +937,7 @@ Point group: C2v
 
  QRLRVE -- linear response calculation for symmetry  1
  QRLRVE -- operator label : XYRANG  
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -787,20 +956,20 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XYRANG      FREQUENCY   0.000000D+00
- SYMMETRY    1
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   XYRANG      FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XYRANG   ; XYRANG   >> (   0.00000):     8.61976343566    
+@ QRLRVE:  << XYRANG   ; XYRANG   >> (   0.00000):     8.61976343565    
 
-@QRLRVE:  << YXRANG   ; XYRANG   >> (   0.00000):    -4.91615179948    
+@ QRLRVE:  << YXRANG   ; XYRANG   >> (   0.00000):    -4.91615179947    
 
-@QRLRVE:  << ZDIPLEN  ; XYRANG   >> (   0.00000):    -3.28247983706    
+@ QRLRVE:  << ZDIPLEN  ; XYRANG   >> (   0.00000):    -3.28247983706    
 
-@QRLRVE:  << ZDIPVEL  ; XYRANG   >> (   0.00000):    -4.70348404496    
+@ QRLRVE:  << ZDIPVEL  ; XYRANG   >> (   0.00000):    -4.70348404495    
 
 
  QRLRVE -- linear response calculation for symmetry  1
  QRLRVE -- operator label : YXRANG  
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -819,20 +988,20 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YXRANG      FREQUENCY   0.000000D+00
- SYMMETRY    1
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   YXRANG      FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XYRANG   ; YXRANG   >> (   0.00000):    -4.91617150621    
+@ QRLRVE:  << XYRANG   ; YXRANG   >> (   0.00000):    -4.91617150620    
 
-@QRLRVE:  << YXRANG   ; YXRANG   >> (   0.00000):     14.7207518938    
+@ QRLRVE:  << YXRANG   ; YXRANG   >> (   0.00000):     14.7207518938    
 
-@QRLRVE:  << ZDIPLEN  ; YXRANG   >> (   0.00000):     3.28247983706    
+@ QRLRVE:  << ZDIPLEN  ; YXRANG   >> (   0.00000):     3.28247983706    
 
-@QRLRVE:  << ZDIPVEL  ; YXRANG   >> (   0.00000):     5.94855450567    
+@ QRLRVE:  << ZDIPVEL  ; YXRANG   >> (   0.00000):     5.94855450567    
 
 
  QRLRVE -- linear response calculation for symmetry  1
  QRLRVE -- operator label : ZDIPLEN 
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -851,20 +1020,20 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.000000D+00
- SYMMETRY    1
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XYRANG   ; ZDIPLEN  >> (   0.00000):    -3.28247983706    
+@ QRLRVE:  << XYRANG   ; ZDIPLEN  >> (   0.00000):    -3.28247983706    
 
-@QRLRVE:  << YXRANG   ; ZDIPLEN  >> (   0.00000):     3.28247983706    
+@ QRLRVE:  << YXRANG   ; ZDIPLEN  >> (   0.00000):     3.28247983706    
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):     6.56495967411    
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):     6.56495967411    
 
-@QRLRVE:  << ZDIPVEL  ; ZDIPLEN  >> (   0.00000):    1.504005253672E-15
+@ QRLRVE:  << ZDIPVEL  ; ZDIPLEN  >> (   0.00000):    1.623701173514E-15
 
 
  QRLRVE -- linear response calculation for symmetry  1
  QRLRVE -- operator label : ZDIPVEL 
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -883,16 +1052,15 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPVEL     FREQUENCY   0.000000D+00
- SYMMETRY    1
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPVEL     FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XYRANG   ; ZDIPVEL  >> (   0.00000):    -4.70338931405    
+@ QRLRVE:  << XYRANG   ; ZDIPVEL  >> (   0.00000):    -4.70338931405    
 
-@QRLRVE:  << YXRANG   ; ZDIPVEL  >> (   0.00000):     5.94858540584    
+@ QRLRVE:  << YXRANG   ; ZDIPVEL  >> (   0.00000):     5.94858540584    
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPVEL  >> (   0.00000):    4.631711680858E-16
+@ QRLRVE:  << ZDIPLEN  ; ZDIPVEL  >> (   0.00000):    5.377642775528E-17
 
-@QRLRVE:  << ZDIPVEL  ; ZDIPVEL  >> (   0.00000):     9.26836146882    
+@ QRLRVE:  << ZDIPVEL  ; ZDIPVEL  >> (   0.00000):     9.26836146882    
 
 
  Linear response calculations for quadratic response
@@ -908,6 +1076,7 @@ Point group: C2v
 
  QRLRVE -- linear response calculation for symmetry  2
  QRLRVE -- operator label : XDIPLEN 
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -926,20 +1095,20 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.000000D+00
- SYMMETRY    2
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   XDIPLEN     FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     5.31785500737    
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     5.31785500736    
 
-@QRLRVE:  << XDIPVEL  ; XDIPLEN  >> (   0.00000):    2.386979502944E-15
+@ QRLRVE:  << XDIPVEL  ; XDIPLEN  >> (   0.00000):    6.106226635438E-16
 
-@QRLRVE:  << YZRANG   ; XDIPLEN  >> (   0.00000):    -2.65892750368    
+@ QRLRVE:  << YZRANG   ; XDIPLEN  >> (   0.00000):    -2.65892750368    
 
-@QRLRVE:  << ZYRANG   ; XDIPLEN  >> (   0.00000):     2.65892750368    
+@ QRLRVE:  << ZYRANG   ; XDIPLEN  >> (   0.00000):     2.65892750368    
 
 
  QRLRVE -- linear response calculation for symmetry  2
  QRLRVE -- operator label : XDIPVEL 
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -958,20 +1127,20 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPVEL     FREQUENCY   0.000000D+00
- SYMMETRY    2
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   XDIPVEL     FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XDIPLEN  ; XDIPVEL  >> (   0.00000):    4.440892098501E-16
+@ QRLRVE:  << XDIPLEN  ; XDIPVEL  >> (   0.00000):   -1.332267629550E-15
 
-@QRLRVE:  << XDIPVEL  ; XDIPVEL  >> (   0.00000):     8.97998535212    
+@ QRLRVE:  << XDIPVEL  ; XDIPVEL  >> (   0.00000):     8.97998535212    
 
-@QRLRVE:  << YZRANG   ; XDIPVEL  >> (   0.00000):    -5.57660931094    
+@ QRLRVE:  << YZRANG   ; XDIPVEL  >> (   0.00000):    -5.57660931095    
 
-@QRLRVE:  << ZYRANG   ; XDIPVEL  >> (   0.00000):     4.98826161390    
+@ QRLRVE:  << ZYRANG   ; XDIPVEL  >> (   0.00000):     4.98826161390    
 
 
  QRLRVE -- linear response calculation for symmetry  2
  QRLRVE -- operator label : YZRANG  
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -990,20 +1159,20 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YZRANG      FREQUENCY   0.000000D+00
- SYMMETRY    2
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   YZRANG      FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XDIPLEN  ; YZRANG   >> (   0.00000):    -2.65892750368    
+@ QRLRVE:  << XDIPLEN  ; YZRANG   >> (   0.00000):    -2.65892750368    
 
-@QRLRVE:  << XDIPVEL  ; YZRANG   >> (   0.00000):    -5.57667104755    
+@ QRLRVE:  << XDIPVEL  ; YZRANG   >> (   0.00000):    -5.57667104755    
 
-@QRLRVE:  << YZRANG   ; YZRANG   >> (   0.00000):     12.9451486592    
+@ QRLRVE:  << YZRANG   ; YZRANG   >> (   0.00000):     12.9451486592    
 
-@QRLRVE:  << ZYRANG   ; YZRANG   >> (   0.00000):    -6.78070752599    
+@ QRLRVE:  << ZYRANG   ; YZRANG   >> (   0.00000):    -6.78070752602    
 
 
  QRLRVE -- linear response calculation for symmetry  2
  QRLRVE -- operator label : ZYRANG  
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -1022,16 +1191,15 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZYRANG      FREQUENCY   0.000000D+00
- SYMMETRY    2
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   ZYRANG      FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XDIPLEN  ; ZYRANG   >> (   0.00000):     2.65892750368    
+@ QRLRVE:  << XDIPLEN  ; ZYRANG   >> (   0.00000):     2.65892750368    
 
-@QRLRVE:  << XDIPVEL  ; ZYRANG   >> (   0.00000):     4.98843158955    
+@ QRLRVE:  << XDIPVEL  ; ZYRANG   >> (   0.00000):     4.98843158955    
 
-@QRLRVE:  << YZRANG   ; ZYRANG   >> (   0.00000):    -6.78070898853    
+@ QRLRVE:  << YZRANG   ; ZYRANG   >> (   0.00000):    -6.78070898856    
 
-@QRLRVE:  << ZYRANG   ; ZYRANG   >> (   0.00000):     9.77609046162    
+@ QRLRVE:  << ZYRANG   ; ZYRANG   >> (   0.00000):     9.77609046163    
 
 
  Linear response calculations for quadratic response
@@ -1047,6 +1215,7 @@ Point group: C2v
 
  QRLRVE -- linear response calculation for symmetry  3
  QRLRVE -- operator label : YDIPLEN 
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -1065,20 +1234,20 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.000000D+00
- SYMMETRY    3
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3    LABEL   YDIPLEN     FREQUENCY   0.000000D+00
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.00000):     7.83619926578    
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.00000):     7.83619926582    
 
-@QRLRVE:  << YDIPVEL  ; YDIPLEN  >> (   0.00000):   -4.492933802780E-16
+@ QRLRVE:  << YDIPVEL  ; YDIPLEN  >> (   0.00000):    1.189261362999E-15
 
-@QRLRVE:  << XZRANG   ; YDIPLEN  >> (   0.00000):     3.91809963289    
+@ QRLRVE:  << XZRANG   ; YDIPLEN  >> (   0.00000):     3.91809963291    
 
-@QRLRVE:  << ZXRANG   ; YDIPLEN  >> (   0.00000):    -3.91809963289    
+@ QRLRVE:  << ZXRANG   ; YDIPLEN  >> (   0.00000):    -3.91809963291    
 
 
  QRLRVE -- linear response calculation for symmetry  3
  QRLRVE -- operator label : YDIPVEL 
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -1097,20 +1266,20 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPVEL     FREQUENCY   0.000000D+00
- SYMMETRY    3
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3    LABEL   YDIPVEL     FREQUENCY   0.000000D+00
 
-@QRLRVE:  << YDIPLEN  ; YDIPVEL  >> (   0.00000):   -1.995582518677E-15
+@ QRLRVE:  << YDIPLEN  ; YDIPVEL  >> (   0.00000):   -1.339857044758E-15
 
-@QRLRVE:  << YDIPVEL  ; YDIPVEL  >> (   0.00000):     9.43722447785    
+@ QRLRVE:  << YDIPVEL  ; YDIPVEL  >> (   0.00000):     9.43722447785    
 
-@QRLRVE:  << XZRANG   ; YDIPVEL  >> (   0.00000):     5.03958260618    
+@ QRLRVE:  << XZRANG   ; YDIPVEL  >> (   0.00000):     5.03958260618    
 
-@QRLRVE:  << ZXRANG   ; YDIPVEL  >> (   0.00000):    -5.70222121707    
+@ QRLRVE:  << ZXRANG   ; YDIPVEL  >> (   0.00000):    -5.70222121706    
 
 
  QRLRVE -- linear response calculation for symmetry  3
  QRLRVE -- operator label : XZRANG  
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -1129,20 +1298,20 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XZRANG      FREQUENCY   0.000000D+00
- SYMMETRY    3
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3    LABEL   XZRANG      FREQUENCY   0.000000D+00
 
-@QRLRVE:  << YDIPLEN  ; XZRANG   >> (   0.00000):     3.91809963289    
+@ QRLRVE:  << YDIPLEN  ; XZRANG   >> (   0.00000):     3.91809963291    
 
-@QRLRVE:  << YDIPVEL  ; XZRANG   >> (   0.00000):     5.03986275311    
+@ QRLRVE:  << YDIPVEL  ; XZRANG   >> (   0.00000):     5.03986275311    
 
-@QRLRVE:  << XZRANG   ; XZRANG   >> (   0.00000):     8.90794880873    
+@ QRLRVE:  << XZRANG   ; XZRANG   >> (   0.00000):     8.90794880874    
 
-@QRLRVE:  << ZXRANG   ; XZRANG   >> (   0.00000):    -6.17114004329    
+@ QRLRVE:  << ZXRANG   ; XZRANG   >> (   0.00000):    -6.17114004329    
 
 
  QRLRVE -- linear response calculation for symmetry  3
  QRLRVE -- operator label : ZXRANG  
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -1161,16 +1330,15 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZXRANG      FREQUENCY   0.000000D+00
- SYMMETRY    3
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3    LABEL   ZXRANG      FREQUENCY   0.000000D+00
 
-@QRLRVE:  << YDIPLEN  ; ZXRANG   >> (   0.00000):    -3.91809963289    
+@ QRLRVE:  << YDIPLEN  ; ZXRANG   >> (   0.00000):    -3.91809963291    
 
-@QRLRVE:  << YDIPVEL  ; ZXRANG   >> (   0.00000):    -5.70285136956    
+@ QRLRVE:  << YDIPVEL  ; ZXRANG   >> (   0.00000):    -5.70285136955    
 
-@QRLRVE:  << XZRANG   ; ZXRANG   >> (   0.00000):    -6.17125748090    
+@ QRLRVE:  << XZRANG   ; ZXRANG   >> (   0.00000):    -6.17125748089    
 
-@QRLRVE:  << ZXRANG   ; ZXRANG   >> (   0.00000):     12.2169704874    
+@ QRLRVE:  << ZXRANG   ; ZXRANG   >> (   0.00000):     12.2169704873    
 
 
  Linear response calculations for quadratic response
@@ -1186,6 +1354,7 @@ Point group: C2v
 
  QRLRVE -- linear response calculation for symmetry  4
  QRLRVE -- operator label : XXRANG  
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -1204,18 +1373,18 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XXRANG      FREQUENCY   0.000000D+00
- SYMMETRY    4
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    4    LABEL   XXRANG      FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XXRANG   ; XXRANG   >> (   0.00000):     2.19529991531    
+@ QRLRVE:  << XXRANG   ; XXRANG   >> (   0.00000):     2.19529991530    
 
-@QRLRVE:  << YYRANG   ; XXRANG   >> (   0.00000):    -1.23461639997    
+@ QRLRVE:  << YYRANG   ; XXRANG   >> (   0.00000):    -1.23461639997    
 
-@QRLRVE:  << ZZRANG   ; XXRANG   >> (   0.00000):   -0.960683515332    
+@ QRLRVE:  << ZZRANG   ; XXRANG   >> (   0.00000):   -0.960683515329    
 
 
  QRLRVE -- linear response calculation for symmetry  4
  QRLRVE -- operator label : YYRANG  
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -1234,18 +1403,18 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YYRANG      FREQUENCY   0.000000D+00
- SYMMETRY    4
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    4    LABEL   YYRANG      FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XXRANG   ; YYRANG   >> (   0.00000):    -1.23396336948    
+@ QRLRVE:  << XXRANG   ; YYRANG   >> (   0.00000):    -1.23396336947    
 
-@QRLRVE:  << YYRANG   ; YYRANG   >> (   0.00000):     5.32754005687    
+@ QRLRVE:  << YYRANG   ; YYRANG   >> (   0.00000):     5.32754005688    
 
-@QRLRVE:  << ZZRANG   ; YYRANG   >> (   0.00000):    -4.09357668740    
+@ QRLRVE:  << ZZRANG   ; YYRANG   >> (   0.00000):    -4.09357668740    
 
 
  QRLRVE -- linear response calculation for symmetry  4
  QRLRVE -- operator label : ZZRANG  
+ QRLRVE -- operator spin  :   0
  QRLRVE -- frequencies :  0.000000
 
 
@@ -1264,14 +1433,13 @@ Point group: C2v
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZZRANG      FREQUENCY   0.000000D+00
- SYMMETRY    4
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    4    LABEL   ZZRANG      FREQUENCY   0.000000D+00
 
-@QRLRVE:  << XXRANG   ; ZZRANG   >> (   0.00000):   -0.960564266432    
+@ QRLRVE:  << XXRANG   ; ZZRANG   >> (   0.00000):   -0.960564266430    
 
-@QRLRVE:  << YYRANG   ; ZZRANG   >> (   0.00000):    -4.09340703345    
+@ QRLRVE:  << YYRANG   ; ZZRANG   >> (   0.00000):    -4.09340703345    
 
-@QRLRVE:  << ZZRANG   ; ZZRANG   >> (   0.00000):     5.05397129988    
+@ QRLRVE:  << ZZRANG   ; ZZRANG   >> (   0.00000):     5.05397129988    
  
  ======================================================================
  >>>>>>>>    L I N E A R   R E S P O N S E   F U N C T I O N   <<<<<<<<
@@ -1295,7 +1463,7 @@ Point group: C2v
 @ A operator, symmetry, frequency:   ZDIPVEL    1 -0.000000
 @ B operator, symmetry, frequency:   ZDIPLEN    1  0.000000
 
-@ Value of linear response -<<A;B>(omega):       0.000000000000
+@ Value of linear response -<<A;B>>(omega):       0.000000000000
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -1309,7 +1477,7 @@ Point group: C2v
 @ A operator, symmetry, frequency:   XDIPVEL    2 -0.000000
 @ B operator, symmetry, frequency:   XDIPLEN    2  0.000000
 
-@ Value of linear response -<<A;B>(omega):       0.000000000000
+@ Value of linear response -<<A;B>>(omega):       0.000000000000
 
 
  Perturbation symmetry.     KSYMOP:       3
@@ -1323,7 +1491,7 @@ Point group: C2v
 @ A operator, symmetry, frequency:   YDIPVEL    3 -0.000000
 @ B operator, symmetry, frequency:   YDIPLEN    3  0.000000
 
-@ Value of linear response -<<A;B>(omega):      -0.000000000000
+@ Value of linear response -<<A;B>>(omega):       0.000000000000
 
 
   Results from quadratic response calculation
@@ -1336,7 +1504,7 @@ Point group: C2v
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: XYRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -1.87966337
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -1.87966337
 
 
 @ Quadratic response function value in a.u. for
@@ -1344,7 +1512,7 @@ Point group: C2v
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: YXRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.21494958
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -0.21494958
 
 
 @ Quadratic response function value in a.u. for
@@ -1352,7 +1520,7 @@ Point group: C2v
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: XYRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.61550694
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -0.61550694
 
 
 @ Quadratic response function value in a.u. for
@@ -1360,7 +1528,7 @@ Point group: C2v
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: YXRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.31793654
+@ omega B, omega C, QR value :     0.00000000     0.00000000     0.31793654
 
 
 @ Quadratic response function value in a.u. for
@@ -1368,7 +1536,7 @@ Point group: C2v
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: XYRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.05185045
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -0.05185045
 
 
 @ Quadratic response function value in a.u. for
@@ -1376,7 +1544,7 @@ Point group: C2v
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: YXRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     1.78596971
+@ omega B, omega C, QR value :     0.00000000     0.00000000     1.78596971
 
 
 @ Quadratic response function value in a.u. for
@@ -1384,7 +1552,7 @@ Point group: C2v
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: YZRANG      2    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.34669619
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -0.34669619
 
 
 @ Quadratic response function value in a.u. for
@@ -1392,7 +1560,7 @@ Point group: C2v
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: ZYRANG      2    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     2.39444368
+@ omega B, omega C, QR value :     0.00000000     0.00000000     2.39444368
 
 
 @ Quadratic response function value in a.u. for
@@ -1400,7 +1568,7 @@ Point group: C2v
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: YZRANG      2    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.41709073
+@ omega B, omega C, QR value :     0.00000000     0.00000000     0.41709073
 
 
 @ Quadratic response function value in a.u. for
@@ -1408,7 +1576,7 @@ Point group: C2v
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: ZYRANG      2    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -1.82932389
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -1.82932389
 
 
 @ Quadratic response function value in a.u. for
@@ -1416,7 +1584,7 @@ Point group: C2v
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: XZRANG      3    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.65126444
+@ omega B, omega C, QR value :     0.00000000     0.00000000     0.65126444
 
 
 @ Quadratic response function value in a.u. for
@@ -1424,7 +1592,7 @@ Point group: C2v
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: ZXRANG      3    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.08401984
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -0.08401984
 
 
 @ Quadratic response function value in a.u. for
@@ -1432,7 +1600,7 @@ Point group: C2v
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: XZRANG      3    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.03571582
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -0.03571582
 
 
 @ Quadratic response function value in a.u. for
@@ -1440,7 +1608,7 @@ Point group: C2v
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: ZXRANG      3    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.06057330
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -0.06057330
 
 
 @ Quadratic response function value in a.u. for
@@ -1448,7 +1616,7 @@ Point group: C2v
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: XXRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.23965989
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -0.23965989
 
 
 @ Quadratic response function value in a.u. for
@@ -1456,7 +1624,7 @@ Point group: C2v
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: YYRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.11120011
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -0.11120011
 
 
 @ Quadratic response function value in a.u. for
@@ -1464,7 +1632,7 @@ Point group: C2v
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: ZZRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.35060410
+@ omega B, omega C, QR value :     0.00000000     0.00000000     0.35060410
 
 
 @ Quadratic response function value in a.u. for
@@ -1472,7 +1640,7 @@ Point group: C2v
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: XXRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.20449008
+@ omega B, omega C, QR value :     0.00000000     0.00000000     0.20449008
 
 
 @ Quadratic response function value in a.u. for
@@ -1480,7 +1648,7 @@ Point group: C2v
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: YYRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.24840944
+@ omega B, omega C, QR value :     0.00000000     0.00000000    -0.24840944
 
 
 @ Quadratic response function value in a.u. for
@@ -1488,19 +1656,19 @@ Point group: C2v
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: ZZRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.04359456
+@ omega B, omega C, QR value :     0.00000000     0.00000000     0.04359456
 
- >>>> Total CPU  time used in RESPONSE:   0.37 seconds
- >>>> Total wall time used in RESPONSE:   3.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.27 seconds
+ >>>> Total wall time used in RESPONSE:   0.27 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.60 seconds
- >>>> Total wall time used in DALTON:   3.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.43 seconds
+ >>>> Total wall time used in DALTON:   0.43 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:46:02 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:18 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

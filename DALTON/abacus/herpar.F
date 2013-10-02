@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -252,8 +252,20 @@ C
       use memory_parallel
       use parallel_communication_models_mpi
       use rma_windows
-C
+
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
 #include "implicit.h"
+#else
+#include "implicit.h"
+#include "mpif.h"
+#endif
+#else
+#include "implicit.h"
+#endif
+
+C
 #include "maxorb.h"
 C
 C Used from common blocks
@@ -562,13 +574,15 @@ C  /* Deck her_sdinit */
       use rma_windows
 
 #ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
       use mpi
 #include "implicit.h"
 #else
 #include "implicit.h"
-!#include "mpif.h"
+#include "mpif.h"
 #endif
+#else
+#include "implicit.h"
 #endif
 C
 #include "priunit.h"
@@ -716,8 +730,12 @@ C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
          CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
          CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
-         CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
+         CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
+         CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
          CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
@@ -806,7 +824,7 @@ C
 C  /molinc/
          CALL PVMXPACK(NMLINE,1,'INTEGER')
 C  /molinp/
-         CALL PVMXPACK(MLINE,80*NMLINE,'STRING')
+         CALL PVMXPACK(MLINE,len_MLINE*NMLINE,'STRING')
 C  /inforb/
          CALL PVMXPACK(MULD2H,NINFI,'INTEGER')
 C  /infpar/
@@ -859,6 +877,11 @@ C  /* Deck her_rvres */
       use parallel_communication_models_mpi
       use one_sided_communication_wrappers
       use rma_windows
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#endif
+#endif
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -884,7 +907,11 @@ C
 #include "inforb.h"
 #include "infpar.h"
 #include "parint.h"
+
 #ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
+#include "mpif.h"
+#endif
        integer (kind=mpi_offset_kind) :: offset_mat
 #endif
 C
@@ -1145,6 +1172,11 @@ C
       use memory_parallel
       use parallel_communication_models_mpi
       use rma_windows
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#endif
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1177,6 +1209,9 @@ C
 #include "gnrinf.h"
 C
 #ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
+#include "mpif.h"
+#endif
       integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
       integer(kind=MPI_ADDRESS_KIND) :: nelement_d, nelement_f
@@ -1456,13 +1491,15 @@ C
       use rma_windows
 
 #ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
       use mpi
 #include "implicit.h"
 #else
 #include "implicit.h"
-!#include "mpif.h"
+#include "mpif.h"
 #endif
+#else
+#include "implicit.h"
 #endif
 
 #include "priunit.h"
@@ -1592,8 +1629,12 @@ C Arnfinn nov -08: Receiving number of QM atom types:
               CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
               CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
-              CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
+              CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
+              CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
               CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
               CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
@@ -1636,7 +1677,7 @@ C
 C  /molinp/
            CALL PVMXUNPACK(NMLINE,1,'INTEGER')
 C  /molinc/
-           CALL PVMXUNPACK(MLINE,80*NMLINE,'STRING')
+           CALL PVMXUNPACK(MLINE,len_MLINE*NMLINE,'STRING')
 C  /inforb/
            CALL PVMXUNPACK(MULD2H,NINFI,'INTEGER')
 C  /infpar/
@@ -2390,6 +2431,11 @@ C  /* Deck her_sdres */
       use parallel_communication_models_mpi
       use one_sided_communication_wrappers
       use rma_windows
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#endif
+#endif
 !
 #include "implicit.h"
 #include "mxcent.h"
@@ -2412,6 +2458,9 @@ C
 #include "inforb.h"
 #include "infpar.h"
 #ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
+#include "mpif.h"
+#endif
        integer (kind=mpi_offset_kind) :: offset_mat
 #endif
 C
@@ -2679,7 +2728,7 @@ C
      &    'limit. Reduce number of nodes or recompile program. ',
      &    'Allocated (NODTOT) :',NODTOT,'Limit (MAXNOD)     :',MAXNOD
          CALL RECOMPI
-         CALL QUIT('ERROR: Number of nodes requested is too large.')        
+         CALL QUIT('ERROR: Number of nodes requested is too large.')
       ENDIF
 C
       RETURN

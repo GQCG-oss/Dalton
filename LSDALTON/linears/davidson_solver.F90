@@ -1,10 +1,8 @@
-
 MODULE  davidson_solv_mod
 use precision
 use matrix_module
 use matrix_operations
 use davidson_settings
-!use pipek
 use typedef
 use decompMod
 use arhDensity
@@ -35,7 +33,7 @@ subroutine davidson_solver(CFG,grad,x)
    logical            :: Levelshift
    real(realk)        :: xHx,gx
    real(realk)        :: initial_stepsize
-   integer            :: MoreRed,start_it
+   integer            :: MoreRed
    real(realk) :: minel,arh_thresh=0_realk
    integer :: minel_pos(2)
   
@@ -51,21 +49,20 @@ subroutine davidson_solver(CFG,grad,x)
   call mat_init(sigma_temp,rowdim,coldim)
   
   initial_stepsize=CFG%stepsize 
-  start_it = 3 
+  CFG%start_it = 3 
   ! Find lowest hessian diagonal, use extra start vector if negative 
   if (.not. CFG%arh_davidson) then
       call mat_min_elm(CFG%P,minel,minel_pos)
-      if (minel < 0_realk) start_it = 4
+      if (minel < 0_realk) CFG%start_it = 4
   else
-      if (CFG%arh_extravec) start_it = 4
+      if (CFG%arh_extravec) CFG%start_it = 4
       if (CFG%arh_gradnorm .ge. 1E-3_realk) arh_thresh=0.0001_realk
       if (CFG%arh_gradnorm < 1E-3_realk) arh_thresh=0.00001_realk
-      if (CFG%arh_gradnorm < 1E-5_realk) arh_thresh=0.00001_realk
   end if
 
    call mem_alloc(CFG%Allb,CFG%max_it)
    call mem_alloc(CFG%AllSigma,CFG%max_it)
-   do i=1,start_it-1
+   do i=1,CFG%start_it-1
       call mat_init(CFG%Allb(i),grad%nrow,grad%ncol)
       call mat_init(CFG%AllSigma(i),grad%nrow,grad%ncol)
    end do
@@ -74,8 +71,15 @@ subroutine davidson_solver(CFG,grad,x)
   call SecondTrialVec(grad,CFG,b_current,sigma_temp) 
   !Construct rest of Ared in 3D starting space
   call IncreaseDimRedSpace(grad,CFG,b_current,2)
-  if (start_it ==4) then
-      call ThirdTrialVec(grad,CFG,b_current,sigma_temp,minel_pos,start_it)
+  if (CFG%start_it ==4) then
+      call ThirdTrialVec(grad,CFG,b_current,sigma_temp,minel_pos,CFG%start_it)
+      ! Check if coupling to b1 and b2 is strong enough
+      if (CFG%singularity) then
+          CFG%start_it = 3
+          call mat_free(CFG%Allb(3))
+          call mat_free(CFG%AllSigma(3))
+          CFG%singularity = .false.
+      endif
   end if
   !************************************************************
   !*             Start Reduced Space Loop                     *
@@ -83,7 +87,7 @@ subroutine davidson_solver(CFG,grad,x)
   converged =.false.
   do MoreRed=1,5
   resnorm_2D =0_realk
-  ReducedSpaceLoop: do iter=start_it,CFG%max_it-1
+  ReducedSpaceLoop: do iter=CFG%start_it,CFG%max_it-1
       call mem_alloc(xred,iter-1)
       call mat_init(CFG%Allb(iter),grad%nrow,grad%ncol)
       call mat_init(CFG%AllSigma(iter),grad%nrow,grad%ncol)
@@ -159,7 +163,7 @@ subroutine davidson_solver(CFG,grad,x)
       if (CFG%orb_debug) write(CFG%lupri,'(a,i4,a,f9.4)') &
       &'iter : Micro iterations not converged for RedSpaceLoop:', MoreRed, &
       & " new stepsize : ",CFG%stepsize
-      do i=start_it,CFG%it
+      do i=CFG%start_it,CFG%it
          call mat_free(CFG%AllSigma(i))
          call mat_free(CFG%Allb(i))
       end do
@@ -331,6 +335,14 @@ subroutine IncreaseDimRedSpace(grad,CFG,b_current,iter)
      CFG%Ared(i+1,iter+1) = mat_dotproduct(CFG%Allb(i),CFG%AllSigma(iter))
  end do
 
+
+ if (CFG%start_it == 4 .and. iter==3) then
+    if ((dabs(CFG%Ared(2,4))+dabs(CFG%Ared(3,4))) < 1.0E-3_realk) then  
+        !Must abandon b3  due to no coupling to b1 and b2
+        CFG%singularity=.true.
+    endif
+ end if
+ 
 
 end subroutine IncreaseDimRedSpace
 
@@ -720,7 +732,7 @@ implicit none
  call mem_alloc(VL,iter,iter)
  call mem_alloc(VR,iter,iter)
 call DGEEV('N','V',iter,A,iter,EigValues,dummy,VL,iter,VR,iter,WORK,LWORK,IERR)
- if (IERR .ne. 0) STOP 'Something went wrong in DGEEV in Solve_EigVal_RedSpace'
+if (IERR .ne. 0) call lsquit('Something went wrong in DGEEV in orbital localization',CFG%lupri)
 call mem_dealloc(WORK)
 call mem_dealloc(VL)
  
@@ -732,10 +744,19 @@ call mem_dealloc(VL)
 call mem_dealloc(VR)
  !scale vector such that first element is 1
  if (dabs(mu_Vec(1)).le. 1E-15_realk) then
+    write(CFG%lupri,*)
     write(*,*)
+    write(CFG%lupri,*) ' ***** WARNING ***** '
     write(*,*) ' ***** WARNING ***** '
+    write(CFG%lupri,*) '  A trial vector contains zero gradient component' 
     write(*,*) '  A trial vector contains zero gradient component' 
-    write(*,*) '  and it is probably related to threshold in DD_Fock_solve.' 
+    if (CFG%arh_davidson) then
+      write(*,*) '  Start calculation using keyword .ARH instead of .ARH DAVID /.ARH(LS) DAVID' 
+      write(CFG%lupri,*) '  Start calculation using keyword .ARH instead of .ARH DAVID /.ARH(LS) DAVID' 
+    else 
+      write(*,*) ' Try to break molecular symmetry slightly '
+      write(CFG%lupri,*) ' Try to break molecular symmetry slightly '
+    end if
     call lsquit('Singularities due to trial vector containg zero gradient component',CFG%lupri)
  end if 
  mu_Vec = mu_Vec/mu_Vec(1)
@@ -833,7 +854,7 @@ b=0.0_realk
 b(1)=-CFG%Gred(1)
 
 call DGESV(ndim,1,A,ndim,IPIV,b,ndim,IERR)
-if (IERR/= 0 ) STOP 'Something wrong, DGESV, test_convergence'
+if (IERR .ne. 0) call lsquit('Something wrong, DGESV, test_convergence, orbital localization',CFG%lupri)
 
 
 !Compute residual
@@ -951,7 +972,7 @@ do i=1,n
 end do
 
 call dsyev('N','L',n,RedH,n,eigvals,wrk,lwrk,IERR)
-if (IERR /= 0 ) STOP 'Something wrong in dsyev in RedHessian_eigvals routine'
+if (IERR .ne. 0)  call lsquit('Something went wrong in DSYEV in orbital localization',CFG%lupri)
 
 
 write(CFG%lupri,*)

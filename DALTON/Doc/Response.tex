@@ -64,6 +64,10 @@ should follow another {\ttfamily{**<something>}} input group
 %\item{\Key{DFT-SO}} Request that the contribution to the spin--orbit
   %integrals are calculated for a given reference density.
 
+\item{\Key{CIS}}
+Request a CI Singles calculation, which is equivalent to invoking the 
+Tamm-Dancoff approximation to RPA/TDHF (invoked by \Key{TDA}).
+
 \item{\Key{HIRPA}}
 Invoke the higher RPA approximation for the calculation of linear
 response properties\index{linear response!higher RPA}.
@@ -163,13 +167,13 @@ Restart quadratic response\index{quadratic response}\index{response!quadratic}
 calculation.
 It is only possible to restart regular quadratic response calculations, not those
 involving residues (as \Key{SINGLE RESIDUE}, \Key{TWO-PHOTON}, and \Key{DOUBLE RESIDUE}).
-because the restarted Dalton does not know the excitation energies associated with the
+because the restarted \dalton\ does not know the excitation energies associated with the
 residues, and the excitation energies are needed to retrieve the right records from
 the \verb|RSPVEC| file.
 % hjaaj Aug 2012: does not work when excitation energies are involved because Dalton
 % does not know them when restarting, and they are needed to get the right records from
 % the RSPVEC file.
-Requires that \em{all} needed linear response solutions % and excitation vectors
+Requires that {\em all} needed linear response solutions % and excitation vectors
 are available on the \verb|RSPVEC| file.
 
 \item{\Key{S0MIX}}
@@ -201,6 +205,10 @@ SOPPA(CCSD)\index{SOPPA(CCSD)} result, and used mostly for comparing to older
 calculations. Note that this keyword requires that \Key{SOPPA} or
 \Key{SOPPA(CCSD)}is set.
 
+\item{\Key{TDA}}
+Invoke the Tamm-Dancoff approximation to RPA/TDHF or TDDFT. Equivalent to the
+use of \Key{CIS} on a Hartree-Fock calculation.
+
 \item{\Key{TRPFLG}}
 Triplet flag. This option is set whenever triplet
 (spin-dependent)\index{triplet response}
@@ -209,6 +217,11 @@ operators must be used in a response calculation
 This flag forces triplet linear response for \Sec{LINEAR},
 both for second order properties and electronic excitations
 (without and with \Key{SINGLE RESIDUE}).
+For quadratic response, \Sec{QUADRATIC}, \Key{TRPFLG} is necessary
+whenever singlet-triplet excitations are involved, for the response function as well as  for
+its residues (\Key{SINGLE RESIDUE} and \Key{DOUBLE RESIDUE}).
+See section \ref{sec:quadraticrsp} for more details.
+For cubic response triplet excitations are not implemented.
 
 \end{description}
 
@@ -535,6 +548,7 @@ CI trial vectors are obtained with Olsen algorithm.
 \end{description}
 
 \subsection{Quadratic response calculation: \Sec{QUADRA}}
+\label{sec:quadraticrsp}
 
 Calculation of third order properties\index{properties!third order}
  as quadratic response
@@ -556,10 +570,11 @@ Test the contributions to the quadratic response function arising from
 the $A^{\left[2\right]}$ term. Mainly for debugging purposes.
 
 \item{\Key{APROP}, \Key{BPROP}, \Key{CPROP}}\\
-\verb|READ(LUCMD,'( A )')LABEL|\\
-Specify the operators $A$, $B$, and $C$. The line following this
-option should be the label of the operator as it appears in the file
-AOPROPER.
+\verb|READ(LUCMD,'( BN,A,I8 )')LABEL, IRANKA|\\
+Specify the operator $A$ and optionally its spin rank. The line following this
+keyword should be the label of the operator as it appears in the file
+AOPROPER. If the line only contains the label it is assumed to be a singlet
+operator. To explicitly specify a triplet operator the label may be followed by the number 1. All variations of spin-orbit operators are always assumed to be triplet.
 
 Note that giving the label \verb|ANGMOM|, \verb|1SPNORB|,
 \verb|2SPNORB|, or \verb|MNFSPNOR|, all the components of angular
@@ -576,11 +591,12 @@ appropriate keywords in the \Sec{*INTEGRALS} input module.
 \verb|READ(LUCMD,*)ISPINA|\\
 Spin information for quadratic response calculations.
 The line following these options contains the spin
-rank\index{spin rank} of the operators
-$A$, $B$, and $C$, respectively, 0 for singlet operators and 1 for triplet
-operators.
-In a triplet response calculations two of these operators are of rank one,
-and the remaining operator of rank zero.
+rank\index{spin rank} of the excitation operators that are coupled with the
+physical operators $A$, $B$, and $C$. This means that excitation spin rank may
+be different from operator spin rank. 
+This is mostly relevant for open-shell singlet response functions 
+where one of physical operators may be triplet.
+Note that the meaning of this keyword is a different from Dalton2011.
 
 \item{\Key{BFREQ}, \Key{CFREQ}}\\
 \verb|READ (LUCMD,*) NBQRFR|\\
@@ -617,10 +633,9 @@ Default is one frequency of each type: zero (static).
 
 \item{\Key{ISPABC}}\\
 \verb|READ *, ISPINA,ISPINB,ISPINC|\\
-Spin symmetry of $A$-operators (ISPINA), $B$-operators (ISPINB),
-and the excitation operator (ISPINC): "0" for singlet and "1" for triplet.
-Default is "0,0,0", {\it i.e.\/} all of singlet spin symmetry.
-{\bf Note: triplet operators are only implemented for singlet reference states.}
+see above, \Key{ISPINA}, \Key{ISPINB}, \Key{ISPINC}
+
+
 \item{\Key{MAX IT}}
 Maximum number of iterations for solving a linear response equation.
 Default is 60.
@@ -652,7 +667,7 @@ Remember to specify operators as well, {\it e.g.\/} \Key{DIPLEN}.
 \verb|READ *,IPRHYP|\\
 Print level. Default is 2.
 
-\item{\Key{REFCHK}} Check reference state(?).
+\item{\Key{REFCHK}} Only used for internal testing.
 
 \item{\Key{SHG}}
 Only response functions connected with second harmonic
@@ -714,7 +729,7 @@ the $A^{\left[2\right]}$ term. Mainly for debugging purposes.
 \item[\Key{APROP}, \Key{BPROP}]
 Specify the operators $A$ and $B$, respectively. The line following this
 option should be the label of the operator as it appears in the file
-AOPROPER.
+AOPROPER. See also Sec.\ref{sec:quadraticrsp}
 
 \item{\Key{BFREQ}, \Key{FREQUE}}\\
 \verb|READ *, NFREQ|\\
@@ -758,9 +773,10 @@ The reference state {\em must} be a singlet spin state. See  also \Key{PHOSPHORE
 
 \item{\Key{ISPABC}}\\
 \verb|READ *, ISPINA,ISPINB,ISPINC|\\
-Spin symmetry of $A$-operators (ISPINA), $B$-operators (ISPINB),
-and the excitation operator (ISPINC): "0" for singlet and "1" for triplet.
+Spin symmetry of excitation operators associated with physical operators $A$ (ISPINA) and $B$ (ISPINB),
+and the excited states specified with \Key{ROOTS} (ISPINC): "0" for singlet and "1" for triplet.
 Default is "0,0,0", {\it i.e.\/} all of singlet spin symmetry.
+c.f. the same keyword in section \ref{sec:quadraticrsp}.
 {\bf Note: triplet operators are only implemented for singlet reference states.}
 %hjaaj June 2001: .ASPIN etc. should be defined for .SINGLE
 %\item[\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}]
@@ -952,9 +968,11 @@ Print level for special excited state transition moment routines.
 
 \item{\Key{ISPABC}}\\
 \verb|READ *, ISPINA,ISPINB,ISPINC|\\
-Spin symmetry of $A$-operators (ISPINA)
-and the left and right excitation operators (ISPINB and ISPINC):
+Spin symmetry of excitation operators associated with physical operator $A$ (ISPINA)
+and the left and right excitation operators (ISPINB and ISPINC) defined to 
+generate excited states defined in  given in by \Key{ROOTS}:
 "0" for singlet and "1" for triplet.
+c.f. the same keyword in section \ref{sec:quadraticrsp}.
 Default is "0,0,0", {\it i.e.\/} all of singlet spin symmetry.
 {\bf Note: triplet operators are only implemented for singlet reference states.}
 %hjaaj June 2001: .ASPIN etc. should be defined for .DOUBLE
@@ -1552,7 +1570,7 @@ Calculate the spin-dipole contributions to the hyperfine coupling tensor
 \verb|READ (LUCMD,*) (NUCINF(IG), IG = 1, ESRNUC) | \\
 Select atoms for which to calculate hyperfine coupling constants.
 The first line contains  the number of atoms and the second line the
-index of each atom (ordered as in the molecule input file \texttt{MOLECULE.INP})
+index of each atom (ordered as in the molecule input file \molinp)
 
 \item{\Key{MAX IT}}      \\
 \verb|READ (LUCMD,*),MAXESR |\\
@@ -1640,4 +1658,35 @@ procedure.
   This option is mainly for linear molecules in a $\Sigma$ state.
   Specifying e.g. "ZZ" on the input line instructs the program
   to skip the calculation of the paramagnetic contribution to $g_{zz}$.
+\end{description}
+
+\subsection{Hyperfine Coupling Constants: \Sec{HFC}}
+
+Calculation of hyperfine coupling constants using restricted-unrestricted Kohn-Sham method\index{HFC}
+
+\begin{description}
+\item{\Key{HFC-FC}} \\
+Calculate the isotropic Fermi-contact contributions to hyperfine coupling tensors of all nuclei in 
+molecule with nonzero nuclear spin. 
+
+\item{\Key{HFC-SD}} \\
+Calculate the spin-dipole contributions to the hyperfine coupling tensor of all nuclei in molecule 
+with nonzero nuclear spin.
+
+\item{\Key{HFC-SO}} \\
+Calculate the spin-orbit contributions to the hyperfine coupling tensor of all nuclei in molecule 
+with nonzero nuclear spin. By default mean field approximation is used for spin-orbit interaction. 
+
+\item{\Key{BRT-SO}} \\
+Requests usage of two-electron spin-orbit interaction integrals in computation of spin-orbit contribution 
+to hyperfine coupling tensor. This keyword must be combined with \Key{SPIN-ORBIT} in the \Sec{*INTEGRALS} input module. 
+
+\item{\Key{EFF-SO}} \\
+Requests usage of effective scaled charge spin-orbit interaction integrals in computation of spin-orbit contribution 
+to hyperfine coupling tensor.
+
+\item{\Key{PRINT}}     \\
+\verb|READ (LUCMD,*),IPRESR |\\
+   The line following gives the print level for the HFC routines.
+
 \end{description}

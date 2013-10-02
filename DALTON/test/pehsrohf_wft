@@ -47,7 +47,7 @@ H           -2.508043   -1.382001     .040282
 #######################################################################
 cat > pehsrohf_wft.pot <<'%EOF%'
 ! Two water molecules
-coordinates
+@COORDINATES
 6
 AA
 O     0.975536     1.507219    -0.082590
@@ -56,7 +56,8 @@ H     1.113831     2.040431     0.704778
 O     1.633705    -1.233280    -0.078786
 H     1.600739    -0.258639    -0.086953
 H     2.303878    -1.461228     0.570065
-monopoles
+@MULTIPOLES
+ORDER 0
 6
  1    -0.739083
  2     0.367781
@@ -64,7 +65,7 @@ monopoles
  4    -0.739251
  5     0.367701
  6     0.371549
-dipoles
+ORDER 1
 6
  1    -0.130726     0.053697     0.127642
  2     0.206730     0.034515    -0.015142
@@ -72,7 +73,7 @@ dipoles
  4     0.104509     0.119958     0.105009
  5    -0.007017    -0.209358    -0.012012
  6    -0.149391     0.032310    -0.145096
-quadrupoles
+ORDER 2
 6
  1    -3.891547     0.304260     0.173633    -4.459360     0.423169    -4.191583
  2    -0.005325     0.100015    -0.012868    -0.496247    -0.009445    -0.522055
@@ -80,7 +81,8 @@ quadrupoles
  4    -4.353401    -0.233572     0.425650    -3.805243    -0.203696    -4.384519
  5    -0.519714    -0.002960    -0.007650     0.013940     0.010074    -0.519177
  6    -0.250836    -0.075418     0.246439    -0.497307    -0.073459    -0.266235
-alphas
+@POLARIZABILITIES
+ORDER 1 1
 6
  1     5.476036    -0.086680    -0.072168     5.582289    -0.124016     5.513301
  2     3.488465     0.298404    -0.071204     1.739307    -0.350308     1.360585
@@ -88,14 +90,14 @@ alphas
  4     5.555285     0.085929    -0.120805     5.451407     0.074565     5.566247
  5     1.509477    -0.036783    -0.366362     3.554625     0.100598     1.528430
  6     2.658086    -0.248537     0.746655     1.223737    -0.356653     2.608086
-exclists
-1
- 1
- 1
- 1
- 2
- 2
- 2
+EXCLISTS
+6 3
+ 1 2 3
+ 2 1 3
+ 3 1 2
+ 4 5 6
+ 5 4 6
+ 6 4 5
 %EOF%
 #######################################################################
 #  DALTON INPUT
@@ -109,6 +111,8 @@ cat > pehsrohf_wft.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *SCF INPUT
+.MAX ERR
+10
 .DOUBLY OCCUPIED
 6
 .SINGLY OCCUPIED
@@ -143,7 +147,7 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Convergence
 #
-CRIT1=`$GREP "*** DIIS converged in  24 iterations" $log | wc -l`
+CRIT1=`$GREP " DIIS converged in  44 iterations" $log | wc -l`
 TEST[2]=`expr $CRIT1 `
 CTRL[2]=1
 ERROR[2]="CONVERGENCE PROBLEM"
@@ -151,14 +155,14 @@ ERROR[2]="CONVERGENCE PROBLEM"
 #
 # Energies
 #
-CRIT1=`$GREP "Monopoles * (|0)\.006147......" $log | wc -l`
-CRIT2=`$GREP "Dipoles * (\-|\-0)\.006050......" $log | wc -l`
-CRIT3=`$GREP "Quadrupoles * (|0)\.011767......" $log | wc -l`
-CRIT4=`$GREP "Electronic * (|0)\.243629......" $log | wc -l`
-CRIT5=`$GREP "Nuclear * (\-|\-0)\.277791......" $log | wc -l`
-CRIT6=`$GREP "Multipole * (\-|\-0)\.002988......" $log | wc -l`
-CRIT7=`$GREP "Total PE energy: * (\-|\-0)\.025284......" $log | wc -l`
-CRIT8=`$GREP "Final HF energy: * \-111\.194146......" $log | wc -l`
+CRIT1=`$GREP "Monopoles * ( |0)\.001447......" $log | wc -l`
+CRIT2=`$GREP "Dipoles * (\-|\-0)\.003653......" $log | wc -l`
+CRIT3=`$GREP "Quadrupoles * ( |0)\.007585......" $log | wc -l`
+CRIT4=`$GREP "Electronic * ( |0)\.228251......" $log | wc -l`
+CRIT5=`$GREP "Nuclear * (\-|\-0)\.259766......" $log | wc -l`
+CRIT6=`$GREP "Multipole * (\-|\-0)\.003579......" $log | wc -l`
+CRIT7=`$GREP "Total PE energy: * (\-|\-0)\.029715......" $log | wc -l`
+CRIT8=`$GREP "Final HF energy: * \-111\.257389......" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 `
 CTRL[3]=8
 ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
@@ -166,12 +170,12 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Induced dipole moments in environment
 #
- CRIT1=`$GREP "*  1 * (|0)\.14317... * (|0)\.25830... * (\-|\-0)\.01784..." $log | wc -l`
- CRIT2=`$GREP "*  2 * (|0)\.25214... * (|0)\.12471... * (\-|\-0)\.03182..." $log | wc -l`
- CRIT3=`$GREP "*  3 * (|0)\.03376... * (|0)\.08590... * (|0)\.06650..." $log | wc -l`
- CRIT4=`$GREP "*  4 * (|0)\.29271... * (|0)\.01854... * (\-|\-0)\.02170..." $log | wc -l`
- CRIT5=`$GREP "*  5 * (|0)\.06059... * (|0)\.15032... * (\-|\-0)\.01236..." $log | wc -l`
- CRIT6=`$GREP "*  6 * (|0)\.08710... * (\-|\-0)\.01124... * (|0)\.03167..." $log | wc -l`
+ CRIT1=`$GREP "  1 * ( |0)\.12473... * ( |0)\.27132... * (\-|\-0)\.01765..." $log | wc -l`
+ CRIT2=`$GREP "  2 * ( |0)\.20285... * ( |0)\.12868... * (\-|\-0)\.03160..." $log | wc -l`
+ CRIT3=`$GREP "  3 * ( |0)\.03080... * ( |0)\.08745... * ( |0)\.06416..." $log | wc -l`
+ CRIT4=`$GREP "  4 * ( |0)\.29873... * ( |0)\.02220... * (\-|\-0)\.02167..." $log | wc -l`
+ CRIT5=`$GREP "  5 * ( |0)\.06133... * ( |0)\.16073... * (\-|\-0)\.01224..." $log | wc -l`
+ CRIT6=`$GREP "  6 * ( |0)\.08835... * (\-|\-0)\.01079... * ( |0)\.03173..." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[4]=6
 ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
@@ -179,9 +183,9 @@ ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 #
 # dipole moment of formaldehyde
 #
-CRIT1=`$GREP "x * (|0)\.13071..." $log | wc -l`
-CRIT2=`$GREP "y * \-1\.27872..." $log | wc -l`
-CRIT3=`$GREP "z * (|0)\.03977..." $log | wc -l`
+CRIT1=`$GREP "x * ( |0)\.14604..." $log | wc -l`
+CRIT2=`$GREP "y * \-1\.61526..." $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.04849..." $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[5]=3
 ERROR[5]="DIPOLE MOMENT NOT CORRECT"

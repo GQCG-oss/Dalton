@@ -195,7 +195,11 @@ contains
       call output(elms, 1, nrow,1, ncol, nrow, ncol, -1, uni)
 #else
       do i = 1, nrow
-         line(1:1) = merge(spr(1:1),' ',i==1)
+         if (i==1) then
+            line(1:1) = spr(1:1)
+         else
+            line(1:1) = ' '
+         end if
          line(2:2) = spr(1:1)
          l = 3
          do j = 1, ncol
