@@ -158,11 +158,20 @@
          case(LSMPIPRINTINFO);
             call lsmpi_print_mem_info(6,.TRUE.)
 
+         case(SLAVES_SHUT_DOWN_CHILD)
+            if(infpar%parent_comm/=MPI_COMM_NULL)then
+              call lsquit("ERROR(SLAVES_SHUT_DOWN_CHILD):I am not a parent",-1)
+            endif
+            call shut_down_child_process
+
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########
          !##########################################
    
-         case(SHUT_DOWN_CHILD);
+         case(CHILD_SHUT_DOWN);
+            if(infpar%parent_comm==MPI_COMM_NULL)then
+              call lsquit("ERROR(SHUT_DOWN_CHILD):I am not a child to be shut down",-1)
+            endif
             call shut_down_child_process
             stay_in_slaveroutine = .false.
 

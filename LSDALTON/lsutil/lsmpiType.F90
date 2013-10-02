@@ -5009,27 +5009,27 @@ contains
     subroutine get_parent_child_relation
       implicit none
       integer(kind=ls_mpik) :: ierr
-      logical(kind=ls_mpik) :: have_priority
+      logical(kind=ls_mpik) :: last
 #ifdef VAR_MPI
 
       if( infpar%parent_comm == MPI_COMM_NULL ) then
         ! if i am a parent 
-        have_priority = .true.
-        call MPI_INTERCOMM_MERGE( infpar%child_comm, have_priority, infpar%pc_comm, ierr )
+        last = .false.
+        call MPI_INTERCOMM_MERGE( infpar%child_comm, last, infpar%pc_comm, ierr )
       else
         ! if i am a child
-        have_priority = .false.
-        call MPI_INTERCOMM_MERGE( infpar%parent_comm, have_priority, infpar%pc_comm, ierr )
+        last = .true.
+        call MPI_INTERCOMM_MERGE( infpar%parent_comm, last, infpar%pc_comm, ierr )
       endif
 
       call MPI_COMM_RANK( infpar%pc_comm, infpar%pc_mynum, ierr )
       call MPI_COMM_SIZE( infpar%pc_comm, infpar%pc_nodtot, ierr )
 
-      if( infpar%parent_comm == MPI_COMM_NULL ) print *,"old",infpar%lg_mynum,infpar%pc_mynum
-      if( infpar%parent_comm /= MPI_COMM_NULL ) print *,"new",infpar%lg_mynum,infpar%pc_mynum
-      call mpi_barrier(infpar%pc_comm,ierr)
-      call mpi_barrier(infpar%lg_comm,ierr)
-      stop 0
+      !if( infpar%parent_comm == MPI_COMM_NULL ) print *,"old",infpar%lg_mynum,infpar%pc_mynum,infpar%pc_nodtot
+      !if( infpar%parent_comm /= MPI_COMM_NULL ) print *,"new",infpar%lg_mynum,infpar%pc_mynum,infpar%pc_nodtot
+      !call mpi_barrier(infpar%pc_comm,ierr)
+      !call mpi_barrier(infpar%lg_comm,ierr)
+      !stop 0
 #endif
     end subroutine get_parent_child_relation
 
@@ -5070,7 +5070,7 @@ contains
 #ifdef VAR_MPI
 
       if( infpar%parent_comm == MPI_COMM_NULL ) then
-        call ls_mpibcast(SHUT_DOWN_CHILD,infpar%pc_mynum,infpar%pc_comm)
+        call ls_mpibcast(CHILD_SHUT_DOWN,infpar%pc_mynum,infpar%pc_comm)
         call MPI_COMM_FREE(infpar%pc_comm,ierr)
         call MPI_COMM_FREE(infpar%child_comm,ierr)
       else

@@ -14,9 +14,10 @@ SUBROUTINE LSDALTON
   real(realk) :: t1,t2
   
   !Set the default values
-  OnMaster = .TRUE.
-  luerr    = 0
-  lupri    = 0
+  OnMaster       = .TRUE.
+  meminfo_slaves = .FALSE.
+  luerr          = 0
+  lupri          = 0
 
   ! setup the calculation 
   call lsinit_all(OnMaster,lupri,luerr,t1,t2)
@@ -653,6 +654,7 @@ END SUBROUTINE lsinit_all
 
 SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use precision
+  use memory_handling, only: stats_mem
   use files, only: lsclose
   use lstiming, only: lstimer, init_timers, print_timers
   use matrix_operations, only: MatrixmemBuf_free
@@ -668,7 +670,7 @@ implicit none
   integer,intent(inout)      :: lupri,luerr
   logical,intent(inout)      :: meminfo
   real(realk), intent(inout) :: t1,t2
-
+  
   !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL
 #ifdef VAR_MPI
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
@@ -684,6 +686,7 @@ implicit none
 
 #ifdef VAR_MPI
   if( infpar%parent_comm==MPI_COMM_NULL ) then
+
     call ls_mpibcast(meminfo,infpar%master,MPI_COMM_LSDALTON)
     if(meminfo)call lsmpi_print_mem_info(lupri,.false.)
 

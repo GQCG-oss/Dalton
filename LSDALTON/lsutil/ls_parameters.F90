@@ -105,7 +105,8 @@ MODULE Integralparameters
   integer,parameter :: DFTADDFU                 = 35
   integer,parameter :: LSMPI_IIDFTABSVALOVERLAP = 36
   integer,parameter :: GIVE_BIRTH               = 37
-  integer,parameter :: SHUT_DOWN_CHILD          = 38
+  integer,parameter :: SLAVES_SHUT_DOWN_CHILD   = 38
+  integer,parameter :: CHILD_SHUT_DOWN          = 39
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2
