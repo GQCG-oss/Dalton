@@ -1712,6 +1712,9 @@ contains
       !get B2.2 contributions
       !**********************
       call get_B22_contrib_mo(sio4,t2,w1,w2,no,nv,nb,omega2,scheme,lock_outside)
+
+
+      !test and debug crap
 #ifdef VAR_MPI
       call lsmpi_win_free(sio4_w)
       call mem_dealloc(sio4,sio4_c)
@@ -1755,8 +1758,14 @@ contains
 #elif VAR_MPI
       startt=MPI_wtime()
 #endif
+
+
       call get_cnd_terms_mo(w1,w2,w3,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
            &scheme,lock_outside,els2add)
+
+
+
+      !test and debug crap
 #ifdef VAR_OMP
       stopp=omp_get_wtime()
 #elif VAR_MPI
@@ -1854,19 +1863,13 @@ contains
     endif
 
     !allocate the density matrix
-    !print *,"1"
     call mat_init(iFock,nb,nb)
-    !print *,"1.1"
     call mat_init(Dens,nb,nb)
-    !print *,"2"
 
     !calculate inactive fock matrix in ao basis
     call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens%elms,nb)
-    !print *,"2.1"
     call mat_zero(iFock)
-    !print *,"2.2"
     call dec_fock_transformation(iFock,Dens,MyLsItem,.false.)
-    !print *,"3"
     
 
     !THIS IS NOT YET IMPLEMENTED -- as soon as it is, do not use type(matrix)
@@ -2437,15 +2440,18 @@ contains
 
      call mem_alloc(w2,w2size)
      call mem_alloc(w3,w3size)
+     if(me==0.and.DECinfo%PL>2)then
+       print *,"alloc done!"
+     endif
 
 
      !calculate doubles C term
      !*************************
 
      
-
      !Reorder gvvoo [a c k i] -> goovv [a i c k]
      if(s==4)then
+       if(me==0.and.DECinfo%PL>2) print *,"1"
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w2)
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w1)
@@ -2497,7 +2503,9 @@ contains
 
      !Reorder t [a d l i] -> t [a i d l]
      if(s==4)then
+       if(me==0.and.DECinfo%PL>2) print *,"2"
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w3)
+       if(me==0.and.DECinfo%PL>2) print *,"2.1"
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
        do i=1,tl
@@ -2533,11 +2541,13 @@ contains
 #endif
      endif
 
+       if(me==0.and.DECinfo%PL>2) print *,"2.2"
    
      !stop 0
      !SCHEME 4 AND 3 because of w1 being buffer before
      !Reorder govov [k d l c] -> govov [d l c k]
      if(s==3.or.s==4)then
+       if(me==0.and.DECinfo%PL>2) print *,"3"
        call array_reorder_4d(1.0E0_realk,govov%elm1,no,nv,no,nv,[2,3,4,1],0.0E0_realk,w1)
        !write (msg,*),infpar%lg_mynum,"w3 ERSCHDE"
        !call print_norm(w3,int(tl*no*nv,kind=8),msg)
@@ -2552,6 +2562,7 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 1         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !(-0.5) * t [a i d l] * govov [d l c k] + goovv [a i c k] = C [a i c k]
+     if(me==0.and.DECinfo%PL>2) print *,"4"
      call dgemm('n','n',tl,no*nv,no*nv,-0.5E0_realk,w3(faif),lead,w1,no*nv,1.0E0_realk,w2(faif),lead)
 
 
@@ -2560,7 +2571,9 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !(-1) * C [a i c k] * t [c k b j] = preOmC [a i b j]
      if(s==4)then
+       if(me==0.and.DECinfo%PL>2) print *,"5"
        w1=0.0E0_realk
+       if(me==0.and.DECinfo%PL>2) print *,"6"
        call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w3,no*nv,0.0E0_realk,w1(fai),no*nv)
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
@@ -2585,8 +2598,10 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      if(s==3.or.s==4)then
        !contribution 1: 0.5*preOmC [a i b j] -> =+ Omega [a b i j]
+       if(me==0.and.DECinfo%PL>2) print *,"7"
        call array_reorder_4d(0.5E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
        !contribution 3: preOmC [a j b i] -> =+ Omega [a b i j]
+       if(me==0.and.DECinfo%PL>2) print *,"8"
        call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,4,2],1.0E0_realk,omega2%elm1)
      elseif(s==2)then
 #ifdef VAR_MPI
