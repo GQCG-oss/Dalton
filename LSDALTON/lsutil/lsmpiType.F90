@@ -5036,15 +5036,22 @@ contains
     subroutine give_birth_to_child_process
       implicit none
       integer(kind=ls_mpik) :: procs_to_spawn,root,errorcode(1),ierr
+      logical               :: localdalton
 #ifdef VAR_MPI
 
           procs_to_spawn = int(1,kind=ls_mpik)
           root           = int(0,kind=ls_mpik)
 
-          call MPI_COMM_SPAWN('./lsdalton.x',MPI_ARGV_NULL,procs_to_spawn,MPI_INFO_NULL,&
+          inquire(file='lsdalton.x', exist=localdalton)
+          if(localdalton)then
+            call MPI_COMM_SPAWN('./lsdalton.x',MPI_ARGV_NULL,procs_to_spawn,MPI_INFO_NULL,&
              &root,MPI_COMM_SELF,infpar%child_comm,errorcode,ierr)
+            call get_parent_child_relation
+          else
+            call lsquit("ERROR(give_birth_to_child_process):lsdalton.x was not&
+             &found in the working directory, move it there and restart",-1)
+          endif
 
-          call get_parent_child_relation
 #endif
     end subroutine give_birth_to_child_process
 
@@ -5608,6 +5615,26 @@ contains
 #endif
   end subroutine lsmpi_get_realkV
 
+  subroutine lsmpi_get_acc_int(ibuf,obuf,dest,pos,win)
+    integer(kind=4),intent(inout)    :: ibuf
+    integer(kind=4),intent(inout)    :: obuf
+    integer(kind=ls_mpik),intent(in) :: dest,win
+    integer,intent(in)               :: pos
+    integer(kind=4)                  :: n
+#ifdef VAR_MPI
+    integer(kind=MPI_ADDRESS_KIND)   :: offset
+    
+    n=1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+#ifdef VAR_HAVE_MPI3
+    call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER4,obuf,n,&
+    &MPI_INTEGER,dest,offset,n,MPI_INTEGER,MPI_SUM,win,ierr)
+#else
+    call lsquit("ERROR(lsmpi_get_acc):you did not comile with an MPI3 enabled&
+          &MPI library. Recompile.",-1)
+#endif
+#endif
+  end subroutine lsmpi_get_acc_int
 
   subroutine lsmpi_acc_int8(buf,pos,dest,win)
     implicit none

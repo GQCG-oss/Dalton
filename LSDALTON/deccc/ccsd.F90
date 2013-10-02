@@ -1245,12 +1245,10 @@ contains
       call distribute_mpi_jobs(mpi_task_distribution,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
            &batchdimGamma,myload,scheme,no,nv,nb,batch2orbAlpha,batch2orbGamma)
     else
-      !call mem_alloc(win_in_g,nbatchesGamma)
-      !call mem_alloc(mpi_task_distribution,mpi_ctasks,nbatchesGamma) 
-      call mem_alloc(mpi_stuff,mpi_ctasks,nbatchesGamma) 
-      mpi_stuff=0.0E0_realk
-      if(master) mpi_stuff(1) = float(infpar%lg_nodtot)
-      call lsmpi_win_create(mpi_stuff,win_in_g,nbatchesGamma,infpar%lg_comm)
+      call mem_alloc(mpi_task_distribution,mpi_ctasks,nbatchesGamma) 
+      mpi_task_distribution = 0
+      if(master) mpi_task_distribution(1) = infpar%lg_nodtot
+      call lsmpi_win_create(mpi_task_distribution,win_in_g,nbatchesGamma,infpar%lg_comm)
     endif
     !startt = omp_get_wtime()
 #endif
@@ -1305,7 +1303,7 @@ contains
        !break the loop if alpha become too large, necessary to account for all
        !of the mpi and non mpi schemes, this is accounted for, because static,
        !and dynamic load balancing are enabled
-       if(alphaB>nbatchesAlpha)exit
+       if(alphaB>nbatchesAlpha) exit
 
        dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
        AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
@@ -1631,7 +1629,7 @@ contains
       call mem_dealloc(mpi_task_distribution)
     else
       call lsmpi_win_free(win_in_g)
-      call mem_dealloc(mpi_stuff,mpi_ctasks)
+      call mem_dealloc(mpi_task_distribution,mpi_ctasks)
     endif
 
     stopp=MPI_wtime()
@@ -2254,10 +2252,10 @@ contains
     integer :: static(:)
     !integer(kind=ls_mpik) :: dynamic(:)
     integer(kind=ls_mpik) :: dynamic
-    real(realk) :: mpi_buf,el 
+    real(realk) :: mpi_buf
+    integer :: el 
     integer(kind=ls_mpik) :: i, job
 #ifdef VAR_MPI
-       el=0
        !ugly construction to get both schemes in
        if(.not.dyn)then
          a=a+1
@@ -2274,18 +2272,10 @@ contains
          if(fr)then
            a=infpar%lg_mynum
          else
-           mpi_buf=1.0E0_realk
+           el=1
            call lsmpi_win_lock(infpar%master,dynamic,'e')
-           call lsmpi_get(el,g,infpar%master,dynamic)
-           call lsmpi_acc(mpi_buf,g,infpar%master,dynamic)
+           call lsmpi_get_acc_int(el,a,infpar%master,g,dynamic)
            call lsmpi_win_unlock(infpar%master,dynamic)
-           if(s==4.or.s==1)then
-             do i=1,infpar%lg_nodtot-1
-               call lsmpi_win_lock(i,dynamic,'s')
-               call lsmpi_win_unlock(i,dynamic)
-             enddo
-           endif
-           a=int(el)
          endif
        endif
        if(fr) fr=.false.
