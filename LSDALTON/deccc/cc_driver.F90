@@ -2100,9 +2100,14 @@ contains
     nnodes=1
 #ifdef VAR_MPI
     nnodes=infpar%lg_nodtot
+
     if ( DECinfo%spawn_comm_proc ) then
+      !impregnate the slaves
+      call ls_mpibcast(GIVE_BIRTH,infpar%master,infpar%lg_comm)
+      !just to find, that the master is also fertile
       call give_birth_to_child_process
     endif
+
 #ifndef COMPILER_UNDERSTANDS_FORTRAN_2003
     call lsquit("ERROR(ccsolver_par):Your compiler does not support certain&
     & features needed to run that part of the code. Use a compiler supporting&
@@ -2607,10 +2612,16 @@ contains
        last_iter = iter
        if(break_iterations) exit
          
-   end do CCIteration
+    end do CCIteration
 
-   call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
+    call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
 
+    if ( DECinfo%spawn_comm_proc ) then
+      !kill the babies of the slaves
+      call ls_mpibcast(SHUT_DOWN_CHILD,infpar%master,infpar%lg_comm)
+      !kill own baby
+      call give_birth_to_child_process
+    endif
 
 
     ! Free memory and save final amplitudes

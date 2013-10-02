@@ -1,10 +1,40 @@
 !> @file 
 !> Contains main SCF driver, some module wrappers and miscellaneous 
 
+
+!> \brief new lsdalton routine to have a nicer stop for the slaves and not to
+!run into a "non-beautiful" stop statement
+!> \author Patrick Ettenhuber
+!> \date 2013
+SUBROUTINE LSDALTON
+  use precision
+  implicit none
+  logical     :: OnMaster,meminfo_slaves
+  integer     :: lupri, luerr
+  real(realk) :: t1,t2
+  
+  !Set the default values
+  OnMaster = .TRUE.
+  luerr    = 0
+  lupri    = 0
+
+  ! setup the calculation 
+  call lsinit_all(OnMaster,lupri,luerr,t1,t2)
+
+  ! execute the acutal calculation
+  if(OnMaster) call LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
+
+  ! free everything take time and close the files
+  call lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
+
+
+END SUBROUTINE LSDALTON
+
+
 !> \brief Driver for stand-alone f90 linear scaling SCF.
 !> \author \latexonly T. Kj{\ae}rgaard, S. Reine  \endlatexonly
 !> \date 2008-10-26
-SUBROUTINE lsdalton
+SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use precision
   use configurationType, only: configitem, LowAccuracyStartType, &
        & set_Low_accuracy_start_settings,revert_Low_accuracy_start_settings
@@ -17,13 +47,13 @@ SUBROUTINE lsdalton
        & mat_TrAB, mat_print, MatrixmemBuf_init, MatrixmemBuf_free, &
        & MatrixmemBuf_print
   use configuration, only: config_shutdown, config_free,scf_purify
+  use files, only: lsopen,lsclose
   use lsdalton_fock_module, only: lsint_fock_data
   use init_lsdalton_mod, only: open_lsdalton_files,init_lsdalton_and_get_lsitem
   use initial_guess, only: get_initial_dens
   use scfloop_module, only: scfloop, scf_afterplay
   use lstiming, only: lstimer, init_timers, print_timers
   use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
-  use files, only: lsopen, lsclose
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
   use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2
   use daltoninfo, only: ls_free 
@@ -67,7 +97,10 @@ SUBROUTINE lsdalton
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
   implicit none
-  integer             :: nbast,lupri, luerr, lucmo
+  logical, intent(in) :: OnMaster
+  logical, intent(out):: meminfo_slaves
+  integer, intent(inout) :: lupri, luerr
+  integer             :: nbast, lucmo
   TYPE(lsitem),target :: ls
   type(configItem),target  :: config
   real(realk)         :: t1,t2,TIMSTR,TIMEND
@@ -81,7 +114,7 @@ SUBROUTINE lsdalton
   real(realk), allocatable :: eival(:)
   real(realk),pointer :: GGem(:,:,:,:,:)
   integer     :: lusoeo,funit
-  logical     :: soeosaveexist, HFdone,OnMaster,scfpurify,skipHFpart
+  logical     :: soeosaveexist, HFdone,scfpurify,skipHFpart
   type(matrix) :: Dmo, tmp
   integer             :: nelec
   Integer             :: Natoms
@@ -90,13 +123,6 @@ SUBROUTINE lsdalton
 #endif
 
   type(LowAccuracyStartType)  :: LAStype
-  OnMaster = .TRUE.
-  ! Set lupri and luerr to zero here to make sure they are not unintialized for MPI slaves
-  luerr=0
-  lupri=0
-
-
-  call lsinit_all()
 
 #if VAR_LSDEBUG
   print *,       "THIS IS A DEBUG BUILD"
@@ -104,11 +130,6 @@ SUBROUTINE lsdalton
   write (LUERR,*)"THIS IS A DEBUG BUILD"
 #endif
 
-  ! Open output files LSDALTON.OUT and LSDALTON.ERR
-  call open_lsdalton_files(lupri,luerr)
-
-  ! Time the whole LSdalton calculation
-  call LSTIMER('START',t1,t2,LUPRI)
 
   ! Init LSdalton calculation and get lsitem and config structures
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
@@ -368,9 +389,9 @@ SUBROUTINE lsdalton
            if (config%decomp%cfg_mlo ) then
               write(ls%lupri,'(a)')'Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****'
               call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
-	      if (config%davidOrbLoc%make_orb_plot) then
+              if (config%davidOrbLoc%make_orb_plot) then
                  call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
-	      end if
+              end if
            endif
            !write lcm to file
            lun = -1
@@ -515,23 +536,23 @@ SUBROUTINE lsdalton
   OnlyLoc:  if (config%davidOrbLoc%OnlyLocalize) then
            ! read orbitals
            lun = -1
-	   call mat_init(CMO,nbast,nbast)
+           call mat_init(CMO,nbast,nbast)
            CALL LSOPEN(lun,'orbitals_in.u','unknown','UNFORMATTED')
-	   call mat_read_from_disk(LUN,cmo,OnMaster)
+           call mat_read_from_disk(LUN,cmo,OnMaster)
            call LSclose(LUN,'KEEP')
            if (config%decomp%cfg_mlo) then
-	      write(ls%lupri,*)
-	      write(ls%lupri,'(a)') '*** LOCALIZING ORBITALS ***'
+              write(ls%lupri,*)
+              write(ls%lupri,'(a)') '*** LOCALIZING ORBITALS ***'
               call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
            else
                call lsquit('No localization type was requested',ls%lupri) 
-	   end if
+           end if
            ! write localized orbitals
            lun = -1
            CALL LSOPEN(lun,'localized_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
            call LSclose(LUN,'KEEP')
-	   call mat_free(cmo)
+           call mat_free(cmo)
   end if OnlyLoc
 
   ! Construct PLT file
@@ -583,35 +604,30 @@ SUBROUTINE lsdalton
   call config_free(config)
 
   call ls_free(ls)
+  
+  meminfo_slaves = config%mpi_mem_monitor
 
-  call lsfree_all()
-
-  call stats_mem(lupri)
-  !finalize MPI 
-  call lsmpi_finalize(lupri,config%mpi_mem_monitor)
-  call print_timers(lupri) !timings for mat operations.
-  call LSTIMER('LSDALTON',t1,t2,LUPRI,.TRUE.)
-  CALL LS_TSTAMP('End simulation',LUPRI)
-
-  CALL LSCLOSE(LUPRI,'KEEP')
-  CALL LSCLOSE(LUERR,'KEEP')
+END SUBROUTINE LSDALTON_DRIVER
 
 
-END SUBROUTINE LSDALTON
-
-SUBROUTINE lsinit_all()
+SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use precision
   use matrix_operations, only: MatrixmemBuf_init, set_matrix_default
+  use init_lsdalton_mod, only: open_lsdalton_files
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
   use memory_handling, only: init_globalmemvar
-  use lstiming, only: init_timers
+  use lstiming, only: init_timers, lstimer,  print_timers
   use lspdm_tensor_operations_module,only:init_persistent_array
   use GCtransMod, only: init_AO2GCAO_GCAO2AO
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
-implicit none
+
+  implicit none
+  logical, intent(inout)     :: OnMaster
+  integer, intent(inout)     :: lupri, luerr
+  real(realk), intent(inout) :: t1,t2
   
   ! Init PAPI FLOP counting event using global parameter "eventset" stored in papi_module
 #ifdef VAR_PAPI
@@ -626,22 +642,64 @@ implicit none
   call init_persistent_array
   call init_timers !initialize timers
   ! MPI initialization
-  call lsmpi_init
+  call lsmpi_init(OnMaster)
 
+  !INIT TIMING AND FILES
+  if(OnMaster)then
+    call LSTIMER('START',t1,t2,LUPRI)
+    call open_lsdalton_files(lupri,luerr)
+  endif
 END SUBROUTINE lsinit_all
 
-SUBROUTINE lsfree_all()
+SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use precision
+  use files, only: lsclose
+  use lstiming, only: lstimer, init_timers, print_timers
   use matrix_operations, only: MatrixmemBuf_free
   use lstensorMem, only: lstmem_free
   use lspdm_tensor_operations_module,only:free_persistent_array
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
+#ifdef VAR_MPI
+  use infpar_module
+  use lsmpi_type
+#endif
 implicit none
-  
+  logical,intent(in)         :: OnMaster
+  integer,intent(inout)      :: lupri,luerr
+  logical,intent(inout)      :: meminfo
+  real(realk), intent(inout) :: t1,t2
+
+  !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL
+#ifdef VAR_MPI
+  if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
+#endif  
+
   call lstmem_free
 
   call MatrixmemBuf_free()
   call free_AO2GCAO_GCAO2AO()
   call free_persistent_array
 
+  if(OnMaster) call stats_mem(lupri)
+
+#ifdef VAR_MPI
+  if( infpar%parent_comm==MPI_COMM_NULL ) then
+    call ls_mpibcast(meminfo,infpar%master,MPI_COMM_LSDALTON)
+    if(meminfo)call lsmpi_print_mem_info(lupri,.false.)
+
+  endif
+
+  call lsmpi_finalize(lupri,.false.)
+#endif
+
+  if(OnMaster)then
+
+    call print_timers(lupri) !timings for mat operations.
+    call LSTIMER('LSDALTON',t1,t2,LUPRI,.TRUE.)
+    CALL LS_TSTAMP('End simulation',LUPRI)
+
+    CALL LSCLOSE(LUPRI,'KEEP')
+    CALL LSCLOSE(LUERR,'KEEP')
+
+  endif
 END SUBROUTINE lsfree_all
