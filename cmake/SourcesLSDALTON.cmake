@@ -227,10 +227,15 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_general.F90
     LSDALTON/IchorIntegrals/IchorEri.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQP.F90
-    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQP.F90
-    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceP.F90
-    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQ.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPA.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPD.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPC.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPAtoC.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPDtoA.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPCtoA.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePAtoB.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQCtoD.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQDtoC.F90
     LSDALTON/IchorIntegrals/AGC_SphContractOBS1.F90
     LSDALTON/IchorIntegrals/AGC_SphContractOBS2.F90
     )

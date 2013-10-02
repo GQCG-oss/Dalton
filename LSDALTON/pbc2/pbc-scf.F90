@@ -1200,7 +1200,8 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,lupri)
 
 END SUBROUTINE pbc_get_kdensity
 
-SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fock,numrealvec,errortest,error,diis_exit,errdim,nelectrons,lupri)
+SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fock,&
+                numrealvec,errortest,error,diis_exit,errdim,nelectrons,lupri)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: ndim,lupri,numrealvec,its,tol,errdim
   INTEGER,INTENT(IN) :: nelectrons

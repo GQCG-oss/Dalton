@@ -1,9 +1,9 @@
-MODULE AGC_OBS_TRANSFERRECURRENCEMOD
+MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoC
  use IchorPrecisionModule
   
  CONTAINS
 
-subroutine TransferRecurrenceP1Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine TransferRecurrenceP1Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
@@ -60,9 +60,9 @@ subroutine TransferRecurrenceP1Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP1Q1
+end subroutine TransferRecurrenceP1Q1AtoC
 
-subroutine TransferRecurrenceP2Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine TransferRecurrenceP2Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
@@ -137,9 +137,9 @@ subroutine TransferRecurrenceP2Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP2Q1
+end subroutine TransferRecurrenceP2Q1AtoC
 
-subroutine TransferRecurrenceP2Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
@@ -305,9 +305,9 @@ subroutine TransferRecurrenceP2Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP2Q2
+end subroutine TransferRecurrenceP2Q2AtoC
 
-subroutine TransferRecurrenceP3Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine TransferRecurrenceP3Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
@@ -412,9 +412,9 @@ subroutine TransferRecurrenceP3Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP3Q1
+end subroutine TransferRecurrenceP3Q1AtoC
 
-subroutine TransferRecurrenceP3Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine TransferRecurrenceP3Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
@@ -685,9 +685,9 @@ subroutine TransferRecurrenceP3Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP3Q2
+end subroutine TransferRecurrenceP3Q2AtoC
 
-subroutine TransferRecurrenceP4Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine TransferRecurrenceP4Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
@@ -837,9 +837,9 @@ subroutine TransferRecurrenceP4Q1(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP4Q1
+end subroutine TransferRecurrenceP4Q1AtoC
 
-subroutine TransferRecurrenceP3Q3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine TransferRecurrenceP3Q3AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
@@ -1464,9 +1464,9 @@ subroutine TransferRecurrenceP3Q3(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP3Q3
+end subroutine TransferRecurrenceP3Q3AtoC
 
-subroutine TransferRecurrenceP4Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine TransferRecurrenceP4Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
@@ -1890,9 +1890,9 @@ subroutine TransferRecurrenceP4Q2(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP4Q2
+end subroutine TransferRecurrenceP4Q2AtoC
 
-subroutine TransferRecurrenceP4Q3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine TransferRecurrenceP4Q3AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
@@ -2877,9 +2877,9 @@ subroutine TransferRecurrenceP4Q3(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP4Q3
+end subroutine TransferRecurrenceP4Q3AtoC
 
-subroutine TransferRecurrenceP4Q4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine TransferRecurrenceP4Q4AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
@@ -4876,5 +4876,5 @@ subroutine TransferRecurrenceP4Q4(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP4Q4
+end subroutine TransferRecurrenceP4Q4AtoC
 end module
