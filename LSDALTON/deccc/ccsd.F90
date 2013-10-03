@@ -2295,7 +2295,7 @@ contains
          else
            el=1
            call lsmpi_win_lock(infpar%master,dynamic,'e')
-           call lsmpi_get_acc_int(el,a,infpar%master,g,dynamic)
+           call lsmpi_get_acc(el,a,infpar%master,g,dynamic)
            call lsmpi_win_unlock(infpar%master,dynamic)
          endif
        endif
