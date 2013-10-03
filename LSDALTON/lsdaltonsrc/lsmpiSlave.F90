@@ -11,25 +11,33 @@
     external lsdalton_chemsh_comm
 #endif
     
-    nLog = 0
-    nDP = 0
-    nInteger4=0
-    nInteger8=0
-    nShort = 0
-    nCha = 0
+    nLog      = 0
+    nDP       = 0
+    nInteger4 = 0
+    nInteger8 = 0
+    nShort    = 0
+    nCha      = 0
+
 #ifdef VAR_CHEMSHELL
     MPI_COMM_LSDALTON = lsdalton_chemsh_comm()
 #else
+
     call MPI_INIT( ierr )
-    MPI_COMM_LSDALTON = MPI_COMM_WORLD
-    !asynchronous progress is off åer default, might be switched on with an
-    !environment variable
-    LSMPIASYNCP = .false.
+
+    MPI_COMM_LSDALTON        = MPI_COMM_WORLD
+    lsmpi_enabled_comm_procs = .false.
+
+    !asynchronous progress is off per default, might be switched on with an
+    !environment variable, or by spawning communication processes
+    LSMPIASYNCP             = .false.
     call ls_getenv(varname="LSMPI_ASYNC_PROGRESS",leng=20,output_bool=LSMPIASYNCP)
+
 #endif
+
     call MPI_COMM_GET_PARENT( infpar%parent_comm, ierr )
     call MPI_COMM_RANK( MPI_COMM_LSDALTON, infpar%mynum, ierr )
     call MPI_COMM_SIZE( MPI_COMM_LSDALTON, infpar%nodtot, ierr )
+
     infpar%master = int(0,kind=ls_mpik);
     
     !CHECK IF WE ARE ON THE MAIN MAIN MAIN MASTER PROCESS (NOT IN LOCAL GROUP,
@@ -39,16 +47,23 @@
     ! Set rank, sizes and communcators for local groups
     ! to be identical to those for world group by default.
     call lsmpi_default_mpi_group
+
+    !if i am a child process, set the intracommunicator to the parent proc
     if( infpar%parent_comm /= MPI_COMM_NULL )  call get_parent_child_relation
+
     ! Assume that there will be local jobs
     infpar%lg_morejobs=.true.
 
+
+    
     if (infpar%mynum.ne.infpar%master) then
 
+      !if normal slave, listen on MPI_COMM_LSDALTON
       call lsmpi_slave(MPI_COMM_LSDALTON)
     
     elseif( infpar%parent_comm /= MPI_COMM_NULL )then
 
+      !if spawned process, listen on the parent-child-intracomm
       call lsmpi_slave(infpar%pc_comm)
 
     endif

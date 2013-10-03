@@ -18,13 +18,16 @@ module lsmpi_type
   include 'mpif.h'
 #endif
 #endif
+
   INTERFACE ls_mpibcast_chunks
     MODULE PROCEDURE ls_mpibcast_realkV_parts44,ls_mpibcast_realkV_parts48,&
                    & ls_mpibcast_realkV_parts84,ls_mpibcast_realkV_parts88
   END INTERFACE ls_mpibcast_chunks
+
   INTERFACE lsmpi_send
     MODULE PROCEDURE lsmpi_send_realkV_4,lsmpi_send_realkV_8
   END INTERFACE lsmpi_send
+
   INTERFACE lsmpi_recv
     MODULE PROCEDURE lsmpi_recv_realkV_4,lsmpi_recv_realkV_8
   END INTERFACE lsmpi_recv
@@ -168,56 +171,75 @@ module lsmpi_type
     module procedure lsmpi_get_acc_int444,lsmpi_get_acc_int888
   end interface lsmpi_get_acc
   !save
+
+!!!!!!!!!!!!!!!!!!!!!!!!!
+!Constants for MPIBUFFER!
+!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #ifdef VAR_MPI
+  integer,parameter     :: LSMPIBROADCAST=1
+  integer,parameter     :: LSMPIREDUCTION=2
+  integer,parameter     :: LSMPIREDUCTIONmaster=3
+  integer,parameter     :: LSMPISENDRECV=4
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!General MPI vars, aka junkbox!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
-  logical :: LSMPIASYNCP
-  integer,parameter :: LSMPIBROADCAST=1
-  integer,parameter :: LSMPIREDUCTION=2
-  integer,parameter :: LSMPIREDUCTIONmaster=3
-  integer,parameter :: LSMPISENDRECV=4
+  logical               :: LSMPIASYNCP
+  logical               :: lsmpi_enabled_comm_procs 
+
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-!#ifdef VAR_LSDEBUG
-  !FOR DEBUGGING USE THE FOLLOWING LINE
-!  integer,parameter :: SPLIT_MPI_MSG=24
-!#else
-  integer,parameter :: SPLIT_MPI_MSG=2147483640
-!#endif
+  integer,parameter     :: SPLIT_MPI_MSG = 2147483640
+
+  !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
+
   type mpigroup
-     integer(kind=ls_mpik) :: groupsize
+     integer(kind=ls_mpik)         :: groupsize
      integer(kind=ls_mpik),pointer :: ranks(:)
   end type mpigroup
+
 #endif
-!integer conversion factor
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!integer conversion factor!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef VAR_INT64
 #ifdef VAR_MPI
 #ifdef VAR_MPI_32BIT_INT
-  integer,parameter :: int_to_short=4 !int64,mpi & mpi32
+  integer,parameter :: int_to_short = 4 !int64,mpi & mpi32
 #else
-  integer,parameter :: int_to_short=8 !int64,mpi nompi32
+  integer,parameter :: int_to_short = 8 !int64,mpi nompi32
 #endif
 #else
-  integer,parameter :: int_to_short=8 !int64 nompi
+  integer,parameter :: int_to_short = 8 !int64 nompi
 #endif
 #else
-  integer,parameter :: int_to_short=4 !no int64
+  integer,parameter :: int_to_short = 4 !no int64
 #endif
-  !nonMPI stuff
-  logical :: AddToBuffer
-  integer(kind=long) :: iLog,iDP,iInt4,iInt8,iSho,iCha
-  integer(kind=long) :: nLog,nDP,nShort,nInteger4,nInteger8,nCha
-  real(realk),pointer :: lsmpibufferDP(:)
-  integer(kind=4),pointer :: lsmpibufferInt4(:)
-  integer(kind=8),pointer :: lsmpibufferInt8(:)
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!Checking and measuring variables!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  logical                     :: AddToBuffer
+  integer(kind=long)          :: iLog,iDP,iInt4,iInt8,iSho,iCha
+  integer(kind=long)          :: nLog,nDP,nShort,nInteger4,nInteger8,nCha
+  real(realk),pointer         :: lsmpibufferDP(:)
+  integer(kind=4),pointer     :: lsmpibufferInt4(:)
+  integer(kind=8),pointer     :: lsmpibufferInt8(:)
   integer(kind=short),pointer :: lsmpibufferSho(:)
-  logical,pointer :: lsmpibufferLog(:)
-  character,pointer :: lsmpibufferCha(:)
-  integer,parameter :: incremLog=169,incremDP=100,incremInteger=626
-  integer,parameter :: incremCha=1510,incremShort=incremInteger*int_to_short
-  real(realk) :: poketime=0.0E0_realk
-  integer(kind=long) :: poketimes = 0
-  real(realk) :: time_win_unlock = 0.0E0_realk
+  logical,pointer             :: lsmpibufferLog(:)
+  character,pointer           :: lsmpibufferCha(:)
+  integer,parameter           :: incremLog=169,incremDP=100,incremInteger=626
+  integer,parameter           :: incremCha=1510,incremShort=incremInteger*int_to_short
+  real(realk)                 :: poketime=0.0E0_realk
+  integer(kind=long)          :: poketimes = 0
+  real(realk)                 :: time_win_unlock = 0.0E0_realk
+
 
 !$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt4,iInt8,iSho,iCha,&
 !$OMP nLog,nDP,nInteger4,nInteger8,nShort,nCha,lsmpibufferDP,lsmpibufferInt4,&
@@ -225,12 +247,6 @@ module lsmpi_type
 
 contains
 
-!var_lsmpi_32
-!############################################################
-!#
-!#   MPI BROADCAST ROUTINES SHOULD NOT BE USED IF IT CAN BE AVOIDED
-!#
-!############################################################
     subroutine ls_mpibcast_integer(buffer,master,comm)
       implicit none
       integer(kind=4) :: buffer
@@ -5028,6 +5044,8 @@ contains
       call MPI_COMM_RANK( infpar%pc_comm, infpar%pc_mynum, ierr )
       call MPI_COMM_SIZE( infpar%pc_comm, infpar%pc_nodtot, ierr )
 
+      lsmpi_enabled_comm_procs = .true.
+
       !if( infpar%parent_comm == MPI_COMM_NULL ) print *,"old",infpar%lg_mynum,infpar%pc_mynum,infpar%pc_nodtot
       !if( infpar%parent_comm /= MPI_COMM_NULL ) print *,"new",infpar%lg_mynum,infpar%pc_mynum,infpar%pc_nodtot
       !call mpi_barrier(infpar%pc_comm,ierr)
@@ -5082,6 +5100,8 @@ contains
         call MPI_COMM_FREE(infpar%pc_comm,ierr)
         call MPI_COMM_FREE(infpar%parent_comm,ierr)
       endif
+
+      lsmpi_enabled_comm_procs = .false.
 
 #endif
     end subroutine shut_down_child_process
@@ -5183,28 +5203,35 @@ contains
     end subroutine lsmpi_print_mem_info
 
     subroutine lsmpi_finalize(lupri,mastercall)
-    implicit none
-    integer,intent(in)    :: lupri
-    logical,intent(in)     :: mastercall
-    integer(kind=ls_mpik) :: ierr
+      implicit none
+      integer,intent(in)    :: lupri
+      logical,intent(in)     :: mastercall
+      integer(kind=ls_mpik) :: ierr
 #ifdef VAR_MPI
-    ierr = 0
+      ierr = 0
 
-    if ((infpar%mynum.eq.infpar%master).and.mastercall) &
+      if ((infpar%mynum.eq.infpar%master).and.mastercall) &
        &call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !CHECK IF EVERYTHING IS OKAY INSIDE THE MODULE!
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      if(lsmpi_enabled_comm_procs)call lsquit("ERROR(lsmpi_finalize):&
+      &comm processes were enabled on shutdown, this should never occur",-1)
+
 #ifdef VAR_CHEMSHELL
-     ! jump out of LSDALTON if a slave (instead of STOP)
-     if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
+      ! jump out of LSDALTON if a slave (instead of STOP)
+      if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
 #else
 
-     call MPI_FINALIZE(ierr)
+      call MPI_FINALIZE(ierr)
 
-     if(ierr/=0)then
-       write (*,*) "mpi_finalize returned",ierr
-       call LSMPI_MYFAIL(ierr)
-       call lsquit("ERROR(MPI_FINALIZE):non zero exit)",-1)
-     endif
+      if(ierr/=0)then
+        write (*,*) "mpi_finalize returned",ierr
+        call LSMPI_MYFAIL(ierr)
+        call lsquit("ERROR(MPI_FINALIZE):non zero exit)",-1)
+      endif
 
 #endif 
 #endif 

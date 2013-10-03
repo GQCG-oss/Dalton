@@ -2091,9 +2091,6 @@ contains
     safefilet21='t21'
     safefilet22='t22'
 
-
-    
-
     nnodes=1
 #ifdef VAR_MPI
     nnodes=infpar%lg_nodtot

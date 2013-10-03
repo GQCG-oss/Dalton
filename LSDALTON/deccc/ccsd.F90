@@ -2430,9 +2430,6 @@ contains
 
      call mem_alloc(w2,w2size)
      call mem_alloc(w3,w3size)
-     if(me==0.and.DECinfo%PL>2)then
-       print *,"alloc done!"
-     endif
 
 
      !calculate doubles C term
@@ -2441,7 +2438,6 @@ contains
      
      !Reorder gvvoo [a c k i] -> goovv [a i c k]
      if(s==4)then
-       if(me==0.and.DECinfo%PL>2) print *,"1"
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w2)
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w1)
@@ -2493,9 +2489,7 @@ contains
 
      !Reorder t [a d l i] -> t [a i d l]
      if(s==4)then
-       if(me==0.and.DECinfo%PL>2) print *,"2"
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w3)
-       if(me==0.and.DECinfo%PL>2) print *,"2.1"
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
        do i=1,tl
@@ -2531,13 +2525,11 @@ contains
 #endif
      endif
 
-       if(me==0.and.DECinfo%PL>2) print *,"2.2"
    
      !stop 0
      !SCHEME 4 AND 3 because of w1 being buffer before
      !Reorder govov [k d l c] -> govov [d l c k]
      if(s==3.or.s==4)then
-       if(me==0.and.DECinfo%PL>2) print *,"3"
        call array_reorder_4d(1.0E0_realk,govov%elm1,no,nv,no,nv,[2,3,4,1],0.0E0_realk,w1)
        !write (msg,*),infpar%lg_mynum,"w3 ERSCHDE"
        !call print_norm(w3,int(tl*no*nv,kind=8),msg)
@@ -2552,7 +2544,6 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 1         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !(-0.5) * t [a i d l] * govov [d l c k] + goovv [a i c k] = C [a i c k]
-     if(me==0.and.DECinfo%PL>2) print *,"4"
      call dgemm('n','n',tl,no*nv,no*nv,-0.5E0_realk,w3(faif),lead,w1,no*nv,1.0E0_realk,w2(faif),lead)
 
 
@@ -2752,12 +2743,13 @@ contains
     !> integer specifying the calc-scheme
     integer, intent(in) :: s
     logical, intent(in) :: lock_outside
-    integer :: nor,i,j,pos
+    integer :: nor
     integer :: ml,l,tl,fai,lai
     integer :: tri,fri
     integer(kind=ls_mpik) :: nod,me,nnod,massa,mode
     real(realk) :: nrm1,nrm2,nrm3,nrm4
-    integer :: pos1, pos2, mv((nv*nv)/2),st
+    integer ::  mv((nv*nv)/2),st
+    integer(kind=8) :: o2v2,pos1,pos2,i,j,pos
     me    = 0
     massa = 0
     nnod  = 1
@@ -2767,6 +2759,7 @@ contains
     me    = infpar%lg_mynum
     mode  = int(MPI_MODE_NOCHECK,kind=ls_mpik)
 #endif
+    o2v2=(i8*no)*no*nv*nv
       
     !Setting transformation variables for each rank
     !**********************************************
@@ -2818,22 +2811,23 @@ contains
       enddo
     enddo
     !OMP END DO
-    !OMP BARRIER
     !OMP END PARALLEL
+
     do j=no,1,-1
       do i=j,1,-1
         pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
         call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
       enddo
     enddo
+
     if(s==4.or.s==3)then
-      call daxpy(int(no*no*nv*nv),1.0E0_realk,w1,1,om2%elm1,1)
+      !$OMP WORKSHARE
+      om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
+      !$OMP END WORKSHARE
     elseif(s==2)then
 #ifdef VAR_MPI
-      !call lsmpi_local_reduction(w1,int(nv*nv*no*no,kind=long),infpar%master)
-      !call array_scatteradd_densetotiled(om2,1.0E0_realk,w1,int(no*no*nv*nv,kind=long),infpar%master)
-       if(lock_outside)call arr_lock_wins(om2,'s',mode)
-       call array_two_dim_1batch(om2,[1,2,3,4],'a',w1,2,1,nv*nv,lock_outside,debug=.true.)
+      if(lock_outside)call arr_lock_wins(om2,'s',mode)
+      call array_two_dim_1batch(om2,[1,2,3,4],'a',w1,2,1,nv*nv,lock_outside,debug=.true.)
 #endif
     endif
   end subroutine get_B22_contrib_mo
@@ -3024,22 +3018,22 @@ contains
     !> Lambda p occupied part
     real(realk),intent(in) :: xocc(:)
     !> number of reduced occupied indices 
-    integer,intent(in)::nor
+    integer,intent(in) :: nor
     !> total number of upper triangular elements in the batch
-    integer,intent(in)::tlen
+    integer,intent(in) :: tlen
     !> first element of alpha and gamma in the current batch
-    integer,intent(in)::fa,fg
+    integer,intent(in) :: fa,fg
     !> length of alpha and gamma in the current batch
-    integer,intent(in)::la,lg
+    integer,intent(in) :: la, lg
     !> number of triangular elements in the batch
-    integer,intent(in)::tred
+    integer,intent(in) :: tred
     !>number of occupied, virtual and ao indices
-    integer,intent(in)::no,nv,nb
+    integer,intent(in) :: no, nv, nb
     !>offsets in the currnt alpha and gamma batches to get to the first upper
     !triangular element
-    integer,intent(in)::goffs,aoffs
+    integer,intent(in) :: goffs, aoffs
     !> scheme
-    integer,intent(in)::s
+    integer,intent(in) :: s
     logical,intent(in) :: lock_outside
     !> size of w0
     integer(kind=8),intent(in):: wszes(4)
@@ -3047,8 +3041,9 @@ contains
     !real(realk),intent(in) :: amps(nv*nv*no*no)
     !type(array),intent(in) :: amps
     real(realk) :: scaleitby
-    integer ::occ,gamm,alpha,pos,pos2,pos21,nel2cp,case_sel,full1,full2,offset1,offset2,ttri
-    integer :: l1,l2,i,j,lsa,lsg,gamm_i_b,a,b,full1T,full2T,tsq,jump,dim_big,dim_small,ft1,ft2,ncph
+    integer(kind=8)       :: pos,pos2,pos21,i,j,dim_big,dim_small,ttri,tsq
+    integer ::occ,gamm,alpha,nel2cp,case_sel,full1,full2,offset1,offset2
+    integer :: l1,l2,lsa,lsg,gamm_i_b,a,b,full1T,full2T,jump,ft1,ft2,ncph
     logical               :: second_trafo_step
     real(realk),pointer   :: dumm(:)
     integer               :: mv((nv*nv)/2),st,pos1,dims(2)
@@ -3167,17 +3162,17 @@ contains
 
     !Zero the elements to update for testing, not needed in a performance
     !implementation
-    pos=nor*full1*full2
-    if(second_trafo_step)pos=pos+nor*full1T*full2T
-    w0(1:pos)=0.0E0_realk
+    pos=(i8*nor)*full1*full2
+    if(second_trafo_step)pos=pos+(i8*nor)*full1T*full2T
+    w0(1_long:pos)=0.0E0_realk
 
     !set required variables
-    ttri=tlen*(tlen+1)/2
-    tsq = tlen * tlen
-    pos=1
-    occ=1
-    dim_big=full1*full2
-    dim_small=full1T*full2T
+    ttri      = tlen * (tlen+1)/2
+    tsq       = tlen *  tlen
+    pos       = 1
+    occ       = 1
+    dim_big   = (i8 * full1 ) * full2
+    dim_small = (i8 * full1T) * full2T
 
 #ifndef VAR_LSESSL
     !OMP PARALLEL DEFAULT(NONE)&
@@ -3203,47 +3198,49 @@ contains
         !calculate the new position
         !**************************
         if(gamm>tlen)then
+
           !get the elements from the rectangular part of the batch
-          !print *,"getel from rect"
-          nel2cp=l1
-          pos2=1+ttri+(gamm-tlen-1)*(la-aoffs)+(occ-1)*((la-aoffs)*(lg-goffs-tlen)+ttri)
+
+          nel2cp = l1
+          pos2   = 1_long + ttri+(gamm-tlen-1)*(la-aoffs)+(occ-1)*((la-aoffs)*(lg-goffs-tlen)+ttri)
+
           if(case_sel==4)then
-            nel2cp=nel2cp+tlen
-            pos2 = pos2 + tlen * aoffs + (gamm-tlen-1) * (la-tlen)+(occ-1)*(aoffs*lg)
+            nel2cp = nel2cp + tlen
+            pos2   = pos2   + tlen * aoffs + (gamm-tlen-1) * (la-tlen)+(occ-1)*(aoffs*lg)
           endif
+
           if(second_trafo_step)then
             jump = full1T
-            ft1 = full1T
-            ft2 = full2T
+            ft1  = full1T
+            ft2  = full2T
           else
-            jump=full1
-            ft1=full1
-            ft2=full2
+            jump = full1
+            ft1  = full1
+            ft2  = full2
           endif
 
         else
           !get the elements from the triangular part of the batch
-          pos2=1+(gamm*(gamm-1)/2)+(gamm-1)*aoffs+(occ-1)*tred
-          nel2cp=l2+gamm
-          jump = full1
-          ft1=full1
-          ft2=full2
+          pos2   = 1  + (gamm*(gamm-1)/2)+(gamm-1)*aoffs+(occ-1)*tred
+          nel2cp = l2 + gamm
+          jump   = full1
+          ft1    = full1
+          ft2    = full2
         endif
         
-        call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
-        !OMP CRITICAL
-        !w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
-        !OMP END CRITICAL
+        !call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
+        w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
+
         !get corresponding position in sigma- and add to output
         pos21=pos2+tred*nor
-        call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
-        !OMP CRITICAL
-        !w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
-        !OMP END CRITICAL
+        !call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
+        w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
 
         !ANTI-SYMMETRIC COMBINATION OF THE SIGMAS
-        pos=gamm+aoffs+(occ-1)*ft1*ft2
-        if(second_trafo_step.and.gamm>tlen) pos=pos+full1*full2*nor-tlen
+        pos = gamm+aoffs+(occ-1)*ft1*ft2
+
+        if(second_trafo_step.and.gamm>tlen) pos = pos+full1*full2*nor-tlen
+
         if(case_sel==3.or.case_sel==4)then
           !fill diagonal part
           if(gamm>tlen)then
@@ -3251,63 +3248,51 @@ contains
           else
             ncph=gamm
           endif
-          call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
-          call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
+          !call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
+          !call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
 
           !because of the intrinsic omp-parallelizaton of daxpy the following
           !lines replace the daxpy calls
-          !dims=[full1,ncph]
-          !call ass_D1to2(w0(aoffs+gamm+(occ-1)*dim_big:&
-          !                 &aoffs+gamm+(occ-1)*dim_big+full1*ncph-1),drain,dims)
-          !dims=[1,ncph]
-          !call ass_D1to2(w3(pos2+aoffs:pos2+aoffs+ncph-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
-          !OMP END CRITICAL
-          !call ass_D1to2(w3(pos21+aoffs:pos21+aoffs+ncph-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
-          !OMP END CRITICAL
+          dims=[full1,ncph]
+          call ass_D1to2(w0(aoffs+gamm+(occ-1)*dim_big:&
+                           &aoffs+gamm+(occ-1)*dim_big+full1*ncph-1),drain,dims)
+          dims=[1,ncph]
+          call ass_D1to2(w3(pos2+aoffs:pos2+aoffs+ncph-1),source,dims)
+          drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
+          call ass_D1to2(w3(pos21+aoffs:pos21+aoffs+ncph-1),source,dims)
+          drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+
           !fill small matrix
           if(gamm>tlen)then
             ncph=nel2cp
           else
             ncph=nel2cp-gamm
           endif
-          call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-          call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-          !dims=[full1T,ncph]
-          !call ass_D1to2(w0(gamm+(occ-1)*full1T*full2T+dim_big*nor:&
-          !                 &gamm+(occ-1)*full1T*full2T+dim_big*nor+ncph*full1T-1),drain,dims)
-          !dims=[1,ncph]
-          !call ass_D1to2(w3(pos2:pos2+ncph-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
-          !OMP END CRITICAL
-          !call ass_D1to2(w3(pos21:pos21+ncph-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
-          !OMP END CRITICAL
+          !call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          !call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          dims=[full1T,ncph]
+          call ass_D1to2(w0(gamm+(occ-1)*full1T*full2T+dim_big*nor:&
+                           &gamm+(occ-1)*full1T*full2T+dim_big*nor+ncph*full1T-1),drain,dims)
+          dims=[1,ncph]
+          call ass_D1to2(w3(pos2:pos2+ncph-1),source,dims)
+          drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
+          call ass_D1to2(w3(pos21:pos21+ncph-1),source,dims)
+          drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
         else
-          call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
-          call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
-          !dims=[jump,nel2cp]
-          !call ass_D1to2(w0(pos:pos+jump*nel2cp-1),drain,dims)
-          !dims=[1,nel2cp]
-          !call ass_D1to2(w3(pos2:pos2+nel2cp-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) + source(1:1,1:nel2cp)
-          !OMP END CRITICAL
-          !call ass_D1to2(w3(pos21:pos21+nel2cp-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) - source(1:1,1:nel2cp)
-          !OMP END CRITICAL
+          !call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
+          !call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
+          dims=[jump,nel2cp]
+          call ass_D1to2(w0(pos:pos+jump*nel2cp-1),drain,dims)
+          dims=[1,nel2cp]
+          call ass_D1to2(w3(pos2:pos2+nel2cp-1),source,dims)
+          drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) + source(1:1,1:nel2cp)
+          call ass_D1to2(w3(pos21:pos21+nel2cp-1),source,dims)
+          drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) - source(1:1,1:nel2cp)
         endif
       enddo
     enddo
 #ifndef VAR_LSESSL
     !OMP END DO
-    !OMP BARRIER
     !OMP END PARALLEL
 #endif
     call lsmpi_poke()
@@ -3383,11 +3368,15 @@ contains
       enddo
     enddo
     if(s==4.or.s==3)then
-      call daxpy(int(no*no*nv*nv),scaleitby,w2,1,omega%elm1,1)
+      !$OMP WORKSHARE
+      omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
+      !$OMP END WORKSHARE
     elseif(s==2)then
 #ifdef VAR_MPI
       if(lock_outside)call arr_lock_wins(omega,'s',mode)
+      !$OMP WORKSHARE
       w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
+      !$OMP END WORKSHARE
       call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
 #endif
     endif
@@ -3451,9 +3440,13 @@ contains
       enddo
 
       if(s==4.or.s==3)then
-        call daxpy(no*no*nv*nv,scaleitby,w2,1,omega%elm1,1)
+        !$OMP WORKSHARE
+        omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
+        !$OMP END WORKSHARE
       elseif(s==2)then
+        !$OMP WORKSHARE
         w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
+        !$OMP END WORKSHARE
         call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
       endif
       call lsmpi_poke()
@@ -3877,9 +3870,9 @@ contains
             write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
             &frac_of_total_mem*MemFree
             write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
-            mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,1,.false.)
+            mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,3,.false.)
             write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
-            mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,2,.false.)
+            mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
             write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
             call lsquit("ERROR(CCSD): there is just not enough memory&
             &available",DECinfo%output)
@@ -3914,19 +3907,8 @@ contains
       else
         print *,"SCHEME ",scheme," DOES NOT EXIST"
         call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme2",-1)
-      !elseif(scheme==1)then
-      !  print *,"SCHEME WITH LOW MEMORY REQUIREMENTS (PDM), HIGH SCALING LOW COMM"
-      !elseif(scheme==0)then
-      !  print *,"NON PDM-SCHEME WITH LOW MEMORY REQUIREMENTS"
       endif
     endif
-
-#ifndef VAR_MPI
-      !scheme3 and  2 and 1 are pure mpi-scheme, this means that a redefinition in the case
-      !of non mpi-builds is necessary
-      if(scheme==3.or.scheme==2) scheme=0
-#endif
-    
 
 
     ! Attention this manual block should be only used for debugging, also you
@@ -3939,19 +3921,21 @@ contains
       if((DECinfo%ccsdGbatch==0).and.(DECinfo%ccsdAbatch==0)) then
         call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree,.false.,e2a,local)
       else
-        nba=DECinfo%ccsdAbatch - iter *0
-        nbg=DECinfo%ccsdGbatch - iter *0
+        nba = DECinfo%ccsdAbatch - iter * 0
+        nbg = DECinfo%ccsdGbatch - iter * 0
       endif
       ! Use value given in input --> the zero can be adjusted to vary batch sizes during the iterations
-      m = nbg-0*iter
-      if (minbsize <  m) nbg = m
-      if (minbsize >= m) nbg = minbsize
-      m = nba-0*iter
-      if (minbsize <  m) nba = m
-      if (minbsize >= m) nba = minbsize
 
-      if (nbg>=nb) nbg = nb
-      if (nba>=nb) nba = nb
+      m = nbg-0*iter
+      if( minbsize <  m ) nbg = m
+      if( minbsize >= m ) nbg = minbsize
+
+      m = nba-0*iter
+      if( minbsize <  m ) nba = m
+      if( minbsize >= m ) nba = minbsize
+
+      if( nbg>=nb )       nbg = nb
+      if( nba>=nb )       nba = nb
 
       mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
 
@@ -3987,13 +3971,7 @@ contains
          nba=nba-1
       endif
     endif
-    !mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,first)
     mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
-    !if(first)write(DECinfo%output,*)"request batches with: N(gamma):",nbg," and N(alpha)",nba
-    !if(first)write(DECinfo%output,*)"will use:",mem_used,"GB of ",MemFree, "GB available"
-    !if(first)write(DECinfo%output,*)"------>",mem_used/MemFree * 100, "%"
-    !divide the work if more nodes than jobs are available
-
 
     !if much more slaves than jobs are available, split the jobs to get at least
     !one for all the slaves
