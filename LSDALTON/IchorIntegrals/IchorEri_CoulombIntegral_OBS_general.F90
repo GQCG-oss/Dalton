@@ -86,1533 +86,1533 @@ CONTAINS
 !ENDIF
  
     
-    IF(PQorder)THEN
-       call IchorQuit('PQorder OBS general expect to get QP ordering',-1)
-    ENDIF
-    
-    
-    !Setup combined Angmom info
-    AngmomP = AngmomA+AngmomB
-    AngmomQ = AngmomC+AngmomD
-    AngmomPQ  = AngmomP + AngmomQ
-!    nTUV = (AngmomPQ+1)*(AngmomPQ+2)*(AngmomPQ+3)/6
-!    nTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6
-!    nTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6
-!    nTUVC = (AngmomC+1)*(AngmomC+2)*(AngmomC+3)/6
-!    nTUVD = (AngmomD+1)*(AngmomD+2)*(AngmomD+3)/6
-!    nlmA = 2*AngmomA+1
-!    nlmB = 2*AngmomB+1
-!    nlmC = 2*AngmomC+1
-!    nlmD = 2*AngmomD+1
-    IF(AngmomA.EQ.  0)THEN
-     IF(AngmomB.EQ.  0)THEN
-      IF(AngmomC.EQ.  0)THEN
-       IF(AngmomD.EQ.  0)THEN
-        !This is the Angmom(A= 0,B= 0,C= 0,D= 0) combi
-        call mem_ichor_alloc(TMParray2,1*nPrimQP*nPasses)
-        call VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&
-               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&
-               & PpreExpFac,QpreExpFac,TMParray2)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray1,1*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray2,TMParray1,   1,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray2,TMParray1,   1,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray2)
-        !no need for LHS Horizontal recurrence relations a simply copy
-        !no Spherical Transformation LHS needed
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray1
-        call mem_ichor_dealloc(TMParray1)
-       ENDIF ! D if statement
-      ENDIF ! C if statement
-     ENDIF ! B if statement
-    ELSEIF(AngmomA.EQ.  1)THEN
-     IF(AngmomB.EQ.  0)THEN
-      IF(AngmomC.EQ.  0)THEN
-       IF(AngmomD.EQ.  0)THEN
-        !This is the Angmom(A= 1,B= 0,C= 0,D= 0) combi
-        call mem_ichor_alloc(TMParray2,4*nPrimQP*nPasses)
-        call VerticalRecurrence1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray1,4*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray2,TMParray1,   4,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray2,TMParray1,   4,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray2)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,3*nContQP*nPasses)
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation LHS needed
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-       ENDIF ! D if statement
-      ELSEIF(AngmomC.EQ.  1)THEN
-       IF(AngmomD.EQ.  0)THEN
-        !This is the Angmom(A= 1,B= 0,C= 1,D= 0) combi
-        call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
-        call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,16*nPrimQP*nPasses)
-        call TransferRecurrenceP1Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,16*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2,  16,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2,  16,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,12*nContQP*nPasses)
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,9*nContQP*nPasses)
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,   3,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-       ELSEIF(AngmomD.EQ.  1)THEN
-        !This is the Angmom(A= 1,B= 0,C= 1,D= 1) combi
-        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
-        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
-        call TransferRecurrenceP1Q2CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,40*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,30*nContQP*nPasses)
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,27*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,   3,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-       ENDIF ! D if statement
-      ENDIF ! C if statement
-     ELSEIF(AngmomB.EQ.  1)THEN
-      IF(AngmomC.EQ.  0)THEN
-       IF(AngmomD.EQ.  0)THEN
-        !This is the Angmom(A= 1,B= 1,C= 0,D= 0) combi
-        call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
-        call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray1,10*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray2)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,9*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation LHS needed
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-       ENDIF ! D if statement
-      ELSEIF(AngmomC.EQ.  1)THEN
-       IF(AngmomD.EQ.  0)THEN
-        !This is the Angmom(A= 1,B= 1,C= 1,D= 0) combi
-        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
-        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,40*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,36*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,27*nContQP*nPasses)
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,   9,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-       ELSEIF(AngmomD.EQ.  1)THEN
-        !This is the Angmom(A= 1,B= 1,C= 1,D= 1) combi
-        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,90*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,81*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,   9,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-       ENDIF ! D if statement
-      ENDIF ! C if statement
-     ENDIF ! B if statement
-    ELSEIF(AngmomA.EQ.  2)THEN
-     IF(AngmomB.EQ.  0)THEN
-      IF(AngmomC.EQ.  0)THEN
-       IF(AngmomD.EQ.  0)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 0,C= 0,D= 0) combi
-        call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
-        call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray1,10*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray2)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,6*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray1,5*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(   1,nContQP*nPasses,TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray1
-        call mem_ichor_dealloc(TMParray1)
-        ELSE
-        !This is the Angmom(A= 2,B= 0,C= 0,D= 0) combi
-        call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
-        call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray1,10*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray2)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,6*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation LHS needed
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ENDIF ! D if statement
-      ELSEIF(AngmomC.EQ.  1)THEN
-       IF(AngmomD.EQ.  0)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 0,C= 1,D= 0) combi
-        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
-        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,40*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,24*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,20*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(   4,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,15*nContQP*nPasses)
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray1
-        call mem_ichor_dealloc(TMParray1)
-        ELSE
-        !This is the Angmom(A= 2,B= 0,C= 1,D= 0) combi
-        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
-        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,40*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,24*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,18*nContQP*nPasses)
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,   6,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ELSEIF(AngmomD.EQ.  1)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 0,C= 1,D= 1) combi
-        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,60*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,50*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,45*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray1
-        call mem_ichor_dealloc(TMParray1)
-        ELSE
-        !This is the Angmom(A= 2,B= 0,C= 1,D= 1) combi
-        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,60*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,54*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,   6,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ENDIF ! D if statement
-      ELSEIF(AngmomC.EQ.  2)THEN
-       IF(AngmomD.EQ.  0)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 0,C= 2,D= 0) combi
-        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,60*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,50*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,30*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation RHS
-        call mem_ichor_alloc(TMParray2,25*nContQP*nPasses)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(   5,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ELSE
-        !This is the Angmom(A= 2,B= 0,C= 2,D= 0) combi
-        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,60*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,36*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,   6,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ELSEIF(AngmomD.EQ.  1)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 0,C= 2,D= 1) combi
-        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q3CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,120*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(  20,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,90*nContQP*nPasses)
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation RHS
-        call mem_ichor_alloc(TMParray2,75*nContQP*nPasses)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(   5,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ELSE
-        !This is the Angmom(A= 2,B= 0,C= 2,D= 1) combi
-        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q3CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,120*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,108*nContQP*nPasses)
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,   6,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ELSEIF(AngmomD.EQ.  2)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 0,C= 2,D= 2) combi
-        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
-        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q4CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,210*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,175*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(  35,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,180*nContQP*nPasses)
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation RHS
-        call mem_ichor_alloc(TMParray2,125*nContQP*nPasses)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(   5,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ELSE
-        !This is the Angmom(A= 2,B= 0,C= 2,D= 2) combi
-        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
-        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
-        call TransferRecurrenceP2Q4CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,210*nContQP*nPasses)
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,216*nContQP*nPasses)
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,   6,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ENDIF ! D if statement
-      ENDIF ! C if statement
-     ELSEIF(AngmomB.EQ.  1)THEN
-      IF(AngmomC.EQ.  0)THEN
-       IF(AngmomD.EQ.  0)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 1,C= 0,D= 0) combi
-        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
-        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray1,20*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray2,TMParray1,  20,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray2,TMParray1,  20,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray2)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,18*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray1,15*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(   1,nContQP*nPasses,TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray1
-        call mem_ichor_dealloc(TMParray1)
-        ELSE
-        !This is the Angmom(A= 2,B= 1,C= 0,D= 0) combi
-        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
-        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray1,20*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray2,TMParray1,  20,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray2,TMParray1,  20,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray2)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,18*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation LHS needed
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ENDIF ! D if statement
-      ELSEIF(AngmomC.EQ.  1)THEN
-       IF(AngmomD.EQ.  0)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 1,C= 1,D= 0) combi
-        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,80*nPrimQP*nPasses)
-        call TransferRecurrenceP3Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,80*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2,  80,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2,  80,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,72*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,60*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(   4,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,45*nContQP*nPasses)
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray1
-        call mem_ichor_dealloc(TMParray1)
-        ELSE
-        !This is the Angmom(A= 2,B= 1,C= 1,D= 0) combi
-        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,80*nPrimQP*nPasses)
-        call TransferRecurrenceP3Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,80*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2,  80,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2,  80,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,72*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,54*nContQP*nPasses)
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,  18,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ELSEIF(AngmomD.EQ.  1)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 1,C= 1,D= 1) combi
-        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
-        call TransferRecurrenceP3Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,180*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,150*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,135*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray1
-        call mem_ichor_dealloc(TMParray1)
-        ELSE
-        !This is the Angmom(A= 2,B= 1,C= 1,D= 1) combi
-        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
-        call TransferRecurrenceP3Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,180*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,162*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,  18,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ENDIF ! D if statement
-      ELSEIF(AngmomC.EQ.  2)THEN
-       IF(AngmomD.EQ.  0)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 1,C= 2,D= 0) combi
-        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
-        call TransferRecurrenceP3Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,180*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,150*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,90*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation RHS
-        call mem_ichor_alloc(TMParray2,75*nContQP*nPasses)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ELSE
-        !This is the Angmom(A= 2,B= 1,C= 2,D= 0) combi
-        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
-        call TransferRecurrenceP3Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,180*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,108*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,  18,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ELSEIF(AngmomD.EQ.  1)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 1,C= 2,D= 1) combi
-        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,400*nPrimQP*nPasses)
-        call TransferRecurrenceP3Q3AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,400*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 400,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 400,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,300*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(  20,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,270*nContQP*nPasses)
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation RHS
-        call mem_ichor_alloc(TMParray2,225*nContQP*nPasses)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ELSE
-        !This is the Angmom(A= 2,B= 1,C= 2,D= 1) combi
-        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,400*nPrimQP*nPasses)
-        call TransferRecurrenceP3Q3AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,400*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 400,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 400,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,324*nContQP*nPasses)
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,  18,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ELSEIF(AngmomD.EQ.  2)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 1,C= 2,D= 2) combi
-        call mem_ichor_alloc(TMParray2,120*nPrimQP*nPasses)
-        call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,700*nPrimQP*nPasses)
-        call TransferRecurrenceP3Q4CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,700*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,630*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,525*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(  35,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,540*nContQP*nPasses)
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation RHS
-        call mem_ichor_alloc(TMParray2,375*nContQP*nPasses)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ELSE
-        !This is the Angmom(A= 2,B= 1,C= 2,D= 2) combi
-        call mem_ichor_alloc(TMParray2,120*nPrimQP*nPasses)
-        call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,700*nPrimQP*nPasses)
-        call TransferRecurrenceP3Q4CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,700*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,630*nContQP*nPasses)
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,648*nContQP*nPasses)
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,  18,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ENDIF ! D if statement
-      ENDIF ! C if statement
-     ELSEIF(AngmomB.EQ.  2)THEN
-      IF(AngmomC.EQ.  0)THEN
-       IF(AngmomD.EQ.  0)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 2,C= 0,D= 0) combi
-        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray1,35*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray2,TMParray1,  35,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray2,TMParray1,  35,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray2)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,36*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray1,25*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(   1,nContQP*nPasses,TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray1
-        call mem_ichor_dealloc(TMParray1)
-        ELSE
-        !This is the Angmom(A= 2,B= 2,C= 0,D= 0) combi
-        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray1,35*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray2,TMParray1,  35,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray2,TMParray1,  35,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray2)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,36*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation LHS needed
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ENDIF ! D if statement
-      ELSEIF(AngmomC.EQ.  1)THEN
-       IF(AngmomD.EQ.  0)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 2,C= 1,D= 0) combi
-        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,140*nPrimQP*nPasses)
-        call TransferRecurrenceP4Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,140*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 140,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 140,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,144*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(   4,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,75*nContQP*nPasses)
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray1
-        call mem_ichor_dealloc(TMParray1)
-        ELSE
-        !This is the Angmom(A= 2,B= 2,C= 1,D= 0) combi
-        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,140*nPrimQP*nPasses)
-        call TransferRecurrenceP4Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,140*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 140,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 140,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,144*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,108*nContQP*nPasses)
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,  36,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ELSEIF(AngmomD.EQ.  1)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 2,C= 1,D= 1) combi
-        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
-        call TransferRecurrenceP4Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,250*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,225*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray1
-        call mem_ichor_dealloc(TMParray1)
-        ELSE
-        !This is the Angmom(A= 2,B= 2,C= 1,D= 1) combi
-        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
-        call TransferRecurrenceP4Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,324*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,  36,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ENDIF ! D if statement
-      ELSEIF(AngmomC.EQ.  2)THEN
-       IF(AngmomD.EQ.  0)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 2,C= 2,D= 0) combi
-        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
-        call TransferRecurrenceP4Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,250*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,150*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation RHS
-        call mem_ichor_alloc(TMParray2,125*nContQP*nPasses)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ELSE
-        !This is the Angmom(A= 2,B= 2,C= 2,D= 0) combi
-        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
-        call TransferRecurrenceP4Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,216*nContQP*nPasses)
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,  36,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ELSEIF(AngmomD.EQ.  1)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 2,C= 2,D= 1) combi
-        call mem_ichor_alloc(TMParray2,120*nPrimQP*nPasses)
-        call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,700*nPrimQP*nPasses)
-        call TransferRecurrenceP4Q3AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,700*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,720*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,500*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(  20,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,450*nContQP*nPasses)
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation RHS
-        call mem_ichor_alloc(TMParray2,375*nContQP*nPasses)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ELSE
-        !This is the Angmom(A= 2,B= 2,C= 2,D= 1) combi
-        call mem_ichor_alloc(TMParray2,120*nPrimQP*nPasses)
-        call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,700*nPrimQP*nPasses)
-        call TransferRecurrenceP4Q3AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,700*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,720*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,648*nContQP*nPasses)
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,  36,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ELSEIF(AngmomD.EQ.  2)THEN
-        IF(spherical)THEN
-        !This is the Angmom(A= 2,B= 2,C= 2,D= 2) combi
-        call mem_ichor_alloc(TMParray2,165*nPrimQP*nPasses)
-        call VerticalRecurrence8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,1225*nPrimQP*nPasses)
-        call TransferRecurrenceP4Q4AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,1225*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2,1225,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2,1225,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,1260*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation LHS
-        call mem_ichor_alloc(TMParray2,875*nContQP*nPasses)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(  35,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,900*nContQP*nPasses)
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !Spherical Transformation RHS
-        call mem_ichor_alloc(TMParray2,625*nContQP*nPasses)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
-        call mem_ichor_dealloc(TMParray1)
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ELSE
-        !This is the Angmom(A= 2,B= 2,C= 2,D= 2) combi
-        call mem_ichor_alloc(TMParray2,165*nPrimQP*nPasses)
-        call VerticalRecurrence8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
-        !Electron Transfer Recurrence Relation 
-        call mem_ichor_alloc(TMParray1,1225*nPrimQP*nPasses)
-        call TransferRecurrenceP4Q4AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
-        call mem_ichor_dealloc(TMParray2)
-        nContQP = nContQ*nContP
-        call mem_ichor_alloc(TMParray2,1225*nContQP*nPasses)
-        IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray1,TMParray2,1225,nPrimP,nPrimQ,nPasses)
-        ELSE
-         call PrimitiveContraction(TMParray1,TMParray2,1225,nPrimP,nPrimQ,nPasses,&
-              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-              & nContC,nPrimD,nContD)
-        ENDIF
-        call mem_ichor_dealloc(TMParray1)
-        !LHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray1,1260*nContQP*nPasses)
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
-        call mem_ichor_dealloc(TMParray2)
-        !no Spherical Transformation LHS needed
-        !RHS Horizontal recurrence relations 
-        call mem_ichor_alloc(TMParray2,1296*nContQP*nPasses)
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,  36,Qdistance12,TMParray1,TMParray2,lupri)
-        call mem_ichor_dealloc(TMParray1)
-        !no Spherical Transformation RHS needed
-        CDAB = TMParray2
-        call mem_ichor_dealloc(TMParray2)
-        ENDIF
-       ENDIF ! D if statement
-      ENDIF ! C if statement
-     ENDIF ! B if statement
-    ENDIF ! A if statement
+!    IF(PQorder)THEN
+!       call IchorQuit('PQorder OBS general expect to get QP ordering',-1)
+!    ENDIF
+!    
+!    
+!    !Setup combined Angmom info
+!    AngmomP = AngmomA+AngmomB
+!    AngmomQ = AngmomC+AngmomD
+!    AngmomPQ  = AngmomP + AngmomQ
+!!    nTUV = (AngmomPQ+1)*(AngmomPQ+2)*(AngmomPQ+3)/6
+!!    nTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6
+!!    nTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6
+!!    nTUVC = (AngmomC+1)*(AngmomC+2)*(AngmomC+3)/6
+!!    nTUVD = (AngmomD+1)*(AngmomD+2)*(AngmomD+3)/6
+!!    nlmA = 2*AngmomA+1
+!!    nlmB = 2*AngmomB+1
+!!    nlmC = 2*AngmomC+1
+!!    nlmD = 2*AngmomD+1
+!    IF(AngmomA.EQ.  0)THEN
+!     IF(AngmomB.EQ.  0)THEN
+!      IF(AngmomC.EQ.  0)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        !This is the Angmom(A= 0,B= 0,C= 0,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,1*nPrimQP*nPasses)
+!        call VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&
+!               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&
+!               & PpreExpFac,QpreExpFac,TMParray2)
+!        !No reason for the Electron Transfer Recurrence Relation 
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray1,1*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray2,TMParray1,   1,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray2,TMParray1,   1,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray2)
+!        !no need for LHS Horizontal recurrence relations a simply copy
+!        !no Spherical Transformation LHS needed
+!        !no need for RHS Horizontal recurrence relations 
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray1
+!        call mem_ichor_dealloc(TMParray1)
+!       ENDIF ! D if statement
+!      ENDIF ! C if statement
+!     ENDIF ! B if statement
+!    ELSEIF(AngmomA.EQ.  1)THEN
+!     IF(AngmomB.EQ.  0)THEN
+!      IF(AngmomC.EQ.  0)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        !This is the Angmom(A= 1,B= 0,C= 0,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,4*nPrimQP*nPasses)
+!        call VerticalRecurrence1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !No reason for the Electron Transfer Recurrence Relation 
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray1,4*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray2,TMParray1,   4,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray2,TMParray1,   4,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray2)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,3*nContQP*nPasses)
+!        call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation LHS needed
+!        !no need for RHS Horizontal recurrence relations 
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!       ENDIF ! D if statement
+!      ELSEIF(AngmomC.EQ.  1)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        !This is the Angmom(A= 1,B= 0,C= 1,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
+!        call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,16*nPrimQP*nPasses)
+!        call TransferRecurrenceP1Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,16*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2,  16,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2,  16,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,12*nContQP*nPasses)
+!        call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,9*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,   3,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!       ELSEIF(AngmomD.EQ.  1)THEN
+!        !This is the Angmom(A= 1,B= 0,C= 1,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
+!        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
+!        call TransferRecurrenceP1Q2CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,40*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,30*nContQP*nPasses)
+!        call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,27*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,   3,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!       ENDIF ! D if statement
+!      ENDIF ! C if statement
+!     ELSEIF(AngmomB.EQ.  1)THEN
+!      IF(AngmomC.EQ.  0)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        !This is the Angmom(A= 1,B= 1,C= 0,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
+!        call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !No reason for the Electron Transfer Recurrence Relation 
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray1,10*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray2)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,9*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation LHS needed
+!        !no need for RHS Horizontal recurrence relations 
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!       ENDIF ! D if statement
+!      ELSEIF(AngmomC.EQ.  1)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        !This is the Angmom(A= 1,B= 1,C= 1,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
+!        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,40*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,36*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,27*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,   9,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!       ELSEIF(AngmomD.EQ.  1)THEN
+!        !This is the Angmom(A= 1,B= 1,C= 1,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
+!        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,90*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,81*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,   9,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!       ENDIF ! D if statement
+!      ENDIF ! C if statement
+!     ENDIF ! B if statement
+!    ELSEIF(AngmomA.EQ.  2)THEN
+!     IF(AngmomB.EQ.  0)THEN
+!      IF(AngmomC.EQ.  0)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 0,C= 0,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
+!        call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !No reason for the Electron Transfer Recurrence Relation 
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray1,10*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray2)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,6*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray1,5*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP2_maxAngA2(   1,nContQP*nPasses,TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no need for RHS Horizontal recurrence relations 
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray1
+!        call mem_ichor_dealloc(TMParray1)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 0,C= 0,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,10*nPrimQP*nPasses)
+!        call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !No reason for the Electron Transfer Recurrence Relation 
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray1,10*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray2,TMParray1,  10,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray2)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,6*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation LHS needed
+!        !no need for RHS Horizontal recurrence relations 
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ENDIF ! D if statement
+!      ELSEIF(AngmomC.EQ.  1)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 0,C= 1,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
+!        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,40*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,24*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,20*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP2_maxAngA2(   4,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,15*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray1
+!        call mem_ichor_dealloc(TMParray1)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 0,C= 1,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
+!        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,40*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,40*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2,  40,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,24*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,18*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,   6,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ELSEIF(AngmomD.EQ.  1)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 0,C= 1,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
+!        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,60*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,50*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP2_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,45*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray1
+!        call mem_ichor_dealloc(TMParray1)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 0,C= 1,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
+!        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,60*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,54*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,   6,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ENDIF ! D if statement
+!      ELSEIF(AngmomC.EQ.  2)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 0,C= 2,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
+!        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,60*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,50*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP2_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,30*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation RHS
+!        call mem_ichor_alloc(TMParray2,25*nContQP*nPasses)
+!        call SphericalContractOBS2_maxAngQ2_maxAngC2(   5,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 0,C= 2,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
+!        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,100*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 100,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,60*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,36*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,   6,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ELSEIF(AngmomD.EQ.  1)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 0,C= 2,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
+!        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q3CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,120*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP2_maxAngA2(  20,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,90*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation RHS
+!        call mem_ichor_alloc(TMParray2,75*nContQP*nPasses)
+!        call SphericalContractOBS2_maxAngQ3_maxAngC2(   5,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 0,C= 2,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
+!        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q3CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,120*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,108*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,   6,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ELSEIF(AngmomD.EQ.  2)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 0,C= 2,D= 2) combi
+!        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
+!        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q4CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,210*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,175*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP2_maxAngA2(  35,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,180*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation RHS
+!        call mem_ichor_alloc(TMParray2,125*nContQP*nPasses)
+!        call SphericalContractOBS2_maxAngQ4_maxAngC2(   5,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 0,C= 2,D= 2) combi
+!        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
+!        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
+!        call TransferRecurrenceP2Q4CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,210*nContQP*nPasses)
+!        call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,216*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,   6,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ENDIF ! D if statement
+!      ENDIF ! C if statement
+!     ELSEIF(AngmomB.EQ.  1)THEN
+!      IF(AngmomC.EQ.  0)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 1,C= 0,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
+!        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !No reason for the Electron Transfer Recurrence Relation 
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray1,20*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray2,TMParray1,  20,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray2,TMParray1,  20,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray2)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,18*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray1,15*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP3_maxAngA2(   1,nContQP*nPasses,TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no need for RHS Horizontal recurrence relations 
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray1
+!        call mem_ichor_dealloc(TMParray1)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 1,C= 0,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,20*nPrimQP*nPasses)
+!        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !No reason for the Electron Transfer Recurrence Relation 
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray1,20*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray2,TMParray1,  20,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray2,TMParray1,  20,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray2)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,18*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation LHS needed
+!        !no need for RHS Horizontal recurrence relations 
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ENDIF ! D if statement
+!      ELSEIF(AngmomC.EQ.  1)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 1,C= 1,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
+!        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,80*nPrimQP*nPasses)
+!        call TransferRecurrenceP3Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,80*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2,  80,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2,  80,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,72*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,60*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP3_maxAngA2(   4,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,45*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray1
+!        call mem_ichor_dealloc(TMParray1)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 1,C= 1,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
+!        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,80*nPrimQP*nPasses)
+!        call TransferRecurrenceP3Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,80*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2,  80,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2,  80,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,72*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,54*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,  18,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ELSEIF(AngmomD.EQ.  1)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 1,C= 1,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
+!        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
+!        call TransferRecurrenceP3Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,180*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,150*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP3_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,135*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray1
+!        call mem_ichor_dealloc(TMParray1)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 1,C= 1,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
+!        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
+!        call TransferRecurrenceP3Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,180*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,162*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,  18,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ENDIF ! D if statement
+!      ELSEIF(AngmomC.EQ.  2)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 1,C= 2,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
+!        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
+!        call TransferRecurrenceP3Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,180*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,150*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP3_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,90*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation RHS
+!        call mem_ichor_alloc(TMParray2,75*nContQP*nPasses)
+!        call SphericalContractOBS2_maxAngQ2_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 1,C= 2,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
+!        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,200*nPrimQP*nPasses)
+!        call TransferRecurrenceP3Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,200*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 200,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,180*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,108*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,  18,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ELSEIF(AngmomD.EQ.  1)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 1,C= 2,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
+!        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,400*nPrimQP*nPasses)
+!        call TransferRecurrenceP3Q3AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,400*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 400,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 400,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,300*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP3_maxAngA2(  20,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,270*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation RHS
+!        call mem_ichor_alloc(TMParray2,225*nContQP*nPasses)
+!        call SphericalContractOBS2_maxAngQ3_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 1,C= 2,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
+!        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,400*nPrimQP*nPasses)
+!        call TransferRecurrenceP3Q3AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,400*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 400,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 400,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,324*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,  18,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ELSEIF(AngmomD.EQ.  2)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 1,C= 2,D= 2) combi
+!        call mem_ichor_alloc(TMParray2,120*nPrimQP*nPasses)
+!        call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,700*nPrimQP*nPasses)
+!        call TransferRecurrenceP3Q4CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,700*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,630*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,525*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP3_maxAngA2(  35,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,540*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation RHS
+!        call mem_ichor_alloc(TMParray2,375*nContQP*nPasses)
+!        call SphericalContractOBS2_maxAngQ4_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 1,C= 2,D= 2) combi
+!        call mem_ichor_alloc(TMParray2,120*nPrimQP*nPasses)
+!        call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,700*nPrimQP*nPasses)
+!        call TransferRecurrenceP3Q4CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,700*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,630*nContQP*nPasses)
+!        call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,648*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,  18,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ENDIF ! D if statement
+!      ENDIF ! C if statement
+!     ELSEIF(AngmomB.EQ.  2)THEN
+!      IF(AngmomC.EQ.  0)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 2,C= 0,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
+!        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !No reason for the Electron Transfer Recurrence Relation 
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray1,35*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray2,TMParray1,  35,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray2,TMParray1,  35,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray2)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,36*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray1,25*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP4_maxAngA2(   1,nContQP*nPasses,TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no need for RHS Horizontal recurrence relations 
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray1
+!        call mem_ichor_dealloc(TMParray1)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 2,C= 0,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,35*nPrimQP*nPasses)
+!        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !No reason for the Electron Transfer Recurrence Relation 
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray1,35*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray2,TMParray1,  35,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray2,TMParray1,  35,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray2)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,36*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation LHS needed
+!        !no need for RHS Horizontal recurrence relations 
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ENDIF ! D if statement
+!      ELSEIF(AngmomC.EQ.  1)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 2,C= 1,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
+!        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,140*nPrimQP*nPasses)
+!        call TransferRecurrenceP4Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,140*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 140,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 140,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,144*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,100*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP4_maxAngA2(   4,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,75*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray1
+!        call mem_ichor_dealloc(TMParray1)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 2,C= 1,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,56*nPrimQP*nPasses)
+!        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,140*nPrimQP*nPasses)
+!        call TransferRecurrenceP4Q1AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,140*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 140,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 140,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,144*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,   4,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,108*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,  36,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ELSEIF(AngmomD.EQ.  1)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 2,C= 1,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
+!        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
+!        call TransferRecurrenceP4Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,250*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP4_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,225*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray1
+!        call mem_ichor_dealloc(TMParray1)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 2,C= 1,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
+!        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
+!        call TransferRecurrenceP4Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,324*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,  36,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ENDIF ! D if statement
+!      ELSEIF(AngmomC.EQ.  2)THEN
+!       IF(AngmomD.EQ.  0)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 2,C= 2,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
+!        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
+!        call TransferRecurrenceP4Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,250*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP4_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,150*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation RHS
+!        call mem_ichor_alloc(TMParray2,125*nContQP*nPasses)
+!        call SphericalContractOBS2_maxAngQ2_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 2,C= 2,D= 0) combi
+!        call mem_ichor_alloc(TMParray2,84*nPrimQP*nPasses)
+!        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,350*nPrimQP*nPasses)
+!        call TransferRecurrenceP4Q2AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,350*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 350,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,360*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,216*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,  36,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ELSEIF(AngmomD.EQ.  1)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 2,C= 2,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,120*nPrimQP*nPasses)
+!        call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,700*nPrimQP*nPasses)
+!        call TransferRecurrenceP4Q3AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,700*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,720*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,500*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP4_maxAngA2(  20,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,450*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation RHS
+!        call mem_ichor_alloc(TMParray2,375*nContQP*nPasses)
+!        call SphericalContractOBS2_maxAngQ3_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 2,C= 2,D= 1) combi
+!        call mem_ichor_alloc(TMParray2,120*nPrimQP*nPasses)
+!        call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,700*nPrimQP*nPasses)
+!        call TransferRecurrenceP4Q3AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,700*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2, 700,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,720*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,648*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,  36,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ELSEIF(AngmomD.EQ.  2)THEN
+!        IF(spherical)THEN
+!        !This is the Angmom(A= 2,B= 2,C= 2,D= 2) combi
+!        call mem_ichor_alloc(TMParray2,165*nPrimQP*nPasses)
+!        call VerticalRecurrence8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,1225*nPrimQP*nPasses)
+!        call TransferRecurrenceP4Q4AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,1225*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2,1225,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2,1225,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,1260*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation LHS
+!        call mem_ichor_alloc(TMParray2,875*nContQP*nPasses)
+!        call SphericalContractOBS1_maxAngP4_maxAngA2(  35,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,900*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !Spherical Transformation RHS
+!        call mem_ichor_alloc(TMParray2,625*nContQP*nPasses)
+!        call SphericalContractOBS2_maxAngQ4_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
+!        call mem_ichor_dealloc(TMParray1)
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ELSE
+!        !This is the Angmom(A= 2,B= 2,C= 2,D= 2) combi
+!        call mem_ichor_alloc(TMParray2,165*nPrimQP*nPasses)
+!        call VerticalRecurrence8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+!        !Electron Transfer Recurrence Relation 
+!        call mem_ichor_alloc(TMParray1,1225*nPrimQP*nPasses)
+!        call TransferRecurrenceP4Q4AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&
+!               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+!               & TMParray2,TMParray1)
+!        call mem_ichor_dealloc(TMParray2)
+!        nContQP = nContQ*nContP
+!        call mem_ichor_alloc(TMParray2,1225*nContQP*nPasses)
+!        IF(Qsegmented.AND.Psegmented)THEN
+!         call PrimitiveContractionSeg(TMParray1,TMParray2,1225,nPrimP,nPrimQ,nPasses)
+!        ELSE
+!         call PrimitiveContraction(TMParray1,TMParray2,1225,nPrimP,nPrimQ,nPasses,&
+!              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
+!              & nContC,nPrimD,nContD)
+!        ENDIF
+!        call mem_ichor_dealloc(TMParray1)
+!        !LHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray1,1260*nContQP*nPasses)
+!        call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
+!        call mem_ichor_dealloc(TMParray2)
+!        !no Spherical Transformation LHS needed
+!        !RHS Horizontal recurrence relations 
+!        call mem_ichor_alloc(TMParray2,1296*nContQP*nPasses)
+!        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,  36,Qdistance12,TMParray1,TMParray2,lupri)
+!        call mem_ichor_dealloc(TMParray1)
+!        !no Spherical Transformation RHS needed
+!        CDAB = TMParray2
+!        call mem_ichor_dealloc(TMParray2)
+!        ENDIF
+!       ENDIF ! D if statement
+!      ENDIF ! C if statement
+!     ENDIF ! B if statement
+!    ENDIF ! A if statement
   end subroutine IchorCoulombIntegral_OBS_general
   subroutine PrimitiveContraction(AUXarray2,AUXarrayCont,nTUVfull,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD)
