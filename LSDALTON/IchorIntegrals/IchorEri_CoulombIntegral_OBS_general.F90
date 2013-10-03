@@ -130,8 +130,8 @@ CONTAINS
         ENDIF
         !no need for LHS Horizontal recurrence relations a simply copy
         !no Spherical Transformation LHS needed
-        !no need for RHS Horizontal recurrence relations 
         CDAB = TMParray1
+        !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1000)  !Angmom(A= 1,B= 0,C= 0,D= 0) combi
         call VerticalRecurrence1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -147,8 +147,8 @@ CONTAINS
         ENDIF
         call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        !no need for RHS Horizontal recurrence relations 
         CDAB = TMParray2
+        !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1010)  !Angmom(A= 1,B= 0,C= 1,D= 0) combi
         call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -200,8 +200,8 @@ CONTAINS
         ENDIF
         call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        !no need for RHS Horizontal recurrence relations 
         CDAB = TMParray2
+        !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1110)  !Angmom(A= 1,B= 1,C= 1,D= 0) combi
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -252,9 +252,8 @@ CONTAINS
               & nContC,nPrimD,nContD)
         ENDIF
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(   1,nContQP*nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(   1,nContQP*nPasses,TMParray2,CDAB     )
         !no need for RHS Horizontal recurrence relations 
-        CDAB = TMParray1
         !no Spherical Transformation RHS needed
     CASE(2010)  !Angmom(A= 2,B= 0,C= 1,D= 0) combi
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -359,9 +358,8 @@ CONTAINS
               & nContC,nPrimD,nContD)
         ENDIF
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(   1,nContQP*nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(   1,nContQP*nPasses,TMParray2,CDAB     )
         !no need for RHS Horizontal recurrence relations 
-        CDAB = TMParray1
         !no Spherical Transformation RHS needed
     CASE(2110)  !Angmom(A= 2,B= 1,C= 1,D= 0) combi
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -466,9 +464,8 @@ CONTAINS
               & nContC,nPrimD,nContD)
         ENDIF
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(   1,nContQP*nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(   1,nContQP*nPasses,TMParray2,CDAB     )
         !no need for RHS Horizontal recurrence relations 
-        CDAB = TMParray1
         !no Spherical Transformation RHS needed
     CASE(2210)  !Angmom(A= 2,B= 2,C= 1,D= 0) combi
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&

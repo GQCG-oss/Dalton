@@ -546,8 +546,8 @@ contains
     integer,intent(in) :: LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,nTUV,AngmomP,AngmomQ
     integer,intent(in) :: AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec
     character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
-    logical :: spherical
-
+    logical :: spherical,OutputSet 
+    OutputSet = .FALSE.
     IF(nTUV.LT.10)THEN
 !       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
     ELSEIF(nTUV.LT.100)THEN
@@ -853,6 +853,11 @@ contains
 
 
     IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
+       IF(AngmomQ.EQ.0)THEN
+          !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
+          STRINGOUT  = 'CDAB     '
+          OutputSet = .TRUE.
+       ENDIF
 !       WRITE(LUMOD3,'(A)')'        !Spherical Transformation LHS'         
        IF(nlmA*nlmB*nTUVQ.LT.10)THEN
 !          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
@@ -883,13 +888,25 @@ contains
        STRINGOUT  = TMPSTRING
     ELSE
        WRITE(LUMOD3,'(A)')'        !no Spherical Transformation LHS needed'
+       IF(AngmomQ.EQ.0)THEN
+          !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
+          !afterwards which means we can 
+          WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
+          OutputSet = .TRUE.
+          print*,'ouptutsat2'
+       ELSE
+          !need for RHS Horizontal  so no copy
+       ENDIF       
     ENDIF
-
 
     IF(AngmomQ.EQ.0)THEN
        WRITE(LUMOD3,'(A)')'        !no need for RHS Horizontal recurrence relations '
        !there will not be need for Spherical either 
-       WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
+       IF(.NOT.OutputSet)THEN
+          WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
+          OutputSet = .TRUE.
+          print*,'ouptutsat1'
+       ENDIF
     ELSE
 !       WRITE(LUMOD3,'(A)')'        !RHS Horizontal recurrence relations '
        IF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.10)THEN
@@ -901,9 +918,14 @@ contains
        ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.10000)THEN
 !          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
        ENDIF
-       IF(.NOT.(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1)))THEN
-          !no Spherical afterwards which means we can 
-          STRINGOUT  = 'CDAB     '
+       IF(.NOT.OutputSet)THEN
+          IF(.NOT.(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1)))THEN
+             !no Spherical afterwards which means we can 
+             STRINGOUT  = 'CDAB     '
+             OutputSet = .TRUE.
+          ENDIF
+       ELSE
+          STOP 'MAJOR ERROR OUTPUT SET BUT RHS HORIZONTAL NEEDED1'
        ENDIF
        IF(AngmomC.GE.AngmomD)THEN
           SPEC = 'CtoD'
@@ -956,7 +978,11 @@ contains
 
     IF(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
 !       WRITE(LUMOD3,'(A)')'        !Spherical Transformation RHS'
-       STRINGOUT  = 'CDAB     '
+       IF(.NOT.OutputSet)THEN
+          STRINGOUT  = 'CDAB     '
+       ELSE
+          STOP 'MAJOR ERROR OUTPUT SET BUT RHS HORIZONTAL NEEDED2'
+       ENDIF
        IF(nlmA*nlmB*nlmC*nlmD.LT.10)THEN
 !          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
        ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.100)THEN
