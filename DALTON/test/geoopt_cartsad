@@ -257,7 +257,7 @@ ERROR[7]="SECOND ITERATION NOT CORRECT"
 # Third iteration
 CRIT1=`$GREP "Energy at this geometry is * \: * \-78\.30209" $log | wc -l`
 CRIT2=`$GREP "Norm of gradient * \: * 0*\.01919" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: *     0*\.7200" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: *     0*\.7(199|200)" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="THIRD ITERATION NOT CORRECT"

@@ -582,6 +582,7 @@ CONTAINS
     CASE DEFAULT
         CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_general',-1)
     END SELECT
+
   end subroutine IchorCoulombIntegral_OBS_general
   
   subroutine IchorCoulombIntegral_OBS_general_size(TMParray1maxsize,&

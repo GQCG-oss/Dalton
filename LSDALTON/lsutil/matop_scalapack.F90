@@ -3077,25 +3077,30 @@ module matrix_operations_scalapack
 
    !created process grid.
 #ifdef VAR_CHEMSHELL
-   ! In MPIBLACS the BLACS contexts are MPI communicators so we can
-   ! assign them directly.
+   ! In MPIBLACS the BLACS system contexts are MPI communicators so 
+   ! we can assign them directly.
    ! SL_INIT (more specifically blacs_get) should not be called
    ! as it can only return a global context (i.e. world communicator)
    ! The calculation will therefore crash in the call to SL_INIT 
    ! if MPI_COMM_LSDALTON is not equal to MPI_COMM_WORLD.
-   ! In the case of CHEM_SHELL the MPI_COMM_LSDALTON is not equal to
+   ! In the case of CHEM_SHELL, MPI_COMM_LSDALTON is not equal to
    ! MPI_COMM_WORLD and SL_INIT should not be called directly
    SLGrid%ictxt = MPI_COMM_LSDALTON
-   ! Set up the process grid
+   ! Set up the process grid - sets ictxt to a BLACS handle
    CALL BLACS_GRIDINIT(SLGrid%ictxt, 'Row-major', TMP(1), TMP(2))
+   ! Again, do not call blacs_get. The BLACS system context
+   ! and corresponding communicator are simply MPI communicators.
+   SLGrid%Masterictxt = MPI_COMM_LSDALTON
+   SLGrid%comm = MPI_COMM_LSDALTON
 #else
    ! SL_INIT returns a global context.
    CALL SL_INIT(SLGrid%ictxt,TMP(1),TMP(2))   
-#endif
 
-   !Get grid communicator
+   ! Get grid communicator
+   ! Note this will always return MPI_COMM_WORLD
    call blacs_get(SLGrid%ictxt,0,SLGrid%Masterictxt)
    SLGrid%comm = blacs2sys_handle(SLGrid%Masterictxt)
+#endif
 
    IF(TMP(4).EQ.0)THEN
       IF(TMP(3).GT.200)THEN  !nbast > 200

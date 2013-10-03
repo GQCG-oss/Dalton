@@ -50,8 +50,10 @@ C
 #else
       INCLUDE 'mpif.h'
 C
+#ifndef VAR_CHEMSHELL
       CALL MPI_INIT(IERR)
       IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+#endif
 C
       CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYNUM,IERR)
 #if defined(CRI_MEMTRACE)
@@ -95,8 +97,10 @@ C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 C
+#ifndef VAR_CHEMSHELL
       CALL MPI_FINALIZE(IERR)
       IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+#endif
 #endif
 C
       RETURN
