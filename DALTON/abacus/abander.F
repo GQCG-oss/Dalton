@@ -4455,7 +4455,7 @@ C     /*Deck gsphes*/
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
-      PARAMETER (KCOL=10)
+      PARAMETER (KCOL=6)
 #include "nuclei.h"
 #include "trkoor.h"
 #include "taymol.h"
