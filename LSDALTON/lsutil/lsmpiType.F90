@@ -164,6 +164,9 @@ module lsmpi_type
                  &   lsmpi_acc_int4,lsmpi_acc_int8
   end interface lsmpi_acc
 
+  interface lsmpi_get_acc
+    module procedure lsmpi_get_acc_int444,lsmpi_get_acc_int888
+  end interface lsmpi_get_acc
   !save
 #ifdef VAR_MPI
   integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
@@ -5645,12 +5648,32 @@ contains
 #endif
   end subroutine lsmpi_get_realkV
 
-  subroutine lsmpi_get_acc_int(ibuf,obuf,dest,pos,win)
+  subroutine lsmpi_get_acc_int888(ibuf,obuf,dest,pos,win)
+    integer(kind=8),intent(inout)    :: ibuf
+    integer(kind=8),intent(inout)    :: obuf
+    integer(kind=ls_mpik),intent(in) :: dest,win
+    integer,intent(in)               :: pos
+    integer(kind=ls_mpik)            :: n
+#ifdef VAR_MPI
+    integer(kind=MPI_ADDRESS_KIND)   :: offset
+    
+    n=1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+#ifdef VAR_HAVE_MPI3
+    call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER8,obuf,n,&
+    &MPI_INTEGER8,dest,offset,n,MPI_INTEGER8,MPI_SUM,win,ierr)
+#else
+    call lsquit("ERROR(lsmpi_get_acc):you did not comile with an MPI3 enabled&
+          &MPI library. Recompile.",-1)
+#endif
+#endif
+  end subroutine lsmpi_get_acc_int888
+  subroutine lsmpi_get_acc_int444(ibuf,obuf,dest,pos,win)
     integer(kind=4),intent(inout)    :: ibuf
     integer(kind=4),intent(inout)    :: obuf
     integer(kind=ls_mpik),intent(in) :: dest,win
     integer,intent(in)               :: pos
-    integer(kind=4)                  :: n
+    integer(kind=ls_mpik)            :: n
 #ifdef VAR_MPI
     integer(kind=MPI_ADDRESS_KIND)   :: offset
     
@@ -5658,13 +5681,13 @@ contains
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 #ifdef VAR_HAVE_MPI3
     call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER4,obuf,n,&
-    &MPI_INTEGER,dest,offset,n,MPI_INTEGER,MPI_SUM,win,ierr)
+    &MPI_INTEGER4,dest,offset,n,MPI_INTEGER4,MPI_SUM,win,ierr)
 #else
     call lsquit("ERROR(lsmpi_get_acc):you did not comile with an MPI3 enabled&
           &MPI library. Recompile.",-1)
 #endif
 #endif
-  end subroutine lsmpi_get_acc_int
+  end subroutine lsmpi_get_acc_int444
 
   subroutine lsmpi_acc_int8(buf,pos,dest,win)
     implicit none
