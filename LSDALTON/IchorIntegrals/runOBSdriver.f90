@@ -888,6 +888,8 @@ contains
 
     IF(AngmomQ.EQ.0)THEN
        WRITE(LUMOD3,'(A)')'        !no need for RHS Horizontal recurrence relations '
+       !there will not be need for Spherical either 
+       WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
     ELSE
 !       WRITE(LUMOD3,'(A)')'        !RHS Horizontal recurrence relations '
        IF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.10)THEN
@@ -898,6 +900,10 @@ contains
 !          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
        ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.10000)THEN
 !          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
+       ENDIF
+       IF(.NOT.(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1)))THEN
+          !no Spherical afterwards which means we can 
+          STRINGOUT  = 'CDAB     '
        ENDIF
        IF(AngmomC.GE.AngmomD)THEN
           SPEC = 'CtoD'
@@ -981,7 +987,6 @@ contains
 !       WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
     ELSE
        WRITE(LUMOD3,'(A)')'        !no Spherical Transformation RHS needed'
-       WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
     ENDIF
 
 !    WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
