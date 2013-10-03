@@ -163,7 +163,7 @@
             call PDM_SLAVE
 #endif
          case(PDMA4SLV);
-            call PDM_ARRAY_SLAVE
+            call PDM_ARRAY_SLAVE(comm)
          case(GIVE_BIRTH);
             call give_birth_to_child_process
          case(LSMPITEST);

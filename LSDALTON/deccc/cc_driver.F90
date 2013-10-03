@@ -2082,32 +2082,31 @@ contains
     integer                :: ii, jj, aa, bb
     logical                :: restart, w_cp
 
-    restart = .false.
-    w_cp    = .false.
-    saferun = (.not.DECinfo%CCSDnosaferun)
+
+    !Set defaults
+    restart     = .false.
+    w_cp        = .false.
+    saferun     = (.not.DECinfo%CCSDnosaferun)
     
-    safefilet11='t11'
-    safefilet12='t12'
-    safefilet21='t21'
-    safefilet22='t22'
+    safefilet11 = 't11'
+    safefilet12 = 't12'
+    safefilet21 = 't21'
+    safefilet22 = 't22'
 
-    nnodes=1
+    nnodes      = 1
+
 #ifdef VAR_MPI
-    nnodes=infpar%lg_nodtot
-
-    if ( w_cp ) then
-      print *,"STARTING UP THE COMMUNICATION PROCESSES"
-      !impregnate the slaves
-      call ls_mpibcast(GIVE_BIRTH,infpar%master,infpar%lg_comm)
-      !just to find, that the master is also fertile
-      call give_birth_to_child_process
-    endif
+    nnodes      = infpar%lg_nodtot
+    w_cp        = DECinfo%spawn_comm_proc
+    
+    if ( w_cp ) call lspdm_start_up_comm_procs
 
 #ifndef COMPILER_UNDERSTANDS_FORTRAN_2003
     call lsquit("ERROR(ccsolver_par):Your compiler does not support certain&
     & features needed to run that part of the code. Use a compiler supporting&
     & Fortran 2003 features",-1)
 #endif
+
 #endif
 
 
@@ -2189,11 +2188,14 @@ contains
     ampl2_dims = [nv,no]
 
     ! create transformation matrices in array form
-    ypo  = array_init( occ_dims, 2 )
-    ypv  = array_init( virt_dims,2 )
-    yho  = array_init( occ_dims, 2 )
-    yhv  = array_init( virt_dims,2 )
-    fock = array_init( ao2_dims, 2 )
+    ypo  = array_minit( occ_dims, 2 )
+#ifdef VAR_MPI
+    if ( w_cp ) call lspdm_shut_down_comm_procs
+#endif
+    ypv  = array_minit( virt_dims,2 )
+    yho  = array_minit( occ_dims, 2 )
+    yhv  = array_minit( virt_dims,2 )
+    fock = array_minit( ao2_dims, 2 )
 
     call array_convert( ypo_d,  ypo  )
     call array_convert( ypv_d,  ypv  )
@@ -2205,6 +2207,7 @@ contains
     call mem_dealloc( ypv_d )
     call mem_dealloc( yho_d )
     call mem_dealloc( yhv_d )
+
     ! Get Fock matrix correction (for fragment and/or frozen core)
     ! ************************************************************
     ! Full molecule/frozen core: The correction corresponds to difference between actual Fock matrix
@@ -2220,7 +2223,7 @@ contains
 
     if(fragment_job) then ! fragment: calculate correction
 
-       ifock=array_init(ao2_dims,2)
+       ifock = array_minit(ao2_dims,2)
 
        if(longrange_singles) then
           ! Get Fock matrix using singles amplitudes from previous
@@ -2234,7 +2237,7 @@ contains
 
        ! Long range Fock correction:
        !delta_fock = getFockCorrection(fock,ifock)
-       delta_fock=array_init(ao2_dims,2)
+       delta_fock = array_minit(ao2_dims,2)
 
        call array_cp_data(fock,delta_fock)
        call array_add(delta_fock,-1.0E0_realk,ifock)
@@ -2244,15 +2247,15 @@ contains
        ! Full molecule: deltaF = F(Dcore) for frozen core (0 otherwise)
        if(DECinfo%frozencore) then
           ! Fock matrix from input MOs
-          ifock=array_init(ao2_dims,2)
+          ifock=array_minit(ao2_dims,2)
           call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
           ! Correction to actual Fock matrix
-          delta_fock=array_init(ao2_dims,2)
+          delta_fock=array_minit(ao2_dims,2)
           call array_cp_data(fock,delta_fock)
           call array_add(delta_fock,-1.0E0_realk,ifock)
           call array_free(ifock)
        else
-          delta_fock=array_init(ao2_dims,2)
+          delta_fock=array_minit(ao2_dims,2)
           call array_zero(delta_fock)
        end if
     end if
@@ -2269,12 +2272,11 @@ contains
     if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
     if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-
     ! get fock matrices for preconditioning
     Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
 
-       ppfock_prec = array_minit_rpseudo_dense( [no,no], 2, local )
-       qqfock_prec = array_minit_rpseudo_dense( [nv,nv], 2, local )
+       ppfock_prec = array_minit( [no,no], 2, local=local, atype='REPD' )
+       qqfock_prec = array_minit( [nv,nv], 2, local=local, atype='REPD' )
 
        call array_change_atype_to_rep( ppfock_prec, local )
        call array_change_atype_to_rep( qqfock_prec, local )
@@ -2283,12 +2285,12 @@ contains
           call array_convert( ppfock_d, ppfock_prec )
           call array_convert( qqfock_d, qqfock_prec )
        else
-          tmp = array_init([nb,no],2)
+          tmp = array_minit([nb,no], 2 )
           call array_contract_outer_indices_rl(1.0E0_realk,fock,yho,0.0E0_realk,tmp)
           call array_contract_outer_indices_ll(1.0E0_realk,ypo,tmp,0.0E0_realk,ppfock_prec)
           call array_free(tmp)
 
-          tmp = array_init([nb,nv],2)
+          tmp = array_minit([nb,nv],2 )
           call array_contract_outer_indices_rl(1.0E0_realk,fock,yhv,0.0E0_realk,tmp)
           call array_contract_outer_indices_ll(1.0E0_realk,ypv,tmp,0.0E0_realk,qqfock_prec)
           call array_free(tmp)
@@ -2306,24 +2308,23 @@ contains
     if(DECinfo%use_singles) then
        call mem_alloc( t1,     DECinfo%ccMaxIter )
        call mem_alloc( omega1, DECinfo%ccMaxIter )
-       ppfock=array_init( [no,no], 2 )
-       pqfock=array_init( [no,nv], 2 )
-       qpfock=array_init( [nv,no], 2 )
-       qqfock=array_init( [nv,nv], 2 )
+       ppfock=array_minit( [no,no], 2 )
+       pqfock=array_minit( [no,nv], 2 )
+       qpfock=array_minit( [nv,no], 2 )
+       qqfock=array_minit( [nv,nv], 2 )
     end if
     call mem_alloc(t2,DECinfo%ccMaxIter)
     call mem_alloc(omega2,DECinfo%ccMaxIter)
 
-
     ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
     if(DECinfo%ccModel /= MODEL_MP2) then
-       xo = array_init( occ_dims, 2 )
-       yo = array_init( occ_dims, 2 )
-       xv = array_init( virt_dims,2 )
-       yv = array_init( virt_dims,2 )
+       xo = array_minit( occ_dims, 2 )
+       yo = array_minit( occ_dims, 2 )
+       xv = array_minit( virt_dims,2 )
+       yv = array_minit( virt_dims,2 )
     end if
-    !iajb=array_minit_tdpseudo_dense([no,nv,no,nv],4)
-    iajb=array_minit_td( [no,nv,no,nv], 4, local )
+
+    iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
     call array_zero(iajb)
 
     call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
@@ -2341,6 +2342,7 @@ contains
     crop_ok          = .false.
     prev_norm        = 1.0E6_realk
 
+    print *,"iterations start"
     CCIteration : do iter=1,DECinfo%ccMaxIter
 
        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -2353,8 +2355,8 @@ contains
           end if
 
           if(DECinfo%use_singles) then
-             call array_free_rpseudo_dense(t1(iter-DECinfo%ccMaxDIIS),local)
-             Call array_free(omega1(iter-DECinfo%ccMaxDIIS))
+             call array_free( t1(iter-DECinfo%ccMaxDIIS)     )
+             Call array_free( omega1(iter-DECinfo%ccMaxDIIS) )
              
           end if
           call array_free(t2(iter-DECinfo%ccMaxDIIS))
@@ -2365,21 +2367,21 @@ contains
        ! restart, else the t*.restart files are read
        GetGuessVectors : if(iter == 1) then
           if(DECinfo%use_singles)then
-            t1(iter) = array_minit_rpseudo_dense(ampl2_dims,2,local)
-            t2(iter) = array_minit_tdpseudo_dense(ampl4_dims,4,local)
+            t1(iter) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
+            t2(iter) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
             call get_guess_vectors(restart,t2(iter),safefilet21,safefilet22,t1(iter),safefilet11,safefilet12)
           else
-            t2(iter) = array_minit_tdpseudo_dense(ampl4_dims,4,local)
+            t2(iter) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
             call get_guess_vectors(restart,t2(iter),safefilet21,safefilet22)
          endif
        end if GetGuessVectors
 
        ! Initialize residual vectors
        if(DECinfo%use_singles)then
-         omega1(iter) = array_init(ampl2_dims,2)
+         omega1(iter) = array_minit( ampl2_dims, 2 )
          call array_zero(omega1(iter))
        endif
-       omega2(iter) = array_minit_td(ampl4_dims,4,local)
+       omega2(iter) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
        call array_zero(omega2(iter))
 
        ! get singles
@@ -2410,6 +2412,7 @@ contains
        case(MODEL_MP2)
           call lsquit("ERROR(ccsolver_par):no mp2 implemented",DECinfo%output)
        case(MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT) !CC2 or  CCSD or CCSD(T)
+          print *,"residual"
 
           call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
              & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
@@ -2456,6 +2459,8 @@ contains
              B(j,i) = B(i,j)
           end do
        end do
+       
+       print *,"CROP setup"
        !msg="DIIS mat, new"
        !call print_norm(B,DECinfo%ccMaxIter*DECinfo%ccMaxIter,msg)
 
@@ -2472,14 +2477,14 @@ contains
        
        ! mixing omega to get optimal
        if(DECinfo%use_singles) then
-          t1_opt     = array_init( ampl2_dims, 2 )
-          omega1_opt = array_init( ampl2_dims, 2 )
+          t1_opt     = array_minit( ampl2_dims, 2 )
+          omega1_opt = array_minit( ampl2_dims, 2 )
           call array_zero(t1_opt    )
           call array_zero(omega1_opt)
        end if
 
-       omega2_opt  = array_minit_td( ampl4_dims, 4, local )
-       t2_opt      = array_minit_td( ampl4_dims, 4, local )
+       omega2_opt  = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
+       t2_opt      = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
        call array_zero( omega2_opt )
        call array_zero( t2_opt     )
 
@@ -2569,23 +2574,23 @@ contains
           if(DECinfo%use_preconditioner) then
              if(DECinfo%use_singles) then
                 omega1_prec = precondition_singles(omega1_opt,ppfock_prec,qqfock_prec)
-                t1(iter+1) = array_minit_rpseudo_dense(ampl2_dims,2,local)
+                t1(iter+1) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
                 call array_cp_data(t1_opt,t1(iter+1))
                 call array_add(t1(iter+1),1.0E0_realk,omega1_prec)
                 call array_free(omega1_prec)
              end if
              omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec,local)
-             t2(iter+1) = array_minit_tdpseudo_dense(ampl4_dims,4,local)
+             t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
              call array_cp_data(t2_opt,t2(iter+1))
              call array_add(t2(iter+1),1.0E0_realk,omega2_prec)
              call array_free(omega2_prec)
           else
              if(DECinfo%use_singles)then
-                t1(iter+1) = array_minit_rpseudo_dense(ampl2_dims,2,local)
+                t1(iter+1) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
                 call array_cp_data(t1_opt,t1(iter+1))
                 call array_add(t1(iter+1),1.0E0_realk,omega1_opt)
              endif
-             t2(iter+1) = array_minit_tdpseudo_dense(ampl4_dims,4,local)
+             t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
              call array_cp_data(t2_opt,t2(iter+1))
              call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
           end if
@@ -2625,15 +2630,6 @@ contains
          
     end do CCIteration
 
-#ifdef VAR_MPI
-    if ( w_cp ) then
-      print *,"SHUTTING DOWN THE COMMUNICATION PROCESSES"
-      !kill the babies of the slaves
-      call ls_mpibcast(SLAVES_SHUT_DOWN_CHILD,infpar%master,infpar%lg_comm)
-      !kill own baby
-      call shut_down_child_process
-    endif
-#endif
 
 
     call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
@@ -2655,8 +2651,8 @@ contains
           end if
 
           ! Free singles amplitudes and residuals
-          call array_free_rpseudo_dense(t1(i),local)
-          call array_free(omega1(i))
+          call array_free( t1(i)     )
+          call array_free( omega1(i) )
 
        end if
 
@@ -2670,9 +2666,9 @@ contains
        end if
 
        ! Free doubles residuals
-       call array_free_tdpseudo_dense(omega2(i),local)
+       call array_free(omega2(i))
        ! Free doubles amplitudes
-       call array_free_tdpseudo_dense(t2(i),local)
+       call array_free(t2(i))
 
     end do
 
@@ -2712,8 +2708,8 @@ contains
 
 
     if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
-       call array_free_rpseudo_dense(ppfock_prec,local)
-       call array_free_rpseudo_dense(qqfock_prec,local)
+       call array_free(ppfock_prec)
+       call array_free(qqfock_prec)
     end if
 
     if(DECinfo%use_singles) then
@@ -2745,6 +2741,10 @@ contains
 
     call mem_dealloc(Uocc)
     call mem_dealloc(Uvirt)
+
+#ifdef VAR_MPI
+    if ( w_cp ) call lspdm_shut_down_comm_procs
+#endif
 
 #ifdef MOD_UNRELEASED
     call array4_print_statistics(DECinfo%output)

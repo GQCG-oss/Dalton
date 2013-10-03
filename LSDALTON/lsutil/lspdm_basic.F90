@@ -296,7 +296,7 @@ module lspdm_basic_module
         !Check if the current tile resides on the current node
         doit=.true.
 #ifdef VAR_MPI
-        if(arr%atype==TILED_DIST.and.&
+        if(arr%itype==TILED_DIST.and.&
         &.not.mod(i-1+arr%offset,infpar%lg_nodtot)==infpar%lg_mynum)doit=.false.
 #endif
         !convert global tile index i to local tile index loc_idx

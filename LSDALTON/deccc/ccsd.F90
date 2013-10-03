@@ -980,7 +980,7 @@ contains
 #else
       !allocate the dense part of the arrays if all can be kept in local memory.
       !do that for master only, as the slaves recieve the data via StartUpSlaves
-      if((scheme==4).and.govov%atype/=DENSE)then
+      if((scheme==4).and.govov%itype/=DENSE)then
         if(iter==1) call memory_allocate_array_dense(govov)
         if(iter/=1) call array_cp_tiled2dense(govov,.false.)
       endif 
@@ -1014,7 +1014,7 @@ contains
     !dense part was allocated in the communicate subroutine
 
     if(scheme==4)then
-      govov%atype    = DENSE
+      govov%itype    = DENSE
     endif
 
     govov%init_type  = ALL_INIT
@@ -1025,9 +1025,9 @@ contains
 
     !if the residual is handeled as dense, allocate and zero it, adjust the
     !access parameters to the data
-    if(omega2%atype/=DENSE.and.(scheme==3.or.scheme==4))then
+    if(omega2%itype/=DENSE.and.(scheme==3.or.scheme==4))then
       call memory_allocate_array_dense(omega2)
-      omega2%atype=DENSE
+      omega2%itype=DENSE
     endif
     call array_zero(omega2)
 
@@ -1601,7 +1601,7 @@ contains
     if(infpar%lg_nodtot>1.or.scheme==3) then
 
        if(iter==1.and.scheme==4)then
-         call lsmpi_local_allreduce_chunks(govov%elm1,o2v2,double_2G_nel)
+         call lsmpi_allreduce(govov%elm1,o2v2,infpar%lg_comm,double_2G_nel)
        elseif(scheme==3)then
          call array_cp_tiled2dense(govov,.false.)
        endif
@@ -1611,12 +1611,12 @@ contains
        !***********************************************************************
        if(DECinfo%ccModel > MODEL_CC2)then
 
-         call lsmpi_local_allreduce_chunks(sio4,int((i8*nor)*no2,kind=8),double_2G_nel)
+         call lsmpi_allreduce(sio4,int((i8*nor)*no2,kind=8),infpar%lg_comm,double_2G_nel)
 
          if(scheme==4)then
 
-           call lsmpi_local_allreduce_chunks(gvvooa%elm1,o2v2,double_2G_nel)
-           call lsmpi_local_allreduce_chunks(gvoova%elm1,o2v2,double_2G_nel)
+           call lsmpi_allreduce(gvvooa%elm1,o2v2,infpar%lg_comm,double_2G_nel)
+           call lsmpi_allreduce(gvoova%elm1,o2v2,infpar%lg_comm,double_2G_nel)
 
          endif
 
@@ -1698,10 +1698,10 @@ contains
       govov%elm1(1_long:o2v2) = w1(1_long:o2v2)
 #ifdef VAR_MPI
       if(.not.local)then
-        govov%atype     = TILED_DIST
+        govov%itype     = TILED_DIST
       endif
       call array_convert(w1,govov)
-      govov%atype = DENSE
+      govov%itype = DENSE
 #endif
     endif
 
@@ -1830,7 +1830,7 @@ contains
     if(.not.local)then
       if((master.and..not.(scheme==2)).or.scheme==3)&
       &call memory_deallocate_array_dense(govov)
-      govov%atype      = TILED_DIST
+      govov%itype      = TILED_DIST
     endif
     govov%init_type  = MASTER_INIT
     omega2%init_type = MASTER_INIT
@@ -1880,19 +1880,15 @@ contains
 
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
          & Dens%elms,nb,nb,AORdefault,AORdefault)
-    !print *,"3.1"
     ! Add one- and two-electron contributions to Fock matrix
     call daxpy(nb2,1.0E0_realk,Dens%elms,1,iFock%elms,1)
-    !print *,"3.2"
     !Free the density matrix
     call mat_free(Dens)
-    !print *,"4"
 
 
 
     ! KK: Add long-range Fock correction
     call daxpy(nb2,1.0E0_realk,deltafock,1,iFock%elms,1)
-    !print *,"4.1"
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_MPI
@@ -2098,16 +2094,13 @@ contains
      
       if(pd) then 
         write(msg,*)"NORM(omega2 before permut):"
-        !call print_norm(omega2,msg)
-        print *,"copy from 1 to",o2v2,no2,nv2
+        call print_norm(omega2,msg)
       endif
 
       !INTRODUCE PERMUTATION
-      !OMP WORKSHARE
-      !w1(int(1,kind=long):o2v2)=omega2%elm1(int(1,kind=long):o2v2)
-      w1 = omega2%elm1
-      print *,"assoc done"
-      !OMP END WORKSHARE
+      !$OMP WORKSHARE
+      w1(1_long:o2v2) = omega2%elm1(1_long:o2v2)
+      !$OMP END WORKSHARE
 
       if(pd) then 
         write(msg,*)"NORM(w1):"
@@ -2552,9 +2545,7 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !(-1) * C [a i c k] * t [c k b j] = preOmC [a i b j]
      if(s==4)then
-       if(me==0.and.DECinfo%PL>2) print *,"5"
        w1=0.0E0_realk
-       if(me==0.and.DECinfo%PL>2) print *,"6"
        call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w3,no*nv,0.0E0_realk,w1(fai),no*nv)
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
@@ -2579,10 +2570,8 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      if(s==3.or.s==4)then
        !contribution 1: 0.5*preOmC [a i b j] -> =+ Omega [a b i j]
-       if(me==0.and.DECinfo%PL>2) print *,"7"
        call array_reorder_4d(0.5E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
        !contribution 3: preOmC [a j b i] -> =+ Omega [a b i j]
-       if(me==0.and.DECinfo%PL>2) print *,"8"
        call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,4,2],1.0E0_realk,omega2%elm1)
      elseif(s==2)then
 #ifdef VAR_MPI

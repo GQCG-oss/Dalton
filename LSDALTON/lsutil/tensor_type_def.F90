@@ -8,7 +8,7 @@ module tensor_type_def_module
   type tile
     type(c_ptr) :: c
     real(realk),pointer :: t(:) => null()         !data in tiles
-    integer,pointer :: d(:)     => null()         !actual dimension of the tiles
+    integer,pointer     :: d(:) => null()         !actual dimension of the tiles
     integer :: e,gt                               !number of elements in current tile, global ti nr
   end type tile
 
@@ -18,7 +18,9 @@ module tensor_type_def_module
      !atype= format or distribution in which the array is stored --> dense, distributed --> see parameters in array_operations.f90
      integer :: mode
      integer(kind=8) :: nelms
-     integer :: atype
+     integer      :: itype                                              !integer type specification
+     character(4) :: atype                                              !more precise character type specification
+
      !> Dimensions
      integer, pointer :: dims(:)                   => null ()
      !> Data, only allocate the first for the elements and use the others just
@@ -47,6 +49,7 @@ module tensor_type_def_module
      integer :: offset                               !use offset in nodes for the distribution of arrays
      integer :: init_type                            !type of initializtation
      logical :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
+     logical :: allocd_w_c_p                         ! allocated with comm_threads or not?
 
   end type array
 
