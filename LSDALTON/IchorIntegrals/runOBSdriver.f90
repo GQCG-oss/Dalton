@@ -950,7 +950,7 @@ contains
 
     IF(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
 !       WRITE(LUMOD3,'(A)')'        !Spherical Transformation RHS'
-
+       STRINGOUT  = 'CDAB     '
        IF(nlmA*nlmB*nlmC*nlmD.LT.10)THEN
 !          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
        ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.100)THEN
@@ -975,14 +975,15 @@ contains
        ENDIF
 !       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
        !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
+!       TMPSTRING = STRINGIN
+!       STRINGIN  = STRINGOUT
+!       STRINGOUT  = TMPSTRING
+!       WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
     ELSE
        WRITE(LUMOD3,'(A)')'        !no Spherical Transformation RHS needed'
+       WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
     ENDIF
 
-    WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
 !    WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
   end subroutine subroutineMain
 
