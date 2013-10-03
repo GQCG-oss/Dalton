@@ -315,8 +315,7 @@ CONTAINS
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS1_maxAngP2_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(   5,nContQP*nPasses,TMParray1,TMParray2)
-        CDAB = TMParray2
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(   5,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -334,8 +333,7 @@ CONTAINS
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS1_maxAngP2_maxAngA2(  20,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(   5,nContQP*nPasses,TMParray1,TMParray2)
-        CDAB = TMParray2
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(   5,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
         call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -353,8 +351,7 @@ CONTAINS
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS1_maxAngP2_maxAngA2(  35,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,   5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(   5,nContQP*nPasses,TMParray1,TMParray2)
-        CDAB = TMParray2
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(   5,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -427,8 +424,7 @@ CONTAINS
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS1_maxAngP3_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
-        CDAB = TMParray2
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(  15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -446,8 +442,7 @@ CONTAINS
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS1_maxAngP3_maxAngA2(  20,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
-        CDAB = TMParray2
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(  15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
         call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -465,8 +460,7 @@ CONTAINS
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS1_maxAngP3_maxAngA2(  35,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,  15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(  15,nContQP*nPasses,TMParray1,TMParray2)
-        CDAB = TMParray2
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(  15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -539,8 +533,7 @@ CONTAINS
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  10,Pdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS1_maxAngP4_maxAngA2(  10,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
-        CDAB = TMParray2
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(  25,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
         call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -558,8 +551,7 @@ CONTAINS
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  20,Pdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS1_maxAngP4_maxAngA2(  20,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
-        CDAB = TMParray2
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(  25,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
         call VerticalRecurrence8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -577,12 +569,10 @@ CONTAINS
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,  35,Pdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS1_maxAngP4_maxAngA2(  35,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,  25,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(  25,nContQP*nPasses,TMParray1,TMParray2)
-        CDAB = TMParray2
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(  25,nContQP*nPasses,TMParray1,CDAB     )
     CASE DEFAULT
         CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_general',-1)
     END SELECT
-
   end subroutine IchorCoulombIntegral_OBS_general
   
   subroutine IchorCoulombIntegral_OBS_general_size(TMParray1maxsize,&
