@@ -765,9 +765,7 @@ contains
     write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', e1_final
     if(.not. DECinfo%onlyoccpart) then
        write(DECinfo%output,'(1X,a,g20.10)') 'Single virtual  energy = ', e3_final
-    end if
-    write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian occ term  = ', e2_final
-    if(.not. DECinfo%onlyoccpart) then
+       write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian occ term  = ', e2_final
        write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian virt term = ', e4_final
     end if
 
@@ -1356,11 +1354,9 @@ contains
     write(DECinfo%output,*) '*****************************************************************************'
 
     write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair occ energy  = ', pairdist,e1_final
-    if(DECinfo%onlyoccpart) then
-       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair virt energy = ', pairdist,e3_final
-    end if
-    write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. occ term  = ', pairdist,e2_final
     if(.not. DECinfo%onlyoccpart) then
+       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair virt energy = ', pairdist,e3_final
+       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. occ term  = ', pairdist,e2_final
        write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. virt term = ', pairdist,e4_final
     end if
     write(DECinfo%output,*)
