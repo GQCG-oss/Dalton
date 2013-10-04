@@ -128,9 +128,9 @@ CONTAINS
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
         ENDIF
-        !no need for LHS Horizontal recurrence relations a simply copy
-        !no Spherical Transformation LHS needed
+        !no need for LHS Horizontal recurrence relations, it would be a simply copy
         CDAB = TMParray1
+        !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1000)  !Angmom(A= 1,B= 0,C= 0,D= 0) combi
@@ -145,9 +145,8 @@ CONTAINS
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
         ENDIF
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation LHS needed
-        CDAB = TMParray2
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1010)  !Angmom(A= 1,B= 0,C= 1,D= 0) combi
@@ -198,9 +197,8 @@ CONTAINS
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
         ENDIF
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,   1,Pdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation LHS needed
-        CDAB = TMParray2
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1110)  !Angmom(A= 1,B= 1,C= 1,D= 0) combi

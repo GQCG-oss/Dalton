@@ -764,6 +764,7 @@ contains
           ENDIF
        ENDIF
     ENDIF
+!================= DONE WITH VERTICAL AND TRANSFER ================================================================
     WRITE(LUMOD3,'(A)')'        nContQP = nContQ*nContP'
     IF(nTUVP*nTUVQ.LT.10)THEN
 !       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP*nPasses)'
@@ -788,10 +789,39 @@ contains
     TMPSTRING = STRINGIN
     STRINGIN  = STRINGOUT
     STRINGOUT  = TMPSTRING
+
+!================= DONE WITH PRIMITIVE CONTRACTION ================================================================
+
     !     The horizontal recurrence also extract nTUVspec from nTUV       
     IF(AngmomP.EQ.0)THEN
-       WRITE(LUMOD3,'(A)')'        !no need for LHS Horizontal recurrence relations a simply copy'
+     WRITE(LUMOD3,'(A)')'        !no need for LHS Horizontal recurrence relations, it would be a simply copy'
+     !there will not be need for spherical transformation afterwards
+     IF(AngmomQ.EQ.0)THEN
+        !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
+        IF(.NOT.OutputSet)THEN
+           WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
+           OutputSet = .TRUE.
+        ENDIF
+     ELSE
+        !need for RHS Horizontal
+     ENDIF
     ELSE
+     IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
+        !need for Spherical Transformation so we cannot place output in CDAB yet
+     ELSE
+        !no need for LHS Spherical Transformation
+        IF(AngmomQ.EQ.0)THEN
+           !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
+           IF(.NOT.OutputSet)THEN
+              STRINGOUT  = 'CDAB     '
+              OutputSet = .TRUE.
+           ELSE
+              STOP 'CDAB already set MAJOER PROBLEM A2'
+           ENDIF              
+        ELSE
+           !need for RHS Horizontal recurrence
+        ENDIF
+     ENDIF
 !     WRITE(LUMOD3,'(A)')'        !LHS Horizontal recurrence relations '
      IF(nTUVAspec*nTUVBspec*nTUVQ.LT.10)THEN
 !       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
@@ -854,9 +884,16 @@ contains
 
     IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
        IF(AngmomQ.EQ.0)THEN
-          !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
-          STRINGOUT  = 'CDAB     '
-          OutputSet = .TRUE.
+          !no need for RHS horizontal transfer nor spherical transformation
+          IF(.NOT.OutputSet)THEN
+             !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
+             STRINGOUT  = 'CDAB     '
+             OutputSet = .TRUE.
+          ELSE
+             STOP 'CDAB already set MAJOER PROBLEM B1'
+          ENDIF
+       ELSE
+          !need for RHS horizontal recurrence
        ENDIF
 !       WRITE(LUMOD3,'(A)')'        !Spherical Transformation LHS'         
        IF(nlmA*nlmB*nTUVQ.LT.10)THEN
@@ -891,11 +928,12 @@ contains
        IF(AngmomQ.EQ.0)THEN
           !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
           !afterwards which means we can 
-          WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
-          OutputSet = .TRUE.
-          print*,'ouptutsat2'
+          IF(.NOT.OutputSet)THEN
+             WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
+             OutputSet = .TRUE.
+          ENDIF
        ELSE
-          !need for RHS Horizontal  so no copy
+          !need for RHS Horizontal so no copy
        ENDIF       
     ENDIF
 
@@ -925,7 +963,7 @@ contains
              OutputSet = .TRUE.
           ENDIF
        ELSE
-          STOP 'MAJOR ERROR OUTPUT SET BUT RHS HORIZONTAL NEEDED1'
+          STOP 'MAJOR ERROR OUTPUT SET BUT RHS HORIZONTAL NEEDED C1'
        ENDIF
        IF(AngmomC.GE.AngmomD)THEN
           SPEC = 'CtoD'
@@ -981,7 +1019,7 @@ contains
        IF(.NOT.OutputSet)THEN
           STRINGOUT  = 'CDAB     '
        ELSE
-          STOP 'MAJOR ERROR OUTPUT SET BUT RHS HORIZONTAL NEEDED2'
+          STOP 'MAJOR ERROR OUTPUT SET BUT RHS HORIZONTAL NEEDED D1'
        ENDIF
        IF(nlmA*nlmB*nlmC*nlmD.LT.10)THEN
 !          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
