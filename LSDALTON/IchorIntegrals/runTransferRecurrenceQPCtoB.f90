@@ -18,7 +18,7 @@ CONTAINS
     integer :: nTUVLIST,nTUVLISTactual
     integer,pointer :: TwoTermTUVLIST(:)
 
-    WRITE(*,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoA'
+    WRITE(*,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoA'
     WRITE(*,'(A)')' use IchorPrecisionModule'
     WRITE(*,'(A)')'  '
     WRITE(*,'(A)')' CONTAINS'
@@ -62,47 +62,37 @@ CONTAINS
              ENDDO
           ENDDO
 
-          !The Equation D to A looks like
-          !D to A
-          !Theta(i+1,0,0,l) = -(b*X_{ab}-cX_{cd})/p Theta(i,0,0,l) - q/p*Theta(i,0,0,l+1) + i/(2p)*Theta(i-1,0,0,l) + l/(2p)*Theta(i,0,0,l-1)
+          !The Equation C to A looks like
           !C to A
           !Theta(i+1,0,k,0) = -(b*X_{ab}+dX_{cd})/p Theta(i,0,k,0) - q/p*Theta(i,0,k+1,0) + i/(2p)*Theta(i-1,0,k,0) + k/(2p)*Theta(i,0,k-1,0)
+          !D to A
+          !Theta(i+1,0,0,l) = -(b*X_{ab}-cX_{cd})/p Theta(i,0,0,l) - q/p*Theta(i,0,0,l+1) + i/(2p)*Theta(i-1,0,0,l) + l/(2p)*Theta(i,0,0,l-1)
           !A to C
           !Theta(i,0,k+1,0) = -(b*X_{ab}+dX_{cd})/q Theta(i,0,k,0) - p/q*Theta(i+1,0,k,0) + k/(2q)*Theta(i,0,k-1,0) + i/(2q)*Theta(i-1,0,k,0) 
           !A to D
-          !Theta(i,0,0,l+1) = -(b*X_{ab}-cX_{cd})/q Theta(i,0,0,l) - p/q*Theta(i+1,0,0,l) + l/(2q)*Theta(i,0,0,l-1) + i/(2q)*Theta(i-1,0,0,l) 
-
-          !The Equation D to B looks like
-          !D to B
-          !Theta(0,j+1,0,l) = -(-a*X_{ab}-cX_{cd})/p Theta(0,j,0,l) - q/p*Theta(0,j,0,l+1) + i/(2p)*Theta(0,j-1,0,l) + l/(2p)*Theta(i,0,0,l-1)
-          !C to B
-          !Theta(i+1,0,k,0) = -(-a*X_{ab}+dX_{cd})/p Theta(0,j,k,0) - q/p*Theta(0,j,k+1,0) + i/(2p)*Theta(0,j-1,k,0) + k/(2p)*Theta(i,0,k-1,0)
-          !B to C
-          !Theta(i,0,k+1,0) = -(-a*X_{ab}+dX_{cd})/q Theta(0,j,k,0) - p/q*Theta(0,j+1,k,0) + k/(2q)*Theta(0,j,k-1,0) + i/(2q)*Theta(i-1,0,k,0) 
-          !B to D
-          !Theta(i,0,0,l+1) = -(-a*X_{ab}-cX_{cd})/q Theta(0,j,0,l) - p/q*Theta(0,j+1,0,l) + l/(2q)*Theta(0,j,0,l-1) + i/(2q)*Theta(i-1,0,0,l) 
+          !Theta(i,0,0,l+1) = -(b*X_{ab}-cX_{cd})/q Theta(i,0,0,l) - p/q*Theta(i,0,0,l+1) + l/(2q)*Theta(i,0,0,l-1) + i/(2q)*Theta(i-1,0,0,l) 
 
           WRITE(*,'(A)')''
           IF(JP.LT.10)THEN
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I1,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I1,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ELSE
-                WRITE(*,'(A,I1,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I1,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ENDIF
           ELSE
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I2,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I2,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ELSE
-                WRITE(*,'(A,I2,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I2,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ENDIF
           ENDIF
 
-          WRITE(*,'(A)')'         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)'
+          WRITE(*,'(A)')'         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)'
           WRITE(*,'(A)')'  implicit none'
           WRITE(*,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD'
           WRITE(*,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)'
           WRITE(*,'(A)')'  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)'
-          WRITE(*,'(A)')'  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)'
+          WRITE(*,'(A)')'  real(realk),intent(in) :: Aexp(nPrimA),Dexp(nPrimD)'
           WRITE(*,'(A,I5,A)')'  real(realk),intent(in) :: Aux(',nTUV,',nPrimQ*nPrimP*nPasses)'
           WRITE(*,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimQ*nPrimP*nPasses)'
           WRITE(*,'(A)')'!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)'
@@ -121,9 +111,9 @@ CONTAINS
              endif
           ENDDO
           WRITE(*,'(A)')'!  real(realk) :: Tmp(nTUVP,nTUVQ) ordering'
-          WRITE(*,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC'
+          WRITE(*,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimD'
           WRITE(*,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk'
-          WRITE(*,'(A)')'  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ'
+          WRITE(*,'(A)')'  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ'
           WRITE(*,'(A)')'  real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp'
           WRITE(*,'(A)')'  Xab = Pdistance12(1)'
           WRITE(*,'(A)')'  Yab = Pdistance12(2)'
@@ -136,19 +126,20 @@ CONTAINS
           WRITE(*,'(A)')'   DO iPrimP=1, nPrimP'
           WRITE(*,'(A)')'    expP = Pexp(iPrimP)'
           WRITE(*,'(A)')'    invexpP = D1/expP'
-          WRITE(*,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'
-          WRITE(*,'(A)')'    expBX = Bexp(iPrimB)*Xab'
-          WRITE(*,'(A)')'    expBY = Bexp(iPrimB)*Yab'
-          WRITE(*,'(A)')'    expBZ = Bexp(iPrimB)*Zab'
+!          WRITE(*,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'
+          WRITE(*,'(A)')'    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA'
+          WRITE(*,'(A)')'    expAX = -Aexp(iPrimA)*Xab'
+          WRITE(*,'(A)')'    expAY = -Aexp(iPrimA)*Yab'
+          WRITE(*,'(A)')'    expAZ = -Aexp(iPrimA)*Zab'
           WRITE(*,'(A)')'    DO iPrimQ=1, nPrimQ'
-!          WRITE(*,'(A)')'     iPrimD = (iPrimQ-1)/nPrimC+1'
-          WRITE(*,'(A)')'     iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC'
+          WRITE(*,'(A)')'     iPrimD = (iPrimQ-1)/nPrimC+1'
+!          WRITE(*,'(A)')'     iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC'
           WRITE(*,'(A)')'     IP = IP + 1'          
           WRITE(*,'(A)')'     qinvp = -Qexp(iPrimQ)*invexpP'
           WRITE(*,'(A)')'     inv2expP = D05*invexpP'
-          WRITE(*,'(A)')'     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP'
-          WRITE(*,'(A)')'     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP'
-          WRITE(*,'(A)')'     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP'
+          WRITE(*,'(A)')'     facX = -(expAX+Dexp(iPrimD)*Xcd)*invexpP'
+          WRITE(*,'(A)')'     facY = -(expAY+Dexp(iPrimD)*Ycd)*invexpP'
+          WRITE(*,'(A)')'     facZ = -(expAZ+Dexp(iPrimD)*Zcd)*invexpP'
 
 
           allocate(CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
@@ -246,15 +237,15 @@ CONTAINS
           WRITE(*,'(A)')'  ENDDO'
           IF(JP.LT.10)THEN
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I1,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA'
+                WRITE(*,'(A,I1,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'CtoA'
              ELSE
-                WRITE(*,'(A,I1,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA'
+                WRITE(*,'(A,I1,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'CtoA'
              ENDIF
           ELSE
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I2,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA'
+                WRITE(*,'(A,I2,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'CtoA'
              ELSE
-                WRITE(*,'(A,I2,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA'
+                WRITE(*,'(A,I2,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'CtoA'
              ENDIF
           ENDIF
           deallocate(TUVINDEX)
