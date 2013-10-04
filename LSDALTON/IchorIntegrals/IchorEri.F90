@@ -12,7 +12,8 @@ MODULE IchorErimodule
   use IchorCommonModule
 !  use IchorEriCoulombintegralMod, only: IchorCoulombIntegral_SSSS
 !  use IchorEriCoulombintegralGeneralMod, only: IchorCoulombIntegral_McM_general
-  use IchorEriCoulombintegralOBSGeneralMod, only: IchorCoulombIntegral_OBS_general
+  use IchorEriCoulombintegralOBSGeneralMod, only: IchorCoulombIntegral_OBS_general, &
+       & IchorCoulombIntegral_OBS_general_size
   use IchorCoulombIntegral_seg_seg_SSSS_mod, only: IchorCoulombIntegral_seg_seg_SSSS
   use IchorMemory
   use IchorGammaTabulationModule
@@ -172,6 +173,9 @@ real(realk),pointer :: expA(:),ContractCoeffA(:,:),Acenter(:,:)
 real(realk),pointer :: expB(:),ContractCoeffB(:,:),Bcenter(:,:)
 real(realk),pointer :: expC(:),ContractCoeffC(:,:),Ccenter(:,:)
 real(realk),pointer :: expD(:),ContractCoeffD(:,:),Dcenter(:,:)
+integer :: TMParray1maxsize,TMParray2maxsize
+real(realk),pointer :: TmpArray1(:)
+real(realk),pointer :: TmpArray2(:)
 INTPRINT=0
 
 ! GAMMATABULATION 
@@ -616,6 +620,15 @@ DO ItypeA=1,nTypesA
        !============================================================================================
        !                                        General integrals
 !       call IchorTimer('START',TSTART,TEND,LUPRI)
+       call IchorCoulombIntegral_OBS_general_size(TMParray1maxsize,&
+         &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+         &nPrimQ*nPrimP,nContQ*nContP)
+       !possibly change MaxPasses according to Sizes!
+       TMParray1maxsize = TMParray1maxsize*MaxPasses
+       TMParray2maxsize = TMParray2maxsize*MaxPasses
+       call mem_ichor_alloc(TmpArray1,TMParray1maxsize)
+       call mem_ichor_alloc(TmpArray2,TMParray2maxsize)
+
        DO IatomA = 1,nAtomsA
           startA = startOrbitalOfTypeA(iAtomA,ItypeA)
           DO IatomB = 1,nAtomsOfTypeB(ItypeB)
@@ -727,7 +740,9 @@ DO ItypeA=1,nTypesA
                      & Qiprim1,Qiprim2,Piprim1,Piprim2,expA,expB,expC,expD,&
                      & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
                      & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&
-                     & Acenter(:,1),Bcenter(:,1),Ccenter,Dcenter,nAtomsC,nAtomsD,Spherical)
+                     & Acenter(:,1),Bcenter(:,1),Ccenter,Dcenter,nAtomsC,nAtomsD,Spherical,&
+                     & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
+
                 !output CDAB(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nAtomsC,nAtomsD)
                 ndimPass = nOrbCompA*nContA*nOrbCompB*nContB*nOrbCompC*nContC*nOrbCompD*nContD
                 !             write(lupri,*)'CDAB'
@@ -797,8 +812,12 @@ DO ItypeA=1,nTypesA
 !             call output(integrals,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
 
              CALL Mem_ichor_dealloc(CDAB)
-          ENDDO
-       ENDDO
+          ENDDO !iAtomB
+       ENDDO !iAtomA
+       call mem_ichor_dealloc(TmpArray1)
+       call mem_ichor_dealloc(TmpArray2)
+
+
 !       call IchorTimer('TYPE',TSTART,TEND,LUPRI)
        !distribute to full Kmat
        !free ThermiteWorkMem
