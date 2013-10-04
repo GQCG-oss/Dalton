@@ -122,14 +122,13 @@ CONTAINS
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
         IF(Qsegmented.AND.Psegmented)THEN
-         call PrimitiveContractionSeg(TMParray2,TMParray1,   1,nPrimP,nPrimQ,nPasses)
+         call PrimitiveContractionSeg(TMParray2,CDAB     ,   1,nPrimP,nPrimQ,nPasses)
         ELSE
-         call PrimitiveContraction(TMParray2,TMParray1,   1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContraction(TMParray2,CDAB     ,   1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
         ENDIF
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
-        CDAB = TMParray1
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -571,12 +570,11 @@ CONTAINS
     integer :: AngmomID
     
     AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
-    TMParray2maxSize = 0
-    TMParray1maxSize = 0
+    TMParray2maxSize = 1
+    TMParray1maxSize = 1
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,1*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,1*nPrimQP)
     CASE(1000)  !Angmom(A= 1,B= 0,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,4*nPrimQP)

@@ -261,8 +261,8 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'    integer :: AngmomID'
   WRITE(LUMOD3,'(A)')'    '
   WRITE(LUMOD3,'(A)')'    AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD'
-  WRITE(LUMOD3,'(A)')'    TMParray2maxSize = 0'
-  WRITE(LUMOD3,'(A)')'    TMParray1maxSize = 0'
+  WRITE(LUMOD3,'(A)')'    TMParray2maxSize = 1'
+  WRITE(LUMOD3,'(A)')'    TMParray1maxSize = 1'
   WRITE(LUMOD3,'(A)')'    SELECT CASE(AngmomID)'  
   DO AngmomA = 0,2
    DO AngmomB = 0,AngmomA
@@ -776,6 +776,15 @@ contains
 !       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP*nPasses)'
     ENDIF
 
+    IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
+       !no subsequent Horizontal or spherical transformations 
+       IF(.NOT.OutputSet)THEN
+          STRINGOUT  = 'CDAB     '
+          OutputSet = .TRUE.
+       ELSE
+          STOP 'CDAB already set MAJOER PROBLEM A2'
+       ENDIF       
+    ENDIF
     WRITE(LUMOD3,'(A)')'        IF(Qsegmented.AND.Psegmented)THEN'
     WRITE(LUMOD3,'(A,A,A,A,A,I4,A)')'         call PrimitiveContractionSeg(',STRINGIN,',',STRINGOUT,',',nTUVQ*nTUVP,',nPrimP,nPrimQ,nPasses)'
     WRITE(LUMOD3,'(A)')'        ELSE'
@@ -1311,14 +1320,18 @@ contains
     ENDIF
 !    WRITE(LUMOD3,'(A)')'        nContQP = nContQ*nContP'
 
-    IF(nTUVP*nTUVQ.LT.10)THEN
-       WRITE(LUMOD3,'(A7,A9,A,A9,A,I1,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nPrimQP)'
-    ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-       WRITE(LUMOD3,'(A7,A9,A,A9,A,I2,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nContQP)'
-    ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-       WRITE(LUMOD3,'(A7,A9,A,A9,A,I3,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nContQP)'
-    ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-       WRITE(LUMOD3,'(A7,A9,A,A9,A,I4,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nContQP)'
+    IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
+       !no subsequent Horizontal or spherical transformations so no need to put into tmp array
+    ELSE
+       IF(nTUVP*nTUVQ.LT.10)THEN
+          WRITE(LUMOD3,'(A7,A9,A,A9,A,I1,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nPrimQP)'
+       ELSEIF(nTUVP*nTUVQ.LT.100)THEN
+          WRITE(LUMOD3,'(A7,A9,A,A9,A,I2,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nContQP)'
+       ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
+          WRITE(LUMOD3,'(A7,A9,A,A9,A,I3,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nContQP)'
+       ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
+          WRITE(LUMOD3,'(A7,A9,A,A9,A,I4,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nContQP)'
+       ENDIF
     ENDIF
 
 !    WRITE(LUMOD3,'(A)')'        IF(Qsegmented.AND.Psegmented)THEN'
