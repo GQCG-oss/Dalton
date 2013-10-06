@@ -56,7 +56,6 @@ if(ENABLE_PCMSOLVER)
     if(MPI_FOUND)
         set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
     endif()
-    set(LIBS stdc++ ${LIBS})
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -72,6 +71,7 @@ if(ENABLE_PCMSOLVER)
     add_dependencies(dalton pcmsolver)
     add_definitions(-DPCM_MODULE)
     set(DALTON_LIBS
+	stdc++
         ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
 	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
         ${DALTON_LIBS}

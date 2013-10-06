@@ -138,13 +138,10 @@ module pcm_interface
 
       subroutine pcm_energy_driver(density_matrix, pol_ene, work, lfree)
 
-      use pcm_write, only: pcm_write_file_separate
-      use pcmmod_cfg
-
-      real(8)      :: density_matrix(*)
-      real(8)      :: pol_ene
-      real(8)      :: work(*)
-      integer      :: lfree
+      real(8)        :: density_matrix(*)
+      real(c_double) :: pol_ene
+      real(8)        :: work(*)
+      integer        :: lfree
 
 ! Make sure that the interface is initialized first
       call check_if_interface_is_initialized
