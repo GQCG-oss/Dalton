@@ -150,7 +150,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #ifdef MOD_UNRELEASED
   if(config%prof%doProf)then
      call di_profile_lsint(ls,config,lupri,nbast)
-     call lsmpi_finalize(lupri,config%mpi_mem_monitor)
      return
   endif
 #endif
