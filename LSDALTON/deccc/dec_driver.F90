@@ -235,7 +235,7 @@ contains
     ! Restart option: In case some fragments are already done and stored in atomicfragments.info.
     fragdone=.false.
     post_fragopt_restart=.false.
-    if(DECinfo%restart) then
+    if(DECinfo%DECrestart) then
        call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
             & UnoccOrbitals,.false.,AtomicFragments,jobs,atomic_fragment_restart)
 
@@ -454,7 +454,6 @@ contains
 
     end do DoAtomicFragments
 
-
     ! Save fragment energies
     FragEnergies=0E0_realk
     do i=1,natoms
@@ -530,8 +529,7 @@ contains
     ! ***************************************************************************
     ! *                    SINGLE+PAIR FRAGMENTS                                *
     ! ***************************************************************************
-    
-
+   
     morejobs=.true.
 
     ! Continue as long as there are more jobs to be done
@@ -659,7 +657,7 @@ contains
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! MP2, use occ energy
-       Ecorr = energies(1)
+       Ecorr = energies(2)
     case(MODEL_CC2)
        ! CC2, use occ energy
        Ecorr = energies(4)

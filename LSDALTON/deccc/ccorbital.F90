@@ -2276,11 +2276,11 @@ contains
     ! -----------------------------------------------------------
     ! Cases where it is necessary to repeat atomic fragment calcs:
     ! - first order properties are requested
-    ! - only one fragment or full molecule included in fragments
+    ! - only one fragment 
     ! - fragment opt where reduction step is done at the MP2 level
     !   but where the target CC model is not MP2.
-    if(DECinfo%first_order .or. nfrags==1 .or. DECinfo%InclFullMolecule .or. &
-         & (DECinfo%ccmodel/=1 .and. DECinfo%fragopt_red_mp2 ) ) then
+    if(DECinfo%first_order .or. nfrags==1 .or. DECinfo%InclFullMolecule &
+         & .or. (DECinfo%ccmodel/=1 .and. DECinfo%fragopt_red_mp2 ) ) then
        DECinfo%RepeatAF=.true.
     else
        DECinfo%RepeatAF=.false.

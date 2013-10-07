@@ -34,6 +34,7 @@ MODULE molecular_hessian_mod
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
+#ifdef MOD_UNRELEASED
 
   private   ::  get_first_order_rsp_vectors
 
@@ -48,6 +49,7 @@ MODULE molecular_hessian_mod
                 & get_first_geoderiv_twoElectron_mat, &
                 & get_first_geoderiv_Fock_mat,&
                 & get_geom_first_order_RHS_HF
+#endif
 
 
 CONTAINS

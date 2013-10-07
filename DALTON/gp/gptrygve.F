@@ -279,7 +279,7 @@ C
       ELSE
          LUPRIN = 6
       END IF
-      WRITE (LUPRIN,*) 'ERROR: ',TEXT,
+      WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,
      & ' not implemented for parallel calculations!'
       CALL QUIT(TEXT)
       RETURN
@@ -918,7 +918,7 @@ C
             END IF
          ELSE
             IF (MYNUM .GT. 0) THEN
-             IF (INDEX(FILENM,'.n') .EQ. 0) THEN
+             IF (INDEX(FILENM(1:FILELN),'.n') .EQ. 0) THEN
                FILENM(FILELN+1:FILELN+LEN_NODEID) = F_NODEID
                FILELN = FILELN + LEN_NODEID
              END IF
@@ -936,8 +936,8 @@ C
             IF (FILELN .LE. 0) GOTO 9005
 C
             IF (MYNUM .GT. 0 .AND. .NOT. OLDDX) THEN
-             IF (INDEX(FILENM,'.n')     .EQ. 0 .AND.
-     &           INDEX(FILENM,'NUMCAL') .EQ. 0) THEN
+             IF (INDEX(FILENM(1:FILELN),'.n')     .EQ. 0 .AND.
+     &           INDEX(FILENM(1:FILELN),'NUMCAL') .EQ. 0) THEN
 C
 C     The last test will not be necessary anymore when we get
 C     locking RMA operations in MPI2
@@ -970,7 +970,7 @@ C
                END IF
             ELSE
                IF (MYNUM .GT. 0) THEN
-                IF (INDEX(FILENM,'.n') .EQ. 0) THEN
+                IF (INDEX(FILENM(1:FILELN),'.n') .EQ. 0) THEN
                   FILENM(FILELN+1:FILELN+LEN_NODEID) = F_NODEID
                   FILELN = FILELN + LEN_NODEID
                 END IF

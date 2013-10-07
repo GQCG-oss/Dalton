@@ -33,7 +33,7 @@ SUBROUTINE find_cutoff_onep(lupri,luerr,setting,nbast,lattice, &
   TYPE(MATRIX)  :: S!,Gab1
   REAL(realk) :: overlap,origin(3)!,distance
   INTEGER :: j,k,nbatch1,nbatch2
-  INTEGER ::  index
+  INTEGER ::  idx
   INTEGER :: l1,l2,l3
   INTEGER, DIMENSION(3) :: fdim
   LOGICAL :: ntimes
@@ -61,20 +61,20 @@ SUBROUTINE find_cutoff_onep(lupri,luerr,setting,nbast,lattice, &
    DO l2=0,lattice%max_layer*fdim(2)
     DO l1=0,lattice%max_layer*fdim(1)
      
-     call find_latt_index(index,l1,l2,l3,fdim,lattice,lattice%max_layer)
+     call find_latt_index(idx,l1,l2,l3,fdim,lattice,lattice%max_layer)
 
-     !call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2,refcell,3,latt_cell(index),4)
+     !call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell,3,latt_cell(idx),4)
      !setting%samemol(1,2)=.false.
      !setting%samemol(2,1)=.false.
-     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast, lattice%lvec(index)%maxGab)
+     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast, lattice%lvec(idx)%maxGab)
 
      !call mat_print(Gab1,1,nbast,1,nbast,lupri)
      !setting%samemol(1,2)=.true.
      !setting%samemol(2,1)=.true.
      !write(lupri,*) 'screening matrix'
      !call mat_print(Gab1,1,nbast,1,nbast,lupri)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),3)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),3)
      !setting%samemol(1,3)=.false.
      !setting%samemol(3,1)=.false.
 
@@ -82,43 +82,43 @@ SUBROUTINE find_cutoff_onep(lupri,luerr,setting,nbast,lattice, &
 !     CALL mat_print(S,1,S%nrow,1,S%ncol,6) 
      !setting%samemol(1,3)=.true.
      !setting%samemol(3,1)=.true.
-     call find_latt_index(index,-l1,l2,l3,fdim,lattice,lattice%max_layer)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2,refcell,3,latt_cell(index),4)
-     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(index)%maxGab)
-     call find_latt_index(index,l1,-l2,l3,fdim,lattice,lattice%max_layer)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2,refcell,3,latt_cell(index),4)
-     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(index)%maxGab)
-     call find_latt_index(index,l1,l2,-l3,fdim,lattice,lattice%max_layer)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2,refcell,3,latt_cell(index),4)
-     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(index)%maxGab)
-     call find_latt_index(index,l1,-l2,-l3,fdim,lattice,lattice%max_layer)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2,refcell,3,latt_cell(index),4)
-     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(index)%maxGab)
-     call find_latt_index(index,-l1,l2,-l3,fdim,lattice,lattice%max_layer)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2,refcell,3,latt_cell(index),4)
-     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(index)%maxGab)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2,refcell,3,latt_cell(index),4)
-     call find_latt_index(index,-l1,-l2,l3,fdim,lattice,lattice%max_layer)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2,refcell,3,latt_cell(index),4)
-     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(index)%maxGab)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2,refcell,3,latt_cell(index),4)
-     call find_latt_index(index,-l1,-l2,-l3,fdim,lattice,lattice%max_layer)
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),2,refcell,3,latt_cell(index),4)
-     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(index)%maxGab)
+     call find_latt_index(idx,-l1,l2,l3,fdim,lattice,lattice%max_layer)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell,3,latt_cell(idx),4)
+     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(idx)%maxGab)
+     call find_latt_index(idx,l1,-l2,l3,fdim,lattice,lattice%max_layer)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell,3,latt_cell(idx),4)
+     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(idx)%maxGab)
+     call find_latt_index(idx,l1,l2,-l3,fdim,lattice,lattice%max_layer)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell,3,latt_cell(idx),4)
+     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(idx)%maxGab)
+     call find_latt_index(idx,l1,-l2,-l3,fdim,lattice,lattice%max_layer)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell,3,latt_cell(idx),4)
+     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(idx)%maxGab)
+     call find_latt_index(idx,-l1,l2,-l3,fdim,lattice,lattice%max_layer)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell,3,latt_cell(idx),4)
+     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(idx)%maxGab)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell,3,latt_cell(idx),4)
+     call find_latt_index(idx,-l1,-l2,l3,fdim,lattice,lattice%max_layer)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell,3,latt_cell(idx),4)
+     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(idx)%maxGab)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell,3,latt_cell(idx),4)
+     call find_latt_index(idx,-l1,-l2,-l3,fdim,lattice,lattice%max_layer)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell,3,latt_cell(idx),4)
+     call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast,lattice%lvec(idx)%maxGab)
 
       overlap=0d0
       DO j=1,nbast*nbast
         overlap=overlap+abs(S%elms(j))
       ENDDO
  
-      if(overlap .lt. 1E-10 .and. ntimes) then
-        k=max(l3,l2)
-        lattice%nneighbour = max(k,l1)
-        ntimes=.false.
-        write(lupri,*) 'lattice%nneighbour =', lattice%nneighbour
-        write(*,*) 'lattice%nneighbour =', lattice%nneighbour
-        !call mat_print(s,1,s%nrow,1,s%ncol,6)
-      endif 
+      !if(overlap .lt. 1E-10 .and. ntimes) then
+      !  k=max(l3,l2)
+      !  lattice%nneighbour = max(k,l1)
+      !  ntimes=.false.
+      !  write(lupri,*) 'lattice%nneighbour =', lattice%nneighbour
+      !  write(*,*) 'lattice%nneighbour =', lattice%nneighbour
+      !  !call mat_print(s,1,s%nrow,1,s%ncol,6)
+      !endif 
       !if(.not. ntimes) exit
 
     END DO
@@ -155,7 +155,7 @@ SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
   TYPE(MATRIX),pointer  ::  Kx(:), K_tmp(:)
   REAL(realk) :: exact_xch,origin(3),distance
   INTEGER :: j,k,checknf1,checknf2,checknf3,checknf
-  INTEGER ::  index,index2,index3,newcell
+  INTEGER ::  idx,index2,index3,newcell
   INTEGER :: l1,l2,l3,il1,il2,il3
   INTEGER :: maxl1,maxl2,maxl3
   INTEGER :: l11,l12,l13,il21,il22,il23,il31,il32,il33
@@ -193,9 +193,9 @@ SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
     DO l1=0,lattice%max_layer*fdim(1)
     if(ntimes) exit
      
-    call find_latt_index(index,l1,l2,l3,fdim,lattice,lattice%max_layer)
+    call find_latt_index(idx,l1,l2,l3,fdim,lattice,lattice%max_layer)
 
-    call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),3)
+    call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),3)
 
      setting%samemol(1,3)=.false.
      setting%samemol(3,1)=.false.
@@ -254,7 +254,7 @@ SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
     setting%samemol=.false.
     ! ToDo Should be turned on at some point
 
-    call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),3,latt_cell(index2),2,latt_cell(newcell),4)
+    call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),3,latt_cell(index2),2,latt_cell(newcell),4)
 
     call mat_zero(K_tmp(1))
     call II_get_exchange_mat(lupri,luerr,setting,nfdensity(checknf:checknf),&
@@ -380,7 +380,7 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,molecule,nbast,lattice,&
   TYPE(moleculeinfo),intent(in) :: latt_cell(numvecs)
   TYPE(MATRIX)  :: S,S1
   INTEGER :: i,j,m,il1,il2,il3
-  INTEGER :: index,refindex
+  INTEGER :: idx,refindex
   INTEGER :: natoms,iunit,maxl1,maxl2,maxl3
   INTEGER, DIMENSION(3) :: fdim
   integer(short) :: gab1
@@ -417,54 +417,54 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,molecule,nbast,lattice,&
   maxl1=0
   maxl2=0
   maxl3=0
-  DO index=1,numvecs
+  DO idx=1,numvecs
      
-     lattice%lvec(index)%ovl_computed=.false.
+     lattice%lvec(idx)%ovl_computed=.false.
 
   !Doing translations
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),3)
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),3)
      setting%samemol(1,3)=.false.
      setting%samemol(3,1)=.false.
 
-     call find_latt_vectors(index,il1,il2,il3,fdim,lattice)
+     call find_latt_vectors(idx,il1,il2,il3,fdim,lattice)
      !So that we do not consider negligible integrals
      !if(abs(il1) .gt. lattice%nneighbour) CYCLE
      !if(abs(il2) .gt. lattice%nneighbour) CYCLE
      !if(abs(il3) .gt. lattice%nneighbour) CYCLE
-     gab1=lattice%lvec(index)%maxgab
+     gab1=lattice%lvec(idx)%maxgab
      if(gab1 .ge. -12) then
        maxl1=max(abs(il1),maxl1)
        maxl2=max(abs(il2),maxl2)
        maxl3=max(abs(il3),maxl3)
-     lattice%lvec(index)%ovl_computed=.true.
+     lattice%lvec(idx)%ovl_computed=.true.
        !input%Basis%regular%atomtype(:)%shell(:)%segment(1)%exponents(:)
 
        if(.not. lattice%store_mats) then
-         call mat_init(ovl(index),nbast,nbast)
+         call mat_init(ovl(idx),nbast,nbast)
        endif
-       call mat_init(lattice%lvec(index)%oper(1),nbast,nbast)
-       call mat_zero(lattice%lvec(index)%oper(1))
+       call mat_init(lattice%lvec(idx)%oper(1),nbast,nbast)
+       call mat_zero(lattice%lvec(idx)%oper(1))
 
 
    !g  et the overlap matrix for cell between reference 
    !a  nd cell l
    !    call II_get_overlap(lupri,luerr,setting,S1)
-       call II_get_overlap(lupri,luerr,setting,lattice%lvec(index)%oper(1))
+       call II_get_overlap(lupri,luerr,setting,lattice%lvec(idx)%oper(1))
 
        !S%elms(:)=S1%elms(:)*exp(phase)
        !call mat_add(1.D0,S,1.D0,S1,S)!phase kan gå inn her istedet
-    !  call mat_daxpy(1.D0,lattice%lvec(index)%oper(1),lattice%lvec(index)%oper(3))!phase kan gå inn her istedet
+    !  call mat_daxpy(1.D0,lattice%lvec(idx)%oper(1),lattice%lvec(idx)%oper(3))!phase kan gå inn her istedet
   !     CALL mat_print(S1,1,S1%nrow,1,S1%ncol,lupri)
-       !call mat_to_full(S1,1d0,lattice%lvec(index)%Sl_mat)
+       !call mat_to_full(S1,1d0,lattice%lvec(idx)%Sl_mat)
        !DO k=1,nbast*nbast
-       !   lattice%lvec(index)%Sl_mat=S1%elms(k)
+       !   lattice%lvec(idx)%Sl_mat=S1%elms(k)
        !ENDDO
        if(.not. lattice%store_mats) then
-         call mat_copy(1D0,lattice%lvec(index)%oper(1),ovl(index))
+         call mat_copy(1D0,lattice%lvec(idx)%oper(1),ovl(idx))
        endif
 
        if(lattice%store_mats) then
-         call pbc_get_file_and_write(lattice,nbast,nbast,index,1,1,'            ')!1 refers to overlap
+         call pbc_get_file_and_write(lattice,nbast,nbast,idx,1,1,'            ')!1 refers to overlap
        endif
 
        
@@ -487,13 +487,13 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,molecule,nbast,lattice,&
 
          CALL lsOPEN(IUNIT,filename,'unknown','FORMATTED')
          DO j=1,nbast
-            write(iunit,*) (lattice%lvec(index)%oper(1)%elms(i+(j-1)*nbast),i=1,nbast)
+            write(iunit,*) (lattice%lvec(idx)%oper(1)%elms(i+(j-1)*nbast),i=1,nbast)
          ENDDO
          call lsclose(iunit,'KEEP')
 
        endif
 
-       call mat_free(lattice%lvec(index)%oper(1))
+       call mat_free(lattice%lvec(idx)%oper(1))
      endif
        !if(phase .ne. cmplx(0.d0,0d0)) then
      !  write(lupri,*) 'phase= ',phase
@@ -538,7 +538,7 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_kin)
   TYPE(MATRIX)  :: kin
   REAL(realk) :: std_vec_length,E_h1,kinetic2,kineticst
   INTEGER :: i,j,k,m,il1,il2,il3,s,t,st
-  INTEGER :: index, refindex
+  INTEGER :: idx, refindex
   INTEGER :: num_latvectors, natoms,iunit
   INTEGER(short) :: gab1
   INTEGER, DIMENSION(3) :: fdim
@@ -581,58 +581,59 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_kin)
   E_h1=0
   E_kin=0._realk
 
-  DO index=1,num_latvectors
+  DO idx=1,num_latvectors
      
 
-     lattice%lvec(index)%f1_computed=.false.
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),3)
+     lattice%lvec(idx)%f1_computed=.false.
+     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),3)
      setting%samemol(1,3)=.false.
      setting%samemol(3,1)=.false.
 
-     !call calc_distance(distance,lattice%lvec(index)%std_coord,latt_vec_std)
-     call find_latt_vectors(index,il1,il2,il3,fdim,lattice)
+     !call calc_distance(distance,lattice%lvec(idx)%std_coord,latt_vec_std)
+     call find_latt_vectors(idx,il1,il2,il3,fdim,lattice)
      !if(abs(il1) .gt. lattice%nneighbour) CYCLE
      !if(abs(il2) .gt. lattice%nneighbour) CYCLE
      !if(abs(il3) .gt. lattice%nneighbour) CYCLE
     
-     gab1=lattice%lvec(index)%maxgab
+     gab1=lattice%lvec(idx)%maxgab
      if(gab1 .ge. -12) then
-       lattice%lvec(index)%f1_computed=.true.
-       call mat_init(lattice%lvec(index)%oper(1),nbast,nbast)
-       call mat_zero(lattice%lvec(index)%oper(1))
-       call mat_init(f_1(index),nbast,nbast)
-       call mat_zero(f_1(index))
-       !call mat_init(lattice%lvec(index)%oper(3),nbast,nbast)
-       !call mat_zero(lattice%lvec(index)%oper(3))
+       lattice%lvec(idx)%f1_computed=.true.
+       call mat_init(lattice%lvec(idx)%oper(1),nbast,nbast)
+       call mat_zero(lattice%lvec(idx)%oper(1))
+       call mat_init(f_1(idx),nbast,nbast)
+       call mat_zero(f_1(idx))
+       !call mat_init(lattice%lvec(idx)%oper(3),nbast,nbast)
+       !call mat_zero(lattice%lvec(idx)%oper(3))
 
 
        !call II_get_kinetic(lupri,luerr,setting,kin)
        
-       call II_get_kinetic(lupri,luerr,setting,lattice%lvec(index)%oper(1))
+       call II_get_kinetic(lupri,luerr,setting,lattice%lvec(idx)%oper(1))
 
-       !call mat_daxpy(1.D0,lattice%lvec(index)%oper(1),lattice%lvec(index)%oper(3))
-       call mat_copy(1._realk,lattice%lvec(index)%oper(1),f_1(index))
+       !call mat_daxpy(1.D0,lattice%lvec(idx)%oper(1),lattice%lvec(idx)%oper(3))
+       call mat_copy(1._realk,lattice%lvec(idx)%oper(1),f_1(idx))
 
-       call pbc_get_file_and_write(lattice,nbast,nbast,index,2,1,'            ')!2 refers to kin
+       call pbc_get_file_and_write(lattice,nbast,nbast,idx,2,1,'            ')!2 refers to kin
 
        write(lupri,*) 'KINETIC MAT',il1
-       call mat_print(lattice%lvec(index)%oper(1),1,nbast,1,nbast,lupri)
+       call mat_print(lattice%lvec(idx)%oper(1),1,nbast,1,nbast,lupri)
 
-       E_kin=E_kin+mat_dotproduct(lattice%lvec(index)%oper(1),nfdensity(index))
+       E_kin=E_kin+mat_dotproduct(lattice%lvec(idx)%oper(1),nfdensity(idx))
 
        DO k=1,nbast*nbast
-          lattice%lvec(index)%fck_vec(k)=lattice%lvec(index)%oper(1)%elms(k)
+          lattice%lvec(idx)%fck_vec(k)=lattice%lvec(idx)%oper(1)%elms(k)
        ENDDO
 
 #ifdef DEBUGPBC
+!       write(*,*) 'kinetic DEBUGPBC'
        st=0
        kinetic2=0._realk
        kineticst=0._realk
         DO s=1,nbast
          DO t=1,nbast
           st=st+1
-          kinetic2=kinetic2+lattice%lvec(index)%oper(1)%elms(st)**2
-          kineticst=kineticst+st*lattice%lvec(index)%oper(1)%elms(st)**2
+          kinetic2=kinetic2+lattice%lvec(idx)%oper(1)%elms(st)**2
+          kineticst=kineticst+st*lattice%lvec(idx)%oper(1)%elms(st)**2
          ENDDO
         ENDDO
         write(lupri,'(A29)') 'DEBUGPBC kinetic contribution'
@@ -640,7 +641,7 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_kin)
         write(lupri,'(A9,X,I3,x,I3,X,I3)') 't1 t2 t3:',il1,il2,il3
         write(lupri,'(A4,X,E16.8)') 'T^2:',kinetic2
         write(lupri,'(A10,X,E16.8)') 'sum ijT^2:',kineticst
-#endif
+#else
 
        if(lattice%compare_elmnts) then
          !compare integrals with the old pbc code
@@ -660,20 +661,21 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_kin)
          CALL lsOPEN(IUNIT,filename,'unknown','FORMATTED')
 !         write(iunit,*) nbast
          DO j=1,nbast
-            write(iunit,*) (lattice%lvec(index)%oper(1)%elms(i+(j-1)*nbast),i=1,nbast)
+            write(iunit,*) (lattice%lvec(idx)%oper(1)%elms(i+(j-1)*nbast),i=1,nbast)
          ENDDO
          call lsclose(iunit,'KEEP')
 
        endif
+#endif
 
-       call mat_free(lattice%lvec(index)%oper(1))
+       call mat_free(lattice%lvec(idx)%oper(1))
        
      endif
 
      i=1
      j=0
 
-       !write(lupri,*) 'kpnt, phase and lvec',bz%kpnt(m)%lambda(1),phase,lattice%lvec(index)%lat_coord(1)
+       !write(lupri,*) 'kpnt, phase and lvec',bz%kpnt(m)%lambda(1),phase,lattice%lvec(idx)%lat_coord(1)
   END DO
   
     ! do m=1,bz%nk
@@ -681,6 +683,11 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_kin)
     !  !write(lupri,*) kdep(m)%kfockvec(k)
     !  call write_zmatrix(kdep(m)%kfockvec,nbast,nbast)
     ! enddo
+
+#ifdef DEBUGPBC
+ write(lupri,*) 'Kinetic energy', E_kin
+ write(*,*) 'Kinetic energy', E_kin
+#endif
 
   call mat_free(kin)
   call set_lstime_print(.true.)
@@ -768,8 +775,10 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_en)
   !if(abs(il12) .gt. lattice%nneighbour) CYCLE
   !if(abs(il13) .gt. lattice%nneighbour) CYCLE
 
+  lattice%lvec(index1)%Vz_computed=.false.
   gab1=lattice%lvec(index1)%maxgab
   if(gab1 .ge. -12) then
+    lattice%lvec(index1)%Vz_computed=.true.
     call mat_init(lattice%lvec(index1)%oper(1),nbast,nbast)
     call mat_zero(lattice%lvec(index1)%oper(1))
 
@@ -785,7 +794,6 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_en)
 
        call find_latt_vectors(index2,il21,il22,il23,fdim,lattice)
        if(abs(il21) .gt. lattice%nf) CYCLE 
-       !if((il21) .ge. lattice%nf .or. il21 .le. -lattice%nf) CYCLE 
        if(abs(il22) .gt. lattice%nf) CYCLE
        if(abs(il23) .gt. lattice%nf) CYCLE
 
@@ -822,7 +830,7 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_en)
 !          fock_tmp(j,i)=H%elms(k)
 !       ENDDO
        !fock_tmp=H%elms!*exp(phase)
-       write(lupri,*) 'h1 mat'
+       write(lupri,*) 'nucattrc mat',il11
        call mat_print(lattice%lvec(index1)%oper(1),1,H%nrow,1,H%ncol,lupri)
        !call write_matrix(fock_tmp,2,2)
        !STOP
@@ -849,7 +857,7 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_en)
         write(lupri,'(A9,X,I3,x,I3,X,I3)') 't1 t2 t3:',il11,il12,il13
         write(lupri,'(A4,X,E16.8)') 'Z^2:',nucatr2
         write(lupri,'(A10,X,E16.8)') 'sum ijZ^2:',nucatrst
-#endif
+#else
 
        if(lattice%compare_elmnts .and. iter .eq. 1) then
          !compare integrals with the old pbc code
@@ -882,6 +890,7 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_en)
 
 
        endif
+#endif
 
         ! phase=phase*2.*pi
         !ToDo Change fock_mtx to matrix type
@@ -902,6 +911,8 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_en)
 !      write(lupri,*) ''
 !      write(lupri,*) 'To compare with the matrix below'
 !      CALL mat_print(H,1,H%nrow,1,H%ncol,6)
+       write(lupri,*) 'Hamilton',il11
+       call mat_print(f_1(index1),1,H%nrow,1,H%ncol,lupri)
 !    endif
 !     write(*,*) 'fock(nlat)', index
 !     write(*,*)  
@@ -914,6 +925,11 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_en)
     endif
 
   ENDDO
+
+#ifdef DEBUGPBC
+ write(lupri,*) 'Nuclear attraction energy', E_en
+ write(*,*) 'Nuclear attraction energy', E_en
+#endif
 
 !     do m=1,bz%nk
 !     write(*,*) 'fock(k)', m
@@ -1151,7 +1167,7 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
         write(lupri,'(A4,X,E16.8)') 'Z^2:',coulombn2
         write(lupri,'(A10,X,E16.8)') 'sum ijZ^2:',coulombnst
      endif
-#endif
+#else
 
      if(lattice%compare_elmnts ) then
        !compare integrals with the old pbc code
@@ -1179,6 +1195,7 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
       endif
 
      endif !comparing
+#endif
 
      if(compute_int) Then
        if(.not. lattice%store_mats) then
@@ -1245,6 +1262,10 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
   call mem_dealloc(F)
   call mem_dealloc(F_tmp)
   E_J=E_nfC
+#ifdef DEBUGPBC
+ write(lupri,*) 'Electronic repulsion nearfield energy', E_J
+ write(*,*) 'Electronic repulsion nearfield energy', E_J
+#endif
   !deallocate(D)
   write(lupri,*) 'Check, nr. lattice vectors',num_latvectors
   call set_lstime_print(.true.)
@@ -1460,6 +1481,10 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
   !   ENDDO
      ! ToDo mat_to_full
 
+     ! FOR debug only
+     write(lupri,*) 'Exchange mat', il1
+     call mat_print(lattice%lvec(index1)%oper(1),1,nbast,1,nbast,lupri)
+
 
     !if(iter .eq. 1) then
     if(compute_int) then
@@ -1525,6 +1550,11 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
   call mem_dealloc(K_tmp)
 
   E_K=E_hfx
+
+#ifdef DEBUGPBC
+ write(lupri,*) 'Exact exchange energy', E_K
+ write(*,*) 'Exact exchange energy', E_K
+#endif
 
   write(lupri,*) 'Check, nr. lattice vectors',num_latvectors
   call set_lstime_print(.true.)
@@ -1958,7 +1988,7 @@ SUBROUTINE pbc_nucpot(lupri,luerr,setting,molecule,lattice,&
   END DO
   !E_nn=E_nn/2.
 
-!  write(*,*) 'Debug 2', E_nn
+ ! write(*,*) 'Debug 2', E_nn
 
 END SUBROUTINE pbc_nucpot
 !> \brief Calculates the nuclear repulsion energy contribution

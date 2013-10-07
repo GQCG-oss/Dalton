@@ -1901,6 +1901,22 @@ retval=0
              write(DECinfo%output,*) i, MyFragment%CunoccFA(:,i)
           end do
           write(DECinfo%output,*)
+
+          if(.not. MyFragment%pairfrag) then
+             write(DECinfo%output,*) 'Occupied corrdens eigenvalues'
+             do i=1,MyFragment%noccFA
+                write(DECinfo%output,*) i, MyFragment%CDocceival(i)
+             end do
+             write(DECinfo%output,*)
+
+             write(DECinfo%output,*) 'Unoccupied corrdens eigenvalues'
+             do i=1,MyFragment%nunoccFA
+                write(DECinfo%output,*) i, MyFragment%CDunocceival(i)
+             end do
+             write(DECinfo%output,*)
+
+          end if
+
        end if
 
     end if
@@ -2004,6 +2020,10 @@ retval=0
     if(fragment%FAset) then
        call mem_dealloc(fragment%CoccFA)
        call mem_dealloc(fragment%CunoccFA)
+       if(.not. fragment%pairfrag) then
+          call mem_dealloc(fragment%CDocceival)
+          call mem_dealloc(fragment%CDunocceival)
+       end if
        fragment%FAset=.false.
     end if
 
@@ -3175,40 +3195,44 @@ retval=0
 
     ! Set which atoms to consider for pair
     dopair=.false.
-    do a=1,fragment1%nunoccEOS   ! Unoccupied EOS for fragment 1
-       do b=1,fragment2%nunoccEOS ! Unoccupied EOS for fragment 2
 
-          ax=fragment1%unoccEOSidx(a)  ! index in full list orbitals
-          bx=fragment2%unoccEOSidx(b)  ! index in full list orbitals
-          p1=0
-          p2=0
+    ! Skip this when only occupied part. is requested
+    DoCheck: if(.not. DECinfo%onlyoccpart) then
+       do a=1,fragment1%nunoccEOS   ! Unoccupied EOS for fragment 1
+          do b=1,fragment2%nunoccEOS ! Unoccupied EOS for fragment 2
 
-          ! Index for fragment 1 in pair fragment list
-          do i=1,PairFragment%nunoccEOS
+             ax=fragment1%unoccEOSidx(a)  ! index in full list orbitals
+             bx=fragment2%unoccEOSidx(b)  ! index in full list orbitals
+             p1=0
+             p2=0
 
-             ! "ax" index in PairFragment%unoccEOSidx list
-             if(PairFragment%unoccEOSidx(i) == ax) p1 = i
+             ! Index for fragment 1 in pair fragment list
+             do i=1,PairFragment%nunoccEOS
 
-             ! "bx" index in PairFragment%unoccEOSidx list
-             if(PairFragment%unoccEOSidx(i) == bx) p2 = i
+                ! "ax" index in PairFragment%unoccEOSidx list
+                if(PairFragment%unoccEOSidx(i) == ax) p1 = i
+
+                ! "bx" index in PairFragment%unoccEOSidx list
+                if(PairFragment%unoccEOSidx(i) == bx) p2 = i
+
+             end do
+
+             ! Sanity check
+             if(p1==p2 .or. p1==0 .or. p2==0 ) then
+                write(DECinfo%output,'(1X,a,4i6)') 'ax,bx,p1,p2', ax,bx,p1,p2
+                call lsquit('which_pairs_unocc: &
+                     & Something wrong with indices in pair',DECinfo%output)
+             end if
+
+
+             ! Pair interaction for (p1,p2) index pair
+             dopair(p1,p2)=.true.
+             dopair(p2,p1)=.true.
 
           end do
-
-          ! Sanity check
-          if(p1==p2 .or. p1==0 .or. p2==0 ) then
-             write(DECinfo%output,'(1X,a,4i6)') 'ax,bx,p1,p2', ax,bx,p1,p2
-             call lsquit('which_pairs_unocc: &
-                  & Something wrong with indices in pair',DECinfo%output)
-          end if
-
-
-          ! Pair interaction for (p1,p2) index pair
-          dopair(p1,p2)=.true.
-          dopair(p2,p1)=.true.
-
        end do
-    end do
 
+    end if DoCheck
 
   end subroutine which_pairs_unocc
 
@@ -3981,7 +4005,7 @@ retval=0
        write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
        write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
-       if(.not. DECinfo%full_molecular_cc) then  
+       if(.not. DECinfo%full_molecular_cc .and. (.not. DECinfo%onlyoccpart) ) then  
           write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
@@ -3997,7 +4021,7 @@ retval=0
        write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
        write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
-       if(.not. DECinfo%full_molecular_cc) then  
+       if(.not. DECinfo%full_molecular_cc .and. (.not. DECinfo%onlyoccpart) ) then  
           write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
@@ -4112,13 +4136,17 @@ retval=0
        else
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,&
                & 'CCD occupied single energies','AF_CCD_OCC')
-          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
-               & 'CCD virtual single energies','AF_CCD_VIR')
+          if(.not.DECinfo%onlyoccpart) then
+             call print_atomic_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
+                  & 'CCD virtual single energies','AF_CCD_VIR')
+          end if
 
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,&
                & DistanceTable, 'CCD occupied pair energies','PF_CCD_OCC')
-          call print_pair_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
-               & DistanceTable, 'CCD virtual pair energies','PF_CCD_VIR')
+          if(.not.DECinfo%onlyoccpart) then
+             call print_pair_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
+                  & DistanceTable, 'CCD virtual pair energies','PF_CCD_VIR')
+          end if
 
           write(DECinfo%output,*)
           write(DECinfo%output,'(1X,a,g20.10)') 'CCD occupied   correlation energy : ', energies(6)

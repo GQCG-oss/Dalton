@@ -12,12 +12,10 @@ set(DART_TESTING_TIMEOUT
     "Set timeout in seconds for every single test"
     )
 
-include(TestsCommon)
 include(TestsDALTON)
 include(TestsLSDALTON)
 
-# radovan: for the moment deactivated, this does not work on one machine
-#          at the moment i do not understand why
+# radovan: does not work, suspect a bug in CMake 2.10 (works with 2.8)
 #configure_file(
 #    ${CMAKE_SOURCE_DIR}/cmake/CTestCustom.cmake.in
 #    ${CMAKE_BINARY_DIR}/CTestCustom.cmake

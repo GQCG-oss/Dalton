@@ -68,8 +68,10 @@ module dec_typedef_module
 
      !> Restart options
      !> ***************
-     !> Restart calculation if some of the fragments were calculated in a previous calculation
-     logical :: restart
+     !> Use HF info generated in previous run (does not necessarily require DECrestart to be true)
+     logical :: HFrestart
+     !> Restart DEC calculation using fragment info files (requires HFrestart to be true)
+     logical :: DECrestart
      !> Creating files for restart: Time (in seconds) passing before backing up restart files
      real(realk) :: TimeBackup
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)
@@ -156,6 +158,8 @@ module dec_typedef_module
      !> Construct Fock matrix from RI integrals (obsolete for the moment)
      !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
      logical :: fock_with_ri
+     !> logial to set whether special communication processes should be spawned
+     logical :: spawn_comm_proc
 
      !> F12 settings
      !> ************
@@ -288,6 +292,9 @@ module dec_typedef_module
      real(realk) :: PairMinDist
      !> Skip pair analysis (debug)
      logical :: checkpairs
+     !> Fragment-adapted threshold for throwing away orbitals in atomic fragments
+     !> that constitute pair fragment (currently on a testing basis)
+     real(realk) :: pairFOthr
      ! --
 
 
@@ -627,6 +634,8 @@ module dec_typedef_module
      real(realk), pointer :: OccMat(:,:) => null()  ! occ AOS-EOS
      real(realk), pointer :: VirtMat(:,:) => null()  ! virt AOS-EOS
      !> Threshold to use for throwing away fragment-adapted occupied (1) or virtual (2) orbitals
+     !> For pair fragment PQ this refers to the threshold used to throw away FOs from
+     !> the underlying atomic fragments P and Q.
      real(realk) :: RejectThr(2)
      !> Control of whether corr dens matrices have been set (true) or simply initialized (false)
      logical :: CDset
@@ -642,6 +651,10 @@ module dec_typedef_module
      logical :: FAset
      real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: number_basis,noccFA
      real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: number_basis,nunoccFA
+     !> Eigenvalues for correlation density matrices 
+     !> --> only set for atomic fragments (pairfrag=.false.) and when FAset=.true.
+     real(realk),pointer :: CDocceival(:) => null()    ! dimension noccFA
+     real(realk),pointer :: CDunocceival(:) => null()  ! dimension nunoccFA
 
 
      !> Information used only for the CC2 and CCSD models to describe

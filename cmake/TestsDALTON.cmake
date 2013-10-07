@@ -1,4 +1,27 @@
-# The scripts add_dalton_test() and add_dalton_perl_test() are defined in TestsCommon.cmake
+macro(add_dalton_test _name _labels)
+    if("${_name}" STREQUAL "pehf_cube")
+        add_test(
+            ${_name}
+            ${CMAKE_SOURCE_DIR}/DALTON/test/TEST -param "-get *.cube" -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null -result-directory ${CMAKE_BINARY_DIR}/test_${_name} ${_name}
+            )
+    else()
+        add_test(
+            ${_name}
+            ${CMAKE_SOURCE_DIR}/DALTON/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null -result-directory ${CMAKE_BINARY_DIR}/test_${_name} ${_name}
+            )
+    endif()
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
+macro(add_dalton_perl_test _name _labels)
+    add_test(perl_${_name} ${CMAKE_SOURCE_DIR}/DALTON/test/test.pl --dalton=${CMAKE_BINARY_DIR}/dalton --tstdir=${CMAKE_SOURCE_DIR}/DALTON/test --list=${_name})
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(perl_${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
 # ALL tests here should contain the label "dalton"
 
 add_dalton_test(gen1int_fluorobenzene_cart  "dalton;gen1int;short;parallel")

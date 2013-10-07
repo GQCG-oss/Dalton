@@ -67,13 +67,14 @@ CHARACTER(len=80),OPTIONAL  :: BASISSETNAME
 !
 !INTEGER,pointer         :: CHARGES(:)
 REAL(REALK),pointer         :: CHARGES(:)
+LOGICAL,pointer    :: uCHARGES(:)
 CHARACTER(len=200)  :: BASISDIR
 INTEGER            :: LEN_BASISDIR,LUBAS,NEND,i,j,k,IPOLST,IAUG
 LOGICAL            :: FILE_EXIST,POLFUN,CONTRACTED,GCONT,pointcharge
 CHARACTER(len=200) :: STRING
 INTEGER,pointer  :: BINDEXES(:)
 real(realk)        :: tstart,tend
-integer            :: IT,II,natomtypes,atomtype
+integer            :: IT,II,natomtypes,atomtype,MaxCharge,iatom,icharge
 logical,pointer    :: POINTCHARGES(:)
 
 CONTRACTED=.NOT.UNCONTRACTED
@@ -137,13 +138,35 @@ BASINFO%LABEL=BASISLABEL
 natomtypes = 0
 DO I=1,J  
  IF(present(BASISSETNAME))THEN
-  call mem_alloc(CHARGES,MOLECULE%nAtoms)
-  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
+!  CALL UNIQUE_CHARGES2(LUPRI,MOLECULE,CHARGES,k)
+    MaxCharge = 0
+    DO IATOM=1,MOLECULE%natoms  
+       ICHARGE = INT(MOLECULE%ATOM(IATOM)%CHARGE)
+       MaxCharge = MAX(Icharge,MaxCharge)
+    ENDDO
+    call mem_alloc(uCHARGES,MaxCharge)
+    uCHARGES = .FALSE.
+    DO IATOM=1,MOLECULE%natoms  
+       ICHARGE = INT(MOLECULE%ATOM(IATOM)%CHARGE)
+       uCHARGES(ICHARGE) = .TRUE.
+    ENDDO
+    k = 0
+    DO ICharge=1,MaxCharge
+       IF(uCHARGES(ICharge)) k = k +1
+    ENDDO
+    call mem_alloc(CHARGES,k)
+    k = 0
+    DO ICharge=1,MaxCharge
+       IF(uCHARGES(ICharge))THEN
+          k = k + 1
+          CHARGES(k) = ICharge
+       ENDIF
+    ENDDO
+    call mem_dealloc(uCHARGES)    
  ELSE
-  k=BASISSETLIBRARY%nCharges(BINDEXES(I))
+    k=BASISSETLIBRARY%nCharges(BINDEXES(I))
  ENDIF
  natomtypes = natomtypes + k
- IF(present(BASISSETNAME)) call mem_dealloc(CHARGES)
 ENDDO
 IF(natomtypes.EQ. 0)CALL LSQUIT('Error trying to build basis but found no atoms',lupri)
 CALL INIT_BASISSETINFO_TYPES(BASINFO,natomtypes)
@@ -151,8 +174,8 @@ CALL INIT_BASISSETINFO_TYPES(BASINFO,natomtypes)
 atomtype = 0
 DO I=1,J  
  IF(present(BASISSETNAME))THEN
-  call mem_alloc(CHARGES,MOLECULE%nAtoms)
-  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
+!  call mem_alloc(CHARGES,MOLECULE%nAtoms)
+!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
 !  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
   DO II=1,k
    BASINFO%ATOMTYPE(atomtype+II)%NAME = BASISSETNAME

@@ -711,6 +711,12 @@ contains
           call mem_alloc(MyFragment%CoccFA,MyFragment%number_basis,MyFragment%noccFA)
           nullify(MyFragment%CunoccFA)
           call mem_alloc(MyFragment%CunoccFA,MyFragment%number_basis,MyFragment%nunoccFA)
+          if(.not. MyFragment%pairfrag) then
+             nullify(MyFragment%CDocceival)
+             call mem_alloc(MyFragment%CDocceival,MyFragment%noccFA)
+             nullify(MyFragment%CDunocceival)
+             call mem_alloc(MyFragment%CDunocceival,MyFragment%nunoccFA)
+          end if
        end if
 
        if (MyFragment%t1_stored) then ! only used for CC singles effects
@@ -728,6 +734,10 @@ contains
     if(MyFragment%FAset) then
        call ls_mpi_buffer(MyFragment%CoccFA,MyFragment%number_basis,MyFragment%noccFA,master)
        call ls_mpi_buffer(MyFragment%CunoccFA,MyFragment%number_basis,MyFragment%nunoccFA,master)
+       if(.not. MyFragment%pairfrag) then
+          call ls_mpi_buffer(MyFragment%CDocceival,MyFragment%noccFA,master)
+          call ls_mpi_buffer(MyFragment%CDunocceival,MyFragment%nunoccFA,master)
+       end if
     end if
     if (MyFragment%t1_stored) then ! only used for CC singles effects
        call ls_mpi_buffer(MyFragment%t1,MyFragment%t1dims(1),MyFragment%t1dims(2),master)
@@ -1646,7 +1656,8 @@ contains
     call dec_set_model_names(DECitem)
     call ls_mpi_buffer(DECitem%ccModel,Master)
     call ls_mpi_buffer(DECitem%use_singles,Master)
-    call ls_mpi_buffer(DECitem%restart,Master)
+    call ls_mpi_buffer(DECitem%HFrestart,Master)
+    call ls_mpi_buffer(DECitem%DECrestart,Master)
     call ls_mpi_buffer(DECitem%TimeBackup,Master)
     call ls_mpi_buffer(DECitem%read_dec_orbitals,Master)
     call ls_mpi_buffer(DECitem%memory,Master)
@@ -1665,6 +1676,7 @@ contains
     call ls_mpi_buffer(DECitem%CCDEBUG,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_MPICH,Master)
+    call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
@@ -1725,6 +1737,7 @@ contains
     call ls_mpi_buffer(DECitem%PairReductionDistance,Master)
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
     call ls_mpi_buffer(DECitem%checkpairs,Master)
+    call ls_mpi_buffer(DECitem%pairFOthr,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%MP2density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)

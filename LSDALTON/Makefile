@@ -17,6 +17,7 @@ DALTON_LIBS =             \
 -Ldft -ldft		  \
 -Lpbc2 -lpbc2            \
 -LLSint -lLSint           \
+-LIchorIntegrals -lIchorIntegrals \
 -L$(FMMDIR) -lmm          \
 -Linterest/lib -linterest \
 -Lpdpack -lpdpack         \
@@ -24,11 +25,11 @@ DALTON_LIBS =             \
 -Llsutil -llsutil      
 
 # VAR_RSP needs MDO_OBJ ORS_OBJ 
-MODULES = LSU_OBJ XFH_OBJ PD_OBJ INT_OBJ FMM_OBJ LSI_OBJ PBC_OBJ2 DFT_OBJ \
-	SOU_OBJ RSO_OBJ RSP_OBJ DEC_OBJ GEO_OBJ DYN_OBJ LIN_OBJ LSD_OBJ 	
+MODULES = LSU_OBJ XFH_OBJ PD_OBJ INT_OBJ FMM_OBJ ICH_OBJ LSI_OBJ PBC_OBJ2 \
+	DFT_OBJ SOU_OBJ RSO_OBJ RSP_OBJ DEC_OBJ GEO_OBJ DYN_OBJ LIN_OBJ LSD_OBJ
 
 # VAR_RSP needs ../external/matrix-defop/src ../external/openrsp/src
-SUBDIRS = lsutil xcfun_host pdpack interest/lib $(FMMDIR) LSint pbc2 dft SolverUtilities \
+SUBDIRS = lsutil xcfun_host pdpack interest/lib $(FMMDIR) IchorIntegrals LSint pbc2 dft SolverUtilities \
 	responsesolver rsp_properties deccc geomopt ddynam linears lsdaltonsrc
 
 PDLIB = pdpack/pdlib.a
@@ -152,13 +153,16 @@ GEO_OBJ : LSU_OBJ LSI_OBJ
 DYN_OBJ : LSU_OBJ LSI_OBJ GEO_OBJ
 	cd ddynam && $(MAKE) all
 
-LSI_OBJ : LSU_OBJ INT_OBJ XFH_OBJ DFT_OBJ
+LSI_OBJ : LSU_OBJ INT_OBJ XFH_OBJ DFT_OBJ ICH_OBJ
 	cd LSint && $(MAKE) all
+
+ICH_OBJ : 
+	cd IchorIntegrals && $(MAKE) all
 
 DEC_OBJ : LSU_OBJ LSI_OBJ
 	cd deccc && $(MAKE) all
 
-RSP_OBJ : LSU_OBJ LSI_OBJ
+RSP_OBJ : LSU_OBJ LSI_OBJ LIN_OBJ
 	cd rsp_properties && $(MAKE) all
 
 RSO_OBJ : LSU_OBJ LSI_OBJ SOU_OBJ

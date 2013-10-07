@@ -6,6 +6,7 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
   USE matrix_module
   USE lattice_vectors
   USE lattice_type
+  USE memory_handling
 !  USE multipole_pbc
 !  USE harmonics_pbc
   USE pbcffdata
@@ -43,16 +44,18 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
   CHARACTER(LEN=10) :: numtostring1,numtostring2,numtostring3,iter
   character(len=15) :: mattxt,string1,filename
   integer :: l1,l2,l3,nil,fdim(3),iunit,n1,iunit2
-  real(realk) :: fcao(ndim*ndim),E_kin,E_en,E_J,E_K,E_ff,E_nn
+  real(realk) :: fcao(ndim*ndim),E_kin,E_en,E_J,E_K,E_ff,E_nn,E_nuc
   TYPE(lvec_data_t) :: erikll(7)
 
+  write(*,*) 'hei'
   fdim=0
-  allocate(nfdensity(numrealvec))
+  call mem_alloc(nfdensity,numrealvec)
   allocate(f_1(numrealvec))
   allocate(g_2(numrealvec))
   allocate(ovl(numrealvec))
   allocate(nucmom((lmax+1)**2))
   write(*,*) lmax
+
 
   call set_refcell(refcell,molecule)
 
@@ -67,6 +70,7 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
      call mat_init(nfdensity(n1),ndim,ndim)
      call mat_zero(nfdensity(n1))
   enddo
+    write(*,*) 'hei'
 
   k=5
   !DO k=2,2   !!!!!!!!!!12
@@ -119,6 +123,10 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
 !         write(lupri,*) 'check n1', n1,nfsze
 !         CALL mat_print(nfdensity(n1),1,ndim,1,ndim,lupri)
 !   enddo
+#ifdef DEBUGPBC
+
+#else
+
    k=5
    DO l3=-ll%max_layer*fdim(3),ll%max_layer*fdim(3)
     DO l2=-ll%max_layer*fdim(2),ll%max_layer*fdim(2)
@@ -165,6 +173,7 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
      ENDDO !l1
     ENDDO  !l2
    ENDDO   !l3
+#endif
 
 !   do l1=-3,3
 !   if (abs(l1) .le. 3) then
@@ -184,30 +193,43 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
    call init_pbc_elstr(kdep_tmp(kpt),ndim,ndim)
  enddo
   
- call pbc_overlap_k(lupri,luerr,setting,molecule,ndim,ll,&
+   call pbc_overlap_k(lupri,luerr,setting,molecule,ndim,ll,&
                     latt_cell,refcell,numrealvec,ovl)
 
- call pbc_kinetic_k(lupri,luerr,setting,molecule,ndim,&
+   call pbc_kinetic_k(lupri,luerr,setting,molecule,ndim,&
    ll,latt_cell,refcell,numrealvec,nfdensity,f_1,E_kin)
 
    !ll%nf=5
 
-  call pbc_nucattrc_k(lupri,luerr,setting,molecule,ndim,&
+   call pbc_nucattrc_k(lupri,luerr,setting,molecule,ndim,&
      ll,latt_cell,refcell,numrealvec,nfdensity,f_1,E_en)
-
-
-  call pbc_electron_rep_k(lupri,luerr,setting,molecule,ndim,&
-     ll,latt_cell,refcell,numrealvec,nfdensity,g_2,E_J)
-  !fixme nucmom 
-   call lsquit('fixme nucmom no value assigned to this variable',-1)
-!   call pbc_fform_fck(lmax,tlat,ndim,nfsze,ll,nfdensity,nucmom,&
-!                   g_2,E_ff,E_nn,lupri)
 
    call pbc_exact_xc_k(lupri,luerr,setting,molecule,ndim,&
      ll,latt_cell,refcell,numrealvec,nfdensity,g_2,E_K)
 
+
+  call pbc_electron_rep_k(lupri,luerr,setting,molecule,ndim,&
+     ll,latt_cell,refcell,numrealvec,nfdensity,g_2,E_J)
+
    !This is needed to form fck
-   call pbc_comp_nucmom(refcell,nucmom,lmax,nfsze,lupri)
+  call pbc_comp_nucmom(refcell,nucmom,lmax,nfsze,lupri)
+
+  !fixme nucmom 
+!   call lsquit('fixme nucmom no value assigned to this variable',-1)
+   call pbc_fform_fck(ll%tlmax,tlat,ll%lmax,ndim,nfsze,ll,nfdensity,nucmom,&
+                   g_2,E_ff,E_nn,lupri)
+
+  CALL pbc_nucpot(lupri,luerr,setting,molecule,ll,&
+                  latt_cell,refcell,numrealvec,E_nuc)
+#ifdef DEBUGPBC
+   do n1=1,numrealvec
+       call mat_free(nfdensity(n1))
+   enddo
+   call mem_dealloc(nfdensity)
+   write(*,*) 'Nuclear N.F. repulsion', E_nuc
+   call LSQUIT('Finished computing matrices with erik',lupri)
+#endif
+
 
 
    do n1=1,nfsze

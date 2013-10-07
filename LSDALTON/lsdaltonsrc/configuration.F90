@@ -729,6 +729,7 @@ DO
      config%latt_config%comp_pbc= .true.
      config%latt_config%wannier_direct= 'indirectly'
      config%latt_config%testcase= .false.
+     config%latt_config%compare_elmnts= .false.
      config%latt_config%lmax=15
      config%latt_config%Tlmax=15
      config%latt_config%num_its=21
@@ -867,10 +868,11 @@ subroutine DEC_meaningful_input(config)
         config%optinfo%dynopt=.true.
 
         ! DEC restart for geometry optimizations not implemented
-        if(DECinfo%restart) then
+        if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
            write(config%lupri,*) 'Warning: DEC restart not implemented for geometry optimization...'
            write(config%lupri,*) '--> I turn off DEC restart!'
-           DECinfo%restart=.false.
+           DECinfo%HFrestart=.false.
+           DECinfo%DECrestart=.false.
         end if
      end if GeoOptCheck
 
@@ -1070,6 +1072,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.4CENTERERI');  INTEGRAL%DO4CENTERERI = .TRUE.
         CASE ('.AOPRINT');  READ(LUCMD,*) INTEGRAL%AOPRINT
         CASE ('.BASPRINT');  READ(LUCMD,*) INTEGRAL%BASPRINT
+        CASE ('.DEBUGICHOR');  INTEGRAL%DEBUGICHOR = .TRUE.
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
 #ifdef BUILD_GEN1INT_LSDALTON
