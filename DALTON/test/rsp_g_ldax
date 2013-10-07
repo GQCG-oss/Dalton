@@ -136,6 +136,11 @@ cat << 'EOCHK' > rsp_g_ldax__1.check
 log=$1
 GREP=egrep
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # ?
 CRIT1=`$GREP "Final DFT energy\: * \-38\.923817272074" $log | wc -l`
 TEST[1]=`expr $CRIT1`
@@ -176,6 +181,11 @@ cat << 'EOCHK' > rsp_g_ldax__2.check
 log=$1
 GREP=egrep
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # ?
 CRIT1=`$GREP "Final DFT energy\: * \-38\.923816146823" $log | wc -l`
 TEST[1]=`expr $CRIT1`
@@ -210,6 +220,11 @@ EOCHK
 cat << 'EOCHK' > rsp_g_ldax__3.check
 log=$1
 GREP=egrep
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
 
 # ?
 CRIT1=`$GREP "Final DFT energy\: * \-38\.923819381144" $log | wc -l`

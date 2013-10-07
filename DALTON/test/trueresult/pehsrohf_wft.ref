@@ -128,14 +128,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Tue Sep 17 22:39:24 2013
+     Date and time (Linux)  : Thu Sep 19 14:36:23 2013
      Host name              : TheSocialist                            
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-17T22_38-testjob-pid-10519
-   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-19T14_36-testjob-pid-704
+   2) /home/magnus/Projects/dalton_devel/dalton/build_mpi/basis
 
 
 Compilation information
@@ -147,18 +147,18 @@ Compilation information
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
+ MPI                      | ON
+ Fortran compiler         | /usr/lib64/openmpi/bin/mpif90
  Fortran compiler version | GNU Fortran (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
- C compiler               | /usr/lib64/ccache/gcc
+ C compiler               | /usr/lib64/openmpi/bin/mpicc
  C compiler version       | gcc (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
- C++ compiler             | /usr/lib64/ccache/g++
- C++ compiler version     | g++ (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
+ C++ compiler             | /usr/lib64/openmpi/bin/mpicxx
+ C++ compiler version     | unknown
  BLAS                     | /lib64/libblas.so
  LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | 125c293ec00a6e285dc76690c5a7c9e35d3b061c
- Configuration time       | 2013-09-17 22:19:49.616906
+ Last Git revision        | fb8006940f13b8a2cbcdb3d11c1bec053b3202b8
+ Configuration time       | 2013-09-19 14:17:42.690768
 
 
    Content of the .dal input file
@@ -232,7 +232,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_mpi/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -240,7 +240,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_mpi/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -248,7 +248,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_mpi/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -434,7 +434,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:24 2013
+     Date and time (Linux)  : Thu Sep 19 14:36:23 2013
      Host name              : TheSocialist                            
 
  Title lines from ".mol" input file:
@@ -596,44 +596,195 @@ Info: SCF gradient has been lower than now,
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  2 iterations.
 @ 17  -111.194200431     -2.529285113042E-02    4.00173D-03   -5.32D-09
+
+!!! Info: DIIS restarted because it was stalled ...
+ - energy changed by   -5.320E-09
+ - gradient changed by  4.494E-07
+ - or strange C vector coeff. for current index (=  8) :
+    0.000386   -0.006934   -0.005263    0.051204   -0.209281    0.631045 1848.835088-1848.296246
+      Virial theorem: -V/T =      2.024988
+@      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+@ 18  -111.194243325     -2.529593626739E-02    5.24981D-03   -4.29D-05
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024991
+@      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  5 iterations.
+@ 19  -111.194320009     -2.530481840481E-02    7.01865D-03   -7.67D-05
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024989
+@      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  5 iterations.
+@ 20  -111.194457018     -2.531420005169E-02    9.37947D-03   -1.37D-04
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
       Virial theorem: -V/T =      2.024988
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  5 iterations.
-@ 18  -111.194178837     -2.528730462661E-02    3.09349D-03    2.16D-05
-      Virial theorem: -V/T =      2.024995
+@ 21  -111.194700989     -2.533336004036E-02    1.25127D-02   -2.44D-04
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024984
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  5 iterations.
-@ 19  -111.194147138     -2.528852580610E-02    9.67587D-04    3.17D-05
-      Virial theorem: -V/T =      2.024993
+@ 22  -111.195132713     -2.536190788087E-02    1.66402D-02   -4.32D-04
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024977
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  5 iterations.
-@ 20  -111.194146275     -2.528245073185E-02    4.56506D-04    8.63D-07
-      Virial theorem: -V/T =      2.024993
+@ 23  -111.195888411     -2.541215207162E-02    2.20027D-02   -7.56D-04
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024963
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
-      Induced dipole moments converged in  5 iterations.
-@ 21  -111.194146448     -2.528864772715E-02    2.73892D-04   -1.73D-07
-      Virial theorem: -V/T =      2.024992
+      Induced dipole moments converged in  6 iterations.
+@ 24  -111.197186389     -2.549325192237E-02    2.88110D-02   -1.30D-03
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024941
 @      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 25  -111.199345907     -2.562713759993E-02    3.71094D-02   -2.16D-03
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024900
+@      MULPOP C       0.48; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 26  -111.202758374     -2.583596149449E-02    4.65561D-02   -3.41D-03
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024834
+@      MULPOP C       0.48; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 27  -111.207746938     -2.614543309065E-02    5.61532D-02   -4.99D-03
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024730
+@      MULPOP C       0.48; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 28  -111.214300337     -2.656224521564E-02    6.42306D-02   -6.55D-03
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024579
+@      MULPOP C       0.48; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 29  -111.221866306     -2.706366536439E-02    6.90057D-02   -7.57D-03
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024383
+@      MULPOP C       0.48; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 30  -111.229503221     -2.759320674919E-02    6.95676D-02   -7.64D-03
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.024162
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 31  -111.236345929     -2.808925839326E-02    6.63680D-02   -6.84D-03
+      Virial theorem: -V/T =      2.023941
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  7 iterations.
+@ 32  -111.251813339     -2.932556727829E-02    4.95063D-02   -1.55D-02
+      Virial theorem: -V/T =      2.023234
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 33  -111.247964792     -2.895704164755E-02    5.20267D-02    3.85D-03
+      Virial theorem: -V/T =      2.023588
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 34  -111.256726999     -2.971598331492E-02    1.97040D-02   -8.76D-03
+      Virial theorem: -V/T =      2.023055
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 35  -111.257049833     -2.975609598905E-02    3.38263D-02   -3.23D-04
+
+Info: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.022938
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 36  -111.255764223     -2.984375181261E-02    7.32320D-02    1.29D-03
+
+Info: SCF gradient has been lower than now,
+      therefore  4 old iterations are removed from DIIS.
+      Virial theorem: -V/T =      2.022697
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  6 iterations.
+@ 37  -111.257371887     -2.974836376676E-02    3.89668D-03   -1.61D-03
+      Virial theorem: -V/T =      2.023079
+@      MULPOP C       0.48; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
       Induced dipole moments converged in  5 iterations.
-@ 22  -111.194146521     -2.528288515327E-02    1.29210D-04   -7.27D-08
-      Virial theorem: -V/T =      2.024993
-@      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
+@ 38  -111.257377240     -2.971347059644E-02    2.00841D-03   -5.35D-06
+      Virial theorem: -V/T =      2.023101
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  5 iterations.
+@ 39  -111.257381566     -2.971756285606E-02    1.56243D-03   -4.33D-06
+      Virial theorem: -V/T =      2.023101
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
-@ 23  -111.194146528     -2.528465516382E-02    2.32208D-05   -6.75D-09
-      Virial theorem: -V/T =      2.024993
-@      MULPOP C       0.48; O       0.57; H       0.50; H       0.45; 
+@ 40  -111.257386646     -2.971634623313E-02    9.96887D-04   -5.08D-06
+      Virial theorem: -V/T =      2.023101
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+@ 41  -111.257389350     -2.971483327310E-02    1.77428D-04   -2.70D-06
+      Virial theorem: -V/T =      2.023101
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  3 iterations.
-@ 24  -111.194146528     -2.528453158328E-02    6.52404D-06   -1.65D-10
+@ 42  -111.257389358     -2.971468987499E-02    5.92119D-05   -7.58D-09
+      Virial theorem: -V/T =      2.023101
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+@ 43  -111.257389359     -2.971494387344E-02    1.20283D-05   -8.39D-10
+      Virial theorem: -V/T =      2.023101
+@      MULPOP C       0.47; O       0.58; H       0.50; H       0.45; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+@ 44  -111.257389359     -2.971505167858E-02    5.99482D-06   -1.08D-10
 
-@ *** DIIS converged in  24 iterations !
-@     Converged SCF energy, gradient:   -111.194146527829    6.52D-06
+@ *** DIIS converged in  44 iterations !
+@     Converged SCF energy, gradient:   -111.257389358647    5.99D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -652,58 +803,58 @@ Info: SCF gradient has been lower than now,
 
  Sym       Hartree-Fock orbital energies
 
-  1    -21.54592938   -12.07223479    -2.25960015    -1.51866737    -1.41440148
-        -1.38953572    -1.23010297    -1.01247718    -0.55557747    -0.07988082
-        -0.00739488     0.02283950
+  1    -21.55123997   -12.07692206    -2.30163995    -1.60018407    -1.42373292
+        -1.40821645    -1.13640832    -1.01874465    -0.55756658    -0.10257402
+        -0.02924873    -0.00190468
 
-    E(LUMO) :    -0.55557747 au (symmetry 1)
-  - E(HOMO) :    -1.38953572 au (symmetry 1)
+    E(LUMO) :    -0.55756658 au (symmetry 1)
+  - E(HOMO) :    -1.40821645 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.83395825 au
+    gap     :     0.85064987 au
 
 and energy and symmetry of HSROHF open shell orbitals:
-    -1.23010297         1
-    -1.01247718         1
+    -1.13640832         1
+    -1.01874465         1
 
  NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
 
- Largest off-diagonal Fock matrix element is  4.29D-02
+ Largest off-diagonal Fock matrix element is  7.18D-02
 
       Polarizable embedding energy contributions:
      ---------------------------------------------
 
        Electrostatic contributions:
-         Monopoles                  0.006147771307
-         Dipoles                   -0.006050013734
-         Quadrupoles                0.011767501523
+         Monopoles                  0.001447526089
+         Dipoles                   -0.003653275673
+         Quadrupoles                0.007585034587
 
        Polarization contributions:
-         Electronic                 0.243629316688
-         Nuclear                   -0.277791005608
-         Multipole                 -0.002988101756
+         Electronic                 0.228251046381
+         Nuclear                   -0.259766074447
+         Multipole                 -0.003579308616
 
-       Total PE energy:            -0.025284531581
+       Total PE energy:            -0.029715051679
 
       Polarizable embedding information
      -----------------------------------
 
                          Induced dipole moments
          site          X              Y              Z
-            1     0.14317571     0.25830286    -0.01784523
-            2     0.25214288     0.12471519    -0.03182553
-            3     0.03376179     0.08590222     0.06650473
-            4     0.29271322     0.01854220    -0.02170100
-            5     0.06059473     0.15032894    -0.01236850
-            6     0.08710187    -0.01124101     0.03167888
+            1     0.12473982     0.27132552    -0.01765822
+            2     0.20285878     0.12868452    -0.03160616
+            3     0.03080022     0.08745723     0.06416462
+            4     0.29873197     0.02220783    -0.02167813
+            5     0.06133820     0.16073422    -0.01224035
+            6     0.08835764    -0.01079277     0.03173564
 
                         Total induced dipole moment
                        X              Y              Z
-                  0.86949020     0.62655040     0.01444334
+                  0.80682664     0.65961655     0.01271740
 
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.170       0.171
+ >>>> CPU and wall time for SCF :       0.305       0.307
 
 
                        .-----------------------------------.
@@ -715,15 +866,15 @@ and energy and symmetry of HSROHF open shell orbitals:
 @    Spatial symmetry:            1
 @    Total charge of molecule:    2
 
-@    Final HF energy:            -111.194146527829                 
+@    Final HF energy:            -111.257389358647                 
 @    Nuclear repulsion:            31.249215315972
-@    Electronic energy:          -142.418077312218
-@    Embedding energy:             -0.025284531583
+@    Electronic energy:          -142.476889622941
+@    Embedding energy:             -0.029715051679
 
-@    Final gradient norm:           0.000006524045
+@    Final gradient norm:           0.000005994817
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:24 2013
+     Date and time (Linux)  : Thu Sep 19 14:36:23 2013
      Host name              : TheSocialist                            
 
  (Only coefficients >0.0100 are printed.)
@@ -732,40 +883,40 @@ and energy and symmetry of HSROHF open shell orbitals:
  ------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
-   1 C   :1s    -0.0005  -0.9931  -0.1108   0.2044  -0.0007  -0.0125  -0.0279
-   2 C   :1s     0.0067  -0.0312   0.2114  -0.7075   0.0024   0.0474   0.0211
-   3 C   :2px   -0.0003   0.0003  -0.0114   0.0138   0.0080   0.6924  -0.0189
-   4 C   :2py    0.0056  -0.0026   0.1492   0.2961  -0.0104   0.0158   0.3153
-   5 C   :2pz   -0.0002   0.0001  -0.0046  -0.0110  -0.2860   0.0084  -0.0107
-   6 O   :1s    -0.9947  -0.0002  -0.2188  -0.0785  -0.0000   0.0029   0.1128
-   7 O   :1s    -0.0242   0.0062   0.7826   0.3507   0.0002  -0.0126  -0.5319
-   8 O   :2px   -0.0003   0.0001   0.0140   0.0062   0.0117   0.2798   0.0355
-   9 O   :2py    0.0050  -0.0024  -0.2730   0.0275  -0.0272   0.0108  -0.7722
-  10 O   :2pz   -0.0002   0.0001   0.0091  -0.0031  -0.8989   0.0096   0.0231
-  11 H   :1s    -0.0002   0.0057   0.0137  -0.1838   0.0024   0.2312  -0.0648
-  12 H   :1s    -0.0002   0.0058   0.0142  -0.2215  -0.0008  -0.2332  -0.0727
+   1 C   :1s    -0.0005  -0.9930  -0.1079   0.1889   0.0865  -0.0227   0.0001
+   2 C   :1s     0.0071  -0.0314   0.2021  -0.6161  -0.3447   0.0887  -0.0002
+   3 C   :2px   -0.0004   0.0003  -0.0113   0.0188   0.0806   0.6941  -0.0015
+   4 C   :2py    0.0061  -0.0027   0.1458   0.0300   0.4733  -0.0454   0.0076
+   5 C   :2pz   -0.0002   0.0001  -0.0045  -0.0014  -0.0154   0.0079   0.2176
+   6 O   :1s    -0.9946  -0.0002  -0.2222  -0.1273   0.0473  -0.0041   0.0002
+   7 O   :1s    -0.0246   0.0065   0.7979   0.5987  -0.2523   0.0243  -0.0009
+   8 O   :2px   -0.0003   0.0001   0.0144  -0.0139   0.0652   0.2785  -0.0096
+   9 O   :2py    0.0057  -0.0020  -0.2545   0.4576  -0.5718   0.0883   0.0285
+  10 O   :2pz   -0.0002   0.0001   0.0085  -0.0140   0.0176  -0.0004   0.9305
+  11 H   :1s    -0.0002   0.0057   0.0152  -0.1099  -0.1330   0.2415   0.0000
+  12 H   :1s    -0.0003   0.0059   0.0159  -0.1313  -0.2206  -0.1991  -0.0006
 
     Orbital         8        9       10
-   1 C   :1s    -0.0024   0.0001   0.2119
-   2 C   :1s     0.0122   0.0003  -1.3781
-   3 C   :2px    0.2685  -0.0091   0.2003
-   4 C   :2py    0.0041   0.0316  -0.0624
-   5 C   :2pz    0.0021   0.9818   0.0044
-   6 O   :1s    -0.0005   0.0000  -0.0624
-   7 O   :1s     0.0034  -0.0001   0.4507
-   8 O   :2px   -0.9628   0.0045  -0.0140
-   9 O   :2py   -0.0497  -0.0149  -0.4730
-  10 O   :2pz   -0.0084  -0.4877   0.0146
-  11 H   :1s     0.1774  -0.0007   0.6450
-  12 H   :1s    -0.1879  -0.0005   0.9608
+   1 C   :1s    -0.0022   0.0001   0.2141
+   2 C   :1s     0.0113   0.0000  -1.3953
+   3 C   :2px    0.2715  -0.0091   0.1666
+   4 C   :2py    0.0027   0.0321  -0.3227
+   5 C   :2pz    0.0020   0.9992   0.0123
+   6 O   :1s    -0.0013   0.0000  -0.0786
+   7 O   :1s     0.0070  -0.0001   0.5890
+   8 O   :2px   -0.9606   0.0038   0.0055
+   9 O   :2py   -0.0480  -0.0133  -0.6467
+  10 O   :2pz   -0.0084  -0.4245   0.0204
+  11 H   :1s     0.1804  -0.0006   0.5734
+  12 H   :1s    -0.1912  -0.0007   0.8124
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.17 seconds
- >>>> Total wall time used in SIRIUS :      0.18 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.31 seconds
+ >>>> Total wall time used in SIRIUS :      0.31 seconds
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:24 2013
+     Date and time (Linux)  : Thu Sep 19 14:36:23 2013
      Host name              : TheSocialist                            
 
 
@@ -796,7 +947,7 @@ and energy and symmetry of HSROHF open shell orbitals:
 
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:24 2013
+     Date and time (Linux)  : Thu Sep 19 14:36:23 2013
      Host name              : TheSocialist                            
 
 
@@ -806,7 +957,7 @@ and energy and symmetry of HSROHF open shell orbitals:
 
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:24 2013
+     Date and time (Linux)  : Thu Sep 19 14:36:23 2013
      Host name              : TheSocialist                            
 
 
@@ -827,19 +978,19 @@ and energy and symmetry of HSROHF open shell orbitals:
 
      Spin multiplicity  3     State number       1     Total charge       2
 
-     Total energy       -111.1941465278 au (Hartrees)
-                         -3025.74664307 eV
-                           -291940.1867 kJ/mol
+     Total energy       -111.2573893586 au (Hartrees)
+                         -3027.46756804 eV
+                           -292106.2307 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1680653744 au
-     Mass-velocity correction:                  -0.2152674243 au
+     Darwin correction:                          0.1687723059 au
+     Mass-velocity correction:                  -0.2164167305 au
 
-     Total relativistic correction:             -0.0472020499 au (0.0425%)
-     Non-relativistic + relativistic energy:  -111.2413485777 au
+     Total relativistic correction:             -0.0476444246 au (0.0428%)
+     Non-relativistic + relativistic energy:  -111.3050337832 au
 
 
 
@@ -848,7 +999,7 @@ and energy and symmetry of HSROHF open shell orbitals:
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              1.286006           3.268701          10.903211
+              1.622578           4.124182          13.756789
 
 
                              Dipole moment components
@@ -856,9 +1007,9 @@ and energy and symmetry of HSROHF open shell orbitals:
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.13071738         0.33225041         1.10826806
-      y     -1.27872652        -3.25019842       -10.84149495
-      z      0.03977942         0.10110919         0.33726395
+      x      0.14604748         0.37121565         1.23824212
+      y     -1.61526413        -4.10559164       -13.69477962
+      z      0.04849063         0.12325087         0.41112066
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -922,9 +1073,9 @@ and energy and symmetry of HSROHF open shell orbitals:
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.24 seconds
- >>>> Total wall time used in DALTON:   0.24 seconds
+ >>>> Total CPU  time used in DALTON:   0.36 seconds
+ >>>> Total wall time used in DALTON:   0.37 seconds
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:24 2013
+     Date and time (Linux)  : Thu Sep 19 14:36:23 2013
      Host name              : TheSocialist                            

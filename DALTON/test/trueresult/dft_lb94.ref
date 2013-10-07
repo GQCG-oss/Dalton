@@ -42,9 +42,9 @@
        A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
        A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
        L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
@@ -128,35 +128,37 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:53:52 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Thu Sep 19 11:19:28 2013
+     Host name              : TheSocialist                            
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_dft_lb94
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/build_mpi/test_dft_lb94_failed_2013-09-19T11_12-7445
+   2) /home/magnus/Projects/dalton_devel/dalton/build_mpi/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | magnus
+ Host                     | TheSocialist
+ System                   | Linux-3.10.11-200.fc19.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ MPI                      | ON
+ Fortran compiler         | /usr/lib64/openmpi/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
+ C compiler               | /usr/lib64/openmpi/bin/mpicc
+ C compiler version       | gcc (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
+ C++ compiler             | /usr/lib64/openmpi/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /lib64/libblas.so
+ LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 30f15e087b0e63f6f3ca4d257145724998abfaad
+ Configuration time       | 2013-09-19 10:56:04.613749
 
 
    Content of the .dal input file
@@ -223,7 +225,7 @@ He    .0000     .0000     .0000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =  18 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/aug-cc-pVTZ"
+     "/home/magnus/Projects/dalton_devel/dalton/build_mpi/basis/aug-cc-pVTZ"
 
 
                          SYMGRP: Point group information
@@ -448,8 +450,9 @@ Point group: D2h
  Number of two-electron integrals written:       85591 ( 10.5% )
  Megabytes written:                              0.982
 
- >>>> Total CPU  time used in HERMIT:   0.10 seconds
- >>>> Total wall time used in HERMIT:   0.10 seconds
+ >>>  Time used in TWOINT     is   0.23 seconds
+ >>>> Total CPU  time used in HERMIT:   0.35 seconds
+ >>>> Total wall time used in HERMIT:   0.35 seconds
 
 
                         .----------------------------------.
@@ -507,8 +510,8 @@ Point group: D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:53:52 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Thu Sep 19 11:19:29 2013
+     Host name              : TheSocialist                            
 
  Title lines from ".mol" input file:
      CO2 cc-pVTZ or AhlrichsVDZ                                              
@@ -573,7 +576,7 @@ Point group: D2h
       K-S energy, electrons, error :    -29.310668758891  18.0000000021    2.06D-09
 @  2  -525.926105442       2.81D-02  -3.51D-03     3   2   2   0   2   0   0   0
       Virial theorem: -V/T =      1.997380
-@      MULPOP He     -0.00; 
+@      MULPOP He      0.00; 
    2  Level shift: occupied orbital energies shifted by -1.47D-01
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :    -29.304709151201  18.0000000021    2.07D-09
@@ -599,49 +602,23 @@ Point group: D2h
       K-S energy, electrons, error :    -29.308896482017  18.0000000020    2.04D-09
 @  5  -525.926485791       7.96D-03   3.54D-05     3   2   2   0   2   0   0   0
       Virial theorem: -V/T =      1.997444
+@      MULPOP He      0.00; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -29.306914009394  18.0000000021    2.06D-09
+@  6  -525.926547253       2.58D-04  -6.15D-05     3   2   2   0   2   0   0   0
+      Virial theorem: -V/T =      1.997489
 @      MULPOP He     -0.00; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -29.304940763671  18.0000000021    2.07D-09
-@  6  -525.926595381       8.13D-03  -1.10D-04     3   2   2   0   2   0   0   0
-
-Info: SCF gradient has been lower than now,
-      therefore  1 old iterations are removed from DIIS.
-
-!!! Info: DIIS restarted because it was stalled ...
- - energy changed by   -1.096E-04
- - gradient changed by  1.747E-04
- - or strange C vector coeff. for current index (=  2) :
-   -0.000015    1.000015
-      Virial theorem: -V/T =      1.997531
+      K-S energy, electrons, error :    -29.306998826432  18.0000000021    2.06D-09
+@  7  -525.926546677       6.55D-05   5.76D-07     3   2   2   0   2   0   0   0
+      Virial theorem: -V/T =      1.997487
 @      MULPOP He      0.00; 
-   6  Level shift: occupied orbital energies shifted by -1.10D-03
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -29.309215370287  18.0000000020    2.04D-09
-@  7  -525.926490935       8.84D-03   1.04D-04     3   2   2   0   2   0   0   0
-      Virial theorem: -V/T =      1.997440
-@      MULPOP He      0.00; 
-   7  Level shift: occupied orbital energies shifted by -9.11D-04
- -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -29.304517888945  18.0000000021    2.07D-09
-@  8  -525.926600256       9.74D-03  -1.09D-04     3   2   2   0   2   0   0   0
+      K-S energy, electrons, error :    -29.306981522927  18.0000000021    2.06D-09
+@  8  -525.926546747       1.29D-06  -7.01D-08     3   2   2   0   2   0   0   0
 
-Info: SCF gradient has been lower than now,
-      therefore  2 old iterations are removed from DIIS.
-      Virial theorem: -V/T =      1.997540
-@      MULPOP He     -0.00; 
-   8  Level shift: occupied orbital energies shifted by -7.57D-04
- -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -29.309702078905  18.0000000020    2.04D-09
-@  9  -525.926478987       1.08D-02   1.21D-04     3   2   2   0   2   0   0   0
-      Virial theorem: -V/T =      1.997430
-@      MULPOP He      0.00; 
-   9  Level shift: occupied orbital energies shifted by -6.29D-04
- -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -29.306983084056  18.0000000021    2.06D-09
-@ 10  -525.926546735       6.63D-06  -6.77D-05     3   2   2   0   2   0   0   0
-
-@ *** DIIS converged in  10 iterations !
-@     Converged SCF energy, gradient:   -525.926546735059    6.63D-06
+@ *** DIIS converged in   8 iterations !
+@     Converged SCF energy, gradient:   -525.926546747110    1.29D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -654,34 +631,34 @@ Info: SCF gradient has been lower than now,
 
  Sym       Kohn-Sham orbital energies
 
-  1   -116.16238138   -11.47229381    -1.07860285    -0.14577201     0.03798090
-         0.03798090     0.60082140     0.60082140
+  1   -116.16238328   -11.47229534    -1.07860356    -0.14577207     0.03798071
+         0.03798071     0.60082098     0.60082098
 
-  2     -9.09814028    -0.57982355    -0.09041378     0.32953261     0.99229175
-         0.99229175     2.28692224
+  2     -9.09814184    -0.57982413    -0.09041371     0.32953245     0.99229157
+         0.99229157     2.28692155
 
-  3     -9.09814028    -0.57982355    -0.09041378     0.32953261     0.99229175
-         0.99229175     2.28692224
+  3     -9.09814184    -0.57982413    -0.09041371     0.32953245     0.99229157
+         0.99229157     2.28692155
 
-  4      0.03798090     0.60082140     2.23419462
+  4      0.03798071     0.60082098     2.23419396
 
-  5     -9.09814028    -0.57982355    -0.09041378     0.32953261     0.99229175
-         0.99229175     2.28692224
+  5     -9.09814184    -0.57982413    -0.09041371     0.32953245     0.99229157
+         0.99229157     2.28692155
 
-  6      0.03798090     0.60082140     2.23419462
+  6      0.03798071     0.60082098     2.23419396
 
-  7      0.03798090     0.60082140     2.23419462
+  7      0.03798071     0.60082098     2.23419396
 
-  8      0.99229175     3.14146147
+  8      0.99229157     3.14146090
 
-    E(LUMO) :    -0.14577201 au (symmetry 1)
-  - E(HOMO) :    -0.57982355 au (symmetry 2)
+    E(LUMO) :    -0.14577207 au (symmetry 1)
+  - E(HOMO) :    -0.57982413 au (symmetry 5)
   ------------------------------------------
-    gap     :     0.43405154 au
+    gap     :     0.43405206 au
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       1.600       1.614
+ >>>> CPU and wall time for SCF :       2.575       2.583
 
 
                        .-----------------------------------.
@@ -693,15 +670,15 @@ Info: SCF gradient has been lower than now,
 @    Spatial symmetry:            1
 @    Total charge of molecule:    0
 
-@    Final DFT energy:           -525.926546735059                 
+@    Final DFT energy:           -525.926546747110                 
 @    Nuclear repulsion:             0.000000000000
-@    Electronic energy:          -525.926546735059
+@    Electronic energy:          -525.926546747110
 
-@    Final gradient norm:           0.000006632516
+@    Final gradient norm:           0.000001288085
 
  
-     Date and time (Linux)  : Sun Sep  8 20:53:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Thu Sep 19 11:19:31 2013
+     Host name              : TheSocialist                            
 
  (Only coefficients >0.0100 are printed.)
 
@@ -709,15 +686,15 @@ Info: SCF gradient has been lower than now,
  ------------------------------------------
 
     Orbital         1        2        3        4        5
-   1 He  :1s     0.9995   0.0042  -0.0126   0.0132  -0.0000
-   2 He  :1s    -0.0051  -0.9643  -0.0690   0.0599  -0.0000
-   3 He  :1s    -0.0024   0.0362   0.9223  -0.2838  -0.0000
-   4 He  :1s     0.0028  -0.0362   0.0646  -0.0650   0.0000
-   5 He  :1s     0.0018  -0.0273   0.0530  -0.7999   0.0000
-   6 He  :1s    -0.0002   0.0045  -0.0022   1.5910  -0.0000
-   8 He  :3d2+   0.0000  -0.0000  -0.0000   0.0000  -0.1894
-  10 He  :3d2+  -0.0000   0.0000   0.0000  -0.0000  -0.0746
-  12 He  :3d2+   0.0000  -0.0000  -0.0000   0.0000  -0.8803
+   1 He  :1s    -0.9995   0.0042  -0.0126   0.0132   0.0000
+   2 He  :1s     0.0051  -0.9643  -0.0690   0.0599   0.0000
+   3 He  :1s     0.0024   0.0362   0.9223  -0.2838   0.0000
+   4 He  :1s    -0.0028  -0.0362   0.0646  -0.0650  -0.0000
+   5 He  :1s    -0.0018  -0.0273   0.0530  -0.7999  -0.0000
+   6 He  :1s     0.0002   0.0045  -0.0022   1.5910   0.0000
+   7 He  :3d0   -0.0000   0.0000   0.0000   0.0000   0.1894
+   9 He  :3d0    0.0000  -0.0000  -0.0000  -0.0000   0.0746
+  11 He  :3d0   -0.0000  -0.0000   0.0000   0.0000   0.8803
 
  Molecular orbitals for symmetry species  2
  ------------------------------------------
@@ -727,7 +704,7 @@ Info: SCF gradient has been lower than now,
    2 He  :2px    0.0005   0.9236  -0.3125   1.9761
    3 He  :2px   -0.0009   0.0537  -0.0377  -0.4332
    4 He  :2px   -0.0004   0.0465  -0.1567  -2.5613
-   5 He  :2px   -0.0003   0.0067   1.1442   0.9296
+   5 He  :2px   -0.0003   0.0067   1.1441   0.9296
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
@@ -737,7 +714,7 @@ Info: SCF gradient has been lower than now,
    2 He  :2py    0.0005   0.9236  -0.3125   1.9761
    3 He  :2py   -0.0009   0.0537  -0.0377  -0.4332
    4 He  :2py   -0.0004   0.0465  -0.1567  -2.5613
-   5 He  :2py   -0.0003   0.0067   1.1442   0.9296
+   5 He  :2py   -0.0003   0.0067   1.1441   0.9296
 
  Molecular orbitals for symmetry species  4
  ------------------------------------------
@@ -755,7 +732,7 @@ Info: SCF gradient has been lower than now,
    2 He  :2pz    0.0005   0.9236  -0.3125   1.9761
    3 He  :2pz   -0.0009   0.0537  -0.0377  -0.4332
    4 He  :2pz   -0.0004   0.0465  -0.1567  -2.5613
-   5 He  :2pz   -0.0003   0.0067   1.1442   0.9296
+   5 He  :2pz   -0.0003   0.0067   1.1441   0.9296
 
  Molecular orbitals for symmetry species  6
  ------------------------------------------
@@ -782,12 +759,12 @@ Info: SCF gradient has been lower than now,
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.60 seconds
- >>>> Total wall time used in SIRIUS :      1.62 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.58 seconds
+ >>>> Total wall time used in SIRIUS :      2.59 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:53:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Thu Sep 19 11:19:31 2013
+     Host name              : TheSocialist                            
 
 
                      .---------------------------------------.
@@ -806,8 +783,8 @@ Info: SCF gradient has been lower than now,
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:53:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Thu Sep 19 11:19:31 2013
+     Host name              : TheSocialist                            
 
 
    ***************************************************************************
@@ -816,8 +793,8 @@ Info: SCF gradient has been lower than now,
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:53:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Thu Sep 19 11:19:32 2013
+     Host name              : TheSocialist                            
 
 
                              Molecular geometry (au)
@@ -834,19 +811,19 @@ Info: SCF gradient has been lower than now,
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-     Total energy       -525.9265467351 au (Hartrees)
-                        -14311.18932943 eV
+     Total energy       -525.9265467471 au (Hartrees)
+                        -14311.18932975 eV
                           -1380819.9356 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          5.7010225546 au
-     Mass-velocity correction:                  -7.5015876928 au
+     Darwin correction:                          5.7010225416 au
+     Mass-velocity correction:                  -7.5015876536 au
 
-     Total relativistic correction:             -1.8005651383 au (0.3424%)
-     Non-relativistic + relativistic energy:  -527.7271118733 au
+     Total relativistic correction:             -1.8005651120 au (0.3424%)
+     Non-relativistic + relativistic energy:  -527.7271118591 au
 
 
 
@@ -876,17 +853,17 @@ Info: SCF gradient has been lower than now,
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.02 seconds
- >>>> Total wall time used in ABACUS:   0.02 seconds
+ >>>> Total CPU  time used in ABACUS:   0.11 seconds
+ >>>> Total wall time used in ABACUS:   0.11 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.73 seconds
- >>>> Total wall time used in DALTON:   1.75 seconds
+ >>>> Total CPU  time used in DALTON:   3.05 seconds
+ >>>> Total wall time used in DALTON:   3.07 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:53:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Thu Sep 19 11:19:32 2013
+     Host name              : TheSocialist                            

@@ -14,7 +14,7 @@ module optimlocMOD
 !  use davidson_settings
   use matrix_module, only: matrix
   use matrix_operations 
-  use matrix_util, only: matrix_exponential
+!  use matrix_util, only: matrix_exponential
   use matrix_util
   use loc_utils
   use typedeftype
