@@ -5139,7 +5139,6 @@ contains
 #ifdef VAR_MPI
 
       if( infpar%parent_comm == MPI_COMM_NULL ) then
-        call ls_mpibcast(CHILD_SHUT_DOWN,infpar%pc_mynum,infpar%pc_comm)
         call MPI_COMM_FREE(infpar%pc_comm,ierr)
         call MPI_COMM_FREE(infpar%child_comm,ierr)
       else
@@ -5257,7 +5256,7 @@ contains
 #ifdef VAR_MPI
       ierr = 0
 
-      if ((infpar%mynum.eq.infpar%master).and.mastercall) &
+      if ((infpar%mynum.eq.infpar%master).and.mastercall.and.(infpar%parent_comm==MPI_COMM_NULL))&
        &call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

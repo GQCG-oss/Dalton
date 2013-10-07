@@ -1,15 +1,17 @@
 
 module tensor_type_def_module
-  use,intrinsic :: iso_c_binding, only:c_ptr
+  use,intrinsic :: iso_c_binding, only:c_ptr,c_null_ptr
   use precision
 
   !tile structure
 
   type tile
-    type(c_ptr) :: c
-    real(realk),pointer :: t(:) => null()         !data in tiles
-    integer,pointer     :: d(:) => null()         !actual dimension of the tiles
-    integer :: e,gt                               !number of elements in current tile, global ti nr
+    type(c_ptr)           :: c    =  c_null_ptr
+    real(realk),pointer   :: t(:) => null()         !data in tiles
+    integer,pointer       :: d(:) => null()         !actual dimension of the tiles
+    integer(kind=8)       :: e                      !number of elements in current tile
+    integer               :: gt                     !global ti nr.
+    integer(kind=ls_mpik) :: wi                     !window in pc group
   end type tile
 
   type array
@@ -23,9 +25,13 @@ module tensor_type_def_module
 
      !> Dimensions
      integer, pointer :: dims(:)                   => null ()
+
      !> Data, only allocate the first for the elements and use the others just
      !to reference the data in the first pointer
-     real(realk), pointer :: elm1(:)               => null()
+     integer(kind=ls_mpik):: w1                                    ! windows for local chunk of memory
+     type(c_ptr)          :: e1c                   =  c_null_ptr   ! cpointer for local chunk, maily as fail-check
+     real(realk), pointer :: elm1(:)               => null()       ! local chunk of memory
+
      ! the following should just point to elm1
      real(realk), pointer :: elm2(:,:)             => null()
      real(realk), pointer :: elm3(:,:,:)           => null()
@@ -35,14 +41,16 @@ module tensor_type_def_module
      real(realk), pointer :: elm7(:,:,:,:,:,:,:)   => null()
 
      !in order to have only one array type the tile information is always there
-     type(c_ptr)        :: dummyc
-     real(realk),pointer:: dummy(:)                => null()       !for the creation of mpi windows a dummy is required
-     type(tile),pointer :: ti(:)                   => null()       !tiles, if matrix should be distributed
+     integer(kind=ls_mpik) :: dummyw
+     type(c_ptr)           :: dummyc               =  c_null_ptr
+     real(realk),pointer   :: dummy(:)             => null()       !for the creation of mpi windows a dummy is required
+     type(tile),pointer    :: ti(:)                => null()       !tiles, if matrix should be distributed
      integer(kind=ls_mpik),pointer    :: wi(:)     => null()       !windows for tiles, if matrix should be distributed, there are ntiles windows to be inited
-     integer,pointer    :: ntpm(:)                 => null()       !dimensions in the modes, number of tiles per mode, 
-     integer,pointer    :: tdim(:)                 => null()       !dimension of the tiles per mode(per def symmetric, but needed)
-     integer,pointer    :: addr_p_arr(:)           => null() !address of array in persistent array "p_arr" on each node
-     logical,pointer    :: lock_set(:)             => null()
+     integer,pointer       :: ntpm(:)              => null()       !dimensions in the modes, number of tiles per mode, 
+     integer,pointer       :: tdim(:)              => null()       !dimension of the tiles per mode(per def symmetric, but needed)
+     integer,pointer       :: addr_p_arr(:)        => null()       !address of array in persistent array "p_arr" on each compute node
+     integer,pointer       :: addr_loc(:)          => null()       !address of array in persistent array "p_arr" on local process
+     logical,pointer       :: lock_set(:)          => null()
      !global tile information
      integer :: ntiles,tsize                         !batching of tiles in one mode, number of tiles, tilesize (ts^mode), amount of modes of the array
      integer :: nlti                                 !number of local tiles
@@ -89,6 +97,9 @@ module tensor_type_def_module
   integer,parameter :: lspdm_stdout = 6
   integer,parameter :: lspdm_errout = 0
 
+
+  !> execution time variables
+  logical :: lspdm_use_comm_proc
 
 
 

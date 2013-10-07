@@ -24,14 +24,18 @@ subroutine pdm_array_slave(comm)
    logical :: logi
    integer, external :: numroc
    integer, pointer :: dims(:),dims2(:)
+   logical :: loc
 #ifdef VAR_MPI
-   CALL PDM_ARRAY_SYNC(comm,JOB,A,B,C,D) !Job is output
+   loc = (infpar%parent_comm /= MPI_COMM_NULL)
+   CALL PDM_ARRAY_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
    !print *,"slave in pdm-> job is",JOB
    !print *,"array1_dims",A%dims
    !print *,"array2_dims",B%dims
    !print *,"array3_dims",C%dims
 
    SELECT CASE(JOB)
+     CASE(JOB_PC_ALLOC_DENSE)
+       call memory_allocate_array_dense_pc(A)
      CASE(JOB_INIT_ARR_PC)
        call mem_alloc(dims,A%mode)
        dims =A%dims
@@ -47,6 +51,8 @@ subroutine pdm_array_slave(comm)
        A=array_init_tiled(dims,A%mode,MASTER_INIT,idiag,A%zeros) 
        call mem_dealloc(idiag)
        call mem_dealloc(dims)
+     CASE(JOB_FREE_ARR_STD)
+       call array_free_pdm(A) 
      CASE(JOB_FREE_ARR_PDM)
        call array_free_pdm(A) 
      CASE(JOB_INIT_ARR_REPLICATED)

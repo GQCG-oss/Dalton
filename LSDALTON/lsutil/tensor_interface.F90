@@ -287,6 +287,7 @@ contains
     if(left%itype==TILED.or.left%itype==TILED_DIST.or.right%itype==TILED&
     &.or.right%itype==TILED_DIST)call lsquit("ERROR(array_contract_outer_&
     &indices_rl):not yet implemented for tiled/PDM",DECinfo%output)
+   
 
     !do that only if type dense --> the other routines are to come
     select case(res%itype)
@@ -616,15 +617,16 @@ contains
     if(present(local)) loc = local
     if(present(atype)) at  = atype
 
+
 #ifdef VAR_MPI
     if(loc) then
-      arr=array_init(dims,nmodes,pdm=NO_PDM)
+      arr=array_init_standard(dims,nmodes,pdm=NO_PDM)
       arr%atype='LDAR'
     else
       select case(at)
       case('LDAR')
         !INITIALIZE a Local Dense ARray
-        arr              = array_init(dims,nmodes,pdm=MASTER_INIT)
+        arr              = array_init_standard(dims,nmodes,pdm=MASTER_INIT)
         arr%atype        = 'LDAR'
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
@@ -642,7 +644,7 @@ contains
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         arr              = array_init_tiled(dims,nmodes,pdm=MASTER_INIT)
         CreatedPDMArrays = CreatedPDMArrays+1
-        call memory_allocate_array_dense(arr)
+        call memory_allocate_array_dense_pc(arr)
         arr%itype        = DENSE
         arr%atype        = 'TDPD'
       case('REPD')
@@ -677,13 +679,13 @@ contains
 
 #ifdef VAR_MPI
     if(loc) then
-      arr=array_init(dims,nmodes,pdm=NO_PDM)
+      arr=array_init_standard(dims,nmodes,pdm=NO_PDM)
       arr%atype='LDAR'
     else
       select case(at)
       case('LDAR')
         !INITIALIZE a Local Dense ARray
-        arr              = array_init(dims,nmodes,pdm=ALL_INIT)
+        arr              = array_init_standard(dims,nmodes,pdm=ALL_INIT)
         arr%atype        = 'LDAR'
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
@@ -715,7 +717,7 @@ contains
       end select
     endif
 #else
-    arr=array_init(dims,nmodes)
+    arr=array_init_standard(dims,nmodes,NO_PDM)
 #endif
   end function array_ainit
 
@@ -785,9 +787,9 @@ contains
   !> \author Patrick Ettenhuber adpted from Marcin Ziolkowski
   !> \date September 2012
   !> \brief get mode index from composite index
-  function array_init_standard(dims,nmodes,pdmtype) result(arr)
+  function array_init_standard(dims,nmodes,pdm) result(arr)
     implicit none
-    integer, intent(in)   :: nmodes,dims(nmodes),pdmtype
+    integer, intent(in)   :: nmodes,dims(nmodes),pdm
     type(array)           :: arr
     logical               :: master
     integer               :: i,addr,tdimdummy(nmodes)
@@ -802,7 +804,7 @@ contains
     if( lspdm_use_comm_proc ) then
       me        = infpar%pc_mynum
       pc_nnodes = infpar%pc_nodtot
-      master    = (infpar%parent_comm == MPI_INFO_NULL)
+      master    = (infpar%parent_comm == MPI_COMM_NULL)
     endif
 #endif
     
@@ -813,21 +815,21 @@ contains
     p_arr%arrays_in_use     = p_arr%arrays_in_use + 1
 
     !SET MODE
-    p_arr%a(addr)%mode = nmodes
+    p_arr%a(addr)%mode      = nmodes
 
     !SET DIMS
     call arr_set_dims(p_arr%a(addr),dims,nmodes)
 
     !SET ARRAY TYPE
-    p_arr%a(addr)%itype        = DENSE
+    p_arr%a(addr)%itype     = DENSE
 
     !SET INIT TYPE
     !default
     p_arr%a(addr)%init_type = NO_PDM
     !if one uses comm threads the following replace the init_type
-    if( pdmtype == MASTER_INIT .and. lspdm_use_comm_proc )&
+    if( pdm == MASTER_INIT .and. lspdm_use_comm_proc )&
     & p_arr%a(addr)%init_type = MASTER_INIT
-    if( pdmtype == ALL_INIT .and. lspdm_use_comm_proc )&
+    if( pdm == ALL_INIT .and. lspdm_use_comm_proc )&
     & p_arr%a(addr)%init_type = ALL_INIT
 
     !SET IF ALLOCATED WITH COMM PROCS
@@ -850,21 +852,24 @@ contains
     !if master init only master has to init the addresses addresses before
     !pdm syncronization
     if(master .and. p_arr%a(addr)%init_type==MASTER_INIT .and. lspdm_use_comm_proc)then
-      call arr_set_addr(p_arr%a(addr),buf,pc_nnodes)
+      call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 #ifdef VAR_MPI
-      call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_PC,p_arr%a(addr))
+      call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_PC,p_arr%a(addr),loc_addr=.true.)
 #endif
     endif
 
+
     !if all_init all have to have the addresses allocated
-    if(p_arr%a(addr)%init_type==ALL_INIT)call arr_set_addr(p_arr%a(addr),buf,pc_nnodes)
+    if(p_arr%a(addr)%init_type==ALL_INIT.and. lspdm_use_comm_proc)&
+       &call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 
     !SET THE ADDRESSES ON ALL NODES     
     buf(me+1)=addr 
 #ifdef VAR_MPI
     if( lspdm_use_comm_proc )call lsmpi_allreduce(buf,pc_nnodes,infpar%pc_comm)
 #endif
-    call arr_set_addr(p_arr%a(addr),buf,pc_nnodes)
+
+    call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 
     call mem_dealloc(buf)
 
@@ -876,19 +881,25 @@ contains
 
   end function array_init_standard
 
+  
 
   subroutine array_free_standard(arr)
     implicit none
     type(array), intent(inout) :: arr
     integer :: me
+    logical :: parent
  
-    me = 0
+    me     = 0
+    parent = .true.
 #ifdef VAR_MPI
-    if( lspdm_use_comm_proc ) me = infpar%pc_mynum
+    if( lspdm_use_comm_proc )then
+      me = infpar%pc_mynum
+      if(parent) call pdm_array_sync(infpar%pc_comm,JOB_FREE_ARR_STD,arr,loc_addr=.true.)
+    endif
 #endif
-    p_arr%free_addr_on_node(arr%addr_p_arr(me+1))=.true.
+    p_arr%free_addr_on_node(arr%addr_loc(me+1))=.true.
     p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
-    call array_free_basic(p_arr%a(arr%addr_p_arr(me+1))) 
+    call array_free_basic(p_arr%a(arr%addr_loc(me+1))) 
     call array_nullify_pointers(arr)
 
   end subroutine array_free_standard

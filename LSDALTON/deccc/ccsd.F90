@@ -56,7 +56,7 @@ module ccsd_module
 
 
     public :: getDoublesResidualMP2_simple,&
-         & get_ccsd_residual_integral_driven_oldarray_wrapper, get_ccsd_residual_integral_driven, &
+         & ccsd_residual_wrapper, get_ccsd_residual_integral_driven, &
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, getsinglesresidualccsd,fullmolecular_get_aot1fock,calculate_E2_and_permute, &
@@ -657,6 +657,137 @@ contains
   !    nullify(xv_p)
   !    nullify(yv_p)
   !end subroutine get_ccsd_residual_integral_driven_oldarray_wrapper
+  subroutine ccsd_residual_wrapper(w_cp,delta_fock,omega2,t2,&
+             & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
+             & xv,yo,yv,nb,MyLsItem,omega1,iter,local,rest)
+    implicit none
+    logical, intent(in)   :: w_cp
+    type(array)           :: delta_fock
+    type(array)           :: omega2
+    type(array)           :: t2
+    type(array)           :: fock
+    type(array)           :: iajb
+    integer,intent(in)    :: no,nv
+    type(array)           :: ppfock
+    type(array)           :: qqfock
+    type(array)           :: pqfock
+    type(array)           :: qpfock
+    type(array)           :: xo
+    type(array)           :: xv
+    type(array)           :: yo
+    type(array)           :: yv
+    integer,intent(in)    :: nb
+    type(lsitem)          :: MyLsItem
+    type(array)           :: omega1
+    integer,intent(in)    :: iter
+    logical,intent(in)    :: local
+    logical,intent(inout) :: rest
+    !internal variables
+    logical :: parent
+    integer :: lg_me,lg_nnod
+    integer :: addr01(infpar%pc_nodtot)
+    integer :: addr02(infpar%pc_nodtot)
+    integer :: addr03(infpar%pc_nodtot)
+    integer :: addr04(infpar%pc_nodtot)
+    integer :: addr05(infpar%pc_nodtot)
+    integer :: addr06(infpar%pc_nodtot)
+    integer :: addr07(infpar%pc_nodtot)
+    integer :: addr08(infpar%pc_nodtot)
+    integer :: addr09(infpar%pc_nodtot)
+    integer :: addr10(infpar%pc_nodtot)
+    integer :: addr11(infpar%pc_nodtot)
+    integer :: addr12(infpar%pc_nodtot)
+    integer :: addr13(infpar%pc_nodtot)
+    integer :: addr14(infpar%pc_nodtot)
+#ifdef VAR_MPI
+    parent  = (infpar%parent_comm == MPI_COMM_NULL)
+    lg_nnod = infpar%lg_nodtot
+    lg_me   = infpar%lg_mynum
+
+    if( lspdm_use_comm_proc  )then
+      if (parent) call ls_mpibcast(CCSD_COMM_PROC_MASTER,infpar%master,infpar%pc_comm)
+      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
+      call ls_mpi_buffer(lg_nnod,infpar%master)
+      call ls_mpi_buffer(lg_me,infpar%master)
+      call ls_mpi_buffer(nb,infpar%master)
+      call ls_mpi_buffer(no,infpar%master)
+      call ls_mpi_buffer(nv,infpar%master)
+      call ls_mpi_buffer(iter,infpar%master)
+      call ls_mpi_buffer(local,infpar%master)
+      call ls_mpi_buffer(rest,infpar%master)
+
+      if(parent)addr01=delta_fock%addr_loc
+      call ls_mpi_buffer(addr01,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)delta_fock=p_arr%a(addr01(infpar%pc_mynum+1))
+
+      if(parent)addr02=omega2%addr_loc
+      call ls_mpi_buffer(addr02,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)omega2=p_arr%a(addr02(infpar%pc_mynum+1))
+
+      if(parent)addr03=t2%addr_loc
+      call ls_mpi_buffer(addr03,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)t2=p_arr%a(addr03(infpar%pc_mynum+1))
+
+      if(parent)addr04=fock%addr_loc
+      call ls_mpi_buffer(addr04,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)fock=p_arr%a(addr04(infpar%pc_mynum+1))
+
+      if(parent)addr05=iajb%addr_loc
+      call ls_mpi_buffer(addr05,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)iajb=p_arr%a(addr05(infpar%pc_mynum+1))
+
+      if(parent)addr06=ppfock%addr_loc
+      call ls_mpi_buffer(addr06,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)ppfock=p_arr%a(addr06(infpar%pc_mynum+1))
+
+      if(parent)addr07=qqfock%addr_loc
+      call ls_mpi_buffer(addr07,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)qqfock=p_arr%a(addr07(infpar%pc_mynum+1))
+
+      if(parent)addr08=pqfock%addr_loc
+      call ls_mpi_buffer(addr08,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)pqfock=p_arr%a(addr08(infpar%pc_mynum+1))
+
+      if(parent)addr09=qpfock%addr_loc
+      call ls_mpi_buffer(addr09,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)qpfock=p_arr%a(addr09(infpar%pc_mynum+1))
+
+      if(parent)addr10=xo%addr_loc
+      call ls_mpi_buffer(addr10,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)xo=p_arr%a(addr10(infpar%pc_mynum+1))
+
+      if(parent)addr11=xv%addr_loc
+      call ls_mpi_buffer(addr11,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)xv=p_arr%a(addr11(infpar%pc_mynum+1))
+
+      if(parent)addr12=yo%addr_loc
+      call ls_mpi_buffer(addr12,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)yo=p_arr%a(addr12(infpar%pc_mynum+1))
+
+      if(parent)addr13=yv%addr_loc
+      call ls_mpi_buffer(addr13,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)yv=p_arr%a(addr13(infpar%pc_mynum+1))
+
+      if(parent)addr14=omega1%addr_loc
+      call ls_mpi_buffer(addr14,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)omega1=p_arr%a(addr14(infpar%pc_mynum+1))
+
+      call mpicopy_lsitem(MyLsItem,infpar%pc_comm)
+      call mpicopy_dec_settings(DECinfo)
+      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
+      if(.not.parent)then
+      endif
+    endif
+    print *,"here mothafucka"
+    call lsmpi_barrier(infpar%pc_comm)
+
+#endif
+    call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2,t2,&
+     & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
+     & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
+
+  end subroutine ccsd_residual_wrapper
+
 
 
   !> \brief Get CCSD residual in an integral direct fashion.
@@ -729,7 +860,7 @@ contains
     type(array),intent(inout) :: omega2
     !> the current guess amplitudes
     !real(realk),pointer,intent(in) ::t2(:)
-    type(array),intent(inout) ::t2
+    type(array),intent(inout) :: t2
     !> on output this contains the occupied-occupied block of the t1-fock matrix
     real(realk),intent(inout) :: ppfock(no*no)
     !> on output this contains the virtual-virtual block of the t1-fock matrix
@@ -854,9 +985,6 @@ contains
     print_debug              = (DECinfo%PL>2)
     debug                    = .false.
     double_2G_nel            = 100000000
-#ifdef VAR_LSDEBUG
-!    double_2G_nel            = 20
-#endif
 
     ! Set some shorthand notations
     ! ****************************
@@ -889,7 +1017,7 @@ contains
     me                       = int(0,kind=ls_mpik)
 #ifdef VAR_MPI
     me                       = infpar%lg_mynum
-    master                   = (infpar%lg_mynum == 0)
+    master                   = (infpar%lg_mynum == 0).and.(infpar%parent_comm==MPI_COMM_NULL)
     nnod                     = infpar%lg_nodtot
     def_atype                = TILED_DIST
     lock_outside             = DECinfo%CCSD_MPICH
@@ -981,8 +1109,11 @@ contains
       !allocate the dense part of the arrays if all can be kept in local memory.
       !do that for master only, as the slaves recieve the data via StartUpSlaves
       if((scheme==4).and.govov%itype/=DENSE)then
-        if(iter==1) call memory_allocate_array_dense(govov)
+        print *,"allocate dense"
+        if(iter==1) call memory_allocate_array_dense_pc(govov)
+        print *,"allocate dense - done copying"
         if(iter/=1) call array_cp_tiled2dense(govov,.false.)
+        print *,"copying done"
       endif 
 #endif
     endif
@@ -1026,7 +1157,7 @@ contains
     !if the residual is handeled as dense, allocate and zero it, adjust the
     !access parameters to the data
     if(omega2%itype/=DENSE.and.(scheme==3.or.scheme==4))then
-      call memory_allocate_array_dense(omega2)
+      call memory_allocate_array_dense_pc(omega2)
       omega2%itype=DENSE
     endif
     call array_zero(omega2)
@@ -5130,167 +5261,201 @@ end module ccsd_module
 !> \date March 2012
 #ifdef VAR_MPI
 subroutine ccsd_data_preparation()
-    use precision
-    !use tensor_def_module
-    use dec_typedef_module
-    use typedeftype,only:lsitem,array
-    use infpar_module
-    use lsmpi_type, only:ls_mpibcast,ls_mpibcast_chunks
-    use daltoninfo, only:ls_free
-    use memory_handling, only: mem_alloc, mem_dealloc
-    use tensor_interface_module, only: array_init,array_free,&
-        &memory_allocate_array_dense,memory_deallocate_array_dense,memory_deallocate_window
-    ! DEC DEPENDENCIES (within deccc directory) 
-    ! *****************************************
-    use decmpi_module, only: mpi_communicate_ccsd_calcdata
-    use array2_simple_operations,only: array2_free,array2_init
-    use array4_simple_operations,only: array4_free,array4_init
-    use ccsd_module, only:get_ccsd_residual_integral_driven
-    implicit none
-    !type(mp2_batch_construction) :: bat
-    type(array2) :: deltafock,ppfock,qqfock,pqfock,qpfock,omega1,fock
-    type(array2) :: xocc,xvirt,yocc,yvirt
-    type(array)  :: om2,t2,govov
-    type(lsitem) :: MyLsItem
-    logical :: local
-    integer :: nbas,nocc,nvirt,scheme
-    integer(kind=long) :: nelms
-    integer      :: iter,k,n4,i
-    real(realk),pointer  :: xodata(:),xvdata(:),yodata(:),yvdata(:),&
-                           & df(:),f(:),ppf(:),qqf(:),pqf(:),qpf(:),om1(:),t2data(:),&
-                           & t2d(:,:,:,:),xod(:,:),xvd(:,:),yod(:,:),yvd(:,:)
+  use precision
+  !use tensor_def_module
+  use dec_typedef_module
+  use typedeftype,only:lsitem,array
+  use infpar_module
+  use lsmpi_type, only:ls_mpibcast,ls_mpibcast_chunks
+  use daltoninfo, only:ls_free
+  use memory_handling, only: mem_alloc, mem_dealloc
+  use tensor_interface_module, only: array_init,array_free,&
+      &memory_allocate_array_dense,memory_deallocate_array_dense,memory_deallocate_window
+  ! DEC DEPENDENCIES (within deccc directory) 
+  ! *****************************************
+  use decmpi_module, only: mpi_communicate_ccsd_calcdata
+  use array2_simple_operations,only: array2_free,array2_init
+  use array4_simple_operations,only: array4_free,array4_init
+  use ccsd_module, only:get_ccsd_residual_integral_driven
+  implicit none
+  !type(mp2_batch_construction) :: bat
+  type(array2) :: deltafock,ppfock,qqfock,pqfock,qpfock,omega1,fock
+  type(array2) :: xocc,xvirt,yocc,yvirt
+  type(array)  :: om2,t2,govov
+  type(lsitem) :: MyLsItem
+  logical :: local
+  integer :: nbas,nocc,nvirt,scheme
+  integer(kind=long) :: nelms
+  integer      :: iter,k,n4,i
+  real(realk),pointer  :: xodata(:),xvdata(:),yodata(:),yvdata(:),&
+                         & df(:),f(:),ppf(:),qqf(:),pqf(:),qpf(:),om1(:),t2data(:),&
+                         & t2d(:,:,:,:),xod(:,:),xvd(:,:),yod(:,:),yvd(:,:)
 
 
 
-    !note that for the slave all allocatable arguments are just dummy indices
-    !the allocation and broadcasting happens in here
-    call mpi_communicate_ccsd_calcdata(om2,t2,govov,xodata,xvdata,yodata,yvdata,&
-    &MyLsItem,nbas,nvirt,nocc,iter,scheme,local)
-    
-    if(.not.local)then
-      call memory_allocate_array_dense(t2)
-      if(scheme==4)then
-        call memory_allocate_array_dense(govov)
-      endif
-    else
-      t2   =array_init([nvirt,nvirt,nocc,nocc],4)
-      govov=array_init([nocc,nvirt,nocc,nvirt],4)
-      om2  =array_init([nvirt,nvirt,nocc,nocc],4)
-    endif
-    
-    ! Quantities, that need to be defined and setset
-    ! ********************************************************
-     
-
-    !split messages in 2GB parts, compare to counterpart in
-    !mpi_communicate_ccsd_calcdate
-    k=250000000
-
-    nelms = nbas*nocc
-    call mem_alloc(yodata,nelms)
-    call mem_alloc(xodata,nelms)
-    call ls_mpibcast_chunks(xodata,nelms,infpar%master,infpar%lg_comm,k)
-    call ls_mpibcast_chunks(yodata,nelms,infpar%master,infpar%lg_comm,k)
-
-    nelms = nbas*nvirt
-    call mem_alloc(xvdata,nelms)
-    call mem_alloc(yvdata,nelms)
-    call ls_mpibcast_chunks(xvdata,nelms,infpar%master,infpar%lg_comm,k)
-    call ls_mpibcast_chunks(yvdata,nelms,infpar%master,infpar%lg_comm,k)
-    
-
-    nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
-    call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
-    if(iter/=1.and.scheme==4)then
-      call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
-    endif
-
-
-    ! Quantities, that need to be defined but not set
-    ! ********************************************************
-    nelms=nbas*nbas
-    call mem_alloc(df,nelms)
-    call mem_alloc(f,nelms)
-    
-    nelms=nocc*nocc
-    call mem_alloc(ppf,nelms)
-
-    nelms=nvirt*nocc
-    call mem_alloc(pqf,nelms)
-    call mem_alloc(qpf,nelms)
-    call mem_alloc(om1,nelms)
+  !note that for the slave all allocatable arguments are just dummy indices
+  !the allocation and broadcasting happens in here
+  call mpi_communicate_ccsd_calcdata(om2,t2,govov,xodata,xvdata,yodata,yvdata,&
+  &MyLsItem,nbas,nvirt,nocc,iter,scheme,local)
   
-    nelms=nvirt*nvirt
-    call mem_alloc(qqf,nelms)
-
-    ! Calculate contribution to integrals/amplitudes for slave
-    ! ********************************************************
-    call get_ccsd_residual_integral_driven(df,om2,t2,f,govov,nocc,nvirt,&
-         ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
-
-    ! FREE EVERYTHING
-    ! ***************
-    if(.not.local)then
-      call memory_deallocate_array_dense(om2)
-      call memory_deallocate_array_dense(t2)
-      if(scheme==4)then
-        call memory_deallocate_array_dense(govov)
-      endif
-    else
-      call array_free(om2)
-      call array_free(t2)
-      call array_free(govov)
+  if(.not.local)then
+    call memory_allocate_array_dense(t2)
+    if(scheme==4)then
+      call memory_allocate_array_dense(govov)
     endif
-    call mem_dealloc(df)
-    call mem_dealloc(f)
-    call mem_dealloc(ppf)
-    call mem_dealloc(pqf)
-    call mem_dealloc(qpf)
-    call mem_dealloc(qqf)
-    call mem_dealloc(om1)
-    call mem_dealloc(xodata)
-    call mem_dealloc(yodata)
-    call mem_dealloc(yvdata)
-    call mem_dealloc(xvdata)
-    call ls_free(MyLsItem)
+  else
+    t2   =array_init([nvirt,nvirt,nocc,nocc],4)
+    govov=array_init([nocc,nvirt,nocc,nvirt],4)
+    om2  =array_init([nvirt,nvirt,nocc,nocc],4)
+  endif
+  
+  ! Quantities, that need to be defined and setset
+  ! ********************************************************
+   
+
+  !split messages in 2GB parts, compare to counterpart in
+  !mpi_communicate_ccsd_calcdate
+  k=250000000
+
+  nelms = nbas*nocc
+  call mem_alloc(yodata,nelms)
+  call mem_alloc(xodata,nelms)
+  call ls_mpibcast_chunks(xodata,nelms,infpar%master,infpar%lg_comm,k)
+  call ls_mpibcast_chunks(yodata,nelms,infpar%master,infpar%lg_comm,k)
+
+  nelms = nbas*nvirt
+  call mem_alloc(xvdata,nelms)
+  call mem_alloc(yvdata,nelms)
+  call ls_mpibcast_chunks(xvdata,nelms,infpar%master,infpar%lg_comm,k)
+  call ls_mpibcast_chunks(yvdata,nelms,infpar%master,infpar%lg_comm,k)
+  
+
+  nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
+  call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
+  if(iter/=1.and.scheme==4)then
+    call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
+  endif
+
+
+  ! Quantities, that need to be defined but not set
+  ! ********************************************************
+  nelms=nbas*nbas
+  call mem_alloc(df,nelms)
+  call mem_alloc(f,nelms)
+  
+  nelms=nocc*nocc
+  call mem_alloc(ppf,nelms)
+
+  nelms=nvirt*nocc
+  call mem_alloc(pqf,nelms)
+  call mem_alloc(qpf,nelms)
+  call mem_alloc(om1,nelms)
+  
+  nelms=nvirt*nvirt
+  call mem_alloc(qqf,nelms)
+
+  ! Calculate contribution to integrals/amplitudes for slave
+  ! ********************************************************
+  call get_ccsd_residual_integral_driven(df,om2,t2,f,govov,nocc,nvirt,&
+       ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
+
+  ! FREE EVERYTHING
+  ! ***************
+  if(.not.local)then
+    call memory_deallocate_array_dense(om2)
+    call memory_deallocate_array_dense(t2)
+    if(scheme==4)then
+      call memory_deallocate_array_dense(govov)
+    endif
+  else
+    call array_free(om2)
+    call array_free(t2)
+    call array_free(govov)
+  endif
+  call mem_dealloc(df)
+  call mem_dealloc(f)
+  call mem_dealloc(ppf)
+  call mem_dealloc(pqf)
+  call mem_dealloc(qpf)
+  call mem_dealloc(qqf)
+  call mem_dealloc(om1)
+  call mem_dealloc(xodata)
+  call mem_dealloc(yodata)
+  call mem_dealloc(yvdata)
+  call mem_dealloc(xvdata)
+  call ls_free(MyLsItem)
 end subroutine ccsd_data_preparation
 
 subroutine calculate_E2_and_permute_slave()
-        use precision
-        use dec_typedef_module
-        use typedeftype,only:lsitem,array
-        use infpar_module
-        use lsmpi_type, only:ls_mpibcast
-        use daltoninfo, only:ls_free
-        use memory_handling, only: mem_alloc, mem_dealloc
-        ! DEC DEPENDENCIES (within deccc directory) 
-        ! *****************************************
-        use decmpi_module, only: share_E2_with_slaves
-        use ccsd_module, only:calculate_E2_and_permute
-        implicit none
-        real(realk),pointer :: ppf(:),qqf(:),xo(:),yv(:),Gbi(:),Had(:)
-        integer :: no,nv,nb,s
-        type(array) :: t2,omega2
-        real(realk),pointer :: w1(:)
-        logical :: lo
-        integer(kind=8) :: o2v2
+  use precision
+  use dec_typedef_module
+  use typedeftype,only:lsitem,array
+  use infpar_module
+  use lsmpi_type, only:ls_mpibcast
+  use daltoninfo, only:ls_free
+  use memory_handling, only: mem_alloc, mem_dealloc
+  ! DEC DEPENDENCIES (within deccc directory) 
+  ! *****************************************
+  use decmpi_module, only: share_E2_with_slaves
+  use ccsd_module, only:calculate_E2_and_permute
+  implicit none
+  real(realk),pointer :: ppf(:),qqf(:),xo(:),yv(:),Gbi(:),Had(:)
+  integer :: no,nv,nb,s
+  type(array) :: t2,omega2
+  real(realk),pointer :: w1(:)
+  logical :: lo
+  integer(kind=8) :: o2v2
 
 
-        call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
-        o2v2 = int((i8*no)*no*nv*nv,kind=8)
-        call mem_alloc(ppf,no*no)
-        call mem_alloc(qqf,nv*nv)
-        call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
-        call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
-        call mem_alloc(w1,o2v2)
-        call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,o2v2,s,.false.,lo)
+  call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
+  o2v2 = int((i8*no)*no*nv*nv,kind=8)
+  call mem_alloc(ppf,no*no)
+  call mem_alloc(qqf,nv*nv)
+  call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
+  call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
+  call mem_alloc(w1,o2v2)
+  call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,o2v2,s,.false.,lo)
 
-        call mem_dealloc(ppf)
-        call mem_dealloc(qqf)
-        call mem_dealloc(xo)
-        call mem_dealloc(yv)
-        call mem_dealloc(Gbi)
-        call mem_dealloc(Had)
-        call mem_dealloc(w1)
-        end subroutine calculate_E2_and_permute_slave
+  call mem_dealloc(ppf)
+  call mem_dealloc(qqf)
+  call mem_dealloc(xo)
+  call mem_dealloc(yv)
+  call mem_dealloc(Gbi)
+  call mem_dealloc(Had)
+  call mem_dealloc(w1)
+end subroutine calculate_E2_and_permute_slave
+subroutine get_master_comm_proc_to_wrapper
+  use precision
+  use typedeftype,only:lsitem,array
+  use infpar_module
+  use tensor_interface_module
+  use ccsd_module, only: ccsd_residual_wrapper
+  implicit none
+  logical               :: w_cp
+  type(array)           :: delta_fock
+  type(array)           :: omega2
+  type(array)           :: t2
+  type(array)           :: fock
+  type(array)           :: iajb
+  integer               :: no,nv
+  type(array)           :: ppfock
+  type(array)           :: qqfock
+  type(array)           :: pqfock
+  type(array)           :: qpfock
+  type(array)           :: xo
+  type(array)           :: xv
+  type(array)           :: yo
+  type(array)           :: yv
+  integer               :: nb
+  type(lsitem)          :: MyLsItem
+  type(array)           :: omega1
+  integer               :: iter
+  logical               :: local
+  logical               :: rest
+  
+  call ccsd_residual_wrapper(w_cp,delta_fock,omega2,t2,&
+             & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
+             & xv,yo,yv,nb,MyLsItem,omega1,iter,local,rest)
+
+end subroutine get_master_comm_proc_to_wrapper
 #endif

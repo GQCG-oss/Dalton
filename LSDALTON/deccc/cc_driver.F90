@@ -2003,8 +2003,29 @@ contains
 
 
   !> \brief adaption of the ccsolver routine, rebuild for the 
-  ! use of parallel distributed memory
-  !> \author Patrick Ettenhuber (adapted from Marcin)
+  ! use of parallel distributed memory. This solver is acutally a bit
+  ! complicated in structure if used in an MPI framework. Most of the work
+  ! happens hidden in the type(array) structure. It is highly recommended to
+  ! begin implementing new features with setting local=.true. at the beginning
+  ! and running without .spawn_comm_procs in the **CC input section. On
+  ! INPUT:
+  ! ypo_f,ypv_f : the occupied and virtual orbital transformation coefficients
+  ! fock_f      : the ao fock matrix
+  ! nb,no,nv    : number of atomic, occupied and virtual orbitals respectively
+  ! mylsitem    : the typical lsitem structure
+  ! ccPrintLevel: print level (might be removed due to DECinfo%PL)
+  ! fragment_job: specify whether it is a fragment job or a full calc
+  ! ppfock_f    : occ occ fock matrix
+  ! qqfock_f    : virt virt fock matrix
+  ! longrange_singles : the longrange singles correction for the fock matrix on input
+  ! local       : boolean which steers whether everything should be treated locally
+  !
+  ! OUTPUT:
+  ! ccenergy    : output correlation energy
+  ! t1_final    : final singles amplitudes, will be allocated in the solver, output
+  ! t2_final    : final doubles amplitudes, will be allocated in the solver, output
+  ! VOVO        : mo-integral WITHOUT T1 trafo on output
+  !> \author Patrick Ettenhuber (heavily adapted version from Marcin)
   subroutine ccsolver_par(ypo_f,ypv_f,fock_f,nb,no,nv, &
        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
        & t1_final,t2_final,VOVO,longrange_singles,local)
@@ -2188,14 +2209,11 @@ contains
     ampl2_dims = [nv,no]
 
     ! create transformation matrices in array form
-    ypo  = array_minit( occ_dims, 2 )
-#ifdef VAR_MPI
-    if ( w_cp ) call lspdm_shut_down_comm_procs
-#endif
-    ypv  = array_minit( virt_dims,2 )
-    yho  = array_minit( occ_dims, 2 )
-    yhv  = array_minit( virt_dims,2 )
-    fock = array_minit( ao2_dims, 2 )
+    ypo  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
+    ypv  = array_minit( virt_dims,2, local=local, atype='LDAR' )
+    yho  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
+    yhv  = array_minit( virt_dims,2, local=local, atype='LDAR' )
+    fock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
 
     call array_convert( ypo_d,  ypo  )
     call array_convert( ypv_d,  ypv  )
@@ -2223,7 +2241,7 @@ contains
 
     if(fragment_job) then ! fragment: calculate correction
 
-       ifock = array_minit(ao2_dims,2)
+       ifock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
 
        if(longrange_singles) then
           ! Get Fock matrix using singles amplitudes from previous
@@ -2237,7 +2255,7 @@ contains
 
        ! Long range Fock correction:
        !delta_fock = getFockCorrection(fock,ifock)
-       delta_fock = array_minit(ao2_dims,2)
+       delta_fock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
 
        call array_cp_data(fock,delta_fock)
        call array_add(delta_fock,-1.0E0_realk,ifock)
@@ -2247,15 +2265,15 @@ contains
        ! Full molecule: deltaF = F(Dcore) for frozen core (0 otherwise)
        if(DECinfo%frozencore) then
           ! Fock matrix from input MOs
-          ifock=array_minit(ao2_dims,2)
+          ifock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
           call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
           ! Correction to actual Fock matrix
-          delta_fock=array_minit(ao2_dims,2)
+          delta_fock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
           call array_cp_data(fock,delta_fock)
           call array_add(delta_fock,-1.0E0_realk,ifock)
           call array_free(ifock)
        else
-          delta_fock=array_minit(ao2_dims,2)
+          delta_fock=array_minit( ao2_dims,2,local=local, atype='LDAR' )
           call array_zero(delta_fock)
        end if
     end if
@@ -2285,12 +2303,12 @@ contains
           call array_convert( ppfock_d, ppfock_prec )
           call array_convert( qqfock_d, qqfock_prec )
        else
-          tmp = array_minit([nb,no], 2 )
+          tmp = array_minit( [nb,no], 2, local=local, atype='LDAR' )
           call array_contract_outer_indices_rl(1.0E0_realk,fock,yho,0.0E0_realk,tmp)
           call array_contract_outer_indices_ll(1.0E0_realk,ypo,tmp,0.0E0_realk,ppfock_prec)
           call array_free(tmp)
 
-          tmp = array_minit([nb,nv],2 )
+          tmp = array_minit( [nb,nv], 2, local=local, atype='LDAR'  )
           call array_contract_outer_indices_rl(1.0E0_realk,fock,yhv,0.0E0_realk,tmp)
           call array_contract_outer_indices_ll(1.0E0_realk,ypv,tmp,0.0E0_realk,qqfock_prec)
           call array_free(tmp)
@@ -2308,20 +2326,20 @@ contains
     if(DECinfo%use_singles) then
        call mem_alloc( t1,     DECinfo%ccMaxIter )
        call mem_alloc( omega1, DECinfo%ccMaxIter )
-       ppfock=array_minit( [no,no], 2 )
-       pqfock=array_minit( [no,nv], 2 )
-       qpfock=array_minit( [nv,no], 2 )
-       qqfock=array_minit( [nv,nv], 2 )
+       ppfock=array_minit( [no,no], 2, local=local, atype='LDAR' )
+       pqfock=array_minit( [no,nv], 2, local=local, atype='LDAR' )
+       qpfock=array_minit( [nv,no], 2, local=local, atype='LDAR' )
+       qqfock=array_minit( [nv,nv], 2, local=local, atype='LDAR' )
     end if
     call mem_alloc(t2,DECinfo%ccMaxIter)
     call mem_alloc(omega2,DECinfo%ccMaxIter)
 
     ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
     if(DECinfo%ccModel /= MODEL_MP2) then
-       xo = array_minit( occ_dims, 2 )
-       yo = array_minit( occ_dims, 2 )
-       xv = array_minit( virt_dims,2 )
-       yv = array_minit( virt_dims,2 )
+       xo = array_minit( occ_dims, 2, local=local, atype='LDAR' )
+       yo = array_minit( occ_dims, 2, local=local, atype='LDAR' )
+       xv = array_minit( virt_dims,2, local=local, atype='LDAR' )
+       yv = array_minit( virt_dims,2, local=local, atype='LDAR' )
     end if
 
     iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
@@ -2342,7 +2360,6 @@ contains
     crop_ok          = .false.
     prev_norm        = 1.0E6_realk
 
-    print *,"iterations start"
     CCIteration : do iter=1,DECinfo%ccMaxIter
 
        if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -2363,6 +2380,7 @@ contains
           call array_free(omega2(iter-DECinfo%ccMaxDIIS))
        end if RemoveOldVectors
 
+
        ! get guess amplitude vectors in the first iteration --> zero if no
        ! restart, else the t*.restart files are read
        GetGuessVectors : if(iter == 1) then
@@ -2376,9 +2394,11 @@ contains
          endif
        end if GetGuessVectors
 
+       print *,"Got guess vectors"
+
        ! Initialize residual vectors
        if(DECinfo%use_singles)then
-         omega1(iter) = array_minit( ampl2_dims, 2 )
+         omega1(iter) = array_minit( ampl2_dims, 2 , local=local, atype='LDAR' )
          call array_zero(omega1(iter))
        endif
        omega2(iter) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
@@ -2414,9 +2434,16 @@ contains
        case(MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT) !CC2 or  CCSD or CCSD(T)
           print *,"residual"
 
-          call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
-             & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-             & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,local,rest=restart)
+          call ccsd_residual_wrapper(w_cp,delta_fock,omega2(iter),t2(iter),&
+             & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
+             & xv,yo,yv,nb,MyLsItem,omega1(iter),iter,local,restart)
+
+          !call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
+          !   & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
+          !   & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,local,rest=restart)
+
+          print *,"residual done"
+          call sleep(3)
        case(MODEL_RPA)
           call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
        case default
@@ -2460,7 +2487,6 @@ contains
           end do
        end do
        
-       print *,"CROP setup"
        !msg="DIIS mat, new"
        !call print_norm(B,DECinfo%ccMaxIter*DECinfo%ccMaxIter,msg)
 
@@ -2477,8 +2503,8 @@ contains
        
        ! mixing omega to get optimal
        if(DECinfo%use_singles) then
-          t1_opt     = array_minit( ampl2_dims, 2 )
-          omega1_opt = array_minit( ampl2_dims, 2 )
+          t1_opt     = array_minit( ampl2_dims, 2 , local=local, atype='LDAR')
+          omega1_opt = array_minit( ampl2_dims, 2 , local=local, atype='LDAR')
           call array_zero(t1_opt    )
           call array_zero(omega1_opt)
        end if
@@ -2744,6 +2770,9 @@ contains
 
 #ifdef VAR_MPI
     if ( w_cp ) call lspdm_shut_down_comm_procs
+    print *,"ALL DONE"
+    call sleep(5)
+    !stop 0
 #endif
 
 #ifdef MOD_UNRELEASED

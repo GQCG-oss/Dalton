@@ -35,8 +35,8 @@
 #endif
 
     call MPI_COMM_GET_PARENT( infpar%parent_comm, ierr )
-    call MPI_COMM_RANK( MPI_COMM_LSDALTON, infpar%mynum, ierr )
-    call MPI_COMM_SIZE( MPI_COMM_LSDALTON, infpar%nodtot, ierr )
+    call get_rank_for_comm( MPI_COMM_LSDALTON, infpar%mynum  )
+    call get_size_for_comm( MPI_COMM_LSDALTON, infpar%nodtot )
 
     infpar%master = int(0,kind=ls_mpik);
     
@@ -81,7 +81,7 @@
       use lsmpi_test
       use integralinterfaceMod
       use dec_driver_slave_module
-      use lspdm_tensor_operations_module,only:free_persistent_array
+      use lspdm_tensor_operations_module
     implicit none
     !> Communicator from which task is to be received
     integer(kind=ls_mpik) :: comm 
@@ -138,6 +138,8 @@
             call MP2_integrals_and_amplitudes_workhorse_slave
          case(CCSDDATA);
             call ccsd_data_preparation
+         case(CCSD_COMM_PROC_MASTER);
+            call get_master_comm_proc_to_wrapper
          case(CCSDSLV4E2);
             call calculate_E2_and_permute_slave
 #ifdef MOD_UNRELEASED
@@ -166,6 +168,9 @@
             call PDM_ARRAY_SLAVE(comm)
          case(GIVE_BIRTH);
             call give_birth_to_child_process
+
+         case(LSPDM_GIVE_BIRTH);
+            call lspdm_start_up_comm_procs
          case(LSMPITEST);
             call test_mpi(comm)
 
@@ -178,6 +183,10 @@
               call lsquit("ERROR(SLAVES_SHUT_DOWN_CHILD):I am not a parent",-1)
             endif
             call shut_down_child_process
+
+         case(LSPDM_SLAVES_SHUT_DOWN_CHILD)
+            if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
+            call lspdm_shut_down_comm_procs
 
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########
