@@ -1050,7 +1050,6 @@ module lspdm_tensor_operations_module
 #endif
     endif
 
-    print *,infpar%lg_mynum,infpar%pc_mynum,"here"
     if(pc_master .and.  p_arr%a(addr)%init_type==MASTER_INIT.and.lspdm_use_comm_proc)then
       call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
 #ifdef VAR_MPI
@@ -1375,8 +1374,8 @@ module lspdm_tensor_operations_module
     if(p_arr%a(addr)%init_type==ALL_INIT)call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 
     call get_distribution_info(p_arr%a(addr))
-    if( parent )then
 #ifdef VAR_MPI
+    if( parent )then
       lg_buf(infpar%lg_mynum+1)=addr 
       lg_buf(lg_nnodes+infpar%lg_mynum+1)=p_arr%a(addr)%offset
       call lsmpi_allreduce(lg_buf,2*lg_nnodes,infpar%lg_comm)

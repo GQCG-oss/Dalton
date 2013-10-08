@@ -685,6 +685,7 @@ contains
     !internal variables
     logical :: parent
     integer :: lg_me,lg_nnod
+#ifdef VAR_MPI
     integer :: addr01(infpar%pc_nodtot)
     integer :: addr02(infpar%pc_nodtot)
     integer :: addr03(infpar%pc_nodtot)
@@ -699,7 +700,6 @@ contains
     integer :: addr12(infpar%pc_nodtot)
     integer :: addr13(infpar%pc_nodtot)
     integer :: addr14(infpar%pc_nodtot)
-#ifdef VAR_MPI
     parent  = (infpar%parent_comm == MPI_COMM_NULL)
     lg_nnod = infpar%lg_nodtot
     lg_me   = infpar%lg_mynum
@@ -778,8 +778,6 @@ contains
       if(.not.parent)then
       endif
     endif
-    print *,"here mothafucka"
-    call lsmpi_barrier(infpar%pc_comm)
 
 #endif
     call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2,t2,&
