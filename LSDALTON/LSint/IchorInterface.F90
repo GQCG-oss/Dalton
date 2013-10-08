@@ -11,7 +11,7 @@ MODULE IchorErimoduleHost
   use precision
   use TYPEDEFTYPE,only: lssetting,BASISSETINFO,MOLECULEINFO
   use memory_handling, only: mem_alloc,mem_dealloc
-  use IchorErimodule, only: IchorEri
+  use IchorErimodule !IchorEri plus the parameters
 public:: MAIN_ICHORERI_DRIVER
 private
 CONTAINS
@@ -46,7 +46,7 @@ real(realk),pointer :: exponentsOfTypeD(:,:),Dcenters(:,:,:),ContractCoeffOfType
 !job specification
 integer :: SphericalSpec,IchorJobSpec,IchorInputSpec,IchorParSpec,IchorScreenSpec
 Integer :: IchorInputDim1,IchorInputDim2,IchorInputDim3,IchorDebugSpec,IchorAlgoSpec
-integer :: filestorageIdentifier,MaxFileStorage
+integer :: filestorageIdentifier,MaxFileStorage,IchorPermuteSpec
 Integer :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
 real(realk),pointer :: InputStorage(:)
 Integer(kind=long) :: MaxMem,MaxMemAllocated,MemAllocated
@@ -126,17 +126,18 @@ call build_TypeInfo2(setting%MOLECULE(4)%p,setting%BASIS(4)%p%REGULAR,nTypesD,&
      & spherical,MaxnAtomsD,MaxnPrimD,MaxnContD,startOrbitalOfTypeD,&
      & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
 
-SphericalSpec=1
-IchorJobSpec=1
+SphericalSpec=SphericalParam
+IchorJobSpec=IcorJobEri
 IchorInputSpec=1
 IchorInputDim1=1
 IchorInputDim2=1
 IchorInputDim3=1
 call mem_alloc(InputStorage,1)
-IchorParSpec=1
-IchorScreenSpec=2
-IchorDebugSpec=1
-IchorAlgoSpec=1
+IchorParSpec=IchorParNone
+IchorScreenSpec=IchorScreenNone
+IchorDebugSpec=IchorDebugNone
+IchorAlgoSpec=IchorAlgoOS
+IchorPermuteSpec=IchorPermuteTTT
 filestorageIdentifier=1
 MaxMem = 0 
 MaxFileStorage = 0
@@ -166,8 +167,8 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
      & IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
-     & IchorAlgoSpec,filestorageIdentifier,MaxMem,MaxFileStorage,&
-     & MaxMemAllocated,MemAllocated,&
+     & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
+     & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & integrals,lupri)
 !=====================================================================
