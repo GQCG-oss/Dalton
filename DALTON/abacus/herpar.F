@@ -730,8 +730,12 @@ C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
          CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
          CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
-         CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
+         CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
+         CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
          CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
@@ -820,7 +824,7 @@ C
 C  /molinc/
          CALL PVMXPACK(NMLINE,1,'INTEGER')
 C  /molinp/
-         CALL PVMXPACK(MLINE,80*NMLINE,'STRING')
+         CALL PVMXPACK(MLINE,len_MLINE*NMLINE,'STRING')
 C  /inforb/
          CALL PVMXPACK(MULD2H,NINFI,'INTEGER')
 C  /infpar/
@@ -1625,8 +1629,12 @@ C Arnfinn nov -08: Receiving number of QM atom types:
               CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
               CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
-              CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
+              CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
+              CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
               CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
               CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
@@ -1669,7 +1677,7 @@ C
 C  /molinp/
            CALL PVMXUNPACK(NMLINE,1,'INTEGER')
 C  /molinc/
-           CALL PVMXUNPACK(MLINE,80*NMLINE,'STRING')
+           CALL PVMXUNPACK(MLINE,len_MLINE*NMLINE,'STRING')
 C  /inforb/
            CALL PVMXUNPACK(MULD2H,NINFI,'INTEGER')
 C  /infpar/
@@ -2720,7 +2728,7 @@ C
      &    'limit. Reduce number of nodes or recompile program. ',
      &    'Allocated (NODTOT) :',NODTOT,'Limit (MAXNOD)     :',MAXNOD
          CALL RECOMPI
-         CALL QUIT('ERROR: Number of nodes requested is too large.')        
+         CALL QUIT('ERROR: Number of nodes requested is too large.')
       ENDIF
 C
       RETURN

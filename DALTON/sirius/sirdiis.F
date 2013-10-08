@@ -985,8 +985,8 @@ C           CALL READMO(CMO,JRDMO,WRK,LFREE)
 C
  4010 FORMAT(' DIIS aborted because energy increased in this iteration.'
      &      /' Program aborted because this means automatic symmetry'
-     &      /' designation of occupied orbitals is not possible!',
-     &      /' Please send this output to dalton users mailing list !!!',
+     &      /' designation of occupied orbitals is not possible!'
+     &      /' Please send this output to dalton users mailing list !!!'
      &      /' You may try again with explicit specfication of .DOUBLY')
  4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
      &      /' Backstep to orbitals from previous iteration.')

@@ -84,9 +84,8 @@ Chapter~\ref{ch:install}.
 In contrast to pre-\dalton\ releases, the keyword \Key{PARALLEL} is not needed any more.
 \dalton\ will automatically perform in parallel those program modules which have been
 parallelized if more than one CPU node is available to the program.
-Also in contrast to pre-Dalton2011 releases, \dalton\ will not quit in the non-parallelized
-modules (as MCSCF and CC), but continue in sequential mode on the master node in these
-program modules while the slaves are idling.
+Also, in contrast to the Dalton2011 release, \dalton\ will quit in some of the non-parallelized
+modules (such as CC and SOPPA).
 
 %All that is needed to do
 %of changes in the \verb|DALTON.INP| file is to add the keyword
