@@ -2432,18 +2432,11 @@ contains
        case(MODEL_MP2)
           call lsquit("ERROR(ccsolver_par):no mp2 implemented",DECinfo%output)
        case(MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT) !CC2 or  CCSD or CCSD(T)
-          print *,"residual"
 
           call ccsd_residual_wrapper(w_cp,delta_fock,omega2(iter),t2(iter),&
              & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
              & xv,yo,yv,nb,MyLsItem,omega1(iter),iter,local,restart)
 
-          !call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
-          !   & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-          !   & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,local,rest=restart)
-
-          print *,"residual done"
-          call sleep(3)
        case(MODEL_RPA)
           call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
        case default
@@ -2771,7 +2764,6 @@ contains
 #ifdef VAR_MPI
     if ( w_cp ) call lspdm_shut_down_comm_procs
     print *,"ALL DONE"
-    call sleep(5)
     !stop 0
 #endif
 
