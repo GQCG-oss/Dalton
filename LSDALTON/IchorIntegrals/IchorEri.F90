@@ -34,8 +34,17 @@ integer,parameter :: IchorDebugNone = 1 !no debug printout
 !> Integral Algorithm specification 
 !> IchorAlgoSpec = IchorAlgoOS = 1 means Obara-Saika (Head-Gordon Pople)
 Integer,parameter :: IchorAlgoOS = 1
+!> IchorPermuteSpec
+Integer,parameter :: IchorPermuteTTT = 1 !(SameLHSaos=.TRUE. , SameRHSaos=.TRUE. , SameODs=.TRUE. ) 
+Integer,parameter :: IchorPermuteFFT = 2 !(SameLHSaos=.FALSE., SameRHSaos=.FALSE., SameODs=.TRUE. ) 
+Integer,parameter :: IchorPermuteTTF = 3 !(SameLHSaos=.TRUE. , SameRHSaos=.TRUE. , SameODs=.FALSE.) 
+Integer,parameter :: IchorPermuteTFF = 4 !(SameLHSaos=.TRUE. , SameRHSaos=.FALSE., SameODs=.FALSE.) 
+Integer,parameter :: IchorPermuteFTF = 5 !(SameLHSaos=.FALSE., SameRHSaos=.TRUE. , SameODs=.FALSE.) 
+Integer,parameter :: IchorPermuteFFF = 6 !(SameLHSaos=.FALSE., SameRHSaos=.FALSE., SameODs=.FALSE.) 
 
-public:: IchorEri
+public:: IchorEri, SphericalParam, IcorJobEri, IcorInputNoInput, IchorParNone,&
+     & IchorScreen, IchorScreenNone, IchorDebugNone, IchorAlgoOS, IchorPermuteTTT,&
+     & IchorPermuteFFT, IchorPermuteTTF, IchorPermuteTFF, IchorPermuteFTF, IchorPermuteFFF
 private
 CONTAINS
 subroutine IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
@@ -52,8 +61,8 @@ subroutine IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
-     & IchorAlgoSpec,filestorageIdentifier,MaxMem,MaxFileStorage,&
-     & MaxMemAllocated,MemAllocated,&
+     & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
+     & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & OutputStorage,lupri)
 implicit none
@@ -132,6 +141,9 @@ Integer,intent(in) :: IchorDebugSpec
 !> Integral Algorithm specification 
 !> IchorAlgoSpec = IchorAlgoOS = 1 means Obara-Saika (Head-Gordon Pople)
 Integer,intent(in) :: IchorAlgoSpec
+!> Permutation specification (SameLHSaos, SameRHSaos, SameODs) 
+!> IchorPermuteSpec = IchorPermuteTTT = 1 means (SameLHSaos=.TRUE., SameRHSaos=.TRUE., SameODs=.TRUE.) 
+Integer,intent(in) :: IchorPermuteSpec
 !> Identifier to determine which file should be used to save integrals on disk, This 
 !> should be logical unit number, if zero no file is open. 
 Integer,intent(in) :: filestorageIdentifier
@@ -157,13 +169,16 @@ integer :: nTABFJW1,nTABFJW2,i1,i2,i3,i4,TotalAngmomABC,TotalAngmomAB,TotalAngmo
 integer :: i12,nPasses,offset,K,I,iPass,MaxPasses,iPrimQ,iPrimP,icont
 integer :: ndimPass,oldmaxangmomABCD
 integer :: ItypeA,ItypeB,itypeC,itypeD,AngmomA,AngmomB,AngmomC,AngmomD
+integer :: ItypeAnon,ItypeBnon,itypeCnon,itypeDnon
 integer :: nPrimA,nPrimB,nContA,nAtomsA,nAtomsB,nAtomsC,nAtomsD,nOrbA
 integer :: nDimA,nOrbCompA,iPrimA,iContA,iAtomA,iPrimB,iContB,iAtomB
 integer :: iPrimC,iContC,iAtomC,iPrimD,iContD,iAtomD,nContB,nOrbB,nDimB
 integer :: nPrimC,nContC,nPrimD,nContD,nOrbC,nOrbD,nOrbCompB,nOrbCompC,nDimC
 integer :: nDimD,nOrbCompD,INTPRINT,startA,startB,startC,startD,maxangmomABCD
 integer,pointer :: Piprim1(:),Piprim2(:),Qiprim1(:),Qiprim2(:)
-logical :: Psegmented,Qsegmented,PQorder,Spherical
+integer,pointer :: OrderdListA(:),OrderdListB(:),OrderdListC(:),OrderdListD(:)
+logical :: Psegmented,Qsegmented,PQorder,Spherical,SameLHSaos,SameRHSaos,SameODs
+logical :: TriangularLHSAtomLoop, PermuteLHS
 real(realk),pointer :: expP(:),Pcent(:),PpreExpFac(:),Qdistance12(:,:),CDAB(:)
 real(realk),pointer :: expQ(:),Qcent(:,:),QpreExpFac(:,:),inversexpQ(:),QcentC(:)
 REAL(realk),pointer :: TABFJW(:,:),reducedExponents(:),integralPrefactor(:)
@@ -177,13 +192,24 @@ integer :: TMParray1maxsize,TMParray2maxsize
 real(realk),pointer :: TmpArray1(:)
 real(realk),pointer :: TmpArray2(:)
 INTPRINT=0
+call mem_ichor_alloc(OrderdListA,nTypesA)
+call GenerateOrderdListOfTypes(lupri,nTypesA,AngmomOfTypeA,OrderdListA)
+call mem_ichor_alloc(OrderdListB,nTypesB)
+call GenerateOrderdListOfTypes(lupri,nTypesB,AngmomOfTypeB,OrderdListB)
+call mem_ichor_alloc(OrderdListC,nTypesC)
+call GenerateOrderdListOfTypes(lupri,nTypesC,AngmomOfTypeC,OrderdListC)
+call mem_ichor_alloc(OrderdListD,nTypesD)
+call GenerateOrderdListOfTypes(lupri,nTypesD,AngmomOfTypeD,OrderdListD)
+
+call determinePermuteSym(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
 
 ! GAMMATABULATION 
 !     is this needed for (SSSS) ? is it better to build it several times for 
 !     different Angmom combis ? 
 Spherical = SphericalSpec.EQ.SphericalParam
 oldmaxangmomABCD = -25
-DO ItypeA=1,nTypesA
+DO ItypeAnon=1,nTypesA !non ordered loop
+ ItypeA = OrderdListA(ItypeAnon)  
  AngmomA = AngmomOfTypeA(ItypeA)
  nPrimA = nPrimOfTypeA(ItypeA)
  nContA = nContOfTypeA(ItypeA)
@@ -214,7 +240,10 @@ DO ItypeA=1,nTypesA
 ! expA =>  exponentsOfTypeA(ItypeA)%elms
 ! ContractCoeffA => ContractCoeffOfTypeA(ItypeA)%elms
 ! Acenter => CentersOfTypeA(ItypeA)%center
- DO ItypeB=1,nTypesB
+ DO ItypeBnon=1,nTypesB
+  ItypeB = OrderdListB(ItypeBnon)
+  IF(SameLHSaos .AND. ItypeB.GT.ItypeA)CYCLE
+  TriangularLHSAtomLoop = SameLHSaos .AND. ItypeB.EQ.ItypeA
   AngmomB = AngmomOfTypeB(ItypeB)
   nPrimB = nPrimOfTypeB(ItypeB)
   nContB = nContOfTypeB(ItypeB)
@@ -224,6 +253,7 @@ DO ItypeA=1,nTypesA
      nOrbCompB = (AngmomB+1)*(AngmomB+2)/2
   ENDIF
   nAtomsB = nAtomsOfTypeB(ItypeB)
+
   nOrbB = nContB*nOrbCompB
   nDimB = nOrbB*nAtomsB
 
@@ -269,7 +299,8 @@ DO ItypeA=1,nTypesA
      ENDDO
   ENDDO
   !here you could allocate (ndimA,ndimB,full,full) 
-  DO ItypeC=1,nTypesC
+  DO ItypeCnon=1,nTypesC
+   ItypeC = OrderdListC(ItypeCnon)  
    AngmomC = AngmomOfTypeC(ItypeC)
    nPrimC = nPrimOfTypeC(ItypeC)
    nContC = nContOfTypeC(ItypeC)
@@ -304,7 +335,8 @@ DO ItypeA=1,nTypesA
 
    TotalAngmomABC = TotalAngmomAB + AngmomC 
 
-   DO ItypeD=1,nTypesD
+   DO ItypeDnon=1,nTypesD
+    ItypeD = OrderdListD(ItypeDnon)  
     AngmomD = AngmomOfTypeD(ItypeD)
 
     maxangmomABCD = AngmomA + AngmomB + AngmomC + AngmomD
@@ -474,6 +506,8 @@ DO ItypeA=1,nTypesA
      DO IatomA = 1,nAtomsA
       startA = startOrbitalOfTypeA(iAtomA,ItypeA)
       DO IatomB = 1,nAtomsOfTypeB(ItypeB)
+       IF(TriangularLHSAtomLoop.AND.IatomB.GT.IatomA)CYCLE
+       PermuteLHS = TriangularLHSAtomLoop.AND.IatomB.LT.IatomA
        startB = startOrbitalOfTypeB(iAtomB,ItypeB)
 !      IF(noScreenAB(IatomB,IatomA))THEN
          !sort combined atom list with respect to distance ? 
@@ -603,11 +637,24 @@ DO ItypeA=1,nTypesA
         
       !must be written out so to vectorize
       !CDAB(IC,ID) = CDAB(IC,ID,StartA+IA,startB+IB)
-      DO IatomC = 1,nAtomsC
+      IF(PermuteLHS)THEN
        DO IatomD = 1,nAtomsD
-        OutputStorage(IatomA,IatomB,IatomC,IatomD,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
+        startD = startOrbitalOfTypeD(iAtomD,ItypeD)        
+        DO IatomC = 1,nAtomsC
+         startC = startOrbitalOfTypeC(iAtomC,ItypeC)
+         OutputStorage(startA+IatomA,startB+IatomB,startC+1,startD+1,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
+         OutputStorage(startB+IatomB,startA+IatomA,startC+1,startD+1,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
+        ENDDO
        ENDDO
-      ENDDO
+      ELSE
+       DO IatomD = 1,nAtomsD        
+        startD = startOrbitalOfTypeD(iAtomD,ItypeD)
+        DO IatomC = 1,nAtomsC
+         startC = startOrbitalOfTypeC(iAtomC,ItypeC)
+         OutputStorage(startA+IatomA,startB+IatomB,startC+1,startD+1,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
+        ENDDO
+       ENDDO
+      ENDIF
       CALL Mem_ichor_dealloc(CDAB)
       ENDDO
      ENDDO
@@ -632,6 +679,8 @@ DO ItypeA=1,nTypesA
        DO IatomA = 1,nAtomsA
           startA = startOrbitalOfTypeA(iAtomA,ItypeA)
           DO IatomB = 1,nAtomsOfTypeB(ItypeB)
+             IF(TriangularLHSAtomLoop.AND.IatomB.GT.IatomA)CYCLE
+             PermuteLHS = TriangularLHSAtomLoop.AND.IatomB.LT.IatomA
              startB = startOrbitalOfTypeB(iAtomB,ItypeB)
              !sort combined atom list with respect to distance ? which distance AB,CD,PQ 
              !only difference is the centers involved. 
@@ -731,7 +780,7 @@ DO ItypeA=1,nTypesA
                 ENDDO
              END IF
              !which method depend on angular momentum and stuff!
-             IF(.TRUE.)THEN !OBS)THEN
+!             IF(.TRUE.)THEN !OBS)THEN
                 call IchorCoulombIntegral_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
                      & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
                      & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
@@ -751,78 +800,27 @@ DO ItypeA=1,nTypesA
 !                1. for segmented all nCont=1
 !                2. nOrbComp is known early on (1,3,5,7,9,...) and is the same for all passes
                 
-
                 call IchorDistribute(nAtomsC,nAtomsD,startOrbitalOfTypeD(1:nAtomsD,ItypeD),&
                      & startOrbitalOfTypeC(1:nAtomsC,ItypeC),startA,startB,&
                      & AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&
                      & OutputStorage,Outputdim1,Outputdim2,Outputdim3,Outputdim4,&
-                     & CDAB,nOrbA,nOrbB,nOrbC,nOrbD,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
-
-             ELSE
-                call IchorQuit('IchorCoulombIntegral_McM_general',-1)
-                !             ELSEIF(McM)THEN
-!!$                call IchorCoulombIntegral_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-!!$                     & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
-!!$                     & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
-!!$                     & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
-!!$                     & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-!!$                     & Qiprim1,Qiprim2,Piprim1,Piprim2,expA,expB,expC,expD,&
-!!$                     & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-!!$                     & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB)
-
-                ndimPass = nOrbCompA*nContA*nOrbCompB*nContB*nOrbCompC*nContC*nOrbCompD*nContD
-                !             write(lupri,*)'CDAB'
-                !             call output(CDAB,1,ndimPass,1,nPasses,ndimPass,nPasses,1,lupri)
-                DO IatomD = 1,nAtomsD
-                 DO IatomC = 1,nAtomsC
-                  DO I1 = 1,nOrbCompA*nContA
-                   DO I2 = 1,nOrbCompB*nContB
-                    DO I3 = 1,nOrbCompC*nContC
-                     DO I4 = 1,nOrbCompD*nContD
-                      OutputStorage(startA+I1,startB+I2,I3+(IatomC-1)*nOrbC,I4+(IatomD-1)*nOrbD,1)=&
-                        & CDAB(I3+(I4-1)*nOrbC+(I1-1)*nOrbC*nOrbD+(I2-1)*nOrbC*nOrbD*nOrbA+&
-                        & (IatomC-1)*ndimPass+(IatomD-1)*ndimPass*nAtomsC)
-                     ENDDO
-                    ENDDO
-                   ENDDO
-                  ENDDO
-                 ENDDO
-                ENDDO
-
-                !             ELSE !RY
-                
-                !             ENDIF
-             ENDIF
+                     & CDAB,nOrbA,nOrbB,nOrbC,nOrbD,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+                     & PermuteLHS)
+!             ENDIF
              
              !Distribute to Active Kmat 4 matrices (K_AC,K_BC,K_AD,K_BD)
              
-             
              !must be written out so to vectorize
              !CDAB(IC,ID) = CDAB(IC,ID,StartA+IA,startB+IB)
-!             print*,'CDAB',CDAB
-!             print*,'dim1',dim1
-!             print*,'dim2',dim2
-!             print*,'dim3',dim3
-!             print*,'dim4',dim4
-!             print*,'ndimA',ndimA
-!             print*,'ndimB',ndimB
-!             print*,'ndimC',ndimC
-!             print*,'ndimD',ndimD
-!             write(lupri,*)'integrals'
-!             call output(integrals,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
-
              CALL Mem_ichor_dealloc(CDAB)
           ENDDO !iAtomB
        ENDDO !iAtomA
        call mem_ichor_dealloc(TmpArray1)
        call mem_ichor_dealloc(TmpArray2)
 
-
 !       call IchorTimer('TYPE',TSTART,TEND,LUPRI)
        !distribute to full Kmat
-       !free ThermiteWorkMem
        !
-!       call lsquit('not implemented',-1)
     ENDIF
     call mem_ichor_dealloc(pcent)
     call mem_ichor_dealloc(PpreExpFac)
@@ -857,68 +855,123 @@ DO ItypeA=1,nTypesA
  call mem_ichor_dealloc(Acenter)
 ENDDO !typeA
 call mem_ichor_dealloc(TABFJW)
+
+call mem_ichor_dealloc(OrderdListA)
+call mem_ichor_dealloc(OrderdListB)
+call mem_ichor_dealloc(OrderdListC)
+call mem_ichor_dealloc(OrderdListD)
+
 end subroutine IchorEri
+
+subroutine determinePermuteSym(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
+implicit none
+integer,intent(in) :: IchorPermuteSpec
+logical,intent(inout) ::  SameLHSaos,SameRHSaos,SameODs
+SELECT CASE(IchorPermuteSpec)
+CASE(IchorPermuteTTT)
+   SameLHSaos=.TRUE.;  SameRHSaos=.TRUE. ; SameODs = .TRUE.
+CASE(IchorPermuteFFT)
+   SameLHSaos=.FALSE.; SameRHSaos=.FALSE.; SameODs = .TRUE.
+CASE(IchorPermuteTTF)
+   SameLHSaos=.TRUE.;  SameRHSaos=.TRUE. ; SameODs = .FALSE.
+CASE(IchorPermuteTFF)
+   SameLHSaos=.TRUE.;  SameRHSaos=.FALSE.; SameODs = .FALSE.
+CASE(IchorPermuteFTF)
+   SameLHSaos=.FALSE.; SameRHSaos=.TRUE. ; SameODs = .FALSE.
+CASE(IchorPermuteFFF)
+   SameLHSaos=.FALSE.; SameRHSaos=.FALSE.; SameODs = .FALSE.
+CASE DEFAULT
+   call lsquit('unknown case in determinePermuteSym',-1)
+END SELECT
+end subroutine determinePermuteSym
+
+subroutine GenerateOrderdListOfTypes(lupri,nTypes,AngmomOfType,OrderdList)
+implicit none
+!> nTypes is the number of different types of shells, each type is defined by 
+!> an angular momentum, a number of primitives(nPrim), a number of contracted functions
+!> (nCont) a set of exponents and a set of contraction coefficients. 
+integer,intent(in) :: nTypes
+!> AngmomOfType is the angular momentum for each type. 
+Integer,intent(in) :: AngmomOfType(ntypes)
+!> Orderd List
+Integer :: OrderdList(ntypes)
+!> Logical unit number of output file.
+Integer :: lupri
+!local variables
+integer :: ILIST,Angmom,Itype
+
+ILIST = 1
+!I want the highest angular momentum first
+DO Angmom=10,0,-1
+  DO Itype=1,nTypes
+   IF(Angmom .EQ. AngmomOfType(Itype))THEN
+      OrderdList(ILIST) = Itype
+      ILIST = ILIST + 1
+   ENDIF
+  ENDDO
+ENDDO
+IF(ILIST-1.NE.nTypes)call ichorQuit('GenerateOrderdListOfTypes Error',-1)
+end subroutine GenerateOrderdListOfTypes
 
 subroutine IchorDistribute(nAtomsC,nAtomsD,startorbitalD,&
      & startorbitalC,startA,startB,AngmomA,AngmomB,AngmomC,AngmomD,&
      & nContA,nContB,nContC,nContD,integrals,dim1,dim2,dim3,dim4,&
-     & CDAB,nOrbA,nOrbB,nOrbC,nOrbD,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+     & CDAB,nOrbA,nOrbB,nOrbC,nOrbD,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+     & PermuteLHS)
   implicit none
   integer,intent(in) :: nAtomsC,nAtomsD,startA,startB,AngmomA,AngmomB,AngmomC,AngmomD
   integer,intent(in) :: nContA,nContB,nContC,nContD,dim1,dim2,dim3,dim4
   integer,intent(in) :: nOrbA,nOrbB,nOrbC,nOrbD,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD
   integer,intent(in) :: startorbitalD(nAtomsD),startorbitalC(nAtomsC)
+  logical,intent(in) :: PermuteLHS 
   !output CDAB(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nAtomsC,nAtomsD)
 !  real(realk),intent(in) :: CDAB(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContC*nContD,nContA*nContB,nAtomsC,nAtomsD)
   real(realk),intent(in) :: CDAB(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContC*nContD,nContA*nContB,nAtomsC*nAtomsD)
   real(realk),intent(inout) :: integrals(dim1,dim2,dim3,dim4)
-  !
+  !local variables
   integer :: IatomD,IatomC,I1,I2,I3,I4,startD,startC,iAngA,iAngB,iAngC,iAngD
-  integer :: iContA,iContB,iContC,iContD,iPassQ,iContP,iContQ
-!  IF(segmented)THEN
- !  IF(AngmomA.EQ.  0)THEN
- !   IF(AngmomB.EQ.  0)THEN
- !    IF(AngmomC.EQ.  0)THEN
- !     IF(AngmomD.EQ.  0)THEN
-!     CALL IchorDistributeSeg0000(nAtomsC,nAtomsD,startorbitalD,&
-!          & startorbitalC,startA,startB,integrals,dim1,dim2,dim3,dim4,&
-!          & CDAB)
- !      CALL IchorDistributeSeg0000(nAtomsC,nAtomsD,startorbitalD,&
- !           & startorbitalC,startA,startB,&
- !           & nContA,nContB,nContC,nContD,integrals,dim1,dim2,dim3,dim4,&
- !           & CDAB)
- !     ENDIF
- !    ENDIF
- !   ENDIF
- !  ENDIF
-!  ELSE
-   DO IatomD = 1,nAtomsD
-    startD = startorbitalD(iAtomD)
-    DO IatomC = 1,nAtomsC
-     startC = startorbitalC(iAtomC)
-     IpassQ = IatomC + (IatomD-1)*nAtomsC
-     iContQ = 0
-     DO iContD = 1,nContD
-      DO iContC = 1,nContC
-       iContQ = iContQ + 1
-       iContP = 0
-       DO iContB = 1,nContB
-        DO iContA = 1,nContA
-         iContP = iContP + 1
-
-         DO iAngD = 1,nOrbCompD
-          I4 = startD + iAngD + (iContD-1)*nOrbCompD
-          DO iAngC = 1,nOrbCompC
-           I3 = startC + iAngC + (iContC-1)*nOrbCompC
+  integer :: iContA,iContB,iContC,iContD,iPassQ,iContP,iContQ,offset
+  DO IatomD = 1,nAtomsD
+   startD = startorbitalD(iAtomD)
+   DO IatomC = 1,nAtomsC
+    startC = startorbitalC(iAtomC)
+    IpassQ = IatomC + (IatomD-1)*nAtomsC
+    iContQ = 0
+    DO iContD = 1,nContD
+     DO iContC = 1,nContC
+      iContQ = iContQ + 1
+      iContP = 0
+      DO iContB = 1,nContB
+       DO iContA = 1,nContA
+        iContP = iContP + 1
+        DO iAngD = 1,nOrbCompD
+         I4 = startD + iAngD + (iContD-1)*nOrbCompD
+         DO iAngC = 1,nOrbCompC
+          I3 = startC + iAngC + (iContC-1)*nOrbCompC
+          IF(PermuteLHS)THEN
+           DO iAngB = 1,nOrbCompB
+            I2 = startB + iAngB + (iContB-1)*nOrbCompB
+            offset = startA + (iContA-1)*nOrbCompA
+            DO iAngA = 1,nOrbCompA
+             integrals(iAngA + offset,I2,I3,I4) = CDAB(iAngA,iAngB,iAngC,iAngD,iContQ,iContP,IpassQ)
+            ENDDO
+           ENDDO
+           DO iAngA = 1,nOrbCompA
+            I1 = startA + iAngA + (iContA-1)*nOrbCompA
+            offset = startB + (iContB-1)*nOrbCompB
+            DO iAngB = 1,nOrbCompB
+             integrals(iAngB + offset,I1,I3,I4) = CDAB(iAngA,iAngB,iAngC,iAngD,iContQ,iContP,IpassQ)
+            ENDDO
+           ENDDO
+          ELSE
            DO iAngB = 1,nOrbCompB
             I2 = startB + iAngB + (iContB-1)*nOrbCompB
             DO iAngA = 1,nOrbCompA
              I1 = startA + iAngA + (iContA-1)*nOrbCompA
              integrals(I1,I2,I3,I4) = CDAB(iAngA,iAngB,iAngC,iAngD,iContQ,iContP,IpassQ)
-!             write(6,'(A,I2,A,I2,A,I2,A,I2,A,F22.10)')'integrals(',I1,',',I2,',',I3,',',I4,')',integrals(I1,I2,I3,I4)
             ENDDO
            ENDDO
-          ENDDO
+          ENDIF
          ENDDO
         ENDDO
        ENDDO
@@ -926,10 +979,11 @@ subroutine IchorDistribute(nAtomsC,nAtomsD,startorbitalD,&
      ENDDO
     ENDDO
    ENDDO
-!  ENDIF
+  ENDDO
 end subroutine IchorDistribute
 
- !alot of jumping around in mem - no matter what since integral is save (abcd)
+ !alot of jumping around in mem - no matter what since integral is saved (abcd)
+ !better with a tmp smaller typeonly where start is consequtive. 
 subroutine IchorDistributeSeg0000(nAtomsC,nAtomsD,startorbitalD,&
      & startorbitalC,startA,startB,integrals,dim1,dim2,dim3,dim4,&
      & CDAB)

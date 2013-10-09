@@ -56,7 +56,7 @@ module ccsd_module
 
 
     public :: getDoublesResidualMP2_simple,&
-         & get_ccsd_residual_integral_driven_oldarray_wrapper, get_ccsd_residual_integral_driven, &
+         & ccsd_residual_wrapper, get_ccsd_residual_integral_driven, &
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, getsinglesresidualccsd,fullmolecular_get_aot1fock,calculate_E2_and_permute, &
@@ -657,6 +657,135 @@ contains
   !    nullify(xv_p)
   !    nullify(yv_p)
   !end subroutine get_ccsd_residual_integral_driven_oldarray_wrapper
+  subroutine ccsd_residual_wrapper(w_cp,delta_fock,omega2,t2,&
+             & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
+             & xv,yo,yv,nb,MyLsItem,omega1,iter,local,rest)
+    implicit none
+    logical, intent(in)   :: w_cp
+    type(array)           :: delta_fock
+    type(array)           :: omega2
+    type(array)           :: t2
+    type(array)           :: fock
+    type(array)           :: iajb
+    integer,intent(in)    :: no,nv
+    type(array)           :: ppfock
+    type(array)           :: qqfock
+    type(array)           :: pqfock
+    type(array)           :: qpfock
+    type(array)           :: xo
+    type(array)           :: xv
+    type(array)           :: yo
+    type(array)           :: yv
+    integer,intent(in)    :: nb
+    type(lsitem)          :: MyLsItem
+    type(array)           :: omega1
+    integer,intent(in)    :: iter
+    logical,intent(in)    :: local
+    logical,intent(inout) :: rest
+    !internal variables
+    logical :: parent
+    integer :: lg_me,lg_nnod
+#ifdef VAR_MPI
+    integer :: addr01(infpar%pc_nodtot)
+    integer :: addr02(infpar%pc_nodtot)
+    integer :: addr03(infpar%pc_nodtot)
+    integer :: addr04(infpar%pc_nodtot)
+    integer :: addr05(infpar%pc_nodtot)
+    integer :: addr06(infpar%pc_nodtot)
+    integer :: addr07(infpar%pc_nodtot)
+    integer :: addr08(infpar%pc_nodtot)
+    integer :: addr09(infpar%pc_nodtot)
+    integer :: addr10(infpar%pc_nodtot)
+    integer :: addr11(infpar%pc_nodtot)
+    integer :: addr12(infpar%pc_nodtot)
+    integer :: addr13(infpar%pc_nodtot)
+    integer :: addr14(infpar%pc_nodtot)
+    parent  = (infpar%parent_comm == MPI_COMM_NULL)
+    lg_nnod = infpar%lg_nodtot
+    lg_me   = infpar%lg_mynum
+
+    if( lspdm_use_comm_proc  )then
+      if (parent) call ls_mpibcast(CCSD_COMM_PROC_MASTER,infpar%master,infpar%pc_comm)
+      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
+      call ls_mpi_buffer(lg_nnod,infpar%master)
+      call ls_mpi_buffer(lg_me,infpar%master)
+      call ls_mpi_buffer(nb,infpar%master)
+      call ls_mpi_buffer(no,infpar%master)
+      call ls_mpi_buffer(nv,infpar%master)
+      call ls_mpi_buffer(iter,infpar%master)
+      call ls_mpi_buffer(local,infpar%master)
+      call ls_mpi_buffer(rest,infpar%master)
+
+      if(parent)addr01=delta_fock%addr_loc
+      call ls_mpi_buffer(addr01,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)delta_fock=p_arr%a(addr01(infpar%pc_mynum+1))
+
+      if(parent)addr02=omega2%addr_loc
+      call ls_mpi_buffer(addr02,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)omega2=p_arr%a(addr02(infpar%pc_mynum+1))
+
+      if(parent)addr03=t2%addr_loc
+      call ls_mpi_buffer(addr03,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)t2=p_arr%a(addr03(infpar%pc_mynum+1))
+
+      if(parent)addr04=fock%addr_loc
+      call ls_mpi_buffer(addr04,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)fock=p_arr%a(addr04(infpar%pc_mynum+1))
+
+      if(parent)addr05=iajb%addr_loc
+      call ls_mpi_buffer(addr05,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)iajb=p_arr%a(addr05(infpar%pc_mynum+1))
+
+      if(parent)addr06=ppfock%addr_loc
+      call ls_mpi_buffer(addr06,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)ppfock=p_arr%a(addr06(infpar%pc_mynum+1))
+
+      if(parent)addr07=qqfock%addr_loc
+      call ls_mpi_buffer(addr07,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)qqfock=p_arr%a(addr07(infpar%pc_mynum+1))
+
+      if(parent)addr08=pqfock%addr_loc
+      call ls_mpi_buffer(addr08,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)pqfock=p_arr%a(addr08(infpar%pc_mynum+1))
+
+      if(parent)addr09=qpfock%addr_loc
+      call ls_mpi_buffer(addr09,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)qpfock=p_arr%a(addr09(infpar%pc_mynum+1))
+
+      if(parent)addr10=xo%addr_loc
+      call ls_mpi_buffer(addr10,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)xo=p_arr%a(addr10(infpar%pc_mynum+1))
+
+      if(parent)addr11=xv%addr_loc
+      call ls_mpi_buffer(addr11,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)xv=p_arr%a(addr11(infpar%pc_mynum+1))
+
+      if(parent)addr12=yo%addr_loc
+      call ls_mpi_buffer(addr12,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)yo=p_arr%a(addr12(infpar%pc_mynum+1))
+
+      if(parent)addr13=yv%addr_loc
+      call ls_mpi_buffer(addr13,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)yv=p_arr%a(addr13(infpar%pc_mynum+1))
+
+      if(parent)addr14=omega1%addr_loc
+      call ls_mpi_buffer(addr14,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)omega1=p_arr%a(addr14(infpar%pc_mynum+1))
+
+      call mpicopy_lsitem(MyLsItem,infpar%pc_comm)
+      call mpicopy_dec_settings(DECinfo)
+      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
+      if(.not.parent)then
+      endif
+    endif
+
+#endif
+    call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2,t2,&
+     & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
+     & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
+
+  end subroutine ccsd_residual_wrapper
+
 
 
   !> \brief Get CCSD residual in an integral direct fashion.
@@ -729,7 +858,7 @@ contains
     type(array),intent(inout) :: omega2
     !> the current guess amplitudes
     !real(realk),pointer,intent(in) ::t2(:)
-    type(array),intent(inout) ::t2
+    type(array),intent(inout) :: t2
     !> on output this contains the occupied-occupied block of the t1-fock matrix
     real(realk),intent(inout) :: ppfock(no*no)
     !> on output this contains the virtual-virtual block of the t1-fock matrix
@@ -854,9 +983,6 @@ contains
     print_debug              = (DECinfo%PL>2)
     debug                    = .false.
     double_2G_nel            = 100000000
-#ifdef VAR_LSDEBUG
-!    double_2G_nel            = 20
-#endif
 
     ! Set some shorthand notations
     ! ****************************
@@ -889,7 +1015,7 @@ contains
     me                       = int(0,kind=ls_mpik)
 #ifdef VAR_MPI
     me                       = infpar%lg_mynum
-    master                   = (infpar%lg_mynum == 0)
+    master                   = (infpar%lg_mynum == 0).and.(infpar%parent_comm==MPI_COMM_NULL)
     nnod                     = infpar%lg_nodtot
     def_atype                = TILED_DIST
     lock_outside             = DECinfo%CCSD_MPICH
@@ -980,9 +1106,12 @@ contains
 #else
       !allocate the dense part of the arrays if all can be kept in local memory.
       !do that for master only, as the slaves recieve the data via StartUpSlaves
-      if((scheme==4).and.govov%atype/=DENSE)then
-        if(iter==1) call memory_allocate_array_dense(govov)
+      if((scheme==4).and.govov%itype/=DENSE)then
+        print *,"allocate dense"
+        if(iter==1) call memory_allocate_array_dense_pc(govov)
+        print *,"allocate dense - done copying"
         if(iter/=1) call array_cp_tiled2dense(govov,.false.)
+        print *,"copying done"
       endif 
 #endif
     endif
@@ -1014,7 +1143,7 @@ contains
     !dense part was allocated in the communicate subroutine
 
     if(scheme==4)then
-      govov%atype    = DENSE
+      govov%itype    = DENSE
     endif
 
     govov%init_type  = ALL_INIT
@@ -1025,9 +1154,9 @@ contains
 
     !if the residual is handeled as dense, allocate and zero it, adjust the
     !access parameters to the data
-    if(omega2%atype/=DENSE.and.(scheme==3.or.scheme==4))then
-      call memory_allocate_array_dense(omega2)
-      omega2%atype=DENSE
+    if(omega2%itype/=DENSE.and.(scheme==3.or.scheme==4))then
+      call memory_allocate_array_dense_pc(omega2)
+      omega2%itype=DENSE
     endif
     call array_zero(omega2)
 
@@ -1601,7 +1730,7 @@ contains
     if(infpar%lg_nodtot>1.or.scheme==3) then
 
        if(iter==1.and.scheme==4)then
-         call lsmpi_local_allreduce_chunks(govov%elm1,o2v2,double_2G_nel)
+         call lsmpi_allreduce(govov%elm1,o2v2,infpar%lg_comm,double_2G_nel)
        elseif(scheme==3)then
          call array_cp_tiled2dense(govov,.false.)
        endif
@@ -1611,12 +1740,12 @@ contains
        !***********************************************************************
        if(DECinfo%ccModel > MODEL_CC2)then
 
-         call lsmpi_local_allreduce_chunks(sio4,int((i8*nor)*no2,kind=8),double_2G_nel)
+         call lsmpi_allreduce(sio4,int((i8*nor)*no2,kind=8),infpar%lg_comm,double_2G_nel)
 
          if(scheme==4)then
 
-           call lsmpi_local_allreduce_chunks(gvvooa%elm1,o2v2,double_2G_nel)
-           call lsmpi_local_allreduce_chunks(gvoova%elm1,o2v2,double_2G_nel)
+           call lsmpi_allreduce(gvvooa%elm1,o2v2,infpar%lg_comm,double_2G_nel)
+           call lsmpi_allreduce(gvoova%elm1,o2v2,infpar%lg_comm,double_2G_nel)
 
          endif
 
@@ -1698,10 +1827,10 @@ contains
       govov%elm1(1_long:o2v2) = w1(1_long:o2v2)
 #ifdef VAR_MPI
       if(.not.local)then
-        govov%atype     = TILED_DIST
+        govov%itype     = TILED_DIST
       endif
       call array_convert(w1,govov)
-      govov%atype = DENSE
+      govov%itype = DENSE
 #endif
     endif
 
@@ -1830,7 +1959,7 @@ contains
     if(.not.local)then
       if((master.and..not.(scheme==2)).or.scheme==3)&
       &call memory_deallocate_array_dense(govov)
-      govov%atype      = TILED_DIST
+      govov%itype      = TILED_DIST
     endif
     govov%init_type  = MASTER_INIT
     omega2%init_type = MASTER_INIT
@@ -1880,19 +2009,15 @@ contains
 
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
          & Dens%elms,nb,nb,AORdefault,AORdefault)
-    !print *,"3.1"
     ! Add one- and two-electron contributions to Fock matrix
     call daxpy(nb2,1.0E0_realk,Dens%elms,1,iFock%elms,1)
-    !print *,"3.2"
     !Free the density matrix
     call mat_free(Dens)
-    !print *,"4"
 
 
 
     ! KK: Add long-range Fock correction
     call daxpy(nb2,1.0E0_realk,deltafock,1,iFock%elms,1)
-    !print *,"4.1"
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_MPI
@@ -2098,16 +2223,13 @@ contains
      
       if(pd) then 
         write(msg,*)"NORM(omega2 before permut):"
-        !call print_norm(omega2,msg)
-        print *,"copy from 1 to",o2v2,no2,nv2
+        call print_norm(omega2,msg)
       endif
 
       !INTRODUCE PERMUTATION
-      !OMP WORKSHARE
-      !w1(int(1,kind=long):o2v2)=omega2%elm1(int(1,kind=long):o2v2)
-      w1 = omega2%elm1
-      print *,"assoc done"
-      !OMP END WORKSHARE
+      !$OMP WORKSHARE
+      w1(1_long:o2v2) = omega2%elm1(1_long:o2v2)
+      !$OMP END WORKSHARE
 
       if(pd) then 
         write(msg,*)"NORM(w1):"
@@ -2430,9 +2552,6 @@ contains
 
      call mem_alloc(w2,w2size)
      call mem_alloc(w3,w3size)
-     if(me==0.and.DECinfo%PL>2)then
-       print *,"alloc done!"
-     endif
 
 
      !calculate doubles C term
@@ -2441,7 +2560,6 @@ contains
      
      !Reorder gvvoo [a c k i] -> goovv [a i c k]
      if(s==4)then
-       if(me==0.and.DECinfo%PL>2) print *,"1"
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w2)
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w1)
@@ -2493,9 +2611,7 @@ contains
 
      !Reorder t [a d l i] -> t [a i d l]
      if(s==4)then
-       if(me==0.and.DECinfo%PL>2) print *,"2"
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w3)
-       if(me==0.and.DECinfo%PL>2) print *,"2.1"
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
        do i=1,tl
@@ -2531,13 +2647,11 @@ contains
 #endif
      endif
 
-       if(me==0.and.DECinfo%PL>2) print *,"2.2"
    
      !stop 0
      !SCHEME 4 AND 3 because of w1 being buffer before
      !Reorder govov [k d l c] -> govov [d l c k]
      if(s==3.or.s==4)then
-       if(me==0.and.DECinfo%PL>2) print *,"3"
        call array_reorder_4d(1.0E0_realk,govov%elm1,no,nv,no,nv,[2,3,4,1],0.0E0_realk,w1)
        !write (msg,*),infpar%lg_mynum,"w3 ERSCHDE"
        !call print_norm(w3,int(tl*no*nv,kind=8),msg)
@@ -2552,7 +2666,6 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 1         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !(-0.5) * t [a i d l] * govov [d l c k] + goovv [a i c k] = C [a i c k]
-     if(me==0.and.DECinfo%PL>2) print *,"4"
      call dgemm('n','n',tl,no*nv,no*nv,-0.5E0_realk,w3(faif),lead,w1,no*nv,1.0E0_realk,w2(faif),lead)
 
 
@@ -2561,9 +2674,7 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !(-1) * C [a i c k] * t [c k b j] = preOmC [a i b j]
      if(s==4)then
-       if(me==0.and.DECinfo%PL>2) print *,"5"
        w1=0.0E0_realk
-       if(me==0.and.DECinfo%PL>2) print *,"6"
        call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w3,no*nv,0.0E0_realk,w1(fai),no*nv)
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
@@ -2588,10 +2699,8 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      if(s==3.or.s==4)then
        !contribution 1: 0.5*preOmC [a i b j] -> =+ Omega [a b i j]
-       if(me==0.and.DECinfo%PL>2) print *,"7"
        call array_reorder_4d(0.5E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
        !contribution 3: preOmC [a j b i] -> =+ Omega [a b i j]
-       if(me==0.and.DECinfo%PL>2) print *,"8"
        call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,4,2],1.0E0_realk,omega2%elm1)
      elseif(s==2)then
 #ifdef VAR_MPI
@@ -2752,12 +2861,13 @@ contains
     !> integer specifying the calc-scheme
     integer, intent(in) :: s
     logical, intent(in) :: lock_outside
-    integer :: nor,i,j,pos
+    integer :: nor
     integer :: ml,l,tl,fai,lai
     integer :: tri,fri
     integer(kind=ls_mpik) :: nod,me,nnod,massa,mode
     real(realk) :: nrm1,nrm2,nrm3,nrm4
-    integer :: pos1, pos2, mv((nv*nv)/2),st
+    integer ::  mv((nv*nv)/2),st
+    integer(kind=8) :: o2v2,pos1,pos2,i,j,pos
     me    = 0
     massa = 0
     nnod  = 1
@@ -2767,6 +2877,7 @@ contains
     me    = infpar%lg_mynum
     mode  = int(MPI_MODE_NOCHECK,kind=ls_mpik)
 #endif
+    o2v2=(i8*no)*no*nv*nv
       
     !Setting transformation variables for each rank
     !**********************************************
@@ -2796,20 +2907,19 @@ contains
     endif
    
 
-    !OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-    !OMP PRIVATE(i,j,pos1,pos2)
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
+    !$OMP PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
-      !OMP DO 
+      !$OMP DO 
       do i=j,1,-1
         pos1=1+((i+j*(j-1)/2)-1)*nv*nv
         pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
         if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
       enddo
-      !OMP END DO
-      !OMP BARRIER
+      !$OMP END DO
     enddo
-    !OMP BARRIER
-    !OMP DO 
+    !$OMP BARRIER
+    !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
         pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
@@ -2817,23 +2927,24 @@ contains
         if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
       enddo
     enddo
-    !OMP END DO
-    !OMP BARRIER
-    !OMP END PARALLEL
+    !$OMP END DO
+    !$OMP END PARALLEL
+
     do j=no,1,-1
       do i=j,1,-1
         pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
         call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
       enddo
     enddo
+
     if(s==4.or.s==3)then
-      call daxpy(int(no*no*nv*nv),1.0E0_realk,w1,1,om2%elm1,1)
+      !$OMP WORKSHARE
+      om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
+      !$OMP END WORKSHARE
     elseif(s==2)then
 #ifdef VAR_MPI
-      !call lsmpi_local_reduction(w1,int(nv*nv*no*no,kind=long),infpar%master)
-      !call array_scatteradd_densetotiled(om2,1.0E0_realk,w1,int(no*no*nv*nv,kind=long),infpar%master)
-       if(lock_outside)call arr_lock_wins(om2,'s',mode)
-       call array_two_dim_1batch(om2,[1,2,3,4],'a',w1,2,1,nv*nv,lock_outside,debug=.true.)
+      if(lock_outside)call arr_lock_wins(om2,'s',mode)
+      call array_two_dim_1batch(om2,[1,2,3,4],'a',w1,2,1,nv*nv,lock_outside,debug=.true.)
 #endif
     endif
   end subroutine get_B22_contrib_mo
@@ -2860,6 +2971,7 @@ contains
     !> sio4 storage space to update during the batched loops
     real(realk),pointer :: sio4(:)
     integer :: nor,pos,i,j
+    integer(kind=8) :: pos1, pos2
 
     nor=no*(no+1)/2
 
@@ -2868,8 +2980,10 @@ contains
     ! (w2):I[alpha gamma i <= j] <- (w3):I[alpha gamma i j]
     do j=1,no
       do i=1,j
-        pos=1+((i+j*(j-1)/2)-1)*la*lg
-        call dcopy(la*lg,w2(1+(i-1)*la*lg+(j-1)*la*lg*no),1,w3(pos),1)
+        pos1=1_long+((i+j*(j-1)/2)-1)*la*(lg*i8)
+        pos2=1_long+(i-1)*la*lg+(j-1)*la*lg*(no*i8)
+        !call dcopy(la*lg,w2(1+(i-1)*la*lg+(j-1)*la*lg*no),1,w3(pos),1)
+        w3(pos1:pos1+la*lg-1) = w2(pos2:pos2+la*lg-1)
       enddo
     enddo
     ! (w3):I[ gamma i <= j alpha] <- (w2):I[alpha gamma i <= j]
@@ -3024,22 +3138,22 @@ contains
     !> Lambda p occupied part
     real(realk),intent(in) :: xocc(:)
     !> number of reduced occupied indices 
-    integer,intent(in)::nor
+    integer,intent(in) :: nor
     !> total number of upper triangular elements in the batch
-    integer,intent(in)::tlen
+    integer,intent(in) :: tlen
     !> first element of alpha and gamma in the current batch
-    integer,intent(in)::fa,fg
+    integer,intent(in) :: fa,fg
     !> length of alpha and gamma in the current batch
-    integer,intent(in)::la,lg
+    integer,intent(in) :: la, lg
     !> number of triangular elements in the batch
-    integer,intent(in)::tred
+    integer,intent(in) :: tred
     !>number of occupied, virtual and ao indices
-    integer,intent(in)::no,nv,nb
+    integer,intent(in) :: no, nv, nb
     !>offsets in the currnt alpha and gamma batches to get to the first upper
     !triangular element
-    integer,intent(in)::goffs,aoffs
+    integer,intent(in) :: goffs, aoffs
     !> scheme
-    integer,intent(in)::s
+    integer,intent(in) :: s
     logical,intent(in) :: lock_outside
     !> size of w0
     integer(kind=8),intent(in):: wszes(4)
@@ -3047,18 +3161,19 @@ contains
     !real(realk),intent(in) :: amps(nv*nv*no*no)
     !type(array),intent(in) :: amps
     real(realk) :: scaleitby
-    integer ::occ,gamm,alpha,pos,pos2,pos21,nel2cp,case_sel,full1,full2,offset1,offset2,ttri
-    integer :: l1,l2,i,j,lsa,lsg,gamm_i_b,a,b,full1T,full2T,tsq,jump,dim_big,dim_small,ft1,ft2,ncph
+    integer(kind=8)       :: pos,pos2,pos21,i,j,dim_big,dim_small,ttri,tsq,nel2cp,ncph,pos1
+    integer ::occ,gamm,alpha,case_sel,full1,full2,offset1,offset2
+    integer :: l1,l2,lsa,lsg,gamm_i_b,a,b,full1T,full2T,jump,ft1,ft2
     logical               :: second_trafo_step
     real(realk),pointer   :: dumm(:)
-    integer               :: mv((nv*nv)/2),st,pos1,dims(2)
+    integer               :: mv((nv*nv)/2),st,dims(2)
     real(realk),pointer   :: source(:,:),drain(:,:)
     integer(kind=ls_mpik) :: mode
     integer(kind=long)    :: o2v2
 
     o2v2 = int((i8*no)*no*nv*nv,kind=long)
 #ifdef VAR_MPI
-    mode = int(MPI_MODE_NOCHECK,kind=ls_mpik)
+    mode = MPI_MODE_NOCHECK
 #endif
 
     scaleitby=0.5E0_realk
@@ -3167,26 +3282,24 @@ contains
 
     !Zero the elements to update for testing, not needed in a performance
     !implementation
-    pos=nor*full1*full2
-    if(second_trafo_step)pos=pos+nor*full1T*full2T
-    w0(1:pos)=0.0E0_realk
+    pos=(i8*nor)*full1*full2
+    if(second_trafo_step)pos=pos+(i8*nor)*full1T*full2T
+    w0(1_long:pos)=0.0E0_realk
 
     !set required variables
-    ttri=tlen*(tlen+1)/2
-    tsq = tlen * tlen
-    pos=1
-    occ=1
-    dim_big=full1*full2
-    dim_small=full1T*full2T
+    ttri      = tlen * (tlen+1)/2
+    tsq       = tlen *  tlen
+    pos       = 1
+    occ       = 1
+    dim_big   = (i8 * full1 ) * full2
+    dim_small = (i8 * full1T) * full2T
 
-#ifndef VAR_LSESSL
-    !OMP PARALLEL DEFAULT(NONE)&
-    !OMP SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
-    !OMP full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
-    !OMP PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
-    !OMP dims,drain,source)
-    !OMP DO
-#endif
+    !$OMP PARALLEL DEFAULT(NONE)&
+    !$OMP SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
+    !$OMP full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
+    !$OMP PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
+    !$OMP dims,i)
+    !$OMP DO
     do occ=1,nor
       do gamm=1,lg-goffs
         gamm_i_b=gamm+goffs
@@ -3203,47 +3316,49 @@ contains
         !calculate the new position
         !**************************
         if(gamm>tlen)then
+
           !get the elements from the rectangular part of the batch
-          !print *,"getel from rect"
-          nel2cp=l1
-          pos2=1+ttri+(gamm-tlen-1)*(la-aoffs)+(occ-1)*((la-aoffs)*(lg-goffs-tlen)+ttri)
+
+          nel2cp = l1
+          pos2   = 1_long + ttri+(gamm-tlen-1)*(la-aoffs)+(occ-1)*((la-aoffs)*(lg-goffs-tlen)+ttri)
+
           if(case_sel==4)then
-            nel2cp=nel2cp+tlen
-            pos2 = pos2 + tlen * aoffs + (gamm-tlen-1) * (la-tlen)+(occ-1)*(aoffs*lg)
+            nel2cp = nel2cp + tlen
+            pos2   = pos2   + tlen * aoffs + (gamm-tlen-1) * (la-tlen)+(occ-1)*(aoffs*lg)
           endif
+
           if(second_trafo_step)then
             jump = full1T
-            ft1 = full1T
-            ft2 = full2T
+            ft1  = full1T
+            ft2  = full2T
           else
-            jump=full1
-            ft1=full1
-            ft2=full2
+            jump = full1
+            ft1  = full1
+            ft2  = full2
           endif
 
         else
           !get the elements from the triangular part of the batch
-          pos2=1+(gamm*(gamm-1)/2)+(gamm-1)*aoffs+(occ-1)*tred
-          nel2cp=l2+gamm
-          jump = full1
-          ft1=full1
-          ft2=full2
+          pos2   = 1  + (gamm*(gamm-1)/2)+(gamm-1)*aoffs+(occ-1)*tred
+          nel2cp = l2 + gamm
+          jump   = full1
+          ft1    = full1
+          ft2    = full2
         endif
         
-        call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
-        !OMP CRITICAL
-        !w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
-        !OMP END CRITICAL
+        !call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
+        w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
+
         !get corresponding position in sigma- and add to output
         pos21=pos2+tred*nor
-        call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
-        !OMP CRITICAL
-        !w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
-        !OMP END CRITICAL
+        !call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
+        w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
 
         !ANTI-SYMMETRIC COMBINATION OF THE SIGMAS
-        pos=gamm+aoffs+(occ-1)*ft1*ft2
-        if(second_trafo_step.and.gamm>tlen) pos=pos+full1*full2*nor-tlen
+        pos = gamm+aoffs+(occ-1)*ft1*ft2
+
+        if(second_trafo_step.and.gamm>tlen) pos = pos+full1*full2*nor-tlen
+
         if(case_sel==3.or.case_sel==4)then
           !fill diagonal part
           if(gamm>tlen)then
@@ -3251,65 +3366,43 @@ contains
           else
             ncph=gamm
           endif
-          call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
-          call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
+          !call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
+          !call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
 
           !because of the intrinsic omp-parallelizaton of daxpy the following
           !lines replace the daxpy calls
-          !dims=[full1,ncph]
-          !call ass_D1to2(w0(aoffs+gamm+(occ-1)*dim_big:&
-          !                 &aoffs+gamm+(occ-1)*dim_big+full1*ncph-1),drain,dims)
-          !dims=[1,ncph]
-          !call ass_D1to2(w3(pos2+aoffs:pos2+aoffs+ncph-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
-          !OMP END CRITICAL
-          !call ass_D1to2(w3(pos21+aoffs:pos21+aoffs+ncph-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
-          !OMP END CRITICAL
+          pos = aoffs+gamm+(occ-1)*dim_big
+          do i=0,ncph-1
+            w0(pos+i*full1)=w0(pos+i*full1) + w3(pos2 +aoffs+i)
+            w0(pos+i*full1)=w0(pos+i*full1) - w3(pos21+aoffs+i)
+          enddo
+
           !fill small matrix
           if(gamm>tlen)then
             ncph=nel2cp
           else
             ncph=nel2cp-gamm
           endif
-          call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-          call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-          !dims=[full1T,ncph]
-          !call ass_D1to2(w0(gamm+(occ-1)*full1T*full2T+dim_big*nor:&
-          !                 &gamm+(occ-1)*full1T*full2T+dim_big*nor+ncph*full1T-1),drain,dims)
-          !dims=[1,ncph]
-          !call ass_D1to2(w3(pos2:pos2+ncph-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
-          !OMP END CRITICAL
-          !call ass_D1to2(w3(pos21:pos21+ncph-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
-          !OMP END CRITICAL
+          !call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          !call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          pos = gamm+(occ-1)*full1T*full2T+dim_big*nor
+          do i=0,ncph-1
+            w0(pos+i*full1T) = w0(pos+i*full1T) + w3(pos2 +i)
+            w0(pos+i*full1T) = w0(pos+i*full1T) - w3(pos21+i)
+          enddo
         else
-          call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
-          call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
-          !dims=[jump,nel2cp]
-          !call ass_D1to2(w0(pos:pos+jump*nel2cp-1),drain,dims)
-          !dims=[1,nel2cp]
-          !call ass_D1to2(w3(pos2:pos2+nel2cp-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) + source(1:1,1:nel2cp)
-          !OMP END CRITICAL
-          !call ass_D1to2(w3(pos21:pos21+nel2cp-1),source,dims)
-          !OMP CRITICAL
-          !drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) - source(1:1,1:nel2cp)
-          !OMP END CRITICAL
+          !call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
+          !call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
+          do i=0,nel2cp-1
+            w0(pos+i*jump) = w0(pos+i*jump) + w3(pos2 +i)
+            w0(pos+i*jump) = w0(pos+i*jump) - w3(pos21+i)
+          enddo
         endif
       enddo
     enddo
-#ifndef VAR_LSESSL
-    !OMP END DO
-    !OMP BARRIER
-    !OMP END PARALLEL
-#endif
+    !$OMP END DO
+    !$OMP END PARALLEL
+
     call lsmpi_poke()
 
 
@@ -3350,31 +3443,28 @@ contains
 
     ! add up contributions in the residual with keeping track of i<j
 
-    !OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-    !OMP PRIVATE(i,j,pos1,pos2)
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
+    !$OMP PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
-      !OMP DO 
+      !$OMP DO 
       do i=j,1,-1
         pos1=1+((i+j*(j-1)/2)-1)*nv*nv
         pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        !if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
         if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
       enddo
-      !OMP END DO
-      !OMP BARRIER
+      !$OMP END DO
     enddo
-    !OMP BARRIER
-    !OMP DO 
+    !$OMP BARRIER
+    !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
         pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
         pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-        !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
         if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
       enddo
     enddo
-    !OMP END DO
-    !OMP END PARALLEL
+    !$OMP END DO
+    !$OMP END PARALLEL
 
     do j=no,1,-1
       do i=j,1,-1
@@ -3383,11 +3473,15 @@ contains
       enddo
     enddo
     if(s==4.or.s==3)then
-      call daxpy(int(no*no*nv*nv),scaleitby,w2,1,omega%elm1,1)
+      !$OMP WORKSHARE
+      omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
+      !$OMP END WORKSHARE
     elseif(s==2)then
 #ifdef VAR_MPI
       if(lock_outside)call arr_lock_wins(omega,'s',mode)
+      !$OMP WORKSHARE
       w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
+      !$OMP END WORKSHARE
       call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
 #endif
     endif
@@ -3417,32 +3511,29 @@ contains
       call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
       call lsmpi_poke()
 
-      !OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-      !OMP PRIVATE(i,j,pos1,pos2)
+      !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
+      !$OMP PRIVATE(i,j,pos1,pos2)
       do j=no,1,-1
-        !OMP DO 
+        !$OMP DO 
         do i=j,1,-1
           pos1=1+((i+j*(j-1)/2)-1)*nv*nv
           pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-          !if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
           if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
         enddo
-        !OMP END DO
-        !OMP BARRIER
+        !$OMP END DO
       enddo
-      !OMP BARRIER
-      !OMP DO 
+      !$OMP BARRIER
+      !$OMP DO 
       do j=no,1,-1
         do i=j,1,-1
             pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
             pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-            !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
             if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
         enddo
       enddo
-      !OMP END DO
-      !OMP BARRIER
-      !OMP END PARALLEL
+      !$OMP END DO
+      !$OMP END PARALLEL
+
       do j=no,1,-1
         do i=j,1,-1
             pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
@@ -3451,9 +3542,13 @@ contains
       enddo
 
       if(s==4.or.s==3)then
-        call daxpy(no*no*nv*nv,scaleitby,w2,1,omega%elm1,1)
+        !$OMP WORKSHARE
+        omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
+        !$OMP END WORKSHARE
       elseif(s==2)then
+        !$OMP WORKSHARE
         w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
+        !$OMP END WORKSHARE
         call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
       endif
       call lsmpi_poke()
@@ -3519,37 +3614,37 @@ contains
     integer,intent(in)::m,nv
     integer ::d,pos,pos2,a,b,c,cged
     logical :: doit
-!#ifdef VAR_OMP
-!    integer :: tid,nthr
-!    integer, external :: omp_get_thread_num,omp_get_max_threads
-!    nthr = omp_get_max_threads()
-!    nthr = min(nthr,nv)
-!    call omp_set_num_threads(nthr)
-!#endif
-!    !OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
-!    !OMP PRIVATE(pos,pos2,d,tid,doit)
-!#ifdef VAR_OMP
-!    tid = omp_get_thread_num()
-!#else 
-!    doit = .true.
-!#endif
+#ifdef VAR_OMP
+    integer :: tid,nthr
+    integer, external :: omp_get_thread_num,omp_get_max_threads
+    nthr = omp_get_max_threads()
+    nthr = min(nthr,nv)
+    call omp_set_num_threads(nthr)
+#endif
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
+    !$OMP PRIVATE(pos,pos2,d,tid,doit)
+#ifdef VAR_OMP
+    tid = omp_get_thread_num()
+#else 
     doit = .true.
+#endif
+!    doit = .true.
     pos =1
     do d=1,nv
-!#ifdef VAR_OMP
-!      doit = (mod(d,nthr) == tid)
-!#endif
+#ifdef VAR_OMP
+      doit = (mod(d,nthr) == tid)
+#endif
       if(doit) then
         pos2=1+(d-1)*m+(d-1)*nv*m
-        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
-        !Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
+!        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
+        Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
       endif
       pos=pos+m*(nv-d+1)
     enddo
-    !OMP END PARALLEL
-!#ifdef VAR_OMP
-!    call omp_set_num_threads(omp_get_max_threads())
-!#endif
+    !$OMP END PARALLEL
+#ifdef VAR_OMP
+    call omp_set_num_threads(omp_get_max_threads())
+#endif
   end subroutine get_I_cged
 
 
@@ -3604,11 +3699,11 @@ contains
             !print *,alpha,gamm,1+eldiag,nb*nb+eldiag,1+elsqre,nb*nb+elsqre,aleg,cagi,nb*nb
             if(fa+alpha==fg+gamm)   call dscal(nb*nb,0.5E0_realk,w2(1+elsqre),1)
             call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
-            !OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-            !OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
-            !OMP DEFAULT(NONE)
+            !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
+            !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
+            !$OMP DEFAULT(NONE)
             if(nbnb>0)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do beta_b=delta_b+bs,nbnb,bs
                   do delta=0,bctr
@@ -3624,10 +3719,10 @@ contains
                   enddo
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
             if(nbnb>0.and.modb)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do delta=0,bctr
                   do beta=nbnb+1,nb
@@ -3641,10 +3736,10 @@ contains
                   enddo
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
             if(nbnb>0)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do delta=0,bctr
                   do beta=delta+1,bctr
@@ -3661,9 +3756,9 @@ contains
                   &trick(delta_b+delta,delta+delta_b,aleg+1)
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
-            !OMP END PARALLEL 
+            !$OMP END PARALLEL 
             if(modb)then
               do delta=nbnb+1,nb
                 do beta=delta+1,nb
@@ -3699,11 +3794,11 @@ contains
             eldiag = aleg*nb*nb
             elsqre = alpha*nb*nb+gamm*nb*nb*la
             call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
-            !OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-            !OMP SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
-            !OMP DEFAULT(NONE)
+            !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
+            !$OMP SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
+            !$OMP DEFAULT(NONE)
             if(nbnb>0)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do beta_b=delta_b+bs,nbnb,bs
                   do delta=0,bctr
@@ -3718,10 +3813,10 @@ contains
                   enddo
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
             if(nbnb>0.and.modb)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do delta=0,bctr
                   do beta=nbnb+1,nb
@@ -3734,10 +3829,10 @@ contains
                   enddo
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
             if(nbnb>0)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do delta=0,bctr
                   do beta=delta+1,bctr
@@ -3753,9 +3848,9 @@ contains
                   &trick(delta+delta_b,delta_b+delta,aleg+1)
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
-            !OMP END PARALLEL 
+            !$OMP END PARALLEL 
             if(modb)then
               do delta=nbnb+1,nb
                 do beta=delta+1,nb
@@ -3806,7 +3901,7 @@ contains
     endif
     !get the combined reduced virtual dimension
     crvd = dims(1) * (dims(1)+1) / 2
-    !OMP PARALLEL PRIVATE(i,j,d,cged,ilej) SHARED(crvd,t2,tmi,tpl) DEFAULT(NONE)
+    !OMP PARALLEL PRIVATE(i,j,d,cged,ilej) SHARED(crvd,t2,tmi,tpl,dims) DEFAULT(NONE)
     !OMP DO
     do j=1,dims(3)
       do i=1,j
@@ -3877,9 +3972,9 @@ contains
             write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
             &frac_of_total_mem*MemFree
             write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
-            mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,1,.false.)
+            mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,3,.false.)
             write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
-            mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,2,.false.)
+            mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
             write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
             call lsquit("ERROR(CCSD): there is just not enough memory&
             &available",DECinfo%output)
@@ -3914,19 +4009,8 @@ contains
       else
         print *,"SCHEME ",scheme," DOES NOT EXIST"
         call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme2",-1)
-      !elseif(scheme==1)then
-      !  print *,"SCHEME WITH LOW MEMORY REQUIREMENTS (PDM), HIGH SCALING LOW COMM"
-      !elseif(scheme==0)then
-      !  print *,"NON PDM-SCHEME WITH LOW MEMORY REQUIREMENTS"
       endif
     endif
-
-#ifndef VAR_MPI
-      !scheme3 and  2 and 1 are pure mpi-scheme, this means that a redefinition in the case
-      !of non mpi-builds is necessary
-      if(scheme==3.or.scheme==2) scheme=0
-#endif
-    
 
 
     ! Attention this manual block should be only used for debugging, also you
@@ -3939,19 +4023,21 @@ contains
       if((DECinfo%ccsdGbatch==0).and.(DECinfo%ccsdAbatch==0)) then
         call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree,.false.,e2a,local)
       else
-        nba=DECinfo%ccsdAbatch - iter *0
-        nbg=DECinfo%ccsdGbatch - iter *0
+        nba = DECinfo%ccsdAbatch - iter * 0
+        nbg = DECinfo%ccsdGbatch - iter * 0
       endif
       ! Use value given in input --> the zero can be adjusted to vary batch sizes during the iterations
-      m = nbg-0*iter
-      if (minbsize <  m) nbg = m
-      if (minbsize >= m) nbg = minbsize
-      m = nba-0*iter
-      if (minbsize <  m) nba = m
-      if (minbsize >= m) nba = minbsize
 
-      if (nbg>=nb) nbg = nb
-      if (nba>=nb) nba = nb
+      m = nbg-0*iter
+      if( minbsize <  m ) nbg = m
+      if( minbsize >= m ) nbg = minbsize
+
+      m = nba-0*iter
+      if( minbsize <  m ) nba = m
+      if( minbsize >= m ) nba = minbsize
+
+      if( nbg>=nb )       nbg = nb
+      if( nba>=nb )       nba = nb
 
       mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
 
@@ -3987,13 +4073,7 @@ contains
          nba=nba-1
       endif
     endif
-    !mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,first)
     mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
-    !if(first)write(DECinfo%output,*)"request batches with: N(gamma):",nbg," and N(alpha)",nba
-    !if(first)write(DECinfo%output,*)"will use:",mem_used,"GB of ",MemFree, "GB available"
-    !if(first)write(DECinfo%output,*)"------>",mem_used/MemFree * 100, "%"
-    !divide the work if more nodes than jobs are available
-
 
     !if much more slaves than jobs are available, split the jobs to get at least
     !one for all the slaves
@@ -5163,167 +5243,201 @@ end module ccsd_module
 !> \date March 2012
 #ifdef VAR_MPI
 subroutine ccsd_data_preparation()
-    use precision
-    !use tensor_def_module
-    use dec_typedef_module
-    use typedeftype,only:lsitem,array
-    use infpar_module
-    use lsmpi_type, only:ls_mpibcast,ls_mpibcast_chunks
-    use daltoninfo, only:ls_free
-    use memory_handling, only: mem_alloc, mem_dealloc
-    use tensor_interface_module, only: array_init,array_free,&
-        &memory_allocate_array_dense,memory_deallocate_array_dense,memory_deallocate_window
-    ! DEC DEPENDENCIES (within deccc directory) 
-    ! *****************************************
-    use decmpi_module, only: mpi_communicate_ccsd_calcdata
-    use array2_simple_operations,only: array2_free,array2_init
-    use array4_simple_operations,only: array4_free,array4_init
-    use ccsd_module, only:get_ccsd_residual_integral_driven
-    implicit none
-    !type(mp2_batch_construction) :: bat
-    type(array2) :: deltafock,ppfock,qqfock,pqfock,qpfock,omega1,fock
-    type(array2) :: xocc,xvirt,yocc,yvirt
-    type(array)  :: om2,t2,govov
-    type(lsitem) :: MyLsItem
-    logical :: local
-    integer :: nbas,nocc,nvirt,scheme
-    integer(kind=long) :: nelms
-    integer      :: iter,k,n4,i
-    real(realk),pointer  :: xodata(:),xvdata(:),yodata(:),yvdata(:),&
-                           & df(:),f(:),ppf(:),qqf(:),pqf(:),qpf(:),om1(:),t2data(:),&
-                           & t2d(:,:,:,:),xod(:,:),xvd(:,:),yod(:,:),yvd(:,:)
+  use precision
+  !use tensor_def_module
+  use dec_typedef_module
+  use typedeftype,only:lsitem,array
+  use infpar_module
+  use lsmpi_type, only:ls_mpibcast,ls_mpibcast_chunks
+  use daltoninfo, only:ls_free
+  use memory_handling, only: mem_alloc, mem_dealloc
+  use tensor_interface_module, only: array_init,array_free,&
+      &memory_allocate_array_dense,memory_deallocate_array_dense,memory_deallocate_window
+  ! DEC DEPENDENCIES (within deccc directory) 
+  ! *****************************************
+  use decmpi_module, only: mpi_communicate_ccsd_calcdata
+  use array2_simple_operations,only: array2_free,array2_init
+  use array4_simple_operations,only: array4_free,array4_init
+  use ccsd_module, only:get_ccsd_residual_integral_driven
+  implicit none
+  !type(mp2_batch_construction) :: bat
+  type(array2) :: deltafock,ppfock,qqfock,pqfock,qpfock,omega1,fock
+  type(array2) :: xocc,xvirt,yocc,yvirt
+  type(array)  :: om2,t2,govov
+  type(lsitem) :: MyLsItem
+  logical :: local
+  integer :: nbas,nocc,nvirt,scheme
+  integer(kind=long) :: nelms
+  integer      :: iter,k,n4,i
+  real(realk),pointer  :: xodata(:),xvdata(:),yodata(:),yvdata(:),&
+                         & df(:),f(:),ppf(:),qqf(:),pqf(:),qpf(:),om1(:),t2data(:),&
+                         & t2d(:,:,:,:),xod(:,:),xvd(:,:),yod(:,:),yvd(:,:)
 
 
 
-    !note that for the slave all allocatable arguments are just dummy indices
-    !the allocation and broadcasting happens in here
-    call mpi_communicate_ccsd_calcdata(om2,t2,govov,xodata,xvdata,yodata,yvdata,&
-    &MyLsItem,nbas,nvirt,nocc,iter,scheme,local)
-    
-    if(.not.local)then
-      call memory_allocate_array_dense(t2)
-      if(scheme==4)then
-        call memory_allocate_array_dense(govov)
-      endif
-    else
-      t2   =array_init([nvirt,nvirt,nocc,nocc],4)
-      govov=array_init([nocc,nvirt,nocc,nvirt],4)
-      om2  =array_init([nvirt,nvirt,nocc,nocc],4)
-    endif
-    
-    ! Quantities, that need to be defined and setset
-    ! ********************************************************
-     
-
-    !split messages in 2GB parts, compare to counterpart in
-    !mpi_communicate_ccsd_calcdate
-    k=250000000
-
-    nelms = nbas*nocc
-    call mem_alloc(yodata,nelms)
-    call mem_alloc(xodata,nelms)
-    call ls_mpibcast_chunks(xodata,nelms,infpar%master,infpar%lg_comm,k)
-    call ls_mpibcast_chunks(yodata,nelms,infpar%master,infpar%lg_comm,k)
-
-    nelms = nbas*nvirt
-    call mem_alloc(xvdata,nelms)
-    call mem_alloc(yvdata,nelms)
-    call ls_mpibcast_chunks(xvdata,nelms,infpar%master,infpar%lg_comm,k)
-    call ls_mpibcast_chunks(yvdata,nelms,infpar%master,infpar%lg_comm,k)
-    
-
-    nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
-    call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
-    if(iter/=1.and.scheme==4)then
-      call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
-    endif
-
-
-    ! Quantities, that need to be defined but not set
-    ! ********************************************************
-    nelms=nbas*nbas
-    call mem_alloc(df,nelms)
-    call mem_alloc(f,nelms)
-    
-    nelms=nocc*nocc
-    call mem_alloc(ppf,nelms)
-
-    nelms=nvirt*nocc
-    call mem_alloc(pqf,nelms)
-    call mem_alloc(qpf,nelms)
-    call mem_alloc(om1,nelms)
+  !note that for the slave all allocatable arguments are just dummy indices
+  !the allocation and broadcasting happens in here
+  call mpi_communicate_ccsd_calcdata(om2,t2,govov,xodata,xvdata,yodata,yvdata,&
+  &MyLsItem,nbas,nvirt,nocc,iter,scheme,local)
   
-    nelms=nvirt*nvirt
-    call mem_alloc(qqf,nelms)
-
-    ! Calculate contribution to integrals/amplitudes for slave
-    ! ********************************************************
-    call get_ccsd_residual_integral_driven(df,om2,t2,f,govov,nocc,nvirt,&
-         ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
-
-    ! FREE EVERYTHING
-    ! ***************
-    if(.not.local)then
-      call memory_deallocate_array_dense(om2)
-      call memory_deallocate_array_dense(t2)
-      if(scheme==4)then
-        call memory_deallocate_array_dense(govov)
-      endif
-    else
-      call array_free(om2)
-      call array_free(t2)
-      call array_free(govov)
+  if(.not.local)then
+    call memory_allocate_array_dense(t2)
+    if(scheme==4)then
+      call memory_allocate_array_dense(govov)
     endif
-    call mem_dealloc(df)
-    call mem_dealloc(f)
-    call mem_dealloc(ppf)
-    call mem_dealloc(pqf)
-    call mem_dealloc(qpf)
-    call mem_dealloc(qqf)
-    call mem_dealloc(om1)
-    call mem_dealloc(xodata)
-    call mem_dealloc(yodata)
-    call mem_dealloc(yvdata)
-    call mem_dealloc(xvdata)
-    call ls_free(MyLsItem)
+  else
+    t2   =array_init([nvirt,nvirt,nocc,nocc],4)
+    govov=array_init([nocc,nvirt,nocc,nvirt],4)
+    om2  =array_init([nvirt,nvirt,nocc,nocc],4)
+  endif
+  
+  ! Quantities, that need to be defined and setset
+  ! ********************************************************
+   
+
+  !split messages in 2GB parts, compare to counterpart in
+  !mpi_communicate_ccsd_calcdate
+  k=250000000
+
+  nelms = nbas*nocc
+  call mem_alloc(yodata,nelms)
+  call mem_alloc(xodata,nelms)
+  call ls_mpibcast_chunks(xodata,nelms,infpar%master,infpar%lg_comm,k)
+  call ls_mpibcast_chunks(yodata,nelms,infpar%master,infpar%lg_comm,k)
+
+  nelms = nbas*nvirt
+  call mem_alloc(xvdata,nelms)
+  call mem_alloc(yvdata,nelms)
+  call ls_mpibcast_chunks(xvdata,nelms,infpar%master,infpar%lg_comm,k)
+  call ls_mpibcast_chunks(yvdata,nelms,infpar%master,infpar%lg_comm,k)
+  
+
+  nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
+  call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
+  if(iter/=1.and.scheme==4)then
+    call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
+  endif
+
+
+  ! Quantities, that need to be defined but not set
+  ! ********************************************************
+  nelms=nbas*nbas
+  call mem_alloc(df,nelms)
+  call mem_alloc(f,nelms)
+  
+  nelms=nocc*nocc
+  call mem_alloc(ppf,nelms)
+
+  nelms=nvirt*nocc
+  call mem_alloc(pqf,nelms)
+  call mem_alloc(qpf,nelms)
+  call mem_alloc(om1,nelms)
+  
+  nelms=nvirt*nvirt
+  call mem_alloc(qqf,nelms)
+
+  ! Calculate contribution to integrals/amplitudes for slave
+  ! ********************************************************
+  call get_ccsd_residual_integral_driven(df,om2,t2,f,govov,nocc,nvirt,&
+       ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
+
+  ! FREE EVERYTHING
+  ! ***************
+  if(.not.local)then
+    call memory_deallocate_array_dense(om2)
+    call memory_deallocate_array_dense(t2)
+    if(scheme==4)then
+      call memory_deallocate_array_dense(govov)
+    endif
+  else
+    call array_free(om2)
+    call array_free(t2)
+    call array_free(govov)
+  endif
+  call mem_dealloc(df)
+  call mem_dealloc(f)
+  call mem_dealloc(ppf)
+  call mem_dealloc(pqf)
+  call mem_dealloc(qpf)
+  call mem_dealloc(qqf)
+  call mem_dealloc(om1)
+  call mem_dealloc(xodata)
+  call mem_dealloc(yodata)
+  call mem_dealloc(yvdata)
+  call mem_dealloc(xvdata)
+  call ls_free(MyLsItem)
 end subroutine ccsd_data_preparation
 
 subroutine calculate_E2_and_permute_slave()
-        use precision
-        use dec_typedef_module
-        use typedeftype,only:lsitem,array
-        use infpar_module
-        use lsmpi_type, only:ls_mpibcast
-        use daltoninfo, only:ls_free
-        use memory_handling, only: mem_alloc, mem_dealloc
-        ! DEC DEPENDENCIES (within deccc directory) 
-        ! *****************************************
-        use decmpi_module, only: share_E2_with_slaves
-        use ccsd_module, only:calculate_E2_and_permute
-        implicit none
-        real(realk),pointer :: ppf(:),qqf(:),xo(:),yv(:),Gbi(:),Had(:)
-        integer :: no,nv,nb,s
-        type(array) :: t2,omega2
-        real(realk),pointer :: w1(:)
-        logical :: lo
-        integer(kind=8) :: o2v2
+  use precision
+  use dec_typedef_module
+  use typedeftype,only:lsitem,array
+  use infpar_module
+  use lsmpi_type, only:ls_mpibcast
+  use daltoninfo, only:ls_free
+  use memory_handling, only: mem_alloc, mem_dealloc
+  ! DEC DEPENDENCIES (within deccc directory) 
+  ! *****************************************
+  use decmpi_module, only: share_E2_with_slaves
+  use ccsd_module, only:calculate_E2_and_permute
+  implicit none
+  real(realk),pointer :: ppf(:),qqf(:),xo(:),yv(:),Gbi(:),Had(:)
+  integer :: no,nv,nb,s
+  type(array) :: t2,omega2
+  real(realk),pointer :: w1(:)
+  logical :: lo
+  integer(kind=8) :: o2v2
 
 
-        call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
-        o2v2 = int((i8*no)*no*nv*nv,kind=8)
-        call mem_alloc(ppf,no*no)
-        call mem_alloc(qqf,nv*nv)
-        call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
-        call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
-        call mem_alloc(w1,o2v2)
-        call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,o2v2,s,.false.,lo)
+  call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
+  o2v2 = int((i8*no)*no*nv*nv,kind=8)
+  call mem_alloc(ppf,no*no)
+  call mem_alloc(qqf,nv*nv)
+  call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
+  call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
+  call mem_alloc(w1,o2v2)
+  call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,o2v2,s,.false.,lo)
 
-        call mem_dealloc(ppf)
-        call mem_dealloc(qqf)
-        call mem_dealloc(xo)
-        call mem_dealloc(yv)
-        call mem_dealloc(Gbi)
-        call mem_dealloc(Had)
-        call mem_dealloc(w1)
-        end subroutine calculate_E2_and_permute_slave
+  call mem_dealloc(ppf)
+  call mem_dealloc(qqf)
+  call mem_dealloc(xo)
+  call mem_dealloc(yv)
+  call mem_dealloc(Gbi)
+  call mem_dealloc(Had)
+  call mem_dealloc(w1)
+end subroutine calculate_E2_and_permute_slave
+subroutine get_master_comm_proc_to_wrapper
+  use precision
+  use typedeftype,only:lsitem,array
+  use infpar_module
+  use tensor_interface_module
+  use ccsd_module, only: ccsd_residual_wrapper
+  implicit none
+  logical               :: w_cp
+  type(array)           :: delta_fock
+  type(array)           :: omega2
+  type(array)           :: t2
+  type(array)           :: fock
+  type(array)           :: iajb
+  integer               :: no,nv
+  type(array)           :: ppfock
+  type(array)           :: qqfock
+  type(array)           :: pqfock
+  type(array)           :: qpfock
+  type(array)           :: xo
+  type(array)           :: xv
+  type(array)           :: yo
+  type(array)           :: yv
+  integer               :: nb
+  type(lsitem)          :: MyLsItem
+  type(array)           :: omega1
+  integer               :: iter
+  logical               :: local
+  logical               :: rest
+  
+  call ccsd_residual_wrapper(w_cp,delta_fock,omega2,t2,&
+             & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
+             & xv,yo,yv,nb,MyLsItem,omega1,iter,local,rest)
+
+end subroutine get_master_comm_proc_to_wrapper
 #endif
