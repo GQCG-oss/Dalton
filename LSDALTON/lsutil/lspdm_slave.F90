@@ -34,6 +34,8 @@ subroutine pdm_array_slave(comm)
    !print *,"array3_dims",C%dims
 
    SELECT CASE(JOB)
+     CASE(JOB_PC_DEALLOC_DENSE)
+       call memory_deallocate_array_dense_pc(A)
      CASE(JOB_PC_ALLOC_DENSE)
        call memory_allocate_array_dense_pc(A)
      CASE(JOB_INIT_ARR_PC)

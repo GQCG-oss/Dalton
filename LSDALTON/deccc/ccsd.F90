@@ -775,8 +775,6 @@ contains
       call mpicopy_lsitem(MyLsItem,infpar%pc_comm)
       call mpicopy_dec_settings(DECinfo)
       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
-      if(.not.parent)then
-      endif
     endif
 
 #endif
@@ -894,14 +892,20 @@ contains
     ! elementary types needed for the calculation
     real(realk), pointer :: w0(:), w1(:), w2(:), w3(:),Had(:),t2_d(:,:,:,:),&
                             &Gbi(:),uigcj(:), tGammadij(:),tpl(:),tmi(:),sio4(:),&
-                            &gvvoo(:),gvoov(:),gvvoo_r(:),gvoov_r(:)
+                            &gvvoo(:),gvoov(:)
+    type(c_ptr) :: w0c, w1c, w2c, w3c,Hadc,t2_dc,&
+                            &Gbic,uigcjc, tGammadijc,tplc,tmic,sio4c,&
+                            &gvvooc,gvoovc
+    integer(kind=ls_mpik) :: w0w, w1w, w2w, w3w,Hadw,t2_dw,&
+                            &Gbiw,uigcjw, tGammadijw,tplw,tmiw,sio4w,&
+                            &gvvoow,gvoovw
 
-    integer(kind=8) :: w0size,w1size,w2size,w3size
+    integer(kind=8) :: w0size,w1size,w2size,w3size,neloc
 
     type(matrix) :: Dens,iFock
     ! Variables for mpi
-    logical :: master
-    integer :: fintel,nintel,fe,ne
+    logical :: master,lg_master,parent,worker,talker
+    integer :: fintel,nintel,fe,ne,ierr
     integer(kind=ls_mpik) :: nnod
     real(realk) :: startt, stopp
     
@@ -910,12 +914,13 @@ contains
     !special arrays for scheme=1
     type(array) :: t2jabi,u2kcjb
     integer,pointer :: mpi_task_distribution(:)
-    integer(kind=ls_mpik) :: win_in_g,me
+    integer(kind=ls_mpik) :: win_in_g,lg_me,lg_nnod
+    integer,parameter :: inflen=5
+    real(realk)       :: inf(inflen)
 #ifdef VAR_MPI
     ! stuff for direct communication
-    type(c_ptr) :: gvvoo_c,gvoov_c,sio4_c,gvvoo_p,gvoov_p
     integer(kind=ls_mpik) :: gvvoo_w, gvoov_w, sio4_w
-    integer(kind=ls_mpik) :: ierr, hstatus, nctr,mode
+    integer(kind=ls_mpik) :: hstatus, nctr,mode
     integer :: rcnt(infpar%lg_nodtot),dsp(infpar%lg_nodtot)
     character*(MPI_MAX_PROCESSOR_NAME) :: hname
     real(realk),pointer :: mpi_stuff(:)
@@ -1012,14 +1017,35 @@ contains
    ! Set MPI related info
    ! ********************
     master                   = .true.
-    me                       = int(0,kind=ls_mpik)
+    lg_master                = .true.
+    parent                   = .true.
+    worker                   = .true.
+    talker                   = .true.
+    lg_me                    = int(0,kind=ls_mpik)
 #ifdef VAR_MPI
-    me                       = infpar%lg_mynum
-    master                   = (infpar%lg_mynum == 0).and.(infpar%parent_comm==MPI_COMM_NULL)
-    nnod                     = infpar%lg_nodtot
+    lg_me                    = infpar%lg_mynum
+    lg_nnod                  = infpar%lg_nodtot
     def_atype                = TILED_DIST
     lock_outside             = DECinfo%CCSD_MPICH
-    mode                     = int(MPI_MODE_NOCHECK,kind=ls_mpik)
+    mode                     = MPI_MODE_NOCHECK
+
+    if( lspdm_use_comm_proc )then
+      
+      !synchronize comm procs about identity of the node (i.e. rank of parent)
+      inf(1)=dble(lg_me); inf(2)=dble(lg_nnod)
+      call ls_mpibcast(inf,inflen,infpar%master,infpar%pc_comm)
+      lg_me=int(inf(1),kind=ls_mpik); lg_nnod=int(inf(2),kind=ls_mpik)
+  
+      ! one is the worker one is the talker
+      if(parent)      worker = .false.
+      if(.not.parent) talker = .false.
+
+    endif
+
+    parent                   = (infpar%parent_comm==MPI_COMM_NULL)
+    lg_master                = (lg_me == 0)
+    master                   = lg_master.and.parent
+
     call get_int_dist_info(o2v2,fintel,nintel)
 #endif
 
@@ -1068,13 +1094,11 @@ contains
     nullify(sio4)
     nullify(gvoov)
     nullify(gvvoo)
-    nullify(gvoov_r)
-    nullify(gvvoo_r)
 #ifdef VAR_MPI
     nullify(mpi_task_distribution)
 #endif
 
-    if(master) then
+    if(lg_master) then
     !==================================================
     !                  Batch construction             !
     !==================================================
@@ -1082,10 +1106,20 @@ contains
 
     ! Get free memory and determine maximum batch sizes
     ! -------------------------------------------------
-      call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
-      call get_currently_available_memory(MemFree)
-      call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
+      if(parent)then
+        call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+        call get_currently_available_memory(MemFree)
+        call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
            &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local)
+      endif
+
+      !synchronize comm-procs 
+      if(lspdm_use_comm_proc)then
+        inf(1)=dble(MaxAllowedDimAlpha);inf(2)=dble(MaxAllowedDimGamma);inf(3)=dble(scheme);inf(4)=MemFree
+        call ls_mpibcast(inf,inflen,infpar%master,infpar%pc_comm)
+        MaxAllowedDimAlpha=int(inf(1));MaxAllowedDimGamma=int(inf(2));scheme=int(inf(3));MemFree=inf(4)
+      endif
+
 
       !SOME WORDS ABOUT THE CHOSEN SCHEME:
       ! Depending on the availability of memory on the nodes a certain scheme
@@ -1106,13 +1140,12 @@ contains
 #else
       !allocate the dense part of the arrays if all can be kept in local memory.
       !do that for master only, as the slaves recieve the data via StartUpSlaves
+      govov%init_type = ALL_INIT
       if((scheme==4).and.govov%itype/=DENSE)then
-        print *,"allocate dense"
         if(iter==1) call memory_allocate_array_dense_pc(govov)
-        print *,"allocate dense - done copying"
-        if(iter/=1) call array_cp_tiled2dense(govov,.false.)
-        print *,"copying done"
+        if(iter/=1.and.master) call array_cp_tiled2dense(govov,.false.)
       endif 
+      govov%init_type = MASTER_INIT
 #endif
     endif
 
@@ -1120,25 +1153,40 @@ contains
     !all communication for MPI prior to the loop
 #ifdef VAR_MPI
 
-    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
-      call ls_mpibcast(CCSDDATA,infpar%master,infpar%lg_comm)
+    StartUpSlaves: if( master .and. infpar%lg_nodtot>1 ) then
+      call ls_mpibcast( CCSDDATA, infpar%master, infpar%lg_comm )
       call mpi_communicate_ccsd_calcdata(omega2,t2,govov,xo,xv,yo,&
       &yv,MyLsItem,nb,nv,no,iter,scheme,local)
     endif StartUpSlaves
-      
-    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpi_buffer(scheme,infpar%master)
-    call ls_mpi_buffer(print_debug,infpar%master)
-    call ls_mpi_buffer(dynamic_load,infpar%master)
-    call ls_mpi_buffer(restart,infpar%master)
-    call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
-    call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
-    call ls_mpi_buffer(els2add,infpar%master)
-    call ls_mpi_buffer(lock_outside,infpar%master)
-    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+    if( parent )then 
+      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(scheme,infpar%master)
+      call ls_mpi_buffer(print_debug,infpar%master)
+      call ls_mpi_buffer(dynamic_load,infpar%master)
+      call ls_mpi_buffer(restart,infpar%master)
+      call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
+      call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
+      call ls_mpi_buffer(els2add,infpar%master)
+      call ls_mpi_buffer(lock_outside,infpar%master)
+      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    endif
+    if( lspdm_use_comm_proc )then
+      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
+      call ls_mpi_buffer(scheme,infpar%master)
+      call ls_mpi_buffer(print_debug,infpar%master)
+      call ls_mpi_buffer(dynamic_load,infpar%master)
+      call ls_mpi_buffer(restart,infpar%master)
+      call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
+      call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
+      call ls_mpi_buffer(els2add,infpar%master)
+      call ls_mpi_buffer(lock_outside,infpar%master)
+      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
+    endif
 
     hstatus = 80
     CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
+
 
     !dense part was allocated in the communicate subroutine
 
@@ -1162,6 +1210,7 @@ contains
 
     !ZERO the integral matrix if  first iteration
     if(iter==1) call array_zero(govov)
+
 
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
@@ -1226,6 +1275,7 @@ contains
     ! ************************************************
 
 
+
     ! PRINT some information about the calculation
     ! --------------------------------------------
     if(master.and.DECinfo%PL>1) then
@@ -1244,9 +1294,26 @@ contains
     ! ------------------------
    
     !get the t+ and t- for the Kobayshi-like B2 term
-    call mem_alloc(tpl,int(i8*nor*nvr,kind=long))
-    call mem_alloc(tmi,int(i8*nor*nvr,kind=long))
-    call get_tpl_and_tmi(t2%elm1,nv,no,tpl,tmi)
+    if( lspdm_use_comm_proc )then
+#ifdef VAR_MPI
+      neloc = 0
+      if( infpar%pc_mynum == infpar%pc_nodtot -1) neloc = int(i8*nor*nvr,kind=long)
+      call mem_alloc( tpl, tplc, neloc, tplw, infpar%pc_comm, int(i8*nor*nvr,kind=long) )
+      call mem_alloc( tmi, tmic, neloc, tmiw, infpar%pc_comm, int(i8*nor*nvr,kind=long) )
+#endif
+    else
+      call mem_alloc( tpl, int(i8*nor*nvr,kind=long) )
+      call mem_alloc( tmi, int(i8*nor*nvr,kind=long) )
+    endif
+    
+    !if I am the working process, then
+    if( worker ) call get_tpl_and_tmi(t2%elm1,nv,no,tpl,tmi)
+
+    print *,infpar%pc_mynum,lg_me
+    call lsmpi_barrier(infpar%pc_comm)
+    if(parent)call lsmpi_barrier(infpar%lg_comm)
+    call sleep(2)
+    stop 0
 
     !get u2 in pdm or local
     if(scheme==2)then
@@ -1271,8 +1338,8 @@ contains
     if( DECinfo%ccModel > MODEL_CC2 )then
 
 #ifdef VAR_MPI
-      call mem_alloc(sio4,sio4_c,int(i8*nor*no2,kind=long))
-      call lsmpi_win_create(sio4,sio4_w,int(i8*nor*no2,kind=long),infpar%lg_comm)
+      call mem_alloc(sio4,sio4c,int(i8*nor*no2,kind=long))
+      call lsmpi_win_create(sio4,sio4w,int(i8*nor*no2,kind=long),infpar%lg_comm)
 #else
       call mem_alloc(sio4,nor*no2)
 #endif
@@ -1689,8 +1756,8 @@ contains
     
 #ifdef VAR_MPI
     if(scheme==3)then
-      call mem_alloc(gvvoo,gvvoo_c,o2v2)
-      call mem_alloc(gvoov,gvoov_c,o2v2)
+      call mem_alloc(gvvoo,gvvooc,o2v2)
+      call mem_alloc(gvoov,gvoovc,o2v2)
     endif
 
     ! Finish the MPI part of the Residual calculation
@@ -1843,8 +1910,8 @@ contains
 
       !test and debug crap
 #ifdef VAR_MPI
-      call lsmpi_win_free(sio4_w)
-      call mem_dealloc(sio4,sio4_c)
+      call lsmpi_win_free(sio4w)
+      call mem_dealloc(sio4,sio4c)
 #else
       call mem_dealloc(sio4)
 #endif
@@ -1935,8 +2002,8 @@ contains
         gvoova%elm1 => null()
         call array_free(gvoova)
         call array_free(gvvooa)
-        call mem_dealloc(gvoov,gvoov_c)
-        call mem_dealloc(gvvoo,gvvoo_c)
+        call mem_dealloc(gvoov,gvoovc)
+        call mem_dealloc(gvvoo,gvvooc)
       elseif(scheme==2)then
         call array_free(gvoova)
         call array_free(gvvooa)
@@ -5259,16 +5326,22 @@ end module ccsd_module
 !> \date March 2012
 #ifdef VAR_MPI
 subroutine ccsd_data_preparation()
+  use, intrinsic :: iso_c_binding, only:c_ptr
   use precision
   !use tensor_def_module
+  use Integralparameters, only:CCSDDATA
   use dec_typedef_module
   use typedeftype,only:lsitem,array
   use infpar_module
-  use lsmpi_type, only:ls_mpibcast,ls_mpibcast_chunks
+  use lsmpi_type, only:ls_mpibcast,ls_mpibcast_chunks,LSMPIBROADCAST,MPI_COMM_NULL,&
+  &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer
+  use lsmpi_op, only:mpicopy_lsitem
   use daltoninfo, only:ls_free
   use memory_handling, only: mem_alloc, mem_dealloc
-  use tensor_interface_module, only: array_init,array_free,&
-      &memory_allocate_array_dense,memory_deallocate_array_dense,memory_deallocate_window
+  use tensor_interface_module, only: array_ainit,array_free,&
+      &memory_allocate_array_dense_pc,memory_deallocate_array_dense_pc,&
+      &memory_deallocate_window,&
+      &lspdm_use_comm_proc,get_arr_from_parr,DENSE,ALL_INIT,MASTER_INIT
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use decmpi_module, only: mpi_communicate_ccsd_calcdata
@@ -5288,23 +5361,73 @@ subroutine ccsd_data_preparation()
   real(realk),pointer  :: xodata(:),xvdata(:),yodata(:),yvdata(:),&
                          & df(:),f(:),ppf(:),qqf(:),pqf(:),qpf(:),om1(:),t2data(:),&
                          & t2d(:,:,:,:),xod(:,:),xvd(:,:),yod(:,:),yvd(:,:)
+  type(c_ptr)           :: xoc,xvc,yoc,yvc,&
+                         & dfc,fc,ppfc,qqfc,pqfc,qpfc,om1c,t2c,&
+                         & t2dc,xodc,xvdc,yodc,yvdc
+  integer(kind=ls_mpik) :: xow,xvw,yow,yvw,&
+                         & dfw,fw,ppfw,qqfw,pqfw,qpfw,om1w,t2w,&
+                         & t2dw,xodw,xvdw,yodw,yvdw
+  logical :: parent
+  integer :: addr01(infpar%pc_nodtot)
+  integer :: addr02(infpar%pc_nodtot)
+  integer :: addr03(infpar%pc_nodtot)
+  integer(kind=ls_mpik) :: lg_me,lg_nnod
+  integer(kind=8) :: ne
 
 
+  lg_me   = infpar%lg_mynum
+  lg_nnod = infpar%lg_nodtot
+  parent  = (infpar%parent_comm == MPI_COMM_NULL)
 
   !note that for the slave all allocatable arguments are just dummy indices
   !the allocation and broadcasting happens in here
-  call mpi_communicate_ccsd_calcdata(om2,t2,govov,xodata,xvdata,yodata,yvdata,&
-  &MyLsItem,nbas,nvirt,nocc,iter,scheme,local)
-  
-  if(.not.local)then
-    call memory_allocate_array_dense(t2)
-    if(scheme==4)then
-      call memory_allocate_array_dense(govov)
+  if (parent) then
+    call mpi_communicate_ccsd_calcdata(om2,t2,govov,xodata,xvdata,yodata,yvdata,&
+    &MyLsItem,nbas,nvirt,nocc,iter,scheme,local)
+  endif
+
+    if( lspdm_use_comm_proc  )then
+      if(parent)call ls_mpibcast(CCSDDATA,infpar%master,infpar%pc_comm)
+      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
+      call ls_mpi_buffer(lg_nnod,infpar%master)
+      call ls_mpi_buffer(lg_me,infpar%master)
+      call ls_mpi_buffer(nbas,infpar%master)
+      call ls_mpi_buffer(nocc,infpar%master)
+      call ls_mpi_buffer(nvirt,infpar%master)
+      call ls_mpi_buffer(iter,infpar%master)
+      call ls_mpi_buffer(local,infpar%master)
+      call ls_mpi_buffer(scheme,infpar%master)
+
+      if(parent)addr01=om2%addr_loc
+      call ls_mpi_buffer(addr01,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)om2=get_arr_from_parr(addr01(infpar%pc_mynum+1))
+
+      if(parent)addr02=t2%addr_loc
+      call ls_mpi_buffer(addr02,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)t2=get_arr_from_parr(addr02(infpar%pc_mynum+1))
+
+      if(parent)addr03=govov%addr_loc
+      call ls_mpi_buffer(addr03,infpar%pc_nodtot,infpar%master)
+      if(.not.parent)govov=get_arr_from_parr(addr03(infpar%pc_mynum+1))
+
+      
+      call mpicopy_lsitem(MyLsItem,infpar%pc_comm)
+      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
     endif
+  
+  if(local)then
+    t2    = array_ainit( [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
+    govov = array_ainit( [nocc,nvirt,nocc,nvirt], 4, local=local, atype='LDAR' )
+    om2   = array_ainit( [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
   else
-    t2   =array_init([nvirt,nvirt,nocc,nocc],4)
-    govov=array_init([nocc,nvirt,nocc,nvirt],4)
-    om2  =array_init([nvirt,nvirt,nocc,nocc],4)
+    t2%init_type=ALL_INIT
+    govov%init_type=ALL_INIT
+    call memory_allocate_array_dense_pc(t2)
+    if(scheme==4)then
+      call memory_allocate_array_dense_pc(govov)
+    endif
+    t2%init_type=MASTER_INIT
+    govov%init_type=MASTER_INIT
   endif
   
   ! Quantities, that need to be defined and setset
@@ -5316,41 +5439,87 @@ subroutine ccsd_data_preparation()
   k=250000000
 
   nelms = nbas*nocc
-  call mem_alloc(yodata,nelms)
-  call mem_alloc(xodata,nelms)
-  call ls_mpibcast_chunks(xodata,nelms,infpar%master,infpar%lg_comm,k)
-  call ls_mpibcast_chunks(yodata,nelms,infpar%master,infpar%lg_comm,k)
+  if( lspdm_use_comm_proc )then
+    ne = 0
+    if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) ne = nelms
+    call mem_alloc( yodata, yoc, ne, yow, infpar%pc_comm, nelms )
+    call mem_alloc( xodata, xoc, ne, xow, infpar%pc_comm, nelms )
+  else
+    call mem_alloc( yodata, nelms )
+    call mem_alloc( xodata, nelms )
+  endif
+  if( parent ) then
+    call ls_mpibcast_chunks( xodata, nelms, infpar%master, infpar%lg_comm, k )
+    call ls_mpibcast_chunks( yodata, nelms, infpar%master, infpar%lg_comm, k )
+  endif
 
   nelms = nbas*nvirt
-  call mem_alloc(xvdata,nelms)
-  call mem_alloc(yvdata,nelms)
-  call ls_mpibcast_chunks(xvdata,nelms,infpar%master,infpar%lg_comm,k)
-  call ls_mpibcast_chunks(yvdata,nelms,infpar%master,infpar%lg_comm,k)
+  if( lspdm_use_comm_proc )then
+    ne = 0
+    if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) ne = nelms
+    call mem_alloc( xvdata, xvc, ne, xvw, infpar%pc_comm, nelms )
+    call mem_alloc( yvdata, yvc, ne, yvw, infpar%pc_comm, nelms )
+  else
+    call mem_alloc( xvdata, nelms )
+    call mem_alloc( yvdata, nelms )
+  endif
+  if( parent )then
+    call ls_mpibcast_chunks( xvdata, nelms, infpar%master, infpar%lg_comm, k )
+    call ls_mpibcast_chunks( yvdata, nelms, infpar%master, infpar%lg_comm, k )
+  endif
   
 
   nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
-  call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
-  if(iter/=1.and.scheme==4)then
-    call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
+  if( parent )call ls_mpibcast_chunks( t2%elm1, nelms, infpar%master, infpar%lg_comm, k )
+
+  if( iter/=1 .and. scheme==4 .and. parent )then
+    call ls_mpibcast_chunks( govov%elm1, nelms, infpar%master, infpar%lg_comm, k )
   endif
 
 
   ! Quantities, that need to be defined but not set
   ! ********************************************************
   nelms=nbas*nbas
-  call mem_alloc(df,nelms)
-  call mem_alloc(f,nelms)
+  if( lspdm_use_comm_proc )then
+    ne = 0
+    if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) ne = nelms
+    call mem_alloc( df, dfc, ne, dfw, infpar%pc_comm, nelms )
+    call mem_alloc(  f,  fc, ne,  fw, infpar%pc_comm, nelms )
+  else
+    call mem_alloc( df, nelms )
+    call mem_alloc(  f, nelms )
+  endif
   
   nelms=nocc*nocc
-  call mem_alloc(ppf,nelms)
+  if( lspdm_use_comm_proc )then
+    ne = 0
+    if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) ne = nelms
+    call mem_alloc( ppf, ppfc, ne, ppfw, infpar%pc_comm, nelms )
+  else
+    call mem_alloc( ppf, nelms )
+  endif
 
   nelms=nvirt*nocc
-  call mem_alloc(pqf,nelms)
-  call mem_alloc(qpf,nelms)
-  call mem_alloc(om1,nelms)
+  if( lspdm_use_comm_proc )then
+    ne = 0
+    if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) ne = nelms
+    call mem_alloc( pqf, pqfc, ne, pqfw, infpar%pc_comm, nelms )
+    call mem_alloc( qpf, qpfc, ne, qpfw, infpar%pc_comm, nelms )
+    call mem_alloc( om1, om1c, ne, om1w, infpar%pc_comm, nelms )
+  else
+    call mem_alloc( pqf, nelms )
+    call mem_alloc( qpf, nelms )
+    call mem_alloc( om1, nelms )
+  endif
   
   nelms=nvirt*nvirt
-  call mem_alloc(qqf,nelms)
+  if( lspdm_use_comm_proc )then
+    ne = 0
+    if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) ne = nelms
+    call mem_alloc( qqf, qqfc, ne, qqfw, infpar%pc_comm, nelms )
+  else
+    call mem_alloc( qqf, nelms )
+  endif
 
   ! Calculate contribution to integrals/amplitudes for slave
   ! ********************************************************
@@ -5359,28 +5528,43 @@ subroutine ccsd_data_preparation()
 
   ! FREE EVERYTHING
   ! ***************
-  if(.not.local)then
-    call memory_deallocate_array_dense(om2)
-    call memory_deallocate_array_dense(t2)
-    if(scheme==4)then
-      call memory_deallocate_array_dense(govov)
-    endif
-  else
+  if(local)then
     call array_free(om2)
     call array_free(t2)
     call array_free(govov)
+  else
+    call memory_deallocate_array_dense_pc(om2)
+    call memory_deallocate_array_dense_pc(t2)
+    if(scheme==4)then
+      call memory_deallocate_array_dense_pc(govov)
+    endif
   endif
-  call mem_dealloc(df)
-  call mem_dealloc(f)
-  call mem_dealloc(ppf)
-  call mem_dealloc(pqf)
-  call mem_dealloc(qpf)
-  call mem_dealloc(qqf)
-  call mem_dealloc(om1)
-  call mem_dealloc(xodata)
-  call mem_dealloc(yodata)
-  call mem_dealloc(yvdata)
-  call mem_dealloc(xvdata)
+
+  if( lspdm_use_comm_proc )then
+    call mem_dealloc(      f,   fc,   fw )
+    call mem_dealloc(     df,  dfc,  dfw )
+    call mem_dealloc(    ppf, ppfc, ppfw )
+    call mem_dealloc(    pqf, pqfc, pqfw )
+    call mem_dealloc(    qpf, qpfc, qpfw )
+    call mem_dealloc(    qqf, qqfc, qqfw )
+    call mem_dealloc(    om1, om1c, om1w )
+    call mem_dealloc( xodata,  xoc,  xow )
+    call mem_dealloc( yodata,  yoc,  yow )
+    call mem_dealloc( yvdata,  yvc,  yvw )
+    call mem_dealloc( xvdata,  xvc,  xvw )
+  else
+    call mem_dealloc(      f )
+    call mem_dealloc(     df )
+    call mem_dealloc(    ppf )
+    call mem_dealloc(    pqf )
+    call mem_dealloc(    qpf )
+    call mem_dealloc(    qqf )
+    call mem_dealloc(    om1 )
+    call mem_dealloc( xodata )
+    call mem_dealloc( yodata )
+    call mem_dealloc( yvdata )
+    call mem_dealloc( xvdata )
+  endif
   call ls_free(MyLsItem)
 end subroutine ccsd_data_preparation
 

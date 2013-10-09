@@ -114,7 +114,8 @@ module lspdm_tensor_operations_module
   save
   
   ! job parameters for pdm jobs
-  integer,parameter :: JOB_PC_ALLOC_DENSE      =  2
+  integer,parameter :: JOB_PC_ALLOC_DENSE      =  1
+  integer,parameter :: JOB_PC_DEALLOC_DENSE    =  2
   integer,parameter :: JOB_FREE_ARR_STD        =  3
   integer,parameter :: JOB_INIT_ARR_TILED      =  4
   integer,parameter :: JOB_FREE_ARR_PDM        =  5
@@ -4240,6 +4241,18 @@ module lspdm_tensor_operations_module
 #endif
       call memory_allocate_array_dense(arr)
   end subroutine memory_allocate_array_dense_pc
+  subroutine memory_deallocate_array_dense_pc(arr)
+      implicit none
+      type(array), intent(inout) :: arr
+      logical :: parent
+#ifdef VAR_MPI
+      parent = (infpar%parent_comm == MPI_COMM_NULL)
+      if(lspdm_use_comm_proc.and.parent.and.arr%init_type==MASTER_INIT)then
+        call pdm_array_sync(infpar%pc_comm,JOB_PC_DEALLOC_DENSE,arr,loc_addr=.true.)
+      endif
+#endif
+      call memory_deallocate_array_dense(arr)
+  end subroutine memory_deallocate_array_dense_pc
 
   subroutine lsmpi_put_realkV_w8(buf,nelms,pos,dest,win)
     implicit none

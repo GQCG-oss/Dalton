@@ -2764,6 +2764,7 @@ contains
 #ifdef VAR_MPI
     if ( w_cp ) call lspdm_shut_down_comm_procs
     print *,"ALL DONE"
+    call sleep(3)
     !stop 0
 #endif
 
