@@ -3703,7 +3703,7 @@ contains
             !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
             !$OMP DEFAULT(NONE)
             if(nbnb>0)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do beta_b=delta_b+bs,nbnb,bs
                   do delta=0,bctr
@@ -3901,8 +3901,8 @@ contains
     endif
     !get the combined reduced virtual dimension
     crvd = dims(1) * (dims(1)+1) / 2
-    !$OMP PARALLEL PRIVATE(i,j,d,cged,ilej) SHARED(crvd,t2,tmi,tpl) DEFAULT(NONE)
-    !$OMP DO
+    !OMP PARALLEL PRIVATE(i,j,d,cged,ilej) SHARED(crvd,t2,tmi,tpl,dims) DEFAULT(NONE)
+    !OMP DO
     do j=1,dims(3)
       do i=1,j
         cged=1
@@ -3924,8 +3924,8 @@ contains
         enddo
       enddo
     enddo
-    !$OMP END DO
-    !$OMP END PARALLEL
+    !OMP END DO
+    !OMP END PARALLEL
   end subroutine get_tpl_and_tmi
 
 
