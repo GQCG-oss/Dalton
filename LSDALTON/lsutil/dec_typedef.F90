@@ -158,6 +158,8 @@ module dec_typedef_module
      !> Construct Fock matrix from RI integrals (obsolete for the moment)
      !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
      logical :: fock_with_ri
+     !> logial to set whether special communication processes should be spawned
+     logical :: spawn_comm_proc
 
      !> F12 settings
      !> ************
@@ -290,6 +292,9 @@ module dec_typedef_module
      real(realk) :: PairMinDist
      !> Skip pair analysis (debug)
      logical :: checkpairs
+     !> Fragment-adapted threshold for throwing away orbitals in atomic fragments
+     !> that constitute pair fragment (currently on a testing basis)
+     real(realk) :: pairFOthr
      ! --
 
 
@@ -629,6 +634,8 @@ module dec_typedef_module
      real(realk), pointer :: OccMat(:,:) => null()  ! occ AOS-EOS
      real(realk), pointer :: VirtMat(:,:) => null()  ! virt AOS-EOS
      !> Threshold to use for throwing away fragment-adapted occupied (1) or virtual (2) orbitals
+     !> For pair fragment PQ this refers to the threshold used to throw away FOs from
+     !> the underlying atomic fragments P and Q.
      real(realk) :: RejectThr(2)
      !> Control of whether corr dens matrices have been set (true) or simply initialized (false)
      logical :: CDset

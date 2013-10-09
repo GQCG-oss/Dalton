@@ -4136,13 +4136,17 @@ retval=0
        else
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,&
                & 'CCD occupied single energies','AF_CCD_OCC')
-          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
-               & 'CCD virtual single energies','AF_CCD_VIR')
+          if(.not.DECinfo%onlyoccpart) then
+             call print_atomic_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
+                  & 'CCD virtual single energies','AF_CCD_VIR')
+          end if
 
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,&
                & DistanceTable, 'CCD occupied pair energies','PF_CCD_OCC')
-          call print_pair_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
-               & DistanceTable, 'CCD virtual pair energies','PF_CCD_VIR')
+          if(.not.DECinfo%onlyoccpart) then
+             call print_pair_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
+                  & DistanceTable, 'CCD virtual pair energies','PF_CCD_VIR')
+          end if
 
           write(DECinfo%output,*)
           write(DECinfo%output,'(1X,a,g20.10)') 'CCD occupied   correlation energy : ', energies(6)

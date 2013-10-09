@@ -44,13 +44,14 @@ SUBROUTINE set_pbc_molecules(INPUT,SETTING,lupri,luerr,nbast,Dmat,lattice)
   real(realk), pointer :: Tlat(:,:)
   REAL(realk)::  latt_vec_std(3),focknorm
   REAL(realk)::  E_cell,E_kin,E_ff,E_XC,E_K,E_J,E_en,E_nuc
-  REAL(realk)::  E_1,E_nn
+  REAL(realk)::  E_1,E_nnff
   real(realk) :: TS,TE
 !  REAL(realk) :: PI=3.14159265358979323846D0
   INTEGER :: sze,num_latvectors
   INTEGER :: maxmultmom,n1,n2,n3,nfsze,fdim(3),Tlmax
   INTEGER :: i,j,k,scfit,iunit,l1,l2,l3,nbasterik,ierror
   character*(20) :: mattxt,string1,numtostring1,numtostring2,numtostring3
+  character(len=3) ::nline
   TYPE(BZgrid_t) :: BZ
 
 
@@ -62,6 +63,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
 !  call screening_ovl(input%Basis%regular)
   call build_lvec_list(lattice,nbast) 
 
+  write(*,*) 'nearest neighbour in pbcmain', lattice%nneighbour
   pbc_control%ldef%is_active=lattice%ldef%is_active
   nearfield=lattice%nf
   write(*,*) '1 active not active:',lattice%ldef%is_active(1)
@@ -96,7 +98,9 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   call find_cutoff_onep(lupri,luerr,setting,nbast,lattice,&
               latt_cell, refcell,num_latvectors)
 
+  write(*,*) 'nearest neighbour in pbcmain 2 ', lattice%nneighbour
   call build_nflvec_list(lattice,nbast) 
+  write(*,*) 'nearest neighbour in pbcmain 3 ', lattice%nneighbour
   n_neighbour=lattice%nneighbour
 
  
@@ -127,7 +131,6 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
     write(lupri,*) 'a1 dot b1 = ',dot_product(lattice%ldef%avec(1,:),kvec(1,:))
     write(lupri,*) 'lat vec', lattice%ldef%avec!(3,3)
     write(lupri,*) 'module test: ', mod(3,3)
-    !STOP
 
     call pbc_init_Bzgrid(kvec,lattice%nk1,lattice%nk2,lattice%nk3,'nosym',bZ,nbast,nbast,lupri)
     lat_data%num_k1=lattice%nk1
@@ -135,6 +138,11 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
     lat_data%num_k3=lattice%nk3
     lat_data%num_kpoints=bz%nk 
     lat_data%reclatvec(:,:)=kvec(:,:)
+  !  write(*,*) 'Number kpoints', Bz%Nk
+  !  write(*,*) 'value of kpoint', BZ%kpnt(1)%n(1:3)
+  !  call pbc_get_kpoint(1,kvec(1,:))
+  !  write(*,*) 'kpoint realvalue',kvec(1,:)
+  !  STOP
 
   kvec=0.0d0
 
@@ -142,6 +150,8 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
 
   write(*,*) 'lattice%nneighbour', lattice%nneighbour
   write(*,*) 'lattice%nf', lattice%nf
+  write(*,*) 'Number of k points', Bz%nk
+  write(lupri,*) 'Number of k points', Bz%nk
 
   call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
   nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)
@@ -156,6 +166,97 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
     l2=0
     l3=0
     !do l1=-3,3
+  do n1=1,num_latvectors
+      call mat_init(nfdensity(n1),nbast,nbast)
+      call mat_zero(nfdensity(n1))
+  enddo
+
+#ifdef DEBUGPBC
+
+  if(lattice%compare_elmnts) then
+  mattxt=adjustl('PBCDMAT000')
+  mattxt=trim(mattxt)
+  write(*,*) mattxt
+  call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+  CALL lsOPEN(IUNIT,mattxt,'old','FORMATTED')
+  !OPEN(UNIT=iunit,FILE=trim(mattxt),STATUS='OLD',IOSTAT=ierror)
+  read(iunit,*) nbasterik
+  if(nbasterik .ne. nbast) then
+    write(*,*) 'Not the right dimensions for the density matrix'
+    write(*,*) 'are you sure you have the same basis or molecule?'
+    write(lupri,*) 'Not the right dimensions for the density matrix'
+    write(lupri,*) 'are you sure you have the same basis or molecule?'
+    call LSquit('Not correct dimension in density matrix',lupri)
+  endif
+  !k=0
+  !DO i=1,nbast
+   DO j=1,nbast
+   !k=k+1
+   !nline='no'
+   !if(k .eq. nbast) THEN
+   !  k=0
+   !  nline='yes'
+   !ENDIF
+   !read(iunit,*,advance=nline) lattice%lvec(k)%d_mat(i,j)
+   read(iunit,*) (lattice%lvec(n1)%d_mat(i,j),i=1,nbasterik)
+  ! ENDDO
+  ENDDO
+  write(*,*) 'dmat'
+  write(*,*) lattice%lvec(n1)%d_mat
+  CALL lsCLOSE(IUNIT,'KEEP')
+
+  !do n1=1,num_latvectors
+  !write(*,*) 'debugpbc num_latvectors',num_latvectors,n1
+  !   call mat_init(nfdensity(n1),nbast,nbast)
+  !write(*,*) 'debugpbc 4'
+  !   call mat_zero(nfdensity(n1))
+  !write(*,*) 'debugpbc 4'
+  !enddo
+
+  call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+  Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+  write(*,*) 'density'
+  write(lupri,*) 'density'
+  call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
+  write(*,*) 'density written to LSDALTON.OUT'
+
+  elseif(lattice%read_file) then
+
+        call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+        mattxt=adjustl(lattice%debugdensfile)
+        mattxt=trim(mattxt)
+        write(*,*) mattxt
+        CALL lsOPEN(IUNIT,mattxt,'old','FORMATTED')
+        !OPEN(UNIT=iunit,FILE=trim(mattxt),STATUS='OLD',IOSTAT=ierror)
+        read(iunit,*) nbasterik
+        if(nbasterik .ne. nbast) then
+          write(*,*) 'Not the right dimensions for the density matrix'
+          write(*,*) 'are you sure you have the same basis or molecule?'
+          write(*,*) 'your dim = ',nbast
+          write(*,*) 'Read dim = ',nbasterik
+          write(lupri,*) 'Not the right dimensions for the density matrix'
+          write(lupri,*) 'are you sure you have the same basis or molecule?'
+          write(lupri,*) 'your dim = ',nbast
+          write(lupri,*) 'Read dim = ',nbasterik
+          call LSquit('Not correct dimension in density matrix',lupri)
+        endif
+        DO j=1,nbasterik
+         read(iunit,*) (lattice%lvec(n1)%d_mat(i,j),i=1,nbasterik)
+        ENDDO
+        CALL lsCLOSE(IUNIT,'KEEP')
+  
+        Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+
+else
+
+
+      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+      call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
+    endif
+
+
+
+#else
 
     if(lattice%testcase) THEN !THIS IS FOR DEBUGGING
       iunit = 345
@@ -214,10 +315,10 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         ENDDO
         CALL lsCLOSE(IUNIT,'KEEP')
       endif
-      do n1=1,num_latvectors
-         call mat_init(nfdensity(n1),nbast,nbast)
-         call mat_zero(nfdensity(n1))
-      enddo
+      !do n1=1,num_latvectors
+      !   call mat_init(nfdensity(n1),nbast,nbast)
+      !   call mat_zero(nfdensity(n1))
+      !enddo
 
       call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
       Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
@@ -232,15 +333,21 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
     else !TESTCASE
 
   
-      do n1=1,num_latvectors
-         call mat_init(nfdensity(n1),nbast,nbast)
-         call mat_zero(nfdensity(n1))
-      enddo
+      !do n1=1,num_latvectors
+      !   call mat_init(nfdensity(n1),nbast,nbast)
+      !   call mat_zero(nfdensity(n1))
+      !enddo
       call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
       call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
 
-    endif!END ELSEIF TESTCASE DEBUGGING
 
+    endif!END ELSEIF TESTCASE DEBUGGING
+#endif
+
+#ifdef DEBUGPBC
+      write(lupri,*) 'Density first'
+      call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
+#endif
 
   CALL LSTIMER('START ',TS,TE,LUPRI)
   call pbc_overlap_k(lupri,luerr,setting,input%molecule,nbast,&
@@ -262,7 +369,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   !CALCULATES nuclear repulsion
   CALL LSTIMER('START ',TS,TE,LUPRI)
   CALL pbc_nucpot(lupri,luerr,setting,input%molecule,lattice,&
-                  latt_cell,refcell,num_latvectors,E_nn)
+                  latt_cell,refcell,num_latvectors,E_nuc)
   CALL LSTIMER('pbc_nucpot',TS,TE,LUPRI)
 
   
@@ -289,7 +396,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   call mem_alloc(Tlat,(Tlmax+1)**2,(Tlmax+1)**2)
 
   call pbc_controlmm(20,Tlat,Tlmax,maxmultmom,.false.,lattice%ldef%avec,&
-     nbast,lupri,nfdensity,num_latvectors,nfsze,lattice,g_2,E_ff,E_nn,refcell)
+     nbast,lupri,nfdensity,num_latvectors,nfsze,lattice,g_2,E_ff,E_nnff,refcell)
 
   CALL LSTIMER('START ',TS,TE,LUPRI)
   call pbc_exact_xc_k(lupri,luerr,setting,input%molecule,nbast,&
@@ -317,6 +424,13 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   enddo
   call mem_dealloc(nfdensity)
 
+#ifdef DEBUGPBC
+  if(lattice%compare_elmnts) then
+    write(*,*) 'hei'
+    call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
+    num_latvectors,latt_cell,nfsze,maxmultmom,bz,tlat,lupri,luerr)
+  endif
+
     focknorm=0.0d0
     write(lupri,*) num_latvectors
      do i=1,num_latvectors
@@ -324,24 +438,26 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
          focknorm=focknorm + lattice%lvec(i)%fck_vec(j)**2
       enddo
      enddo
+#endif
     !CALL lsOPEN(IUNIT,'pbch2_t.dat','UNKNOWN','FORMATTED')
-    E_cell=E_kin+E_en+E_J+E_K+E_ff+E_nn
+    E_cell=E_kin+E_en+E_J+E_K+E_ff+E_nuc+E_nnff
     write(lupri,'(A,I4)') 'numbers of lattice vectors', num_latvectors
     write(lupri,'(A,I8)') 'number of basis', nbast
     write(lupri,'(A,F16.6)')  'Norm of fock matrix', focknorm
     write(lupri,'(A,F16.6)')  'Cell energy', E_cell
-    write(lupri,'(A,F16.6)')  'Electronic energy', E_cell-E_nn-E_ff-E_K
-    write(lupri,'(A,F16.6)')  'Nuclear repulsion energy', E_nn
+    write(lupri,'(A,F16.6)')  'Electronic energy', E_cell-E_nuc-E_ff-E_K-E_nnff
+    write(lupri,'(A,F16.6)')  'Nuclear repulsion energy', E_nuc
     write(lupri,'(A,F16.6)')  'N. F. Coulomb energy', E_J
     write(lupri,'(A,F16.6)')  'Exact xch energy', E_K
-    write(lupri,'(A,F16.6)')  'Far field', E_ff
+    write(lupri,'(A,F16.6)')  'Far field', E_ff+E_nnff
     write(*,'(A,F16.6)')  'N. F. Coulomb energy', E_J
     write(*,'(A,F16.6)')  'Exact xch energy', E_K
-    write(*,'(A,F16.6)')  'Far field', E_ff
+    write(*,'(A,F16.6,X,F16.6)')  'Far field', E_ff, E_nnff
+    write(*,*)  'Far field', E_ff, E_nnff
     write(*,'(A,F16.6)')  'Cell energy', E_cell
     write(*,'(A,F16.6,X,F16.6,X,F16.6)')  'one part energy', E_kin+E_en,E_kin,E_en
-    write(*,'(A,F16.6)')  'Electronic energy', E_cell-E_nn-E_ff-E_K
-    write(*,'(A,F16.6)')  'Nuclear repulsion energy', E_nn
+    write(*,'(A,F16.6)')  'Electronic energy', E_cell-E_nnff-E_ff-E_K-E_nuc
+    write(*,'(A,F16.6)')  'Nuclear repulsion energy', E_nuc
     !CALL lsCLOSE(IUNIT,'KEEP')
     
 
@@ -389,9 +505,9 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
 	enddo
     deallocate(latt_cell)
 
-    E_1=E_kin+E_en+E_nn
+    E_1=E_kin+E_en+E_nuc
     if(lattice%num_its .gt. 0) call pbc_startzdiis(input%molecule,setting,nbast,lattice,&
-    num_latvectors,nfsze,maxmultmom,bz,ovl,f_1,g_2,E_1,lupri,luerr)
+    num_latvectors,nfsze,maxmultmom,bz,ovl,f_1,g_2,E_nuc,lupri,luerr)
 
   endif
 

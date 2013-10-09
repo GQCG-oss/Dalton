@@ -596,7 +596,7 @@ contains
      if (a%nnz .eq. 0) then
         return
      endif
-#ifdef VAR_MKL
+#ifdef VAR_CSR
      call mkl_ddnscsr(job, m, n, afulltmp, lda, a%val, a%col, a%row, info)
 #endif
      N = a%nrow    !change diff

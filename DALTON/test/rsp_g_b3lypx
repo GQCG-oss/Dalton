@@ -136,6 +136,11 @@ cat << 'EOCHK' > rsp_g_b3lypx__1.check
 log=$1
 GREP=egrep
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # ?
 CRIT1=`$GREP "Final DFT energy\: * \-39\.310213311195" $log | wc -l`
 TEST[1]=`expr $CRIT1`
@@ -176,6 +181,11 @@ cat << 'EOCHK' > rsp_g_b3lypx__2.check
 log=$1
 GREP=egrep
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # ?
 CRIT1=`$GREP "Final DFT energy\: * \-39\.310212222343" $log | wc -l`
 TEST[1]=`expr $CRIT1`
@@ -210,6 +220,11 @@ EOCHK
 cat << 'EOCHK' > rsp_g_b3lypx__3.check
 log=$1
 GREP=egrep
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
 
 # ?
 CRIT1=`$GREP "Final DFT energy\: * \-39\.310215407207" $log | wc -l`

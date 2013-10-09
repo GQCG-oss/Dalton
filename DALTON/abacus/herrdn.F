@@ -176,6 +176,11 @@ C                 '.PRINT '
     2          CONTINUE
 C                 'CONTINUUM': generate continuum functions of Kaufmann
 C                 Sonia, 2012
+                  IF (LCMMAX .GT. -1) THEN
+                     WRITE (LUPRI,'(/A/)')
+     &          ' Input error: .CONTINUUM and .CM FUN not both allowed.'
+                     CALL QUIT('.CONTIN and .CM FUN not both allowed.')
+                  END IF
                   READ (LUCMD,*,IOSTAT=IOS) LCMMAX, CMSTR, CMEND
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .CONTINUUM')
@@ -208,6 +213,11 @@ C                 '.SYMTHR'
                GO TO 100
 C              '.CM FUN'
     7          CONTINUE
+                  IF (LCMMAX .GT. -1) THEN
+                     WRITE (LUPRI,'(/A/)')
+     &          ' Input error: .CONTINUUM and .CM FUN not both allowed.'
+                     CALL QUIT('.CONTIN and .CM FUN not both allowed.')
+                  END IF
                   READ (LUCMD,*,IOSTAT=IOS) LCMMAX, CMSTR, CMEND
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .CM FUN')
@@ -1103,6 +1113,7 @@ C...
 #include "qm3.h"
 #include "infpar.h"
 C
+      LCMMAX_save = LCMMAX
 C     MBSIP = identifier for Previous basis-set identifier MBSI (WK/UniKA/04-11-2002).
       MBSIP     = 0
 C
@@ -1813,6 +1824,7 @@ C
 C
         END IF
       END IF
+      LCMMAX = LCMMAX_save
       RETURN
 C
 C     Error messages:

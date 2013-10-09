@@ -6,7 +6,7 @@ CONTAINS
     INTEGER :: nTUVQ,nTUVTMPP,nTUVTMPQ,JPQ,JP,JQ,nTUVTMP,nTUVTMPprev
     integer :: tq,uq,vq,ituvq,ituvqminus1x,ituvqminus1y,ituvqminus1z
     integer :: iTUVplus1x,iTUVplus1y,iTUVplus1z,nTUVTMPQs
-    Integer :: MaxAngmomQP,nTUVplus,JTMP,ntuvprev2,ntuvprev3
+    Integer :: MaxAngmomQP,nTUVplus,JTMQ,ntuvprev2,ntuvprev3
     !    logical :: CREATED(-2:8,-2:8,-2:8)
     logical,pointer :: CREATED(:,:,:)
     logical :: TREC,UREC,VREC,TREC2,UREC2,VREC2
@@ -18,7 +18,7 @@ CONTAINS
     integer :: nTUVLIST,nTUVLISTactual
     integer,pointer :: TwoTermTUVLIST(:)
 
-    WRITE(*,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMOD'
+    WRITE(*,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoC'
     WRITE(*,'(A)')' use IchorPrecisionModule'
     WRITE(*,'(A)')'  '
     WRITE(*,'(A)')' CONTAINS'
@@ -67,15 +67,15 @@ CONTAINS
           WRITE(*,'(A)')''
           IF(JP.LT.10)THEN
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I1,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I1,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ELSE
-                WRITE(*,'(A,I1,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I1,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ENDIF
           ELSE
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I2,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I2,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ELSE
-                WRITE(*,'(A,I2,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I2,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ENDIF
           ENDIF
 
@@ -91,14 +91,14 @@ CONTAINS
           WRITE(*,'(A)')'  !Local variables'
           !             WRITE(*,'(A)')'  real(realk) :: Pexpfac,PREF'
           !             WRITE(*,'(A,i4,A)')'  real(realk) :: TwoTerms(',MAX(1,nTUVprev2-nTUVprev3),')'
-          DO JTMP=1,JQ-1
-             nTUVTMPQs=(JTMP)*(JTMP+1)*(JTMP+2)/6
-             nTUVTMPQ=(JTMP+1)*(JTMP+2)*(JTMP+3)/6
-             nTUVTMPP=(JPQ-JTMP+1)*(JPQ-JTMP+2)*(JPQ-JTMP+3)/6
-             if(JTMP.LT.10)THEN
-                WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I3,A)')'  real(realk) :: Tmp',JTMP,'(',nTUVP+1,':',nTUVTMPP,',',nTUVTMPQs+1,':',nTUVTMPQ,')'
+          DO JTMQ=1,JQ-1
+             nTUVTMPQs=(JTMQ)*(JTMQ+1)*(JTMQ+2)/6
+             nTUVTMPQ=(JTMQ+1)*(JTMQ+2)*(JTMQ+3)/6
+             nTUVTMPP=(JPQ-JTMQ+1)*(JPQ-JTMQ+2)*(JPQ-JTMQ+3)/6
+             if(JTMQ.LT.10)THEN
+                WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I3,A)')'  real(realk) :: Tmp',JTMQ,'(',nTUVP+1,':',nTUVTMPP,',',nTUVTMPQs+1,':',nTUVTMPQ,')'
              else
-                WRITE(*,'(A,I2,A,I3,A,I3,A,I3,A,I3,A)')'  real(realk) :: Tmp',JTMP,'(',nTUVP+1,':',nTUVTMPP,',',nTUVTMPQs+1,':',nTUVTMPQ,')'
+                WRITE(*,'(A,I2,A,I3,A,I3,A,I3,A,I3,A)')'  real(realk) :: Tmp',JTMQ,'(',nTUVP+1,':',nTUVTMPP,',',nTUVTMPQs+1,':',nTUVTMPQ,')'
 
              endif
           ENDDO
@@ -134,22 +134,22 @@ CONTAINS
           CREATED  = .FALSE.
           CREATED(0,0,0) = .TRUE.
 
-          DO JTMP=0,JQ
-!           print*,'!JTMP = ',JTMP
-           IF(JTMP.EQ.0)THEN
-              nTUVTMPP=(JPQ-JTMP)*(JPQ-JTMP+1)*(JPQ-JTMP+2)/6
+          DO JTMQ=0,JQ
+!           print*,'!JTMQ = ',JTMQ
+           IF(JTMQ.EQ.0)THEN
+              nTUVTMPP=(JPQ-JTMQ)*(JPQ-JTMQ+1)*(JPQ-JTMQ+2)/6
               WRITE(*,'(A,I3)')'     DO iTUVP=1,',nTUVP
               WRITE(*,'(A)')   '        Aux2(iTUVP,1,IP) = Aux(iTUVp,IP)'
               WRITE(*,'(A)')   '     ENDDO'
               CYCLE
            ELSE
-             nTUVTMPQ=(JTMP+1)*(JTMP+2)*(JTMP+3)/6
-             nTUVTMPP=(JPQ-JTMP+1)*(JPQ-JTMP+2)*(JPQ-JTMP+3)/6
-             !slowly increase JQ=JTMP with 1 
-             nTUVTMPQ=(JTMP+1)*(JTMP+2)*(JTMP+3)/6
-             DO Tq=JTMP,0,-1       
-                DO Uq=JTMP-Tq,0,-1
-                   Vq=JTMP-Tq-Uq                
+             nTUVTMPQ=(JTMQ+1)*(JTMQ+2)*(JTMQ+3)/6
+             nTUVTMPP=(JPQ-JTMQ+1)*(JPQ-JTMQ+2)*(JPQ-JTMQ+3)/6
+             !slowly increase JQ=JTMQ with 1 
+             nTUVTMPQ=(JTMQ+1)*(JTMQ+2)*(JTMQ+3)/6
+             DO Tq=JTMQ,0,-1       
+                DO Uq=JTMQ-Tq,0,-1
+                   Vq=JTMQ-Tq-Uq                
 !                   print*,'!Tq,Uq,Vq = ',Tq,Uq,Vq
                    !step 1.
                    !how can the (Tp,Up,Vp) be built from lower
@@ -165,13 +165,13 @@ CONTAINS
                       !only one possible way to construct it
                       IF(TREC)THEN
 !                         print*,'!A TRECURRENCE iTUV',iTUV
-                         call TRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+                         call TRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
                       ELSEIF(UREC)THEN
 !                         print*,'!A URECURRENCE iTUV',iTUV
-                         call URECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+                         call URECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
                       ELSEIF(VREC)THEN
 !                         print*,'!A VRECURRENCE iTUV',iTUV
-                         call VRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+                         call VRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
                       ELSE
                          STOP 'TK1'
                       ENDIF
@@ -189,25 +189,25 @@ CONTAINS
                          !we chose the one term possibility
                          IF(.NOT.(TREC.AND.TREC2).AND.TREC)THEN
 !                            print*,'!B TRECURRENCE iTUV',iTUV
-                            call TRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+                            call TRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
                          ELSEIF(.NOT.(UREC.AND.UREC2).AND.UREC)THEN
 !                            print*,'!B URECURRENCE iTUV',iTUV
-                            call URECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+                            call URECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
                          ELSEIF(.NOT.(VREC.AND.VREC2).AND.VREC)THEN
 !                            print*,'!B VRECURRENCE iTUV',iTUV
-                            call VRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+                            call VRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
                          ENDIF
                       ELSE
                          !chose one of the possibilities
                          IF(TREC)THEN
 !                            print*,'!C TRECURRENCE iTUV',iTUV
-                            call TRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+                            call TRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
                          ELSEIF(UREC)THEN
 !                            print*,'!C URECURRENCE iTUV',iTUV
-                            call URECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+                            call URECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
                          ELSEIF(VREC)THEN
 !                            print*,'!D VRECURRENCE iTUV',iTUV
-                            call VRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+                            call VRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
                          ELSE
                             STOP 'TK2'
                          ENDIF
@@ -227,15 +227,15 @@ CONTAINS
           WRITE(*,'(A)')'  ENDDO'
           IF(JP.LT.10)THEN
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I1,A,I1)')'end subroutine TransferRecurrenceP',JP,'Q',JQ
+                WRITE(*,'(A,I1,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC'
              ELSE
-                WRITE(*,'(A,I1,A,I2)')'end subroutine TransferRecurrenceP',JP,'Q',JQ
+                WRITE(*,'(A,I1,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC'
              ENDIF
           ELSE
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I2,A,I1)')'end subroutine TransferRecurrenceP',JP,'Q',JQ
+                WRITE(*,'(A,I2,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC'
              ELSE
-                WRITE(*,'(A,I2,A,I2)')'end subroutine TransferRecurrenceP',JP,'Q',JQ
+                WRITE(*,'(A,I2,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC'
              ENDIF
           ENDIF
           deallocate(TUVINDEX)
@@ -249,10 +249,10 @@ CONTAINS
   END subroutine PASSsub
   
 
-subroutine TRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+subroutine TRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
 implicit none
-integer :: Tq,Uq,Vq,Tp,Up,Vp,J,JTMP,iTUVQ,iTUVQminus1x,iTUVQminus1y,iTUVQminus1z,nTUVP
-integer :: iTUVQminus2x, iTUVP,nTUVTMPP,iTUVminus1x,iTUVplus1x,JMAX,JQ,TMQ,TMP,JP
+integer :: Tq,Uq,Vq,Tp,Up,Vp,J,JTMQ,iTUVQ,iTUVQminus1x,iTUVQminus1y,iTUVQminus1z,nTUVP
+integer :: iTUVQminus2x, iTUVP,nTUVTMPP,iTUVpminus1x,iTUVpplus1x,JMAX,JQ,TMQ,TMP,JP
 integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
 integer :: TINDEX(:)
 integer :: UINDEX(:)
@@ -270,9 +270,12 @@ do iTUVP = 1,nTUVTMPP
    Up = Uindex(iTUVp) 
    Vp = Vindex(iTUVp)
    TMP = Tp
-   iTUVplus1x = TUVindex(Tp+1,Up,Vp)
-   iTUVminus1x = TUVindex(Tp-1,Up,Vp)
+   ituvpplus1x = TUVindex(Tp+1,Up,Vp)
+   ituvpminus1x = TUVindex(Tp-1,Up,Vp)
    Jp = Jindex(iTUVp)   
+
+   !A to C
+   !Theta(i,0,k+1,0) = -(b*X_{ab}+dX_{cd})/q Theta(i,0,k,0) - p/q*Theta(i+1,0,k,0) + k/(2q)*Theta(i,0,k-1,0) + i/(2q)*Theta(i-1,0,k,0) 
 
    !step 1 add blanks
 
@@ -283,11 +286,11 @@ do iTUVP = 1,nTUVTMPP
       WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
       iString = iSTRING+5
    ELSE
-      IF(JTMP.LT.10)THEN
-         WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP,'('
+      IF(JTMQ.LT.10)THEN
+         WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ,'('
          iString = iSTRING+5
       ELSE
-         WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A)') 'Tmp',JTMP,'('
+         WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A)') 'Tmp',JTMQ,'('
          iString = iSTRING+6
       ENDIF
    ENDIF
@@ -334,11 +337,11 @@ do iTUVP = 1,nTUVTMPP
          WRITE(STRING(iSTRING:iSTRING+9),'(A10)') 'facX*Aux2('
          iString = iSTRING+10
       ELSE
-         IF(JTMP-1.LT.10)THEN
-            WRITE(STRING(iSTRING:iSTRING+9),'(A8,I1,A1)') 'facX*Tmp',JTMP-1,'('
+         IF(JTMQ-1.LT.10)THEN
+            WRITE(STRING(iSTRING:iSTRING+9),'(A8,I1,A1)') 'facX*Tmp',JTMQ-1,'('
             iString = iSTRING+10
          ELSE
-            WRITE(STRING(iSTRING:iSTRING+10),'(A8,I2,A1)') 'facX*Tmp',JTMP-1,'('
+            WRITE(STRING(iSTRING:iSTRING+10),'(A8,I2,A1)') 'facX*Tmp',JTMQ-1,'('
             iString = iSTRING+11
          ENDIF
       ENDIF
@@ -376,8 +379,8 @@ do iTUVP = 1,nTUVTMPP
       ENDIF
    ENDIF
    !step 4 determine if the second term: 
-   !  TMP*inv2expQ*Aux(',iTUVminus1x,',IP) 
-   !  TMp*inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,')
+   !  TMP*inv2expQ*Aux(',ituvpminus1x,',IP) 
+   !  TMp*inv2expQ*Tmp',JTMQ-1,'(',ituvpminus1x,',',iTUVQminus1x,')
    !should be included and if it should use Aux or Tmp 
    IF(TMp.GT.2)THEN
       IF(TMp.GE.10)THEN
@@ -402,36 +405,36 @@ do iTUVP = 1,nTUVTMPP
          WRITE(STRING(iSTRING:iSTRING+3),'(A4)') 'Aux('
          iString = iSTRING+4
       ELSE
-         IF(iTUVminus1x.LE.nTUVP)THEN
+         IF(ituvpminus1x.LE.nTUVP)THEN
             WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
             iString = iSTRING+5
          ELSE
-            IF(JTMP-1.LT.10)THEN
-               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP-1,'('
+            IF(JTMQ-1.LT.10)THEN
+               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ-1,'('
                iString = iSTRING+5
             ELSE
-               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMP-1,'('
+               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMQ-1,'('
                iString = iSTRING+6
             ENDIF
          ENDIF
       ENDIF
-      IF(iTUVminus1x.LT.100)THEN
-         WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') iTUVminus1x,','
+      IF(ituvpminus1x.LT.100)THEN
+         WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') ituvpminus1x,','
          iString = iSTRING+3
-      ELSEIF(iTUVminus1x.LT.1000)THEN
-         WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') iTUVminus1x,','
+      ELSEIF(ituvpminus1x.LT.1000)THEN
+         WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') ituvpminus1x,','
          iString = iSTRING+4
-      ELSEIF(iTUVminus1x.LT.10000)THEN
-         WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') iTUVminus1x,','
+      ELSEIF(ituvpminus1x.LT.10000)THEN
+         WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') ituvpminus1x,','
          iString = iSTRING+5
       ELSE
-         STOP 'Recurrent iTUVminus1x'
+         STOP 'Recurrent ituvpminus1x'
       ENDIF
       IF(iTUVQminus1x.EQ.1)THEN
          WRITE(STRING(iSTRING:iSTRING+3),'(A4)')'IP) '
          iString = iSTRING+4
       ELSE
-         IF(iTUVminus1x.LE.nTUVP)THEN
+         IF(ituvpminus1x.LE.nTUVP)THEN
             IF(iTUVQminus1x.LT.100)THEN
                WRITE(STRING(iSTRING:iSTRING+6),'(I2,A5)') iTUVQminus1x,',IP) '
                iString = iSTRING+7
@@ -464,7 +467,7 @@ do iTUVP = 1,nTUVTMPP
    ENDIF
    !step 5 determine if the third term: 
    !  Tmq*inv2expQ*Aux(',iTUVp,',IP)
-   !  Tmq*inv2expQ*Tmp',JTMP-2,'(',iTUVp,',',iTUVQminus2x,')
+   !  Tmq*inv2expQ*Tmp',JTMQ-2,'(',iTUVp,',',iTUVQminus2x,')
    !should be included and if it should use Aux or Tmp 
    IF(TMq.GT.2)THEN
       IF(TMq.GE.10)THEN
@@ -493,11 +496,11 @@ do iTUVP = 1,nTUVTMPP
             WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
             iString = iSTRING+5
          ELSE
-            IF(JTMP-1.LT.10)THEN
-               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP-2,'('
+            IF(JTMQ-1.LT.10)THEN
+               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ-2,'('
                iString = iSTRING+5
             ELSE
-               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMP-2,'('
+               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMQ-2,'('
                iString = iSTRING+6
             ENDIF
          ENDIF
@@ -550,8 +553,8 @@ do iTUVP = 1,nTUVTMPP
       !do not include this term       
    ENDIF
    !step 6 determine if the third term: 
-   !  pinvq*Aux(',iTUVplus1x,',IP)'
-   !  pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
+   !  pinvq*Aux(',ituvpplus1x,',IP)'
+   !  pinvq*Tmp',JTMQ-1,'(',ituvpplus1x,',',iTUVQminus1x,')'
    !should be included and if it should use Aux or Tmp 
    WRITE(STRING(iSTRING:iSTRING+7),'(A8)') '+ pinvq*'
    iString = iSTRING+8
@@ -559,30 +562,30 @@ do iTUVP = 1,nTUVTMPP
       WRITE(STRING(iSTRING:iSTRING+3),'(A4)') 'Aux('
       iString = iSTRING+4
    ELSE
-      IF(iTUVplus1x.LE.nTUVP)THEN
+      IF(ituvpplus1x.LE.nTUVP)THEN
          WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
          iString = iSTRING+5
       ELSE
-         IF(JTMP-1.LT.10)THEN
-            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP-1,'('
+         IF(JTMQ-1.LT.10)THEN
+            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ-1,'('
             iString = iSTRING+5
          ELSE
-            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I2,A1)') 'Tmp',JTMP-1,'('
+            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I2,A1)') 'Tmp',JTMQ-1,'('
             iString = iSTRING+5
          ENDIF
       ENDIF
    ENDIF
-   IF(iTUVplus1x.LT.100)THEN
-      WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') iTUVplus1x,','
+   IF(ituvpplus1x.LT.100)THEN
+      WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') ituvpplus1x,','
       iString = iSTRING+3
-   ELSEIF(iTUVplus1x.LT.1000)THEN
-      WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') iTUVplus1x,','
+   ELSEIF(ituvpplus1x.LT.1000)THEN
+      WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') ituvpplus1x,','
       iString = iSTRING+4
-   ELSEIF(iTUVplus1x.LT.10000)THEN
-      WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') iTUVplus1x,','
+   ELSEIF(ituvpplus1x.LT.10000)THEN
+      WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') ituvpplus1x,','
       iString = iSTRING+5
    ELSE
-      STOP 'Recurrent iTUVplus1x'
+      STOP 'Recurrent ituvpplus1x'
    ENDIF
    IF(iTUVQminus1x.EQ.1)THEN
       WRITE(STRING(iSTRING:iSTRING+3),'(A4)')'IP) '
@@ -600,7 +603,7 @@ do iTUVP = 1,nTUVTMPP
       ELSE
          STOP 'Recurrent iTUVQminus2x'
       ENDIF
-      IF(iTUVplus1x.LE.nTUVP)THEN
+      IF(ituvpplus1x.LE.nTUVP)THEN
          WRITE(STRING(iSTRING:iSTRING+4),'(A5)') ',IP) '
          iString = iSTRING+5
       ELSE
@@ -614,10 +617,10 @@ ENDDO
 
 end subroutine TRECURRENCE
 
-subroutine URECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+subroutine URECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
 implicit none
-integer :: Tq,Uq,Vq,Tp,Up,Vp,J,JTMP,iTUVQ,iTUVQminus1x,iTUVQminus1y,iTUVQminus1z,nTUVP
-integer :: iTUVQminus2x, iTUVP,nTUVTMPP,iTUVminus1x,iTUVplus1x,JMAX,JQ,TMQ,TMP,JP
+integer :: Tq,Uq,Vq,Tp,Up,Vp,J,JTMQ,iTUVQ,iTUVQminus1x,iTUVQminus1y,iTUVQminus1z,nTUVP
+integer :: iTUVQminus2x, iTUVP,nTUVTMPP,ituvpminus1x,ituvpplus1x,JMAX,JQ,TMQ,TMP,JP
 integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
 integer :: TINDEX(:)
 integer :: UINDEX(:)
@@ -635,8 +638,8 @@ do iTUVP = 1,nTUVTMPP
    Up = Uindex(iTUVp) 
    Vp = Vindex(iTUVp)
    TMP = Up
-   iTUVplus1x = TUVindex(Tp,Up+1,Vp)
-   iTUVminus1x = TUVindex(Tp,Up-1,Vp)
+   ituvpplus1x = TUVindex(Tp,Up+1,Vp)
+   ituvpminus1x = TUVindex(Tp,Up-1,Vp)
    Jp = Jindex(iTUVp)   
 
    !step 1 add blanks
@@ -648,11 +651,11 @@ do iTUVP = 1,nTUVTMPP
       WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
       iString = iSTRING+5
    ELSE
-      IF(JTMP.LT.10)THEN
-         WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP,'('
+      IF(JTMQ.LT.10)THEN
+         WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ,'('
          iString = iSTRING+5
       ELSE
-         WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A)') 'Tmp',JTMP,'('
+         WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A)') 'Tmp',JTMQ,'('
          iString = iSTRING+6
       ENDIF
    ENDIF
@@ -699,11 +702,11 @@ do iTUVP = 1,nTUVTMPP
          WRITE(STRING(iSTRING:iSTRING+9),'(A10)') 'facY*Aux2('
          iString = iSTRING+10
       ELSE
-         IF(JTMP-1.LT.10)THEN
-            WRITE(STRING(iSTRING:iSTRING+9),'(A8,I1,A1)') 'facY*Tmp',JTMP-1,'('
+         IF(JTMQ-1.LT.10)THEN
+            WRITE(STRING(iSTRING:iSTRING+9),'(A8,I1,A1)') 'facY*Tmp',JTMQ-1,'('
             iString = iSTRING+10
          ELSE
-            WRITE(STRING(iSTRING:iSTRING+10),'(A8,I2,A1)') 'facY*Tmp',JTMP-1,'('
+            WRITE(STRING(iSTRING:iSTRING+10),'(A8,I2,A1)') 'facY*Tmp',JTMQ-1,'('
             iString = iSTRING+11
          ENDIF
       ENDIF
@@ -741,8 +744,8 @@ do iTUVP = 1,nTUVTMPP
       ENDIF
    ENDIF
    !step 4 determine if the second term: 
-   !  TMP*inv2expQ*Aux(',iTUVminus1x,',IP) 
-   !  TMp*inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,')
+   !  TMP*inv2expQ*Aux(',ituvpminus1x,',IP) 
+   !  TMp*inv2expQ*Tmp',JTMQ-1,'(',ituvpminus1x,',',iTUVQminus1x,')
    !should be included and if it should use Aux or Tmp 
    IF(TMp.GT.2)THEN
       IF(TMp.GE.10)THEN
@@ -767,36 +770,36 @@ do iTUVP = 1,nTUVTMPP
          WRITE(STRING(iSTRING:iSTRING+3),'(A4)') 'Aux('
          iString = iSTRING+4
       ELSE
-         IF(iTUVminus1x.LE.nTUVP)THEN
+         IF(ituvpminus1x.LE.nTUVP)THEN
             WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
             iString = iSTRING+5
          ELSE
-            IF(JTMP-1.LT.10)THEN
-               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP-1,'('
+            IF(JTMQ-1.LT.10)THEN
+               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ-1,'('
                iString = iSTRING+5
             ELSE
-               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMP-1,'('
+               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMQ-1,'('
                iString = iSTRING+6
             ENDIF
          ENDIF
       ENDIF
-      IF(iTUVminus1x.LT.100)THEN
-         WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') iTUVminus1x,','
+      IF(ituvpminus1x.LT.100)THEN
+         WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') ituvpminus1x,','
          iString = iSTRING+3
-      ELSEIF(iTUVminus1x.LT.1000)THEN
-         WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') iTUVminus1x,','
+      ELSEIF(ituvpminus1x.LT.1000)THEN
+         WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') ituvpminus1x,','
          iString = iSTRING+4
-      ELSEIF(iTUVminus1x.LT.10000)THEN
-         WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') iTUVminus1x,','
+      ELSEIF(ituvpminus1x.LT.10000)THEN
+         WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') ituvpminus1x,','
          iString = iSTRING+5
       ELSE
-         STOP 'Recurrent iTUVminus1x'
+         STOP 'Recurrent ituvpminus1x'
       ENDIF
       IF(iTUVQminus1x.EQ.1)THEN
          WRITE(STRING(iSTRING:iSTRING+3),'(A4)')'IP) '
          iString = iSTRING+4
       ELSE
-         IF(iTUVminus1x.LE.nTUVP)THEN
+         IF(ituvpminus1x.LE.nTUVP)THEN
             IF(iTUVQminus1x.LT.100)THEN
                WRITE(STRING(iSTRING:iSTRING+6),'(I2,A5)') iTUVQminus1x,',IP) '
                iString = iSTRING+7
@@ -829,7 +832,7 @@ do iTUVP = 1,nTUVTMPP
    ENDIF
    !step 5 determine if the third term: 
    !  Tmq*inv2expQ*Aux(',iTUVp,',IP)
-   !  Tmq*inv2expQ*Tmp',JTMP-2,'(',iTUVp,',',iTUVQminus2x,')
+   !  Tmq*inv2expQ*Tmp',JTMQ-2,'(',iTUVp,',',iTUVQminus2x,')
    !should be included and if it should use Aux or Tmp 
    IF(TMq.GT.2)THEN
       IF(TMq.GE.10)THEN
@@ -858,11 +861,11 @@ do iTUVP = 1,nTUVTMPP
             WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
             iString = iSTRING+5
          ELSE
-            IF(JTMP-1.LT.10)THEN
-               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP-2,'('
+            IF(JTMQ-1.LT.10)THEN
+               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ-2,'('
                iString = iSTRING+5
             ELSE
-               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMP-2,'('
+               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMQ-2,'('
                iString = iSTRING+6
             ENDIF
          ENDIF
@@ -915,8 +918,8 @@ do iTUVP = 1,nTUVTMPP
       !do not include this term       
    ENDIF
    !step 6 determine if the third term: 
-   !  pinvq*Aux(',iTUVplus1x,',IP)'
-   !  pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
+   !  pinvq*Aux(',ituvpplus1x,',IP)'
+   !  pinvq*Tmp',JTMQ-1,'(',ituvpplus1x,',',iTUVQminus1x,')'
    !should be included and if it should use Aux or Tmp 
    WRITE(STRING(iSTRING:iSTRING+7),'(A8)') '+ pinvq*'
    iString = iSTRING+8
@@ -924,30 +927,30 @@ do iTUVP = 1,nTUVTMPP
       WRITE(STRING(iSTRING:iSTRING+3),'(A4)') 'Aux('
       iString = iSTRING+4
    ELSE
-      IF(iTUVplus1x.LE.nTUVP)THEN
+      IF(ituvpplus1x.LE.nTUVP)THEN
          WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
          iString = iSTRING+5
       ELSE
-         IF(JTMP-1.LT.10)THEN
-            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP-1,'('
+         IF(JTMQ-1.LT.10)THEN
+            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ-1,'('
             iString = iSTRING+5
          ELSE
-            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I2,A1)') 'Tmp',JTMP-1,'('
+            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I2,A1)') 'Tmp',JTMQ-1,'('
             iString = iSTRING+5
          ENDIF
       ENDIF
    ENDIF
-   IF(iTUVplus1x.LT.100)THEN
-      WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') iTUVplus1x,','
+   IF(ituvpplus1x.LT.100)THEN
+      WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') ituvpplus1x,','
       iString = iSTRING+3
-   ELSEIF(iTUVplus1x.LT.1000)THEN
-      WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') iTUVplus1x,','
+   ELSEIF(ituvpplus1x.LT.1000)THEN
+      WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') ituvpplus1x,','
       iString = iSTRING+4
-   ELSEIF(iTUVplus1x.LT.10000)THEN
-      WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') iTUVplus1x,','
+   ELSEIF(ituvpplus1x.LT.10000)THEN
+      WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') ituvpplus1x,','
       iString = iSTRING+5
    ELSE
-      STOP 'Recurrent iTUVplus1x'
+      STOP 'Recurrent ituvpplus1x'
    ENDIF
    IF(iTUVQminus1x.EQ.1)THEN
       WRITE(STRING(iSTRING:iSTRING+3),'(A4)')'IP) '
@@ -965,7 +968,7 @@ do iTUVP = 1,nTUVTMPP
       ELSE
          STOP 'Recurrent iTUVQminus2x'
       ENDIF
-      IF(iTUVplus1x.LE.nTUVP)THEN
+      IF(ituvpplus1x.LE.nTUVP)THEN
          WRITE(STRING(iSTRING:iSTRING+4),'(A5)') ',IP) '
          iString = iSTRING+5
       ELSE
@@ -979,10 +982,10 @@ ENDDO
 
 end subroutine URECURRENCE
 
-subroutine VRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP)
+subroutine VRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMQ,nTUVTMPP,JMAX,JQ,nTUVP)
 implicit none
-integer :: Tq,Uq,Vq,Tp,Up,Vp,J,JTMP,iTUVQ,iTUVQminus1x,iTUVQminus1y,iTUVQminus1z
-integer :: iTUVQminus2x, iTUVP,nTUVTMPP,iTUVminus1x,iTUVplus1x,JMAX,JQ,TMQ,TMP,JP,nTUVP
+integer :: Tq,Uq,Vq,Tp,Up,Vp,J,JTMQ,iTUVQ,iTUVQminus1x,iTUVQminus1y,iTUVQminus1z
+integer :: iTUVQminus2x, iTUVP,nTUVTMPP,ituvpminus1x,ituvpplus1x,JMAX,JQ,TMQ,TMP,JP,nTUVP
 integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
 integer :: TINDEX(:)
 integer :: UINDEX(:)
@@ -1000,8 +1003,8 @@ do iTUVP = 1,nTUVTMPP
    Up = Uindex(iTUVp) 
    Vp = Vindex(iTUVp)
    TMP = Vp
-   iTUVplus1x = TUVindex(Tp,Up,Vp+1)
-   iTUVminus1x = TUVindex(Tp,Up,Vp-1)
+   ituvpplus1x = TUVindex(Tp,Up,Vp+1)
+   ituvpminus1x = TUVindex(Tp,Up,Vp-1)
    Jp = Jindex(iTUVp)   
 
    !step 1 add blanks
@@ -1013,11 +1016,11 @@ do iTUVP = 1,nTUVTMPP
       WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
       iString = iSTRING+5
    ELSE
-      IF(JTMP.LT.10)THEN
-         WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP,'('
+      IF(JTMQ.LT.10)THEN
+         WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ,'('
          iString = iSTRING+5
       ELSE
-         WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A)') 'Tmp',JTMP,'('
+         WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A)') 'Tmp',JTMQ,'('
          iString = iSTRING+6
       ENDIF
    ENDIF
@@ -1064,11 +1067,11 @@ do iTUVP = 1,nTUVTMPP
          WRITE(STRING(iSTRING:iSTRING+9),'(A10)') 'facZ*Aux2('
          iString = iSTRING+10
       ELSE
-         IF(JTMP-1.LT.10)THEN
-            WRITE(STRING(iSTRING:iSTRING+9),'(A8,I1,A1)') 'facZ*Tmp',JTMP-1,'('
+         IF(JTMQ-1.LT.10)THEN
+            WRITE(STRING(iSTRING:iSTRING+9),'(A8,I1,A1)') 'facZ*Tmp',JTMQ-1,'('
             iString = iSTRING+10
          ELSE
-            WRITE(STRING(iSTRING:iSTRING+10),'(A8,I2,A1)') 'facZ*Tmp',JTMP-1,'('
+            WRITE(STRING(iSTRING:iSTRING+10),'(A8,I2,A1)') 'facZ*Tmp',JTMQ-1,'('
             iString = iSTRING+11
          ENDIF
       ENDIF
@@ -1106,8 +1109,8 @@ do iTUVP = 1,nTUVTMPP
       ENDIF
    ENDIF
    !step 4 determine if the second term: 
-   !  TMP*inv2expQ*Aux(',iTUVminus1x,',IP) 
-   !  TMp*inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,')
+   !  TMP*inv2expQ*Aux(',ituvpminus1x,',IP) 
+   !  TMp*inv2expQ*Tmp',JTMQ-1,'(',ituvpminus1x,',',iTUVQminus1x,')
    !should be included and if it should use Aux or Tmp 
    IF(TMp.GT.2)THEN
       IF(TMp.GE.10)THEN
@@ -1132,36 +1135,36 @@ do iTUVP = 1,nTUVTMPP
          WRITE(STRING(iSTRING:iSTRING+3),'(A4)') 'Aux('
          iString = iSTRING+4
       ELSE
-         IF(iTUVminus1x.LE.nTUVP)THEN
+         IF(ituvpminus1x.LE.nTUVP)THEN
             WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
             iString = iSTRING+5
          ELSE
-            IF(JTMP-1.LT.10)THEN
-               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP-1,'('
+            IF(JTMQ-1.LT.10)THEN
+               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ-1,'('
                iString = iSTRING+5
             ELSE
-               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMP-1,'('
+               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMQ-1,'('
                iString = iSTRING+6
             ENDIF
          ENDIF
       ENDIF
-      IF(iTUVminus1x.LT.100)THEN
-         WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') iTUVminus1x,','
+      IF(ituvpminus1x.LT.100)THEN
+         WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') ituvpminus1x,','
          iString = iSTRING+3
-      ELSEIF(iTUVminus1x.LT.1000)THEN
-         WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') iTUVminus1x,','
+      ELSEIF(ituvpminus1x.LT.1000)THEN
+         WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') ituvpminus1x,','
          iString = iSTRING+4
-      ELSEIF(iTUVminus1x.LT.10000)THEN
-         WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') iTUVminus1x,','
+      ELSEIF(ituvpminus1x.LT.10000)THEN
+         WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') ituvpminus1x,','
          iString = iSTRING+5
       ELSE
-         STOP 'Recurrent iTUVminus1x'
+         STOP 'Recurrent ituvpminus1x'
       ENDIF
       IF(iTUVQminus1x.EQ.1)THEN
          WRITE(STRING(iSTRING:iSTRING+3),'(A4)')'IP) '
          iString = iSTRING+4
       ELSE
-         IF(iTUVminus1x.LE.nTUVP)THEN
+         IF(ituvpminus1x.LE.nTUVP)THEN
             IF(iTUVQminus1x.LT.100)THEN
                WRITE(STRING(iSTRING:iSTRING+6),'(I2,A5)') iTUVQminus1x,',IP) '
                iString = iSTRING+7
@@ -1194,7 +1197,7 @@ do iTUVP = 1,nTUVTMPP
    ENDIF
    !step 5 determine if the third term: 
    !  Tmq*inv2expQ*Aux(',iTUVp,',IP)
-   !  Tmq*inv2expQ*Tmp',JTMP-2,'(',iTUVp,',',iTUVQminus2x,')
+   !  Tmq*inv2expQ*Tmp',JTMQ-2,'(',iTUVp,',',iTUVQminus2x,')
    !should be included and if it should use Aux or Tmp 
    IF(TMq.GT.2)THEN
       IF(TMq.GE.10)THEN
@@ -1223,11 +1226,11 @@ do iTUVP = 1,nTUVTMPP
             WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
             iString = iSTRING+5
          ELSE
-            IF(JTMP-1.LT.10)THEN
-               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP-2,'('
+            IF(JTMQ-1.LT.10)THEN
+               WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ-2,'('
                iString = iSTRING+5
             ELSE
-               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMP-2,'('
+               WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMQ-2,'('
                iString = iSTRING+6
             ENDIF
          ENDIF
@@ -1280,8 +1283,8 @@ do iTUVP = 1,nTUVTMPP
       !do not include this term       
    ENDIF
    !step 6 determine if the third term: 
-   !  pinvq*Aux(',iTUVplus1x,',IP)'
-   !  pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
+   !  pinvq*Aux(',ituvpplus1x,',IP)'
+   !  pinvq*Tmp',JTMQ-1,'(',ituvpplus1x,',',iTUVQminus1x,')'
    !should be included and if it should use Aux or Tmp 
    WRITE(STRING(iSTRING:iSTRING+7),'(A8)') '+ pinvq*'
    iString = iSTRING+8
@@ -1289,30 +1292,30 @@ do iTUVP = 1,nTUVTMPP
       WRITE(STRING(iSTRING:iSTRING+3),'(A4)') 'Aux('
       iString = iSTRING+4
    ELSE
-      IF(iTUVplus1x.LE.nTUVP)THEN
+      IF(ituvpplus1x.LE.nTUVP)THEN
          WRITE(STRING(iSTRING:iSTRING+4),'(A5)') 'Aux2('
          iString = iSTRING+5
       ELSE
-         IF(JTMP-1.LT.10)THEN
-            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP-1,'('
+         IF(JTMQ-1.LT.10)THEN
+            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMQ-1,'('
             iString = iSTRING+5
          ELSE
-            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I2,A1)') 'Tmp',JTMP-1,'('
+            WRITE(STRING(iSTRING:iSTRING+4),'(A3,I2,A1)') 'Tmp',JTMQ-1,'('
             iString = iSTRING+5
          ENDIF
       ENDIF
    ENDIF
-   IF(iTUVplus1x.LT.100)THEN
-      WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') iTUVplus1x,','
+   IF(ituvpplus1x.LT.100)THEN
+      WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') ituvpplus1x,','
       iString = iSTRING+3
-   ELSEIF(iTUVplus1x.LT.1000)THEN
-      WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') iTUVplus1x,','
+   ELSEIF(ituvpplus1x.LT.1000)THEN
+      WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') ituvpplus1x,','
       iString = iSTRING+4
-   ELSEIF(iTUVplus1x.LT.10000)THEN
-      WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') iTUVplus1x,','
+   ELSEIF(ituvpplus1x.LT.10000)THEN
+      WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') ituvpplus1x,','
       iString = iSTRING+5
    ELSE
-      STOP 'Recurrent iTUVplus1x'
+      STOP 'Recurrent ituvpplus1x'
    ENDIF
    IF(iTUVQminus1x.EQ.1)THEN
       WRITE(STRING(iSTRING:iSTRING+3),'(A4)')'IP) '
@@ -1330,7 +1333,7 @@ do iTUVP = 1,nTUVTMPP
       ELSE
          STOP 'Recurrent iTUVQminus2x'
       ENDIF
-      IF(iTUVplus1x.LE.nTUVP)THEN
+      IF(ituvpplus1x.LE.nTUVP)THEN
          WRITE(STRING(iSTRING:iSTRING+4),'(A5)') ',IP) '
          iString = iSTRING+5
       ELSE
@@ -1343,210 +1346,6 @@ do iTUVP = 1,nTUVTMPP
 ENDDO
 
 end subroutine VRECURRENCE
-
-!!$   IF(JP.LE.JQ)THEN
-!!$      IF(iTUVQminus1x.EQ.1)THEN
-!!$         IF(iTUVQminus2x.EQ.1)THEN
-!!$            IF(TMq.GT.1)THEN
-!!$               IF(TMp.GT.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I1,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + ',TMP,'*inv2expQ*Aux(',iTUVminus1x,',IP) + ',Tmq,'*inv2expQ*Aux(',iTUVp,',IP) + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSEIF(TMp.EQ.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + inv2expQ*Aux(',iTUVminus1x,',IP) + ',Tmq,'*inv2expQ*Aux(',iTUVp,',IP) + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSE
-!!$                  !Tp = 0 special case the second term vanish
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + ',TMQ,'*inv2expQ*Aux(',iTUVp,',IP) + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ENDIF
-!!$            ELSEIF(TMq.EQ.1)THEN
-!!$               IF(TMp.GT.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + ',TMP,'*inv2expQ*Aux(',iTUVminus1x,',IP) + inv2expQ*Aux(',iTUVp,',IP) + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSEIF(TMp.EQ.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I3,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + inv2expQ*Aux(',iTUVminus1x,',IP) + inv2expQ*Aux(',iTUVp,',IP) + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSE
-!!$                  !Tp = 0 special case the second term vanish
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + ',TMQ,'*inv2expQ*Aux(',iTUVp,',IP) + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ENDIF
-!!$            ELSE
-!!$               !Tq-1 = 0 special case the third term vanish
-!!$               IF(Tmp.GT.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                       &'     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + ',TMp,'*inv2expQ*Aux(',iTUVminus1x,',IP)  + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSEIF(Tmp.EQ.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I3,A,I3,A)')&
-!!$                       &'     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + inv2expQ*Aux(',iTUVminus1x,',IP)  + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSE
-!!$                  !Tp = 0 special case the second and third term vanish
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ENDIF
-!!$            ENDIF
-!!$
-!!$         ELSE
-!!$            IF(TMq.GT.1)THEN
-!!$               IF(TMp.GT.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I1,A,I3,A,I1,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + ',TMP,'*inv2expQ*Aux(',iTUVminus1x,',IP) + ',Tmq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSEIF(TMp.EQ.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + inv2expQ*Aux(',iTUVminus1x,',IP) + ',Tmq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSE
-!!$                  !Tp = 0 special case the second term vanish
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + ',TMQ,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ENDIF
-!!$            ELSEIF(TMq.EQ.1)THEN
-!!$               IF(TMp.GT.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I1,A,I3,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + ',TMP,'*inv2expQ*Aux(',iTUVminus1x,',IP) + inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSEIF(TMp.EQ.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I3,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + inv2expQ*Aux(',iTUVminus1x,',IP) + inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSE
-!!$                  !Tp = 0 special case the second term vanish
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + ',TMQ,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ENDIF
-!!$            ELSE
-!!$               !Tq-1 = 0 special case the third term vanish
-!!$               IF(Tmp.GT.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                       &'     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + ',TMp,'*inv2expQ*Aux(',iTUVminus1x,',IP)  + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSEIF(Tmp.EQ.1)THEN
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I3,A,I3,A)')&
-!!$                       &'     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + inv2expQ*Aux(',iTUVminus1x,',IP)  + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ELSE
-!!$                  !Tp = 0 special case the second and third term vanish
-!!$                  WRITE(*,'(A,I3,A,I3,A,I3,A,I3,A)')&
-!!$                       & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Aux(',iTUVp,',IP) + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$               ENDIF
-!!$            ENDIF
-!!$         ENDIF
-!!$      ELSE
-!!$         IF(Tmq.GT.1)THEN
-!!$            IF(Tmp.GT.1)THEN
-!!$               WRITE(*,'(A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + ',TMp,'*inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,') + ',TMq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSEIF(Tmp.EQ.1)THEN
-!!$               WRITE(*,'(A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,') + ',TMq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSE
-!!$               !Tp = 0 special case the second term vanish
-!!$               WRITE(*,'(A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + ',TMq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ENDIF
-!!$         ELSEIF(Tmq.EQ.1)THEN
-!!$            IF(Tmp.GT.1)THEN
-!!$               WRITE(*,'(A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + ',TMp,'*inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSEIF(Tmp.EQ.1)THEN
-!!$               WRITE(*,'(A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSE
-!!$               !Tp = 0 special case the second term vanish
-!!$               WRITE(*,'(A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ENDIF
-!!$         ELSE
-!!$            !Tq-1 = 0 special case the third term vanish
-!!$            IF(Tmp.GT.1)THEN
-!!$               WRITE(*,'(A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    &'     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + ',TMp,'*inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,')  + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSEIF(Tmp.EQ.1)THEN
-!!$               WRITE(*,'(A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    &'     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,')  + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSE
-!!$               !Tp = 0 special case the second and third term vanish
-!!$               WRITE(*,'(A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Aux2(',iTUVP,',',iTUVQ,',IP) = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ENDIF
-!!$         ENDIF
-!!$      ENDIF
-!!$   ELSE
-!!$      IF(iTUVQminus1x.EQ.1)THEN
-!!$         IF(TMq.GT.1)THEN
-!!$            IF(Tmp.GT.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I1,A,I3,A,I1,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Aux(',iTUVp,',IP) + ',TMp,'*inv2expQ*Aux(',iTUVminus1x,',IP) + ',TMq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$            ELSEIF(Tmp.EQ.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Aux(',iTUVp,',IP) + inv2expQ*Aux(',iTUVminus1x,',IP) + ',TMq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$            ELSE
-!!$               !Tp = 0 special case the second term vanish
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Aux(',iTUVp,',IP) + ',TMq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$            ENDIF
-!!$         ELSEIF(TMq.EQ.1)THEN
-!!$            IF(Tmp.GT.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I1,A,I3,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Aux(',iTUVp,',IP) + ',TMp,'*inv2expQ*Aux(',iTUVminus1x,',IP) + inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$            ELSEIF(Tmp.EQ.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I3,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Aux(',iTUVp,',IP) + inv2expQ*Aux(',iTUVminus1x,',IP) + inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$            ELSE
-!!$               !Tp = 0 special case the second term vanish
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I1,A,I3,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Aux(',iTUVp,',IP) + inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$            ENDIF
-!!$         ELSE
-!!$            !Tq-1 = 0 special case the third term vanish
-!!$            IF(Tmp.GT.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    &'     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Aux(',iTUVp,',IP) + ',TMp,'*inv2expQ*Aux(',iTUVminus1x,',IP)  + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$            ELSEIF(Tmp.EQ.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I3,A,I3,A)')&
-!!$                    &'     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Aux(',iTUVp,',IP) + inv2expQ*Aux(',iTUVminus1x,',IP)  + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$            ELSE
-!!$               !Tp = 0 special case the second and third term vanish
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Aux(',iTUVp,',IP) + pinvq*Aux(',iTUVplus1x,',IP)'
-!!$            ENDIF
-!!$         ENDIF
-!!$      ELSE
-!!$         IF(TMq.GT.1)THEN
-!!$            IF(Tmp.GT.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + ',TMp,'*inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,') + ',TMq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSEIF(Tmp.EQ.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,') + ',TMq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSE
-!!$               !Tp = 0 special case the second term vanish
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + ',TMq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ENDIF
-!!$         ELSEIF(TMq.EQ.0)THEN
-!!$            IF(Tmp.GT.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + ',TMp,'*inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSEIF(Tmp.EQ.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSE
-!!$               !Tp = 0 special case the second term vanish
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + ',TMq,'*inv2expQ*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus2x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ENDIF
-!!$         ELSE
-!!$            !Tq-1 = 0 special case the third term vanish
-!!$            IF(Tmp.GT.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    &'     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + ',TMp,'*inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,')  + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSEIF(Tmp.EQ.1)THEN
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    &'     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + inv2expQ*Tmp',JTMP-1,'(',iTUVminus1x,',',iTUVQminus1x,')  + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ELSE
-!!$               !Tp = 0 special case the second and third term vanish
-!!$               WRITE(*,'(A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A,I1,A,I3,A,I3,A)')&
-!!$                    & '     Tmp',JTMP,'(',iTUVP,',',iTUVQ,') = facX*Tmp',JTMP-1,'(',iTUVp,',',iTUVQminus1x,') + pinvq*Tmp',JTMP-1,'(',iTUVplus1x,',',iTUVQminus1x,')'
-!!$            ENDIF
-!!$         ENDIF
-!!$      ENDIF
-!!$   ENDIF
 
 end MODULE TESTMODULE
 

@@ -30,7 +30,11 @@ C951009-kenneth : Changed name from PSISTAR to DALTON
 C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
+#ifdef VAR_CHEMSHELL
+      subroutine dalton
+#else
       PROGRAM DALTON2013_DALTON
+#endif
 C
       use parallel_models_mpi
 C
