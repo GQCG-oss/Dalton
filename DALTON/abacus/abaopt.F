@@ -160,6 +160,7 @@ C
       NOAUX  = .FALSE.
       NODIHE = .FALSE.
       NOADDA = .FALSE.
+      PRJTRO = .TRUE.  ! Project translation-rotation out of gradient and Hessian
       REDRED = .FALSE.
       LINDHD = .TRUE.
 C     ... hjaaj Mar 2004: disable generalization of Lindh
@@ -469,8 +470,14 @@ C           .VR-SYM
                   CALL QUIT('Illegal frozen atom.')
                END IF
                IFREEZ(0) = IFREEZ(0) + 1
+               IF (IFREEZ(0) .GT. MX_IFREEZ) THEN
+                  WRITE(LUPRI,*) 'ERROR for .FREEZE Input,'//
+     &               ' max number frozen atoms is',MX_IFREEZ
+                  CALL QUIT('Too many atoms frozen with .FREEZE')
+               END IF
                IFREEZ(IFREEZ(0)) = NFRZ
  474        CONTINUE
+            IF (IFREEZ(0) .GT. 0) PRJTRO = .FALSE. ! Do not project out translation-rotation if some coordinates are frozen.
             GOTO 100
  75         READ (LUCMD,*) ITRFRZ
             GOTO 100
@@ -1477,7 +1484,6 @@ C  /* Deck runopt */
 #include "symmet.h"
 #include "nuclei.h"
 #include "taymol.h"
-#include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
 #include "molde.h"
@@ -1720,7 +1726,8 @@ C
 C     Note that the contents of WORK(KTEMP1) is passed on
 C     from PROJGH to DIAHES below.
 C
-         CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
+         IF (PRJTRO)  ! project out trans-rot coordinates
+     &   CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
      &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4))
          IF (LNSRCH .AND. RATFUN .AND. (ITRNMR .GT. 0))
      &        CALL LINSRC(NCART,MXCOOR,EGRAD,GRDARR(1,1),CSTEP,
@@ -1933,7 +1940,8 @@ C
      &           WORK(KTEMP5),WORK(KWRK2),LWRK2)
             IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS + 1
          ELSE
-            CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
+            IF (PRJTRO)  ! project out trans-rot coordinates
+     &      CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
      &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4))
             IF (LNSRCH .AND. RATFUN .AND. (ITRNMR .GT. 0))
      &           CALL LINSRC(NCART,MXCOOR,EGRAD,GRDARR(1,1),CSTEP,
@@ -5111,21 +5119,23 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
-#include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
       NCRTOT = 0
       NTMAT = 0
       NCART = NCRREP(0,1)
-      NPROJ = NTRREP(0)
       DO 5 I = 0, 7
          DOREPW(I) = .FALSE.
  5    CONTINUE
-      IF (IPRINT .GT. 5) CALL HEADER('Coordinates in CNTCRD',-1)
+      IF (IPRINT .GT. 5) CALL HEADER('Coordinates counted in CNTCRD',-1)
       DO 10 I  = 0, MAXREP
-         NPRREP(I) = NTRREP(I)
+         IF (PRJTRO) THEN   ! project out tra-rot
+            NPRREP(I) = NTRREP(I)
+         ELSE
+            NPRREP(I) = 0
+         END IF
          NCR = NCRREP(I,1)
-         NPR = NTRREP(I)
+         NPR = NPRREP(I)
          DOREPW(I) = (NCR .GT. NPR)
          IF (DOREPW(I)) THEN
             NCRTOT = NCRTOT + NCR
@@ -5139,6 +5149,7 @@ C
             WRITE(LUPRI,'(A,L5)')' Dorepw               :', DOREPW(I)
          END IF
  10   CONTINUE
+      NPROJ = NPRREP(0)
       IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A,I5)')
      &  ' Total number of Cartesian coordinates:', NCRTOT
       RETURN
@@ -5195,7 +5206,6 @@ C  /* Deck projgh */
 #include "maxaqn.h"
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
       DIMENSION TMPMAT(MXCOOR,MXCOOR), TMPMT2(MXCOOR)
@@ -5317,8 +5327,6 @@ C
       DIMENSION TMPHES(MX2CRD,MX2CRD)
       DIMENSION HESPCK(NCRDHS*NCRDHS)
       DIMENSION WORK(LWORK)
-      LOGICAL PRJTRO
-      PRJTRO = .TRUE.
 C
       CALL DZERO(GRDDIA,MXRCRD)
       CALL WLKEIG(EGRAD,ALLHES,EVAL,EVCTMP,GRDDIA,TMAT,THRLDP,
@@ -6117,7 +6125,7 @@ C
       END IF
       CALL DZERO(STPDIA,NCART)
       CALL DZERO(STPSYM,NCART)
-      NPROJ = NTRREP(0)
+      NPROJ = NPRREP(0)
       NVEC = NCART-NPROJ
       IF (IPRINT .GT. 2) CALL TITLER('Output from FNDSTP','*',103)
 C
@@ -6671,7 +6679,7 @@ C
  17      CONTINUE
  15   CONTINUE
       NCR = NCRREP(ISYMBR,1)
-      NVC = NCR - NTRREP(ISYMBR)
+      NVC = NCR - NPRREP(ISYMBR)
       DO 19 I = 1, NVC
          STPDIA(I) = 1.0D0/SQRT(NVC*1.0D0)
  19   CONTINUE
