@@ -1300,7 +1300,7 @@ C        Do not try that with open-shell - it does not work./pawsa
      &       THEN
 C              .. test EMCDIF*grddif against -1.0D-10 instead of 0.0D0
 C                 to avoid round-off problems here /hjaaj Sep 2005
-#endif
+C#endif
 c        IF (ITDIIS.GT.1 .AND. 
 c    &       ( ABS(CVEC(INDEVC)) .LT. 0.2D0 .OR.
 c    &         ABS(CVEC(INDEVC)) .GT. 2.0D0 ) .AND.
