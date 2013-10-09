@@ -58,10 +58,10 @@ contains
 
        Eerr = 0E0_realk
        nbast = D(1)%nrow
-       do_decomp =(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
-            & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
-            & config%decomp%cfg_check_converged_solution .or. &
-            & config%decomp%cfg_rsp_nexcit > 0 .or. config%integral%locallink) 
+       do_decomp =.TRUE. !(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
+!           & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
+!           & config%decomp%cfg_check_converged_solution .or. &
+!           & config%decomp%cfg_rsp_nexcit > 0 .or. config%integral%locallink) 
        integraltransformGC = ls%setting%integraltransformGC
        if (do_decomp) then
           call decomp_shutdown(config%decomp)
