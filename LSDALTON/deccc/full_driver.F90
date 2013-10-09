@@ -29,6 +29,7 @@ module full
   use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
   use cc_debug_routines_module
   use ccdriver!,only: ccsolver_justenergy, ccsolver
+  use fragment_energy_module,only : Full_DECMP2_calculation
 
   public :: full_driver
   private
@@ -54,7 +55,7 @@ contains
     ! run cc program
     if(DECinfo%F12) then ! F12 correction
 #ifdef MOD_UNRELEASED
-       if(DECinfo%ccModel==1) then
+       if(DECinfo%ccModel==MODEL_MP2) then
           call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
        else
           call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
@@ -63,8 +64,16 @@ contains
        call lsquit('f12 not released',-1)
 #endif
     else
-       if(DECinfo%ccModel==1) then
-          call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+       if(DECinfo%ccModel==MODEL_MP2) then
+
+          if(DECinfo%full_print_frag_energies) then
+             ! Call debug routine which calculates individual fragment contributions
+             call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
+          else
+             ! simple canonical MP2 calculation
+             call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+          end if
+
        else
           call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
        end if
@@ -125,7 +134,7 @@ contains
 
 #ifdef MOD_UNRELEASED
 
-       if (DECinfo%ccModel .eq. 4) then
+       if (DECinfo%ccModel == MODEL_CCSDpT) then
           ! ccsd(t) correction
           Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
                & mylsitem,print_level,fragment_job,ypo_fc=ypo_fc,ppfock_fc=ppfock_fc)
@@ -146,7 +155,7 @@ contains
 
 #ifdef MOD_UNRELEASED
 
-       if (Decinfo%ccModel .eq. 4) then
+       if (Decinfo%ccModel == MODEL_CCSDpT) then
 
           Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
                & mylsitem,print_level,fragment_job)
@@ -268,8 +277,7 @@ contains
     type(matrix) :: Fii
     type(matrix) :: Fac
     Real(realk)  :: E21, E21_debug, E22, E22_debug, Gtmp
-    type(array2) :: array2Tai
-    type(array4) :: array4Taibj
+    type(array4) :: array4Taibj,array4gmo
 
     ! Init stuff
     ! **********
@@ -392,8 +400,13 @@ contains
     else
        !  THIS PIECE OF CODE IS MORE GENERAL AS IT DOES NOT REQUIRE CANONICAL ORBITALS
        !    ! Get full MP2 (as specified in input)
-       call full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,array2Tai, array4Taibj)
-       !Calculate standard MP2 energy (both canonical and noncanonical)
+
+       ! KK: Quick and dirty solution to the fact that the MP2 solver requires array4 format.
+       array4gmo = array4_init([nvirt,nocc,nvirt,nocc])
+       array4gmo%val=gmo
+       call mp2_solver(nocc,nvirt,MyMolecule%ppfock,MyMolecule%qqfock,array4gmo,array4Taibj)
+       call array4_free(array4gmo)
+
 
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
 
@@ -594,7 +607,6 @@ contains
     write(DECinfo%output,*) 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', energy
 
     call array4_free(array4Taibj)
-    call array2_free(array2Tai)
     call mem_dealloc(gmo)
 
   end subroutine full_canonical_mp2_f12
@@ -1318,7 +1330,12 @@ contains
     real(realk) :: energy
     type(array4) :: VOVO
     real(realk),pointer :: ppfock(:,:)
-
+    logical :: local
+    local = .true.
+#ifdef VAR_MPI
+    local = .false.
+#endif
+    
 
     ! Quick fix to always use CCSD model
     !    save_model=DECinfo%ccmodel
@@ -1347,18 +1364,18 @@ contains
 
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%numocc
-       call ccsolver(MyMolecule%ypo(1:nbasis,startidx:endidx),&
+       call ccsolver_par(MyMolecule%ypo(1:nbasis,startidx:endidx),&
             & MyMolecule%ypv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
             & print_level,fragment_job,&
-            & ppfock,MyMolecule%qqfock,energy, Tai, Taibj, VOVO,.false.)
+            & ppfock,MyMolecule%qqfock,energy, Tai, Taibj, VOVO,.false.,local)
        call mem_dealloc(ppfock)
 
     else
 
-       call ccsolver(MyMolecule%ypo,MyMolecule%ypv,&
+       call ccsolver_par(MyMolecule%ypo,MyMolecule%ypv,&
             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, fragment_job,&
             & MyMolecule%ppfock,MyMolecule%qqfock,&
-            & energy, Tai, Taibj, VOVO,.false.)
+            & energy, Tai, Taibj, VOVO,.false.,local)
     end if
 
     call array4_free(VOVO)
@@ -1701,7 +1718,9 @@ contains
 
     ! Sanity check
     if(.not. DECinfo%use_canonical) then
-       call lsquit('full_canonical_mp2_correlation_energy requires canonical orbitals!',-1)
+       call lsquit('full_canonical_mp2_correlation_energy requires canonical orbitals! &
+            & Insert .CANONICAL keyword OR insert .PRINTFRAGS keyword to run test calculation,&
+            & where the individual fragment energies are calculated',-1)
     end if
 
     ! Initialize stuff

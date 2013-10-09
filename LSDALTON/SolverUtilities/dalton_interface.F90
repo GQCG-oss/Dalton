@@ -37,6 +37,7 @@ MODULE dal_interface
    use II_XC_interfaceModule
    use IIDFTINT, only: II_DFTsetFunc
    use gridgenerationmodule
+   use ls_util, only: ls_print_gradient
 #ifdef BUILD_GEN1INT_LSDALTON
    ! debug GEN1INT
    use gen1int_host
@@ -2129,11 +2130,11 @@ CONTAINS
       type(lsitem) :: ls
       real(realk), INTENT(INOUT) :: Etotal(ndmat)
       !
-      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat)
+      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp
       integer nbast, lupri,luerr,idmat
       logical :: Dsym,ADMMexchange
       TYPE(Matrix) :: K(ndmat),dXC(ndmat)
-
+      !
       nbast = D(1)%nrow
       fac = 2E0_realk
       IF(matrix_type .EQ. mtype_unres_dense)fac = 1E0_realk
@@ -2167,20 +2168,25 @@ CONTAINS
          do idmat=1,ndmat
             WRITE(lupri,*)'The Coulomb energy contribution ',fac*0.5E0_realk*mat_dotproduct(D(idmat),F(idmat))
          enddo
-
-         !Then we build the ADMM exact exchange matrix K and the XC correction dXC
          do idmat=1,ndmat
             call mat_init(K(idmat),nbast,nbast)
             call mat_init(dXC(idmat),nbast,nbast)
             call mat_zero(K(idmat))
             call mat_zero(dXC(idmat))
             CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
+            Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM
             call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
             Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat)
+            EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
+            write(lupri,*) "ADMM exchange energy contribution: ",EADMM
             call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
+            
+                     
             call mat_free(K(idmat))
             call mat_free(dXC(idmat))
          enddo
+         
+
 ! *********************************************************************************
 ! *                              Regular case          
 ! *********************************************************************************
@@ -2330,6 +2336,7 @@ CONTAINS
             ADMMexchange = .FALSE.
         ENDIF
         IF (ADMMexchange) THEN 
+            call lsquit('ADMM is not fully tested yet for RESPONSE',-1)
             ! GdBs = J(B) + K(b) + X(B) - X(b)
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
         ELSE 
@@ -2728,7 +2735,8 @@ CONTAINS
 
             onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
 
-            IF (io_file_exist(Filename,setting%IO)) THEN
+!           IF (io_file_exist(Filename,setting%IO)) THEN
+            IF (.FALSE.) THEN
                 call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
             ELSE
                 call mat_init(S22,n2,n2)

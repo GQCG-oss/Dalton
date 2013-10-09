@@ -184,6 +184,9 @@ Functional* available_functionals[] = {
     NULL
 };
 
+integer
+clear_funclist();
+
 static integer my_printf(const char *fmt, ...)
 {
     integer i;va_list ap; va_start(ap, fmt); i= vprintf(fmt, ap); va_end(ap);
@@ -211,6 +214,7 @@ fun_select_by_name(const char *conf_string)
     integer ok, i;
     char func_name[20];
 
+    clear_funclist();
     sscanf(conf_string,"%20s", func_name);
     for(i=0; available_functionals[i]; i++)
         if(strcasecmp(available_functionals[i]->name, func_name)==0) {

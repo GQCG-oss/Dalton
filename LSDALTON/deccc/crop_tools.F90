@@ -9,6 +9,9 @@ module crop_tools_module
   use precision
   use tensor_interface_module
 
+  
+  ! DEC DEPENDENCIES (within deccc directory)   
+  ! *****************************************
   use array2_simple_operations
   use array4_simple_operations
 
@@ -196,7 +199,7 @@ module crop_tools_module
     ecorr_s = 0.0E0_realk
     ecorr_d = 0.0E0_realk
 
-    if(t2%atype==DENSE.and.gmo%atype==DENSE.and.(t1%atype==DENSE.or.t1%atype==REPLICATED))then
+    if(t2%itype==DENSE.and.gmo%itype==DENSE.and.(t1%itype==DENSE.or.t1%itype==REPLICATED))then
       do j=1,nocc
          do b=1,nvirt
             do i=1,nocc
@@ -216,11 +219,11 @@ module crop_tools_module
       end if
 
       ecorr = ecorr_s + ecorr_d
-    elseif(t2%atype==TILED_DIST.and.gmo%atype==TILED_DIST)then
-      t1%atype=REPLICATED
+    elseif(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+      t1%itype=REPLICATED
       call array_sync_replicated(t1)
       ecorr=get_cc_energy_parallel(t1,t2,gmo)
-      t1%atype=DENSE
+      t1%itype=DENSE
     endif
 
 
@@ -274,16 +277,23 @@ module crop_tools_module
   !> \param nbasis Number of basis functions
   !> \param nocc Number of occupied orbitals
   !> \param nvirt Number of unoccupied orbitals
-  subroutine print_ccjob_header(ccPrintLevel,fragment_job,nbasis,nocc,nvirt)
+  subroutine print_ccjob_header(ccPrintLevel,fj,multiplier_job,&
+  &nbasis,nocc,nvirt,maxsub)
     implicit none
-    integer, intent(in) :: ccPrintLevel,nbasis,nocc,nvirt
-    logical, intent(in) :: fragment_job
+    integer, intent(in) :: ccPrintLevel,nbasis,nocc,nvirt,maxsub
+    logical, intent(in) :: fj,multiplier_job
 
     if(ccPrintLevel > 0) then
-       if(.not.fragment_job) then
-          write(DECinfo%output,'(/,a)') '--------------------------'
-          write(DECinfo%output,'(a)')   '  Coupled-cluster energy  '
-          write(DECinfo%output,'(a,/)') '--------------------------'
+       if(.not.fj) then
+          if(multiplier_job)then
+             write(DECinfo%output,'(/,a)') '-------------------------------'
+             write(DECinfo%output,'(a)')   '  Coupled-cluster multipliers  '
+             write(DECinfo%output,'(a,/)') '-------------------------------'
+          else
+             write(DECinfo%output,'(/,a)') '--------------------------'
+             write(DECinfo%output,'(a)')   '  Coupled-cluster energy  '
+             write(DECinfo%output,'(a,/)') '--------------------------'
+          endif
           if(DECinfo%CCDhack)then
             write(DECinfo%output,'(a,a)')      'Wave function    = ','CCD'
           else
@@ -294,10 +304,11 @@ module crop_tools_module
           write(DECinfo%output,'(a,i4)')     'Num. occ. orb.   = ',nocc
           write(DECinfo%output,'(a,i4)')     'Num. unocc. orb. = ',nvirt
           write(DECinfo%output,'(a,e8.1e2)') 'Convergence      = ',DECinfo%ccConvergenceThreshold
+          write(DECinfo%output,'(a,l1)')     'Debug routine    = ',DECinfo%CCDEBUG
           write(DECinfo%output,'(a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
           write(DECinfo%output,'(a,i4)')     'Print level      = ',ccPrintLevel
           write(DECinfo%output,'(a,l1)')     'Use CROP         = ',DECinfo%use_crop
-          write(DECinfo%output,'(a,i4)')     'CROP subspace    = ',DECinfo%ccMaxDIIS
+          write(DECinfo%output,'(a,i4)')     'CROP subspace    = ',maxsub
           write(DECinfo%output,'(a,l1)')     'Preconditioner   = ',DECinfo%use_preconditioner
           write(DECinfo%output,'(a,l1)')     'Precond. B       = ',DECinfo%use_preconditioner_in_b
           write(DECinfo%output,'(a,l1)')     'Singles          = ',DECinfo%use_singles
@@ -321,27 +332,132 @@ module crop_tools_module
        end if
 
        ! cc parameters
-       if(ccPrintLevel > 0) then
-          if(fragment_job) then
-             write(DECinfo%output,'(/,a,a)') &
-                  '----  -------------   -------------   -------------   -------------   -------------     ------'
-             write(DECinfo%output,'(a,a)') &
-                  'Iter   1norm(S)        1norm(D)        2norm(S+D)      Targ-N(S+D)     Targ-energy       time  '
-             write(DECinfo%output,'(a,a)') &
-                  '----  -------------   -------------   -------------   -------------   -------------     ------'
-          else
-             write(DECinfo%output,'(/,a,a)') &
-                  '----  -------------   -------------   -------------   -------------   -------------     ------'
-             write(DECinfo%output,'(a,a)') &
-                  'Iter   1norm(S)        1norm(D)        1norm(S+D)      2norm(S+D)      energy            time  '
-             write(DECinfo%output,'(a,a)') &
-                  '----  -------------   -------------   -------------   -------------   -------------     ------'
-          end if
-       end if
+       !if(ccPrintLevel > 0) then
+       !   if(fj) then
+       !      write(DECinfo%output,'(/,a,a)') &
+       !           '----  -------------   -------------   -------------   -------------   -------------     ------'
+       !      write(DECinfo%output,'(a,a)') &
+       !           'Iter   1norm(S)        1norm(D)        2norm(S+D)      Targ-N(S+D)     Targ-energy       time  '
+       !      write(DECinfo%output,'(a,a)') &
+       !           '----  -------------   -------------   -------------   -------------   -------------     ------'
+       !   else
+       !      write(DECinfo%output,'(/,a,a)') &
+       !           '----  -------------   -------------   -------------   -------------   -------------     ------'
+       !      write(DECinfo%output,'(a,a)') &
+       !           'Iter   1norm(S)        1norm(D)        1norm(S+D)      2norm(S+D)      energy            time  '
+       !      write(DECinfo%output,'(a,a)') &
+       !           '----  -------------   -------------   -------------   -------------   -------------     ------'
+       !   end if
+       !end if
     end if
 
-    return
+    if(.not.multiplier_job)then
+      print *
+      print *, '### Starting CC iterations'
+      print *, '### ----------------------'
+      print '(1X,a)',  '###  Iteration     Residual norm          CC energy'
+
+      write(DECinfo%output,*)
+      write(DECinfo%output,*) '### Starting CC iterations'
+      write(DECinfo%output,*) '### ----------------------'
+      write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm          CC energy'
+    else
+      print *
+      print *, '### Starting  Lagrangian iterations'
+      print *, '### -------------------------------'
+      print '(1X,a)',  '###  Iteration     Residual norm'
+
+      write(DECinfo%output,*)
+      write(DECinfo%output,*) '### Starting Lagrangian iterations'
+      write(DECinfo%output,*) '### ------------------------------'
+      write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm'
+    endif
+     
   end subroutine print_ccjob_header
+
+
+  !it = iteration number
+  !norm = norm of the total residual
+  !ce = correlation energy
+  !gm = multipliers yes or no?
+  subroutine print_ccjob_iterinfo(it,norm,ce,gm)
+    implicit none
+    integer,intent(in)     :: it
+    real(realk),intent(in) :: norm,ce
+    logical, intent(in)    :: gm
+    if( gm ) then
+      print '(1X,a,2X,i4,5X,g19.9,4X)',  '### ',it, norm
+      write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X)') &
+         &   '### ',it, norm
+    else
+      print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',it, norm,ce
+      write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
+         &   '### ',it, norm,ce
+    endif
+    
+  end subroutine print_ccjob_iterinfo
+  
+
+
+  ! bi is the logical for break_iterations => success of the crop procedure
+  ! gm is the logical for get_mult(ipliers) => ccequations vs left-hand
+  ! transformations
+  ! fj is the logical for fragment_job => fj or not fj, that is the question
+  ! li is the number of the last iteration
+  ! ce is the correlation energy
+  ! t* are timings
+  subroutine print_ccjob_summary(bi,gm,fj,li,ce,tew,tsw,tec,tsc,t1,t2)
+    implicit none
+    logical, intent(in)        :: bi,gm,fj
+    integer, intent(in)        :: li
+    real(realk), intent(in)    :: ce,tew,tsw,tec,tsc
+    type(array2),intent(inout) :: t1
+    type(array4),intent(inout) :: t2
+    real(realk) :: snorm,dnorm,tnorm
+     call print_norm(t1,snorm,.true.)
+     call print_norm(t2,dnorm,.true.)
+     tnorm = sqrt(snorm+dnorm)
+     snorm = sqrt(snorm)
+     dnorm = sqrt(dnorm)
+
+     write(DECinfo%output,*)
+     write(DECinfo%output,'(/,a)') '-------------------------------'
+     write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '
+     write(DECinfo%output,'(a,/)') '-------------------------------'
+     if(bi) then
+        if(gm)then
+          write(DECinfo%output,'(a)')     'Yeeehaw! left-transformations converged!'
+        else
+          write(DECinfo%output,'(a)')     'Hooray! CC equation is solved!'
+        endif
+     else
+        write(DECinfo%output,'(a,i4,a)')  'Equation not solved in ', &
+             & DECinfo%ccMaxIter, ' iterations!'
+        call lsquit('CC equation not solved!',DECinfo%output)
+     end if
+     write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total cpu time    = ',tec-tsc,' s'
+     write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total wall time   = ',tew-tsw,' s'
+
+     if(fj) then
+        write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ce
+     else
+        if(gm)then
+          if(DECinfo%use_singles)then
+            write(DECinfo%output,'(a,f16.10)')  'Singles multiplier norm  = ',snorm
+          endif
+          write(DECinfo%output,'(a,f16.10)')  'Doubles multiplier norm  = ',dnorm
+          write(DECinfo%output,'(a,f16.10)')  'Total multiplier norm    = ',tnorm
+        else
+          if(DECinfo%use_singles)then
+            write(DECinfo%output,'(a,f16.10)')  'Singles amplitudes norm  = ',snorm
+          endif
+          write(DECinfo%output,'(a,f16.10)')  'Doubles amplitudes norm  = ',dnorm
+          write(DECinfo%output,'(a,f16.10)')  'Total amplitudes norm    = ',tnorm
+          write(DECinfo%output,'(a,f16.10)')  'Corr. energy             = ',ce
+        endif
+     end if
+     write(DECinfo%output,'(a,i5)') 'Number of CC iterations  =', li
+  end subroutine print_ccjob_summary
 
   !> \brief: transform ccsd_doubles, ccsdpt_singles and ccsdpt_doubles from canonical to local basis
   !> \author: Patrick Ettenhuber adapted from Janus Juul Eriksen
@@ -355,7 +471,7 @@ module crop_tools_module
     integer, intent(in) :: no, nv
     !> ccsd_doubles and ccsdpt_doubles
     real(realk), intent(inout) :: t2(nv*nv*no*no), gvovo(nv*nv*no*no)
-    !> unitary transformation matrices
+    !> unitary transformation matrices - indices: (local,semi-canonical)
     real(realk), intent(inout) :: Uocc(no*no), Uvirt(nv*nv)
     !> ccsdpt_singles
     real(realk), intent(inout),optional :: t1(nv*no)
@@ -391,6 +507,7 @@ module crop_tools_module
     !> ccsd_doubles and ccsdpt_doubles
     real(realk), intent(inout) :: t2(nv*nv*no*no), gvovo(nv*nv*no*no)
     !> unitary transformation matrices
+    !> unitary transformation matrices - indices: (local,semi-canonical)
     real(realk), intent(inout) :: Uocc(no*no), Uvirt(nv*nv)
     real(realk) :: UoccT(no*no), UvirtT(nv*nv)
     !> ccsdpt_singles

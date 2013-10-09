@@ -8,6 +8,8 @@ MODULE BUILDBASISSET
   use memory_handling
   use AO_TypeType, only: ExpThr
   use molecule_type
+  use files
+  use molecule_module
 contains
 !> \brief builds the basis structure
 !> \author T. Kjaergaard
@@ -39,9 +41,6 @@ contains
 !>
 SUBROUTINE Build_BASIS(LUPRI,IPRINT,MOLECULE,BASINFO,BASISSETLIBRARY,&
      &BASISLABEL,UNCONTRACTED,SINGLESEGMENT,doprint,DOSPHERICAL,BASISSETNAME)
-use files
-use molecule_type
-use molecule_module
 implicit none
 !> the logical unit number for the output file
 INTEGER            :: LUPRI
@@ -68,13 +67,14 @@ CHARACTER(len=80),OPTIONAL  :: BASISSETNAME
 !
 !INTEGER,pointer         :: CHARGES(:)
 REAL(REALK),pointer         :: CHARGES(:)
+LOGICAL,pointer    :: uCHARGES(:)
 CHARACTER(len=200)  :: BASISDIR
 INTEGER            :: LEN_BASISDIR,LUBAS,NEND,i,j,k,IPOLST,IAUG
 LOGICAL            :: FILE_EXIST,POLFUN,CONTRACTED,GCONT,pointcharge
 CHARACTER(len=200) :: STRING
 INTEGER,pointer  :: BINDEXES(:)
 real(realk)        :: tstart,tend
-integer            :: IT,II,natomtypes,atomtype
+integer            :: IT,II,natomtypes,atomtype,MaxCharge,iatom,icharge
 logical,pointer    :: POINTCHARGES(:)
 
 CONTRACTED=.NOT.UNCONTRACTED
@@ -138,13 +138,35 @@ BASINFO%LABEL=BASISLABEL
 natomtypes = 0
 DO I=1,J  
  IF(present(BASISSETNAME))THEN
-  call mem_alloc(CHARGES,MOLECULE%nAtoms)
-  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
+!  CALL UNIQUE_CHARGES2(LUPRI,MOLECULE,CHARGES,k)
+    MaxCharge = 0
+    DO IATOM=1,MOLECULE%natoms  
+       ICHARGE = INT(MOLECULE%ATOM(IATOM)%CHARGE)
+       MaxCharge = MAX(Icharge,MaxCharge)
+    ENDDO
+    call mem_alloc(uCHARGES,MaxCharge)
+    uCHARGES = .FALSE.
+    DO IATOM=1,MOLECULE%natoms  
+       ICHARGE = INT(MOLECULE%ATOM(IATOM)%CHARGE)
+       uCHARGES(ICHARGE) = .TRUE.
+    ENDDO
+    k = 0
+    DO ICharge=1,MaxCharge
+       IF(uCHARGES(ICharge)) k = k +1
+    ENDDO
+    call mem_alloc(CHARGES,k)
+    k = 0
+    DO ICharge=1,MaxCharge
+       IF(uCHARGES(ICharge))THEN
+          k = k + 1
+          CHARGES(k) = ICharge
+       ENDIF
+    ENDDO
+    call mem_dealloc(uCHARGES)    
  ELSE
-  k=BASISSETLIBRARY%nCharges(BINDEXES(I))
+    k=BASISSETLIBRARY%nCharges(BINDEXES(I))
  ENDIF
  natomtypes = natomtypes + k
- IF(present(BASISSETNAME)) call mem_dealloc(CHARGES)
 ENDDO
 IF(natomtypes.EQ. 0)CALL LSQUIT('Error trying to build basis but found no atoms',lupri)
 CALL INIT_BASISSETINFO_TYPES(BASINFO,natomtypes)
@@ -152,8 +174,8 @@ CALL INIT_BASISSETINFO_TYPES(BASINFO,natomtypes)
 atomtype = 0
 DO I=1,J  
  IF(present(BASISSETNAME))THEN
-  call mem_alloc(CHARGES,MOLECULE%nAtoms)
-  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
+!  call mem_alloc(CHARGES,MOLECULE%nAtoms)
+!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
 !  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
   DO II=1,k
    BASINFO%ATOMTYPE(atomtype+II)%NAME = BASISSETNAME
@@ -268,6 +290,7 @@ END SUBROUTINE Build_BASIS
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE DETERMINE_FAMILYTYPEBASISSET(LUPRI,IPRINT,BASINFO)
+implicit none
 !> the logical unit number for the output file
 INTEGER :: LUPRI
 !> the printlevel integer, determining how much output should be generated
@@ -313,6 +336,7 @@ END SUBROUTINE DETERMINE_FAMILYTYPEBASISSET
 !> \author T. Kjaergaard
 !> \date 2011
 SUBROUTINE DETERMINE_GENERALCONTRACTED(LUPRI,IPRINT,BASINFO,GCONT)
+implicit none
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
 !> the printlevel integer, determining how much output should be generated
@@ -465,7 +489,6 @@ END SUBROUTINE GET_BASISSET_LIB
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE UNIQUE_BASISSETS(LUPRI,MOLECULE,BASISLABEL,BINDEX,b)
-use molecule_type
 implicit none
 TYPE(MOLECULEINFO) :: MOLECULE
 CHARACTER(len=9)   :: BASISLABEL
