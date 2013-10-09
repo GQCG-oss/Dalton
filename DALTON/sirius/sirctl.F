@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -289,6 +289,15 @@ C        Use always NEO for RHF (920221-hjaaj)
 C        unless .NR ALWAYS (FLAG(39)) is set, e.g. for core relax calc.
          IF (.NOT.FLAG(39)) FLAG(38) = .TRUE.
 C
+C        High-spin Fock matrices for all open-shell calcs with dft or direct
+!         HSFOCK=(((DODFT.OR.DIRCAL).AND. NASHT .GE. 1) .OR. HSROHF)
+!        Sep 2013 hjaaj: now HSFOCK also for NASHT.eq.1 because we
+!        have some evidence that the open shell Fock matrix from HSFOCK
+!        gives better convergence than the one from "single open shell"
+         HSFOCK = NASHT .GE. 1
+         IF (CORHOL.OR.CORRLX) HSFOCK = .FALSE.
+         IF (HSFOCK) HSROHF = .TRUE.
+C
 C
          CALL GETTIM(TSTART,WSTART)
 C
@@ -481,6 +490,7 @@ C
       IF ( (DORHF .OR. DOMP2) .AND.
      &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) ) THEN
          HSROHF = .FALSE.
+         HSFOCK = .FALSE.
 C        ... otherwise error in some MCSCF routines
 C            where HSROHF specifications erroneously will be used
          FLAG(25)   = FLAGSV(25)

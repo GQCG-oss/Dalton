@@ -80,6 +80,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
 CRIT2=`$GREP "The following one\-electron property integrals are calculated" $log | wc -l`
@@ -205,7 +210,7 @@ ERROR[13]="STATE 2 (SYM 4) NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

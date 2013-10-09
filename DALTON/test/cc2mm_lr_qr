@@ -189,6 +189,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #  The classical and QM/MM interaction energies compared:
 CRIT1=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * (\-|\-0)\.03404007" $log | wc -l`
 CRIT2=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * (\-|\-0)\.00944547" $log | wc -l`
@@ -205,11 +210,11 @@ CTRL[1]=13
 ERROR[1]="THE CLASSICAL OR QM/MM ENERGY TERMS ARE NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=` $GREP "x * ( |0)\.39849697 * 1\.0128781." $log | wc -l`
-CRIT2=` $GREP "y * (\-|\-0)\.43901603 * \-1\.1158673." $log | wc -l`
-CRIT3=` $GREP "z * ( |0)\.0951269[56] * ( |0)\.241788.." $log | wc -l`
+CRIT1=` $GREP "x * ( |0)\.3984969. * 1\.0128781." $log | wc -l`
+CRIT2=` $GREP "y * (\-|\-0)\.4390160. * \-1\.1158673." $log | wc -l`
+CRIT3=` $GREP "z * ( |0)\.0951269. * ( |0)\.241788.." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[2]=3
+CTRL[2]=9
 ERROR[2]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
 
 # Static dipole-dipole polarizability compared:
@@ -261,7 +266,7 @@ ERROR[4]="STATIC HYPERPOLARIZABILITY COMPONENTS ARE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

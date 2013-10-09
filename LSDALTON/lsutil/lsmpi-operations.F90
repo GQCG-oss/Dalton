@@ -29,8 +29,13 @@ module lsmpi_op
        & lsmpi_print, lsmpi_default_mpi_group, lsmpi_finalize, lsmpi_barrier,&
        & LSMPIREDUCTION, LSMPIREDUCTIONmaster
   use infpar_module
-!  use mpi
+
+#ifdef USE_MPI_MOD_F90
+  use mpi
+#else
   include 'mpif.h'
+#endif 
+
 #endif
   !*****************************************
   !*
@@ -156,8 +161,8 @@ integer(kind=ls_mpik),intent(in) :: comm  ! communicator
 integer(kind=ls_mpik) :: MASTER
 LOGICAL :: SLAVE
 integer(kind=ls_mpik) :: mynum,nodtot,ierr
-call get_rank_for_comm(comm,mynum)
-CALL get_size_for_comm(comm, nodtot, ierr)
+call get_rank_for_comm(comm, mynum)
+CALL get_size_for_comm(comm, nodtot)
 input%numNodes = nodtot 
 input%node = mynum
 
@@ -219,7 +224,7 @@ SUBROUTINE mpicopy_setting(setting,comm)
   Master  = infpar%master
 
   call get_rank_for_comm(comm,mynum)
-  CALL get_size_for_comm(comm, nodtot, ierr)
+  CALL get_size_for_comm(comm, nodtot)
   setting%numNodes = nodtot 
   setting%node = mynum
   setting%comm = comm
@@ -1156,6 +1161,7 @@ call LS_MPI_BUFFER(dalton%DEBUGOVERLAP,Master)
 call LS_MPI_BUFFER(dalton%DEBUG4CENTER,Master)
 call LS_MPI_BUFFER(dalton%DEBUG4CENTER_ERI,Master)
 call LS_MPI_BUFFER(dalton%DEBUGPROP,Master)
+call LS_MPI_BUFFER(dalton%DEBUGICHOR,Master)
 call LS_MPI_BUFFER(dalton%DEBUGGEN1INT,Master)
 call LS_MPI_BUFFER(dalton%DEBUGCGTODIFF,Master)
 call LS_MPI_BUFFER(dalton%DEBUGEP,Master)

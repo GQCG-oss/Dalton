@@ -12,16 +12,22 @@ module lsmpi_type
        & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats
 #ifdef VAR_MPI
   use infpar_module
+#ifdef USE_MPI_MOD_F90
+  use mpi
+#else
   include 'mpif.h'
-!  use mpi
 #endif
+#endif
+
   INTERFACE ls_mpibcast_chunks
     MODULE PROCEDURE ls_mpibcast_realkV_parts44,ls_mpibcast_realkV_parts48,&
                    & ls_mpibcast_realkV_parts84,ls_mpibcast_realkV_parts88
   END INTERFACE ls_mpibcast_chunks
+
   INTERFACE lsmpi_send
     MODULE PROCEDURE lsmpi_send_realkV_4,lsmpi_send_realkV_8
   END INTERFACE lsmpi_send
+
   INTERFACE lsmpi_recv
     MODULE PROCEDURE lsmpi_recv_realkV_4,lsmpi_recv_realkV_8
   END INTERFACE lsmpi_recv
@@ -118,18 +124,16 @@ module lsmpi_type
   END INTERFACE lsmpi_local_reduction
 
 
-  INTERFACE lsmpi_local_allreduce
-     MODULE PROCEDURE lsmpi_local_allreduce_D,&
-          & lsmpi_local_allreduce_D1N4,lsmpi_local_allreduce_D1N8,&
-          & lsmpi_local_allreduce_D2,&
-          & lsmpi_local_allreduce_D3,lsmpi_local_allreduce_D4,&
-          & lsmpi_local_allreduce_int4V,lsmpi_local_allreduce_int4V_wrapper8, &
-          & lsmpi_local_allreduce_int8V,lsmpi_local_allreduce_int8V_wrapper8
-  END INTERFACE lsmpi_local_allreduce
-  INTERFACE lsmpi_local_allreduce_chunks
-    MODULE PROCEDURE lsmpi_local_allreduce_D1N8_parts,&
-          & lsmpi_local_allreduce_D1N4_parts
-  END INTERFACE lsmpi_local_allreduce_chunks
+  INTERFACE lsmpi_allreduce
+     MODULE PROCEDURE lsmpi_allreduce_D,&
+          & lsmpi_allreduce_D1N4,lsmpi_allreduce_D1N8,&
+          & lsmpi_allreduce_D2,&
+          & lsmpi_allreduce_D3,lsmpi_allreduce_D4,&
+          & lsmpi_allreduce_int4V,lsmpi_allreduce_int4V_wrapper8, &
+          & lsmpi_allreduce_int8V,lsmpi_allreduce_int8V_wrapper8, &
+          & lsmpi_allreduce_D1N8_parts, lsmpi_allreduce_D1N4_parts
+  END INTERFACE lsmpi_allreduce
+
 
   interface lsmpi_local_allgatherv
     module procedure lsmpi_localallgatherv_realk4,lsmpi_localallgatherv_realk8
@@ -161,57 +165,79 @@ module lsmpi_type
                  &   lsmpi_acc_int4,lsmpi_acc_int8
   end interface lsmpi_acc
 
+  interface lsmpi_get_acc
+    module procedure lsmpi_get_acc_int444,lsmpi_get_acc_int888
+  end interface lsmpi_get_acc
   !save
+
+!!!!!!!!!!!!!!!!!!!!!!!!!
+!Constants for MPIBUFFER!
+!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #ifdef VAR_MPI
+  integer,parameter     :: LSMPIBROADCAST=1
+  integer,parameter     :: LSMPIREDUCTION=2
+  integer,parameter     :: LSMPIREDUCTIONmaster=3
+  integer,parameter     :: LSMPISENDRECV=4
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!General MPI vars, aka junkbox!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
-  logical :: LSMPIASYNCP
-  integer,parameter :: LSMPIBROADCAST=1
-  integer,parameter :: LSMPIREDUCTION=2
-  integer,parameter :: LSMPIREDUCTIONmaster=3
-  integer,parameter :: LSMPISENDRECV=4
+  logical               :: LSMPIASYNCP
+  logical               :: lsmpi_enabled_comm_procs 
+
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-!#ifdef VAR_LSDEBUG
-  !FOR DEBUGGING USE THE FOLLOWING LINE
-!  integer,parameter :: SPLIT_MPI_MSG=24
-!#else
-  integer,parameter :: SPLIT_MPI_MSG=2147483640
-!#endif
+  integer,parameter     :: SPLIT_MPI_MSG = 2147483640
+
+  !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
+
   type mpigroup
-     integer(kind=ls_mpik) :: groupsize
+     integer(kind=ls_mpik)         :: groupsize
      integer(kind=ls_mpik),pointer :: ranks(:)
   end type mpigroup
+
 #endif
-!integer conversion factor
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!integer conversion factor!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef VAR_INT64
 #ifdef VAR_MPI
 #ifdef VAR_MPI_32BIT_INT
-  integer,parameter :: int_to_short=4 !int64,mpi & mpi32
+  integer,parameter :: int_to_short = 4 !int64,mpi & mpi32
 #else
-  integer,parameter :: int_to_short=8 !int64,mpi nompi32
+  integer,parameter :: int_to_short = 8 !int64,mpi nompi32
 #endif
 #else
-  integer,parameter :: int_to_short=8 !int64 nompi
+  integer,parameter :: int_to_short = 8 !int64 nompi
 #endif
 #else
-  integer,parameter :: int_to_short=4 !no int64
+  integer,parameter :: int_to_short = 4 !no int64
 #endif
-  !nonMPI stuff
-  logical :: AddToBuffer
-  integer(kind=long) :: iLog,iDP,iInt4,iInt8,iSho,iCha
-  integer(kind=long) :: nLog,nDP,nShort,nInteger4,nInteger8,nCha
-  real(realk),pointer :: lsmpibufferDP(:)
-  integer(kind=4),pointer :: lsmpibufferInt4(:)
-  integer(kind=8),pointer :: lsmpibufferInt8(:)
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!Checking and measuring variables!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  logical                     :: AddToBuffer
+  integer(kind=long)          :: iLog,iDP,iInt4,iInt8,iSho,iCha
+  integer(kind=long)          :: nLog,nDP,nShort,nInteger4,nInteger8,nCha
+  real(realk),pointer         :: lsmpibufferDP(:)
+  integer(kind=4),pointer     :: lsmpibufferInt4(:)
+  integer(kind=8),pointer     :: lsmpibufferInt8(:)
   integer(kind=short),pointer :: lsmpibufferSho(:)
-  logical,pointer :: lsmpibufferLog(:)
-  character,pointer :: lsmpibufferCha(:)
-  integer,parameter :: incremLog=169,incremDP=100,incremInteger=626
-  integer,parameter :: incremCha=1510,incremShort=incremInteger*int_to_short
-  real(realk) :: poketime=0.0E0_realk
-  integer(kind=long) :: poketimes = 0
-  real(realk) :: time_win_unlock = 0.0E0_realk
+  logical,pointer             :: lsmpibufferLog(:)
+  character,pointer           :: lsmpibufferCha(:)
+  integer,parameter           :: incremLog=169,incremDP=100,incremInteger=626
+  integer,parameter           :: incremCha=1510,incremShort=incremInteger*int_to_short
+  real(realk)                 :: poketime=0.0E0_realk
+  integer(kind=long)          :: poketimes = 0
+  real(realk)                 :: time_win_unlock = 0.0E0_realk
+
 
 !$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt4,iInt8,iSho,iCha,&
 !$OMP nLog,nDP,nInteger4,nInteger8,nShort,nCha,lsmpibufferDP,lsmpibufferInt4,&
@@ -219,12 +245,6 @@ module lsmpi_type
 
 contains
 
-!var_lsmpi_32
-!############################################################
-!#
-!#   MPI BROADCAST ROUTINES SHOULD NOT BE USED IF IT CAN BE AVOIDED
-!#
-!############################################################
     subroutine ls_mpibcast_integer(buffer,master,comm)
       implicit none
       integer(kind=4) :: buffer
@@ -3926,10 +3946,11 @@ contains
   end subroutine lsmpi_reduction_realkT8
 
   ! MPI all reduce within local group (infpar%lg_comm communicator)
-  subroutine lsmpi_local_allreduce_int8V_wrapper8(rbuffer,n1)
+  subroutine lsmpi_allreduce_int8V_wrapper8(rbuffer,n1,comm)
     implicit none
-    integer(kind=8) :: n1
-    integer(kind=8) :: rbuffer(n1)
+    integer(kind=8)                  :: n1
+    integer(kind=8)                  :: rbuffer(n1)
+    integer(kind=ls_mpik),intent(in) :: comm
 #ifdef VAR_MPI
     integer(kind=4) :: n4,k,i
     integer(kind=ls_mpik) :: ierr,nelms
@@ -3938,34 +3959,36 @@ contains
       do i=1,n1,k
         n4=k
         if(((n1-i)<k).and.(mod(n1-i+1,k)/=0))n4=mod(n1,k)
-        call lsmpi_local_allreduce_int8V(rbuffer(i:i+n4-1),n4)
+        call lsmpi_allreduce_int8V(rbuffer(i:i+n4-1),n4,comm)
       enddo
     else
       IERR=0
       nelms=n1
       CALL MPI_ALLREDUCE(MPI_IN_PLACE,RBUFFER,nelms,MPI_INTEGER8,MPI_SUM,&
-           &infpar%lg_comm,IERR)
+           & comm, IERR)
       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
     endif
 #endif
-  end subroutine lsmpi_local_allreduce_int8V_wrapper8
-  subroutine lsmpi_local_allreduce_int8V(rbuffer,n1)
+  end subroutine lsmpi_allreduce_int8V_wrapper8
+  subroutine lsmpi_allreduce_int8V(rbuffer,n1,comm)
     implicit none
-    integer(kind=4) :: n1
-    integer(kind=8) :: rbuffer(n1)
+    integer(kind=4)                  :: n1
+    integer(kind=8)                  :: rbuffer(n1)
+    integer(kind=ls_mpik),intent(in) :: comm
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: ierr,nelms
     IERR=0
     nelms=n1
     CALL MPI_ALLREDUCE(MPI_IN_PLACE,RBUFFER,nelms,MPI_INTEGER8,MPI_SUM,&
-         &infpar%lg_comm,IERR)
+         &comm,IERR)
     IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif
-  end subroutine lsmpi_local_allreduce_int8V
-  subroutine lsmpi_local_allreduce_int4V_wrapper8(rbuffer,n1)
+  end subroutine lsmpi_allreduce_int8V
+  subroutine lsmpi_allreduce_int4V_wrapper8(rbuffer,n1,comm)
     implicit none
-    integer(kind=8) :: n1
-    integer(kind=4) :: rbuffer(n1)
+    integer(kind=8)                  :: n1
+    integer(kind=4)                  :: rbuffer(n1)
+    integer(kind=ls_mpik),intent(in) :: comm
 #ifdef VAR_MPI
     integer(kind=4) :: n4,k,i
     integer(kind=ls_mpik) :: ierr,nelms
@@ -3974,63 +3997,67 @@ contains
       do i=1,n1,k
         n4=k
         if(((n1-i)<k).and.(mod(n1-i+1,k)/=0))n4=mod(n1,k)
-        call lsmpi_local_allreduce_int4V(rbuffer(i:i+n4-1),n4)
+        call lsmpi_allreduce_int4V(rbuffer(i:i+n4-1),n4,comm)
       enddo
     else
       IERR=0
       nelms=n1
       CALL MPI_ALLREDUCE(MPI_IN_PLACE,RBUFFER,nelms,MPI_INTEGER4,MPI_SUM,&
-         &infpar%lg_comm,IERR)
+         & comm,IERR)
       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
     endif
 #endif
-  end subroutine lsmpi_local_allreduce_int4V_wrapper8
-  subroutine lsmpi_local_allreduce_int4V(rbuffer,n1)
+  end subroutine lsmpi_allreduce_int4V_wrapper8
+  subroutine lsmpi_allreduce_int4V(rbuffer,n1,comm)
     implicit none
-    integer(kind=4) :: n1
-    integer(kind=4) :: rbuffer(n1)
+    integer(kind=4)                  :: n1
+    integer(kind=4)                  :: rbuffer(n1)
+    integer(kind=ls_mpik),intent(in) :: comm
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: ierr,nelms
     IERR=0
     nelms=n1
     CALL MPI_ALLREDUCE(MPI_IN_PLACE,RBUFFER,nelms,MPI_INTEGER4,MPI_SUM,&
-         &infpar%lg_comm,IERR)
+         &comm,IERR)
     IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif
-  end subroutine lsmpi_local_allreduce_int4V
+  end subroutine lsmpi_allreduce_int4V
 
   ! MPI all reduce within local group (infpar%lg_comm communicator)
-  subroutine lsmpi_local_allreduce_D(rbuffer)
+  subroutine lsmpi_allreduce_D(rbuffer,comm)
     implicit none
-    real(realk) :: sbuffer,rbuffer
+    real(realk)                      :: sbuffer,rbuffer
+    integer(kind=ls_mpik),intent(in) :: comm
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: ierr,nel
     IERR=0
     nel=1
     sbuffer=rbuffer
     CALL MPI_ALLREDUCE(SBUFFER,RBUFFER,nel,MPI_DOUBLE_PRECISION&
-    &,MPI_SUM,infpar%lg_comm,IERR)
+    &,MPI_SUM,comm,IERR)
     IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif
-  end subroutine lsmpi_local_allreduce_D
+  end subroutine lsmpi_allreduce_D
 
-  subroutine lsmpi_local_allreduce_D1N4(rbuffer,n1)
+  subroutine lsmpi_allreduce_D1N4(rbuffer,n1,comm)
     implicit none
-    integer(kind=4) :: n1
-    real(realk)         :: rbuffer(n1)
+    integer(kind=4)                  :: n1
+    real(realk)                      :: rbuffer(n1)
+    integer(kind=ls_mpik),intent(in) :: comm
 #ifdef VAR_MPI
     integer(ls_mpik) :: ierr,nel
     IERR=0
     nel=n1
     CALL MPI_ALLREDUCE(MPI_IN_PLACE,RBUFFER,nel,MPI_DOUBLE_PRECISION,&
-         &MPI_SUM,infpar%lg_comm,IERR)
+         &MPI_SUM,comm,IERR)
     IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif
-  end subroutine lsmpi_local_allreduce_D1N4
-  subroutine lsmpi_local_allreduce_D1N8_parts(rbuffer,nelms,split)
+  end subroutine lsmpi_allreduce_D1N4
+  subroutine lsmpi_allreduce_D1N8_parts(rbuffer,nelms,comm,split)
     implicit none
-    integer(kind=8),intent(in) :: nelms
-    real(realk) :: rbuffer(nelms)
+    integer(kind=8),intent(in)       :: nelms
+    real(realk)                      :: rbuffer(nelms)
+    integer(kind=ls_mpik),intent(in) :: comm
     integer,intent(in) :: split
 #ifdef VAR_MPI
     integer(kind=8) :: n,i
@@ -4040,15 +4067,16 @@ contains
       n=split
       n1 = nelms-i+1
       if(((nelms-i)<split).and.(mod(n1,n2)/=0))n=mod(nelms,split)
-      call lsmpi_local_allreduce_D1N8(rbuffer(i:i+n-1),n)
+      call lsmpi_allreduce_D1N8(rbuffer(i:i+n-1),n,comm)
     enddo
 #endif
-  end subroutine lsmpi_local_allreduce_D1N8_parts
-  subroutine lsmpi_local_allreduce_D1N4_parts(rbuffer,nelms,split)
+  end subroutine lsmpi_allreduce_D1N8_parts
+  subroutine lsmpi_allreduce_D1N4_parts(rbuffer,nelms,comm,split)
     implicit none
-    integer(kind=4),intent(in) :: nelms
-    real(realk) :: rbuffer(nelms)
-    integer,intent(in) :: split
+    integer(kind=4),intent(in)       :: nelms
+    real(realk)                      :: rbuffer(nelms)
+    integer(kind=ls_mpik),intent(in) :: comm
+    integer,intent(in)               :: split
 #ifdef VAR_MPI
     integer(kind=8) :: n,i
     integer(kind=8) :: n1,n2
@@ -4057,14 +4085,15 @@ contains
       n=split
       n1 = nelms-i+1
       if(((nelms-i)<split).and.(mod(n1,n2)/=0))n=mod(nelms,split)
-      call lsmpi_local_allreduce_D1N8(rbuffer(i:i+n-1),n)
+      call lsmpi_allreduce_D1N8(rbuffer(i:i+n-1),n,comm)
     enddo
 #endif
-  end subroutine lsmpi_local_allreduce_D1N4_parts
-  subroutine lsmpi_local_allreduce_D1N8(rbuffer,n)
+  end subroutine lsmpi_allreduce_D1N4_parts
+  subroutine lsmpi_allreduce_D1N8(rbuffer,n,comm)
     implicit none
-    integer(kind=8) :: n
-    real(realk) :: rbuffer(n)
+    integer(kind=8)                  :: n
+    real(realk)                      :: rbuffer(n)
+    integer(kind=ls_mpik),intent(in) :: comm
 #ifdef VAR_MPI
     integer(ls_mpik) :: ierr,nel
     integer(kind=8)  :: i,k
@@ -4075,50 +4104,53 @@ contains
         n4=k
         !if((n-i)<k)n4=mod(n,k)
         if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
-        call lsmpi_local_allreduce_D1N4(rbuffer(i:i+n4-1),n4)
+        call lsmpi_allreduce_D1N4(rbuffer(i:i+n4-1),n4,comm)
       enddo
     else
       IERR=0
       nel=n
       CALL MPI_ALLREDUCE(MPI_IN_PLACE,RBUFFER,nel,MPI_DOUBLE_PRECISION,&
-           &MPI_SUM,infpar%lg_comm,IERR)
+           &MPI_SUM,comm,IERR)
       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
     endif
 #endif
-  end subroutine lsmpi_local_allreduce_D1N8
+  end subroutine lsmpi_allreduce_D1N8
 
-  subroutine lsmpi_local_allreduce_D2(rbuffer,n1,n2)
+  subroutine lsmpi_allreduce_D2(rbuffer,n1,n2,comm)
     implicit none
-    integer :: n1,n2
-    real(realk), dimension(n1,n2) :: rbuffer
+    integer                          :: n1,n2
+    real(realk), dimension(n1,n2)    :: rbuffer
+    integer(kind=ls_mpik),intent(in) :: comm
     integer(kind=8) :: n
 #ifdef VAR_MPI
     n=n1*n2
-    call lsmpi_local_allreduce_D1N8(rbuffer,n)
+    call lsmpi_allreduce_D1N8(rbuffer,n,comm)
 #endif
-  end subroutine lsmpi_local_allreduce_D2
+  end subroutine lsmpi_allreduce_D2
 
-  subroutine lsmpi_local_allreduce_D3(rbuffer,n1,n2,n3)
+  subroutine lsmpi_allreduce_D3(rbuffer,n1,n2,n3,comm)
     implicit none
-    integer :: n1,n2,n3
+    integer                          :: n1,n2,n3
     real(realk), dimension(n1,n2,n3) :: rbuffer
+    integer(kind=ls_mpik),intent(in) :: comm
     integer(kind=8) :: n
 #ifdef VAR_MPI
-    n=n1*n2*n3
-    call lsmpi_local_allreduce_D1N8(rbuffer,n)
+    n=(i8*n1)*n2*n3
+    call lsmpi_allreduce_D1N8(rbuffer,n,comm)
 #endif
-  end subroutine lsmpi_local_allreduce_D3
+  end subroutine lsmpi_allreduce_D3
 
-  subroutine lsmpi_local_allreduce_D4(rbuffer,n1,n2,n3,n4)
+  subroutine lsmpi_allreduce_D4(rbuffer,n1,n2,n3,n4,comm)
     implicit none
-    integer :: n1,n2,n3,n4
+    integer                             :: n1,n2,n3,n4
     real(realk), dimension(n1,n2,n3,n4) :: rbuffer
+    integer(kind=ls_mpik),intent(in)    :: comm
     integer(kind=8) :: n
 #ifdef VAR_MPI
-    n=n1*n2*n3*n4
-    call lsmpi_local_allreduce_D1N8(rbuffer,n)
+    n=(i8*n1)*n2*n3*n4
+    call lsmpi_allreduce_D1N8(rbuffer,n,comm)
 #endif
-  end subroutine lsmpi_local_allreduce_D4
+  end subroutine lsmpi_allreduce_D4
 
   ! MPI reduction within local group (infpar%lg_comm communicator)
   subroutine lsmpi_local_max(buffer,master)
@@ -4682,7 +4714,7 @@ contains
        infpar%lg_nodtot = lg(mygroup)%groupsize   
 
        ! Rank within group
-       call MPI_COMM_RANK(infpar%lg_comm,infpar%lg_mynum,ierr)
+       call get_rank_for_comm(infpar%lg_comm,infpar%lg_mynum)
 
        ! Print out
        CALL MPI_GET_PROCESSOR_NAME(HNAME,HSTATUS,IERR)
@@ -4691,7 +4723,7 @@ contains
 
     else  ! Global master
        infpar%lg_nodtot = gmsize
-       call MPI_COMM_RANK(infpar%lg_comm,infpar%lg_mynum,ierr)
+       call get_rank_for_comm (infpar%lg_comm,infpar%lg_mynum)
     end if
 
     call MPI_GROUP_FREE(worldgroup,ierr)
@@ -4820,7 +4852,7 @@ contains
   !> Get number of processors for a specific communicator
   !> \author Thomas Kjaergaard
   !> \date juni 2012
-  subroutine get_size_for_comm(comm,nodtot,ierr)
+  subroutine get_size_for_comm(comm,nodtot)
     implicit none
     !> Communicator
     integer(kind=ls_mpik),intent(in) :: comm
@@ -4957,7 +4989,7 @@ contains
     infpar%lg_nodtot = mysize
 
     ! Rank within group
-    call MPI_COMM_RANK(newcomm,infpar%lg_mynum,ierr)
+    call get_rank_for_comm(newcomm,infpar%lg_mynum)
 
     ! Communicator
     infpar%lg_comm = newcomm
@@ -5001,94 +5033,204 @@ contains
     end subroutine lsmpi_default_mpi_group
 
 
-    subroutine lsmpi_finalize(lupri,doprint)
-    implicit none
-    integer,intent(in) :: lupri
-    logical,intent(in) :: doprint
-!
+    !> \brief calling this routine from the master process will start up
+    !communication processes on all the slaves
+    !> \author Patrick Ettenhuber
+    !> \date 2013
+    subroutine local_group_start_comm_processes
+      implicit none
 #ifdef VAR_MPI
-    integer(kind=ls_mpik) :: o,n,ierr,I,t(1),tag_meminfo,count,dest,tag,from,root
-    integer(kind=long) :: recvbuffer
-    real(realk) :: recvbuffer_real
-    integer(kind=long),pointer :: longintbufferInt(:) 
-#ifdef VAR_INT64
-    integer, parameter :: i2l = 1
+      print *,"STARTING UP THE COMMUNICATION PROCESSES"
+      !impregnate the slaves
+      call ls_mpibcast(GIVE_BIRTH,infpar%master,infpar%lg_comm)
+      !just to find, that the master is also fertile
+      call give_birth_to_child_process
 #else
-    integer, parameter :: i2l = 2
+      call lsquit("ERROR(local_group_start_comm_processes): not available without mpi",-1)
+#endif
+    end subroutine local_group_start_comm_processes
+
+    !> \brief calling this routine from the master process will kill all
+    !communication processes on all the slaves
+    !> \author Patrick Ettenhuber
+    !> \date 2013
+    subroutine local_group_kill_comm_processes
+      implicit none
+#ifdef VAR_MPI
+      print *,"SHUTTING DOWN THE COMMUNICATION PROCESSES"
+      !kill the babies of the slaves
+      call ls_mpibcast(SLAVES_SHUT_DOWN_CHILD,infpar%master,infpar%lg_comm)
+      !kill own baby
+      call shut_down_child_process
+#else
+      call lsquit("ERROR(local_group_kill_comm_processes): not available without mpi",-1)
+#endif
+    end subroutine local_group_kill_comm_processes
+
+    !> \brief make a new communicator for the child and parent process(es)
+    !> \author Patrick Ettenhuber
+    !> \date 2013
+    subroutine get_parent_child_relation
+      implicit none
+      integer(kind=ls_mpik) :: ierr
+      logical(kind=ls_mpik) :: last
+#ifdef VAR_MPI
+
+      if( infpar%parent_comm == MPI_COMM_NULL ) then
+        ! if i am a parent 
+        last = .false.
+        call MPI_INTERCOMM_MERGE( infpar%child_comm, last, infpar%pc_comm, ierr )
+      else
+        ! if i am a child
+        last = .true.
+        call MPI_INTERCOMM_MERGE( infpar%parent_comm, last, infpar%pc_comm, ierr )
+      endif
+
+      call get_rank_for_comm( infpar%pc_comm, infpar%pc_mynum  )
+      call get_size_for_comm( infpar%pc_comm, infpar%pc_nodtot )
+
+      lsmpi_enabled_comm_procs = .true.
+
+      if( infpar%parent_comm == MPI_COMM_NULL .and.  infpar%pc_mynum/=infpar%master )&
+      & call lsquit("ERROR(get_parent_child_relation)&
+      & parent needs to have rank 0 in the pc_comm",-1)
+
+      if( infpar%parent_comm /= MPI_COMM_NULL .and.  infpar%pc_mynum==infpar%master )&
+      & call lsquit("ERROR(get_parent_child_relation)&
+      & child cannot have rank 0 in the pc_comm",-1)
+#endif
+    end subroutine get_parent_child_relation
+
+
+    subroutine give_birth_to_child_process
+      implicit none
+      integer(kind=ls_mpik) :: procs_to_spawn,root,errorcode(1),ierr
+      logical               :: localdalton
+#ifdef VAR_MPI
+
+          procs_to_spawn = int(1,kind=ls_mpik)
+          root           = int(0,kind=ls_mpik)
+
+          !check if the program is in the workdir, if not, spawning is not
+          !possible
+          inquire(file='lsdalton.x', exist=localdalton)
+
+          !if lsdalton.x is in workdir, spawn another process
+          if(localdalton)then
+            call MPI_COMM_SPAWN('./lsdalton.x',MPI_ARGV_NULL,procs_to_spawn,MPI_INFO_NULL,&
+             &root,MPI_COMM_SELF,infpar%child_comm,errorcode,ierr)
+            call get_parent_child_relation
+          else
+            call lsquit("ERROR(give_birth_to_child_process):lsdalton.x was not&
+             &found in the working directory, move it there and restart",-1)
+          endif
+
+#endif
+    end subroutine give_birth_to_child_process
+
+
+    !> \brief free everything related to child processes
+    !> \author Patrick Ettenhuber
+    !> \date 2013
+    subroutine shut_down_child_process
+      implicit none
+      integer(kind=ls_mpik) :: ierr
+      logical(kind=ls_mpik) :: have_priority
+#ifdef VAR_MPI
+
+      if( infpar%parent_comm == MPI_COMM_NULL ) then
+        call MPI_COMM_FREE(infpar%pc_comm,ierr)
+        call MPI_COMM_FREE(infpar%child_comm,ierr)
+      else
+        ! if i am a child
+        call MPI_COMM_FREE(infpar%pc_comm,ierr)
+        call MPI_COMM_FREE(infpar%parent_comm,ierr)
+      endif
+
+      lsmpi_enabled_comm_procs = .false.
+
+#endif
+    end subroutine shut_down_child_process
+
+    subroutine lsmpi_print_mem_info(lupri,mastercall)
+      implicit none
+      integer,intent(in) :: lupri
+      logical,intent(in) :: mastercall
+#ifdef VAR_MPI
+      integer(kind=ls_mpik) :: o,n,ierr,I,t(1),tag_meminfo,count,dest,tag,from,root
+      integer(kind=long) :: recvbuffer
+      real(realk) :: recvbuffer_real
+      integer(kind=long),pointer :: longintbufferInt(:) 
+#ifdef VAR_INT64
+      integer, parameter :: i2l = 1
+#else
+      integer, parameter :: i2l = 2
 #endif
       IERR=0
 
-    tag=2001
-    dest=0
-    t=0
-    o=1;n=0
-    IF(doprint)then
-       if (infpar%mynum.eq.infpar%master) THEN
-          !wake up slaves
-          call ls_mpibcast(LSMPIQUITINFO,infpar%master,MPI_COMM_LSDALTON)
-       ENDIF
-       count = 1
-       root = 0
-       recvbuffer = 0
-       !Total max_mem_used_global across all nodes
-       CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
-            & count,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
-       !IF direct communication is used the unlock times are interesting
-       call lsmpi_reduction(time_win_unlock,infpar%master,MPI_COMM_LSDALTON)
-       print *,"YEAH DEBUG INFO TIME SPENT IN UNLOCK",infpar%mynum,time_win_unlock
-       IF(infpar%mynum.eq.infpar%master) THEN
-          WRITE(lupri,'(A)')'  The total memory used across all MPI nodes'
-          call print_maxmem(lupri,recvbuffer,'TOTAL')
-          Write(lupri,'("time spent in unlock: ",f19.10)')time_win_unlock
-       ENDIF
-       !Largest max_mem_used_global including Master
-       CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
-            & count,MPI_INTEGER8,MPI_MAX,root,MPI_COMM_LSDALTON,IERR)
-       IF(infpar%mynum.eq.infpar%master) THEN
-          WRITE(lupri,'(A)')'  Largest memory allocated on a single MPI slave node (including Master)'
-          call print_maxmem(lupri,recvbuffer,'TOTAL')
-       ENDIF
-       !Largest Slave max_mem_used_global (not including Master)      
-       IF(infpar%mynum.EQ.infpar%master)max_mem_used_global=0
-       CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
-            & count,MPI_INTEGER8,MPI_MAX,root,MPI_COMM_LSDALTON,IERR)
-       IF(infpar%mynum.eq.infpar%master) THEN
-          WRITE(lupri,'(A)')'  Largest memory allocated on a single MPI slave node (exclusing Master)'
-          call print_maxmem(lupri,recvbuffer,'TOTAL')
-       ENDIF
-       IF(infpar%mynum.NE.infpar%master)then
-          call stats_mem(6)
-          call mem_alloc(longintbufferInt,longintbuffersize)
-          call copy_from_mem_stats(longintbufferInt)
-          count=longintbuffersize
-          CALL MPI_SEND(longintbufferInt,count,MPI_INTEGER8,dest,tag,MPI_COMM_LSDALTON,IERR)
-          call mem_dealloc(longintbufferInt)
-       ELSE          
-          DO I=1,infpar%nodtot-1
-             call init_globalmemvar !WARNING removes all mem info on master 
-             call mem_alloc(longintbufferInt,longintbuffersize)
-             count = longintbuffersize
-             CALL MPI_RECV(longintbufferInt,count,MPI_INTEGER8,I,tag,&
-                  & MPI_COMM_LSDALTON,status,IERR)
-             call copy_to_mem_stats(longintbufferInt)
-             call mem_dealloc(longintbufferInt)
-             WRITE(LUPRI,'("  Memory statistics for MPI node number ",i9," ")') I
-             call stats_mpi_mem(lupri)
-          ENDDO
-       ENDIF
-       !Total max_mem_used_global
-       IF(infpar%mynum.NE.infpar%master)then
-          RETURN
-       ENDIF
-    ENDIF
+      tag=2001
+      dest=0
+      t=0
+      o=1;n=0
 
-    if (infpar%mynum.eq.infpar%master) &
-       &call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
+      if ((infpar%mynum.eq.infpar%master).and.mastercall) THEN
+         !wake up slaves
+         call ls_mpibcast(LSMPIPRINTINFO,infpar%master,MPI_COMM_LSDALTON)
+      ENDIF
 
-#ifdef VAR_CHEMSHELL
-     ! jump out of LSDALTON if a slave (instead of STOP)
-     if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
-#else
+      count = 1
+      root = 0
+      recvbuffer = 0
+      !Total max_mem_used_global across all nodes
+      CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
+           & count,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
+      !IF direct communication is used the unlock times are interesting
+
+      call lsmpi_reduction(time_win_unlock,infpar%master,MPI_COMM_LSDALTON)
+  
+      IF(infpar%mynum.eq.infpar%master) THEN
+         WRITE(lupri,'(A)')'  The total memory used across all MPI nodes'
+         call print_maxmem(lupri,recvbuffer,'TOTAL')
+         Write(lupri,'("time spent in unlock: ",f19.10)')time_win_unlock
+      ENDIF
+      !Largest max_mem_used_global including Master
+      CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
+           & count,MPI_INTEGER8,MPI_MAX,root,MPI_COMM_LSDALTON,IERR)
+      IF(infpar%mynum.eq.infpar%master) THEN
+         WRITE(lupri,'(A)')'  Largest memory allocated on a single MPI slave node (including Master)'
+         call print_maxmem(lupri,recvbuffer,'TOTAL')
+      ENDIF
+      !Largest Slave max_mem_used_global (not including Master)      
+      IF(infpar%mynum.EQ.infpar%master)max_mem_used_global=0
+      CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
+           & count,MPI_INTEGER8,MPI_MAX,root,MPI_COMM_LSDALTON,IERR)
+      IF(infpar%mynum.eq.infpar%master) THEN
+         WRITE(lupri,'(A)')'  Largest memory allocated on a single MPI slave node (exclusing Master)'
+         call print_maxmem(lupri,recvbuffer,'TOTAL')
+      ENDIF
+
+
+      IF(infpar%mynum.NE.infpar%master)then
+         call stats_mem(6)
+         call mem_alloc(longintbufferInt,longintbuffersize)
+         call copy_from_mem_stats(longintbufferInt)
+         count=longintbuffersize
+         CALL MPI_SEND(longintbufferInt,count,MPI_INTEGER8,dest,tag,MPI_COMM_LSDALTON,IERR)
+         call mem_dealloc(longintbufferInt)
+
+      ELSE          
+         DO I=1,infpar%nodtot-1
+            call init_globalmemvar !WARNING removes all mem info on master 
+            call mem_alloc(longintbufferInt,longintbuffersize)
+            count = longintbuffersize
+            CALL MPI_RECV(longintbufferInt,count,MPI_INTEGER8,I,tag,&
+                 & MPI_COMM_LSDALTON,status,IERR)
+            call copy_to_mem_stats(longintbufferInt)
+            call mem_dealloc(longintbufferInt)
+            WRITE(LUPRI,'("  Memory statistics for MPI node number ",i9," ")') I
+            call stats_mpi_mem(lupri)
+         ENDDO
+      ENDIF
 
 !!$#ifdef VAR_LSDEBUG
 !!$     count=1
@@ -5103,22 +5245,44 @@ contains
 !!$       print *,"CUMULATIVE MPI POKETIME",recvbuffer_real,recvbuffer,recvbuffer_real/(recvbuffer*1.0E0_realk)
 !!$     endif
 !!$#endif     
+#endif
+    end subroutine lsmpi_print_mem_info
 
-     call MPI_FINALIZE(ierr)
-     if(ierr/=0)then
-       write (*,*) "mpi_finalize returned",ierr
-       call LSMPI_MYFAIL(ierr)
-       call lsquit("ERROR(MPI_FINALIZE):non zero exit)",-1)
-     endif
-     !stop all slaves
-     if (infpar%mynum.ne.infpar%master) STOP
-#endif 
-! #endif VAR_CHEMSHELL
+    subroutine lsmpi_finalize(lupri,mastercall)
+      implicit none
+      integer,intent(in)    :: lupri
+      logical,intent(in)     :: mastercall
+      integer(kind=ls_mpik) :: ierr
+#ifdef VAR_MPI
+      ierr = 0
+
+      if ((infpar%mynum.eq.infpar%master).and.mastercall.and.(infpar%parent_comm==MPI_COMM_NULL))&
+       &call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
+
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !CHECK IF EVERYTHING IS OKAY INSIDE THE MODULE!
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      if(lsmpi_enabled_comm_procs)call lsquit("ERROR(lsmpi_finalize):&
+      &comm processes were enabled on shutdown, this should never occur",-1)
+
+#ifdef VAR_CHEMSHELL
+      ! jump out of LSDALTON if a slave (instead of STOP)
+      if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
+#else
+
+      call MPI_FINALIZE(ierr)
+
+      if(ierr/=0)then
+        write (*,*) "mpi_finalize returned",ierr
+        call LSMPI_MYFAIL(ierr)
+        call lsquit("ERROR(MPI_FINALIZE):non zero exit)",-1)
+      endif
 
 #endif 
-! #endif VAR_MPI
- 
+#endif 
     end subroutine lsmpi_finalize
+
 
     subroutine lsmpi_barrier(comm)
     implicit none
@@ -5557,6 +5721,46 @@ contains
 #endif
   end subroutine lsmpi_get_realkV
 
+  subroutine lsmpi_get_acc_int888(ibuf,obuf,dest,pos,win)
+    integer(kind=8),intent(inout)    :: ibuf
+    integer(kind=8),intent(inout)    :: obuf
+    integer(kind=ls_mpik),intent(in) :: dest,win
+    integer,intent(in)               :: pos
+    integer(kind=ls_mpik)            :: n
+#ifdef VAR_MPI
+    integer(kind=MPI_ADDRESS_KIND)   :: offset
+    
+    n=1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+#ifdef VAR_HAVE_MPI3
+    call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER8,obuf,n,&
+    &MPI_INTEGER8,dest,offset,n,MPI_INTEGER8,MPI_SUM,win,ierr)
+#else
+    call lsquit("ERROR(lsmpi_get_acc):you did not comile with an MPI3 enabled&
+          &MPI library. Recompile.",-1)
+#endif
+#endif
+  end subroutine lsmpi_get_acc_int888
+  subroutine lsmpi_get_acc_int444(ibuf,obuf,dest,pos,win)
+    integer(kind=4),intent(inout)    :: ibuf
+    integer(kind=4),intent(inout)    :: obuf
+    integer(kind=ls_mpik),intent(in) :: dest,win
+    integer,intent(in)               :: pos
+    integer(kind=ls_mpik)            :: n
+#ifdef VAR_MPI
+    integer(kind=MPI_ADDRESS_KIND)   :: offset
+    
+    n=1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+#ifdef VAR_HAVE_MPI3
+    call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER4,obuf,n,&
+    &MPI_INTEGER4,dest,offset,n,MPI_INTEGER4,MPI_SUM,win,ierr)
+#else
+    call lsquit("ERROR(lsmpi_get_acc):you did not comile with an MPI3 enabled&
+          &MPI library. Recompile.",-1)
+#endif
+#endif
+  end subroutine lsmpi_get_acc_int444
 
   subroutine lsmpi_acc_int8(buf,pos,dest,win)
     implicit none

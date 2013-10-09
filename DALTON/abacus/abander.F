@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -3610,7 +3610,7 @@ C     /* Deck mknrmc */
      &                  LWORK,IPRINT)
 ************************************************************
 *** Makes normal coordinates from the molecular hessian, ***
-*** and writes out the  harmonic frequensies according   ***
+*** and writes out the  harmonic frequencies according   ***
 ***             general symmetry species.                ***
 ************************************************************
 #include "implicit.h"
@@ -4221,10 +4221,12 @@ C     *** Print gradient ***
 C
       IF (NPRRDR.GT.0) THEN
 C
-         CALL HEADER('Numerical gradient in ' // TEXT(1:LTXT) //
+         IF (NAORDR.LT.1) THEN
+            CALL HEADER('Numerical gradient in ' // TEXT(1:LTXT) //
      &               ' coordinates',-1)
-C
-         IF (NAORDR.GE.1) THEN
+         ELSE
+            CALL HEADER('Analytical gradient in ' // TEXT(1:LTXT) //
+     &               ' coordinates',-1)
             KCSTRA = 1
             KSCTRA = KCSTRA + NCOOR**2
             KEGRAD = KSCTRA + MXCOOR
@@ -4261,8 +4263,16 @@ C     *** Print hessian ***
 C
       IF (NPRRDR.GT.1) THEN
 C
-         CALL HEADER('Numerical hessian in ' // TEXT(1:LTXT) //
+         IF (PREHES) THEN
+            CALL HEADER('Precalculated hessian in ' // TEXT(1:LTXT) //
      &               ' coordinates',-1)
+         ELSE IF (NAORDR .GE. 2) THEN
+            CALL HEADER('Analytical hessian in ' // TEXT(1:LTXT) //
+     &               ' coordinates',-1)
+         ELSE
+            CALL HEADER('Numerical hessian in ' // TEXT(1:LTXT) //
+     &               ' coordinates',-1)
+         END IF
 C
          IF ((NAORDR.GE.2).AND..NOT.PREHES) THEN
             KCSTRA = 1
@@ -4461,6 +4471,7 @@ C
 C     *** Print hessian in symmetric coordinates ***
 C
       CALL HEADER('Hessian in ' // TEXT(1:LTXT) // ' coordinates',-1)
+      WRITE(LUPRI,'(/8X,A/)') 'Notation: irrep/coordinate number'
 C
       BEGIN = 1
       LAST  = MIN(NDCOOR,KCOL)
@@ -4469,10 +4480,10 @@ C
       IF (MOD(NDCOOR,KCOL).NE.0) NCOL = NCOL + 1
 C
       DO 100 ICOL = 1, NCOL
-         WRITE (LUPRI,1000) (ICRIRP(I,1),I = BEGIN,LAST)
+         WRITE (LUPRI,1000) (ICRIRP(I,1),I,I = BEGIN,LAST)
 C
          DO 200 ICOOR = BEGIN, NDCOOR
-            WRITE (LUPRI,2000) ICRIRP(ICOOR,1),
+            WRITE (LUPRI,2000) ICRIRP(ICOOR,1),ICOOR,
      &                        (HESMOL(ICOOR,I),I=BEGIN,MIN(LAST,ICOOR))
  200     CONTINUE
          WRITE (LUPRI,'(A)') '                                       '
@@ -4597,8 +4608,8 @@ C
          END IF
       END IF
 C
- 1000 FORMAT (8X,6(3X,I4,5X),(3X,I4,5X))
- 2000 FORMAT (1X,I4,2X,6F12.6)
+ 1000 FORMAT (8X,20(I4,'/',I4,3X))
+ 2000 FORMAT (I2,'/',I4,6F12.6)
       RETURN
       END
 C
@@ -4609,7 +4620,7 @@ C     /* Deck tsths1*/
 ************************************************************
 *** Tests the molecular hessian by makeing the cartesian ***
 *** hessian, diagonalizing the mass-weighted hessian and ***
-*** prints the eigenvalues, and harmonic frequancies     ***
+*** prints the eigenvalues, and harmonic frequencies     ***
 ************************************************************
 #include "implicit.h"
 #include "priunit.h"

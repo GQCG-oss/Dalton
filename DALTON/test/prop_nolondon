@@ -116,6 +116,16 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+if $GREP -q "ERI does not work with Cartesian basis." $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Basis set
 CRIT1=`$GREP "O * 1 * 8\.0000 * 44 * 27 * \[11s7p2d\|6s5p1d\]" $log | wc -l`
 CRIT2=`$GREP "H * 2 * 1\.0000 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
@@ -176,25 +186,25 @@ CTRL[6]=5
 ERROR[6]="MAGNETIZABILITIES NOT CORRECT"
 
 # Total magnetizability tensor
-CRIT1=`$GREP "Bx * \-3\.0537786[0-9]* * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * \-*0*\.000000000000 * \-2\.99536[34][0-9]* * \-*0*\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 * \-3\.0622257" $log | wc -l`
+CRIT1=`$GREP "Bx *   \-3\.053778...... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 *   \-2\.995363...... * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 *   \-3\.062225......" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="TOTAL MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Diamagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * \-3\.5093859[0-9]* * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-3\.1230162[0-9]* * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.3015076" $log | wc -l`
+CRIT1=`$GREP "Bx *   \-3\.509386...... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 *   \-3\.123016...... * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 *   \-3\.301507......" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Paramagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * (0| )\.455607[0-9]* * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * (0| )\.127652[0-9]* * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * (0| )\.239281" $log | wc -l`
+CRIT1=`$GREP "Bx * (0| )\.455607...... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 * (0| )\.127652...... * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 * (0| )\.239281......" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
@@ -242,7 +252,7 @@ CTRL[13]=5
 ERROR[13]="CHEMICAL SHIELDING FOR OXYGEN NOT CORRECT"
 
 # Total shielding tensor for O
-CRIT1=`$GREP "O * x * 297\.161....[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT1=`$GREP "O * x * 297\.16(1|2)....[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
 CRIT2=`$GREP "O * y * (0| )\.00000000 * 355\.218....[0-9] * (0| )\.00000000" $log | wc -l`
 CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 * 304\.755....[0-9]" $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
@@ -301,7 +311,7 @@ ERROR[20]="CHEMICAL SHIELDINGS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

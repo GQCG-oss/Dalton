@@ -29,6 +29,9 @@ if(ENABLE_PELIB)
     endif()
     if(MPI_FOUND)
         set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
+        if(MPI_COMPILER_MATCHES)
+            set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DUSE_MPI_MOD_F90")
+        endif()
     endif()
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

@@ -70,9 +70,6 @@ MODULE ls_Integral_Interface
        & lsmpi_free_MPI_task_list, lsmpi_time_harvest,&
        & set_reduced_screen_info, ls_print_tasks
   use infpar_module
-!#ifdef VAR_MPI
-!include 'mpif.h'
-!#endif
 #endif
 
   INTERFACE ls_attachDmatToSetting

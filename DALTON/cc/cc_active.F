@@ -1450,7 +1450,7 @@ C
       READ(LUMOLDEN,'(A8)',END=556) LINE
       GOTO 555
   556 CONTINUE
-#if defined (SYS_OSXLION)
+#if defined (SYS_DARWIN)
       BACKSPACE(LUMOLDEN)
 #endif
 C

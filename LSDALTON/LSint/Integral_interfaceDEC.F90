@@ -588,15 +588,7 @@ setting%output%DECPACKED = .TRUE.
 setting%output%Resultmat => outputintegral
 
 ! Set to zero
-do l=1,dim4
-   do k=1,dim3
-      do j=1,nbast2
-         do i=1,nbast1
-            setting%output%ResultMat(i,j,k,l,1) = 0.0E0_realk
-         end do
-      end do
-   end do
-end do
+call JZERO(setting%output%ResultMat,nbast1,nbast2,dim3,dim4)
 
 CALL ls_setDefaultFragments(setting)
 IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
@@ -654,6 +646,23 @@ ENDIF
 
 call time_II_operations2(JOB_II_GET_DECPACKED4CENTER_J_ERI)
 END SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI
+
+subroutine JZERO(ResultMat,dim1,dim2,dim3,dim4)
+implicit none
+integer,intent(in) :: dim1,dim2,dim3,dim4
+real(realk),intent(inout) :: ResultMat(dim1,dim2,dim3,dim4)
+!
+integer :: i,j,k,l
+do l=1,dim4
+   do k=1,dim3
+      do j=1,dim2
+         do i=1,dim1
+            ResultMat(i,j,k,l) = 0.0E0_realk
+         end do
+      end do
+   end do
+end do
+end subroutine JZERO
 
 !> \brief Calculates the decpacked explicit 4 center eri 
 !> \author T. Kjaergaard
@@ -787,15 +796,7 @@ setting%output%DECPACKED2 = .TRUE.
 setting%output%Resultmat => outputintegral
 
 ! Set to zero
-do j=1,nbast2
- do l=1,dim4
-  do k=1,dim3
-   do i=1,nbast1
-    setting%output%ResultMat(i,k,l,j,1) = 0.0E0_realk
-   end do
-  end do
- end do
-end do
+call JZERO(setting%output%ResultMat,nbast1,dim3,dim4,nbast2)
 
 CALL ls_setDefaultFragments(setting)
 IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
@@ -964,15 +965,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      setting%output%Resultmat => outputintegral
 
      ! Set to zero
-     do l=1,nbast4
-        do k=1,dim3
-           do j=1,nbast2
-              do i=1,dim1
-                 setting%output%ResultMat(i,j,k,l,1) = 0.0E0_realk
-              end do
-           end do
-        end do
-     end do
+     call JZERO(setting%output%ResultMat,dim1,nbast2,dim3,nbast4)
 
      CALL ls_setDefaultFragments(setting)
      IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN

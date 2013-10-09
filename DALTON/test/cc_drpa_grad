@@ -85,6 +85,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, SOSEX and DRCCD energies:
 CRIT1=`$GREP "Final * HF energy: * -98\.57216719" $log | wc -l`
 CRIT2=`$GREP "Total SOSEX Energy: * -98\.58647364" $log | wc -l`
@@ -111,7 +116,7 @@ ERROR[3]="DRCCD (DRPA) GRADIENT IS NOT CORRECT"
 PASSED=1
 for i in 1 2 3
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

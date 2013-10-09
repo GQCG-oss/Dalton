@@ -1,11 +1,11 @@
 \chapter{Finite field calculations}\label{ch:finite}
 
 Despite the large number of properties that in principle can be
-calculated with \dalton , it is often of interest to study the
+calculated with \dalton, it is often of interest to study the
 dependence of these properties under an external electric
 perturbation. This can be easily achieved by adding static electric
 fields\index{finite field}, and thus increase the number of properties
-that can be calculated with \dalton .
+that can be calculated with \dalton.
 
 In the next section we comment briefly on some important aspects of
 finite electric field calculations, and the following section
@@ -47,9 +47,9 @@ the convergence threshold for the solution of the response equations
 if molecular properties are being evaluated.
 
 Whereas the finite field approach may be combined with any property
-that can be calculated with the \resp\ program, more care need to be
+that can be calculated with the \resp\ module, more care need to be
 taken if the finite field method is used with the \aba\
-program. Properties that involve perturbation-dependent basis
+module. Properties that involve perturbation-dependent basis
 sets\index{perturbation-dependent basis set},
 like nuclear shieldings and molecular Hessians, will often introduce
 extra reorthonormalization terms due to the finite field operator, and
@@ -109,8 +109,7 @@ keyword \Key{FIELD}. On the next line, the
 strength of the electric field (in atomic units) is given, and on the following
 line we give the direction of the applied electric field
 (\verb|XDIPLEN|, \verb|YDIPLEN|, or \verb|ZDIPLEN|). Several fields may
-of course be applied at the same time. In comparison with \dalton\
-1.2, the present version of \dalton\ can also calculate the nuclear
+of course be applied at the same time. In comparison with Dalton~1.2, the present version of \dalton\ can also calculate the nuclear
 shielding polarizabilities with respect to an external electric field
 gradient using London atomic orbitals, both using the traceless
 quadrupole operator \Key{THETA} and the second moment of charge

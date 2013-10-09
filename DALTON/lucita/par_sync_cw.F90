@@ -14,7 +14,7 @@ module sync_coworkers
   use dalton_mpi
   use lucita_cfg
   use lucita_mcscf_ci_task
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
 #else
@@ -81,7 +81,7 @@ contains
                 call sync_coworkers_ij_abcd(xarray1,xarray2)
               else
                 call quit('*** sync_coworkers_cfg: sync of 1-/2-el integrals requires& 
- the output arrays in the argument list.***')
+&the output arrays in the argument list.***')
               end if
             case(4) ! distribute previous solution vector (i.e., we restart a CI run)
             case(5) ! synchronize with current expansion point (CEP) vector (MCSCF run)

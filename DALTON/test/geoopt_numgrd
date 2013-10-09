@@ -152,8 +152,8 @@ CTRL[9]=3
 ERROR[9]="SECOND DISPLACEMENT NOT CORRECT"
 
 # First gradient
-CRIT1=`$GREP "\-0*\.0031011" $log | wc -l`
-CRIT2=`$GREP   "0*\.0273827" $log | wc -l`
+CRIT1=`$GREP "\-0*\.003101" $log | wc -l`
+CRIT2=`$GREP   "0*\.027382" $log | wc -l`
 CRIT3=`$GREP "H1 * _1 * \-*0*\.0000000000 * \-0*\.0021928.* 0*\.019362" $log | wc -l`
 CRIT4=`$GREP "H1 * _2 * \-*0*\.0000000000 *   0*\.0021928.* 0*\.019362" $log | wc -l`
 CRIT5=`$GREP "O  * \-*0*\.0000000000 * \-*0*\.0000000000 * \-0*\.038720" $log | wc -l`
@@ -217,7 +217,7 @@ ERROR[16]="GEOMETRY NOT CONVERGED CORRECTLY"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi

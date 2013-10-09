@@ -105,6 +105,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2 and CC3 energies:
 CRIT1=`$GREP "Total SCF   energy: * -7\.5744842494" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * -7\.5922238176" $log | wc -l`
@@ -115,17 +120,17 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 polarizability :
-CRIT1=`$GREP  "ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *12\.684665" $log | wc -l`
-CRIT2=`$GREP  "(-|-0)\.1000 *(|0)\.1000 *230\.56897" $log | wc -l`
-CRIT3=`$GREP  "(-|-0)\.2000 *(|0)\.2000 *8\.8105639" $log | wc -l`
+CRIT1=`$GREP  "ZDIPLEN *\(unrel\.\) *( |-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *( |-|-0|0)\.0000 *12\.684665" $log | wc -l`
+CRIT2=`$GREP  "(-|-0)\.1000 *( |0)\.1000 *230\.56897" $log | wc -l`
+CRIT3=`$GREP  "(-|-0)\.2000 *( |0)\.2000 *8\.8105639" $log | wc -l`
 TEST[2]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=3
 ERROR[2]="CC3 POLARIZABILITY NOT CORRECT"
 
 # CC3 hyperpolarizability :
-CRIT1=`$GREP  "ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *-1050.3968" $log | wc -l`
-CRIT2=`$GREP  "(|-|-0|0)\.0000 *(|0)\.1000 *(-|-0)\.1000 *-401811.17" $log | wc -l`
-CRIT3=`$GREP  "(-|-0)\.2000 *(|0)\.1000 *(|0)\.1000 *-115.90926" $log | wc -l`
+CRIT1=`$GREP  "ZDIPLEN *\(unrel\.\) *( |-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *( |-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *( |-|-0|0)\.0000 *-1050.3968" $log | wc -l`
+CRIT2=`$GREP  "( |-|-0|0)\.0000 *( |0)\.1000 *(-|-0)\.1000 *-401811.17" $log | wc -l`
+CRIT3=`$GREP  "(-|-0)\.2000 *( |0)\.1000 *( |0)\.1000 *-115.90926" $log | wc -l`
 TEST[3]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="CC3 HYPERPOLARIZABILITY NOT CORRECT"

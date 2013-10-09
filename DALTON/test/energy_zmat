@@ -57,6 +57,9 @@ cat > energy_zmat.dal <<'%EOF%'
 .RUN WAVE FUNCTION
 **WAVE FUNCTIONS
 .HF
+*SCF INPUT
+.THRESH
+1.0d-6
 *POPULATION
 .VIRIAL
 .MULLIK
@@ -111,7 +114,7 @@ ERROR[4]="SCF ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

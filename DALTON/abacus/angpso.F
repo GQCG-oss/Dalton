@@ -254,10 +254,11 @@ C -------------------------------------------------
 C     PARAMETOS DE LEO AOPROPER
 C -------------------------------------------------
       CHARACTER*8  STARS, LABEL, B(4)
-      double precision xx(5000000) , A(n,n)
+      double precision A(n,n)
       integer*4 nelem,  mu, nu
       PARAMETER (STARS = '********')
       PARAMETER (LUINP222 = 222)
+      real(8), allocatable :: xx(:)
 C ===================================================
 C ------------------------------------------------
 C       LEO AOPROPER Y ARMO EL VECTOR xx 
@@ -279,6 +280,7 @@ C          WRITE (*, '(5X,I5,3X,4(2X,A8))')  IREC, B
            IF (B(4).EQ.LABEL) then
               IF (B(3).EQ.'SYMMETRI') then
                  nelem = n*(n+1)/2
+                 allocate(xx(nelem))
                  read (LUINP222,end=3,err=2) (xx(i),i=1,nelem)
 C                 write(*,*) 'Found : ', B ,' on FILE AOPPROPER'
                  k = 1
@@ -290,9 +292,10 @@ C                      write(*,*) mu, nu, a(mu,nu)
                      k = k + 1 
                      enddo
                  enddo
+                 deallocate(xx)
               ELSE
                  nelem = n*(n+1)/2
-C                 nelem = n*(n-1)/2
+                 allocate(xx(nelem))
                  read (LUINP222,end=3,err=2) (xx(i),i=1,nelem)
 C                 write(*,*) 'Found : ', B ,' on FILE AOPPROPER'
                  k = 1
@@ -308,6 +311,7 @@ C                        write(*,*) mu, nu, a(mu,nu)
 C                      ENDIF
                     enddo
                  enddo   
+                 deallocate(xx)
               ENDIF  
            ENDIF   
       GO TO 1

@@ -5093,8 +5093,10 @@ n = mat%nrow
 !WRITE(6,'(2X,A4,5E13.3,/(6X,5E13.3))')'VAL:',(VAL(j),j=1,nnz)
 !WRITE(6,'(2X,A4,15I4,/(6X,15I4))')'COL:',(COL(j),j=1,nnz)
 !WRITE(6,'(2X,A4,15I4,/(6X,15I4))')'ROW:',(row(j),j=1,nnz)
-#ifdef VAR_MKL
+#ifdef VAR_CSR
 call mkl_dcsrcoo(job,n,mat%val,mat%col,mat%row,nnz,VAL,ROW,COL,info)
+#else
+call lsquit('Build_single_csr_mat_from_lst requires VAR_CSR',-1)
 #endif
 !print*,'THE CSR from MKL  '
 !call mat_print(mat,1,mat%nrow,1,mat%ncol,6)
@@ -5212,9 +5214,11 @@ DO IMAT = 1,TENSOR%ndim5
    job(8)=1
    n = mat(IMAT)%nrow
    !call mat_print(mat,1,mat%nrow,1,mat%nrow,6)
-#ifdef VAR_MKL
+#ifdef VAR_CSR
    call mkl_dcsrcoo(job,n,mat(IMAT)%val,mat(IMAT)%col,mat(IMAT)%row,nnz(IMAT),&
         &VAL(1:NNZ(IMAT),IMAT),ROW(1:NNZ(IMAT),IMAT),COL(1:NNZ(IMAT),IMAT),info)
+#else
+   call lsquit('Build_array_csr_mat_from_lst requires VAR_CSR',-1)
 #endif
 
 enddo
@@ -5597,6 +5601,7 @@ END SUBROUTINE BUILD_LST_FROM_MATARRAY
 !> \param useAO2 flag to describe if the AO1 item should be used or an empty AO 
 !> \param lupri the logical unit number for the output
 subroutine Build_lst_from_dense_matarray(TENSOR,MAT,AO1,AO2,nbast1,nbast2,nmat,useAO1,useAO2,ODscreen,lupri)
+  implicit none
   TYPE(LSTENSOR)     :: TENSOR
   TYPE(MATRIXP)       :: MAT(:)
   TYPE(AOITEM),target :: AO1,AO2
@@ -5607,6 +5612,7 @@ subroutine Build_lst_from_dense_matarray(TENSOR,MAT,AO1,AO2,nbast1,nbast2,nmat,u
   TYPE(AOITEM),pointer :: AOT1,AOT2,AOT3,AOT4
   logical :: useAO3,useAO4
   LOGICAL :: MATELMZERO
+  integer :: I
   TYPE(LSTAUXITEM) :: LSTAUX
   call SET_EMPTY_AO(AOT)
   AOT1 => AO1
