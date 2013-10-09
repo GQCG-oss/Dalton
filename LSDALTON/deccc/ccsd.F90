@@ -3614,37 +3614,37 @@ contains
     integer,intent(in)::m,nv
     integer ::d,pos,pos2,a,b,c,cged
     logical :: doit
-!#ifdef VAR_OMP
-!    integer :: tid,nthr
-!    integer, external :: omp_get_thread_num,omp_get_max_threads
-!    nthr = omp_get_max_threads()
-!    nthr = min(nthr,nv)
-!    call omp_set_num_threads(nthr)
-!#endif
-!    !OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
-!    !OMP PRIVATE(pos,pos2,d,tid,doit)
-!#ifdef VAR_OMP
-!    tid = omp_get_thread_num()
-!#else 
-!    doit = .true.
-!#endif
+#ifdef VAR_OMP
+    integer :: tid,nthr
+    integer, external :: omp_get_thread_num,omp_get_max_threads
+    nthr = omp_get_max_threads()
+    nthr = min(nthr,nv)
+    call omp_set_num_threads(nthr)
+#endif
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
+    !$OMP PRIVATE(pos,pos2,d,tid,doit)
+#ifdef VAR_OMP
+    tid = omp_get_thread_num()
+#else 
     doit = .true.
+#endif
+!    doit = .true.
     pos =1
     do d=1,nv
-!#ifdef VAR_OMP
-!      doit = (mod(d,nthr) == tid)
-!#endif
+#ifdef VAR_OMP
+      doit = (mod(d,nthr) == tid)
+#endif
       if(doit) then
         pos2=1+(d-1)*m+(d-1)*nv*m
-        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
-        !Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
+!        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
+        Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
       endif
       pos=pos+m*(nv-d+1)
     enddo
-    !OMP END PARALLEL
-!#ifdef VAR_OMP
-!    call omp_set_num_threads(omp_get_max_threads())
-!#endif
+    !$OMP END PARALLEL
+#ifdef VAR_OMP
+    call omp_set_num_threads(omp_get_max_threads())
+#endif
   end subroutine get_I_cged
 
 
@@ -3699,9 +3699,9 @@ contains
             !print *,alpha,gamm,1+eldiag,nb*nb+eldiag,1+elsqre,nb*nb+elsqre,aleg,cagi,nb*nb
             if(fa+alpha==fg+gamm)   call dscal(nb*nb,0.5E0_realk,w2(1+elsqre),1)
             call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
-            !OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-            !OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
-            !OMP DEFAULT(NONE)
+            !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
+            !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
+            !$OMP DEFAULT(NONE)
             if(nbnb>0)then
               !OMP DO
               do delta_b=1,nbnb,bs
@@ -3719,10 +3719,10 @@ contains
                   enddo
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
             if(nbnb>0.and.modb)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do delta=0,bctr
                   do beta=nbnb+1,nb
@@ -3736,10 +3736,10 @@ contains
                   enddo
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
             if(nbnb>0)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do delta=0,bctr
                   do beta=delta+1,bctr
@@ -3756,9 +3756,9 @@ contains
                   &trick(delta_b+delta,delta+delta_b,aleg+1)
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
-            !OMP END PARALLEL 
+            !$OMP END PARALLEL 
             if(modb)then
               do delta=nbnb+1,nb
                 do beta=delta+1,nb
@@ -3794,11 +3794,11 @@ contains
             eldiag = aleg*nb*nb
             elsqre = alpha*nb*nb+gamm*nb*nb*la
             call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
-            !OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-            !OMP SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
-            !OMP DEFAULT(NONE)
+            !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
+            !$OMP SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
+            !$OMP DEFAULT(NONE)
             if(nbnb>0)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do beta_b=delta_b+bs,nbnb,bs
                   do delta=0,bctr
@@ -3813,10 +3813,10 @@ contains
                   enddo
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
             if(nbnb>0.and.modb)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do delta=0,bctr
                   do beta=nbnb+1,nb
@@ -3829,10 +3829,10 @@ contains
                   enddo
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
             if(nbnb>0)then
-              !OMP DO
+              !$OMP DO
               do delta_b=1,nbnb,bs
                 do delta=0,bctr
                   do beta=delta+1,bctr
@@ -3848,9 +3848,9 @@ contains
                   &trick(delta+delta_b,delta_b+delta,aleg+1)
                 enddo
               enddo
-              !OMP END DO NOWAIT
+              !$OMP END DO NOWAIT
             endif
-            !OMP END PARALLEL 
+            !$OMP END PARALLEL 
             if(modb)then
               do delta=nbnb+1,nb
                 do beta=delta+1,nb
@@ -3901,8 +3901,8 @@ contains
     endif
     !get the combined reduced virtual dimension
     crvd = dims(1) * (dims(1)+1) / 2
-    !OMP PARALLEL PRIVATE(i,j,d,cged,ilej) SHARED(crvd,t2,tmi,tpl) DEFAULT(NONE)
-    !OMP DO
+    !$OMP PARALLEL PRIVATE(i,j,d,cged,ilej) SHARED(crvd,t2,tmi,tpl) DEFAULT(NONE)
+    !$OMP DO
     do j=1,dims(3)
       do i=1,j
         cged=1
@@ -3924,8 +3924,8 @@ contains
         enddo
       enddo
     enddo
-    !OMP END DO
-    !OMP END PARALLEL
+    !$OMP END DO
+    !$OMP END PARALLEL
   end subroutine get_tpl_and_tmi
 
 
