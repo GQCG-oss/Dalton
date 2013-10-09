@@ -2907,20 +2907,19 @@ contains
     endif
    
 
-    !OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-    !OMP PRIVATE(i,j,pos1,pos2)
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
+    !$OMP PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
-      !OMP DO 
+      !$OMP DO 
       do i=j,1,-1
         pos1=1+((i+j*(j-1)/2)-1)*nv*nv
         pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
         if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
       enddo
-      !OMP END DO
-      !OMP BARRIER
+      !$OMP END DO
     enddo
-    !OMP BARRIER
-    !OMP DO 
+    !$OMP BARRIER
+    !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
         pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
@@ -2928,8 +2927,8 @@ contains
         if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
       enddo
     enddo
-    !OMP END DO
-    !OMP END PARALLEL
+    !$OMP END DO
+    !$OMP END PARALLEL
 
     do j=no,1,-1
       do i=j,1,-1
@@ -2972,6 +2971,7 @@ contains
     !> sio4 storage space to update during the batched loops
     real(realk),pointer :: sio4(:)
     integer :: nor,pos,i,j
+    integer(kind=8) :: pos1, pos2
 
     nor=no*(no+1)/2
 
@@ -2980,8 +2980,10 @@ contains
     ! (w2):I[alpha gamma i <= j] <- (w3):I[alpha gamma i j]
     do j=1,no
       do i=1,j
-        pos=1+((i+j*(j-1)/2)-1)*la*lg
-        call dcopy(la*lg,w2(1+(i-1)*la*lg+(j-1)*la*lg*no),1,w3(pos),1)
+        pos1=1_long+((i+j*(j-1)/2)-1)*la*(lg*i8)
+        pos2=1_long+(i-1)*la*lg+(j-1)*la*lg*(no*i8)
+        !call dcopy(la*lg,w2(1+(i-1)*la*lg+(j-1)*la*lg*no),1,w3(pos),1)
+        w3(pos1:pos1+la*lg-1) = w2(pos2:pos2+la*lg-1)
       enddo
     enddo
     ! (w3):I[ gamma i <= j alpha] <- (w2):I[alpha gamma i <= j]
@@ -3159,19 +3161,19 @@ contains
     !real(realk),intent(in) :: amps(nv*nv*no*no)
     !type(array),intent(in) :: amps
     real(realk) :: scaleitby
-    integer(kind=8)       :: pos,pos2,pos21,i,j,dim_big,dim_small,ttri,tsq
-    integer ::occ,gamm,alpha,nel2cp,case_sel,full1,full2,offset1,offset2
-    integer :: l1,l2,lsa,lsg,gamm_i_b,a,b,full1T,full2T,jump,ft1,ft2,ncph
+    integer(kind=8)       :: pos,pos2,pos21,i,j,dim_big,dim_small,ttri,tsq,nel2cp,ncph,pos1
+    integer ::occ,gamm,alpha,case_sel,full1,full2,offset1,offset2
+    integer :: l1,l2,lsa,lsg,gamm_i_b,a,b,full1T,full2T,jump,ft1,ft2
     logical               :: second_trafo_step
     real(realk),pointer   :: dumm(:)
-    integer               :: mv((nv*nv)/2),st,pos1,dims(2)
+    integer               :: mv((nv*nv)/2),st,dims(2)
     real(realk),pointer   :: source(:,:),drain(:,:)
     integer(kind=ls_mpik) :: mode
     integer(kind=long)    :: o2v2
 
     o2v2 = int((i8*no)*no*nv*nv,kind=long)
 #ifdef VAR_MPI
-    mode = int(MPI_MODE_NOCHECK,kind=ls_mpik)
+    mode = MPI_MODE_NOCHECK
 #endif
 
     scaleitby=0.5E0_realk
@@ -3292,14 +3294,12 @@ contains
     dim_big   = (i8 * full1 ) * full2
     dim_small = (i8 * full1T) * full2T
 
-#ifndef VAR_LSESSL
-    !OMP PARALLEL DEFAULT(NONE)&
-    !OMP SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
-    !OMP full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
-    !OMP PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
-    !OMP dims,drain,source)
-    !OMP DO
-#endif
+    !$OMP PARALLEL DEFAULT(NONE)&
+    !$OMP SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
+    !$OMP full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
+    !$OMP PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
+    !$OMP dims,i)
+    !$OMP DO
     do occ=1,nor
       do gamm=1,lg-goffs
         gamm_i_b=gamm+goffs
@@ -3371,14 +3371,11 @@ contains
 
           !because of the intrinsic omp-parallelizaton of daxpy the following
           !lines replace the daxpy calls
-          dims=[full1,ncph]
-          call ass_D1to2(w0(aoffs+gamm+(occ-1)*dim_big:&
-                           &aoffs+gamm+(occ-1)*dim_big+full1*ncph-1),drain,dims)
-          dims=[1,ncph]
-          call ass_D1to2(w3(pos2+aoffs:pos2+aoffs+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
-          call ass_D1to2(w3(pos21+aoffs:pos21+aoffs+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          pos = aoffs+gamm+(occ-1)*dim_big
+          do i=0,ncph-1
+            w0(pos+i*full1)=w0(pos+i*full1) + w3(pos2 +aoffs+i)
+            w0(pos+i*full1)=w0(pos+i*full1) - w3(pos21+aoffs+i)
+          enddo
 
           !fill small matrix
           if(gamm>tlen)then
@@ -3388,31 +3385,24 @@ contains
           endif
           !call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
           !call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-          dims=[full1T,ncph]
-          call ass_D1to2(w0(gamm+(occ-1)*full1T*full2T+dim_big*nor:&
-                           &gamm+(occ-1)*full1T*full2T+dim_big*nor+ncph*full1T-1),drain,dims)
-          dims=[1,ncph]
-          call ass_D1to2(w3(pos2:pos2+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
-          call ass_D1to2(w3(pos21:pos21+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          pos = gamm+(occ-1)*full1T*full2T+dim_big*nor
+          do i=0,ncph-1
+            w0(pos+i*full1T) = w0(pos+i*full1T) + w3(pos2 +i)
+            w0(pos+i*full1T) = w0(pos+i*full1T) - w3(pos21+i)
+          enddo
         else
           !call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
           !call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
-          dims=[jump,nel2cp]
-          call ass_D1to2(w0(pos:pos+jump*nel2cp-1),drain,dims)
-          dims=[1,nel2cp]
-          call ass_D1to2(w3(pos2:pos2+nel2cp-1),source,dims)
-          drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) + source(1:1,1:nel2cp)
-          call ass_D1to2(w3(pos21:pos21+nel2cp-1),source,dims)
-          drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) - source(1:1,1:nel2cp)
+          do i=0,nel2cp-1
+            w0(pos+i*jump) = w0(pos+i*jump) + w3(pos2 +i)
+            w0(pos+i*jump) = w0(pos+i*jump) - w3(pos21+i)
+          enddo
         endif
       enddo
     enddo
-#ifndef VAR_LSESSL
-    !OMP END DO
-    !OMP END PARALLEL
-#endif
+    !$OMP END DO
+    !$OMP END PARALLEL
+
     call lsmpi_poke()
 
 
@@ -3453,31 +3443,28 @@ contains
 
     ! add up contributions in the residual with keeping track of i<j
 
-    !OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-    !OMP PRIVATE(i,j,pos1,pos2)
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
+    !$OMP PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
-      !OMP DO 
+      !$OMP DO 
       do i=j,1,-1
         pos1=1+((i+j*(j-1)/2)-1)*nv*nv
         pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        !if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
         if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
       enddo
-      !OMP END DO
-      !OMP BARRIER
+      !$OMP END DO
     enddo
-    !OMP BARRIER
-    !OMP DO 
+    !$OMP BARRIER
+    !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
         pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
         pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-        !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
         if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
       enddo
     enddo
-    !OMP END DO
-    !OMP END PARALLEL
+    !$OMP END DO
+    !$OMP END PARALLEL
 
     do j=no,1,-1
       do i=j,1,-1
@@ -3524,32 +3511,29 @@ contains
       call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
       call lsmpi_poke()
 
-      !OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-      !OMP PRIVATE(i,j,pos1,pos2)
+      !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
+      !$OMP PRIVATE(i,j,pos1,pos2)
       do j=no,1,-1
-        !OMP DO 
+        !$OMP DO 
         do i=j,1,-1
           pos1=1+((i+j*(j-1)/2)-1)*nv*nv
           pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-          !if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
           if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
         enddo
-        !OMP END DO
-        !OMP BARRIER
+        !$OMP END DO
       enddo
-      !OMP BARRIER
-      !OMP DO 
+      !$OMP BARRIER
+      !$OMP DO 
       do j=no,1,-1
         do i=j,1,-1
             pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
             pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-            !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
             if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
         enddo
       enddo
-      !OMP END DO
-      !OMP BARRIER
-      !OMP END PARALLEL
+      !$OMP END DO
+      !$OMP END PARALLEL
+
       do j=no,1,-1
         do i=j,1,-1
             pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
