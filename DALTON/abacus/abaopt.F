@@ -7398,9 +7398,11 @@ C
             END IF
    20    CONTINUE
    30    CONTINUE
+         HESMAX = EVAL(NONTRO)
          SPECAS = .FALSE.
       ELSE
          HESMIN = EVAL(1)
+         HESMAX = EVAL(NONTRO)
          GRDMIN = ABS(GRDDIA(1))
 C
 C        Test whether the lowest Hessian eigenvalue is negative and the
@@ -7412,6 +7414,7 @@ C
       GRDNRM = SQRT(DDOT(NONTRO,GRDDIA,1,GRDDIA,1))
       IF (IPRINT .GT. 5) THEN
          WRITE (LUPRI,'(A,1P,D12.5)') ' HESMIN: ', HESMIN
+         WRITE (LUPRI,'(A,1P,D12.5)') ' HESMAX: ', HESMAX
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDMIN: ', GRDMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDNRM: ', GRDNRM
          WRITE (LUPRI,'(A,1P,D12.5)') ' ZERGRD: ', ZERGRD
@@ -7425,9 +7428,16 @@ C
          IF (IPRINT .GT. 3) WRITE (LUPRI,'(/A/)') ' General case.'
 C
 C        Determine level shift
+C        hjaaj Oct 2013:
+C           We want to find the RNU for which the step length SL is TRUSTR
+C           We want RNU = 0 (Newton step) or RNU > 0 (restricted step)
+C           We know that SL = norm(- (Hess + RNU)^-1 grad )
+C                   Thus SL ≥ norm(grad) / (HESMAX + RNU)
+C                   and  SL ≤ norm(grad) / (HESMIN + RNU)
+C           From this you can derive the formulas for XMIN and XMAX
 C
-         XMIN = GRDNRM/TRUSTR - MIN(HESMIN,D0)
-         XMAX = MAX(D0, - HESMIN + DP5*GRDMIN/TRUSTR)
+         XMIN = MAX(D0,GRDNRM/TRUSTR - HESMIN)
+         XMAX = MAX(D0,GRDNRM/TRUSTR - HESMAX)
          IF (IPRINT .GT. 5) THEN
             WRITE (LUPRI,'(/A,2(1P,D12.5,2X))')
      *         ' XMIN and XMAX before WLKBIS (WSTPLN) minimum walk: ',
