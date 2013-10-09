@@ -160,6 +160,7 @@ c       write(lupri,*) 'Llamando Cuenta para : ', LABEL(j),'  ', LABEL(k)
             write(lupri,*) '< ',LABEL(j),' >< ',LABEL(k),'>' 
         ENDIF 
         S1 = 0.0
+c jix : on NaN issue . should be  nelec/2
         do i1 = 1,NOCCT
            IF (B0(1).Eq.'ORBITAL') then
 C              write(lupri,*) 'Orbital : ',i1, '  Valor', ORBC(i1)
@@ -435,6 +436,7 @@ C       write(*,*) 'delta'
 C          write(*,*) delta(i,a)
           enddo
        enddo
+C jix : on NaN issue : should be  nelec/2 
        do a = 1,noc
           do i = 1,nmos
           ORBC(a) = ORBC(a) + gama(a,i)*delta(i,a)
