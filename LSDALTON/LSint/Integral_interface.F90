@@ -5468,13 +5468,6 @@ CONTAINS
      CALL mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
      CALL mat_mul(S23,T23,'n','t',1E0_realk,0E0_realk,D2)
     
-!Simen DEBUG
-     CALL mat_init(S22,n2,n2)
-     CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-     write(lupri,*) 'DEBUG: Tr(D22,S22)',mat_trAB(S22,D2)
-     CALL mat_free(S22)
-!Simen DEBUG END
-
      IF (McWeeny) THEN
        CALL mat_init(S22,n2,n2)
        CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
