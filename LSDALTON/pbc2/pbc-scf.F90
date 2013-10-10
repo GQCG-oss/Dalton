@@ -622,13 +622,13 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
    call print_bands(bz,ndim,'band-energy')
    call pbc_trans_k_energy(lattice,cellenergies,nfsze,ndim,molecule%nelectrons,bz)
-   E_cell=E_1+E_j+E_K+E_ff+E_nuc!+E_nn
+   !E_cell=E_1+E_j+E_K!+E_ff+E_nuc!+E_nn
    write(lupri,*) 'E(HOMO) =', cellenergies(1)
    write(lupri,*) 'E(LUMO) =', cellenergies(2)
    write(*,*) 'E(HOMO) =', cellenergies(1)
    write(*,*) 'E(LUMO) =', cellenergies(2)
-   write(lupri,*) 'Ecell =', E_cell
-   write(*,*) 'Ecell =', E_cell
+   !write(lupri,*) 'Ecell =', E_cell
+   !write(*,*) 'E electrons E_NF =', E_cell
 
    !stop
    call pbc_free_read_matrices(lattice)
