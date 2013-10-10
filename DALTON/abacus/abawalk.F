@@ -249,7 +249,7 @@ Cpeo mass-scaled coordinates as default
  38            CONTINUE
                   ECKART = .TRUE.
                   DO I = 1, NUCDEP
-                     READ (LUCMD,'(7X,F17.10,2F24.10)') 
+                     READ (LUCMD,'(7X,F17.10,2F24.10)')
      &                    (ECKGEO(J,I), J = 1, 3)
                   END DO
                   GO TO 100
@@ -904,7 +904,7 @@ C
          END IF
       ELSE
          TRUSTX = TRUSTR
-         IF (DIPDER .AND. (IWKTYP .EQ. 6 .AND. .NOT. 
+         IF (DIPDER .AND. (IWKTYP .EQ. 6 .AND. .NOT.
      &                    (V3CAL .OR. VIBAVE))) THEN
             NXYZ = 0
             DO 100 I = 1, 3
@@ -988,7 +988,7 @@ C
          END IF
          CALL CMMASS(WORK(KGEOM),WORK(KAMASS),WORK(KNATYP),WORK(KNUMIS),
      &               IPRWLK)
-C     
+C
 C     Project out translation and rotational motion from the Hessian
 C
          CALL VIBHES(IPRWLK,NCART,WORK(KGEOM),KTRRO,GRDCAR,HESCAR,
@@ -1117,7 +1117,7 @@ C
      *                     IPOINT,IPRWLK)
             END IF
 C
-C     The step should be so small that no important change in energy 
+C     The step should be so small that no important change in energy
 C     should occur, and prediction of the new energy should be zero energy
 C     change. KR, July-97
 C
@@ -1237,7 +1237,7 @@ C
          CALL DCOPY(NCART,COOR,1,CORD,1)
 C
 C     WORK(KFMATF) and WORK(KFMATT) is used as temporary arrays here.
-C     The most important point is that we would like to initialize 
+C     The most important point is that we would like to initialize
 C     WORK(KAMASS)
 C
          CALL CMMASS(WORK(KFMATF),WORK(KAMASS),WORK(KFMATT),WORK(KLAST),
@@ -2158,7 +2158,7 @@ C     ... make a translation of center of cavity to (0,0,0)
             TOTCHR = D0
 C
 C     If we have a finite field, we must ensure that there is a zero
-C     contribution from the nuclear part of the dipole moment to the 
+C     contribution from the nuclear part of the dipole moment to the
 C     total charge. Thus move center-of nuclear charge to the origin
 C
             DO IATOM = 1, NUCIND
@@ -2347,20 +2347,20 @@ C
      &          DIPM0(3), DIPG0(3,NCART), DIPGF(3,NCART),
      &          STPDIX(NCART), GRDDIX(NCART),
      &          FMATF(NCART,NCART,NCART), SUSTO0(3,3), SUSTF(3,3,NCART),
-     &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3), 
-     &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT), 
-     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
+     &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3),
+     &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT),
+     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT),
      &          SRCF(3,3,MXCENT,NCART), POLAR0(3,3),
      &          POLARF(3,3,NCART),
-     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
+     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART),
      &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART)
 C
 #include "inftap.h"
 #include "nuclei.h"
 #include "cbilnr.h"
-      DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR), 
+      DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR),
      &          ROAGLD(3,3,MXFR,MXCOOR), ROAAD(3,3,3,MXFR,MXCOOR),
-     &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR), 
+     &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR),
      &          ROAGLU(3,3,MXFR), ROAAU(3,3,3,MXFR)
 C
       CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
@@ -2380,8 +2380,8 @@ C
      &                                ROAGLU,ROAGLD, ROAAU, ROAAD
       IF (IWKTYP .EQ. 6) READ (LUWLK) NUMMOD, FMATF
       IF (IWKTYP .EQ. 6 .AND. VIBAVE) READ (LUWLK) SUSTO0, SUSTF, GFAC0,
-     &                                GFACF, QUAD0, QUADF, SIGMA0, 
-     &                                SIGMAF, SRC0, SRCF, POLAR0, 
+     &                                GFACF, QUAD0, QUADF, SIGMA0,
+     &                                SIGMAF, SRC0, SRCF, POLAR0,
      &                                POLARF, EFG0, EFGF, SSJ0, SSJF
       CALL GPCLOSE(LUWLK,'KEEP')
 C
@@ -2441,19 +2441,19 @@ C
      &          STPDIA(NCART),GRDDIA(NCART),
      &          FMATF(NCART,NCART,NCART), SUSTO0(3,3), SUSTF(3,3,NCART),
      &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3),
-     &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT), 
-     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
+     &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT),
+     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT),
      &          SRCF(3,3,MXCENT,NCART), POLAR0(3,3), POLARF(3,3,NCART),
-     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
+     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART),
      &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART),
      &          WORK(LWORK)
 C
 #include "inftap.h"
 #include "nuclei.h"
 #include "cbilnr.h"
-      DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR), 
+      DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR),
      &          ROAGLD(3,3,MXFR,MXCOOR), ROAAD(3,3,3,MXFR,MXCOOR),
-     &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR), 
+     &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR),
      &          ROAGLU(3,3,MXFR), ROAAU(3,3,3,MXFR)
 C
       CALL GPOPEN(LUWLK,ABAWLK,'UNKNOWN','SEQUENTIAL','UNFORMATTED',
@@ -2472,8 +2472,8 @@ C
      &                                 ROAAFU,ROAAFD,ROAGNU,ROAGND,
      &                                 ROAGLU,ROAGLD,ROAAU, ROAAD
       IF (IWKTYP .EQ. 6) WRITE (LUWLK) NUMMOD, FMATF
-      IF (IWKTYP .EQ. 6 .AND. VIBAVE)  WRITE (LUWLK) SUSTO0, SUSTF, 
-     &                                 GFAC0, GFACF, QUAD0, QUADF, 
+      IF (IWKTYP .EQ. 6 .AND. VIBAVE)  WRITE (LUWLK) SUSTO0, SUSTF,
+     &                                 GFAC0, GFACF, QUAD0, QUADF,
      &                                 SIGMA0, SIGMAF, SRC0, SRCF,
      &                                 POLAR0, POLARF, EFG0, EFGF,
      &                                 SSJ0, SSJF
@@ -2627,7 +2627,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 C
       CHARACTER*1 STARM, STARE, STARG, STARS, STARH
@@ -3379,7 +3379,7 @@ C
                   STPCAR(ICCOOR) = EVEC(ICCOOR,1)*DISPNC
                ELSE IF (IPOINT .EQ. 4*NUMMOD) THEN
                   STPCAR(ICCOOR) = EVEC(ICCOOR,NUMMOD)*DISPNC
-               ELSE IF ((MOD(IPOINT,4) .EQ. 1) .OR. 
+               ELSE IF ((MOD(IPOINT,4) .EQ. 1) .OR.
      &                  (MOD(IPOINT,4) .EQ. 3)) THEN
                   STPCAR(ICCOOR) = EVEC(ICCOOR,(IPOINT+3)/4)*DISPNC
                ELSE IF (MOD(IPOINT,4) .EQ. 2) THEN
@@ -3610,12 +3610,12 @@ C  /* Deck wlkv3 */
      *                 IPRINT)
 C
 C     Determine anharmonic force field by numerical differentiation
-C     Currently the entire anharmonic is determined only, using 
-C     numerical differentiation of the Hessian. In the future V_imm should 
+C     Currently the entire anharmonic is determined only, using
+C     numerical differentiation of the Hessian. In the future V_imm should
 C     be determined in internal coordinates, using numerical differentiation
-C     of the gradient. This can be used for speeding of the determination 
+C     of the gradient. This can be used for speeding of the determination
 C     of the effective geometry needed for rovibrational averaging.
-C     
+C
 C     K.Ruud, San Diego March 1999
 C
 #include "implicit.h"
@@ -3686,7 +3686,7 @@ C
      *       ' - numerical differentiation is complete.'
 
             DO I = 1, NCART
-               WRITE (LUPRI,'(/A,I5,/A)') 
+               WRITE (LUPRI,'(/A,I5,/A)')
      &              ' Anharmonic force constants (*,*,I):', I,
      &              ' ----------------------------------------'
                CALL OUTPUT(FMATF(1,1,I),1,NCART,1,NCART,NCART,NCART,
@@ -3697,7 +3697,7 @@ Ckr      Print anharmonic force field and analyze in terms of normal
 Ckr      coordinates. Need also some consistency check for the accuray of
 Ckr      of the numerical differentiation, qua what is done for the symmetric
 Ckr      nature of the Hessian.
-Ckr            
+Ckr
          END IF
 C
       END IF
@@ -3711,7 +3711,7 @@ C
 C     Determine anharmonic force field by numerical differentiation
 C     along normal coordinates. Only the anharmonic force constants
 C     needed for determining an effective geometry is considered.
-C     
+C
 C     K.Ruud, San Diego March 1999
 C
 #include "implicit.h"
@@ -3731,7 +3731,7 @@ C
 #include "chrsgn.h"
 C
       FINAL = IPOINT .EQ. 2*NUMMOD
-C      
+C
       CALL DGEMM('N','N',1,NUMMOD,NCART,1.D0,
      &           GRDCAR,1,
      &           EVEC,NCART,0.D0,
@@ -3781,7 +3781,7 @@ C
      *       ' - numerical differentiation is complete.'
 
             DO I = 1, NUMMOD
-               WRITE (LUPRI,'(/A,I5,/A)') 
+               WRITE (LUPRI,'(/A,I5,/A)')
      &              ' Anharmonic force constants (*,*,I):', I,
      &              ' ----------------------------------------'
                CALL OUTPUT(FMATF(1,1,I),1,NUMMOD,1,NUMMOD,NCART,NCART,
@@ -3792,7 +3792,7 @@ Ckr      Print anharmonic force field and analyze in terms of normal
 Ckr      coordinates. Need also some consistency check for the accuray of
 Ckr      of the numerical differentiation, qua what is done for the symmetric
 Ckr      nature of the Hessian.
-Ckr            
+Ckr
          END IF
 C
       END IF
@@ -3827,19 +3827,19 @@ C
       LOGICAL FINAL, ODD
 #include "cbilnr.h"
       DIMENSION GRDCAR(NCRTOT), HESCAR(NCART,NCART), GRAD0(NCRTOT),
-     &          HESS0(NCART,NCART), HESSF(NCART,NCART), DIPM0(3), 
-     &          EVAL(NCART), DIPMF(3,NCART), SUSTO0(3,3), 
+     &          HESS0(NCART,NCART), HESSF(NCART,NCART), DIPM0(3),
+     &          EVAL(NCART), DIPMF(3,NCART), SUSTO0(3,3),
      &          SUSTF(3,3,NCART),
      &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3),
      &          QUADF(3,3,NCART), QUADT(3,3), SIGMA0(3,3,MXCENT),
-     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
-     &          SRCF(3,3,MXCENT,NCART), TMAT(3,3,MXCENT), CSTRA(*), 
-     &          SCTRA(*), POLAR0(3,3), POLARF(3,3,NCART), 
-     &          POLDD(2,3,3,MXFR), ALFA0(3,3,MXFR), 
+     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT),
+     &          SRCF(3,3,MXCENT,NCART), TMAT(3,3,MXCENT), CSTRA(*),
+     &          SCTRA(*), POLAR0(3,3), POLARF(3,3,NCART),
+     &          POLDD(2,3,3,MXFR), ALFA0(3,3,MXFR),
      &          ALFAF(3,3,MXFR,NCART),
-     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
-     &          SPNTOT(MXCOOR,MXCOOR), SSJ0(MXCOOR,MXCOOR), 
-     &          SSJF(MXCOOR,MXCOOR,NCART), ROANL(2,3,3,MXFR), 
+     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART),
+     &          SPNTOT(MXCOOR,MXCOOR), SSJ0(MXCOOR,MXCOOR),
+     &          SSJF(MXCOOR,MXCOOR,NCART), ROANL(2,3,3,MXFR),
      &          ROALO(2,3,3,MXFR), ROANL0(3,3,MXFR), ROALO0(3,3,MXFR),
      &          ROANLF(3,3,MXFR,MXCOOR), ROALOF(3,3,MXFR,MXCOOR),
      &          WORK(LWORK)
@@ -3941,7 +3941,7 @@ C
                   HESSF(I,1) = HESSF(I,1)
      &                 - (ERGMOL - ESTART)/(D12*(DISPLC**2))
             ELSE
-                  HESSF(I,1) = HESSF(I,1) + 
+                  HESSF(I,1) = HESSF(I,1) +
      &                         (D4/D3)*(ERGMOL - ESTART)/(DISPLC**2)
             END IF
          ELSE
@@ -4050,7 +4050,7 @@ C
                WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                DO ICOOR = 1, 3
                   WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                 NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                 NAMDPX(3*(IATOM-1)+ICOOR),
      &                 (SIGMA0(K,ICOOR,IATOM),K=1,3)
                END DO
             END DO
@@ -4062,7 +4062,7 @@ C
                WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                DO ICOOR = 1, 3
                   WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                 NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                 NAMDPX(3*(IATOM-1)+ICOOR),
      &                 (SRC0(K,ICOOR,IATOM),K=1,3)
                END DO
             END DO
@@ -4085,7 +4085,7 @@ C
             DO IATOM = 1, NUCDEP
                DO ICOOR = 1, 3
                   WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                 NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                 NAMDPX(3*(IATOM-1)+ICOOR),
      &                 (EFG0(K,ICOOR,IATOM),K=1,3)
                END DO
             END DO
@@ -4127,17 +4127,17 @@ C
             CALL OUTPUT(DIP0,1,1,1,3,1,3,1,LUPRI)
             IF (MAGSUS) THEN
                CALL HEADER('Magnetizabilities at displaced geometry',1)
-               CALL POLPRI(SUSTOT,'   ',-2)            
+               CALL POLPRI(SUSTOT,'   ',-2)
             END IF
             IF (MOLGFA) THEN
                CALL HEADER('Rotational g tensor at displaced '//
      &                     'geometry',1)
-               CALL POLPRI(GTRAN,'   ',-2)            
+               CALL POLPRI(GTRAN,'   ',-2)
             END IF
             IF (QUADRU) THEN
                CALL HEADER('Molecular quadrupole moment at displaced '//
      &                     'geometry',1)
-               CALL POLPRI(QUADT,'   ',-1)            
+               CALL POLPRI(QUADT,'   ',-1)
             END IF
             IF (SHIELD) THEN
                CALL HEADER('Chemical shielding tensors at displaced '//
@@ -4146,7 +4146,7 @@ C
                   WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                   DO ICOOR = 1, 3
                      WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                    NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                    NAMDPX(3*(IATOM-1)+ICOOR),
      &                    (TMAT(K,ICOOR,IATOM),K=1,3)
                   END DO
                END DO
@@ -4158,14 +4158,14 @@ C
                   WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                   DO ICOOR = 1, 3
                      WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                    NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                    NAMDPX(3*(IATOM-1)+ICOOR),
      &                    (GTRANT(K,ICOOR,IATOM),K=1,3)
                   END DO
                END DO
             END IF
             IF (POLAR) THEN
                CALL HEADER('Polarizability at displaced geometry',1)
-               CALL POLPRI(POLARS,'   ',-1)            
+               CALL POLPRI(POLARS,'   ',-1)
             END IF
             IF (ALFA) THEN
                CALL HEADER('Polarizability at displaced geometry',1)
@@ -4182,7 +4182,7 @@ C
                DO IATOM = 1, NUCDEP
                   DO ICOOR = 1, 3
                      WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                    NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                    NAMDPX(3*(IATOM-1)+ICOOR),
      &                    (ELNQC(K,ICOOR,IATOM),K=1,3)
                   END DO
                END DO
@@ -4221,12 +4221,12 @@ C
                WRITE (LUPRI,'(A)') ' New harmonic force '//
      &              'field, but derivatives read in from file'
 C
-C     We can either check what the user wants (by reading input file), 
+C     We can either check what the user wants (by reading input file),
 C     since the user need to calculate properties in new effective geometry
 C
                CALL ABAINP('**START',WORK,LWORK)
             END IF
-            WRITE (LUPRI,'(/A,/A)') 
+            WRITE (LUPRI,'(/A,/A)')
      &           ' Dipole moment second derivatives:',
      &           ' ---------------------------------'
             WRITE (LUPRI,'(5X,A4,5X,3(5X,A1,11X))') 'Mode','X',
@@ -4236,7 +4236,7 @@ C
      &              IMOD,(DIPMF(ICOOR,IMOD),ICOOR = 1, 3)
             END DO
             IF (MAGSUS) THEN
-               WRITE (LUPRI,'(/A,/A)') 
+               WRITE (LUPRI,'(/A,/A)')
      &              ' Magnetizability tensor second derivatives:',
      &              ' ------------------------------------------'
                WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
@@ -4248,7 +4248,7 @@ C
                END DO
             END IF
             IF (MOLGFA) THEN
-               WRITE (LUPRI,'(/A,/A)') 
+               WRITE (LUPRI,'(/A,/A)')
      &              ' Rotational g tensor second derivatives:',
      &              ' ---------------------------------------'
                WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
@@ -4260,7 +4260,7 @@ C
                END DO
             END IF
             IF (QUADRU) THEN
-               WRITE (LUPRI,'(/A,/A)') 
+               WRITE (LUPRI,'(/A,/A)')
      &              ' Molecular quadrupole moment second derivatives:',
      &              ' -----------------------------------------------'
                WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
@@ -4303,7 +4303,7 @@ C
                END DO
             END IF
             IF (POLAR) THEN
-               WRITE (LUPRI,'(/A,/A)') 
+               WRITE (LUPRI,'(/A,/A)')
      &              ' Polarizability second derivatives:',
      &              ' ----------------------------------'
                WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
@@ -4316,7 +4316,7 @@ C
             END IF
             IF (ALFA) THEN
                DO IFRQR = 1, NFRVAL
-                  WRITE (LUPRI,'(/A,2X,F8.5,/A)') 
+                  WRITE (LUPRI,'(/A,2X,F8.5,/A)')
      &              ' Polarizability second derivatives for frequency:',
      &              FRVAL(IFRQR),
      &              ' -----------------------------------------------'//
@@ -4325,7 +4325,7 @@ C
      &                 'YY','XZ','YZ','ZZ'
                   DO IMOD = 1, NUMMOD
                      WRITE (LUPRI,'(2X,I2,1X,6(2X,F10.6))') IMOD,
-     &                    ((ALFAF(ICOOR,JCOOR,IFRQR,IMOD), 
+     &                    ((ALFAF(ICOOR,JCOOR,IFRQR,IMOD),
      &                    ICOOR = 1, JCOOR), JCOOR = 1, 3)
                   END DO
                END DO
@@ -4357,7 +4357,7 @@ C
             END IF
             IF (OPTROT) THEN
                DO IFRQR = 1, NFRVAL
-               WRITE (LUPRI,'(/A,F8.5,/A)') 
+               WRITE (LUPRI,'(/A,F8.5,/A)')
      &           ' London G matrix second derivatives for frequency:',
      &                 FRVAL(IFRQR),
      &           ' -------------------------------------------------'//
@@ -4369,7 +4369,7 @@ C
      &              ((ROALOF(ICOOR,JCOOR,IFRQR,IMOD), ICOOR = 1, JCOOR),
      &                                           JCOOR = 1, 3)
                END DO
-               WRITE (LUPRI,'(/A,F8.5,/A)') 
+               WRITE (LUPRI,'(/A,F8.5,/A)')
      &          ' No-London G matrix second derivatives for frequency:',
      &                 FRVAL(IFRQR),
      &          ' --------------------------------------------------'//
@@ -6223,6 +6223,7 @@ C          XMIN ; FUNCT(..,XMIN,..) < 0
 C  Output: XDET ; FUNCT(..,XDET,..) = 0
 C
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION GDDIA(*),HESDIA(*)
       PARAMETER ( MAXIT=100 , D2=2.0D0 , D0=0.0D0 , DTEST=1.0D-7 )
       EXTERNAL FUNCT
@@ -6230,7 +6231,11 @@ C
       FMAX  = FUNCT(GDDIA,HESDIA,XMAX,NCORD,TRUSTR)
       FMIN  = FUNCT(GDDIA,HESDIA,XMIN,NCORD,TRUSTR)
       IF ( (FMAX.LT.D0) .OR. (FMIN.GT.D0) ) THEN
+         WRITE(LUPRI,*) 'WLKBIS problem: XMIN, XMAX =',XMIN,XMAX
          WRITE(LUPRI,*) 'WLKBIS problem: FMIN, FMAX =',FMIN,FMAX
+         WRITE(LUPRI,*) 'WLKBIS problem: TRUSTR     =',TRUSTR
+         WRITE(LUPRI,*) 'WLKBIS problem: (GDDIA(i),HESDIA(i),i=1,ncord)'
+         WRITE(LUPRI,'(I5,2F20.10)') (i,GDDIA(i),HESDIA(i),i=1,NCORD)
          RETURN
       END IF
 C
@@ -7227,7 +7232,7 @@ C
          CALL HEADER('Rayleigh properties for parent molecule '//
      &               '(in A**6)',1)
          DO 340 F = 1, NFRVAL
-            WRITE (LUPRI,'(2X,A,F8.6,A,F6.2,A,/2X,A)') 
+            WRITE (LUPRI,'(2X,A,F8.6,A,F6.2,A,/2X,A)')
      &         'frequency: ',FRVAL(F),' a.u. = ',XTNM/FRVAL(F),' nm',
      &         '----------------------------------'
             ALMN  = ALFMN  (ROAAFU(1,1,F))
@@ -7274,9 +7279,9 @@ C
                WRITE (LUPRI,'(5F14.4)') ALMN*GMMNL*XFOAIN,
      &             ALMN*GMMNNL*XFOAIN,BGML*XFOAIN,BGMNL*XFOAIN,BA*XFOAIN
                WRITE (LUPRI,'(/1X,A)') '** Difference para'//
-     &                'meters L-R (1st line) and '//            
-     &                'chirality number (2nd line,*E3) **'          
-               WRITE (LUPRI,'(/6X,A,2(/2X,4F14.6),/)') 
+     &                'meters L-R (1st line) and '//
+     &                'chirality number (2nd line,*E3) **'
+               WRITE (LUPRI,'(/6X,A,2(/2X,4F14.6),/)')
      &           'DELTApar(Lon) DELTAperp(Lon) DELTA0(Lon)   '//
      &           'DELTA180(Lon)',
      &           DZL*XFRAIN, DXL*XFRAIN,D0L*XFRAIN,DBL*XFRAIN,
