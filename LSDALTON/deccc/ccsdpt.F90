@@ -3090,8 +3090,8 @@ contains
     if (infpar%lg_nodtot .gt. 1) then
 
        ! now, reduce o^2v^2 and o^3v integrals onto master
-       call lsmpi_local_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt)
-       call lsmpi_local_allreduce(JAIK%val,nocc,nvirt,nocc,nocc) 
+       call lsmpi_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt,infpar%lg_comm)
+       call lsmpi_allreduce(JAIK%val,nocc,nvirt,nocc,nocc, infpar%lg_comm) 
 
     end if
 
