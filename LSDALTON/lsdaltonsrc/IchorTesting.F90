@@ -2,6 +2,7 @@ MODULE IntegralInterfaceIchorMod
   use precision
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
        & BASISSETLIBRARYITEM
+  use basis_type, only: free_basissetinfo
   use basis_typetype,only: BASISSETINFO,BASISINFO
   use BuildBasisSet, only: Build_BASIS
   use Matrix_module, only: MATRIX, MATRIXP
@@ -19,7 +20,7 @@ MODULE IntegralInterfaceIchorMod
        & mat_daxpy, mat_init, mat_free, mat_write_to_disk, mat_print, mat_zero,&
        & mat_scal, mat_mul, mat_assign, mat_trans
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym
-  use memory_handling, only: mem_alloc, mem_dealloc
+  use memory_handling, only: mem_alloc, mem_dealloc, debug_mem_stats
   use IntegralInterfaceMOD, only: II_get_4center_eri
   use IchorErimoduleHost,only: MAIN_ICHORERI_DRIVER
   use lsmatrix_operations_dense
@@ -55,7 +56,12 @@ CHARACTER(len=20)    :: BASISTYPE(10)
 real(realk)          :: Rxyz(3)
 type(lsmatrix)       :: FINALVALUE(2)
 logical      :: spherical,savedospherical
-logical      :: FAIL(10,10,10,10)
+logical      :: FAIL(10,10,10,10),ALLPASS
+
+!WRITE(lupri,*)'Before IchorUnitTest'
+!call debug_mem_stats(LUPRI)
+
+ALLPASS = .TRUE.
 WRITE(lupri,*)'II_test_Ichor'
 do A=1,80
    BASISSETNAME(A:A) = ' '
@@ -220,6 +226,10 @@ do Ipass = 1,2
        ENDDO
        call mem_dealloc(integralsII)
        call mem_dealloc(integralsIchor)
+       call free_basissetinfo(UNITTESTBASIS(1)%REGULAR)
+       call free_basissetinfo(UNITTESTBASIS(2)%REGULAR)
+       call free_basissetinfo(UNITTESTBASIS(3)%REGULAR)
+       call free_basissetinfo(UNITTESTBASIS(4)%REGULAR)
     ENDDO
    ENDDO
   ENDDO
@@ -240,6 +250,7 @@ do Ipass = 1,2
         write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
              & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
              & BASISTYPE(iBasis4)(10:15),',',ipass,') FAILED'
+        ALLPASS = .FALSE.
      ELSE
         write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
              & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
@@ -260,6 +271,7 @@ do Ipass = 1,2
  call free_moleculeinfo(atomicmolecule(3))
  call free_moleculeinfo(atomicmolecule(4))
  deallocate(atomicmolecule)
+ deallocate(UNITTESTBASIS)
 enddo !ipass 
 iprint=0
 setting%scheme%intprint = 0
@@ -274,9 +286,17 @@ SETTING%BASIS(2)%p => originalBasis
 SETTING%BASIS(3)%p => originalBasis
 SETTING%BASIS(4)%p => originalBasis
 
-
+IF(ALLPASS)THEN
+   WRITE(lupri,'(A)')'Ichor Integrals tested against Thermite: SUCCESSFUL'
+ELSE
+   WRITE(lupri,'(A)')'Ichor Integrals tested against Thermite: FAILED'
+ENDIF
 WRITE(lupri,*)'done II_test_Ichor'
 !call lsquit('II_test_Ichor done',-1)
+
+!WRITE(lupri,*)'After IchorUnitTest'
+!call debug_mem_stats(LUPRI)
+
 END SUBROUTINE II_unittest_Ichor
 
 subroutine build_unittest_atomicmolecule(atomicmolecule,ICHARGE,Rxyz,nAtoms,lupri)
