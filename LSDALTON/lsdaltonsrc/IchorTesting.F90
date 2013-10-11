@@ -218,7 +218,8 @@ do Ipass = 1,2
                            & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                    ELSE
                       write(lupri,'(A,I2,A,I2,A,I2,A,I2,A,ES16.8,A,ES16.8)')&
-                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
+                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                    ENDIF
                 ENDDO
              ENDDO
