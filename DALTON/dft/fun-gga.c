@@ -255,6 +255,12 @@ add_functional(FuncList* lst, Functional* f, real weight)
     return n;
 }
 
+int
+clear_funclist()
+{
+    gga_fun_list = NULL;
+    return 1;
+}
 
 static integer
 xalpha_read(const char* conf_line)

@@ -158,6 +158,8 @@ module dec_typedef_module
      !> Construct Fock matrix from RI integrals (obsolete for the moment)
      !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
      logical :: fock_with_ri
+     !> logial to set whether special communication processes should be spawned
+     logical :: spawn_comm_proc
 
      !> F12 settings
      !> ************

@@ -14,10 +14,15 @@ F90_OBJS = \
         IchorEri_CoulombIntegral_McM_seg_seg_SSSS.o \
         IchorEri_CoulombIntegral_OBS_general.o \
         IchorEri.o \
-        AGC_VerticalRecurrenceQP.o \
-        AGC_TransferRecurrenceQP.o \
-        AGC_HorizontalRecurrenceP.o \
-        AGC_HorizontalRecurrenceQ.o \
+        AGC_VerticalRecurrenceQPA.o \
+        AGC_VerticalRecurrenceQPC.o \
+        AGC_VerticalRecurrenceQPD.o \
+        AGC_TransferRecurrenceQPAtoC.o \
+        AGC_TransferRecurrenceQPDtoA.o \
+        AGC_TransferRecurrenceQPCtoA.o \
+        AGC_HorizontalRecurrencePAtoB.o \
+        AGC_HorizontalRecurrenceQCtoD.o \
+        AGC_HorizontalRecurrenceQDtoC.o \
         AGC_SphContractOBS1.o \
         AGC_SphContractOBS2.o
 

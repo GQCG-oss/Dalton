@@ -204,7 +204,7 @@ CTRL[13]=1
 ERROR[13]="DIPOLE MOMENT AT EFFECTIVE GEOMETRY NOT CORRECT"
 
 # Energy at first displacement
-CRIT1=`$GREP "Final * HF energy\: * \-100\.05480515574[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-100\.0548051557.." $log | wc -l`
 TEST[14]=`expr	$CRIT1`
 CTRL[14]=1
 ERROR[14]="ENERGY AT FIRST DISPLACEMENT NOT CORRECT"

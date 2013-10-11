@@ -240,6 +240,7 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPDtoB.F90
     LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPCtoB.F90
     LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePAtoB.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePBtoA.F90
     LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQCtoD.F90
     LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQDtoC.F90
     LSDALTON/IchorIntegrals/AGC_SphContractOBS1.F90

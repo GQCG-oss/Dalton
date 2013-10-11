@@ -39,6 +39,28 @@ subroutine HorizontalRR_LHS_P1A1B0AtoB(nContPasses,nTUVQ,&
   ENDDO
 end subroutine HorizontalRR_LHS_P1A1B0AtoB
 
+subroutine HorizontalRR_LHS_P1A0B1AtoB(nContPasses,nTUVQ,&
+         & Pdistance12,AuxCont,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContPasses,nTUVQ,lupri
+  real(realk),intent(in) :: Pdistance12(3)
+  real(realk),intent(in) :: AuxCont(4,nTUVQ,nContPasses)
+  real(realk),intent(inout) :: ThetaP(1,2:4,nTUVQ,nContPasses)
+  !Local variables
+  integer :: iP,iTUVQ,iTUVA
+  real(realk) :: Xab,Yab,Zab
+  Xab = Pdistance12(1)
+  Yab = Pdistance12(2)
+  Zab = Pdistance12(3)
+  DO iP = 1,nContPasses
+   DO iTUVQ = 1,nTUVQ
+      ThetaP( 1, 2,iTUVQ,IP) = AuxCont( 2,iTUVQ,IP) + Xab*AuxCont( 1,iTUVQ,IP) 
+      ThetaP( 1, 3,iTUVQ,IP) = AuxCont( 3,iTUVQ,IP) + Yab*AuxCont( 1,iTUVQ,IP) 
+      ThetaP( 1, 4,iTUVQ,IP) = AuxCont( 4,iTUVQ,IP) + Zab*AuxCont( 1,iTUVQ,IP) 
+   ENDDO
+  ENDDO
+end subroutine HorizontalRR_LHS_P1A0B1AtoB
+
 subroutine HorizontalRR_LHS_P2A1B1AtoB(nContPasses,nTUVQ,&
          & Pdistance12,AuxCont,ThetaP,lupri)
   implicit none

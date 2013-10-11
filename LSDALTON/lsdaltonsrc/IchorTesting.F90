@@ -140,6 +140,7 @@ do Ipass = 1,2
     do iBasis2 = 1,nBasis
      do iBasis3 = 1,nBasis
       do iBasis4 = 1,nBasis
+
        ibasiselm(1) = iBasis1
        ibasiselm(2) = iBasis2
        ibasiselm(3) = iBasis3
@@ -154,15 +155,15 @@ do Ipass = 1,2
        enddo
        dim1 = nbast(1); dim2 = nbast(2); dim3 = nbast(3); dim4 = nbast(4)
        !due to current code restrictions
-       IF(dim2.GT.dim1)CYCLE
-       IF(dim3/nPass.GT.dim1)CYCLE
-       IF(dim4.GT.dim3/nPass)CYCLE
-       IF(dim3/nPass+dim4.GT.dim1+dim2)CYCLE
+!       IF(dim2.GT.dim1)CYCLE
+!       IF(dim3/nPass.GT.dim1)CYCLE
+!       IF(dim4.GT.dim3/nPass)CYCLE
+!       IF(dim3/nPass+dim4.GT.dim1+dim2)CYCLE
        
        write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),&
             & ',',BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
        
-!       write(lupri,*)'dim:',dim1,dim2,dim3,dim4
+       write(lupri,*)'dim:',dim1,dim2,dim3,dim4
        
        Setting%sameMol = .FALSE.
        Setting%sameFrag = .FALSE.
@@ -190,10 +191,10 @@ do Ipass = 1,2
 !       print*,'dim1,dim2,dim3,dim4',dim1,dim2,dim3,dim4
        call mem_alloc(integralsIchor,dim1,dim2,dim3,dim4)
        integralsIchor = 0.0E0_realk
-       !   setting%scheme%intprint = 1000
+!          setting%scheme%intprint = 1000
 !       WRITE(lupri,*)'IchorDriver'
        call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integralsIchor,spherical)
-       !   setting%scheme%intprint = 0
+!          setting%scheme%intprint = 0
        write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
             & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
        DO D=1,dim4
@@ -209,9 +210,9 @@ do Ipass = 1,2
                       write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
                       write(lupri,'(A,ES16.8)')'DIFF                   ',&
                            & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
-!                   ELSE
-!                      write(lupri,'(A,I2,A,I2,A,I2,A,I2,A,ES16.8,A,ES16.8)')&
-!                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                   ELSE
+                      write(lupri,'(A,I2,A,I2,A,I2,A,I2,A,ES16.8,A,ES16.8)')&
+                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                    ENDIF
                 ENDDO
              ENDDO
@@ -230,10 +231,10 @@ do Ipass = 1,2
    do iBasis3 = 1,nBasis
     do iBasis4 = 1,nBasis
        !warning this only works if number is realted to angmom
-     IF(iBasis2.GT.iBasis1)CYCLE
-     IF(iBasis3.GT.iBasis1)CYCLE
-     IF(iBasis4.GT.iBasis3)CYCLE
-     IF(iBasis3+iBasis4.GT.iBasis1+iBasis2)CYCLE  
+!     IF(iBasis2.GT.iBasis1)CYCLE
+!     IF(iBasis3.GT.iBasis1)CYCLE
+!     IF(iBasis4.GT.iBasis3)CYCLE
+!     IF(iBasis3+iBasis4.GT.iBasis1+iBasis2)CYCLE  
 
      IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4)) THEN
         write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
@@ -313,9 +314,9 @@ do I=1,nAtoms
    atomicmolecule%ATOM(I)%Mass = 0.0E0_realk    
    atomicmolecule%ATOM(I)%CovRad = 0.0E0_realk      
    atomicmolecule%ATOM(I)%Frag = 0.0E0_realk
-   atomicmolecule%ATOM(I)%CENTER(1) = Rxyz(1)*I
-   atomicmolecule%ATOM(I)%CENTER(2) = Rxyz(2)*I
-   atomicmolecule%ATOM(I)%CENTER(3) = Rxyz(3)*I
+   atomicmolecule%ATOM(I)%CENTER(1) = Rxyz(1)!*I
+   atomicmolecule%ATOM(I)%CENTER(2) = Rxyz(2)!*I
+   atomicmolecule%ATOM(I)%CENTER(3) = Rxyz(3)!*I
    atomicmolecule%ATOM(I)%Atomic_number = 0 
    atomicmolecule%ATOM(I)%Charge = Icharge       
    atomicmolecule%ATOM(I)%nbasis=0 

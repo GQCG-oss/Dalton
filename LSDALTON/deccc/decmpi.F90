@@ -1676,6 +1676,7 @@ contains
     call ls_mpi_buffer(DECitem%CCDEBUG,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_MPICH,Master)
+    call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)

@@ -18,7 +18,7 @@ CONTAINS
     integer :: nTUVLIST,nTUVLISTactual
     integer,pointer :: TwoTermTUVLIST(:)
 
-    WRITE(*,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoC'
+    WRITE(*,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODBtoC'
     WRITE(*,'(A)')' use IchorPrecisionModule'
     WRITE(*,'(A)')'  '
     WRITE(*,'(A)')' CONTAINS'
@@ -67,15 +67,15 @@ CONTAINS
           WRITE(*,'(A)')''
           IF(JP.LT.10)THEN
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I1,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I1,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ELSE
-                WRITE(*,'(A,I1,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I1,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ENDIF
           ELSE
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I2,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I2,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ELSE
-                WRITE(*,'(A,I2,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I2,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoC(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ENDIF
           ENDIF
 
@@ -228,15 +228,15 @@ CONTAINS
           WRITE(*,'(A)')'  ENDDO'
           IF(JP.LT.10)THEN
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I1,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC'
+                WRITE(*,'(A,I1,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoC'
              ELSE
-                WRITE(*,'(A,I1,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC'
+                WRITE(*,'(A,I1,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoC'
              ENDIF
           ELSE
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I2,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC'
+                WRITE(*,'(A,I2,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoC'
              ELSE
-                WRITE(*,'(A,I2,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoC'
+                WRITE(*,'(A,I2,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoC'
              ENDIF
           ENDIF
           deallocate(TUVINDEX)

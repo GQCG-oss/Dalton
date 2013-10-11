@@ -18,7 +18,7 @@ CONTAINS
     integer :: nTUVLIST,nTUVLISTactual
     integer,pointer :: TwoTermTUVLIST(:)
 
-    WRITE(*,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoD'
+    WRITE(*,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODBtoD'
     WRITE(*,'(A)')' use IchorPrecisionModule'
     WRITE(*,'(A)')'  '
     WRITE(*,'(A)')' CONTAINS'
@@ -69,15 +69,15 @@ CONTAINS
           WRITE(*,'(A)')''
           IF(JP.LT.10)THEN
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I1,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I1,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ELSE
-                WRITE(*,'(A,I1,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I1,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ENDIF
           ELSE
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I2,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I2,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ELSE
-                WRITE(*,'(A,I2,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I2,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ENDIF
           ENDIF
 
@@ -86,7 +86,7 @@ CONTAINS
           WRITE(*,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD'
           WRITE(*,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)'
           WRITE(*,'(A)')'  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)'
-          WRITE(*,'(A)')'  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimD)'
+          WRITE(*,'(A)')'  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)'
           WRITE(*,'(A,I5,A)')'  real(realk),intent(in) :: Aux(',nTUV,',nPrimQ*nPrimP*nPasses)'
           WRITE(*,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimQ*nPrimP*nPasses)'
           WRITE(*,'(A)')'!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)'
@@ -231,15 +231,15 @@ CONTAINS
           WRITE(*,'(A)')'  ENDDO'
           IF(JP.LT.10)THEN
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I1,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoD'
+                WRITE(*,'(A,I1,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoD'
              ELSE
-                WRITE(*,'(A,I1,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoD'
+                WRITE(*,'(A,I1,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoD'
              ENDIF
           ELSE
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I2,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoD'
+                WRITE(*,'(A,I2,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoD'
              ELSE
-                WRITE(*,'(A,I2,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'AtoD'
+                WRITE(*,'(A,I2,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'BtoD'
              ENDIF
           ENDIF
           deallocate(TUVINDEX)

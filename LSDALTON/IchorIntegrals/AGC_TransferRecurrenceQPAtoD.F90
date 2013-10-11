@@ -9,7 +9,7 @@ subroutine TransferRecurrenceP1Q1AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)
+  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   10,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(    4,    4,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -68,7 +68,7 @@ subroutine TransferRecurrenceP2Q1AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)
+  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   20,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   10,    4,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -145,7 +145,7 @@ subroutine TransferRecurrenceP2Q2AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)
+  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   35,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   10,   10,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -313,7 +313,7 @@ subroutine TransferRecurrenceP3Q1AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)
+  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   35,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   20,    4,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -420,7 +420,7 @@ subroutine TransferRecurrenceP3Q2AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)
+  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   56,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   20,   10,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -693,7 +693,7 @@ subroutine TransferRecurrenceP4Q1AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)
+  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   56,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   35,    4,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -845,7 +845,7 @@ subroutine TransferRecurrenceP3Q3AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)
+  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   84,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   20,   20,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -1472,7 +1472,7 @@ subroutine TransferRecurrenceP4Q2AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)
+  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   84,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   35,   10,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -1898,7 +1898,7 @@ subroutine TransferRecurrenceP4Q3AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)
+  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(  120,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   35,   20,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -2885,7 +2885,7 @@ subroutine TransferRecurrenceP4Q4AtoD(nPasses,nPrimP,nPrimQ,reducedExponents,&
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)
+  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(  165,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   35,   35,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)

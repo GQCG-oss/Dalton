@@ -376,6 +376,7 @@ C
       EQUIVALENCE (ITMP,MLINE)
 #endif
 #include "cbieri.h"
+#include "cbirea.h"
 C
       NDMAT = NDMT
 C
@@ -401,16 +402,20 @@ C   /molinc/
 #if defined (SYS_T3D)
          CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
 #else
-         CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
+         CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 #endif
 C   /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C   /infpar/
          CALL MPIXBCAST(NODTOT,NPARI,'INTEGER',MASTER)
-C   /cbieri/ integers
+C   /cbieri/
          CALL MPIXBCAST(NDMAT ,NCBII,'INTEGER',MASTER)
-C   /cbieri/ logicals
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
+C   /cbirea/
+         CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
 C  comr12
          CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
          CALL MPIXBCAST(LMULBS,1,'LOGICAL',MASTER)
@@ -437,7 +442,7 @@ C
 C   /molinp/
          CALL PVMXPACK(NMLINE,1,'INTEGER')
 C   /molinc/
-         CALL PVMXPACK(MLINE ,80*NMLINE,'STRING')
+         CALL PVMXPACK(MLINE ,len_MLINE*NMLINE,'STRING')
 C   /inforb/
          CALL PVMXPACK(MULD2H,NINFI,'INTEGER')
 C   /infpar/
@@ -1312,6 +1317,7 @@ C
 #include "inforb.h"
 #include "r12int.h"
 #include "cbieri.h"
+#include "cbirea.h"
 #if defined (SYS_T3D)
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER
@@ -1345,7 +1351,7 @@ C   /molinc/
 #if defined (SYS_T3D)
          CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
 #else
-         CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
+         CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 #endif
 C   /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
@@ -1354,6 +1360,11 @@ C   /infpar/
 C   /cbieri/
          CALL MPIXBCAST(NDMAT ,NCBII,'INTEGER',MASTER)
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
+C   /cbirea/
+         CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
 C  comr12
          CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
          CALL MPIXBCAST(LMULBS,1,'LOGICAL',MASTER)
@@ -1383,7 +1394,7 @@ C
 C   /molinp/
          CALL PVMXUNPACK(NMLINE,1,'INTEGER')
 C   /molinc/
-         CALL PVMXUNPACK(MLINE,80*NMLINE,'STRING')
+         CALL PVMXUNPACK(MLINE,len_MLINE*NMLINE,'STRING')
 C   /inforb/
          CALL PVMXUNPACK(MULD2H,NINFI,'INTEGER')
 C   /infpar/

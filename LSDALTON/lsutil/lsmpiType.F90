@@ -164,6 +164,9 @@ module lsmpi_type
                  &   lsmpi_acc_int4,lsmpi_acc_int8
   end interface lsmpi_acc
 
+  interface lsmpi_get_acc
+    module procedure lsmpi_get_acc_int444,lsmpi_get_acc_int888
+  end interface lsmpi_get_acc
   !save
 #ifdef VAR_MPI
   integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
@@ -5003,98 +5006,165 @@ contains
 
     end subroutine lsmpi_default_mpi_group
 
-
-    subroutine lsmpi_finalize(lupri,doprint)
-    implicit none
-    integer,intent(in) :: lupri
-    logical,intent(in) :: doprint
-!
+    !> \brief make a new communicator for the child and parent process(es)
+    !> \author Patrick Ettenhuber
+    !> \date 2013
+    subroutine get_parent_child_relation
+      implicit none
+      integer(kind=ls_mpik) :: ierr
+      logical(kind=ls_mpik) :: last
 #ifdef VAR_MPI
-    integer(kind=ls_mpik) :: o,n,ierr,I,t(1),tag_meminfo,count,dest,tag,from,root
-    integer(kind=long) :: recvbuffer
-    real(realk) :: recvbuffer_real
-    integer(kind=long),pointer :: longintbufferInt(:) 
+
+      if( infpar%parent_comm == MPI_COMM_NULL ) then
+        ! if i am a parent 
+        last = .false.
+        call MPI_INTERCOMM_MERGE( infpar%child_comm, last, infpar%pc_comm, ierr )
+      else
+        ! if i am a child
+        last = .true.
+        call MPI_INTERCOMM_MERGE( infpar%parent_comm, last, infpar%pc_comm, ierr )
+      endif
+
+      call MPI_COMM_RANK( infpar%pc_comm, infpar%pc_mynum, ierr )
+      call MPI_COMM_SIZE( infpar%pc_comm, infpar%pc_nodtot, ierr )
+
+      !if( infpar%parent_comm == MPI_COMM_NULL ) print *,"old",infpar%lg_mynum,infpar%pc_mynum,infpar%pc_nodtot
+      !if( infpar%parent_comm /= MPI_COMM_NULL ) print *,"new",infpar%lg_mynum,infpar%pc_mynum,infpar%pc_nodtot
+      !call mpi_barrier(infpar%pc_comm,ierr)
+      !call mpi_barrier(infpar%lg_comm,ierr)
+      !stop 0
+#endif
+    end subroutine get_parent_child_relation
+
+
+    subroutine give_birth_to_child_process
+      implicit none
+      integer(kind=ls_mpik) :: procs_to_spawn,root,errorcode(1),ierr
+      logical               :: localdalton
+#ifdef VAR_MPI
+
+          procs_to_spawn = int(1,kind=ls_mpik)
+          root           = int(0,kind=ls_mpik)
+
+          !check if the program is in the workdir, if not, spawning is not
+          !possible
+          inquire(file='lsdalton.x', exist=localdalton)
+
+          !if lsdalton.x is in workdir, spawn another process
+          if(localdalton)then
+            call MPI_COMM_SPAWN('./lsdalton.x',MPI_ARGV_NULL,procs_to_spawn,MPI_INFO_NULL,&
+             &root,MPI_COMM_SELF,infpar%child_comm,errorcode,ierr)
+            call get_parent_child_relation
+          else
+            call lsquit("ERROR(give_birth_to_child_process):lsdalton.x was not&
+             &found in the working directory, move it there and restart",-1)
+          endif
+
+#endif
+    end subroutine give_birth_to_child_process
+
+
+    !> \brief free everything related to child processes
+    !> \author Patrick Ettenhuber
+    !> \date 2013
+    subroutine shut_down_child_process
+      implicit none
+      integer(kind=ls_mpik) :: ierr
+      logical(kind=ls_mpik) :: have_priority
+#ifdef VAR_MPI
+
+      if( infpar%parent_comm == MPI_COMM_NULL ) then
+        call ls_mpibcast(CHILD_SHUT_DOWN,infpar%pc_mynum,infpar%pc_comm)
+        call MPI_COMM_FREE(infpar%pc_comm,ierr)
+        call MPI_COMM_FREE(infpar%child_comm,ierr)
+      else
+        ! if i am a child
+        call MPI_COMM_FREE(infpar%pc_comm,ierr)
+        call MPI_COMM_FREE(infpar%parent_comm,ierr)
+      endif
+
+#endif
+    end subroutine shut_down_child_process
+
+    subroutine lsmpi_print_mem_info(lupri,mastercall)
+      implicit none
+      integer,intent(in) :: lupri
+      logical,intent(in) :: mastercall
+#ifdef VAR_MPI
+      integer(kind=ls_mpik) :: o,n,ierr,I,t(1),tag_meminfo,count,dest,tag,from,root
+      integer(kind=long) :: recvbuffer
+      real(realk) :: recvbuffer_real
+      integer(kind=long),pointer :: longintbufferInt(:) 
 #ifdef VAR_INT64
-    integer, parameter :: i2l = 1
+      integer, parameter :: i2l = 1
 #else
-    integer, parameter :: i2l = 2
+      integer, parameter :: i2l = 2
 #endif
       IERR=0
 
-    tag=2001
-    dest=0
-    t=0
-    o=1;n=0
-    IF(doprint)then
-       if (infpar%mynum.eq.infpar%master) THEN
-          !wake up slaves
-          call ls_mpibcast(LSMPIQUITINFO,infpar%master,MPI_COMM_LSDALTON)
-       ENDIF
-       count = 1
-       root = 0
-       recvbuffer = 0
-       !Total max_mem_used_global across all nodes
-       CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
-            & count,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
-       !IF direct communication is used the unlock times are interesting
-#ifdef MOD_UNRELEASED
-       call lsmpi_reduction(time_win_unlock,infpar%master,MPI_COMM_LSDALTON)
-       print *,"TIME SPENT IN UNLOCK",infpar%mynum,time_win_unlock
-#endif
+      tag=2001
+      dest=0
+      t=0
+      o=1;n=0
 
-       IF(infpar%mynum.eq.infpar%master) THEN
-          WRITE(lupri,'(A)')'  The total memory used across all MPI nodes'
-          call print_maxmem(lupri,recvbuffer,'TOTAL')
-          Write(lupri,'("time spent in unlock: ",f19.10)')time_win_unlock
-       ENDIF
-       !Largest max_mem_used_global including Master
-       CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
-            & count,MPI_INTEGER8,MPI_MAX,root,MPI_COMM_LSDALTON,IERR)
-       IF(infpar%mynum.eq.infpar%master) THEN
-          WRITE(lupri,'(A)')'  Largest memory allocated on a single MPI slave node (including Master)'
-          call print_maxmem(lupri,recvbuffer,'TOTAL')
-       ENDIF
-       !Largest Slave max_mem_used_global (not including Master)      
-       IF(infpar%mynum.EQ.infpar%master)max_mem_used_global=0
-       CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
-            & count,MPI_INTEGER8,MPI_MAX,root,MPI_COMM_LSDALTON,IERR)
-       IF(infpar%mynum.eq.infpar%master) THEN
-          WRITE(lupri,'(A)')'  Largest memory allocated on a single MPI slave node (exclusing Master)'
-          call print_maxmem(lupri,recvbuffer,'TOTAL')
-       ENDIF
-       IF(infpar%mynum.NE.infpar%master)then
-          call stats_mem(6)
-          call mem_alloc(longintbufferInt,longintbuffersize)
-          call copy_from_mem_stats(longintbufferInt)
-          count=longintbuffersize
-          CALL MPI_SEND(longintbufferInt,count,MPI_INTEGER8,dest,tag,MPI_COMM_LSDALTON,IERR)
-          call mem_dealloc(longintbufferInt)
-       ELSE          
-          DO I=1,infpar%nodtot-1
-             call init_globalmemvar !WARNING removes all mem info on master 
-             call mem_alloc(longintbufferInt,longintbuffersize)
-             count = longintbuffersize
-             CALL MPI_RECV(longintbufferInt,count,MPI_INTEGER8,I,tag,&
-                  & MPI_COMM_LSDALTON,status,IERR)
-             call copy_to_mem_stats(longintbufferInt)
-             call mem_dealloc(longintbufferInt)
-             WRITE(LUPRI,'("  Memory statistics for MPI node number ",i9," ")') I
-             call stats_mpi_mem(lupri)
-          ENDDO
-       ENDIF
-       !Total max_mem_used_global
-       IF(infpar%mynum.NE.infpar%master)then
-          RETURN
-       ENDIF
-    ENDIF
+      if ((infpar%mynum.eq.infpar%master).and.mastercall) THEN
+         !wake up slaves
+         call ls_mpibcast(LSMPIPRINTINFO,infpar%master,MPI_COMM_LSDALTON)
+      ENDIF
 
-    if (infpar%mynum.eq.infpar%master) &
-       &call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
+      count = 1
+      root = 0
+      recvbuffer = 0
+      !Total max_mem_used_global across all nodes
+      CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
+           & count,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
+      !IF direct communication is used the unlock times are interesting
 
-#ifdef VAR_CHEMSHELL
-     ! jump out of LSDALTON if a slave (instead of STOP)
-     if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
-#else
+      call lsmpi_reduction(time_win_unlock,infpar%master,MPI_COMM_LSDALTON)
+  
+      IF(infpar%mynum.eq.infpar%master) THEN
+         WRITE(lupri,'(A)')'  The total memory used across all MPI nodes'
+         call print_maxmem(lupri,recvbuffer,'TOTAL')
+         Write(lupri,'("time spent in unlock: ",f19.10)')time_win_unlock
+      ENDIF
+      !Largest max_mem_used_global including Master
+      CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
+           & count,MPI_INTEGER8,MPI_MAX,root,MPI_COMM_LSDALTON,IERR)
+      IF(infpar%mynum.eq.infpar%master) THEN
+         WRITE(lupri,'(A)')'  Largest memory allocated on a single MPI slave node (including Master)'
+         call print_maxmem(lupri,recvbuffer,'TOTAL')
+      ENDIF
+      !Largest Slave max_mem_used_global (not including Master)      
+      IF(infpar%mynum.EQ.infpar%master)max_mem_used_global=0
+      CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
+           & count,MPI_INTEGER8,MPI_MAX,root,MPI_COMM_LSDALTON,IERR)
+      IF(infpar%mynum.eq.infpar%master) THEN
+         WRITE(lupri,'(A)')'  Largest memory allocated on a single MPI slave node (exclusing Master)'
+         call print_maxmem(lupri,recvbuffer,'TOTAL')
+      ENDIF
+
+
+      IF(infpar%mynum.NE.infpar%master)then
+         call stats_mem(6)
+         call mem_alloc(longintbufferInt,longintbuffersize)
+         call copy_from_mem_stats(longintbufferInt)
+         count=longintbuffersize
+         CALL MPI_SEND(longintbufferInt,count,MPI_INTEGER8,dest,tag,MPI_COMM_LSDALTON,IERR)
+         call mem_dealloc(longintbufferInt)
+
+      ELSE          
+         DO I=1,infpar%nodtot-1
+            call init_globalmemvar !WARNING removes all mem info on master 
+            call mem_alloc(longintbufferInt,longintbuffersize)
+            count = longintbuffersize
+            CALL MPI_RECV(longintbufferInt,count,MPI_INTEGER8,I,tag,&
+                 & MPI_COMM_LSDALTON,status,IERR)
+            call copy_to_mem_stats(longintbufferInt)
+            call mem_dealloc(longintbufferInt)
+            WRITE(LUPRI,'("  Memory statistics for MPI node number ",i9," ")') I
+            call stats_mpi_mem(lupri)
+         ENDDO
+      ENDIF
 
 !!$#ifdef VAR_LSDEBUG
 !!$     count=1
@@ -5109,22 +5179,37 @@ contains
 !!$       print *,"CUMULATIVE MPI POKETIME",recvbuffer_real,recvbuffer,recvbuffer_real/(recvbuffer*1.0E0_realk)
 !!$     endif
 !!$#endif     
+#endif
+    end subroutine lsmpi_print_mem_info
+
+    subroutine lsmpi_finalize(lupri,mastercall)
+    implicit none
+    integer,intent(in)    :: lupri
+    logical,intent(in)     :: mastercall
+    integer(kind=ls_mpik) :: ierr
+#ifdef VAR_MPI
+    ierr = 0
+
+    if ((infpar%mynum.eq.infpar%master).and.mastercall) &
+       &call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
+
+#ifdef VAR_CHEMSHELL
+     ! jump out of LSDALTON if a slave (instead of STOP)
+     if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
+#else
 
      call MPI_FINALIZE(ierr)
+
      if(ierr/=0)then
        write (*,*) "mpi_finalize returned",ierr
        call LSMPI_MYFAIL(ierr)
        call lsquit("ERROR(MPI_FINALIZE):non zero exit)",-1)
      endif
-     !stop all slaves
-     if (infpar%mynum.ne.infpar%master) STOP
-#endif 
-! #endif VAR_CHEMSHELL
 
 #endif 
-! #endif VAR_MPI
- 
+#endif 
     end subroutine lsmpi_finalize
+
 
     subroutine lsmpi_barrier(comm)
     implicit none
@@ -5563,6 +5648,46 @@ contains
 #endif
   end subroutine lsmpi_get_realkV
 
+  subroutine lsmpi_get_acc_int888(ibuf,obuf,dest,pos,win)
+    integer(kind=8),intent(inout)    :: ibuf
+    integer(kind=8),intent(inout)    :: obuf
+    integer(kind=ls_mpik),intent(in) :: dest,win
+    integer,intent(in)               :: pos
+    integer(kind=ls_mpik)            :: n
+#ifdef VAR_MPI
+    integer(kind=MPI_ADDRESS_KIND)   :: offset
+    
+    n=1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+#ifdef VAR_HAVE_MPI3
+    call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER8,obuf,n,&
+    &MPI_INTEGER8,dest,offset,n,MPI_INTEGER8,MPI_SUM,win,ierr)
+#else
+    call lsquit("ERROR(lsmpi_get_acc):you did not comile with an MPI3 enabled&
+          &MPI library. Recompile.",-1)
+#endif
+#endif
+  end subroutine lsmpi_get_acc_int888
+  subroutine lsmpi_get_acc_int444(ibuf,obuf,dest,pos,win)
+    integer(kind=4),intent(inout)    :: ibuf
+    integer(kind=4),intent(inout)    :: obuf
+    integer(kind=ls_mpik),intent(in) :: dest,win
+    integer,intent(in)               :: pos
+    integer(kind=ls_mpik)            :: n
+#ifdef VAR_MPI
+    integer(kind=MPI_ADDRESS_KIND)   :: offset
+    
+    n=1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+#ifdef VAR_HAVE_MPI3
+    call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER4,obuf,n,&
+    &MPI_INTEGER4,dest,offset,n,MPI_INTEGER4,MPI_SUM,win,ierr)
+#else
+    call lsquit("ERROR(lsmpi_get_acc):you did not comile with an MPI3 enabled&
+          &MPI library. Recompile.",-1)
+#endif
+#endif
+  end subroutine lsmpi_get_acc_int444
 
   subroutine lsmpi_acc_int8(buf,pos,dest,win)
     implicit none

@@ -853,9 +853,9 @@ contains
     stopp                    = 0.0E0_realk
     print_debug              = (DECinfo%PL>2)
     debug                    = .false.
-    double_2G_nel            = 170000000
+    double_2G_nel            = 100000000
 #ifdef VAR_LSDEBUG
-    double_2G_nel            = 20
+!    double_2G_nel            = 20
 #endif
 
     ! Set some shorthand notations
@@ -1245,12 +1245,10 @@ contains
       call distribute_mpi_jobs(mpi_task_distribution,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
            &batchdimGamma,myload,scheme,no,nv,nb,batch2orbAlpha,batch2orbGamma)
     else
-      !call mem_alloc(win_in_g,nbatchesGamma)
-      !call mem_alloc(mpi_task_distribution,mpi_ctasks,nbatchesGamma) 
-      call mem_alloc(mpi_stuff,mpi_ctasks,nbatchesGamma) 
-      mpi_stuff=0.0E0_realk
-      if(master) mpi_stuff(1) = float(infpar%lg_nodtot)
-      call lsmpi_win_create(mpi_stuff,win_in_g,nbatchesGamma,infpar%lg_comm)
+      call mem_alloc(mpi_task_distribution,mpi_ctasks,nbatchesGamma) 
+      mpi_task_distribution = 0
+      if(master) mpi_task_distribution(1) = infpar%lg_nodtot
+      call lsmpi_win_create(mpi_task_distribution,win_in_g,nbatchesGamma,infpar%lg_comm)
     endif
     !startt = omp_get_wtime()
 #endif
@@ -1305,7 +1303,7 @@ contains
        !break the loop if alpha become too large, necessary to account for all
        !of the mpi and non mpi schemes, this is accounted for, because static,
        !and dynamic load balancing are enabled
-       if(alphaB>nbatchesAlpha)exit
+       if(alphaB>nbatchesAlpha) exit
 
        dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
        AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
@@ -1587,13 +1585,13 @@ contains
 
 #ifdef VAR_LSDEBUG
     if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)') infpar%mynum,myload,wait_time
+#endif
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
     if(master.and.print_debug)then
       write(*,'("----------------------------------------------------------")')
       write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)') wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
     endif
-#endif
 
 
     if (master) call LSTIMER('CCSD part B',time_start,timewall_start,DECinfo%output)
@@ -1631,7 +1629,7 @@ contains
       call mem_dealloc(mpi_task_distribution)
     else
       call lsmpi_win_free(win_in_g)
-      call mem_dealloc(mpi_stuff,mpi_ctasks)
+      call mem_dealloc(mpi_task_distribution,mpi_ctasks)
     endif
 
     stopp=MPI_wtime()
@@ -1655,7 +1653,7 @@ contains
      !DEBUG PRINT NORM OMEGA
       write(msg,*)"NORM(omega2 after main loop):"
       if(scheme==4.or.scheme==3)then
-        w1(1:o2v2) = omega2%elm1(1:o2v2)
+        w1(1_long:o2v2) = omega2%elm1(1_long:o2v2)
 #ifdef VAR_MPI
         call lsmpi_local_reduction(w1,o2v2,infpar%master,double_2G_nel)
 #endif
@@ -1697,7 +1695,7 @@ contains
     !reorder integral for use within the solver and the c and d terms
     if(iter==1.and.scheme==4)then
       call array_reorder_4d(1.0E0_realk,govov%elm1,no,no,nv,nv,[1,4,2,3],0.0E0_realk,w1)
-      govov%elm1(1:o2v2) = w1(1:o2v2)
+      govov%elm1(1_long:o2v2) = w1(1_long:o2v2)
 #ifdef VAR_MPI
       if(.not.local)then
         govov%atype     = TILED_DIST
@@ -1712,6 +1710,9 @@ contains
       !get B2.2 contributions
       !**********************
       call get_B22_contrib_mo(sio4,t2,w1,w2,no,nv,nb,omega2,scheme,lock_outside)
+
+
+      !test and debug crap
 #ifdef VAR_MPI
       call lsmpi_win_free(sio4_w)
       call mem_dealloc(sio4,sio4_c)
@@ -1726,7 +1727,7 @@ contains
 #endif
         write(msg,*)"NORM(omega2 after B2.2):"
         if(scheme==4.or.scheme==3)then
-          w1(1:o2v2) = omega2%elm1(1:o2v2)
+          w1(1_long:o2v2) = omega2%elm1(1_long:o2v2)
 #ifdef VAR_MPI
           call lsmpi_local_reduction(w1,o2v2,infpar%master,double_2G_nel)
 #endif
@@ -1755,8 +1756,14 @@ contains
 #elif VAR_MPI
       startt=MPI_wtime()
 #endif
+
+
       call get_cnd_terms_mo(w1,w2,w3,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
            &scheme,lock_outside,els2add)
+
+
+
+      !test and debug crap
 #ifdef VAR_OMP
       stopp=omp_get_wtime()
 #elif VAR_MPI
@@ -1770,7 +1777,7 @@ contains
 #endif
         write(msg,*)"NORM(omega2 after CND):"
         if(scheme==4)then
-          w1(1:o2v2) = omega2%elm1(1:o2v2)
+          w1(1_long:o2v2) = omega2%elm1(1_long:o2v2)
 #ifdef VAR_MPI
           call lsmpi_local_reduction(w1,o2v2,infpar%master,double_2G_nel)
 #endif
@@ -1873,15 +1880,19 @@ contains
 
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
          & Dens%elms,nb,nb,AORdefault,AORdefault)
+    !print *,"3.1"
     ! Add one- and two-electron contributions to Fock matrix
     call daxpy(nb2,1.0E0_realk,Dens%elms,1,iFock%elms,1)
+    !print *,"3.2"
     !Free the density matrix
     call mat_free(Dens)
+    !print *,"4"
 
 
 
     ! KK: Add long-range Fock correction
     call daxpy(nb2,1.0E0_realk,deltafock,1,iFock%elms,1)
+    !print *,"4.1"
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_MPI
@@ -1986,7 +1997,8 @@ contains
 
     !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY
     !***********************************************************
-    call calculate_E2_and_permute(ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,scheme,print_debug,lock_outside)
+    call calculate_E2_and_permute(ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,&
+    &no,nv,nb,omega2,o2v2,scheme,print_debug,lock_outside)
 
     call mem_dealloc(Had)
     call mem_dealloc(Gbi)
@@ -2023,11 +2035,12 @@ contains
   end subroutine get_ccsd_residual_integral_driven
 
   subroutine calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,&
-  &omega2,s,pd,lock_outside)
+  &omega2,o2v2,s,pd,lock_outside)
     implicit none
+    integer(kind=8),intent(in)::o2v2
     real(realk),intent(inout)::ppf(:)
     real(realk),intent(inout)::qqf(:)
-    real(realk),pointer:: w1(:)
+    real(realk) :: w1(o2v2)
     type(array),intent(inout) :: t2
     real(realk),pointer:: xo(:)
     real(realk),pointer:: yv(:)
@@ -2048,7 +2061,7 @@ contains
     integer :: fri,tri
     character(ARR_MSG_LEN) :: msg
     real(realk) :: nrm
-    integer(kind=8) :: o2v2,w3size
+    integer(kind=8) :: w3size
     integer(kind=ls_mpik) :: mode
 
     master       = .true.
@@ -2057,7 +2070,6 @@ contains
     nv2          = nv*nv
     v2o          = nv*nv*no
     o2v          = no*no*nv
-    o2v2         = int((i8*no2)*nv2,kind=8)
     me           = 0
     nnod         = 1
     
@@ -2086,10 +2098,17 @@ contains
      
       if(pd) then 
         write(msg,*)"NORM(omega2 before permut):"
-        call print_norm(omega2,msg)
+        !call print_norm(omega2,msg)
+        print *,"copy from 1 to",o2v2,no2,nv2
       endif
+
       !INTRODUCE PERMUTATION
-      w1(1:o2v2)=omega2%elm1(1:o2v2)
+      !OMP WORKSHARE
+      !w1(int(1,kind=long):o2v2)=omega2%elm1(int(1,kind=long):o2v2)
+      w1 = omega2%elm1
+      print *,"assoc done"
+      !OMP END WORKSHARE
+
       if(pd) then 
         write(msg,*)"NORM(w1):"
         call print_norm(w1,o2v2,msg)
@@ -2254,10 +2273,10 @@ contains
     integer :: static(:)
     !integer(kind=ls_mpik) :: dynamic(:)
     integer(kind=ls_mpik) :: dynamic
-    real(realk) :: mpi_buf,el 
+    real(realk) :: mpi_buf
+    integer :: el 
     integer(kind=ls_mpik) :: i, job
 #ifdef VAR_MPI
-       el=0
        !ugly construction to get both schemes in
        if(.not.dyn)then
          a=a+1
@@ -2274,18 +2293,10 @@ contains
          if(fr)then
            a=infpar%lg_mynum
          else
-           mpi_buf=1.0E0_realk
+           el=1
            call lsmpi_win_lock(infpar%master,dynamic,'e')
-           call lsmpi_get(el,g,infpar%master,dynamic)
-           call lsmpi_acc(mpi_buf,g,infpar%master,dynamic)
+           call lsmpi_get_acc(el,a,infpar%master,g,dynamic)
            call lsmpi_win_unlock(infpar%master,dynamic)
-           if(s==4.or.s==1)then
-             do i=1,infpar%lg_nodtot-1
-               call lsmpi_win_lock(i,dynamic,'s')
-               call lsmpi_win_unlock(i,dynamic)
-             enddo
-           endif
-           a=int(el)
          endif
        endif
        if(fr) fr=.false.
@@ -2419,15 +2430,18 @@ contains
 
      call mem_alloc(w2,w2size)
      call mem_alloc(w3,w3size)
+     if(me==0.and.DECinfo%PL>2)then
+       print *,"alloc done!"
+     endif
 
 
      !calculate doubles C term
      !*************************
 
      
-
      !Reorder gvvoo [a c k i] -> goovv [a i c k]
      if(s==4)then
+       if(me==0.and.DECinfo%PL>2) print *,"1"
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w2)
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w1)
@@ -2479,7 +2493,9 @@ contains
 
      !Reorder t [a d l i] -> t [a i d l]
      if(s==4)then
+       if(me==0.and.DECinfo%PL>2) print *,"2"
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w3)
+       if(me==0.and.DECinfo%PL>2) print *,"2.1"
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
        do i=1,tl
@@ -2515,11 +2531,13 @@ contains
 #endif
      endif
 
+       if(me==0.and.DECinfo%PL>2) print *,"2.2"
    
      !stop 0
      !SCHEME 4 AND 3 because of w1 being buffer before
      !Reorder govov [k d l c] -> govov [d l c k]
      if(s==3.or.s==4)then
+       if(me==0.and.DECinfo%PL>2) print *,"3"
        call array_reorder_4d(1.0E0_realk,govov%elm1,no,nv,no,nv,[2,3,4,1],0.0E0_realk,w1)
        !write (msg,*),infpar%lg_mynum,"w3 ERSCHDE"
        !call print_norm(w3,int(tl*no*nv,kind=8),msg)
@@ -2534,6 +2552,7 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 1         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !(-0.5) * t [a i d l] * govov [d l c k] + goovv [a i c k] = C [a i c k]
+     if(me==0.and.DECinfo%PL>2) print *,"4"
      call dgemm('n','n',tl,no*nv,no*nv,-0.5E0_realk,w3(faif),lead,w1,no*nv,1.0E0_realk,w2(faif),lead)
 
 
@@ -2542,7 +2561,9 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !(-1) * C [a i c k] * t [c k b j] = preOmC [a i b j]
      if(s==4)then
+       if(me==0.and.DECinfo%PL>2) print *,"5"
        w1=0.0E0_realk
+       if(me==0.and.DECinfo%PL>2) print *,"6"
        call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w3,no*nv,0.0E0_realk,w1(fai),no*nv)
      elseif(s==3)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
@@ -2567,8 +2588,10 @@ contains
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      if(s==3.or.s==4)then
        !contribution 1: 0.5*preOmC [a i b j] -> =+ Omega [a b i j]
+       if(me==0.and.DECinfo%PL>2) print *,"7"
        call array_reorder_4d(0.5E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
        !contribution 3: preOmC [a j b i] -> =+ Omega [a b i j]
+       if(me==0.and.DECinfo%PL>2) print *,"8"
        call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,4,2],1.0E0_realk,omega2%elm1)
      elseif(s==2)then
 #ifdef VAR_MPI
@@ -3364,7 +3387,7 @@ contains
     elseif(s==2)then
 #ifdef VAR_MPI
       if(lock_outside)call arr_lock_wins(omega,'s',mode)
-      w2(1:o2v2) = scaleitby*w2(1:o2v2)
+      w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
       call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
 #endif
     endif
@@ -3430,7 +3453,7 @@ contains
       if(s==4.or.s==3)then
         call daxpy(no*no*nv*nv,scaleitby,w2,1,omega%elm1,1)
       elseif(s==2)then
-        w2(1:o2v2) = scaleitby*w2(1:o2v2)
+        w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
         call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
       endif
       call lsmpi_poke()
@@ -5283,14 +5306,17 @@ subroutine calculate_E2_and_permute_slave()
         type(array) :: t2,omega2
         real(realk),pointer :: w1(:)
         logical :: lo
+        integer(kind=8) :: o2v2
+
 
         call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
+        o2v2 = int((i8*no)*no*nv*nv,kind=8)
         call mem_alloc(ppf,no*no)
         call mem_alloc(qqf,nv*nv)
         call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
         call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
-        call mem_alloc(w1,int((i8*no)*no*nv*nv,kind=8))
-        call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,.false.,lo)
+        call mem_alloc(w1,o2v2)
+        call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,o2v2,s,.false.,lo)
 
         call mem_dealloc(ppf)
         call mem_dealloc(qqf)

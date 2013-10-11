@@ -86,7 +86,7 @@ CONTAINS
           WRITE(*,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD'
           WRITE(*,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)'
           WRITE(*,'(A)')'  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)'
-          WRITE(*,'(A)')'  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimD)'
+          WRITE(*,'(A)')'  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)'
           WRITE(*,'(A,I5,A)')'  real(realk),intent(in) :: Aux(',nTUV,',nPrimQ*nPrimP*nPasses)'
           WRITE(*,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimQ*nPrimP*nPasses)'
           WRITE(*,'(A)')'!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)'
