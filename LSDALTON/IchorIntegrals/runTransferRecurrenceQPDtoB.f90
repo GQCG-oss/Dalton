@@ -1,5 +1,5 @@
 MODULE TESTMODULE
-  use TESTMODULEQXYZ
+use TESTMODULEQXYZ
 CONTAINS
   subroutine PASSsub
     IMPLICIT NONE
@@ -19,7 +19,7 @@ CONTAINS
     integer :: nTUVLIST,nTUVLISTactual
     integer,pointer :: TwoTermTUVLIST(:)
 
-    WRITE(*,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoA'
+    WRITE(*,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoB'
     WRITE(*,'(A)')' use IchorPrecisionModule'
     WRITE(*,'(A)')'  '
     WRITE(*,'(A)')' CONTAINS'
@@ -86,24 +86,24 @@ CONTAINS
           WRITE(*,'(A)')''
           IF(JP.LT.10)THEN
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I1,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I1,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ELSE
-                WRITE(*,'(A,I1,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I1,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ENDIF
           ELSE
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I2,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I2,A,I1,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ELSE
-                WRITE(*,'(A,I2,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(*,'(A,I2,A,I2,A)')'subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
              ENDIF
           ENDIF
 
-          WRITE(*,'(A)')'         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)'
+          WRITE(*,'(A)')'         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)'
           WRITE(*,'(A)')'  implicit none'
           WRITE(*,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD'
           WRITE(*,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)'
           WRITE(*,'(A)')'  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)'
-          WRITE(*,'(A)')'  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)'
+          WRITE(*,'(A)')'  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)'
           WRITE(*,'(A,I5,A)')'  real(realk),intent(in) :: Aux(',nTUV,',nPrimQ*nPrimP*nPasses)'
           WRITE(*,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimQ*nPrimP*nPasses)'
           WRITE(*,'(A)')'!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)'
@@ -122,9 +122,9 @@ CONTAINS
              endif
           ENDDO
           WRITE(*,'(A)')'!  real(realk) :: Tmp(nTUVP,nTUVQ) ordering'
-          WRITE(*,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC'
+          WRITE(*,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC'
           WRITE(*,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk'
-          WRITE(*,'(A)')'  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ'
+          WRITE(*,'(A)')'  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ'
           WRITE(*,'(A)')'  real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp'
           WRITE(*,'(A)')'  Xab = Pdistance12(1)'
           WRITE(*,'(A)')'  Yab = Pdistance12(2)'
@@ -137,19 +137,20 @@ CONTAINS
           WRITE(*,'(A)')'   DO iPrimP=1, nPrimP'
           WRITE(*,'(A)')'    expP = Pexp(iPrimP)'
           WRITE(*,'(A)')'    invexpP = D1/expP'
-          WRITE(*,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'
-          WRITE(*,'(A)')'    expBX = Bexp(iPrimB)*Xab'
-          WRITE(*,'(A)')'    expBY = Bexp(iPrimB)*Yab'
-          WRITE(*,'(A)')'    expBZ = Bexp(iPrimB)*Zab'
+!          WRITE(*,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'
+          WRITE(*,'(A)')'    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA'
+          WRITE(*,'(A)')'    expAX = -Aexp(iPrimA)*Xab'
+          WRITE(*,'(A)')'    expAY = -Aexp(iPrimA)*Yab'
+          WRITE(*,'(A)')'    expAZ = -Aexp(iPrimA)*Zab'
           WRITE(*,'(A)')'    DO iPrimQ=1, nPrimQ'
 !          WRITE(*,'(A)')'     iPrimD = (iPrimQ-1)/nPrimC+1'
           WRITE(*,'(A)')'     iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC'
           WRITE(*,'(A)')'     IP = IP + 1'          
           WRITE(*,'(A)')'     qinvp = -Qexp(iPrimQ)*invexpP'
           WRITE(*,'(A)')'     inv2expP = D05*invexpP'
-          WRITE(*,'(A)')'     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP'
-          WRITE(*,'(A)')'     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP'
-          WRITE(*,'(A)')'     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP'
+          WRITE(*,'(A)')'     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP'
+          WRITE(*,'(A)')'     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP'
+          WRITE(*,'(A)')'     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP'
 
 
           allocate(CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
@@ -247,15 +248,15 @@ CONTAINS
           WRITE(*,'(A)')'  ENDDO'
           IF(JP.LT.10)THEN
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I1,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA'
+                WRITE(*,'(A,I1,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoB'
              ELSE
-                WRITE(*,'(A,I1,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA'
+                WRITE(*,'(A,I1,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoB'
              ENDIF
           ELSE
              IF(JQ.LT.10)THEN
-                WRITE(*,'(A,I2,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA'
+                WRITE(*,'(A,I2,A,I1,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoB'
              ELSE
-                WRITE(*,'(A,I2,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoA'
+                WRITE(*,'(A,I2,A,I2,A)')'end subroutine TransferRecurrenceP',JP,'Q',JQ,'DtoB'
              ENDIF
           ENDIF
           deallocate(TUVINDEX)

@@ -1,23 +1,23 @@
-MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoA
+MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoB
  use IchorPrecisionModule
   
  CONTAINS
 
-subroutine TransferRecurrenceP1Q1DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+subroutine TransferRecurrenceP1Q1DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
+  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   10,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(    4,    4,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
   !Local variables
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC
+  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
-  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ
+  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
@@ -30,18 +30,18 @@ subroutine TransferRecurrenceP1Q1DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
    DO iPrimP=1, nPrimP
     expP = Pexp(iPrimP)
     invexpP = D1/expP
-    iPrimB = (iPrimP-1)/nPrimA+1
-    expBX = Bexp(iPrimB)*Xab
-    expBY = Bexp(iPrimB)*Yab
-    expBZ = Bexp(iPrimB)*Zab
+    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA
+    expAX = -Aexp(iPrimA)*Xab
+    expAY = -Aexp(iPrimA)*Yab
+    expAZ = -Aexp(iPrimA)*Zab
     DO iPrimQ=1, nPrimQ
      iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC
      IP = IP + 1
      qinvp = -Qexp(iPrimQ)*invexpP
      inv2expP = D05*invexpP
-     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP
-     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP
-     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP
+     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP
+     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP
+     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP
      DO iTUVQ=1,  4
         Aux2(1,iTUVQ,IP) = Aux(iTUVQ,IP)
      ENDDO
@@ -60,23 +60,23 @@ subroutine TransferRecurrenceP1Q1DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP1Q1DtoA
+end subroutine TransferRecurrenceP1Q1DtoB
 
-subroutine TransferRecurrenceP1Q2DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+subroutine TransferRecurrenceP1Q2DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
+  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   20,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(    4,   10,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
   !Local variables
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC
+  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
-  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ
+  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
@@ -89,18 +89,18 @@ subroutine TransferRecurrenceP1Q2DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
    DO iPrimP=1, nPrimP
     expP = Pexp(iPrimP)
     invexpP = D1/expP
-    iPrimB = (iPrimP-1)/nPrimA+1
-    expBX = Bexp(iPrimB)*Xab
-    expBY = Bexp(iPrimB)*Yab
-    expBZ = Bexp(iPrimB)*Zab
+    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA
+    expAX = -Aexp(iPrimA)*Xab
+    expAY = -Aexp(iPrimA)*Yab
+    expAZ = -Aexp(iPrimA)*Zab
     DO iPrimQ=1, nPrimQ
      iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC
      IP = IP + 1
      qinvp = -Qexp(iPrimQ)*invexpP
      inv2expP = D05*invexpP
-     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP
-     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP
-     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP
+     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP
+     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP
+     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP
      DO iTUVQ=1, 10
         Aux2(1,iTUVQ,IP) = Aux(iTUVQ,IP)
      ENDDO
@@ -137,23 +137,23 @@ subroutine TransferRecurrenceP1Q2DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP1Q2DtoA
+end subroutine TransferRecurrenceP1Q2DtoB
 
-subroutine TransferRecurrenceP1Q3DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+subroutine TransferRecurrenceP1Q3DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
+  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   35,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(    4,   20,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
   !Local variables
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC
+  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
-  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ
+  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
@@ -166,18 +166,18 @@ subroutine TransferRecurrenceP1Q3DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
    DO iPrimP=1, nPrimP
     expP = Pexp(iPrimP)
     invexpP = D1/expP
-    iPrimB = (iPrimP-1)/nPrimA+1
-    expBX = Bexp(iPrimB)*Xab
-    expBY = Bexp(iPrimB)*Yab
-    expBZ = Bexp(iPrimB)*Zab
+    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA
+    expAX = -Aexp(iPrimA)*Xab
+    expAY = -Aexp(iPrimA)*Yab
+    expAZ = -Aexp(iPrimA)*Zab
     DO iPrimQ=1, nPrimQ
      iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC
      IP = IP + 1
      qinvp = -Qexp(iPrimQ)*invexpP
      inv2expP = D05*invexpP
-     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP
-     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP
-     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP
+     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP
+     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP
+     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP
      DO iTUVQ=1, 20
         Aux2(1,iTUVQ,IP) = Aux(iTUVQ,IP)
      ENDDO
@@ -244,24 +244,24 @@ subroutine TransferRecurrenceP1Q3DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP1Q3DtoA
+end subroutine TransferRecurrenceP1Q3DtoB
 
-subroutine TransferRecurrenceP2Q2DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+subroutine TransferRecurrenceP2Q2DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
+  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   35,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   10,   10,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
   !Local variables
   real(realk) :: Tmp1(  2:  4, 11: 20)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC
+  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
-  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ
+  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
@@ -274,18 +274,18 @@ subroutine TransferRecurrenceP2Q2DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
    DO iPrimP=1, nPrimP
     expP = Pexp(iPrimP)
     invexpP = D1/expP
-    iPrimB = (iPrimP-1)/nPrimA+1
-    expBX = Bexp(iPrimB)*Xab
-    expBY = Bexp(iPrimB)*Yab
-    expBZ = Bexp(iPrimB)*Zab
+    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA
+    expAX = -Aexp(iPrimA)*Xab
+    expAY = -Aexp(iPrimA)*Yab
+    expAZ = -Aexp(iPrimA)*Zab
     DO iPrimQ=1, nPrimQ
      iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC
      IP = IP + 1
      qinvp = -Qexp(iPrimQ)*invexpP
      inv2expP = D05*invexpP
-     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP
-     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP
-     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP
+     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP
+     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP
+     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP
      DO iTUVQ=1, 10
         Aux2(1,iTUVQ,IP) = Aux(iTUVQ,IP)
      ENDDO
@@ -412,23 +412,23 @@ subroutine TransferRecurrenceP2Q2DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP2Q2DtoA
+end subroutine TransferRecurrenceP2Q2DtoB
 
-subroutine TransferRecurrenceP1Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+subroutine TransferRecurrenceP1Q4DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
+  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   56,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(    4,   35,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
   !Local variables
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC
+  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
-  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ
+  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
@@ -441,18 +441,18 @@ subroutine TransferRecurrenceP1Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
    DO iPrimP=1, nPrimP
     expP = Pexp(iPrimP)
     invexpP = D1/expP
-    iPrimB = (iPrimP-1)/nPrimA+1
-    expBX = Bexp(iPrimB)*Xab
-    expBY = Bexp(iPrimB)*Yab
-    expBZ = Bexp(iPrimB)*Zab
+    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA
+    expAX = -Aexp(iPrimA)*Xab
+    expAY = -Aexp(iPrimA)*Yab
+    expAZ = -Aexp(iPrimA)*Zab
     DO iPrimQ=1, nPrimQ
      iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC
      IP = IP + 1
      qinvp = -Qexp(iPrimQ)*invexpP
      inv2expP = D05*invexpP
-     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP
-     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP
-     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP
+     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP
+     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP
+     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP
      DO iTUVQ=1, 35
         Aux2(1,iTUVQ,IP) = Aux(iTUVQ,IP)
      ENDDO
@@ -564,24 +564,24 @@ subroutine TransferRecurrenceP1Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP1Q4DtoA
+end subroutine TransferRecurrenceP1Q4DtoB
 
-subroutine TransferRecurrenceP2Q3DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+subroutine TransferRecurrenceP2Q3DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
+  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   56,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   10,   20,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
   !Local variables
   real(realk) :: Tmp1(  2:  4, 21: 35)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC
+  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
-  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ
+  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
@@ -594,18 +594,18 @@ subroutine TransferRecurrenceP2Q3DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
    DO iPrimP=1, nPrimP
     expP = Pexp(iPrimP)
     invexpP = D1/expP
-    iPrimB = (iPrimP-1)/nPrimA+1
-    expBX = Bexp(iPrimB)*Xab
-    expBY = Bexp(iPrimB)*Yab
-    expBZ = Bexp(iPrimB)*Zab
+    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA
+    expAX = -Aexp(iPrimA)*Xab
+    expAY = -Aexp(iPrimA)*Yab
+    expAZ = -Aexp(iPrimA)*Zab
     DO iPrimQ=1, nPrimQ
      iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC
      IP = IP + 1
      qinvp = -Qexp(iPrimQ)*invexpP
      inv2expP = D05*invexpP
-     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP
-     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP
-     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP
+     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP
+     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP
+     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP
      DO iTUVQ=1, 20
         Aux2(1,iTUVQ,IP) = Aux(iTUVQ,IP)
      ENDDO
@@ -837,24 +837,24 @@ subroutine TransferRecurrenceP2Q3DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP2Q3DtoA
+end subroutine TransferRecurrenceP2Q3DtoB
 
-subroutine TransferRecurrenceP2Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+subroutine TransferRecurrenceP2Q4DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
+  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   84,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   10,   35,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
   !Local variables
   real(realk) :: Tmp1(  2:  4, 36: 56)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC
+  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
-  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ
+  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
@@ -867,18 +867,18 @@ subroutine TransferRecurrenceP2Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
    DO iPrimP=1, nPrimP
     expP = Pexp(iPrimP)
     invexpP = D1/expP
-    iPrimB = (iPrimP-1)/nPrimA+1
-    expBX = Bexp(iPrimB)*Xab
-    expBY = Bexp(iPrimB)*Yab
-    expBZ = Bexp(iPrimB)*Zab
+    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA
+    expAX = -Aexp(iPrimA)*Xab
+    expAY = -Aexp(iPrimA)*Yab
+    expAZ = -Aexp(iPrimA)*Zab
     DO iPrimQ=1, nPrimQ
      iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC
      IP = IP + 1
      qinvp = -Qexp(iPrimQ)*invexpP
      inv2expP = D05*invexpP
-     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP
-     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP
-     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP
+     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP
+     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP
+     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP
      DO iTUVQ=1, 35
         Aux2(1,iTUVQ,IP) = Aux(iTUVQ,IP)
      ENDDO
@@ -1263,15 +1263,15 @@ subroutine TransferRecurrenceP2Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP2Q4DtoA
+end subroutine TransferRecurrenceP2Q4DtoB
 
-subroutine TransferRecurrenceP3Q3DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+subroutine TransferRecurrenceP3Q3DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
+  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(   84,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   20,   20,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -1279,9 +1279,9 @@ subroutine TransferRecurrenceP3Q3DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk) :: Tmp1(  2:  4, 21: 56)
   real(realk) :: Tmp2(  5: 10, 21: 35)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC
+  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
-  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ
+  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
@@ -1294,18 +1294,18 @@ subroutine TransferRecurrenceP3Q3DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
    DO iPrimP=1, nPrimP
     expP = Pexp(iPrimP)
     invexpP = D1/expP
-    iPrimB = (iPrimP-1)/nPrimA+1
-    expBX = Bexp(iPrimB)*Xab
-    expBY = Bexp(iPrimB)*Yab
-    expBZ = Bexp(iPrimB)*Zab
+    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA
+    expAX = -Aexp(iPrimA)*Xab
+    expAY = -Aexp(iPrimA)*Yab
+    expAZ = -Aexp(iPrimA)*Zab
     DO iPrimQ=1, nPrimQ
      iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC
      IP = IP + 1
      qinvp = -Qexp(iPrimQ)*invexpP
      inv2expP = D05*invexpP
-     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP
-     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP
-     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP
+     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP
+     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP
+     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP
      DO iTUVQ=1, 20
         Aux2(1,iTUVQ,IP) = Aux(iTUVQ,IP)
      ENDDO
@@ -1890,15 +1890,15 @@ subroutine TransferRecurrenceP3Q3DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP3Q3DtoA
+end subroutine TransferRecurrenceP3Q3DtoB
 
-subroutine TransferRecurrenceP3Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+subroutine TransferRecurrenceP3Q4DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
+  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(  120,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   20,   35,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -1906,9 +1906,9 @@ subroutine TransferRecurrenceP3Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk) :: Tmp1(  2:  4, 36: 84)
   real(realk) :: Tmp2(  5: 10, 36: 56)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC
+  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
-  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ
+  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
@@ -1921,18 +1921,18 @@ subroutine TransferRecurrenceP3Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
    DO iPrimP=1, nPrimP
     expP = Pexp(iPrimP)
     invexpP = D1/expP
-    iPrimB = (iPrimP-1)/nPrimA+1
-    expBX = Bexp(iPrimB)*Xab
-    expBY = Bexp(iPrimB)*Yab
-    expBZ = Bexp(iPrimB)*Zab
+    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA
+    expAX = -Aexp(iPrimA)*Xab
+    expAY = -Aexp(iPrimA)*Yab
+    expAZ = -Aexp(iPrimA)*Zab
     DO iPrimQ=1, nPrimQ
      iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC
      IP = IP + 1
      qinvp = -Qexp(iPrimQ)*invexpP
      inv2expP = D05*invexpP
-     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP
-     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP
-     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP
+     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP
+     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP
+     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP
      DO iTUVQ=1, 35
         Aux2(1,iTUVQ,IP) = Aux(iTUVQ,IP)
      ENDDO
@@ -2877,15 +2877,15 @@ subroutine TransferRecurrenceP3Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP3Q4DtoA
+end subroutine TransferRecurrenceP3Q4DtoB
 
-subroutine TransferRecurrenceP4Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+subroutine TransferRecurrenceP4Q4DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
-  real(realk),intent(in) :: Bexp(nPrimB),Cexp(nPrimC)
+  real(realk),intent(in) :: Aexp(nPrimA),Cexp(nPrimC)
   real(realk),intent(in) :: Aux(  165,nPrimQ*nPrimP*nPasses)
   real(realk),intent(inout) :: Aux2(   35,   35,nPrimQ*nPrimP*nPasses)
 !  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ*nPrimP*nPasses)
@@ -2894,9 +2894,9 @@ subroutine TransferRecurrenceP4Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk) :: Tmp2(  5: 10, 36: 84)
   real(realk) :: Tmp3( 11: 20, 36: 56)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimB,iPrimC
+  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVQ,iPrimA,iPrimC
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
-  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expBX,expBY,expBZ
+  real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
@@ -2909,18 +2909,18 @@ subroutine TransferRecurrenceP4Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
    DO iPrimP=1, nPrimP
     expP = Pexp(iPrimP)
     invexpP = D1/expP
-    iPrimB = (iPrimP-1)/nPrimA+1
-    expBX = Bexp(iPrimB)*Xab
-    expBY = Bexp(iPrimB)*Yab
-    expBZ = Bexp(iPrimB)*Zab
+    iPrimA = iPrimP - ((iPrimP-1)/nPrimA)*nPrimA
+    expAX = -Aexp(iPrimA)*Xab
+    expAY = -Aexp(iPrimA)*Yab
+    expAZ = -Aexp(iPrimA)*Zab
     DO iPrimQ=1, nPrimQ
      iPrimC = iPrimQ - ((iPrimQ-1)/nPrimC)*nPrimC
      IP = IP + 1
      qinvp = -Qexp(iPrimQ)*invexpP
      inv2expP = D05*invexpP
-     facX = -(expBX-Cexp(iPrimC)*Xcd)*invexpP
-     facY = -(expBY-Cexp(iPrimC)*Ycd)*invexpP
-     facZ = -(expBZ-Cexp(iPrimC)*Zcd)*invexpP
+     facX = -(expAX-Cexp(iPrimC)*Xcd)*invexpP
+     facY = -(expAY-Cexp(iPrimC)*Ycd)*invexpP
+     facZ = -(expAZ-Cexp(iPrimC)*Zcd)*invexpP
      DO iTUVQ=1, 35
         Aux2(1,iTUVQ,IP) = Aux(iTUVQ,IP)
      ENDDO
@@ -4876,5 +4876,5 @@ subroutine TransferRecurrenceP4Q4DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&
     ENDDO
    ENDDO
   ENDDO
-end subroutine TransferRecurrenceP4Q4DtoA
+end subroutine TransferRecurrenceP4Q4DtoB
 end module
