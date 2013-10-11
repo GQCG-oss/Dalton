@@ -11,25 +11,33 @@
     external lsdalton_chemsh_comm
 #endif
     
-    nLog = 0
-    nDP = 0
-    nInteger4=0
-    nInteger8=0
-    nShort = 0
-    nCha = 0
+    nLog      = 0
+    nDP       = 0
+    nInteger4 = 0
+    nInteger8 = 0
+    nShort    = 0
+    nCha      = 0
+
 #ifdef VAR_CHEMSHELL
     MPI_COMM_LSDALTON = lsdalton_chemsh_comm()
 #else
+
     call MPI_INIT( ierr )
-    MPI_COMM_LSDALTON = MPI_COMM_WORLD
-    !asynchronous progress is off åer default, might be switched on with an
-    !environment variable
-    LSMPIASYNCP = .false.
+
+    MPI_COMM_LSDALTON        = MPI_COMM_WORLD
+    lsmpi_enabled_comm_procs = .false.
+
+    !asynchronous progress is off per default, might be switched on with an
+    !environment variable, or by spawning communication processes
+    LSMPIASYNCP             = .false.
     call ls_getenv(varname="LSMPI_ASYNC_PROGRESS",leng=20,output_bool=LSMPIASYNCP)
+
 #endif
+
     call MPI_COMM_GET_PARENT( infpar%parent_comm, ierr )
-    call MPI_COMM_RANK( MPI_COMM_LSDALTON, infpar%mynum, ierr )
-    call MPI_COMM_SIZE( MPI_COMM_LSDALTON, infpar%nodtot, ierr )
+    call get_rank_for_comm( MPI_COMM_LSDALTON, infpar%mynum  )
+    call get_size_for_comm( MPI_COMM_LSDALTON, infpar%nodtot )
+
     infpar%master = int(0,kind=ls_mpik);
     
     !CHECK IF WE ARE ON THE MAIN MAIN MAIN MASTER PROCESS (NOT IN LOCAL GROUP,
@@ -39,16 +47,23 @@
     ! Set rank, sizes and communcators for local groups
     ! to be identical to those for world group by default.
     call lsmpi_default_mpi_group
+
+    !if i am a child process, set the intracommunicator to the parent proc
     if( infpar%parent_comm /= MPI_COMM_NULL )  call get_parent_child_relation
+
     ! Assume that there will be local jobs
     infpar%lg_morejobs=.true.
 
+
+    
     if (infpar%mynum.ne.infpar%master) then
 
+      !if normal slave, listen on MPI_COMM_LSDALTON
       call lsmpi_slave(MPI_COMM_LSDALTON)
     
     elseif( infpar%parent_comm /= MPI_COMM_NULL )then
 
+      !if spawned process, listen on the parent-child-intracomm
       call lsmpi_slave(infpar%pc_comm)
 
     endif
@@ -66,7 +81,7 @@
       use lsmpi_test
       use integralinterfaceMod
       use dec_driver_slave_module
-      use lspdm_tensor_operations_module,only:free_persistent_array
+      use lspdm_tensor_operations_module
     implicit none
     !> Communicator from which task is to be received
     integer(kind=ls_mpik) :: comm 
@@ -123,6 +138,8 @@
             call MP2_integrals_and_amplitudes_workhorse_slave
          case(CCSDDATA);
             call ccsd_data_preparation
+         case(CCSD_COMM_PROC_MASTER);
+            call get_master_comm_proc_to_wrapper
          case(CCSDSLV4E2);
             call calculate_E2_and_permute_slave
 #ifdef MOD_UNRELEASED
@@ -148,9 +165,12 @@
             call PDM_SLAVE
 #endif
          case(PDMA4SLV);
-            call PDM_ARRAY_SLAVE
+            call PDM_ARRAY_SLAVE(comm)
          case(GIVE_BIRTH);
             call give_birth_to_child_process
+
+         case(LSPDM_GIVE_BIRTH);
+            call lspdm_start_up_comm_procs
          case(LSMPITEST);
             call test_mpi(comm)
 
@@ -163,6 +183,10 @@
               call lsquit("ERROR(SLAVES_SHUT_DOWN_CHILD):I am not a parent",-1)
             endif
             call shut_down_child_process
+
+         case(LSPDM_SLAVES_SHUT_DOWN_CHILD)
+            if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
+            call lspdm_shut_down_comm_procs
 
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########

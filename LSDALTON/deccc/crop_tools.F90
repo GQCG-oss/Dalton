@@ -199,7 +199,7 @@ module crop_tools_module
     ecorr_s = 0.0E0_realk
     ecorr_d = 0.0E0_realk
 
-    if(t2%atype==DENSE.and.gmo%atype==DENSE.and.(t1%atype==DENSE.or.t1%atype==REPLICATED))then
+    if(t2%itype==DENSE.and.gmo%itype==DENSE.and.(t1%itype==DENSE.or.t1%itype==REPLICATED))then
       do j=1,nocc
          do b=1,nvirt
             do i=1,nocc
@@ -219,11 +219,11 @@ module crop_tools_module
       end if
 
       ecorr = ecorr_s + ecorr_d
-    elseif(t2%atype==TILED_DIST.and.gmo%atype==TILED_DIST)then
-      t1%atype=REPLICATED
+    elseif(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+      t1%itype=REPLICATED
       call array_sync_replicated(t1)
       ecorr=get_cc_energy_parallel(t1,t2,gmo)
-      t1%atype=DENSE
+      t1%itype=DENSE
     endif
 
 
