@@ -82,7 +82,7 @@ C       LEO DALTON.CM  y saco nbas(naos)
 C ------------------------------------------------------
        naos = NBAST 
        nmos= naos
-       nelec=10
+c       nelec=10
 c       write(*,*) 'nelec = NOCCT ?. elec. cpa closed: ', NOCCT, nelec
 c       write(*,*) ' NBAST', NBAST
  

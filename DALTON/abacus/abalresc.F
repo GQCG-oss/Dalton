@@ -304,8 +304,8 @@ C Zeroth Order, Singlet of course
 C --------------------------------
 C
       IF (SIGMAD0S) THEN
-         CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
-         CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
+c         CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
+c         CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
          CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
       END IF
 
@@ -552,11 +552,11 @@ c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
      &       'DiaDw  :',LRDIAD(1,1),LRDIAD(2,2),LRDIAD(3,3),aa,' [ppm]'
             ENDIF
          ENDIF
-      ENDIF
             WRITE(LUPRI,*)
             WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
      &      'Total Diamagnetic Corrections :      ',
      &       (SGD0S+SGD1S),' [ppm]'
+      ENDIF
 C
 C All of them in detail
 C
