@@ -135,9 +135,9 @@ IchorInputDim3=1
 call mem_alloc(InputStorage,1)
 IchorParSpec=IchorParNone
 IchorScreenSpec=IchorScreenNone
-IchorDebugSpec=IchorDebugNone
+IchorDebugSpec=iprint!IchorDebugNone
 IchorAlgoSpec=IchorAlgoOS
-IchorPermuteSpec=IchorPermuteTTT
+IchorPermuteSpec=IchorPermuteFFF
 filestorageIdentifier=1
 MaxMem = 0 
 MaxFileStorage = 0

@@ -77,7 +77,7 @@ BASISTYPE(7) = 'UnitTest_genS       '
 BASISTYPE(8) = 'UnitTest_genP       '
 BASISTYPE(9) = 'UnitTest_genD       '
 BASISTYPE(10) = 'UnitTest_segSP      '
-nbasis = 6
+nbasis = 9
 !issues with SP in that 
 !       IF(dim2.GT.dim1)CYCLE
 !       IF(dim3.GT.dim1)CYCLE
