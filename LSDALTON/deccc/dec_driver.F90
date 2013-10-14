@@ -115,6 +115,44 @@ contains
 
 
 
+
+  !> \brief Calculate all atomic fragment energies
+  !> and all pair interaction energies using small predefined orbital spaces
+  !> to ESTIMATE the various energy contributions. Based on these estimates,
+  !> determine which CC model to use for the various pair fragments in the actual pair calculations
+  !> where orbital spaces are chosen according to the FOT
+  !> (either use input CC model, MP2, or simply skip pair).
+  !> Information is stored in MyMolecule%PairModel.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine estimated_fragment_energies(MyMolecule,mylsitem,&
+       & nocc,nunocc,OccOrbitals,UnoccOrbitals)
+
+    implicit none
+    !> Number of occupied orbitals in full molecule
+    integer,intent(in) :: nOcc
+    !> Number of unoccupied orbitals in full molecule
+    integer,intent(in) :: nUnocc
+    !> LSDalton info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Occupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
+    type(ccorbital), intent(inout) :: OccOrbitals(nocc)
+    !> Unoccupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
+    type(ccorbital), intent(inout) :: UnoccOrbitals(nunocc)
+    !> Full molecule info, model for pair fragment calculations are stored in MyMolecule%PairModel.
+    type(fullmolecule), intent(inout) :: MyMolecule
+    type(ccatom),pointer :: AtomicFragments(:)
+    integer, dimension(MyMolecule%natoms) :: nocc_per_atom, nunocc_per_atom    
+    integer :: natoms
+
+    natoms=MyMolecule%natoms
+ 
+
+
+
+  end subroutine estimated_fragment_energies
+
+
   !> \brief Calculate all atomic fragment energies
   !> and all pair interaction energies, and add them
   !> to get the correlation energy for the full molecule
