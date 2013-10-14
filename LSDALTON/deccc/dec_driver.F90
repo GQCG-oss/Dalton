@@ -57,7 +57,6 @@ contains
     type(matrix),intent(in) :: D
     type(ccorbital), pointer :: OccOrbitals(:)
     type(ccorbital), pointer :: UnoccOrbitals(:)
-    real(realk), pointer :: DistanceTable(:,:)
     real(realk) :: Ecorr, Ehf, Eerr
     real(realk), pointer :: mp2gradient(:,:)
     integer :: nBasis,nOcc,nUnocc,nAtoms,i
@@ -72,17 +71,11 @@ contains
     nBasis = MyMolecule%nbasis
     nAtoms = MyMolecule%natoms
 
-    ! -- Calculate distance matrix
-    call mem_alloc(DistanceTable,nAtoms,nAtoms)
-    DistanceTable=0.0E0_realk
-    call GetDistances(DistanceTable,nAtoms,mylsitem,DECinfo%output) ! distances in atomic units
-
-
     ! -- Analyze basis and create orbitals
     call mem_alloc(OccOrbitals,nOcc)
     call mem_alloc(UnoccOrbitals,nUnocc)
     call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
-         & OccOrbitals, UnoccOrbitals, DistanceTable)
+         & OccOrbitals, UnoccOrbitals)
 
 
     ! *************************************************
@@ -91,11 +84,10 @@ contains
     call mem_alloc(mp2gradient,3,natoms)
     call main_fragment_driver(MyMolecule,mylsitem,D,&
          &OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,DistanceTable,EHF,Ecorr,mp2gradient,Eerr)
+         & natoms,nocc,nunocc,EHF,Ecorr,mp2gradient,Eerr)
 
     ! Free stuff
     call mem_dealloc(mp2gradient)
-    call mem_dealloc(DistanceTable)
 
     ! Delete orbitals
     do i=1,nOcc
@@ -131,7 +123,7 @@ contains
   !> \date October 2010
   subroutine main_fragment_driver(MyMolecule,mylsitem,D,&
        & OccOrbitals,UnoccOrbitals, &
-       & natoms,nocc,nunocc,DistanceTable,EHF,Ecorr,molgrad,Eerr)
+       & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr)
 
     implicit none
     !> Number of occupied orbitals in full molecule
@@ -150,8 +142,6 @@ contains
     type(ccorbital), intent(inout) :: OccOrbitals(nocc)
     !> Unoccupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
     type(ccorbital), intent(inout) :: UnoccOrbitals(nunocc)
-    !> Distances between all atoms (not changed at output, is intent(inout) for MPI purposes)
-    real(realk),intent(inout) :: DistanceTable(natoms,natoms)
     !> Hartree-Fock energy
     real(realk),intent(inout) :: EHF
     !> MP2 correlation energy
@@ -338,7 +328,7 @@ contains
     call ls_mpibcast(nunocc,master,MPI_COMM_LSDALTON)
 
     ! Pass remaining full molecular info to local masters
-    call mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,DistanceTable,&
+    call mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,&
          & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
 
 #else
@@ -359,7 +349,7 @@ contains
 
 
     ! Sort atomic fragments according to estimated size
-    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
+    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,mymolecule%DistanceTable,&
          & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
 
     write(DECinfo%output,*)
@@ -432,11 +422,11 @@ contains
        ! No MPI: Master nodes does all jobs.
        if(DECinfo%SinglesPolari) then ! singles effects for full molecule
           call optimize_atomic_fragment(i,AtomicFragments(i),nAtoms, &
-               & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
+               & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
                & MyMolecule,mylsitem,.true.,t1full=t1old)
        else
           call optimize_atomic_fragment(i,AtomicFragments(i),nAtoms, &
-               & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
+               & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
                & MyMolecule,mylsitem,.true.)
        end if
 
@@ -492,7 +482,7 @@ contains
     DECinfo%gradient = grad_save
 
     ! Get job list 
-    call create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,DistanceTable,&
+    call create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
     njobs = jobs%njobs
 
@@ -571,7 +561,7 @@ contains
 
           ! Calculate all fragments (both single and pairs)
           call fragment_jobs(post_fragopt_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,&
-               & OccOrbitals,UnoccOrbitals,DistanceTable,jobs,AtomicFragments,&
+               & OccOrbitals,UnoccOrbitals,jobs,AtomicFragments,&
                & FragEnergies,fullgrad,t1old,t1new)
           
           ! Compare amplitudes from single fragment calculations
@@ -598,7 +588,7 @@ contains
 
        ! Determine whether more pairs are required, if so determine new pair cutoff
        oldpaircut = DECinfo%pair_distance_threshold
-       call dec_energy_control_center(natoms,oldpaircut,dofrag,DistanceTable,&
+       call dec_energy_control_center(natoms,oldpaircut,dofrag,mymolecule%DistanceTable,&
             & FragEnergies,AtomicFragments,morejobs,newpaircut,Eerr)
 
        if(morejobs) then ! update pair cutoff
@@ -607,7 +597,7 @@ contains
           ! Expand existing job list (where are jobs are already done) to include additional pair jobs
           ! ------------------------------------------------------------------------------------------
           ! Append new jobs to existing job list
-          call expand_joblist_to_include_more_pairs(nocc,nunocc,natoms,DistanceTable,dofrag,&
+          call expand_joblist_to_include_more_pairs(nocc,nunocc,natoms,dofrag,&
                & AtomicFragments,oldpaircut,newpaircut,MyMolecule,OccOrbitals,&
                & UnoccOrbitals,jobs)
 
@@ -651,7 +641,7 @@ contains
 
     ! Print all fragment energies
     call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
-         & DistanceTable,energies)
+         & mymolecule%DistanceTable,energies)
 
     ! Set output energy
     select case(DECinfo%ccmodel)
@@ -764,7 +754,7 @@ contains
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine fragment_jobs(post_fragopt_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
-       & UnoccOrbitals,DistanceTable,jobs,AtomicFragments,FragEnergies,&
+       & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,&
        & fullgrad,t1old,t1new)
 
     implicit none
@@ -784,8 +774,6 @@ contains
     type(ccorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals in DEC format 
     type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
-    !> Distances between atoms
-    real(realk),intent(in) :: DistanceTable(natoms,natoms)
     !>  fragment job list
     type(joblist),intent(inout) :: jobs
     !> Atomic fragments
@@ -1037,18 +1025,18 @@ contains
 
           ! Init pair
           call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-               & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, DistanceTable, &
+               & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
                & MyMolecule,mylsitem,.true.,PairFragment)
 
 
           if(DECinfo%SinglesPolari) then
-             call pair_driver_singles(natoms,nocc,nunocc,DistanceTable,&
+             call pair_driver_singles(natoms,nocc,nunocc,&
                   & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),PairFragment,t1old,t1new)
           else
              call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),&
-                  & natoms,DistanceTable,PairFragment,grad)
+                  & natoms,PairFragment,grad)
           end if
 
           ! Update pair energies

@@ -1292,7 +1292,7 @@ contains
   !> \brief Subroutine that creates initial fragment
   !> \date august 2011
   !> \author Ida-Marie Hoyvik
-  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,Occ,Virt)
+  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,init_radius,Occ,Virt)
     implicit none
     !> number of atoms in MOLECULE
     Integer, intent(in)    :: natoms
@@ -1300,18 +1300,16 @@ contains
     integer,intent(in), dimension(natoms) :: nocc_per_atom, nunocc_per_atom
     !> Distances from central atom to other atoms
     real(realk),intent(in) :: DistMyAtom(natoms)
+    !> Include orbitals assigned to atoms within this distance of central atom
+    real(realk),intent(in) :: init_radius
     !> Which AOS atoms to include for occ and virt spaces
     !> (entry i is T if orbitals on atom i is included)
     !> (In practice occ and virt will be identical but we keep it general)
     logical,intent(inout)  :: Occ(natoms),Virt(natoms)
-    real(realk)            :: init_radius
     integer                :: i
     real(realk)            :: FOT
 
     FOT=DECinfo%FOT
-
-    ! Initial radius set to 6 a.u.
-    init_radius = 6.0 
 
     write(DECinfo%output,'(a,f5.2)') " FOP Radius for initial fragment: ",init_radius
 

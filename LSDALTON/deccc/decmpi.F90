@@ -380,7 +380,7 @@ contains
   !> have already been communicated.
   !> \author Kasper Kristensen
   !> \date March 2012
-  subroutine mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,DistanceTable,&
+  subroutine mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,&
        & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
 
     implicit none
@@ -391,9 +391,6 @@ contains
     integer,intent(in) :: nocc
     !> Number of unoccupied orbitals in the molecule
     integer,intent(in) :: nunocc
-    !> Distance table with inter-atomic distances
-    !> Intent(in) for main master, intent(out) for local masters
-    real(realk),intent(inout) :: DistanceTable(natoms,natoms)
     !> Occupied orbitals in DEC format
     !> Intent(in) for main master, intent(out) for local masters
     type(ccorbital),intent(inout) :: OccOrbitals(nocc)
@@ -474,10 +471,6 @@ contains
     end do
 
 
-    ! Distance table
-    ! --------------
-    call ls_mpi_buffer(DistanceTable,natoms,natoms,master)
-
     ! Integral lsitem
     ! ---------------
     call mpicopy_lsitem(MyLsitem,MPI_COMM_LSDALTON)
@@ -543,6 +536,8 @@ contains
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%numocc)
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%numvirt)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%PairModel,MyMolecule%natoms,MyMolecule%natoms)
     end if
 
 
@@ -564,6 +559,8 @@ contains
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%PairModel,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
 
   end subroutine mpi_bcast_fullmolecule
 

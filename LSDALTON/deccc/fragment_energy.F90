@@ -786,14 +786,13 @@ contains
   !> improved full molecular singles amplitudes by the calculated fragment singles amplitudes.
   !> \author Kasper Kristensen
   !> \date March 2012
-  subroutine pair_driver_singles(natoms,nocc,nunocc,distancetable,&
+  subroutine pair_driver_singles(natoms,nocc,nunocc,&
        & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
        & Fragment1,Fragment2,PairFragment,t1old,t1new)
 
     implicit none
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
     !> Number of occupied orbitals in full molecule
     integer,intent(in) :: nOcc
     !> Number of unoccupied orbitals in full molecule
@@ -826,7 +825,7 @@ contains
 
     ! Call main driver to get energy
     call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
-         & Fragment1,Fragment2,natoms,distancetable, PairFragment,grad)
+         & Fragment1,Fragment2,natoms, PairFragment,grad)
 
     ! Update full molecular singles amplitudes with (virt EOS,occ EOS) fragment contributions
     ! ***************************************************************************************
@@ -856,7 +855,7 @@ contains
   !> If requested, first order properties (MP2 density or gradient) are also calculated and saved.
   !> \author Kasper Kristensen
   subroutine pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-       & Fragment1,Fragment2,natoms,distancetable,PairFragment,grad)
+       & Fragment1,Fragment2,natoms,PairFragment,grad)
 
     implicit none
     !> Full molecule info
@@ -873,7 +872,6 @@ contains
     type(ccatom),intent(inout) :: Fragment2
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
     !> Atomic fragment 
     type(ccatom), intent(inout) :: PairFragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
@@ -888,7 +886,7 @@ contains
 
        ! Run calculation using fragment with fragment-adapted orbitals
        call pair_fragment_energy_and_prop(Fragment1,Fragment2, &
-            & natoms, DistanceTable, FOfragment,grad)
+            & natoms, mymolecule%DistanceTable, FOfragment,grad)
 
        ! Copy stuff from FO fragment to original fragment
        call copy_mpi_main_info_from_FOfragment(FOfragment,PairFragment)
@@ -898,7 +896,7 @@ contains
 
        ! Run calculation using input fragment
        call pair_fragment_energy_and_prop(Fragment1,Fragment2, &
-            & natoms, DistanceTable, PairFragment,grad)       
+            & natoms, mymolecule%DistanceTable, PairFragment,grad)       
     end if
 
   end subroutine pair_driver
@@ -1101,7 +1099,7 @@ contains
     real(realk), intent(in) :: DistanceTable(natoms,natoms)
     integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
     integer :: i,j,k,a,b,c
-    real(realk) :: tcpu, twall,pairdist,au_to_angstrom
+    real(realk) :: tcpu, twall,pairdist
     real(realk) :: e1, e2, e3, e4,tmp,multaibj
     real(realk) :: tcpu1,tcpu2,twall1,twall2
     logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
@@ -1148,8 +1146,7 @@ contains
     e4_final=0E0_realk
     ! Distance between fragments in Angstrom
     pairdist = get_distance_between_fragments(Fragment1,Fragment2,natoms,DistanceTable)
-    au_to_angstrom = bohr_to_angstrom
-    pairdist = au_to_angstrom*pairdist
+    pairdist = bohr_to_angstrom*pairdist
 
     ! Which "interaction pairs" to include for occ and unocc space (avoid double counting)
     call mem_alloc(dopair_occ,noccEOS,noccEOS)
@@ -1396,7 +1393,6 @@ contains
 #endif
     type(ccorbital), pointer :: OccOrbitals(:)
     type(ccorbital), pointer :: UnoccOrbitals(:)
-    real(realk), pointer :: DistanceTable(:,:)
     integer :: nocc,nunocc,nbasis,natoms
 
     write(DECinfo%output,*) 'Using DEC-MP2 debug routine for full molecular system...'
@@ -1413,16 +1409,11 @@ contains
     nBasis = MyMolecule%nbasis
     nAtoms = MyMolecule%natoms
 
-    ! -- Calculate distance matrix 
-    call mem_alloc(DistanceTable,nAtoms,nAtoms)
-    DistanceTable=0.0E0_realk
-    call GetDistances(DistanceTable,nAtoms,mylsitem,DECinfo%output) ! distances in atomic units
-
     ! -- Analyze basis and create orbitals 
     call mem_alloc(OccOrbitals,nOcc)
     call mem_alloc(UnoccOrbitals,nUnocc)
     call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
-         & OccOrbitals, UnoccOrbitals, DistanceTable)
+         & OccOrbitals, UnoccOrbitals)
 
 
     if(DECinfo%frozencore) then
@@ -1732,16 +1723,15 @@ contains
             & 'MP2 Lagrangian single energies','AF_MP2_LAG')
     end if
     call print_pair_fragment_energies(natoms,e1,orbitals_assigned,&
-         & DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
+         & MyMolecule%DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
     if(.not.DECinfo%onlyoccpart) then
        call print_pair_fragment_energies(natoms,e3,orbitals_assigned,&
-            & DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')
+            & MyMolecule%DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')
        call print_pair_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
-            & DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
+            & MyMolecule%DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
     end if
 
     call mem_dealloc(ppfock)
-    call mem_dealloc(DistanceTable)
 
     do i=1,nOcc
        call orbital_free(OccOrbitals(i))
@@ -2597,7 +2587,7 @@ contains
   !> \date February 2013
   !> \author Ida-Marie Hoeyvik & Kasper Kristensen
   subroutine optimize_atomic_fragment(MyAtom,AtomicFragment,nAtoms, &
-       &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
+       &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
        &MyMolecule,mylsitem,freebasisinfo,t1full)
     implicit none
     !> Number of occupied orbitals in molecule
@@ -2614,8 +2604,6 @@ contains
     type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
     type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
-    !> Distance table for all atoms in molecule
-    real(realk), dimension(nAtoms,nAtoms), intent(in) :: DistanceTable
     !> Full molecule information
     type(fullmolecule), intent(in) :: MyMolecule
     !> Integral information
@@ -2625,7 +2613,7 @@ contains
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
     real(realk)                    :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
-    real(realk)                    :: LagEnergyOld, OccEnergyOld, VirtEnergyOld, FOT
+    real(realk)                    :: LagEnergyOld, OccEnergyOld, VirtEnergyOld, FOT, init_radius
     logical, dimension(natoms)     :: Occ_atoms,Virt_atoms,OccOld,VirtOld
     real(realk),dimension(natoms)  :: DistMyAtom,SortedDistMyAtom
     integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
@@ -2664,9 +2652,9 @@ contains
     expansion_converged=.false.
     max_iter_red=15   ! allow 15 reduction steps (should be more than enough)
     FOT = DECinfo%FOT
-    DistMyAtom= DistanceTable(:,MyAtom)   ! distance vector for central atom
+    DistMyAtom= mymolecule%DistanceTable(:,MyAtom)   ! distance vector for central atom
     ! Sort atoms according to distance from central atom
-    call GetSortedList(SortedDistMyAtom,DistTrackMyAtom,DistanceTable,natoms,MyAtom)
+    call GetSortedList(SortedDistMyAtom,DistTrackMyAtom,mymolecule%DistanceTable,natoms,MyAtom)
     nocc_per_atom=get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
     nunocc_per_atom=get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
 
@@ -2704,8 +2692,11 @@ contains
     !                            Initial fragment
     ! ======================================================================
 
-    ! Start fragment optimization by calculating initial fragment
-    call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,Occ_atoms,Virt_atoms)
+    ! Start fragment optimization by calculating initial fragment where atoms within 2 Angstrom
+    ! of central atom are included
+    init_radius = 2.0_realk/bohr_to_angstrom
+    call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
+         & init_radius, Occ_atoms,Virt_atoms)
     call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
          & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
          & AtomicFragment)

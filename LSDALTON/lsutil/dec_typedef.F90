@@ -428,6 +428,7 @@ module dec_typedef_module
 
 
   !> All information about full molecule and HF calculation
+  !> REMEMBER TO UPDATE mpi_bcast_fullmolecule IF YOU MODIFY THIS!!!
   type fullmolecule
 
      !> Number of electrons
@@ -476,6 +477,14 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+
+     !> Pair distance table giving interatomic distances
+     real(realk),pointer :: DistanceTable(:,:) => null()
+     !> Pair table describing which model should be used for given pair calculation:
+     !> model=0:  Skip pair
+     !> model=MODEL_MP2:  Do MP2
+     !> etc., see MODEL definitions below
+     integer,pointer :: PairModel(:,:) => null()
 
   end type fullmolecule
 

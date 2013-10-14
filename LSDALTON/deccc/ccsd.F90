@@ -5205,14 +5205,14 @@ contains
   !> Only for occupied partitioning scheme.
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_ccsd_full_occ(natoms,ccsd_matrix,orbitals_assigned,distance_table)
+  subroutine print_ccsd_full_occ(natoms,ccsd_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: ccsd_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: ccsd_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -5223,12 +5223,12 @@ contains
        call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
             & 'CCSD occupied single energies','AF_CCSD_OCC')
        call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
-            & Distance_table, 'CCSD occupied pair energies','PF_CCSD_OCC')
+            & Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
     else
        call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
             & 'CCD occupied single energies','AF_CCD_OCC')
        call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
-            & Distance_table, 'CCD occupied pair energies','PF_CCD_OCC')
+            & Distancetable, 'CCD occupied pair energies','PF_CCD_OCC')
     endif
 
   end subroutine print_ccsd_full_occ

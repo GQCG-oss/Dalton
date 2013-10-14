@@ -49,7 +49,6 @@ subroutine main_fragment_driver_slave()
   type(lsitem) :: MyLsitem
   type(ccatom),pointer :: AtomicFragments(:)
   type(fullmolecule) :: MyMolecule
-  real(realk),pointer :: DistanceTable(:,:)
   type(ccorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
   logical,pointer :: dofrag(:)
   type(joblist) :: jobs
@@ -92,10 +91,9 @@ subroutine main_fragment_driver_slave()
   ! Allocate arrays needed for fragment calculations
   call mem_alloc(OccOrbitals,nocc)
   call mem_alloc(UnoccOrbitals,nunocc)
-  call mem_alloc(DistanceTable,natoms,natoms)
 
   ! Get remaining full molecular information needed for all fragment calculations
-  call mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,DistanceTable,&
+  call mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,&
        & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
 
 
@@ -117,7 +115,7 @@ subroutine main_fragment_driver_slave()
   ! *        ATOMIC FRAGMENT OPTIMIZATION        *
   ! **********************************************
 
-  call atomic_fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
+  call atomic_fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
        & UnoccOrbitals,MyMolecule,MyLsitem)
 
   ! Remaining local slaves should exit local slave routine (but there will be more jobs)
@@ -225,7 +223,7 @@ subroutine main_fragment_driver_slave()
   
         ! Receive  fragment jobs from master and carry those out
         ! ======================================================
-        call fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
+        call fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
              & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
 
         ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
@@ -260,7 +258,6 @@ subroutine main_fragment_driver_slave()
   call mem_dealloc(AtomicFragments)
   call mem_dealloc(OccOrbitals)
   call mem_dealloc(UnoccOrbitals)
-  call mem_dealloc(DistanceTable)
   call ls_free(MyLsitem)
   call molecule_finalize(MyMolecule)
 
@@ -275,7 +272,7 @@ end subroutine main_fragment_driver_slave
 !> those atomic fragments requested by main master.
 !> \author Kasper Kristensen
 !> \date May 2012
-subroutine atomic_fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
+subroutine atomic_fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
      & UnoccOrbitals,MyMolecule,MyLsitem)
 
 
@@ -287,8 +284,6 @@ subroutine atomic_fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
   integer,intent(in) :: nocc
   !> Number of unoccupied orbitals in the molecule
   integer,intent(in) :: nunocc
-  !> Distance table with atomic distances
-  real(realk) :: DistanceTable(natoms,natoms)
   !> Occupied orbitals, DEC format
   type(ccorbital),intent(in) :: OccOrbitals(nocc)
   !> Unoccupied orbitals, DEC format
@@ -356,7 +351,7 @@ subroutine atomic_fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
 
         ! Carry out fragment optimization job task
         call optimize_atomic_fragment(jobidx,AtomicFragment,nAtoms, &
-             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
+             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
              & MyMolecule,mylsitem,.true.)
 
         ! Set job info (statistics)
@@ -396,7 +391,7 @@ end subroutine atomic_fragments_slave
 !> for those  fragments requested by main master.
 !> \author Kasper Kristensen
 !> \date May 2012
-subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
+subroutine fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
      & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
 
   implicit none
@@ -407,8 +402,6 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
   integer,intent(in) :: nocc
   !> Number of unoccupied orbitals in the molecule
   integer,intent(in) :: nunocc
-  !> Distances between atoms
-  real(realk) :: DistanceTable(natoms,natoms)
   !> Occupied orbitals, DEC format
   type(ccorbital),intent(in) :: OccOrbitals(nocc)
   !> Unoccupied orbitals, DEC format
@@ -513,7 +506,7 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
 
            ! init pair
            call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, DistanceTable, &
+                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
                 & MyMolecule,mylsitem,.true.,PairFragment)
            call get_number_of_integral_tasks_for_mpi(PairFragment,ntasks)
 
@@ -578,7 +571,7 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
 
            call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                 & AtomicFragments(atomA), AtomicFragments(atomB), &
-                & natoms,DistanceTable,PairFragment,grad)
+                & natoms,PairFragment,grad)
            flops_slaves = PairFragment%flops_slaves
            tottime = PairFragment%slavetime ! time used by all local slaves
            fragenergy=PairFragment%energies

@@ -29,7 +29,7 @@ contains
   !> \author Kasper Kristensen
   !> \date November 2011
   subroutine GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
-       & OccOrbitals, UnoccOrbitals, DistanceTable)
+       & OccOrbitals, UnoccOrbitals)
 
     implicit none
     !> Full molecule structure ( Note: MyMolecule is only changed if modbasis=.true.!)
@@ -46,8 +46,6 @@ contains
     type(ccorbital),intent(inout) :: OccOrbitals(nocc)
     !> Unoccupied orbitals to be generated
     type(ccorbital),intent(inout) :: UnoccOrbitals(nunocc)
-    !> Distance table for atoms
-    real(realk) :: DistanceTable(natoms,natoms)
 
 
     OrbitalGeneration: if(DECinfo%read_dec_orbitals) then ! Read DEC orbitals form file
@@ -70,15 +68,15 @@ contains
 
           ! For Boughton-Pulay, reassign orbitals originally assigned to hydrogen
           if(DECinfo%AbsorbHatoms) then
-             call reassign_orbitals(nocc,OccOrbitals,natoms,DistanceTable,mylsitem)
-             call reassign_orbitals(nunocc,UnOccOrbitals,natoms,DistanceTable,mylsitem)
+             call reassign_orbitals(nocc,OccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
+             call reassign_orbitals(nunocc,UnOccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
           end if
 
        else ! Simple Lowdin charge procedure to determine atomic extent
 
           write(DECinfo%output,*) 'Generating DEC orbitals using simple Lowdin charge analysis'
 
-          call GenerateOrbitals_simple(nocc,nunocc,natoms,DistanceTable, &
+          call GenerateOrbitals_simple(nocc,nunocc,natoms, &
                & MyMolecule,MyLsitem,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
           if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nocc,DECinfo%output)
           if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
@@ -496,7 +494,7 @@ contains
   !>    + one atomic fragment for all hydrogens (if any) assigned to that heavy atom.
   !> \author Kasper Kristensen
   !> \date September 2011
-  subroutine GenerateOrbitals_simple(nocc,nunocc,natoms,DistanceTable, &
+  subroutine GenerateOrbitals_simple(nocc,nunocc,natoms, &
        & MyMolecule,MyLsitem,approximated_norm_threshold,OccOrbitals,UnoccOrbitals)
 
     implicit none
@@ -506,8 +504,6 @@ contains
     integer, intent(in) :: nunocc
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
-    !> Distance table for atoms
-    real(realk) :: DistanceTable(natoms,natoms)
     !> Molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> General LS info
@@ -696,8 +692,8 @@ contains
 
     AbsorbHydrogenAtoms: if(DECinfo%AbsorbHatoms) then 
        ! Reassign orbitals originally assigned to hydrogen
-       call reassign_orbitals(nocc,OccOrbitals,natoms,DistanceTable,mylsitem)
-       call reassign_orbitals(nunocc,UnOccOrbitals,natoms,DistanceTable,mylsitem)
+       call reassign_orbitals(nocc,OccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
+       call reassign_orbitals(nunocc,UnOccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
 
     else ! we want fragments of hydrogen atoms
 
@@ -720,8 +716,8 @@ contains
                 do j=1,natoms
                    if(.not. which_hydrogens(j)) then ! atom "j" is a heavy atom
 
-                      if(DistanceTable(i,j) < mindist) then
-                         mindist = DistanceTable(i,j)
+                      if(MyMolecule%DistanceTable(i,j) < mindist) then
+                         mindist = MyMolecule%DistanceTable(i,j)
                          heavyatom = j
                       end if
 

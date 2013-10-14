@@ -36,147 +36,6 @@ module atomic_fragment_operations
 
 contains
 
-  !> \brief Nullify everything and set variables to zero
-  !> \author Marcin Ziolkowski
-  !> \param fragment Molecular fragment
-  subroutine atomic_fragment_nullify(fragment)
-
-    implicit none
-    type(ccatom), intent(inout) :: fragment
-
-
-    fragment%occEOSidx => null()
-    fragment%unoccEOSidx => null()
-    fragment%occAOSidx => null()
-    fragment%unoccAOSidx => null()
-    fragment%coreidx => null()
-
-
-    fragment%occAOSorb => null()
-    fragment%unoccAOSorb => null()
-
-    fragment%idxo => null()
-    fragment%idxu => null()
-
-    fragment%atoms_idx => null()
-
-    fragment%ypo => null()
-    fragment%ypv => null()
-
-    !Free CABS MO F12
-    fragment%cabsMOs => null()
-
-    fragment%fock => null()
-    fragment%ppfock => null()
-    fragment%ccfock => null()
-    fragment%qqfock => null()
-
-    fragment%OccContribs => null()
-    fragment%VirtContribs => null()
-
-    fragment%OccMat => null()
-    fragment%VirtMat => null()
-
-    fragment%CoccFA => null()
-    fragment%CunoccFA => null()
-    fragment%CDocceival => null()
-    fragment%CDunocceival => null()
-
-    fragment%basisinfoisset=.false.
-    fragment%atomic_number = 0
-    fragment%noccEOS = 0
-    fragment%nunoccEOS = 0
-    fragment%noccAOS = 0
-    fragment%nunoccAOS = 0
-    fragment%number_atoms = 0
-    fragment%number_basis = 0
-
-    fragment%t1dims=0
-    fragment%t1 => null()
-    fragment%t1_occidx => null()
-    fragment%t1_virtidx => null()
-
-
-  end subroutine atomic_fragment_nullify
-
-
-
-  !> \brief Initialize atomic fragment based on a list of atoms for the occupied and
-  !> unoccupied orbital spaces. 
-  !> For a pair fragment calculation it is assumed that EOSatoms and nEOSatoms
-  !> are set and that fragment%pairfrag=.true. before calling this routine
-  !> \author Kasper Kristensen
-  subroutine atomic_fragment_init_atom_specific(MyAtom,natoms,Unocc_atoms, &
-       & Occ_atoms,nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-       & MyMolecule,mylsitem,fragment,DoBasis,Pairfrag,FA)
-
-    implicit none
-    !> Number of atom to build a fragment on
-    integer, intent(in) :: MyAtom
-    !> Number of atoms in full molecule
-    integer, intent(in) :: nAtoms
-    !> Logical vector telling which atoms are in unocc AOS
-    logical, dimension(natoms), intent(in) :: Unocc_atoms
-    !> Logical vector telling which atoms are in occ AOS
-    logical, dimension(natoms), intent(in) :: Occ_atoms
-    !> Full molecule info
-    type(fullmolecule), intent(in) :: MyMolecule
-    !> LS item info
-    type(lsitem), intent(inout) :: mylsitem
-    !> Number of occupied orbitals in full molecule
-    integer, intent(in) :: nocc
-    !> Number of unoccupied orbitals in full molecule
-    integer, intent(in) :: nunocc
-    !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
-    !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
-    !> Fragment to construct
-    type(ccatom), intent(inout) :: fragment
-    !> Make fragment basis (MO coeff and Fock matrix for fragment)?
-    logical, intent(in) :: DoBasis
-    !> Is it a pair fragment?
-    logical,intent(in) :: pairfrag
-    !> Use fragment-adapted orbitals?
-    !> NOTE: If FA=.true. then the MO coefficients and MO Fock matrix
-    !> elements in the fragment are NOT set here. Rather they should be
-    !> set AFTER calling this routine (see init_fragment_adapted).
-    logical,intent(in),optional :: FA
-    integer :: j,idx, CentralAtom
-    logical,pointer :: occ_list(:),unocc_list(:)
-
-    ! Determine list of occupied orbitals assigned to one of the atoms in occ_atoms
-    call mem_alloc(occ_list,nocc)
-    occ_list=.false.
-    do j=1,nocc
-       CentralAtom=OccOrbitals(j)%centralatom
-       if( Occ_atoms(CentralAtom) ) then  ! occupied orbital j is included in fragment
-          occ_list(j)=.true.
-       end if
-    end do
-
-
-    ! Determine list of unoccupied orbitals assigned to one of the atoms in unocc_atoms
-    call mem_alloc(unocc_list,nunocc)
-    unocc_list=.false.
-    do j=1,nunocc
-       CentralAtom=UnoccOrbitals(j)%centralatom
-       if( Unocc_atoms(CentralAtom) ) then
-          ! unoccupied orbital j is included in fragment
-          unocc_list(j)=.true.
-       end if
-    end do
-
-
-    ! Create fragment based on logical vectors for occupied and virtual AOS
-    call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_list, &
-       & occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,pairfrag)
-    call mem_dealloc(occ_list)
-    call mem_dealloc(unocc_list)
-
-
-  end subroutine atomic_fragment_init_atom_specific
-
 
 
   !> \brief Initialize atomic fragment based on a list of specific AOS orbitals.
@@ -514,6 +373,209 @@ contains
 
   end subroutine atomic_fragment_init_orbital_specific
 
+
+
+  !> \brief Nullify everything and set variables to zero
+  !> \author Marcin Ziolkowski
+  !> \param fragment Molecular fragment
+  subroutine atomic_fragment_nullify(fragment)
+
+    implicit none
+    type(ccatom), intent(inout) :: fragment
+
+
+    fragment%occEOSidx => null()
+    fragment%unoccEOSidx => null()
+    fragment%occAOSidx => null()
+    fragment%unoccAOSidx => null()
+    fragment%coreidx => null()
+
+
+    fragment%occAOSorb => null()
+    fragment%unoccAOSorb => null()
+
+    fragment%idxo => null()
+    fragment%idxu => null()
+
+    fragment%atoms_idx => null()
+
+    fragment%ypo => null()
+    fragment%ypv => null()
+
+    !Free CABS MO F12
+    fragment%cabsMOs => null()
+
+    fragment%fock => null()
+    fragment%ppfock => null()
+    fragment%ccfock => null()
+    fragment%qqfock => null()
+
+    fragment%OccContribs => null()
+    fragment%VirtContribs => null()
+
+    fragment%OccMat => null()
+    fragment%VirtMat => null()
+
+    fragment%CoccFA => null()
+    fragment%CunoccFA => null()
+    fragment%CDocceival => null()
+    fragment%CDunocceival => null()
+
+    fragment%basisinfoisset=.false.
+    fragment%atomic_number = 0
+    fragment%noccEOS = 0
+    fragment%nunoccEOS = 0
+    fragment%noccAOS = 0
+    fragment%nunoccAOS = 0
+    fragment%number_atoms = 0
+    fragment%number_basis = 0
+
+    fragment%t1dims=0
+    fragment%t1 => null()
+    fragment%t1_occidx => null()
+    fragment%t1_virtidx => null()
+
+
+  end subroutine atomic_fragment_nullify
+
+
+
+  !> \brief Initialize atomic fragment based on a list of atoms for the occupied and
+  !> unoccupied orbital spaces. 
+  !> For a pair fragment calculation it is assumed that EOSatoms and nEOSatoms
+  !> are set and that fragment%pairfrag=.true. before calling this routine
+  !> \author Kasper Kristensen
+  subroutine atomic_fragment_init_atom_specific(MyAtom,natoms,Unocc_atoms, &
+       & Occ_atoms,nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+       & MyMolecule,mylsitem,fragment,DoBasis,Pairfrag,FA)
+
+    implicit none
+    !> Number of atom to build a fragment on
+    integer, intent(in) :: MyAtom
+    !> Number of atoms in full molecule
+    integer, intent(in) :: nAtoms
+    !> Logical vector telling which atoms are in unocc AOS
+    logical, dimension(natoms), intent(in) :: Unocc_atoms
+    !> Logical vector telling which atoms are in occ AOS
+    logical, dimension(natoms), intent(in) :: Occ_atoms
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Information about DEC occupied orbitals
+    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Fragment to construct
+    type(ccatom), intent(inout) :: fragment
+    !> Make fragment basis (MO coeff and Fock matrix for fragment)?
+    logical, intent(in) :: DoBasis
+    !> Is it a pair fragment?
+    logical,intent(in) :: pairfrag
+    !> Use fragment-adapted orbitals?
+    !> NOTE: If FA=.true. then the MO coefficients and MO Fock matrix
+    !> elements in the fragment are NOT set here. Rather they should be
+    !> set AFTER calling this routine (see init_fragment_adapted).
+    logical,intent(in),optional :: FA
+    integer :: j,idx, CentralAtom
+    logical,pointer :: occ_list(:),unocc_list(:)
+
+    ! Determine list of occupied orbitals assigned to one of the atoms in occ_atoms
+    call mem_alloc(occ_list,nocc)
+    occ_list=.false.
+    do j=1,nocc
+       CentralAtom=OccOrbitals(j)%centralatom
+       if( Occ_atoms(CentralAtom) ) then  ! occupied orbital j is included in fragment
+          occ_list(j)=.true.
+       end if
+    end do
+
+
+    ! Determine list of unoccupied orbitals assigned to one of the atoms in unocc_atoms
+    call mem_alloc(unocc_list,nunocc)
+    unocc_list=.false.
+    do j=1,nunocc
+       CentralAtom=UnoccOrbitals(j)%centralatom
+       if( Unocc_atoms(CentralAtom) ) then
+          ! unoccupied orbital j is included in fragment
+          unocc_list(j)=.true.
+       end if
+    end do
+
+
+    ! Create fragment based on logical vectors for occupied and virtual AOS
+    call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_list, &
+       & occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,pairfrag)
+    call mem_dealloc(occ_list)
+    call mem_dealloc(unocc_list)
+
+
+  end subroutine atomic_fragment_init_atom_specific
+
+
+
+  !> \brief Initialize atomic fragment by simply including all local orbitals assigned
+  !> to atoms which are closer to central atom than the input radius.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine atomic_fragment_init_within_distance(MyAtom,&
+       & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+       & MyMolecule,mylsitem,DoBasis,init_radius,Fragment)
+
+    implicit none
+    !> Number of atom to build a fragment on
+    integer, intent(in) :: MyAtom
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Information about DEC occupied orbitals
+    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Make fragment basis (MO coeff and Fock matrix for fragment)?
+    logical, intent(in) :: DoBasis
+    !> Distance beyond which to include neighbour atoms
+    real(realk),intent(in) :: init_radius
+    !> Fragment to construct
+    type(ccatom), intent(inout) :: fragment
+    integer :: natoms
+    logical, pointer :: Unocc_atoms(:), Occ_atoms(:)
+    integer, pointer :: nocc_per_atom(:),nunocc_per_atom(:)
+    logical :: pairfrag
+
+    ! How many occ/unocc orbitals assigned to each atom
+    natoms = MyMolecule%natoms
+    call mem_alloc(nocc_per_atom,natoms)
+    call mem_alloc(nunocc_per_atom,natoms)
+
+    ! Determine logical vectors describing which atoms to include in fragment,
+    ! i.e., atoms where the distance to MyAtom is smaller than init_radius
+    call mem_alloc(occ_atoms,natoms)
+    call mem_alloc(unocc_atoms,natoms)
+    call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,MyMolecule%distancetable(:,MyAtom),&
+         & init_radius,Occ_atoms, Unocc_atoms)
+
+    ! Init atomic fragment
+    pairfrag=.false.
+    call atomic_fragment_init_atom_specific(MyAtom,natoms,Unocc_atoms, &
+         & Occ_atoms,nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+         & MyMolecule,mylsitem,fragment,DoBasis,pairfrag)
+
+    call mem_dealloc(nocc_per_atom)
+    call mem_dealloc(nunocc_per_atom)
+    call mem_dealloc(occ_atoms)
+    call mem_dealloc(unocc_atoms)
+
+  end subroutine atomic_fragment_init_within_distance
 
 
 
@@ -1329,7 +1391,7 @@ contains
   !> \author Kasper Kristensen
   !> \date December 2011
   subroutine merged_fragment_init(Fragment1,Fragment2,nunocc, nocc, natoms, &
-       & OccOrbitals,UnoccOrbitals,DistanceTable,MyMolecule,mylsitem,DoBasis,pairfragment)
+       & OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,DoBasis,pairfragment)
 
 
     implicit none
@@ -1347,8 +1409,6 @@ contains
     type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
     type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
-    !> Distance table for all atoms in the molecule
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> LS item info
@@ -1389,7 +1449,7 @@ contains
 
     ! Find pair distance
     pairdist = get_distance_between_fragments(fragment1,&
-         & fragment2,natoms,DistanceTable)
+         & fragment2,natoms,MyMolecule%DistanceTable)
     ! Use reduced fragments for large distances
     if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,F12.3)') 'Pair distance (Angstrom)      = '&
          &, PairDist*bohr_to_angstrom
@@ -1940,7 +2000,7 @@ contains
   !> \author Kasper Kristensen
   !> \date February 2013
   subroutine get_fragment_adapted_dimensions_for_pair(Fragment1,Fragment2,nunoccFULL, noccFULL, natoms, &
-       & OccOrbitals,UnoccOrbitals,DistanceTable,MyMolecule,mylsitem,&
+       & OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
        & noccFA,nunoccFA,nbasisFA)
 
     implicit none
@@ -1958,8 +2018,6 @@ contains
     type(ccorbital), dimension(noccFULL), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
     type(ccorbital), dimension(nunoccFULL), intent(in) :: UnoccOrbitals
-    !> Distance table for all atoms in the molecule
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> LS item info
@@ -1976,7 +2034,7 @@ contains
     ! Init pair fragment
     ! ------------------
     call merged_fragment_init(Fragment1,Fragment2,nunoccFULL, noccFULL, natoms, &
-       & OccOrbitals,UnoccOrbitals,DistanceTable,MyMolecule,mylsitem,.true.,pairfragment)
+       & OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,.true.,pairfragment)
 
     noccFA = pairfragment%noccFA
     nunoccFA = pairfragment%nunoccFA
@@ -3737,7 +3795,7 @@ if(DECinfo%PL>0) then
   !> \author Kasper Kristensen
   !> \date January 2013
   subroutine create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,&
-       &DistanceTable,OccOrbitals,UnoccOrbitals,AtomicFragments,which_fragments,jobs)
+       &OccOrbitals,UnoccOrbitals,AtomicFragments,which_fragments,jobs)
 
     implicit none
     !> Full molecule info
@@ -3750,8 +3808,6 @@ if(DECinfo%PL>0) then
     integer, intent(in) :: nocc
     !> Number of unoccupied orbitals for full molecule
     integer, intent(in) :: nunocc
-    !> Table with atomic distances
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
     !> Occupied orbitals
     type(ccorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
@@ -3908,7 +3964,7 @@ if(DECinfo%PL>0) then
        if(.not. which_fragments(i)) cycle
        do j=i+1,natoms
           if(.not. which_fragments(j)) cycle
-          CheckPair: if(DistanceTable(i,j) < DECinfo%pair_distance_threshold) then  
+          CheckPair: if(MyMolecule%DistanceTable(i,j) < DECinfo%pair_distance_threshold) then  
              ! Pair needs to be computed
              npair = npair+1
           end if CheckPair
@@ -3929,7 +3985,7 @@ if(DECinfo%PL>0) then
     call init_joblist(njobs,jobs)
 
     call set_dec_joblist(natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-         & FragBasis,which_fragments, DistanceTable, jobs)
+         & FragBasis,which_fragments, mymolecule%DistanceTable, jobs)
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -4276,7 +4332,7 @@ if(DECinfo%PL>0) then
   !> simply be appended at the end of the job list.
   !> \author Kasper Kristensen
   !> \data October 2012
-  subroutine expand_joblist_to_include_more_pairs(nocc,nunocc,natoms,DistanceTable,dofrag,&
+  subroutine expand_joblist_to_include_more_pairs(nocc,nunocc,natoms,dofrag,&
        & Fragments,oldpaircut,newpaircut,MyMolecule,OccOrbitals,UnoccOrbitals,jobs)
 
     implicit none
@@ -4286,8 +4342,6 @@ if(DECinfo%PL>0) then
     integer,intent(in) :: nunocc
     !> Number of atoms in full molecule 
     integer,intent(in) :: nAtoms
-    !> Distances between atoms
-    real(realk),intent(in) :: DistanceTable(natoms,natoms)
     !> dofrag(P) is true if P is central atom for a fragment (see main_fragment_driver)
     logical,intent(in) :: dofrag(natoms)
     !> Single fragments
@@ -4324,10 +4378,10 @@ if(DECinfo%PL>0) then
           if(.not. dofrag(j)) cycle ! atom "j" is not central atom in a  fragment
 
           ! Number of pairs for old cutoff
-          if(DistanceTable(i,j) < oldpaircut) npairold = npairold+1
+          if(mymolecule%DistanceTable(i,j) < oldpaircut) npairold = npairold+1
 
           ! Number of pairs for new cutoff
-          if(DistanceTable(i,j) < newpaircut) npairnew = npairnew+1
+          if(mymolecule%DistanceTable(i,j) < newpaircut) npairnew = npairnew+1
 
        end do
     end do
@@ -4417,7 +4471,7 @@ if(DECinfo%PL>0) then
           if(.not. dofrag(j) ) cycle ! No  fragment for atom j
 
           ! Distance between atoms i and j
-          dist = DistanceTable(i,j)
+          dist = mymolecule%DistanceTable(i,j)
 
           ! Add pairs with distances between old and new paircut
           AddPairToJobList: if( (dist < newpaircut) .and. (dist >= oldpaircut) ) then  

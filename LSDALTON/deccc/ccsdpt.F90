@@ -2550,14 +2550,14 @@ contains
   !>         ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distance_table)
+  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: e4_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -2607,7 +2607,7 @@ contains
           if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
 
              write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
-                  & bohr_to_angstrom*distance_table(i,j), e4_matrix(i,j)
+                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
 
           end if
 
@@ -2678,14 +2678,14 @@ contains
   !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distance_table)
+  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -2724,7 +2724,7 @@ contains
              else
 
                 write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-                     &bohr_to_angstrom*distance_table(a,i), e5_matrix(a,i)
+                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
 
              end if
 

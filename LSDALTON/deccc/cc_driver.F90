@@ -883,7 +883,6 @@ contains
     !> Integrals (ai|bj) stored as (a,i,b,j) (not changed but need to be inout)
     type(array4),intent(inout) :: VOVO
     integer :: natoms,nocc_tot,ncore,i,p,pdx,nvirt,nocc
-    real(realk), pointer :: distance_table(:,:)
     type(ccorbital), pointer :: occorbitals(:)
     type(ccorbital), pointer :: unoccorbitals(:)
     logical, pointer :: orbitals_assigned(:)
@@ -905,16 +904,11 @@ contains
     endif
     nvirt = MyMolecule%numvirt
 
-    ! -- Calculate distance matrix
-    call mem_alloc(distance_table,natoms,natoms)
-    distance_table = 0.0E0_realk
-    call GetDistances(distance_table,natoms,mylsitem,DECinfo%output) ! distances in atomic units
-
     ! -- Analyze basis and create orbitals
     call mem_alloc(occorbitals,nocc_tot)
     call mem_alloc(unoccorbitals,nvirt)
     call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc_tot,nvirt,natoms, &
-         & occorbitals,unoccorbitals,distance_table)
+         & occorbitals,unoccorbitals)
 
     ! Orbital assignment
     call mem_alloc(orbitals_assigned,natoms)
@@ -938,7 +932,7 @@ contains
     ccsd_mat_tmp = array2_init([natoms,natoms])
     call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2,t1,VOVO,occorbitals,&
          & ccsd_mat_tot%val,ccsd_mat_tmp%val)
-    call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,distance_table)
+    call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
 
 
     ! Delete orbitals 
@@ -950,7 +944,6 @@ contains
     end do
     call mem_dealloc(occorbitals)
     call mem_dealloc(unoccorbitals)
-    call mem_dealloc(distance_table)
     call mem_dealloc(orbitals_assigned)
     call array2_free(ccsd_mat_tot)
     call array2_free(ccsd_mat_tmp)
@@ -998,8 +991,6 @@ contains
     type(array4) :: t2_final,ccsdpt_t2,VOVO
     type(array2) :: t1_final,ccsdpt_t1,ccsd_mat_tot,ccsd_mat_tmp,e4_mat_tot,e4_mat_tmp,e5_mat_tot
     integer :: natoms,ncore,nocc_tot,p,pdx,i
-    !> stuff needed for pair analysis
-    real(realk), pointer :: distance_table(:,:)
     type(ccorbital), pointer :: occ_orbitals(:)
     type(ccorbital), pointer :: unocc_orbitals(:)
     logical, pointer :: orbitals_assigned(:)
@@ -1067,19 +1058,14 @@ contains
 
 
     ! as we want to  print out fragment and pair interaction fourth-order energy contributions,
-    ! then for locality analysis purposes we need distance_table and occ_orbitals/
+    ! then for locality analysis purposes we need occ_orbitals and
     ! unocc_orbitals (adapted from fragment_energy.f90)
-
-    ! -- Calculate distance matrix
-    call mem_alloc(distance_table,natoms,natoms)
-    distance_table = 0.0E0_realk
-    call GetDistances(distance_table,natoms,mylsitem,DECinfo%output) ! distances in atomic units
 
     ! -- Analyze basis and create orbitals
     call mem_alloc(occ_orbitals,nocc_tot)
     call mem_alloc(unocc_orbitals,nvirt)
     call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc_tot,nvirt,natoms, &
-         & occ_orbitals,unocc_orbitals,distance_table)
+         & occ_orbitals,unocc_orbitals)
 
     ! Orbital assignment
     call mem_alloc(orbitals_assigned,natoms)
@@ -1103,7 +1089,7 @@ contains
     call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
                            & ccsd_mat_tot%val,ccsd_mat_tmp%val)
 
-    call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,distance_table)
+    call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
 
     ! release ccsd stuff
     call array2_free(ccsd_mat_tot)
@@ -1124,15 +1110,14 @@ contains
                              & occ_orbitals,unocc_orbitals,e5_mat_tot%val,ccsdpt_e5)
 
     ! print out the fourth- and fifth-order fragment and pair interactin energies
-    call print_e4_full(natoms,e4_mat_tot%val,orbitals_assigned,distance_table)
+    call print_e4_full(natoms,e4_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
 
-    call print_e5_full(natoms,e5_mat_tot%val,orbitals_assigned,distance_table)
+    call print_e5_full(natoms,e5_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
 
     ! release stuff
     call array2_free(e4_mat_tot)
     call array2_free(e4_mat_tmp)
     call array2_free(e5_mat_tot)
-    call mem_dealloc(distance_table)
     do i=1,nocc_tot
        call orbital_free(occ_orbitals(i))
     end do
