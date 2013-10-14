@@ -2332,4 +2332,44 @@ contains
 
 
 
+  !> \brief Determine which atoms have one or more orbitals assigned.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine which_atom_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
+
+    implicit none
+    !> Number of occupied orbitals in full molecule
+    integer,intent(in) :: nOcc
+    !> Number of unoccupied orbitals in full molecule
+    integer,intent(in) :: nUnocc
+    !> Number of atoms in full molecule
+    integer,intent(in) :: nAtoms
+    !> Occupied orbitals in DEC format
+    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    !> Unoccupied orbitals in DEC format
+    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !> dofrag(P) is true/false if atom P has one or more/zero orbitals assigned.
+    logical,intent(inout) :: dofrag(natoms)
+    integer, dimension(natoms) :: nocc_per_atom, nunocc_per_atom
+    integer :: i
+
+    ! Number of orbitals per atom
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnOccOrbitals,nunocc,natoms)
+
+    ! Which fragments to consider
+    dofrag=.true.
+    do i=1,natoms
+       if(DECinfo%onlyoccpart) then
+          ! Only consider occupied orbitals
+          if( (nocc_per_atom(i)==0) ) dofrag(i)=.false.
+       else
+          ! Consider occupied as well as unoccupied orbitals
+          if( (nocc_per_atom(i)==0) .and. (nunocc_per_atom(i)==0) ) dofrag(i)=.false.
+       end if
+    end do
+
+  end subroutine which_atom_have_orbitals_assigned
+
+
 end module orbital_operations

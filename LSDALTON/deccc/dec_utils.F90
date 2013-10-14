@@ -4347,6 +4347,44 @@ retval=0
   end subroutine print_pair_fragment_energies
 
 
+  !> \brief Get total number of atomic fragments + pair fragments
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  function get_total_number_of_fragments(natoms,dofrag,DistanceTable) result(njobs)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Logical vector describing which atoms have orbitals assigned 
+    !> (i.e., which atoms to consider in atomic fragment calculations)
+    logical,intent(in) :: dofrag(natoms)
+    !> Distance table with interatomic distances
+    real(realk),intent(in) :: DistanceTable(natoms,natoms)
+    integer :: njobs
+    integer :: naf,npf,i,j
+    
+
+    ! Number of atomic fragments
+    naf = count(dofrag)
+
+    ! Number of pair fragments (do not include pairs with interatomic distance beyond pair threshold)
+    npf=0
+    iloop: do i=1,natoms
+       if(.not. dofrag(i)) cycle iloop
+       jloop: do j=i+1,natoms
+          if(.not. dofrag(j)) cycle iloop
+
+          ! Pair distance below threshold?
+          if(DistanceTable(i,j)<DECinfo%pair_distance_threshold) then
+             npf=npf+1
+          end if
+
+       end do jloop
+    end do iloop
+
+    ! Number of jobs: Atomic frags + pair frags
+    njobs = naf+npf
+
+  end function get_total_number_of_fragments
 
 
 end module dec_fragment_utils

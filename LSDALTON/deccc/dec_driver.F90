@@ -125,7 +125,7 @@ contains
   !> Information is stored in MyMolecule%PairModel.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine estimated_fragment_energies(MyMolecule,mylsitem,&
+  subroutine estimate_fragment_driver(MyMolecule,mylsitem,&
        & nocc,nunocc,OccOrbitals,UnoccOrbitals)
 
     implicit none
@@ -143,14 +143,76 @@ contains
     type(fullmolecule), intent(inout) :: MyMolecule
     type(ccatom),pointer :: AtomicFragments(:)
     integer, dimension(MyMolecule%natoms) :: nocc_per_atom, nunocc_per_atom    
-    integer :: natoms
+    logical,dimension(MyMolecule%natoms) :: dofrag
+    integer :: natoms,i,MyAtom,njobs, savemodel
+    logical :: DoBasis, save_fragadapt, hybridsave
+    real(realk) :: init_radius
+    type(joblist) :: jobs
+    real(realk),pointer :: FragEnergies(:,:,:)
+    type(fullmp2grad) :: dummy_fullgrad
+    type(array2) :: dummy_t1old, dummy_t1new
+
+
+    ! Not pretty, but we have to turn off fragment-adapted orbitals 
+    ! and change model to MP2
+    ! Original settings are restored at the end of this routine
+    savemodel = DECinfo%ccmodel
+    hybridsave = DECinfo%HybridScheme
+    save_fragadapt=DECinfo%fragadapt
+    DECinfo%ccmodel = MODEL_MP2
+    DECinfo%HybridScheme=.false.
+    DECinfo%fragadapt=.false.
 
     natoms=MyMolecule%natoms
- 
+    call mem_alloc(AtomicFragments,natoms)
+    do i=1,natoms
+       call atomic_fragment_nullify(AtomicFragments(i))
+    end do
 
+    ! Find out which atoms have one or more orbitals assigned
+    call which_atom_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
 
+    ! Init atomic fragments by simply including neighbour atoms (in practice within 2 Angstrom)
+    init_radius = 2.0_realk/bohr_to_angstrom
+    DoBasis=.false.
+    do i=1,natoms
+       if(.not. dofrag(i)) cycle
+       MyAtom=i
+       call atomic_fragment_init_within_distance(MyAtom,&
+            & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+            & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
+    end do
 
-  end subroutine estimated_fragment_energies
+    ! Number of atomic fragments + pair fragments
+    njobs = get_total_number_of_fragments(natoms,dofrag,MyMolecule%DistanceTable)
+
+    ! Create job list with atomic fragments and pair fragments
+    call init_joblist(njobs,jobs)
+    call create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,&
+         &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
+
+    ! Calculate fragment energies for MP2 using small orbital spaces
+    call mem_alloc(FragEnergies,natoms,natoms,ndecenergies)
+    call fragment_jobs(.false.,nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+         & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,&
+         & dummy_fullgrad,dummy_t1old,dummy_t1new)
+
+    
+    do i=1,nAtoms
+       if(.not. dofrag(i)) cycle
+       call atomic_fragment_free(AtomicFragments(i))
+!       call atomic_fragment_free_simple(AtomicFragments(i))
+    end do
+    call mem_dealloc(AtomicFragments)
+    call mem_dealloc(FragEnergies)
+    call free_joblist(jobs)
+
+    ! Reset original settings
+    DECinfo%ccmodel = savemodel
+    DECinfo%HybridScheme = hybridsave
+    DECinfo%fragadapt = save_fragadapt
+
+  end subroutine estimate_fragment_driver
 
 
   !> \brief Calculate all atomic fragment energies
@@ -197,10 +259,8 @@ contains
     logical :: FO_save  ! Internal control of first order property keyword
     logical :: grad_save  ! Internal control of MP2 gradient keyword
     logical :: dofrag(natoms), fragdone(natoms)
-    integer, dimension(natoms) :: nocc_per_atom, nunocc_per_atom
     type(array2) :: t1old,fockt1,t1new
     logical :: redo,post_fragopt_restart
-    logical,dimension(natoms) :: whichfrags
     type(mp2grad) :: grad
     type(fullmp2grad) :: fullgrad
     integer :: jobdone,newjob, nworkers, njobs, siz, jobidx
@@ -227,7 +287,6 @@ contains
     ! ************************************************************************
 
     Eerr=0.0_realk
-    whichfrags=.false.
     redo=.false.
     nbasis = MyMolecule%nbasis
     call mem_alloc(AtomicFragments,natoms)
@@ -235,15 +294,8 @@ contains
        call atomic_fragment_nullify(AtomicFragments(i))
     end do
 
-    ! Number of orbitals per atom
-    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
-    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnOccOrbitals,nunocc,natoms)
-
-    ! Which fragments to consider
-    dofrag=.true.
-    do i=1,natoms
-       if( (nocc_per_atom(i)==0) .and. (nunocc_per_atom(i)==0) ) dofrag(i)=.false.
-    end do
+    ! Find out which atoms have one or more orbitals assigned
+    call which_atom_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
     njobs = count(dofrag)
 
 

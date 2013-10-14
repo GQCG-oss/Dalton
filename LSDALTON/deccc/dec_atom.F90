@@ -5745,4 +5745,198 @@ if(DECinfo%PL>0) then
 
   end subroutine get_pairFO_union
 
+
+  !> \brief For each pair, determine whether pair calculation should be calculated
+  !> should be calculated (i) using input CC model, (ii) MP2 model, or (iii) simply be skipped.
+  !> This information is stored in MyMolecule%PairModel(P,Q) in terms of an integer
+  !> defining the model to be used for pair (P,Q), according to the model.
+  !> See details defining the model inside subroutine.
+  !> definitions in dec_typedef.F90.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine define_pair_calculations(natoms,dofrag,FragEnergies,MyMolecule)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Logical vector describing which atoms have orbitals assigned
+    !> (i.e., which atoms to consider in atomic fragment calculations)
+    logical,intent(in) :: dofrag(natoms)
+    !> Estimated fragment energies
+    real(realk),intent(in) :: FragEnergies(natoms,natoms)
+    !> Full molecule structure, where only MyMolecule%PairModel is modified
+    type(fullmolecule),intent(inout) :: MyMolecule
+    integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit
+    real(realk),dimension(natoms) :: EPQ
+    real(realk) :: Eacc
+    integer,dimension(natoms) :: atomindices
+
+
+    ! ****************************************************************************************
+    !            DIFFERENT TREATMENT OF PAIR FRAGMENTS BASED ON ENERGY ESTIMATES
+    ! ****************************************************************************************
+    !
+    ! The basic philosophy is that, since we have an error of ~FOT in the atomic fragment energy E_P,
+    ! we also allow error(s) of size ~FOT in the pair fragment energies dE_PQ associated with
+    ! atomic site P. Procedure:
+    ! 
+    ! 1. For each atomic site P, sort estimated pair energies dE_PQ according to size.
+    ! 2. Add up the smallest contributions until they add up to the FOT. Skip those pairs.
+    ! 3. Add up the "second-smallest" contributions until they add up to the FOT.
+    !    Calculate these pairs at the MP2 level.
+    ! 
+    ! 4. Thus, at the end we get this where the (absolute) 
+    !    pair energies are arranged in decreasing order:
+    !
+    !
+    !    dE_PQ: (*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*)
+    !           |          CC MODEL             |    MP2 LEVEL  |    SKIP PAIRS   |
+    !
+    !                                                             
+    ! In this way we (2) skip pairs for which the contribution to the energy is so small
+    ! that it anyways drowns in numerical noise from the E_P FOT error; and then (3) we allow an
+    ! additional error of order FOT by treating the next pairs only at the MP2 level. Point (3) is
+    ! a very conservative strategy, where we basically assume that the error introduced by doing MP2
+    ! rather than the actual CC model is of the same order as the actual pair interaction energy.
+    ! In practice this error is typically 1%-10% of the pair interaction energy itself,
+    ! but for now we choose to be very conservative here...
+
+
+    ! Init stuff
+    MyMolecule%PairModel = DECinfo%ccmodel  ! use original CC model as initialization model
+    Nskip=0
+    NMP2=0
+    NCC=0
+   
+
+    ! Loop over all atoms P
+    Ploop: do P=1,natoms
+
+       ! If no orbitals assigned to P, no pairs for this atom
+       if(.not. dofrag(P)) then
+          Qloop1: do Q=1,natoms
+             MyMolecule%PairModel(P,Q)=MODEL_NONE
+             MyMolecule%PairModel(Q,P)=MODEL_NONE
+          end do Qloop1
+          cycle Ploop
+       end if
+
+       ! Sort absolute pair interaction energies dE_PQ for given P and all Q's.
+       EPQ = abs(FragEnergies(:,P))
+       call real_inv_sort_with_tracking(EPQ,atomindices,natoms)
+
+
+       ! Step 2 above: Find which pairs to skip
+       ! **************************************
+       Eacc = 0.0_realk
+       Qloop2: do Q=natoms,1,-1
+          
+          ! Skip if no orbitals assigned to atom Q
+          Qidx = atomindices(Q)
+          if(.not. dofrag(Qidx)) cycle Qloop2
+
+          ! Accumulated estimated energy from smallest pair interaction energies
+          Eacc = Eacc + EPQ(Q)
+          if(Eacc < DECinfo%FOT) then
+             ! Accumulated value smaller than FOT --> (P,Qidx) can be skipped!
+             MyMolecule%PairModel(P,Qidx)=MODEL_NONE
+             Nskip=Nskip+1  ! count number of skipped pairs
+          else
+             ! Not possible to skip (P,Q). Save current counter value.
+             Qquit = Q
+             exit Qloop2
+          end if
+
+       end do Qloop2
+
+
+       ! Step 3 above: Find which pairs to treat at MP2 level
+       ! ****************************************************
+       ! (Only do this if DECinfo%PairMP2 is turned on)
+
+       NotMP2model: if(DECinfo%PairMP2 .and. DECinfo%ccmodel/=MODEL_MP2) then
+
+          ! Same procedure as step 2 above, now the loop starts where we ended above...
+          Eacc = 0.0_realk
+          Qstart=Qquit
+          Qloop3: do Q=Qstart,1,-1
+             Qidx = atomindices(Q)
+             if(.not. dofrag(Qidx)) cycle Qloop3
+
+             Eacc = Eacc + EPQ(Q)
+             if(Eacc < DECinfo%FOT) then
+                MyMolecule%PairModel(P,Qidx)=MODEL_MP2
+                NMP2 = NMP2+1
+             else
+                Qquit = Q
+                exit Qloop3
+             end if
+
+          end do Qloop3
+
+       end if NotMP2model
+
+       ! Number of pairs to treat at CC level.
+       NCC = NCC + Qquit
+
+    end do Ploop
+
+
+    ! Fix inconsistencies which may arise if MyMolecule%PairModel(P,Q) is not
+    ! identical to MyMolecule%PairModel(Q,P) from the above procedure
+    call fix_inconsistencies_for_pair_model(MyMolecule)
+
+  end subroutine define_pair_calculations
+
+
+  !> Once the CC model to be used for each pair has been defined in define_pair_calculations,
+  !> there will in general be inconsistencies. For example, it might be that from P's point
+  !> of view the pair (P,Q) should be treated at the CCSD level [MyMolecule%PairModel(P,Q)=MODEL_CCSD],
+  !> while from the point of view of Q, this pair should be skipped
+  !> [MyMolecule%PairModel(Q,P)=MODEL_NONE]. In such cases we always choose the more accurate model.
+  !> (Thus, for this example we would do a CCSD calculation for pair (P,Q)).
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine fix_inconsistencies_for_pair_model(MyMolecule)
+    implicit none
+    !> Full molecule structure, where only MyMolecule%PairModel is modified
+    type(fullmolecule),intent(inout) :: MyMolecule
+    integer :: P,Q
+
+    do P=1,MyMolecule%natoms
+       do Q=1,MyMolecule%natoms
+          ! Check whether model defined by (P,Q) is different from that defined by (Q,P)
+          Inconsistency: if(MyMolecule%PairModel(P,Q) /= MyMolecule%PairModel(Q,P)) then
+
+             ! Possibility 1: Either (P,Q) or (Q,P) requires original CC model, the
+             ! other one requires a less accurate model
+             if(MyMolecule%PairModel(P,Q)==DECinfo%ccmodel .or. &
+                  & MyMolecule%PairModel(Q,P)==DECinfo%ccmodel) then
+                MyMolecule%PairModel(P,Q)=DECinfo%ccmodel
+                MyMolecule%PairModel(Q,P)=DECinfo%ccmodel
+
+                ! Possibility 2: Either (P,Q) or (Q,P) requires MP2 model, the
+                ! other one dictates that the pair should be skipped
+             elseif(MyMolecule%PairModel(P,Q)==MODEL_MP2 .or. &
+                  & MyMolecule%PairModel(Q,P)==MODEL_MP2) then
+                MyMolecule%PairModel(P,Q)=MODEL_MP2
+                MyMolecule%PairModel(Q,P)=MODEL_MP2
+                
+                ! This should never happen! Something very wrong...
+             else
+                print *, 'P,Q: ', P,Q
+                print *, 'Model(P,Q): ', MyMolecule%PairModel(P,Q)
+                print *, 'Model(Q,P): ', MyMolecule%PairModel(Q,P)
+                call lsquit('fix_inconsistencies_for_pair_model: Something wrong &
+                     & with definitions of CC model for pair!',-1)
+             end if
+             
+          end if Inconsistency
+
+       end do
+    end do
+   
+ 
+
+  end subroutine fix_inconsistencies_for_pair_model
+
 end module atomic_fragment_operations
