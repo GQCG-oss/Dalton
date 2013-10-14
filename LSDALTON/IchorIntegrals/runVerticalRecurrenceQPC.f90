@@ -15,14 +15,14 @@ CONTAINS
     integer :: nTUVLIST,nTUVLISTactual
     integer,pointer :: TwoTermTUVLIST(:)
     
-    WRITE(*,'(A)')'MODULE AGC_OBS_VERTICALRECURRENCEMODD'
+    WRITE(*,'(A)')'MODULE AGC_OBS_VERTICALRECURRENCEMODC'
     WRITE(*,'(A)')' use IchorPrecisionModule'
     WRITE(*,'(A)')'  '
     WRITE(*,'(A)')' CONTAINS'
     MaxAngmomQP = 8
 
-    WRITE(*,'(A)')'subroutine VerticalRecurrence1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-    WRITE(*,'(A)')'         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,&'
+    WRITE(*,'(A)')'subroutine VerticalRecurrence1C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
+    WRITE(*,'(A)')'         & reducedExponents,TABFJW,Qexp,Ccenter,Pcent,Qcent,&'
     WRITE(*,'(A)')'         & integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)'
     WRITE(*,'(A)')'  implicit none'
     WRITE(*,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD'
@@ -31,11 +31,11 @@ CONTAINS
 !    WRITE(*,'(A)')'!  REAL(REALK),intent(in) :: RJ000(0:1,nPrimQ,nPrimP,nPasses)'
     WRITE(*,'(A)')'  REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)'
     WRITE(*,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)'
-    WRITE(*,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses),Dcenter(3,nPasses)'
+    WRITE(*,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses),Ccenter(3,nAtomsC)'
     WRITE(*,'(A)')'  real(realk),intent(inout) :: AUXarray(4,nPrimQ,nPrimP,nPasses)'
     WRITE(*,'(A)')'  !local variables'
-    WRITE(*,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,ipnt,iAtomD'
-    WRITE(*,'(A)')'  real(realk) :: Dx,Dy,Dz,Pexpfac,mPX,mPY,mPZ,Xqd,Yqd,Zqd,RJ000(0:1)'
+    WRITE(*,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,ipnt,iAtomC'
+    WRITE(*,'(A)')'  real(realk) :: Cx,Cy,Cz,Pexpfac,mPX,mPY,mPZ,Xqc,Yqc,Zqc,RJ000(0:1)'
     WRITE(*,'(A)')'  real(realk) :: PREF,TMP1,TMP2,alphaQ,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq'    
     WRITE(*,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
     WRITE(*,'(A)')'  real(realk) :: invexpQ(nPrimQ)'
@@ -54,26 +54,26 @@ CONTAINS
     WRITE(*,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
     WRITE(*,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
     WRITE(*,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
-    WRITE(*,'(A)')'  !ThetaAux(n,1,0,0) = Xqd*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)'
+    WRITE(*,'(A)')'  !ThetaAux(n,1,0,0) = Xqc*ThetaAux(n,0,0,0) + (alpha/q*Xpq)*ThetaAux(n+1,0,0,0)'
     WRITE(*,'(A)')'  !i = 0 last 2 term vanish'
     WRITE(*,'(A)')'  !We include scaling of RJ000 '
     WRITE(*,'(A)')'  DO iPrimQ=1, nPrimQ'
     WRITE(*,'(A)')'     invexpQ(iPrimQ) = D1/Qexp(iPrimQ)'
     WRITE(*,'(A)')'  ENDDO'
     WRITE(*,'(A)')'  DO iPassQ = 1,nPasses'
-    WRITE(*,'(A)')'   iAtomD = (iPassQ-1)/nAtomsC+1'
-    WRITE(*,'(A)')'   Dx = -Dcenter(1,iAtomD)'
-    WRITE(*,'(A)')'   Dy = -Dcenter(2,iAtomD)'
-    WRITE(*,'(A)')'   Dz = -Dcenter(3,iAtomD)'
+    WRITE(*,'(A)')'   iAtomC = iPassQ - ((iPassQ-1)/nAtomsC)*nAtomsC'
+    WRITE(*,'(A)')'   Cx = -Ccenter(1,iAtomC)'
+    WRITE(*,'(A)')'   Cy = -Ccenter(2,iAtomC)'
+    WRITE(*,'(A)')'   Cz = -Ccenter(3,iAtomC)'
     WRITE(*,'(A)')'   DO iPrimP=1, nPrimP'
     WRITE(*,'(A)')'    Pexpfac = PpreExpFac(iPrimP)'
     WRITE(*,'(A)')'    mPX = -Pcent(1,iPrimP)'
     WRITE(*,'(A)')'    mPY = -Pcent(2,iPrimP)'
     WRITE(*,'(A)')'    mPZ = -Pcent(3,iPrimP)'
     WRITE(*,'(A)')'    DO iPrimQ=1, nPrimQ'
-    WRITE(*,'(A)')'     Xqd = Qcent(1,iPrimQ,iPassQ) + Dx'
-    WRITE(*,'(A)')'     Yqd = Qcent(2,iPrimQ,iPassQ) + Dy'
-    WRITE(*,'(A)')'     Zqd = Qcent(3,iPrimQ,iPassQ) + Dz'
+    WRITE(*,'(A)')'     Xqc = Qcent(1,iPrimQ,iPassQ) + Cx'
+    WRITE(*,'(A)')'     Yqc = Qcent(2,iPrimQ,iPassQ) + Cy'
+    WRITE(*,'(A)')'     Zqc = Qcent(3,iPrimQ,iPassQ) + Cz'
     WRITE(*,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)'
     WRITE(*,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)'
     WRITE(*,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)'
@@ -111,13 +111,13 @@ CONTAINS
     WRITE(*,'(A)')'     TMP1 = PREF*RJ000(0)'
     WRITE(*,'(A)')'     TMP2 = PREF*RJ000(1)'
     WRITE(*,'(A)')'     AUXarray(1,iPrimQ,iPrimP,iPassQ) = TMP1'
-    WRITE(*,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xqd*TMP1 + alphaXpq*TMP2'
-    WRITE(*,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassQ) = Yqd*TMP1 + alphaYpq*TMP2'
-    WRITE(*,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassQ) = Zqd*TMP1 + alphaZpq*TMP2'
+    WRITE(*,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xqc*TMP1 + alphaXpq*TMP2'
+    WRITE(*,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassQ) = Yqc*TMP1 + alphaYpq*TMP2'
+    WRITE(*,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassQ) = Zqc*TMP1 + alphaZpq*TMP2'
     WRITE(*,'(A)')'    enddo'
     WRITE(*,'(A)')'   enddo'
     WRITE(*,'(A)')'  enddo'
-    WRITE(*,'(A)')'end subroutine VerticalRecurrence1D'
+    WRITE(*,'(A)')'end subroutine VerticalRecurrence1C'
 
     DO JMAX=2,MaxAngmomQP
        nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
@@ -149,8 +149,8 @@ CONTAINS
        ENDDO
 
        WRITE(*,'(A)')''
-       WRITE(*,'(A,I1,A)')'subroutine VerticalRecurrence',JMAX,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-       WRITE(*,'(A)')'         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&'
+       WRITE(*,'(A,I1,A)')'subroutine VerticalRecurrence',JMAX,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
+       WRITE(*,'(A)')'         & reducedExponents,TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&'
        WRITE(*,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
        WRITE(*,'(A)')'  implicit none'
        WRITE(*,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD'
@@ -159,11 +159,11 @@ CONTAINS
        WRITE(*,'(A)')'  REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)'
        WRITE(*,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)'
        WRITE(*,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimQ*nPrimP*nPasses)'
-       WRITE(*,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nAtomsD),Qcent(3,nPrimQ,nPasses)'
+       WRITE(*,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP),Ccenter(3,nAtomsC),Qcent(3,nPrimQ,nPasses)'
        WRITE(*,'(A,I2,A)')'  REAL(REALK),intent(in) :: TABFJW(0:',JMAX+3,',0:1200)'
        WRITE(*,'(A)')'  !Local variables'
-       WRITE(*,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP,iAtomD'
-       WRITE(*,'(A)')'  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,mPX,mPY,mPZ,Xqd,Yqd,Zqd,WVAL'
+       WRITE(*,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP,iAtomC'
+       WRITE(*,'(A)')'  real(realk) :: Cx,Cy,Cz,Pexpfac,invexpQ,inv2expQ,mPX,mPY,mPZ,Xqc,Yqc,Zqc,WVAL'
        WRITE(*,'(A)')'  real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL'
        WRITE(*,'(A)')'  real(realk) :: PREF,alphaQ,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance'
        WRITE(*,'(A,i4,A)')'  real(realk) :: TwoTerms(',MAX(1,nTUVprev2-nTUVprev3),')'
@@ -194,13 +194,15 @@ CONTAINS
        WRITE(*,'(A)')'  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
        WRITE(*,'(A)')'  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2'
        WRITE(*,'(A)')'  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+       WRITE(*,'(A)')'  !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N) + (alpha/p)*Xpq*TUV(T-1,0,0,N+1)'
+       WRITE(*,'(A)')'  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))'
        WRITE(*,'(A)')'  !We include scaling of RJ000 '
        WRITE(*,'(A)')''
        WRITE(*,'(A)')'  DO iPassQ = 1,nPasses'
-       WRITE(*,'(A)')'   iAtomD = (iPassQ-1)/nAtomsC+1'
-       WRITE(*,'(A)')'   Dx = -Dcenter(1,iAtomD)'
-       WRITE(*,'(A)')'   Dy = -Dcenter(2,iAtomD)'
-       WRITE(*,'(A)')'   Dz = -Dcenter(3,iAtomD)'
+       WRITE(*,'(A)')'   iAtomC = iPassQ - ((iPassQ-1)/nAtomsC)*nAtomsC'
+       WRITE(*,'(A)')'   Cx = -Ccenter(1,iAtomC)'
+       WRITE(*,'(A)')'   Cy = -Ccenter(2,iAtomC)'
+       WRITE(*,'(A)')'   Cz = -Ccenter(3,iAtomC)'
        WRITE(*,'(A)')'   IP = (iPassQ-1)*nPrimQ*nPrimP'
        WRITE(*,'(A)')'   DO iPrimP=1, nPrimP'
        WRITE(*,'(A)')'    Pexpfac = PpreExpFac(iPrimP)'
@@ -212,9 +214,9 @@ CONTAINS
        WRITE(*,'(A)')'     invexpQ = D1/Qexp(iPrimQ)'
        WRITE(*,'(A)')'     inv2expQ = D05*invexpQ'
        WRITE(*,'(A)')'     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ'
-       WRITE(*,'(A)')'     Xqd = Qcent(1,iPrimQ,iPassQ) + Dx'
-       WRITE(*,'(A)')'     Yqd = Qcent(2,iPrimQ,iPassQ) + Dy'
-       WRITE(*,'(A)')'     Zqd = Qcent(3,iPrimQ,iPassQ) + Dz'
+       WRITE(*,'(A)')'     Xqc = Qcent(1,iPrimQ,iPassQ) + Cx'
+       WRITE(*,'(A)')'     Yqc = Qcent(2,iPrimQ,iPassQ) + Cy'
+       WRITE(*,'(A)')'     Zqc = Qcent(3,iPrimQ,iPassQ) + Cz'
        WRITE(*,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)'
        WRITE(*,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)'
        WRITE(*,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)'
@@ -296,7 +298,7 @@ CONTAINS
               Vp=JTMP-Tp-Up                
               iTUV = TUVINDEX(Tp,Up,Vp)
 
-!                print*,'!iTUV=',iTUV
+!                print*,'!iTUV=',iTUV,'(',Tp,',',Up,',',Vp,')'
                 !step 1.
                 !how can the (Tp,Up,Vp) be built from lower
                 TREC = CREATED(Tp-1,Up,Vp)
@@ -364,7 +366,7 @@ CONTAINS
        WRITE(*,'(A)')'    ENDDO'
        WRITE(*,'(A)')'   ENDDO'
        WRITE(*,'(A)')'  ENDDO'
-       WRITE(*,'(A,I1,A)')'end subroutine VerticalRecurrence',JMAX,'D'
+       WRITE(*,'(A,I1,A)')'end subroutine VerticalRecurrence',JMAX,'C'
        deallocate(TUVINDEX)
        deallocate(TINDEX)
        deallocate(UINDEX)
@@ -502,30 +504,30 @@ IF(J.EQ.JMAX)THEN
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Xqd*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Xqc*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Xqd*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Xqc*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A)')&
-              &'     AuxArray(',ituvP0,',IP) = Xqd*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2)'
+              &'     AuxArray(',ituvP0,',IP) = Xqc*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2)'
       ENDIF
    ELSE
       IF(TM2.GE.0)THEN
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A)')&
-              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
+              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
       ENDIF      
    ENDIF
 ELSE
@@ -534,30 +536,30 @@ ELSE
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Xqd*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Xqc*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Xqd*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Xqc*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A)')&
-              &'     AuxArray(',ituvP0,',IP) = Xqd*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2)'
+              &'     AuxArray(',ituvP0,',IP) = Xqc*AuxArray(',ituvP1,',IP) + alphaXpq*TmpArray',JTMP,'(',ituvP1,',2)'
       ENDIF
    ELSE
       IF(TM2.GE.0)THEN
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A)')&
-              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
+              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Xqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaXpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
       ENDIF
    ENDIF
 ENDIF
@@ -594,30 +596,30 @@ IF(J.EQ.JMAX)THEN
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Yqd*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Yqc*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Yqd*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Yqc*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A)')&
-              &'     AuxArray(',ituvP0,',IP) = Yqd*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2)'
+              &'     AuxArray(',ituvP0,',IP) = Yqc*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2)'
       ENDIF
    ELSE
       IF(TM2.GE.0)THEN
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A)')&
-              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
+              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
       ENDIF      
    ENDIF
 ELSE
@@ -626,30 +628,30 @@ ELSE
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Yqd*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Yqc*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Yqd*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Yqc*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A)')&
-              &'     AuxArray(',ituvP0,',IP) = Yqd*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2)'
+              &'     AuxArray(',ituvP0,',IP) = Yqc*AuxArray(',ituvP1,',IP) + alphaYpq*TmpArray',JTMP,'(',ituvP1,',2)'
       ENDIF
    ELSE
       IF(TM2.GE.0)THEN
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A)')&
-              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
+              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Yqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaYpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
       ENDIF
    ENDIF
 ENDIF
@@ -686,30 +688,30 @@ IF(J.EQ.JMAX)THEN
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Zqd*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Zqc*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Zqd*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Zqc*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A)')&
-              &'     AuxArray(',ituvP0,',IP) = Zqd*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2)'
+              &'     AuxArray(',ituvP0,',IP) = Zqc*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2)'
       ENDIF
    ELSE
       IF(TM2.GE.0)THEN
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A)')&
-              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
+              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
       ENDIF      
    ENDIF
 ELSE
@@ -718,30 +720,30 @@ ELSE
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Zqd*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Zqc*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2) + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     AuxArray(',ituvP0,',IP) = Zqd*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     AuxArray(',ituvP0,',IP) = Zqc*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2) + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I4,A,I4,A,I1,A,I4,A)')&
-              &'     AuxArray(',ituvP0,',IP) = Zqd*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2)'
+              &'     AuxArray(',ituvP0,',IP) = Zqc*AuxArray(',ituvP1,',IP) + alphaZpq*TmpArray',JTMP,'(',ituvP1,',2)'
       ENDIF
    ELSE
       IF(TM2.GE.0)THEN
          !four term relation
          IF(TM1.EQ.1)THEN
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + TwoTerms(',iTwoTerms,')'
          ELSE
             WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I2,A,I3,A)')&
-                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
+                 &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,') + ',TM1,'*TwoTerms(',iTwoTerms,')'
          ENDIF
       ELSE
          !two term relation
          WRITE(*,'(A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A,I1,A,I4,A,I2,A)')&
-              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqd*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
+              &'     tmpArray',JTMP+1,'(',ituvP0,',',J,') = Zqc*tmpArray',JTMP,'(',ituvP1,',',J,') + alphaZpq*TmpArray',JTMP,'(',ituvP1,',',J+1,')'
       ENDIF
    ENDIF
 ENDIF

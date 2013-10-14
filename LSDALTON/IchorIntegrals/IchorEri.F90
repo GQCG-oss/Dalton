@@ -480,7 +480,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
           WRITE(lupri,'(3X,5ES18.9/,(3X,5ES18.9))')expD(iPrimP),(ContractCoeffD(iPrimP,iCont),iCont=1,nContD)
        enddo
     ENDIF
-    IF(TotalAngmom.EQ.0)THEN
+    IF(TotalAngmom.EQ.0.AND.(Psegmented.AND.Qsegmented))THEN
        !============================================================================================
        !                                        SSSS integrals
        !At this point we know all info about the integral except for the coordinates. 
@@ -500,6 +500,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
        !Qsegmented
        !Psegmented
        !ThermiteWorkMem
+       !Fix this so that is also works for non segmented SSSS
        !============================================================================================
 !     call IchorTimer('START',TSTART,TEND,LUPRI)
      !INFO 
@@ -607,31 +608,15 @@ DO ItypeAnon=1,nTypesA !non ordered loop
           ENDDO
        END IF
 
-       IF (Psegmented.AND.Qsegmented) THEN
+!       IF (Psegmented.AND.Qsegmented) THEN
           call IchorCoulombIntegral_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,&
                & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
                & reducedExponents,integralPrefactor,PQorder,CDAB)
-       ELSE
+!       ELSE
 
 
-!!$          WRITE(lupri,*)'IchorCoulombIntegral_McM_general'
-                call IchorQuit('IchorCoulombIntegral_McM_general',-1)
-!!$             call IchorCoulombIntegral_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-!!$                  & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
-!!$                  & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
-!!$                  & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
-!!$                  & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-!!$                  & Qiprim1,Qiprim2,Piprim1,Piprim2,expA,expB,expC,expD,&
-!!$                  & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-!!$                  & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB)
-!          call IchorCoulombIntegral_SSSS(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-!               & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
-!               & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
-!               & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
-!               & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-!               & Qiprim1,Qiprim2,Piprim1,Piprim2,expA,expB,expC,expD,&
-!               & Qsegmented,Psegmented,reducedExponents,integralPrefactor,CDAB)
-       ENDIF
+
+!       ENDIF
       !Distribute to Active Kmat 4 matrices (K_AC,K_BC,K_AD,K_BD)
              
         
