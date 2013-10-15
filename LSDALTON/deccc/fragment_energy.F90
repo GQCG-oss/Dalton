@@ -251,7 +251,7 @@ contains
     end if
 
 
-    if(DECinfo%fragadapt) then  ! Use fragment-adapted orbitals
+    if(DECinfo%fragadapt .and. MyFragment%FAset) then  ! Use fragment-adapted orbitals
 
        ! Init new fragment with fragment-adapted orbitals
        call init_fragment_adapted(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
@@ -879,7 +879,7 @@ contains
     type(ccatom) :: FOfragment
 
 
-    if(DECinfo%fragadapt) then
+    if(DECinfo%fragadapt .and. PairFragment%FAset) then
        ! Init new fragment with fragment-adapted orbitals'
        call init_fragment_adapted(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
             & PairFragment,FOfragment)
@@ -3455,7 +3455,7 @@ end subroutine optimize_atomic_fragment
     !> All unoccupied orbitals
     type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
-    type(fullmolecule), intent(in) :: MyMolecule
+    type(fullmolecule), intent(inout) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
     !> Delete fragment basis information ("expensive box in ccatom type") at exit?
@@ -3463,7 +3463,6 @@ end subroutine optimize_atomic_fragment
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
     type(array4) :: g, t2
-    integer      :: savemodel
 
 
     write(DECinfo%output,*) 'FOP Fragment includes all orbitals and fragment optimization is skipped'
@@ -3475,11 +3474,8 @@ end subroutine optimize_atomic_fragment
     ! Set information for fragment-adapted orbitals
     FullFragAdapt: if(DECinfo%fragadapt) then
 
-       ! Save existing model 
-       savemodel = DECinfo%ccmodel
-
        ! Set model to be MP2
-       DECinfo%ccmodel = MODEL_MP2
+       MyMolecule%ccmodel(MyAtom,MyAtom) = MODEL_MP2
 
        ! Integrals (ai|bj)
        call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%number_basis,&
@@ -3497,7 +3493,7 @@ end subroutine optimize_atomic_fragment
        call fragment_adapted_transformation_matrices(AtomicFragment)
 
        ! Restore the original CC model 
-       DECinfo%ccmodel = savemodel
+       MyMolecule%ccmodel(MyAtom,MyAtom) = DECinfo%ccmodel
 
     end if FullFragAdapt
 

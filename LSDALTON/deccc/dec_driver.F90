@@ -561,6 +561,7 @@ contains
        end if
     end do
 
+
     ! Now all atomic fragment energies have been calculated and the
     ! fragment information has been stored in AtomicFragments.
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
