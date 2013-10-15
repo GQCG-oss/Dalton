@@ -347,7 +347,7 @@ contains
        ! ***********************************
 
        ! we calculate (T) contribution to single  fragment energy 
-       ! and store in MyFragment%energies(8) and MyFragment%energies(9)
+       ! and store in MyFragment%energies(FRAGMODEL_OCCpT) and MyFragment%energies(FRAGMODEL_VIRTpT)
        if(DECinfo%ccModel==MODEL_CCSDpT) then
 
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
@@ -379,19 +379,19 @@ contains
     end if WhichCCmodel
 
 
-    ! Calcuate atomic fragment energy using Lagrangian scheme
-    ! *******************************************************
+    ! Calcuate atomic fragment energy
+    ! *******************************
 
     ! MODIFY FOR NEW MODEL!
-    ! If you implement a new model, which does fit into the standard CC energy
-    ! expression implemented in get_atomic_fragment_energy, then please make a new atomic
-    ! fragment energy subroutine and call it from here instead of 
-    ! calling get_atomic_fragment_energy.
-    ! If the energy in your new model does fit into the standard CC energy expression,
-    ! then grep for
-    ! "MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION"
-    ! The calculated pair interaction energy should be saved in myfragment%energies(?),
-    ! see "energies" in ccatom type definition to determine the "?".
+    ! Two possible situations:
+    ! (1) Your new model fits into the standard CC energy expression. 
+    !     In this case you should grep for
+    !     "MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION"
+    !     in the DEC files and introduce your model in the same way as the other models,
+    !     see FRAGMODEL_* in dec_typedef.F90.
+    ! (2) Your model does NOT fit into the standard CC energy expression.
+    !     In this case you need to make a new atomic fragment energy subroutine and call it from
+    !     here instead of calling get_atomic_fragment_energy.
 
     ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
     ! since they, "rather incoveniently", are required for the gradient but not for the energy
@@ -406,7 +406,7 @@ contains
     ! MODIFY FOR NEW CORRECTION!
     ! If you implement a new correction (e.g. F12) please insert call to subroutine here
     ! which calculates atomic fragment contribution and saves it in myfragment%energies(?),
-    ! see dec_readme file.
+    ! see dec_readme file and FRAGMODEL_* definitions in dec_typedef.F90.
 
 #ifdef MOD_UNRELEASED
     if(DECinfo%f12) then    
@@ -729,22 +729,22 @@ contains
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! MP2
-       MyFragment%energies(1) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
-       MyFragment%energies(2) = e1_final   ! occupied
-       MyFragment%energies(3) = e3_final   ! virtual
+       MyFragment%energies(FRAGMODEL_LAGMP2) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
+       MyFragment%energies(FRAGMODEL_OCCMP2) = e1_final   ! occupied
+       MyFragment%energies(FRAGMODEL_VIRTMP2) = e3_final   ! virtual
     case(MODEL_CC2)
        ! CC2
-       MyFragment%energies(4) = e1_final   ! occupied
-       MyFragment%energies(5) = e3_final   ! virtual
+       MyFragment%energies(FRAGMODEL_OCCCC2) = e1_final   ! occupied
+       MyFragment%energies(FRAGMODEL_VIRTCC2) = e3_final   ! virtual
     case(MODEL_CCSD)
        ! CCSD
-       MyFragment%energies(6) = e1_final   ! occupied
-       MyFragment%energies(7) = e3_final   ! virtual
+       MyFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
+       MyFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
 #ifdef MOD_UNRELEASED
     case(MODEL_CCSDpT)
        ! Save also CCSD contribution for CCSD(T)
-       MyFragment%energies(6) = e1_final   ! occupied
-       MyFragment%energies(7) = e3_final   ! virtual
+       MyFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
+       MyFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
 !endif mod_unreleased
 #endif
     end select
@@ -973,17 +973,16 @@ contains
     ! Calculate pair interaction energy using Lagrangian scheme
     ! *********************************************************
 
-
     ! MODIFY FOR NEW MODEL!
-    ! If you implement a new model, which does fit into the standard CC energy
-    ! expression implemented in get_pair_fragment_energy, then please make a new pair
-    ! fragment energy subroutine and call it from here instead of 
-    ! calling get_pair_fragment_energy.
-    ! If the energy in your new model does fit into the standard CC energy expression,
-    ! then grep for
-    ! "MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION"
-    ! The calculated pair interaction energy should be saved in pairfragment%energies(?),
-    ! see "energies" in ccatom type definition to determine the "?".
+    ! Two possible situations:
+    ! (1) Your new model fits into the standard CC energy expression. 
+    !     In this case you should grep for
+    !     "MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION"
+    !     in the DEC files and introduce your model in the same way as the other models,
+    !     see FRAGMODEL_* in dec_typedef.F90.
+    ! (2) Your model does NOT fit into the standard CC energy expression.
+    !     In this case you need to make a new pair interaction energy subroutine and call it from
+    !     here instead of calling get_pair_fragment_energy.
 
     ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
     ! since they, "rather incoveniently", are required for the gradient but not for the energy
@@ -1026,7 +1025,7 @@ contains
     ! *******************************************
 
     ! (T) energy contributions are stored 
-    ! in PairFragment%energies(8) and PairFragment%energies(9) 
+    ! in PairFragment%energies(FRAGMODEL_OCCpT) and PairFragment%energies(FRAGMODEL_VIRTpT) 
 
     if (DECinfo%CCModel == MODEL_CCSDpT) then
 
@@ -1317,22 +1316,22 @@ contains
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! MP2
-       PairFragment%energies(1) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
-       PairFragment%energies(2) = e1_final   ! occupied
-       PairFragment%energies(3) = e3_final   ! virtual
+       PairFragment%energies(FRAGMODEL_LAGMP2) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
+       PairFragment%energies(FRAGMODEL_OCCMP2) = e1_final   ! occupied
+       PairFragment%energies(FRAGMODEL_VIRTMP2) = e3_final   ! virtual
     case(MODEL_CC2)
        ! CC2
-       PairFragment%energies(4) = e1_final   ! occupied
-       PairFragment%energies(5) = e3_final   ! virtual
+       PairFragment%energies(FRAGMODEL_OCCCC2) = e1_final   ! occupied
+       PairFragment%energies(FRAGMODEL_VIRTCC2) = e3_final   ! virtual
     case(MODEL_CCSD)
        ! CCSD
-       PairFragment%energies(6) = e1_final   ! occupied
-       PairFragment%energies(7) = e3_final   ! virtual
+       PairFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
+       PairFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
 #ifdef MOD_UNRELEASED
     case(MODEL_CCSDpT)
        ! save CCSD contribution for CCSD(T)
-       PairFragment%energies(6) = e1_final   ! occupied
-       PairFragment%energies(7) = e3_final   ! virtual
+       PairFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
+       PairFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
 !endif mod_unreleased
 #endif
     end select
@@ -3813,26 +3812,26 @@ end subroutine optimize_atomic_fragment
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! MP2
-       fragment%LagFOP = fragment%energies(1)
-       fragment%EoccFOP = fragment%energies(2)
-       fragment%EvirtFOP = fragment%energies(3)
+       fragment%LagFOP = fragment%energies(FRAGMODEL_LAGMP2)
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCMP2)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTMP2)
     case(MODEL_CC2)
        ! CC2
-       fragment%EoccFOP = fragment%energies(4)
-       fragment%EvirtFOP = fragment%energies(5)
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCC2)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCC2)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
     case(MODEL_CCSD)
        ! CCSD
-       fragment%EoccFOP = fragment%energies(6)
-       fragment%EvirtFOP = fragment%energies(7)
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCCSD)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCCSD)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
 #ifdef MOD_UNRELEASED
     case(MODEL_CCSDpT)
        ! CCSD(T)
-       fragment%EoccFOP = fragment%energies(8)
-       fragment%EvirtFOP = fragment%energies(9)
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCpT)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTpT)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
 !endif mod_unreleased
@@ -3859,27 +3858,27 @@ end subroutine optimize_atomic_fragment
     type(ccatom),intent(inout) :: fragment
     ! MODIFY FOR NEW MODEL 
     ! If you implement a new model, please set fragment%energies(?) for your model,
-    ! see ccatom type def to determine the "?".
+    ! see FRAGMODEL_* definitions in dec_typedef.F90 to determine the "?".
 
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! MP2
-       fragment%energies(1) = fragment%LagFOP 
-       fragment%energies(2) = fragment%EoccFOP
-       fragment%energies(3) = fragment%EvirtFOP 
+       fragment%energies(FRAGMODEL_LAGMP2) = fragment%LagFOP 
+       fragment%energies(FRAGMODEL_OCCMP2) = fragment%EoccFOP
+       fragment%energies(FRAGMODEL_VIRTMP2) = fragment%EvirtFOP 
     case(MODEL_CC2)
        ! CC2
-       fragment%energies(4) = fragment%EoccFOP
-       fragment%energies(5) = fragment%EvirtFOP
+       fragment%energies(FRAGMODEL_OCCCC2) = fragment%EoccFOP
+       fragment%energies(FRAGMODEL_VIRTCC2) = fragment%EvirtFOP
     case(MODEL_CCSD)
        ! CCSD
-       fragment%energies(6) = fragment%EoccFOP 
-       fragment%energies(7) = fragment%EvirtFOP
+       fragment%energies(FRAGMODEL_OCCCCSD) = fragment%EoccFOP 
+       fragment%energies(FRAGMODEL_VIRTCCSD) = fragment%EvirtFOP
 #ifdef MOD_UNRELEASED 
     case(MODEL_CCSDpT)
        ! CCSD(T)
-       fragment%energies(8) = fragment%EoccFOP 
-       fragment%energies(9) = fragment%EvirtFOP
+       fragment%energies(FRAGMODEL_OCCpT) = fragment%EoccFOP 
+       fragment%energies(FRAGMODEL_VIRTpT) = fragment%EvirtFOP
 !endif mod_unreleased
 #endif
     case default
@@ -3922,21 +3921,21 @@ end subroutine optimize_atomic_fragment
              ! MP2
 
              ! Lagrangian MP2 energy stored in entry 1 (see "energies" in ccatom type def)
-             FragEnergiesModel(i,j,1) = FragEnergiesAll(i,j,1)
+             FragEnergiesModel(i,j,1) = FragEnergiesAll(i,j,FRAGMODEL_LAGMP2)
 
              ! Occupied MP2 energies stored in entry 2
-             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,2)
+             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,FRAGMODEL_OCCMP2)
 
              ! Virtual MP2 energies stored in entry 3
-             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,3)
+             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,FRAGMODEL_VIRTMP2)
           case(MODEL_CC2)
              ! CC2
 
              ! Occupied CC2 energies stored in entry 4
-             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,4)
+             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,FRAGMODEL_OCCCC2)
 
              ! Virtual CC2 energies stored in entry 5
-             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,5)
+             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,FRAGMODEL_VIRTCC2)
 
              ! Lagrangian CC2 energy not implemented, simply use average of occ and virt energies
              FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
@@ -3945,10 +3944,10 @@ end subroutine optimize_atomic_fragment
              ! CCSD
 
              ! Occupied CCSD energies stored in entry 6
-             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,6)
+             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,FRAGMODEL_OCCCCSD)
 
              ! Virtual CCSD energies stored in entry 7
-             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,7)
+             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,FRAGMODEL_VIRTCCSD)
 
              ! Lagrangian CCSD energy not implemented, simply use average of occ and virt energies
              FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
@@ -3959,10 +3958,12 @@ end subroutine optimize_atomic_fragment
              ! CCSD(T)
 
              ! Occupied CCSD energies stored in entry 6 + occupied (T) energies stored in entry 8 
-             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,6) + FragEnergiesAll(i,j,8)
+             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,FRAGMODEL_OCCCCSD) &
+                  & + FragEnergiesAll(i,j,FRAGMODEL_OCCpT)
 
              ! Virtual CCSD energies stored in entry 7 + virtual (T) energies stored in entry 9
-             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,7) + FragEnergiesAll(i,j,9)
+             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,FRAGMODEL_VIRTCCSD) &
+                  & + FragEnergiesAll(i,j,FRAGMODEL_VIRTpT)
 
              ! Lagrangian CCSD(T) energy not implemented, simply use average of occ and virt energies
              FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &

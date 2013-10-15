@@ -5777,9 +5777,19 @@ if(DECinfo%PL>0) then
     !
     ! The basic philosophy is that, since we have an error of ~FOT in the atomic fragment energy E_P,
     ! we also allow error(s) of size ~FOT in the pair fragment energies dE_PQ associated with
-    ! atomic site P. Procedure:
+    ! atomic site P. 
+    ! We use usually write the DEC correlation energy like this:
+    !
+    ! Ecorr = sum_P E_P  +  sum_P sum_{Q>P} dE_PQ
+    !
+    ! For this analysis it is more convinient to rewrite it like:
+    !
+    ! Ecorr = sum_P [ E_P + 1/2 sum_P sum_{Q .neq. P} dE_PQ ]
     ! 
-    ! 1. For each atomic site P, sort estimated pair energies dE_PQ according to size.
+    ! In this way everything inside [...] is associated with atom P, and all atoms have
+    ! the same number of associated pair fragments. The procedure use is then:
+    ! 
+    ! 1. For each atomic site P, sort estimated pair energies (1/2)dE_PQ according to size.
     ! 2. Add up the smallest contributions until they add up to the FOT. Skip those pairs.
     ! 3. Add up the "second-smallest" contributions until they add up to the FOT.
     !    Calculate these pairs at the MP2 level.
@@ -5788,8 +5798,8 @@ if(DECinfo%PL>0) then
     !    pair energies are arranged in decreasing order:
     !
     !
-    !    dE_PQ: (*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*)
-    !           |          CC MODEL             |    MP2 LEVEL  |    SKIP PAIRS   |
+    !    (1/2) dE_PQ: (*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*)
+    !                 |          CC MODEL             |    MP2 LEVEL  |    SKIP PAIRS   |
     !
     !                                                             
     ! In this way we (2) skip pairs for which the contribution to the energy is so small
@@ -5821,7 +5831,8 @@ if(DECinfo%PL>0) then
        end if
 
        ! Sort absolute pair interaction energies dE_PQ for given P and all Q's.
-       EPQ = abs(FragEnergies(:,P))
+       ! Multiply by 1/2 for the reasons discussed above.
+       EPQ = 0.5_realk*abs(FragEnergies(:,P))
        call real_inv_sort_with_tracking(EPQ,atomindices,natoms)
 
 
@@ -5887,6 +5898,47 @@ if(DECinfo%PL>0) then
 
   end subroutine define_pair_calculations
 
+
+  !> \brief Print summary of analysis used to define pair calculations (see define_pair_calculations).
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,FragEnergies)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Number of pairs skipped
+    integer,intent(in) :: Nskip
+    !> Number of pairs treated at MP2 level
+    integer,intent(in) :: NMP2
+    !> Number of pairs treated at input CC level
+    integer,intent(in) :: NCC
+    !> Which atomic sites have orbitals assigned?
+    logical,intent(in),dimension(natoms) :: dofrag
+    !> Estimated fragment energies
+    real(realk),intent(in) :: FragEnergies(natoms,natoms)
+    integer :: npairs
+
+    ! Total number of pairs
+    npairs = count(dofrag)*(count(dofrag)-1)/2
+
+    write(DECinfo%output,'(1X,a)') '******************************************************************'
+    write(DECinfo%output,'(1X,a)') '*            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *'
+    write(DECinfo%output,'(1X,a)') '******************************************************************'
+    write(DECinfo%output,*) 
+    write(DECinfo%output,*) 
+    write(DECinfo%output,'(1X,a,i10)') 'Total number of pairs:                ', npairs
+    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be treated at input CC level ', NCC
+    if(DECinfo%PairMP2 .and. DECinfo%ccmodel/=MODEL_MP2) then
+    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be treated at MP2 level      ', NMP2
+    end if
+    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be skipped from calculation  ', Nskip
+    write(DECinfo%output,*) 
+    write(DECinfo%output,*) 'Estimated total correlation energy:        '
+    write(DECinfo%output,*) 'Estimated contribution from skipped pairs: '
+    write(DECinfo%output,*) 
+    write(DECinfo%output,*) 
+
+  end subroutine print_pair_estimate_summary
 
   !> Once the CC model to be used for each pair has been defined in define_pair_calculations,
   !> there will in general be inconsistencies. For example, it might be that from P's point

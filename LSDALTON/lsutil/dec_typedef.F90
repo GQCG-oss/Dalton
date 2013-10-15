@@ -10,11 +10,15 @@ module dec_typedef_module
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
   !Could someone please rename ri to something less generic. TK!!
-  private
-  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,ccorbital,ri,&
-       & fullmolecule,ccatom,FullMP2grad,mp2dens,mp2grad,&
-       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
-       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
+!  private
+!  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,ccorbital,ri,&
+!       & fullmolecule,ccatom,FullMP2grad,mp2dens,mp2grad,&
+!       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
+!       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
+
+
+
+
   ! IMPORTANT: Number of possible energies to calculate using the DEC scheme
   ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
   ! MODIFY FOR NEW MODEL
@@ -532,28 +536,12 @@ module dec_typedef_module
      !> Indices of unoccupied EOS in AOS basis
      integer, pointer :: idxu(:) => null()
 
-     ! MODIFY FOR NEW MODEL
-     ! MODIFY FOR NEW CORRECTION
-     !> DEC fragment energies stored in the following manner:
-     !> 1. MP2 Lagrangian partitioning scheme
-     !> 2. MP2 occupied partitioning scheme
-     !> 3. MP2 virtual partitioning scheme
-     !> 4. CC2 occupied partitioning scheme
-     !> 5. CC2 virtual partitioning scheme
-     !> 6. CCSD occupied partitioning scheme
-     !> 7. CCSD virtual partitioning scheme
-     !> 8. (T) contribution, occupied partitioning scheme
-     !> 9. (T) contribution, virtual partitioning scheme
-     !> 10. Fourth order (T) contribution, occupied partitioning scheme
-     !> 11. Fourth order (T) contribution, virtual partitioning scheme
-     !> 12. Fifth order (T) contribution, occupied partitioning scheme
-     !> 13. Fifth order (T) contribution, virtual partitioning scheme
-     !> 14. MP2-F12 energy correction
-
-     real(realk),dimension(ndecenergies) :: energies
+     !> DEC fragment energies are stored in the energies array
+     !> according to the global integers "FRAGMODEL_*" defined below.
      ! Note 1: Only the energies requested for the model in question are calculated!
      ! Note 2: Obviously you need to change the the global integer "ndecenergies"
      !         at the top of this file if you add new models!!!
+     real(realk),dimension(ndecenergies) :: energies
 
 
      !> The energy definitions below are only used for fragment optimization (FOP)
@@ -567,7 +555,7 @@ module dec_typedef_module
      !> Lagrangian energy 
      !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
      real(realk) :: LagFOP
-  
+
      !> Contributions to the fragment Lagrangian energy from each individual
      !  occupied or virtual orbital.
      real(realk),pointer :: OccContribs(:) => null()
@@ -640,7 +628,7 @@ module dec_typedef_module
      ! End of EXPENSIVE BOX
      ! ==============================================================
 
-     
+
      ! Information used for fragment-adapted orbitals
      ! *******************************************
      !> Correlation density matrices in local AOS basis
@@ -938,13 +926,13 @@ module dec_typedef_module
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.
-   TYPE traceback
-      INTEGER :: na,ng,ident
-   END TYPE traceback
-    
+  TYPE traceback
+     INTEGER :: na,ng,ident
+  END TYPE traceback
 
-   !> Integral batch handling
-   TYPE batchTOorb
+
+  !> Integral batch handling
+  TYPE batchTOorb
      INTEGER,pointer :: orbindex(:)
      INTEGER :: norbindex
   END TYPE batchTOorb
@@ -968,13 +956,14 @@ module dec_typedef_module
      !> point with minimum x and y values and maximum z value.
      real(4), pointer :: val(:,:,:)
   end type SPgridbox
-  
+
 
   !> Information about DEC calculation
   !> We keep it as a global parameter for now.
   type(DECsettings) :: DECinfo
 
 
+  ! MODIFY FOR NEW MODEL
   !> Specify the parameters for ccModel here. NEVER HARDCODE THE NUMBER
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
@@ -982,5 +971,23 @@ module dec_typedef_module
   integer,parameter :: MODEL_CCSD   = 3
   integer,parameter :: MODEL_CCSDpT = 4
   integer,parameter :: MODEL_RPA    = 5
+
+  ! MODIFY FOR NEW MODEL
+  ! MODIFY FOR NEW CORRECTION
+  !> Specify numbers for storing of fragment energies
+  integer,parameter :: FRAGMODEL_LAGMP2 = 1  ! MP2 Lagrangian partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCMP2 = 2  ! MP2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTMP2 = 3 ! MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCCC2 = 4  ! CC2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCC2 = 5 ! CC2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCCCSD = 6 ! CCSD occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCCSD= 7 ! CCSD virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT = 8   ! (T) contribution, occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT = 9  ! (T) contribution, virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT4 = 10 ! Fourth order (T) contribution, occ partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT4 =11 ! Fourth order (T) contribution, virt partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT5 = 12 ! Fifth order (T) contribution, occ partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT5 =13 ! Fifth order (T) contribution, virt partitioning scheme
+  integer,parameter :: FRAGMODEL_F12 = 14    ! MP2-F12 energy correction
 
 end module dec_typedef_module

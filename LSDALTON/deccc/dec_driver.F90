@@ -733,20 +733,21 @@ contains
     call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
          & mymolecule%DistanceTable,energies)
 
+    ! MODIFY FOR NEW MODEL
     ! Set output energy
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! MP2, use occ energy
-       Ecorr = energies(2)
+       Ecorr = energies(FRAGMODEL_OCCMP2)
     case(MODEL_CC2)
        ! CC2, use occ energy
-       Ecorr = energies(4)
+       Ecorr = energies(FRAGMODEL_OCCCC2)
     case(MODEL_CCSD)
        ! CCSD, use occ energy
-       Ecorr = energies(6)
+       Ecorr = energies(FRAGMODEL_OCCCCSD)
     case(MODEL_CCSDpT)
        ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
-       Ecorr = energies(6) + energies(8)
+       Ecorr = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
     end select
 
     ! If singles polarization was considered, we need to
