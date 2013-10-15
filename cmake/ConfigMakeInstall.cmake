@@ -7,7 +7,7 @@ install(
     ${INSTALL_DIRECTORY}
     )
 
-foreach(_executable dalton.x lsdalton.x)
+foreach(_executable dalton.x lsdalton.x lslib_tester.x)
     install(
         TARGETS ${_executable}
         DESTINATION ${INSTALL_DIRECTORY}

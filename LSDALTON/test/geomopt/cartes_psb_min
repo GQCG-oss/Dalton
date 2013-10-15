@@ -95,7 +95,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Energy at final geometry is * \: * \-151\.51849[8-9]" $log | wc -l`
+CRIT1=`$GREP "Energy at final geometry is * \: * \-151\.51849[7-8]" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
@@ -109,7 +109,7 @@ ERROR[2]="Memory leak -"
 # Number of energies
 CRIT3=`$GREP "Final * DFT energy" $log | wc -l` 
 TEST[3]=`expr   $CRIT3`
-CTRL[3]=15
+CTRL[3]=14
 ERROR[3]="Wrong number of geometry steps"
 
 # MPI Memory test
