@@ -551,13 +551,23 @@ contains
 
     end do DoAtomicFragments
 
-    ! Save fragment energies
+    ! Save fragment energies and set model for atomic fragments appropriately
     FragEnergies=0E0_realk
     do i=1,natoms
        if( dofrag(i) ) then
           do j=1,ndecenergies
              FragEnergies(i,i,j) = AtomicFragments(i)%energies(j)
           end do
+
+          ! If atomic fragments are to be repeated we need to reset original model
+          ! for fragments here! For example, if fragment optimization was done
+          ! at the MP2 level, then AtomicFragments(i)%ccmodel is MODEL_MP2 now.
+          ! However, if the target model is CCSD, then we of course need to use the original
+          ! model for the subsequent atomic fragment calculations.
+          if(DECinfo%RepeatAF) then
+             AtomicFragments(i)%ccmodel = DECinfo%ccmodel
+          end if
+
        end if
     end do
 
