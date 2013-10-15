@@ -304,7 +304,7 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Which model? MP2,CC2, CCSD etc.
-    WhichCCmodel: if(DECinfo%ccModel==MODEL_MP2) then ! MP2 calculation
+    WhichCCmodel: if(MyFragment%ccmodel==MODEL_MP2) then ! MP2 calculation
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
@@ -348,7 +348,7 @@ contains
 
        ! we calculate (T) contribution to single  fragment energy 
        ! and store in MyFragment%energies(FRAGMODEL_OCCpT) and MyFragment%energies(FRAGMODEL_VIRTpT)
-       if(DECinfo%ccModel==MODEL_CCSDpT) then
+       if(MyFragment%ccmodel==MODEL_CCSDpT) then
 
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
           ccsdpt_t1 = array2_init([MyFragment%nunoccAOS,MyFragment%noccAOS])
@@ -579,7 +579,7 @@ contains
                 ! --------------
 
                 ! Skip contribution 2 for anything but MP2
-                if(DECinfo%ccmodel==MODEL_MP2) then
+                if(MyFragment%ccmodel==MODEL_MP2) then
                    ! Multiplier (multiplied by one half)
                    multaibj = 2.0_realk*t2occ%val(a,i,b,j) - t2occ%val(b,i,a,j)
 
@@ -676,7 +676,7 @@ contains
                 ! --------------
 
                 ! Skip contribution 4 for anything but MP2
-                if(DECinfo%ccmodel==MODEL_MP2) then
+                if(MyFragment%ccmodel==MODEL_MP2) then
 
                    do k=1,noccAOS
 
@@ -726,7 +726,7 @@ contains
     ! Total atomic fragment energy
     ! ****************************
     ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
-    select case(DECinfo%ccmodel)
+    select case(MyFragment%ccmodel)
     case(MODEL_MP2)
        ! MP2
        MyFragment%energies(FRAGMODEL_LAGMP2) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
@@ -930,7 +930,7 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
-    WhichCCModel: if(DECinfo%ccModel==MODEL_MP2) then ! MP2
+    WhichCCModel: if(PairFragment%ccModel==MODEL_MP2) then ! MP2
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
@@ -1027,7 +1027,7 @@ contains
     ! (T) energy contributions are stored 
     ! in PairFragment%energies(FRAGMODEL_OCCpT) and PairFragment%energies(FRAGMODEL_VIRTpT) 
 
-    if (DECinfo%CCModel == MODEL_CCSDpT) then
+    if (PairFragment%CCModel == MODEL_CCSDpT) then
 
        ! init ccsd(t) singles and ccsd(t) doubles
        ccsdpt_t1 = array2_init([PairFragment%nunoccAOS,PairFragment%noccAOS])
@@ -1053,7 +1053,7 @@ contains
 !endif mod_unreleased
 #endif
 
-    if( DECinfo%ccmodel /= MODEL_MP2 ) then
+    if( PairFragment%ccmodel /= MODEL_MP2 ) then
        call array2_free(t1)
        call array4_free(t2)
     end if
@@ -1214,7 +1214,7 @@ contains
 
 
                    ! Skip contribution 2 for anything but MP2
-                   if(DECinfo%ccmodel==MODEL_MP2) then
+                   if(pairfragment%ccmodel==MODEL_MP2) then
 
                       ! Multiplier (multiplied by one half)
                       multaibj = 2.0_realk*t2occ%val(a,i,b,j) - t2occ%val(b,i,a,j)
@@ -1278,7 +1278,7 @@ contains
 
 
                    ! Skip contribution 4 for anything but MP2
-                   if(DECinfo%ccmodel==MODEL_MP2) then
+                   if(pairfragment%ccmodel==MODEL_MP2) then
 
                       tmp=0E0_realk
                       do k=1,noccAOS
@@ -1313,7 +1313,7 @@ contains
     ! Total pair interaction energy
     ! *****************************
     ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
-    select case(DECinfo%ccmodel)
+    select case(pairfragment%ccmodel)
     case(MODEL_MP2)
        ! MP2
        PairFragment%energies(FRAGMODEL_LAGMP2) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
@@ -1793,7 +1793,7 @@ contains
 
     ! Extract fragment energies for model under consideration
     call mem_alloc(FragEnergiesModel,natoms,natoms,3)
-    call extract_fragenergies_for_model(natoms,FragEnergiesAll,FragEnergiesModel)
+    call extract_fragenergies_for_model(natoms,FragEnergiesAll,DECinfo%ccmodel,FragEnergiesModel)
 
     ! Total number of pairs: N*(N-1)/2
     ! where N is the number of atoms with orbitals assigned
@@ -3800,7 +3800,7 @@ end subroutine optimize_atomic_fragment
     fragment%EvirtFOP = 0.0_realk
     fragment%LagFOP = 0.0_realk
 
-    select case(DECinfo%ccmodel)
+    select case(fragment%ccmodel)
     case(MODEL_MP2)
        ! MP2
        fragment%LagFOP = fragment%energies(FRAGMODEL_LAGMP2)
@@ -3829,7 +3829,7 @@ end subroutine optimize_atomic_fragment
 #endif
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
-            & for model:', DECinfo%ccmodel
+            & for model:', fragment%ccmodel
     end select
 
   end subroutine get_occ_virt_lag_energies_fragopt
@@ -3851,7 +3851,7 @@ end subroutine optimize_atomic_fragment
     ! If you implement a new model, please set fragment%energies(?) for your model,
     ! see FRAGMODEL_* definitions in dec_typedef.F90 to determine the "?".
 
-    select case(DECinfo%ccmodel)
+    select case(fragment%ccmodel)
     case(MODEL_MP2)
        ! MP2
        fragment%energies(FRAGMODEL_LAGMP2) = fragment%LagFOP 
@@ -3874,7 +3874,7 @@ end subroutine optimize_atomic_fragment
 #endif
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
-            & for model:', DECinfo%ccmodel
+            & for model:', fragment%ccmodel
     end select
 
   end subroutine set_energies_ccatom_structure_fragopt
@@ -3886,7 +3886,7 @@ end subroutine optimize_atomic_fragment
   !> for the given CC model (see "energies" in ccatom typedef).
   !> \author Kasper Kristensen
   !> \date March 2013
-  subroutine extract_fragenergies_for_model(natoms,FragEnergiesAll,FragEnergiesModel)
+  subroutine extract_fragenergies_for_model(natoms,FragEnergiesAll,ccmodel,FragEnergiesModel)
 
     implicit none
 
@@ -3894,6 +3894,8 @@ end subroutine optimize_atomic_fragment
     integer,intent(in) :: natoms
     !> Fragment energies for all models as determined in main_fragment_driver.
     real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergiesAll
+    !> CC model (see MODEL_* in dec_typedef.F90)
+    integer,intent(in) :: ccmodel
     !> Fragment energies for model under consideration (DECinfo%ccmodel) in the order:
     !> Lagrangian (:,:,1)   Occupied(:,:,2)    Virtual(:,:,3)
     real(realk),dimension(natoms,natoms,3),intent(inout) :: FragEnergiesModel
@@ -3907,7 +3909,7 @@ end subroutine optimize_atomic_fragment
 
     do i=1,natoms
        do j=1,natoms
-          select case(DECinfo%ccmodel)
+          select case(ccmodel)
           case(MODEL_MP2)
              ! MP2
 
@@ -3964,7 +3966,7 @@ end subroutine optimize_atomic_fragment
 #endif
           case default
              write(DECinfo%output,*) 'WARNING: extract_fragenergies_for_model: Needs implementation &
-                  & for model:', DECinfo%ccmodel
+                  & for model:', ccmodel
           end select
 
        end do

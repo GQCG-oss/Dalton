@@ -130,6 +130,15 @@ contains
        fragment%pairfrag=.false.
     end if IsThisAPairFragment
 
+    ! Set model to use for fragment calculation (see define_pair_calculations for details)
+    if(fragment%pairfrag) then
+       ! Read model from MyMolecule%PairModel (again, see define_pair_calculations)
+       fragment%ccmodel = MyMolecule%PairModel(fragment%EOSatoms(1),fragment%EOSatoms(2))
+    else
+       ! Always use input CC model for atomic fragments
+       fragment%ccmodel = DECinfo%ccmodel
+    end if
+       
 
 
     ! Size of occupied EOS
@@ -2941,7 +2950,7 @@ end subroutine atomic_fragment_basis
     end if
 
     ! Sanity check: Only implemented for MP2
-    if(DECinfo%ccModel/=MODEL_MP2) then
+    if(MyFragment%ccModel/=MODEL_MP2) then
        call lsquit('estimate_memory_consumption: &
             & Only implemented for the MP2 model!',-1)
     end if

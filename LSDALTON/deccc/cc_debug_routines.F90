@@ -27,13 +27,13 @@ module cc_debug_routines_module
    
 
    contains
-   subroutine ccsolver_energy_multipliers(MyMolecule,ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+   subroutine ccsolver_energy_multipliers(ccmodel,ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
         &mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy)
 
      implicit none
 
-     !> full molecule information
-     type(fullmolecule), intent(in) :: MyMolecule
+     !> CC model
+     integer,intent(in) :: ccmodel
      !> Number of occupied orbitals in full molecule/fragment AOS
      integer, intent(in) :: nocc
      !> Number of virtual orbitals in full molecule/fragment AOS
@@ -70,13 +70,13 @@ module cc_debug_routines_module
      type(array2) :: mult1
 
 
-     call ccsolver_debug(ypo_f, ypv_f, fock_f, nbasis, nocc, nvirt, &
+     call ccsolver_debug(ccmodel,ypo_f, ypv_f, fock_f, nbasis, nocc, nvirt, &
         & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
         & t1_final, t2_final, VOVO, .false.)
 
      call array4_free(VOVO)
 
-     call ccsolver_debug(ypo_f, ypv_f, fock_f, nbasis, nocc, nvirt, &
+     call ccsolver_debug(ccmodel,ypo_f, ypv_f, fock_f, nbasis, nocc, nvirt, &
         & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
         & t1_final, t2_final, VOVO, .false., m2 = mult2, m1 = mult1)
 
@@ -94,12 +94,14 @@ module cc_debug_routines_module
 
    !> \author Marcin Ziolkowski (modified by Kasper Kristensen and Patrick
    !  Ettenhuber)
-   subroutine ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+   subroutine ccsolver_debug(ccmodel,ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
         & t1_final,t2_final,VOVO,longrange_singles,m2,m1)
 
      implicit none
 
+     !> CC model
+     integer,intent(in) :: ccmodel
      !> Number of occupied orbitals in full molecule/fragment AOS
      integer, intent(in) :: nocc
      !> Number of virtual orbitals in full molecule/fragment AOS
@@ -202,7 +204,7 @@ module cc_debug_routines_module
      MaxSubSpace = DECinfo%ccMaxDIIS
 
      ! title
-     Call print_ccjob_header(ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace)
+     Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace)
 
      ! dimension vectors
      occ_dims   = [nbasis,nocc]
@@ -327,7 +329,7 @@ module cc_debug_routines_module
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
      ! special MP2 things
-     MP2Special : if(DECinfo%ccModel == MODEL_MP2 .or. DECinfo%ccModel == MODEL_RPA) then
+     MP2Special : if(CCmodel == MODEL_MP2 .or. CCmodel == MODEL_RPA) then
 
         write(DECinfo%output,*)
         write(DECinfo%output,*) ' ********************  WARNING  **********************'
@@ -370,7 +372,7 @@ module cc_debug_routines_module
      call mem_alloc(omega2,DECinfo%ccMaxIter)
 
      ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-     if(DECinfo%ccModel /= MODEL_MP2) then
+     if(CCmodel /= MODEL_MP2) then
         xocc = array2_init(occ_dims)
         yocc = array2_init(occ_dims)
         xvirt = array2_init(virt_dims)
@@ -481,11 +483,11 @@ module cc_debug_routines_module
            call array2_add_to(ifock,1.0E0_realk,delta_fock)
 
            ! readme : this should be done in a more clear way
-           if(DECinfo%ccModel == MODEL_CC2) then
+           if(CCmodel == MODEL_CC2) then
               ! CC2
               ppfock = array2_similarity_transformation(xocc,fock,yocc,[nocc,nocc])
               qqfock = array2_similarity_transformation(xvirt,fock,yvirt,[nvirt,nvirt])
-           else if(DECinfo%ccModel >= MODEL_CCSD) then
+           else if(CCmodel >= MODEL_CCSD) then
               ! CCSD
               ppfock = array2_similarity_transformation(xocc,ifock,yocc,[nocc,nocc])
               qqfock = array2_similarity_transformation(xvirt,ifock,yvirt,[nvirt,nvirt])
@@ -504,12 +506,12 @@ module cc_debug_routines_module
 
         ! MODIFY FOR NEW MODEL
         ! If you implement a new model, please insert call to your own residual routine here!
-        SelectCoupledClusterModel : if(DECinfo%ccModel==MODEL_MP2) then
+        SelectCoupledClusterModel : if(CCmodel==MODEL_MP2) then
 
            call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
                 & nocc,nvirt)
 
-        elseif(DECinfo%ccModel==MODEL_CC2) then
+        elseif(CCmodel==MODEL_CC2) then
            u = get_u(t2(iter))
            call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock, &
                 xocc,xvirt,yocc,yvirt,nocc,nvirt)
@@ -521,7 +523,7 @@ module cc_debug_routines_module
            call array4_free(gmo)
 
 
-        elseif(DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT) then  ! CCSD or CCSD(T)
+        elseif(CCmodel==MODEL_CCSD .or. CCmodel==MODEL_CCSDpT) then  ! CCSD or CCSD(T)
 
            if(get_mult)then
 
@@ -543,7 +545,7 @@ module cc_debug_routines_module
            call array4_free(u)
 
 
-        elseif(DECinfo%ccmodel==MODEL_RPA) then
+        elseif(CCmodel==MODEL_RPA) then
 
            call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
 
@@ -685,13 +687,13 @@ module cc_debug_routines_module
         ! If you implement a new model, please insert call to energy routine here,
         ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
         if(.not. get_mult)then
-           EnergyForCCmodel: if(DECinfo%ccmodel==MODEL_MP2) then  
+           EnergyForCCmodel: if(CCmodel==MODEL_MP2) then  
               ! MP2
               ccenergy = get_mp2_energy(t2(iter),Lmo)
-           elseif(DECinfo%ccmodel==MODEL_CC2 .or. DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT )then
+           elseif(CCmodel==MODEL_CC2 .or. CCmodel==MODEL_CCSD .or. CCmodel==MODEL_CCSDpT )then
               ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
               ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
-           elseif(DECinfo%ccmodel==MODEL_RPA) then
+           elseif(CCmodel==MODEL_RPA) then
               ccenergy = RPA_energy(t2(iter),gmo)
               sosex = SOSEX_contribution(t2(iter),gmo)
               ccenergy=ccenergy+sosex
@@ -835,7 +837,7 @@ module cc_debug_routines_module
 
 
      ! Save two-electron integrals in the order (virt,occ,virt,occ)
-     if(DECinfo%ccModel == MODEL_MP2) then
+     if(CCmodel == MODEL_MP2) then
         call array4_free(lmo) ! also free lmo integrals
         VOVO = array4_duplicate(gmo)
         call array4_free(gmo)

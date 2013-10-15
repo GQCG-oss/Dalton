@@ -493,6 +493,7 @@ module dec_typedef_module
 
 
   !> Atomic fragment / Atomic pair fragment
+  !> IMPORTANT: IF YOU MODIFY THIS STRUCTURE, REMEMBER TO CHANGE mpicopy_fragment ACCORDINGLY!!!
   type ccatom
 
      !> Number of atom in full molecule
@@ -512,6 +513,9 @@ module dec_typedef_module
 
      !> Pair fragment?
      logical :: pairfrag
+
+     !> CC model to use for fragment (see MODEL_* in this file)
+     integer :: ccmodel
 
      !> Occupied orbital EOS indices 
      integer, pointer :: occEOSidx(:) => null()
