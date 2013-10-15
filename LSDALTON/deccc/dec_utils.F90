@@ -3730,6 +3730,42 @@ retval=0
   end subroutine add_dec_energies
 
 
+
+  !> Add estimated DEC energies for pairs which are skipped from the calculation
+  !> to estimate the associated error.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine estimate_energy_of_skipped_pairs(natoms,FragEnergies,orbitals_assigned,MyMolecule,E)
+
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Estimated fragment energies (E_P on diagonal, dE_PQ on off-diagonal)
+    real(realk),dimension(natoms,natoms),intent(in) :: FragEnergies
+    !> Which atoms have orbitals assigned?
+    logical,dimension(natoms) :: orbitals_assigned
+    !> Full molecule structure, where MyMolecule%PairModel defines the model to be used for
+    !> each pair. If the model is MODEL_NONE (see dec_typedef.F90), then the pair
+    !> will be skipped in the DEC calculation.
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> Estimated energy contribution from skipped pairs
+    real(realk),intent(inout) :: E
+    integer :: P,Q
+
+    E = 0.0_realk
+    do P=1,natoms
+       if(orbitals_assigned(P)) then
+          do Q=1,P-1
+             if(orbitals_assigned(Q) .and. MyMolecule%PairModel(P,Q)==MODEL_NONE ) then
+                E = E + FragEnergies(P,Q)
+             end if
+          end do
+       end if
+    end do
+
+  end subroutine estimate_energy_of_skipped_pairs
+
+
   !> \brief Project orbitals onto MO space defined by input (see details inside subroutine).
   !> \author Kasper Kristensen
   !> \date April 2013

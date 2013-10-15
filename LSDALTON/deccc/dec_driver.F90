@@ -57,7 +57,7 @@ contains
     type(matrix),intent(in) :: D
     type(ccorbital), pointer :: OccOrbitals(:)
     type(ccorbital), pointer :: UnoccOrbitals(:)
-    real(realk) :: Ecorr, Ehf, Eerr
+    real(realk) :: Ecorr, Ehf, Eerr,Ecorr_est,Eskip_est
     real(realk), pointer :: mp2gradient(:,:)
     integer :: nBasis,nOcc,nUnocc,nAtoms,i
 
@@ -76,6 +76,13 @@ contains
     call mem_alloc(UnoccOrbitals,nUnocc)
     call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
          & OccOrbitals, UnoccOrbitals)
+
+    ! -- Define different models for different pair fragments based on 
+    !    the estimated energy contributions from each pair
+    if(DECinfo%PairEstimate) then
+       call estimate_fragment_driver(MyMolecule,mylsitem,&
+            & nocc,nunocc,OccOrbitals,UnoccOrbitals,Ecorr_est,Eskip_est)
+    end if
 
 
     ! *************************************************
@@ -126,7 +133,7 @@ contains
   !> \author Kasper Kristensen
   !> \date October 2013
   subroutine estimate_fragment_driver(MyMolecule,mylsitem,&
-       & nocc,nunocc,OccOrbitals,UnoccOrbitals)
+       & nocc,nunocc,OccOrbitals,UnoccOrbitals,Ecorr_est,Eskip_est)
 
     implicit none
     !> Number of occupied orbitals in full molecule
@@ -141,6 +148,10 @@ contains
     type(ccorbital), intent(inout) :: UnoccOrbitals(nunocc)
     !> Full molecule info, model for pair fragment calculations are stored in MyMolecule%PairModel.
     type(fullmolecule), intent(inout) :: MyMolecule
+   !> Estimated correlation energy from all estimated atomic and pair fragments
+    real(realk),intent(inout) :: Ecorr_est
+    !> Estimated correlation energy from the pairs that will be skipped in the calculation
+    real(realk),intent(inout) :: Eskip_est
     type(ccatom),pointer :: AtomicFragments(:)
     integer, dimension(MyMolecule%natoms) :: nocc_per_atom, nunocc_per_atom    
     logical,dimension(MyMolecule%natoms) :: dofrag
@@ -148,7 +159,7 @@ contains
     logical :: DoBasis, save_fragadapt, hybridsave
     real(realk) :: init_radius
     type(joblist) :: jobs
-    real(realk),pointer :: FragEnergies(:,:,:)
+    real(realk),pointer :: FragEnergiesAll(:,:,:),FragEnergiesOcc(:,:)
     type(fullmp2grad) :: dummy_fullgrad
     type(array2) :: dummy_t1old, dummy_t1new
 
@@ -192,19 +203,28 @@ contains
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
 
     ! Calculate fragment energies for MP2 using small orbital spaces
-    call mem_alloc(FragEnergies,natoms,natoms,ndecenergies)
+    call mem_alloc(FragEnergiesALL,natoms,natoms,ndecenergies)
     call fragment_jobs(.false.,nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
-         & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,&
+         & UnoccOrbitals,jobs,AtomicFragments,FragEnergiesALL,&
          & dummy_fullgrad,dummy_t1old,dummy_t1new)
 
+    ! Extract fragment energies corresponding to occupied partitioning using MP2
+    call mem_alloc(FragEnergiesOcc,natoms,natoms)
+    FragEnergiesOcc = FragEnergiesALL(:,:,FRAGMODEL_OCCMP2)
+
+    ! Define which model to use in each pair calculation (info stored in MyMolecule%PairModel)
+    ! (Also calculate estimated correlation energy and estimated error by skipping pairs).
+    call define_pair_calculations(natoms,dofrag,FragEnergiesOcc,MyMolecule,Ecorr_est,Eskip_est)
+
     
+    ! Free stuff
     do i=1,nAtoms
        if(.not. dofrag(i)) cycle
-       call atomic_fragment_free(AtomicFragments(i))
-!       call atomic_fragment_free_simple(AtomicFragments(i))
+       call atomic_fragment_free_simple(AtomicFragments(i))
     end do
     call mem_dealloc(AtomicFragments)
-    call mem_dealloc(FragEnergies)
+    call mem_dealloc(FragEnergiesALL)
+    call mem_dealloc(FragEnergiesOcc)
     call free_joblist(jobs)
 
     ! Reset original settings

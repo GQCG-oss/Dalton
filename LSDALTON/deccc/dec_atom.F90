@@ -5754,7 +5754,7 @@ if(DECinfo%PL>0) then
   !> definitions in dec_typedef.F90.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine define_pair_calculations(natoms,dofrag,FragEnergies,MyMolecule)
+  subroutine define_pair_calculations(natoms,dofrag,FragEnergies,MyMolecule,Ecorr_est,Eskip_est)
     implicit none
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
@@ -5765,6 +5765,10 @@ if(DECinfo%PL>0) then
     real(realk),intent(in) :: FragEnergies(natoms,natoms)
     !> Full molecule structure, where only MyMolecule%PairModel is modified
     type(fullmolecule),intent(inout) :: MyMolecule
+    !> Estimated correlation energy from all estimated atomic and pair fragments
+    real(realk),intent(inout) :: Ecorr_est
+    !> Estimated correlation energy from the pairs that will be skipped in the calculation
+    real(realk),intent(inout) :: Eskip_est
     integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit
     real(realk),dimension(natoms) :: EPQ
     real(realk) :: Eacc
@@ -5780,7 +5784,7 @@ if(DECinfo%PL>0) then
     ! atomic site P. 
     ! We use usually write the DEC correlation energy like this:
     !
-    ! Ecorr = sum_P E_P  +  sum_P sum_{Q>P} dE_PQ
+    ! Ecorr = sum_P E_P  +  sum_P sum_{Q<P} dE_PQ
     !
     ! For this analysis it is more convinient to rewrite it like:
     !
@@ -5891,10 +5895,15 @@ if(DECinfo%PL>0) then
 
     end do Ploop
 
-
     ! Fix inconsistencies which may arise if MyMolecule%PairModel(P,Q) is not
     ! identical to MyMolecule%PairModel(Q,P) from the above procedure
     call fix_inconsistencies_for_pair_model(MyMolecule)
+
+    ! Estimate correlation energy by adding all estimated atomic and pair fragment energy contributions
+    call add_dec_energies(natoms,FragEnergies,dofrag,Ecorr_est)
+
+    ! Estimate energy contribution from pairs which will be skipped from the calculation
+    call estimate_energy_of_skipped_pairs(natoms,FragEnergies,dofrag,MyMolecule,Eskip_est)
 
   end subroutine define_pair_calculations
 
@@ -5902,7 +5911,7 @@ if(DECinfo%PL>0) then
   !> \brief Print summary of analysis used to define pair calculations (see define_pair_calculations).
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,FragEnergies)
+  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est)
     implicit none
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
@@ -5914,8 +5923,10 @@ if(DECinfo%PL>0) then
     integer,intent(in) :: NCC
     !> Which atomic sites have orbitals assigned?
     logical,intent(in),dimension(natoms) :: dofrag
-    !> Estimated fragment energies
-    real(realk),intent(in) :: FragEnergies(natoms,natoms)
+    !> Estimated correlation energy from all estimated atomic and pair fragments
+    real(realk),intent(in) :: Ecorr_est
+    !> Estimated correlation energy from the pairs that will be skipped in the calculation
+    real(realk),intent(inout) :: Eskip_est
     integer :: npairs
 
     ! Total number of pairs
@@ -5933,8 +5944,8 @@ if(DECinfo%PL>0) then
     end if
     write(DECinfo%output,'(1X,a,i10)') 'Pairs to be skipped from calculation  ', Nskip
     write(DECinfo%output,*) 
-    write(DECinfo%output,*) 'Estimated total correlation energy:        '
-    write(DECinfo%output,*) 'Estimated contribution from skipped pairs: '
+    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated total correlation energy:        ', Ecorr_est
+    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated contribution from skipped pairs: ', Eskip_est
     write(DECinfo%output,*) 
     write(DECinfo%output,*) 
 
