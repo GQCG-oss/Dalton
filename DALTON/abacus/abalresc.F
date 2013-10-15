@@ -304,8 +304,8 @@ C Zeroth Order, Singlet of course
 C --------------------------------
 C
       IF (SIGMAD0S) THEN
-c         CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
-c         CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
+         CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
+         CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
          CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
       END IF
 
