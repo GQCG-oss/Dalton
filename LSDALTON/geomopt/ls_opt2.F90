@@ -1222,7 +1222,15 @@ Implicit Real(realk) (A-H,O-Z)
       EXTERNAL FUNCT
       IFAIL = 0
       FMAX  = wstpln_ls(GDDIA,HESDIA,XMAX,NCORD,TRUSTR)
+      IF (abs(FMAX) .le. DTEST) THEN
+          XDET = XMAX
+          GO TO 8000
+      END IF
       FMIN  = wstpln_ls(GDDIA,HESDIA,XMIN,NCORD,TRUSTR)
+      IF (abs(FMIN) .le. DTEST) THEN
+          XDET = XMIN
+          GO TO 8000
+       END IF
       IF ( (FMAX.LT. 0E0_realk) .OR. (FMIN.GT. 0E0_realk) )  RETURN
 !
       ITER = 0
@@ -1232,13 +1240,13 @@ Implicit Real(realk) (A-H,O-Z)
          FDET= wstpln_ls(GDDIA,HESDIA,XDET,NCORD,TRUSTR)
          IF (FDET.GT.D0) XMAX=XDET
          IF (FDET.LT.D0) XMIN=XDET
-      IF (ABS(XMAX-XMIN).LT.DTEST) GO TO 101
+      IF (ABS(XMAX-XMIN).LT.DTEST) GO TO 8000
       IF (ITER .LT. MAXIT) GO TO 100
 !
       IFAIL=1
       RETURN
 !
- 101  CONTINUE
+8000  CONTINUE
       IFAIL=5
       RETURN
       END
