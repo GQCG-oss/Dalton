@@ -310,6 +310,7 @@ add_dalton_test(pehf_border   "dalton;peqm;parallel;short")
 add_dalton_test(pehf_cube     "dalton;peqm;parallel;short")
 add_dalton_test(perohf_prop   "dalton;peqm;parallel;short")
 add_dalton_test(pehsrohf_wft  "dalton;peqm;parallel;short")
+add_dalton_test(pe_zeromul_isopol  "dalton;peqm;parallel;short")
 add_dalton_test(pesoppa_excit "dalton;peqm;short")
 endif()
 
