@@ -19,6 +19,8 @@ PROGRAM TUV
   character(len=15),pointer :: uniqeparamNAME(:)
   character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
   character(len=4) :: SPEC
+  logical :: BUILD(0:2,0:2,0:2,0:2)
+
 !TODO
 !remove mem_alloc
 !remove CDAB = TMParray2
@@ -33,12 +35,19 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'use IchorCommonModule'
   WRITE(LUMOD3,'(A)')'use IchorMemory'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODA'
+  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODB'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODD'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODC'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoC'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoA'
+  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoD'
+  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoC'
+  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoD'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoA'
+  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoA'
+  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoB'
+  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoB'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_HorizontalRecurrenceLHSModAtoB'
+  WRITE(LUMOD3,'(A)')'use AGC_OBS_HorizontalRecurrenceLHSModBtoA'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_HorizontalRecurrenceRHSModCtoD'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_HorizontalRecurrenceRHSModDtoC'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_Sphcontract1Mod'
@@ -174,80 +183,164 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'!    nlmD = 2*AngmomD+1'
   WRITE(LUMOD3,'(A)')'    AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD'
        WRITE(LUMOD3,'(A)')'    SELECT CASE(AngmomID)'
-  
+
   DO AngmomA = 0,2
-!   DO AngmomB = 0,2!AngmomA
+   DO AngmomB = 0,2
+    DO AngmomC = 0,2
+     DO AngmomD = 0,2
+        BUILD(AngmomA,AngmomB,AngmomC,AngmomD) = .TRUE.
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+!the order may be important and should be 
+  DO AngmomA = 0,2
    DO AngmomB = 0,AngmomA
-!    DO AngmomC = 0,2!AngmomA
     DO AngmomC = 0,AngmomA
-!     DO AngmomD = 0,2!AngmomC
      DO AngmomD = 0,AngmomC
+      
+        BUILD(AngmomA,AngmomB,AngmomC,AngmomD) = .FALSE.
+
+!==========================00=====================================
+        
         AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
         WRITE(LUMOD3,'(A,I4,A,I2,A,I2,A,I2,A,I2,A)')'    CASE(',AngmomID,')  !Angmom(A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,') combi'
-      AngmomP = AngmomA + AngmomB
-      AngmomQ = AngmomC + AngmomD
-!      IF(AngmomQ.GT.AngmomP)CYCLE
-      AngmomPQ = AngmomA + AngmomB + AngmomC + AngmomD
-      nTUV = (AngmomPQ+1)*(AngmomPQ+2)*(AngmomPQ+3)/6
-      nTUVP = (AngmomP+1)*(AngmomP+2)*(AngmomP+3)/6
-      nTUVQ = (AngmomQ+1)*(AngmomQ+2)*(AngmomQ+3)/6
-      nTUVAspec = (AngmomA+1)*(AngmomA+2)/2
-      nTUVBspec = (AngmomB+1)*(AngmomB+2)/2
-      nTUVCspec = (AngmomC+1)*(AngmomC+2)/2
-      nTUVDspec = (AngmomD+1)*(AngmomD+2)/2
-      nTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6
-      nTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6
-      nTUVC = (AngmomC+1)*(AngmomC+2)*(AngmomC+3)/6
-      nTUVD = (AngmomD+1)*(AngmomD+2)*(AngmomD+3)/6
-      IF((AngmomA.GT.1.OR.AngmomB.GT.1).OR.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
-         spherical = .TRUE.
-         nlmA = 2*AngmomA+1
-         nlmB = 2*AngmomB+1
-         nlmC = 2*AngmomC+1
-         nlmD = 2*AngmomD+1
-         STRINGIN(1:9)  = 'TMParray1'
-         STRINGOUT(1:9) = 'TMParray2'
-         TMPSTRING(1:9) = '         '
-!         WRITE(LUMOD3,'(A)')'      IF(spherical)THEN'
-         call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-              & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
-!         WRITE(LUMOD3,'(A)')'      ELSE'
-!         spherical = .FALSE.
-!         nlmA = nTUVAspec
-!         nlmB = nTUVBspec
-!         nlmC = nTUVCspec
-!         nlmD = nTUVDspec
-!         STRINGIN(1:9)  = 'TMParray1'
-!         STRINGOUT(1:9) = 'TMParray2'
-!         TMPSTRING(1:9) = '         '
-!         call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-!              & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
-!         WRITE(LUMOD3,'(A)')'      ENDIF'
-      ELSE
-         spherical = .TRUE.
-         nlmA = 2*AngmomA+1
-         nlmB = 2*AngmomB+1
-         nlmC = 2*AngmomC+1
-         nlmD = 2*AngmomD+1
-         STRINGIN(1:9)  = 'TMParray1'
-         STRINGOUT(1:9) = 'TMParray2'
-         TMPSTRING(1:9) = '         '
-         call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-              & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
-      ENDIF
+        AngmomP = AngmomA + AngmomB
+        AngmomQ = AngmomC + AngmomD
+        !      IF(AngmomQ.GT.AngmomP)CYCLE
+        AngmomPQ = AngmomA + AngmomB + AngmomC + AngmomD
+        nTUV = (AngmomPQ+1)*(AngmomPQ+2)*(AngmomPQ+3)/6
+        nTUVP = (AngmomP+1)*(AngmomP+2)*(AngmomP+3)/6
+        nTUVQ = (AngmomQ+1)*(AngmomQ+2)*(AngmomQ+3)/6
+        nTUVAspec = (AngmomA+1)*(AngmomA+2)/2
+        nTUVBspec = (AngmomB+1)*(AngmomB+2)/2
+        nTUVCspec = (AngmomC+1)*(AngmomC+2)/2
+        nTUVDspec = (AngmomD+1)*(AngmomD+2)/2
+        nTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6
+        nTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6
+        nTUVC = (AngmomC+1)*(AngmomC+2)*(AngmomC+3)/6
+        nTUVD = (AngmomD+1)*(AngmomD+2)*(AngmomD+3)/6
+        IF((AngmomA.GT.1.OR.AngmomB.GT.1).OR.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
+           spherical = .TRUE.
+           nlmA = 2*AngmomA+1
+           nlmB = 2*AngmomB+1
+           nlmC = 2*AngmomC+1
+           nlmD = 2*AngmomD+1
+           STRINGIN(1:9)  = 'TMParray1'
+           STRINGOUT(1:9) = 'TMParray2'
+           TMPSTRING(1:9) = '         '
+           !         WRITE(LUMOD3,'(A)')'      IF(spherical)THEN'
+           call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+                & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
+           !         WRITE(LUMOD3,'(A)')'      ELSE'
+           !         spherical = .FALSE.
+           !         nlmA = nTUVAspec
+           !         nlmB = nTUVBspec
+           !         nlmC = nTUVCspec
+           !         nlmD = nTUVDspec
+           !         STRINGIN(1:9)  = 'TMParray1'
+           !         STRINGOUT(1:9) = 'TMParray2'
+           !         TMPSTRING(1:9) = '         '
+           !         call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+           !              & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
+           !         WRITE(LUMOD3,'(A)')'      ENDIF'
+        ELSE
+           spherical = .TRUE.
+           nlmA = 2*AngmomA+1
+           nlmB = 2*AngmomB+1
+           nlmC = 2*AngmomC+1
+           nlmD = 2*AngmomD+1
+           STRINGIN(1:9)  = 'TMParray1'
+           STRINGOUT(1:9) = 'TMParray2'
+           TMPSTRING(1:9) = '         '
+           call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+                & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
+        ENDIF
+        
+        
+!==========================00=====================================
+
      ENDDO
-!     WRITE(LUMOD3,'(A)')'       ENDIF ! D if statement'
     ENDDO
-!    WRITE(LUMOD3,'(A)')'      ENDIF ! C if statement'
    ENDDO
-!   WRITE(LUMOD3,'(A)')'     ENDIF ! B if statement'
   ENDDO
-!  WRITE(LUMOD3,'(A)')'    ENDIF ! A if statement'
+
+
+  DO AngmomA = 0,2
+   DO AngmomB = 0,2
+    DO AngmomC = 0,2
+     DO AngmomD = 0,2
+        IF(BUILD(AngmomA,AngmomB,AngmomC,AngmomD))THEN
+
+!==========================00=====================================
+
+           AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
+           WRITE(LUMOD3,'(A,I4,A,I2,A,I2,A,I2,A,I2,A)')'    CASE(',AngmomID,')  !Angmom(A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,') combi'
+           AngmomP = AngmomA + AngmomB
+           AngmomQ = AngmomC + AngmomD
+           !      IF(AngmomQ.GT.AngmomP)CYCLE
+           AngmomPQ = AngmomA + AngmomB + AngmomC + AngmomD
+           nTUV = (AngmomPQ+1)*(AngmomPQ+2)*(AngmomPQ+3)/6
+           nTUVP = (AngmomP+1)*(AngmomP+2)*(AngmomP+3)/6
+           nTUVQ = (AngmomQ+1)*(AngmomQ+2)*(AngmomQ+3)/6
+           nTUVAspec = (AngmomA+1)*(AngmomA+2)/2
+           nTUVBspec = (AngmomB+1)*(AngmomB+2)/2
+           nTUVCspec = (AngmomC+1)*(AngmomC+2)/2
+           nTUVDspec = (AngmomD+1)*(AngmomD+2)/2
+           nTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6
+           nTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6
+           nTUVC = (AngmomC+1)*(AngmomC+2)*(AngmomC+3)/6
+           nTUVD = (AngmomD+1)*(AngmomD+2)*(AngmomD+3)/6
+           IF((AngmomA.GT.1.OR.AngmomB.GT.1).OR.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
+              spherical = .TRUE.
+              nlmA = 2*AngmomA+1
+              nlmB = 2*AngmomB+1
+              nlmC = 2*AngmomC+1
+              nlmD = 2*AngmomD+1
+              STRINGIN(1:9)  = 'TMParray1'
+              STRINGOUT(1:9) = 'TMParray2'
+              TMPSTRING(1:9) = '         '
+              !         WRITE(LUMOD3,'(A)')'      IF(spherical)THEN'
+              call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+                   & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
+              !         WRITE(LUMOD3,'(A)')'      ELSE'
+              !         spherical = .FALSE.
+              !         nlmA = nTUVAspec
+              !         nlmB = nTUVBspec
+              !         nlmC = nTUVCspec
+              !         nlmD = nTUVDspec
+              !         STRINGIN(1:9)  = 'TMParray1'
+              !         STRINGOUT(1:9) = 'TMParray2'
+              !         TMPSTRING(1:9) = '         '
+              !         call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+              !              & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
+              !         WRITE(LUMOD3,'(A)')'      ENDIF'
+           ELSE
+              spherical = .TRUE.
+              nlmA = 2*AngmomA+1
+              nlmB = 2*AngmomB+1
+              nlmC = 2*AngmomC+1
+              nlmD = 2*AngmomD+1
+              STRINGIN(1:9)  = 'TMParray1'
+              STRINGOUT(1:9) = 'TMParray2'
+              TMPSTRING(1:9) = '         '
+              call subroutineMAIN(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+                   & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
+           ENDIF
+
+!==========================00=====================================
+
+        ENDIF
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
   WRITE(LUMOD3,'(A)')'    CASE DEFAULT'
   WRITE(LUMOD3,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_OBS_general'',-1)'
   WRITE(LUMOD3,'(A)')'    END SELECT'
   
   WRITE(LUMOD3,'(A)')'  end subroutine IchorCoulombIntegral_OBS_general'
+
 
   WRITE(LUMOD3,'(A)')'  '
   WRITE(LUMOD3,'(A)')'  subroutine IchorCoulombIntegral_OBS_general_size(TMParray1maxsize,&'
@@ -265,9 +358,12 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'    TMParray1maxSize = 1'
   WRITE(LUMOD3,'(A)')'    SELECT CASE(AngmomID)'  
   DO AngmomA = 0,2
-   DO AngmomB = 0,AngmomA
-    DO AngmomC = 0,AngmomA
-     DO AngmomD = 0,AngmomC
+   DO AngmomB = 0,2
+    DO AngmomC = 0,2
+     DO AngmomD = 0,2
+!   DO AngmomB = 0,AngmomA
+!    DO AngmomC = 0,AngmomA
+!     DO AngmomD = 0,AngmomC
       AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
       WRITE(LUMOD3,'(A,I4,A,I2,A,I2,A,I2,A,I2,A)')'    CASE(',AngmomID,')  !Angmom(A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,') combi'
       AngmomP = AngmomA + AngmomB
@@ -608,7 +704,11 @@ contains
                       WRITE(LUMOD3,'(A,I2,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ENDIF
                 ENDIF
-                WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                IF(AngmomC.GE.AngmomD)THEN ! A to C
+                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                ELSE                       ! A to D
+                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                ENDIF
                 WRITE(LUMOD3,'(A,A,A,A,A)')'               & ',STRINGIN,',',STRINGOUT,')'
 !                WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
                 !swap 
@@ -656,7 +756,13 @@ contains
                       WRITE(LUMOD3,'(A,I2,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ENDIF
                 ENDIF
-                WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                IF(AngmomC.GE.AngmomD)THEN
+                   !B to C TransferRecurrence
+                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                ELSE
+                   !B to D TransferRecurrence
+                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                ENDIF
                 WRITE(LUMOD3,'(A,A,A,A,A)')'               & ',STRINGIN,',',STRINGOUT,')'
 !                WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
                 !swap 
@@ -669,10 +775,10 @@ contains
           IF(AngmomC.GE.AngmomD)THEN
              !C Vertical recurrence
              IF(AngmomPQ.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
                 WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
              ELSE
-                WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
                 WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
              ENDIF
              !swap 
@@ -706,7 +812,11 @@ contains
                       WRITE(LUMOD3,'(A,I2,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ENDIF
                 ENDIF
-                WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                IF(AngmomA.GE.AngmomB)THEN   !C to A
+                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                ELSE                         !C to B
+                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                ENDIF
                 WRITE(LUMOD3,'(A,A,A,A,A)')'               & ',STRINGIN,',',STRINGOUT,')'
 !                WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
                 !swap 
@@ -717,10 +827,10 @@ contains
           ELSE
              !D Vertical recurrence
              IF(AngmomPQ.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
                 WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
              ELSE
-                WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
                 WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
              ENDIF
              !swap 
@@ -753,7 +863,11 @@ contains
                       WRITE(LUMOD3,'(A,I2,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ENDIF
                 ENDIF
-                WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                IF(AngmomA.GE.AngmomB)THEN !D to A
+                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                ELSE                       !D to B
+                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
+                ENDIF
                 WRITE(LUMOD3,'(A,A,A,A,A)')'               & ',STRINGIN,',',STRINGOUT,')'
 !                WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
                 !swap 

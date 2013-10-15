@@ -9,15 +9,9 @@ subroutine HorizontalRR_LHS_P0A0B0AtoB(nContPasses,nTUVQ,&
   integer,intent(in) :: nContPasses,nTUVQ,lupri
   real(realk),intent(in) :: Pdistance12(3)
   real(realk),intent(in) :: AuxCont(    1,nTUVQ,nContPasses)
-  real(realk),intent(inout) :: ThetaP(    1:    1,    1:    1,nTUVQ,nContPasses)
+  real(realk),intent(inout) :: ThetaP(    1:    1,1,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVA
-  real(realk),parameter :: D1=1.0E0_realk,D2=2.0E0_realk
-  real(realk) :: Xab,Yab,Zab
-!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
   DO iP = 1,nContPasses
    DO iTUVQ = 1,nTUVQ
      DO iTUVA=  1,  1
@@ -33,15 +27,9 @@ subroutine HorizontalRR_LHS_P1A1B0AtoB(nContPasses,nTUVQ,&
   integer,intent(in) :: nContPasses,nTUVQ,lupri
   real(realk),intent(in) :: Pdistance12(3)
   real(realk),intent(in) :: AuxCont(    4,nTUVQ,nContPasses)
-  real(realk),intent(inout) :: ThetaP(    2:    4,    1:    1,nTUVQ,nContPasses)
+  real(realk),intent(inout) :: ThetaP(    2:    4,1,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVA
-  real(realk),parameter :: D1=1.0E0_realk,D2=2.0E0_realk
-  real(realk) :: Xab,Yab,Zab
-!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
   DO iP = 1,nContPasses
    DO iTUVQ = 1,nTUVQ
      DO iTUVA=  2,  4
@@ -60,9 +48,7 @@ subroutine HorizontalRR_LHS_P2A1B1AtoB(nContPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(    2:    4,    2:    4,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVA
-  real(realk),parameter :: D1=1.0E0_realk,D2=2.0E0_realk
   real(realk) :: Xab,Yab,Zab
-!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
@@ -87,15 +73,9 @@ subroutine HorizontalRR_LHS_P2A2B0AtoB(nContPasses,nTUVQ,&
   integer,intent(in) :: nContPasses,nTUVQ,lupri
   real(realk),intent(in) :: Pdistance12(3)
   real(realk),intent(in) :: AuxCont(   10,nTUVQ,nContPasses)
-  real(realk),intent(inout) :: ThetaP(    5:   10,    1:    1,nTUVQ,nContPasses)
+  real(realk),intent(inout) :: ThetaP(    5:   10,1,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVA
-  real(realk),parameter :: D1=1.0E0_realk,D2=2.0E0_realk
-  real(realk) :: Xab,Yab,Zab
-!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
   DO iP = 1,nContPasses
    DO iTUVQ = 1,nTUVQ
      DO iTUVA=  5, 10
@@ -114,9 +94,7 @@ subroutine HorizontalRR_LHS_P3A2B1AtoB(nContPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(    5:   10,    2:    4,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVA
-  real(realk),parameter :: D1=1.0E0_realk,D2=2.0E0_realk
   real(realk) :: Xab,Yab,Zab
-!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
@@ -150,15 +128,9 @@ subroutine HorizontalRR_LHS_P3A3B0AtoB(nContPasses,nTUVQ,&
   integer,intent(in) :: nContPasses,nTUVQ,lupri
   real(realk),intent(in) :: Pdistance12(3)
   real(realk),intent(in) :: AuxCont(   20,nTUVQ,nContPasses)
-  real(realk),intent(inout) :: ThetaP(   11:   20,    1:    1,nTUVQ,nContPasses)
+  real(realk),intent(inout) :: ThetaP(   11:   20,1,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVA
-  real(realk),parameter :: D1=1.0E0_realk,D2=2.0E0_realk
-  real(realk) :: Xab,Yab,Zab
-!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
   DO iP = 1,nContPasses
    DO iTUVQ = 1,nTUVQ
      DO iTUVA= 11, 20
@@ -177,7 +149,6 @@ subroutine HorizontalRR_LHS_P4A2B2AtoB(nContPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(    5:   10,    5:   10,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVA
-  real(realk),parameter :: D1=1.0E0_realk,D2=2.0E0_realk
   real(realk) :: Xab,Yab,Zab
   real(realk) :: Tmp1(  5: 20,  2:  4)
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
@@ -283,9 +254,7 @@ subroutine HorizontalRR_LHS_P4A3B1AtoB(nContPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(   11:   20,    2:    4,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVA
-  real(realk),parameter :: D1=1.0E0_realk,D2=2.0E0_realk
   real(realk) :: Xab,Yab,Zab
-!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
   Xab = Pdistance12(1)
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
@@ -334,7 +303,6 @@ subroutine HorizontalRR_LHS_P5A3B2AtoB(nContPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(   11:   20,    5:   10,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVA
-  real(realk),parameter :: D1=1.0E0_realk,D2=2.0E0_realk
   real(realk) :: Xab,Yab,Zab
   real(realk) :: Tmp1( 11: 35,  2:  4)
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
@@ -491,7 +459,6 @@ subroutine HorizontalRR_LHS_P6A3B3AtoB(nContPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(   11:   20,   11:   20,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVA
-  real(realk),parameter :: D1=1.0E0_realk,D2=2.0E0_realk
   real(realk) :: Xab,Yab,Zab
   real(realk) :: Tmp1( 11: 56,  2:  4)
   real(realk) :: Tmp2( 11: 35,  5: 10)

@@ -191,6 +191,7 @@ real(realk),pointer :: expD(:),ContractCoeffD(:,:),Dcenter(:,:)
 integer :: TMParray1maxsize,TMParray2maxsize
 real(realk),pointer :: TmpArray1(:)
 real(realk),pointer :: TmpArray2(:)
+!INTPRINT=IchorDebugSpec
 INTPRINT=0
 call mem_ichor_alloc(OrderdListA,nTypesA)
 call GenerateOrderdListOfTypes(lupri,nTypesA,AngmomOfTypeA,OrderdListA)
@@ -480,7 +481,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
           WRITE(lupri,'(3X,5ES18.9/,(3X,5ES18.9))')expD(iPrimP),(ContractCoeffD(iPrimP,iCont),iCont=1,nContD)
        enddo
     ENDIF
-    IF(TotalAngmom.EQ.0)THEN
+    IF(TotalAngmom.EQ.0.AND.(Psegmented.AND.Qsegmented))THEN
        !============================================================================================
        !                                        SSSS integrals
        !At this point we know all info about the integral except for the coordinates. 
@@ -500,6 +501,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
        !Qsegmented
        !Psegmented
        !ThermiteWorkMem
+       !Fix this so that is also works for non segmented SSSS
        !============================================================================================
 !     call IchorTimer('START',TSTART,TEND,LUPRI)
      !INFO 
@@ -532,7 +534,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
          d2 = d2 + Y*Y
          d2 = d2 + Z*Z
          PpreExpFac(i12) = exp(-e1*e2/(e1+e2)*d2)
-         IF (Psegmented) THEN
+         IF (Psegmented.AND.Qsegmented) THEN
             PpreExpFac(i12) = PpreExpFac(i12)*ContractCoeffA(i1,1)*ContractCoeffB(i2,1)
          ENDIF
         ENDDO
@@ -587,7 +589,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
                   d2 = d2 + Y*Y
                   d2 = d2 + Z*Z
                   QpreExpFac(i12,iPass) = exp(-e1*e2/(e1+e2)*d2)
-                  IF (Qsegmented) THEN
+                  IF (Qsegmented.AND.Psegmented) THEN
                    QpreExpFac(i12,iPass) = QpreExpFac(i12,iPass)*ContractCoeffC(i1,1)*ContractCoeffD(i2,1)
                   ENDIF
                   !integralPrefactor(nPrimPQ) could be modified instead of QpreExpFac to avoid nPass cost
@@ -607,31 +609,15 @@ DO ItypeAnon=1,nTypesA !non ordered loop
           ENDDO
        END IF
 
-       IF (Psegmented.AND.Qsegmented) THEN
+!       IF (Psegmented.AND.Qsegmented) THEN
           call IchorCoulombIntegral_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,&
                & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
                & reducedExponents,integralPrefactor,PQorder,CDAB)
-       ELSE
+!       ELSE
 
 
-!!$          WRITE(lupri,*)'IchorCoulombIntegral_McM_general'
-                call IchorQuit('IchorCoulombIntegral_McM_general',-1)
-!!$             call IchorCoulombIntegral_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-!!$                  & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
-!!$                  & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
-!!$                  & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
-!!$                  & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-!!$                  & Qiprim1,Qiprim2,Piprim1,Piprim2,expA,expB,expC,expD,&
-!!$                  & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-!!$                  & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB)
-!          call IchorCoulombIntegral_SSSS(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-!               & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
-!               & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
-!               & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
-!               & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-!               & Qiprim1,Qiprim2,Piprim1,Piprim2,expA,expB,expC,expD,&
-!               & Qsegmented,Psegmented,reducedExponents,integralPrefactor,CDAB)
-       ENDIF
+
+!       ENDIF
       !Distribute to Active Kmat 4 matrices (K_AC,K_BC,K_AD,K_BD)
              
         
@@ -642,8 +628,8 @@ DO ItypeAnon=1,nTypesA !non ordered loop
         startD = startOrbitalOfTypeD(iAtomD,ItypeD)        
         DO IatomC = 1,nAtomsC
          startC = startOrbitalOfTypeC(iAtomC,ItypeC)
-         OutputStorage(startA+IatomA,startB+IatomB,startC+1,startD+1,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
-         OutputStorage(startB+IatomB,startA+IatomA,startC+1,startD+1,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
+         OutputStorage(startA+1,startB+1,startC+1,startD+1,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
+         OutputStorage(startB+1,startA+1,startC+1,startD+1,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
         ENDDO
        ENDDO
       ELSE
@@ -651,7 +637,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
         startD = startOrbitalOfTypeD(iAtomD,ItypeD)
         DO IatomC = 1,nAtomsC
          startC = startOrbitalOfTypeC(iAtomC,ItypeC)
-         OutputStorage(startA+IatomA,startB+IatomB,startC+1,startD+1,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
+         OutputStorage(startA+1,startB+1,startC+1,startD+1,1)=CDAB(IatomC+(IatomD-1)*nAtomsC)
         ENDDO
        ENDDO
       ENDIF
@@ -704,7 +690,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
                    d2 = d2 + Y*Y
                    d2 = d2 + Z*Z
                    PpreExpFac(i12) = exp(-e1*e2/(e1+e2)*d2)
-                   IF (Psegmented) THEN
+                   IF (Psegmented.AND.Qsegmented) THEN
                       PpreExpFac(i12) = PpreExpFac(i12)*ContractCoeffA(i1,1)*ContractCoeffB(i2,1)
                    ENDIF
                 ENDDO
@@ -760,7 +746,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
                          d2 = d2 + Y*Y
                          d2 = d2 + Z*Z
                          QpreExpFac(i12,iPass) = exp(-e1*e2/(e1+e2)*d2)
-                         IF (Qsegmented) THEN
+                         IF (Qsegmented.AND.Psegmented) THEN
                             QpreExpFac(i12,iPass) = QpreExpFac(i12,iPass)*ContractCoeffC(i1,1)*ContractCoeffD(i2,1)
                          ENDIF
                          !integralPrefactor(nPrimPQ) could be modified instead of QpreExpFac to avoid nPass cost
