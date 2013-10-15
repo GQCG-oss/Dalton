@@ -3744,7 +3744,7 @@ retval=0
     real(realk),dimension(natoms,natoms),intent(in) :: FragEnergies
     !> Which atoms have orbitals assigned?
     logical,dimension(natoms) :: orbitals_assigned
-    !> Full molecule structure, where MyMolecule%PairModel defines the model to be used for
+    !> Full molecule structure, where MyMolecule%ccmodel defines the model to be used for
     !> each pair. If the model is MODEL_NONE (see dec_typedef.F90), then the pair
     !> will be skipped in the DEC calculation.
     type(fullmolecule),intent(in) :: MyMolecule
@@ -3756,7 +3756,7 @@ retval=0
     do P=1,natoms
        if(orbitals_assigned(P)) then
           do Q=1,P-1
-             if(orbitals_assigned(Q) .and. MyMolecule%PairModel(P,Q)==MODEL_NONE ) then
+             if(orbitals_assigned(Q) .and. MyMolecule%ccmodel(P,Q)==MODEL_NONE ) then
                 E = E + FragEnergies(P,Q)
              end if
           end do

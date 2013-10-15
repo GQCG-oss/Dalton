@@ -2604,7 +2604,7 @@ contains
     !> All unoccupied orbitals
     type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
-    type(fullmolecule), intent(in) :: MyMolecule
+    type(fullmolecule), intent(inout) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
     !> Delete fragment basis information ("expensive box in ccatom type") at exit?
@@ -2617,7 +2617,7 @@ contains
     real(realk),dimension(natoms)  :: DistMyAtom,SortedDistMyAtom
     integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
     integer      :: iter,i,idx
-    integer      :: max_iter_red,savemodel
+    integer      :: max_iter_red
     logical :: expansion_converged
     type(array4) :: t2,g
     real(realk),pointer :: OccContribs(:),VirtContribs(:)    
@@ -2678,10 +2678,9 @@ contains
     end if
 
 
-    ! Save existing model and do fragment expansion with MP2 energies if requested
-    savemodel = DECinfo%ccmodel
+    ! Do fragment expansion at the MP2 level?
     if(DECinfo%fragopt_exp_mp2) then
-       DECinfo%ccmodel = MODEL_MP2
+       MyMolecule%ccmodel(MyAtom,Myatom) = MODEL_MP2
     end if
 
 
@@ -2817,10 +2816,10 @@ contains
  ! *******************************
  if(DECinfo%fragopt_red_mp2) then
     ! Do reduction with MP2 calculations --> set model to be MP2.
-    DECinfo%ccmodel = MODEL_MP2
+    MyMolecule%ccmodel(MyAtom,Myatom) = MODEL_MP2
  else
     ! Use original model for reduction loop --> restore original model
-    DECinfo%ccmodel = savemodel
+    MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
  end if
 
 
@@ -2844,7 +2843,7 @@ contains
     VirtEnergyDiff=0.0_realk
     iter=0
     write(DECinfo%output,*) 'FOP Calculated reference atomic fragment energy for relevant CC model'
-    write(DECinfo%output,*) 'FOP CC model number: ', DECinfo%ccmodel
+    write(DECinfo%output,*) 'FOP CC model number: ', MyMolecule%ccmodel(MyAtom,Myatom)
     call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
     LagEnergyOld = AtomicFragment%LagFOP
     OccEnergyOld= AtomicFragment%EoccFOP
@@ -2898,7 +2897,7 @@ contains
 
  ! Restore the original CC model 
  ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
- DECinfo%ccmodel = savemodel
+ MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
 
 end subroutine optimize_atomic_fragment
 

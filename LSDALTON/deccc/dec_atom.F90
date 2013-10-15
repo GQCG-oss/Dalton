@@ -132,11 +132,9 @@ contains
 
     ! Set model to use for fragment calculation (see define_pair_calculations for details)
     if(fragment%pairfrag) then
-       ! Read model from MyMolecule%PairModel (again, see define_pair_calculations)
-       fragment%ccmodel = MyMolecule%PairModel(fragment%EOSatoms(1),fragment%EOSatoms(2))
+       fragment%ccmodel = MyMolecule%ccmodel(fragment%EOSatoms(1),fragment%EOSatoms(2))
     else
-       ! Always use input CC model for atomic fragments
-       fragment%ccmodel = DECinfo%ccmodel
+       fragment%ccmodel = MyMolecule%ccmodel(MyAtom,MyAtom)
     end if
        
 
@@ -5757,7 +5755,7 @@ if(DECinfo%PL>0) then
 
   !> \brief For each pair, determine whether pair calculation should be calculated
   !> should be calculated (i) using input CC model, (ii) MP2 model, or (iii) simply be skipped.
-  !> This information is stored in MyMolecule%PairModel(P,Q) in terms of an integer
+  !> This information is stored in MyMolecule%ccmodel(P,Q) in terms of an integer
   !> defining the model to be used for pair (P,Q), according to the model.
   !> See details defining the model inside subroutine.
   !> definitions in dec_typedef.F90.
@@ -5772,7 +5770,7 @@ if(DECinfo%PL>0) then
     logical,intent(in) :: dofrag(natoms)
     !> Estimated fragment energies
     real(realk),intent(in) :: FragEnergies(natoms,natoms)
-    !> Full molecule structure, where only MyMolecule%PairModel is modified
+    !> Full molecule structure, where only MyMolecule%ccmodel is modified
     type(fullmolecule),intent(inout) :: MyMolecule
     !> Estimated correlation energy from all estimated atomic and pair fragments
     real(realk),intent(inout) :: Ecorr_est
@@ -5825,7 +5823,7 @@ if(DECinfo%PL>0) then
 
 
     ! Init stuff
-    MyMolecule%PairModel = DECinfo%ccmodel  ! use original CC model as initialization model
+    MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model as initialization model
     Nskip=0
     NMP2=0
     NCC=0
@@ -5837,8 +5835,8 @@ if(DECinfo%PL>0) then
        ! If no orbitals assigned to P, no pairs for this atom
        if(.not. dofrag(P)) then
           Qloop1: do Q=1,natoms
-             MyMolecule%PairModel(P,Q)=MODEL_NONE
-             MyMolecule%PairModel(Q,P)=MODEL_NONE
+             MyMolecule%ccmodel(P,Q)=MODEL_NONE
+             MyMolecule%ccmodel(Q,P)=MODEL_NONE
           end do Qloop1
           cycle Ploop
        end if
@@ -5862,7 +5860,7 @@ if(DECinfo%PL>0) then
           Eacc = Eacc + EPQ(Q)
           if(Eacc < DECinfo%FOT) then
              ! Accumulated value smaller than FOT --> (P,Qidx) can be skipped!
-             MyMolecule%PairModel(P,Qidx)=MODEL_NONE
+             MyMolecule%ccmodel(P,Qidx)=MODEL_NONE
              Nskip=Nskip+1  ! count number of skipped pairs
           else
              ! Not possible to skip (P,Q). Save current counter value.
@@ -5888,7 +5886,7 @@ if(DECinfo%PL>0) then
 
              Eacc = Eacc + EPQ(Q)
              if(Eacc < DECinfo%FOT) then
-                MyMolecule%PairModel(P,Qidx)=MODEL_MP2
+                MyMolecule%ccmodel(P,Qidx)=MODEL_MP2
                 NMP2 = NMP2+1
              else
                 Qquit = Q
@@ -5904,8 +5902,8 @@ if(DECinfo%PL>0) then
 
     end do Ploop
 
-    ! Fix inconsistencies which may arise if MyMolecule%PairModel(P,Q) is not
-    ! identical to MyMolecule%PairModel(Q,P) from the above procedure
+    ! Fix inconsistencies which may arise if MyMolecule%ccmodel(P,Q) is not
+    ! identical to MyMolecule%ccmodel(Q,P) from the above procedure
     call fix_inconsistencies_for_pair_model(MyMolecule)
 
     ! Estimate correlation energy by adding all estimated atomic and pair fragment energy contributions
@@ -5962,42 +5960,42 @@ if(DECinfo%PL>0) then
 
   !> Once the CC model to be used for each pair has been defined in define_pair_calculations,
   !> there will in general be inconsistencies. For example, it might be that from P's point
-  !> of view the pair (P,Q) should be treated at the CCSD level [MyMolecule%PairModel(P,Q)=MODEL_CCSD],
+  !> of view the pair (P,Q) should be treated at the CCSD level [MyMolecule%ccmodel(P,Q)=MODEL_CCSD],
   !> while from the point of view of Q, this pair should be skipped
-  !> [MyMolecule%PairModel(Q,P)=MODEL_NONE]. In such cases we always choose the more accurate model.
+  !> [MyMolecule%ccmodel(Q,P)=MODEL_NONE]. In such cases we always choose the more accurate model.
   !> (Thus, for this example we would do a CCSD calculation for pair (P,Q)).
   !> \author Kasper Kristensen
   !> \date October 2013
   subroutine fix_inconsistencies_for_pair_model(MyMolecule)
     implicit none
-    !> Full molecule structure, where only MyMolecule%PairModel is modified
+    !> Full molecule structure, where only MyMolecule%ccmodel is modified
     type(fullmolecule),intent(inout) :: MyMolecule
     integer :: P,Q
 
     do P=1,MyMolecule%natoms
        do Q=1,MyMolecule%natoms
           ! Check whether model defined by (P,Q) is different from that defined by (Q,P)
-          Inconsistency: if(MyMolecule%PairModel(P,Q) /= MyMolecule%PairModel(Q,P)) then
+          Inconsistency: if(MyMolecule%ccmodel(P,Q) /= MyMolecule%ccmodel(Q,P)) then
 
              ! Possibility 1: Either (P,Q) or (Q,P) requires original CC model, the
              ! other one requires a less accurate model
-             if(MyMolecule%PairModel(P,Q)==DECinfo%ccmodel .or. &
-                  & MyMolecule%PairModel(Q,P)==DECinfo%ccmodel) then
-                MyMolecule%PairModel(P,Q)=DECinfo%ccmodel
-                MyMolecule%PairModel(Q,P)=DECinfo%ccmodel
+             if(MyMolecule%ccmodel(P,Q)==DECinfo%ccmodel .or. &
+                  & MyMolecule%ccmodel(Q,P)==DECinfo%ccmodel) then
+                MyMolecule%ccmodel(P,Q)=DECinfo%ccmodel
+                MyMolecule%ccmodel(Q,P)=DECinfo%ccmodel
 
                 ! Possibility 2: Either (P,Q) or (Q,P) requires MP2 model, the
                 ! other one dictates that the pair should be skipped
-             elseif(MyMolecule%PairModel(P,Q)==MODEL_MP2 .or. &
-                  & MyMolecule%PairModel(Q,P)==MODEL_MP2) then
-                MyMolecule%PairModel(P,Q)=MODEL_MP2
-                MyMolecule%PairModel(Q,P)=MODEL_MP2
+             elseif(MyMolecule%ccmodel(P,Q)==MODEL_MP2 .or. &
+                  & MyMolecule%ccmodel(Q,P)==MODEL_MP2) then
+                MyMolecule%ccmodel(P,Q)=MODEL_MP2
+                MyMolecule%ccmodel(Q,P)=MODEL_MP2
                 
                 ! This should never happen! Something very wrong...
              else
                 print *, 'P,Q: ', P,Q
-                print *, 'Model(P,Q): ', MyMolecule%PairModel(P,Q)
-                print *, 'Model(Q,P): ', MyMolecule%PairModel(Q,P)
+                print *, 'Model(P,Q): ', MyMolecule%ccmodel(P,Q)
+                print *, 'Model(Q,P): ', MyMolecule%ccmodel(Q,P)
                 call lsquit('fix_inconsistencies_for_pair_model: Something wrong &
                      & with definitions of CC model for pair!',-1)
              end if

@@ -129,7 +129,7 @@ contains
   !> determine which CC model to use for the various pair fragments in the actual pair calculations
   !> where orbital spaces are chosen according to the FOT
   !> (either use input CC model, MP2, or simply skip pair).
-  !> Information is stored in MyMolecule%PairModel.
+  !> Information is stored in MyMolecule%ccmodel.
   !> \author Kasper Kristensen
   !> \date October 2013
   subroutine estimate_fragment_driver(MyMolecule,mylsitem,&
@@ -146,7 +146,7 @@ contains
     type(ccorbital), intent(inout) :: OccOrbitals(nocc)
     !> Unoccupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
     type(ccorbital), intent(inout) :: UnoccOrbitals(nunocc)
-    !> Full molecule info, model for pair fragment calculations are stored in MyMolecule%PairModel.
+    !> Full molecule info, model for pair fragment calculations are stored in MyMolecule%ccmodel.
     type(fullmolecule), intent(inout) :: MyMolecule
    !> Estimated correlation energy from all estimated atomic and pair fragments
     real(realk),intent(inout) :: Ecorr_est
@@ -165,12 +165,13 @@ contains
 
 
     ! Not pretty, but we have to turn off fragment-adapted orbitals 
-    ! and change model to MP2
     ! Original settings are restored at the end of this routine
-    savemodel = DECinfo%ccmodel
     save_fragadapt=DECinfo%fragadapt
-    DECinfo%ccmodel = MODEL_MP2
     DECinfo%fragadapt=.false.
+
+    ! All estimates are done using MP2, set model for all fragments to MP2
+    ! (MyMolecule%ccmodel is then redefined below based on these estimates)
+    MyMolecule%ccmodel = MODEL_MP2
 
     natoms=MyMolecule%natoms
     call mem_alloc(AtomicFragments,natoms)
@@ -210,7 +211,7 @@ contains
     call mem_alloc(FragEnergiesOcc,natoms,natoms)
     FragEnergiesOcc = FragEnergiesALL(:,:,FRAGMODEL_OCCMP2)
 
-    ! Define which model to use in each pair calculation (info stored in MyMolecule%PairModel)
+    ! Define which model to use in each pair calculation (info stored in MyMolecule%ccmodel)
     ! (Also calculate estimated correlation energy and estimated error by skipping pairs).
     call define_pair_calculations(natoms,dofrag,FragEnergiesOcc,MyMolecule,Ecorr_est,Eskip_est)
 
@@ -226,7 +227,6 @@ contains
     call free_joblist(jobs)
 
     ! Reset original settings
-    DECinfo%ccmodel = savemodel
     DECinfo%fragadapt = save_fragadapt
 
   end subroutine estimate_fragment_driver
@@ -526,7 +526,7 @@ contains
        call ls_mpisendrecv(newjob,MPI_COMM_LSDALTON,master,MPISTATUS(MPI_SOURCE))
 #else
 
-       ! No MPI: Master nodes does all jobs.
+       ! No MPI: Master performs all jobs.
        if(DECinfo%SinglesPolari) then ! singles effects for full molecule
           call optimize_atomic_fragment(i,AtomicFragments(i),nAtoms, &
                & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &

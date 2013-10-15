@@ -483,11 +483,11 @@ module dec_typedef_module
 
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()
-     !> Pair table describing which model should be used for given pair calculation:
-     !> model=0:  Skip pair
+     !> Table describing which model should be used for given fragment calculation:
+     !> model=0:  Skip fragment (only relevant for pairs)
      !> model=MODEL_MP2:  Do MP2
-     !> etc., see MODEL definitions below
-     integer,pointer :: PairModel(:,:) => null()
+     !> etc., see MODEL_* definitions below
+     integer,pointer :: ccmodel(:,:) => null()
 
   end type fullmolecule
 

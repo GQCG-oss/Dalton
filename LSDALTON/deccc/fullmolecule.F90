@@ -166,8 +166,8 @@ contains
 
     !> Which model to use for different pair calculations?
     !> At this initialization step - use the input CC model for all pairs
-    call mem_alloc(molecule%PairModel,molecule%natoms,molecule%natoms)
-    molecule%PairModel = DECinfo%ccmodel
+    call mem_alloc(molecule%ccmodel,molecule%natoms,molecule%natoms)
+    molecule%ccmodel = DECinfo%ccmodel
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
@@ -642,8 +642,8 @@ contains
        call mem_dealloc(molecule%DistanceTable)
     end if
 
-    if(associated(molecule%PairModel)) then
-       call mem_dealloc(molecule%PairModel)
+    if(associated(molecule%ccmodel)) then
+       call mem_dealloc(molecule%ccmodel)
     end if
 
   end subroutine molecule_finalize
