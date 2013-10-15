@@ -1243,10 +1243,8 @@ contains
   !> \brief For a given fragment, calculate combined doubles+singles amplitudes:
   !> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
   !> and two-electron integrals (a i | bj ).
-  !> IMPORTANT: The EOS indices are extracted for both the occupied and
-  !> the virtual spaces, such that the output amplitudes/integrals
-  !> can be used directly in the DEC hybrid scheme for determining the
-  !> individual orbital contributions to the fragment energy.
+  !> The EOS indices are extracted for both the occupied and
+  !> the virtual spaces
   !> Intended to be used for CC2 and CCSD (and NOT for MP2).
   !> \author Kasper Kristensen
   !> \date January 2012

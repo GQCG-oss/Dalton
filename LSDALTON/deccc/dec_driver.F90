@@ -156,7 +156,7 @@ contains
     integer, dimension(MyMolecule%natoms) :: nocc_per_atom, nunocc_per_atom    
     logical,dimension(MyMolecule%natoms) :: dofrag
     integer :: natoms,i,MyAtom,njobs, savemodel
-    logical :: DoBasis, save_fragadapt, hybridsave
+    logical :: DoBasis, save_fragadapt
     real(realk) :: init_radius
     type(joblist) :: jobs
     real(realk),pointer :: FragEnergiesAll(:,:,:),FragEnergiesOcc(:,:)
@@ -168,10 +168,8 @@ contains
     ! and change model to MP2
     ! Original settings are restored at the end of this routine
     savemodel = DECinfo%ccmodel
-    hybridsave = DECinfo%HybridScheme
     save_fragadapt=DECinfo%fragadapt
     DECinfo%ccmodel = MODEL_MP2
-    DECinfo%HybridScheme=.false.
     DECinfo%fragadapt=.false.
 
     natoms=MyMolecule%natoms
@@ -229,7 +227,6 @@ contains
 
     ! Reset original settings
     DECinfo%ccmodel = savemodel
-    DECinfo%HybridScheme = hybridsave
     DECinfo%fragadapt = save_fragadapt
 
   end subroutine estimate_fragment_driver

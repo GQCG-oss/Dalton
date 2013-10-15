@@ -101,7 +101,6 @@ contains
     DECinfo%PL=0
     DECinfo%PurifyMOs=.false.
     DECinfo%precondition_with_full=.false.
-    DECinfo%HybridScheme=.false.
     DECinfo%FragmentExpansionSize = 5
     DECinfo%fragadapt=.false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
@@ -547,9 +546,6 @@ contains
           call lsquit('Calculation of molecular gradient is only implemented for MP2!', DECinfo%output)
        end if
 
-       ! Turn on the occupied/virtual hybrid scheme
-       DECinfo%HybridScheme=.true.
-
     end if BeyondMp2
 
 
@@ -711,7 +707,6 @@ end if
     write(lupri,*) 'MaxIter ', DECitem%MaxIter
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
-    write(lupri,*) 'HybridScheme ', DECitem%HybridScheme
     write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
     write(lupri,*) 'fragopt_exp_mp2 ', DECitem%fragopt_exp_mp2
     write(lupri,*) 'fragopt_red_mp2 ', DECitem%fragopt_red_mp2

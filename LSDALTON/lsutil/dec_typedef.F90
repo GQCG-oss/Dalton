@@ -258,11 +258,6 @@ module dec_typedef_module
      integer :: FOTlevel
      !> Max accepted FOT level
      integer :: maxFOTlevel
-     !> Use occupied/virtual hybrid partitioning scheme
-     !> This is a temporary solution for models where the Lagrangian has not yet been implemented.
-     !> The Lagrangian fragment energy is then simply defined as the average value of the two energies
-     !> for the occupied and virtual partitioning schemes.
-     logical :: HybridScheme
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
      !> Use MP2 energies for expansion part of fragment optimization

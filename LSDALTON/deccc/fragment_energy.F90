@@ -578,8 +578,8 @@ contains
                 ! Contribution 2
                 ! --------------
 
-                ! Skip contribution 2 for hybrid scheme
-                if(.not. DECinfo%HybridScheme) then
+                ! Skip contribution 2 for anything but MP2
+                if(DECinfo%ccmodel==MODEL_MP2) then
                    ! Multiplier (multiplied by one half)
                    multaibj = 2.0_realk*t2occ%val(a,i,b,j) - t2occ%val(b,i,a,j)
 
@@ -675,8 +675,8 @@ contains
                 ! Contribution 4
                 ! --------------
 
-                ! Skip contribution 4 for hybrid scheme
-                if(.not. DECinfo%HybridScheme) then
+                ! Skip contribution 4 for anything but MP2
+                if(DECinfo%ccmodel==MODEL_MP2) then
 
                    do k=1,noccAOS
 
@@ -1213,8 +1213,8 @@ contains
                    e1 = e1 + t2occ%val(a,i,b,j)*(2.0_realk*gocc%val(a,i,b,j) - gocc%val(b,i,a,j))
 
 
-                   ! Skip contribution 2 for hybrid scheme
-                   if(.not. DECinfo%HybridScheme) then
+                   ! Skip contribution 2 for anything but MP2
+                   if(DECinfo%ccmodel==MODEL_MP2) then
 
                       ! Multiplier (multiplied by one half)
                       multaibj = 2.0_realk*t2occ%val(a,i,b,j) - t2occ%val(b,i,a,j)
@@ -1277,8 +1277,8 @@ contains
                    e3 = e3 + multaibj*gvirt%val(a,i,b,j)
 
 
-                   ! Skip contribution 4 for hybrid scheme
-                   if(.not. DECinfo%HybridScheme) then
+                   ! Skip contribution 4 for anything but MP2
+                   if(DECinfo%ccmodel==MODEL_MP2) then
 
                       tmp=0E0_realk
                       do k=1,noccAOS
@@ -2618,7 +2618,7 @@ contains
     integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
     integer      :: iter,i,idx
     integer      :: max_iter_red,savemodel
-    logical :: expansion_converged,hybridsave
+    logical :: expansion_converged
     type(array4) :: t2,g
     real(realk),pointer :: OccContribs(:),VirtContribs(:)    
 
@@ -2680,10 +2680,8 @@ contains
 
     ! Save existing model and do fragment expansion with MP2 energies if requested
     savemodel = DECinfo%ccmodel
-    hybridsave = DECinfo%HybridScheme
     if(DECinfo%fragopt_exp_mp2) then
        DECinfo%ccmodel = MODEL_MP2
-       DECinfo%HybridScheme=.false.
     end if
 
 
@@ -2820,11 +2818,9 @@ contains
  if(DECinfo%fragopt_red_mp2) then
     ! Do reduction with MP2 calculations --> set model to be MP2.
     DECinfo%ccmodel = MODEL_MP2
-    DECinfo%HybridScheme=.false.
  else
     ! Use original model for reduction loop --> restore original model
     DECinfo%ccmodel = savemodel
-    DECinfo%HybridScheme=hybridsave
  end if
 
 
@@ -2903,7 +2899,6 @@ contains
  ! Restore the original CC model 
  ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
  DECinfo%ccmodel = savemodel
- DECinfo%HybridScheme=hybridsave
 
 end subroutine optimize_atomic_fragment
 
@@ -3470,7 +3465,6 @@ end subroutine optimize_atomic_fragment
     type(array2),intent(inout),optional :: t1full
     type(array4) :: g, t2
     integer      :: savemodel
-    logical :: hybridsave
 
 
     write(DECinfo%output,*) 'FOP Fragment includes all orbitals and fragment optimization is skipped'
@@ -3484,11 +3478,9 @@ end subroutine optimize_atomic_fragment
 
        ! Save existing model 
        savemodel = DECinfo%ccmodel
-       hybridsave = DECinfo%HybridScheme
 
        ! Set model to be MP2
        DECinfo%ccmodel = MODEL_MP2
-       DECinfo%HybridScheme=.false.
 
        ! Integrals (ai|bj)
        call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%number_basis,&
@@ -3507,7 +3499,6 @@ end subroutine optimize_atomic_fragment
 
        ! Restore the original CC model 
        DECinfo%ccmodel = savemodel
-       DECinfo%HybridScheme=hybridsave
 
     end if FullFragAdapt
 
