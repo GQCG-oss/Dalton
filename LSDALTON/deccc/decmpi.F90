@@ -503,6 +503,8 @@ contains
     type(fullmolecule),intent(inout) :: MyMolecule
     logical :: gm
     integer(kind=ls_mpik) :: master
+    integer,pointer :: dirty(:)
+    integer :: natoms2
     master = 0
 
     IF(infpar%mynum==0)THEN ! Global master
@@ -560,7 +562,12 @@ contains
     call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+
+    ! Dirty trick for bcasting integer matrix quickly...
+    natoms2=MyMolecule%natoms*MyMolecule%natoms
+    dirty=>MyMolecule%ccmodel(1:1,1)
+    call ls_mpibcast(dirty,natoms2,master,MPI_COMM_LSDALTON)
+    nullify(dirty)
 
   end subroutine mpi_bcast_fullmolecule
 

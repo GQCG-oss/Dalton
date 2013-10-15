@@ -289,7 +289,7 @@ subroutine atomic_fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
   !> Unoccupied orbitals, DEC format
   type(ccorbital),intent(in) :: UnoccOrbitals(nunocc)
   !> Full molecular info
-  type(fullmolecule),intent(in) :: MyMolecule
+  type(fullmolecule),intent(inout) :: MyMolecule
   !> LS item structure
   type(lsitem),intent(inout) :: MyLsitem
   !> Atomic fragments to be determined

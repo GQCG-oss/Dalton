@@ -847,7 +847,7 @@ contains
     implicit none
 
     !> CC model
-    integer,intent(in) :: ccmodel
+    integer,intent(inout) :: ccmodel
     !> Number of basis functions
     integer,intent(in) :: nb
     !> Number of occupied orbitals
@@ -2169,7 +2169,7 @@ contains
   &omega2,o2v2,s,pd,lock_outside)
     implicit none
     !> CC model
-    integer,intent(in) :: ccmodel
+    integer,intent(inout) :: ccmodel
     integer(kind=8),intent(in)::o2v2
     real(realk),intent(inout)::ppf(:)
     real(realk),intent(inout)::qqf(:)
