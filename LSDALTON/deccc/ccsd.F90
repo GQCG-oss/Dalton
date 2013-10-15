@@ -657,10 +657,12 @@ contains
   !    nullify(xv_p)
   !    nullify(yv_p)
   !end subroutine get_ccsd_residual_integral_driven_oldarray_wrapper
-  subroutine ccsd_residual_wrapper(w_cp,delta_fock,omega2,t2,&
+  subroutine ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2,t2,&
              & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
              & xv,yo,yv,nb,MyLsItem,omega1,iter,local,rest)
     implicit none
+    !> CC model
+    integer,intent(inout) :: ccmodel
     logical, intent(in)   :: w_cp
     type(array)           :: delta_fock
     type(array)           :: omega2
@@ -714,6 +716,7 @@ contains
       call ls_mpi_buffer(nv,infpar%master)
       call ls_mpi_buffer(iter,infpar%master)
       call ls_mpi_buffer(local,infpar%master)
+      call ls_mpi_buffer(ccmodel,infpar%master)
       call ls_mpi_buffer(rest,infpar%master)
 
       if(parent)addr01=delta_fock%addr_loc
@@ -780,7 +783,7 @@ contains
     endif
 
 #endif
-    call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2,t2,&
+    call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
      & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
      & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
 
@@ -836,12 +839,15 @@ contains
   !
   !rest = tells the routine wheter the calculation has been restarted from
   !amplitude files
-  subroutine get_ccsd_residual_integral_driven(deltafock,omega2,t2,fock,govov,no,nv,&
+  subroutine get_ccsd_residual_integral_driven(ccmodel,deltafock,omega2,t2,fock,govov,no,nv,&
        ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
 #ifdef VAR_OMP
     use omp_lib,only:omp_get_wtime
 #endif
     implicit none
+
+    !> CC model
+    integer,intent(in) :: ccmodel
     !> Number of basis functions
     integer,intent(in) :: nb
     !> Number of occupied orbitals
@@ -1122,7 +1128,7 @@ contains
 
     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
       call ls_mpibcast(CCSDDATA,infpar%master,infpar%lg_comm)
-      call mpi_communicate_ccsd_calcdata(omega2,t2,govov,xo,xv,yo,&
+      call mpi_communicate_ccsd_calcdata(ccmodel,omega2,t2,govov,xo,xv,yo,&
       &yv,MyLsItem,nb,nv,no,iter,scheme,local)
     endif StartUpSlaves
       
@@ -1268,7 +1274,7 @@ contains
     call mem_alloc(Gbi,nb*no)
 
 
-    if( DECinfo%ccModel > MODEL_CC2 )then
+    if( Ccmodel > MODEL_CC2 )then
 
 #ifdef VAR_MPI
       call mem_alloc(sio4,sio4_c,int(i8*nor*no2,kind=long))
@@ -1329,7 +1335,7 @@ contains
     !      &(8.0E0_realk*o2v*MaxActualDimGamma*2)/(1024.0E0_realk*1024.0E0_realk*1024.0E0_realk)
     call mem_alloc(uigcj,int((i8*o2v)*MaxActualDimGamma,kind=8))
 
-    if( DECinfo%ccModel > MODEL_CC2 )then
+    if( Ccmodel > MODEL_CC2 )then
       sio4=0.0E0_realk
     endif
 
@@ -1499,7 +1505,7 @@ contains
        call lsmpi_poke()
 
        !VVOO
-       if ( DECinfo%ccModel > MODEL_CC2 ) then
+       if ( Ccmodel > MODEL_CC2 ) then
         !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
         call dgemm('n','n',la*no*lg,no,nb,1.0E0_realk,w1,la*no*lg,yo,nb,0.0E0_realk,w3,la*no*lg)
         call lsmpi_poke()
@@ -1558,7 +1564,7 @@ contains
        endif
 
 
-       if ( DECinfo%ccModel > MODEL_CC2 .and. ( iter/=1.or.restart ) ) then
+       if ( Ccmodel > MODEL_CC2 .and. ( iter/=1.or.restart ) ) then
         ! gvoov = (vo|ov) constructed from w2               = I [alpha j b  gamma]
         !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
         call dgemm('n','n',la*no*nv,no,lg,1.0E0_realk,w2,la*no*nv,yo(fg),nb,0.0E0_realk,w1,la*no*nv)
@@ -1587,13 +1593,13 @@ contains
 
 #ifdef VAR_MPI
        if(scheme/=4.and.iter==1.and.lock_outside) call arr_unlock_wins(govov,.true.)
-       if((scheme==2.or.scheme==3).and.DECinfo%ccModel>MODEL_CC2.and.lock_outside) call arr_unlock_wins(gvvooa,.true.)
-       if (DECinfo%ccModel>MODEL_CC2.and.(iter/=1.or.restart).and.(scheme==2.or.scheme==3).and.lock_outside) then
+       if((scheme==2.or.scheme==3).and.Ccmodel>MODEL_CC2.and.lock_outside) call arr_unlock_wins(gvvooa,.true.)
+       if (Ccmodel>MODEL_CC2.and.(iter/=1.or.restart).and.(scheme==2.or.scheme==3).and.lock_outside) then
          call arr_unlock_wins(gvoova,.true.)
        endif
 #endif
 
-      if( DECinfo%ccmodel > MODEL_CC2 )then
+      if( Ccmodel > MODEL_CC2 )then
         if(fa<=fg+lg-1)then
         !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
         !element in the alpha batch has a smaller index as the last element in
@@ -1618,7 +1624,7 @@ contains
       call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2,no*lg*la,yo,nb,0.0E0_realk,w0,no*lg*la)
       call lsmpi_poke()
       ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
-      if( DECinfo%ccModel > MODEL_CC2 )call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
+      if( Ccmodel > MODEL_CC2 )call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
       call lsmpi_poke()
 
 
@@ -1700,7 +1706,7 @@ contains
     wait_time = stopp - startt
     max_wait_time = wait_time
 
-    if( DECinfo%ccmodel>MODEL_CC2 .and. scheme==3 )then
+    if( Ccmodel>MODEL_CC2 .and. scheme==3 )then
 #if VAR_MPI
       if(lock_outside)then
         call arr_lock_wins(gvoova,'s',mode)
@@ -1738,7 +1744,7 @@ contains
 
        ! The following block is structured like this due to performance reasons
        !***********************************************************************
-       if(DECinfo%ccModel > MODEL_CC2)then
+       if(Ccmodel > MODEL_CC2)then
 
          call lsmpi_allreduce(sio4,int((i8*nor)*no2,kind=8),infpar%lg_comm,double_2G_nel)
 
@@ -1834,7 +1840,7 @@ contains
 #endif
     endif
 
-    if(DECinfo%ccModel>MODEL_CC2)then
+    if(Ccmodel>MODEL_CC2)then
 
       !get B2.2 contributions
       !**********************
@@ -2033,7 +2039,7 @@ contains
 
 
     !Transform inactive Fock matrix into the different mo subspaces
-    if (DECinfo%ccModel>MODEL_CC2) then
+    if (Ccmodel>MODEL_CC2) then
       ! -> Foo
       call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1,no)
       call dgemm('n','n',no,no,nb,1.0E0_realk,w1,no,yo,nb,0.0E0_realk,ppfock,no)
@@ -2122,7 +2128,7 @@ contains
 
     !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY
     !***********************************************************
-    call calculate_E2_and_permute(ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,&
+    call calculate_E2_and_permute(ccmodel,ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,&
     &no,nv,nb,omega2,o2v2,scheme,print_debug,lock_outside)
 
     call mem_dealloc(Had)
@@ -2159,9 +2165,11 @@ contains
 
   end subroutine get_ccsd_residual_integral_driven
 
-  subroutine calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,&
+  subroutine calculate_E2_and_permute(ccmodel,ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,&
   &omega2,o2v2,s,pd,lock_outside)
     implicit none
+    !> CC model
+    integer,intent(in) :: ccmodel
     integer(kind=8),intent(in)::o2v2
     real(realk),intent(inout)::ppf(:)
     real(realk),intent(inout)::qqf(:)
@@ -2201,7 +2209,7 @@ contains
 #ifdef VAR_MPI
     master=(infpar%lg_mynum==infpar%master)
     if((s==2.or.s==1).and.master)then
-      call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
+      call share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
     endif
 #endif
 
@@ -2210,14 +2218,14 @@ contains
       !calculate first part of doubles E term and its permutation
       ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
       call dcopy(no2,ppf,1,w1,1)
-      if (DECinfo%ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w1,no)
+      if (Ccmodel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w1,no)
       ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
       call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,w1,no,1.0E0_realk,omega2%elm1,v2o)
      
       !calculate second part of doubles E term
       ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
       call dcopy(nv2,qqf,1,w1,1)
-      if (DECinfo%ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w1,nv)
+      if (Ccmodel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w1,nv)
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       call dgemm('n','n',nv,o2v,nv,1.0E0_realk,w1,nv,t2%elm1,nv,1.0E0_realk,omega2%elm1,nv)
      
@@ -2271,7 +2279,7 @@ contains
       !calculate first part of doubles E term and its permutation
       ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
       call dcopy(no2,ppf,1,w2,1)
-      if (DECinfo%ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
+      if (ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
       ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
       !if(me==0) call array_convert(t2,w1,t2%nelms)
       if(.not.lock_outside)then
@@ -2317,7 +2325,7 @@ contains
       !calculate second part of doubles E term
       ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
       call dcopy(nv2,qqf,1,w2,1)
-      if (DECinfo%ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
+      if (ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
 
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       if(.not.lock_outside)then
@@ -5205,14 +5213,14 @@ contains
   !> Only for occupied partitioning scheme.
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_ccsd_full_occ(natoms,ccsd_matrix,orbitals_assigned,distance_table)
+  subroutine print_ccsd_full_occ(natoms,ccsd_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: ccsd_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: ccsd_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -5223,12 +5231,12 @@ contains
        call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
             & 'CCSD occupied single energies','AF_CCSD_OCC')
        call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
-            & Distance_table, 'CCSD occupied pair energies','PF_CCSD_OCC')
+            & Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
     else
        call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
             & 'CCD occupied single energies','AF_CCD_OCC')
        call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
-            & Distance_table, 'CCD occupied pair energies','PF_CCD_OCC')
+            & Distancetable, 'CCD occupied pair energies','PF_CCD_OCC')
     endif
 
   end subroutine print_ccsd_full_occ
@@ -5266,7 +5274,7 @@ subroutine ccsd_data_preparation()
   type(array)  :: om2,t2,govov
   type(lsitem) :: MyLsItem
   logical :: local
-  integer :: nbas,nocc,nvirt,scheme
+  integer :: nbas,nocc,nvirt,scheme,ccmodel
   integer(kind=long) :: nelms
   integer      :: iter,k,n4,i
   real(realk),pointer  :: xodata(:),xvdata(:),yodata(:),yvdata(:),&
@@ -5277,7 +5285,7 @@ subroutine ccsd_data_preparation()
 
   !note that for the slave all allocatable arguments are just dummy indices
   !the allocation and broadcasting happens in here
-  call mpi_communicate_ccsd_calcdata(om2,t2,govov,xodata,xvdata,yodata,yvdata,&
+  call mpi_communicate_ccsd_calcdata(ccmodel,om2,t2,govov,xodata,xvdata,yodata,yvdata,&
   &MyLsItem,nbas,nvirt,nocc,iter,scheme,local)
   
   if(.not.local)then
@@ -5338,7 +5346,7 @@ subroutine ccsd_data_preparation()
 
   ! Calculate contribution to integrals/amplitudes for slave
   ! ********************************************************
-  call get_ccsd_residual_integral_driven(df,om2,t2,f,govov,nocc,nvirt,&
+  call get_ccsd_residual_integral_driven(ccmodel,df,om2,t2,f,govov,nocc,nvirt,&
        ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
 
   ! FREE EVERYTHING
@@ -5382,21 +5390,21 @@ subroutine calculate_E2_and_permute_slave()
   use ccsd_module, only:calculate_E2_and_permute
   implicit none
   real(realk),pointer :: ppf(:),qqf(:),xo(:),yv(:),Gbi(:),Had(:)
-  integer :: no,nv,nb,s
+  integer :: no,nv,nb,s,ccmodel
   type(array) :: t2,omega2
   real(realk),pointer :: w1(:)
   logical :: lo
   integer(kind=8) :: o2v2
 
 
-  call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
+  call share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
   o2v2 = int((i8*no)*no*nv*nv,kind=8)
   call mem_alloc(ppf,no*no)
   call mem_alloc(qqf,nv*nv)
   call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
   call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
   call mem_alloc(w1,o2v2)
-  call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,o2v2,s,.false.,lo)
+  call calculate_E2_and_permute(ccmodel,ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,o2v2,s,.false.,lo)
 
   call mem_dealloc(ppf)
   call mem_dealloc(qqf)
@@ -5431,11 +5439,11 @@ subroutine get_master_comm_proc_to_wrapper
   integer               :: nb
   type(lsitem)          :: MyLsItem
   type(array)           :: omega1
-  integer               :: iter
+  integer               :: iter,ccmodel
   logical               :: local
   logical               :: rest
   
-  call ccsd_residual_wrapper(w_cp,delta_fock,omega2,t2,&
+  call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2,t2,&
              & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
              & xv,yo,yv,nb,MyLsItem,omega1,iter,local,rest)
 

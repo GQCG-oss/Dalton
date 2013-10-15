@@ -136,11 +136,11 @@ contains
 
        if (DECinfo%ccModel == MODEL_CCSDpT) then
           ! ccsd(t) correction
-          Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
+          Ecorr = ccsolver_justenergy_pt(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
                & mylsitem,print_level,fragment_job,ypo_fc=ypo_fc,ppfock_fc=ppfock_fc)
        else
 #endif
-          Ecorr = ccsolver_justenergy(MyMolecule,ypo_fc,&
+          Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,ypo_fc,&
                & MyMolecule%ypv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
                & print_level,fragment_job,ppfock_fc,MyMolecule%qqfock)
 #ifdef MOD_UNRELEASED
@@ -157,7 +157,7 @@ contains
 
        if (Decinfo%ccModel == MODEL_CCSDpT) then
 
-          Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
+          Ecorr = ccsolver_justenergy_pt(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
                & mylsitem,print_level,fragment_job)
 
        else
@@ -165,11 +165,11 @@ contains
 #endif
 
           if(DECinfo%CCSDmultipliers)then
-            call ccsolver_energy_multipliers(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
+            call ccsolver_energy_multipliers(DECinfo%ccmodel,MyMolecule%ypo,MyMolecule%ypv,&
                & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
                & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ecorr)
           else
-            Ecorr = ccsolver_justenergy(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
+            Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
                & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
                & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock)
           endif
@@ -1364,7 +1364,7 @@ contains
 
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%numocc
-       call ccsolver_par(MyMolecule%ypo(1:nbasis,startidx:endidx),&
+       call ccsolver_par(DECinfo%ccmodel,MyMolecule%ypo(1:nbasis,startidx:endidx),&
             & MyMolecule%ypv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
             & print_level,fragment_job,&
             & ppfock,MyMolecule%qqfock,energy, Tai, Taibj, VOVO,.false.,local)
@@ -1372,7 +1372,7 @@ contains
 
     else
 
-       call ccsolver_par(MyMolecule%ypo,MyMolecule%ypv,&
+       call ccsolver_par(DECinfo%ccmodel,MyMolecule%ypo,MyMolecule%ypv,&
             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, fragment_job,&
             & MyMolecule%ppfock,MyMolecule%qqfock,&
             & energy, Tai, Taibj, VOVO,.false.,local)

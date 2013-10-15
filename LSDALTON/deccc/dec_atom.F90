@@ -36,147 +36,6 @@ module atomic_fragment_operations
 
 contains
 
-  !> \brief Nullify everything and set variables to zero
-  !> \author Marcin Ziolkowski
-  !> \param fragment Molecular fragment
-  subroutine atomic_fragment_nullify(fragment)
-
-    implicit none
-    type(ccatom), intent(inout) :: fragment
-
-
-    fragment%occEOSidx => null()
-    fragment%unoccEOSidx => null()
-    fragment%occAOSidx => null()
-    fragment%unoccAOSidx => null()
-    fragment%coreidx => null()
-
-
-    fragment%occAOSorb => null()
-    fragment%unoccAOSorb => null()
-
-    fragment%idxo => null()
-    fragment%idxu => null()
-
-    fragment%atoms_idx => null()
-
-    fragment%ypo => null()
-    fragment%ypv => null()
-
-    !Free CABS MO F12
-    fragment%cabsMOs => null()
-
-    fragment%fock => null()
-    fragment%ppfock => null()
-    fragment%ccfock => null()
-    fragment%qqfock => null()
-
-    fragment%OccContribs => null()
-    fragment%VirtContribs => null()
-
-    fragment%OccMat => null()
-    fragment%VirtMat => null()
-
-    fragment%CoccFA => null()
-    fragment%CunoccFA => null()
-    fragment%CDocceival => null()
-    fragment%CDunocceival => null()
-
-    fragment%basisinfoisset=.false.
-    fragment%atomic_number = 0
-    fragment%noccEOS = 0
-    fragment%nunoccEOS = 0
-    fragment%noccAOS = 0
-    fragment%nunoccAOS = 0
-    fragment%number_atoms = 0
-    fragment%number_basis = 0
-
-    fragment%t1dims=0
-    fragment%t1 => null()
-    fragment%t1_occidx => null()
-    fragment%t1_virtidx => null()
-
-
-  end subroutine atomic_fragment_nullify
-
-
-
-  !> \brief Initialize atomic fragment based on a list of atoms for the occupied and
-  !> unoccupied orbital spaces. 
-  !> For a pair fragment calculation it is assumed that EOSatoms and nEOSatoms
-  !> are set and that fragment%pairfrag=.true. before calling this routine
-  !> \author Kasper Kristensen
-  subroutine atomic_fragment_init_atom_specific(MyAtom,natoms,Unocc_atoms, &
-       & Occ_atoms,nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-       & MyMolecule,mylsitem,fragment,DoBasis,Pairfrag,FA)
-
-    implicit none
-    !> Number of atom to build a fragment on
-    integer, intent(in) :: MyAtom
-    !> Number of atoms in full molecule
-    integer, intent(in) :: nAtoms
-    !> Logical vector telling which atoms are in unocc AOS
-    logical, dimension(natoms), intent(in) :: Unocc_atoms
-    !> Logical vector telling which atoms are in occ AOS
-    logical, dimension(natoms), intent(in) :: Occ_atoms
-    !> Full molecule info
-    type(fullmolecule), intent(in) :: MyMolecule
-    !> LS item info
-    type(lsitem), intent(inout) :: mylsitem
-    !> Number of occupied orbitals in full molecule
-    integer, intent(in) :: nocc
-    !> Number of unoccupied orbitals in full molecule
-    integer, intent(in) :: nunocc
-    !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
-    !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
-    !> Fragment to construct
-    type(ccatom), intent(inout) :: fragment
-    !> Make fragment basis (MO coeff and Fock matrix for fragment)?
-    logical, intent(in) :: DoBasis
-    !> Is it a pair fragment?
-    logical,intent(in) :: pairfrag
-    !> Use fragment-adapted orbitals?
-    !> NOTE: If FA=.true. then the MO coefficients and MO Fock matrix
-    !> elements in the fragment are NOT set here. Rather they should be
-    !> set AFTER calling this routine (see init_fragment_adapted).
-    logical,intent(in),optional :: FA
-    integer :: j,idx, CentralAtom
-    logical,pointer :: occ_list(:),unocc_list(:)
-
-    ! Determine list of occupied orbitals assigned to one of the atoms in occ_atoms
-    call mem_alloc(occ_list,nocc)
-    occ_list=.false.
-    do j=1,nocc
-       CentralAtom=OccOrbitals(j)%centralatom
-       if( Occ_atoms(CentralAtom) ) then  ! occupied orbital j is included in fragment
-          occ_list(j)=.true.
-       end if
-    end do
-
-
-    ! Determine list of unoccupied orbitals assigned to one of the atoms in unocc_atoms
-    call mem_alloc(unocc_list,nunocc)
-    unocc_list=.false.
-    do j=1,nunocc
-       CentralAtom=UnoccOrbitals(j)%centralatom
-       if( Unocc_atoms(CentralAtom) ) then
-          ! unoccupied orbital j is included in fragment
-          unocc_list(j)=.true.
-       end if
-    end do
-
-
-    ! Create fragment based on logical vectors for occupied and virtual AOS
-    call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_list, &
-       & occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,pairfrag)
-    call mem_dealloc(occ_list)
-    call mem_dealloc(unocc_list)
-
-
-  end subroutine atomic_fragment_init_atom_specific
-
 
 
   !> \brief Initialize atomic fragment based on a list of specific AOS orbitals.
@@ -271,6 +130,13 @@ contains
        fragment%pairfrag=.false.
     end if IsThisAPairFragment
 
+    ! Set model to use for fragment calculation (see define_pair_calculations for details)
+    if(fragment%pairfrag) then
+       fragment%ccmodel = MyMolecule%ccmodel(fragment%EOSatoms(1),fragment%EOSatoms(2))
+    else
+       fragment%ccmodel = MyMolecule%ccmodel(MyAtom,MyAtom)
+    end if
+       
 
 
     ! Size of occupied EOS
@@ -514,6 +380,209 @@ contains
 
   end subroutine atomic_fragment_init_orbital_specific
 
+
+
+  !> \brief Nullify everything and set variables to zero
+  !> \author Marcin Ziolkowski
+  !> \param fragment Molecular fragment
+  subroutine atomic_fragment_nullify(fragment)
+
+    implicit none
+    type(ccatom), intent(inout) :: fragment
+
+
+    fragment%occEOSidx => null()
+    fragment%unoccEOSidx => null()
+    fragment%occAOSidx => null()
+    fragment%unoccAOSidx => null()
+    fragment%coreidx => null()
+
+
+    fragment%occAOSorb => null()
+    fragment%unoccAOSorb => null()
+
+    fragment%idxo => null()
+    fragment%idxu => null()
+
+    fragment%atoms_idx => null()
+
+    fragment%ypo => null()
+    fragment%ypv => null()
+
+    !Free CABS MO F12
+    fragment%cabsMOs => null()
+
+    fragment%fock => null()
+    fragment%ppfock => null()
+    fragment%ccfock => null()
+    fragment%qqfock => null()
+
+    fragment%OccContribs => null()
+    fragment%VirtContribs => null()
+
+    fragment%OccMat => null()
+    fragment%VirtMat => null()
+
+    fragment%CoccFA => null()
+    fragment%CunoccFA => null()
+    fragment%CDocceival => null()
+    fragment%CDunocceival => null()
+
+    fragment%basisinfoisset=.false.
+    fragment%atomic_number = 0
+    fragment%noccEOS = 0
+    fragment%nunoccEOS = 0
+    fragment%noccAOS = 0
+    fragment%nunoccAOS = 0
+    fragment%number_atoms = 0
+    fragment%number_basis = 0
+
+    fragment%t1dims=0
+    fragment%t1 => null()
+    fragment%t1_occidx => null()
+    fragment%t1_virtidx => null()
+
+
+  end subroutine atomic_fragment_nullify
+
+
+
+  !> \brief Initialize atomic fragment based on a list of atoms for the occupied and
+  !> unoccupied orbital spaces. 
+  !> For a pair fragment calculation it is assumed that EOSatoms and nEOSatoms
+  !> are set and that fragment%pairfrag=.true. before calling this routine
+  !> \author Kasper Kristensen
+  subroutine atomic_fragment_init_atom_specific(MyAtom,natoms,Unocc_atoms, &
+       & Occ_atoms,nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+       & MyMolecule,mylsitem,fragment,DoBasis,Pairfrag,FA)
+
+    implicit none
+    !> Number of atom to build a fragment on
+    integer, intent(in) :: MyAtom
+    !> Number of atoms in full molecule
+    integer, intent(in) :: nAtoms
+    !> Logical vector telling which atoms are in unocc AOS
+    logical, dimension(natoms), intent(in) :: Unocc_atoms
+    !> Logical vector telling which atoms are in occ AOS
+    logical, dimension(natoms), intent(in) :: Occ_atoms
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Information about DEC occupied orbitals
+    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Fragment to construct
+    type(ccatom), intent(inout) :: fragment
+    !> Make fragment basis (MO coeff and Fock matrix for fragment)?
+    logical, intent(in) :: DoBasis
+    !> Is it a pair fragment?
+    logical,intent(in) :: pairfrag
+    !> Use fragment-adapted orbitals?
+    !> NOTE: If FA=.true. then the MO coefficients and MO Fock matrix
+    !> elements in the fragment are NOT set here. Rather they should be
+    !> set AFTER calling this routine (see init_fragment_adapted).
+    logical,intent(in),optional :: FA
+    integer :: j,idx, CentralAtom
+    logical,pointer :: occ_list(:),unocc_list(:)
+
+    ! Determine list of occupied orbitals assigned to one of the atoms in occ_atoms
+    call mem_alloc(occ_list,nocc)
+    occ_list=.false.
+    do j=1,nocc
+       CentralAtom=OccOrbitals(j)%centralatom
+       if( Occ_atoms(CentralAtom) ) then  ! occupied orbital j is included in fragment
+          occ_list(j)=.true.
+       end if
+    end do
+
+
+    ! Determine list of unoccupied orbitals assigned to one of the atoms in unocc_atoms
+    call mem_alloc(unocc_list,nunocc)
+    unocc_list=.false.
+    do j=1,nunocc
+       CentralAtom=UnoccOrbitals(j)%centralatom
+       if( Unocc_atoms(CentralAtom) ) then
+          ! unoccupied orbital j is included in fragment
+          unocc_list(j)=.true.
+       end if
+    end do
+
+
+    ! Create fragment based on logical vectors for occupied and virtual AOS
+    call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_list, &
+       & occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,pairfrag)
+    call mem_dealloc(occ_list)
+    call mem_dealloc(unocc_list)
+
+
+  end subroutine atomic_fragment_init_atom_specific
+
+
+
+  !> \brief Initialize atomic fragment by simply including all local orbitals assigned
+  !> to atoms which are closer to central atom than the input radius.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine atomic_fragment_init_within_distance(MyAtom,&
+       & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+       & MyMolecule,mylsitem,DoBasis,init_radius,Fragment)
+
+    implicit none
+    !> Number of atom to build a fragment on
+    integer, intent(in) :: MyAtom
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Information about DEC occupied orbitals
+    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Make fragment basis (MO coeff and Fock matrix for fragment)?
+    logical, intent(in) :: DoBasis
+    !> Distance beyond which to include neighbour atoms
+    real(realk),intent(in) :: init_radius
+    !> Fragment to construct
+    type(ccatom), intent(inout) :: fragment
+    integer :: natoms
+    logical, pointer :: Unocc_atoms(:), Occ_atoms(:)
+    integer, pointer :: nocc_per_atom(:),nunocc_per_atom(:)
+    logical :: pairfrag
+
+    ! How many occ/unocc orbitals assigned to each atom
+    natoms = MyMolecule%natoms
+    call mem_alloc(nocc_per_atom,natoms)
+    call mem_alloc(nunocc_per_atom,natoms)
+
+    ! Determine logical vectors describing which atoms to include in fragment,
+    ! i.e., atoms where the distance to MyAtom is smaller than init_radius
+    call mem_alloc(occ_atoms,natoms)
+    call mem_alloc(unocc_atoms,natoms)
+    call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,MyMolecule%distancetable(:,MyAtom),&
+         & init_radius,Occ_atoms, Unocc_atoms)
+
+    ! Init atomic fragment
+    pairfrag=.false.
+    call atomic_fragment_init_atom_specific(MyAtom,natoms,Unocc_atoms, &
+         & Occ_atoms,nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+         & MyMolecule,mylsitem,fragment,DoBasis,pairfrag)
+
+    call mem_dealloc(nocc_per_atom)
+    call mem_dealloc(nunocc_per_atom)
+    call mem_dealloc(occ_atoms)
+    call mem_dealloc(unocc_atoms)
+
+  end subroutine atomic_fragment_init_within_distance
 
 
 
@@ -1329,7 +1398,7 @@ contains
   !> \author Kasper Kristensen
   !> \date December 2011
   subroutine merged_fragment_init(Fragment1,Fragment2,nunocc, nocc, natoms, &
-       & OccOrbitals,UnoccOrbitals,DistanceTable,MyMolecule,mylsitem,DoBasis,pairfragment)
+       & OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,DoBasis,pairfragment)
 
 
     implicit none
@@ -1347,8 +1416,6 @@ contains
     type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
     type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
-    !> Distance table for all atoms in the molecule
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> LS item info
@@ -1389,7 +1456,7 @@ contains
 
     ! Find pair distance
     pairdist = get_distance_between_fragments(fragment1,&
-         & fragment2,natoms,DistanceTable)
+         & fragment2,natoms,MyMolecule%DistanceTable)
     ! Use reduced fragments for large distances
     if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,F12.3)') 'Pair distance (Angstrom)      = '&
          &, PairDist*bohr_to_angstrom
@@ -1940,7 +2007,7 @@ contains
   !> \author Kasper Kristensen
   !> \date February 2013
   subroutine get_fragment_adapted_dimensions_for_pair(Fragment1,Fragment2,nunoccFULL, noccFULL, natoms, &
-       & OccOrbitals,UnoccOrbitals,DistanceTable,MyMolecule,mylsitem,&
+       & OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
        & noccFA,nunoccFA,nbasisFA)
 
     implicit none
@@ -1958,8 +2025,6 @@ contains
     type(ccorbital), dimension(noccFULL), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
     type(ccorbital), dimension(nunoccFULL), intent(in) :: UnoccOrbitals
-    !> Distance table for all atoms in the molecule
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> LS item info
@@ -1976,7 +2041,7 @@ contains
     ! Init pair fragment
     ! ------------------
     call merged_fragment_init(Fragment1,Fragment2,nunoccFULL, noccFULL, natoms, &
-       & OccOrbitals,UnoccOrbitals,DistanceTable,MyMolecule,mylsitem,.true.,pairfragment)
+       & OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,.true.,pairfragment)
 
     noccFA = pairfragment%noccFA
     nunoccFA = pairfragment%nunoccFA
@@ -2883,7 +2948,7 @@ end subroutine atomic_fragment_basis
     end if
 
     ! Sanity check: Only implemented for MP2
-    if(DECinfo%ccModel/=MODEL_MP2) then
+    if(MyFragment%ccModel/=MODEL_MP2) then
        call lsquit('estimate_memory_consumption: &
             & Only implemented for the MP2 model!',-1)
     end if
@@ -3737,7 +3802,7 @@ if(DECinfo%PL>0) then
   !> \author Kasper Kristensen
   !> \date January 2013
   subroutine create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,&
-       &DistanceTable,OccOrbitals,UnoccOrbitals,AtomicFragments,which_fragments,jobs)
+       &OccOrbitals,UnoccOrbitals,AtomicFragments,which_fragments,jobs)
 
     implicit none
     !> Full molecule info
@@ -3750,8 +3815,6 @@ if(DECinfo%PL>0) then
     integer, intent(in) :: nocc
     !> Number of unoccupied orbitals for full molecule
     integer, intent(in) :: nunocc
-    !> Table with atomic distances
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
     !> Occupied orbitals
     type(ccorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
@@ -3908,7 +3971,7 @@ if(DECinfo%PL>0) then
        if(.not. which_fragments(i)) cycle
        do j=i+1,natoms
           if(.not. which_fragments(j)) cycle
-          CheckPair: if(DistanceTable(i,j) < DECinfo%pair_distance_threshold) then  
+          CheckPair: if(MyMolecule%DistanceTable(i,j) < DECinfo%pair_distance_threshold) then  
              ! Pair needs to be computed
              npair = npair+1
           end if CheckPair
@@ -3929,7 +3992,7 @@ if(DECinfo%PL>0) then
     call init_joblist(njobs,jobs)
 
     call set_dec_joblist(natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-         & FragBasis,which_fragments, DistanceTable, jobs)
+         & FragBasis,which_fragments, mymolecule%DistanceTable, jobs)
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -4276,7 +4339,7 @@ if(DECinfo%PL>0) then
   !> simply be appended at the end of the job list.
   !> \author Kasper Kristensen
   !> \data October 2012
-  subroutine expand_joblist_to_include_more_pairs(nocc,nunocc,natoms,DistanceTable,dofrag,&
+  subroutine expand_joblist_to_include_more_pairs(nocc,nunocc,natoms,dofrag,&
        & Fragments,oldpaircut,newpaircut,MyMolecule,OccOrbitals,UnoccOrbitals,jobs)
 
     implicit none
@@ -4286,8 +4349,6 @@ if(DECinfo%PL>0) then
     integer,intent(in) :: nunocc
     !> Number of atoms in full molecule 
     integer,intent(in) :: nAtoms
-    !> Distances between atoms
-    real(realk),intent(in) :: DistanceTable(natoms,natoms)
     !> dofrag(P) is true if P is central atom for a fragment (see main_fragment_driver)
     logical,intent(in) :: dofrag(natoms)
     !> Single fragments
@@ -4324,10 +4385,10 @@ if(DECinfo%PL>0) then
           if(.not. dofrag(j)) cycle ! atom "j" is not central atom in a  fragment
 
           ! Number of pairs for old cutoff
-          if(DistanceTable(i,j) < oldpaircut) npairold = npairold+1
+          if(mymolecule%DistanceTable(i,j) < oldpaircut) npairold = npairold+1
 
           ! Number of pairs for new cutoff
-          if(DistanceTable(i,j) < newpaircut) npairnew = npairnew+1
+          if(mymolecule%DistanceTable(i,j) < newpaircut) npairnew = npairnew+1
 
        end do
     end do
@@ -4417,7 +4478,7 @@ if(DECinfo%PL>0) then
           if(.not. dofrag(j) ) cycle ! No  fragment for atom j
 
           ! Distance between atoms i and j
-          dist = DistanceTable(i,j)
+          dist = mymolecule%DistanceTable(i,j)
 
           ! Add pairs with distances between old and new paircut
           AddPairToJobList: if( (dist < newpaircut) .and. (dist >= oldpaircut) ) then  
@@ -5690,5 +5751,262 @@ if(DECinfo%PL>0) then
 
 
   end subroutine get_pairFO_union
+
+
+  !> \brief For each pair, determine whether pair calculation should be calculated
+  !> should be calculated (i) using input CC model, (ii) MP2 model, or (iii) simply be skipped.
+  !> This information is stored in MyMolecule%ccmodel(P,Q) in terms of an integer
+  !> defining the model to be used for pair (P,Q), according to the model.
+  !> See details defining the model inside subroutine.
+  !> definitions in dec_typedef.F90.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine define_pair_calculations(natoms,dofrag,FragEnergies,MyMolecule,Ecorr_est,Eskip_est)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Logical vector describing which atoms have orbitals assigned
+    !> (i.e., which atoms to consider in atomic fragment calculations)
+    logical,intent(in) :: dofrag(natoms)
+    !> Estimated fragment energies
+    real(realk),intent(in) :: FragEnergies(natoms,natoms)
+    !> Full molecule structure, where only MyMolecule%ccmodel is modified
+    type(fullmolecule),intent(inout) :: MyMolecule
+    !> Estimated correlation energy from all estimated atomic and pair fragments
+    real(realk),intent(inout) :: Ecorr_est
+    !> Estimated correlation energy from the pairs that will be skipped in the calculation
+    real(realk),intent(inout) :: Eskip_est
+    integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit
+    real(realk),dimension(natoms) :: EPQ
+    real(realk) :: Eacc
+    integer,dimension(natoms) :: atomindices
+
+
+    ! ****************************************************************************************
+    !            DIFFERENT TREATMENT OF PAIR FRAGMENTS BASED ON ENERGY ESTIMATES
+    ! ****************************************************************************************
+    !
+    ! The basic philosophy is that, since we have an error of ~FOT in the atomic fragment energy E_P,
+    ! we also allow error(s) of size ~FOT in the pair fragment energies dE_PQ associated with
+    ! atomic site P. 
+    ! We use usually write the DEC correlation energy like this:
+    !
+    ! Ecorr = sum_P E_P  +  sum_P sum_{Q<P} dE_PQ
+    !
+    ! For this analysis it is more convinient to rewrite it like:
+    !
+    ! Ecorr = sum_P [ E_P + 1/2 sum_P sum_{Q .neq. P} dE_PQ ]
+    ! 
+    ! In this way everything inside [...] is associated with atom P, and all atoms have
+    ! the same number of associated pair fragments. The procedure use is then:
+    ! 
+    ! 1. For each atomic site P, sort estimated pair energies (1/2)dE_PQ according to size.
+    ! 2. Add up the smallest contributions until they add up to the FOT. Skip those pairs.
+    ! 3. Add up the "second-smallest" contributions until they add up to the FOT.
+    !    Calculate these pairs at the MP2 level.
+    ! 
+    ! 4. Thus, at the end we get this where the (absolute) 
+    !    pair energies are arranged in decreasing order:
+    !
+    !
+    !    (1/2) dE_PQ: (*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*)
+    !                 |          CC MODEL             |    MP2 LEVEL  |    SKIP PAIRS   |
+    !
+    !                                                             
+    ! In this way we (2) skip pairs for which the contribution to the energy is so small
+    ! that it anyways drowns in numerical noise from the E_P FOT error; and then (3) we allow an
+    ! additional error of order FOT by treating the next pairs only at the MP2 level. Point (3) is
+    ! a very conservative strategy, where we basically assume that the error introduced by doing MP2
+    ! rather than the actual CC model is of the same order as the actual pair interaction energy.
+    ! In practice this error is typically 1%-10% of the pair interaction energy itself,
+    ! but for now we choose to be very conservative here...
+
+
+    ! Init stuff
+    MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model as initialization model
+    Nskip=0
+    NMP2=0
+    NCC=0
+   
+
+    ! Loop over all atoms P
+    Ploop: do P=1,natoms
+
+       ! If no orbitals assigned to P, no pairs for this atom
+       if(.not. dofrag(P)) then
+          Qloop1: do Q=1,natoms
+             MyMolecule%ccmodel(P,Q)=MODEL_NONE
+             MyMolecule%ccmodel(Q,P)=MODEL_NONE
+          end do Qloop1
+          cycle Ploop
+       end if
+
+       ! Sort absolute pair interaction energies dE_PQ for given P and all Q's.
+       ! Multiply by 1/2 for the reasons discussed above.
+       EPQ = 0.5_realk*abs(FragEnergies(:,P))
+       call real_inv_sort_with_tracking(EPQ,atomindices,natoms)
+
+
+       ! Step 2 above: Find which pairs to skip
+       ! **************************************
+       Eacc = 0.0_realk
+       Qloop2: do Q=natoms,1,-1
+          
+          ! Skip if no orbitals assigned to atom Q
+          Qidx = atomindices(Q)
+          if(.not. dofrag(Qidx)) cycle Qloop2
+
+          ! Accumulated estimated energy from smallest pair interaction energies
+          Eacc = Eacc + EPQ(Q)
+          if(Eacc < DECinfo%FOT) then
+             ! Accumulated value smaller than FOT --> (P,Qidx) can be skipped!
+             MyMolecule%ccmodel(P,Qidx)=MODEL_NONE
+             Nskip=Nskip+1  ! count number of skipped pairs
+          else
+             ! Not possible to skip (P,Q). Save current counter value.
+             Qquit = Q
+             exit Qloop2
+          end if
+
+       end do Qloop2
+
+
+       ! Step 3 above: Find which pairs to treat at MP2 level
+       ! ****************************************************
+       ! (Only do this if DECinfo%PairMP2 is turned on)
+
+       NotMP2model: if(DECinfo%PairMP2 .and. DECinfo%ccmodel/=MODEL_MP2) then
+
+          ! Same procedure as step 2 above, now the loop starts where we ended above...
+          Eacc = 0.0_realk
+          Qstart=Qquit
+          Qloop3: do Q=Qstart,1,-1
+             Qidx = atomindices(Q)
+             if(.not. dofrag(Qidx)) cycle Qloop3
+
+             Eacc = Eacc + EPQ(Q)
+             if(Eacc < DECinfo%FOT) then
+                MyMolecule%ccmodel(P,Qidx)=MODEL_MP2
+                NMP2 = NMP2+1
+             else
+                Qquit = Q
+                exit Qloop3
+             end if
+
+          end do Qloop3
+
+       end if NotMP2model
+
+       ! Number of pairs to treat at CC level.
+       NCC = NCC + Qquit
+
+    end do Ploop
+
+    ! Fix inconsistencies which may arise if MyMolecule%ccmodel(P,Q) is not
+    ! identical to MyMolecule%ccmodel(Q,P) from the above procedure
+    call fix_inconsistencies_for_pair_model(MyMolecule)
+
+    ! Estimate correlation energy by adding all estimated atomic and pair fragment energy contributions
+    call add_dec_energies(natoms,FragEnergies,dofrag,Ecorr_est)
+
+    ! Estimate energy contribution from pairs which will be skipped from the calculation
+    call estimate_energy_of_skipped_pairs(natoms,FragEnergies,dofrag,MyMolecule,Eskip_est)
+
+  end subroutine define_pair_calculations
+
+
+  !> \brief Print summary of analysis used to define pair calculations (see define_pair_calculations).
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Number of pairs skipped
+    integer,intent(in) :: Nskip
+    !> Number of pairs treated at MP2 level
+    integer,intent(in) :: NMP2
+    !> Number of pairs treated at input CC level
+    integer,intent(in) :: NCC
+    !> Which atomic sites have orbitals assigned?
+    logical,intent(in),dimension(natoms) :: dofrag
+    !> Estimated correlation energy from all estimated atomic and pair fragments
+    real(realk),intent(in) :: Ecorr_est
+    !> Estimated correlation energy from the pairs that will be skipped in the calculation
+    real(realk),intent(inout) :: Eskip_est
+    integer :: npairs
+
+    ! Total number of pairs
+    npairs = count(dofrag)*(count(dofrag)-1)/2
+
+    write(DECinfo%output,'(1X,a)') '******************************************************************'
+    write(DECinfo%output,'(1X,a)') '*            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *'
+    write(DECinfo%output,'(1X,a)') '******************************************************************'
+    write(DECinfo%output,*) 
+    write(DECinfo%output,*) 
+    write(DECinfo%output,'(1X,a,i10)') 'Total number of pairs:                ', npairs
+    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be treated at input CC level ', NCC
+    if(DECinfo%PairMP2 .and. DECinfo%ccmodel/=MODEL_MP2) then
+    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be treated at MP2 level      ', NMP2
+    end if
+    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be skipped from calculation  ', Nskip
+    write(DECinfo%output,*) 
+    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated total correlation energy:        ', Ecorr_est
+    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated contribution from skipped pairs: ', Eskip_est
+    write(DECinfo%output,*) 
+    write(DECinfo%output,*) 
+
+  end subroutine print_pair_estimate_summary
+
+  !> Once the CC model to be used for each pair has been defined in define_pair_calculations,
+  !> there will in general be inconsistencies. For example, it might be that from P's point
+  !> of view the pair (P,Q) should be treated at the CCSD level [MyMolecule%ccmodel(P,Q)=MODEL_CCSD],
+  !> while from the point of view of Q, this pair should be skipped
+  !> [MyMolecule%ccmodel(Q,P)=MODEL_NONE]. In such cases we always choose the more accurate model.
+  !> (Thus, for this example we would do a CCSD calculation for pair (P,Q)).
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine fix_inconsistencies_for_pair_model(MyMolecule)
+    implicit none
+    !> Full molecule structure, where only MyMolecule%ccmodel is modified
+    type(fullmolecule),intent(inout) :: MyMolecule
+    integer :: P,Q
+
+    do P=1,MyMolecule%natoms
+       do Q=1,MyMolecule%natoms
+          ! Check whether model defined by (P,Q) is different from that defined by (Q,P)
+          Inconsistency: if(MyMolecule%ccmodel(P,Q) /= MyMolecule%ccmodel(Q,P)) then
+
+             ! Possibility 1: Either (P,Q) or (Q,P) requires original CC model, the
+             ! other one requires a less accurate model
+             if(MyMolecule%ccmodel(P,Q)==DECinfo%ccmodel .or. &
+                  & MyMolecule%ccmodel(Q,P)==DECinfo%ccmodel) then
+                MyMolecule%ccmodel(P,Q)=DECinfo%ccmodel
+                MyMolecule%ccmodel(Q,P)=DECinfo%ccmodel
+
+                ! Possibility 2: Either (P,Q) or (Q,P) requires MP2 model, the
+                ! other one dictates that the pair should be skipped
+             elseif(MyMolecule%ccmodel(P,Q)==MODEL_MP2 .or. &
+                  & MyMolecule%ccmodel(Q,P)==MODEL_MP2) then
+                MyMolecule%ccmodel(P,Q)=MODEL_MP2
+                MyMolecule%ccmodel(Q,P)=MODEL_MP2
+                
+                ! This should never happen! Something very wrong...
+             else
+                print *, 'P,Q: ', P,Q
+                print *, 'Model(P,Q): ', MyMolecule%ccmodel(P,Q)
+                print *, 'Model(Q,P): ', MyMolecule%ccmodel(Q,P)
+                call lsquit('fix_inconsistencies_for_pair_model: Something wrong &
+                     & with definitions of CC model for pair!',-1)
+             end if
+             
+          end if Inconsistency
+
+       end do
+    end do
+   
+ 
+
+  end subroutine fix_inconsistencies_for_pair_model
 
 end module atomic_fragment_operations

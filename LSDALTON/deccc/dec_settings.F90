@@ -101,7 +101,6 @@ contains
     DECinfo%PL=0
     DECinfo%PurifyMOs=.false.
     DECinfo%precondition_with_full=.false.
-    DECinfo%HybridScheme=.false.
     DECinfo%FragmentExpansionSize = 5
     DECinfo%fragadapt=.false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
@@ -120,6 +119,8 @@ contains
     DECinfo%PairReductionDistance = 1000000.0E0_realk
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr = 0.0_realk
+    DECinfo%PairMP2=.false.
+    DECinfo%PairEstimate=.false.
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory=0E0_realk
@@ -449,6 +450,8 @@ contains
           DECinfo%PairReductionDistance = DECinfo%PairReductionDistance/bohr_to_angstrom
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
        case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
+       case('.PAIRMP2'); DECinfo%PairMP2=.true.
+       case('.PAIRESTIMATE'); DECinfo%PairEstimate=.true.
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
@@ -542,9 +545,6 @@ contains
        if(DECinfo%gradient) then
           call lsquit('Calculation of molecular gradient is only implemented for MP2!', DECinfo%output)
        end if
-
-       ! Turn on the occupied/virtual hybrid scheme
-       DECinfo%HybridScheme=.true.
 
     end if BeyondMp2
 
@@ -707,7 +707,6 @@ end if
     write(lupri,*) 'MaxIter ', DECitem%MaxIter
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
-    write(lupri,*) 'HybridScheme ', DECitem%HybridScheme
     write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
     write(lupri,*) 'fragopt_exp_mp2 ', DECitem%fragopt_exp_mp2
     write(lupri,*) 'fragopt_red_mp2 ', DECitem%fragopt_red_mp2
@@ -717,6 +716,8 @@ end if
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
+    write(lupri,*) 'PairMP2 ', DECitem%PairMP2
+    write(lupri,*) 'PairEstimate ', DECitem%PairEstimate
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'MP2density ', DECitem%MP2density
     write(lupri,*) 'gradient ', DECitem%gradient

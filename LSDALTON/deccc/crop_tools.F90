@@ -277,10 +277,10 @@ module crop_tools_module
   !> \param nbasis Number of basis functions
   !> \param nocc Number of occupied orbitals
   !> \param nvirt Number of unoccupied orbitals
-  subroutine print_ccjob_header(ccPrintLevel,fj,multiplier_job,&
+  subroutine print_ccjob_header(ccmodel,ccPrintLevel,fj,multiplier_job,&
   &nbasis,nocc,nvirt,maxsub)
     implicit none
-    integer, intent(in) :: ccPrintLevel,nbasis,nocc,nvirt,maxsub
+    integer, intent(in) :: ccmodel,ccPrintLevel,nbasis,nocc,nvirt,maxsub
     logical, intent(in) :: fj,multiplier_job
 
     if(ccPrintLevel > 0) then
@@ -297,7 +297,7 @@ module crop_tools_module
           if(DECinfo%CCDhack)then
             write(DECinfo%output,'(a,a)')      'Wave function    = ','CCD'
           else
-            write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(DECinfo%ccModel)
+            write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(ccModel)
           endif
           write(DECinfo%output,'(a,i4)')     'MaxIter          = ',DECinfo%ccMaxIter
           write(DECinfo%output,'(a,i4)')     'Num. b.f.        = ',nbasis
@@ -318,7 +318,7 @@ module crop_tools_module
           if(DECinfo%CCDhack)then
             write(DECinfo%output,'(a,a)')      'Wave function    = ','CCD'
           else
-            write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(DECinfo%ccModel)
+            write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(ccModel)
           endif
           write(DECinfo%output,'(4x,a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
           write(DECinfo%output,'(a,i4,$)')      'MaxIter          = ',DECinfo%ccMaxIter

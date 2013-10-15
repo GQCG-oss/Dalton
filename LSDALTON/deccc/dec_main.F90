@@ -284,7 +284,6 @@ contains
     type(ccorbital), pointer :: OccOrbitals(:)
     type(ccorbital), pointer :: UnoccOrbitals(:)
     integer :: i
-    real(realk), pointer :: DistanceTable(:,:)
 
     write(DECinfo%output,*) 'Calculating DEC-MP2 gradient, FOT = ', DECinfo%FOT
 
@@ -314,25 +313,18 @@ contains
     call mat_free(C)
 
 
-    ! Calculate distance matrix 
-    ! *************************
-    call mem_alloc(DistanceTable,nAtoms,nAtoms)
-    DistanceTable=0.0E0_realk
-    call GetDistances(DistanceTable,nAtoms,mylsitem,DECinfo%output) ! distances in atomic units
-
-
     ! Analyze basis and create orbitals
     ! *********************************
     call mem_alloc(OccOrbitals,nOcc)
     call mem_alloc(UnoccOrbitals,nUnocc)
     call GenerateOrbitals_driver(Molecule,mylsitem,nocc,nunocc,natoms, &
-         & OccOrbitals, UnoccOrbitals, DistanceTable)
+         & OccOrbitals, UnoccOrbitals)
 
 
     ! -- Calculate molecular MP2 gradient
     call main_fragment_driver(Molecule,mylsitem,D,&
          & OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,DistanceTable,EHF,Ecorr,mp2gradient,Eerr)
+         & natoms,nocc,nunocc,EHF,Ecorr,mp2gradient,Eerr)
 
     ! Total MP2 energy: EHF + Ecorr
     EMP2 = EHF + Ecorr
@@ -342,7 +334,6 @@ contains
 
     ! Free molecule structure and other stuff
     call molecule_finalize(Molecule)
-    call mem_dealloc(DistanceTable)
     
     ! Delete orbitals 
     do i=1,nOcc
@@ -397,7 +388,7 @@ contains
     integer :: nBasis,nOcc,nUnocc,natoms
     type(ccorbital), pointer :: OccOrbitals(:)
     type(ccorbital), pointer :: UnoccOrbitals(:)
-    real(realk), pointer :: DistanceTable(:,:), dummy(:,:)
+    real(realk), pointer :: dummy(:,:)
     integer :: i
     logical :: save_first_order, save_grad, save_dens
     ! Quick solution to ensure that the MP2 gradient contributions are not set
@@ -428,25 +419,18 @@ contains
     natoms = Molecule%natoms
 
 
-    ! Calculate distance matrix 
-    ! *************************
-    call mem_alloc(DistanceTable,nAtoms,nAtoms)
-    DistanceTable=0.0E0_realk
-    call GetDistances(DistanceTable,nAtoms,mylsitem,DECinfo%output) ! distances in atomic units
-
-
     ! Analyze basis and create orbitals
     ! *********************************
     call mem_alloc(OccOrbitals,nOcc)
     call mem_alloc(UnoccOrbitals,nUnocc)
     call GenerateOrbitals_driver(Molecule,mylsitem,nocc,nunocc,natoms, &
-         & OccOrbitals, UnoccOrbitals, DistanceTable)
+         & OccOrbitals, UnoccOrbitals)
 
     ! -- Calculate correlation energy
     call mem_alloc(dummy,3,natoms)
     call main_fragment_driver(Molecule,mylsitem,D,&
          & OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,DistanceTable,EHF,Ecorr,dummy,Eerr)
+         & natoms,nocc,nunocc,EHF,Ecorr,dummy,Eerr)
     call mem_dealloc(dummy)
 
     ! Total MP2 energy: EHF + Ecorr
@@ -458,7 +442,6 @@ contains
 
     ! Free molecule structure and other stuff
     call molecule_finalize(Molecule)
-    call mem_dealloc(DistanceTable)
 
     ! Delete orbitals 
     do i=1,nOcc
