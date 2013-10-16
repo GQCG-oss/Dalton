@@ -5925,7 +5925,8 @@ if(DECinfo%PL>0) then
     call estimate_energy_of_skipped_pairs(natoms,FragEnergies,dofrag,MyMolecule,Eskip_est)
 
     ! Print summary for pair analysis and estimated energies
-    call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est)
+    call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est,&
+         & FragEnergies,MyMolecule%DistanceTable)
 
   end subroutine define_pair_calculations
 
@@ -5933,7 +5934,8 @@ if(DECinfo%PL>0) then
   !> \brief Print summary of analysis used to define pair calculations (see define_pair_calculations).
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est)
+  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est,&
+       & FragEnergies,DistanceTable)
     implicit none
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
@@ -5948,7 +5950,11 @@ if(DECinfo%PL>0) then
     !> Estimated correlation energy from all estimated atomic and pair fragments
     real(realk),intent(in) :: Ecorr_est
     !> Estimated correlation energy from the pairs that will be skipped in the calculation
-    real(realk),intent(inout) :: Eskip_est
+    real(realk),intent(in) :: Eskip_est
+    !> Estimated fragment energies
+    real(realk),intent(in) :: FragEnergies(natoms,natoms)
+    !> Interatomic distance table
+    real(realk),intent(in) :: DistanceTable(natoms,natoms)
     integer :: npairs
 
     ! Total number of pairs
@@ -5968,6 +5974,13 @@ if(DECinfo%PL>0) then
     write(DECinfo%output,*) 
     write(DECinfo%output,'(1X,a,g20.10)') 'Estimated total correlation energy:        ', Ecorr_est
     write(DECinfo%output,'(1X,a,g20.10)') 'Estimated contribution from skipped pairs: ', Eskip_est
+    write(DECinfo%output,*) 
+    write(DECinfo%output,*) 
+    ! Also print all estimated fragment energies. Maybe this should be removed at some point
+    call print_atomic_fragment_energies(natoms,FragEnergies,dofrag,&
+         & 'Estimated occupied single energies','AF_ESTIMATE')
+    call print_pair_fragment_energies(natoms,FragEnergies,dofrag,&
+         & DistanceTable, 'Estimated occupied pair energies','PF_ESTIMATE')
     write(DECinfo%output,*) 
     write(DECinfo%output,*) 
 
