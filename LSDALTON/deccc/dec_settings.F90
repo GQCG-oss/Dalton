@@ -113,7 +113,7 @@ contains
     DECinfo%CorrDensScheme=1
 
     ! -- Pair fragments
-    DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
+    DECinfo%pair_distance_threshold=20.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set=.false.
     ! Pair reduction distance - set high to avoid using in practice right now...
     DECinfo%PairReductionDistance = 1000000.0E0_realk
