@@ -464,7 +464,7 @@ C
             WRITE(LUPRI,*)
             IF(PRTALL) THEN 
               aa =(LRLKIN(1,1)+LRLKIN(2,2)+LRLKIN(3,3))/3.0
-              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+            WRITE(LUPRI,*)'       Detailed info : [.PARA1S] Diagonal'// 
      &                      ' components, for each operator'
               WRITE(LUPRI,*)'       ---------------            xx  '//
      &                       '          yy             zz          iso'
@@ -482,7 +482,7 @@ C
      &      'Second Order Triplets. Total Value : ', SGP1T,'[ppm]'
             WRITE(LUPRI,*)
             IF(PRTALL) THEN
-              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+            WRITE(LUPRI,*)'       Detailed info : [.PARA1T] Diagonal'// 
      &                      ' components, for each operator'
               WRITE(LUPRI,*)'       ---------------            xx  '//
      &                       '          yy             zz          iso'
@@ -500,11 +500,12 @@ C
      &       'SdBso :',LRSDBS(1,1),LRSDBS(2,2),LRSDBS(3,3),aa,' [ppm]'
             ENDIF
          ENDIF
+         IF((SIGMAP1S.AND.SIGMAP1T).OR.LRESCALL) THEN
             WRITE(LUPRI,*)
             WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
      &      'Total Paramagnetic Corrections :     ',
      &       (SGP1S+SGP1T),' [ppm]'
-
+         ENDIF
       ENDIF
 C
 C diamagnetic 0th or 1st order singlet
@@ -516,10 +517,10 @@ c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
          IF(SIGMAD0S) THEN 
             WRITE(LUPRI,*)
             WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
-     &      'First Order. Total Value :           ', SGD0S,' [ppm]'
+     &      'First Order Singlets. Total Value :  ', SGD0S,' [ppm]'
             WRITE(LUPRI,*)
             IF(PRTALL) THEN
-              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+            WRITE(LUPRI,*)'       Detailed info : [.DIAM1S] Diagonal'// 
      &                      ' components, for each operator'
               WRITE(LUPRI,*)'       ---------------            xx  '//
      &                       '          yy             zz          iso'
@@ -540,7 +541,7 @@ c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
      &      'Second Order Singlets. Total Value : ', SGD1S,' [ppm]'
             WRITE(LUPRI,*)
             IF(PRTALL) THEN
-              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+            WRITE(LUPRI,*)'       Detailed info : [.DIAM1S] Diagonal'// 
      &                      ' components, for each operator'
               WRITE(LUPRI,*)'       ---------------            xx  '//
      &                       '          yy             zz          iso'
@@ -552,10 +553,12 @@ c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
      &       'DiaDw  :',LRDIAD(1,1),LRDIAD(2,2),LRDIAD(3,3),aa,' [ppm]'
             ENDIF
          ENDIF
+         IF((SIGMAD1S.AND.SIGMAD0S).OR.LRESCALL) THEN
             WRITE(LUPRI,*)
             WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
      &      'Total Diamagnetic Corrections :      ',
      &       (SGD0S+SGD1S),' [ppm]'
+         ENDIF
       ENDIF
 C
 C All of them in detail
