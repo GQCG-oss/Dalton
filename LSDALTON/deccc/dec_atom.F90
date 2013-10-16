@@ -3975,7 +3975,7 @@ if(DECinfo%PL>0) then
        if(.not. which_fragments(i)) cycle
        do j=i+1,natoms
           if(.not. which_fragments(j)) cycle
-          CheckPair: if(MyMolecule%DistanceTable(i,j) < DECinfo%pair_distance_threshold) then  
+          CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE) then  
              ! Pair needs to be computed
              npair = npair+1
           end if CheckPair
@@ -3995,7 +3995,7 @@ if(DECinfo%PL>0) then
 
     call init_joblist(njobs,jobs)
 
-    call set_dec_joblist(calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+    call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
          & FragBasis,which_fragments, mymolecule%DistanceTable, jobs)
 
     write(DECinfo%output,*)
@@ -4105,10 +4105,12 @@ if(DECinfo%PL>0) then
   !> Note: MPI fragment statistics is not modified here.
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine set_dec_joblist(calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+  subroutine set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
        & FragBasis,which_fragments, DistanceTable, jobs)
 
     implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
     !> Calculate atomic fragments (true) or just pair fragments (false)
     logical,intent(in) :: calcAF
     !> Number of atoms in full molecule
@@ -4182,7 +4184,7 @@ if(DECinfo%PL>0) then
           ! Distance between atoms i and j
           dist = DistanceTable(i,j)
 
-          CheckPair: if(dist < DECinfo%pair_distance_threshold) then  ! Pair needs to be computed
+          CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE) then   ! Pair needs to be computed
              k=k+1
 
              if(dist < DECinfo%PairReductionDistance) then
@@ -5830,9 +5832,6 @@ if(DECinfo%PL>0) then
 
     ! Init stuff
     MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model as initialization model
-    Nskip=0
-    NMP2=0
-    NCC=0
    
 
     ! Loop over all atoms P
@@ -5867,7 +5866,6 @@ if(DECinfo%PL>0) then
           if(Eacc < DECinfo%FOT) then
              ! Accumulated value smaller than FOT --> (P,Qidx) can be skipped!
              MyMolecule%ccmodel(P,Qidx)=MODEL_NONE
-             Nskip=Nskip+1  ! count number of skipped pairs
           else
              ! Not possible to skip (P,Q). Save current counter value.
              Qquit = Q
@@ -5893,7 +5891,6 @@ if(DECinfo%PL>0) then
              Eacc = Eacc + EPQ(Q)
              if(Eacc < DECinfo%FOT) then
                 MyMolecule%ccmodel(P,Qidx)=MODEL_MP2
-                NMP2 = NMP2+1
              else
                 Qquit = Q
                 exit Qloop3
@@ -5903,18 +5900,30 @@ if(DECinfo%PL>0) then
 
        end if NotMP2model
 
+       ! Sanity precaution: Atomic fragment energies should always use input CC model
+       MyMolecule%ccmodel(P,P) = DECinfo%ccmodel
+
     end do Ploop
 
     ! Fix inconsistencies which may arise if MyMolecule%ccmodel(P,Q) is not
     ! identical to MyMolecule%ccmodel(Q,P) from the above procedure
     call fix_inconsistencies_for_pair_model(MyMolecule)
 
-    ! Count number of pairs to be treated at input CC level
+    ! Count number of pairs to be treated at the different levels
+    NCC=0
+    NMP2=0
+    Nskip=0
     do P=1,natoms
        if(.not. dofrag(P)) cycle
        do Q=1,P-1
           if(.not. dofrag(Q)) cycle
-          if(MyMolecule%ccmodel(P,Q)==DECinfo%ccmodel) NCC=NCC+1
+          if(MyMolecule%ccmodel(P,Q)==DECinfo%ccmodel) then
+             NCC=NCC+1
+          elseif(MyMolecule%ccmodel(P,Q)==MODEL_MP2) then
+             NMP2=NMP2+1
+          elseif(MyMolecule%ccmodel(P,Q)==MODEL_NONE) then
+             Nskip=Nskip+1
+          end if
        end do
     end do
 

@@ -304,7 +304,9 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Which model? MP2,CC2, CCSD etc.
-    WhichCCmodel: if(MyFragment%ccmodel==MODEL_MP2) then ! MP2 calculation
+    WhichCCmodel: if(MyFragment%ccmodel==MODEL_NONE) then ! SKip calculation
+       return
+    elseif(MyFragment%ccmodel==MODEL_MP2) then ! MP2 calculation
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
@@ -930,7 +932,9 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
-    WhichCCModel: if(PairFragment%ccModel==MODEL_MP2) then ! MP2
+    WhichCCmodel: if(PairFragment%ccmodel==MODEL_NONE) then ! SKip calculation
+       return
+    elseif(PairFragment%ccModel==MODEL_MP2) then ! MP2
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
