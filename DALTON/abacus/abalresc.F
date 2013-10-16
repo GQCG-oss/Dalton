@@ -172,7 +172,7 @@ c jim-dbg ICHANG < 0 no cambios
          CALL HEADER('Changes of defaults for LRESC :',0)
          IF (GAUCHANG) THEN
            write(lupri,*)' - Remember to set GAUGEO on INTEGRAL ' //
-     &     ' SECTION. GAUGEO MUST be placed on selected NUCLEUS'
+     &   ' SECTION. GAUGEO MUST be placed on selected NUCLEUS, in a.u.'
            WRITE (LUPRI,*) ' - cambiaste origen de gauge .. ojo  '
          END IF
          IF (JIMPRT.NE.0) THEN
@@ -438,7 +438,7 @@ c      WRITE(LUPRI,*)' Gaugeo placed at : ', GAGORG
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(4X,A)')'-  Remember : '
       WRITE(LUPRI,'(14X,A)')'*  GAUGEO should be placed at selected '//
-     &  'nucleus, on INTEGRALS SECTION' 
+     &  'nucleus, on INTEGRALS SECTION, in a.u' 
       IF (.NOT. PRTALL) THEN 
          WRITE(LUPRI,'(14X,A)')'*  For individual contributions, add '//
      &   '.PRTALL in your input file under *LROPTS'
