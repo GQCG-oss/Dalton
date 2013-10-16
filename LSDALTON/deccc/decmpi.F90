@@ -380,13 +380,11 @@ contains
   !> have already been communicated.
   !> \author Kasper Kristensen
   !> \date March 2012
-  subroutine mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,&
+  subroutine mpi_dec_fullinfo_master_to_slaves(nocc,nunocc,&
        & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
 
     implicit none
 
-    !> Number of atoms in the molecule
-    integer,intent(in) :: natoms
     !> Number of occupied orbitals in the molecule
     integer,intent(in) :: nocc
     !> Number of unoccupied orbitals in the molecule
@@ -1757,6 +1755,23 @@ contains
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
 
   end subroutine mpicopy_dec_settings
+
+  !> \brief bcast very basic information from master to slaves 
+  !> (information which for practical reasons cannot be packed into mpi_dec_fullinfo_master_to_slaves)
+  subroutine mpi_dec_fullinfo_master_to_slaves_precursor(esti,nocc,nunocc,master)
+    implicit none
+    !> Is this an estimated calculation (no FOT optimization)?
+    logical,intent(inout) :: esti
+    !> Number of occ/unocc orbitals in molecule
+    integer,intent(inout) :: nocc,nunocc
+    !> Master node number
+    integer(kind=ls_mpik),intent(in) :: master
+
+    call ls_mpibcast(esti,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(nocc,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(nunocc,master,MPI_COMM_LSDALTON)
+
+  end subroutine mpi_dec_fullinfo_master_to_slaves_precursor
 
 end module decmpi_module
 

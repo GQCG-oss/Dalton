@@ -4435,4 +4435,83 @@ retval=0
   end function get_total_number_of_fragments
 
 
+  !> \brief Extract fragment energies for occupied partitioning for given CC model
+  !> from set of all fragment energies.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine get_occfragenergies(natoms,FragEnergiesAll,FragEnergies)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Fragment energies for all models (see FRAGMODEL_* in dec_typedef.F90)
+    real(realk),intent(in) :: FragEnergiesAll(natoms,natoms,ndecenergies)
+    !> Fragment energies for occupied partitioning for given CC model
+    real(realk),intent(inout) :: FragEnergies(natoms,natoms)
+
+    ! MODIFY FOR NEW MODEL
+    select case(DECinfo%ccmodel)
+    case(MODEL_MP2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCMP2)
+
+    case(MODEL_CC2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCC2)
+
+    case(MODEL_CCSD)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCCSD)
+
+    case(MODEL_CCSDpT)
+       ! CCSD(T): Add CCSD and (T) contributions using occupied partitioning
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCCSD) &
+            & + FragEnergiesAll(:,:,FRAGMODEL_OCCpT)
+
+    case default
+       print *, 'Model is: ', DECinfo%ccmodel
+       call lsquit('get_occfragenergies: Model needs implementation!',-1)
+    end select
+
+  end subroutine get_occfragenergies
+
+
+
+  !> \brief Estimate (absolute) energy error in DEC calculation.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine get_estimated_energy_error(natoms,energies,Eerr)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> SUM of fragment energies for all models (see FRAGMODEL_* in dec_typedef.F90)
+    real(realk),intent(in) :: energies(ndecenergies)
+    !> Estimated (absolute) energy error
+    real(realk),intent(inout) :: Eerr
+    real(realk) :: Eocc,Evirt
+
+    ! MODIFY FOR NEW MODEL
+    select case(DECinfo%ccmodel)
+    case(MODEL_MP2)
+       ! Energy error = max difference between occ,virt, and Lag energies
+       Eerr = max(energies(FRAGMODEL_LAGMP2),energies(FRAGMODEL_OCCMP2),energies(FRAGMODEL_VIRTMP2)) &
+            & - min(energies(FRAGMODEL_LAGMP2),energies(FRAGMODEL_OCCMP2),energies(FRAGMODEL_VIRTMP2))
+
+    case(MODEL_CC2)
+       ! Energy error = difference between occ and virt energies
+       Eerr = abs(energies(FRAGMODEL_OCCCC2) - energies(FRAGMODEL_VIRTCC2))
+
+    case(MODEL_CCSD)
+       Eerr = abs(energies(FRAGMODEL_OCCCCSD) - energies(FRAGMODEL_VIRTCCSD))
+
+    case(MODEL_CCSDpT)
+       ! CCSD(T): Add CCSD and (T) contributions and find diff
+       Eocc = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
+       Evirt = energies(FRAGMODEL_VIRTCCSD) + energies(FRAGMODEL_VIRTpT)
+       Eerr = abs(Eocc-Evirt)
+
+    case default
+       print *, 'Model is: ', DECinfo%ccmodel
+       call lsquit('get_estimated_energy_error: Model needs implementation!',-1)
+    end select
+
+  end subroutine get_estimated_energy_error
+
+
 end module dec_fragment_utils

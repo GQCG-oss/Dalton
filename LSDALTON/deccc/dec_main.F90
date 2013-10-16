@@ -281,6 +281,7 @@ contains
     real(realk) :: Ecorr,EHF
     type(fullmolecule) :: Molecule
     integer :: nBasis,nOcc,nUnocc
+    real(realk),pointer :: FragEnergiesOcc(:,:)
     type(ccorbital), pointer :: OccOrbitals(:)
     type(ccorbital), pointer :: UnoccOrbitals(:)
     integer :: i
@@ -322,9 +323,10 @@ contains
 
 
     ! -- Calculate molecular MP2 gradient
+    call mem_alloc(FragEnergiesOcc,Molecule%natoms,Molecule%natoms)
     call main_fragment_driver(Molecule,mylsitem,D,&
          & OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,EHF,Ecorr,mp2gradient,Eerr)
+         & natoms,nocc,nunocc,EHF,Ecorr,mp2gradient,Eerr,FragEnergiesOcc)
 
     ! Total MP2 energy: EHF + Ecorr
     EMP2 = EHF + Ecorr
@@ -346,6 +348,7 @@ contains
 
     call mem_dealloc(OccOrbitals)
     call mem_dealloc(UnOccOrbitals)
+    call mem_dealloc(FragEnergiesOcc)
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
     ! (the current value of Eerr) and the intrinsic error at the previous geometry.
@@ -389,6 +392,7 @@ contains
     type(ccorbital), pointer :: OccOrbitals(:)
     type(ccorbital), pointer :: UnoccOrbitals(:)
     real(realk), pointer :: dummy(:,:)
+    real(realk),pointer :: FragEnergiesOcc(:,:)
     integer :: i
     logical :: save_first_order, save_grad, save_dens
     ! Quick solution to ensure that the MP2 gradient contributions are not set
@@ -428,9 +432,10 @@ contains
 
     ! -- Calculate correlation energy
     call mem_alloc(dummy,3,natoms)
+    call mem_alloc(FragEnergiesOcc,Molecule%natoms,Molecule%natoms)
     call main_fragment_driver(Molecule,mylsitem,D,&
          & OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,EHF,Ecorr,dummy,Eerr)
+         & natoms,nocc,nunocc,EHF,Ecorr,dummy,Eerr,FragEnergiesOcc)
     call mem_dealloc(dummy)
 
     ! Total MP2 energy: EHF + Ecorr
@@ -454,7 +459,7 @@ contains
 
     call mem_dealloc(OccOrbitals)
     call mem_dealloc(UnOccOrbitals)
-
+    call mem_dealloc(FragEnergiesOcc)
 
     ! Reset DEC parameters to the same as they were at input
     DECinfo%first_order = save_first_order
