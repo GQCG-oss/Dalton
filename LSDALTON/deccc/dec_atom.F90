@@ -5914,6 +5914,9 @@ if(DECinfo%PL>0) then
     ! Estimate energy contribution from pairs which will be skipped from the calculation
     call estimate_energy_of_skipped_pairs(natoms,FragEnergies,dofrag,MyMolecule,Eskip_est)
 
+    ! Print summary for pair analysis and estimated energies
+    call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est)
+
   end subroutine define_pair_calculations
 
 
