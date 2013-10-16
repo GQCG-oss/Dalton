@@ -563,6 +563,8 @@ contains
     natoms = MyMolecule%natoms
     call mem_alloc(nocc_per_atom,natoms)
     call mem_alloc(nunocc_per_atom,natoms)
+    nocc_per_atom=get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
+    nunocc_per_atom=get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
 
     ! Determine logical vectors describing which atoms to include in fragment,
     ! i.e., atoms where the distance to MyAtom is smaller than init_radius
