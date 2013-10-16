@@ -155,8 +155,8 @@ contains
     type(ccatom),pointer :: AtomicFragments(:)
     integer, dimension(MyMolecule%natoms) :: nocc_per_atom, nunocc_per_atom    
     logical,dimension(MyMolecule%natoms) :: dofrag
-    integer :: natoms,i,MyAtom,njobs, savemodel
-    logical :: DoBasis, save_fragadapt
+    integer :: natoms,i,MyAtom, savemodel
+    logical :: DoBasis, save_fragadapt,calcAF
     real(realk) :: init_radius
     type(joblist) :: jobs
     real(realk),pointer :: FragEnergiesAll(:,:,:),FragEnergiesOcc(:,:)
@@ -193,12 +193,9 @@ contains
             & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
     end do
 
-    ! Number of atomic fragments + pair fragments
-    njobs = get_total_number_of_fragments(natoms,dofrag,MyMolecule%DistanceTable)
-
     ! Create job list with atomic fragments and pair fragments
-    call init_joblist(njobs,jobs)
-    call create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,&
+    calcAF=.true.
+    call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
 
     ! Calculate fragment energies for MP2 using small orbital spaces
@@ -600,7 +597,7 @@ contains
     DECinfo%gradient = grad_save
 
     ! Get job list 
-    call create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,&
+    call create_dec_joblist_driver(DECinfo%repeatAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
     njobs = jobs%njobs
 

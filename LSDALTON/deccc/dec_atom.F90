@@ -3803,10 +3803,12 @@ if(DECinfo%PL>0) then
   !> \brief Create job list for DEC calculations remaining after fragment optimization.
   !> \author Kasper Kristensen
   !> \date January 2013
-  subroutine create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,&
+  subroutine create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
        &OccOrbitals,UnoccOrbitals,AtomicFragments,which_fragments,jobs)
 
     implicit none
+    !> Calculate atomic fragments (true) or just pair fragments (false)
+    logical,intent(in) :: calcAF
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> LS item info for full molecule
@@ -3983,8 +3985,8 @@ if(DECinfo%PL>0) then
 
     ! Set job list for fragments
     ! --------------------------
-    if(DECinfo%RepeatAF) then
-       ! Repeat atomic fragments: Both atomic and pair frags
+    if(calcAF) then
+       ! Calculate atomic fragments: Both atomic and pair frags
        njobs = nsingle+npair
     else
        ! Atomic fragments are already done - only do pairs
@@ -3993,7 +3995,7 @@ if(DECinfo%PL>0) then
 
     call init_joblist(njobs,jobs)
 
-    call set_dec_joblist(natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+    call set_dec_joblist(calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
          & FragBasis,which_fragments, mymolecule%DistanceTable, jobs)
 
     write(DECinfo%output,*)
@@ -4103,10 +4105,12 @@ if(DECinfo%PL>0) then
   !> Note: MPI fragment statistics is not modified here.
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine set_dec_joblist(natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+  subroutine set_dec_joblist(calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
        & FragBasis,which_fragments, DistanceTable, jobs)
 
     implicit none
+    !> Calculate atomic fragments (true) or just pair fragments (false)
+    logical,intent(in) :: calcAF
     !> Number of atoms in full molecule
     integer,intent(in) :: natoms
     !> Number of occupied orbitals in full molecule
@@ -4158,7 +4162,7 @@ if(DECinfo%PL>0) then
        if(.not. which_fragments(i)) cycle  ! No fragment for atom i
 
        ! Repeat atomic fragments if requested
-       if(DECinfo%RepeatAF) then
+       if(calcAF) then
 
           ! Set atom indices for single fragment job
           k=k+1
@@ -5899,14 +5903,20 @@ if(DECinfo%PL>0) then
 
        end if NotMP2model
 
-       ! Number of pairs to treat at CC level.
-       NCC = NCC + Qquit
-
     end do Ploop
 
     ! Fix inconsistencies which may arise if MyMolecule%ccmodel(P,Q) is not
     ! identical to MyMolecule%ccmodel(Q,P) from the above procedure
     call fix_inconsistencies_for_pair_model(MyMolecule)
+
+    ! Count number of pairs to be treated at input CC level
+    do P=1,natoms
+       if(.not. dofrag(P)) cycle
+       do Q=1,P-1
+          if(.not. dofrag(Q)) cycle
+          if(MyMolecule%ccmodel(P,Q)==DECinfo%ccmodel) NCC=NCC+1
+       end do
+    end do
 
     ! Estimate correlation energy by adding all estimated atomic and pair fragment energy contributions
     call add_dec_energies(natoms,FragEnergies,dofrag,Ecorr_est)
