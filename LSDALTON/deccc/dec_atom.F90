@@ -2203,7 +2203,7 @@ contains
        call mem_alloc(correct_vector_moS,fragment%number_basis)
        call mem_alloc(approximated_orbital,fragment%number_basis)
 
-       ! Fragment YPO
+       ! Fragment Co
        ! half transform overlap
        tmp1 = array2_init(dimsMO,MyMolecule%Co)
        tmp2 = array2_init(dimsAO,MyMolecule%overlap)
@@ -2271,7 +2271,7 @@ contains
           tmp1 = array2_init(dimsMO,MyMolecule%Cv)
 
 
-          ! Fragmant YPV
+          ! Fragmant Cv
           call array2_matmul(tmp1,tmp2,S,'T','N',1E0_realk,0E0_realk)
 
           do i=1,fragment%nunoccAOS
@@ -2311,12 +2311,12 @@ contains
           call lsquit('atomic_fragment_basis: Needs implementation!',-1)
        end if
 
-       ! Fragment YPO
+       ! Fragment Co
        call adjust_basis_matrix(MyMolecule%Co,fragment%Co,fragment%occAOSidx, &
             fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nocc,natoms, &
             fragment%number_basis,fragment%noccAOS,Fragment%number_atoms)
 
-       ! Fragment YPV
+       ! Fragment Cv
        call adjust_basis_matrix(MyMolecule%Cv,fragment%Cv,fragment%unoccAOSidx, &
             fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nunocc,natoms, &
             fragment%number_basis,fragment%nunoccAOS,Fragment%number_atoms)

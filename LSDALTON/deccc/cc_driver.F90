@@ -57,7 +57,7 @@ contains
 
   !> \brief Get coupled-cluster energy by calling general ccsolver.
   !> \author Kasper Kristensen
-  function ccsolver_justenergy(ccmodel,MyMolecule,ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+  function ccsolver_justenergy(ccmodel,MyMolecule,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
        &mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f) result(ccenergy)
 
     implicit none
@@ -76,9 +76,9 @@ contains
     !> Fock matrix in AO basis for fragment or full molecule
     real(realk), dimension(nbasis,nbasis), intent(in) :: fock_f
     !> Occupied MO coefficients  for fragment/full molecule
-    real(realk), dimension(nbasis,nocc), intent(inout) :: ypo_f
+    real(realk), dimension(nbasis,nocc), intent(inout) :: Co_f
     !> Virtual MO coefficients  for fragment/full molecule
-    real(realk), dimension(nbasis,nvirt), intent(inout) :: ypv_f
+    real(realk), dimension(nbasis,nvirt), intent(inout) :: Cv_f
     !> Occ-occ block of Fock matrix in MO basis
     real(realk), dimension(nocc,nocc), intent(inout) :: ppfock_f
     !> Virt-virt block of Fock matrix in MO basis
@@ -102,11 +102,11 @@ contains
 
 
     if(DECinfo%CCDEBUG)then
-      call ccsolver_debug(ccmodel,ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+      call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
        & t1_final,t2_final,VOVO,.false.)
     else
-      call ccsolver_par(ccmodel,ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+      call ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
          & t1_final,t2_final,VOVO,.false.,local)
     endif
@@ -224,7 +224,7 @@ contains
   !> \author Janus Juul Eriksen
   !> \date February 2013
   function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
-                      & ccPrintLevel,fragment_job,ypo_fc,ppfock_fc) result(ccenergy)
+                      & ccPrintLevel,fragment_job,Co_fc,ppfock_fc) result(ccenergy)
 
     implicit none
     
@@ -245,7 +245,7 @@ contains
     !> How much to print? ( ccPrintLevel>0 --> print info stuff)
     integer, intent(in) :: ccPrintLevel
     !> Occupied MO coefficients  for fragment/full molecule (only used for Frozen core)
-    real(realk), dimension(nbasis,nocc), intent(in),optional :: ypo_fc
+    real(realk), dimension(nbasis,nocc), intent(in),optional :: Co_fc
     !> Occ-occ block of Fock matrix in MO basis (only used for frozen core)
     real(realk), dimension(nocc,nocc), intent(in),optional :: ppfock_fc
     !> Coupled cluster energy for full molecule
@@ -266,7 +266,7 @@ contains
     ! is this a frozen core calculation or not?
     if (DECinfo%frozencore) then
        ncore = MyMolecule%ncore
-       if(.not. present(ypo_fc)) then
+       if(.not. present(Co_fc)) then
           call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
        end if
        if(.not. present(ppfock_fc)) then
@@ -274,11 +274,11 @@ contains
        end if
 
        if (DECinfo%CCDEBUG) then
-          call ccsolver_debug(ccmodel,ypo_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+          call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
              & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
              & t1_final,t2_final,VOVO,.false.)
        else
-          call ccsolver_par(ccmodel,ypo_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
                & t1_final,t2_final,VOVO,.false.,local)
        endif
@@ -311,7 +311,7 @@ contains
     ccsdpt_t2 = array4_init([nvirt,nvirt,nocc,nocc])
 
     if(DECinfo%frozencore) then
-       call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,ypo_fc,MyMolecule%Cv,mylsitem,t2_final,&
+       call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,t2_final,&
             & ccsdpt_t1,ccsdpt_t2)
     else
        call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
@@ -1249,7 +1249,7 @@ contains
   ! begin implementing new features with setting local=.true. at the beginning
   ! and running without .spawn_comm_procs in the **CC input section. On
   ! INPUT:
-  ! ypo_f,ypv_f : the occupied and virtual orbital transformation coefficients
+  ! Co_f,Cv_f : the occupied and virtual orbital transformation coefficients
   ! fock_f      : the ao fock matrix
   ! nb,no,nv    : number of atomic, occupied and virtual orbitals respectively
   ! mylsitem    : the typical lsitem structure
@@ -1266,7 +1266,7 @@ contains
   ! t2_final    : final doubles amplitudes, will be allocated in the solver, output
   ! VOVO        : mo-integral WITHOUT T1 trafo on output
   !> \author Patrick Ettenhuber (heavily adapted version from Marcin)
-  subroutine ccsolver_par(ccmodel,ypo_f,ypv_f,fock_f,nb,no,nv, &
+  subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
        & t1_final,t2_final,VOVO,longrange_singles,local)
 
@@ -1283,9 +1283,9 @@ contains
     !> Fock matrix in AO basis for fragment or full molecule
     real(realk), dimension(nb,nb), intent(in) :: fock_f
     !> Occupied MO coefficients for fragment/full molecule
-    real(realk), dimension(nb,no), intent(in) :: ypo_f
+    real(realk), dimension(nb,no), intent(in) :: Co_f
     !> Virtual MO coefficients for fragment/full molecule
-    real(realk), dimension(nb,nv), intent(in) :: ypv_f
+    real(realk), dimension(nb,nv), intent(in) :: Cv_f
     !> Occ-occ block of Fock matrix in MO basis
     real(realk), dimension(no,no), intent(in) :: ppfock_f
     !> Virt-virt block of Fock matrix in MO basis
@@ -1313,11 +1313,11 @@ contains
     logical,intent(in)                        :: local
     !
     !work stuff
-    real(realk),pointer :: ypo_d(:,:),ypv_d(:,:),yho_d(:,:), yhv_d(:,:),focc(:),fvirt(:)
+    real(realk),pointer :: Co_d(:,:),Cv_d(:,:),Co2_d(:,:), Cv2_d(:,:),focc(:),fvirt(:)
     real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:),Uocc(:,:),Uvirt(:,:)
     integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims
     integer, dimension(4) :: ampl4_dims
-    type(array)  :: fock,ypo,ypv,yho,yhv
+    type(array)  :: fock,Co,Cv,Co2,Cv2
     type(array)  :: ppfock,qqfock,pqfock,qpfock
     type(array)  :: ifock,delta_fock
     type(array)  :: aibj,iajb
@@ -1396,10 +1396,10 @@ contains
     ! go to a (pseudo) canonical basis
     call mem_alloc( focc,     no     )
     call mem_alloc( fvirt,    nv     )
-    call mem_alloc( ypo_d,    nb, no )
-    call mem_alloc( ypv_d,    nb, nv )
-    call mem_alloc( yho_d,    nb, no )
-    call mem_alloc( yhv_d,    nb, nv )
+    call mem_alloc( Co_d,    nb, no )
+    call mem_alloc( Cv_d,    nb, nv )
+    call mem_alloc( Co2_d,    nb, no )
+    call mem_alloc( Cv2_d,    nb, nv )
     call mem_alloc( ppfock_d, no, no )
     call mem_alloc( qqfock_d, nv, nv )
     call mem_alloc( Uocc,     no, no )
@@ -1407,8 +1407,8 @@ contains
 
     if(DECinfo%CCSDpreventcanonical)then
       !no diagonalization
-      ypo_d   = ypo_f
-      ypv_d   = ypv_f
+      Co_d   = Co_f
+      Cv_d   = Cv_f
       ppfock_d = ppfock_f
       qqfock_d = qqfock_f
       Uocc=0.0E0_realk
@@ -1420,8 +1420,8 @@ contains
         Uvirt(aa,aa) = 1.0E0_realk
       enddo
     else
-      call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,ypo_f,ypv_f,&
-                                       & ypo_d,ypv_d,Uocc,Uvirt,focc,fvirt)
+      call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,Co_f,Cv_f,&
+                                       & Co_d,Cv_d,Uocc,Uvirt,focc,fvirt)
       ppfock_d = 0.0E0_realk
       qqfock_d = 0.0E0_realk
       do ii=1,no
@@ -1437,8 +1437,8 @@ contains
 
     ! Copy MO coeffcients. It is very convenient to store them twice to handle transformation
     ! (including transposed MO matrices) efficiently. 
-    yho_d = ypo_d
-    yhv_d = ypv_d
+    Co2_d = Co_d
+    Cv2_d = Cv_d
 
 
     ! title
@@ -1451,22 +1451,22 @@ contains
     ampl2_dims = [nv,no]
 
     ! create transformation matrices in array form
-    ypo  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
-    ypv  = array_minit( virt_dims,2, local=local, atype='LDAR' )
-    yho  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
-    yhv  = array_minit( virt_dims,2, local=local, atype='LDAR' )
+    Co  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
+    Cv  = array_minit( virt_dims,2, local=local, atype='LDAR' )
+    Co2  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
+    Cv2  = array_minit( virt_dims,2, local=local, atype='LDAR' )
     fock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
 
-    call array_convert( ypo_d,  ypo  )
-    call array_convert( ypv_d,  ypv  )
-    call array_convert( yho_d,  yho  )
-    call array_convert( yhv_d,  yhv  )
+    call array_convert( Co_d,  Co  )
+    call array_convert( Cv_d,  Cv  )
+    call array_convert( Co2_d,  Co2  )
+    call array_convert( Cv2_d,  Cv2  )
     call array_convert( fock_f, fock )
 
-    call mem_dealloc( ypo_d )
-    call mem_dealloc( ypv_d )
-    call mem_dealloc( yho_d )
-    call mem_dealloc( yhv_d )
+    call mem_dealloc( Co_d )
+    call mem_dealloc( Cv_d )
+    call mem_dealloc( Co2_d )
+    call mem_dealloc( Cv2_d )
 
     ! Get Fock matrix correction (for fragment and/or frozen core)
     ! ************************************************************
@@ -1479,7 +1479,7 @@ contains
 
     ! Density corresponding to input MOs
     call mem_alloc(dens,nb,nb)
-    call get_density_from_occ_orbitals(nb,no,ypo%elm2,dens)
+    call get_density_from_occ_orbitals(nb,no,Co%elm2,dens)
 
     if(fragment_job) then ! fragment: calculate correction
 
@@ -1489,7 +1489,7 @@ contains
           ! Get Fock matrix using singles amplitudes from previous
           ! fragment calculation, thereby effectively including long-range
           ! correlated polarization effects
-          call Get_AOt1Fock(mylsitem,t1_final,ifock,no,nv,nb,ypo,yho,yhv)
+          call Get_AOt1Fock(mylsitem,t1_final,ifock,no,nv,nb,Co,Co2,Cv2)
        else
           ! Fock matrix for fragment from density made from input MOs
            call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
@@ -1546,13 +1546,13 @@ contains
           call array_convert( qqfock_d, qqfock_prec )
        else
           tmp = array_minit( [nb,no], 2, local=local, atype='LDAR' )
-          call array_contract_outer_indices_rl(1.0E0_realk,fock,yho,0.0E0_realk,tmp)
-          call array_contract_outer_indices_ll(1.0E0_realk,ypo,tmp,0.0E0_realk,ppfock_prec)
+          call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
+          call array_contract_outer_indices_ll(1.0E0_realk,Co,tmp,0.0E0_realk,ppfock_prec)
           call array_free(tmp)
 
           tmp = array_minit( [nb,nv], 2, local=local, atype='LDAR'  )
-          call array_contract_outer_indices_rl(1.0E0_realk,fock,yhv,0.0E0_realk,tmp)
-          call array_contract_outer_indices_ll(1.0E0_realk,ypv,tmp,0.0E0_realk,qqfock_prec)
+          call array_contract_outer_indices_rl(1.0E0_realk,fock,Cv2,0.0E0_realk,tmp)
+          call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qqfock_prec)
           call array_free(tmp)
        end if
 
@@ -1650,13 +1650,13 @@ contains
        T1Related : if(DECinfo%use_singles) then
 
           ! get the T1 transformation matrices
-          call array_cp_data(yhv,yv)
-          call array_cp_data(ypv,xv)
-          call array_contract_outer_indices_rr(-1.0E0_realk,ypo,t1(iter),1.0E0_realk,xv)
+          call array_cp_data(Cv2,yv)
+          call array_cp_data(Cv,xv)
+          call array_contract_outer_indices_rr(-1.0E0_realk,Co,t1(iter),1.0E0_realk,xv)
 
-          call array_cp_data(yho,yo)
-          call array_cp_data(ypo,xo)
-          call array_contract_outer_indices_rl(1.0E0_realk,yhv,t1(iter),1.0E0_realk,yo)
+          call array_cp_data(Co2,yo)
+          call array_cp_data(Co,xo)
+          call array_contract_outer_indices_rl(1.0E0_realk,Cv2,t1(iter),1.0E0_realk,yo)
 
        end if T1Related
 
@@ -1986,10 +1986,10 @@ contains
     call array_free(ppfock)
     call array_free(qqfock)
 
-    call array_free(ypo)
-    call array_free(yho)
-    call array_free(ypv)
-    call array_free(yhv)
+    call array_free(Co)
+    call array_free(Co2)
+    call array_free(Cv)
+    call array_free(Cv2)
     call array_free(fock)
 
 

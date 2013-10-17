@@ -766,7 +766,7 @@ module array2_simple_operations
   !> \author Janus Juul Eriksen (adapted from mp2 routine by Kasper Kristensen),changed by PE
   !> \date February 2013
   subroutine get_canonical_integral_transformation_matrices(no,nv,nb,ppfock,qqfock,&
-             &ypo,ypv,CDIAGocc, CDIAGvirt, Uocc, Uvirt,EVocc, EVvirt)
+             &Co,Cv,CDIAGocc, CDIAGvirt, Uocc, Uvirt,EVocc, EVvirt)
 
     implicit none
 
@@ -775,7 +775,7 @@ module array2_simple_operations
     !> ppfock and qqfock for fragment or full molecule
     real(realk), intent(in) :: ppfock(no,no), qqfock(nv,nv)
     !> mo coefficents for occ and virt space for fragment or full molecule
-    real(realk), intent(in) :: ypo(nb,no), ypv(nb,nv)
+    real(realk), intent(in) :: Co(nb,no), Cv(nb,nv)
     !> Transforming from AO to occupied orbitals in the basis where the fock matrix is diagonal
     !> - indices: (local,semi-canonical)
     real(realk),intent(inout) :: CDIAGocc(nb,no)
@@ -840,7 +840,7 @@ module array2_simple_operations
     ! where CLOCALocc are the basis MO coefficients in MyFragment%Co
 
     ! Determine CDIAGocc
-    call dgemm('n','n',nb,no,no,1.0E0_realk,ypo,nb,Uocc,no,0.0E0_realk,CDIAGocc,nb)
+    call dgemm('n','n',nb,no,no,1.0E0_realk,Co,nb,Uocc,no,0.0E0_realk,CDIAGocc,nb)
 
     ! ***************************************************************************************
     ! *                                  VIRTUAL ORBITAL SPACE                              *
@@ -857,7 +857,7 @@ module array2_simple_operations
     call solve_eigenvalue_problem(nv,qqfock,S,EVvirt,Uvirt)
     call mem_dealloc(S)
 
-    call dgemm('n','n',nb,nv,nv,1.0E0_realk,ypv,nb,Uvirt,nv,0.0E0_realk,CDIAGvirt,nb)
+    call dgemm('n','n',nb,nv,nv,1.0E0_realk,Cv,nb,Uvirt,nv,0.0E0_realk,CDIAGvirt,nb)
 
 
   end subroutine get_canonical_integral_transformation_matrices

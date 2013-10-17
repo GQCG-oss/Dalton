@@ -100,7 +100,7 @@ contains
     real(realk),intent(inout) :: Ecorr
     integer :: nocc,nunocc,nbasis,print_level,i,j
     logical :: fragment_job
-    real(realk),pointer :: ppfock_fc(:,:), ypo_fc(:,:)
+    real(realk),pointer :: ppfock_fc(:,:), Co_fc(:,:)
 
     Ecorr = 0.0E0_realk
 
@@ -125,10 +125,10 @@ contains
        end do
 
        ! Frozen core component of MO coeff.
-       call mem_alloc(ypo_fc,nbasis,nocc)
+       call mem_alloc(Co_fc,nbasis,nocc)
        do j=1,nocc
           do i=1,nbasis
-             ypo_fc(i,j) = MyMolecule%Co(i,MyMolecule%ncore+j)
+             Co_fc(i,j) = MyMolecule%Co(i,MyMolecule%ncore+j)
           end do
        end do       
 
@@ -137,10 +137,10 @@ contains
        if (DECinfo%ccModel == MODEL_CCSDpT) then
           ! ccsd(t) correction
           Ecorr = ccsolver_justenergy_pt(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
-               & mylsitem,print_level,fragment_job,ypo_fc=ypo_fc,ppfock_fc=ppfock_fc)
+               & mylsitem,print_level,fragment_job,Co_fc=Co_fc,ppfock_fc=ppfock_fc)
        else
 #endif
-          Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,ypo_fc,&
+          Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,Co_fc,&
                & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
                & print_level,fragment_job,ppfock_fc,MyMolecule%qqfock)
 #ifdef MOD_UNRELEASED
@@ -149,7 +149,7 @@ contains
 !endif mod_unreleased
 
        call mem_dealloc(ppfock_fc)
-       call mem_dealloc(ypo_fc)
+       call mem_dealloc(Co_fc)
 
     else
 

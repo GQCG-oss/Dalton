@@ -727,7 +727,7 @@ contains
 
     implicit none
     type(fullmolecule), intent(inout) :: molecule
-    type(array2) :: ppfock, qqfock, ypo,ypv,yho,yhv,fock
+    type(array2) :: ppfock, qqfock, Co,Cv,Co2,Cv2,fock
     integer :: nocc, nvirt, oo(2), bo(2), bv(2), vv(2), bb(2),nbasis
 
     nocc = molecule%numocc
@@ -748,21 +748,21 @@ contains
     fock = array2_init(bb,molecule%fock)
 
     ! Occ-occ block
-    ypo = array2_init(bo,molecule%Co)
-    yho = array2_init(bo,molecule%Co)
-    ppfock = array2_similarity_transformation(ypo,fock,yho,oo)
-    call array2_free(ypo)
-    call array2_free(yho)
+    Co = array2_init(bo,molecule%Co)
+    Co2 = array2_init(bo,molecule%Co)
+    ppfock = array2_similarity_transformation(Co,fock,Co2,oo)
+    call array2_free(Co)
+    call array2_free(Co2)
     call mem_alloc(molecule%ppfock,nocc,nocc)
     molecule%ppfock(1:nocc,1:nocc) = ppfock%val(1:nocc,1:nocc)
     call array2_free(ppfock)
 
     ! Virt-virt block
-    ypv = array2_init(bv,molecule%Cv)
-    yhv = array2_init(bv,molecule%Cv)
-    qqfock = array2_similarity_transformation(ypv,fock,yhv,vv)
-    call array2_free(ypv)
-    call array2_free(yhv)
+    Cv = array2_init(bv,molecule%Cv)
+    Cv2 = array2_init(bv,molecule%Cv)
+    qqfock = array2_similarity_transformation(Cv,fock,Cv2,vv)
+    call array2_free(Cv)
+    call array2_free(Cv2)
     call array2_free(fock)
     call mem_alloc(molecule%qqfock,nvirt,nvirt)
     molecule%qqfock(1:nvirt,1:nvirt) = qqfock%val(1:nvirt,1:nvirt)

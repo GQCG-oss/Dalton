@@ -953,12 +953,12 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,ccsd_t2,mylsitem)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2,mylsitem)
 
     implicit none
 
     integer            :: nocc,nvirt,nbasis,ierr
-    real(realk)        :: ppfock(:,:),qqfock(:,:),ypo(:,:),ypv(:,:),ccsd_t2(:,:,:,:)
+    real(realk)        :: ppfock(:,:),qqfock(:,:),Co(:,:),Cv(:,:),ccsd_t2(:,:,:,:)
     type(lsitem)       :: mylsitem
 
     ! communicate mylsitem and integers
@@ -979,9 +979,9 @@ contains
  
        call ls_mpibcast(qqfock,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
-       call ls_mpibcast(ypo,nbasis,nocc,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(Co,nbasis,nocc,infpar%master,infpar%lg_comm)
 
-       call ls_mpibcast(ypv,nbasis,nvirt,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
  
        call ls_mpibcast(ccsd_t2,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
 

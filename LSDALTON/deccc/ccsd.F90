@@ -4514,39 +4514,39 @@ contains
 
   !> \brief T1 transformations
   subroutine getT1transformation(t1,xocc,xvirt,yocc,yvirt, &
-       & ypo,ypv,yho,yhv)
+       & Co,Cv,Co2,Cv2)
 
     implicit none
     type(array2), intent(inout) :: t1
-    type(array2), intent(inout) :: ypo,ypv,yho,yhv
+    type(array2), intent(inout) :: Co,Cv,Co2,Cv2
     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
 
     ! Occupied X and Y matrices
-    call getT1transformation_occ(t1,xocc,yocc,ypo,yho,yhv)
+    call getT1transformation_occ(t1,xocc,yocc,Co,Co2,Cv2)
 
     ! Virtual X and Y matrices
-    call getT1transformation_virt(t1,xvirt,yvirt,ypo,ypv,yhv)
+    call getT1transformation_virt(t1,xvirt,yvirt,Co,Cv,Cv2)
 
 
   end subroutine getT1transformation
 
 
   !> \brief T1 transformations for occupied X and Y matrices
-  subroutine getT1transformation_occ(t1,xocc,yocc,ypo,yho,yhv)
+  subroutine getT1transformation_occ(t1,xocc,yocc,Co,Co2,Cv2)
 
     implicit none
     type(array2), intent(inout) :: t1
-    type(array2), intent(inout) :: ypo,yho,yhv
+    type(array2), intent(inout) :: Co,Co2,Cv2
     type(array2), intent(inout) :: xocc,yocc
 
     ! xocc
     call array2_zero(xocc)
-    call array2_copy(xocc,ypo)
+    call array2_copy(xocc,Co)
 
     ! yocc
     call array2_zero(yocc)
-    call array2_copy(yocc,yho)
-    call array2_matmul(yhv,t1,yocc,'n','n',1.0E0_realk,1.0E0_realk)
+    call array2_copy(yocc,Co2)
+    call array2_matmul(Cv2,t1,yocc,'n','n',1.0E0_realk,1.0E0_realk)
 
 
   end subroutine getT1transformation_occ
@@ -4554,21 +4554,21 @@ contains
 
 
   !> \brief T1 transformations for virtual X and Y matrices
-  subroutine getT1transformation_virt(t1,xvirt,yvirt,ypo,ypv,yhv)
+  subroutine getT1transformation_virt(t1,xvirt,yvirt,Co,Cv,Cv2)
 
     implicit none
     type(array2), intent(inout) :: t1
-    type(array2), intent(inout) :: ypo,ypv,yhv
+    type(array2), intent(inout) :: Co,Cv,Cv2
     type(array2), intent(inout) :: xvirt,yvirt
 
     ! xvirt
     call array2_zero(xvirt)
-    call array2_copy(xvirt,ypv)
-    call array2_matmul(ypo,t1,xvirt,'n','t',-1.0E0_realk,1.0E0_realk)
+    call array2_copy(xvirt,Cv)
+    call array2_matmul(Co,t1,xvirt,'n','t',-1.0E0_realk,1.0E0_realk)
 
     ! yvirt
     call array2_zero(yvirt)
-    call array2_copy(yvirt,yhv)
+    call array2_copy(yvirt,Cv2)
 
   end subroutine getT1transformation_virt
 
@@ -4790,7 +4790,7 @@ contains
     type(array2),intent(inout) :: t1
     !> T1-transformed Fock matrix in the AO basis (also initialized here)
     type(array2),intent(inout) :: fockt1
-    type(array2) :: ypo,yho,ypv
+    type(array2) :: Co,Co2,Cv
     integer :: nbasis,nocc,nvirt
     integer,dimension(2) :: bo,bv
 
@@ -4804,17 +4804,17 @@ contains
     bv(2) = nvirt
 
     ! Initialize stuff in array2 format
-    ypo = array2_init(bo,MyMolecule%Co)
-    yho = array2_init(bo,MyMolecule%Co)
-    ypv = array2_init(bv,MyMolecule%Cv)
+    Co = array2_init(bo,MyMolecule%Co)
+    Co2 = array2_init(bo,MyMolecule%Co)
+    Cv = array2_init(bv,MyMolecule%Cv)
 
     ! Get T1-transformed Fock matrix in AO basis
-    call Get_AOt1Fock(mylsitem,t1,fockt1,nocc,nvirt,nbasis,ypo,yho,ypv)
+    call Get_AOt1Fock(mylsitem,t1,fockt1,nocc,nvirt,nbasis,Co,Co2,Cv)
 
     ! Free stuff
-    call array2_free(ypo)
-    call array2_free(yho)
-    call array2_free(ypv)
+    call array2_free(Co)
+    call array2_free(Co2)
+    call array2_free(Cv)
 
 
   end subroutine fullmolecular_get_AOt1Fock
@@ -4830,7 +4830,7 @@ contains
     !> T1-transformed Fock matrix in the AO basis (also initialized here)
     type(array2),intent(inout) :: fockt1
     type(array2) :: t1
-    type(array2) :: ypo,yho,ypv
+    type(array2) :: Co,Co2,Cv
     integer :: nbasis,nocc,nvirt
     integer,dimension(2) :: bo,bv,vo
 
@@ -4848,9 +4848,9 @@ contains
 
     ! Initialize stuff in array2 format
     ! *********************************
-    ypo = array2_init(bo,MyFragment%Co)
-    yho = array2_init(bo,MyFragment%Co)   ! particle and hole coefficients are identical
-    ypv = array2_init(bv,MyFragment%Cv)
+    Co = array2_init(bo,MyFragment%Co)
+    Co2 = array2_init(bo,MyFragment%Co)   ! particle and hole coefficients are identical
+    Cv = array2_init(bv,MyFragment%Cv)
 
     ! Set t1 equal to the t1 associated with the fragment
     ! ***************************************************
@@ -4865,18 +4865,18 @@ contains
 
     ! Get T1-transformed Fock matrix in AO basis
     fockt1=array2_init([nbasis,nbasis])
-    call Get_AOt1Fock(MyFragment%mylsitem,t1,fockt1,nocc,nvirt,nbasis,ypo,yho,ypv)
+    call Get_AOt1Fock(MyFragment%mylsitem,t1,fockt1,nocc,nvirt,nbasis,Co,Co2,Cv)
 
     ! Free stuff
-    call array2_free(ypo)
-    call array2_free(yho)
-    call array2_free(ypv)
+    call array2_free(Co)
+    call array2_free(Co2)
+    call array2_free(Cv)
 
 
   end subroutine fragment_get_AOt1Fock
 
 
-  subroutine Get_AOt1Fock_arraywrapper(mylsitem,t1,fockt1,nocc,nvirt,nbasis,ypo,yho,ypv)
+  subroutine Get_AOt1Fock_arraywrapper(mylsitem,t1,fockt1,nocc,nvirt,nbasis,Co,Co2,Cv)
     implicit none
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
@@ -4892,41 +4892,41 @@ contains
     !> Number of basis functions (atomic fragment extent or full molecule)
     integer,intent(in) :: nbasis
     !> Occupied MOs (particle)
-    type(array),intent(inout) :: ypo
+    type(array),intent(inout) :: Co
     !> Occupied MOs (hole - currently particle=hole always)
-    type(array),intent(inout) :: yho
+    type(array),intent(inout) :: Co2
     !> Virtual MOs (hole)
-    type(array),intent(inout) :: ypv
+    type(array),intent(inout) :: Cv
 
     type(array2) :: fockt1_a2
-    type(array2) :: ypo_a2
-    type(array2) :: yho_a2
-    type(array2) :: ypv_a2
+    type(array2) :: Co_a2
+    type(array2) :: Co2_a2
+    type(array2) :: Cv_a2
 
     fockt1_a2%dims=fockt1%dims
-    ypo_a2%dims=ypo%dims
-    yho_a2%dims=yho%dims
-    ypv_a2%dims=ypv%dims
+    Co_a2%dims=Co%dims
+    Co2_a2%dims=Co2%dims
+    Cv_a2%dims=Cv%dims
 
     call ass_D1to2(fockt1%elm1,fockt1_a2%val,fockt1%dims)
-    call ass_D1to2(ypo%elm1,ypo_a2%val,ypo%dims)
-    call ass_D1to2(yho%elm1,yho_a2%val,yho%dims)
-    call ass_D1to2(ypv%elm1,ypv_a2%val,ypv%dims)
+    call ass_D1to2(Co%elm1,Co_a2%val,Co%dims)
+    call ass_D1to2(Co2%elm1,Co2_a2%val,Co2%dims)
+    call ass_D1to2(Cv%elm1,Cv_a2%val,Cv%dims)
 
-    call Get_AOt1Fock(mylsitem,t1,fockt1_a2,nocc,nvirt,nbasis,ypo_a2,yho_a2,ypv_a2)
+    call Get_AOt1Fock(mylsitem,t1,fockt1_a2,nocc,nvirt,nbasis,Co_a2,Co2_a2,Cv_a2)
 
 
     nullify(fockt1_a2%val)
-    nullify(ypo_a2%val)
-    nullify(yho_a2%val)
-    nullify(ypv_a2%val)
+    nullify(Co_a2%val)
+    nullify(Co2_a2%val)
+    nullify(Cv_a2%val)
 
     !call print_norm(fockt1)
   end subroutine Get_AOt1Fock_arraywrapper
 
   !> \brief Get T1 transformed Fock matrix in the AO basis using
   !> either fragment or full molecular T1 amplitudes.
-  subroutine Get_AOt1Fock_oa(mylsitem,t1,fockt1,nocc,nvirt,nbasis,ypo,yho,ypv)
+  subroutine Get_AOt1Fock_oa(mylsitem,t1,fockt1,nocc,nvirt,nbasis,Co,Co2,Cv)
     implicit none
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
@@ -4942,11 +4942,11 @@ contains
     !> Number of basis functions (atomic fragment extent or full molecule)
     integer,intent(in) :: nbasis
     !> Occupied MOs (particle)
-    type(array2),intent(inout) :: ypo
+    type(array2),intent(inout) :: Co
     !> Occupied MOs (hole - currently particle=hole always)
-    type(array2),intent(inout) :: yho
+    type(array2),intent(inout) :: Co2
     !> Virtual MOs (hole)
-    type(array2),intent(inout) :: ypv
+    type(array2),intent(inout) :: Cv
     type(array2) :: xocc,yocc
     type(matrix) :: fockmat,dens,h1
     integer :: i,idx1,idx2
@@ -4962,7 +4962,7 @@ contains
     ! Get T1-modified occupied orbitals xocc and yocc
     xocc=array2_init(bo)
     yocc=array2_init(bo)
-    call getT1transformation_occ(t1,xocc,yocc,ypo,yho,ypv)
+    call getT1transformation_occ(t1,xocc,yocc,Co,Co2,Cv)
 
     ! Get effective T1 density: Yocc Xocc^T
     call mat_init(dens,nbasis,nbasis)
