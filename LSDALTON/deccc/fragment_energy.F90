@@ -39,7 +39,7 @@ module fragment_energy_module
   use ccdriver, only: mp2_solver,fragment_ccsolver
 
 public :: optimize_atomic_fragment, pair_driver_singles, atomic_driver, &
-     & pair_driver,atomic_driver_advanced,dec_energy_control_center,&
+     & pair_driver,atomic_driver_advanced,plot_pair_energies,&
      & Full_DECMP2_calculation,estimate_energy_error
 private
 
@@ -47,13 +47,13 @@ contains
 
 
 
-  !> \brief Construct new atomic fragment based on info in OccAtoms and UnoccAtoms,
+  !> \brief Construct new atomic fragment based on info in occ_atoms and Unocc_atoms,
   !> and calculate fragment energy. Energy contributions from each individual orbital
   !> is also calculated and stored in MyFragment%OccContribs and MyFragment%VirtContribs for
   !> the occupied and virtual orbitals, respectively.
   !> \author Kasper Kristensen
   !> \date January 2011
-  subroutine get_fragment_and_Energy(MyAtom,natoms,OccAtoms,UnoccAtoms,&
+  subroutine get_fragment_and_Energy(MyAtom,natoms,occ_atoms,Unocc_atoms,&
        & MyMolecule,MyLsitem,nocc_tot,nunocc_tot,OccOrbitals,UnoccOrbitals,&
        & MyFragment)
 
@@ -63,9 +63,9 @@ contains
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
     !> Which atoms are in the occupied fragment space
-    logical, dimension(natoms),intent(in) :: OccAtoms
+    logical, dimension(natoms),intent(in) :: occ_atoms
     !> Which atoms are in the unoccupied fragment space
-    logical, dimension(natoms),intent(in) :: UnoccAtoms
+    logical, dimension(natoms),intent(in) :: Unocc_atoms
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> Full molecule lsitem
@@ -75,11 +75,11 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc_tot
     !> Occupied orbitals for full molecule
-    type(ccorbital), dimension(nOcc_tot), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcc_tot), intent(in) :: OccOrbitals
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), dimension(nUnocc_tot), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc_tot), intent(in) :: UnoccOrbitals
     !> Atomic fragment to be determined  (NOT pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
     logical :: DoBasis
 
@@ -91,8 +91,8 @@ contains
     ! Initialize fragment
     ! *******************
     DoBasis=.true.
-    call atomic_fragment_init_atom_specific(MyAtom,natoms,UnoccAtoms, &
-         & OccAtoms,nocc_tot,nunocc_tot,OccOrbitals,UnoccOrbitals, &
+    call atomic_fragment_init_atom_specific(MyAtom,natoms,Unocc_atoms, &
+         & occ_atoms,nocc_tot,nunocc_tot,OccOrbitals,UnoccOrbitals, &
          & MyMolecule,mylsitem,MyFragment,DoBasis,.false.)
 
     ! Calculate fragment energies
@@ -119,15 +119,15 @@ contains
     !> Full molecule lsitem
     type(lsitem), intent(inout) :: mylsitem
     !> Occupied orbitals for full molecule
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Which atoms are in the occupied fragment space
     logical, dimension(MyMolecule%numocc),intent(in) :: OccAOS
     !> Which atoms are in the unoccupied fragment space
     logical, dimension(MyMolecule%numvirt),intent(in) :: UnoccAOS
     !> Atomic Fragment to be determined (NOT pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
     logical :: DoBasis
 
@@ -158,7 +158,7 @@ contains
 
   !> \brief Wrapper for atomic_driver with the following special features:
   !> 1. It is assumed that the input fragment has been initialized but that
-  !> the fragment basis information (expensive box in ccatom type) has not been set.
+  !> the fragment basis information (expensive box in decfrag type) has not been set.
   !> 2. The fragment basis information is calculated here and then freed again.
   !> 3. This wrapper can also attach exisiting full molecular singles amplitudes
   !>    to the fragment structure and update new improved full molecular singles amplitudes
@@ -171,7 +171,7 @@ contains
 
     implicit none
     !> Atomic fragment 
-    type(ccatom), intent(inout) :: myfragment
+    type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout) :: grad
     !> Number of occupied orbitals in full molecule
@@ -179,9 +179,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer,intent(in) :: nUnocc
     !> Occupied orbitals for full molecule
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Full molecule info (will be unchanged at output)
     type(fullmolecule), intent(inout) :: MyMolecule
     !> LSDalton info
@@ -234,14 +234,14 @@ contains
     !> LS item info                                                                                    
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals                                                         
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Atomic fragment 
-    type(ccatom), intent(inout) :: myfragment
+    type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
-    type(ccatom) :: FOfragment
+    type(decfrag) :: FOfragment
 
     ! Sanity check
     if(DECinfo%first_order) then
@@ -294,7 +294,7 @@ contains
 
     implicit none
     !> Atomic fragment
-    type(ccatom), intent(inout) :: myfragment
+    type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
     type(array2) :: t1, ccsdpt_t1
@@ -304,7 +304,9 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Which model? MP2,CC2, CCSD etc.
-    WhichCCmodel: if(MyFragment%ccmodel==MODEL_MP2) then ! MP2 calculation
+    WhichCCmodel: if(MyFragment%ccmodel==MODEL_NONE) then ! SKip calculation
+       return
+    elseif(MyFragment%ccmodel==MODEL_MP2) then ! MP2 calculation
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
@@ -358,8 +360,8 @@ contains
           ! call ccsd(t) driver and single fragment evaluation
           call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nunoccAOS,&
                              & MyFragment%number_basis,MyFragment%ppfock,&
-                             & MyFragment%qqfock,MyFragment%ypo,&
-                             & MyFragment%ypv,MyFragment%mylsitem,&
+                             & MyFragment%qqfock,MyFragment%Co,&
+                             & MyFragment%Cv,MyFragment%mylsitem,&
                              & t2,ccsdpt_t1,ccsdpt_t2)
           call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
                              & MyFragment%OccContribs,MyFragment%VirtContribs)
@@ -448,7 +450,7 @@ contains
     !> MP2 amplitudes, only virt orbitals on central atom, occ AOS orbitals
     type(array4), intent(in) :: t2virt
     !> Atomic fragment 
-    type(ccatom), intent(inout) :: myfragment
+    type(decfrag), intent(inout) :: myfragment
     integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
     integer :: i,j,k,a,b,c
     real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
@@ -798,19 +800,19 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer,intent(in) :: nUnocc
     !> Occupied orbitals for full molecule
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Full molecule info (will be unchanged at output)
     type(fullmolecule), intent(inout) :: MyMolecule
     !> LSDalton info
     type(lsitem), intent(inout) :: mylsitem
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> Existing full molecular t1 amplitudes
     type(array2),intent(in) :: t1old
     !> New full molecular t1 amplitudes which will be updated with the contribution from pair fragment
@@ -863,20 +865,20 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Atomic fragment 
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout) :: grad
-    type(ccatom) :: FOfragment
+    type(decfrag) :: FOfragment
 
 
     if(DECinfo%fragadapt .and. PairFragment%FAset) then
@@ -911,15 +913,15 @@ contains
 
     implicit none
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Distance table for all atoms in the molecule
     real(realk), intent(in) :: DistanceTable(natoms,natoms)
     !> Pair fragment formed from fragment 1 and 2 
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout) :: grad
     type(array2) :: t1, ccsdpt_t1
@@ -930,7 +932,9 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
-    WhichCCModel: if(PairFragment%ccModel==MODEL_MP2) then ! MP2
+    WhichCCmodel: if(PairFragment%ccmodel==MODEL_NONE) then ! SKip calculation
+       return
+    elseif(PairFragment%ccModel==MODEL_MP2) then ! MP2
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
@@ -1037,8 +1041,8 @@ contains
        ! call ccsd(t) driver and pair fragment evaluation
        call ccsdpt_driver(PairFragment%noccAOS,PairFragment%nunoccAOS,&
                           & PairFragment%number_basis,PairFragment%ppfock,&
-                          & PairFragment%qqfock,PairFragment%ypo,&
-                          & PairFragment%ypv,PairFragment%mylsitem,&
+                          & PairFragment%qqfock,PairFragment%Co,&
+                          & PairFragment%Cv,PairFragment%mylsitem,&
                           & t2,ccsdpt_t1,ccsdpt_t2)
        call ccsdpt_energy_e4_pair(Fragment1,Fragment2,&
                           &PairFragment,t2,ccsdpt_t2)
@@ -1087,11 +1091,11 @@ contains
     !> MP2 amplitudes, only virt orbitals on central atom, occ AOS orbitals
     type(array4), intent(in) :: t2virt
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Distance table for all atoms in the molecule
@@ -1390,8 +1394,8 @@ contains
 #ifdef VAR_OMP
     integer, external :: OMP_GET_MAX_THREADS
 #endif
-    type(ccorbital), pointer :: OccOrbitals(:)
-    type(ccorbital), pointer :: UnoccOrbitals(:)
+    type(decorbital), pointer :: OccOrbitals(:)
+    type(decorbital), pointer :: UnoccOrbitals(:)
     integer :: nocc,nunocc,nbasis,natoms
 
     write(DECinfo%output,*) 'Using DEC-MP2 debug routine for full molecular system...'
@@ -1432,7 +1436,7 @@ contains
        ! Only copy valence orbitals into array2 structure
        call mem_alloc(Cocc,nbasis,nocc)
        do i=1,nocc
-          Cocc(:,i) = MyMolecule%ypo(:,i+Ncore)
+          Cocc(:,i) = MyMolecule%Co(:,i+Ncore)
        end do
 
        ! Fock valence
@@ -1445,12 +1449,12 @@ contains
     else
        ! No frozen core, simply copy elements for all occupied orbitals
        call mem_alloc(Cocc,nbasis,nocc)
-       Cocc=MyMolecule%ypo
+       Cocc=MyMolecule%Co
        ppfock = MyMolecule%ppfock
        offset=0
     end if
     call mem_alloc(Cvirt,nbasis,nunocc)
-    Cvirt = MyMolecule%ypv
+    Cvirt = MyMolecule%Cv
     e1=0E0_realk
     e2=0E0_realk
     e3=0E0_realk
@@ -1745,387 +1749,6 @@ contains
 
 
 
-  !> \brief Energy control and printout center.
-  !> 1. Estimate error of correlation energy Eerr as difference between energies
-  !>    for the three partitioning schemes (see PCCP, 14, 15706 (2012))
-  !> 2. Estimate contibutions from neglected pairs.
-  !> 3. Accept current pair cut off if estimated contributions from neglected pairs
-  !>    are less than half of Err for all three partitioning schemes.
-  !> \author Kasper Kristensen
-  !> \date October 2012
-  subroutine dec_energy_control_center(natoms,paircut,dofrag,DistanceTable,FragEnergiesAll,&
-       & Fragments, morepairsneeded, newpaircut,Eerr)
-
-    implicit none
-    !> Number of atoms in molecule
-    integer,intent(in) :: natoms
-    !> Pair cut off distance used
-    !> (i.e. FragEnergies must contain pair energies with pair distances from 0 to paircut, while
-    !> pairs separated by more than paircut have not been treated and need to be extrapolated)
-    real(realk),intent(in) :: paircut
-    !> dofrag(P) is true if P has orbitals assigned
-    logical,intent(in) :: dofrag(natoms)
-    !> Distances between atoms
-    real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
-    !> Fragment energies as determined in main_fragment_driver.
-    real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergiesAll
-    !> Single  fragments
-    type(ccatom),intent(inout) :: Fragments(natoms)
-    !> Do we need to include more pairs...? (Answer to point 3 above)
-    logical, intent(inout) :: morepairsneeded
-    !> New pair cutoff distance (identical to paircut if morepairsneeded=.false.)
-    real(realk),intent(inout) :: newpaircut
-    !> Estimated intrinsic energy error of DEC calculation
-    real(realk),intent(inout) :: Eerr
-    real(realk) :: Lmiss, EOCCmiss, EVIRTmiss,maxmiss
-    ! Number of terms in fitting function, currently just nterms=1: f(x) = a(1)*x^{-6}
-    ! (of nterms=2, then f(x) = a(1)*x^{-6} + a(2)*x^{-7} etc.)
-    integer,parameter :: nterms=1
-    ! Fitting parameters
-    real(realk),dimension(nterms) :: alag,aocc,avirt
-    real(realk) :: L,Eocc,Evirt
-    integer :: i,j,npairsdone,npairstot, nnewpairsL, nnewpairsO, nnewpairsV, nnewpairs
-    logical :: allpairs
-    real(realk) :: Lnewpaircut, Onewpaircut, Vnewpaircut, Etarget,dist
-    real(realk),pointer :: FragEnergiesModel(:,:,:)
-
-    morepairsneeded=.false.
-
-    ! Extract fragment energies for model under consideration
-    call mem_alloc(FragEnergiesModel,natoms,natoms,3)
-    call extract_fragenergies_for_model(natoms,FragEnergiesAll,DECinfo%ccmodel,FragEnergiesModel)
-
-    ! Total number of pairs: N*(N-1)/2
-    ! where N is the number of atoms with orbitals assigned
-    npairstot = count(dofrag)*(count(dofrag)-1)/2
-
-
-    ! Calculate current energies using the three part. schemes
-    ! ********************************************************
-    L=0.0E0_realk
-    Eocc=0.0E0_realk
-    Evirt=0.0E0_realk
-    npairsdone=0
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle  ! no orbitals assigned to atom "i"
-       L = L + FragEnergiesModel(i,i,1)
-       Eocc = Eocc + FragEnergiesModel(i,i,2)
-       Evirt = Evirt + FragEnergiesModel(i,i,3)
-       do j=i+1,natoms
-          if(.not. dofrag(j)) cycle  ! no orbitals assigned to atom "j"
-          if(DistanceTable(i,j) > paircut) cycle   ! only pairs below cutoff have been determined
-          npairsdone = npairsdone +1
-          L = L + FragEnergiesModel(i,j,1)
-          Eocc = Eocc + FragEnergiesModel(i,j,2)
-          Evirt = Evirt + FragEnergiesModel(i,j,3)
-       end do
-    end do
-
-    ! Estimate error as largest different between these energies
-    ! **********************************************************
-    Eerr = max(L,Eocc,Evirt) - min(L,Eocc,Evirt)
-
-
-
-    ! SANITY CHECKS
-    ! *************
-
-    ! Sanity check 1
-    if(DECinfo%simulate_full) then ! no pairs in calculation, and therefore no pairs are needed
-       write(DECinfo%output,*) 'Simulated full calculation - skipping pair analysis'
-       morepairsneeded=.false.
-       call mem_dealloc(FragEnergiesModel)
-       return
-    end if
-
-    ! Sanity check 2
-    if(npairsdone==npairstot) then ! all pairs have already been calculated
-       allpairs=.true.
-       morepairsneeded=.false.  ! no more pairs needed
-    else
-       allpairs=.false.
-    end if
-
-    ! Sanity check 3
-    if(npairsdone==0 .and. (count(dofrag)>1) ) then 
-       ! No pairs have been calculated, but there is more than one fragment,
-       ! and thus at least one pair.
-       ! The remaining part of the routine will be meaningless.
-       ! This is presumably a debug calculation.
-       write(DECinfo%output,*) 'WARNING: Pair energy estimate could not be carried out, there are no pairs!'
-       morepairsneeded=.false.
-       call mem_dealloc(FragEnergiesModel)
-       return
-    end if
-
-    ! Sanity check 4
-    if(npairstot==1) then 
-       ! Regression plot is meaningless if there is only one pair
-       write(DECinfo%output,*) 'Pair energy estimate could not be carried out, there is only one pair!'
-       if(npairsdone==1) then  ! The single pair has already been calculated
-          morepairsneeded=.false.
-       else ! require the single pair to be calculated
-          morepairsneeded=.true.
-       end if
-       call mem_dealloc(FragEnergiesModel)
-       ! Do not include extra pairs if the checkpairs keyword is not set (see below)
-       if( (.not. DECinfo%checkpairs) ) morepairsneeded=.false.
-       return
-    end if
-
-    ! Sanity check 5
-    ! We only perform regression for pair distances beyond DECinfo%PairMinDist
-    ! in estimate_remaining_pair_energies, and therefore paircutoff beyond this distance is meaningless
-    if(paircut < DECinfo%PairMinDist) then
-       write(DECinfo%output,*) 'Pair cut off smaller than 3 Angstrom, skipping pair regression.'
-       morepairsneeded=.true.
-       call mem_dealloc(FragEnergiesModel)
-       ! Do not include extra pairs if the checkpairs keyword is not set (see below)
-       if( (.not. DECinfo%checkpairs) ) morepairsneeded=.false.
-       return
-    end if
-
-
-
-    ! Estimate contributions from neglected pairs
-    ! *******************************************
-    ! Lagrangian
-    call estimate_remaining_pair_energies(natoms,paircut,DistanceTable,FragEnergiesModel(:,:,1),dofrag,&
-         & Lmiss, nterms, alag)
-    ! Occupied
-    call estimate_remaining_pair_energies(natoms,paircut,DistanceTable,FragEnergiesModel(:,:,2),dofrag,&
-         & EOCCmiss, nterms, aocc)
-    ! Virtual
-    call estimate_remaining_pair_energies(natoms,paircut,DistanceTable,FragEnergiesModel(:,:,3),dofrag,&
-         & EVIRTmiss, nterms, avirt)
-
-    ! Maximum missing contribution (all these should be negative)
-    maxmiss = max( abs(Lmiss), abs(EOCCmiss), abs(EVIRTmiss) )
-
-
-
-    ! Ensure that missing contribution is well below estimated error
-    ! **************************************************************
-    ! Current criteria: Calculate more pairs if maxmiss is larger than half of Eerr
-    Etarget = 0.5E0_realk*Eerr
-
-    if(.not. allpairs) then  ! only relevant if some pairs have not been considered
-       if( maxmiss > Etarget) then
-          morepairsneeded=.true.
-       else
-          morepairsneeded=.false.
-       end if
-    end if
-
-    ! If more pairs are needed, determine new pair cutoff
-    ! ***************************************************
-
-    NeedMorePairs: if(morepairsneeded) then
-       ! New pair cutoff estimated by Lagrangian scheme
-       call determine_new_paircutoff(natoms,paircut,DistanceTable,FragEnergiesModel(:,:,1),dofrag,Etarget,&
-            & Lmiss,nterms, alag,Lnewpaircut,nnewpairsL)
-
-       ! New pair cutoff estimated by occupied scheme
-       call determine_new_paircutoff(natoms,paircut,DistanceTable,FragEnergiesModel(:,:,2),dofrag,Etarget,&
-            & EOCCmiss,nterms, aocc,Onewpaircut,nnewpairsO)
-
-       ! New pair cutoff estimated by virtual scheme
-       call determine_new_paircutoff(natoms,paircut,DistanceTable,FragEnergiesModel(:,:,3),dofrag,Etarget,&
-            & EVIRTmiss,nterms, avirt,Vnewpaircut,nnewpairsV)
-
-       ! Be on the safe side and use maximum value of new pair cut offs from the 3 schemes
-       newpaircut = max(Lnewpaircut,Onewpaircut,Vnewpaircut)
-       ! Number of new pairs
-       nnewpairs = max(nnewpairsL,nnewpairsO,nnewpairsV)
-
-    else
-       ! Everything is fine with current pair cutoff - set new pair cutoff equal to existing one
-       newpaircut = paircut
-       nnewpairs=0
-    end if NeedMorePairs
-
-    ! Print out energy statistics
-    call dec_energy_pairanalysis_printout(natoms,paircut,DistanceTable,FragEnergiesModel,&
-         & morepairsneeded,newpaircut, Lmiss,EOCCmiss,EVIRTmiss,Eerr,L,Eocc,Evirt,alag,aocc,avirt,&
-         & allpairs,dofrag,nnewpairs)
-
-    ! Note: The check pairs option should be made default but has not yet been properly tested.
-    ! For now we simply make a warning if pair analysis indicated that more pairs are needed.
-    if( (.not. DECinfo%checkpairs) .and. morepairsneeded) then
-       write(DECinfo%output,*) 'WARNING! The pair analysis indicated that more pairs are needed.'
-       write(DECinfo%output,*) '--> Your final results may be inaccurate!'
-       write(DECinfo%output,*) 'I recommend that your rerun the calculation with a larger pair cut-off.'
-       write(DECinfo%output,*) 'This can be done with the .PAIRTHRANGSTROM keyword.'
-       write(DECinfo%output,'(1X,a,g12.4,a)') 'Current pair cutoff: ', paircut*bohr_to_angstrom, &
-            & ' Angstrom'
-       newpaircut = paircut
-       morepairsneeded = .false.
-    end if
-
-    call mem_dealloc(FragEnergiesModel)
-
-  end subroutine dec_energy_control_center
-
-
-
-
-  !> \brief Print out information from DEC energy control center (see dec_energy_control_center).
-  !> \author Kasper Kristensen
-  !> \date October 2012
-  subroutine dec_energy_pairanalysis_printout(natoms,paircut,DistanceTable,FragEnergies,&
-       & morepairsneeded,newpaircut,Lmiss,EOCCmiss,EVIRTmiss,Eerr,L,Eocc,Evirt,&
-       & alag,aocc,avirt,allpairs,dofrag,nnewpairs)
-
-    implicit none
-    !> Number of atoms in molecule
-    integer,intent(in) :: natoms
-    !> Pair cut off distance used
-    !> (i.e. FragEnergies must contain pair energies with pair distances from 0 to paircut, while
-    !> pairs separated by more than paircut have not been treated and need to be extrapolated)
-    real(realk),intent(in) :: paircut
-    !> Distances between atoms
-    real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
-    !> Fragment energies for Lagrangian (:,:,1), occupied (:,:,2), and virtual (:,:,3) schemes
-    real(realk),dimension(natoms,natoms,3),intent(in) :: FragEnergies
-    !> Do we need to include more pairs...? (see point 3 in dec_energy_control_center)
-    logical, intent(in) :: morepairsneeded
-    !> New pair cut off (only printed if morepairsneeded is true)
-    real(realk),intent(in) :: newpaircut
-    !> Energy from missing pairs for Lagrangian partitioning scheme
-    real(realk),intent(in) :: Lmiss
-    !> Energy from missing pairs for occupied partitioning scheme
-    real(realk),intent(in) :: EOCCmiss
-    !> Energy from missing pairs for virtual partitioning scheme
-    real(realk),intent(in) :: EVIRTmiss
-    !> Estimated intrinsic energy error of DEC calculation
-    real(realk),intent(in) :: Eerr
-    !> Correlation energy for Lagrangian scheme (including pairs up to paircut)
-    real(realk),intent(in) :: L
-    !> Correlation energy for occupied scheme (including pairs up to paircut)
-    real(realk),intent(in) :: Eocc
-    !> Correlation energy for virtual scheme (including pairs up to paircut)
-    real(realk),intent(in) :: Evirt
-    !> Fitting parameters for Lagrangian scheme
-    real(realk),intent(in) :: alag(1)
-    !> Fitting parameters for occupied scheme
-    real(realk),intent(in) :: aocc(1)
-    !> Fitting parameters for virtual scheme
-    real(realk),intent(in) :: avirt(1)
-    !> Have all pairs been included or not?
-    logical,intent(in) :: allpairs
-    !> dofrag(P) is true if P has orbitals assigned
-    logical,intent(in) :: dofrag(natoms)
-    !> Number of new pairs to calculate
-    integer,intent(in) :: nnewpairs
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '=================================================================='
-    write(DECinfo%output,'(1X,a)') '|                 DEC PAIR ENERGY CONTROL CENTER                 |'
-    write(DECinfo%output,'(1X,a)') '=================================================================='
-    write(DECinfo%output,*)
-    if(allpairs) then
-       write(DECinfo%output,'(1X,a)') 'All pairs have been included!'
-    else
-       write(DECinfo%output,'(1X,a,f10.2,a,f10.2,a)') 'Pair cutoff distance = ', paircut, ' a.u. = ', &
-            & bohr_to_angstrom*paircut, ' Angstrom'
-    end if
-    write(DECinfo%output,*)
-    if(.not. allpairs) then
-       write(DECinfo%output,'(1X,a)') '---------------------------------------------------------------'
-       write(DECinfo%output,'(1X,a)') ' Calculated energies with pair contributions up to pair cutoff '
-       write(DECinfo%output,'(1X,a)') '---------------------------------------------------------------'
-    end if
-    write(DECinfo%output,'(1X,a,g20.9)') 'Lagrangian scheme energy      : ', L
-    write(DECinfo%output,'(1X,a,g20.9)') 'Occupied scheme energy        : ', Eocc
-    write(DECinfo%output,'(1X,a,g20.9)') 'Virtual scheme energy         : ', Evirt
-    write(DECinfo%output,'(1X,a,g20.9)') '*** Estimated intrinsic error : ', Eerr
-
-    if(.not. allpairs) then
-       write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a)') '----------------------------------------------------------------'
-       write(DECinfo%output,'(1X,a)') '  Regression-estimated energy contributions from missing pairs  '
-       write(DECinfo%output,'(1X,a)') '----------------------------------------------------------------'
-       write(DECinfo%output,'(1X,a,g20.9)') 'Lagrangian scheme missing  : ', Lmiss
-       write(DECinfo%output,'(1X,a,g20.9)') 'Occupied scheme missing    : ', EOCCmiss
-       write(DECinfo%output,'(1X,a,g20.9)') 'Virtual scheme missing     : ', EVIRTmiss
-       write(DECinfo%output,'(1X,a,g20.9)') '*** Max (absolute) missing : ', &
-            & max( abs(Lmiss), abs(EOCCmiss), abs(EVIRTmiss) )
-
-       write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a)') '----------------------'
-       write(DECinfo%output,'(1X,a)') 'PAIR CUTOFF CONCLUSION'
-       write(DECinfo%output,'(1X,a)') '----------------------'
-       if(morepairsneeded) then
-          write(DECinfo%output,'(1X,a)') 'The maxium estimated missing pair energy contribution'
-          write(DECinfo%output,'(1X,a)') 'is larger than half of the estimated intrinsic energy error.' 
-          write(DECinfo%output,'(1X,a)') 'PairConclusion: Include more pairs to adapt to precision!'
-          write(DECinfo%output,'(1X,a,f10.2,a,f10.2,a)') 'NEW pair cutoff distance = ', newpaircut, &
-               & ' a.u. = ', bohr_to_angstrom*newpaircut, ' Angstrom'
-          write(DECinfo%output,'(1X,a,i8)') 'Number of new pairs to calculate : ', nnewpairs
-       else
-          write(DECinfo%output,'(1X,a)') 'The maxium estimated missing pair energy contribution'
-          write(DECinfo%output,'(1X,a)') 'is smaller than half of the estimated intrinsic energy error.' 
-          write(DECinfo%output,'(1X,a)') 'PairConclusion: No need to include more pairs!'
-       end if
-
-
-       write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a)') '-------------------------------------------------------------'
-       write(DECinfo%output,'(1X,a)') '             Estimated total energies (all pairs)            '
-       write(DECinfo%output,'(1X,a)') '-------------------------------------------------------------'
-       write(DECinfo%output,'(1X,a,g20.9)') 'Lagrangian scheme estimat. : ', L+Lmiss
-       write(DECinfo%output,'(1X,a,g20.9)') 'Occupied scheme estimat.   : ', Eocc+EOCCmiss
-       write(DECinfo%output,'(1X,a,g20.9)') 'Virtual scheme estimat.    : ', Evirt+EVIRTmiss
-
-    end if
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '-------------------------------------------------------------'
-    write(DECinfo%output,'(1X,a)') '           Pair energy regression parameters                 '
-    write(DECinfo%output,'(1X,a)') '-------------------------------------------------------------'
-    write(DECinfo%output,'(1X,a)') 'The calculated pair energies were fitted to the function:'
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') 'f(x) = a*x^{-6} '
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') 'where x is the pair distance.'
-    write(DECinfo%output,'(1X,a)') 'Only pairs in the dispersion range'
-    write(DECinfo%output,'(1X,a)') '(3 Angstrom to pair cutoff distance) were included in the fit'
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') 'The x^{-6} term is the leading order term as shown in:'
-    write(DECinfo%output,'(1X,a)') 'Hoyvik et al., J. Chem. Phys. 136, 014105 (2012), app. C     '
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a,g18.8,a,g18.8,a)') 'Lag. scheme : a = ',alag(1), &
-         & ' Hartree*bohr^6 = ', alag(1)*(bohr_to_angstrom**6), ' Hartree*Angstrom^6'
-    write(DECinfo%output,'(1X,a,g18.8,a,g18.8,a)') 'Occ. scheme : a = ',aocc(1), &
-         & ' Hartree*bohr^6 = ', aocc(1)*(bohr_to_angstrom**6), ' Hartree*Angstrom^6'
-    write(DECinfo%output,'(1X,a,g18.8,a,g18.8,a)') 'Vir. scheme : a = ',avirt(1), &
-         & ' Hartree*bohr^6 = ', avirt(1)*(bohr_to_angstrom**6), ' Hartree*Angstrom^6'
-    write(DECinfo%output,*)
-
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '-------------------------------------------------------------'
-    write(DECinfo%output,'(1X,a)') '                 PAIR INTERACTION ENERGY PLOT                '
-    write(DECinfo%output,'(1X,a)') '-------------------------------------------------------------'
-    if(DECinfo%ccmodel==MODEL_MP2) then ! MP2: Lagrangian
-       write(DECinfo%output,'(1X,a)') 'Plot contains maximum pair energies for Lagrangian scheme'
-       write(DECinfo%output,'(1X,a)') 'in intervals of 1 Angstrom.'
-    else  ! higher order CC: currently averaged occupied-virtual scheme
-       write(DECinfo%output,'(1X,a)') 'Plot contains maximum pair energies for averaged occ-virt scheme'
-       write(DECinfo%output,'(1X,a)') 'in intervals of 1 Angstrom.'
-    end if
-    write(DECinfo%output,*)
-    call plot_pair_energies(natoms,paircut,FragEnergies(:,:,1),DistanceTable,dofrag)
-
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-  end subroutine dec_energy_pairanalysis_printout
-
-
 
   !> \brief Print a simple "ascii-art" plot of the largest pair energies.
   !> \author Kasper Kristensen
@@ -2297,6 +1920,12 @@ contains
 
     ! Make "ascii-art" plot
     ! *********************
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(1X,a)') '-------------------------------------------------------------'
+    write(DECinfo%output,'(1X,a)') '                 PAIR INTERACTION ENERGY PLOT                '
+    write(DECinfo%output,'(1X,a)') '-------------------------------------------------------------'
+    write(DECinfo%output,'(1X,a)') 'Plot contains maximum pair energies in intervals of 1 Angstrom.'
+    write(DECinfo%output,*)
 
     ! Set x and y labels
     xlabel = 'log[R/Ang]      '
@@ -2313,260 +1942,6 @@ contains
 
   end subroutine plot_pair_energies
 
-
-
-  !> \brief Assuming that pair energies for pair distances from 0 Å to some pair cutoff distance
-  !> have been calculated, use regression to estimate contributions from remaining pairs.
-  !> This is done by fitting exiting pair energies to function: 
-  !> f(x) = a(1)*x^{-6} + a(2)*x^{-7} + a(3)*x^{-8} + ...  (x is pair distance)
-  !> The theoretical foundation for this fit is given in Appendix C of JCP 136,014105 (2012).
-  !> \author Kasper Kristensen
-  !> \date October 2012
-  subroutine estimate_remaining_pair_energies(natoms,paircut,DistanceTable,FragEnergies,dofrag,Emiss,&
-       & nterms, a)
-
-    implicit none
-    !> Number of atoms in molecule
-    integer,intent(in) :: natoms
-    !> Pair cut off distance used
-    !> (i.e. FragEnergies must contain pair energies with pair distances from 0 to paircut, while
-    !> pairs separated by more than paircut have not been treated and need to be extrapolated)
-    real(realk),intent(in) :: paircut
-    !> Distances between atoms
-    real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
-    !> Fragment energies 
-    real(realk),dimension(natoms,natoms),intent(in) :: FragEnergies
-    !> dofrag(P) is true if P has orbitals assigned
-    logical,intent(in) :: dofrag(natoms)
-    !> Estimated energy contribution from missing pairs (separated by more than paircut)
-    real(realk),intent(inout) :: Emiss
-    !> Number of terms in fitting function, e.g. for nterms=2: f(x) = a(1)*x^{-6} + a(2)*x^{-7}
-    integer,intent(in) :: nterms
-    !> Fitting parameters
-    real(realk),intent(inout) :: a(nterms)
-    real(realk),dimension(nterms) :: powers
-    integer :: i,j,k,npairsdone,idx
-    real(realk),pointer :: R(:),E(:)
-    real(realk) :: mindist,errornorm
-
-
-    ! Only consider pairs separated by more than 3 Angstrom
-    mindist = DECinfo%PairMinDist
-
-
-    ! Count how many pairs have already been calculated (number of pair distances below paircut)
-    npairsdone=0
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle  ! only consider fragment with orbital assigned
-       do j=i+1,natoms
-          if(.not. dofrag(j)) cycle
-          if(DistanceTable(i,j) < mindist) cycle
-          if(DistanceTable(i,j) < paircut) npairsdone = npairsdone +1
-       end do
-    end do
-
-    ! Sanity check - if no pairs are done, then return
-    if(npairsdone == 0) then
-       Emiss = 0.0E0_realk
-       a = 0.0E0_realk
-       return
-    end if
-
-    ! Collect distances (R) and energies (E) for calculated pairs
-    call mem_alloc(R,npairsdone)
-    call mem_alloc(E,npairsdone)
-    idx=0
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle  ! only consider fragment with orbital assigned
-       do j=i+1,natoms
-          if(.not. dofrag(j)) cycle
-          if(DistanceTable(i,j) < mindist) cycle
-          if(DistanceTable(i,j) < paircut) then
-             idx=idx+1
-             R(idx) = DistanceTable(i,j)
-             E(idx) = FragEnergies(i,j)
-          end if
-       end do
-    end do
-
-
-    ! *************************************************************
-    ! For calculated (R,E) points, make regression fit to function:
-    ! f(x) = a(1)*x^{-6} + a(2)*x^{-7} + ...    (for nterms)
-    ! *************************************************************
-
-    ! Set powers: -6,-7,-8,...
-    do i=1,nterms
-       powers(i) = -real(6+i-1)
-    end do
-
-    ! Perform regression
-    call dec_regression(npairsdone,R,E,nterms,powers,a,errornorm)
-    if(DECinfo%PL>1) write(DECinfo%output,'(1X,a,g20.8)') 'Pair regression, error norm:', errornorm
-
-
-
-    ! Estimate contributions from missing pairs based on fit
-    ! ******************************************************
-    Emiss = 0.0E0_realk
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle  ! only consider fragment with orbital assigned
-       do j=i+1,natoms
-          if(.not. dofrag(j)) cycle
-
-          if(DistanceTable(i,j) < mindist) cycle
-
-          AddPairEstimate: if(DistanceTable(i,j) > paircut) then 
-
-             ! Estimate pair (i,j) contribution using fitted function 
-             ! f(x) = a(1)*x^{-6} + a(2)*x^{-7} + ...    (for nterms)
-             ! and add contribution to missing energy.
-             do k=1,nterms
-                Emiss = Emiss + a(k)*DistanceTable(i,j)**(powers(k))
-             end do
-
-          end if AddPairEstimate
-
-       end do
-    end do
-
-
-
-    call mem_dealloc(R)
-    call mem_dealloc(E)
-
-  end subroutine estimate_remaining_pair_energies
-
-
-
-
-  !> \brief For a given set of fragment energies and a given pair cutoff distance, 
-  !> use data from pair regression fit (see estimate_remaining_pair_energies) to
-  !> determine new pair cutoff distance beyond which the error associated with the 
-  !> neglected pairs is below some target energy error.
-  !> (To be on the safe side we add 1 a.u. to the actual estimated distance).
-  !> \author Kasper Kristensen
-  !> \date October 2012
-  subroutine determine_new_paircutoff(natoms,paircut,DistanceTable,FragEnergies,dofrag,Etarget,Emiss,&
-       & nterms, a,newpaircut,nnewpairs)
-
-    implicit none
-    !> Number of atoms in molecule
-    integer,intent(in) :: natoms
-    !> Pair cut off distance currently used
-    real(realk),intent(in) :: paircut
-    !> Distances between atoms
-    real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
-    !> Fragment energies (atomic units)
-    real(realk),dimension(natoms,natoms),intent(in) :: FragEnergies
-    !> dofrag(P) is true if P has orbitals assigned
-    logical,intent(in) :: dofrag(natoms)
-    !> Target energy error
-    real(realk),intent(in) :: Etarget
-    !> Estimated energy contribution from ALL missing pairs
-    real(realk),intent(in) :: Emiss
-    !> Number of terms in fitting function, e.g. for nterms=2: f(x) = a(1)*x^{-6} + a(2)*x^{-7}
-    integer,intent(in) :: nterms
-    !> Fitting parameters (in atomic units)
-    real(realk),intent(in) :: a(nterms)
-    !> New pair cut off distance
-    real(realk),intent(inout) :: newpaircut
-    !> Number of additional pairs to include
-    integer,intent(inout) :: nnewpairs
-    real(realk),dimension(nterms) :: powers
-    integer :: i,j,k,maxexpansion,l
-    real(realk) :: Enewpairs, pairerror
-    logical :: conv
-
-
-    ! Init stuff
-    ! **********
-
-    ! Sanity check
-    if(Etarget <=0.0E0_realk) then
-       call lsquit('determine_new_paircutoff: target energy error must be positive!',-1)
-    end if
-
-    ! quit if pair distance increment of 40 bohr is not enough (in which case something is very wrong)
-    maxexpansion = 40 
-    newpaircut = paircut
-
-    ! Fitting function: f(x) = a(1)*x^{-6} + a(2)*x^{-7} + ...    (see estimate_remaining_pair_energies)
-    ! Set powers: -6,-7,-8,...
-    do i=1,nterms
-       powers(i) = -real(6+i-1)
-    end do
-
-
-
-    ! Increase pair cut off until estimated pair error is below target energy error
-    ! *****************************************************************************
-    conv=.false.
-    nnewpairs=0
-    IncreasePairCutOff: do k=1,maxexpansion
-
-       ! Zero accumulated energy for new pairs to include
-       Enewpairs = 0.0E0_realk
-
-       ! Increase new pair cutoff by 1 bohr
-       newpaircut = newpaircut + real(k)
-
-       do i=1,natoms
-          if(.not. dofrag(i)) cycle  ! only consider fragment with orbital assigned
-          do j=i+1,natoms
-             if(.not. dofrag(j)) cycle
-
-             ! Add additional pair energy contributions obtained with new pair cutoff,
-             ! i.e. pair energy contributions for distances between current and new pair cutoffs.
-             AddPairEstimate: if(DistanceTable(i,j) > paircut &
-                  & .and. DistanceTable(i,j) < newpaircut ) then 
-
-                ! Estimate pair (i,j) contribution using fitted function 
-                ! f(x) = a(1)*x^{-6} + a(2)*x^{-7} + ...    (for nterms)
-                ! and add contribution to missing energy.
-                do l=1,nterms
-                   Enewpairs = Enewpairs + a(l)*DistanceTable(i,j)**(powers(l))
-                end do
-
-                ! Update number of new pairs
-                nnewpairs= nnewpairs+1
-
-             end if AddPairEstimate
-
-          end do
-       end do
-
-       ! Estimated pair cutoff error using new pair cutoff, i.e.:
-       ! E(all missing pairs) - E(pairs between current and new cutoff)
-       pairerror = abs(Emiss - Enewpairs)
-
-       ! Exit if new estimate is smaller than requested target energy
-       if(pairerror < Etarget) then
-          conv=.true.
-          exit IncreasePairCutOff
-       end if
-
-    end do IncreasePairCutOff
-
-    ! Sanity check
-    if(.not. conv .or. DECinfo%PL>1) then
-       write(DECinfo%output,*) 'Missing pair energy: ', Emiss
-       write(DECinfo%output,*) 'Pair error ', Emiss
-       write(DECinfo%output,*) 'Old pair distance ', paircut
-       write(DECinfo%output,*) 'New pair distance ', newpaircut
-    end if
-    if(.not. conv) then
-       call lsquit('determine_new_paircutoff: Pair cut off expansion did not converge!',-1)
-    end if
-
-
-    ! Now newpaircutoff contains the estimated pair cutoff distance to ensure
-    ! that the pair cutoff error is smaller than the target error.
-    ! Since this is just a rough estimate we add 1 bohr to be on the safe side
-    newpaircut = newpaircut + 1.0E0_realk    
-
-
-  end subroutine determine_new_paircutoff
 
 
 
@@ -2598,16 +1973,16 @@ contains
     !> Central atom in molecule
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
-    type(ccatom),intent(inout)        :: AtomicFragment
+    type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
-    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
+    !> Delete fragment basis information ("expensive box in decfrag type") at exit?
     logical,intent(in) :: freebasisinfo
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
@@ -2802,7 +2177,7 @@ contains
     ! Integrals (ai|bj)
     call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%number_basis,&
          & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-         & AtomicFragment%ypv, AtomicFragment%ypo, g)
+         & AtomicFragment%Cv, AtomicFragment%Co, g)
     ! Amplitudes
     call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
          & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
@@ -2892,7 +2267,7 @@ contains
  call mem_dealloc(VirtContribs)
 
  ! Ensure that energies in fragment are set consistently
- call set_energies_ccatom_structure_fragopt(AtomicFragment)
+ call set_energies_decfrag_structure_fragopt(AtomicFragment)
 
 
  ! Restore the original CC model 
@@ -2918,23 +2293,23 @@ end subroutine optimize_atomic_fragment
     !> Central atom in molecule
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
-    type(ccatom),intent(inout)        :: AtomicFragment
+    type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(in) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
-    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
+    !> Delete fragment basis information ("expensive box in decfrag type") at exit?
     logical,intent(in) :: freebasisinfo
     !> Doubles amplitudes for converged fragment (local orbital basis, index order: a,i,b,j)
     !> At output, the virtual indices will have been transformed to the (smaller) FO orbital space
     type(array4),intent(inout) :: t2
     !> Maximum number of reduction steps
     integer,intent(in) :: max_iter_red
-    type(ccatom) :: FOfragment
+    type(decfrag) :: FOfragment
     integer :: ov,iter,Nold,Nnew,nocc_exp,nvirt_exp
     logical :: reduction_converged,ReductionPossible(2)
     real(realk) :: FOT,LagEnergyOld,OccEnergyOld,VirtEnergyOld
@@ -3158,16 +2533,16 @@ end subroutine optimize_atomic_fragment
     !> Central atom in molecule
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
-    type(ccatom),intent(inout)        :: AtomicFragment
+    type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(in) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
-    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
+    !> Delete fragment basis information ("expensive box in decfrag type") at exit?
     logical,intent(in) :: freebasisinfo
     !> Maximum number of reduction steps
     integer,intent(in) :: max_iter_red
@@ -3449,16 +2824,16 @@ end subroutine optimize_atomic_fragment
     !> Central atom in molecule
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
-    type(ccatom),intent(inout)        :: AtomicFragment
+    type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
-    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
+    !> Delete fragment basis information ("expensive box in decfrag type") at exit?
     logical,intent(in) :: freebasisinfo
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
@@ -3480,7 +2855,7 @@ end subroutine optimize_atomic_fragment
        ! Integrals (ai|bj)
        call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%number_basis,&
             & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-            & AtomicFragment%ypv, AtomicFragment%ypo, g)
+            & AtomicFragment%Cv, AtomicFragment%Co, g)
        ! MP2 amplitudes
        call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
             & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
@@ -3511,7 +2886,7 @@ end subroutine optimize_atomic_fragment
   subroutine fragopt_print_info(Fragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
     implicit none
     !> Atomic fragment
-    type(ccatom),intent(inout) :: Fragment
+    type(decfrag),intent(inout) :: Fragment
     !> Lagrangian energy difference since last loop in fragment optimization
     real(realk),intent(in) :: LagEnergyDiff
     !> Occupied energy difference since last loop in fragment optimization
@@ -3732,7 +3107,7 @@ end subroutine optimize_atomic_fragment
 
     implicit none
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Number of orbitals (occ OR virt) in full molecule
     integer,intent(in)        :: norb_full
     !> Contributions to the fragment energy from each individual orbital
@@ -3781,15 +3156,15 @@ end subroutine optimize_atomic_fragment
   !> \brief For a given model, get the occupied, virtual and Lagragian fragment energies
   !> to use for fragment optimization, i.e. simply copy the relevant energies from
   !> "fragment%energies" to fragment%EoccFOP, fragment%EvirtFOP, and fragment%LagFOP.
-  !> (See description of EoccFOP, EvirtFOP, and LagFOP in ccatom type definition).
+  !> (See description of EoccFOP, EvirtFOP, and LagFOP in decfrag type definition).
   !> \author Kasper Kristensen
   !> \date March 2013
   subroutine get_occ_virt_lag_energies_fragopt(Fragment)
     implicit none
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     ! MODIFY FOR NEW MODEL
     ! If you implement a new model, please copy fragment%energies(?) for your model,
-    ! see ccatom type def to determine the "?".
+    ! see decfrag type def to determine the "?".
 
     fragment%EoccFOP = 0.0_realk
     fragment%EvirtFOP = 0.0_realk
@@ -3836,12 +3211,12 @@ end subroutine optimize_atomic_fragment
   !> in fragment%LagFOP, fragment%EoccFOP, and fragment%EvirtFOP are copied correctly 
   !> to the general fragment%energies arrays.
   !> This is effectively the inverse routine of get_occ_virt_lag_energies_fragopt.
-  !> (See description of energies, EoccFOP, EvirtFOP, and LagFOP in ccatom type definition).
+  !> (See description of energies, EoccFOP, EvirtFOP, and LagFOP in decfrag type definition).
   !> \author Kasper Kristensen
   !> \date March 2013
-  subroutine set_energies_ccatom_structure_fragopt(Fragment)
+  subroutine set_energies_decfrag_structure_fragopt(Fragment)
     implicit none
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     ! MODIFY FOR NEW MODEL 
     ! If you implement a new model, please set fragment%energies(?) for your model,
     ! see FRAGMODEL_* definitions in dec_typedef.F90 to determine the "?".
@@ -3872,102 +3247,8 @@ end subroutine optimize_atomic_fragment
             & for model:', fragment%ccmodel
     end select
 
-  end subroutine set_energies_ccatom_structure_fragopt
+  end subroutine set_energies_decfrag_structure_fragopt
 
-
-
-  !> \brief Given the list of all fragment energies as defined in main_fragment_driver,
-  !> extract the fragment energies for Lagrangian, occupied, and virtual part. schemes
-  !> for the given CC model (see "energies" in ccatom typedef).
-  !> \author Kasper Kristensen
-  !> \date March 2013
-  subroutine extract_fragenergies_for_model(natoms,FragEnergiesAll,ccmodel,FragEnergiesModel)
-
-    implicit none
-
-    !> Number of atoms in molecule
-    integer,intent(in) :: natoms
-    !> Fragment energies for all models as determined in main_fragment_driver.
-    real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergiesAll
-    !> CC model (see MODEL_* in dec_typedef.F90)
-    integer,intent(in) :: ccmodel
-    !> Fragment energies for model under consideration (DECinfo%ccmodel) in the order:
-    !> Lagrangian (:,:,1)   Occupied(:,:,2)    Virtual(:,:,3)
-    real(realk),dimension(natoms,natoms,3),intent(inout) :: FragEnergiesModel
-    integer :: i,j
-    ! MODIFY FOR NEW MODEL
-    ! If you implement a new model, please introduce your model below,
-    ! see "energies" in ccatom type def to determine how to copy energies for your model.
-
-
-    FragEnergiesModel=0.0_realk
-
-    do i=1,natoms
-       do j=1,natoms
-          select case(ccmodel)
-          case(MODEL_MP2)
-             ! MP2
-
-             ! Lagrangian MP2 energy stored in entry 1 (see "energies" in ccatom type def)
-             FragEnergiesModel(i,j,1) = FragEnergiesAll(i,j,FRAGMODEL_LAGMP2)
-
-             ! Occupied MP2 energies stored in entry 2
-             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,FRAGMODEL_OCCMP2)
-
-             ! Virtual MP2 energies stored in entry 3
-             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,FRAGMODEL_VIRTMP2)
-          case(MODEL_CC2)
-             ! CC2
-
-             ! Occupied CC2 energies stored in entry 4
-             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,FRAGMODEL_OCCCC2)
-
-             ! Virtual CC2 energies stored in entry 5
-             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,FRAGMODEL_VIRTCC2)
-
-             ! Lagrangian CC2 energy not implemented, simply use average of occ and virt energies
-             FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
-                  & FragEnergiesModel(i,j,3) )
-          case(MODEL_CCSD)
-             ! CCSD
-
-             ! Occupied CCSD energies stored in entry 6
-             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,FRAGMODEL_OCCCCSD)
-
-             ! Virtual CCSD energies stored in entry 7
-             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,FRAGMODEL_VIRTCCSD)
-
-             ! Lagrangian CCSD energy not implemented, simply use average of occ and virt energies
-             FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
-                  & FragEnergiesModel(i,j,3) )
-
-#ifdef MOD_UNRELEASED
-          case(MODEL_CCSDpT)
-             ! CCSD(T)
-
-             ! Occupied CCSD energies stored in entry 6 + occupied (T) energies stored in entry 8 
-             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,FRAGMODEL_OCCCCSD) &
-                  & + FragEnergiesAll(i,j,FRAGMODEL_OCCpT)
-
-             ! Virtual CCSD energies stored in entry 7 + virtual (T) energies stored in entry 9
-             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,FRAGMODEL_VIRTCCSD) &
-                  & + FragEnergiesAll(i,j,FRAGMODEL_VIRTpT)
-
-             ! Lagrangian CCSD(T) energy not implemented, simply use average of occ and virt energies
-             FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
-                  & FragEnergiesModel(i,j,3) )
-
-!endif mod_unreleased
-#endif
-          case default
-             write(DECinfo%output,*) 'WARNING: extract_fragenergies_for_model: Needs implementation &
-                  & for model:', ccmodel
-          end select
-
-       end do
-    end do
-
-  end subroutine extract_fragenergies_for_model
 
 
   

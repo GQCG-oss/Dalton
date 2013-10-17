@@ -1587,7 +1587,7 @@ contains
 
     implicit none
     !> Fragment information
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     real(realk), intent(inout) :: fragmem
     real(realk) :: O,V,A,tmp,GB
 
@@ -1599,7 +1599,7 @@ contains
     A = MyFragment%number_basis
     GB = 1.000E9_realk ! 1 GB
 
-    ! Use type ccatom to calculate memory use
+    ! Use type decfrag to calculate memory use
     ! ***************************************
 
     ! Y matrices
@@ -1744,7 +1744,7 @@ retval=0
 
     implicit none
     !> Atomic (or pair) fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> How much to print?
     !> 1. Basic fragment info (size and energies, i.e. no pointers are printed)
     !> 2. Basic fragment info AND EOS/AOS indices
@@ -1837,13 +1837,13 @@ retval=0
        
        write(DECinfo%output,*) 'Occ MO coefficients (column, elements in column)'
        do i=1,MyFragment%noccAOS
-          write(DECinfo%output,*) i, MyFragment%ypo(:,i)
+          write(DECinfo%output,*) i, MyFragment%Co(:,i)
        end do
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'Virt MO coefficients (column, elements in column)'
        do i=1,MyFragment%nunoccAOS
-          write(DECinfo%output,*) i, MyFragment%ypv(:,i)
+          write(DECinfo%output,*) i, MyFragment%Cv(:,i)
        end do
        write(DECinfo%output,*)
 
@@ -1936,7 +1936,7 @@ retval=0
 
     implicit none
     !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
 
     ! Free everything in fragment - including basis info (fock matrix, MO coefficients, lsitem etc.)
     call atomic_fragment_free_simple(fragment)
@@ -1953,7 +1953,7 @@ retval=0
 
     implicit none
     !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     integer :: i
 
     if(associated(fragment%occEOSidx)) then
@@ -2058,7 +2058,7 @@ retval=0
 
     implicit none
     !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     integer :: i
 
     if(associated(fragment%S)) then
@@ -2066,12 +2066,12 @@ retval=0
     end if
 
     ! Transformation matrices
-    if(associated(fragment%ypo)) then
-       call mem_dealloc(fragment%ypo)
+    if(associated(fragment%Co)) then
+       call mem_dealloc(fragment%Co)
     end if
 
-    if(associated(fragment%ypv)) then
-       call mem_dealloc(fragment%ypv)
+    if(associated(fragment%Cv)) then
+       call mem_dealloc(fragment%Cv)
     end if
     
     ! Free CABS MOs !
@@ -2120,7 +2120,7 @@ retval=0
   subroutine free_fragment_t1(Fragment)
     implicit none
     !> Fragment info (only t1-related information will be modified here)
-    type(ccatom), intent(inout) :: Fragment
+    type(decfrag), intent(inout) :: Fragment
 
     if(associated(fragment%t1)) then
        call mem_dealloc(fragment%t1)
@@ -2144,7 +2144,7 @@ retval=0
   subroutine orbital_free(myorbital)
 
     implicit none
-    type(ccorbital), intent(inout) :: myorbital
+    type(decorbital), intent(inout) :: myorbital
 
     if(associated(myorbital%atoms)) then
        call mem_dealloc(myorbital%atoms)
@@ -2558,9 +2558,9 @@ retval=0
     !> Distance between fragments
     real(realk) :: fragdist
     !>  fragment 1
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !>  fragment 2
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Distance table for all atoms in the molecule
@@ -2964,7 +2964,7 @@ retval=0
   subroutine save_fragment_t1_AOSAOSamplitudes(MyFragment,t1)
     implicit none
     !> Fragment info (only t1-related information will be modified here)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Singles amplitudes to be stored (stored as virtual,occupied)
     type(array2),intent(in) :: t1
     integer :: nocc,nvirt,i,a,ix,ax
@@ -3017,9 +3017,9 @@ retval=0
 
     implicit none
     ! Fragment 1 in pair
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     ! Fragment 2 in pair
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     integer, intent(in) :: natoms
     logical,dimension(natoms,natoms),intent(inout) :: dopair
     integer :: a,b,ax,bx
@@ -3076,11 +3076,11 @@ retval=0
 
     implicit none
     ! Fragment 1 in pair
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     ! Fragment 2 in pair
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: PairFragment
+    type(decfrag),intent(inout) :: PairFragment
     !> Do pair or not - dimension: (noccEOS,noccEOS) for PAIR
     logical,dimension(PairFragment%noccEOS,PairFragment%noccEOS),&
          & intent(inout) :: dopair
@@ -3178,11 +3178,11 @@ retval=0
 
     implicit none
     ! Fragment 1 in pair
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     ! Fragment 2 in pair
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: PairFragment
+    type(decfrag),intent(inout) :: PairFragment
     !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
     logical,dimension(PairFragment%nunoccEOS,PairFragment%nunoccEOS),&
          & intent(inout) :: dopair
@@ -4083,7 +4083,7 @@ retval=0
     implicit none
     !> Number of atoms in full molecule
     integer,intent(in) :: nAtoms
-    ! Fragment energies as listed in ccatom type def "energies"
+    ! Fragment energies as listed in decfrag type def "energies"
     real(realk),intent(in) :: FragEnergies(natoms,natoms,ndecenergies)
     !> Which atoms are associated with a fragment?
     logical,intent(in) :: dofrag(natoms)
@@ -4283,7 +4283,7 @@ retval=0
     case default
        ! MODIFY FOR NEW MODEL
        ! If you implement new model, please print the fragment energies here,
-       ! see ccatom type def. to determine the number for your model (see FRAGMODEL_* definitions
+       ! see decfrag type def. to determine the number for your model (see FRAGMODEL_* definitions
        ! in dec_typedef.F90).
        write(DECinfo%output,*) 'WARNING: print_all_fragment_energies needs implementation &
             & for model: ', DECinfo%ccmodel
@@ -4363,7 +4363,7 @@ retval=0
     !> Label to print after each energy for easy grepping
     character(*),intent(in) :: greplabel
     integer :: i,j
-    real(realk) :: pairdist
+    real(realk) :: pairdist,thr
 
 
     write(DECinfo%output,*)
@@ -4373,7 +4373,7 @@ retval=0
     write(DECinfo%output,*) '================================================================='
     write(DECinfo%output,*)
     write(DECinfo%output,'(2X,a)') 'Frag1  Frag2     Dist(Ang)        Energy'
-
+    thr=1.0E-15_realk
     do i=1,natoms
        do j=i+1,natoms
 
@@ -4383,8 +4383,9 @@ retval=0
 
           pairdist = DistanceTable(i,j)
 
-          ! Only print if pair distance is below threshold
-          DistanceCheck: if(pairdist < DECinfo%pair_distance_threshold ) then
+          ! Only print if pair distance is below threshold and nonzero
+          DistanceCheck: if(pairdist < DECinfo%pair_distance_threshold &
+               & .and. abs(FragEnergies(i,j)) > thr  ) then
              write(DECinfo%output,'(I6,2X,I6,2X,g14.5,2X,g20.10,2a)') &
                   & i,j,pairdist*bohr_to_angstrom, FragEnergies(i,j),"    ",greplabel
           end if DistanceCheck
@@ -4433,6 +4434,85 @@ retval=0
     njobs = naf+npf
 
   end function get_total_number_of_fragments
+
+
+  !> \brief Extract fragment energies for occupied partitioning for given CC model
+  !> from set of all fragment energies.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine get_occfragenergies(natoms,FragEnergiesAll,FragEnergies)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Fragment energies for all models (see FRAGMODEL_* in dec_typedef.F90)
+    real(realk),intent(in) :: FragEnergiesAll(natoms,natoms,ndecenergies)
+    !> Fragment energies for occupied partitioning for given CC model
+    real(realk),intent(inout) :: FragEnergies(natoms,natoms)
+
+    ! MODIFY FOR NEW MODEL
+    select case(DECinfo%ccmodel)
+    case(MODEL_MP2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCMP2)
+
+    case(MODEL_CC2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCC2)
+
+    case(MODEL_CCSD)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCCSD)
+
+    case(MODEL_CCSDpT)
+       ! CCSD(T): Add CCSD and (T) contributions using occupied partitioning
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCCSD) &
+            & + FragEnergiesAll(:,:,FRAGMODEL_OCCpT)
+
+    case default
+       print *, 'Model is: ', DECinfo%ccmodel
+       call lsquit('get_occfragenergies: Model needs implementation!',-1)
+    end select
+
+  end subroutine get_occfragenergies
+
+
+
+  !> \brief Estimate (absolute) energy error in DEC calculation.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine get_estimated_energy_error(natoms,energies,Eerr)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> SUM of fragment energies for all models (see FRAGMODEL_* in dec_typedef.F90)
+    real(realk),intent(in) :: energies(ndecenergies)
+    !> Estimated (absolute) energy error
+    real(realk),intent(inout) :: Eerr
+    real(realk) :: Eocc,Evirt
+
+    ! MODIFY FOR NEW MODEL
+    select case(DECinfo%ccmodel)
+    case(MODEL_MP2)
+       ! Energy error = max difference between occ,virt, and Lag energies
+       Eerr = max(energies(FRAGMODEL_LAGMP2),energies(FRAGMODEL_OCCMP2),energies(FRAGMODEL_VIRTMP2)) &
+            & - min(energies(FRAGMODEL_LAGMP2),energies(FRAGMODEL_OCCMP2),energies(FRAGMODEL_VIRTMP2))
+
+    case(MODEL_CC2)
+       ! Energy error = difference between occ and virt energies
+       Eerr = abs(energies(FRAGMODEL_OCCCC2) - energies(FRAGMODEL_VIRTCC2))
+
+    case(MODEL_CCSD)
+       Eerr = abs(energies(FRAGMODEL_OCCCCSD) - energies(FRAGMODEL_VIRTCCSD))
+
+    case(MODEL_CCSDpT)
+       ! CCSD(T): Add CCSD and (T) contributions and find diff
+       Eocc = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
+       Evirt = energies(FRAGMODEL_VIRTCCSD) + energies(FRAGMODEL_VIRTpT)
+       Eerr = abs(Eocc-Evirt)
+
+    case default
+       print *, 'Model is: ', DECinfo%ccmodel
+       call lsquit('get_estimated_energy_error: Model needs implementation!',-1)
+    end select
+
+  end subroutine get_estimated_energy_error
 
 
 end module dec_fragment_utils

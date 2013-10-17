@@ -37,7 +37,7 @@ contains
     integer(kind=ls_mpik),intent(in) :: MySender
     !> Rank of receiver WITHIN comm group
     integer(kind=ls_mpik),intent(in) :: MyReceiver
-    !> Fragment energies, see "energy" in ccatom type def
+    !> Fragment energies, see "energy" in decfrag type def
     real(realk),dimension(ndecenergies),intent(inout) :: fragenergy
     !> Fragment job info (job list containing a single job)
     type(joblist),intent(inout) :: job
@@ -81,7 +81,7 @@ contains
     integer(kind=ls_mpik),intent(in) :: MySender
     !> Rank of receiver WITHIN comm group
     integer(kind=ls_mpik),intent(in) :: MyReceiver
-    !> Fragment energies, see "energy" in ccatom type def
+    !> Fragment energies, see "energy" in decfrag type def
     real(realk),dimension(ndecenergies),intent(inout) :: fragenergy
     !> MP2 fragment gradient matrix information
     type(mp2grad),intent(inout) :: grad
@@ -117,7 +117,7 @@ contains
 
 
   !> \brief Send fragment from given sender to given receiver.
-  !> NOTE: Only the information OUTSIDE the expensive box in the ccatom
+  !> NOTE: Only the information OUTSIDE the expensive box in the decfrag
   !> type definition can be sent this way. In general, the information outside
   !> the expensive box combined with full molecular information is enough
   !> to detemine the stuff outside the expensive box.
@@ -128,7 +128,7 @@ contains
     implicit none
 
     !> Fragment under consideration
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Communicator
     integer(kind=ls_mpik),intent(in) :: comm
     !> Rank of sender WITHIN comm group
@@ -148,7 +148,7 @@ contains
        call lsquit('mpi_send_recv_single_fragment: Rank number is neither sender nor receiver!',-1)
     end if
 
-    ! Sanity check 2: Basis info in "Expensive box" in ccatom should not be sent
+    ! Sanity check 2: Basis info in "Expensive box" in decfrag should not be sent
     if(MyFragment%BasisInfoIsSet .and. mynum==MySender) then
        call lsquit('mpi_send_recv_single_fragment: Not implemented for &
             & sending/receiving fragment basis info!',-1)
@@ -172,7 +172,7 @@ contains
 
 
   !> \brief Send fragments from given sender to given receiver.
-  !> NOTE: Only the information OUTSIDE the expensive box in the ccatom
+  !> NOTE: Only the information OUTSIDE the expensive box in the decfrag
   !> type definition can be sent this way. In general, the information outside
   !> the expensive box combined with full molecular information is enough
   !> to detemine the stuff outside the expensive box.
@@ -192,7 +192,7 @@ contains
     logical,dimension(natoms),intent(inout) :: whichfrags
     !> Fragments to be sent/received. Only those entries in Fragments specified
     !> by whichfrags will be touched!
-    type(ccatom),dimension(natoms),intent(inout) :: Fragments
+    type(decfrag),dimension(natoms),intent(inout) :: Fragments
     !> Communicator
     integer(kind=ls_mpik),intent(in) :: comm
     !> Rank of sender WITHIN comm group
@@ -221,7 +221,7 @@ contains
 
        CommunicateFragment: if(whichfrags(atom)) then
 
-          ! Sanity check: Basis info in "Expensive box" in ccatom should not be sent
+          ! Sanity check: Basis info in "Expensive box" in decfrag should not be sent
           if(Fragments(atom)%BasisInfoIsSet) then
              call lsquit('mpi_send_recv_many_fragments: Not implemented for &
                   & sending/receiving fragment basis info!',-1)
@@ -252,7 +252,7 @@ contains
 
 
   !> \brief Bcast fragments from master to slave (within communicator group).
-  !> NOTE: Only the information OUTSIDE the expensive box in the ccatom
+  !> NOTE: Only the information OUTSIDE the expensive box in the decfrag
   !> type definition can be sent this way. In general, the information outside
   !> the expensive box combined with full molecular information is enough
   !> to detemine the stuff outside the expensive box.
@@ -272,7 +272,7 @@ contains
     logical,dimension(natoms),intent(in) :: whichfrags
     !> Fragments to be bcasted. Only those entries in Fragments specified
     !> by whichfrags will be touched!
-    type(ccatom),dimension(natoms),intent(inout) :: Fragments
+    type(decfrag),dimension(natoms),intent(inout) :: Fragments
     !> Communicator
     integer(kind=ls_mpik),intent(in) :: comm
     integer :: atom
@@ -288,7 +288,7 @@ contains
 
        CommunicateFragment: if(whichfrags(atom)) then
 
-          ! Sanity check: Basis info in "Expensive box" in ccatom should not be sent
+          ! Sanity check: Basis info in "Expensive box" in decfrag should not be sent
           if(Fragments(atom)%BasisInfoIsSet .and. mynum==0) then
              call lsquit('mpi_bcast_many_fragments: Not implemented for &
                   & sending/receiving fragment basis info!',-1)
@@ -315,7 +315,7 @@ contains
   end subroutine mpi_bcast_many_fragments
 
 
-  !> \brief MPI communcation where the information in the ccatom type
+  !> \brief MPI communcation where the information in the decfrag type
   !> is send (for local master) or received (for local slaves).
   !> In addition, other information required for calculating MP2 integrals
   !> and amplitudes is communicated.
@@ -326,12 +326,12 @@ contains
     implicit none
 
     !> Fragment under consideration
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Batch information
     type(mp2_batch_construction),intent(inout) :: bat
     !> Do first order integrals?
     logical,intent(inout) :: first_order_integrals
-    !> Communicate basis (expensive box in ccatom)
+    !> Communicate basis (expensive box in decfrag)
     logical,intent(in) :: DoBasis
     integer(kind=ls_mpik) :: master
     master = 0
@@ -346,7 +346,7 @@ contains
     ! Buffer handling
     ! ***************
     ! MASTER: Put information info buffer
-    ! SLAVE: Put buffer information into ccatom structure
+    ! SLAVE: Put buffer information into decfrag structure
 
     ! Fragment information
     call mpicopy_fragment(MyFragment,infpar%lg_comm,DoBasis)
@@ -380,23 +380,21 @@ contains
   !> have already been communicated.
   !> \author Kasper Kristensen
   !> \date March 2012
-  subroutine mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,&
+  subroutine mpi_dec_fullinfo_master_to_slaves(nocc,nunocc,&
        & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
 
     implicit none
 
-    !> Number of atoms in the molecule
-    integer,intent(in) :: natoms
     !> Number of occupied orbitals in the molecule
     integer,intent(in) :: nocc
     !> Number of unoccupied orbitals in the molecule
     integer,intent(in) :: nunocc
     !> Occupied orbitals in DEC format
     !> Intent(in) for main master, intent(out) for local masters
-    type(ccorbital),intent(inout) :: OccOrbitals(nocc)
+    type(decorbital),intent(inout) :: OccOrbitals(nocc)
     !> Unoccupied orbitals in DEC format
     !> Intent(in) for main master, intent(out) for local masters
-    type(ccorbital),intent(inout) :: UnoccOrbitals(nunocc)
+    type(decorbital),intent(inout) :: UnoccOrbitals(nunocc)
     !> Full molecule structure (MO coeffecients, Fock matrix etc.)
     !> Intent(in) for main master, intent(out) for local masters
     type(fullmolecule),intent(inout) :: MyMolecule
@@ -434,7 +432,7 @@ contains
     ! DEC Occupied orbitals
     ! ---------------------
 
-    ! Integers and reals inside ccorbital sub-type
+    ! Integers and reals inside decorbital sub-type
     do i=1,nocc
        call ls_mpi_buffer(OccOrbitals(i)%orbitalnumber,master)
        call ls_mpi_buffer(OccOrbitals(i)%centralatom,master)
@@ -454,7 +452,7 @@ contains
     ! DEC Unoccupied orbitals
     ! -----------------------
 
-    ! Integers and reals inside ccorbital sub-type
+    ! Integers and reals inside decorbital sub-type
     do i=1,nunocc
        call ls_mpi_buffer(UnoccOrbitals(i)%orbitalnumber,master)
        call ls_mpi_buffer(UnoccOrbitals(i)%centralatom,master)
@@ -528,8 +526,8 @@ contains
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_start,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_end,MyMolecule%natoms)
-       call mem_alloc(MyMolecule%ypo,MyMolecule%nbasis,MyMolecule%numocc)
-       call mem_alloc(MyMolecule%ypv,MyMolecule%nbasis,MyMolecule%numvirt)
+       call mem_alloc(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%numocc)
+       call mem_alloc(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%numvirt)
        call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%numocc,MyMolecule%numocc)
@@ -551,8 +549,8 @@ contains
 
     ! Real pointers
     ! -------------
-    call ls_mpibcast(MyMolecule%ypo,MyMolecule%nbasis,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%ypv,MyMolecule%nbasis,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%numocc,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
@@ -567,7 +565,7 @@ contains
 
 
 
-  !> \brief MPI copy information in ccatom type.
+  !> \brief MPI copy information in decfrag type.
   !> Note 1: The information is copied into the global buffers here,
   !> and it is assumed that ls_mpiInitBuffer (ls_mpiFinalizeBuffer)
   !> is called before (after) calling this subroutine.
@@ -583,10 +581,10 @@ contains
     implicit none
 
     !> Fragment under consideration
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Communicator
     integer(kind=ls_mpik),intent(in) :: comm
-    !> Copy basis (expensive box in ccatom)
+    !> Copy basis (expensive box in decfrag)
     logical,intent(in) :: DoBasis
     integer :: i
     integer(kind=ls_mpik) :: master
@@ -745,7 +743,7 @@ contains
 
     ! CCORBITAL types
     ! ---------------
-    ! Allocate ccorbitals
+    ! Allocate decorbitals
     if(.not. AddToBuffer) then
        nullify(MyFragment%occAOSorb)
        call mem_alloc(MyFragment%occAOSorb,MyFragment%noccAOS)
@@ -753,13 +751,13 @@ contains
        call mem_alloc(MyFragment%unoccAOSorb,MyFragment%nunoccAOS)
     end if
 
-    ! Integers and reals inside ccorbital sub-type
+    ! Integers and reals inside decorbital sub-type
     do i=1,MyFragment%noccAOS ! occ orbitals
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%numberofatoms,master)
 
-       ! Pointers inside ccorbital sub-type (which again is inside ccatom type)
+       ! Pointers inside decorbital sub-type (which again is inside decfrag type)
        if(.not. AddToBuffer) then
           Nullify(MyFragment%occAOSorb(i)%atoms)
           call mem_alloc(MyFragment%occAOSorb(i)%atoms,&
@@ -788,15 +786,15 @@ contains
     ! ===========================================================================
     !                              EXPENSIVE BOX
     ! ===========================================================================
-    ! This is the information inside the "expensive" box in the ccatom type definition.
+    ! This is the information inside the "expensive" box in the decfrag type definition.
     ! This stuff is only copied if MyFragment%BasisInfoIsSet is true.
     ExpensiveBox: if(DoBasis) then
 
        ! Real pointers
        if(.not. AddToBuffer) then
           call mem_alloc(MyFragment%S,MyFragment%number_basis,MyFragment%number_basis)
-          call mem_alloc(MyFragment%ypo,MyFragment%number_basis,MyFragment%noccAOS)
-          call mem_alloc(MyFragment%ypv,MyFragment%number_basis,MyFragment%nunoccAOS)
+          call mem_alloc(MyFragment%Co,MyFragment%number_basis,MyFragment%noccAOS)
+          call mem_alloc(MyFragment%Cv,MyFragment%number_basis,MyFragment%nunoccAOS)
           call mem_alloc(MyFragment%coreMO,MyFragment%number_basis,MyFragment%ncore)
           call mem_alloc(MyFragment%fock,MyFragment%number_basis,MyFragment%number_basis)
           call mem_alloc(MyFragment%ppfock,MyFragment%noccAOS,MyFragment%noccAOS)
@@ -804,8 +802,8 @@ contains
           call mem_alloc(MyFragment%qqfock,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
        end if
        call ls_mpi_buffer(MyFragment%S,MyFragment%number_basis,MyFragment%number_basis,master)
-       call ls_mpi_buffer(MyFragment%ypo,MyFragment%number_basis,MyFragment%noccAOS,master)
-       call ls_mpi_buffer(MyFragment%ypv,MyFragment%number_basis,MyFragment%nunoccAOS,master)
+       call ls_mpi_buffer(MyFragment%Co,MyFragment%number_basis,MyFragment%noccAOS,master)
+       call ls_mpi_buffer(MyFragment%Cv,MyFragment%number_basis,MyFragment%nunoccAOS,master)
        call ls_mpi_buffer(MyFragment%coreMO,MyFragment%number_basis,MyFragment%ncore,master)
        call ls_mpi_buffer(MyFragment%fock,MyFragment%number_basis,MyFragment%number_basis,master)
        call ls_mpi_buffer(MyFragment%ppfock,MyFragment%noccAOS,MyFragment%noccAOS,master)
@@ -955,12 +953,12 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,ccsd_t2,mylsitem)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2,mylsitem)
 
     implicit none
 
     integer            :: nocc,nvirt,nbasis,ierr
-    real(realk)        :: ppfock(:,:),qqfock(:,:),ypo(:,:),ypv(:,:),ccsd_t2(:,:,:,:)
+    real(realk)        :: ppfock(:,:),qqfock(:,:),Co(:,:),Cv(:,:),ccsd_t2(:,:,:,:)
     type(lsitem)       :: mylsitem
 
     ! communicate mylsitem and integers
@@ -981,9 +979,9 @@ contains
  
        call ls_mpibcast(qqfock,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
-       call ls_mpibcast(ypo,nbasis,nocc,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(Co,nbasis,nocc,infpar%master,infpar%lg_comm)
 
-       call ls_mpibcast(ypv,nbasis,nvirt,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
  
        call ls_mpibcast(ccsd_t2,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
 
@@ -1736,7 +1734,6 @@ contains
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%paircut_set,Master)
-    call ls_mpi_buffer(DECitem%PairReductionDistance,Master)
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
     call ls_mpi_buffer(DECitem%checkpairs,Master)
     call ls_mpi_buffer(DECitem%pairFOthr,Master)
@@ -1757,6 +1754,23 @@ contains
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
 
   end subroutine mpicopy_dec_settings
+
+  !> \brief bcast very basic information from master to slaves 
+  !> (information which for practical reasons cannot be packed into mpi_dec_fullinfo_master_to_slaves)
+  subroutine mpi_dec_fullinfo_master_to_slaves_precursor(esti,nocc,nunocc,master)
+    implicit none
+    !> Is this an estimated calculation (no FOT optimization)?
+    logical,intent(inout) :: esti
+    !> Number of occ/unocc orbitals in molecule
+    integer,intent(inout) :: nocc,nunocc
+    !> Master node number
+    integer(kind=ls_mpik),intent(in) :: master
+
+    call ls_mpibcast(esti,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(nocc,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(nunocc,master,MPI_COMM_LSDALTON)
+
+  end subroutine mpi_dec_fullinfo_master_to_slaves_precursor
 
 end module decmpi_module
 

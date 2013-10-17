@@ -113,10 +113,8 @@ contains
     DECinfo%CorrDensScheme=1
 
     ! -- Pair fragments
-    DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
+    DECinfo%pair_distance_threshold=20.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set=.false.
-    ! Pair reduction distance - set high to avoid using in practice right now...
-    DECinfo%PairReductionDistance = 1000000.0E0_realk
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr = 0.0_realk
     DECinfo%PairMP2=.false.
@@ -438,16 +436,8 @@ contains
        case('.MAXITER'); read(input,*) DECinfo%MaxIter
        case('.DECPRINT'); read(input,*) DECinfo%PL
        case('.MULLIKENTHR'); read(input,*) DECinfo%mulliken_threshold
-       case('.SKIPPAIRS') 
-          DECinfo%pair_distance_threshold=0.0E0_realk
-          DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
        case('.CHECKPAIRS') 
           DECinfo%checkpairs=.true.
-       case('.PAIRREDDIST') 
-          read(input,*) DECinfo%PairReductionDistance 
-       case('.PAIRREDDISTANGSTROM') 
-          read(input,*) DECinfo%PairReductionDistance 
-          DECinfo%PairReductionDistance = DECinfo%PairReductionDistance/bohr_to_angstrom
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
        case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
        case('.PAIRMP2'); DECinfo%PairMP2=.true.
@@ -712,7 +702,6 @@ end if
     write(lupri,*) 'fragopt_red_mp2 ', DECitem%fragopt_red_mp2
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
-    write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
@@ -736,7 +725,7 @@ end if
 
 
   !> \brief Set DEC parameters in DEC structure according to FOT level,
-  !> e.g. FOT itself, pair cut-off, and orbital extent threshold are set here.
+  !> e.g. FOT itself and orbital extent threshold are set here.
   !> See details inside subroutine.
   !> \author Kasper Kristensen
   !> \date November 2012
@@ -748,37 +737,9 @@ end if
     !> FOTlevel: Defines the precision of the whole calculation:
     !>           In general FOT=10^{-FOTlevel}
     !>           So a large FOTlevel means HIGH precision.
-    !>           Reasonable pair cutoff distances are associated with each FOT level.
-    !>           If necessary, the paircut off is increased
-    !>           in a self-adaptive black box manner during
-    !>           the calculation.
     !>           It is also possible to adapt the orbital threshold to the given FOT,
-    !>           however, for now we simply set the orbital threshold to 0.01 for all levels.
+    !>           however, for now we simply set the orbital threshold to 0.05 for all levels.
     !> 
-    !> FOTlevel = 1: 
-    !> FOT=10^{-1}, pair_distance_threshold=4Angstrom.
-    !>
-    !> FOTlevel = 2: 
-    !> FOT=10^{-2}, pair_distance_threshold=6Angstrom.
-    !> 
-    !> FOTlevel = 3: 
-    !> FOT=10^{-3}, pair_distance_threshold=8Angstrom.
-    !> 
-    !> FOTlevel = 4: 
-    !> FOT=10^{-4}, pair_distance_threshold=10Angstrom.
-    !>
-    !> FOTlevel = 5: 
-    !> FOT=10^{-5}, pair_distance_threshold=12Angstrom.
-    !> 
-    !> FOTlevel = 6: 
-    !> FOT=10^{-6}, pair_distance_threshold=14Angstrom.
-    !>
-    !> FOTlevel = 7: 
-    !> FOT=10^{-7}, pair_distance_threshold=16Angstrom.
-    !> 
-    !> FOTlevel = 8: 
-    !> FOT=10^{-8}, pair_distance_threshold=18Angstrom.
-    !>
     !> Default: FOTlevel=4. If FOTlevel is not 1,2,3,4,5,6,7, or 8, the program will quit.
 
     ! Set FOT level
@@ -788,58 +749,49 @@ end if
 
     case(1)
        DECinfo%FOT = 1.0E-1_realk
-       ! Use FOT-adapted pair cutoff and simple orbital threshold
-       ! only if these were not set set manually
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=4.0E0_realk/bohr_to_angstrom
+       ! Define simple orbital threshold here only if it was not set manually
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(2)
        DECinfo%FOT = 1.0E-2_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=6.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(3)
        DECinfo%FOT = 1.0E-3_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=8.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(4)
        DECinfo%FOT = 1.0E-4_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(5)
        DECinfo%FOT = 1.0E-5_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=12.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(6)
        DECinfo%FOT = 1.0E-6_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=14.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(7)
        DECinfo%FOT = 1.0E-7_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=16.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(8)
        DECinfo%FOT = 1.0E-8_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=18.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
