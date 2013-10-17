@@ -285,8 +285,6 @@ module dec_typedef_module
      real(realk) :: pair_distance_threshold
      !> Pair cutoff set manually (will overwrite default pair cutoff defined by FOTlevel)
      logical :: paircut_set
-     !> Pair distance beyond which reduced fragments are used
-     real(realk) :: PairReductionDistance
      !> When pair regression fit is performed, pair distances smaller than PairMinDist are ignored
      real(realk) :: PairMinDist
      !> Skip pair analysis (debug)

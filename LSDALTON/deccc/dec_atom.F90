@@ -1428,7 +1428,7 @@ contains
     type(ccatom),intent(inout) :: pairfragment
     logical, dimension(nunocc) :: Unocc_list
     logical, dimension(nocc) :: Occ_list
-    logical :: pairfrag,pairreduction
+    logical :: pairfrag
     logical,pointer :: EOSatoms(:)
     integer :: i,j,idx
     real(realk) :: pairdist
@@ -1459,18 +1459,10 @@ contains
     ! Find pair distance
     pairdist = get_distance_between_fragments(fragment1,&
          & fragment2,natoms,MyMolecule%DistanceTable)
-    ! Use reduced fragments for large distances
+    if(DECinfo%PL>0) write(DECinfo%output,*) '--> Initiating pair fragment...'
     if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,F12.3)') 'Pair distance (Angstrom)      = '&
          &, PairDist*bohr_to_angstrom
-    if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,F12.3)') 'Pair reduction thr (Angstrom) = '&
-         &, DECinfo%PairReductionDistance*bohr_to_angstrom
-    if(pairdist > DECinfo%PairReductionDistance) then
-       pairreduction=.true.
-       if(DECinfo%PL>0) write(DECinfo%output,*) '--> Initiating pair fragment using REDUCED fragments'
-    else
-       pairreduction=.false.
-       if(DECinfo%PL>0) write(DECinfo%output,*) '--> Initiating pair fragment using STANDARD fragments'
-    end if
+
 
 
 
@@ -1503,30 +1495,21 @@ contains
     occ_list=.false.
     unocc_list=.false.
 
-    if(pairreduction) then  ! use reduced orbital space
+    ! Occupied
+    do i=1,fragment1%noccAOS
+       occ_list(fragment1%occAOSidx(i))=.true.
+    end do
+    do i=1,fragment2%noccAOS
+       occ_list(fragment2%occAOSidx(i))=.true.
+    end do
 
-       call lsquit('merged_fragment_init: Reduced pairs are temporarily disabled! &
-            & Suggestion: Set .PAIRREDDIST to 1000000.0 to avoid using reduced pair fragments.',-1)
-
-    else
-
-       ! Occupied
-       do i=1,fragment1%noccAOS
-          occ_list(fragment1%occAOSidx(i))=.true.
-       end do
-       do i=1,fragment2%noccAOS
-          occ_list(fragment2%occAOSidx(i))=.true.
-       end do
-
-       ! Unoccupied
-       do i=1,fragment1%nunoccAOS
-          unocc_list(fragment1%unoccAOSidx(i))=.true.
-       end do
-       do i=1,fragment2%nunoccAOS
-          unocc_list(fragment2%unoccAOSidx(i))=.true.
-       end do
-
-    end if
+    ! Unoccupied
+    do i=1,fragment1%nunoccAOS
+       unocc_list(fragment1%unoccAOSidx(i))=.true.
+    end do
+    do i=1,fragment2%nunoccAOS
+       unocc_list(fragment2%unoccAOSidx(i))=.true.
+    end do
 
 
     ! Construct pair fragment as union of input fragments
@@ -3975,7 +3958,8 @@ if(DECinfo%PL>0) then
        if(.not. which_fragments(i)) cycle
        do j=i+1,natoms
           if(.not. which_fragments(j)) cycle
-          CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE) then  
+          CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE .and. &
+               & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold ) then  
              ! Pair needs to be computed
              npair = npair+1
           end if CheckPair
@@ -4184,23 +4168,14 @@ if(DECinfo%PL>0) then
           ! Distance between atoms i and j
           dist = DistanceTable(i,j)
 
-          CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE) then   ! Pair needs to be computed
+          CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE .and. &
+               & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold ) then  
              k=k+1
 
-             if(dist < DECinfo%PairReductionDistance) then
-
-                ! Merge AOS for fragment 1 and 2 for standard pair
-                call get_logical_pair_vector(nocc,occAOS(1:nocc,i),occAOS(1:nocc,j),occpairAOS)
-                call get_logical_pair_vector(nunocc,unoccAOS(1:nunocc,i),&
-                     &unoccAOS(1:nunocc,j),unoccpairAOS)
-
-             else
-
-                call lsquit('set_dec_joblist: Reduced pairs are temporarily disabled! &
-                     & Suggestion: Set .PAIRREDDIST to 1000000.0 to avoid using reduced &
-                     & pair fragments.',-1)
-
-             end if
+             ! Merge AOS for fragment 1 and 2 for standard pair
+             call get_logical_pair_vector(nocc,occAOS(1:nocc,i),occAOS(1:nocc,j),occpairAOS)
+             call get_logical_pair_vector(nunocc,unoccAOS(1:nunocc,i),&
+                  &unoccAOS(1:nunocc,j),unoccpairAOS)
 
              ! Logical vector for basis functions
              call get_logical_pair_vector(nbasis,FragBasis(1:nbasis,i),FragBasis(1:nbasis,j),&
@@ -4491,21 +4466,10 @@ if(DECinfo%PL>0) then
           ! Add pairs with distances between old and new paircut
           AddPairToJobList: if( (dist < newpaircut) .and. (dist >= oldpaircut) ) then  
 
-             if(dist < DECinfo%PairReductionDistance) then  
-
-                ! Merge AOS for fragment 1 and 2 for standard pair
-                call get_logical_pair_vector(nocc,occAOS(1:nocc,i),occAOS(1:nocc,j),occpairAOS)
-                call get_logical_pair_vector(nunocc,unoccAOS(1:nunocc,i),&
-                     &unoccAOS(1:nunocc,j),unoccpairAOS)
-
-             else
-
-                call lsquit('expand_joblist_to_include_more_pairs: Reduced pairs are &
-                     & temporarily disabled! Suggestion: Set .PAIRREDDIST to 1000000.0 &
-                     & to avoid using reduced pair fragments.',-1)
-
-             end if
-
+             ! Merge AOS for fragment 1 and 2 for standard pair
+             call get_logical_pair_vector(nocc,occAOS(1:nocc,i),occAOS(1:nocc,j),occpairAOS)
+             call get_logical_pair_vector(nunocc,unoccAOS(1:nunocc,i),&
+                  &unoccAOS(1:nunocc,j),unoccpairAOS)
 
              ! Set pair job info
              ! *****************

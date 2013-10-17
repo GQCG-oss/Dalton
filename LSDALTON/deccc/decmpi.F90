@@ -1734,7 +1734,6 @@ contains
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%paircut_set,Master)
-    call ls_mpi_buffer(DECitem%PairReductionDistance,Master)
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
     call ls_mpi_buffer(DECitem%checkpairs,Master)
     call ls_mpi_buffer(DECitem%pairFOthr,Master)

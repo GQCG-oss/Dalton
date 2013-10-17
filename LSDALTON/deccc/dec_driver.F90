@@ -46,7 +46,7 @@ contains
   !> \brief Main DEC driver
   !> \author Marcin Ziokowski and Kasper Kristensen
   !> \date November 2010
-  subroutine DEC_wrapper(MyMolecule,mylsitem,D)
+  subroutine DEC_wrapper(MyMolecule,mylsitem,D,EHF,Ecorr,molgrad,Eerr)
 
     implicit none
     !> Full molecule info
@@ -55,11 +55,18 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> Density matrix (only stored on master node, not needed for fragment calculations)
     type(matrix),intent(in) :: D
+    !> Hartree-Fock energy
+    real(realk),intent(inout) :: EHF
+    !> MP2 correlation energy
+    real(realk),intent(inout) :: Ecorr
+    !> Molecular gradient (only calculated if DECinfo%gradient is set!)
+    real(realk),intent(inout) :: molgrad(3,MyMolecule%natoms)
+    !> Estimated energy error
+    real(realk),intent(inout) :: Eerr
     type(ccorbital), pointer :: OccOrbitals(:)
     type(ccorbital), pointer :: UnoccOrbitals(:)
     real(realk),pointer :: FragEnergiesOcc(:,:)
-    real(realk) :: Ecorr, Ehf, Ecorr_est,Eskip_est,Eerr
-    real(realk), pointer :: mp2gradient(:,:)
+    real(realk) :: Ecorr_est,Eskip_est
     integer :: nBasis,nOcc,nUnocc,nAtoms,i
 
 
@@ -88,14 +95,11 @@ contains
     ! *************************************************
     ! Optimize all atomic fragments and calculate pairs
     ! *************************************************
-    call mem_alloc(mp2gradient,3,natoms)
     call mem_alloc(FragEnergiesOcc,MyMolecule%natoms,MyMolecule%natoms)
     call main_fragment_driver(MyMolecule,mylsitem,D,&
          &OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,EHF,Ecorr,mp2gradient,Eerr,FragEnergiesOcc)
+         & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc)
 
-    ! Free stuff
-    call mem_dealloc(mp2gradient)
 
     ! Delete orbitals
     do i=1,nOcc
@@ -821,10 +825,6 @@ contains
     write(DECinfo%output,'(a,i4)')     'Expansion step size           = ',DECinfo%FragmentExpansionSize
     write(DECinfo%output,'(a,i4)')     'Print level                   = ',DECinfo%PL
     write(DECinfo%output,'(a,l1)')     'Fragment-adapted orbitals     = ',DECinfo%FragAdapt
-    if(DECinfo%PairReductionDistance<DECinfo%pair_distance_threshold) then
-       write(DECinfo%output,'(a,g15.3)')  'Pair reduction thr (Angstrom) = ',&
-            & DECinfo%PairReductionDistance
-    end if
 
     ! print cc parameters
     write(DECinfo%output,'(/,a)') '--------------------------'

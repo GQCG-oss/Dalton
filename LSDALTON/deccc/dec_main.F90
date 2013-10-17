@@ -34,7 +34,7 @@ module dec_main_mod
   use full,only: full_driver
 
 public :: dec_main_prog_input, dec_main_prog_file, &
-     & get_mp2gradient_and_energy_from_inputs, get_total_mp2energy_from_inputs
+     & get_mp2gradient_and_energy_from_inputs, get_total_CCenergy_from_inputs
 private
 
 contains
@@ -147,7 +147,8 @@ contains
     character(len=10) :: program_version
     character(len=50) :: MyHostname
     integer, dimension(8) :: values
-    real(realk) :: tcpu1, twall1, tcpu2, twall2
+    real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr
+    real(realk) :: molgrad(3,Molecule%natoms)
 
 
     ! Sanity check: LCM orbitals span the same space as canonical orbitals 
@@ -196,7 +197,7 @@ contains
     else
        ! -- Initialize DEC driver for energy calculation
        write(DECinfo%output,'(/,a,/)') 'DEC calculation is carried out...'
-       call DEC_wrapper(molecule,mylsitem,D)
+       call DEC_wrapper(molecule,mylsitem,D,EHF,Ecorr,molgrad,Eerr)
        ! --
     end if
 
@@ -280,11 +281,6 @@ contains
     real(realk),intent(inout) :: Eerr
     real(realk) :: Ecorr,EHF
     type(fullmolecule) :: Molecule
-    integer :: nBasis,nOcc,nUnocc
-    real(realk),pointer :: FragEnergiesOcc(:,:)
-    type(ccorbital), pointer :: OccOrbitals(:)
-    type(ccorbital), pointer :: UnoccOrbitals(:)
-    integer :: i
 
     write(DECinfo%output,*) 'Calculating DEC-MP2 gradient, FOT = ', DECinfo%FOT
 
@@ -304,29 +300,14 @@ contains
     ! Get informations about full molecule
     ! ************************************
     call molecule_init_from_inputs(Molecule,mylsitem,F,S,C)
-    nOcc = Molecule%numocc
-    nUnocc = Molecule%numvirt
-    nBasis = Molecule%nbasis
 
     ! No reason to save F,S and C twice. Delete the ones in matrix format and reset at the end
     call mat_free(F)
     call mat_free(S)
     call mat_free(C)
 
-
-    ! Analyze basis and create orbitals
-    ! *********************************
-    call mem_alloc(OccOrbitals,nOcc)
-    call mem_alloc(UnoccOrbitals,nUnocc)
-    call GenerateOrbitals_driver(Molecule,mylsitem,nocc,nunocc,natoms, &
-         & OccOrbitals, UnoccOrbitals)
-
-
-    ! -- Calculate molecular MP2 gradient
-    call mem_alloc(FragEnergiesOcc,Molecule%natoms,Molecule%natoms)
-    call main_fragment_driver(Molecule,mylsitem,D,&
-         & OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,EHF,Ecorr,mp2gradient,Eerr,FragEnergiesOcc)
+    ! -- Calculate molecular MP2 gradient and correlation energy
+    call DEC_wrapper(Molecule,mylsitem,D,EHF,Ecorr,mp2gradient,Eerr)
 
     ! Total MP2 energy: EHF + Ecorr
     EMP2 = EHF + Ecorr
@@ -337,18 +318,6 @@ contains
     ! Free molecule structure and other stuff
     call molecule_finalize(Molecule)
     
-    ! Delete orbitals 
-    do i=1,nOcc
-       call orbital_free(OccOrbitals(i))
-    end do
-
-    do i=1,nUnocc
-       call orbital_free(UnoccOrbitals(i))
-    end do
-
-    call mem_dealloc(OccOrbitals)
-    call mem_dealloc(UnOccOrbitals)
-    call mem_dealloc(FragEnergiesOcc)
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
     ! (the current value of Eerr) and the intrinsic error at the previous geometry.
@@ -368,7 +337,7 @@ contains
   !> as is done in a "conventional" DEC calculation which uses the dec_main_prog subroutine.
   !> \author Kasper Kristensen
   !> \date November 2011
-  subroutine get_total_mp2energy_from_inputs(MyLsitem,F,D,S,C,EMP2,Eerr)
+  subroutine get_total_CCenergy_from_inputs(MyLsitem,F,D,S,C,ECC,Eerr)
 
     implicit none
     !> LSitem structure
@@ -381,18 +350,14 @@ contains
     type(matrix),intent(inout) :: S
     !> MO coefficients 
     type(matrix),intent(inout) :: C
-    !> Total MP2 energy (Hartree-Fock + correlation contribution)
-    real(realk),intent(inout) :: EMP2
+    !> Total CC energy (Hartree-Fock + correlation contribution)
+    real(realk),intent(inout) :: ECC
     !> Difference between intrinsic energy error at this and the previous geometry
     !> (zero for single point calculation or first geometry step)
     real(realk),intent(inout) :: Eerr
     real(realk) :: Ecorr,EHF
     type(fullmolecule) :: Molecule
-    integer :: nBasis,nOcc,nUnocc,natoms
-    type(ccorbital), pointer :: OccOrbitals(:)
-    type(ccorbital), pointer :: UnoccOrbitals(:)
     real(realk), pointer :: dummy(:,:)
-    real(realk),pointer :: FragEnergiesOcc(:,:)
     integer :: i
     logical :: save_first_order, save_grad, save_dens
     ! Quick solution to ensure that the MP2 gradient contributions are not set
@@ -403,7 +368,7 @@ contains
     DECinfo%gradient = .false.
     DECinfo%MP2density=.false.
     
-    write(DECinfo%output,*) 'Calculating DEC-MP2 energy, FOT = ', DECinfo%FOT
+    write(DECinfo%output,*) 'Calculating DEC correlation energy, FOT = ', DECinfo%FOT
 
     ! Set DEC memory
     call get_memory_for_dec_calculation()
@@ -417,49 +382,19 @@ contains
     call mat_free(S)
     call mat_free(C)
 
-    nOcc = Molecule%numocc
-    nUnocc = Molecule%numvirt
-    nBasis = Molecule%nbasis
-    natoms = Molecule%natoms
-
-
-    ! Analyze basis and create orbitals
-    ! *********************************
-    call mem_alloc(OccOrbitals,nOcc)
-    call mem_alloc(UnoccOrbitals,nUnocc)
-    call GenerateOrbitals_driver(Molecule,mylsitem,nocc,nunocc,natoms, &
-         & OccOrbitals, UnoccOrbitals)
-
     ! -- Calculate correlation energy
-    call mem_alloc(dummy,3,natoms)
-    call mem_alloc(FragEnergiesOcc,Molecule%natoms,Molecule%natoms)
-    call main_fragment_driver(Molecule,mylsitem,D,&
-         & OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,EHF,Ecorr,dummy,Eerr,FragEnergiesOcc)
+    call mem_alloc(dummy,3,Molecule%natoms)
+    call DEC_wrapper(Molecule,mylsitem,D,EHF,Ecorr,dummy,Eerr)
     call mem_dealloc(dummy)
 
-    ! Total MP2 energy: EHF + Ecorr
-    EMP2 = EHF + Ecorr
-
+    ! Total CC energy: EHF + Ecorr
+    ECC = EHF + Ecorr
 
     ! Restore input matrices
     call molecule_copyback_FSC_matrices(Molecule,F,S,C)
 
     ! Free molecule structure and other stuff
     call molecule_finalize(Molecule)
-
-    ! Delete orbitals 
-    do i=1,nOcc
-       call orbital_free(OccOrbitals(i))
-    end do
-
-    do i=1,nUnocc
-       call orbital_free(UnoccOrbitals(i))
-    end do
-
-    call mem_dealloc(OccOrbitals)
-    call mem_dealloc(UnOccOrbitals)
-    call mem_dealloc(FragEnergiesOcc)
 
     ! Reset DEC parameters to the same as they were at input
     DECinfo%first_order = save_first_order
@@ -474,7 +409,7 @@ contains
     DECinfo%ncalc(DECinfo%FOTlevel) = DECinfo%ncalc(DECinfo%FOTlevel) +1
     call print_calculation_bookkeeping()
 
-  end subroutine get_total_mp2energy_from_inputs
+  end subroutine get_total_CCenergy_from_inputs
 
   !> \brief Print number of DEC calculations for each FOT level (only interesting for geometry opt)
   !> \author Kasper Kristensen
