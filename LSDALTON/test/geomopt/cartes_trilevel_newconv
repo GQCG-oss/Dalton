@@ -89,7 +89,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-75\.81990076" $log | wc -l` 
+CRIT1=`$GREP "Final * DFT energy\: * \-75\.81990075" $log | wc -l` 
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
@@ -103,7 +103,7 @@ ERROR[2]="Memory leak -"
 # Number of energies
 CRIT3=`$GREP "Final * DFT energy" $log | wc -l` 
 TEST[3]=`expr   $CRIT3`
-CTRL[3]=22
+CTRL[3]=20
 ERROR[3]="Wrong number of geometry steps"
 
 PASSED=1
