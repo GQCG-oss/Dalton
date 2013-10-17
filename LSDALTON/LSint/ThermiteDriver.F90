@@ -1661,15 +1661,12 @@ integer,pointer     :: atomC(:),atomD(:),batchC(:),batchD(:),atomIndexC(:),atomI
 real(realk),pointer :: X3(:),Y3(:),Z3(:),X4(:),Y4(:),Z4(:)
 real(realk) :: TMP,factor,CS_THRESHOLD
 integer :: IRHSI(1),nLHSbatches,nA,node,numnodes
-integer :: nthreads,tid,nDMAT_RHS,nDMAT_LHS
+integer :: nthreads,tid,nDMAT_RHS,nDMAT_LHS,IOMPLHSCOUNT
 integer,pointer :: Belms(:)
 integer,pointer :: IODelms(:)
 real(realk)           :: ReductionECONT(input%NDMAT_RHS)
 #ifdef VAR_OMP
-integer,pointer :: MPIINDEX(:)
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
-#else
-integer :: MPIINDEX(0:0)
 #endif
 CALL LS_GETTIM(CPUTIMESTART,WALLTIMESTART)
 !IF(.NOT. INPUT%CS_SCREEN)THEN
@@ -1950,7 +1947,7 @@ IF(.NOT.INPUT%noOMP) call mem_TurnONThread_Memory()
 !$OMP totmaxpasses,screen,overlaplist,REDGABLHS,REDDMATRHSAD,REDDMATRHSBD,&
 !$OMP TMP_short,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,IRHSI,localKmat,&
 !$OMP iODType,currentODtype,tid,nthreads,WORKLENGTH2,WORKLENGTH3,WORKEST1,IODelms,&
-!$OMP Belms,RED_GAB_TMP,node,numnodes,natoms3,natoms4) SHARED(MPIINDEX,Input,&
+!$OMP Belms,RED_GAB_TMP,node,numnodes,natoms3,natoms4,IOMPLHSCOUNT) SHARED(Input,&
 !$OMP nPassTypes,nLHSODtypes,CS_THRESHOLD,nonSR_EXCHANGE,&
 !$OMP Alloc,OD_LHS,OD_RHS,iprint,lupri,sharedTUV,nOverlapOfPassType,&
 !$OMP PassTypeOverlapIndex,TypeOverlapIndex,ODpassesIndex,dim3,dim4,sameods,&
@@ -1963,8 +1960,10 @@ IF(.NOT.INPUT%noOMP) call mem_TurnONThread_Memory()
 IF(.NOT.INPUT%noOMP) call init_threadmemvar()
 #ifdef VAR_MPI
 node = input%node
+numnodes = input%numnodes
 #else
 node = 0
+numnodes = 1
 #endif
 #ifdef VAR_OMP
 nthreads=OMP_GET_NUM_THREADS()
@@ -1972,7 +1971,6 @@ tid=OMP_GET_THREAD_NUM()
 !$OMP MASTER
 if(tid==0)then
   IF(node.EQ.0)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',omp_get_num_threads(),' threads.'
-  call mem_alloc(MPIINDEX,nthreads,.TRUE.)
 endif
 !$OMP END MASTER
 
@@ -2095,14 +2093,18 @@ CALL determineMaxPassesForType(Alloc,currentODtype,nPassTypes,&
      & maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
 iODtype = currentODtype
 
-#ifdef VAR_MPI
-MPIINDEX(tid) = 0 
-numnodes = input%numnodes
-node = input%node
-#endif
 call mem_alloc(overlaplist,TOTmaxpasses,npassTypes)
 !!$OMP DO SCHEDULE(DYNAMIC,1)
-DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
+IOMPLHSCOUNT = 0
+DO ILHSCOUNT=1+node,nLHSbatches,numnodes
+  !each node does different of theses ILHSCOUNT
+  IOMPLHSCOUNT = IOMPLHSCOUNT+1
+  !Each thread does different of these IOMPLHSCOUNT
+  !Without MPI IOMPLHSCOUNT goes (1,2,..,nLHSbatches)
+  !and Thread1 takes 1, Thread2 takes 2, ...
+  !With 4 MPI procs IOMPLHSCOUNT goes (1,5,9,13,...)
+  !and Thread1 takes 1, Thread2 takes 5, ...
+  IF(MOD(IOMPLHSCOUNT,nthreads).EQ.tid)THEN
    ILHS = ILHSCOUNTINDEX(ILHSCOUNT)
    iODType = ODtypeIndex(ILHS)
    IF(iODType.NE.currentODtype)THEN
@@ -2223,24 +2225,17 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
    ENDIF
    !Do diagonal =================================================
    IF(sameODs)THEN
-#ifdef VAR_MPI
-      MPIINDEX(tid) = MPIINDEX(tid) + 1
-      IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
-#endif
-         ipasstype = ODpassesIndex(ILHS)
-         IRHSI(1) = ILHS
-         call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
-         CALL modifyOverlapCenter(Q(iPassType),Q(iPassType)%nPrimitives,&
-              & IRHSI,TMPWORK,&
-              & 1,1,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
-              & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
-         call mem_workpointer_dealloc(TMPWORK)
-         CALL ExplicitIntegrals(Integral,PQ,P,Q(ipasstype),INPUT,LSOUTPUT,&
-              & ILHS,ILHS,LUPRI,IPRINT)
-         CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_MPI
-      ENDIF
-#endif
+      ipasstype = ODpassesIndex(ILHS)
+      IRHSI(1) = ILHS
+      call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
+      CALL modifyOverlapCenter(Q(iPassType),Q(iPassType)%nPrimitives,&
+           & IRHSI,TMPWORK,&
+           & 1,1,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
+           & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
+      call mem_workpointer_dealloc(TMPWORK)
+      CALL ExplicitIntegrals(Integral,PQ,P,Q(ipasstype),INPUT,LSOUTPUT,&
+           & ILHS,ILHS,LUPRI,IPRINT)
+      CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
       DoINT(ILHS) = .FALSE.
    ENDIF
    !Done diagonal ================================================
@@ -2267,54 +2262,6 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
          overlaplist(numPasses(iPassType),ipassType) = IRHS
          IF (numPasses(iPassType).EQ.maxPassesForTypes(iPassType)) THEN
 
-#ifdef VAR_MPI
-            MPIINDEX(tid) = MPIINDEX(tid) + 1
-            IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
-#endif
-               call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
-               CALL modifyOverlapCenter(PassQ(iPassType),PassQ(iPassType)%nPrimitives,&
-                    & overlaplist(1:numPasses(iPassType),iPasstype),&
-                    & TMPWORK,&
-                    & numPasses(iPassType),maxPassesForTypes(iPassType),&
-                    & atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
-                    & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
-               call mem_workpointer_dealloc(TMPWORK)
-               IRHS = overlaplist(1,iPassType)
-               CALL FinalizePass(PassQ(iPassType),Q(Ipasstype),maxPassesForTypes(iPassType),LUPRI,IPRINT)
-               CALL ExplicitIntegrals(Integral,PQ,P,PassQ(iPassType),INPUT,LSOUTPUT,&
-                    & ILHS,IRHS,LUPRI,IPRINT)
-               CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_MPI
-            ENDIF
-#endif
-            numPasses(iPassType) = 0
-         ENDIF
-      ELSE
-         IRHSI(1) = IRHS
-#ifdef VAR_MPI
-         MPIINDEX(tid) = MPIINDEX(tid) + 1
-         IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
-#endif
-            call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
-            CALL modifyOverlapCenter(Q(iPassType),Q(iPassType)%nPrimitives,&
-                 & IRHSI,TMPWORK,&
-                 & 1,1,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
-                 & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
-            call mem_workpointer_dealloc(TMPWORK)
-            CALL ExplicitIntegrals(Integral,PQ,P,Q(Ipasstype),INPUT,LSOUTPUT,&
-                 & ILHS,IRHS,LUPRI,IPRINT)
-            CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_MPI
-         ENDIF
-#endif
-      ENDIF
-   ENDDO LOOPRHS
-   DO iPassType=1,nPassTypes
-      IF(numPasses(iPassType).GT. 0) THEN
-#ifdef VAR_MPI
-         MPIINDEX(tid) = MPIINDEX(tid) + 1
-         IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
-#endif
             call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
             CALL modifyOverlapCenter(PassQ(iPassType),PassQ(iPassType)%nPrimitives,&
                  & overlaplist(1:numPasses(iPassType),iPasstype),&
@@ -2324,23 +2271,51 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
                  & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
             call mem_workpointer_dealloc(TMPWORK)
             IRHS = overlaplist(1,iPassType)
-            CALL FinalizePass(PassQ(iPassType),Q(Ipasstype),numPasses(iPassType),LUPRI,IPRINT)
-            IRHS=ILHS+1
-            !IRHS has been used to build Q(IRHS) which was then added to 
-            !PassQ and for all Q(IRHS), IRHS was different from ILHS.
-            !which was treated as a special case.  
-            !IRHS do no longer have any meaning, but is not allowed be accidentally be equal ILHS
-            !because then a triangular loop will be used which PassQ was not built for
+            CALL FinalizePass(PassQ(iPassType),Q(Ipasstype),maxPassesForTypes(iPassType),LUPRI,IPRINT)
             CALL ExplicitIntegrals(Integral,PQ,P,PassQ(iPassType),INPUT,LSOUTPUT,&
                  & ILHS,IRHS,LUPRI,IPRINT)
             CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_MPI
+            numPasses(iPassType) = 0
          ENDIF
-#endif
+      ELSE
+         IRHSI(1) = IRHS
+         call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
+         CALL modifyOverlapCenter(Q(iPassType),Q(iPassType)%nPrimitives,&
+              & IRHSI,TMPWORK,&
+              & 1,1,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
+              & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
+         call mem_workpointer_dealloc(TMPWORK)
+         CALL ExplicitIntegrals(Integral,PQ,P,Q(Ipasstype),INPUT,LSOUTPUT,&
+              & ILHS,IRHS,LUPRI,IPRINT)
+         CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
+      ENDIF
+   ENDDO LOOPRHS
+   DO iPassType=1,nPassTypes
+      IF(numPasses(iPassType).GT. 0) THEN
+         call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
+         CALL modifyOverlapCenter(PassQ(iPassType),PassQ(iPassType)%nPrimitives,&
+              & overlaplist(1:numPasses(iPassType),iPasstype),&
+              & TMPWORK,&
+              & numPasses(iPassType),maxPassesForTypes(iPassType),&
+              & atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
+              & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
+         call mem_workpointer_dealloc(TMPWORK)
+         IRHS = overlaplist(1,iPassType)
+         CALL FinalizePass(PassQ(iPassType),Q(Ipasstype),numPasses(iPassType),LUPRI,IPRINT)
+         IRHS=ILHS+1
+         !IRHS has been used to build Q(IRHS) which was then added to 
+         !PassQ and for all Q(IRHS), IRHS was different from ILHS.
+         !which was treated as a special case.  
+         !IRHS do no longer have any meaning, but is not allowed be accidentally be equal ILHS
+         !because then a triangular loop will be used which PassQ was not built for
+         CALL ExplicitIntegrals(Integral,PQ,P,PassQ(iPassType),INPUT,LSOUTPUT,&
+              & ILHS,IRHS,LUPRI,IPRINT)
+         CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
          numPasses(iPassType) = 0
       ENDIF
    ENDDO
    !numpass is now 0 for all ipasstype, and ready for next loop
+  ENDIF
 ENDDO
 !!$OMP END DO NOWAIT
 
@@ -2385,12 +2360,6 @@ call freeRHS_centerinfo(atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,&
 !!$OMP END CRITICAL
 !   call lstensor_free(localKmat)
 !ENDIF
-#ifdef VAR_OMP
-!$OMP BARRIER
-!$OMP MASTER
-if(tid==0)call mem_dealloc(MPIINDEX)
-!$OMP END MASTER
-#endif
 
 IF(.NOT.INPUT%noOMP)call collect_thread_memory()
 !$OMP END PARALLEL
