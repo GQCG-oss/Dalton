@@ -1636,8 +1636,6 @@ contains
          endif
        end if GetGuessVectors
 
-       print *,"Got guess vectors"
-
        ! Initialize residual vectors
        if(DECinfo%use_singles)then
          omega1(iter) = array_minit( ampl2_dims, 2 , local=local, atype='LDAR' )
