@@ -184,17 +184,17 @@ CAMT  Determine which flavour of DFT-D we are to run (2,3,3+BJ)
       ENDIF
 
       CALL HEADER('DFT-D Empirical Dispersion Correction',-1)
-      WRITE(LUPRI,'(A31,I5)')'Running DFT-D Ver.   :',NVER
+      WRITE(LUPRI,'(A31,I5)')'Running DFT-D Version : ',NVER
       IF (DO_DFTD2) THEN
-       WRITE(LUPRI,'(A31,A49)')'Ref. :',
+       WRITE(LUPRI,'(A31,A49)')'Reference : ',
      & 'S. Grimme, J. Comput. Chem., 27 (2006), 1787-1799'
       ELSE IF (DO_DFTD3) THEN
-       WRITE(LUPRI,'(A31,A47)')'Ref. :',
+       WRITE(LUPRI,'(A31,A47)')'Reference : ',
      & 'S. Grimme, J. Antony, S. Ehrlich and H. Krieg, '
        WRITE(LUPRI,'(A31,A33)')' ',
      & 'J. Chem. Phys. 132 (2010), 154104'
         IF (DO_BJDAMP) THEN
-        WRITE(LUPRI,'(A31,A38)')'Ref. :',
+        WRITE(LUPRI,'(A31,A38)')'Reference : ',
      & 'S. Grimme, S. Ehrlich and L. Goerigk, '
         WRITE(LUPRI,'(A31,A37)')' ',
      & 'J. Comput. Chem. 32 (2011), 1456-1465'
@@ -202,9 +202,9 @@ CAMT  Determine which flavour of DFT-D we are to run (2,3,3+BJ)
       ENDIF
 
       IF (DO_DFTD3) THEN
-        WRITE(LUPRI,'(A31,3X,L1)')'Becke-Johnson Damping   :',
+        WRITE(LUPRI,'(A31,3X,L1)')'Becke-Johnson Damping : ',
      &                                                         DO_BJDAMP
-        WRITE(LUPRI,'(A31,3X,L1)')'3-body terms   :',
+        WRITE(LUPRI,'(A31,3X,L1)')'3-body terms : ',
      &                                                         DO_3BODY
       ENDIF
 
@@ -297,7 +297,7 @@ CAMT  Calculate the Energy Correction
       ENDIF
  
       CALL AROUND('Dispersion Energy Correction')
-      WRITE(LUPRI,'(A31,3X,F20.12)')'E_disp: ',EDISP
+      WRITE(LUPRI,'(A31,3X,F20.12)')'E_disp : ',EDISP
       
 CAMT  Calculate the Gradient Contributions
       IF (L_GRAD) THEN

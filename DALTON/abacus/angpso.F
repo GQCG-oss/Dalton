@@ -1,3 +1,27 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+
       SUBROUTINE ANGPSO(xmos,llwork,PRT,char1,char2,Av)
 C
 C Linux version, Melo, azua, giribet, alejandrito, 
@@ -136,6 +160,7 @@ c       write(lupri,*) 'Llamando Cuenta para : ', LABEL(j),'  ', LABEL(k)
             write(lupri,*) '< ',LABEL(j),' >< ',LABEL(k),'>' 
         ENDIF 
         S1 = 0.0
+c jix : on NaN issue . should be  nelec/2
         do i1 = 1,NOCCT
            IF (B0(1).Eq.'ORBITAL') then
 C              write(lupri,*) 'Orbital : ',i1, '  Valor', ORBC(i1)
@@ -411,6 +436,7 @@ C       write(*,*) 'delta'
 C          write(*,*) delta(i,a)
           enddo
        enddo
+C jix : on NaN issue : should be  nelec/2 
        do a = 1,noc
           do i = 1,nmos
           ORBC(a) = ORBC(a) + gama(a,i)*delta(i,a)
