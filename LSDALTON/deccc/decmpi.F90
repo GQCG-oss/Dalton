@@ -380,20 +380,15 @@ contains
   !> have already been communicated.
   !> \author Kasper Kristensen
   !> \date March 2012
-  subroutine mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,DistanceTable,&
+  subroutine mpi_dec_fullinfo_master_to_slaves(nocc,nunocc,&
        & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
 
     implicit none
 
-    !> Number of atoms in the molecule
-    integer,intent(in) :: natoms
     !> Number of occupied orbitals in the molecule
     integer,intent(in) :: nocc
     !> Number of unoccupied orbitals in the molecule
     integer,intent(in) :: nunocc
-    !> Distance table with inter-atomic distances
-    !> Intent(in) for main master, intent(out) for local masters
-    real(realk),intent(inout) :: DistanceTable(natoms,natoms)
     !> Occupied orbitals in DEC format
     !> Intent(in) for main master, intent(out) for local masters
     type(ccorbital),intent(inout) :: OccOrbitals(nocc)
@@ -474,10 +469,6 @@ contains
     end do
 
 
-    ! Distance table
-    ! --------------
-    call ls_mpi_buffer(DistanceTable,natoms,natoms,master)
-
     ! Integral lsitem
     ! ---------------
     call mpicopy_lsitem(MyLsitem,MPI_COMM_LSDALTON)
@@ -510,6 +501,7 @@ contains
     type(fullmolecule),intent(inout) :: MyMolecule
     logical :: gm
     integer(kind=ls_mpik) :: master
+    integer :: natoms2
     master = 0
 
     IF(infpar%mynum==0)THEN ! Global master
@@ -543,6 +535,8 @@ contains
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%numocc)
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%numvirt)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms)
     end if
 
 
@@ -564,6 +558,8 @@ contains
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -612,6 +608,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%nunoccFA,master)
     CALL ls_mpi_buffer(MyFragment%number_atoms,master)
     CALL ls_mpi_buffer(MyFragment%number_basis,master)
+    CALL ls_mpi_buffer(MyFragment%ccmodel,master)
 
 
     ! Logicals that are not pointers
@@ -831,8 +828,9 @@ contains
 
   End subroutine mpicopy_fragment
 
-  subroutine share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
+  subroutine share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
     implicit none
+    integer,intent(inout) :: ccmodel
     real(realk),pointer :: xo(:),yv(:),Gbi(:),Had(:)
     real(realk), intent(inout) :: ppf(:),qqf(:)
     integer :: no,nv,nb,s
@@ -852,6 +850,7 @@ contains
     call ls_mpi_buffer(nb,infpar%master)
     call ls_mpi_buffer(s,infpar%master)
     call ls_mpi_buffer(lo,infpar%master)
+    call ls_mpi_buffer(ccmodel,infpar%master)
     if(master)oaddr=omega2%addr_p_arr
     call ls_mpi_buffer(oaddr,infpar%lg_nodtot,infpar%master)
     if(master)taddr=t2%addr_p_arr
@@ -881,8 +880,9 @@ contains
   !> \brief MPI communcation where CCSD and CC2 data is transferred
   !> \author Patrick Ettenhuber
   !> \date March 2012
-  subroutine mpi_communicate_ccsd_calcdata(om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,s,loc)
+  subroutine mpi_communicate_ccsd_calcdata(ccmodel,om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,s,loc)
     implicit none
+    integer,intent(inout) :: ccmodel
     type(mp2_batch_construction) :: bat
     integer            :: nbas,nocc,nvirt,ierr,iter,s
     !real(realk)        :: t2(:),govov(:)
@@ -901,13 +901,14 @@ contains
     master=(infpar%lg_mynum==infpar%master)
    !communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpi_buffer(DECinfo%ccModel,infpar%master)
+!    call ls_mpi_buffer(DECinfo%ccModel,infpar%master)
     call ls_mpi_buffer(nbas,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(iter,infpar%master)
     call ls_mpi_buffer(s,infpar%master)
     call ls_mpi_buffer(loc,infpar%master)
+    call ls_mpi_buffer(ccmodel,infpar%master)
     if(.not.loc)then
       if(master)gaddr=govov%addr_p_arr
       call ls_mpi_buffer(gaddr,infpar%lg_nodtot,infpar%master)
@@ -962,7 +963,7 @@ contains
 
     ! communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpi_buffer(DECinfo%ccModel,infpar%master)
+!    call ls_mpi_buffer(DECinfo%ccModel,infpar%master)
     call ls_mpi_buffer(DECinfo%memory,infpar%master)
     call ls_mpi_buffer(nbasis,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
@@ -1725,7 +1726,6 @@ contains
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
-    call ls_mpi_buffer(DECitem%HybridScheme,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
     call ls_mpi_buffer(DECitem%fragopt_exp_mp2,Master)
     call ls_mpi_buffer(DECitem%fragopt_red_mp2,Master)
@@ -1734,10 +1734,11 @@ contains
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%paircut_set,Master)
-    call ls_mpi_buffer(DECitem%PairReductionDistance,Master)
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
     call ls_mpi_buffer(DECitem%checkpairs,Master)
     call ls_mpi_buffer(DECitem%pairFOthr,Master)
+    call ls_mpi_buffer(DECitem%PairMP2,Master)
+    call ls_mpi_buffer(DECitem%PairEstimate,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%MP2density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
@@ -1753,6 +1754,23 @@ contains
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
 
   end subroutine mpicopy_dec_settings
+
+  !> \brief bcast very basic information from master to slaves 
+  !> (information which for practical reasons cannot be packed into mpi_dec_fullinfo_master_to_slaves)
+  subroutine mpi_dec_fullinfo_master_to_slaves_precursor(esti,nocc,nunocc,master)
+    implicit none
+    !> Is this an estimated calculation (no FOT optimization)?
+    logical,intent(inout) :: esti
+    !> Number of occ/unocc orbitals in molecule
+    integer,intent(inout) :: nocc,nunocc
+    !> Master node number
+    integer(kind=ls_mpik),intent(in) :: master
+
+    call ls_mpibcast(esti,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(nocc,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(nunocc,master,MPI_COMM_LSDALTON)
+
+  end subroutine mpi_dec_fullinfo_master_to_slaves_precursor
 
 end module decmpi_module
 

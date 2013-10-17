@@ -2027,7 +2027,7 @@ contains
     dens%nvirt = fragment%nunoccAOS
     dens%nocc = fragment%noccAOS
     dens%nocctot = fragment%nocctot
-    dens%energy = fragment%energies(1)
+    dens%energy = fragment%energies(FRAGMODEL_OCCMP2)
     dens%pairdist = 0E0_realk
     dens%nEOSatoms = fragment%nEOSatoms
 

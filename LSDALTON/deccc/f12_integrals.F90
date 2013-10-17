@@ -289,7 +289,7 @@ contains
     print *, "E_22_Xsum:", X1energy + X2energy 
     print *, '----------------------------------------'
    
-    myfragment%energies(14) = V1energy + V2energy + X1energy + X2energy 
+    myfragment%energies(FRAGMODEL_F12) = V1energy + V2energy + X1energy + X2energy 
     
     ! Free memory
     call mem_dealloc(CoccEOS)
@@ -448,7 +448,7 @@ contains
     print *, '----------------------------------------'
     
     ! Input for Dec Driver
-    pairfragment%energies(14) = V1energy + V2energy
+    pairfragment%energies(FRAGMODEL_F12) = V1energy + V2energy
 
     ! Free memory
     call mem_dealloc(dopair_occ)

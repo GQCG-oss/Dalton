@@ -159,6 +159,16 @@ contains
     call calculate_fullmolecule_memory(molecule,memory_use)
     DECinfo%fullmolecule_memory = memory_use
 
+    !> Interatomic distances in atomic units
+    call mem_alloc(molecule%DistanceTable,molecule%natoms,molecule%natoms)
+    molecule%DistanceTable=0.0E0_realk
+    call GetDistances(molecule%DistanceTable,molecule%natoms,mylsitem,DECinfo%output) 
+
+    !> Which model to use for different pair calculations?
+    !> At this initialization step - use the input CC model for all pairs
+    call mem_alloc(molecule%ccmodel,molecule%natoms,molecule%natoms)
+    molecule%ccmodel = DECinfo%ccmodel
+
     ! Print some info about the molecule
     write(DECinfo%output,*)
     write(DECinfo%output,'(/,a)') '-- Full moleculecular info --'
@@ -626,6 +636,14 @@ contains
 
     if(associated(molecule%AtomCenters)) then
        call mem_dealloc(molecule%AtomCenters)
+    end if
+
+    if(associated(molecule%DistanceTable)) then
+       call mem_dealloc(molecule%DistanceTable)
+    end if
+
+    if(associated(molecule%ccmodel)) then
+       call mem_dealloc(molecule%ccmodel)
     end if
 
   end subroutine molecule_finalize

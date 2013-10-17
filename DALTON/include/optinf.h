@@ -4,6 +4,7 @@
 ! Information for geometry optimization
 ! controlled in abaopt.F, abaop2.F, and abarint.F
 !
+      PARAMETER      (MX_IFREEZ = 200)
       LOGICAL         GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM,           ! please keep same order as below, for easier checking
      &                DOSPE,  DOPRE,  FINPRE, VRML,   VRBOND, VREIGV,
      &                VRCORD, VRVIBA, VRML_SYM, VISUAL, INITHS, HSFILE,
@@ -14,7 +15,7 @@
      &                TRSTRG, RATFUN, GDIIS,  DELINT, RSTARR, LNSRCH,
      &                SADDLE, REBILD, BOFILL, CMBMOD, HFPROP, CONFRM,
      &                NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
-     &                NATNRM, NOHSWR
+     &                NATNRM, NOHSWR, PRJTRO
       COMMON /OPTINF/ TRSTRA, TRSTIN, TRSTDE, RTENBD, RTENGD, RTRJMN,     ! we start with double precision variables
      &                RTRJMX, ENERGY, ERGOLD, ERGPRD, ERGPRO, STPNRM,
      &                STPNRO, GRADNM, THRERG, GRDTHR, THRSTP, THRSYM,
@@ -26,7 +27,7 @@
      &                CRDIN1(8*MXCENT), CRDINT(8*MXCENT), CNDHES(0:7),
      &                INDHES(0:7), INTCRD(8*MXCENT,6),                     ! first line with integer variables
      &                ICONF(0:5), ICNSTR(8*MXCENT), IADDCR(0:10,1:4),
-     &                IFREEZ(0:10),
+     &                IFREEZ(0:MX_IFREEZ),
      &                ISTBLZ, IAUXRD, ITOTRJ, KEPTIT, NSPMOD, NCNSTP,
      &                INDTOT, ITRNMR, ITRMAX, MAXREJ, IPRINT, NCRTOT,
      &                NCART,  NPROJ,  NTMAT,  IINTCR, IREDIC, ICRTCR,
@@ -41,7 +42,7 @@
      &                TRSTRG, RATFUN, GDIIS,  DELINT, RSTARR, LNSRCH,
      &                SADDLE, REBILD, BOFILL, CMBMOD, HFPROP, CONFRM,
      &                NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
-     &                NATNRM, NOHSWR
+     &                NATNRM, NOHSWR, PRJTRO
 
       PARAMETER (MAXPRE = 10)
       CHARACTER*80            PREBTX,         SPBSTX

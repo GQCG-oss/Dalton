@@ -36,6 +36,8 @@ module lsmpi_type
      MODULE PROCEDURE ls_mpibcast_integer,& 
           &           ls_mpibcast_integerV,ls_mpibcast_integerV_wrapper8,&
           &           ls_mpibcast_longV, ls_mpibcast_longV_wrapper8, &
+          &           ls_mpibcast_integerM,ls_mpibcast_integerM_wrapper8,&
+          &           ls_mpibcast_longM, ls_mpibcast_longM_wrapper8, &
           &           ls_mpibcast_realk, ls_mpibcast_realkV,&
           &           ls_mpibcast_realkV_wrapper8,&
           &           ls_mpibcast_realkM, ls_mpibcast_realkT,&
@@ -388,7 +390,7 @@ contains
       else
         DATATYPE = MPI_INTEGER8
         COUNT = SIZE(buffer)
-        if(COUNT.NE.n)call lsquit('lsmpi error in ls_mpibcast_longV',-1)
+        if(COUNT.NE.n)call lsquit('lsmpi error in ls_mpibcast_longV_wrapper8',-1)
         !      COUNT = nbuf
         CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
@@ -460,6 +462,116 @@ contains
       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif
     end subroutine ls_mpibcast_integerV
+
+
+
+    subroutine ls_mpibcast_longM_wrapper8(buffer,n1,n2,master,comm)
+      implicit none
+      integer(kind=ls_mpik),intent(in) :: comm
+      integer(kind=ls_mpik),intent(in) :: master
+      integer(kind=8) :: n1,n2
+      integer(kind=8) :: buffer(:,:)
+      integer(kind=8),pointer :: buffertmp(:)
+      integer(kind=4) :: n4
+      integer(kind=8) :: i,k,n
+#ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,count,datatype
+      !loop over batches, which contain a number of elements,
+      !describable by 32 bit integers, here 2E9
+      IERR=0
+      n=n1*n2
+      if(ls_mpik==4)then
+         call ass_88I2to1(buffer,buffertmp,[n1,n2])
+        k=SPLIT_MPI_MSG
+        do i=1,n,k
+          n4=k
+          !if((n-i)<k)n4=mod(n,k)
+          if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
+          call ls_mpibcast_longV(buffertmp(i:i+n4-1),n4,master,comm)
+        enddo
+        nullify(buffertmp)
+      else
+        DATATYPE = MPI_INTEGER8
+        COUNT = SIZE(buffer)
+        if(COUNT.NE.n)call lsquit('lsmpi error in ls_mpibcast_longM_wrapper8',-1)
+        !      COUNT = nbuf
+        CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
+        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      endif
+#endif
+    end subroutine ls_mpibcast_longM_wrapper8
+    subroutine ls_mpibcast_longM(buffer,nbuf1,nbuf2,master,comm)
+      implicit none
+      integer(kind=8) :: buffer(:,:)
+      integer(kind=4) :: nbuf1,nbuf2
+      integer(kind=ls_mpik) :: master
+      integer(kind=ls_mpik) :: comm   ! communicator
+#ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,datatype,n
+      IERR=0
+      DATATYPE = MPI_INTEGER8
+      n = SIZE(buffer)
+      if(n.NE.nbuf1*nbuf2)call lsquit('lsmpi error in ls_mpibcast_longM',-1)
+      !      COUNT = nbuf
+      CALL MPI_BCAST(BUFFER,n,DATATYPE,master,comm,IERR)
+      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+#endif
+    end subroutine ls_mpibcast_longM
+
+
+    subroutine ls_mpibcast_integerM_wrapper8(buffer,n1,n2,master,comm)
+      implicit none
+      integer(kind=ls_mpik),intent(in) :: comm
+      integer(kind=ls_mpik),intent(in) :: master
+      integer(kind=8) :: n1,n2
+      integer(kind=4) :: buffer(:,:)
+      integer(kind=4),pointer :: buffertmp(:)
+      integer(kind=8) :: i,k,n
+      integer(kind=4) :: n4
+      !loop over batches, which contain a number of elements,
+      !describable by 32 bit integers, here 2E9
+#ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,count,datatype
+      IERR=0
+      n=n1*n2
+      if(ls_mpik==4)then
+         call ass_48I2to1(buffer,buffertmp,[n1,n2])
+        k=SPLIT_MPI_MSG
+        do i=1,n,k
+          n4=k
+          !if((n-i)<k)n4=mod(n,k)
+          if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
+          call ls_mpibcast_integerV(buffertmp(i:i+n4-1),n4,master,comm)
+        enddo
+        nullify(buffertmp)
+      else
+        DATATYPE = MPI_INTEGER4
+        COUNT = SIZE(buffer)
+        if(COUNT.NE.n)call lsquit('lsmpi error in ls_mpibcast_integerM_wrapper8',-1)
+        CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
+        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      endif
+#endif
+    end subroutine ls_mpibcast_integerM_wrapper8
+
+    subroutine ls_mpibcast_integerM(buffer,nbuf1,nbuf2,master,comm)
+      implicit none
+      integer(kind=4)       :: nbuf1,nbuf2
+      integer(kind=ls_mpik) :: master
+      integer(kind=4)       :: buffer(:,:)
+      integer(kind=ls_mpik) :: comm   ! communicator
+#ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,count,datatype
+      IERR=0
+      DATATYPE = MPI_INTEGER4
+      COUNT = SIZE(buffer)
+      if(COUNT.NE.nbuf1*nbuf2)call lsquit('lsmpi error in ls_mpibcast_integerM',-1)
+      CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
+      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+#endif
+    end subroutine ls_mpibcast_integerM
+
+
 
     subroutine ls_mpibcast_realk(buffer,master,comm)
       implicit none
