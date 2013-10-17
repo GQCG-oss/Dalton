@@ -14,7 +14,7 @@ module profile_int
   use daltoninfo       
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
-  
+  use ProfileIchorMod
 private
 public :: di_profile_lsint
 
@@ -54,7 +54,11 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
 #endif
   WRITE(lupri,*)' '
   WRITE(lupri,*)'============================================='
-
+  WRITE(lupri,*)'config%prof%Ichor',config%prof%Ichor
+  IF(config%prof%Ichor)THEN
+     call profile_Ichor(LUPRI,LUPRI,ls%SETTING,config)
+     RETURN
+  ENDIF
   IF(config%prof%Overlap)THEN
      CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
      call mat_init(S,nbast,nbast)

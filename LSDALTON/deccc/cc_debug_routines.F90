@@ -27,13 +27,13 @@ module cc_debug_routines_module
    
 
    contains
-   subroutine ccsolver_energy_multipliers(MyMolecule,ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+   subroutine ccsolver_energy_multipliers(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
         &mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy)
 
      implicit none
 
-     !> full molecule information
-     type(fullmolecule), intent(in) :: MyMolecule
+     !> CC model
+     integer,intent(in) :: ccmodel
      !> Number of occupied orbitals in full molecule/fragment AOS
      integer, intent(in) :: nocc
      !> Number of virtual orbitals in full molecule/fragment AOS
@@ -43,9 +43,9 @@ module cc_debug_routines_module
      !> Fock matrix in AO basis for fragment or full molecule
      real(realk), dimension(nbasis,nbasis), intent(in) :: fock_f
      !> Occupied MO coefficients  for fragment/full molecule
-     real(realk), dimension(nbasis,nocc), intent(inout) :: ypo_f
+     real(realk), dimension(nbasis,nocc), intent(inout) :: Co_f
      !> Virtual MO coefficients  for fragment/full molecule
-     real(realk), dimension(nbasis,nvirt), intent(inout) :: ypv_f
+     real(realk), dimension(nbasis,nvirt), intent(inout) :: Cv_f
      !> Occ-occ block of Fock matrix in MO basis
      real(realk), dimension(nocc,nocc), intent(inout) :: ppfock_f
      !> Virt-virt block of Fock matrix in MO basis
@@ -63,21 +63,20 @@ module cc_debug_routines_module
      !> stuff needed for pair analysis
      type(array2) :: ccsd_mat_tot,ccsd_mat_tmp
      integer :: natoms,ncore,nocc_tot,p,pdx,i
-     real(realk), pointer :: distance_table(:,:)
-     type(ccorbital), pointer :: occ_orbitals(:)
-     type(ccorbital), pointer :: unocc_orbitals(:)
+     type(decorbital), pointer :: occ_orbitals(:)
+     type(decorbital), pointer :: unocc_orbitals(:)
      logical, pointer :: orbitals_assigned(:)
      type(array4) :: mult2
      type(array2) :: mult1
 
 
-     call ccsolver_debug(ypo_f, ypv_f, fock_f, nbasis, nocc, nvirt, &
+     call ccsolver_debug(ccmodel,Co_f, Cv_f, fock_f, nbasis, nocc, nvirt, &
         & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
         & t1_final, t2_final, VOVO, .false.)
 
      call array4_free(VOVO)
 
-     call ccsolver_debug(ypo_f, ypv_f, fock_f, nbasis, nocc, nvirt, &
+     call ccsolver_debug(ccmodel,Co_f, Cv_f, fock_f, nbasis, nocc, nvirt, &
         & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
         & t1_final, t2_final, VOVO, .false., m2 = mult2, m1 = mult1)
 
@@ -95,12 +94,14 @@ module cc_debug_routines_module
 
    !> \author Marcin Ziolkowski (modified by Kasper Kristensen and Patrick
    !  Ettenhuber)
-   subroutine ccsolver_debug(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
+   subroutine ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
         & t1_final,t2_final,VOVO,longrange_singles,m2,m1)
 
      implicit none
 
+     !> CC model
+     integer,intent(in) :: ccmodel
      !> Number of occupied orbitals in full molecule/fragment AOS
      integer, intent(in) :: nocc
      !> Number of virtual orbitals in full molecule/fragment AOS
@@ -110,9 +111,9 @@ module cc_debug_routines_module
      !> Fock matrix in AO basis for fragment or full molecule
      real(realk), dimension(nbasis,nbasis), intent(in) :: fock_f
      !> Occupied MO coefficients for fragment/full molecule
-     real(realk), dimension(nbasis,nocc), intent(in) :: ypo_f
+     real(realk), dimension(nbasis,nocc), intent(in) :: Co_f
      !> Virtual MO coefficients for fragment/full molecule
-     real(realk), dimension(nbasis,nvirt), intent(in) :: ypv_f
+     real(realk), dimension(nbasis,nvirt), intent(in) :: Cv_f
      !> Occ-occ block of Fock matrix in MO basis
      real(realk), dimension(nocc,nocc), intent(in) :: ppfock_f
      !> Virt-virt block of Fock matrix in MO basis
@@ -140,12 +141,12 @@ module cc_debug_routines_module
      !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
      !> (from previous calculations) must be stored in t1_final at input!
      logical,intent(in) :: longrange_singles
-     real(realk),pointer :: yho_d(:,:), yhv_d(:,:),ypo_d(:,:),ypv_d(:,:),focc(:),fvirt(:)
+     real(realk),pointer :: Co2_d(:,:), Cv2_d(:,:),Co_d(:,:),Cv_d(:,:),focc(:),fvirt(:)
      real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:), Uocc(:,:), Uvirt(:,:)
 
      integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims
      integer, dimension(4) :: ampl4_dims
-     type(array2) :: fock,ypo,ypv,yho,yhv
+     type(array2) :: fock,Co,Cv,Co2,Cv2
      type(array2) :: ppfock,qqfock,pqfock,qpfock
      type(array4) :: gao,gmo,aibj,iajb
      type(array4), pointer :: t2(:),omega2(:)
@@ -203,7 +204,7 @@ module cc_debug_routines_module
      MaxSubSpace = DECinfo%ccMaxDIIS
 
      ! title
-     Call print_ccjob_header(ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace)
+     Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace)
 
      ! dimension vectors
      occ_dims   = [nbasis,nocc]
@@ -215,10 +216,10 @@ module cc_debug_routines_module
      ! go to a (pseudo) canonical basis
      call mem_alloc(focc,nocc)
      call mem_alloc(fvirt,nvirt)
-     call mem_alloc(ypo_d,nbasis,nocc)
-     call mem_alloc(ypv_d,nbasis,nvirt)
-     call mem_alloc(yho_d,nbasis,nocc)
-     call mem_alloc(yhv_d,nbasis,nvirt)
+     call mem_alloc(Co_d,nbasis,nocc)
+     call mem_alloc(Cv_d,nbasis,nvirt)
+     call mem_alloc(Co2_d,nbasis,nocc)
+     call mem_alloc(Cv2_d,nbasis,nvirt)
      call mem_alloc(ppfock_d,nocc,nocc)
      call mem_alloc(qqfock_d,nvirt,nvirt)
      call mem_alloc(Uocc,nocc,nocc)
@@ -230,8 +231,8 @@ module cc_debug_routines_module
 
      if(DECinfo%CCSDpreventcanonical)then
        !nocc diagonalization
-       ypo_d    = ypo_f
-       ypv_d    = ypv_f
+       Co_d    = Co_f
+       Cv_d    = Cv_f
        ppfock_d = ppfock_f
        qqfock_d = qqfock_f
        Uocc     = 0.0E0_realk
@@ -247,7 +248,7 @@ module cc_debug_routines_module
      else
 
        call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock_f,&
-            &qqfock_f,ypo_f,ypv_f,ypo_d,ypv_d,Uocc,Uvirt,focc,fvirt)
+            &qqfock_f,Co_f,Cv_f,Co_d,Cv_d,Uocc,Uvirt,focc,fvirt)
 
        ppfock_d = 0.0E0_realk
        qqfock_d = 0.0E0_realk
@@ -277,20 +278,20 @@ module cc_debug_routines_module
 
      ! Copy MO coeffcients. It is very convenient to store them twice to handle transformation
      ! (including transposed MO matrices) efficiently. 
-     yho_d = ypo_d
-     yhv_d = ypv_d
+     Co2_d = Co_d
+     Cv2_d = Cv_d
 
      ! create transformation matrices in array form
-     ypo   = array2_init(occ_dims,ypo_d)
-     ypv   = array2_init(virt_dims,ypv_d)
-     yho   = array2_init(occ_dims,yho_d)
-     yhv   = array2_init(virt_dims,yhv_d)
+     Co   = array2_init(occ_dims,Co_d)
+     Cv   = array2_init(virt_dims,Cv_d)
+     Co2   = array2_init(occ_dims,Co2_d)
+     Cv2   = array2_init(virt_dims,Cv2_d)
      fock  = array2_init(ao2_dims,fock_f)
 
-     call mem_dealloc(ypo_d)
-     call mem_dealloc(ypv_d)
-     call mem_dealloc(yho_d)
-     call mem_dealloc(yhv_d)
+     call mem_dealloc(Co_d)
+     call mem_dealloc(Cv_d)
+     call mem_dealloc(Co2_d)
+     call mem_dealloc(Cv2_d)
 
 
 
@@ -305,7 +306,7 @@ module cc_debug_routines_module
 
      ! Density corresponding to input MOs
      call mem_alloc(dens,nbasis,nbasis)
-     call get_density_from_occ_orbitals(nbasis,nocc,ypo%val,dens)
+     call get_density_from_occ_orbitals(nbasis,nocc,Co%val,dens)
 
      call mem_dealloc(dens)
 
@@ -328,7 +329,7 @@ module cc_debug_routines_module
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
      ! special MP2 things
-     MP2Special : if(DECinfo%ccModel == MODEL_MP2 .or. DECinfo%ccModel == MODEL_RPA) then
+     MP2Special : if(CCmodel == MODEL_MP2 .or. CCmodel == MODEL_RPA) then
 
         write(DECinfo%output,*)
         write(DECinfo%output,*) ' ********************  WARNING  **********************'
@@ -336,13 +337,13 @@ module cc_debug_routines_module
         write(DECinfo%output,*) 'This will work fine but it is recommended to use the non-iterative'
         write(DECinfo%output,*) 'MP2_integrals_and_amplitudes_workhorse to use get the MP2 amplitudes'
         write(DECinfo%output,*)
-        call get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,ypv%val,ypo%val,gmo)
+        call get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cv%val,Co%val,gmo)
 
         ! Construct L: L_{bjai} = 2*g_{bjai} - g_{ajbi}
         Lmo = getL_simple_from_gmo(gmo)
 
-        ppfock = array2_similarity_transformation(ypo,fock,yho,[nocc,nocc])
-        qqfock = array2_similarity_transformation(ypv,fock,yhv,[nvirt,nvirt])
+        ppfock = array2_similarity_transformation(Co,fock,Co2,[nocc,nocc])
+        qqfock = array2_similarity_transformation(Cv,fock,Cv2,[nvirt,nvirt])
 
         if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug :: gmo(vovo) norm  : ',gmo*gmo
      end if MP2Special
@@ -354,8 +355,8 @@ module cc_debug_routines_module
            ppfock_prec = array2_init([nocc,nocc],ppfock_d)
            qqfock_prec = array2_init([nvirt,nvirt],qqfock_d)
         else
-           ppfock_prec = array2_similarity_transformation(ypo,fock,yho,[nocc,nocc])
-           qqfock_prec = array2_similarity_transformation(ypv,fock,yhv,[nvirt,nvirt])
+           ppfock_prec = array2_similarity_transformation(Co,fock,Co2,[nocc,nocc])
+           qqfock_prec = array2_similarity_transformation(Cv,fock,Cv2,[nvirt,nvirt])
         end if
      end if Preconditioner
      call mem_dealloc(ppfock_d)
@@ -371,7 +372,7 @@ module cc_debug_routines_module
      call mem_alloc(omega2,DECinfo%ccMaxIter)
 
      ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-     if(DECinfo%ccModel /= MODEL_MP2) then
+     if(CCmodel /= MODEL_MP2) then
         xocc = array2_init(occ_dims)
         yocc = array2_init(occ_dims)
         xvirt = array2_init(virt_dims)
@@ -425,7 +426,7 @@ module cc_debug_routines_module
         ! it is a debug code this solution was simpler)
         if(iter == 1.and.DECinfo%use_singles .and. get_mult) then
            call getT1transformation(t1_final,xocc,xvirt,yocc,yvirt, &
-           ypo,ypv,yho,yhv)
+           Co,Cv,Co2,Cv2)
         endif
 
 
@@ -433,7 +434,7 @@ module cc_debug_routines_module
         GetGuessVectors : if(iter == 1) then
 
            call get_guess_vectors_simple(mylsitem,t2(iter),t1(iter),&
-           &t1_final,gao,get_mult,ypo,yho,yhv,nocc,nvirt,nbasis,xocc,yvirt,restart)
+           &t1_final,gao,get_mult,Co,Co2,Cv2,nocc,nvirt,nbasis,xocc,yvirt,restart)
 
         end if GetGuessVectors
 
@@ -453,7 +454,7 @@ module cc_debug_routines_module
            ! get the T1 transformation matrices
            if(.not.get_mult)then
               call getT1transformation(t1(iter),xocc,xvirt,yocc,yvirt, &
-                ypo,ypv,yho,yhv)
+                Co,Cv,Co2,Cv2)
            endif
 
            ! get inactive fock
@@ -482,11 +483,11 @@ module cc_debug_routines_module
            call array2_add_to(ifock,1.0E0_realk,delta_fock)
 
            ! readme : this should be done in a more clear way
-           if(DECinfo%ccModel == MODEL_CC2) then
+           if(CCmodel == MODEL_CC2) then
               ! CC2
               ppfock = array2_similarity_transformation(xocc,fock,yocc,[nocc,nocc])
               qqfock = array2_similarity_transformation(xvirt,fock,yvirt,[nvirt,nvirt])
-           else if(DECinfo%ccModel >= MODEL_CCSD) then
+           else if(CCmodel >= MODEL_CCSD) then
               ! CCSD
               ppfock = array2_similarity_transformation(xocc,ifock,yocc,[nocc,nocc])
               qqfock = array2_similarity_transformation(xvirt,ifock,yvirt,[nvirt,nvirt])
@@ -505,12 +506,12 @@ module cc_debug_routines_module
 
         ! MODIFY FOR NEW MODEL
         ! If you implement a new model, please insert call to your own residual routine here!
-        SelectCoupledClusterModel : if(DECinfo%ccModel==MODEL_MP2) then
+        SelectCoupledClusterModel : if(CCmodel==MODEL_MP2) then
 
            call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
                 & nocc,nvirt)
 
-        elseif(DECinfo%ccModel==MODEL_CC2) then
+        elseif(CCmodel==MODEL_CC2) then
            u = get_u(t2(iter))
            call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock, &
                 xocc,xvirt,yocc,yvirt,nocc,nvirt)
@@ -522,7 +523,7 @@ module cc_debug_routines_module
            call array4_free(gmo)
 
 
-        elseif(DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT) then  ! CCSD or CCSD(T)
+        elseif(CCmodel==MODEL_CCSD .or. CCmodel==MODEL_CCSDpT) then  ! CCSD or CCSD(T)
 
            if(get_mult)then
 
@@ -544,7 +545,7 @@ module cc_debug_routines_module
            call array4_free(u)
 
 
-        elseif(DECinfo%ccmodel==MODEL_RPA) then
+        elseif(CCmodel==MODEL_RPA) then
 
            call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
 
@@ -686,13 +687,13 @@ module cc_debug_routines_module
         ! If you implement a new model, please insert call to energy routine here,
         ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
         if(.not. get_mult)then
-           EnergyForCCmodel: if(DECinfo%ccmodel==MODEL_MP2) then  
+           EnergyForCCmodel: if(CCmodel==MODEL_MP2) then  
               ! MP2
               ccenergy = get_mp2_energy(t2(iter),Lmo)
-           elseif(DECinfo%ccmodel==MODEL_CC2 .or. DECinfo%ccmodel==MODEL_CCSD .or. DECinfo%ccmodel==MODEL_CCSDpT )then
+           elseif(CCmodel==MODEL_CC2 .or. CCmodel==MODEL_CCSD .or. CCmodel==MODEL_CCSDpT )then
               ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
               ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
-           elseif(DECinfo%ccmodel==MODEL_RPA) then
+           elseif(CCmodel==MODEL_RPA) then
               ccenergy = RPA_energy(t2(iter),gmo)
               sosex = SOSEX_contribution(t2(iter),gmo)
               ccenergy=ccenergy+sosex
@@ -836,7 +837,7 @@ module cc_debug_routines_module
 
 
      ! Save two-electron integrals in the order (virt,occ,virt,occ)
-     if(DECinfo%ccModel == MODEL_MP2) then
+     if(CCmodel == MODEL_MP2) then
         call array4_free(lmo) ! also free lmo integrals
         VOVO = array4_duplicate(gmo)
         call array4_free(gmo)
@@ -887,10 +888,10 @@ module cc_debug_routines_module
      call array2_free(ppfock)
      call array2_free(qqfock)
 
-     call array2_free(ypo)
-     call array2_free(yho)
-     call array2_free(ypv)
-     call array2_free(yhv)
+     call array2_free(Co)
+     call array2_free(Co2)
+     call array2_free(Cv)
+     call array2_free(Cv2)
      call array2_free(fock)
 
 
@@ -1916,14 +1917,14 @@ module cc_debug_routines_module
     !> \author Patrick Ettenhuber
     !> \date December 2012
    subroutine get_guess_vectors_simple(mylsitem,t2,t1,t1_final,gao,&
-   &get_mult,ypo,yho,yhv,no,nv,nb,xocc,yvirt,restart)
+   &get_mult,Co,Co2,Cv2,no,nv,nb,xocc,yvirt,restart)
      implicit none
      type(lsitem),intent(inout) :: mylsitem
      !> contains the guess doubles amplitudes on output
      type(array4),intent(inout) :: t2
      !> contains the singles amplitudes on output
      type(array2),intent(inout) :: t1
-     type(array2),intent(inout) :: t1_final,ypo,yho,yhv,xocc,yvirt
+     type(array2),intent(inout) :: t1_final,Co,Co2,Cv2,xocc,yvirt
      type(array4),intent(inout) :: gao
      integer, intent(in)        :: no,nv,nb
      logical,intent(in)         :: get_mult
@@ -2097,7 +2098,7 @@ module cc_debug_routines_module
         restart = .false.
         if(get_mult)then
           fockguess=array2_init([nb,nb])
-          call Get_AOt1Fock(mylsitem,t1_final,fockguess,no,nv,nb,ypo,yho,yhv)
+          call Get_AOt1Fock(mylsitem,t1_final,fockguess,no,nv,nb,Co,Co2,Cv2)
           t1tmp = array2_similarity_transformation(xocc,fockguess,yvirt,[no,nv]) 
           call array2_free(fockguess)
           call mat_transpose(no,nv,-1.0E0_realk,t1tmp%val,0.0E0_realk,t1%val)

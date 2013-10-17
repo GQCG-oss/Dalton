@@ -22,7 +22,7 @@ use matrix_operations_aux, only: mat_density_from_orbs
 use integralinterfaceMod, only: II_get_molecular_gradient,&
      & II_get_nucpot,II_get_overlap,II_get_h1
 use lsdalton_rsp_mod,only: get_excitation_energy, GET_EXCITED_STATE_GRADIENT
-use dec_main_mod!, only: get_total_mp2energy_from_inputs, get_mp2gradient_and_energy_from_inputs
+use dec_main_mod
 use ls_util, only: ls_print_gradient
 use molecule_typetype, only: moleculeinfo
 use optimlocMOD, only: optimloc
@@ -58,10 +58,10 @@ contains
 
        Eerr = 0E0_realk
        nbast = D(1)%nrow
-       do_decomp =(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
-            & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
-            & config%decomp%cfg_check_converged_solution .or. &
-            & config%decomp%cfg_rsp_nexcit > 0 .or. config%integral%locallink) 
+       do_decomp =.TRUE. !(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
+!           & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
+!           & config%decomp%cfg_check_converged_solution .or. &
+!           & config%decomp%cfg_rsp_nexcit > 0 .or. config%integral%locallink) 
        integraltransformGC = ls%setting%integraltransformGC
        if (do_decomp) then
           call decomp_shutdown(config%decomp)
@@ -172,7 +172,7 @@ contains
 
        If (config%doDEC.AND.(.NOT.config%noDecEnergy)) then
           ! Get dec energy
-          call get_total_mp2energy_from_inputs(ls,F(1),D(1),S,C,E(1),Eerr)
+          call get_total_CCenergy_from_inputs(ls,F(1),D(1),S,C,E(1),Eerr)
        elseif(config%doESGopt)then
           call get_excitation_energy(ls,config,F(1),D(1),S,ExcitE,&
                & config%decomp%cfg_rsp_nexcit)       
