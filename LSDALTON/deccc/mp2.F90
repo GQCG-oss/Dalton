@@ -117,7 +117,7 @@ contains
     ! (See below)
 
     !> Atomic fragment (or pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see notation inside]
     type(array4),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see notation inside]
@@ -1989,7 +1989,7 @@ end subroutine Get_ijba_integrals
     implicit none
 
     !> Atomic fragment (or pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
     type(array4),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
@@ -2023,7 +2023,7 @@ end subroutine Get_ijba_integrals
     implicit none
 
     !> Atomic fragment (or pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
     type(array4),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
@@ -2065,7 +2065,7 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   implicit none
 
   !> Fragment info
-  type(ccatom),intent(inout) :: MyFragment
+  type(decfrag),intent(inout) :: MyFragment
   !> Are integrals needed for first-order properties also requested
   logical,intent(in) :: first_order_integrals
   !> Batch sizes used for MP2 integral/amplitude calculation (see mp2_batch_construction type)
@@ -2352,7 +2352,7 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
   implicit none
 
   !> Fragment info
-  type(ccatom),intent(inout) :: MyFragment
+  type(decfrag),intent(inout) :: MyFragment
   !> Are integrals needed for first-order properties also requested
   logical,intent(in) :: first_order_integrals
   !> Maximum size of AO batch Alpha
@@ -2647,7 +2647,7 @@ subroutine MP2_integrals_and_amplitudes_workhorse_slave()
   implicit none
 
   !> Fragment information
-  type(ccatom) :: MyFragment
+  type(decfrag) :: MyFragment
   !> Batch sizes
   type(mp2_batch_construction) :: bat
   !> Calculate intgrals for first order MP2 properties?

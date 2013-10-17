@@ -1587,7 +1587,7 @@ contains
 
     implicit none
     !> Fragment information
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     real(realk), intent(inout) :: fragmem
     real(realk) :: O,V,A,tmp,GB
 
@@ -1599,7 +1599,7 @@ contains
     A = MyFragment%number_basis
     GB = 1.000E9_realk ! 1 GB
 
-    ! Use type ccatom to calculate memory use
+    ! Use type decfrag to calculate memory use
     ! ***************************************
 
     ! Y matrices
@@ -1744,7 +1744,7 @@ retval=0
 
     implicit none
     !> Atomic (or pair) fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> How much to print?
     !> 1. Basic fragment info (size and energies, i.e. no pointers are printed)
     !> 2. Basic fragment info AND EOS/AOS indices
@@ -1936,7 +1936,7 @@ retval=0
 
     implicit none
     !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
 
     ! Free everything in fragment - including basis info (fock matrix, MO coefficients, lsitem etc.)
     call atomic_fragment_free_simple(fragment)
@@ -1953,7 +1953,7 @@ retval=0
 
     implicit none
     !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     integer :: i
 
     if(associated(fragment%occEOSidx)) then
@@ -2058,7 +2058,7 @@ retval=0
 
     implicit none
     !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     integer :: i
 
     if(associated(fragment%S)) then
@@ -2120,7 +2120,7 @@ retval=0
   subroutine free_fragment_t1(Fragment)
     implicit none
     !> Fragment info (only t1-related information will be modified here)
-    type(ccatom), intent(inout) :: Fragment
+    type(decfrag), intent(inout) :: Fragment
 
     if(associated(fragment%t1)) then
        call mem_dealloc(fragment%t1)
@@ -2558,9 +2558,9 @@ retval=0
     !> Distance between fragments
     real(realk) :: fragdist
     !>  fragment 1
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !>  fragment 2
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Distance table for all atoms in the molecule
@@ -2964,7 +2964,7 @@ retval=0
   subroutine save_fragment_t1_AOSAOSamplitudes(MyFragment,t1)
     implicit none
     !> Fragment info (only t1-related information will be modified here)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Singles amplitudes to be stored (stored as virtual,occupied)
     type(array2),intent(in) :: t1
     integer :: nocc,nvirt,i,a,ix,ax
@@ -3017,9 +3017,9 @@ retval=0
 
     implicit none
     ! Fragment 1 in pair
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     ! Fragment 2 in pair
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     integer, intent(in) :: natoms
     logical,dimension(natoms,natoms),intent(inout) :: dopair
     integer :: a,b,ax,bx
@@ -3076,11 +3076,11 @@ retval=0
 
     implicit none
     ! Fragment 1 in pair
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     ! Fragment 2 in pair
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: PairFragment
+    type(decfrag),intent(inout) :: PairFragment
     !> Do pair or not - dimension: (noccEOS,noccEOS) for PAIR
     logical,dimension(PairFragment%noccEOS,PairFragment%noccEOS),&
          & intent(inout) :: dopair
@@ -3178,11 +3178,11 @@ retval=0
 
     implicit none
     ! Fragment 1 in pair
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     ! Fragment 2 in pair
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: PairFragment
+    type(decfrag),intent(inout) :: PairFragment
     !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
     logical,dimension(PairFragment%nunoccEOS,PairFragment%nunoccEOS),&
          & intent(inout) :: dopair
@@ -4083,7 +4083,7 @@ retval=0
     implicit none
     !> Number of atoms in full molecule
     integer,intent(in) :: nAtoms
-    ! Fragment energies as listed in ccatom type def "energies"
+    ! Fragment energies as listed in decfrag type def "energies"
     real(realk),intent(in) :: FragEnergies(natoms,natoms,ndecenergies)
     !> Which atoms are associated with a fragment?
     logical,intent(in) :: dofrag(natoms)
@@ -4283,7 +4283,7 @@ retval=0
     case default
        ! MODIFY FOR NEW MODEL
        ! If you implement new model, please print the fragment energies here,
-       ! see ccatom type def. to determine the number for your model (see FRAGMODEL_* definitions
+       ! see decfrag type def. to determine the number for your model (see FRAGMODEL_* definitions
        ! in dec_typedef.F90).
        write(DECinfo%output,*) 'WARNING: print_all_fragment_energies needs implementation &
             & for model: ', DECinfo%ccmodel

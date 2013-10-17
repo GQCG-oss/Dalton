@@ -69,7 +69,7 @@ contains
     implicit none
 
     !> Atomic fragment to be determined  (NOT pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> MO coefficient matrix for the occupied EOS
     real(realk), pointer :: CoccEOS(:,:)
     !> MO coefficient matrix for the occupied + virtual EOS
@@ -325,11 +325,11 @@ contains
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> MO coefficient matrix for the occupied EOS
     real(realk), pointer :: CoccEOS(:,:)
     !> MO coefficient matrix for the occupied + virtual EOS
@@ -555,11 +555,11 @@ contains
   subroutine get_mp2f12_pf_E21(ijkl, Fragment1, Fragment2, PairFragment, nocc, energy, scalar)
     implicit none
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> The pair fragment energy
     real(realk),intent(out) :: energy
     !> Scalar to be multiplied with the energy
@@ -1532,7 +1532,7 @@ contains
     implicit none
 
     !> Full molecule info
-    type(ccatom), intent(in) :: MyFragment
+    type(decfrag), intent(in) :: MyFragment
     type(lsitem), intent(inout) :: mylsitem
     integer :: nocc, noccfull, nvirt, nbasis, ncabsAO
     type(matrix) :: Fcc

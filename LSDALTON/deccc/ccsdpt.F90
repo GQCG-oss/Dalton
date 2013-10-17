@@ -1836,7 +1836,7 @@ contains
     implicit none
 
     !> fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
@@ -1904,11 +1904,11 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> fragment info
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
@@ -2030,7 +2030,7 @@ contains
     implicit none
 
     !> fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) doubles amplitudes
     type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> is this called from inside the ccsd(t) fragment optimization routine?
@@ -2249,11 +2249,11 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> pair fragment info
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
     type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     ! logical pointers for keeping hold of which pairs are to be handled

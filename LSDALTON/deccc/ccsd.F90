@@ -4826,7 +4826,7 @@ contains
   subroutine fragment_get_AOt1Fock(MyFragment,fockt1)
     implicit none
     !> Fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> T1-transformed Fock matrix in the AO basis (also initialized here)
     type(array2),intent(inout) :: fockt1
     type(array2) :: t1

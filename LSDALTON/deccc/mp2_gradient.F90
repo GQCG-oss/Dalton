@@ -142,7 +142,7 @@ contains
 
 
 
-  !> \brief Init MP2 gradient structure for single fragment, assumes that the fragment structure (ccatom)
+  !> \brief Init MP2 gradient structure for single fragment, assumes that the fragment structure (decfrag)
   !> has already been initiated!
   !> \author Kasper Kristensen
   !> \date October 2011
@@ -150,7 +150,7 @@ contains
 
     implicit none
     !> Fragment (single or pair) for which to initialize MP2 gradient info
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     !> MP2 gradient for fragment
     type(mp2grad), intent(inout) :: grad
     integer :: i,atom1,atom2
@@ -268,7 +268,7 @@ contains
 
     implicit none
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(inout) :: t2occ  ! ordered as (C,I,J,D) at output
     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
@@ -340,7 +340,7 @@ contains
     implicit none
 
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
     !> Theta array Theta_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order:  (A,K,B,L)
@@ -464,7 +464,7 @@ contains
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Structure containing MP2 gradient info, including Ltheta.
     type(mp2grad), intent(inout) :: grad
     type(array4) :: ThetaAO, dens4index
@@ -591,11 +591,11 @@ contains
 
     implicit none
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: pairfragment
+    type(decfrag),intent(inout) :: pairfragment
     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(in) :: t2occ
     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
@@ -662,11 +662,11 @@ contains
     implicit none
 
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: pairfragment
+    type(decfrag),intent(inout) :: pairfragment
     !> Theta array, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(inout) :: ThetaOCC       ! ordered as (C,I,J,D) at output
     !> Theta array, only for EOS orbitals using virtual partitioning, order:  (A,K,B,L)
@@ -879,7 +879,7 @@ contains
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
     !> Pair fragment
-    type(ccatom),intent(inout) :: PairFragment
+    type(decfrag),intent(inout) :: PairFragment
     !> Number of occupied EOS orbitals
     integer,intent(in) :: noccEOS
     !> Which "interaction orbital pairs" to include (see which_pairs_occ)
@@ -1790,7 +1790,7 @@ contains
     implicit none
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
-    !> Fragment energies (see ccatom type def)
+    !> Fragment energies (see decfrag type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergies
     !> Job list of fragments
     type(joblist),intent(in) :: jobs
@@ -1851,7 +1851,7 @@ contains
     implicit none
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
-    !> Fragment energies (see ccatom type def)
+    !> Fragment energies (see decfrag type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(inout) :: FragEnergies
     !> Job list of fragments
     type(joblist),intent(inout) :: jobs
@@ -2003,7 +2003,7 @@ contains
   ! ======================================
 
 
-  !> \brief Init MP2 density structure for single fragment, assumes that the fragment structure (ccatom)
+  !> \brief Init MP2 density structure for single fragment, assumes that the fragment structure (decfrag)
   !> has already been initiated!
   !> \author Kasper Kristensen
   !> \date September 2011
@@ -2011,7 +2011,7 @@ contains
 
     implicit none
     !> Fragment with information corresponding to density
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     !> MP2 density for fragment
     type(mp2dens), intent(inout) :: dens
     integer :: i
@@ -2092,7 +2092,7 @@ contains
 
     implicit none
     !> Pair fragment with information corresponding to density
-    type(ccatom),intent(inout) :: pairfragment
+    type(decfrag),intent(inout) :: pairfragment
     !> MP2 density for pair fragment
     type(mp2dens), intent(inout) :: dens
     !> First atom in pair
@@ -2150,7 +2150,7 @@ contains
     implicit none
 
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: t2occ
     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
@@ -2306,11 +2306,11 @@ contains
 
     implicit none
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: pairfragment
+    type(decfrag),intent(inout) :: pairfragment
     !> t2 amplitudes, only for EOS orbitals using occupied partitioning, order:  (A,I,B,J)
     type(array4),intent(in) :: t2occ
     !> t2 amplitudes, only for EOS orbitals using virtual partitioning, order:  (A,I,B,J)
@@ -4165,7 +4165,7 @@ call mem_TurnOffThread_Memory()
     implicit none
 
     !> Fragment under consideration
-    type(ccatom),intent(in) :: fragment
+    type(decfrag),intent(in) :: fragment
     !> MP2 gradient structure for fragment
     type(mp2grad), intent(inout) :: grad
 

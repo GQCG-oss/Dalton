@@ -252,7 +252,7 @@ contains
     logical,intent(in),optional :: estimate_calc
     ! Fragment energies for Lagrangian (:,:,1), occupied (:,:,2), and virtual (:,:,3) schemes
     real(realk) :: FragEnergies(natoms,natoms,ndecenergies)
-    type(ccatom),pointer :: AtomicFragments(:)
+    type(decfrag),pointer :: AtomicFragments(:)
     integer :: i,j,k,dims(2),nbasis,counter
     real(realk) :: energies(ndecenergies)
     logical :: dens_save ! Internal control of MP2 density keyword
@@ -873,8 +873,8 @@ contains
     !>  fragment job list
     type(joblist),intent(inout) :: jobs
     !> Atomic fragments
-    type(ccatom),dimension(natoms),intent(inout) :: AtomicFragments
-    !> Fragment energies, see "energies" in ccatom type def
+    type(decfrag),dimension(natoms),intent(inout) :: AtomicFragments
+    !> Fragment energies, see "energies" in decfrag type def
     real(realk),intent(inout) :: FragEnergies(natoms,natoms,ndecenergies)
     !> MP2 gradient structure (only used if DECinfo%first_order is set)
     type(fullmp2grad),intent(inout) :: fullgrad
@@ -882,7 +882,7 @@ contains
     type(array2),intent(in) :: t1old
     !> New t1 amplitudes (see main_fragment_driver for details)
     type(array2),intent(inout) :: t1new
-    type(ccatom) :: PairFragment
+    type(decfrag) :: PairFragment
     integer :: k,atomA,atomB,i,j,counter,jobdone,nworkers,newjob,jobstodo,siz
     type(mp2grad) :: grad
     type(joblist) :: singlejob,jobsold

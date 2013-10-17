@@ -65,7 +65,7 @@ contains
     !> Information about DEC unoccupied orbitals
     type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> Fragment to construct
-    type(ccatom), intent(inout) :: fragment
+    type(decfrag), intent(inout) :: fragment
     !> Make fragment basis (MO coeff and Fock matrix for fragment)?
     logical, intent(in) :: DoBasis
     !> Is it a pair fragment?
@@ -317,7 +317,7 @@ contains
     ! Set atomic fragment extent info
     call init_atomic_fragment_extent(OccOrbitals,UnoccOrbitals,MyMolecule,fragment)
 
-    ! Only create fragment basis (the information in the "expensive box" in ccatom type definition)
+    ! Only create fragment basis (the information in the "expensive box" in decfrag type definition)
     ! if DoBasis is true.
     if(DoBasis) then
        call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,UnoccOrbitals,&
@@ -388,7 +388,7 @@ contains
   subroutine atomic_fragment_nullify(fragment)
 
     implicit none
-    type(ccatom), intent(inout) :: fragment
+    type(decfrag), intent(inout) :: fragment
 
 
     fragment%occEOSidx => null()
@@ -478,7 +478,7 @@ contains
     !> Information about DEC unoccupied orbitals
     type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> Fragment to construct
-    type(ccatom), intent(inout) :: fragment
+    type(decfrag), intent(inout) :: fragment
     !> Make fragment basis (MO coeff and Fock matrix for fragment)?
     logical, intent(in) :: DoBasis
     !> Is it a pair fragment?
@@ -553,7 +553,7 @@ contains
     !> Distance beyond which to include neighbour atoms
     real(realk),intent(in) :: init_radius
     !> Fragment to construct
-    type(ccatom), intent(inout) :: fragment
+    type(decfrag), intent(inout) :: fragment
     integer :: natoms
     logical, pointer :: Unocc_atoms(:), Occ_atoms(:)
     integer, pointer :: nocc_per_atom(:),nunocc_per_atom(:)
@@ -615,9 +615,9 @@ contains
     !> Atomic fragment where all quantities are expressed in local basis
     !> The transformation coefficients between AO and fragment-adapted basis
     !> will be stored in LocalFragment%CoccFA and LocalFragment%CunoccFA.
-    type(ccatom), intent(inout) :: LocalFragment
+    type(decfrag), intent(inout) :: LocalFragment
     !> Atomic fragment where all quantities are expressed in fragment-adapted basis
-    type(ccatom), intent(inout) :: FOfragment
+    type(decfrag), intent(inout) :: FOfragment
     real(realk) :: tcpu,twall
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -643,7 +643,7 @@ contains
 
     implicit none
     !> Atomic fragment where all quantities are expressed in local basis
-    type(ccatom), intent(inout) :: LocalFragment
+    type(decfrag), intent(inout) :: LocalFragment
     real(realk),pointer :: VirtMat(:,:),OccMat(:,:),tmpU(:,:),occeival(:),virteival(:)
     integer :: i,j,ix,jx
     integer :: noccTRANS,nvirtTRANS,noccEOS,nvirtEOS,offset,nocc,nvirt
@@ -973,10 +973,10 @@ contains
     !> Atomic fragment where all quantities are expressed in local basis
     !> and where fragment-adapted MO coefficients have been stored in 
     !> CoccFA and CunoccFA (see fragment_adapted_transformation_matrices).
-    type(ccatom),intent(inout) :: LocalFragment
+    type(decfrag),intent(inout) :: LocalFragment
     !> Atomic fragment where all quantities are expressed in fragment-adapted basis
     !> (should be an "empty" fragment at input)
-    type(ccatom), intent(inout) :: FOfragment
+    type(decfrag), intent(inout) :: FOfragment
     integer :: i,ix,MyAtom,nocc,nvirt
     logical,pointer :: VirtLocal(:), OccLocal(:)
     logical :: pairfrag
@@ -1127,7 +1127,7 @@ contains
 
     implicit none
     !> Atomic fragment where all quantities are expressed in local basis
-    type(ccatom),intent(inout) :: LocalFragment
+    type(decfrag),intent(inout) :: LocalFragment
     !> Number of occupied AOS orbitals for local fragment
     integer, intent(in) :: nocc
     !> Number of virtual AOS orbitals for local fragment
@@ -1216,7 +1216,7 @@ contains
 
 
   !> \brief Initialize the basis part of fragment, i.e. the information listed
-  !> in the "expensive box" in the ccatom type definition.
+  !> in the "expensive box" in the decfrag type definition.
   !> \author Kasper Kristensen
   !> \date March 2012
   subroutine atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,UnoccOrbitals,&
@@ -1236,7 +1236,7 @@ contains
     !> Information about DEC unoccupied orbitals
     type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> Fragment to construct
-    type(ccatom), intent(inout) :: fragment
+    type(decfrag), intent(inout) :: fragment
     integer :: j,idx
 
     ! Basis info
@@ -1269,7 +1269,7 @@ contains
   subroutine fragment_purify(fragment)
     implicit none
     !> Fragment where the MOs (fragment%ypo, fragment%ypv, fragment%coremo) will be purified
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     integer :: nXOS,nbasis,noccAOS,nunoccAOS,ncore,i
     real(realk),pointer :: XOS(:,:)
 
@@ -1380,7 +1380,7 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     !> Fragment to construct
-    type(ccatom), intent(inout) :: fragment
+    type(decfrag), intent(inout) :: fragment
     !> Make fragment basis (MO coeff and Fock matrix for fragment)?
     logical, intent(in) :: DoBasis
     logical, dimension(nunocc) :: Unocc_list
@@ -1405,9 +1405,9 @@ contains
 
     implicit none
     !> Fragment 1 in pair
-    type(ccatom),intent(inout) :: fragment1
+    type(decfrag),intent(inout) :: fragment1
     !> Fragment 2 in pair
-    type(ccatom),intent(inout) :: fragment2
+    type(decfrag),intent(inout) :: fragment2
     !> Number of occupied orbitals in full molecule
     integer, intent(in) :: nocc
     !> Number of unoccupied orbitals in full molecule
@@ -1425,7 +1425,7 @@ contains
     !> Make pair fragment basis (MO coeff and Fock matrix for fragment)?
     logical, intent(in) :: DoBasis
     !> Pair fragment to be constructed
-    type(ccatom),intent(inout) :: pairfragment
+    type(decfrag),intent(inout) :: pairfragment
     logical, dimension(nunocc) :: Unocc_list
     logical, dimension(nocc) :: Occ_list
     logical :: pairfrag
@@ -1570,12 +1570,12 @@ contains
     !> Information about DEC unoccupied orbitals for full molecule
     type(ccorbital), dimension(nUnocctot), intent(in) :: UnoccOrbitals
     !> Fragment P
-    type(ccatom),intent(inout) :: fragmentP
+    type(decfrag),intent(inout) :: fragmentP
     !> Fragment Q
-    type(ccatom),intent(inout) :: fragmentQ
+    type(decfrag),intent(inout) :: fragmentQ
     !> Pair fragment PQ (it is assumed that everything except fragment-adapted
     !> stuff has already been initialized).
-    type(ccatom),intent(inout) :: FragmentPQ
+    type(decfrag),intent(inout) :: FragmentPQ
     real(realk) :: lambdathr,lambdathr_default
     real(realk),pointer :: CoccPQ(:,:), CunoccPQ(:,:),moS(:,:),Sinv(:,:)
     real(realk),pointer :: T(:,:),lambda(:),MOtmp(:,:),tmp(:,:),tmp2(:,:),CEOS(:,:)
@@ -1964,12 +1964,12 @@ contains
     implicit none
 
     !> Fragment P
-    type(ccatom),intent(inout) :: fragmentP
+    type(decfrag),intent(inout) :: fragmentP
     !> Fragment Q
-    type(ccatom),intent(inout) :: fragmentQ
+    type(decfrag),intent(inout) :: fragmentQ
     !> Pair fragment PQ (it is assumed that everything except fragment-adapted
     !> stuff has already been initialized).
-    type(ccatom),intent(inout) :: FragmentPQ
+    type(decfrag),intent(inout) :: FragmentPQ
 
     ! Occupied space
     fragmentPQ%noccFA = fragmentPQ%noccAOS 
@@ -1997,9 +1997,9 @@ contains
 
     implicit none
     !> Fragment 1 in pair
-    type(ccatom),intent(inout) :: fragment1
+    type(decfrag),intent(inout) :: fragment1
     !> Fragment 2 in pair
-    type(ccatom),intent(inout) :: fragment2
+    type(decfrag),intent(inout) :: fragment2
     !> Number of occupied orbitals in full molecule
     integer, intent(in) :: noccFULL
     !> Number of unoccupied orbitals in full molecule
@@ -2020,7 +2020,7 @@ contains
     integer,intent(inout) :: nunoccFA
     !> Number of basis functions for pair fragment
     integer,intent(inout) :: nbasisFA
-    type(ccatom) :: pairfragment
+    type(decfrag) :: pairfragment
 
 
     ! Init pair fragment
@@ -2054,7 +2054,7 @@ contains
     !> Information about DEC unoccupied orbitals
     type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Fragment info
-    type(ccatom), intent(inout) :: fragment
+    type(decfrag), intent(inout) :: fragment
     integer :: i,j,idx
     logical,pointer :: which_atoms(:)
 
@@ -2146,7 +2146,7 @@ contains
   subroutine atomic_fragment_basis(fragment,MyMolecule)
 
     implicit none
-    type(ccatom), intent(inout) :: fragment
+    type(decfrag), intent(inout) :: fragment
     type(fullmolecule), intent(in) :: MyMolecule
     type(array2) :: S,tmp1,tmp2
     real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:)
@@ -2379,7 +2379,7 @@ end subroutine atomic_fragment_basis
   subroutine target_indices(fragment)
 
     implicit none
-    type(ccatom), intent(inout) :: fragment
+    type(decfrag), intent(inout) :: fragment
     integer :: i,j
 
     ! don't do that if no occ assigned
@@ -2420,7 +2420,7 @@ end subroutine atomic_fragment_basis
   subroutine add_fragment_to_file(fragment,jobs)
     implicit none
     !> Fragment to add to common fragment file
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     !> Job list
     type(joblist),intent(in) :: jobs
     character(len=40) :: FileName
@@ -2487,7 +2487,7 @@ end subroutine atomic_fragment_basis
     implicit none
     !> File unit number to write to
     integer, intent(in) :: wunit
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     integer :: i
 
 
@@ -2554,7 +2554,7 @@ end subroutine atomic_fragment_basis
     !> Construct Fock matrix and MO coeff for fragments?
     logical,intent(in) :: DoBasis
     !> Atomic fragments. NOTE: Only those fragments specified by bookkeeping will be initialized here.
-    type(ccatom), intent(inout),dimension(natoms) :: fragments
+    type(decfrag), intent(inout),dimension(natoms) :: fragments
     !> Job list
     type(joblist),intent(inout) :: jobs
     !> Do restart files exist?
@@ -2675,7 +2675,7 @@ end subroutine atomic_fragment_basis
     type(lsitem),intent(inout)        :: MyLsitem
     type(ccorbital),intent(in)     :: OccOrbitals(MyMolecule%numocc)
     type(ccorbital),intent(in)     :: UnoccOrbitals(MyMolecule%numvirt)
-    type(ccatom),intent(inout)        :: fragment
+    type(decfrag),intent(inout)        :: fragment
     integer, intent(in) :: runit
     !> Construct Fock matrix and MO coeff for fragment?
     logical,intent(in) :: DoBasis
@@ -2909,7 +2909,7 @@ end subroutine atomic_fragment_basis
 
     implicit none
     !> Original fragment information
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Memory already in use before calling estimate_memory_consumption (in GB)
     real(realk), intent(in) :: offset_memory
     real(realk) :: O,V,A,B,Oeos,Veos
@@ -3234,7 +3234,7 @@ if(DECinfo%PL>0) then
   subroutine update_full_t1_from_atomic_frag(MyFragment,t1full)
     implicit none
     !> Atomic fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> t1 amplitudes for the full molecule, to be updated (order virtual,occupied)
     type(array2), intent(inout) :: t1full
     integer :: i,a,ix,ax
@@ -3275,7 +3275,7 @@ if(DECinfo%PL>0) then
        & natoms,dopair,OccOrbitals,VirtOrbitals,t1full)
     implicit none
     !> Pair fragment info
-    type(ccatom),intent(inout) :: PairFragment
+    type(decfrag),intent(inout) :: PairFragment
     !> Number of occupied orbitals in molecule
     integer,intent(in) :: nocc
     !> Number of virtual orbitals in molecule
@@ -3339,7 +3339,7 @@ if(DECinfo%PL>0) then
   subroutine get_fragmentt1_AOSAOS_from_full(MyFragment,t1full)
     implicit none
     !> Fragment info (only t1-related information will be modified here)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Singles amplitudes for full molecular system (stored as virtual,occupied)
     type(array2),intent(in) :: t1full
     integer :: noccfrag,nvirtfrag,noccfull,nvirtfull,i,a,ix,ax
@@ -3399,7 +3399,7 @@ if(DECinfo%PL>0) then
   subroutine extract_specific_fragmentt1(MyFragment,occEOS,virtEOS)
     implicit none
     !> Fragment info (only t1-related information will be modified here)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Reduce occupied indices from AOS to EOS size?
     logical,intent(in) :: occEOS
     !> Reduce virtual indices from AOS to EOS size?
@@ -3685,7 +3685,7 @@ if(DECinfo%PL>0) then
     !> Occupied orbitals
     type(ccorbital), intent(in) :: OccOrbitals(nocc)
     !> Fragment where core information is to be set
-    type(ccatom),intent(inout) :: MyFragment 
+    type(decfrag),intent(inout) :: MyFragment 
     integer :: i,idx,atom
     logical,pointer :: which_atoms(:), which_core_orbitals(:)
 
@@ -3757,7 +3757,7 @@ if(DECinfo%PL>0) then
   subroutine get_density_for_fragment(MyFragment,dens)
     implicit none
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Density = Cocc Cocc^T 
     real(realk),intent(inout),dimension(MyFragment%number_basis,MyFragment%number_basis) :: dens
 
@@ -3772,7 +3772,7 @@ if(DECinfo%PL>0) then
   subroutine get_coredensity_for_fragment(MyFragment,dens)
     implicit none
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Density = Cocc Cocc^T 
     real(realk),intent(inout),dimension(MyFragment%number_basis,MyFragment%number_basis) :: dens
 
@@ -3807,7 +3807,7 @@ if(DECinfo%PL>0) then
     !> Unoccupied orbitals
     type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Optimized atomic fragments
-    type(ccatom),dimension(natoms),intent(in) :: AtomicFragments
+    type(decfrag),dimension(natoms),intent(in) :: AtomicFragments
     !> which_fragments(i) is true if atom "i" is central in one of the fragments
     logical, dimension(natoms),intent(in) :: which_fragments
     !> Job list of fragments listed according to size
@@ -4242,7 +4242,7 @@ if(DECinfo%PL>0) then
     implicit none
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
-    !> Fragment energies (see ccatom type def)
+    !> Fragment energies (see decfrag type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergies
     !> Job list of fragment jobs
     type(joblist),intent(in) :: jobs
@@ -4285,7 +4285,7 @@ if(DECinfo%PL>0) then
     implicit none
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
-    !> Fragment energies (see ccatom type def)
+    !> Fragment energies (see decfrag type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(inout) :: FragEnergies
     !> Job list of fragments 
     type(joblist),intent(inout) :: jobs
@@ -4335,7 +4335,7 @@ if(DECinfo%PL>0) then
     !> dofrag(P) is true if P is central atom for a fragment (see main_fragment_driver)
     logical,intent(in) :: dofrag(natoms)
     !> Single fragments
-    type(ccatom),intent(inout) :: Fragments(natoms)
+    type(decfrag),intent(inout) :: Fragments(natoms)
     !> Pair cutoff distance used for current job list
     real(realk),intent(in) :: oldpaircut
     !> Pair cutoff distance to be used for new job list
@@ -4438,7 +4438,7 @@ if(DECinfo%PL>0) then
     ! occAOS(i,j) is true (false) if occupied orbital "i" is (not) included in  fragment "j"
     call mem_alloc(occAOS,nocc,natoms)
     call mem_alloc(unoccAOS,nunocc,natoms)
-    ! same for reduced fragment spaces (see ccatom type)
+    ! same for reduced fragment spaces (see decfrag type)
     call get_logical_vectors_for_AOS(nocc,nunocc,natoms,dofrag,Fragments,&
          & occAOS, unoccAOS)
 
@@ -4546,7 +4546,7 @@ if(DECinfo%PL>0) then
     !> dofrag(P) is true if P is central atom for a  fragment (see main_fragment_driver)
     logical,intent(in) :: dofrag(natoms)
     !> Single  fragments
-    type(ccatom),intent(inout) :: Fragments(natoms)
+    type(decfrag),intent(inout) :: Fragments(natoms)
     !> Logical vector for occupied AOS
     logical,intent(inout) :: occAOS(nocc,natoms)
     !> Logical vector for unoccupied AOS
@@ -4802,11 +4802,11 @@ if(DECinfo%PL>0) then
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule    
     !> Fragment P
-    type(ccatom),intent(inout) :: fragmentP
+    type(decfrag),intent(inout) :: fragmentP
     !> Fragment Q
-    type(ccatom),intent(inout) :: fragmentQ
+    type(decfrag),intent(inout) :: fragmentQ
     !> Pair Fragment PQ
-    type(ccatom),intent(inout) :: FragmentPQ
+    type(decfrag),intent(inout) :: FragmentPQ
     !> Number of occupied redundant pair orbitals (see get_pairFO_union)
     integer,intent(in) :: noccPQ
     !> Number of unoccupied redundant pair orbitals (see get_pairFO_union)
@@ -4940,7 +4940,7 @@ if(DECinfo%PL>0) then
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule    
     !> Fragment
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     !> Which atomic orbitals in full AO list are included in atomic fragment extent?
     integer,intent(inout) :: which_orbitals(fragment%number_basis)
     integer :: i,j,idx,atom
@@ -4973,9 +4973,9 @@ if(DECinfo%PL>0) then
   subroutine copy_mpi_main_info_from_FOfragment(FOfragment,MyFragment)
     implicit none
     !> Fragment-adapted fragment (to copy from)
-    type(ccatom),intent(inout) :: FOfragment
+    type(decfrag),intent(inout) :: FOfragment
     !> Original fragment (to copy to)
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
 
     MyFragment%slavetime = FOfragment%slavetime
     MyFragment%flops_slaves = FOfragment%flops_slaves
@@ -4993,7 +4993,7 @@ if(DECinfo%PL>0) then
   subroutine extract_XOS_orbitals_occ(MyFragment,nbasis,nXOS,XOS)
     implicit none
     !> Fragment info (atomic fragment or pair fragment)
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Number of basis functions in fragment
     integer,intent(in) :: nbasis
     !> Number of XOS orbitals
@@ -5056,7 +5056,7 @@ if(DECinfo%PL>0) then
   subroutine extract_XOS_orbitals_unocc(MyFragment,nbasis,nXOS,XOS)
     implicit none
     !> Fragment info (atomic fragment or pair fragment)
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Number of basis functions in fragment
     integer,intent(in) :: nbasis
     !> Number of XOS orbitals
@@ -5126,7 +5126,7 @@ if(DECinfo%PL>0) then
     !> XOS MO coefficients
     real(realk),intent(in),dimension(nbasis,nXOS) :: XOS
     !> Fragment info (MyFragment%ypo will be modified here)
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     integer :: i,idx,nAOS,nEOS
     logical,pointer :: which_XOS(:)
 
@@ -5191,7 +5191,7 @@ if(DECinfo%PL>0) then
     !> XOS MO coefficients
     real(realk),intent(in),dimension(nbasis,nXOS) :: XOS
     !> Fragment info (MyFragment%ypv will be modified here)
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     integer :: i,idx,nAOS,nEOS
     logical,pointer :: which_XOS(:)
 
@@ -5247,7 +5247,7 @@ if(DECinfo%PL>0) then
   subroutine copy_fragment_info_job(myfragment,myjob)
     implicit none
     !> Fragent info
-    type(ccatom),intent(in) :: myfragment
+    type(decfrag),intent(in) :: myfragment
     !> Job list of length 1
     type(joblist) :: myjob
 
@@ -5287,7 +5287,7 @@ if(DECinfo%PL>0) then
     type(array4),intent(in) :: t2
     !> MyFragment - output occ and virt density matrices are stored in 
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
 
     ! Delete existing correlation density matrix (if present)
     if(MyFragment%CDset) then
@@ -5332,7 +5332,7 @@ if(DECinfo%PL>0) then
     type(array4),intent(in) :: t2
     !> MyFragment - output occ and virt density matrices are stored in 
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     integer :: i,j,k,a,b,c,ax,bx,ix,jx
     real(realk) :: i2,i4
 
@@ -5396,7 +5396,7 @@ if(DECinfo%PL>0) then
     type(array4),intent(in) :: t2
     !> MyFragment - output occ and virt density matrices are stored in 
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     integer :: i,j,a,b,c
     real(realk) :: i2,i4
     logical,pointer :: OccEOS(:)
@@ -5469,7 +5469,7 @@ if(DECinfo%PL>0) then
     type(array4),intent(in) :: t2
     !> MyFragment - output occ and virt density matrices are stored in 
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
 
     ! Occ-occ block of density matrix
     call calculate_corrdens_AOS_occocc(t2,MyFragment)
@@ -5491,7 +5491,7 @@ if(DECinfo%PL>0) then
     type(array4),intent(in) :: t2
     !> MyFragment - output occ and virt density matrices are stored in 
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     integer :: i,j,k,a,b
     real(realk) :: i2,i4
 
@@ -5534,7 +5534,7 @@ if(DECinfo%PL>0) then
     type(array4),intent(in) :: t2
     !> MyFragment - output occ and virt density matrices are stored in 
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     integer :: i,j,a,b,c
     real(realk) :: i2,i4
 
@@ -5599,11 +5599,11 @@ if(DECinfo%PL>0) then
        & WhichOccP, WhichOccQ, WhichUnoccP, WhichUnoccQ)
     implicit none
     !> Fragment P
-    type(ccatom),intent(in) :: fragmentP
+    type(decfrag),intent(in) :: fragmentP
     !> Fragment Q
-    type(ccatom),intent(in) :: fragmentQ
+    type(decfrag),intent(in) :: fragmentQ
     !> Pair fragment PQ using local orbitals
-    type(ccatom),intent(in) :: FragmentPQ
+    type(decfrag),intent(in) :: FragmentPQ
     !> Number of occupied, unoccupied MOs and number of atomic basis functions for pair fragment
     integer,intent(inout) :: noccPQ,nunoccPQ,nbasisPQ
     !> Which occupied FOs to include from atomic fragments P and Q

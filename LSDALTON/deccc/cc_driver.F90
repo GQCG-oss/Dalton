@@ -449,7 +449,7 @@ contains
     implicit none
 
     !> Fragment info (only t1 information in MyFragment may be changed here)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Singles amplitudes t1(a,i)
     type(array2),intent(inout) :: t1
     !> Doubles amplitudes t2(a,i,b,j)
@@ -516,7 +516,7 @@ contains
     implicit none
 
     !> Fragment info (only t1 information in MyFragment may be changed here)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Combined doubles+singles amplitudes for occupied partitioning
     type(array4),intent(inout) :: uocc
     !> Combined doubles+singles amplitudes for virtual partitioning

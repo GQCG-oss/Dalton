@@ -47,7 +47,7 @@ contains
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
     integer :: nunocc,nocc,natoms,siz
     type(lsitem) :: MyLsitem
-    type(ccatom),pointer :: AtomicFragments(:)
+    type(decfrag),pointer :: AtomicFragments(:)
     type(fullmolecule) :: MyMolecule
     type(ccorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
     logical,pointer :: dofrag(:)
@@ -281,7 +281,7 @@ subroutine atomic_fragments_slave(nocc,nunocc,OccOrbitals,&
   !> LS item structure
   type(lsitem),intent(inout) :: MyLsitem
   !> Atomic fragments to be determined
-  type(ccatom) :: AtomicFragment
+  type(decfrag) :: AtomicFragment
   type(joblist) :: job  
   real(realk) :: flops
   integer :: jobidx
@@ -399,11 +399,11 @@ subroutine fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
   !> LS item structure
   type(lsitem),intent(inout) :: MyLsitem
   !> Atomic fragments
-  type(ccatom),dimension(natoms),intent(inout) :: AtomicFragments
+  type(decfrag),dimension(natoms),intent(inout) :: AtomicFragments
   !> Job list for  fragments
   type(joblist),intent(inout) :: jobs
   type(joblist) :: singlejob
-  type(ccatom) :: PairFragment
+  type(decfrag) :: PairFragment
   integer :: job,atomA,atomB,i,slavejob,ntasks
   real(realk) :: flops_slaves
   type(mp2grad) :: grad
@@ -605,7 +605,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
 
   implicit none
   !> Atomic fragment
-  type(ccatom),intent(inout) :: MyFragment
+  type(decfrag),intent(inout) :: MyFragment
   !> Number of tasks
   integer,intent(inout) :: ntasks
   type(mp2_batch_construction) :: bat

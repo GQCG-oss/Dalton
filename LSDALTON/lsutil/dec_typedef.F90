@@ -12,7 +12,7 @@ module dec_typedef_module
   !Could someone please rename ri to something less generic. TK!!
 !  private
 !  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,ccorbital,ri,&
-!       & fullmolecule,ccatom,FullMP2grad,mp2dens,mp2grad,&
+!       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
 !       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
 !       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
 
@@ -518,7 +518,7 @@ module dec_typedef_module
 
   !> Atomic fragment / Atomic pair fragment
   !> IMPORTANT: IF YOU MODIFY THIS STRUCTURE, REMEMBER TO CHANGE mpicopy_fragment ACCORDINGLY!!!
-  type ccatom
+  type decfrag
 
      !> Number of atom in full molecule
      integer :: atomic_number=0
@@ -590,7 +590,7 @@ module dec_typedef_module
      integer, pointer :: EOSatoms(:) => null()
 
 
-     !> Information used only when the ccatom is a pair fragment
+     !> Information used only when the decfrag is a pair fragment
      !> ********************************************************
      !> Distance between single fragments used to generate pair
      real(realk) :: pairdist
@@ -709,7 +709,7 @@ module dec_typedef_module
      real(realk) :: slavetime
 
 
-  end type ccatom
+  end type decfrag
 
 
   !> MP2 gradient matrices for full molecule.

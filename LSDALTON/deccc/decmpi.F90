@@ -37,7 +37,7 @@ contains
     integer(kind=ls_mpik),intent(in) :: MySender
     !> Rank of receiver WITHIN comm group
     integer(kind=ls_mpik),intent(in) :: MyReceiver
-    !> Fragment energies, see "energy" in ccatom type def
+    !> Fragment energies, see "energy" in decfrag type def
     real(realk),dimension(ndecenergies),intent(inout) :: fragenergy
     !> Fragment job info (job list containing a single job)
     type(joblist),intent(inout) :: job
@@ -81,7 +81,7 @@ contains
     integer(kind=ls_mpik),intent(in) :: MySender
     !> Rank of receiver WITHIN comm group
     integer(kind=ls_mpik),intent(in) :: MyReceiver
-    !> Fragment energies, see "energy" in ccatom type def
+    !> Fragment energies, see "energy" in decfrag type def
     real(realk),dimension(ndecenergies),intent(inout) :: fragenergy
     !> MP2 fragment gradient matrix information
     type(mp2grad),intent(inout) :: grad
@@ -117,7 +117,7 @@ contains
 
 
   !> \brief Send fragment from given sender to given receiver.
-  !> NOTE: Only the information OUTSIDE the expensive box in the ccatom
+  !> NOTE: Only the information OUTSIDE the expensive box in the decfrag
   !> type definition can be sent this way. In general, the information outside
   !> the expensive box combined with full molecular information is enough
   !> to detemine the stuff outside the expensive box.
@@ -128,7 +128,7 @@ contains
     implicit none
 
     !> Fragment under consideration
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Communicator
     integer(kind=ls_mpik),intent(in) :: comm
     !> Rank of sender WITHIN comm group
@@ -148,7 +148,7 @@ contains
        call lsquit('mpi_send_recv_single_fragment: Rank number is neither sender nor receiver!',-1)
     end if
 
-    ! Sanity check 2: Basis info in "Expensive box" in ccatom should not be sent
+    ! Sanity check 2: Basis info in "Expensive box" in decfrag should not be sent
     if(MyFragment%BasisInfoIsSet .and. mynum==MySender) then
        call lsquit('mpi_send_recv_single_fragment: Not implemented for &
             & sending/receiving fragment basis info!',-1)
@@ -172,7 +172,7 @@ contains
 
 
   !> \brief Send fragments from given sender to given receiver.
-  !> NOTE: Only the information OUTSIDE the expensive box in the ccatom
+  !> NOTE: Only the information OUTSIDE the expensive box in the decfrag
   !> type definition can be sent this way. In general, the information outside
   !> the expensive box combined with full molecular information is enough
   !> to detemine the stuff outside the expensive box.
@@ -192,7 +192,7 @@ contains
     logical,dimension(natoms),intent(inout) :: whichfrags
     !> Fragments to be sent/received. Only those entries in Fragments specified
     !> by whichfrags will be touched!
-    type(ccatom),dimension(natoms),intent(inout) :: Fragments
+    type(decfrag),dimension(natoms),intent(inout) :: Fragments
     !> Communicator
     integer(kind=ls_mpik),intent(in) :: comm
     !> Rank of sender WITHIN comm group
@@ -221,7 +221,7 @@ contains
 
        CommunicateFragment: if(whichfrags(atom)) then
 
-          ! Sanity check: Basis info in "Expensive box" in ccatom should not be sent
+          ! Sanity check: Basis info in "Expensive box" in decfrag should not be sent
           if(Fragments(atom)%BasisInfoIsSet) then
              call lsquit('mpi_send_recv_many_fragments: Not implemented for &
                   & sending/receiving fragment basis info!',-1)
@@ -252,7 +252,7 @@ contains
 
 
   !> \brief Bcast fragments from master to slave (within communicator group).
-  !> NOTE: Only the information OUTSIDE the expensive box in the ccatom
+  !> NOTE: Only the information OUTSIDE the expensive box in the decfrag
   !> type definition can be sent this way. In general, the information outside
   !> the expensive box combined with full molecular information is enough
   !> to detemine the stuff outside the expensive box.
@@ -272,7 +272,7 @@ contains
     logical,dimension(natoms),intent(in) :: whichfrags
     !> Fragments to be bcasted. Only those entries in Fragments specified
     !> by whichfrags will be touched!
-    type(ccatom),dimension(natoms),intent(inout) :: Fragments
+    type(decfrag),dimension(natoms),intent(inout) :: Fragments
     !> Communicator
     integer(kind=ls_mpik),intent(in) :: comm
     integer :: atom
@@ -288,7 +288,7 @@ contains
 
        CommunicateFragment: if(whichfrags(atom)) then
 
-          ! Sanity check: Basis info in "Expensive box" in ccatom should not be sent
+          ! Sanity check: Basis info in "Expensive box" in decfrag should not be sent
           if(Fragments(atom)%BasisInfoIsSet .and. mynum==0) then
              call lsquit('mpi_bcast_many_fragments: Not implemented for &
                   & sending/receiving fragment basis info!',-1)
@@ -315,7 +315,7 @@ contains
   end subroutine mpi_bcast_many_fragments
 
 
-  !> \brief MPI communcation where the information in the ccatom type
+  !> \brief MPI communcation where the information in the decfrag type
   !> is send (for local master) or received (for local slaves).
   !> In addition, other information required for calculating MP2 integrals
   !> and amplitudes is communicated.
@@ -326,12 +326,12 @@ contains
     implicit none
 
     !> Fragment under consideration
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Batch information
     type(mp2_batch_construction),intent(inout) :: bat
     !> Do first order integrals?
     logical,intent(inout) :: first_order_integrals
-    !> Communicate basis (expensive box in ccatom)
+    !> Communicate basis (expensive box in decfrag)
     logical,intent(in) :: DoBasis
     integer(kind=ls_mpik) :: master
     master = 0
@@ -346,7 +346,7 @@ contains
     ! Buffer handling
     ! ***************
     ! MASTER: Put information info buffer
-    ! SLAVE: Put buffer information into ccatom structure
+    ! SLAVE: Put buffer information into decfrag structure
 
     ! Fragment information
     call mpicopy_fragment(MyFragment,infpar%lg_comm,DoBasis)
@@ -565,7 +565,7 @@ contains
 
 
 
-  !> \brief MPI copy information in ccatom type.
+  !> \brief MPI copy information in decfrag type.
   !> Note 1: The information is copied into the global buffers here,
   !> and it is assumed that ls_mpiInitBuffer (ls_mpiFinalizeBuffer)
   !> is called before (after) calling this subroutine.
@@ -581,10 +581,10 @@ contains
     implicit none
 
     !> Fragment under consideration
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Communicator
     integer(kind=ls_mpik),intent(in) :: comm
-    !> Copy basis (expensive box in ccatom)
+    !> Copy basis (expensive box in decfrag)
     logical,intent(in) :: DoBasis
     integer :: i
     integer(kind=ls_mpik) :: master
@@ -757,7 +757,7 @@ contains
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%numberofatoms,master)
 
-       ! Pointers inside ccorbital sub-type (which again is inside ccatom type)
+       ! Pointers inside ccorbital sub-type (which again is inside decfrag type)
        if(.not. AddToBuffer) then
           Nullify(MyFragment%occAOSorb(i)%atoms)
           call mem_alloc(MyFragment%occAOSorb(i)%atoms,&
@@ -786,7 +786,7 @@ contains
     ! ===========================================================================
     !                              EXPENSIVE BOX
     ! ===========================================================================
-    ! This is the information inside the "expensive" box in the ccatom type definition.
+    ! This is the information inside the "expensive" box in the decfrag type definition.
     ! This stuff is only copied if MyFragment%BasisInfoIsSet is true.
     ExpensiveBox: if(DoBasis) then
 

@@ -442,7 +442,7 @@ module array2_simple_operations
     !> Matrix where rows, columns or both are AOS indices
     type(array2),intent(in) :: AOS
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Extract occupied ('o' or 'O') or virtual ('v' or 'V') EOS indices from AOS matrix
     character(len=1), intent(in) :: occ_or_virt
     !> Extract EOS indices from rows ('r' or 'R') or columns ('c' or 'C') of AOS matrix
@@ -579,7 +579,7 @@ module array2_simple_operations
     !> MO coeffiecient matrix for fragment occupied EOS
     type(array2),intent(inout) :: Ceos
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     ! Number of basis functions in fragment
     integer :: nbasis
     ! Number of occupied orbitals in EOS
@@ -612,7 +612,7 @@ module array2_simple_operations
     !> MO coeffiecient matrix for fragment virtual EOS
     type(array2),intent(inout) :: Ceos
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     ! Number of basis functions in fragment
     integer :: nbasis
     ! Number of occupied orbitals in EOS
@@ -646,7 +646,7 @@ module array2_simple_operations
 
     implicit none
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Transforming from AO to occupied orbitals in the basis where the fragment Fock matrix is diagonal
     type(array2),intent(inout) :: CDIAGocc
     !> Transforming from AO to virtual orbitals in the basis where the fragment Fock matrix is diagonal
@@ -878,7 +878,7 @@ module array2_simple_operations
 
     implicit none
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Transforming from AO to valence occupied orbitals in Fock-diagonal basis
     type(array2),intent(inout) :: CDIAGocc
     !> Transforming from AO to virtual orbitals in Fock-diagonal basis
