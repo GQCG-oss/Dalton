@@ -143,8 +143,8 @@ contains
     !> Integrals (ai|bj) stored as (a,i,b,j) (not changed but need to be inout)
     type(array4),intent(inout) :: VOVO
     integer :: natoms,nocc_tot,ncore,i,p,pdx,nvirt,nocc
-    type(ccorbital), pointer :: occorbitals(:)
-    type(ccorbital), pointer :: unoccorbitals(:)
+    type(decorbital), pointer :: occorbitals(:)
+    type(decorbital), pointer :: unoccorbitals(:)
     logical, pointer :: orbitals_assigned(:)
     type(array2) :: ccsd_mat_tot,ccsd_mat_tmp
 
@@ -253,8 +253,8 @@ contains
     type(array4) :: t2_final,ccsdpt_t2,VOVO
     type(array2) :: t1_final,ccsdpt_t1,ccsd_mat_tot,ccsd_mat_tmp,e4_mat_tot,e4_mat_tmp,e5_mat_tot
     integer :: natoms,ncore,nocc_tot,p,pdx,i
-    type(ccorbital), pointer :: occ_orbitals(:)
-    type(ccorbital), pointer :: unocc_orbitals(:)
+    type(decorbital), pointer :: occ_orbitals(:)
+    type(decorbital), pointer :: unocc_orbitals(:)
     logical, pointer :: orbitals_assigned(:)
     logical :: local
 
@@ -274,11 +274,11 @@ contains
        end if
 
        if (DECinfo%CCDEBUG) then
-          call ccsolver_debug(ccmodel,ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
+          call ccsolver_debug(ccmodel,ypo_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
              & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
              & t1_final,t2_final,VOVO,.false.)
        else
-          call ccsolver_par(ccmodel,ypo_fc,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
+          call ccsolver_par(ccmodel,ypo_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
                & t1_final,t2_final,VOVO,.false.,local)
        endif
@@ -287,11 +287,11 @@ contains
        ncore = 0
 
        if (DECinfo%CCDEBUG) then
-          call ccsolver_debug(ccmodel,MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
+          call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
              & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
              & t1_final,t2_final,VOVO,.false.)
        else
-          call ccsolver_par(ccmodel,MyMolecule%ypo,MyMolecule%ypv,MyMolecule%fock,nbasis,nocc,nvirt,&
+          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
                & t1_final,t2_final,VOVO,.false.,local)
        endif
@@ -311,11 +311,11 @@ contains
     ccsdpt_t2 = array4_init([nvirt,nvirt,nocc,nocc])
 
     if(DECinfo%frozencore) then
-       call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,ypo_fc,MyMolecule%ypv,mylsitem,t2_final,&
+       call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,ypo_fc,MyMolecule%Cv,mylsitem,t2_final,&
             & ccsdpt_t1,ccsdpt_t2)
     else
-       call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%ypo,&
-            & MyMolecule%ypv,mylsitem,t2_final,ccsdpt_t1,ccsdpt_t2)
+       call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
+            & MyMolecule%Cv,mylsitem,t2_final,ccsdpt_t1,ccsdpt_t2)
     end if
 
 
@@ -482,12 +482,12 @@ contains
     end if
 
     if(DECinfo%CCDEBUG)then
-      call ccsolver_debug(MyFragment%ccmodel,myfragment%ypo,myfragment%ypv,&
+      call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored)
     else
-      call ccsolver_par(MyFragment%ccmodel,myfragment%ypo,myfragment%ypv,&
+      call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,local)

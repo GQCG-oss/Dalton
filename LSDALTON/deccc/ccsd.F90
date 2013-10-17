@@ -4804,9 +4804,9 @@ contains
     bv(2) = nvirt
 
     ! Initialize stuff in array2 format
-    ypo = array2_init(bo,MyMolecule%ypo)
-    yho = array2_init(bo,MyMolecule%ypo)
-    ypv = array2_init(bv,MyMolecule%ypv)
+    ypo = array2_init(bo,MyMolecule%Co)
+    yho = array2_init(bo,MyMolecule%Co)
+    ypv = array2_init(bv,MyMolecule%Cv)
 
     ! Get T1-transformed Fock matrix in AO basis
     call Get_AOt1Fock(mylsitem,t1,fockt1,nocc,nvirt,nbasis,ypo,yho,ypv)
@@ -4848,9 +4848,9 @@ contains
 
     ! Initialize stuff in array2 format
     ! *********************************
-    ypo = array2_init(bo,MyFragment%ypo)
-    yho = array2_init(bo,MyFragment%ypo)   ! particle and hole coefficients are identical
-    ypv = array2_init(bv,MyFragment%ypv)
+    ypo = array2_init(bo,MyFragment%Co)
+    yho = array2_init(bo,MyFragment%Co)   ! particle and hole coefficients are identical
+    ypv = array2_init(bv,MyFragment%Cv)
 
     ! Set t1 equal to the t1 associated with the fragment
     ! ***************************************************
@@ -5114,7 +5114,7 @@ contains
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
     real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
     !> integers

@@ -167,7 +167,7 @@ contains
     call mem_alloc(CoccEOS, MyFragment%number_basis, noccEOS)
     do i=1, MyFragment%noccEOS
        ix = MyFragment%idxo(i)
-       CoccEOS(:,i) = MyFragment%ypo(:,ix)
+       CoccEOS(:,i) = MyFragment%Co(:,ix)
     end do
 
     ! ***********************************************************
@@ -175,11 +175,11 @@ contains
     ! ***********************************************************
     call mem_alloc(CocvAOS, MyFragment%number_basis, nocvAOS)
      do i=1, MyFragment%noccAOS
-       CocvAOS(:,i) = MyFragment%ypo(:,i)
+       CocvAOS(:,i) = MyFragment%Co(:,i)
     end do
 
     do i=1, MyFragment%nunoccAOS
-       CocvAOS(:,i+MyFragment%noccAOS) = MyFragment%ypv(:,i)
+       CocvAOS(:,i+MyFragment%noccAOS) = MyFragment%Cv(:,i)
     end do
 
     ! ***********************************************************
@@ -376,7 +376,7 @@ contains
     ! ***********************************************************
     do i=1, PairFragment%noccEOS
        ix = PairFragment%idxo(i)
-       CoccEOS(:,i) = PairFragment%ypo(:,ix)
+       CoccEOS(:,i) = PairFragment%Co(:,ix)
     end do
 
     call mem_alloc(CocvAOS, PairFragment%number_basis, nocvAOS)
@@ -384,11 +384,11 @@ contains
     ! Creating a CocvAOS matrix 
     ! ***********************************************************
     do i=1, PairFragment%noccAOS
-       CocvAOS(:,i) = PairFragment%ypo(:,i)
+       CocvAOS(:,i) = PairFragment%Co(:,i)
     end do
 
     do i=1, PairFragment%nunoccAOS
-       CocvAOS(:,i+PairFragment%noccAOS) = PairFragment%ypv(:,i)
+       CocvAOS(:,i+PairFragment%noccAOS) = PairFragment%Cv(:,i)
     end do
     
     ! ***********************************************************
@@ -1554,7 +1554,7 @@ contains
     !Fii
     call mat_init(Fii, nocc, nocc)
     !call MO_transform_AOMatrix(mylsitem, nbasis, nocc, noccfull, nvirt,&
-    !     & MyFragment%ypo, MyFragment%ypv,'ii',Fcc,Fii)
+    !     & MyFragment%Co, MyFragment%Cv,'ii',Fcc,Fii)
 
     !call mat_to_full(Fii,1.0E0_realk,Fij)
  

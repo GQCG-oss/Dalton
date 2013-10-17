@@ -391,10 +391,10 @@ contains
     integer,intent(in) :: nunocc
     !> Occupied orbitals in DEC format
     !> Intent(in) for main master, intent(out) for local masters
-    type(ccorbital),intent(inout) :: OccOrbitals(nocc)
+    type(decorbital),intent(inout) :: OccOrbitals(nocc)
     !> Unoccupied orbitals in DEC format
     !> Intent(in) for main master, intent(out) for local masters
-    type(ccorbital),intent(inout) :: UnoccOrbitals(nunocc)
+    type(decorbital),intent(inout) :: UnoccOrbitals(nunocc)
     !> Full molecule structure (MO coeffecients, Fock matrix etc.)
     !> Intent(in) for main master, intent(out) for local masters
     type(fullmolecule),intent(inout) :: MyMolecule
@@ -432,7 +432,7 @@ contains
     ! DEC Occupied orbitals
     ! ---------------------
 
-    ! Integers and reals inside ccorbital sub-type
+    ! Integers and reals inside decorbital sub-type
     do i=1,nocc
        call ls_mpi_buffer(OccOrbitals(i)%orbitalnumber,master)
        call ls_mpi_buffer(OccOrbitals(i)%centralatom,master)
@@ -452,7 +452,7 @@ contains
     ! DEC Unoccupied orbitals
     ! -----------------------
 
-    ! Integers and reals inside ccorbital sub-type
+    ! Integers and reals inside decorbital sub-type
     do i=1,nunocc
        call ls_mpi_buffer(UnoccOrbitals(i)%orbitalnumber,master)
        call ls_mpi_buffer(UnoccOrbitals(i)%centralatom,master)
@@ -526,8 +526,8 @@ contains
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_start,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_end,MyMolecule%natoms)
-       call mem_alloc(MyMolecule%ypo,MyMolecule%nbasis,MyMolecule%numocc)
-       call mem_alloc(MyMolecule%ypv,MyMolecule%nbasis,MyMolecule%numvirt)
+       call mem_alloc(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%numocc)
+       call mem_alloc(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%numvirt)
        call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%numocc,MyMolecule%numocc)
@@ -549,8 +549,8 @@ contains
 
     ! Real pointers
     ! -------------
-    call ls_mpibcast(MyMolecule%ypo,MyMolecule%nbasis,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%ypv,MyMolecule%nbasis,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%numocc,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
@@ -743,7 +743,7 @@ contains
 
     ! CCORBITAL types
     ! ---------------
-    ! Allocate ccorbitals
+    ! Allocate decorbitals
     if(.not. AddToBuffer) then
        nullify(MyFragment%occAOSorb)
        call mem_alloc(MyFragment%occAOSorb,MyFragment%noccAOS)
@@ -751,13 +751,13 @@ contains
        call mem_alloc(MyFragment%unoccAOSorb,MyFragment%nunoccAOS)
     end if
 
-    ! Integers and reals inside ccorbital sub-type
+    ! Integers and reals inside decorbital sub-type
     do i=1,MyFragment%noccAOS ! occ orbitals
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%numberofatoms,master)
 
-       ! Pointers inside ccorbital sub-type (which again is inside decfrag type)
+       ! Pointers inside decorbital sub-type (which again is inside decfrag type)
        if(.not. AddToBuffer) then
           Nullify(MyFragment%occAOSorb(i)%atoms)
           call mem_alloc(MyFragment%occAOSorb(i)%atoms,&
@@ -793,8 +793,8 @@ contains
        ! Real pointers
        if(.not. AddToBuffer) then
           call mem_alloc(MyFragment%S,MyFragment%number_basis,MyFragment%number_basis)
-          call mem_alloc(MyFragment%ypo,MyFragment%number_basis,MyFragment%noccAOS)
-          call mem_alloc(MyFragment%ypv,MyFragment%number_basis,MyFragment%nunoccAOS)
+          call mem_alloc(MyFragment%Co,MyFragment%number_basis,MyFragment%noccAOS)
+          call mem_alloc(MyFragment%Cv,MyFragment%number_basis,MyFragment%nunoccAOS)
           call mem_alloc(MyFragment%coreMO,MyFragment%number_basis,MyFragment%ncore)
           call mem_alloc(MyFragment%fock,MyFragment%number_basis,MyFragment%number_basis)
           call mem_alloc(MyFragment%ppfock,MyFragment%noccAOS,MyFragment%noccAOS)
@@ -802,8 +802,8 @@ contains
           call mem_alloc(MyFragment%qqfock,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
        end if
        call ls_mpi_buffer(MyFragment%S,MyFragment%number_basis,MyFragment%number_basis,master)
-       call ls_mpi_buffer(MyFragment%ypo,MyFragment%number_basis,MyFragment%noccAOS,master)
-       call ls_mpi_buffer(MyFragment%ypv,MyFragment%number_basis,MyFragment%nunoccAOS,master)
+       call ls_mpi_buffer(MyFragment%Co,MyFragment%number_basis,MyFragment%noccAOS,master)
+       call ls_mpi_buffer(MyFragment%Cv,MyFragment%number_basis,MyFragment%nunoccAOS,master)
        call ls_mpi_buffer(MyFragment%coreMO,MyFragment%number_basis,MyFragment%ncore,master)
        call ls_mpi_buffer(MyFragment%fock,MyFragment%number_basis,MyFragment%number_basis,master)
        call ls_mpi_buffer(MyFragment%ppfock,MyFragment%noccAOS,MyFragment%noccAOS,master)

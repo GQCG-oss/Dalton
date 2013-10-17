@@ -63,8 +63,8 @@ module cc_debug_routines_module
      !> stuff needed for pair analysis
      type(array2) :: ccsd_mat_tot,ccsd_mat_tmp
      integer :: natoms,ncore,nocc_tot,p,pdx,i
-     type(ccorbital), pointer :: occ_orbitals(:)
-     type(ccorbital), pointer :: unocc_orbitals(:)
+     type(decorbital), pointer :: occ_orbitals(:)
+     type(decorbital), pointer :: unocc_orbitals(:)
      logical, pointer :: orbitals_assigned(:)
      type(array4) :: mult2
      type(array2) :: mult1

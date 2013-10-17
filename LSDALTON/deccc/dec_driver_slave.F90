@@ -49,7 +49,7 @@ contains
     type(lsitem) :: MyLsitem
     type(decfrag),pointer :: AtomicFragments(:)
     type(fullmolecule) :: MyMolecule
-    type(ccorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
+    type(decorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
     logical,pointer :: dofrag(:)
     type(joblist) :: jobs
     integer :: groups,signal
@@ -273,9 +273,9 @@ subroutine atomic_fragments_slave(nocc,nunocc,OccOrbitals,&
   !> Number of unoccupied orbitals in the molecule
   integer,intent(in) :: nunocc
   !> Occupied orbitals, DEC format
-  type(ccorbital),intent(in) :: OccOrbitals(nocc)
+  type(decorbital),intent(in) :: OccOrbitals(nocc)
   !> Unoccupied orbitals, DEC format
-  type(ccorbital),intent(in) :: UnoccOrbitals(nunocc)
+  type(decorbital),intent(in) :: UnoccOrbitals(nunocc)
   !> Full molecular info
   type(fullmolecule),intent(inout) :: MyMolecule
   !> LS item structure
@@ -391,9 +391,9 @@ subroutine fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
   !> Number of unoccupied orbitals in the molecule
   integer,intent(in) :: nunocc
   !> Occupied orbitals, DEC format
-  type(ccorbital),intent(in) :: OccOrbitals(nocc)
+  type(decorbital),intent(in) :: OccOrbitals(nocc)
   !> Unoccupied orbitals, DEC format
-  type(ccorbital),intent(in) :: UnoccOrbitals(nunocc)
+  type(decorbital),intent(in) :: UnoccOrbitals(nunocc)
   !> Full molecular info (not changed at output)
   type(fullmolecule),intent(inout) :: MyMolecule
   !> LS item structure

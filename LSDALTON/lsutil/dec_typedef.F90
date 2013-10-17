@@ -11,7 +11,7 @@ module dec_typedef_module
   use Matrix_module, only: matrix
   !Could someone please rename ri to something less generic. TK!!
 !  private
-!  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,ccorbital,ri,&
+!  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
 !       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
 !       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
 !       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
@@ -423,7 +423,7 @@ module dec_typedef_module
   end type array4
 
 
-  type ccorbital
+  type decorbital
 
      !> Number of the orbital in full molecular basis
      integer :: orbitalnumber
@@ -435,7 +435,7 @@ module dec_typedef_module
      !> List of significant atoms
      integer, pointer :: atoms(:) => null()
 
-  end type ccorbital
+  end type decorbital
 
 
   !> Three dimensional array
@@ -483,9 +483,9 @@ module dec_typedef_module
      integer, pointer :: atom_end(:) => null()
 
      !> Occupied MO coefficients (mu,i)
-     real(realk), pointer :: ypo(:,:) => null()
+     real(realk), pointer :: Co(:,:) => null()
      !> Virtual MO coefficients (mu,a)
-     real(realk), pointer :: ypv(:,:) => null()
+     real(realk), pointer :: Cv(:,:) => null()
      !> CABS MO coefficients (mu,x)
      real(realk), pointer :: cabsMOs(:,:) => null()
 
@@ -596,9 +596,9 @@ module dec_typedef_module
      real(realk) :: pairdist
 
      !> Total occupied orbital space (orbital type)
-     type(ccorbital), pointer :: occAOSorb(:) => null()
+     type(decorbital), pointer :: occAOSorb(:) => null()
      !> Total unoccupied orbital space (orbital type)
-     type(ccorbital), pointer :: unoccAOSorb(:) => null()
+     type(decorbital), pointer :: unoccAOSorb(:) => null()
 
      !> Number of atoms (atomic extent)
      integer :: number_atoms=0
@@ -628,9 +628,9 @@ module dec_typedef_module
      real(realk),pointer :: S(:,:) => null()
 
      !> Occupied MO coefficients (only valence space for frozen core approx)
-     real(realk), pointer :: ypo(:,:) => null()
+     real(realk), pointer :: Co(:,:) => null()
      !> Virtual MO coefficients
-     real(realk), pointer :: ypv(:,:) => null()
+     real(realk), pointer :: Cv(:,:) => null()
      !> Cabs MO coefficients
      real(realk),pointer :: cabsMOs(:,:) => null()     
      !> Core MO coefficients 

@@ -593,7 +593,7 @@ module array2_simple_operations
     ! Loop over orbitals and extract EOS orbitals
     do i=1,nocc_eos
        idx=MyFragment%idxo(i)
-       Ceos%val(1:nbasis,i) = MyFragment%ypo(1:nbasis,idx)
+       Ceos%val(1:nbasis,i) = MyFragment%Co(1:nbasis,idx)
     end do
 
 
@@ -625,7 +625,7 @@ module array2_simple_operations
     ! Loop over orbitals and extract virtual EOS orbitals
     do a=1,nunocc_eos
        ax=MyFragment%idxu(a)
-       Ceos%val(1:nbasis,a) = MyFragment%ypv(1:nbasis,ax)
+       Ceos%val(1:nbasis,a) = MyFragment%Cv(1:nbasis,ax)
     end do
 
 
@@ -717,10 +717,10 @@ module array2_simple_operations
     !
     ! CDIAGocc = CLOCALocc Uocc     (*)
     !
-    ! where CLOCALocc are the basis MO coefficients in MyFragment%ypo
+    ! where CLOCALocc are the basis MO coefficients in MyFragment%Co
 
     ! Local MO coefficients
-    Ctmp = array2_init(occAO,MyFragment%ypo)
+    Ctmp = array2_init(occAO,MyFragment%Co)
 
     ! Determine CDIAGocc
     CDIAGocc = array2_init(occAO)
@@ -736,7 +736,7 @@ module array2_simple_operations
     ! ***************************************************************************************
 
     ! For the virtual space we do exactly the same with the virt-virt blocks of the Fock matrix
-    ! and the virtual local MO coefficients (MyFragment%ypv). (Thus, comments are omitted below)
+    ! and the virtual local MO coefficients (MyFragment%Cv). (Thus, comments are omitted below)
 
 
     Uvirt = array2_init(virtvirt)
@@ -749,7 +749,7 @@ module array2_simple_operations
     call solve_eigenvalue_problem(nvirt,MyFragment%qqfock,S,EVvirt,Uvirt%val)
     call mem_dealloc(S)
 
-    Ctmp = array2_init(virtAO,MyFragment%ypv)
+    Ctmp = array2_init(virtAO,MyFragment%Cv)
     CDIAGvirt = array2_init(virtAO)
     call array2_matmul(Ctmp,Uvirt,CDIAGvirt,'n','n',1.0E0_realk,0.0E0_realk)
     call array2_free(Ctmp)
@@ -837,7 +837,7 @@ module array2_simple_operations
     !
     ! CDIAGocc = CLOCALocc Uocc     (*)
     !
-    ! where CLOCALocc are the basis MO coefficients in MyFragment%ypo
+    ! where CLOCALocc are the basis MO coefficients in MyFragment%Co
 
     ! Determine CDIAGocc
     call dgemm('n','n',nb,no,no,1.0E0_realk,ypo,nb,Uocc,no,0.0E0_realk,CDIAGocc,nb)
@@ -847,7 +847,7 @@ module array2_simple_operations
     ! ***************************************************************************************
 
     ! For the virtual space we do exactly the same with the virt-virt blocks of the Fock matrix
-    ! and the virtual local MO coefficients (MyFragment%ypv). (Thus, comments are omitted below)
+    ! and the virtual local MO coefficients (MyFragment%Cv). (Thus, comments are omitted below)
 
     call mem_alloc(S,nv,nv)
     S=0.0E0_realk
@@ -998,7 +998,7 @@ module array2_simple_operations
        LoccALL%val(:,j) = MyFragment%coreMO(:,j)
     end do
     do j=1,nval      ! Put valence orbitals into LoccALL
-       LoccALL%val(:,j+ncore) = MyFragment%ypo(:,j)
+       LoccALL%val(:,j+ncore) = MyFragment%Co(:,j)
     end do
 
 
@@ -1075,7 +1075,7 @@ module array2_simple_operations
     call solve_eigenvalue_problem(nvirt,MyFragment%qqfock,S,EVvirt,Uvirt%val)
     call mem_dealloc(S)
 
-    Ctmp = array2_init(virtAO,MyFragment%ypv)
+    Ctmp = array2_init(virtAO,MyFragment%Cv)
     CDIAGvirt = array2_init(virtAO)
     call array2_matmul(Ctmp,Uvirt,CDIAGvirt,'n','n',1.0E0_realk,0.0E0_realk)
     call array2_free(Ctmp)

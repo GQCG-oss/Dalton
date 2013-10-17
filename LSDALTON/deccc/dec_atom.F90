@@ -61,9 +61,9 @@ contains
     !> Logical vector telling which occupied AOS orbitals are included in fragment
     logical, dimension(nocc), intent(in) :: Occ_list
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> Fragment to construct
     type(decfrag), intent(inout) :: fragment
     !> Make fragment basis (MO coeff and Fock matrix for fragment)?
@@ -406,8 +406,8 @@ contains
 
     fragment%atoms_idx => null()
 
-    fragment%ypo => null()
-    fragment%ypv => null()
+    fragment%Co => null()
+    fragment%Cv => null()
 
     !Free CABS MO F12
     fragment%cabsMOs => null()
@@ -474,9 +474,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> Fragment to construct
     type(decfrag), intent(inout) :: fragment
     !> Make fragment basis (MO coeff and Fock matrix for fragment)?
@@ -545,9 +545,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> Make fragment basis (MO coeff and Fock matrix for fragment)?
     logical, intent(in) :: DoBasis
     !> Distance beyond which to include neighbour atoms
@@ -609,9 +609,9 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Atomic fragment where all quantities are expressed in local basis
     !> The transformation coefficients between AO and fragment-adapted basis
     !> will be stored in LocalFragment%CoccFA and LocalFragment%CunoccFA.
@@ -933,12 +933,12 @@ contains
     nullify(LocalFragment%CoccFA,LocalFragment%CunoccFA)
     call mem_alloc(LocalFragment%CoccFA,LocalFragment%number_basis,LocalFragment%noccFA)
     call dec_simple_dgemm(LocalFragment%number_basis,LocalFragment%noccAOS,&
-         & LocalFragment%noccFA,LocalFragment%ypo,OUred,LocalFragment%CoccFA,'n','n')
+         & LocalFragment%noccFA,LocalFragment%Co,OUred,LocalFragment%CoccFA,'n','n')
 
     ! Virtual space (same strategy as for occ space)
     call mem_alloc(LocalFragment%CunoccFA,LocalFragment%number_basis,LocalFragment%nunoccFA)
     call dec_simple_dgemm(LocalFragment%number_basis,LocalFragment%nunoccAOS,&
-         & LocalFragment%nunoccFA,LocalFragment%ypv,VUred,LocalFragment%CunoccFA,'n','n')
+         & LocalFragment%nunoccFA,LocalFragment%Cv,VUred,LocalFragment%CunoccFA,'n','n')
     LocalFragment%FAset=.true.
 
     call mem_dealloc(OccOrbs)
@@ -967,9 +967,9 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Atomic fragment where all quantities are expressed in local basis
     !> and where fragment-adapted MO coefficients have been stored in 
     !> CoccFA and CunoccFA (see fragment_adapted_transformation_matrices).
@@ -1079,10 +1079,10 @@ contains
     end if
 
     ! Copy MOs
-    call mem_alloc(FOfragment%ypo,FOfragment%number_basis,FOfragment%noccAOS)
-    FOfragment%ypo = LocalFragment%CoccFA
-    call mem_alloc(FOfragment%ypv,FOfragment%number_basis,FOfragment%nunoccAOS)
-    FOfragment%ypv = LocalFragment%CunoccFA
+    call mem_alloc(FOfragment%Co,FOfragment%number_basis,FOfragment%noccAOS)
+    FOfragment%Co = LocalFragment%CoccFA
+    call mem_alloc(FOfragment%Cv,FOfragment%number_basis,FOfragment%nunoccAOS)
+    FOfragment%Cv = LocalFragment%CunoccFA
 
 
     ! Purify FOs
@@ -1099,12 +1099,12 @@ contains
     ! Occ space
     call mem_alloc(FOfragment%ppfock,FOfragment%noccAOS,FOfragment%noccAOS)
     call dec_simple_basis_transform1(FOfragment%number_basis,FOfragment%noccAOS,&
-         & FOfragment%ypo,FOfragment%fock,FOfragment%ppfock)
+         & FOfragment%Co,FOfragment%fock,FOfragment%ppfock)
 
     ! Virt space
     call mem_alloc(FOfragment%qqfock,FOfragment%nunoccAOS,FOfragment%nunoccAOS)
     call dec_simple_basis_transform1(FOfragment%number_basis,FOfragment%nunoccAOS,&
-         & FOfragment%ypv,FOfragment%fock,FOfragment%qqfock)
+         & FOfragment%Cv,FOfragment%fock,FOfragment%qqfock)
 
 
     call mem_dealloc(VirtLocal)
@@ -1232,9 +1232,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> Fragment to construct
     type(decfrag), intent(inout) :: fragment
     integer :: j,idx
@@ -1268,7 +1268,7 @@ contains
   !> \date April 2013
   subroutine fragment_purify(fragment)
     implicit none
-    !> Fragment where the MOs (fragment%ypo, fragment%ypv, fragment%coremo) will be purified
+    !> Fragment where the MOs (fragment%Co, fragment%Cv, fragment%coremo) will be purified
     type(decfrag),intent(inout) :: fragment
     integer :: nXOS,nbasis,noccAOS,nunoccAOS,ncore,i
     real(realk),pointer :: XOS(:,:)
@@ -1293,7 +1293,7 @@ contains
           call extract_XOS_orbitals_occ(Fragment,nbasis,nXOS,XOS)
 
           ! (i) Project out possible unoccupied components from the occupied XOS
-          call project_out_MO_space(nunoccAOS,nXOS,nbasis,Fragment%ypv,fragment%S,XOS)
+          call project_out_MO_space(nunoccAOS,nXOS,nbasis,Fragment%Cv,fragment%S,XOS)
           ! For frozen core also project out possible core orbital components
           if(DECinfo%frozencore .and. ncore>0) then
              call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,fragment%S,XOS)
@@ -1319,7 +1319,7 @@ contains
           call extract_XOS_orbitals_unocc(Fragment,nbasis,nXOS,XOS)
 
           ! (i) Project out possible occupied components from the unoccupied XOS
-          call project_out_MO_space(noccAOS,nXOS,nbasis,Fragment%ypo,fragment%S,XOS)
+          call project_out_MO_space(noccAOS,nXOS,nbasis,Fragment%Co,fragment%S,XOS)
           ! For frozen core also project out possible core orbital components
           if(DECinfo%frozencore .and. ncore>0) then
              call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,fragment%S,XOS)
@@ -1339,10 +1339,10 @@ contains
        if(ncore>0) then
 
           ! (i) Project out possible unoccupied components from core space
-          call project_out_MO_space(nunoccAOS,ncore,nbasis,Fragment%ypv,fragment%S,fragment%coreMO)
+          call project_out_MO_space(nunoccAOS,ncore,nbasis,Fragment%Cv,fragment%S,fragment%coreMO)
           ! For frozen core also project out possible valence orbital components
           if(DECinfo%frozencore) then
-             call project_out_MO_space(noccAOS,ncore,nbasis,fragment%ypo,fragment%S,Fragment%coreMO)
+             call project_out_MO_space(noccAOS,ncore,nbasis,fragment%Co,fragment%S,Fragment%coreMO)
           end if
 
           ! (ii) Orthogonalize core orbitals
@@ -1372,9 +1372,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> LS item info
@@ -1415,9 +1415,9 @@ contains
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> LS item info
@@ -1566,9 +1566,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocctot
     !> Information about DEC occupied orbitals for full molecule
-    type(ccorbital), dimension(nOcctot), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcctot), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals for full molecule
-    type(ccorbital), dimension(nUnocctot), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocctot), intent(in) :: UnoccOrbitals
     !> Fragment P
     type(decfrag),intent(inout) :: fragmentP
     !> Fragment Q
@@ -1679,7 +1679,7 @@ contains
     ! Sinv is the inverse overlap matrix for the local MOs for pair PQ (the identity matrix in the
     ! limit where the atomic extent for PQ contains all atomic basis functions in the molecule),
     ! aoS is the AO overlap matrix.
-    call project_onto_MO_space(fragmentPQ%noccAOS,noccPQ,nbasisPQ,fragmentPQ%ypo,&
+    call project_onto_MO_space(fragmentPQ%noccAOS,noccPQ,nbasisPQ,fragmentPQ%Co,&
          & fragmentPQ%S,CoccPQ)
 
 
@@ -1699,7 +1699,7 @@ contains
     ! Extract EOS indices
     call mem_alloc(CEOS,nbasisPQ,fragmentPQ%noccEOS)
     do i=1,fragmentPQ%noccEOS
-       CEOS(:,i) = fragmentPQ%ypo(:,fragmentPQ%idxo(i))
+       CEOS(:,i) = fragmentPQ%Co(:,fragmentPQ%idxo(i))
     end do
 
     ! Project out EOS componets
@@ -1787,7 +1787,7 @@ contains
        ! EOS index for local orbitals in AOS list for local orbitals
        EOSidx = fragmentPQ%idxo(i)
        do mu=1,nbasisPQ
-          fragmentPQ%CoccFA(mu,i) = fragmentPQ%ypo(mu,EOSidx)
+          fragmentPQ%CoccFA(mu,i) = fragmentPQ%Co(mu,EOSidx)
        end do
     end do
     idx= fragmentPQ%noccEOS  ! counter
@@ -1842,13 +1842,13 @@ contains
 
 
     ! 2
-    call project_onto_MO_space(fragmentPQ%nunoccAOS,nunoccPQ,nbasisPQ,fragmentPQ%ypv,fragmentPQ%S,CunoccPQ)
+    call project_onto_MO_space(fragmentPQ%nunoccAOS,nunoccPQ,nbasisPQ,fragmentPQ%Cv,fragmentPQ%S,CunoccPQ)
 
 
     ! 3
     call mem_alloc(CEOS,nbasisPQ,fragmentPQ%nunoccEOS)
     do i=1,fragmentPQ%nunoccEOS
-       CEOS(:,i) = fragmentPQ%ypv(:,fragmentPQ%idxu(i))
+       CEOS(:,i) = fragmentPQ%Cv(:,fragmentPQ%idxu(i))
     end do
     call project_out_MO_space(fragmentPQ%nunoccEOS,nunoccPQ,nbasisPQ,CEOS,fragmentPQ%S,CunoccPQ)
     call mem_dealloc(CEOS)
@@ -1900,7 +1900,7 @@ contains
     do i=1,fragmentPQ%nunoccEOS
        EOSidx = fragmentPQ%idxu(i)
        do mu=1,nbasisPQ
-          fragmentPQ%CunoccFA(mu,i) = fragmentPQ%ypv(mu,EOSidx)
+          fragmentPQ%CunoccFA(mu,i) = fragmentPQ%Cv(mu,EOSidx)
        end do
     end do
     idx= fragmentPQ%nunoccEOS  ! counter
@@ -1974,12 +1974,12 @@ contains
     ! Occupied space
     fragmentPQ%noccFA = fragmentPQ%noccAOS 
     call mem_alloc(fragmentPQ%CoccFA,fragmentPQ%number_basis,fragmentPQ%noccFA)
-    fragmentPQ%CoccFA = fragmentPQ%ypo
+    fragmentPQ%CoccFA = fragmentPQ%Co
 
     ! Unoccupied space
     fragmentPQ%nunoccFA = fragmentPQ%nunoccAOS 
     call mem_alloc(fragmentPQ%CunoccFA,fragmentPQ%number_basis,fragmentPQ%nunoccFA)
-    fragmentPQ%CunoccFA = fragmentPQ%ypv
+    fragmentPQ%CunoccFA = fragmentPQ%Cv
 
     fragmentPQ%FAset=.true.
 
@@ -2007,9 +2007,9 @@ contains
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(noccFULL), intent(in) :: OccOrbitals
+    type(decorbital), dimension(noccFULL), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(nunoccFULL), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nunoccFULL), intent(in) :: UnoccOrbitals
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> LS item info
@@ -2050,9 +2050,9 @@ contains
     !> FUll molecular info
     type(fullmolecule), intent(in) :: MyMolecule
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Fragment info
     type(decfrag), intent(inout) :: fragment
     integer :: i,j,idx
@@ -2159,11 +2159,11 @@ contains
 
     if(.not. fragment%fragmentadapted) then
        ! allocate C^o(nbasis,occ) C^v(nbasis,unocc)
-       call mem_alloc(fragment%ypo, fragment%number_basis,  fragment%noccAOS   )
-       call mem_alloc(fragment%ypv, fragment%number_basis,  fragment%nunoccAOS )
+       call mem_alloc(fragment%Co, fragment%number_basis,  fragment%noccAOS   )
+       call mem_alloc(fragment%Cv, fragment%number_basis,  fragment%nunoccAOS )
        ! Core
-       fragment%ypo=0.0E0_realk
-       fragment%ypv=0.0E0_realk
+       fragment%Co=0.0E0_realk
+       fragment%Cv=0.0E0_realk
     end if
 
     call mem_alloc(fragment%CoreMO, fragment%number_basis, fragment%ncore)
@@ -2205,7 +2205,7 @@ contains
 
        ! Fragment YPO
        ! half transform overlap
-       tmp1 = array2_init(dimsMO,MyMolecule%ypo)
+       tmp1 = array2_init(dimsMO,MyMolecule%Co)
        tmp2 = array2_init(dimsAO,MyMolecule%overlap)
        call array2_matmul(tmp1,tmp2,S,'T','N',1E0_realk,0E0_realk)
 
@@ -2229,7 +2229,7 @@ contains
              approximated_orbital = 0.0E0_realk
              call solve_linear_equations(fragment%S,approximated_orbital, &
                   correct_vector_moS,fragment%number_basis)
-             fragment%ypo(:,i) = approximated_orbital
+             fragment%Co(:,i) = approximated_orbital
 
           end do
 
@@ -2268,7 +2268,7 @@ contains
           dims(1) = nunocc
           dims(2) = nbasis
           S = array2_init(dims)
-          tmp1 = array2_init(dimsMO,MyMolecule%ypv)
+          tmp1 = array2_init(dimsMO,MyMolecule%Cv)
 
 
           ! Fragmant YPV
@@ -2291,7 +2291,7 @@ contains
              approximated_orbital = 0.0E0_realk
              call solve_linear_equations(fragment%S,approximated_orbital, &
                   correct_vector_moS,fragment%number_basis)
-             fragment%ypv(:,i) = approximated_orbital
+             fragment%Cv(:,i) = approximated_orbital
           end do
 
        end if SkipUnocc
@@ -2312,12 +2312,12 @@ contains
        end if
 
        ! Fragment YPO
-       call adjust_basis_matrix(MyMolecule%ypo,fragment%ypo,fragment%occAOSidx, &
+       call adjust_basis_matrix(MyMolecule%Co,fragment%Co,fragment%occAOSidx, &
             fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nocc,natoms, &
             fragment%number_basis,fragment%noccAOS,Fragment%number_atoms)
 
        ! Fragment YPV
-       call adjust_basis_matrix(MyMolecule%ypv,fragment%ypv,fragment%unoccAOSidx, &
+       call adjust_basis_matrix(MyMolecule%Cv,fragment%Cv,fragment%unoccAOSidx, &
             fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nunocc,natoms, &
             fragment%number_basis,fragment%nunoccAOS,Fragment%number_atoms)
 
@@ -2351,12 +2351,12 @@ contains
     ! Occ-occ block  (valence-valence for frozen core)
     call mem_alloc(fragment%ppfock,fragment%noccAOS,fragment%noccAOS)
     call dec_simple_basis_transform1(fragment%number_basis,fragment%noccAOS,&
-         & fragment%ypo,fragment%fock,fragment%ppfock) 
+         & fragment%Co,fragment%fock,fragment%ppfock) 
 
     ! Virtual-virtual block
     call mem_alloc(fragment%qqfock,fragment%nunoccAOS,fragment%nunoccAOS)
     call dec_simple_basis_transform1(fragment%number_basis,fragment%nunoccAOS,&
-         & fragment%ypv,fragment%fock,fragment%qqfock) 
+         & fragment%Cv,fragment%fock,fragment%qqfock) 
 
  end if SkipFock
 
@@ -2548,9 +2548,9 @@ end subroutine atomic_fragment_basis
     !> LSitem info
     type(lsitem),intent(inout)        :: MyLsitem
     !> Occupied orbitals in DEC format
-    type(ccorbital),intent(in)     :: OccOrbitals(MyMolecule%numocc)
+    type(decorbital),intent(in)     :: OccOrbitals(MyMolecule%numocc)
     !> Unoccupied orbitals in DEC format
-    type(ccorbital),intent(in)     :: UnoccOrbitals(MyMolecule%numvirt)
+    type(decorbital),intent(in)     :: UnoccOrbitals(MyMolecule%numvirt)
     !> Construct Fock matrix and MO coeff for fragments?
     logical,intent(in) :: DoBasis
     !> Atomic fragments. NOTE: Only those fragments specified by bookkeeping will be initialized here.
@@ -2673,8 +2673,8 @@ end subroutine atomic_fragment_basis
     implicit none
     type(fullmolecule),intent(in)  :: MyMolecule
     type(lsitem),intent(inout)        :: MyLsitem
-    type(ccorbital),intent(in)     :: OccOrbitals(MyMolecule%numocc)
-    type(ccorbital),intent(in)     :: UnoccOrbitals(MyMolecule%numvirt)
+    type(decorbital),intent(in)     :: OccOrbitals(MyMolecule%numocc)
+    type(decorbital),intent(in)     :: UnoccOrbitals(MyMolecule%numvirt)
     type(decfrag),intent(inout)        :: fragment
     integer, intent(in) :: runit
     !> Construct Fock matrix and MO coeff for fragment?
@@ -2849,9 +2849,9 @@ end subroutine atomic_fragment_basis
     !> Number of atoms in the fragment (which may be the full molecule)
     integer, intent(in) :: natoms
     !> Orbital information for orbitals describing the first index of orbital_mat
-    type(ccorbital), dimension(dim1), intent(in) :: Orbitals1
+    type(decorbital), dimension(dim1), intent(in) :: Orbitals1
     !> Orbital information for orbitals describing the second index of orbital_mat
-    type(ccorbital), dimension(dim2), intent(in) :: Orbitals2
+    type(decorbital), dimension(dim2), intent(in) :: Orbitals2
     !> Orbital matrix
     real(realk), dimension(dim1,dim2),intent(in) :: orbital_mat
     !> Atom matrix
@@ -3286,9 +3286,9 @@ if(DECinfo%PL>0) then
     !> (Needed to avoid double counting, see subroutine which_pairs)
     logical,dimension(natoms,natoms),intent(in) :: dopair
     !> Occupied orbitals in DEC format
-    type(ccorbital),dimension(nocc) :: OccOrbitals
+    type(decorbital),dimension(nocc) :: OccOrbitals
     !> Virtual orbitals in DEC format
-    type(ccorbital),dimension(nvirt) :: VirtOrbitals
+    type(decorbital),dimension(nvirt) :: VirtOrbitals
     !> t1 amplitudes for the full molecule to be updated (order virtual,occupied)
     type(array2), intent(inout) :: t1full
     integer :: i,a,ix,ax, atomA,atomI
@@ -3595,9 +3595,9 @@ if(DECinfo%PL>0) then
     !> Distance table for all atoms in the molecule
     real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     !> List of atoms, sorted according to estimated size (largest first)
@@ -3683,7 +3683,7 @@ if(DECinfo%PL>0) then
     !> Number of occupied orbitals for full molecule
     integer,intent(in) :: nocc
     !> Occupied orbitals
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Fragment where core information is to be set
     type(decfrag),intent(inout) :: MyFragment 
     integer :: i,idx,atom
@@ -3761,7 +3761,7 @@ if(DECinfo%PL>0) then
     !> Density = Cocc Cocc^T 
     real(realk),intent(inout),dimension(MyFragment%number_basis,MyFragment%number_basis) :: dens
 
-    call get_density_from_occ_orbitals(MyFragment%number_basis,MyFragment%noccAOS,MyFragment%ypo,dens)
+    call get_density_from_occ_orbitals(MyFragment%number_basis,MyFragment%noccAOS,MyFragment%Co,dens)
 
   end subroutine get_density_for_fragment
 
@@ -3803,9 +3803,9 @@ if(DECinfo%PL>0) then
     !> Number of unoccupied orbitals for full molecule
     integer, intent(in) :: nunocc
     !> Occupied orbitals
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Optimized atomic fragments
     type(decfrag),dimension(natoms),intent(in) :: AtomicFragments
     !> which_fragments(i) is true if atom "i" is central in one of the fragments
@@ -4343,9 +4343,9 @@ if(DECinfo%PL>0) then
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> Occupied orbitals
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Current job list which will be appended with new pairs
     type(joblist),intent(inout) :: jobs
     type(joblist) :: oldjobs
@@ -4724,9 +4724,9 @@ if(DECinfo%PL>0) then
     !> Logical vector describing unocc AOS for fragment
     logical,intent(in) :: unoccAOS(nunocc)
     !> Occupied orbitals
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> Number of basis functions in fragment
@@ -5039,7 +5039,7 @@ if(DECinfo%PL>0) then
     do i=1,nAOS
        if(which_XOS(i)) then
          idx=idx+1
-         XOS(:,idx) = MyFragment%ypo(:,i)
+         XOS(:,idx) = MyFragment%Co(:,i)
        end if
     end do
     if(idx/=nXOS) then
@@ -5102,7 +5102,7 @@ if(DECinfo%PL>0) then
     do i=1,nAOS
        if(which_XOS(i)) then
          idx=idx+1
-         XOS(:,idx) = MyFragment%ypv(:,i)
+         XOS(:,idx) = MyFragment%Cv(:,i)
        end if
     end do
     if(idx/=nXOS) then
@@ -5125,7 +5125,7 @@ if(DECinfo%PL>0) then
     integer,intent(in) :: nXOS
     !> XOS MO coefficients
     real(realk),intent(in),dimension(nbasis,nXOS) :: XOS
-    !> Fragment info (MyFragment%ypo will be modified here)
+    !> Fragment info (MyFragment%Co will be modified here)
     type(decfrag),intent(inout) :: MyFragment
     integer :: i,idx,nAOS,nEOS
     logical,pointer :: which_XOS(:)
@@ -5166,7 +5166,7 @@ if(DECinfo%PL>0) then
     do i=1,nAOS
        if(which_XOS(i)) then
          idx=idx+1
-         MyFragment%ypo(:,i) = XOS(:,idx)
+         MyFragment%Co(:,i) = XOS(:,idx)
        end if
     end do
     if(idx/=nXOS) then
@@ -5190,7 +5190,7 @@ if(DECinfo%PL>0) then
     integer,intent(in) :: nXOS
     !> XOS MO coefficients
     real(realk),intent(in),dimension(nbasis,nXOS) :: XOS
-    !> Fragment info (MyFragment%ypv will be modified here)
+    !> Fragment info (MyFragment%Cv will be modified here)
     type(decfrag),intent(inout) :: MyFragment
     integer :: i,idx,nAOS,nEOS
     logical,pointer :: which_XOS(:)
@@ -5230,7 +5230,7 @@ if(DECinfo%PL>0) then
     do i=1,nAOS
        if(which_XOS(i)) then
          idx=idx+1
-         MyFragment%ypv(:,i) = XOS(:,idx)
+         MyFragment%Cv(:,i) = XOS(:,idx)
        end if
     end do
     if(idx/=nXOS) then

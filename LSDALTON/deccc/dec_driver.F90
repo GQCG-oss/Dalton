@@ -63,8 +63,8 @@ contains
     real(realk),intent(inout) :: molgrad(3,MyMolecule%natoms)
     !> Estimated energy error
     real(realk),intent(inout) :: Eerr
-    type(ccorbital), pointer :: OccOrbitals(:)
-    type(ccorbital), pointer :: UnoccOrbitals(:)
+    type(decorbital), pointer :: OccOrbitals(:)
+    type(decorbital), pointer :: UnoccOrbitals(:)
     real(realk),pointer :: FragEnergiesOcc(:,:)
     real(realk) :: Ecorr_est,Eskip_est
     integer :: nBasis,nOcc,nUnocc,nAtoms,i
@@ -151,9 +151,9 @@ contains
     !> LSDalton info
     type(lsitem), intent(inout) :: mylsitem
     !> Occupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
-    type(ccorbital), intent(inout) :: OccOrbitals(nocc)
+    type(decorbital), intent(inout) :: OccOrbitals(nocc)
     !> Unoccupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
-    type(ccorbital), intent(inout) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(inout) :: UnoccOrbitals(nunocc)
     !> Full molecule info, model for pair fragment calculations are stored in MyMolecule%ccmodel.
     type(fullmolecule), intent(inout) :: MyMolecule
    !> Estimated correlation energy from all estimated atomic and pair fragments
@@ -235,9 +235,9 @@ contains
     !> HF density matrix
     type(matrix),intent(in) :: D
     !> Occupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
-    type(ccorbital), intent(inout) :: OccOrbitals(nocc)
+    type(decorbital), intent(inout) :: OccOrbitals(nocc)
     !> Unoccupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
-    type(ccorbital), intent(inout) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(inout) :: UnoccOrbitals(nunocc)
     !> Hartree-Fock energy
     real(realk),intent(inout) :: EHF
     !> MP2 correlation energy
@@ -867,9 +867,9 @@ contains
     !> LSDalton info
     type(lsitem), intent(inout) :: mylsitem
     !> Occupied orbitals in DEC format 
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals in DEC format 
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !>  fragment job list
     type(joblist),intent(inout) :: jobs
     !> Atomic fragments

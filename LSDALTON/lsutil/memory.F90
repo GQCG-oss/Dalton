@@ -80,7 +80,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_allocated_logical, max_mem_used_logical       !Count 'logical' memory, integral code
 
    integer(KIND=long),save :: mem_allocated_AOBATCH, max_mem_used_AOBATCH       !Count 'AOBATCH' memory, integral code
-   integer(KIND=long),save :: mem_allocated_CCORBITAL, max_mem_used_CCORBITAL       !Count 'CCORBITAL' memory, deccc code
+   integer(KIND=long),save :: mem_allocated_DECORBITAL, max_mem_used_DECORBITAL       !Count 'DECORBITAL' memory, deccc code
    integer(KIND=long),save :: mem_allocated_DECFRAG, max_mem_used_DECFRAG       !Count 'DECFRAG' memory, deccc code
    integer(KIND=long),save :: mem_allocated_BATCHTOORB, max_mem_used_BATCHTOORB       !Count 'BATCHTOORB' memory, deccc code
    integer(KIND=long),save :: mem_allocated_MYPOINTER, max_mem_used_MYPOINTER       !Count 'MYPOINTER' memory, deccc code
@@ -126,7 +126,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_tp_allocated_character, max_mem_tp_used_character   !Count 'character' memory, integral code
    integer(KIND=long),save :: mem_tp_allocated_logical, max_mem_tp_used_logical       !Count 'logical' memory, integral code
    integer(KIND=long),save :: mem_tp_allocated_AOBATCH, max_mem_tp_used_AOBATCH       !Count 'AOBATCH' memory, integral code
-   integer(KIND=long),save :: mem_tp_allocated_CCORBITAL, max_mem_tp_used_CCORBITAL       !Count 'CCORBITAL' memory, deccc code
+   integer(KIND=long),save :: mem_tp_allocated_DECORBITAL, max_mem_tp_used_DECORBITAL       !Count 'DECORBITAL' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_DECFRAG, max_mem_tp_used_DECFRAG       !Count 'DECFRAG' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_BATCHTOORB, max_mem_tp_used_BATCHTOORB       !Count 'BATCHTOORB' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_MYPOINTER, max_mem_tp_used_MYPOINTER       !Count 'MYPOINTER' memory, deccc code
@@ -151,7 +151,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_check_allocated_complex
    integer(KIND=long),save :: mem_check_allocated_character,mem_check_allocated_logical
    integer(KIND=long),save :: mem_check_allocated_AOBATCH,mem_check_allocated_ODBATCH
-   integer(KIND=long),save :: mem_check_allocated_CCORBITAL
+   integer(KIND=long),save :: mem_check_allocated_DECORBITAL
    integer(KIND=long),save :: mem_check_allocated_DECFRAG
    integer(KIND=long),save :: mem_check_allocated_BATCHTOORB
    integer(KIND=long),save :: mem_check_allocated_MYPOINTER
@@ -183,7 +183,7 @@ MODULE memory_handling
    integer(KIND=long),save :: max_mem_used_integer_tmp,max_mem_used_character_tmp
    integer(KIND=long),save :: max_mem_used_logical_tmp,max_mem_used_linkshell_tmp
    integer(KIND=long),save :: max_mem_used_AOBATCH_tmp,max_mem_used_ODBATCH_tmp
-   integer(KIND=long),save :: max_mem_used_CCORBITAL_tmp
+   integer(KIND=long),save :: max_mem_used_DECORBITAL_tmp
    integer(KIND=long),save :: max_mem_used_DECFRAG_tmp
    integer(KIND=long),save :: max_mem_used_BATCHTOORB_tmp
    integer(KIND=long),save :: max_mem_used_MYPOINTER_tmp
@@ -207,7 +207,7 @@ MODULE memory_handling
    !the types change these numbers should be changes accordingly.
    integer(KIND=long),save :: mem_OVERLAPsize
    integer(KIND=long),save :: mem_AOBATCHsize
-   integer(KIND=long),save :: mem_CCORBITALsize
+   integer(KIND=long),save :: mem_DECORBITALsize
    integer(KIND=long),save :: mem_DECFRAGsize
    integer(KIND=long),save :: mem_BATCHTOORBsize
    integer(KIND=long),save :: mem_MYPOINTERsize
@@ -248,7 +248,7 @@ MODULE memory_handling
 !$OMP mem_tp_allocated_character, max_mem_tp_used_character,&
 !$OMP mem_tp_allocated_logical, max_mem_tp_used_logical,&
 !$OMP mem_tp_allocated_AOBATCH, max_mem_tp_used_AOBATCH,&
-!$OMP mem_tp_allocated_CCORBITAL, max_mem_tp_used_CCORBITAL,&
+!$OMP mem_tp_allocated_DECORBITAL, max_mem_tp_used_DECORBITAL,&
 !$OMP mem_tp_allocated_DECFRAG, max_mem_tp_used_DECFRAG,&
 !$OMP mem_tp_allocated_BATCHTOORB, max_mem_tp_used_BATCHTOORB,&
 !$OMP mem_tp_allocated_MYPOINTER, max_mem_tp_used_MYPOINTER,&
@@ -281,7 +281,7 @@ MODULE memory_handling
 !$OMP mem_check_allocated_complex,&
 !$OMP mem_check_allocated_character,mem_check_allocated_logical,&
 !$OMP mem_check_allocated_AOBATCH,mem_check_allocated_ODBATCH,&
-!$OMP mem_check_allocated_CCORBITAL,mem_check_allocated_DECFRAG,&
+!$OMP mem_check_allocated_DECORBITAL,mem_check_allocated_DECFRAG,&
 !$OMP mem_check_allocated_BATCHTOORB,&
 !$OMP mem_check_allocated_MYPOINTER,&
 !$OMP mem_check_allocated_ARRAY,&
@@ -319,7 +319,7 @@ INTERFACE mem_alloc
      &             logic4_allocate_2dim, logic4_allocate_3dim,&
      &             logic8_allocate_1dim,logic8_allocate_1dim_wrapper4,logic8_allocate_1dim_zero, &
      &             logic8_allocate_2dim, logic8_allocate_3dim,&
-     &             AOBATCH_allocate_1dim, ODBATCH_allocate_1dim, CCORBITAL_allocate_1dim, &
+     &             AOBATCH_allocate_1dim, ODBATCH_allocate_1dim, DECORBITAL_allocate_1dim, &
      &             LSAOTENSOR_allocate_1dim, SLSAOTENSOR_allocate_1dim, &
      &             GLOBALLSAOTENSOR_allocate_1dim, ATOMTYPEITEM_allocate_1dim, &
      &             ATOMITEM_allocate_1dim, LSMATRIX_allocate_1dim,&! LSMATRIXP_allocate_1dim, &
@@ -346,7 +346,7 @@ INTERFACE mem_dealloc
      &             shortint_deallocate_1dim, &
      &             logic4_deallocate_1dim, logic4_deallocate_2dim,logic4_deallocate_3dim, &
      &             logic8_deallocate_1dim, logic8_deallocate_2dim,logic8_deallocate_3dim, &
-     &             AOBATCH_deallocate_1dim, ODBATCH_deallocate_1dim, CCORBITAL_deallocate_1dim, &
+     &             AOBATCH_deallocate_1dim, ODBATCH_deallocate_1dim, DECORBITAL_deallocate_1dim, &
      &             LSAOTENSOR_deallocate_1dim, SLSAOTENSOR_deallocate_1dim, &
      &             GLOBALLSAOTENSOR_deallocate_1dim, ATOMTYPEITEM_deallocate_1dim, &
      &             ATOMITEM_deallocate_1dim, LSMATRIX_deallocate_1dim, &!LSMATRIXP_deallocate_1dim, &
@@ -370,7 +370,7 @@ subroutine set_sizes_of_types()
 implicit none
 TYPE(OVERLAP) :: OVERLAPitem
 TYPE(AOBATCH) :: AOBATCHitem
-TYPE(CCORBITAL) :: CCORBITALitem
+TYPE(DECORBITAL) :: DECORBITALitem
 TYPE(DECFRAG) :: DECFRAGitem
 TYPE(BATCHTOORB) :: BATCHTOORBitem
 TYPE(MYPOINTER) :: MYPOINTERitem
@@ -395,7 +395,7 @@ longintbuffersize = 72
 print*,'Warning set sizes of Types Manual!'
 print*,'This is error prone - verify that the hardcoded sizes are up to date!'
 mem_AOBATCHsize=496
-mem_CCORBITALsize=88
+mem_DECORBITALsize=88
 mem_DECFRAGsize=4004
 mem_BATCHTOORBsize=28
 mem_MYPOINTERsize=48
@@ -418,7 +418,7 @@ mem_OVERLAPsize=2904
 !implemented for VAR_PGF90 VAR_GFORTRAN VAR_IFORT we think!
 !we assume that all other compilers work with sizeof()
 mem_AOBATCHsize=sizeof(AOBATCHitem)
-mem_CCORBITALsize=sizeof(CCORBITALitem)
+mem_DECORBITALsize=sizeof(DECORBITALitem)
 mem_DECFRAGsize=sizeof(DECFRAGitem)
 mem_BATCHTOORBsize=sizeof(BATCHTOORBitem)
 mem_MYPOINTERsize=sizeof(MYPOINTERitem)
@@ -454,7 +454,7 @@ max_mem_used_integer = MAX(max_mem_used_integer,max_mem_used_integer_tmp)
 max_mem_used_character = MAX(max_mem_used_character,max_mem_used_character_tmp)
 max_mem_used_logical = MAX(max_mem_used_logical,max_mem_used_logical_tmp)
 max_mem_used_AOBATCH = MAX(max_mem_used_AOBATCH,max_mem_used_AOBATCH_tmp)
-max_mem_used_CCORBITAL = MAX(max_mem_used_CCORBITAL,max_mem_used_CCORBITAL_tmp)
+max_mem_used_DECORBITAL = MAX(max_mem_used_DECORBITAL,max_mem_used_DECORBITAL_tmp)
 max_mem_used_DECFRAG = MAX(max_mem_used_DECFRAG,max_mem_used_DECFRAG_tmp)
 max_mem_used_BATCHTOORB = MAX(max_mem_used_BATCHTOORB,max_mem_used_BATCHTOORB_tmp)
 max_mem_used_MYPOINTER = MAX(max_mem_used_MYPOINTER,max_mem_used_MYPOINTER_tmp)
@@ -497,7 +497,7 @@ max_mem_used_integer_tmp = 0
 max_mem_used_character_tmp = 0
 max_mem_used_logical_tmp = 0
 max_mem_used_AOBATCH_tmp = 0
-max_mem_used_CCORBITAL_tmp = 0
+max_mem_used_DECORBITAL_tmp = 0
 max_mem_used_DECFRAG_tmp = 0
 max_mem_used_BATCHTOORB_tmp = 0
 max_mem_used_MYPOINTER_tmp = 0
@@ -551,8 +551,8 @@ mem_allocated_logical = 0
 max_mem_used_logical = 0
 mem_allocated_AOBATCH = 0
 max_mem_used_AOBATCH = 0
-mem_allocated_CCORBITAL = 0
-max_mem_used_CCORBITAL = 0
+mem_allocated_DECORBITAL = 0
+max_mem_used_DECORBITAL = 0
 mem_allocated_DECFRAG = 0
 mem_allocated_BATCHTOORB = 0
 mem_allocated_MYPOINTER = 0
@@ -630,8 +630,8 @@ mem_tp_allocated_logical = 0
 max_mem_tp_used_logical = 0
 mem_tp_allocated_AOBATCH = 0
 max_mem_tp_used_AOBATCH = 0
-mem_tp_allocated_CCORBITAL = 0
-max_mem_tp_used_CCORBITAL = 0
+mem_tp_allocated_DECORBITAL = 0
+max_mem_tp_used_DECORBITAL = 0
 mem_tp_allocated_DECFRAG = 0
 mem_tp_allocated_BATCHTOORB = 0
 mem_tp_allocated_MYPOINTER = 0
@@ -708,8 +708,8 @@ subroutine collect_thread_memory()
     max_mem_used_logical_tmp = max_mem_used_logical_tmp+max_mem_tp_used_logical
     mem_allocated_AOBATCH = mem_allocated_AOBATCH+mem_tp_allocated_AOBATCH
     max_mem_used_AOBATCH_tmp = max_mem_used_AOBATCH_tmp+max_mem_tp_used_AOBATCH
-    mem_allocated_CCORBITAL = mem_allocated_CCORBITAL+mem_tp_allocated_CCORBITAL
-    max_mem_used_CCORBITAL_tmp = max_mem_used_CCORBITAL_tmp+max_mem_tp_used_CCORBITAL
+    mem_allocated_DECORBITAL = mem_allocated_DECORBITAL+mem_tp_allocated_DECORBITAL
+    max_mem_used_DECORBITAL_tmp = max_mem_used_DECORBITAL_tmp+max_mem_tp_used_DECORBITAL
     mem_allocated_DECFRAG = mem_allocated_DECFRAG+mem_tp_allocated_DECFRAG
     mem_allocated_BATCHTOORB = mem_allocated_BATCHTOORB+mem_tp_allocated_BATCHTOORB
     mem_allocated_MYPOINTER = mem_allocated_MYPOINTER+mem_tp_allocated_MYPOINTER
@@ -807,8 +807,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ATOMITEM
     WRITE(LUPRI,'("  Allocated memory (LSMATRIX):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_LSMATRIX
-    WRITE(LUPRI,'("  Allocated memory (CCORBITAL):       ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_allocated_CCORBITAL
+    WRITE(LUPRI,'("  Allocated memory (DECORBITAL):       ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_DECORBITAL
     WRITE(LUPRI,'("  Allocated memory (DECFRAG):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECFRAG
     WRITE(LUPRI,'("  Allocated memory (overlapType):     ",i9," byte  &
@@ -863,7 +863,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_logical,'logical')
     CALL print_maxmem(lupri,max_mem_used_character,'character')
     CALL print_maxmem(lupri,max_mem_used_AOBATCH,'AOBATCH')
-    CALL print_maxmem(lupri,max_mem_used_CCORBITAL,'CCORBITAL')
+    CALL print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
     CALL print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
     CALL print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
     CALL print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
@@ -939,8 +939,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ATOMITEM
     WRITE(LUPRI,'("  Allocated MPI memory (LSMATRIX):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_LSMATRIX
-    WRITE(LUPRI,'("  Allocated MPI memory (CCORBITAL):       ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_allocated_CCORBITAL
+    WRITE(LUPRI,'("  Allocated MPI memory (DECORBITAL):       ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_DECORBITAL
     WRITE(LUPRI,'("  Allocated MPI memory (DECFRAG):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECFRAG
     WRITE(LUPRI,'("  Allocated MPI memory (overlapType):     ",i9," byte  &
@@ -995,7 +995,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_logical,'logical')
     CALL print_maxmem(lupri,max_mem_used_character,'character')
     CALL print_maxmem(lupri,max_mem_used_AOBATCH,'AOBATCH')
-    CALL print_maxmem(lupri,max_mem_used_CCORBITAL,'CCORBITAL')
+    CALL print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
     CALL print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
     CALL print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
     CALL print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
@@ -1071,8 +1071,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ATOMITEM
     WRITE(LUPRI,'("  Allocated memory (LSMATRIX):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_LSMATRIX
-    WRITE(LUPRI,'("  Allocated memory (CCORBITAL):       ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_CCORBITAL
+    WRITE(LUPRI,'("  Allocated memory (DECORBITAL):       ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECORBITAL
     WRITE(LUPRI,'("  Allocated memory (DECFRAG):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECFRAG
     WRITE(LUPRI,'("  Allocated memory (overlapType):     ",i9," byte  &
@@ -1127,7 +1127,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_tp_used_logical,'logical')
     CALL print_maxmem(lupri,max_mem_tp_used_character,'character')
     CALL print_maxmem(lupri,max_mem_tp_used_AOBATCH,'AOBATCH')
-    CALL print_maxmem(lupri,max_mem_tp_used_CCORBITAL,'CCORBITAL')
+    CALL print_maxmem(lupri,max_mem_tp_used_DECORBITAL,'DECORBITAL')
     CALL print_maxmem(lupri,max_mem_tp_used_DECFRAG,'DECFRAG')
     CALL print_maxmem(lupri,max_mem_tp_used_BATCHTOORB,'BATCHTOORB')
     CALL print_maxmem(lupri,max_mem_tp_used_MYPOINTER,'MYPOINTER')
@@ -1185,7 +1185,7 @@ end subroutine collect_thread_memory
        if (max_mem_used_character > 0_long) call print_maxmem(lupri,max_mem_used_character,'character')
        
        if (max_mem_used_AOBATCH > 0_long) call print_maxmem(lupri,max_mem_used_AOBATCH,'AOBATCH')
-       if (max_mem_used_CCORBITAL > 0_long) call print_maxmem(lupri,max_mem_used_CCORBITAL,'CCORBITAL')
+       if (max_mem_used_DECORBITAL > 0_long) call print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
        if (max_mem_used_DECFRAG > 0_long) call print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
        if (max_mem_used_BATCHTOORB > 0_long) call print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
        if (max_mem_used_MYPOINTER > 0_long) call print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
@@ -1223,7 +1223,7 @@ end subroutine collect_thread_memory
        if (mem_allocated_logical > 0_long) call print_mem_alloc(lupri,mem_allocated_logical,'logical')
        if (mem_allocated_character > 0_long) call print_mem_alloc(lupri,mem_allocated_character,'character')
        if (mem_allocated_AOBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_AOBATCH,'AOBATCH')
-       if (mem_allocated_CCORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_CCORBITAL,'CCORBITAL')
+       if (mem_allocated_DECORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_DECORBITAL,'DECORBITAL')
        if (mem_allocated_DECFRAG > 0_long) call print_mem_alloc(lupri,mem_allocated_DECFRAG,'DECFRAG')
        if (mem_allocated_BATCHTOORB > 0_long) call print_mem_alloc(lupri,mem_allocated_BATCHTOORB,'BATCHTOORB')
        if (mem_allocated_MYPOINTER > 0_long) call print_mem_alloc(lupri,mem_allocated_MYPOINTER,'MYPOINTER')
@@ -1276,7 +1276,7 @@ end subroutine collect_thread_memory
     if (max_mem_used_logical > 0_long) call print_maxmem(lupri,max_mem_used_logical,'logical')
     if (max_mem_used_character > 0_long) call print_maxmem(lupri,max_mem_used_character,'character')
     if (max_mem_used_AOBATCH > 0_long) call print_maxmem(lupri,max_mem_used_AOBATCH,'AOBATCH')
-    if (max_mem_used_CCORBITAL > 0_long) call print_maxmem(lupri,max_mem_used_CCORBITAL,'CCORBITAL')
+    if (max_mem_used_DECORBITAL > 0_long) call print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
     if (max_mem_used_DECFRAG > 0_long) call print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
     if (max_mem_used_BATCHTOORB > 0_long) call print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
     if (max_mem_used_MYPOINTER > 0_long) call print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
@@ -1313,7 +1313,7 @@ end subroutine collect_thread_memory
     if (mem_allocated_logical > 0_long) call print_mem_alloc(lupri,mem_allocated_logical,'logical')
     if (mem_allocated_character > 0_long) call print_mem_alloc(lupri,mem_allocated_character,'character')
     if (mem_allocated_AOBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_AOBATCH,'AOBATCH')
-    if (mem_allocated_CCORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_CCORBITAL,'CCORBITAL')
+    if (mem_allocated_DECORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_DECORBITAL,'DECORBITAL')
     if (mem_allocated_DECFRAG > 0_long) call print_mem_alloc(lupri,mem_allocated_DECFRAG,'DECFRAG')
     if (mem_allocated_BATCHTOORB > 0_long) call print_mem_alloc(lupri,mem_allocated_BATCHTOORB,'BATCHTOORB')
     if (mem_allocated_MYPOINTER > 0_long) call print_mem_alloc(lupri,mem_allocated_MYPOINTER,'MYPOINTER')
@@ -3211,42 +3211,42 @@ integer (kind=long) :: nsize
    NULLIFY(OVERLAPITEM)
 END SUBROUTINE OVERLAPT_deallocate_1dim
 
-!----- ALLOCATE CCORBITAL POINTERS -----!
+!----- ALLOCATE DECORBITAL POINTERS -----!
 
-SUBROUTINE CCORBITAL_allocate_1dim(CCORBITALITEM,n)
+SUBROUTINE DECORBITAL_allocate_1dim(DECORBITALITEM,n)
 implicit none
 integer,intent(in) :: n
-TYPE(CCORBITAL),pointer    :: CCORBITALITEM(:)
+TYPE(DECORBITAL),pointer    :: DECORBITALITEM(:)
 integer :: IERR
 integer (kind=long) :: nsize
-nullify(CCORBITALITEM)
-ALLOCATE(CCORBITALITEM(n),STAT = IERR)
+nullify(DECORBITALITEM)
+ALLOCATE(DECORBITALITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in CCORBITAL_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in CCORBITAL_allocate_1dim')
+   write(*,*) 'Error in DECORBITAL_allocate_1dim',IERR,n
+   CALL MEMORY_ERROR_QUIT('Error in DECORBITAL_allocate_1dim')
 ENDIF
-nsize = size(CCORBITALITEM,KIND=long)*mem_CCORBITALsize
-call mem_allocated_mem_CCORBITAL(nsize)
-END SUBROUTINE CCORBITAL_allocate_1dim
+nsize = size(DECORBITALITEM,KIND=long)*mem_DECORBITALsize
+call mem_allocated_mem_DECORBITAL(nsize)
+END SUBROUTINE DECORBITAL_allocate_1dim
 
-SUBROUTINE CCORBITAL_deallocate_1dim(CCORBITALITEM)
+SUBROUTINE DECORBITAL_deallocate_1dim(DECORBITALITEM)
 implicit none
-TYPE(CCORBITAL),pointer :: CCORBITALITEM(:)
+TYPE(DECORBITAL),pointer :: DECORBITALITEM(:)
 integer :: IERR
 integer (kind=long) :: nsize
-   nsize = size(CCORBITALITEM,KIND=long)*mem_CCORBITALsize
-   call mem_deallocated_mem_CCORBITAL(nsize)
-   if (.not.ASSOCIATED(CCORBITALITEM)) then
+   nsize = size(DECORBITALITEM,KIND=long)*mem_DECORBITALsize
+   call mem_deallocated_mem_DECORBITAL(nsize)
+   if (.not.ASSOCIATED(DECORBITALITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in CCORBITAL_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in DECORBITAL_deallocate_1dim - memory previously released')
    endif
-   DEALLOCATE(CCORBITALITEM,STAT = IERR)
+   DEALLOCATE(DECORBITALITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in CCORBITAL_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in CCORBITAL_deallocate_1dim')
+      write(*,*) 'Error in DECORBITAL_deallocate_1dim',IERR
+      CALL MEMORY_ERROR_QUIT('Error in DECORBITAL_deallocate_1dim')
    ENDIF
-   NULLIFY(CCORBITALITEM)
-END SUBROUTINE CCORBITAL_deallocate_1dim
+   NULLIFY(DECORBITALITEM)
+END SUBROUTINE DECORBITAL_deallocate_1dim
 
 
 !----- ALLOCATE DECFRAG POINTERS -----!
@@ -4425,49 +4425,49 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      ENDIF
    end subroutine mem_deallocated_mem_OVERLAPT
 
-  subroutine mem_allocated_mem_CCORBITAL(nsize)
+  subroutine mem_allocated_mem_DECORBITAL(nsize)
      implicit none
      integer (kind=long), intent(in) :: nsize
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
-        mem_tp_allocated_CCORBITAL = mem_tp_allocated_CCORBITAL + nsize
-        max_mem_tp_used_CCORBITAL = MAX(max_mem_tp_used_CCORBITAL,mem_tp_allocated_CCORBITAL)
+        mem_tp_allocated_DECORBITAL = mem_tp_allocated_DECORBITAL + nsize
+        max_mem_tp_used_DECORBITAL = MAX(max_mem_tp_used_DECORBITAL,mem_tp_allocated_DECORBITAL)
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      ELSE
-        mem_allocated_CCORBITAL = mem_allocated_CCORBITAL + nsize
-        max_mem_used_CCORBITAL = MAX(max_mem_used_CCORBITAL,mem_allocated_CCORBITAL)
+        mem_allocated_DECORBITAL = mem_allocated_DECORBITAL + nsize
+        max_mem_used_DECORBITAL = MAX(max_mem_used_DECORBITAL,mem_allocated_DECORBITAL)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
-   end subroutine mem_allocated_mem_CCORBITAL
+   end subroutine mem_allocated_mem_DECORBITAL
 
-   subroutine mem_deallocated_mem_CCORBITAL(nsize)
+   subroutine mem_deallocated_mem_DECORBITAL(nsize)
      implicit none
      integer (kind=long), intent(in) :: nsize
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
-        mem_tp_allocated_CCORBITAL = mem_tp_allocated_CCORBITAL - nsize
-        if (mem_tp_allocated_CCORBITAL < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_CCORBITAL - probably integer overflow!')
+        mem_tp_allocated_DECORBITAL = mem_tp_allocated_DECORBITAL - nsize
+        if (mem_tp_allocated_DECORBITAL < 0) then
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECORBITAL - probably integer overflow!')
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_CCORBITAL - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECORBITAL - probably integer overflow!')
         endif
      ELSE
-        mem_allocated_CCORBITAL = mem_allocated_CCORBITAL - nsize
-        if (mem_allocated_CCORBITAL < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_CCORBITAL - probably integer overflow!')
+        mem_allocated_DECORBITAL = mem_allocated_DECORBITAL - nsize
+        if (mem_allocated_DECORBITAL < 0) then
+           call memory_error_quit('Error in mem_deallocated_mem_DECORBITAL - probably integer overflow!')
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_CCORBITAL - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_DECORBITAL - probably integer overflow!')
         endif
      ENDIF
-   end subroutine mem_deallocated_mem_CCORBITAL
+   end subroutine mem_deallocated_mem_DECORBITAL
 
 
 
@@ -5896,8 +5896,8 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      longintbufferInt(42) = max_mem_used_ATOMTYPEITEM
      longintbufferInt(43) = max_mem_used_ATOMITEM
      longintbufferInt(44) = max_mem_used_LSMATRIX
-     longintbufferInt(45) = mem_allocated_CCORBITAL
-     longintbufferInt(46) = max_mem_used_CCORBITAL
+     longintbufferInt(45) = mem_allocated_DECORBITAL
+     longintbufferInt(46) = max_mem_used_DECORBITAL
      longintbufferInt(47) = mem_allocated_DECFRAG
      longintbufferInt(48) = mem_allocated_BATCHTOORB
      longintbufferInt(49) = mem_allocated_MYPOINTER
@@ -5973,8 +5973,8 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      max_mem_used_ATOMTYPEITEM = longintbufferInt(42)
      max_mem_used_ATOMITEM = longintbufferInt(43)
      max_mem_used_LSMATRIX = longintbufferInt(44)
-     mem_allocated_CCORBITAL = longintbufferInt(45)
-     max_mem_used_CCORBITAL = longintbufferInt(46)
+     mem_allocated_DECORBITAL = longintbufferInt(45)
+     max_mem_used_DECORBITAL = longintbufferInt(46)
      mem_allocated_DECFRAG = longintbufferInt(47)
      mem_allocated_BATCHTOORB = longintbufferInt(48)
      mem_allocated_MYPOINTER = longintbufferInt(49)

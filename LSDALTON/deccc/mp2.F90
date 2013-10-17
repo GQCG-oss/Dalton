@@ -340,7 +340,7 @@ end if
        call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
             & EVocc, EVvirt)
        LoccTALL = array2_init([nocc,nbasis])
-       call mat_transpose(nbasis,nocc,1.0E0_realk,MyFragment%ypo,0.0E0_realk,LoccTALL%val)
+       call mat_transpose(nbasis,nocc,1.0E0_realk,MyFragment%Co,0.0E0_realk,LoccTALL%val)
     end if
 
 
@@ -356,8 +356,8 @@ end if
     call array2_free(tmparray2)
 
 
-    ! Extract occupied and virtual EOS indices from columns of MyFragment%ypo
-    ! and MyFragment%ypv, i.e. the local EOS molecular orbital coefficients
+    ! Extract occupied and virtual EOS indices from columns of MyFragment%Co
+    ! and MyFragment%Cv, i.e. the local EOS molecular orbital coefficients
     LoccEOS = array2_init_plain([nbasis,noccEOS])
     call extract_occupied_EOS_MO_indices(LoccEOS,MyFragment)
     LvirtEOS = array2_init_plain([nbasis,nvirtEOS])
@@ -509,7 +509,7 @@ end if
     call mat_transpose(nvirtEOS,nvirt,1.0E0_realk,UvirtEOS,0.0E0_realk,UvirtEOST)
     call mat_transpose(nbasis,noccEOS,1.0E0_realk,LoccEOS%val,0.0E0_realk,LoccEOST)
     call mat_transpose(nbasis,nvirtEOS,1.0E0_realk,LvirtEOS%val,0.0E0_realk,LvirtEOST)
-    call mat_transpose(nbasis,nvirt,1.0E0_realk,MyFragment%ypv,0.0E0_realk,LvirtT)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,MyFragment%Cv,0.0E0_realk,LvirtT)
 
 
     ! ***************************************************************

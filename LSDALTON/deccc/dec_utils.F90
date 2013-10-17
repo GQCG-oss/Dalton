@@ -1837,13 +1837,13 @@ retval=0
        
        write(DECinfo%output,*) 'Occ MO coefficients (column, elements in column)'
        do i=1,MyFragment%noccAOS
-          write(DECinfo%output,*) i, MyFragment%ypo(:,i)
+          write(DECinfo%output,*) i, MyFragment%Co(:,i)
        end do
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'Virt MO coefficients (column, elements in column)'
        do i=1,MyFragment%nunoccAOS
-          write(DECinfo%output,*) i, MyFragment%ypv(:,i)
+          write(DECinfo%output,*) i, MyFragment%Cv(:,i)
        end do
        write(DECinfo%output,*)
 
@@ -2066,12 +2066,12 @@ retval=0
     end if
 
     ! Transformation matrices
-    if(associated(fragment%ypo)) then
-       call mem_dealloc(fragment%ypo)
+    if(associated(fragment%Co)) then
+       call mem_dealloc(fragment%Co)
     end if
 
-    if(associated(fragment%ypv)) then
-       call mem_dealloc(fragment%ypv)
+    if(associated(fragment%Cv)) then
+       call mem_dealloc(fragment%Cv)
     end if
     
     ! Free CABS MOs !
@@ -2144,7 +2144,7 @@ retval=0
   subroutine orbital_free(myorbital)
 
     implicit none
-    type(ccorbital), intent(inout) :: myorbital
+    type(decorbital), intent(inout) :: myorbital
 
     if(associated(myorbital%atoms)) then
        call mem_dealloc(myorbital%atoms)

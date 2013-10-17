@@ -250,11 +250,11 @@ contains
     call mem_alloc(tmp,nbasis,nbasis)
     ! Put occ orbitals into tmp
     do i=1,Molecule%numocc
-       tmp(1:nbasis,i) = Molecule%ypo(1:nbasis,i)
+       tmp(1:nbasis,i) = Molecule%Co(1:nbasis,i)
     end do
     ! Put virt orbitals into tmp
     do i=1,Molecule%numvirt
-       tmp(1:nbasis,i+Molecule%numocc) = Molecule%ypv(1:nbasis,i)
+       tmp(1:nbasis,i+Molecule%numocc) = Molecule%Cv(1:nbasis,i)
     end do
     
     ! All orbitals into C
@@ -361,7 +361,7 @@ contains
 
   !> \brief Set orbitals used in DEC to canonical orbitals (only for testing).
   !> Assumes that Fock matrix is stored in molecule%fock when this subroutine is called.
-  !> After this call molecule%ypo and molecule%ypv will contain the occupied and virtual MO
+  !> After this call molecule%Co and molecule%Cv will contain the occupied and virtual MO
   !> coefficients, respectively, while molecule%ppfock and molecule%qqfock will be the occ-occ
   !> and virt-virt blocks of the diagonal canonical MO Fock matrix.
   !> \author Kasper Kristensen
@@ -388,8 +388,8 @@ contains
     call solve_eigenvalue_problem(nbasis,molecule%fock,molecule%overlap,eival,C)
 
     ! Set MO coefficients
-    Molecule%ypo = C(:,1:nocc)   ! occupied 
-    Molecule%ypv = C(:,nocc+1:nbasis)   ! unoccupied
+    Molecule%Co = C(:,1:nocc)   ! occupied 
+    Molecule%Cv = C(:,nocc+1:nbasis)   ! unoccupied
 
     ! Set Fock matrix in canonical MO basis 
     Molecule%ppfock=0.0_realk
@@ -540,8 +540,8 @@ contains
        call mat_init(Xocc,nocc,nocc)
        call mat_init(Xvirt,nvirt,nvirt)
 
-       call mat_set_from_full(Molecule%ypo(1:nbasis,1:nocc), 1E0_realk,Cocc)
-       call mat_set_from_full(Molecule%ypv(1:nbasis,1:nvirt), 1E0_realk,Cvirt)
+       call mat_set_from_full(Molecule%Co(1:nbasis,1:nocc), 1E0_realk,Cocc)
+       call mat_set_from_full(Molecule%Cv(1:nbasis,1:nvirt), 1E0_realk,Cvirt)
 
        call mem_alloc(molecule%carmomocc,3,nocc)
        call mem_alloc(molecule%carmomvirt,3,nvirt)
@@ -581,12 +581,12 @@ contains
     if(DECinfo%SkipReadIn) return
 
     ! Delete transformation matrices for general basis
-    if(associated(molecule%ypo)) then
-       call mem_dealloc(molecule%ypo)
+    if(associated(molecule%Co)) then
+       call mem_dealloc(molecule%Co)
     end if
 
-    if(associated(molecule%ypv)) then
-       call mem_dealloc(molecule%ypv)
+    if(associated(molecule%Cv)) then
+       call mem_dealloc(molecule%Cv)
     end if
 
     !Deallocate CABS MO!
@@ -712,12 +712,12 @@ contains
     nbasis = molecule%nbasis
     nocc = molecule%numocc
     nvirt = molecule%numvirt
-    call mem_alloc(molecule%ypo,nbasis,nocc)
-    call mem_alloc(molecule%ypv,nbasis,nvirt)
+    call mem_alloc(molecule%Co,nbasis,nocc)
+    call mem_alloc(molecule%Cv,nbasis,nvirt)
 
     ! assign
-    molecule%ypo = C(1:nbasis,1:nocc)
-    molecule%ypv = C(1:nbasis,nocc+1:nbasis)
+    molecule%Co = C(1:nbasis,1:nocc)
+    molecule%Cv = C(1:nbasis,nocc+1:nbasis)
 
   end subroutine molecule_generate_basis
 
@@ -748,8 +748,8 @@ contains
     fock = array2_init(bb,molecule%fock)
 
     ! Occ-occ block
-    ypo = array2_init(bo,molecule%ypo)
-    yho = array2_init(bo,molecule%ypo)
+    ypo = array2_init(bo,molecule%Co)
+    yho = array2_init(bo,molecule%Co)
     ppfock = array2_similarity_transformation(ypo,fock,yho,oo)
     call array2_free(ypo)
     call array2_free(yho)
@@ -758,8 +758,8 @@ contains
     call array2_free(ppfock)
 
     ! Virt-virt block
-    ypv = array2_init(bv,molecule%ypv)
-    yhv = array2_init(bv,molecule%ypv)
+    ypv = array2_init(bv,molecule%Cv)
+    yhv = array2_init(bv,molecule%Cv)
     qqfock = array2_similarity_transformation(ypv,fock,yhv,vv)
     call array2_free(ypv)
     call array2_free(yhv)
@@ -939,7 +939,7 @@ contains
 !!$
 !!$    ! Transform to MO basis
 !!$    call dec_diff_basis_transform1(molecule%nbasis,molecule%numocc,molecule%numvirt,&
-!!$         & molecule%ypo, molecule%ypv, AOint, molecule%orbint)
+!!$         & molecule%Co, molecule%Cv, AOint, molecule%orbint)
 !!$
 !!$    ! Take absolute value (should not be necessary but do it to be on the safe side)
 !!$    do j=1,molecule%numvirt

@@ -75,9 +75,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc_tot
     !> Occupied orbitals for full molecule
-    type(ccorbital), dimension(nOcc_tot), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcc_tot), intent(in) :: OccOrbitals
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), dimension(nUnocc_tot), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc_tot), intent(in) :: UnoccOrbitals
     !> Atomic fragment to be determined  (NOT pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
@@ -119,9 +119,9 @@ contains
     !> Full molecule lsitem
     type(lsitem), intent(inout) :: mylsitem
     !> Occupied orbitals for full molecule
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Which atoms are in the occupied fragment space
     logical, dimension(MyMolecule%numocc),intent(in) :: OccAOS
     !> Which atoms are in the unoccupied fragment space
@@ -179,9 +179,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer,intent(in) :: nUnocc
     !> Occupied orbitals for full molecule
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Full molecule info (will be unchanged at output)
     type(fullmolecule), intent(inout) :: MyMolecule
     !> LSDalton info
@@ -234,9 +234,9 @@ contains
     !> LS item info                                                                                    
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals                                                         
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Atomic fragment 
     type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
@@ -360,8 +360,8 @@ contains
           ! call ccsd(t) driver and single fragment evaluation
           call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nunoccAOS,&
                              & MyFragment%number_basis,MyFragment%ppfock,&
-                             & MyFragment%qqfock,MyFragment%ypo,&
-                             & MyFragment%ypv,MyFragment%mylsitem,&
+                             & MyFragment%qqfock,MyFragment%Co,&
+                             & MyFragment%Cv,MyFragment%mylsitem,&
                              & t2,ccsdpt_t1,ccsdpt_t2)
           call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
                              & MyFragment%OccContribs,MyFragment%VirtContribs)
@@ -800,9 +800,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer,intent(in) :: nUnocc
     !> Occupied orbitals for full molecule
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Full molecule info (will be unchanged at output)
     type(fullmolecule), intent(inout) :: MyMolecule
     !> LSDalton info
@@ -865,9 +865,9 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Fragment 1 in the pair fragment
     type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
@@ -1041,8 +1041,8 @@ contains
        ! call ccsd(t) driver and pair fragment evaluation
        call ccsdpt_driver(PairFragment%noccAOS,PairFragment%nunoccAOS,&
                           & PairFragment%number_basis,PairFragment%ppfock,&
-                          & PairFragment%qqfock,PairFragment%ypo,&
-                          & PairFragment%ypv,PairFragment%mylsitem,&
+                          & PairFragment%qqfock,PairFragment%Co,&
+                          & PairFragment%Cv,PairFragment%mylsitem,&
                           & t2,ccsdpt_t1,ccsdpt_t2)
        call ccsdpt_energy_e4_pair(Fragment1,Fragment2,&
                           &PairFragment,t2,ccsdpt_t2)
@@ -1394,8 +1394,8 @@ contains
 #ifdef VAR_OMP
     integer, external :: OMP_GET_MAX_THREADS
 #endif
-    type(ccorbital), pointer :: OccOrbitals(:)
-    type(ccorbital), pointer :: UnoccOrbitals(:)
+    type(decorbital), pointer :: OccOrbitals(:)
+    type(decorbital), pointer :: UnoccOrbitals(:)
     integer :: nocc,nunocc,nbasis,natoms
 
     write(DECinfo%output,*) 'Using DEC-MP2 debug routine for full molecular system...'
@@ -1436,7 +1436,7 @@ contains
        ! Only copy valence orbitals into array2 structure
        call mem_alloc(Cocc,nbasis,nocc)
        do i=1,nocc
-          Cocc(:,i) = MyMolecule%ypo(:,i+Ncore)
+          Cocc(:,i) = MyMolecule%Co(:,i+Ncore)
        end do
 
        ! Fock valence
@@ -1449,12 +1449,12 @@ contains
     else
        ! No frozen core, simply copy elements for all occupied orbitals
        call mem_alloc(Cocc,nbasis,nocc)
-       Cocc=MyMolecule%ypo
+       Cocc=MyMolecule%Co
        ppfock = MyMolecule%ppfock
        offset=0
     end if
     call mem_alloc(Cvirt,nbasis,nunocc)
-    Cvirt = MyMolecule%ypv
+    Cvirt = MyMolecule%Cv
     e1=0E0_realk
     e2=0E0_realk
     e3=0E0_realk
@@ -1975,9 +1975,9 @@ contains
     !> Atomic fragment to be optimized
     type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     !> Integral information
@@ -2177,7 +2177,7 @@ contains
     ! Integrals (ai|bj)
     call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%number_basis,&
          & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-         & AtomicFragment%ypv, AtomicFragment%ypo, g)
+         & AtomicFragment%Cv, AtomicFragment%Co, g)
     ! Amplitudes
     call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
          & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
@@ -2295,9 +2295,9 @@ end subroutine optimize_atomic_fragment
     !> Atomic fragment to be optimized
     type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(in) :: MyMolecule
     !> Integral information
@@ -2535,9 +2535,9 @@ end subroutine optimize_atomic_fragment
     !> Atomic fragment to be optimized
     type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(in) :: MyMolecule
     !> Integral information
@@ -2826,9 +2826,9 @@ end subroutine optimize_atomic_fragment
     !> Atomic fragment to be optimized
     type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     !> Integral information
@@ -2855,7 +2855,7 @@ end subroutine optimize_atomic_fragment
        ! Integrals (ai|bj)
        call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%number_basis,&
             & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-            & AtomicFragment%ypv, AtomicFragment%ypo, g)
+            & AtomicFragment%Cv, AtomicFragment%Co, g)
        ! MP2 amplitudes
        call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
             & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
