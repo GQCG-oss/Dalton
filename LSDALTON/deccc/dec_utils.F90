@@ -4363,7 +4363,7 @@ retval=0
     !> Label to print after each energy for easy grepping
     character(*),intent(in) :: greplabel
     integer :: i,j
-    real(realk) :: pairdist
+    real(realk) :: pairdist,thr
 
 
     write(DECinfo%output,*)
@@ -4373,7 +4373,7 @@ retval=0
     write(DECinfo%output,*) '================================================================='
     write(DECinfo%output,*)
     write(DECinfo%output,'(2X,a)') 'Frag1  Frag2     Dist(Ang)        Energy'
-
+    thr=1.0E-15_realk
     do i=1,natoms
        do j=i+1,natoms
 
@@ -4383,8 +4383,9 @@ retval=0
 
           pairdist = DistanceTable(i,j)
 
-          ! Only print if pair distance is below threshold
-          DistanceCheck: if(pairdist < DECinfo%pair_distance_threshold ) then
+          ! Only print if pair distance is below threshold and nonzero
+          DistanceCheck: if(pairdist < DECinfo%pair_distance_threshold &
+               & .and. abs(FragEnergies(i,j)) > thr  ) then
              write(DECinfo%output,'(I6,2X,I6,2X,g14.5,2X,g20.10,2a)') &
                   & i,j,pairdist*bohr_to_angstrom, FragEnergies(i,j),"    ",greplabel
           end if DistanceCheck
