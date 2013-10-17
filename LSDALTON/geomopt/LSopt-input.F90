@@ -182,7 +182,7 @@ Subroutine LS_optimization_input(optinfo,readword,keyword,lucmd,lupri,NAtoms)
 ! Input processing for linear scaling optimization
 Implicit none
 Type(opt_setting) :: optinfo
-Logical :: readword,inihess_set
+Logical :: readword
 Integer :: lucmd, lupri  ! File units
 Integer :: NAtoms,i
 Character(Len = 70) :: Keyword
@@ -211,7 +211,6 @@ Character(Len=7), dimension(80) :: KwordTABLE = &
             '.CARTRS', '.FORBAC', '.SCANSI', '.SCANST'/)
 ! Number of cartesian coordinates
 optinfo%IcartCoord = NAtoms*3
-inihess_set = .FALSE.
 !
 ! Allocate optinfo%IConstr anyway
 !
@@ -304,10 +303,8 @@ Do
                  Case('.INITHE')
                    Write(lupri,*)'INITHE optinon is not available in LSDALTON'
                    Call LSQuit('Hessian not available in LSDALTON',lupri)
-                   inihess_set = .TRUE.
                  Case('.INITEV')
                    Read(lucmd,*) optinfo%EvLini
-                   inihess_set = .TRUE.
                  Case('.HESFIL')
                     Call lsquit('.HESFIL not implemented in LSDALTON',lupri)
 !                   optinfo%HessFile = .TRUE.
@@ -337,7 +334,6 @@ Do
                  Case('.CARTES')
                     optinfo%CartCoord = .TRUE. 
                     optinfo%RedInt = .FALSE.
-                    IF (.NOT.inihess_set) optinfo%InrdHess = .TRUE.
                  Case('.REDINT')
                     If (optinfo%CartCoord) then
                        Call LSQuit('The user must choose&
@@ -348,7 +344,6 @@ Do
                     optinfo%CartCoord = .FALSE.
                  Case('.INIRED')
                     optinfo%InrdHess = .TRUE.
-                    inihess_set = .TRUE.
                  Case('.1STORD')
                     optinfo%FirstOrd = .TRUE.
                  Case('.2NDORD')
@@ -381,7 +376,6 @@ Do
                  Case('.INIMOD')
 !                    Call lsquit('.INIMOD not implemented in LSDALTON',lupri)
                      optinfo%InmdHess = .TRUE.
-                     inihess_set = .TRUE.
                  Case('.FINDRE')
 !                    Call lsquit('.FINDRE not implemented in LSDALTON',lupri)
                     optinfo%FindRe = .TRUE.
