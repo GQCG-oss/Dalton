@@ -778,6 +778,7 @@ contains
     endif
 
 #endif
+    print *,lg_me,infpar%pc_mynum,associated(t2%elm1)
     call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2,t2,&
      & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
      & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
@@ -897,7 +898,7 @@ contains
                             &Gbic,uigcjc, tGammadijc,tplc,tmic,sio4c,&
                             &gvvooc,gvoovc
     integer(kind=ls_mpik) :: w0w, w1w, w2w, w3w,Hadw,t2_dw,&
-                            &Gbiw,uigcjw, tGammadijw,tplw,tmiw,sio4w,&
+                            &Gbiw,uigcjw, tGammadijw,tplw,tmiw,sio4w,sio4lw,&
                             &gvvoow,gvoovw
 
     integer(kind=8) :: w0size,w1size,w2size,w3size,neloc
@@ -1029,6 +1030,7 @@ contains
     lock_outside             = DECinfo%CCSD_MPICH
     mode                     = MPI_MODE_NOCHECK
 
+    parent                   = (infpar%parent_comm==MPI_COMM_NULL)
     if( lspdm_use_comm_proc )then
       
       !synchronize comm procs about identity of the node (i.e. rank of parent)
@@ -1042,7 +1044,6 @@ contains
 
     endif
 
-    parent                   = (infpar%parent_comm==MPI_COMM_NULL)
     lg_master                = (lg_me == 0)
     master                   = lg_master.and.parent
 
@@ -1306,58 +1307,89 @@ contains
       call mem_alloc( tmi, int(i8*nor*nvr,kind=long) )
     endif
     
-    !if I am the working process, then
-    if( worker ) call get_tpl_and_tmi(t2%elm1,nv,no,tpl,tmi)
-
-    print *,infpar%pc_mynum,lg_me
+    print *,infpar%pc_mynum,lg_me,associated(t2%elm1),nv,no,associated(tpl),associated(tmi)
     call lsmpi_barrier(infpar%pc_comm)
     if(parent)call lsmpi_barrier(infpar%lg_comm)
     call sleep(2)
     stop 0
+    !if I am the working process, then
+    if( worker ) call get_tpl_and_tmi(t2%elm1,nv,no,tpl,tmi)
+
+
 
     !get u2 in pdm or local
     if(scheme==2)then
-      u2=array_init([nv,nv,no,no],4,TILED_DIST,ALL_INIT)
-      call array_zero(u2)
-      if(master)then 
-        call array_add(u2,2.0E0_realk,t2%elm1,order=[2,1,3,4])
-        call array_add(u2,-1.0E0_realk,t2%elm1,order=[2,1,4,3])
+      u2=array_ainit( [nv,nv,no,no], 4, local=local, atype='TDAR' )
+      if(worker)then
+        call array_zero(u2)
+        if(master)then 
+          call array_add(u2,2.0E0_realk,t2%elm1,order=[2,1,3,4])
+          call array_add(u2,-1.0E0_realk,t2%elm1,order=[2,1,4,3])
+        endif
+        call array_mv_dense2tiled(t2,.true.)
       endif
-      call array_mv_dense2tiled(t2,.true.)
     else
-      u2=array_init([nv,nv,no,no],4)
+      u2=array_ainit( [nv,nv,no,no], 4, local=local, atype='LDAR' )
       !calculate u matrix: t[c d i j] -> t[d c i j], 2t[d c i j] - t[d c j i] = u [d c i j]
-      call array_reorder_4d(2.0E0_realk,t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
-      call array_reorder_4d(-1.0E0_realk,t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
+      if(worker)then
+        call array_reorder_4d(2.0E0_realk,t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
+        call array_reorder_4d(-1.0E0_realk,t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
+      endif
     endif
 
-    call mem_alloc(Had,nv*nb)
-    call mem_alloc(Gbi,nb*no)
+    if(lspdm_use_comm_proc)then
+#ifdef VAR_MPI
+      neloc = 0
+      if( infpar%pc_mynum == infpar%pc_nodtot -1) neloc = int(i8*nv*nb,kind=long)
+      call mem_alloc(Had,Hadc,neloc,Hadw,infpar%pc_comm,i8*nv*nb)
+      neloc = 0
+      if( infpar%pc_mynum == infpar%pc_nodtot -1) neloc = int(i8*nb*no,kind=long)
+      call mem_alloc(Gbi,Gbic,neloc,Gbiw,infpar%pc_comm,i8*nb*no)
+#endif
+    else
+      call mem_alloc(Had,nv*nb)
+      call mem_alloc(Gbi,nb*no)
+    endif
+
 
 
     if( DECinfo%ccModel > MODEL_CC2 )then
 
 #ifdef VAR_MPI
-      call mem_alloc(sio4,sio4c,int(i8*nor*no2,kind=long))
-      call lsmpi_win_create(sio4,sio4w,int(i8*nor*no2,kind=long),infpar%lg_comm)
+      if( lspdm_use_comm_proc )then
+        neloc = 0
+        if( infpar%pc_mynum == infpar%pc_nodtot -1) neloc = int(i8*no2*nor,kind=long)
+        call mem_alloc(sio4,sio4c, neloc, sio4lw, infpar%pc_comm,int(i8*nor*no2,kind=long))
+      else
+        call mem_alloc(sio4,sio4c,int(i8*nor*no2,kind=long))
+      endif
+      if(talker)&
+        &call lsmpi_win_create(sio4,sio4w,int(i8*nor*no2,kind=long),infpar%lg_comm)
 #else
       call mem_alloc(sio4,nor*no2)
 #endif
       if(scheme==4)then
-        gvvooa=array_init([nv,no,no,nv],4,DENSE)
-        gvoova=array_init([nv,no,nv,no],4,DENSE)
-        call array_zero(gvvooa)
-        call array_zero(gvoova)
+        gvvooa=array_ainit([nv,no,no,nv],4, local=local, atype='LDAR' )
+        gvoova=array_ainit([nv,no,nv,no],4, local=local, atype='LDAR' )
+        if(worker)then
+          call array_zero(gvvooa)
+          call array_zero(gvoova)
+        endif
       elseif(scheme==2.or.scheme==3)then
-        gvvooa=array_init([nv,no,no,nv],4,TILED_DIST,ALL_INIT)
-        gvoova=array_init([nv,no,nv,no],4,TILED_DIST,ALL_INIT)
-        call array_zero(gvvooa)
-        call array_zero(gvoova)
+        gvvooa=array_ainit( [nv,no,no,nv], 4, local=local, atype='TDAR' )
+        gvoova=array_ainit( [nv,no,nv,no], 4, local=local, atype='TDAR' )
+        if(worker)then
+          call array_zero(gvvooa)
+          call array_zero(gvoova)
+        endif
       endif
     endif
     !zero the matrix
+    !$OMP WORKSHARE
     Had=0.0E0_realk
     Gbi=0.0E0_realk
+    !$OMP END WORKSHARE
+
    
     ! allocate working arrays depending on the batch sizes
     maxsize64 = int((i8*nb2)*MaxActualDimAlpha*MaxActualDimGamma,kind=8)
