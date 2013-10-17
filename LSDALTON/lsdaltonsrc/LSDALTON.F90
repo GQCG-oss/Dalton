@@ -337,12 +337,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            endif
         endif
 
-!SIMEN DEBUG
-write(lupri,*) 'DEBUG: the converged AO density matrix',D%ncol
-call mat_print(D(1),1,D(1)%ncol,1,D(1)%nrow,lupri)
-!SIMEN DEBUG END
-
-
         IF(config%decomp%cfg_DumpDensRestart)THEN !default true
            ! Kasper K, save Fock and overlap matrices to file for future use
            call save_fock_matrix_to_file(F(1))
