@@ -68,6 +68,7 @@ contains
     real(realk),pointer :: FragEnergiesOcc(:,:)
     real(realk) :: Ecorr_est,Eskip_est
     integer :: nBasis,nOcc,nUnocc,nAtoms,i
+    logical :: esti
 
 
     ! Print DEC info
@@ -96,9 +97,10 @@ contains
     ! Optimize all atomic fragments and calculate pairs
     ! *************************************************
     call mem_alloc(FragEnergiesOcc,MyMolecule%natoms,MyMolecule%natoms)
+    esti=.false.
     call main_fragment_driver(MyMolecule,mylsitem,D,&
          &OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc)
+         & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc,esti)
 
 
     ! Delete orbitals
@@ -190,7 +192,7 @@ contains
     esti=.true.
     call main_fragment_driver(MyMolecule,mylsitem,D,OccOrbitals,UnoccOrbitals,&
          & natoms,nocc,nunocc,EHF_dummy,Ecorr_est,molgrad_dummy,Eerr_dummy,&
-         & FragEnergiesOcc,estimate_calc=esti)
+         & FragEnergiesOcc,esti)
 
 
     ! Find out which atoms have one or more orbitals assigned
@@ -219,7 +221,7 @@ contains
   !> \date October 2010
   subroutine main_fragment_driver(MyMolecule,mylsitem,D,&
        & OccOrbitals,UnoccOrbitals, &
-       & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc,estimate_calc)
+       & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc,esti)
 
     implicit none
     !> Number of occupied orbitals in full molecule (not changed, inout for MPI reasons)
@@ -249,7 +251,8 @@ contains
     !> Fragment energies for occupied partitioning scheme
     real(realk),dimension(natoms,natoms),intent(inout) :: FragEnergiesOcc
     !> Is this a calculation with predefined small orbital spaces used to estimate frag energies?
-    logical,intent(in),optional :: estimate_calc
+    !> (This is effectively intent(in), only intent(inout) in practice for MPI purposes).
+    logical,intent(inout) :: esti
     ! Fragment energies for Lagrangian (:,:,1), occupied (:,:,2), and virtual (:,:,3) schemes
     real(realk) :: FragEnergies(natoms,natoms,ndecenergies)
     type(decfrag),pointer :: AtomicFragments(:)
@@ -258,7 +261,7 @@ contains
     logical :: dens_save ! Internal control of MP2 density keyword
     logical :: FO_save  ! Internal control of first order property keyword
     logical :: grad_save  ! Internal control of MP2 gradient keyword
-    logical :: dofrag(natoms), fragdone(natoms), esti
+    logical :: dofrag(natoms), fragdone(natoms)
     type(array2) :: t1old,fockt1,t1new
     logical :: redo,post_fragopt_restart
     type(mp2grad) :: grad
@@ -285,14 +288,6 @@ contains
     ! ************************************************************************
     ! *                           Initialize stuff                           *
     ! ************************************************************************
-
-    ! Estimated calculation
-    esti=.false.
-    if(present(estimate_calc)) then
-       if(estimate_calc) then
-          esti=.true.
-       end if
-    end if
 
     redo=.false.
     nbasis = MyMolecule%nbasis
@@ -323,59 +318,71 @@ contains
     ! Restart option: In case some fragments are already done and stored in atomicfragments.info.
     fragdone=.false.
     post_fragopt_restart=.false.
-    if(DECinfo%DECrestart .and. (.not. esti) ) then
-       call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
-            & UnoccOrbitals,.false.,AtomicFragments,jobs,atomic_fragment_restart)
+    if(DECinfo%DECrestart) then  
 
-
-       AFrestartfileexist: if(atomic_fragment_restart) then
-          ! Atomic fragment restart files exist - we restart...
-
-          write(DECinfo%output,'(a,i8)') 'RESTARTING ATOMIC FRAGMENTS - jobs to do ', &
-               & count(dofrag)-count(jobs%jobsdone)
-
-          ! Restart pair fragments only if all atomic fragments are done AND fragment file exists
-          if(count(dofrag) == count(jobs%jobsdone)) then
-             post_fragopt_restart = fragment_restart_file_exist(DECinfo%first_order)
-             if(post_fragopt_restart) then
-                write(DECinfo%output,'(a)') 'Fragment optimization is done, restart remaining fragments'
-             else
-                write(DECinfo%output,'(a)') 'Fragment optimization is done, but no restart file &
-                     & for remaining fragments'
-                write(DECinfo%output,'(a)') '--> We will calculate remaining fragments from scratch!'
-             end if
-          end if
-
-          ! Make list of dimension natoms telling which atomic fragments are already done
-          ! (note that number of jobs in job list is equal to count(dofrag) which
-          !  in general is smaller than natoms because not all atoms have orbitals assigned.
-          !  When all calculations are done dofrag=fragdone).
-          do i=1,jobs%njobs
-             if(jobs%jobsdone(i)) then  ! job number "i" is done
-                ! Job number "i" in job list corresponds to atom number jobs%atom1(i)
-                fragdone(jobs%atom1(i)) = .true.
-             end if
-          end do
-
-          ! Sanity checks
-          if(count(fragdone) /= count(jobs%jobsdone) ) then
-             write(DECinfo%output,*) 'jobsdone / fragdone: ', count(jobs%jobsdone),count(fragdone)
-             call lsquit('Main driver: Inconsistency in atomic fragment restart job list 1',-1)
-          end if
-          if(count(dofrag) /= jobs%njobs) then
-             write(DECinfo%output,*) 'dofrag / njobs: ', count(dofrag),jobs%njobs
-             call lsquit('Main driver: Inconsistency in atomic fragment restart job list 2',-1)
-          end if
-
-          ! Subtract number of fragments already done from job count
-          njobs = njobs - count(jobs%jobsdone)
-          jobidx = count(jobs%jobsdone) ! counter used for putting new jobs into job list
-
-       else
-          ! Atomic fragment restart files do not exist --> calculate from scratch
+       EstimatedFragments: if(esti) then       
+          ! No atomic fragment optimization for estimated fragments
+          atomic_fragment_restart=.false.
+          ! Check for estimate fragment energy restart file
+          post_fragopt_restart = fragment_restart_file_exist(.false.,esti)
           call init_joblist(njobs,jobs)
-          jobidx=0
-       end if AFrestartfileexist
+          if(post_fragopt_restart) then
+             write(DECinfo%output,'(a)') 'Restarting estimated fragment calculations...'
+          end if
+       else
+          call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
+               & UnoccOrbitals,.false.,AtomicFragments,jobs,atomic_fragment_restart)
+
+          AFrestartfileexist: if(atomic_fragment_restart) then
+             ! Atomic fragment restart files exist - we restart...
+
+             write(DECinfo%output,'(a,i8)') 'RESTARTING ATOMIC FRAGMENTS - jobs to do ', &
+                  & count(dofrag)-count(jobs%jobsdone)
+
+             ! Restart pair fragments only if all atomic fragments are done AND fragment file exists
+             if(count(dofrag) == count(jobs%jobsdone)) then
+                post_fragopt_restart = fragment_restart_file_exist(DECinfo%first_order,esti)
+                if(post_fragopt_restart) then
+                   write(DECinfo%output,'(a)') 'Fragment optimization is done, restart remaining fragments'
+                else
+                   write(DECinfo%output,'(a)') 'Fragment optimization is done, but no restart file &
+                        & for remaining fragments'
+                   write(DECinfo%output,'(a)') '--> We will calculate remaining fragments from scratch!'
+                end if
+             end if
+
+             ! Make list of dimension natoms telling which atomic fragments are already done
+             ! (note that number of jobs in job list is equal to count(dofrag) which
+             !  in general is smaller than natoms because not all atoms have orbitals assigned.
+             !  When all calculations are done dofrag=fragdone).
+             do i=1,jobs%njobs
+                if(jobs%jobsdone(i)) then  ! job number "i" is done
+                   ! Job number "i" in job list corresponds to atom number jobs%atom1(i)
+                   fragdone(jobs%atom1(i)) = .true.
+                end if
+             end do
+
+             ! Sanity checks
+             if(count(fragdone) /= count(jobs%jobsdone) ) then
+                write(DECinfo%output,*) 'jobsdone / fragdone: ', count(jobs%jobsdone),count(fragdone)
+                call lsquit('Main driver: Inconsistency in atomic fragment restart job list 1',-1)
+             end if
+             if(count(dofrag) /= jobs%njobs) then
+                write(DECinfo%output,*) 'dofrag / njobs: ', count(dofrag),jobs%njobs
+                call lsquit('Main driver: Inconsistency in atomic fragment restart job list 2',-1)
+             end if
+
+             ! Subtract number of fragments already done from job count
+             njobs = njobs - count(jobs%jobsdone)
+             jobidx = count(jobs%jobsdone) ! counter used for putting new jobs into job list
+
+          else
+             ! Atomic fragment restart files do not exist --> calculate from scratch
+             call init_joblist(njobs,jobs)
+             jobidx=0
+          end if AFrestartfileexist
+
+       end if EstimatedFragments
 
     else ! create new empty job list to be updated
        call init_joblist(njobs,jobs)
@@ -683,7 +690,7 @@ contains
        ! Calculate all fragments (both single and pairs)
        call fragment_jobs(post_fragopt_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,&
             & OccOrbitals,UnoccOrbitals,jobs,AtomicFragments,&
-            & FragEnergies,fullgrad,t1old,t1new)
+            & FragEnergies,esti,fullgrad,t1old,t1new)
 
        ! Compare amplitudes from single fragment calculations
        ! to amplitudes from  fragment (single+pair) calculations
@@ -851,7 +858,7 @@ contains
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine fragment_jobs(post_fragopt_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
-       & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,&
+       & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
        & fullgrad,t1old,t1new)
 
     implicit none
@@ -875,8 +882,10 @@ contains
     type(joblist),intent(inout) :: jobs
     !> Atomic fragments
     type(decfrag),dimension(natoms),intent(inout) :: AtomicFragments
-    !> Fragment energies, see "energies" in decfrag type def
+    !> Fragment energies, see FRAGMODEL_* in dec_typedef.F90
     real(realk),intent(inout) :: FragEnergies(natoms,natoms,ndecenergies)
+    !> Is this a calculation with predefined small orbital spaces used to estimate frag energies?
+    logical,intent(in) :: esti
     !> MP2 gradient structure (only used if DECinfo%first_order is set)
     type(fullmp2grad),intent(inout) :: fullgrad
     !> Old t1 amplitudes (see main_fragment_driver for details)
@@ -921,7 +930,7 @@ contains
        if(DECinfo%first_order) then ! density or gradient
           call read_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
        else
-          call read_fragment_energies_for_restart(natoms,FragEnergies,jobs)
+          call read_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
        end if
 
        ! Sanity check for job list read from file
@@ -1045,7 +1054,7 @@ contains
              if(DECinfo%first_order) then  ! density and/or gradient 
                 call write_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
              else ! just energy
-                call write_fragment_energies_for_restart(natoms,FragEnergies,jobs)
+                call write_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
              end if
 
              ! Reset timer
@@ -1164,7 +1173,7 @@ contains
        if(DECinfo%first_order) then  ! density and/or gradient 
           call write_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
        else ! just energy
-          call write_fragment_energies_for_restart(natoms,FragEnergies,jobs)
+          call write_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
        end if
 
 #endif

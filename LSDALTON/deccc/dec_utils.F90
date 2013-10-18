@@ -2766,18 +2766,20 @@ retval=0
   !> Check whether fragment restart file exist.
   !> \author Kasper Kristensen
   !> \date December 2012
-  function fragment_restart_file_exist(first_order) result(file_exist)
+  function fragment_restart_file_exist(first_order,esti) result(file_exist)
 
     implicit none
     !> First order calculation?
     logical,intent(in) :: first_order
+    !> Use estimated fragment energies
+    logical,intent(in) :: esti
     logical :: file_exist
     character(len=40) :: FileName
 
     if(first_order) then  ! first order calculation
        filename = 'mp2grad.info'
-
     else ! energy calculation
+       filename = get_fragenergy_restart_filename(esti) 
        filename = 'fragenergies.info'
     end if
 
@@ -4513,6 +4515,23 @@ retval=0
     end select
 
   end subroutine get_estimated_energy_error
+
+  !> \brief Get filename for for fragment energy restart file 
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  function get_fragenergy_restart_filename(esti) result(filename)
+    implicit none
+    !> Is this estimated fragment energies?
+    logical,intent(in) :: esti
+    character(len=40) :: FileName
+
+    if(esti) then
+       FileName='estimated_fragenergies.info'
+    else
+       FileName='fragenergies.info'
+    end if
+
+  end function get_fragenergy_restart_filename
 
 
 end module dec_fragment_utils
