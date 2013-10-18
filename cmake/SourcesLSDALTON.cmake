@@ -51,6 +51,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     LSDALTON/lsdaltonsrc/LSlib.F90
     LSDALTON/lsdaltonsrc/Profile.F90
     LSDALTON/lsdaltonsrc/IchorTesting.F90
+    LSDALTON/lsdaltonsrc/IchorProfile.F90
     )
 set(DDYNAM_SOURCES
     LSDALTON/ddynam/LSinput.F90
@@ -228,12 +229,19 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_general.F90
     LSDALTON/IchorIntegrals/IchorEri.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPA.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPD.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPB.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPC.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPD.F90
     LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPAtoC.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPAtoD.F90
     LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPDtoA.F90
     LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPCtoA.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPBtoC.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPBtoD.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPDtoB.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPCtoB.F90
     LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePAtoB.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePBtoA.F90
     LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQCtoD.F90
     LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQDtoC.F90
     LSDALTON/IchorIntegrals/AGC_SphContractOBS1.F90

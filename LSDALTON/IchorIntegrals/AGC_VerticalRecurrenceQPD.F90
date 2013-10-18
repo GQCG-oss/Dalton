@@ -2,11 +2,11 @@ MODULE AGC_OBS_VERTICALRECURRENCEMODD
  use IchorPrecisionModule
   
  CONTAINS
-subroutine VerticalRecurrence1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&
-         & QpreExpFac,AUXarray)
+subroutine VerticalRecurrence1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,&
+         & integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD
   REAL(REALK),intent(in) :: TABFJW(0:4,0:1200)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
@@ -14,8 +14,8 @@ subroutine VerticalRecurrence1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses),Dcenter(3,nPasses)
   real(realk),intent(inout) :: AUXarray(4,nPrimQ,nPrimP,nPasses)
   !local variables
-  integer :: iPassQ,iPrimP,iPrimQ,ipnt
-  real(realk) :: Dx,Dy,Dz,Pexpfac,PX,PY,PZ,Xqd,Yqd,Zqd,RJ000(0:1)
+  integer :: iPassQ,iPrimP,iPrimQ,ipnt,iAtomD
+  real(realk) :: Dx,Dy,Dz,Pexpfac,mPX,mPY,mPZ,Xqd,Yqd,Zqd,RJ000(0:1)
   real(realk) :: PREF,TMP1,TMP2,alphaQ,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
   real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
   real(realk) :: invexpQ(nPrimQ)
@@ -41,22 +41,23 @@ subroutine VerticalRecurrence1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      invexpQ(iPrimQ) = D1/Qexp(iPrimQ)
   ENDDO
   DO iPassQ = 1,nPasses
-   Dx = -Dcenter(1,iPassQ)
-   Dy = -Dcenter(2,iPassQ)
-   Dz = -Dcenter(3,iPassQ)
+   iAtomD = (iPassQ-1)/nAtomsC+1
+   Dx = -Dcenter(1,iAtomD)
+   Dy = -Dcenter(2,iAtomD)
+   Dz = -Dcenter(3,iAtomD)
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
-    PX = Pcent(1,iPrimP)
-    PY = Pcent(2,iPrimP)
-    PZ = Pcent(3,iPrimP)
+    mPX = -Pcent(1,iPrimP)
+    mPY = -Pcent(2,iPrimP)
+    mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
      Xqd = Qcent(1,iPrimQ,iPassQ) + Dx
      Yqd = Qcent(2,iPrimQ,iPassQ) + Dy
      Zqd = Qcent(3,iPrimQ,iPassQ) + Dz
-     Xpq = PX - Qcent(1,iPrimQ,iPassQ)
-     Ypq = PY - Qcent(2,iPrimQ,iPassQ)
-     Zpq = PZ - Qcent(3,iPrimQ,iPassQ)
-     alphaQ = reducedExponents(iPrimQ,iPrimP)*invexpQ(iPrimQ)
+     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
+     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
+     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
+     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ(iPrimQ)
      alphaXpq = alphaQ*Xpq
      alphaYpq = alphaQ*Ypq
      alphaZpq = alphaQ*Zpq
@@ -98,21 +99,21 @@ subroutine VerticalRecurrence1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   enddo
 end subroutine VerticalRecurrence1D
 
-subroutine VerticalRecurrence2D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrence2D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+         & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
 !  REAL(REALK),intent(in) :: RJ000(0:2,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(   10,nPrimQ*nPrimP*nPasses)
-  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nPasses),Qcent(3,nPrimQ,nPasses)
+  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nAtomsD),Qcent(3,nPrimQ,nPasses)
   REAL(REALK),intent(in) :: TABFJW(0: 5,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
-  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,PX,PY,PZ,Xqd,Yqd,Zqd,WVAL
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP,iAtomD
+  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,mPX,mPY,mPZ,Xqd,Yqd,Zqd,WVAL
   real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
   real(realk) :: PREF,alphaQ,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(   1)
@@ -133,31 +134,30 @@ subroutine VerticalRecurrence2D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-  !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
-  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
 
   DO iPassQ = 1,nPasses
-   Dx = -Dcenter(1,iPassQ)
-   Dy = -Dcenter(2,iPassQ)
-   Dz = -Dcenter(3,iPassQ)
+   iAtomD = (iPassQ-1)/nAtomsC+1
+   Dx = -Dcenter(1,iAtomD)
+   Dy = -Dcenter(2,iAtomD)
+   Dz = -Dcenter(3,iAtomD)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
-    PX = Pcent(1,iPrimP)
-    PY = Pcent(2,iPrimP)
-    PZ = Pcent(3,iPrimP)
+    mPX = -Pcent(1,iPrimP)
+    mPY = -Pcent(2,iPrimP)
+    mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
      invexpQ = D1/Qexp(iPrimQ)
      inv2expQ = D05*invexpQ
-     alphaQ = reducedExponents(iPrimQ,iPrimP)*invexpQ
+     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ
      Xqd = Qcent(1,iPrimQ,iPassQ) + Dx
      Yqd = Qcent(2,iPrimQ,iPassQ) + Dy
      Zqd = Qcent(3,iPrimQ,iPassQ) + Dz
-     Xpq = PX - Qcent(1,iPrimQ,iPassQ)
-     Ypq = PY - Qcent(2,iPrimQ,iPassQ)
-     Zpq = PZ - Qcent(3,iPrimQ,iPassQ)
+     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
+     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
+     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
      alphaXpq = alphaQ*Xpq
      alphaYpq = alphaQ*Ypq
      alphaZpq = alphaQ*Zpq
@@ -217,21 +217,21 @@ subroutine VerticalRecurrence2D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
 end subroutine VerticalRecurrence2D
 
-subroutine VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+         & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
 !  REAL(REALK),intent(in) :: RJ000(0:3,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(   20,nPrimQ*nPrimP*nPasses)
-  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nPasses),Qcent(3,nPrimQ,nPasses)
+  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nAtomsD),Qcent(3,nPrimQ,nPasses)
   REAL(REALK),intent(in) :: TABFJW(0: 6,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
-  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,PX,PY,PZ,Xqd,Yqd,Zqd,WVAL
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP,iAtomD
+  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,mPX,mPY,mPZ,Xqd,Yqd,Zqd,WVAL
   real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
   real(realk) :: PREF,alphaQ,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(   3)
@@ -253,31 +253,30 @@ subroutine VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-  !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
-  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
 
   DO iPassQ = 1,nPasses
-   Dx = -Dcenter(1,iPassQ)
-   Dy = -Dcenter(2,iPassQ)
-   Dz = -Dcenter(3,iPassQ)
+   iAtomD = (iPassQ-1)/nAtomsC+1
+   Dx = -Dcenter(1,iAtomD)
+   Dy = -Dcenter(2,iAtomD)
+   Dz = -Dcenter(3,iAtomD)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
-    PX = Pcent(1,iPrimP)
-    PY = Pcent(2,iPrimP)
-    PZ = Pcent(3,iPrimP)
+    mPX = -Pcent(1,iPrimP)
+    mPY = -Pcent(2,iPrimP)
+    mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
      invexpQ = D1/Qexp(iPrimQ)
      inv2expQ = D05*invexpQ
-     alphaQ = reducedExponents(iPrimQ,iPrimP)*invexpQ
+     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ
      Xqd = Qcent(1,iPrimQ,iPassQ) + Dx
      Yqd = Qcent(2,iPrimQ,iPassQ) + Dy
      Zqd = Qcent(3,iPrimQ,iPassQ) + Dz
-     Xpq = PX - Qcent(1,iPrimQ,iPassQ)
-     Ypq = PY - Qcent(2,iPrimQ,iPassQ)
-     Zpq = PZ - Qcent(3,iPrimQ,iPassQ)
+     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
+     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
+     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
      alphaXpq = alphaQ*Xpq
      alphaYpq = alphaQ*Ypq
      alphaZpq = alphaQ*Zpq
@@ -365,21 +364,21 @@ subroutine VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
 end subroutine VerticalRecurrence3D
 
-subroutine VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+         & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
 !  REAL(REALK),intent(in) :: RJ000(0:4,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(   35,nPrimQ*nPrimP*nPasses)
-  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nPasses),Qcent(3,nPrimQ,nPasses)
+  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nAtomsD),Qcent(3,nPrimQ,nPasses)
   REAL(REALK),intent(in) :: TABFJW(0: 7,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
-  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,PX,PY,PZ,Xqd,Yqd,Zqd,WVAL
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP,iAtomD
+  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,mPX,mPY,mPZ,Xqd,Yqd,Zqd,WVAL
   real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
   real(realk) :: PREF,alphaQ,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(   6)
@@ -402,31 +401,30 @@ subroutine VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-  !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
-  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
 
   DO iPassQ = 1,nPasses
-   Dx = -Dcenter(1,iPassQ)
-   Dy = -Dcenter(2,iPassQ)
-   Dz = -Dcenter(3,iPassQ)
+   iAtomD = (iPassQ-1)/nAtomsC+1
+   Dx = -Dcenter(1,iAtomD)
+   Dy = -Dcenter(2,iAtomD)
+   Dz = -Dcenter(3,iAtomD)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
-    PX = Pcent(1,iPrimP)
-    PY = Pcent(2,iPrimP)
-    PZ = Pcent(3,iPrimP)
+    mPX = -Pcent(1,iPrimP)
+    mPY = -Pcent(2,iPrimP)
+    mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
      invexpQ = D1/Qexp(iPrimQ)
      inv2expQ = D05*invexpQ
-     alphaQ = reducedExponents(iPrimQ,iPrimP)*invexpQ
+     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ
      Xqd = Qcent(1,iPrimQ,iPassQ) + Dx
      Yqd = Qcent(2,iPrimQ,iPassQ) + Dy
      Zqd = Qcent(3,iPrimQ,iPassQ) + Dz
-     Xpq = PX - Qcent(1,iPrimQ,iPassQ)
-     Ypq = PY - Qcent(2,iPrimQ,iPassQ)
-     Zpq = PZ - Qcent(3,iPrimQ,iPassQ)
+     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
+     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
+     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
      alphaXpq = alphaQ*Xpq
      alphaYpq = alphaQ*Ypq
      alphaZpq = alphaQ*Zpq
@@ -563,21 +561,21 @@ subroutine VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
 end subroutine VerticalRecurrence4D
 
-subroutine VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+         & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
 !  REAL(REALK),intent(in) :: RJ000(0:5,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(   56,nPrimQ*nPrimP*nPasses)
-  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nPasses),Qcent(3,nPrimQ,nPasses)
+  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nAtomsD),Qcent(3,nPrimQ,nPasses)
   REAL(REALK),intent(in) :: TABFJW(0: 8,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
-  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,PX,PY,PZ,Xqd,Yqd,Zqd,WVAL
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP,iAtomD
+  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,mPX,mPY,mPZ,Xqd,Yqd,Zqd,WVAL
   real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
   real(realk) :: PREF,alphaQ,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(  10)
@@ -601,31 +599,30 @@ subroutine VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-  !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
-  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
 
   DO iPassQ = 1,nPasses
-   Dx = -Dcenter(1,iPassQ)
-   Dy = -Dcenter(2,iPassQ)
-   Dz = -Dcenter(3,iPassQ)
+   iAtomD = (iPassQ-1)/nAtomsC+1
+   Dx = -Dcenter(1,iAtomD)
+   Dy = -Dcenter(2,iAtomD)
+   Dz = -Dcenter(3,iAtomD)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
-    PX = Pcent(1,iPrimP)
-    PY = Pcent(2,iPrimP)
-    PZ = Pcent(3,iPrimP)
+    mPX = -Pcent(1,iPrimP)
+    mPY = -Pcent(2,iPrimP)
+    mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
      invexpQ = D1/Qexp(iPrimQ)
      inv2expQ = D05*invexpQ
-     alphaQ = reducedExponents(iPrimQ,iPrimP)*invexpQ
+     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ
      Xqd = Qcent(1,iPrimQ,iPassQ) + Dx
      Yqd = Qcent(2,iPrimQ,iPassQ) + Dy
      Zqd = Qcent(3,iPrimQ,iPassQ) + Dz
-     Xpq = PX - Qcent(1,iPrimQ,iPassQ)
-     Ypq = PY - Qcent(2,iPrimQ,iPassQ)
-     Zpq = PZ - Qcent(3,iPrimQ,iPassQ)
+     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
+     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
+     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
      alphaXpq = alphaQ*Xpq
      alphaYpq = alphaQ*Ypq
      alphaZpq = alphaQ*Zpq
@@ -801,6 +798,7 @@ subroutine VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray5(  28, 2) = Xqd*tmpArray4(  18, 2) + alphaXpq*TmpArray4(  18, 3)
      tmpArray5(  29, 2) = Xqd*tmpArray4(  19, 2) + alphaXpq*TmpArray4(  19, 3)
      tmpArray5(  30, 2) = Xqd*tmpArray4(  20, 2) + alphaXpq*TmpArray4(  20, 3)
+     tmpArray5(  31, 2) = Yqd*tmpArray4(  17, 2) + alphaYpq*TmpArray4(  17, 3) +  3*TwoTerms(  4)
      tmpArray5(  32, 2) = Zqd*tmpArray4(  17, 2) + alphaZpq*TmpArray4(  17, 3)
      tmpArray5(  33, 2) = Yqd*tmpArray4(  19, 2) + alphaYpq*TmpArray4(  19, 3) + TwoTerms(  6)
      tmpArray5(  34, 2) = Yqd*tmpArray4(  20, 2) + alphaYpq*TmpArray4(  20, 3)
@@ -841,21 +839,21 @@ subroutine VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
 end subroutine VerticalRecurrence5D
 
-subroutine VerticalRecurrence6D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrence6D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+         & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
 !  REAL(REALK),intent(in) :: RJ000(0:6,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(   84,nPrimQ*nPrimP*nPasses)
-  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nPasses),Qcent(3,nPrimQ,nPasses)
+  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nAtomsD),Qcent(3,nPrimQ,nPasses)
   REAL(REALK),intent(in) :: TABFJW(0: 9,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
-  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,PX,PY,PZ,Xqd,Yqd,Zqd,WVAL
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP,iAtomD
+  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,mPX,mPY,mPZ,Xqd,Yqd,Zqd,WVAL
   real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
   real(realk) :: PREF,alphaQ,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(  15)
@@ -880,31 +878,30 @@ subroutine VerticalRecurrence6D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-  !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
-  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
 
   DO iPassQ = 1,nPasses
-   Dx = -Dcenter(1,iPassQ)
-   Dy = -Dcenter(2,iPassQ)
-   Dz = -Dcenter(3,iPassQ)
+   iAtomD = (iPassQ-1)/nAtomsC+1
+   Dx = -Dcenter(1,iAtomD)
+   Dy = -Dcenter(2,iAtomD)
+   Dz = -Dcenter(3,iAtomD)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
-    PX = Pcent(1,iPrimP)
-    PY = Pcent(2,iPrimP)
-    PZ = Pcent(3,iPrimP)
+    mPX = -Pcent(1,iPrimP)
+    mPY = -Pcent(2,iPrimP)
+    mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
      invexpQ = D1/Qexp(iPrimQ)
      inv2expQ = D05*invexpQ
-     alphaQ = reducedExponents(iPrimQ,iPrimP)*invexpQ
+     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ
      Xqd = Qcent(1,iPrimQ,iPassQ) + Dx
      Yqd = Qcent(2,iPrimQ,iPassQ) + Dy
      Zqd = Qcent(3,iPrimQ,iPassQ) + Dz
-     Xpq = PX - Qcent(1,iPrimQ,iPassQ)
-     Ypq = PY - Qcent(2,iPrimQ,iPassQ)
-     Zpq = PZ - Qcent(3,iPrimQ,iPassQ)
+     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
+     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
+     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
      alphaXpq = alphaQ*Xpq
      alphaYpq = alphaQ*Ypq
      alphaZpq = alphaQ*Zpq
@@ -1108,6 +1105,7 @@ subroutine VerticalRecurrence6D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray5(  28, 2) = Xqd*tmpArray4(  18, 2) + alphaXpq*TmpArray4(  18, 3)
      tmpArray5(  29, 2) = Xqd*tmpArray4(  19, 2) + alphaXpq*TmpArray4(  19, 3)
      tmpArray5(  30, 2) = Xqd*tmpArray4(  20, 2) + alphaXpq*TmpArray4(  20, 3)
+     tmpArray5(  31, 2) = Yqd*tmpArray4(  17, 2) + alphaYpq*TmpArray4(  17, 3) +  3*TwoTerms(  4)
      tmpArray5(  32, 2) = Zqd*tmpArray4(  17, 2) + alphaZpq*TmpArray4(  17, 3)
      tmpArray5(  33, 2) = Yqd*tmpArray4(  19, 2) + alphaYpq*TmpArray4(  19, 3) + TwoTerms(  6)
      tmpArray5(  34, 2) = Yqd*tmpArray4(  20, 2) + alphaYpq*TmpArray4(  20, 3)
@@ -1128,6 +1126,7 @@ subroutine VerticalRecurrence6D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray5(  28, 3) = Xqd*tmpArray4(  18, 3) + alphaXpq*TmpArray4(  18, 4)
      tmpArray5(  29, 3) = Xqd*tmpArray4(  19, 3) + alphaXpq*TmpArray4(  19, 4)
      tmpArray5(  30, 3) = Xqd*tmpArray4(  20, 3) + alphaXpq*TmpArray4(  20, 4)
+     tmpArray5(  31, 3) = Yqd*tmpArray4(  17, 3) + alphaYpq*TmpArray4(  17, 4) +  3*TwoTerms(  4)
      tmpArray5(  32, 3) = Zqd*tmpArray4(  17, 3) + alphaZpq*TmpArray4(  17, 4)
      tmpArray5(  33, 3) = Yqd*tmpArray4(  19, 3) + alphaYpq*TmpArray4(  19, 4) + TwoTerms(  6)
      tmpArray5(  34, 3) = Yqd*tmpArray4(  20, 3) + alphaYpq*TmpArray4(  20, 4)
@@ -1188,6 +1187,7 @@ subroutine VerticalRecurrence6D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray6(  48, 2) = Xqd*tmpArray5(  33, 2) + alphaXpq*TmpArray5(  33, 3)
      tmpArray6(  49, 2) = Xqd*tmpArray5(  34, 2) + alphaXpq*TmpArray5(  34, 3)
      tmpArray6(  50, 2) = Xqd*tmpArray5(  35, 2) + alphaXpq*TmpArray5(  35, 3)
+     tmpArray6(  51, 2) = Yqd*tmpArray5(  31, 2) + alphaYpq*TmpArray5(  31, 3) +  4*TwoTerms(  7)
      tmpArray6(  52, 2) = Zqd*tmpArray5(  31, 2) + alphaZpq*TmpArray5(  31, 3)
      tmpArray6(  53, 2) = Yqd*tmpArray5(  33, 2) + alphaYpq*TmpArray5(  33, 3) +  2*TwoTerms(  9)
      tmpArray6(  54, 2) = Yqd*tmpArray5(  34, 2) + alphaYpq*TmpArray5(  34, 3) + TwoTerms( 10)
@@ -1241,21 +1241,21 @@ subroutine VerticalRecurrence6D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
 end subroutine VerticalRecurrence6D
 
-subroutine VerticalRecurrence7D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrence7D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+         & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
 !  REAL(REALK),intent(in) :: RJ000(0:7,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(  120,nPrimQ*nPrimP*nPasses)
-  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nPasses),Qcent(3,nPrimQ,nPasses)
+  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nAtomsD),Qcent(3,nPrimQ,nPasses)
   REAL(REALK),intent(in) :: TABFJW(0:10,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
-  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,PX,PY,PZ,Xqd,Yqd,Zqd,WVAL
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP,iAtomD
+  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,mPX,mPY,mPZ,Xqd,Yqd,Zqd,WVAL
   real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
   real(realk) :: PREF,alphaQ,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(  21)
@@ -1281,31 +1281,30 @@ subroutine VerticalRecurrence7D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-  !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
-  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
 
   DO iPassQ = 1,nPasses
-   Dx = -Dcenter(1,iPassQ)
-   Dy = -Dcenter(2,iPassQ)
-   Dz = -Dcenter(3,iPassQ)
+   iAtomD = (iPassQ-1)/nAtomsC+1
+   Dx = -Dcenter(1,iAtomD)
+   Dy = -Dcenter(2,iAtomD)
+   Dz = -Dcenter(3,iAtomD)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
-    PX = Pcent(1,iPrimP)
-    PY = Pcent(2,iPrimP)
-    PZ = Pcent(3,iPrimP)
+    mPX = -Pcent(1,iPrimP)
+    mPY = -Pcent(2,iPrimP)
+    mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
      invexpQ = D1/Qexp(iPrimQ)
      inv2expQ = D05*invexpQ
-     alphaQ = reducedExponents(iPrimQ,iPrimP)*invexpQ
+     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ
      Xqd = Qcent(1,iPrimQ,iPassQ) + Dx
      Yqd = Qcent(2,iPrimQ,iPassQ) + Dy
      Zqd = Qcent(3,iPrimQ,iPassQ) + Dz
-     Xpq = PX - Qcent(1,iPrimQ,iPassQ)
-     Ypq = PY - Qcent(2,iPrimQ,iPassQ)
-     Zpq = PZ - Qcent(3,iPrimQ,iPassQ)
+     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
+     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
+     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
      alphaXpq = alphaQ*Xpq
      alphaYpq = alphaQ*Ypq
      alphaZpq = alphaQ*Zpq
@@ -1537,6 +1536,7 @@ subroutine VerticalRecurrence7D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray5(  28, 2) = Xqd*tmpArray4(  18, 2) + alphaXpq*TmpArray4(  18, 3)
      tmpArray5(  29, 2) = Xqd*tmpArray4(  19, 2) + alphaXpq*TmpArray4(  19, 3)
      tmpArray5(  30, 2) = Xqd*tmpArray4(  20, 2) + alphaXpq*TmpArray4(  20, 3)
+     tmpArray5(  31, 2) = Yqd*tmpArray4(  17, 2) + alphaYpq*TmpArray4(  17, 3) +  3*TwoTerms(  4)
      tmpArray5(  32, 2) = Zqd*tmpArray4(  17, 2) + alphaZpq*TmpArray4(  17, 3)
      tmpArray5(  33, 2) = Yqd*tmpArray4(  19, 2) + alphaYpq*TmpArray4(  19, 3) + TwoTerms(  6)
      tmpArray5(  34, 2) = Yqd*tmpArray4(  20, 2) + alphaYpq*TmpArray4(  20, 3)
@@ -1557,6 +1557,7 @@ subroutine VerticalRecurrence7D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray5(  28, 3) = Xqd*tmpArray4(  18, 3) + alphaXpq*TmpArray4(  18, 4)
      tmpArray5(  29, 3) = Xqd*tmpArray4(  19, 3) + alphaXpq*TmpArray4(  19, 4)
      tmpArray5(  30, 3) = Xqd*tmpArray4(  20, 3) + alphaXpq*TmpArray4(  20, 4)
+     tmpArray5(  31, 3) = Yqd*tmpArray4(  17, 3) + alphaYpq*TmpArray4(  17, 4) +  3*TwoTerms(  4)
      tmpArray5(  32, 3) = Zqd*tmpArray4(  17, 3) + alphaZpq*TmpArray4(  17, 4)
      tmpArray5(  33, 3) = Yqd*tmpArray4(  19, 3) + alphaYpq*TmpArray4(  19, 4) + TwoTerms(  6)
      tmpArray5(  34, 3) = Yqd*tmpArray4(  20, 3) + alphaYpq*TmpArray4(  20, 4)
@@ -1577,6 +1578,7 @@ subroutine VerticalRecurrence7D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray5(  28, 4) = Xqd*tmpArray4(  18, 4) + alphaXpq*TmpArray4(  18, 5)
      tmpArray5(  29, 4) = Xqd*tmpArray4(  19, 4) + alphaXpq*TmpArray4(  19, 5)
      tmpArray5(  30, 4) = Xqd*tmpArray4(  20, 4) + alphaXpq*TmpArray4(  20, 5)
+     tmpArray5(  31, 4) = Yqd*tmpArray4(  17, 4) + alphaYpq*TmpArray4(  17, 5) +  3*TwoTerms(  4)
      tmpArray5(  32, 4) = Zqd*tmpArray4(  17, 4) + alphaZpq*TmpArray4(  17, 5)
      tmpArray5(  33, 4) = Yqd*tmpArray4(  19, 4) + alphaYpq*TmpArray4(  19, 5) + TwoTerms(  6)
      tmpArray5(  34, 4) = Yqd*tmpArray4(  20, 4) + alphaYpq*TmpArray4(  20, 5)
@@ -1637,6 +1639,7 @@ subroutine VerticalRecurrence7D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray6(  48, 2) = Xqd*tmpArray5(  33, 2) + alphaXpq*TmpArray5(  33, 3)
      tmpArray6(  49, 2) = Xqd*tmpArray5(  34, 2) + alphaXpq*TmpArray5(  34, 3)
      tmpArray6(  50, 2) = Xqd*tmpArray5(  35, 2) + alphaXpq*TmpArray5(  35, 3)
+     tmpArray6(  51, 2) = Yqd*tmpArray5(  31, 2) + alphaYpq*TmpArray5(  31, 3) +  4*TwoTerms(  7)
      tmpArray6(  52, 2) = Zqd*tmpArray5(  31, 2) + alphaZpq*TmpArray5(  31, 3)
      tmpArray6(  53, 2) = Yqd*tmpArray5(  33, 2) + alphaYpq*TmpArray5(  33, 3) +  2*TwoTerms(  9)
      tmpArray6(  54, 2) = Yqd*tmpArray5(  34, 2) + alphaYpq*TmpArray5(  34, 3) + TwoTerms( 10)
@@ -1667,6 +1670,7 @@ subroutine VerticalRecurrence7D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray6(  48, 3) = Xqd*tmpArray5(  33, 3) + alphaXpq*TmpArray5(  33, 4)
      tmpArray6(  49, 3) = Xqd*tmpArray5(  34, 3) + alphaXpq*TmpArray5(  34, 4)
      tmpArray6(  50, 3) = Xqd*tmpArray5(  35, 3) + alphaXpq*TmpArray5(  35, 4)
+     tmpArray6(  51, 3) = Yqd*tmpArray5(  31, 3) + alphaYpq*TmpArray5(  31, 4) +  4*TwoTerms(  7)
      tmpArray6(  52, 3) = Zqd*tmpArray5(  31, 3) + alphaZpq*TmpArray5(  31, 4)
      tmpArray6(  53, 3) = Yqd*tmpArray5(  33, 3) + alphaYpq*TmpArray5(  33, 4) +  2*TwoTerms(  9)
      tmpArray6(  54, 3) = Yqd*tmpArray5(  34, 3) + alphaYpq*TmpArray5(  34, 4) + TwoTerms( 10)
@@ -1751,7 +1755,9 @@ subroutine VerticalRecurrence7D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray7(  75, 2) = Xqd*tmpArray6(  54, 2) + alphaXpq*TmpArray6(  54, 3)
      tmpArray7(  76, 2) = Xqd*tmpArray6(  55, 2) + alphaXpq*TmpArray6(  55, 3)
      tmpArray7(  77, 2) = Xqd*tmpArray6(  56, 2) + alphaXpq*TmpArray6(  56, 3)
+     tmpArray7(  78, 2) = Yqd*tmpArray6(  51, 2) + alphaYpq*TmpArray6(  51, 3) +  5*TwoTerms( 11)
      tmpArray7(  79, 2) = Zqd*tmpArray6(  51, 2) + alphaZpq*TmpArray6(  51, 3)
+     tmpArray7(  80, 2) = Yqd*tmpArray6(  53, 2) + alphaYpq*TmpArray6(  53, 3) +  3*TwoTerms( 13)
      tmpArray7(  81, 2) = Yqd*tmpArray6(  54, 2) + alphaYpq*TmpArray6(  54, 3) +  2*TwoTerms( 14)
      tmpArray7(  82, 2) = Yqd*tmpArray6(  55, 2) + alphaYpq*TmpArray6(  55, 3) + TwoTerms( 15)
      tmpArray7(  83, 2) = Yqd*tmpArray6(  56, 2) + alphaYpq*TmpArray6(  56, 3)
@@ -1818,21 +1824,21 @@ subroutine VerticalRecurrence7D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
 end subroutine VerticalRecurrence7D
 
-subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+         & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
 !  REAL(REALK),intent(in) :: RJ000(0:8,nPrimQ*nPrimP*nPasses)
   REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)
   REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(inout) :: AUXarray(  165,nPrimQ*nPrimP*nPasses)
-  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nPasses),Qcent(3,nPrimQ,nPasses)
+  real(realk),intent(in) :: Pcent(3,nPrimP),Dcenter(3,nAtomsD),Qcent(3,nPrimQ,nPasses)
   REAL(REALK),intent(in) :: TABFJW(0:11,0:1200)
   !Local variables
-  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP
-  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,PX,PY,PZ,Xqd,Yqd,Zqd,WVAL
+  integer :: iPassQ,iPrimP,iPrimQ,IPNT,IP,iAtomD
+  real(realk) :: Dx,Dy,Dz,Pexpfac,invexpQ,inv2expQ,mPX,mPY,mPZ,Xqd,Yqd,Zqd,WVAL
   real(realk) :: WDIFF,W2,W3,REXPW,RWVAL,GVAL
   real(realk) :: PREF,alphaQ,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq,squaredDistance
   real(realk) :: TwoTerms(  28)
@@ -1859,31 +1865,30 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-  !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
-  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
 
   DO iPassQ = 1,nPasses
-   Dx = -Dcenter(1,iPassQ)
-   Dy = -Dcenter(2,iPassQ)
-   Dz = -Dcenter(3,iPassQ)
+   iAtomD = (iPassQ-1)/nAtomsC+1
+   Dx = -Dcenter(1,iAtomD)
+   Dy = -Dcenter(2,iAtomD)
+   Dz = -Dcenter(3,iAtomD)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
-    PX = Pcent(1,iPrimP)
-    PY = Pcent(2,iPrimP)
-    PZ = Pcent(3,iPrimP)
+    mPX = -Pcent(1,iPrimP)
+    mPY = -Pcent(2,iPrimP)
+    mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
      IP = IP + 1
      invexpQ = D1/Qexp(iPrimQ)
      inv2expQ = D05*invexpQ
-     alphaQ = reducedExponents(iPrimQ,iPrimP)*invexpQ
+     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ
      Xqd = Qcent(1,iPrimQ,iPassQ) + Dx
      Yqd = Qcent(2,iPrimQ,iPassQ) + Dy
      Zqd = Qcent(3,iPrimQ,iPassQ) + Dz
-     Xpq = PX - Qcent(1,iPrimQ,iPassQ)
-     Ypq = PY - Qcent(2,iPrimQ,iPassQ)
-     Zpq = PZ - Qcent(3,iPrimQ,iPassQ)
+     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
+     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
+     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
      alphaXpq = alphaQ*Xpq
      alphaYpq = alphaQ*Ypq
      alphaZpq = alphaQ*Zpq
@@ -2143,6 +2148,7 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray5(  28, 2) = Xqd*tmpArray4(  18, 2) + alphaXpq*TmpArray4(  18, 3)
      tmpArray5(  29, 2) = Xqd*tmpArray4(  19, 2) + alphaXpq*TmpArray4(  19, 3)
      tmpArray5(  30, 2) = Xqd*tmpArray4(  20, 2) + alphaXpq*TmpArray4(  20, 3)
+     tmpArray5(  31, 2) = Yqd*tmpArray4(  17, 2) + alphaYpq*TmpArray4(  17, 3) +  3*TwoTerms(  4)
      tmpArray5(  32, 2) = Zqd*tmpArray4(  17, 2) + alphaZpq*TmpArray4(  17, 3)
      tmpArray5(  33, 2) = Yqd*tmpArray4(  19, 2) + alphaYpq*TmpArray4(  19, 3) + TwoTerms(  6)
      tmpArray5(  34, 2) = Yqd*tmpArray4(  20, 2) + alphaYpq*TmpArray4(  20, 3)
@@ -2163,6 +2169,7 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray5(  28, 3) = Xqd*tmpArray4(  18, 3) + alphaXpq*TmpArray4(  18, 4)
      tmpArray5(  29, 3) = Xqd*tmpArray4(  19, 3) + alphaXpq*TmpArray4(  19, 4)
      tmpArray5(  30, 3) = Xqd*tmpArray4(  20, 3) + alphaXpq*TmpArray4(  20, 4)
+     tmpArray5(  31, 3) = Yqd*tmpArray4(  17, 3) + alphaYpq*TmpArray4(  17, 4) +  3*TwoTerms(  4)
      tmpArray5(  32, 3) = Zqd*tmpArray4(  17, 3) + alphaZpq*TmpArray4(  17, 4)
      tmpArray5(  33, 3) = Yqd*tmpArray4(  19, 3) + alphaYpq*TmpArray4(  19, 4) + TwoTerms(  6)
      tmpArray5(  34, 3) = Yqd*tmpArray4(  20, 3) + alphaYpq*TmpArray4(  20, 4)
@@ -2183,6 +2190,7 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray5(  28, 4) = Xqd*tmpArray4(  18, 4) + alphaXpq*TmpArray4(  18, 5)
      tmpArray5(  29, 4) = Xqd*tmpArray4(  19, 4) + alphaXpq*TmpArray4(  19, 5)
      tmpArray5(  30, 4) = Xqd*tmpArray4(  20, 4) + alphaXpq*TmpArray4(  20, 5)
+     tmpArray5(  31, 4) = Yqd*tmpArray4(  17, 4) + alphaYpq*TmpArray4(  17, 5) +  3*TwoTerms(  4)
      tmpArray5(  32, 4) = Zqd*tmpArray4(  17, 4) + alphaZpq*TmpArray4(  17, 5)
      tmpArray5(  33, 4) = Yqd*tmpArray4(  19, 4) + alphaYpq*TmpArray4(  19, 5) + TwoTerms(  6)
      tmpArray5(  34, 4) = Yqd*tmpArray4(  20, 4) + alphaYpq*TmpArray4(  20, 5)
@@ -2203,6 +2211,7 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray5(  28, 5) = Xqd*tmpArray4(  18, 5) + alphaXpq*TmpArray4(  18, 6)
      tmpArray5(  29, 5) = Xqd*tmpArray4(  19, 5) + alphaXpq*TmpArray4(  19, 6)
      tmpArray5(  30, 5) = Xqd*tmpArray4(  20, 5) + alphaXpq*TmpArray4(  20, 6)
+     tmpArray5(  31, 5) = Yqd*tmpArray4(  17, 5) + alphaYpq*TmpArray4(  17, 6) +  3*TwoTerms(  4)
      tmpArray5(  32, 5) = Zqd*tmpArray4(  17, 5) + alphaZpq*TmpArray4(  17, 6)
      tmpArray5(  33, 5) = Yqd*tmpArray4(  19, 5) + alphaYpq*TmpArray4(  19, 6) + TwoTerms(  6)
      tmpArray5(  34, 5) = Yqd*tmpArray4(  20, 5) + alphaYpq*TmpArray4(  20, 6)
@@ -2263,6 +2272,7 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray6(  48, 2) = Xqd*tmpArray5(  33, 2) + alphaXpq*TmpArray5(  33, 3)
      tmpArray6(  49, 2) = Xqd*tmpArray5(  34, 2) + alphaXpq*TmpArray5(  34, 3)
      tmpArray6(  50, 2) = Xqd*tmpArray5(  35, 2) + alphaXpq*TmpArray5(  35, 3)
+     tmpArray6(  51, 2) = Yqd*tmpArray5(  31, 2) + alphaYpq*TmpArray5(  31, 3) +  4*TwoTerms(  7)
      tmpArray6(  52, 2) = Zqd*tmpArray5(  31, 2) + alphaZpq*TmpArray5(  31, 3)
      tmpArray6(  53, 2) = Yqd*tmpArray5(  33, 2) + alphaYpq*TmpArray5(  33, 3) +  2*TwoTerms(  9)
      tmpArray6(  54, 2) = Yqd*tmpArray5(  34, 2) + alphaYpq*TmpArray5(  34, 3) + TwoTerms( 10)
@@ -2293,6 +2303,7 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray6(  48, 3) = Xqd*tmpArray5(  33, 3) + alphaXpq*TmpArray5(  33, 4)
      tmpArray6(  49, 3) = Xqd*tmpArray5(  34, 3) + alphaXpq*TmpArray5(  34, 4)
      tmpArray6(  50, 3) = Xqd*tmpArray5(  35, 3) + alphaXpq*TmpArray5(  35, 4)
+     tmpArray6(  51, 3) = Yqd*tmpArray5(  31, 3) + alphaYpq*TmpArray5(  31, 4) +  4*TwoTerms(  7)
      tmpArray6(  52, 3) = Zqd*tmpArray5(  31, 3) + alphaZpq*TmpArray5(  31, 4)
      tmpArray6(  53, 3) = Yqd*tmpArray5(  33, 3) + alphaYpq*TmpArray5(  33, 4) +  2*TwoTerms(  9)
      tmpArray6(  54, 3) = Yqd*tmpArray5(  34, 3) + alphaYpq*TmpArray5(  34, 4) + TwoTerms( 10)
@@ -2323,6 +2334,7 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray6(  48, 4) = Xqd*tmpArray5(  33, 4) + alphaXpq*TmpArray5(  33, 5)
      tmpArray6(  49, 4) = Xqd*tmpArray5(  34, 4) + alphaXpq*TmpArray5(  34, 5)
      tmpArray6(  50, 4) = Xqd*tmpArray5(  35, 4) + alphaXpq*TmpArray5(  35, 5)
+     tmpArray6(  51, 4) = Yqd*tmpArray5(  31, 4) + alphaYpq*TmpArray5(  31, 5) +  4*TwoTerms(  7)
      tmpArray6(  52, 4) = Zqd*tmpArray5(  31, 4) + alphaZpq*TmpArray5(  31, 5)
      tmpArray6(  53, 4) = Yqd*tmpArray5(  33, 4) + alphaYpq*TmpArray5(  33, 5) +  2*TwoTerms(  9)
      tmpArray6(  54, 4) = Yqd*tmpArray5(  34, 4) + alphaYpq*TmpArray5(  34, 5) + TwoTerms( 10)
@@ -2407,7 +2419,9 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray7(  75, 2) = Xqd*tmpArray6(  54, 2) + alphaXpq*TmpArray6(  54, 3)
      tmpArray7(  76, 2) = Xqd*tmpArray6(  55, 2) + alphaXpq*TmpArray6(  55, 3)
      tmpArray7(  77, 2) = Xqd*tmpArray6(  56, 2) + alphaXpq*TmpArray6(  56, 3)
+     tmpArray7(  78, 2) = Yqd*tmpArray6(  51, 2) + alphaYpq*TmpArray6(  51, 3) +  5*TwoTerms( 11)
      tmpArray7(  79, 2) = Zqd*tmpArray6(  51, 2) + alphaZpq*TmpArray6(  51, 3)
+     tmpArray7(  80, 2) = Yqd*tmpArray6(  53, 2) + alphaYpq*TmpArray6(  53, 3) +  3*TwoTerms( 13)
      tmpArray7(  81, 2) = Yqd*tmpArray6(  54, 2) + alphaYpq*TmpArray6(  54, 3) +  2*TwoTerms( 14)
      tmpArray7(  82, 2) = Yqd*tmpArray6(  55, 2) + alphaYpq*TmpArray6(  55, 3) + TwoTerms( 15)
      tmpArray7(  83, 2) = Yqd*tmpArray6(  56, 2) + alphaYpq*TmpArray6(  56, 3)
@@ -2448,7 +2462,9 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray7(  75, 3) = Xqd*tmpArray6(  54, 3) + alphaXpq*TmpArray6(  54, 4)
      tmpArray7(  76, 3) = Xqd*tmpArray6(  55, 3) + alphaXpq*TmpArray6(  55, 4)
      tmpArray7(  77, 3) = Xqd*tmpArray6(  56, 3) + alphaXpq*TmpArray6(  56, 4)
+     tmpArray7(  78, 3) = Yqd*tmpArray6(  51, 3) + alphaYpq*TmpArray6(  51, 4) +  5*TwoTerms( 11)
      tmpArray7(  79, 3) = Zqd*tmpArray6(  51, 3) + alphaZpq*TmpArray6(  51, 4)
+     tmpArray7(  80, 3) = Yqd*tmpArray6(  53, 3) + alphaYpq*TmpArray6(  53, 4) +  3*TwoTerms( 13)
      tmpArray7(  81, 3) = Yqd*tmpArray6(  54, 3) + alphaYpq*TmpArray6(  54, 4) +  2*TwoTerms( 14)
      tmpArray7(  82, 3) = Yqd*tmpArray6(  55, 3) + alphaYpq*TmpArray6(  55, 4) + TwoTerms( 15)
      tmpArray7(  83, 3) = Yqd*tmpArray6(  56, 3) + alphaYpq*TmpArray6(  56, 4)
@@ -2559,7 +2575,10 @@ subroutine VerticalRecurrence8D(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray8( 110, 2) = Xqd*tmpArray7(  82, 2) + alphaXpq*TmpArray7(  82, 3)
      tmpArray8( 111, 2) = Xqd*tmpArray7(  83, 2) + alphaXpq*TmpArray7(  83, 3)
      tmpArray8( 112, 2) = Xqd*tmpArray7(  84, 2) + alphaXpq*TmpArray7(  84, 3)
+     tmpArray8( 113, 2) = Yqd*tmpArray7(  78, 2) + alphaYpq*TmpArray7(  78, 3) +  6*TwoTerms( 16)
      tmpArray8( 114, 2) = Zqd*tmpArray7(  78, 2) + alphaZpq*TmpArray7(  78, 3)
+     tmpArray8( 115, 2) = Yqd*tmpArray7(  80, 2) + alphaYpq*TmpArray7(  80, 3) +  4*TwoTerms( 18)
+     tmpArray8( 116, 2) = Yqd*tmpArray7(  81, 2) + alphaYpq*TmpArray7(  81, 3) +  3*TwoTerms( 19)
      tmpArray8( 117, 2) = Yqd*tmpArray7(  82, 2) + alphaYpq*TmpArray7(  82, 3) +  2*TwoTerms( 20)
      tmpArray8( 118, 2) = Yqd*tmpArray7(  83, 2) + alphaYpq*TmpArray7(  83, 3) + TwoTerms( 21)
      tmpArray8( 119, 2) = Yqd*tmpArray7(  84, 2) + alphaYpq*TmpArray7(  84, 3)

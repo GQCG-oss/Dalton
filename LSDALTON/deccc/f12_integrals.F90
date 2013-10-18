@@ -69,7 +69,7 @@ contains
     implicit none
 
     !> Atomic fragment to be determined  (NOT pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> MO coefficient matrix for the occupied EOS
     real(realk), pointer :: CoccEOS(:,:)
     !> MO coefficient matrix for the occupied + virtual EOS
@@ -167,7 +167,7 @@ contains
     call mem_alloc(CoccEOS, MyFragment%number_basis, noccEOS)
     do i=1, MyFragment%noccEOS
        ix = MyFragment%idxo(i)
-       CoccEOS(:,i) = MyFragment%ypo(:,ix)
+       CoccEOS(:,i) = MyFragment%Co(:,ix)
     end do
 
     ! ***********************************************************
@@ -175,11 +175,11 @@ contains
     ! ***********************************************************
     call mem_alloc(CocvAOS, MyFragment%number_basis, nocvAOS)
      do i=1, MyFragment%noccAOS
-       CocvAOS(:,i) = MyFragment%ypo(:,i)
+       CocvAOS(:,i) = MyFragment%Co(:,i)
     end do
 
     do i=1, MyFragment%nunoccAOS
-       CocvAOS(:,i+MyFragment%noccAOS) = MyFragment%ypv(:,i)
+       CocvAOS(:,i+MyFragment%noccAOS) = MyFragment%Cv(:,i)
     end do
 
     ! ***********************************************************
@@ -289,7 +289,7 @@ contains
     print *, "E_22_Xsum:", X1energy + X2energy 
     print *, '----------------------------------------'
    
-    myfragment%energies(14) = V1energy + V2energy + X1energy + X2energy 
+    myfragment%energies(FRAGMODEL_F12) = V1energy + V2energy + X1energy + X2energy 
     
     ! Free memory
     call mem_dealloc(CoccEOS)
@@ -325,11 +325,11 @@ contains
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> MO coefficient matrix for the occupied EOS
     real(realk), pointer :: CoccEOS(:,:)
     !> MO coefficient matrix for the occupied + virtual EOS
@@ -376,7 +376,7 @@ contains
     ! ***********************************************************
     do i=1, PairFragment%noccEOS
        ix = PairFragment%idxo(i)
-       CoccEOS(:,i) = PairFragment%ypo(:,ix)
+       CoccEOS(:,i) = PairFragment%Co(:,ix)
     end do
 
     call mem_alloc(CocvAOS, PairFragment%number_basis, nocvAOS)
@@ -384,11 +384,11 @@ contains
     ! Creating a CocvAOS matrix 
     ! ***********************************************************
     do i=1, PairFragment%noccAOS
-       CocvAOS(:,i) = PairFragment%ypo(:,i)
+       CocvAOS(:,i) = PairFragment%Co(:,i)
     end do
 
     do i=1, PairFragment%nunoccAOS
-       CocvAOS(:,i+PairFragment%noccAOS) = PairFragment%ypv(:,i)
+       CocvAOS(:,i+PairFragment%noccAOS) = PairFragment%Cv(:,i)
     end do
     
     ! ***********************************************************
@@ -448,7 +448,7 @@ contains
     print *, '----------------------------------------'
     
     ! Input for Dec Driver
-    pairfragment%energies(14) = V1energy + V2energy
+    pairfragment%energies(FRAGMODEL_F12) = V1energy + V2energy
 
     ! Free memory
     call mem_dealloc(dopair_occ)
@@ -555,11 +555,11 @@ contains
   subroutine get_mp2f12_pf_E21(ijkl, Fragment1, Fragment2, PairFragment, nocc, energy, scalar)
     implicit none
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> The pair fragment energy
     real(realk),intent(out) :: energy
     !> Scalar to be multiplied with the energy
@@ -1532,7 +1532,7 @@ contains
     implicit none
 
     !> Full molecule info
-    type(ccatom), intent(in) :: MyFragment
+    type(decfrag), intent(in) :: MyFragment
     type(lsitem), intent(inout) :: mylsitem
     integer :: nocc, noccfull, nvirt, nbasis, ncabsAO
     type(matrix) :: Fcc
@@ -1554,7 +1554,7 @@ contains
     !Fii
     call mat_init(Fii, nocc, nocc)
     !call MO_transform_AOMatrix(mylsitem, nbasis, nocc, noccfull, nvirt,&
-    !     & MyFragment%ypo, MyFragment%ypv,'ii',Fcc,Fii)
+    !     & MyFragment%Co, MyFragment%Cv,'ii',Fcc,Fii)
 
     !call mat_to_full(Fii,1.0E0_realk,Fij)
  

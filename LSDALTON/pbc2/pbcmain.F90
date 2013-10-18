@@ -443,7 +443,9 @@ else
     E_cell=E_kin+E_en+E_J+E_K+E_ff+E_nuc+E_nnff
     write(lupri,'(A,I4)') 'numbers of lattice vectors', num_latvectors
     write(lupri,'(A,I8)') 'number of basis', nbast
+#ifdef DEBUGPBC
     write(lupri,'(A,F16.6)')  'Norm of fock matrix', focknorm
+#endif
     write(lupri,'(A,F16.6)')  'Cell energy', E_cell
     write(lupri,'(A,F16.6)')  'Electronic energy', E_cell-E_nuc-E_ff-E_K-E_nnff
     write(lupri,'(A,F16.6)')  'Nuclear repulsion energy', E_nuc
