@@ -4442,17 +4442,19 @@ retval=0
   !> from set of all fragment energies.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine get_occfragenergies(natoms,FragEnergiesAll,FragEnergies)
+  subroutine get_occfragenergies(natoms,ccmodel,FragEnergiesAll,FragEnergies)
     implicit none
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
+    !> CC model according to MODEL_* conventions in dec_typedef.F90
+    integer,intent(in) :: ccmodel
     !> Fragment energies for all models (see FRAGMODEL_* in dec_typedef.F90)
     real(realk),intent(in) :: FragEnergiesAll(natoms,natoms,ndecenergies)
     !> Fragment energies for occupied partitioning for given CC model
     real(realk),intent(inout) :: FragEnergies(natoms,natoms)
 
     ! MODIFY FOR NEW MODEL
-    select case(DECinfo%ccmodel)
+    select case(ccmodel)
     case(MODEL_MP2)
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCMP2)
 
@@ -4468,7 +4470,7 @@ retval=0
             & + FragEnergiesAll(:,:,FRAGMODEL_OCCpT)
 
     case default
-       print *, 'Model is: ', DECinfo%ccmodel
+       print *, 'Model is: ', ccmodel
        call lsquit('get_occfragenergies: Model needs implementation!',-1)
     end select
 

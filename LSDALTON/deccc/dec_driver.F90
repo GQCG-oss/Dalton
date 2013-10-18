@@ -528,6 +528,7 @@ contains
              call free_joblist(singlejob)
              ! Save fragment info to file atomicfragments.info
              call add_fragment_to_file(AtomicFragments(jobdone),jobs)
+
           end if
 
           ! Send new job task to local master
@@ -713,7 +714,12 @@ contains
 
     ! Plot pair interaction energies using occ. partitioning scheme
     ! *************************************************************
-    call get_occfragenergies(natoms,FragEnergies,FragEnergiesOcc)
+    if(esti) then       
+       ! Always MP2 model
+       call get_occfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesOcc)
+    else
+       call get_occfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+    end if
     call plot_pair_energies(natoms,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
          & MyMolecule%DistanceTable,dofrag)
 
