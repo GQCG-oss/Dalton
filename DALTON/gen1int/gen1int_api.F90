@@ -43,8 +43,8 @@
 module gen1int_api
 
   ! Fortran 90 module of Gen1Int library
-  use gen1int, Gen1IntAPINaryTreeDestroy => NaryTreeDestroy, &
-               Gen1IntAPINaryTreeView => NaryTreeView
+  use gen1int_geom, Gen1IntAPINaryTreeDestroy => NaryTreeDestroy, &
+                    Gen1IntAPINaryTreeView => NaryTreeView
   ! AO sub-shells
   use gen1int_shell
   ! matrix module
