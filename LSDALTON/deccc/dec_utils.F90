@@ -4172,8 +4172,10 @@ retval=0
           write(DECinfo%output,*)
           write(DECinfo%output,'(1X,a,g20.10)') 'CCSD occupied   correlation energy : ', &
                & energies(FRAGMODEL_OCCCCSD)
-          write(DECinfo%output,'(1X,a,g20.10)') 'CCSD virtual    correlation energy : ', &
-               & energies(FRAGMODEL_VIRTCCSD)
+          if(.not.DECinfo%onlyoccpart) then
+             write(DECinfo%output,'(1X,a,g20.10)') 'CCSD virtual    correlation energy : ', &
+                  & energies(FRAGMODEL_VIRTCCSD)
+          end if
           write(DECinfo%output,*)
        else
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
@@ -4231,12 +4233,14 @@ retval=0
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT),dofrag,&
                & '(T) virtual single energies','AF_ParT_VIR_BOTH')
        end if
+
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
             & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
        if(.not.DECinfo%onlyoccpart) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
                & '(T) virtual single energies (fourth order)','AF_ParT_VIR4')
        end if
+
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
             & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
        if(.not.DECinfo%onlyoccpart) then
@@ -4250,12 +4254,14 @@ retval=0
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT),dofrag,&
                & DistanceTable, '(T) virtual pair energies','PF_ParT_VIR_BOTH')
        end if
+
        call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
             & DistanceTable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
        if(.not.DECinfo%onlyoccpart) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
                & DistanceTable, '(T) virtual pair energies (fourth order)','PF_ParT_VIR4')
        end if
+
        call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
             & DistanceTable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
        if(.not.DECinfo%onlyoccpart) then
