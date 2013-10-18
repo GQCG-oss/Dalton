@@ -323,7 +323,7 @@ contains
     ! Restart option: In case some fragments are already done and stored in atomicfragments.info.
     fragdone=.false.
     post_fragopt_restart=.false.
-    if(DECinfo%DECrestart) then
+    if(DECinfo%DECrestart .and. (.not. esti) ) then
        call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
             & UnoccOrbitals,.false.,AtomicFragments,jobs,atomic_fragment_restart)
 
@@ -331,7 +331,7 @@ contains
        AFrestartfileexist: if(atomic_fragment_restart) then
           ! Atomic fragment restart files exist - we restart...
 
-          write(DECinfo%output,'(a,2i8)') 'RESTARTING STANDARD FRAGMENTS - jobs to do ', &
+          write(DECinfo%output,'(a,i8)') 'RESTARTING ATOMIC FRAGMENTS - jobs to do ', &
                & count(dofrag)-count(jobs%jobsdone)
 
           ! Restart pair fragments only if all atomic fragments are done AND fragment file exists
@@ -462,7 +462,7 @@ contains
     counter=0
     jobdone=0
     EstimatedCalculation: if(esti) then
-       ! Just use atomic fragment with predefined sizes to estimate fragment energies?
+       ! Just use atomic fragment with predefined sizes to estimate fragment energies below
        init_radius = 2.0_realk/bohr_to_angstrom
        do i=1,natoms
           if(.not. dofrag(i)) cycle
@@ -471,7 +471,8 @@ contains
                & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
                & MyMolecule,mylsitem,.false.,init_radius,AtomicFragments(MyAtom))
        end do
-       ! This means that we have to calculate atomic fragments together with pair fragments below
+       ! This means that we have to calculate atomic fragments together with pair fragments below,
+       ! i.e., the atomic fragment energies have not yet been calculated.
        calcAF=.true.
 
     else
