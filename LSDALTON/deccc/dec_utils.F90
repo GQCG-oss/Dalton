@@ -2780,7 +2780,6 @@ retval=0
        filename = 'mp2grad.info'
     else ! energy calculation
        filename = get_fragenergy_restart_filename(esti) 
-       filename = 'fragenergies.info'
     end if
 
     inquire(file=FileName,exist=file_exist)
