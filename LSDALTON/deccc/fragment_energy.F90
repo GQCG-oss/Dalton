@@ -1299,12 +1299,12 @@ contains
 
     ! Total pair interaction energy
     ! *****************************
-    if(MyFragment%ccmodel==MODEL_MP2) then
+    if(PairFragment%ccmodel==MODEL_MP2) then
        ! Lagrangian energy only implemented for MP2 so it gets special treatment
-       MyFragment%energies(FRAGMODEL_LAGMP2) = Eocc + lag_occ + Evirt + lag_virt
+       PairFragment%energies(FRAGMODEL_LAGMP2) = Eocc + lag_occ + Evirt + lag_virt
     end if
     ! Put occupied (Eocc) and virtual (Evirt) scheme energies into fragment energies array
-    call put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
+    call put_fragment_energy_contribs_main(Eocc,Evirt,PairFragment)
 
     call mem_dealloc(dopair_occ)
     call mem_dealloc(dopair_virt)
@@ -3225,6 +3225,8 @@ end subroutine optimize_atomic_fragment
     implicit none
     !> Occupied and virtual partitioning scheme energies
     real(realk),intent(in) :: Eocc, Evirt
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: MyFragment
 
 
     ! Put energies into their proper place in the MyFragment&energies array
