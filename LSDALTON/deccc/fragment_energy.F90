@@ -3229,7 +3229,7 @@ end subroutine optimize_atomic_fragment
     type(decfrag),intent(inout) :: MyFragment
 
 
-    ! Put energies into their proper place in the MyFragment&energies array
+    ! Put energies into their proper place in the MyFragment%energies array
     ! according to the CC model used for the fragment
     call put_fragment_energy_contribs(MyFragment%ccmodel,Eocc,Evirt,MyFragment%energies)
 

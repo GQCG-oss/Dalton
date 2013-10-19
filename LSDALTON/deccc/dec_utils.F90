@@ -4540,5 +4540,22 @@ retval=0
 
   end function get_fragenergy_restart_filename
 
+  !> \brief Get filename for for fragment energy restart file used for backing up existing file
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  function get_fragenergy_restart_filename_backup(esti) result(filename)
+    implicit none
+    !> Is this estimated fragment energies?
+    logical,intent(in) :: esti
+    character(len=40) :: FileName
+
+    if(esti) then
+       FileName='estimated_fragenergies.backup'
+    else
+       FileName='fragenergies.backup'
+    end if
+
+  end function get_fragenergy_restart_filename_backup
+
 
 end module dec_fragment_utils

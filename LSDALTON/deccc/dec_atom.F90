@@ -4249,7 +4249,7 @@ if(DECinfo%PL>0) then
     !> Read estimated fragment energies for restart?
     logical,intent(in) :: esti
     character(len=40) :: FileName, filebackup
-    integer :: funit,l,i
+    integer :: funit
     logical :: file_exist
 
     ! Init stuff
@@ -4259,10 +4259,7 @@ if(DECinfo%PL>0) then
     ! backup exisiting file
     inquire(file=FileName,exist=file_exist)
     if(file_exist) then  
-       l = len(filename)
-       ! filebackup: Add ".backup" suffix.
-       filebackup(1:l) = filename(1:l)
-       filebackup(l+1:l+7) = '.backup'
+       filebackup = get_fragenergy_restart_filename_backup(esti)
        call rename(filename,filebackup)
     end if
 
