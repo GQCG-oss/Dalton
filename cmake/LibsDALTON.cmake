@@ -71,14 +71,16 @@ if(ENABLE_PCMSOLVER)
         -DENABLE_STATIC_LINKING=${ENABLE_STATIC_LINKING}
         -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
         -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+	-DEIGEN3_ROOT=${EIGEN3_ROOT}
+	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
         )
     add_external(pcmsolver)
     add_dependencies(dalton pcmsolver)
     add_definitions(-DPCM_MODULE)
     set(DALTON_LIBS
-	stdc++
         ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
 	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
+	stdc++
         ${DALTON_LIBS}
         )
 endif()
