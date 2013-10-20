@@ -47,7 +47,7 @@ contains
   !> \brief: driver routine for dec-ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2012
-  subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,mylsitem,ccsd_doubles,&
+  subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_doubles,&
                          & ccsdpt_singles,ccsdpt_doubles)
 
     implicit none
@@ -57,7 +57,7 @@ contains
     !> ppfock and qqfock for fragment or full molecule
     real(realk), intent(in) :: ppfock(nocc,nocc), qqfock(nvirt,nvirt)
     !> mo coefficents for occ and virt space for fragment or full molecule
-    real(realk), intent(in) :: ypo(nbasis,nocc), ypv(nbasis,nvirt)
+    real(realk), intent(in) :: Co(nbasis,nocc), Cv(nbasis,nvirt)
     !> mylsitem for fragment or full molecule
     type(lsitem), intent(inout) :: mylsitem
     !> ccsd doubles amplitudes
@@ -115,7 +115,7 @@ contains
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,ccsd_doubles%val,mylsitem)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%val,mylsitem)
 
     end if waking_the_slaves
 
@@ -134,7 +134,7 @@ contains
     Uvirt      = array2_init(virtdims)
     C_can_occ  = array2_init(occAO)
     C_can_virt = array2_init(virtAO)
-    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
+    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
                          & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
 
     ! ***************************************************
@@ -1836,7 +1836,7 @@ contains
     implicit none
 
     !> fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
@@ -1854,8 +1854,8 @@ contains
 
     ! init energy reals to be on the safe side.
     ! note: OccEnergyPT and VirtEnergyPT have been initialized in the e4 routine.
-    MyFragment%energies(12) = 0.0E0_realk
-    MyFragment%energies(13) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
 
     ! init temp energy
     ccsdpt_e5 = 0.0E0_realk
@@ -1875,19 +1875,19 @@ contains
                     end do ido_frag_singles
                     !$OMP END PARALLEL DO
 
-    MyFragment%energies(12) = 2.0E0_realk * ccsdpt_e5
+    MyFragment%energies(FRAGMODEL_OCCpT5) = 2.0E0_realk * ccsdpt_e5
 
     ! insert into occ. part. scheme part
-    MyFragment%energies(8) = MyFragment%energies(8) + MyFragment%energies(12)
+    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) + MyFragment%energies(FRAGMODEL_OCCpT5)
 
     ! *********************************
     ! do unoccupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
-    MyFragment%energies(9) = MyFragment%energies(9) + MyFragment%energies(12)
+    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) + MyFragment%energies(FRAGMODEL_OCCpT5)
     ! insert into virt_e5 part
-    MyFragment%energies(13) = MyFragment%energies(13) + MyFragment%energies(12)
+    MyFragment%energies(FRAGMODEL_VIRTpT5) = MyFragment%energies(FRAGMODEL_VIRTpT5) + MyFragment%energies(FRAGMODEL_OCCpT5)
 
     ! ******************************
     !   done with E[5] energy part
@@ -1904,11 +1904,11 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> fragment info
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
@@ -1926,8 +1926,8 @@ contains
 
     ! init energy reals to be on the safe side.
     ! note: OccEnergyPT and VirtEnergyPT have been initialized in the e4 routine.
-    PairFragment%energies(12) = 0.0E0_realk
-    PairFragment%energies(13) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
 
   ido_pair_singles: do i=1,nocc_eos
                     i_eos = PairFragment%idxo(i)
@@ -1953,7 +1953,7 @@ contains
                           end do
 
                           if (occ_in_frag_1 .and. virt_in_frag_2) then
-                             PairFragment%energies(12) = PairFragment%energies(12) &
+                             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
                                & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
                                & * ccsdpt_singles%val(a_eos,i_eos)
                           end if
@@ -1975,7 +1975,7 @@ contains
                           end do
                              
                           if (occ_in_frag_2 .and. virt_in_frag_1) then
-                             PairFragment%energies(12) = PairFragment%energies(12) &
+                             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
                                & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
                                & * ccsdpt_singles%val(a_eos,i_eos)
                           end if
@@ -2003,16 +2003,16 @@ contains
                     end do ido_pair_singles
 
     ! insert into occ. part. scheme part
-    PairFragment%energies(8) = PairFragment%energies(8) + PairFragment%energies(12)
+    PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
 
     ! *********************************
     ! do unoccupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
-    PairFragment%energies(9) = PairFragment%energies(9) + PairFragment%energies(12)
+    PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
     ! insert into virt_e5 part
-    PairFragment%energies(13) = PairFragment%energies(13) + PairFragment%energies(12)
+    PairFragment%energies(FRAGMODEL_VIRTpT5) = PairFragment%energies(FRAGMODEL_VIRTpT5) + PairFragment%energies(FRAGMODEL_OCCpT5)
 
     ! ******************************
     !   done with E[5] energy part
@@ -2030,7 +2030,7 @@ contains
     implicit none
 
     !> fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) doubles amplitudes
     type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> is this called from inside the ccsd(t) fragment optimization routine?
@@ -2059,10 +2059,10 @@ contains
     ! init energy reals to be on the safe side
     ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
     !       as this (e4) routine is called before the e5 routine
-    MyFragment%energies(8) = 0.0E0_realk
-    MyFragment%energies(9) = 0.0E0_realk
-    MyFragment%energies(10) = 0.0E0_realk
-    MyFragment%energies(11) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
 
     ! *******************************
     ! do occupied partitioning scheme
@@ -2133,10 +2133,10 @@ contains
                         !$OMP END PARALLEL DO
 
     !get total fourth--order energy contribution
-    MyFragment%energies(10) = energy_res_cou + energy_res_exc
+    MyFragment%energies(FRAGMODEL_OCCpT4) = energy_res_cou + energy_res_exc
 
     ! insert into occ. part. scheme part
-    MyFragment%energies(8) = MyFragment%energies(8) + MyFragment%energies(10)
+    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) + MyFragment%energies(FRAGMODEL_OCCpT4)
 
     ! *********************************
     ! do unoccupied partitioning scheme
@@ -2213,10 +2213,10 @@ contains
                         !$OMP END PARALLEL DO
 
     !get total fourth--order energy contribution
-    MyFragment%energies(11) = energy_res_cou + energy_res_exc
+    MyFragment%energies(FRAGMODEL_VIRTpT4) = energy_res_cou + energy_res_exc
 
     ! insert into virt. part. scheme part
-    MyFragment%energies(9) = MyFragment%energies(9) + MyFragment%energies(11)
+    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) + MyFragment%energies(FRAGMODEL_VIRTpT4)
 
     ! ******************************
     !   done with E[4] energy part
@@ -2249,11 +2249,11 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> pair fragment info
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
     type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     ! logical pointers for keeping hold of which pairs are to be handled
@@ -2288,10 +2288,10 @@ contains
     ! init energy reals to be on the safe side
     ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
     !       as this (e4) routine is called before the e5 routine
-    PairFragment%energies(8) = 0.0E0_realk
-    PairFragment%energies(9) = 0.0E0_realk
-    PairFragment%energies(10) = 0.0E0_realk
-    PairFragment%energies(11) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
 
     ! *******************************
     ! do occupied partitioning scheme
@@ -2352,10 +2352,10 @@ contains
                         !$OMP END PARALLEL DO
 
     ! get total fourth--order energy contribution
-    PairFragment%energies(10) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+    PairFragment%energies(FRAGMODEL_OCCpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
 
     ! insert into occ. part. scheme part
-    PairFragment%energies(8) = PairFragment%energies(8) + PairFragment%energies(10)
+    PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) + PairFragment%energies(FRAGMODEL_OCCpT4)
 
     ! *********************************
     ! do unoccupied partitioning scheme
@@ -2422,10 +2422,10 @@ contains
                         !$OMP END PARALLEL DO
 
     ! get total fourth--order energy contribution
-    PairFragment%energies(11) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+    PairFragment%energies(FRAGMODEL_VIRTpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
 
     ! insert into virt. part. scheme part
-    PairFragment%energies(9) = PairFragment%energies(9) + PairFragment%energies(11)
+    PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) + PairFragment%energies(FRAGMODEL_VIRTpT4)
 
     ! ******************************
     !   done with E[4] energy part
@@ -2454,7 +2454,7 @@ contains
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e4
     real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
@@ -2550,14 +2550,14 @@ contains
   !>         ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distance_table)
+  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: e4_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -2607,7 +2607,7 @@ contains
           if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
 
              write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
-                  & bohr_to_angstrom*distance_table(i,j), e4_matrix(i,j)
+                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
 
           end if
 
@@ -2632,9 +2632,9 @@ contains
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> virtual orbital information
-    type(ccorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
+    type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e5
     real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix
@@ -2678,14 +2678,14 @@ contains
   !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distance_table)
+  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -2724,7 +2724,7 @@ contains
              else
 
                 write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-                     &bohr_to_angstrom*distance_table(a,i), e5_matrix(a,i)
+                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
 
              end if
 
@@ -3405,13 +3405,13 @@ end module ccsdpt_module
 
     implicit none
     integer :: nocc, nvirt,nbasis
-    real(realk), pointer :: ppfock(:,:), qqfock(:,:), ypo(:,:), ypv(:,:)
+    real(realk), pointer :: ppfock(:,:), qqfock(:,:), Co(:,:), Cv(:,:)
     type(array2) :: ccsdpt_t1
     type(array4) :: ccsd_t2, ccsdpt_t2
     type(lsitem) :: mylsitem
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,ccsd_t2%val,mylsitem)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%val,mylsitem)
 
     ! init and receive ppfock
     call mem_alloc(ppfock,nocc,nocc)
@@ -3421,13 +3421,13 @@ end module ccsdpt_module
     call mem_alloc(qqfock,nvirt,nvirt)
     call ls_mpibcast(qqfock,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
-    ! init and receive ypo
-    call mem_alloc(ypo,nbasis,nocc)
-    call ls_mpibcast(ypo,nbasis,nocc,infpar%master,infpar%lg_comm)
+    ! init and receive Co
+    call mem_alloc(Co,nbasis,nocc)
+    call ls_mpibcast(Co,nbasis,nocc,infpar%master,infpar%lg_comm)
 
-    ! init and receive ypv
-    call mem_alloc(ypv,nbasis,nvirt)
-    call ls_mpibcast(ypv,nbasis,nvirt,infpar%master,infpar%lg_comm)
+    ! init and receive Cv
+    call mem_alloc(Cv,nbasis,nvirt)
+    call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
 
     ! init and receive ccsd_doubles array4 structure
     ccsd_t2 = array4_init([nvirt,nocc,nvirt,nocc])
@@ -3438,7 +3438,7 @@ end module ccsdpt_module
     ccsdpt_t2 = array4_init_standard([nvirt,nvirt,nocc,nocc])
 
     ! now enter the ccsd(t) driver routine
-    call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,mylsitem,ccsd_t2,&
+    call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_t2,&
                          & ccsdpt_t1,ccsdpt_t2)
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
@@ -3450,8 +3450,8 @@ end module ccsdpt_module
     call ls_free(mylsitem)
     call mem_dealloc(ppfock)
     call mem_dealloc(qqfock)
-    call mem_dealloc(ypo)
-    call mem_dealloc(ypv)
+    call mem_dealloc(Co)
+    call mem_dealloc(Cv)
 
   end subroutine ccsdpt_slave
 

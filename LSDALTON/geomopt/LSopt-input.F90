@@ -795,12 +795,12 @@ ELSE
            & removing a number of dihedral coordinates.'
       END IF
 !
-      IF (.NOT. (optinfo%HessFile .OR. optinfo%InmdHess .OR. optinfo%CMBMod &
+      IF (.NOT. (optinfo%HessFile .OR. optinfo%InmdHess .OR. optinfo%ModHes .OR. optinfo%CMBMod &
       .OR. optinfo%InrdHess .OR. (optinfo%EVLINI .GT. -0.9E0_realk))) THEN
          IF (optinfo%SADDLE) THEN
             optinfo%NOAUX  = .TRUE.
          ELSE
-            optinfo%InmdHess = .TRUE.
+            IF (.NOT.optinfo%CartCoord) optinfo%InmdHess = .TRUE.
          END IF
       END IF
 !
