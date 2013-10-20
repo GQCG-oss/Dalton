@@ -4,7 +4,6 @@ module tensor_type_def_module
   use precision
 
   !tile structure
-
   type tile
     type(c_ptr)           :: c    =  c_null_ptr
     real(realk),pointer   :: t(:) => null()         !data in tiles

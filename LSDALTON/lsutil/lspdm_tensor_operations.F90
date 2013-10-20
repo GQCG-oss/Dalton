@@ -138,6 +138,7 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_CHANGE_INIT_TYPE    = 22
   integer,parameter :: JOB_ARRAY_SCALE         = 23
   integer,parameter :: JOB_INIT_ARR_PC         = 24
+  integer,parameter :: JOB_TEST_ARRAY          = 25
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -205,7 +206,7 @@ module lspdm_tensor_operations_module
     if(.not. lspdm_use_comm_proc)then
 
       if(infpar%lg_mynum == infpar%master .and. infpar%parent_comm == MPI_COMM_NULL)then
-        print *,"STARTING UP THE COMMUNICATION PROCESSES (LSPDM)"
+        write (*,'(55A)',advance='no')" STARTING UP THE COMMUNICATION PROCESSES (LSPDM) ..."
         !impregnate the slaves
         call ls_mpibcast(LSPDM_GIVE_BIRTH,infpar%master,infpar%lg_comm)
       endif
@@ -217,6 +218,19 @@ module lspdm_tensor_operations_module
         call give_birth_to_child_process
         !call slaves to set lspdm_use_comm_proc to .true.
         call ls_mpibcast(LSPDM_GIVE_BIRTH,infpar%pc_mynum,infpar%pc_comm)
+      endif
+
+#ifdef VAR_LSDEBUG
+      call lsmpi_barrier(infpar%pc_comm)
+#endif
+
+      if(infpar%parent_comm == MPI_COMM_NULL)then
+#ifdef VAR_LSDEBUG
+        call lsmpi_barrier(infpar%lg_comm)
+#endif
+        if(infpar%lg_mynum == infpar%master)then
+          write(*,*) " SUCCESS"
+        endif
       endif
 
     else
@@ -504,7 +518,15 @@ module lspdm_tensor_operations_module
   end function get_residence_of_tile
 
 
-
+  subroutine test_array(arr)
+    type(array), intent(inout) :: arr
+#ifdef VAR_MPI
+    if(infpar%pc_mynum==0)then
+      call pdm_array_sync(infpar%pc_comm,JOB_TEST_ARRAY,arr,loc_addr=.true.)
+    endif
+    print *,infpar%pc_mynum,"has da test",associated(arr%elm1),associated(arr%elm4),arr%addr_loc
+#endif      
+  end subroutine test_array
 
 
   !> \author Patrick Ettenhuber
@@ -1231,22 +1253,24 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief initialized a distributed tiled array
-  function array_init_tiled(dims,nmodes,pdm,tdims,zeros_in_tiles)result(arr)
+  function array_init_tiled(dims,nmodes,pdm,tdims,zeros_in_tiles,ps_d)result(arr)
     implicit none
     type(array) :: arr
     integer,intent(in) :: nmodes,dims(nmodes)
     integer :: pdm
     integer,optional :: tdims(nmodes)
     logical, optional :: zeros_in_tiles
+    logical, optional :: ps_d
     integer(kind=long) :: i,j
     integer ::addr,pdmt,k,div
     integer :: dflt(nmodes),cdims
     integer, pointer :: lg_buf(:),pc_buf(:)
     integer(kind=ls_mpik) :: lg_nnodes,pc_nnodes
     integer(kind=ls_mpik) :: pc_me, lg_me
-    logical :: master,defdims
+    logical :: master,defdims, pseudo_dense
     logical :: pc_master,lg_master,child,parent
-
+    integer :: infobuf(2)
+   
     !set the initial values and overwrite them later
     pc_nnodes               = 1
     pc_master               = .true.
@@ -1255,6 +1279,7 @@ module lspdm_tensor_operations_module
     lg_master               = .true.
     child                   = .false.
     parent                  = .not.child
+    lg_me                   = 0
 #ifdef VAR_MPI
     child     = (infpar%parent_comm /= MPI_COMM_NULL)
     parent    = .not.child
@@ -1269,8 +1294,11 @@ module lspdm_tensor_operations_module
     if( parent )then
       lg_master = (infpar%lg_mynum==infpar%master)
       lg_nnodes = infpar%lg_nodtot
+      lg_me     = infpar%lg_mynum
     endif
 #endif
+    pseudo_dense = .false.
+    if(present(ps_d))pseudo_dense=ps_d
 
     master = (pc_master.and.lg_master)
 
@@ -1370,6 +1398,12 @@ module lspdm_tensor_operations_module
       call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_TILED,p_arr%a(addr),loc_addr=.true.)
 #endif
     endif
+#ifdef VAR_MPI
+    infobuf(1) = lg_me; infobuf(2) = 0; if(pseudo_dense) infobuf(2) = 1
+    call ls_mpibcast(infobuf,2,infpar%master,infpar%pc_comm)
+    lg_me = infobuf(1); pseudo_dense = (infobuf(2) == 1)
+#endif
+    
 
     !if all_init only all have to know the addresses
     if(p_arr%a(addr)%init_type==ALL_INIT)call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
@@ -1398,6 +1432,10 @@ module lspdm_tensor_operations_module
 
     call arr_init_lock_set(p_arr%a(addr))
     call memory_allocate_tiles(p_arr%a(addr))
+
+    if(pseudo_dense .and. lg_me == 0)then
+      call memory_allocate_array_dense(p_arr%a(addr))
+    endif
 
     arr = p_arr%a(addr)
     !print *,infpar%lg_mynum,associated(arr%wi),"peristent",associated(p_arr%a(addr)%wi)
@@ -4241,6 +4279,7 @@ module lspdm_tensor_operations_module
 #endif
       call memory_allocate_array_dense(arr)
   end subroutine memory_allocate_array_dense_pc
+
   subroutine memory_deallocate_array_dense_pc(arr)
       implicit none
       type(array), intent(inout) :: arr

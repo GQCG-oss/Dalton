@@ -2933,7 +2933,8 @@ contains
     ! init distribution
     distribution = 0
     myload = 0
-    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,batchdimAlpha,batchdimGamma,myload)
+    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
+    &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
 
 #endif
 

@@ -642,9 +642,8 @@ contains
         arr%atype        = 'REAR'
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
-        arr              = array_init_tiled(dims,nmodes,pdm=MASTER_INIT)
+        arr              = array_init_tiled(dims,nmodes,pdm=MASTER_INIT,ps_d=.true.)
         CreatedPDMArrays = CreatedPDMArrays+1
-        call memory_allocate_array_dense_pc(arr)
         arr%itype        = DENSE
         arr%atype        = 'TDPD'
       case('REPD')
@@ -703,7 +702,6 @@ contains
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         arr              = array_init_tiled(dims,nmodes,pdm=ALL_INIT)
         CreatedPDMArrays = CreatedPDMArrays+1
-        call memory_allocate_array_dense(arr)
         arr%itype        = DENSE
         arr%atype        = 'TDPD'
       case('REPD')
@@ -859,6 +857,7 @@ contains
     endif
 
 
+
     !if all_init all have to have the addresses allocated
     if(p_arr%a(addr)%init_type==ALL_INIT.and. lspdm_use_comm_proc)&
        &call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
@@ -875,6 +874,7 @@ contains
 
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
     call memory_allocate_array_dense(p_arr%a(addr))
+
 
     !RETURN THE CURRENLY ALLOCATE ARRAY
     arr=p_arr%a(addr)

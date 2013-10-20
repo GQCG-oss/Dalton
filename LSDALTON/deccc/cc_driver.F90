@@ -1451,8 +1451,8 @@ contains
     ampl2_dims = [nv,no]
 
     ! create transformation matrices in array form
-    Co  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
-    Cv  = array_minit( virt_dims,2, local=local, atype='LDAR' )
+    Co   = array_minit( occ_dims, 2, local=local, atype='LDAR' )
+    Cv   = array_minit( virt_dims,2, local=local, atype='LDAR' )
     Co2  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
     Cv2  = array_minit( virt_dims,2, local=local, atype='LDAR' )
     fock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
