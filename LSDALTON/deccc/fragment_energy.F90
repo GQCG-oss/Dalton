@@ -456,7 +456,7 @@ contains
     real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
     real(realk) :: e1, e2, e3, e4,tmp,multaibj
     logical ::  something_wrong
-    real(realk) :: e1_final, e2_final,e3_final,e4_final
+    real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     real(realk),pointer :: occ_tmp(:),virt_tmp(:)
 
     ! Lagrangian energy can be split into four contributions:
@@ -496,10 +496,10 @@ contains
     nvirtEOS = MyFragment%nunoccEOS
     noccAOS = MyFragment%noccAOS
     nvirtAOS = MyFragment%nunoccAOS
-    e1_final=0E0_realk
-    e2_final=0E0_realk
-    e3_final=0E0_realk
-    e4_final=0E0_realk
+    Eocc=0E0_realk
+    lag_occ=0E0_realk
+    Evirt=0E0_realk
+    lag_virt=0E0_realk
     ! Just in case, zero individual orbital contributions for fragment
     MyFragment%OccContribs=0E0_realk
     MyFragment%VirtContribs=0E0_realk
@@ -615,8 +615,8 @@ contains
 
     ! Total e1, e2, and individual virt atomic contributions are found by summing all thread contributions
     !$OMP CRITICAL
-    e1_final = e1_final + e1
-    e2_final = e2_final + e2
+    Eocc = Eocc + e1
+    lag_occ = lag_occ + e2
 
     ! Update total virtual contributions to fragment energy
     do a=1,nvirtAOS
@@ -709,8 +709,8 @@ contains
 
     ! Total e3, e4, and individual occ atomic contributions are found by summing all thread contributions
     !$OMP CRITICAL
-    e3_final = e3_final + e3
-    e4_final = e4_final + e4
+    Evirt = Evirt + e3
+    lag_virt = lag_virt + e4
 
     ! Update total occupied contributions to fragment energy
     do i=1,noccAOS
@@ -727,30 +727,12 @@ contains
 
     ! Total atomic fragment energy
     ! ****************************
-    ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
-    select case(MyFragment%ccmodel)
-    case(MODEL_MP2)
-       ! MP2
-       MyFragment%energies(FRAGMODEL_LAGMP2) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
-       MyFragment%energies(FRAGMODEL_OCCMP2) = e1_final   ! occupied
-       MyFragment%energies(FRAGMODEL_VIRTMP2) = e3_final   ! virtual
-    case(MODEL_CC2)
-       ! CC2
-       MyFragment%energies(FRAGMODEL_OCCCC2) = e1_final   ! occupied
-       MyFragment%energies(FRAGMODEL_VIRTCC2) = e3_final   ! virtual
-    case(MODEL_CCSD)
-       ! CCSD
-       MyFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
-       MyFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
-#ifdef MOD_UNRELEASED
-    case(MODEL_CCSDpT)
-       ! Save also CCSD contribution for CCSD(T)
-       MyFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
-       MyFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
-!endif mod_unreleased
-#endif
-    end select
-    ! Energy contributions other than MP2,CC2, and CCSD are calculated elsewhere
+    if(MyFragment%ccmodel==MODEL_MP2) then
+       ! Lagrangian energy only implemented for MP2 so it gets special treatment
+       MyFragment%energies(FRAGMODEL_LAGMP2) = Eocc + lag_occ + Evirt + lag_virt
+    end if
+    ! Put occupied (Eocc) and virtual (Evirt) scheme energies into fragment energies array
+    call put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
 
     ! Set energies used by fragment optimization
     call get_occ_virt_lag_energies_fragopt(MyFragment)
@@ -764,11 +746,11 @@ contains
     write(DECinfo%output,'(1X,a,i7)') 'Energy summary for fragment: ', &
          & MyFragment%atomic_number
     write(DECinfo%output,*) '**********************************************************************'
-    write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', e1_final
+    write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', Eocc
     if(.not. DECinfo%onlyoccpart) then
-       write(DECinfo%output,'(1X,a,g20.10)') 'Single virtual  energy = ', e3_final
-       write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian occ term  = ', e2_final
-       write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian virt term = ', e4_final
+       write(DECinfo%output,'(1X,a,g20.10)') 'Single virtual  energy = ', Evirt
+       write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian occ term  = ', lag_occ
+       write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian virt term = ', lag_virt
     end if
 
     write(DECinfo%output,*)
@@ -1106,7 +1088,7 @@ contains
     real(realk) :: e1, e2, e3, e4,tmp,multaibj
     real(realk) :: tcpu1,tcpu2,twall1,twall2
     logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
-    real(realk) :: e1_final, e2_final,e3_final,e4_final
+    real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     logical :: something_wrong
 
 
@@ -1143,10 +1125,10 @@ contains
     nvirtEOS = PairFragment%nunoccEOS
     noccAOS = PairFragment%noccAOS
     nvirtAOS = PairFragment%nunoccAOS
-    e1_final=0E0_realk
-    e2_final=0E0_realk
-    e3_final=0E0_realk
-    e4_final=0E0_realk
+    Eocc=0E0_realk
+    lag_occ=0E0_realk
+    Evirt=0E0_realk
+    lag_virt=0E0_realk
     ! Distance between fragments in Angstrom
     pairdist = get_distance_between_fragments(Fragment1,Fragment2,natoms,DistanceTable)
     pairdist = bohr_to_angstrom*pairdist
@@ -1247,8 +1229,8 @@ contains
 
     ! Total e1 and e2 contributions are found by summing all thread contributions
     !$OMP CRITICAL
-    e1_final = e1_final + e1
-    e2_final = e2_final + e2
+    Eocc = Eocc + e1
+    lag_occ = lag_occ + e2
     !$OMP END CRITICAL
 
     call collect_thread_memory()
@@ -1306,40 +1288,24 @@ contains
 
     ! Total e3 and e4 contributions are found by summing all thread contributions
     !$OMP CRITICAL
-    e3_final = e3_final + e3
-    e4_final = e4_final + e4
+    Evirt = Evirt + e3
+    lag_virt = lag_virt + e4
     !$OMP END CRITICAL
 
     call collect_thread_memory()
     !$OMP END PARALLEL
     call mem_TurnOffThread_Memory()
 
+
     ! Total pair interaction energy
     ! *****************************
-    ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
-    select case(pairfragment%ccmodel)
-    case(MODEL_MP2)
-       ! MP2
-       PairFragment%energies(FRAGMODEL_LAGMP2) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
-       PairFragment%energies(FRAGMODEL_OCCMP2) = e1_final   ! occupied
-       PairFragment%energies(FRAGMODEL_VIRTMP2) = e3_final   ! virtual
-    case(MODEL_CC2)
-       ! CC2
-       PairFragment%energies(FRAGMODEL_OCCCC2) = e1_final   ! occupied
-       PairFragment%energies(FRAGMODEL_VIRTCC2) = e3_final   ! virtual
-    case(MODEL_CCSD)
-       ! CCSD
-       PairFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
-       PairFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
-#ifdef MOD_UNRELEASED
-    case(MODEL_CCSDpT)
-       ! save CCSD contribution for CCSD(T)
-       PairFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
-       PairFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
-!endif mod_unreleased
-#endif
-    end select
-    ! Energy contributions other than MP2,CC2, and CCSD are calculated elsewhere
+    if(PairFragment%ccmodel==MODEL_MP2) then
+       ! Lagrangian energy only implemented for MP2 so it gets special treatment
+       PairFragment%energies(FRAGMODEL_LAGMP2) = Eocc + lag_occ + Evirt + lag_virt
+    end if
+    ! Put occupied (Eocc) and virtual (Evirt) scheme energies into fragment energies array
+    call put_fragment_energy_contribs_main(Eocc,Evirt,PairFragment)
+
     call mem_dealloc(dopair_occ)
     call mem_dealloc(dopair_virt)
 
@@ -1353,11 +1319,11 @@ contains
          & Fragment1%atomic_number, Fragment2%atomic_number
     write(DECinfo%output,*) '*****************************************************************************'
 
-    write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair occ energy  = ', pairdist,e1_final
+    write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair occ energy  = ', pairdist,Eocc
     if(.not. DECinfo%onlyoccpart) then
-       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair virt energy = ', pairdist,e3_final
-       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. occ term  = ', pairdist,e2_final
-       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. virt term = ', pairdist,e4_final
+       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair virt energy = ', pairdist,Evirt
+       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. occ term  = ', pairdist,lag_occ
+       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. virt term = ', pairdist,lag_virt
     end if
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -3249,6 +3215,76 @@ end subroutine optimize_atomic_fragment
 
   end subroutine set_energies_decfrag_structure_fragopt
 
+
+  !> \brief When fragment energies have been calculated, put them
+  !> into the energies array in fragment structure according to the given model
+  !> (see FRAGMODEL_* in dec_typedef.F90).
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
+    implicit none
+    !> Occupied and virtual partitioning scheme energies
+    real(realk),intent(in) :: Eocc, Evirt
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: MyFragment
+
+
+    ! Put energies into their proper place in the MyFragment%energies array
+    ! according to the CC model used for the fragment
+    call put_fragment_energy_contribs(MyFragment%ccmodel,Eocc,Evirt,MyFragment%energies)
+
+
+    ! Special case: When some pairs are treated at the MP2 level, while the
+    ! actual CC model is higher in the hierarchy (e.g. CCSD), we need to 
+    ! put the MP2 fragment energies into the energy array for the more accurate model.
+    if(MyFragment%ccmodel==MODEL_MP2 .and. DECinfo%ccmodel/=MODEL_MP2) then
+       call put_fragment_energy_contribs(DECinfo%ccmodel,Eocc,Evirt,MyFragment%energies)
+    end if
+
+  end subroutine put_fragment_energy_contribs_main
+
+
+
+  ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
+  !> \brief When fragment energies have been calculated, put them
+  !> into the energies array according to the given model
+  !> (see FRAGMODEL_* in dec_typedef.F90).
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine put_fragment_energy_contribs(ccmodel,Eocc,Evirt,energies)
+    implicit none
+    !> Which CC model
+    integer,intent(in) :: ccmodel
+    !> Occupied and virtual partitioning scheme energies
+    real(realk),intent(in) :: Eocc, Evirt
+    !> Energies array
+    real(realk),intent(inout) :: energies(ndecenergies)
+
+
+    ! Put energies into their proper place in the energies array
+    select case(ccmodel)
+    case(MODEL_MP2)
+       ! MP2
+       energies(FRAGMODEL_OCCMP2) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTMP2) = Evirt   ! virtual
+    case(MODEL_CC2)
+       ! CC2
+       energies(FRAGMODEL_OCCCC2) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTCC2) = Evirt   ! virtual
+    case(MODEL_CCSD)
+       ! CCSD
+       energies(FRAGMODEL_OCCCCSD) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTCCSD) = Evirt   ! virtual
+#ifdef MOD_UNRELEASED
+    case(MODEL_CCSDpT)
+       ! Save also CCSD contribution for CCSD(T)
+       energies(FRAGMODEL_OCCCCSD) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTCCSD) = Evirt   ! virtual
+       !endif mod_unreleased
+#endif
+    end select
+
+  end subroutine put_fragment_energy_contribs
 
 
   

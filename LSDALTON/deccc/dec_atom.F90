@@ -4234,10 +4234,10 @@ if(DECinfo%PL>0) then
 
 
   !> \brief Write fragment energies for fragment for easy restart to
-  !> file fragenergies.info.
+  !> file fragenergies.info (or estimate_fragenergies.info for estimated energies).
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine write_fragment_energies_for_restart(natoms,FragEnergies,jobs)
+  subroutine write_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
 
     implicit none
     !> Number of atoms in the molecule
@@ -4246,22 +4246,21 @@ if(DECinfo%PL>0) then
     real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergies
     !> Job list of fragment jobs
     type(joblist),intent(in) :: jobs
-    character(len=40) :: FileName
+    !> Read estimated fragment energies for restart?
+    logical,intent(in) :: esti
+    character(len=40) :: FileName, filebackup
     integer :: funit
     logical :: file_exist
 
     ! Init stuff
     funit = -1
-    FileName='fragenergies.info'
+    filename = get_fragenergy_restart_filename(esti)
 
-    ! Delete existing file
+    ! backup exisiting file
     inquire(file=FileName,exist=file_exist)
-    if(file_exist) then  ! backup exisiting file
-#ifdef SYS_AIX
-       call rename('fragenergies.info\0','fragenergies.backup\0')
-#else
-       call rename('fragenergies.info','fragenergies.backup')
-#endif
+    if(file_exist) then  
+       filebackup = get_fragenergy_restart_filename_backup(esti)
+       call rename(filename,filebackup)
     end if
 
     ! Create a new file fragenergies.info
@@ -4280,7 +4279,7 @@ if(DECinfo%PL>0) then
   !> \brief Read fragment energies for fragment from file fragenergies.info.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine read_fragment_energies_for_restart(natoms,FragEnergies,jobs)
+  subroutine read_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
 
     implicit none
     !> Number of atoms in the molecule
@@ -4289,19 +4288,22 @@ if(DECinfo%PL>0) then
     real(realk),dimension(natoms,natoms,ndecenergies),intent(inout) :: FragEnergies
     !> Job list of fragments 
     type(joblist),intent(inout) :: jobs
+    !> Read estimated fragment energies for restart?
+    logical,intent(in) :: esti
     character(len=40) :: FileName
     integer :: funit
     logical :: file_exist
 
     ! Init stuff
     funit = -1
-    FileName='fragenergies.info'
+    filename = get_fragenergy_restart_filename(esti)
 
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
     if(.not. file_exist) then
+       print *, 'filename: ', filename
        call lsquit('read_fragment_energies_for_restart: &
-            & File fragenergies.info does not exist!',-1)
+            & Restart file does not exist!',-1)
     end if
 
     ! Create a new file fragenergies.info
