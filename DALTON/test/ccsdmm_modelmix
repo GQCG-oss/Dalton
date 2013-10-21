@@ -368,6 +368,5 @@ else
   echo THERE IS A PROBLEM 
   exit 1
 fi
-
-' > ccsdmm_modelmix.check
+%EOF%
 #######################################################################

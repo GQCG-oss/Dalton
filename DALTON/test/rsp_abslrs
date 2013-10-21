@@ -99,7 +99,7 @@ CRIT6=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.475000 * \-57\.448... * 228\.05" $log | w
 CRIT7=`$GREP " XDIPLEN * XDIPLEN * 0*\.490000 * \-43\.396... * 18\.891" $log | wc -l`
 CRIT8=`$GREP " YDIPLEN * YDIPLEN * 0*\.490000 * \-43\.396... * 18\.891" $log | wc -l`
 CRIT9=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.490000 * \-43\.396... * 18\.891" $log | wc -l`
-TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[2]=9
 ERROR[2]="Polarizability is NOT CORRECT"

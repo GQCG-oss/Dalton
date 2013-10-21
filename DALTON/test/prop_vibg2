@@ -176,6 +176,5 @@ else
   echo THERE IS A PROBLEM
   exit 1
 fi
-
-' > prop_vibg2.check
+%EOF%
 #######################################################################
