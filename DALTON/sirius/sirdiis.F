@@ -275,7 +275,6 @@ C DFT modifications T.  Helgaker
 C
 C
 #if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
       use polarizable_embedding, only: pe_master
 #endif
 #include "implicit.h"
@@ -386,12 +385,10 @@ C     this also includes the case of MMPCM
      &      ' Iter     Total energy      Solvation energy  Error norm'//
      &      '  Delta(E)  Sym.  Closed shell occupation'
       END IF
-#if defined (BUILD_PELIB)
       else if (peqm) then
         write(luw4,'(/a)')
      &      ' Iter      Total energy     Embedding energy      '//
      &      'Error norm     Delta(E)'
-#endif
       ELSE ! no solvation energy
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
@@ -484,12 +481,8 @@ C------------------
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT.QMMM
      &     .AND. .NOT.AOSAVE   .AND. .NOT.CHOINT
+     &     .AND. .NOT.peqm
 C
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        dodifden = .false.
-      end if
-#endif
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
@@ -919,11 +912,9 @@ C           this also includes the case of MMPCM
      &                 '@',ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,
      &                 IOPRHF,(NISH(I),I=1,NSYM)
                END IF
-#if defined (BUILD_PELIB)
             else if (peqm) then
                write (luw4,'(a,i3,1p,2g20.12,d15.5,d12.2)')
      &                '@',itdiis,emcscf,esolt,grdnrm,emcdif
-#endif
             ELSE
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(A,I3,1P,G22.12,D15.5,D12.2,I5)')
@@ -1466,20 +1457,16 @@ C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
-#if defined (BUILD_PELIB)
          if (peqm) write(luw4,'(a)')
      &    '   (incl. contribution from polarizable embedding potential)'
-#endif
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-#if defined (BUILD_PELIB)
             if (peqm) write(lupri,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
-#endif
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
 C-------------------

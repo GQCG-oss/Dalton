@@ -1130,7 +1130,6 @@ C
 C     GENERAL input for Dalton
 C
 #if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
       use polarizable_embedding, only: pe_dalton_input
 #endif
 #include "implicit.h"
@@ -1496,8 +1495,8 @@ C        '.DOUGLA'
 #if defined (BUILD_PELIB)
             peqm = .true.
 #else
-            write(lupri,*) 'ERROR: PE library not enabled.'
-            call quit('ERROR: PE library not enabled.')
+            write(lupri,*) 'ERROR for .PEQM: PE library not enabled.'
+            call quit('ERROR for .PEQM: PE library not enabled.')
 #endif
          goto 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1609,11 +1608,9 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
-#if defined (BUILD_PELIB)
         if (peqm) write(lupri,'(4x,a)')
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
-#endif
 C
 Cholesky
       IF (CHOINT) THEN
@@ -1717,7 +1714,7 @@ C     "*QMMM  " input
 #if defined (BUILD_PELIB)
         call pe_dalton_input(word, lucmd, lupri)
 #else
-        call quit('ERROR: PE library not enabled.')
+        call quit('ERROR for *PBE: PE library not enabled.')
 #endif
       goto 200
 
