@@ -51,11 +51,6 @@ SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
   Integer,external    :: LSlib_get_nbasis
   logical :: diff,i1,j1,k1,l1
 
-LUPRI=-1
-LUERR=-1
-CALL LSOPEN(LUPRI,'LSDALTON.OUT','NEW','FORMATTED')
-CALL LSOPEN(LUERR,'LSDALTON.ERR','UNKNOWN','FORMATTED')
-
 CALL LSlib_get_dimensions(nbast,natoms,nelectrons,lupri,luerr)
 write(lupri,'(A,I8,A,I8,A,I8)') 'Starting lslib_test with nbast =',nbast,', natoms =', natoms,&
      &                          ' and nelectrons =', nelectrons
