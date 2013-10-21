@@ -1749,7 +1749,7 @@ c            CALL QUIT('Not supported input in ABAINP')
      &      '        Diamagnetic first and second order ',
      &      '        Paramagnetic second singlet and triplet order ',
      &      '     - Remember to set GAUGEO on INTEGRAL SECTION',
-     &      '        GAUGEO Should be placed at selected nucleus'
+     &   '        GAUGEO Should be placed at selected nucleus, in a.u.'
       ENDIF
       IF (ABASOP) THEN
          IERR = 0

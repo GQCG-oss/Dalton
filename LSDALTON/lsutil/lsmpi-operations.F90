@@ -161,8 +161,8 @@ integer(kind=ls_mpik),intent(in) :: comm  ! communicator
 integer(kind=ls_mpik) :: MASTER
 LOGICAL :: SLAVE
 integer(kind=ls_mpik) :: mynum,nodtot,ierr
-call get_rank_for_comm(comm,mynum)
-CALL get_size_for_comm(comm, nodtot, ierr)
+call get_rank_for_comm(comm, mynum)
+CALL get_size_for_comm(comm, nodtot)
 input%numNodes = nodtot 
 input%node = mynum
 
@@ -224,7 +224,7 @@ SUBROUTINE mpicopy_setting(setting,comm)
   Master  = infpar%master
 
   call get_rank_for_comm(comm,mynum)
-  CALL get_size_for_comm(comm, nodtot, ierr)
+  CALL get_size_for_comm(comm, nodtot)
   setting%numNodes = nodtot 
   setting%node = mynum
   setting%comm = comm

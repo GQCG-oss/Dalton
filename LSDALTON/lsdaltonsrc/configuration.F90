@@ -935,7 +935,7 @@ subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)
   INTEGER,intent(in) :: LUCMD !Logical unit number for the daltoninput
   INTEGER,intent(in) :: LUPRI !Logical unit number for the daltonoutput file
 !
-  INTEGER            :: IDUMMY
+  INTEGER            :: IDUMMY,I
   character(len=2)   :: PROMPT
   profinput%doProf = .TRUE.
   DO   
@@ -963,6 +963,16 @@ subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)
         CASE ('.XC ENERGY'); PROFINPUT%XCENERGY = .TRUE.
         CASE ('.FOCK');  PROFINPUT%FOCK = .TRUE.
         CASE ('.NEGRAD'); PROFINPUT%NEGRAD = .TRUE.
+        CASE ('.ICHOR'); PROFINPUT%Ichor = .TRUE.
+           PROFINPUT%IchorProfDoIchor = .TRUE.
+        CASE ('.ICHOR PURE THERMITE'); PROFINPUT%IchorProfDoIchor = .FALSE.;
+           PROFINPUT%IchorProfDoThermite = .TRUE.;
+        CASE ('.ICHOR ADD THERMITE'); PROFINPUT%IchorProfDoThermite = .TRUE.;
+        CASE ('.ICHOR BASIS'); PROFINPUT%IchorProfInputBasis = .TRUE.
+           DO I=1,4
+              READ(LUCMD, '(A40)')WORD
+              profinput%IchorProfInputBasisString(I) = WORD(1:20)
+           ENDDO
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **PROFILE readin.'
