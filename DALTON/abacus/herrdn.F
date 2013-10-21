@@ -2594,7 +2594,7 @@ C
       IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
 
 #if defined (BUILD_PELIB)
-      if (peqm) then
+      if (.NOT.SLAVE .and. peqm) then
         call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
       end if
 #endif
