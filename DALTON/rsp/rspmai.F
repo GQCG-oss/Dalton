@@ -1282,9 +1282,6 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1712,12 +1709,10 @@ C
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-#if defined (BUILD_PELIB)
          if (peqm) then
            write(lupri,'(a)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          end if
-#endif
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
@@ -1828,9 +1823,6 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -2279,12 +2271,10 @@ C
              WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
          END IF    
 
-#if defined (BUILD_PELIB)
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          end if
-#endif
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -4728,9 +4718,6 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
@@ -4879,12 +4866,10 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-#if defined (BUILD_PELIB)
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          end if
-#endif
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='

@@ -687,9 +687,6 @@ C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
 C             (Feb 2003: one of **START, **PROPE, or **FINAL)
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"
@@ -706,8 +703,8 @@ C
      *          WORDL*12
       DIMENSION IPOINT(MXCOOR), IDOSYM(8), WORK(LWORK)
 C
-#include "abainf.h"
 #include "gnrinf.h"
+#include "abainf.h"
 #include "energy.h"
 #include "orgcom.h"
 #include "dorps.h"

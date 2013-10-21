@@ -303,9 +303,6 @@ C     **** Subroutine that keeps track of the analytical ****
 C     **** for a given wave-function. NAORDR gives the   ****
 C     **** order of the analytical derivative.           ****
 C     *******************************************************
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -356,11 +353,9 @@ CAMT Only gradients for empirical disp correction so far
       ELSE
          NAORDR = 2
       END IF
-#if defined (BUILD_PELIB)
       if (peqm) then
         naordr = 0
       end if
-#endif
 C
       WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
      &          'energy-derivatives available:', NAORDR
