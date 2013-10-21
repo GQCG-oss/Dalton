@@ -47,7 +47,7 @@ contains
   !> \brief: driver routine for dec-ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2012
-  subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,mylsitem,ccsd_doubles,&
+  subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_doubles,&
                          & ccsdpt_singles,ccsdpt_doubles)
 
     implicit none
@@ -57,7 +57,7 @@ contains
     !> ppfock and qqfock for fragment or full molecule
     real(realk), intent(in) :: ppfock(nocc,nocc), qqfock(nvirt,nvirt)
     !> mo coefficents for occ and virt space for fragment or full molecule
-    real(realk), intent(in) :: ypo(nbasis,nocc), ypv(nbasis,nvirt)
+    real(realk), intent(in) :: Co(nbasis,nocc), Cv(nbasis,nvirt)
     !> mylsitem for fragment or full molecule
     type(lsitem), intent(inout) :: mylsitem
     !> ccsd doubles amplitudes
@@ -115,7 +115,7 @@ contains
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,ccsd_doubles%val,mylsitem)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%val,mylsitem)
 
     end if waking_the_slaves
 
@@ -134,7 +134,7 @@ contains
     Uvirt      = array2_init(virtdims)
     C_can_occ  = array2_init(occAO)
     C_can_virt = array2_init(virtAO)
-    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
+    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
                          & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
 
     ! ***************************************************
@@ -1836,7 +1836,7 @@ contains
     implicit none
 
     !> fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
@@ -1904,11 +1904,11 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> fragment info
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
@@ -2030,7 +2030,7 @@ contains
     implicit none
 
     !> fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) doubles amplitudes
     type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> is this called from inside the ccsd(t) fragment optimization routine?
@@ -2249,11 +2249,11 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> pair fragment info
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
     type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     ! logical pointers for keeping hold of which pairs are to be handled
@@ -2454,7 +2454,7 @@ contains
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e4
     real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
@@ -2632,9 +2632,9 @@ contains
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> virtual orbital information
-    type(ccorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
+    type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e5
     real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix
@@ -3405,13 +3405,13 @@ end module ccsdpt_module
 
     implicit none
     integer :: nocc, nvirt,nbasis
-    real(realk), pointer :: ppfock(:,:), qqfock(:,:), ypo(:,:), ypv(:,:)
+    real(realk), pointer :: ppfock(:,:), qqfock(:,:), Co(:,:), Cv(:,:)
     type(array2) :: ccsdpt_t1
     type(array4) :: ccsd_t2, ccsdpt_t2
     type(lsitem) :: mylsitem
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,ccsd_t2%val,mylsitem)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%val,mylsitem)
 
     ! init and receive ppfock
     call mem_alloc(ppfock,nocc,nocc)
@@ -3421,13 +3421,13 @@ end module ccsdpt_module
     call mem_alloc(qqfock,nvirt,nvirt)
     call ls_mpibcast(qqfock,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
-    ! init and receive ypo
-    call mem_alloc(ypo,nbasis,nocc)
-    call ls_mpibcast(ypo,nbasis,nocc,infpar%master,infpar%lg_comm)
+    ! init and receive Co
+    call mem_alloc(Co,nbasis,nocc)
+    call ls_mpibcast(Co,nbasis,nocc,infpar%master,infpar%lg_comm)
 
-    ! init and receive ypv
-    call mem_alloc(ypv,nbasis,nvirt)
-    call ls_mpibcast(ypv,nbasis,nvirt,infpar%master,infpar%lg_comm)
+    ! init and receive Cv
+    call mem_alloc(Cv,nbasis,nvirt)
+    call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
 
     ! init and receive ccsd_doubles array4 structure
     ccsd_t2 = array4_init([nvirt,nocc,nvirt,nocc])
@@ -3438,7 +3438,7 @@ end module ccsdpt_module
     ccsdpt_t2 = array4_init_standard([nvirt,nvirt,nocc,nocc])
 
     ! now enter the ccsd(t) driver routine
-    call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,mylsitem,ccsd_t2,&
+    call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_t2,&
                          & ccsdpt_t1,ccsdpt_t2)
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
@@ -3450,8 +3450,8 @@ end module ccsdpt_module
     call ls_free(mylsitem)
     call mem_dealloc(ppfock)
     call mem_dealloc(qqfock)
-    call mem_dealloc(ypo)
-    call mem_dealloc(ypv)
+    call mem_dealloc(Co)
+    call mem_dealloc(Cv)
 
   end subroutine ccsdpt_slave
 

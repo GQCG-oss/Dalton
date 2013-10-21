@@ -47,13 +47,13 @@ contains
 
 
 
-  !> \brief Construct new atomic fragment based on info in OccAtoms and UnoccAtoms,
+  !> \brief Construct new atomic fragment based on info in occ_atoms and Unocc_atoms,
   !> and calculate fragment energy. Energy contributions from each individual orbital
   !> is also calculated and stored in MyFragment%OccContribs and MyFragment%VirtContribs for
   !> the occupied and virtual orbitals, respectively.
   !> \author Kasper Kristensen
   !> \date January 2011
-  subroutine get_fragment_and_Energy(MyAtom,natoms,OccAtoms,UnoccAtoms,&
+  subroutine get_fragment_and_Energy(MyAtom,natoms,occ_atoms,Unocc_atoms,&
        & MyMolecule,MyLsitem,nocc_tot,nunocc_tot,OccOrbitals,UnoccOrbitals,&
        & MyFragment)
 
@@ -63,9 +63,9 @@ contains
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
     !> Which atoms are in the occupied fragment space
-    logical, dimension(natoms),intent(in) :: OccAtoms
+    logical, dimension(natoms),intent(in) :: occ_atoms
     !> Which atoms are in the unoccupied fragment space
-    logical, dimension(natoms),intent(in) :: UnoccAtoms
+    logical, dimension(natoms),intent(in) :: Unocc_atoms
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> Full molecule lsitem
@@ -75,11 +75,11 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc_tot
     !> Occupied orbitals for full molecule
-    type(ccorbital), dimension(nOcc_tot), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nOcc_tot), intent(in) :: OccOrbitals
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), dimension(nUnocc_tot), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc_tot), intent(in) :: UnoccOrbitals
     !> Atomic fragment to be determined  (NOT pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
     logical :: DoBasis
 
@@ -91,8 +91,8 @@ contains
     ! Initialize fragment
     ! *******************
     DoBasis=.true.
-    call atomic_fragment_init_atom_specific(MyAtom,natoms,UnoccAtoms, &
-         & OccAtoms,nocc_tot,nunocc_tot,OccOrbitals,UnoccOrbitals, &
+    call atomic_fragment_init_atom_specific(MyAtom,natoms,Unocc_atoms, &
+         & occ_atoms,nocc_tot,nunocc_tot,OccOrbitals,UnoccOrbitals, &
          & MyMolecule,mylsitem,MyFragment,DoBasis,.false.)
 
     ! Calculate fragment energies
@@ -119,15 +119,15 @@ contains
     !> Full molecule lsitem
     type(lsitem), intent(inout) :: mylsitem
     !> Occupied orbitals for full molecule
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Which atoms are in the occupied fragment space
     logical, dimension(MyMolecule%numocc),intent(in) :: OccAOS
     !> Which atoms are in the unoccupied fragment space
     logical, dimension(MyMolecule%numvirt),intent(in) :: UnoccAOS
     !> Atomic Fragment to be determined (NOT pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
     logical :: DoBasis
 
@@ -158,7 +158,7 @@ contains
 
   !> \brief Wrapper for atomic_driver with the following special features:
   !> 1. It is assumed that the input fragment has been initialized but that
-  !> the fragment basis information (expensive box in ccatom type) has not been set.
+  !> the fragment basis information (expensive box in decfrag type) has not been set.
   !> 2. The fragment basis information is calculated here and then freed again.
   !> 3. This wrapper can also attach exisiting full molecular singles amplitudes
   !>    to the fragment structure and update new improved full molecular singles amplitudes
@@ -171,7 +171,7 @@ contains
 
     implicit none
     !> Atomic fragment 
-    type(ccatom), intent(inout) :: myfragment
+    type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout) :: grad
     !> Number of occupied orbitals in full molecule
@@ -179,9 +179,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer,intent(in) :: nUnocc
     !> Occupied orbitals for full molecule
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Full molecule info (will be unchanged at output)
     type(fullmolecule), intent(inout) :: MyMolecule
     !> LSDalton info
@@ -234,14 +234,14 @@ contains
     !> LS item info                                                                                    
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals                                                         
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Atomic fragment 
-    type(ccatom), intent(inout) :: myfragment
+    type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
-    type(ccatom) :: FOfragment
+    type(decfrag) :: FOfragment
 
     ! Sanity check
     if(DECinfo%first_order) then
@@ -294,7 +294,7 @@ contains
 
     implicit none
     !> Atomic fragment
-    type(ccatom), intent(inout) :: myfragment
+    type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
     type(array2) :: t1, ccsdpt_t1
@@ -360,8 +360,8 @@ contains
           ! call ccsd(t) driver and single fragment evaluation
           call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nunoccAOS,&
                              & MyFragment%number_basis,MyFragment%ppfock,&
-                             & MyFragment%qqfock,MyFragment%ypo,&
-                             & MyFragment%ypv,MyFragment%mylsitem,&
+                             & MyFragment%qqfock,MyFragment%Co,&
+                             & MyFragment%Cv,MyFragment%mylsitem,&
                              & t2,ccsdpt_t1,ccsdpt_t2)
           call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
                              & MyFragment%OccContribs,MyFragment%VirtContribs)
@@ -450,13 +450,13 @@ contains
     !> MP2 amplitudes, only virt orbitals on central atom, occ AOS orbitals
     type(array4), intent(in) :: t2virt
     !> Atomic fragment 
-    type(ccatom), intent(inout) :: myfragment
+    type(decfrag), intent(inout) :: myfragment
     integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
     integer :: i,j,k,a,b,c
     real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
     real(realk) :: e1, e2, e3, e4,tmp,multaibj
     logical ::  something_wrong
-    real(realk) :: e1_final, e2_final,e3_final,e4_final
+    real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     real(realk),pointer :: occ_tmp(:),virt_tmp(:)
 
     ! Lagrangian energy can be split into four contributions:
@@ -496,10 +496,10 @@ contains
     nvirtEOS = MyFragment%nunoccEOS
     noccAOS = MyFragment%noccAOS
     nvirtAOS = MyFragment%nunoccAOS
-    e1_final=0E0_realk
-    e2_final=0E0_realk
-    e3_final=0E0_realk
-    e4_final=0E0_realk
+    Eocc=0E0_realk
+    lag_occ=0E0_realk
+    Evirt=0E0_realk
+    lag_virt=0E0_realk
     ! Just in case, zero individual orbital contributions for fragment
     MyFragment%OccContribs=0E0_realk
     MyFragment%VirtContribs=0E0_realk
@@ -615,8 +615,8 @@ contains
 
     ! Total e1, e2, and individual virt atomic contributions are found by summing all thread contributions
     !$OMP CRITICAL
-    e1_final = e1_final + e1
-    e2_final = e2_final + e2
+    Eocc = Eocc + e1
+    lag_occ = lag_occ + e2
 
     ! Update total virtual contributions to fragment energy
     do a=1,nvirtAOS
@@ -709,8 +709,8 @@ contains
 
     ! Total e3, e4, and individual occ atomic contributions are found by summing all thread contributions
     !$OMP CRITICAL
-    e3_final = e3_final + e3
-    e4_final = e4_final + e4
+    Evirt = Evirt + e3
+    lag_virt = lag_virt + e4
 
     ! Update total occupied contributions to fragment energy
     do i=1,noccAOS
@@ -727,30 +727,12 @@ contains
 
     ! Total atomic fragment energy
     ! ****************************
-    ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
-    select case(MyFragment%ccmodel)
-    case(MODEL_MP2)
-       ! MP2
-       MyFragment%energies(FRAGMODEL_LAGMP2) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
-       MyFragment%energies(FRAGMODEL_OCCMP2) = e1_final   ! occupied
-       MyFragment%energies(FRAGMODEL_VIRTMP2) = e3_final   ! virtual
-    case(MODEL_CC2)
-       ! CC2
-       MyFragment%energies(FRAGMODEL_OCCCC2) = e1_final   ! occupied
-       MyFragment%energies(FRAGMODEL_VIRTCC2) = e3_final   ! virtual
-    case(MODEL_CCSD)
-       ! CCSD
-       MyFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
-       MyFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
-#ifdef MOD_UNRELEASED
-    case(MODEL_CCSDpT)
-       ! Save also CCSD contribution for CCSD(T)
-       MyFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
-       MyFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
-!endif mod_unreleased
-#endif
-    end select
-    ! Energy contributions other than MP2,CC2, and CCSD are calculated elsewhere
+    if(MyFragment%ccmodel==MODEL_MP2) then
+       ! Lagrangian energy only implemented for MP2 so it gets special treatment
+       MyFragment%energies(FRAGMODEL_LAGMP2) = Eocc + lag_occ + Evirt + lag_virt
+    end if
+    ! Put occupied (Eocc) and virtual (Evirt) scheme energies into fragment energies array
+    call put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
 
     ! Set energies used by fragment optimization
     call get_occ_virt_lag_energies_fragopt(MyFragment)
@@ -764,11 +746,11 @@ contains
     write(DECinfo%output,'(1X,a,i7)') 'Energy summary for fragment: ', &
          & MyFragment%atomic_number
     write(DECinfo%output,*) '**********************************************************************'
-    write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', e1_final
+    write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', Eocc
     if(.not. DECinfo%onlyoccpart) then
-       write(DECinfo%output,'(1X,a,g20.10)') 'Single virtual  energy = ', e3_final
-       write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian occ term  = ', e2_final
-       write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian virt term = ', e4_final
+       write(DECinfo%output,'(1X,a,g20.10)') 'Single virtual  energy = ', Evirt
+       write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian occ term  = ', lag_occ
+       write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian virt term = ', lag_virt
     end if
 
     write(DECinfo%output,*)
@@ -800,19 +782,19 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer,intent(in) :: nUnocc
     !> Occupied orbitals for full molecule
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals for full molecule
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Full molecule info (will be unchanged at output)
     type(fullmolecule), intent(inout) :: MyMolecule
     !> LSDalton info
     type(lsitem), intent(inout) :: mylsitem
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> Existing full molecular t1 amplitudes
     type(array2),intent(in) :: t1old
     !> New full molecular t1 amplitudes which will be updated with the contribution from pair fragment
@@ -865,20 +847,20 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals
-    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Atomic fragment 
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout) :: grad
-    type(ccatom) :: FOfragment
+    type(decfrag) :: FOfragment
 
 
     if(DECinfo%fragadapt .and. PairFragment%FAset) then
@@ -913,15 +895,15 @@ contains
 
     implicit none
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Distance table for all atoms in the molecule
     real(realk), intent(in) :: DistanceTable(natoms,natoms)
     !> Pair fragment formed from fragment 1 and 2 
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout) :: grad
     type(array2) :: t1, ccsdpt_t1
@@ -1041,8 +1023,8 @@ contains
        ! call ccsd(t) driver and pair fragment evaluation
        call ccsdpt_driver(PairFragment%noccAOS,PairFragment%nunoccAOS,&
                           & PairFragment%number_basis,PairFragment%ppfock,&
-                          & PairFragment%qqfock,PairFragment%ypo,&
-                          & PairFragment%ypv,PairFragment%mylsitem,&
+                          & PairFragment%qqfock,PairFragment%Co,&
+                          & PairFragment%Cv,PairFragment%mylsitem,&
                           & t2,ccsdpt_t1,ccsdpt_t2)
        call ccsdpt_energy_e4_pair(Fragment1,Fragment2,&
                           &PairFragment,t2,ccsdpt_t2)
@@ -1091,11 +1073,11 @@ contains
     !> MP2 amplitudes, only virt orbitals on central atom, occ AOS orbitals
     type(array4), intent(in) :: t2virt
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Distance table for all atoms in the molecule
@@ -1106,7 +1088,7 @@ contains
     real(realk) :: e1, e2, e3, e4,tmp,multaibj
     real(realk) :: tcpu1,tcpu2,twall1,twall2
     logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
-    real(realk) :: e1_final, e2_final,e3_final,e4_final
+    real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     logical :: something_wrong
 
 
@@ -1143,10 +1125,10 @@ contains
     nvirtEOS = PairFragment%nunoccEOS
     noccAOS = PairFragment%noccAOS
     nvirtAOS = PairFragment%nunoccAOS
-    e1_final=0E0_realk
-    e2_final=0E0_realk
-    e3_final=0E0_realk
-    e4_final=0E0_realk
+    Eocc=0E0_realk
+    lag_occ=0E0_realk
+    Evirt=0E0_realk
+    lag_virt=0E0_realk
     ! Distance between fragments in Angstrom
     pairdist = get_distance_between_fragments(Fragment1,Fragment2,natoms,DistanceTable)
     pairdist = bohr_to_angstrom*pairdist
@@ -1247,8 +1229,8 @@ contains
 
     ! Total e1 and e2 contributions are found by summing all thread contributions
     !$OMP CRITICAL
-    e1_final = e1_final + e1
-    e2_final = e2_final + e2
+    Eocc = Eocc + e1
+    lag_occ = lag_occ + e2
     !$OMP END CRITICAL
 
     call collect_thread_memory()
@@ -1306,40 +1288,24 @@ contains
 
     ! Total e3 and e4 contributions are found by summing all thread contributions
     !$OMP CRITICAL
-    e3_final = e3_final + e3
-    e4_final = e4_final + e4
+    Evirt = Evirt + e3
+    lag_virt = lag_virt + e4
     !$OMP END CRITICAL
 
     call collect_thread_memory()
     !$OMP END PARALLEL
     call mem_TurnOffThread_Memory()
 
+
     ! Total pair interaction energy
     ! *****************************
-    ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
-    select case(pairfragment%ccmodel)
-    case(MODEL_MP2)
-       ! MP2
-       PairFragment%energies(FRAGMODEL_LAGMP2) = e1_final + e2_final + e3_final + e4_final  ! Lagrangian
-       PairFragment%energies(FRAGMODEL_OCCMP2) = e1_final   ! occupied
-       PairFragment%energies(FRAGMODEL_VIRTMP2) = e3_final   ! virtual
-    case(MODEL_CC2)
-       ! CC2
-       PairFragment%energies(FRAGMODEL_OCCCC2) = e1_final   ! occupied
-       PairFragment%energies(FRAGMODEL_VIRTCC2) = e3_final   ! virtual
-    case(MODEL_CCSD)
-       ! CCSD
-       PairFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
-       PairFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
-#ifdef MOD_UNRELEASED
-    case(MODEL_CCSDpT)
-       ! save CCSD contribution for CCSD(T)
-       PairFragment%energies(FRAGMODEL_OCCCCSD) = e1_final   ! occupied
-       PairFragment%energies(FRAGMODEL_VIRTCCSD) = e3_final   ! virtual
-!endif mod_unreleased
-#endif
-    end select
-    ! Energy contributions other than MP2,CC2, and CCSD are calculated elsewhere
+    if(PairFragment%ccmodel==MODEL_MP2) then
+       ! Lagrangian energy only implemented for MP2 so it gets special treatment
+       PairFragment%energies(FRAGMODEL_LAGMP2) = Eocc + lag_occ + Evirt + lag_virt
+    end if
+    ! Put occupied (Eocc) and virtual (Evirt) scheme energies into fragment energies array
+    call put_fragment_energy_contribs_main(Eocc,Evirt,PairFragment)
+
     call mem_dealloc(dopair_occ)
     call mem_dealloc(dopair_virt)
 
@@ -1353,11 +1319,11 @@ contains
          & Fragment1%atomic_number, Fragment2%atomic_number
     write(DECinfo%output,*) '*****************************************************************************'
 
-    write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair occ energy  = ', pairdist,e1_final
+    write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair occ energy  = ', pairdist,Eocc
     if(.not. DECinfo%onlyoccpart) then
-       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair virt energy = ', pairdist,e3_final
-       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. occ term  = ', pairdist,e2_final
-       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. virt term = ', pairdist,e4_final
+       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair virt energy = ', pairdist,Evirt
+       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. occ term  = ', pairdist,lag_occ
+       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. virt term = ', pairdist,lag_virt
     end if
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -1394,8 +1360,8 @@ contains
 #ifdef VAR_OMP
     integer, external :: OMP_GET_MAX_THREADS
 #endif
-    type(ccorbital), pointer :: OccOrbitals(:)
-    type(ccorbital), pointer :: UnoccOrbitals(:)
+    type(decorbital), pointer :: OccOrbitals(:)
+    type(decorbital), pointer :: UnoccOrbitals(:)
     integer :: nocc,nunocc,nbasis,natoms
 
     write(DECinfo%output,*) 'Using DEC-MP2 debug routine for full molecular system...'
@@ -1436,7 +1402,7 @@ contains
        ! Only copy valence orbitals into array2 structure
        call mem_alloc(Cocc,nbasis,nocc)
        do i=1,nocc
-          Cocc(:,i) = MyMolecule%ypo(:,i+Ncore)
+          Cocc(:,i) = MyMolecule%Co(:,i+Ncore)
        end do
 
        ! Fock valence
@@ -1449,12 +1415,12 @@ contains
     else
        ! No frozen core, simply copy elements for all occupied orbitals
        call mem_alloc(Cocc,nbasis,nocc)
-       Cocc=MyMolecule%ypo
+       Cocc=MyMolecule%Co
        ppfock = MyMolecule%ppfock
        offset=0
     end if
     call mem_alloc(Cvirt,nbasis,nunocc)
-    Cvirt = MyMolecule%ypv
+    Cvirt = MyMolecule%Cv
     e1=0E0_realk
     e2=0E0_realk
     e3=0E0_realk
@@ -1973,16 +1939,16 @@ contains
     !> Central atom in molecule
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
-    type(ccatom),intent(inout)        :: AtomicFragment
+    type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
-    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
+    !> Delete fragment basis information ("expensive box in decfrag type") at exit?
     logical,intent(in) :: freebasisinfo
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
@@ -2177,7 +2143,7 @@ contains
     ! Integrals (ai|bj)
     call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%number_basis,&
          & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-         & AtomicFragment%ypv, AtomicFragment%ypo, g)
+         & AtomicFragment%Cv, AtomicFragment%Co, g)
     ! Amplitudes
     call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
          & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
@@ -2267,7 +2233,7 @@ contains
  call mem_dealloc(VirtContribs)
 
  ! Ensure that energies in fragment are set consistently
- call set_energies_ccatom_structure_fragopt(AtomicFragment)
+ call set_energies_decfrag_structure_fragopt(AtomicFragment)
 
 
  ! Restore the original CC model 
@@ -2293,23 +2259,23 @@ end subroutine optimize_atomic_fragment
     !> Central atom in molecule
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
-    type(ccatom),intent(inout)        :: AtomicFragment
+    type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(in) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
-    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
+    !> Delete fragment basis information ("expensive box in decfrag type") at exit?
     logical,intent(in) :: freebasisinfo
     !> Doubles amplitudes for converged fragment (local orbital basis, index order: a,i,b,j)
     !> At output, the virtual indices will have been transformed to the (smaller) FO orbital space
     type(array4),intent(inout) :: t2
     !> Maximum number of reduction steps
     integer,intent(in) :: max_iter_red
-    type(ccatom) :: FOfragment
+    type(decfrag) :: FOfragment
     integer :: ov,iter,Nold,Nnew,nocc_exp,nvirt_exp
     logical :: reduction_converged,ReductionPossible(2)
     real(realk) :: FOT,LagEnergyOld,OccEnergyOld,VirtEnergyOld
@@ -2533,16 +2499,16 @@ end subroutine optimize_atomic_fragment
     !> Central atom in molecule
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
-    type(ccatom),intent(inout)        :: AtomicFragment
+    type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(in) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
-    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
+    !> Delete fragment basis information ("expensive box in decfrag type") at exit?
     logical,intent(in) :: freebasisinfo
     !> Maximum number of reduction steps
     integer,intent(in) :: max_iter_red
@@ -2824,16 +2790,16 @@ end subroutine optimize_atomic_fragment
     !> Central atom in molecule
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
-    type(ccatom),intent(inout)        :: AtomicFragment
+    type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
-    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All unoccupied orbitals
-    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
-    !> Delete fragment basis information ("expensive box in ccatom type") at exit?
+    !> Delete fragment basis information ("expensive box in decfrag type") at exit?
     logical,intent(in) :: freebasisinfo
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
@@ -2855,7 +2821,7 @@ end subroutine optimize_atomic_fragment
        ! Integrals (ai|bj)
        call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%number_basis,&
             & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-            & AtomicFragment%ypv, AtomicFragment%ypo, g)
+            & AtomicFragment%Cv, AtomicFragment%Co, g)
        ! MP2 amplitudes
        call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
             & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
@@ -2886,7 +2852,7 @@ end subroutine optimize_atomic_fragment
   subroutine fragopt_print_info(Fragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
     implicit none
     !> Atomic fragment
-    type(ccatom),intent(inout) :: Fragment
+    type(decfrag),intent(inout) :: Fragment
     !> Lagrangian energy difference since last loop in fragment optimization
     real(realk),intent(in) :: LagEnergyDiff
     !> Occupied energy difference since last loop in fragment optimization
@@ -3107,7 +3073,7 @@ end subroutine optimize_atomic_fragment
 
     implicit none
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Number of orbitals (occ OR virt) in full molecule
     integer,intent(in)        :: norb_full
     !> Contributions to the fragment energy from each individual orbital
@@ -3156,15 +3122,15 @@ end subroutine optimize_atomic_fragment
   !> \brief For a given model, get the occupied, virtual and Lagragian fragment energies
   !> to use for fragment optimization, i.e. simply copy the relevant energies from
   !> "fragment%energies" to fragment%EoccFOP, fragment%EvirtFOP, and fragment%LagFOP.
-  !> (See description of EoccFOP, EvirtFOP, and LagFOP in ccatom type definition).
+  !> (See description of EoccFOP, EvirtFOP, and LagFOP in decfrag type definition).
   !> \author Kasper Kristensen
   !> \date March 2013
   subroutine get_occ_virt_lag_energies_fragopt(Fragment)
     implicit none
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     ! MODIFY FOR NEW MODEL
     ! If you implement a new model, please copy fragment%energies(?) for your model,
-    ! see ccatom type def to determine the "?".
+    ! see decfrag type def to determine the "?".
 
     fragment%EoccFOP = 0.0_realk
     fragment%EvirtFOP = 0.0_realk
@@ -3211,12 +3177,12 @@ end subroutine optimize_atomic_fragment
   !> in fragment%LagFOP, fragment%EoccFOP, and fragment%EvirtFOP are copied correctly 
   !> to the general fragment%energies arrays.
   !> This is effectively the inverse routine of get_occ_virt_lag_energies_fragopt.
-  !> (See description of energies, EoccFOP, EvirtFOP, and LagFOP in ccatom type definition).
+  !> (See description of energies, EoccFOP, EvirtFOP, and LagFOP in decfrag type definition).
   !> \author Kasper Kristensen
   !> \date March 2013
-  subroutine set_energies_ccatom_structure_fragopt(Fragment)
+  subroutine set_energies_decfrag_structure_fragopt(Fragment)
     implicit none
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     ! MODIFY FOR NEW MODEL 
     ! If you implement a new model, please set fragment%energies(?) for your model,
     ! see FRAGMODEL_* definitions in dec_typedef.F90 to determine the "?".
@@ -3247,8 +3213,78 @@ end subroutine optimize_atomic_fragment
             & for model:', fragment%ccmodel
     end select
 
-  end subroutine set_energies_ccatom_structure_fragopt
+  end subroutine set_energies_decfrag_structure_fragopt
 
+
+  !> \brief When fragment energies have been calculated, put them
+  !> into the energies array in fragment structure according to the given model
+  !> (see FRAGMODEL_* in dec_typedef.F90).
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
+    implicit none
+    !> Occupied and virtual partitioning scheme energies
+    real(realk),intent(in) :: Eocc, Evirt
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: MyFragment
+
+
+    ! Put energies into their proper place in the MyFragment%energies array
+    ! according to the CC model used for the fragment
+    call put_fragment_energy_contribs(MyFragment%ccmodel,Eocc,Evirt,MyFragment%energies)
+
+
+    ! Special case: When some pairs are treated at the MP2 level, while the
+    ! actual CC model is higher in the hierarchy (e.g. CCSD), we need to 
+    ! put the MP2 fragment energies into the energy array for the more accurate model.
+    if(MyFragment%ccmodel==MODEL_MP2 .and. DECinfo%ccmodel/=MODEL_MP2) then
+       call put_fragment_energy_contribs(DECinfo%ccmodel,Eocc,Evirt,MyFragment%energies)
+    end if
+
+  end subroutine put_fragment_energy_contribs_main
+
+
+
+  ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
+  !> \brief When fragment energies have been calculated, put them
+  !> into the energies array according to the given model
+  !> (see FRAGMODEL_* in dec_typedef.F90).
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine put_fragment_energy_contribs(ccmodel,Eocc,Evirt,energies)
+    implicit none
+    !> Which CC model
+    integer,intent(in) :: ccmodel
+    !> Occupied and virtual partitioning scheme energies
+    real(realk),intent(in) :: Eocc, Evirt
+    !> Energies array
+    real(realk),intent(inout) :: energies(ndecenergies)
+
+
+    ! Put energies into their proper place in the energies array
+    select case(ccmodel)
+    case(MODEL_MP2)
+       ! MP2
+       energies(FRAGMODEL_OCCMP2) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTMP2) = Evirt   ! virtual
+    case(MODEL_CC2)
+       ! CC2
+       energies(FRAGMODEL_OCCCC2) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTCC2) = Evirt   ! virtual
+    case(MODEL_CCSD)
+       ! CCSD
+       energies(FRAGMODEL_OCCCCSD) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTCCSD) = Evirt   ! virtual
+#ifdef MOD_UNRELEASED
+    case(MODEL_CCSDpT)
+       ! Save also CCSD contribution for CCSD(T)
+       energies(FRAGMODEL_OCCCCSD) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTCCSD) = Evirt   ! virtual
+       !endif mod_unreleased
+#endif
+    end select
+
+  end subroutine put_fragment_energy_contribs
 
 
   

@@ -30,7 +30,7 @@ module dec_main_mod
   use orbital_operations!,only: check_lcm_against_canonical
   use full_molecule!,only: molecule_copyback_FSC_matrices
   use mp2_gradient_module!,only: dec_get_error_difference
-  use dec_driver_module,only: dec_wrapper, main_fragment_driver
+  use dec_driver_module,only: dec_wrapper
   use full,only: full_driver
 
 public :: dec_main_prog_input, dec_main_prog_file, &

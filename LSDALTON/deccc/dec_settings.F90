@@ -555,10 +555,6 @@ contains
     end if SimulateFullCalc
 
 
-    if(DECinfo%ccmodel==MODEL_CCSDpT .and. DECinfo%DECrestart) then
-       call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
-    end if
-
     ! Which orbitals to use?
     ! Default full calculation: Canonical orbitals
     ! Default DEC calculation : Local orbitals
