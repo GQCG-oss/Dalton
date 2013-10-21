@@ -42,9 +42,9 @@
        A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
        A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
        L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
@@ -128,35 +128,47 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:49:24 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:25:55 2013
+     Host name              : c10-6.local                             
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_rsp_esr
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /home/arnfinn/release_dalton/DALTON/test/2013-10-21T15_25-testjob-pid-54990
+   2) /home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | arnfinn
+ Host                     | stallo-2.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Fortran compiler         | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/ifort
+ C compiler               | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icpc
+ C++ compiler version     | icpc (ICC) 13.0.1 20121010
+ BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
+                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
+                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
+                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
+                          | mp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
+                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
+                          | nmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 9e5bb7f558e1ee66d0614a37cb4fb8c71086ba4e
+ Configuration time       | 2013-10-15 12:56:50.249803
 
 
    Content of the .dal input file
@@ -706,9 +718,9 @@ Point group: C2v
  Number of two-electron integrals written:     7905721 ( 21.1% )
  Megabytes written:                             90.530
 
- >>>  Time used in TWOINT     is   1.23 seconds
- >>>> Total CPU  time used in HERMIT:   1.33 seconds
- >>>> Total wall time used in HERMIT:   1.34 seconds
+ >>>  Time used in TWOINT     is   1.05 seconds
+ >>>> Total CPU  time used in HERMIT:   1.15 seconds
+ >>>> Total wall time used in HERMIT:   1.19 seconds
 
 
                         .----------------------------------.
@@ -748,8 +760,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:49:25 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:25:56 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      Calculation of ESR parameters                                           
@@ -799,16 +811,13 @@ Point group: C2v
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  33 electrons.
  "sym." is the symmetry of the one open shell orbital in table below.
 
  Iter     Total energy    Error norm  Delta(E)  Sym.  Closed shell occupation
  -----------------------------------------------------------------------------
-     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
- >>>  Time used in FORMSUP    is   0.26 seconds
 @  1  -608.396981602       4.38D+01  -6.08D+02   2     8   2   5   1
       Virial theorem: -V/T =      1.998331
 @      MULPOP Cl      1.09; O1  _1 -0.54; O1  _2 -0.54; 
@@ -817,58 +826,50 @@ Point group: C2v
       Virial theorem: -V/T =      1.998347
 @      MULPOP Cl     -0.21; O1  _1  0.10; O1  _2  0.10; 
  -----------------------------------------------------------------------------
-@  3  -608.830548788       2.23D+00  -7.00D-02   2     8   2   5   1
-      Virial theorem: -V/T =      1.998400
+@  3  -608.830331075       2.23D+00  -6.98D-02   2     8   2   5   1
+      Virial theorem: -V/T =      1.998399
 @      MULPOP Cl      1.01; O1  _1 -0.51; O1  _2 -0.51; 
  -----------------------------------------------------------------------------
-@  4  -609.050383159       1.45D-01  -2.20D-01   2     8   2   5   1
-      Virial theorem: -V/T =      1.999735
-@      MULPOP Cl      0.52; O1  _1 -0.26; O1  _2 -0.26; 
- -----------------------------------------------------------------------------
-@  5  -609.053198282       6.71D-02  -2.82D-03   2     8   2   5   1
-      Virial theorem: -V/T =      1.999244
-@      MULPOP Cl      0.49; O1  _1 -0.25; O1  _2 -0.25; 
- -----------------------------------------------------------------------------
-@  6  -609.054020516       2.40D-02  -8.22D-04   2     8   2   5   1
-      Virial theorem: -V/T =      1.999319
-@      MULPOP Cl      0.50; O1  _1 -0.25; O1  _2 -0.25; 
- -----------------------------------------------------------------------------
-@  7  -609.054184492       6.86D-03  -1.64D-04   2     8   2   5   1
-      Virial theorem: -V/T =      1.999263
+@  4  -609.051569102       1.34D-01  -2.21D-01   2     8   2   5   1
+      Virial theorem: -V/T =      1.999793
 @      MULPOP Cl      0.51; O1  _1 -0.25; O1  _2 -0.25; 
  -----------------------------------------------------------------------------
-@  8  -609.054199243       2.90D-03  -1.48D-05   2     8   2   5   1
-      Virial theorem: -V/T =      1.999268
+@  5  -609.053412924       5.76D-02  -1.84D-03   2     8   2   5   1
+      Virial theorem: -V/T =      1.999230
 @      MULPOP Cl      0.51; O1  _1 -0.25; O1  _2 -0.25; 
  -----------------------------------------------------------------------------
-@  9  -609.054201039       1.37D-03  -1.80D-06   2     8   2   5   1
-      Virial theorem: -V/T =      1.999265
+@  6  -609.054051457       2.35D-02  -6.39D-04   2     8   2   5   1
+      Virial theorem: -V/T =      1.999328
 @      MULPOP Cl      0.51; O1  _1 -0.25; O1  _2 -0.25; 
  -----------------------------------------------------------------------------
-@ 10  -609.054201559       4.90D-04  -5.20D-07   2     8   2   5   1
-      Virial theorem: -V/T =      1.999265
+@  7  -609.054193757       5.92D-03  -1.42D-04   2     8   2   5   1
+      Virial theorem: -V/T =      1.999270
 @      MULPOP Cl      0.51; O1  _1 -0.26; O1  _2 -0.26; 
  -----------------------------------------------------------------------------
-@ 11  -609.054201685       1.92D-04  -1.27D-07   2     8   2   5   1
+@  8  -609.054201271       1.44D-03  -7.51D-06   2     8   2   5   1
+      Virial theorem: -V/T =      1.999267
+@      MULPOP Cl      0.51; O1  _1 -0.26; O1  _2 -0.26; 
+ -----------------------------------------------------------------------------
+@  9  -609.054201645       6.14D-04  -3.74D-07   2     8   2   5   1
       Virial theorem: -V/T =      1.999266
 @      MULPOP Cl      0.51; O1  _1 -0.26; O1  _2 -0.26; 
  -----------------------------------------------------------------------------
-@ 12  -609.054201706       8.38D-05  -2.08D-08   2     8   2   5   1
+@ 10  -609.054201695       1.90D-04  -4.93D-08   2     8   2   5   1
       Virial theorem: -V/T =      1.999266
 @      MULPOP Cl      0.51; O1  _1 -0.26; O1  _2 -0.26; 
  -----------------------------------------------------------------------------
-@ 13  -609.054201710       5.06D-05  -3.30D-09   2     8   2   5   1
+@ 11  -609.054201706       1.09D-04  -1.18D-08   2     8   2   5   1
       Virial theorem: -V/T =      1.999266
 @      MULPOP Cl      0.51; O1  _1 -0.26; O1  _2 -0.26; 
  -----------------------------------------------------------------------------
-@ 14  -609.054201710       1.50D-05  -5.43D-10   2     8   2   5   1
+@ 12  -609.054201710       3.37D-05  -3.53D-09   2     8   2   5   1
       Virial theorem: -V/T =      1.999266
 @      MULPOP Cl      0.51; O1  _1 -0.26; O1  _2 -0.26; 
  -----------------------------------------------------------------------------
-@ 15  -609.054201710       5.02D-06  -6.55D-11   2     8   2   5   1
+@ 13  -609.054201710       8.72D-06  -2.50D-10   2     8   2   5   1
 
-@ *** DIIS converged in  15 iterations !
-@     Converged SCF energy, gradient:   -609.054201710109    5.02D-06
+@ *** DIIS converged in  13 iterations !
+@     Converged SCF energy, gradient:   -609.054201710096    8.72D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -886,25 +887,25 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1   -105.09832784   -20.63184841   -10.80112043    -8.26632205    -1.55859624
-        -1.00128260    -0.73248003    -0.52534293     0.17589726     0.40718381
-         0.47583411     0.61483544     0.67788003
+  1   -105.09832705   -20.63184902   -10.80111967    -8.26632131    -1.55859628
+        -1.00128255    -0.73248012    -0.52534290     0.17589711     0.40718423
+         0.47583418     0.61483558     0.67787997
 
-  2     -8.26681295    -0.72577586    -0.22424106     0.40864410     0.59647754
-         0.85886881     1.60840961     1.90315599
+  2     -8.26681218    -0.72577594    -0.22424091     0.40864450     0.59647795
+         0.85886858     1.60840947     1.90315606
 
-  3    -20.63187507    -8.26800248    -1.40385277    -0.72121039    -0.53417272
-         0.18753821     0.48314589     0.66144729     0.89011062     1.15236451
+  3    -20.63187568    -8.26800173    -1.40385306    -0.72121087    -0.53417315
+         0.18753844     0.48314604     0.66144716     0.89011034     1.15236438
 
-  4     -0.53103911     0.65523309     0.80478665     1.64012827     1.95470374
-         2.16743124
+  4     -0.53103853     0.65523353     0.80478641     1.64012800     1.95470370
+         2.16743186
 
-    E(LUMO) :     0.17589726 au (symmetry 1)
-  - E(HOMO) :    -0.52534293 au (symmetry 1)
+    E(LUMO) :     0.17589711 au (symmetry 1)
+  - E(HOMO) :    -0.52534290 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.70124019 au
+    gap     :     0.70124000 au
 
-and E(SOMO) :    -0.22424106 au (symmetry 2)
+and E(SOMO) :    -0.22424091 au (symmetry 2)
 
  NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
 
@@ -912,7 +913,7 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.953       1.332
+ >>>> CPU and wall time for SCF :       3.437       3.482
 
 
                        .-----------------------------------.
@@ -924,15 +925,15 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
 @    Spatial symmetry:            2
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -609.054201710109                 
+@    Final HF energy:            -609.054201710096                 
 @    Nuclear repulsion:           111.397397857680
-@    Electronic energy:          -720.451599567789
+@    Electronic energy:          -720.451599567776
 
-@    Final gradient norm:           0.000005022906
+@    Final gradient norm:           0.000008722251
 
  
-     Date and time (Linux)  : Sun Sep  8 20:49:27 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:26:00 2013
+     Host name              : c10-6.local                             
 
  (Only coefficients >0.0100 are printed.)
 
@@ -1050,12 +1051,12 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.00 seconds
- >>>> Total wall time used in SIRIUS :      1.38 seconds
+ >>>> Total CPU  time used in SIRIUS :      3.57 seconds
+ >>>> Total wall time used in SIRIUS :      3.63 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:49:27 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:26:00 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1142,18 +1143,18 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
           SD 005 y
           SD 006 y
 
- Integral transformation: Total CPU and WALL times (sec)       2.487       2.515
+ Integral transformation: Total CPU and WALL times (sec)       3.368       3.421
 
 
- open shell SCF energy:     -609.054201710108714
- -- inactive part     :     -720.014533077844362
- --   active part     :       -0.437066489944760
+ open shell SCF energy:     -609.054201710095981
+ -- inactive part     :     -720.345186945444539
+ --   active part     :       -0.106412622331894
  -- nuclear repulsion :      111.397397857680389
 
 
-                     ***************************************
-                     *** RHF response calculation (TDHF) ***
-                     ***************************************
+                   *******************************************
+                   *** High-spin ROHF response calculation ***
+                   *******************************************
 
 
 
@@ -1184,7 +1185,7 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
  Convergence of RSP solution vectors, threshold = 1.00D-05
  ---------------------------------------------------------------
  (dimension of paired reduced space:   22)
- RSP solution vector no.    1; norm of residual   3.83D-06
+ RSP solution vector no.    1; norm of residual   3.75D-06
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1192,61 +1193,61 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
      FC Cl 01 active part  : 0.00000000D+00
      FC Cl 01 total        : 0.00000000D+00
 
-TRIPLET OPERATOR: "FC Cl 01" LAGRANGIAN:  1.964391 AVERAGE:  0.000000 TOTAL:  1.964391
+TRIPLET OPERATOR: "FC Cl 01" LAGRANGIAN:  1.964388 AVERAGE:  0.000000 TOTAL:  1.964388
 
      FC O1 02 inactive part: 0.00000000D+00
      FC O1 02 active part  : 0.00000000D+00
      FC O1 02 total        : 0.00000000D+00
 
-TRIPLET OPERATOR: "FC O1 02" LAGRANGIAN:  2.156360 AVERAGE:  0.000000 TOTAL:  2.156360
+TRIPLET OPERATOR: "FC O1 02" LAGRANGIAN:  2.156357 AVERAGE:  0.000000 TOTAL:  2.156357
 
      SD 002 y inactive part:     0.00000000
-     SD 002 y active part  :    -1.47183462
-     SD 002 y total        :    -1.47183462
+     SD 002 y active part  :    -1.47179519
+     SD 002 y total        :    -1.47179519
 
-TRIPLET OPERATOR: "SD 002 y" LAGRANGIAN: -0.187766 AVERAGE: -1.471835 TOTAL: -1.659600
+TRIPLET OPERATOR: "SD 002 y" LAGRANGIAN: -0.187800 AVERAGE: -1.471795 TOTAL: -1.659595
 
      SD 003 y inactive part:     0.00000000
-     SD 003 y active part  :    -1.14743091
-     SD 003 y total        :    -1.14743091
+     SD 003 y active part  :    -1.14745312
+     SD 003 y total        :    -1.14745312
 
-TRIPLET OPERATOR: "SD 003 y" LAGRANGIAN: -0.639623 AVERAGE: -1.147431 TOTAL: -1.787053
+TRIPLET OPERATOR: "SD 003 y" LAGRANGIAN: -0.639600 AVERAGE: -1.147453 TOTAL: -1.787053
 
      SD 004 y inactive part:     0.00000000
-     SD 004 y active part  :    -0.02511773
-     SD 004 y total        :    -0.02511773
+     SD 004 y active part  :    -0.02511698
+     SD 004 y total        :    -0.02511698
 
-TRIPLET OPERATOR: "SD 004 y" LAGRANGIAN:  0.011079 AVERAGE: -0.025118 TOTAL: -0.014039
+TRIPLET OPERATOR: "SD 004 y" LAGRANGIAN:  0.011077 AVERAGE: -0.025117 TOTAL: -0.014040
 
      SD 005 x inactive part:     0.00000000
-     SD 005 x active part  :     2.95179433
-     SD 005 x total        :     2.95179433
+     SD 005 x active part  :     2.95171606
+     SD 005 x total        :     2.95171606
 
-TRIPLET OPERATOR: "SD 005 x" LAGRANGIAN:  0.631076 AVERAGE:  2.951794 TOTAL:  3.582870
+TRIPLET OPERATOR: "SD 005 x" LAGRANGIAN:  0.631145 AVERAGE:  2.951716 TOTAL:  3.582861
 
      SD 006 x inactive part:     0.00000000
-     SD 006 x active part  :     2.32437771
-     SD 006 x total        :     2.32437771
+     SD 006 x active part  :     2.32442187
+     SD 006 x total        :     2.32442187
 
-TRIPLET OPERATOR: "SD 006 x" LAGRANGIAN:  1.156844 AVERAGE:  2.324378 TOTAL:  3.481221
+TRIPLET OPERATOR: "SD 006 x" LAGRANGIAN:  1.156802 AVERAGE:  2.324422 TOTAL:  3.481224
 
      SD 007 z inactive part:     0.00000000
-     SD 007 z active part  :    -1.47995971
-     SD 007 z total        :    -1.47995971
+     SD 007 z active part  :    -1.47992087
+     SD 007 z total        :    -1.47992087
 
-TRIPLET OPERATOR: "SD 007 z" LAGRANGIAN: -0.443310 AVERAGE: -1.479960 TOTAL: -1.923270
+TRIPLET OPERATOR: "SD 007 z" LAGRANGIAN: -0.443345 AVERAGE: -1.479921 TOTAL: -1.923266
 
      SD 008 z inactive part:     0.00000000
-     SD 008 z active part  :    -0.02511773
-     SD 008 z total        :    -0.02511773
+     SD 008 z active part  :    -0.02511698
+     SD 008 z total        :    -0.02511698
 
-TRIPLET OPERATOR: "SD 008 z" LAGRANGIAN:  0.011079 AVERAGE: -0.025118 TOTAL: -0.014039
+TRIPLET OPERATOR: "SD 008 z" LAGRANGIAN:  0.011077 AVERAGE: -0.025117 TOTAL: -0.014040
 
      SD 009 z inactive part:     0.00000000
-     SD 009 z active part  :    -1.17694680
-     SD 009 z total        :    -1.17694680
+     SD 009 z active part  :    -1.17696875
+     SD 009 z total        :    -1.17696875
 
-TRIPLET OPERATOR: "SD 009 z" LAGRANGIAN: -0.517221 AVERAGE: -1.176947 TOTAL: -1.694168
+TRIPLET OPERATOR: "SD 009 z" LAGRANGIAN: -0.517203 AVERAGE: -1.176969 TOTAL: -1.694171
 
 TRIPLET OPERATOR: "SD 001 y" contribution = 0.0 by symmetry.
 - Operator is of symmetry no.  2
@@ -1308,17 +1309,17 @@ TRIPLET OPERATOR: "SD 005 y" contribution = 0.0 by symmetry.
 TRIPLET OPERATOR: "SD 006 y" contribution = 0.0 by symmetry.
 - Operator is of symmetry no.  4
 
- >>>> Total CPU  time used in RESPONSE:   2.94 seconds
- >>>> Total wall time used in RESPONSE:   2.98 seconds
+ >>>> Total CPU  time used in RESPONSE:   7.48 seconds
+ >>>> Total wall time used in RESPONSE:   7.59 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   5.29 seconds
- >>>> Total wall time used in DALTON:   5.71 seconds
+ >>>> Total CPU  time used in DALTON:  12.23 seconds
+ >>>> Total wall time used in DALTON:  12.46 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:49:30 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:26:08 2013
+     Host name              : c10-6.local                             
