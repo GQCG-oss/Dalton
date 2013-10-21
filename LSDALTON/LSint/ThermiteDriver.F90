@@ -3348,7 +3348,7 @@ CALL extractDifferentiated_PA(Integral%IN,INTEGRAL%OUT,l1,l2,ijkdiff,ijk,dim1,&
      & LUPRI,IPRINT)
 !
 Integral%nAng = ijk
-Integral%ngeoDeriv = P%ngeoDerivComp*P%nCartesianMomentComp
+Integral%ngeoDeriv = nComp*P%nCartesianMomentComp
 
 !Swap pointers IN and OUT
 ptemp => Integral%IN
@@ -3763,12 +3763,10 @@ DO iDerivP=1,ndim5P
               iQpd = iPassQ + (iDerivQ-1)*nPassQ
               DO iQ=1,nQ
                CDAB(iQ,iA,iB,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
-!              CDAB(iQ,iA,iB,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
               ENDDO !iQ
               IF (permute) THEN
                 DO iQ=1,nQ
                  CDAB(iQ,iB,iA,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
-!                CDAB(iQ,iB,iA,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
                 ENDDO !iQ
               ENDIF
              ENDDO !iDerivQ
