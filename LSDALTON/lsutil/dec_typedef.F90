@@ -467,13 +467,13 @@ module dec_typedef_module
      !> Number of auxiliary basis functions
      integer :: nauxbasis
      !> Number of occupied orbitals (core + valence)
-     integer :: numocc
+     integer :: nocc
      !> Number of core orbitals
      integer :: ncore
-     !> Number of valence orbitals (numocc-ncore)
+     !> Number of valence orbitals (nocc-ncore)
      integer :: nval
      !> Number of unoccupied orbitals
-     integer :: numvirt
+     integer :: nunocc
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()
@@ -601,9 +601,9 @@ module dec_typedef_module
      type(decorbital), pointer :: unoccAOSorb(:) => null()
 
      !> Number of atoms (atomic extent)
-     integer :: number_atoms=0
+     integer :: natoms=0
      !> Number of basis functions
-     integer :: number_basis=0
+     integer :: nbasis=0
      !> Atomic indices
      integer, pointer :: atoms_idx(:) => null()
      !> Corresponding basis function indices
@@ -673,8 +673,8 @@ module dec_typedef_module
      !> Index 1: Local,   Index 2: Fragment-adapted
      !> Has fragment-adapted MO coeff been set (not done by default fragment initialization)?
      logical :: FAset
-     real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: number_basis,noccFA
-     real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: number_basis,nunoccFA
+     real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: nbasis,noccFA
+     real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: nbasis,nunoccFA
      !> Eigenvalues for correlation density matrices 
      !> --> only set for atomic fragments (pairfrag=.false.) and when FAset=.true.
      real(realk),pointer :: CDocceival(:) => null()    ! dimension noccFA
@@ -718,8 +718,8 @@ module dec_typedef_module
   type FullMP2grad
      !> Number of occupied orbitals in full molecule
      integer :: nocc
-     !> Number of virtual orbitals in full molecule
-     integer :: nvirt
+     !> Number of unoccupied orbitals in full molecule
+     integer :: nunocc
      !> Number of basis functions in full molecule
      integer :: nbasis
      !> Number of atoms in full molecule
@@ -812,8 +812,8 @@ module dec_typedef_module
      integer :: CentralAtom2
      !> Number of basis functions in fragment
      integer :: nbasis
-     !> Number of virtual AOS orbitals in fragment
-     integer :: nvirt
+     !> Number of unoccupied AOS orbitals in fragment
+     integer :: nunocc
      !> Number of occupied AOS orbitals in fragment (only valence for frozen core)
      integer :: nocc
      !> Number of occupied core+valence AOS orbitals (only different from nocc for frozen core)
@@ -933,8 +933,8 @@ module dec_typedef_module
      integer,pointer:: nslaves(:)
      !> Number of occupied orbitals for given fragment (AOS)
      integer,pointer :: nocc(:)
-     !> Number of virtual orbitals for given fragment (AOS)
-     integer,pointer :: nvirt(:)
+     !> Number of unoccupied orbitals for given fragment (AOS)
+     integer,pointer :: nunocc(:)
      !> Number of basis functions for given fragment
      integer,pointer :: nbasis(:)
      !> Number of MPI tasks used for integral/transformation (nalpha*ngamma)
