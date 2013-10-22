@@ -977,12 +977,16 @@ C
 C
       IF (IPRTYP.GT.0) THEN
 
+         CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+         IF (IPRINT .GT. 0)
+     &      write (lupri,*) 'Node',MYNUM,' received job IPRTYP =',IPRTYP
+
 !        allocate memory here if we don't call hermit (more to follow...).
 !        idea: move allocation down to main driver routines of modules as we might want to use
 !              dynamic memory allocation down there (for MPI performance/MPI standard compliance reasons)
 !              which is severely hampered by a "static" WORK for everything.
 !              sknecht - feb 2013.
-         if(iprtyp /= her_work .and. .not.(allocated(work)))then
+         if(iprtyp /= HER_WORK .and. .not.(allocated(work)))then
 !          allocate memory using f90 utilities
            allocate(work(0:mwork+1),stat=i)
 !          Set memory traps
@@ -999,7 +1003,6 @@ C
            end if
          end if
 
-         CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
 C  new calculation type needs to be added in include/iprtyp.h
          IF      (IPRTYP.EQ.HER_WORK) THEN
             CALL HER_NODSTR(MWORK,wrkdlm,IPRINT)
@@ -1105,7 +1108,7 @@ C added by Bin Gao, May 12, 2012
          END IF
 C
          GO TO 100
-      END IF
+      END IF ! IPRTYP .gt. 0
 
 !     release memory
       if(allocated(work)) deallocate(work)
