@@ -90,7 +90,7 @@ C     Expectation values of differentiated integrals (all atoms)
       IF (ITYPE .EQ. 2) THEN
          L_GRA = MXCOOR
          L_HES = L_GRA*L_GRA
-         L_TMPMT = L_GRA + L_HES
+         L_TMPMT = MAX(L_GRA,L_HES,MXPRIM) ! for gradient, Hessian, expgrd
 C     Direct calculation of Fock matrices
 C        using skeleton matrix approach (AO basis)
       ELSE IF (ITYPE .EQ. 3) THEN
@@ -420,6 +420,7 @@ C
 C-----------------------
 C     Start calculation.
 C-----------------------
+C
       CALL DOPAR(INDEX,MTOTTK,NBATCH,NSTAT,IPRINT)
 C
 C--------------------------------------
@@ -590,6 +591,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mtags.h"
+#include "expopt.h"
 C
       LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR,FIRST
       DIMENSION DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*)
@@ -698,6 +700,7 @@ C
       CALL MPIXBCAST(SRINTS,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(EXPGRA,1,'LOGICAL',MASTER)
 C
 Cef begin
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
@@ -907,6 +910,7 @@ C
 #include "inforb.h"
 #include "infpar.h"
 #include "parint.h"
+#include "expopt.h"
 
 #ifdef VAR_MPI
 #ifndef USE_MPI_MOD_F90
@@ -958,9 +962,11 @@ C
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG7)
          IF (ITYPE .EQ. 2) THEN
             CALL MPIXRECV(TMPMAT(1),L_GRA,'DOUBLE',NWHO,MTAG7)
-            CALL MPIXRECV(TMPMAT(L_GRA+1),L_HES,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_GRA,D1,TMPMAT,1,GRADEE,1)
+            CALL MPIXRECV(TMPMAT(1),L_HES,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_HES,D1,TMPMAT(L_GRA+1),1,HESSEE,1)
+            CALL MPIXRECV(TMPMAT(1),MXPRIM,'DOUBLE',NWHO,MTAG7)
+            CALL DAXPY(MXPRIM,D1,TMPMAT(1),1,ALPGRD,1)
 #if !defined(_CRAYT3E) && !defined(NO_BINSUM)
          ELSE IF (ITYPE .EQ. 3) THEN
             if(.not.rma_model)then
@@ -1087,6 +1093,7 @@ c        CALL QUIT('Inconsistence in HER_RVRES -> MTOTTK .NE. ICOUNT')
       ENDIF
 C
       CALL QEXIT('HER_RVRES')
+      RETURN
       END
 
 C  /* Deck parsrt */
@@ -1552,12 +1559,10 @@ C
 #include "dftcom.h"
 #include "parint.h"
 #include "r12int.h"
+#include "expopt.h"
 C
 #include "cbisol.h"
-Cef begin
 #include "incore.h"
-Cef end
-C
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVINIT','*',103)
 
@@ -1587,6 +1592,7 @@ C
         CALL MPIXBCAST(SRINTS,   1,'LOGICAL',MASTER)
         CALL MPIXBCAST(ERFEXP,   1,'LOGICAL',MASTER)
         CALL MPIXBCAST(CHIVAL,   1,'DOUBLE' ,MASTER)
+        CALL MPIXBCAST(EXPGRA,   1,'LOGICAL',MASTER)
 C
 C       IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                               ELSE calculate g_lr(R12)
@@ -2454,6 +2460,7 @@ C
 #include "suscpt.h"
 #include "inforb.h"
 #include "infpar.h"
+#include "expopt.h"
 #ifdef VAR_MPI
 #ifndef USE_MPI_MOD_F90
 #include "mpif.h"
@@ -2471,8 +2478,11 @@ C
       CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG7)
 C
       IF (ITYPE .EQ. 2) THEN
+         L_TRANSFER = L_GRA + L_HES + MXPRIM
+         CALL MPIXSEND(TMPMAT(1),L_TRANSFER,'DOUBLE',NWHO,MTAG7)
          CALL MPIXSEND(GRADEE,L_GRA,'DOUBLE',MASTER,MTAG7)
          CALL MPIXSEND(HESSEE,L_HES,'DOUBLE',MASTER,MTAG7)
+         CALL MPIXSEND(ALPGRD,MXPRIM,'DOUBLE',MASTER,MTAG7)
       ELSE IF (ITYPE .EQ. 3) THEN
 #if defined(_CRAYT3E) && !defined(NO_BINSUM)
          CALL BIN_SUM(NDMAT*N2BASX, FMAT)
