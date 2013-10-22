@@ -480,7 +480,16 @@ C
                   CALL CC_EXCINP(WORD,MSYM)
                GO TO 1000
     7          CONTINUE
-                  CALL CC_LRSINP(WORD,MSYM)
+c filip, 21.10.2013
+c In case of CC3 the ground state-excited state
+c transition moments are calculated via the CC_OPAINP
+c module, hence:
+                  IF (CC3) THEN
+                     WORD = '*CCOPA '
+                     GOTO 99
+                  ELSE
+                     CALL CC_LRSINP(WORD,MSYM)
+                  ENDIF
                GO TO 1000
     8          CONTINUE
                   CCSTST = .TRUE.
@@ -692,7 +701,16 @@ CKeinSPASmehr
                   DEBUG = .TRUE.
                GO TO 1000
    57          CONTINUE
-                  CALL CC_QR2RINP(WORD)
+c filip, 21.10.2013
+c In case of CC3 the transition moments 
+c between two excited state are calculated 
+c via the CC_OPAINP module, hence:
+                  IF (CC3) THEN
+                     WORD = '*CCXOPA'
+                     GOTO 18
+                  ELSE
+                     CALL CC_QR2RINP(WORD)
+                  ENDIF
                GO TO 1000
    58          CONTINUE
                   HERDIR = .TRUE.
@@ -2509,7 +2527,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_OPAINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 16)
 
 * variables:
       LOGICAL SETGSTOPA, SETGSTTPA, SETXSTOPA
@@ -2535,7 +2553,8 @@ C=====================================================================*
       DATA SETXSTOPA /.FALSE./
       DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
      *             '.ANGMOM','.HALFFR','.PRINT ','.USE X2','.USE O2',
-     *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR'/
+     *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR',
+     *             '.DIPOLE'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2609,7 +2628,7 @@ c         table look up:
 
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
 
 C           ---------------------------------------------------------
@@ -2894,6 +2913,11 @@ C           ------------------------------------------------------
               WRITE(LUPRI,*) 'input will be ignored...'
             END IF
             GO TO 100
+C           ------------------------------------------------------
+C           .DIPOLE is the synonim od .DIPLEN.
+C           ------------------------------------------------------
+16          CONTINUE
+            GO TO 4
 
 C
           ELSE
@@ -5261,6 +5285,15 @@ c /* deck cc_qrinp */
 
       ICHANG = 0
 
+C filip, 21.10.2013:
+C Currently CC3 is not working without the .NOBMAT option,
+C because the B-matrix transformation is going through the
+C F-matrix routines (for the triples part), hence:
+      IF (CC3) THEN
+         USEBTRAN = .FALSE.
+         WRITE(LUPRI,*)'CC_QRINP: USEBTRAN set to false for CC3'
+      ENDIF
+C
 *---------------------------------------------------------------------*
 * read input:
 *---------------------------------------------------------------------*
@@ -7382,6 +7415,16 @@ c /* deck cc_exlrinp */
 
       ICHANG = 0
 
+C filip, 21.10.2013:
+C Currently the projection onto the orthogonal 
+C complement for the EL1/ER1 equations for
+C excited state polarizabilities is not
+C implemented for CC3.
+C We need therefore to switch this projection off whenever we enter
+C the CC_EXLRINP module with CC3:
+      IF (CC3) THEN
+         NOPROJ = .TRUE.
+      ENDIF
 *---------------------------------------------------------------------*
 * read input:
 *---------------------------------------------------------------------*
