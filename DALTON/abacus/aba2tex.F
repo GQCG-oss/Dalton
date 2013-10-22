@@ -284,8 +284,9 @@ C defined parallel calculation types
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
-      LOGICAL DDFOCK, NOBLK, ZFS2EL, PARCAL_IS_OK, PARCAL_SAVE
-      INTEGER IFCTYP(MXDMAT), ISYMDM(MXDMAT)
+      LOGICAL   DDFOCK, NOBLK, ZFS2EL, PARCAL_IS_OK, PARCAL_SAVE
+      INTEGER   IFCTYP(MXDMAT), ISYMDM(MXDMAT)
+      DIMENSION ALPGR1(MXPRIM)
 C
 C     Control routine for calculation of expectation values
 C     of differentiated two-electron integrals
