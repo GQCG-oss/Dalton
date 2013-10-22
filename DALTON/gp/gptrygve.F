@@ -48,6 +48,7 @@ C
       WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
       WRITE (LUPRI, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
       WRITE (LUPRI, '()')
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C  /* Deck timer */
@@ -166,6 +167,7 @@ Cx    WRITE (LUPRI,'(//150A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
 Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '| ', HEAD(1:LHEAD), ' |'
 Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
       WRITE (LUPRI,'()')
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C  /* Deck stopit */
