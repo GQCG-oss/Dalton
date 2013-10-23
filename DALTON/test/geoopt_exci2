@@ -213,8 +213,8 @@ CTRL[11]=4
 ERROR[11]="FINAL ITERATION NOT CORRECT"
 
 # Final gradient
-CRIT1=`$GREP "Li * z * (-0|-)\.000000017." $log | wc -l`
-CRIT2=`$GREP "H * z * (0| )\.000000017." $log | wc -l`
+CRIT1=`$GREP "Li * z * (-0|-)\.00000001.." $log | wc -l`
+CRIT2=`$GREP "H * z * (0| )\.00000001.." $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[12]=2
 ERROR[12]="FINAL GRADIENT NOT CORRECT"
