@@ -29,7 +29,7 @@ type,public ::lvec_data_t
   REAL(realk),pointer :: fck_vec(:),fck_mat(:,:)!probably only
   REAL(realk),pointer :: Sl_vec(:),Sl_mat(:,:)!elms is needed her.
   REAL(realk),pointer :: d_vec(:),d_mat(:,:), elms(:)
-  LOGICAL      :: is_redundant,g2_computed,f1_computed
+  LOGICAL      :: is_redundant,g2_computed,f1_computed,J_computed,Kx_computed
   LOGICAL      :: ovl_computed,Vz_computed
   TYPE(matrix) :: oper(MaxPBCOpTypes)              !Not sure 
   !type(rspcopdata_t) :: opdat(MaxPBCOpTypes+1)

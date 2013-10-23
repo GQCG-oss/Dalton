@@ -84,6 +84,7 @@ IMPLICIT NONE
      integer :: ninv(3)
      real(realk) :: weight
      real(realk) :: lambda(3)
+     COMPLEX(complexk),pointer :: Uk(:,:),Uinv(:,:)
   end type BZpoint_t
 
   type BZgrid_t
@@ -360,7 +361,7 @@ INTEGER :: i,j,k
        j=1
        i=i+1
      ENDIF
-     MAT(i,j)=CMPLX(0d0,0d0)
+     MAT(i,j)=CMPLX(0d0,0d0,complexk)
      MAT(i,j)=VEC(k)
       j=j+1
      ENDDO
@@ -606,7 +607,7 @@ DO kpt=1,1!bz%nk
   phase1=bz%kpnt(kpt)%lambda(1)*ll%lvec(nlat)%lat_coord(1)
   phase2=bz%kpnt(kpt)%lambda(2)*ll%lvec(nlat)%lat_coord(2)
   phase3=bz%kpnt(kpt)%lambda(3)*ll%lvec(nlat)%lat_coord(3)
-  phasetot=CMPLX(0.,(phase1+phase2+phase3)*2.*pi)
+  phasetot=CMPLX(0.,(phase1+phase2+phase3)*2.*pi,complexk)
   do i=1,ndim*ndim
    kdep(kpt)%kfockvec(i)=kdep(kpt)%kfockvec(i)+&
    ll%lvec(nlat)%fck_vec(i)*exp(phasetot)
