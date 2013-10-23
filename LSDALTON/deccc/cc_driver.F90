@@ -154,7 +154,7 @@ contains
     natoms = MyMolecule%natoms
     ! Note: For frozen core approx: nocc_tot = nocc + ncore,  nocc=#valence orbitals
     !       Without frozen core approx: nocc_tot = nocc
-    nocc_tot = MyMolecule%numocc
+    nocc_tot = MyMolecule%nocc
     if(DECinfo%frozencore) then
        ncore = MyMolecule%ncore
        nocc = MyMolecule%nval
@@ -162,7 +162,7 @@ contains
        ncore = 0
        nocc = nocc_tot
     endif
-    nvirt = MyMolecule%numvirt
+    nvirt = MyMolecule%nunocc
 
     ! -- Analyze basis and create orbitals
     call mem_alloc(occorbitals,nocc_tot)
@@ -305,7 +305,7 @@ contains
 !    call array4_free(VOVO)
 
     natoms = MyMolecule%natoms
-    nocc_tot = MyMolecule%numocc
+    nocc_tot = MyMolecule%nocc
 
     ccsdpt_t1 = array2_init([nvirt,nocc])
     ccsdpt_t2 = array4_init([nvirt,nvirt,nocc,nocc])
@@ -483,12 +483,12 @@ contains
 
     if(DECinfo%CCDEBUG)then
       call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
-         & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
+         & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored)
     else
       call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
-         & myfragment%fock, myfragment%number_basis,myfragment%noccAOS,&
+         & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,local)
     endif

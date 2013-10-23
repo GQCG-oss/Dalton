@@ -260,7 +260,7 @@ end if
     nullify(batch2orbGamma)
     nullify(batchindexGamma)
     nullify(mini1,mini2,mini3,mini4)
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
     nocc = MyFragment%noccAOS   ! occupied AOS (only valence for frozen core)
     nvirt = MyFragment%nunoccAOS   ! virtual AOS
     noccEOS = MyFragment%noccEOS  ! occupied EOS
@@ -2110,7 +2110,7 @@ nthreads=1
   end if
   noccEOS=MyFragment%noccEOS
   nvirtEOS=MyFragment%nunoccEOS
-  nbasis = MyFragment%number_basis
+  nbasis = MyFragment%nbasis
 
 
 
@@ -2381,7 +2381,7 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
   ! **********************************************
   nocc=MyFragment%noccAOS  ! occupied AOS (only valence for frozen core)
   nvirt = MyFragment%nunoccAOS   ! virtual AOS
-  nbasis = MyFragment%number_basis      ! number of basis functions in atomic extent
+  nbasis = MyFragment%nbasis      ! number of basis functions in atomic extent
   noccEOS = MyFragment%noccEOS  ! occupied EOS
   nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
   if(DECinfo%frozencore .and. first_order_integrals) then

@@ -107,9 +107,9 @@ contains
     if(DECinfo%FrozenCore) then
        nocc = MyMolecule%nval
     else
-       nocc = MyMolecule%numocc
+       nocc = MyMolecule%nocc
     end if
-    nunocc = MyMolecule%numvirt
+    nunocc = MyMolecule%nunocc
     nbasis = MyMolecule%nbasis
 
     fragment_job = .false.
@@ -283,8 +283,8 @@ contains
     ! **********
     call init_cabs
     nbasis = MyMolecule%nbasis
-    nocc   = MyMolecule%numocc
-    nvirt  = MyMolecule%numvirt
+    nocc   = MyMolecule%nocc
+    nvirt  = MyMolecule%nunocc
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     noccfull = nocc
 
@@ -1107,8 +1107,8 @@ contains
 
     ! Init dimensions
     call init_cabs
-    nocc = MyMolecule%numocc
-    nvirt = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
     nbasis = MyMolecule%nbasis
     noccfull = nocc
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
@@ -1344,9 +1344,9 @@ contains
     if(DECinfo%FrozenCore) then
        nocc = MyMolecule%nval
     else
-       nocc = MyMolecule%numocc
+       nocc = MyMolecule%nocc
     end if
-    nunocc = MyMolecule%numvirt
+    nunocc = MyMolecule%nunocc
     nbasis = MyMolecule%nbasis
 
     fragment_job = .false.
@@ -1363,7 +1363,7 @@ contains
        end do
 
        startidx = MyMolecule%ncore+1  
-       endidx = MyMolecule%numocc
+       endidx = MyMolecule%nocc
        call ccsolver_par(DECinfo%ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
             & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
             & print_level,fragment_job,&
@@ -1730,10 +1730,10 @@ contains
        ! Frozen core: Only valence orbitals
        nocc = MyMolecule%nval
     else
-       nocc = MyMolecule%numocc
+       nocc = MyMolecule%nocc
     end if
 
-    nunocc = MyMolecule%numvirt
+    nunocc = MyMolecule%nunocc
     ncore = MyMolecule%ncore
     nbasis=MyMolecule%nbasis
     call mem_alloc(ppfock,nocc,nocc)

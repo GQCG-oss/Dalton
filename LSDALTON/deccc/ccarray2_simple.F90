@@ -588,7 +588,7 @@ module array2_simple_operations
 
 
     nocc_eos = MyFragment%noccEOS
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
 
     ! Loop over orbitals and extract EOS orbitals
     do i=1,nocc_eos
@@ -620,7 +620,7 @@ module array2_simple_operations
     integer :: a, ax
 
     nunocc_eos = MyFragment%nunoccEOS
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
 
     ! Loop over orbitals and extract virtual EOS orbitals
     do a=1,nunocc_eos
@@ -671,7 +671,7 @@ module array2_simple_operations
     ! **********
     nocc = MyFragment%noccAOS      ! (occ AOS size)
     nvirt = MyFragment%nunoccAOS   ! (virt AOS size)
-    nbasis = MyFragment%number_basis        ! (atomic extent)
+    nbasis = MyFragment%nbasis        ! (atomic extent)
     occocc = [nocc,nocc]
     virtvirt = [nvirt,nvirt]
     occAO = [nbasis,nocc]
@@ -915,7 +915,7 @@ module array2_simple_operations
     ncore = MyFragment%ncore   ! number of core orbitals
     nval = MyFragment%noccAOS      ! (occ AOS valence size)
     nvirt = MyFragment%nunoccAOS   ! (virt AOS size)
-    nbasis = MyFragment%number_basis        ! (atomic extent)
+    nbasis = MyFragment%nbasis        ! (atomic extent)
     nocctot = MyFragment%nocctot   ! occ AOS core+valence
     virtvirt = [nvirt,nvirt]
     occAO = [nbasis,nocctot]
