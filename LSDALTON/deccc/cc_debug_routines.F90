@@ -410,6 +410,7 @@ module cc_debug_routines_module
 
      ! begin pablo
      ! criterion will need to be improved/adjusted.
+     small_frag = .false.
      !if (nbasis<=300) small_frag=.true. 
      !> get gmo and packed them
      if (small_frag) then
