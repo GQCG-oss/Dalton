@@ -960,6 +960,28 @@ module dec_typedef_module
      INTEGER :: norbindex
   END TYPE batchTOorb
 
+  ! begin pablo
+  !> MO Integral batch info:
+  type MObatchInfo
+
+    !> number of batches:
+    integer :: nPbatch
+    integer :: nRbatch
+    !> dimension of each of the nPbatch:
+    integer, pointer :: Pdims(:) 
+    !> dimension of each of the nRbatch:
+    integer, pointer :: Rdims(:)
+    !> MO index corresponding to the starting point of each batch:
+    integer, pointer :: PStarts(:) 
+    integer, pointer :: RStarts(:) 
+    !> starting index of each batch in the full array:
+    integer, pointer :: PR_index(:) 
+    !> starting index of each batch in the packed array:
+    integer, pointer :: PR_packInd(:) 
+    
+  end type
+  ! end pablo
+
   !> \brief Grid box handling for analyzing orbitals in specific parts of space
   !> for single precision real grid points
   !> \author Kasper Kristensen
