@@ -954,9 +954,9 @@ C
 C
       RETURN
       END
-C  /* Deck nodedriver */
+C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
-      SUBROUTINE NODEDRIVER(MWORK,WRKDLM)
+      SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
       use polarizable_embedding, only: pe_mpi
 #include "implicit.h"
@@ -969,7 +969,8 @@ C defined parallel calculation types
 #include "iprtyp.h"
       real(8), allocatable :: work(:)
 C
-      CALL QENTER('NODEDRIVER')
+      CALL QENTER('DALTON_NODEDRIVER')
+      CALL GETTIM(CSTR,WSTR)
 C
 C     Get calculation type (IPRTYP)
 C
@@ -1102,9 +1103,12 @@ C added by Bin Gao, May 12, 2012
 #endif
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
-     &         '(NODEDRIVER) ERROR on slave',MYTID,
+     &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
      &         ': Unknown calculation type request',IPRTYP
-            CALL QUIT('NODEDRIVER: Unknown calculation type')
+            WRITE(*,'(/A,I5,A,I10)')
+     &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
+     &         ': Unknown calculation type request',IPRTYP
+            CALL QUIT('DALTON_NODEDRIVER: Unknown calculation type')
          END IF
 C
          GO TO 100
@@ -1113,7 +1117,20 @@ C
 !     release memory
       if(allocated(work)) deallocate(work)
 C
-      CALL QEXIT('NODEDRIVER')
+      IF (MYNUM .LE. 20) THEN
+         CALL GETTIM(CEND,WEND)
+         CTOT = CEND - CSTR
+         WTOT = WEND - WSTR
+C
+         CALL TIMTXT('>>>> Total CPU  time used:',CTOT,LUPRI)
+         CALL TIMTXT('>>>> Total wall time used:',WTOT,LUPRI)
+C
+C        Stamp date and time and hostname to output
+C
+         CALL TSTAMP(' ',LUPRI)
+      END IF
+C
+      CALL QEXIT('DALTON_NODEDRIVER')
       RETURN
       END
 #endif
