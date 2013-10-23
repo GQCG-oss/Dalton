@@ -141,7 +141,7 @@ fi
 CRIT1=`$GREP "Final DFT energy\: * \-511\.51127220[0-9][0-9][0-9][0-9]" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
-ERROR[1]="? NOT CORRECT"
+ERROR[1]="FINAL DFT ENERGY NOT CORRECT"
 
 PASSED=1
 for i in 1
@@ -179,13 +179,13 @@ CRIT2=`$GREP "Spatial symmetry\: * 1" $log | wc -l`
 CRIT3=`$GREP "Total charge of molecule\: * 1" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=3
-ERROR[1]="? NOT CORRECT"
+ERROR[1]="SPIN MULTIPLICITY, SYMMETRY AND/OR TOTAL CHARGE NOT CORRECT"
 
 # ?
 CRIT1=`$GREP "Final DFT energy\: * \-491\.62797422[0-9][0-9][0-9][0-9]" $log | wc -l`
 TEST[2]=`expr	$CRIT1`
 CTRL[2]=1
-ERROR[2]="? NOT CORRECT"
+ERROR[2]="FINAL DFT ENERGY NOT CORRECT"
 
 PASSED=1
 for i in 1 2
@@ -220,13 +220,13 @@ fi
 CRIT1=`$GREP "Number of orbitals frozen with \"\.FREEZE\" 14" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
-ERROR[1]="? NOT CORRECT"
+ERROR[1]="NUMBER OF FROZEN ORBITALS NOT CORRECT"
 
 # ?
 CRIT1=`$GREP "Final DFT energy\: * \-491\.66356699[0-9][0-9][0-9][0-9]" $log | wc -l`
 TEST[2]=`expr	$CRIT1`
 CTRL[2]=1
-ERROR[2]="? NOT CORRECT"
+ERROR[2]="FINAL DFT ENERGY NOT CORRECT"
 
 PASSED=1
 for i in 1 2
@@ -261,13 +261,13 @@ fi
 CRIT1=`$GREP "Number of orbitals frozen with \"\.FREEZE\" * 2" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
-ERROR[1]="? NOT CORRECT"
+ERROR[1]="NUMBER OF FROZEN ORBITALS NOT CORRECT"
 
 # ?
-CRIT1=`$GREP "Final DFT energy\: * \-49(0| )\.93295933[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy\: * \-490\.9329593....." $log | wc -l`
 TEST[2]=`expr	$CRIT1`
 CTRL[2]=1
-ERROR[2]="? NOT CORRECT"
+ERROR[2]="FINAL DFT ENERGY NOT CORRECT"
 
 PASSED=1
 for i in 1 2

@@ -39,266 +39,249 @@ contains
 !> integral/amplitude routine (MP2) or coupled-cluster residual (CC2 or CCSD).
 !> \author Kasper Kristensen
 !> \date March 2012
-subroutine main_fragment_driver_slave()
+  subroutine main_fragment_driver_slave()
 
 
-  implicit none
-  integer :: job,i
-  INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
-  integer :: nunocc,nocc,natoms,siz
-  type(lsitem) :: MyLsitem
-  type(ccatom),pointer :: AtomicFragments(:)
-  type(fullmolecule) :: MyMolecule
-  real(realk),pointer :: DistanceTable(:,:)
-  type(ccorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
-  logical,pointer :: dofrag(:)
-  type(joblist) :: jobs
-  integer :: groups,signal
-  integer(kind=ls_mpik) :: groupsize,ierr
-  logical :: dens_save,FO_save,grad_save, localslave, in_master_group, morejobs
-  integer(kind=ls_mpik) :: master
-  master=0
+    implicit none
+    integer :: job,i
+    INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
+    integer :: nunocc,nocc,natoms,siz
+    type(lsitem) :: MyLsitem
+    type(decfrag),pointer :: AtomicFragments(:)
+    type(fullmolecule) :: MyMolecule
+    type(decorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
+    logical,pointer :: dofrag(:)
+    type(joblist) :: jobs
+    integer :: groups,signal
+    integer(kind=ls_mpik) :: groupsize,ierr
+    logical :: dens_save,FO_save,grad_save, localslave, in_master_group,esti
+    integer(kind=ls_mpik) :: master
+    master=0
 
 
-  ! DEC settings
-  ! ************
-  ! Just in case, initialize using default settings
-  call dec_set_default_config(0)
-  ! Get DEC settings for current calculation from master
-  call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
+    ! DEC settings
+    ! ************
+    ! Just in case, initialize using default settings
+    call dec_set_default_config(0)
+    ! Get DEC settings for current calculation from master
+    call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
 
-  ! Set output unit number to 0 for slaves
-  DECinfo%output=0
+    ! Set output unit number to 0 for slaves
+    DECinfo%output=0
 
-  ! Internal control of first order property keywords
-  ! (Necessary because these must be false during fragment optimization.)
-  ! Better solution should be implemented at some point...
-  dens_save = DECinfo%MP2density
-  FO_save = DECinfo%first_order
-  grad_save = DECinfo%gradient
-  DECinfo%MP2density=.false.
-  DECinfo%first_order=.false.
-  DECinfo%gradient=.false.
-
-
-  ! GET FULL MOLECULAR INFO FROM MASTER
-  ! ***********************************
-
-  ! Get very basic dimension information from main master
-  call ls_mpibcast(natoms,master,MPI_COMM_LSDALTON)
-  call ls_mpibcast(nocc,master,MPI_COMM_LSDALTON)
-  call ls_mpibcast(nunocc,master,MPI_COMM_LSDALTON)
-
-  ! Allocate arrays needed for fragment calculations
-  call mem_alloc(OccOrbitals,nocc)
-  call mem_alloc(UnoccOrbitals,nunocc)
-  call mem_alloc(DistanceTable,natoms,natoms)
-
-  ! Get remaining full molecular information needed for all fragment calculations
-  call mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,DistanceTable,&
-       & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
+    ! Internal control of first order property keywords
+    ! (Necessary because these must be false during fragment optimization.)
+    ! Better solution should be implemented at some point...
+    dens_save = DECinfo%MP2density
+    FO_save = DECinfo%first_order
+    grad_save = DECinfo%gradient
+    DECinfo%MP2density=.false.
+    DECinfo%first_order=.false.
+    DECinfo%gradient=.false.
 
 
-  ! Local master if rank=0 WITHIN the local group
-  if(infpar%lg_mynum/=master) then ! local slave
-     localslave=.true.
-  else ! local master
-     localslave = .false.
-  end if
+    ! GET FULL MOLECULAR INFO FROM MASTER
+    ! ***********************************
 
-  if(localslave) then
-     ! Send local slave to local waiting position until local master contacts it
-     call DEC_lsmpi_slave(infpar%lg_comm)
-  end if
+    ! Get very basic dimension information from main master
+    call mpi_dec_fullinfo_master_to_slaves_precursor(esti,nocc,nunocc,master)
+
+
+    ! Allocate arrays needed for fragment calculations
+    call mem_alloc(OccOrbitals,nocc)
+    call mem_alloc(UnoccOrbitals,nunocc)
+
+    ! Get remaining full molecular information needed for all fragment calculations
+    call mpi_dec_fullinfo_master_to_slaves(nocc,nunocc,&
+         & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
+    natoms=MyMolecule%natoms
+
+    ! Local master if rank=0 WITHIN the local group
+    if(infpar%lg_mynum/=master) then ! local slave
+       localslave=.true.
+    else ! local master
+       localslave = .false.
+    end if
+
+    if(localslave) then
+       ! Send local slave to local waiting position until local master contacts it
+       call DEC_lsmpi_slave(infpar%lg_comm)
+    end if
 
 
 
-  ! **********************************************
-  ! *        ATOMIC FRAGMENT OPTIMIZATION        *
-  ! **********************************************
+    ! **********************************************
+    ! *        ATOMIC FRAGMENT OPTIMIZATION        *
+    ! **********************************************
 
-  call atomic_fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
-       & UnoccOrbitals,MyMolecule,MyLsitem)
+    ! Skip calculation if just use estimated fragments
+    if(.not. esti) then
+       call atomic_fragments_slave(nocc,nunocc,OccOrbitals,&
+            & UnoccOrbitals,MyMolecule,MyLsitem)
+    end if
 
-  ! Remaining local slaves should exit local slave routine (but there will be more jobs)
-  job=QUITMOREJOBS
-  if(infpar%lg_mynum==0 .and. infpar%lg_nodtot>1) then
-     call ls_mpibcast(job,master,infpar%lg_comm)
-  end if
-
-
-
-  ! ********************************************************************
-  ! *       Get new optimized atomic fragments from master node        *
-  ! ********************************************************************
-  ! 1. Get list of which atoms are EOS atoms
-  call mem_alloc(dofrag,natoms)
-  dofrag=.false.
-  call ls_mpibcast(dofrag,natoms,master,MPI_COMM_LSDALTON)
-
-  ! 2. Get  fragments
-  call mem_alloc(AtomicFragments,natoms)
-  call mpi_bcast_many_fragments(natoms,dofrag,AtomicFragments,MPI_COMM_LSDALTON)
+    ! Remaining local slaves should exit local slave routine (but there will be more jobs)
+    job=QUITMOREJOBS
+    if(infpar%lg_mynum==0 .and. infpar%lg_nodtot>1) then
+       call ls_mpibcast(job,master,infpar%lg_comm)
+    end if
 
 
 
+    ! ********************************************************************
+    ! *       Get new optimized atomic fragments from master node        *
+    ! ********************************************************************
+    ! 1. Get list of which atoms are EOS atoms
+    call mem_alloc(dofrag,natoms)
+    dofrag=.false.
+    call ls_mpibcast(dofrag,natoms,master,MPI_COMM_LSDALTON)
 
-     ! *************************************************************
-     ! *         POST-FRAGOPT FRAGMENT CALCULATIONS                *
-     ! *************************************************************
-
-     ! Init stuff
-     ! **********
-
-     ! Restore first order keywords
-     DECinfo%MP2density=dens_save
-     DECinfo%first_order = FO_save
-     DECinfo%gradient = grad_save
-
-
-     ! Continue as long as there are more jobs to be done
-     ! (we might need to add more pairs than in original  job list to adapt to precision)
-     morejobs=.true.
-     MorePairs: do while(morejobs)
-
-        !  Get  fragment job list (includes initalization of pointers in job list)
-        call bcast_post_fragopt_joblist(jobs,MPI_COMM_LSDALTON)
-        ! Receive pair distance threshold to make sure we are consistent
-        call ls_mpibcast(DECinfo%pair_distance_threshold,master,MPI_COMM_LSDALTON)
+    ! 2. Get  fragments
+    call mem_alloc(AtomicFragments,natoms)
+    call mpi_bcast_many_fragments(natoms,dofrag,AtomicFragments,MPI_COMM_LSDALTON)
 
 
-        ! Redefine MPI groups for  fragments
-        ! ***************************************
-        call lsmpi_barrier(MPI_COMM_LSDALTON)
-
-        ! Free existing group communicators
-        call MPI_COMM_FREE(infpar%lg_comm, IERR)
-
-        ! Receive signal from master to init group/sanity check
-        call ls_mpibcast(signal,infpar%master,MPI_COMM_LSDALTON)
-        if(signal /= GROUPINIT) then
-           call lsquit('main_fragment_driver_slave: Expected signal to init group',-1)
-        end if
-     
-        ! Get groupsize from master
-        call ls_mpibcast(groupsize,master,MPI_COMM_LSDALTON)
-        if(DECinfo%PL>0) print *, 'node/groupsize', infpar%mynum, groupsize
-
-        ! Initialize new group
-        call init_mpi_groups(groupsize,DECinfo%output)
-
-        ! Local master/slave assigment might have changed - reset
-        if(infpar%lg_mynum/=0) then ! local slave
-           localslave=.true.
-        else ! local master
-           localslave = .false.
-        end if
-
-        
-        ! REDEFINING LOCAL GROUPS
-        ! =======================
-        infpar%lg_morejobs = .true.   ! more jobs for local group
-        do while(localslave)
-           ! Send local slave to local waiting position until local master contacts it
-           call DEC_lsmpi_slave(infpar%lg_comm)
-           
-           ! Slaves were kicked out of waiting position - two possibilities:
-           !
-           ! 1. lg_morejobs=.true.
-           ! There are more jobs to be done - divide local group, and then go back to local slave position
-           ! unless this rank has become a new local master (infpar%lg_mynum=0)
-           !
-           ! 2. lg_morejobs=.false.
-           ! There are no more jobs to be done - quit do-loop regardless of current rank number
-        
-           if(.not. infpar%lg_morejobs) exit
-
-           ! Get new local groups
-           ! (redefine globals infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm)
-           call dec_half_local_group
-           
-           ! Check if the current rank has become a local master (rank=0 within local group)
-           if(infpar%lg_mynum==0) localslave=.false.
-        
-        end do
-
-  
-        ! Receive  fragment jobs from master and carry those out
-        ! ======================================================
-        call fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
-             & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
-
-        ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
-        job=QUITNOMOREJOBS
-        if(infpar%lg_mynum==0 .and. infpar%lg_nodtot>1) then
-           call ls_mpibcast(job,master,infpar%lg_comm)
-        end if
-     
-        ! Receive information telling whether there are more jobs or not
-        call ls_mpibcast(morejobs,master,MPI_COMM_LSDALTON)
-        
-        ! Done with existing job list
-        call free_joblist(jobs)
-        
-     end do MorePairs
 
 
-  ! Free stuff
-  ! **********
-  do i=1,natoms
-     if(dofrag(i)) then
-        call atomic_fragment_free_simple(AtomicFragments(i))
-     end if
-  end do
-  do i=1,nOcc
-     call orbital_free(OccOrbitals(i))
-  end do
-  do i=1,nUnocc
-     call orbital_free(UnoccOrbitals(i))
-  end do
-  call mem_dealloc(dofrag)
-  call mem_dealloc(AtomicFragments)
-  call mem_dealloc(OccOrbitals)
-  call mem_dealloc(UnoccOrbitals)
-  call mem_dealloc(DistanceTable)
-  call ls_free(MyLsitem)
-  call molecule_finalize(MyMolecule)
+    ! *************************************************************
+    ! *         POST-FRAGOPT FRAGMENT CALCULATIONS                *
+    ! *************************************************************
 
-  ! Free existing group communicators
-  call MPI_COMM_FREE(infpar%lg_comm, IERR)
+    ! Init stuff
+    ! **********
+
+    ! Restore first order keywords
+    DECinfo%MP2density=dens_save
+    DECinfo%first_order = FO_save
+    DECinfo%gradient = grad_save
 
 
-end subroutine main_fragment_driver_slave
+    !  Get  fragment job list (includes initalization of pointers in job list)
+    call bcast_post_fragopt_joblist(jobs,MPI_COMM_LSDALTON)
+
+
+    ! Redefine MPI groups for  fragments
+    ! ***************************************
+    call lsmpi_barrier(MPI_COMM_LSDALTON)
+
+    ! Free existing group communicators
+    call MPI_COMM_FREE(infpar%lg_comm, IERR)
+
+    ! Receive signal from master to init group/sanity check
+    call ls_mpibcast(signal,infpar%master,MPI_COMM_LSDALTON)
+    if(signal /= GROUPINIT) then
+       call lsquit('main_fragment_driver_slave: Expected signal to init group',-1)
+    end if
+
+    ! Get groupsize from master
+    call ls_mpibcast(groupsize,master,MPI_COMM_LSDALTON)
+    if(DECinfo%PL>0) print *, 'node/groupsize', infpar%mynum, groupsize
+
+    ! Initialize new group
+    call init_mpi_groups(groupsize,DECinfo%output)
+
+    ! Local master/slave assigment might have changed - reset
+    if(infpar%lg_mynum/=0) then ! local slave
+       localslave=.true.
+    else ! local master
+       localslave = .false.
+    end if
+
+
+    ! REDEFINING LOCAL GROUPS
+    ! =======================
+    infpar%lg_morejobs = .true.   ! more jobs for local group
+    do while(localslave)
+       ! Send local slave to local waiting position until local master contacts it
+       call DEC_lsmpi_slave(infpar%lg_comm)
+
+       ! Slaves were kicked out of waiting position - two possibilities:
+       !
+       ! 1. lg_morejobs=.true.
+       ! There are more jobs to be done - divide local group, and then go back to local slave position
+       ! unless this rank has become a new local master (infpar%lg_mynum=0)
+       !
+       ! 2. lg_morejobs=.false.
+       ! There are no more jobs to be done - quit do-loop regardless of current rank number
+
+       if(.not. infpar%lg_morejobs) exit
+
+       ! Get new local groups
+       ! (redefine globals infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm)
+       call dec_half_local_group
+
+       ! Check if the current rank has become a local master (rank=0 within local group)
+       if(infpar%lg_mynum==0) localslave=.false.
+
+    end do
+
+
+    ! Receive  fragment jobs from master and carry those out
+    ! ======================================================
+    call fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
+         & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
+
+    ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
+    job=QUITNOMOREJOBS
+    if(infpar%lg_mynum==0 .and. infpar%lg_nodtot>1) then
+       call ls_mpibcast(job,master,infpar%lg_comm)
+    end if
+
+    ! Done with existing job list
+    call free_joblist(jobs)
+
+
+    ! Free stuff
+    ! **********
+    do i=1,natoms
+       if(dofrag(i)) then
+          call atomic_fragment_free_simple(AtomicFragments(i))
+       end if
+    end do
+    do i=1,nOcc
+       call orbital_free(OccOrbitals(i))
+    end do
+    do i=1,nUnocc
+       call orbital_free(UnoccOrbitals(i))
+    end do
+    call mem_dealloc(dofrag)
+    call mem_dealloc(AtomicFragments)
+    call mem_dealloc(OccOrbitals)
+    call mem_dealloc(UnoccOrbitals)
+    call ls_free(MyLsitem)
+    call molecule_finalize(MyMolecule)
+
+    ! Free existing group communicators
+    call MPI_COMM_FREE(infpar%lg_comm, IERR)
+
+
+  end subroutine main_fragment_driver_slave
 
 
 !> \brief For each local master: Carry out fragment optimization for
 !> those atomic fragments requested by main master.
 !> \author Kasper Kristensen
 !> \date May 2012
-subroutine atomic_fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
+subroutine atomic_fragments_slave(nocc,nunocc,OccOrbitals,&
      & UnoccOrbitals,MyMolecule,MyLsitem)
 
 
   implicit none
 
-  !> Number of atoms in the molecule
-  integer,intent(in) :: natoms
   !> Number of occupied orbitals in the molecule
   integer,intent(in) :: nocc
   !> Number of unoccupied orbitals in the molecule
   integer,intent(in) :: nunocc
-  !> Distance table with atomic distances
-  real(realk) :: DistanceTable(natoms,natoms)
   !> Occupied orbitals, DEC format
-  type(ccorbital),intent(in) :: OccOrbitals(nocc)
+  type(decorbital),intent(in) :: OccOrbitals(nocc)
   !> Unoccupied orbitals, DEC format
-  type(ccorbital),intent(in) :: UnoccOrbitals(nunocc)
+  type(decorbital),intent(in) :: UnoccOrbitals(nunocc)
   !> Full molecular info
-  type(fullmolecule),intent(in) :: MyMolecule
+  type(fullmolecule),intent(inout) :: MyMolecule
   !> LS item structure
   type(lsitem),intent(inout) :: MyLsitem
   !> Atomic fragments to be determined
-  type(ccatom) :: AtomicFragment
+  type(decfrag) :: AtomicFragment
   type(joblist) :: job  
   real(realk) :: flops
   integer :: jobidx
@@ -355,8 +338,8 @@ subroutine atomic_fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
         call start_flop_counter()
 
         ! Carry out fragment optimization job task
-        call optimize_atomic_fragment(jobidx,AtomicFragment,nAtoms, &
-             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
+        call optimize_atomic_fragment(jobidx,AtomicFragment,MyMolecule%nAtoms, &
+             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
              & MyMolecule,mylsitem,.true.)
 
         ! Set job info (statistics)
@@ -396,7 +379,7 @@ end subroutine atomic_fragments_slave
 !> for those  fragments requested by main master.
 !> \author Kasper Kristensen
 !> \date May 2012
-subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
+subroutine fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
      & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
 
   implicit none
@@ -407,22 +390,20 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
   integer,intent(in) :: nocc
   !> Number of unoccupied orbitals in the molecule
   integer,intent(in) :: nunocc
-  !> Distances between atoms
-  real(realk) :: DistanceTable(natoms,natoms)
   !> Occupied orbitals, DEC format
-  type(ccorbital),intent(in) :: OccOrbitals(nocc)
+  type(decorbital),intent(in) :: OccOrbitals(nocc)
   !> Unoccupied orbitals, DEC format
-  type(ccorbital),intent(in) :: UnoccOrbitals(nunocc)
+  type(decorbital),intent(in) :: UnoccOrbitals(nunocc)
   !> Full molecular info (not changed at output)
   type(fullmolecule),intent(inout) :: MyMolecule
   !> LS item structure
   type(lsitem),intent(inout) :: MyLsitem
   !> Atomic fragments
-  type(ccatom),dimension(natoms),intent(inout) :: AtomicFragments
+  type(decfrag),dimension(natoms),intent(inout) :: AtomicFragments
   !> Job list for  fragments
   type(joblist),intent(inout) :: jobs
   type(joblist) :: singlejob
-  type(ccatom) :: PairFragment
+  type(decfrag) :: PairFragment
   integer :: job,atomA,atomB,i,slavejob,ntasks
   real(realk) :: flops_slaves
   type(mp2grad) :: grad
@@ -513,7 +494,7 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
 
            ! init pair
            call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, DistanceTable, &
+                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
                 & MyMolecule,mylsitem,.true.,PairFragment)
            call get_number_of_integral_tasks_for_mpi(PairFragment,ntasks)
 
@@ -578,7 +559,7 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
 
            call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                 & AtomicFragments(atomA), AtomicFragments(atomB), &
-                & natoms,DistanceTable,PairFragment,grad)
+                & natoms,PairFragment,grad)
            flops_slaves = PairFragment%flops_slaves
            tottime = PairFragment%slavetime ! time used by all local slaves
            fragenergy=PairFragment%energies
@@ -624,7 +605,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
 
   implicit none
   !> Atomic fragment
-  type(ccatom),intent(inout) :: MyFragment
+  type(decfrag),intent(inout) :: MyFragment
   !> Number of tasks
   integer,intent(inout) :: ntasks
   type(mp2_batch_construction) :: bat
@@ -657,21 +638,21 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   end if
 
   ! Determine optimal batchsizes with available memory
-  if(DECinfo%ccmodel==MODEL_MP2) then ! MP2
+  if(MyFragment%ccmodel==MODEL_MP2) then ! MP2
      call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.)
   else  ! CC2 or CCSD
      iter=1
      call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
      call get_currently_available_memory(MemFree)
-     call get_max_batch_sizes(scheme,MyFragment%number_basis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
+     call get_max_batch_sizes(scheme,MyFragment%nbasis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
           & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,dummy,(.not.DECinfo%solver_par))
   end if
 
 
   ! Get number of gamma batches
-  call mem_alloc(orb2batchGamma,MyFragment%number_basis)
+  call mem_alloc(orb2batchGamma,MyFragment%nbasis)
   call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
-       & MyFragment%number_basis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
+       & MyFragment%nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
        & batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
   call mem_dealloc(orb2batchGamma)
   call mem_dealloc(batchdimGamma)
@@ -679,9 +660,9 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   call mem_dealloc(batchindexGamma)
 
   ! Get number of alpha batches
-  call mem_alloc(orb2batchAlpha,MyFragment%number_basis)
+  call mem_alloc(orb2batchAlpha,MyFragment%nbasis)
   call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimAlpha,&
-       & MyFragment%number_basis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
+       & MyFragment%nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
        & batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
   call mem_dealloc(orb2batchAlpha)
   call mem_dealloc(batchdimAlpha)

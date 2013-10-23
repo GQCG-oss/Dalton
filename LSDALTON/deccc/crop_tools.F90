@@ -199,7 +199,7 @@ module crop_tools_module
     ecorr_s = 0.0E0_realk
     ecorr_d = 0.0E0_realk
 
-    if(t2%atype==DENSE.and.gmo%atype==DENSE.and.(t1%atype==DENSE.or.t1%atype==REPLICATED))then
+    if(t2%itype==DENSE.and.gmo%itype==DENSE.and.(t1%itype==DENSE.or.t1%itype==REPLICATED))then
       do j=1,nocc
          do b=1,nvirt
             do i=1,nocc
@@ -219,11 +219,11 @@ module crop_tools_module
       end if
 
       ecorr = ecorr_s + ecorr_d
-    elseif(t2%atype==TILED_DIST.and.gmo%atype==TILED_DIST)then
-      t1%atype=REPLICATED
+    elseif(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+      t1%itype=REPLICATED
       call array_sync_replicated(t1)
       ecorr=get_cc_energy_parallel(t1,t2,gmo)
-      t1%atype=DENSE
+      t1%itype=DENSE
     endif
 
 
@@ -277,10 +277,10 @@ module crop_tools_module
   !> \param nbasis Number of basis functions
   !> \param nocc Number of occupied orbitals
   !> \param nvirt Number of unoccupied orbitals
-  subroutine print_ccjob_header(ccPrintLevel,fj,multiplier_job,&
+  subroutine print_ccjob_header(ccmodel,ccPrintLevel,fj,multiplier_job,&
   &nbasis,nocc,nvirt,maxsub)
     implicit none
-    integer, intent(in) :: ccPrintLevel,nbasis,nocc,nvirt,maxsub
+    integer, intent(in) :: ccmodel,ccPrintLevel,nbasis,nocc,nvirt,maxsub
     logical, intent(in) :: fj,multiplier_job
 
     if(ccPrintLevel > 0) then
@@ -297,7 +297,7 @@ module crop_tools_module
           if(DECinfo%CCDhack)then
             write(DECinfo%output,'(a,a)')      'Wave function    = ','CCD'
           else
-            write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(DECinfo%ccModel)
+            write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(ccModel)
           endif
           write(DECinfo%output,'(a,i4)')     'MaxIter          = ',DECinfo%ccMaxIter
           write(DECinfo%output,'(a,i4)')     'Num. b.f.        = ',nbasis
@@ -318,7 +318,7 @@ module crop_tools_module
           if(DECinfo%CCDhack)then
             write(DECinfo%output,'(a,a)')      'Wave function    = ','CCD'
           else
-            write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(DECinfo%ccModel)
+            write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(ccModel)
           endif
           write(DECinfo%output,'(4x,a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
           write(DECinfo%output,'(a,i4,$)')      'MaxIter          = ',DECinfo%ccMaxIter

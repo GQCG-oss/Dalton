@@ -225,7 +225,7 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
          call mat_abs_max_elm(density(layer),maxdens)
          if(maxdens .gt. 1e-12)then
            write(*,*) 'maybe to hard density cutoff, max element for&
-            layer', l1,l2,l3,maxdens
+            &layer', l1,l2,l3,maxdens
          endif
        endif
      endif

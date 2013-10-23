@@ -321,7 +321,7 @@ C
       IF (NACTEL .EQ. 0) NODV = .TRUE.
       IF (NACTEL .LE. 1 .OR. HSROHF) THEN
          NOPV   = .TRUE.
-         IF (HSROHF .AND. (DIPDER .OR. MOLHES)) THEN
+         IF (HSROHF .AND. NASHT .GT. 1 .AND. (DIPDER .OR. MOLHES)) THEN
             WRITE(LUPRI,'(/A)')
      &          ' ERROR: Dipole gradients and molecular '//
      &          'not implemented for high-spin restricted open-shell HF'

@@ -141,10 +141,13 @@ CHJMAERKE: define IPR_DIIS separately?
 C
       MXERRV = MAXEVC
       IF (MXERRV .LE. 0) THEN
-         MXERRV = MIN(NWOPT,10)
+         MXERRV = MIN(NWOPT,5)
 C        ... fixes linear dependency problem for very small debug runs
 C            MXERRV=10 gave lin.dep. for 2 el. in 2 orbitals,
 C            MXERRV=2 gave quadratic convergence ! (940701-hjaaj)
+C        (130919-hjaaj: decreased default from 10 to 5, because
+C         with 10 the span of BMAT may be >1.D15, giving problems
+C         in the DIIS solver - an example has been seen !!!)
          MXERRV = MAX(2,MXERRV)
       END IF
       IPR_DIIS = IPRRHF
@@ -1043,8 +1046,8 @@ C           CALL READMO(CMO,JRDMO,WRK,LFREE)
 C
  4010 FORMAT(' DIIS aborted because energy increased in this iteration.'
      &      /' Program aborted because this means automatic symmetry'
-     &      /' designation of occupied orbitals is not possible!',
-     &      /' Please send this output to dalton users mailing list !!!',
+     &      /' designation of occupied orbitals is not possible!'
+     &      /' Please send this output to dalton users mailing list !!!'
      &      /' You may try again with explicit specfication of .DOUBLY')
  4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
      &      /' Backstep to orbitals from previous iteration.')
@@ -1153,6 +1156,7 @@ C     Reason: DIIS tries to minimize gradient norm, not energy.
 C   - hjaaj mar 2004: only remove entries with lower gradient and
 C     higher energy, not "earlier entries"
 C
+         J_removed = 0
          IF (INDEVC.EQ.NEVC .AND. ITDIIS .GT. 3 .AND.
      &       GRDNRM .LE. 10.0D0) THEN
 C        ... no wrap around yet - INDEVC .lt. NEVC requires more programming
@@ -1160,13 +1164,12 @@ C        ITDIIS/GRDNRM check: give initial oscillations a chance to settle down
 C          before checking ... experience shows this will often be advantageous
 C          (see below) /hjaaj
             IEND = NEVC - 1
-            J = 0
             DO I = 1,IEND
 C           IF (I .NE. INDEVC) THEN
                IF (EGSAV(1,I) .GT. EMCSCF + EMCDIFERR .AND.
      &             EGSAV(2,I) .LT. GRDNRM) THEN
 C                  ... Oops! a previous iter with higher E and lower grd
-                  J = J + 1
+                  J_removed = J_removed + 1
                   EGSAV(1,I) = D0
                END IF
 C           END IF
@@ -1174,10 +1177,11 @@ C           END IF
 C
 C           remove entries with higher E and lower grd, if any
 C
-            IF (J .GT. 0) THEN
+            IF (J_removed .GT. 0) THEN
                WRITE(LUPRI,'(/A/A,I3,A)')
      &   'Info: SCF gradient has been lower than now,',
-     &   '      therefore',J,' old iterations are removed from DIIS.'
+     &   '      therefore',J_removed,
+     &   ' old iterations are removed from DIIS.'
                K = 0
                DO J = 1, NEVC
                   IF (EGSAV(1,J) .NE. D0) THEN
@@ -1236,7 +1240,7 @@ C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
           END IF
 C        Do not try that with open-shell - it does not work./pawsa
 !         IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND. J_removed.EQ.0 .AND.
      &        GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
@@ -1251,7 +1255,7 @@ C                 to avoid round-off problems here /hjaaj Sep 2005
      &       ' - or strange C vector coeff. for current index (=',
      &       INDEVC,') :'
              WRITE (LUPRI,'(10F12.6)') (CVEC(I),I=1,NEVC)
-             IF (EMCDIF .LT. D0) THEN
+             IF (EMCDIF .LE. ABS(EMCSCF)*1.0D-12) THEN
                 JNDEVC = INDEVC
              ELSE
 C               ... use previous Fock matrix if energy increased

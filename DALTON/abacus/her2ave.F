@@ -365,7 +365,7 @@ C
                                  PVAL = PFAC*(DTAB*DTCD
      &                                - XFAC*DP25*(DTAC*DTBD+DTAD*DTBC)
      &                                + PAOVAL)
-                              ELSE IF (HSROHF .OR. 
+                              ELSE IF ((HSROHF .AND. NASHT .GT. 1) .OR. 
      &                                (DFTADD .AND. .NOT. NODV)) THEN
                                  PVAL = PFAC*(DTAB*DTCD
      &                                - XFAC*DP25*(DTAC*DTBD + DVAC*DVBD
