@@ -2722,10 +2722,10 @@ module cc_debug_routines_module
 
     implicit none
 
-    real(realk), intent(inout) :: gmo(:)
-    real(realk), intent(in) :: gao(dimAlpha*nbas*dimGamma*nbas), cmo_full(nbas,nbas)
     integer, intent(in) :: nbas, PStart, dimP, RStart, dimR
     integer, intent(in) :: AlphaStart, dimAlpha, GammaStart, dimGamma
+    real(realk), intent(in) :: gao(dimAlpha*nbas*dimGamma*nbas), cmo_full(nbas,nbas)
+    real(realk), intent(inout) :: gmo(:)
 
     integer :: AlphaEnd, GammaEnd, Pend, Rend
     real(realk), pointer, dimension(:)   :: tmp1, tmp2, tmp3     => null()
@@ -2939,10 +2939,10 @@ module cc_debug_routines_module
     implicit none
 
     !> MO pack integrals; amplitudes and residuals:
+    integer, intent(in) :: nbas, nocc, nvir
     real(realk), intent(inout) :: omega2(nvir,nvir,nocc,nocc)
     real(realk), intent(in) :: pack_gmo(:), t1(nvir,nocc)
     real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc) 
-    integer, intent(in) :: nbas, nocc, nvir
 
     !> Batches info:
     type(MObatchInfo), intent(in) :: MOinfo
