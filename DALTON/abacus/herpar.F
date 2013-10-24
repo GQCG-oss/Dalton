@@ -216,7 +216,7 @@ C                                    to magnetic field.
 C                                8 = Fock matrices derivated with respect
 C                                    to atomic coordinates.
 C           NTASK  - Number of tasks
-C           IPRPAR - Print level during parallelization.
+C           IPRPAR - Print level in parallelization routines on master.
 C           MAXDIF -
 C           MAXREP -
 C           ISYMDM - Symmetries of density matrices
@@ -273,7 +273,7 @@ C
 C MXORB : MXSHEL (used for INFPAR)
 C GNRINF: NEWBAS
 C SIRIPC: NEWGEO
-C INFPAR: NODTOT, NTASK, IPRPAR
+C INFPAR: NODTOT, NTASK
 C INFORB: N2BASX
 C
 #include "gnrinf.h"
@@ -1459,9 +1459,9 @@ C
 
       CALL MEMREL('HER_NODSTR',WORK(1),KWORK,KWORK,KFREE,LFREE)
 C
-C     Send overall timings if requested.
+C     Send overall timings.
 C
-      IF (IPRPAR .GT. 0) CALL SDTIM(CPU1,WALL1,IPRINT)
+      CALL SDTIM(CPU1,WALL1,IPRINT)
 C
       deallocate(work)
 

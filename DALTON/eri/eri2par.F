@@ -79,7 +79,7 @@ C
 #endif
       IF (IPRTYP.EQ.1) THEN
          if (iprint .gt. 3)
-     &        write (lupri,*) 'Calling parallel HERMIT routines.'
+     &      write (lupri,*) 'Calling parallel HERMIT routines.'
          CALL HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
@@ -87,21 +87,21 @@ C
      &                   DINTSKP,RELCAL)
       ELSE
          if (iprint .gt. 3)
-     &    write (lupri,*) 'Calling parallel ERI routines.'
+     &      write (lupri,*) 'Calling parallel ERI routines.'
          CALL ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,IPRINT)
       END IF
 C
+      KCPUS  = 1
+      KWALLS = KCPUS  + NODTOT
+      KLAST  = KWALLS + NODTOT
+      IF (KLAST .GT. LWORK)
+     &   CALL STOPIT('PARDRV','RVTIM',KLAST,LWORK)
+C
+      CALL RVTIM(NSTAT,WORK(KCPUS),WORK(KWALLS),NODNAM(1),NODTOT,
+     &           IPRPAR,IPRINT)
+C
       IF (IPRPAR .GT. 0) THEN
-         KCPUS  = 1
-         KWALLS = KCPUS  + NODTOT
-         KLAST  = KWALLS + NODTOT
-         IF (KLAST .GT. LWORK)
-     &      CALL STOPIT('PARDRV','RVTIM',KLAST,LWORK)
-C
-         CALL RVTIM(NSTAT,WORK(KCPUS),WORK(KWALLS),NODNAM(1),NODTOT,
-     &              IPRPAR,IPRINT)
-C
          CALL GETTIM(CPU2,WALL2)
          CPU    = CPU2 - CPU1
          WALL   = WALL2 - WALL1
@@ -160,19 +160,20 @@ C
 C
   100 CONTINUE
 C
+      IF (IPRPAR .LE. 0) GOTO 9000
       IF (IPRPAR .GT. 1) THEN
          CALL AROUND('Overall statistics for distribution of batches')
 C
          WRITE(LUPRI,'(9X,5(A,4X))')   'Nodename',
-     &                                  'Batches',
-     &                                  'CPU time',
-     &                                  'Wall time',
-     &                                  'Efficiency'
+     &                                 'Batches',
+     &                                 'CPU time',
+     &                                 'Wall time',
+     &                                 'Efficiency'
          WRITE(LUPRI,'(9X,5(A,4X)/)')  '--------',
-     &                                  '-------',
-     &                                  '--------',
-     &                                  '---------',
-     &                                  '----------'
+     &                                 '-------',
+     &                                 '--------',
+     &                                 '---------',
+     &                                 '----------'
 C
          DO 200 NWHO = 1, NODTOT
             IF (WALLS(NWHO) .NE. 0.0D0) THEN
@@ -193,8 +194,9 @@ C
       WRITE(LUPRI,'(/A,I5.2,A,I2.2,A,I2.2)')
      &     '>>>> Total CPU  time used in NODES  so far   :',
      &     IHOURS,':',IMINS,':',ISECS
+      CALL FLSHFO(LUPRI)
 C
-      RETURN
+ 9000 RETURN
       END
 C  /* Deck eri_pardrv */
       SUBROUTINE ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
@@ -971,12 +973,14 @@ C defined parallel calculation types
 C
       CALL QENTER('DALTON_NODEDRIVER')
       CALL GETTIM(CSTR,WSTR)
+      N_TASKS = 0
 C
 C     Get calculation type (IPRTYP)
 C
   100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN
+         N_TASKS = N_TASKS + 1
 
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
          IF (IPRINT .GT. 0)
@@ -1122,6 +1126,7 @@ C
          CTOT = CEND - CSTR
          WTOT = WEND - WSTR
 C
+         WRITE (LUPRI,'(/A,I10/)') 'Number of tasks performed:',N_TASKS
          CALL TIMTXT('>>>> Total CPU  time used:',CTOT,LUPRI)
          CALL TIMTXT('>>>> Total wall time used:',WTOT,LUPRI)
 C
@@ -1488,7 +1493,7 @@ C
 C
       CALL GETTIM(CPU2,WALL2)
 C
-      TMGARR(1)  = CPU2 - CPU1
+      TMGARR(1) = CPU2  - CPU1
       TMGARR(2) = WALL2 - WALL1
 C
 #if defined (VAR_MPI)
