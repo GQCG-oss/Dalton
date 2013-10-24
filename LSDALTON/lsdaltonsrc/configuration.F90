@@ -888,22 +888,16 @@ subroutine DEC_meaningful_input(config)
         config%decomp%cfg_lcv = .true.
         config%decomp%cfg_lcm=.true.
 
-        ! Only necessary to localize for DEC calculation, not for full calculation
-        ! or simulated full calculation
-        NotFullCalc: if( .not. (DECinfo%full_molecular_cc .or. DECinfo%simulate_full) ) then
+        ! Turn on orbital localization
+        config%decomp%cfg_mlo = .true.
 
-           ! Turn on orbital localization
-           config%decomp%cfg_mlo = .true.
+        ! use orbspread localization function and line search
+        config%davidOrbLoc%orbspread=.true.
+        config%davidOrbLoc%linesearch=.true.
 
-           ! use orbspread localization function and line search
-           config%davidOrbLoc%orbspread=.true.
-           config%davidOrbLoc%linesearch=.true.
-
-           ! Exponent 2 for both occ and virt orbitals
-           config%decomp%cfg_mlo_m(1) = 2
-           config%decomp%cfg_mlo_m(2) = 2
-
-        end if NotFullCalc
+        ! Exponent 2 for both occ and virt orbitals
+        config%decomp%cfg_mlo_m(1) = 2
+        config%decomp%cfg_mlo_m(2) = 2
 
         ! For the release we only include DEC-MP2
 #ifndef MOD_UNRELEASED
@@ -915,12 +909,6 @@ subroutine DEC_meaningful_input(config)
 #endif
 
      end if OrbLocCheck
-
-     !Check in the case of a DEC calculation that the cc-restart-files are not
-     !written
-     if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
-       DECinfo%CCSDnosaferun = .true.
-     endif
 
   end if DECcalculation
 
