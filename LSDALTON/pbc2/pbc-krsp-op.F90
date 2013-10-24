@@ -21,6 +21,7 @@ INTEGER                       :: layer,l1,l2,l3
 REAL(realk)                   :: phase1,phase2,phase3
 COMPLEX(complexk)             :: phase
 
+
  DO layer = 1, size(Armat%lvec)
    l1=int(Armat%lvec(layer)%lat_coord(1))
    l2=int(Armat%lvec(layer)%lat_coord(2))
@@ -175,9 +176,9 @@ END SUBROUTINE transformk_2_realmat
 
 
 !TRANSFORMS TO D^0l
-SUBROUTINE kspc_2_rspc_loop_k(density,kmat,ll,kvec,weight_k,volbz,nbast)
+SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
   IMPLICIT NONE
-  INTEGER,intent(in)           :: nbast
+  INTEGER,intent(in)           :: nbast,k,Nk
   integer                      :: volbz
   COMPLEX(complexk),intent(in) :: kmat(nbast,nbast)
   TYPE(lvec_list_t),intent(IN) :: ll
@@ -187,6 +188,7 @@ SUBROUTINE kspc_2_rspc_loop_k(density,kmat,ll,kvec,weight_k,volbz,nbast)
   TYPE(matrix)                 :: tmp_density
   REAL(realk)                  :: work(nbast,nbast)
   REAL(realk)                  :: phase1,phase2,phase3
+  REAL(realk)                  :: maxdens
   COMPLEX(complexk)            :: phase
   INTEGER                      :: layer,i,j
   INTEGER                      :: l1,l2,l3
@@ -216,6 +218,16 @@ SUBROUTINE kspc_2_rspc_loop_k(density,kmat,ll,kvec,weight_k,volbz,nbast)
        !call write_matrix(work,nbast,nbast)
        call mat_set_from_full(work,1.0_realk,tmp_density)
        call mat_daxpy(1.D0,tmp_density,density(layer))
+     endif
+
+     if(k==Nk)then
+       if (l1 == ll%ndmat .or. l2 == ll%ndmat .or.l3== ll%ndmat)then
+         call mat_abs_max_elm(density(layer),maxdens)
+         if(maxdens .gt. 1e-12)then
+           write(*,*) 'maybe to hard density cutoff, max element for&
+            &layer', l1,l2,l3,maxdens
+         endif
+       endif
      endif
 
   enddo

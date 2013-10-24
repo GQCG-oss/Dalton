@@ -141,10 +141,13 @@ CHJMAERKE: define IPR_DIIS separately?
 C
       MXERRV = MAXEVC
       IF (MXERRV .LE. 0) THEN
-         MXERRV = MIN(NWOPT,10)
+         MXERRV = MIN(NWOPT,5)
 C        ... fixes linear dependency problem for very small debug runs
 C            MXERRV=10 gave lin.dep. for 2 el. in 2 orbitals,
 C            MXERRV=2 gave quadratic convergence ! (940701-hjaaj)
+C        (130919-hjaaj: decreased default from 10 to 5, because
+C         with 10 the span of BMAT may be >1.D15, giving problems
+C         in the DIIS solver - an example has been seen !!!)
          MXERRV = MAX(2,MXERRV)
       END IF
       IPR_DIIS = IPRRHF
@@ -508,9 +511,8 @@ C------------------
       DODIFDEN = .NOT.FLAG(49) .AND. .NOT.HSFOCK
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
-     &     .AND. .NOT.QM3      .AND. .NOT. QMMM
-     &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
-     &     .AND. .NOT.QMNPMM
+     &     .AND. .NOT.QM3      .AND. .NOT.QMMM
+     &     .AND. .NOT.AOSAVE   .AND. .NOT.CHOINT
      &     .AND. .NOT.QMNPMM   
 C
 #if defined (BUILD_PELIB)
@@ -528,7 +530,7 @@ C-tbp: turn off DIFDEN for Cholesky decomposition (CHOINT true)
 C------------------
       IF (.NOT. USRSCR) THEN
 C        AOSAVE or Cholesky (CHOINT): No screening.
-         IF (AOSAVE .OR. CHOINT) THEN
+         IF (AOSAVE .OR. CHOINT .OR. .NOT. DIRFCK) THEN
             IFTHRS = 20 ! code for no screening
          ELSE IF (FLAG(13)) THEN
 Chj-aug99: MO's read from input, assume good guess
@@ -697,10 +699,6 @@ C
 C  ***** Calculate 2-electron part of Fock matrix with
 C        differential density
 C
-Cef begin
-C         write(lupri,*) 'DCAO: '
-C         call output(DCAO,1,nbast,1,nbast,nbast,nbast,-1,lupri)
-Cef end
          CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
          IF (HSFOCK) THEN
 C
@@ -908,7 +906,7 @@ C
          if (peqm) then
            call memget2('REAL','fpe', kfpe, nnbasx, wrk, kfree, lfree)
            call memget2('REAL','epe', kepe, 1, wrk, kfree, lfree)
-           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+           if (nasht == 0 .or. hsfock) then
              call pe_master(runtype='fock', denmats=daosav(:,1),
      &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
      &                      energies=wrk(kepe:kepe),
@@ -1049,8 +1047,8 @@ C           CALL READMO(CMO,JRDMO,WRK,LFREE)
 C
  4010 FORMAT(' DIIS aborted because energy increased in this iteration.'
      &      /' Program aborted because this means automatic symmetry'
-     &      /' designation of occupied orbitals is not possible!',
-     &      /' Please send this output to dalton users mailing list !!!',
+     &      /' designation of occupied orbitals is not possible!'
+     &      /' Please send this output to dalton users mailing list !!!'
      &      /' You may try again with explicit specfication of .DOUBLY')
  4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
      &      /' Backstep to orbitals from previous iteration.')
@@ -1159,6 +1157,7 @@ C     Reason: DIIS tries to minimize gradient norm, not energy.
 C   - hjaaj mar 2004: only remove entries with lower gradient and
 C     higher energy, not "earlier entries"
 C
+         J_removed = 0
          IF (INDEVC.EQ.NEVC .AND. ITDIIS .GT. 3 .AND.
      &       GRDNRM .LE. 10.0D0) THEN
 C        ... no wrap around yet - INDEVC .lt. NEVC requires more programming
@@ -1166,13 +1165,12 @@ C        ITDIIS/GRDNRM check: give initial oscillations a chance to settle down
 C          before checking ... experience shows this will often be advantageous
 C          (see below) /hjaaj
             IEND = NEVC - 1
-            J = 0
             DO I = 1,IEND
 C           IF (I .NE. INDEVC) THEN
                IF (EGSAV(1,I) .GT. EMCSCF + EMCDIFERR .AND.
      &             EGSAV(2,I) .LT. GRDNRM) THEN
 C                  ... Oops! a previous iter with higher E and lower grd
-                  J = J + 1
+                  J_removed = J_removed + 1
                   EGSAV(1,I) = D0
                END IF
 C           END IF
@@ -1180,10 +1178,11 @@ C           END IF
 C
 C           remove entries with higher E and lower grd, if any
 C
-            IF (J .GT. 0) THEN
+            IF (J_removed .GT. 0) THEN
                WRITE(LUPRI,'(/A/A,I3,A)')
      &   'Info: SCF gradient has been lower than now,',
-     &   '      therefore',J,' old iterations are removed from DIIS.'
+     &   '      therefore',J_removed,
+     &   ' old iterations are removed from DIIS.'
                K = 0
                DO J = 1, NEVC
                   IF (EGSAV(1,J) .NE. D0) THEN
@@ -1234,33 +1233,30 @@ C           is higher in energy with lower gradient, especially if MOSTART H1DIA
 C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
-C        Do not try that with open-shell - it does not work./pawsa
-#if 0 /* I am not sure what the test for stalling detection should be */
-         IF (JTDIIS.GT.1 .AND.
-     &       EMCDIF.GT.5D-5) THEN
-#else
 !  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT 
-          IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-     &        GRDNRM .LE. 10.0D0 .AND. ABS(EMCDIF) .GT. 1.0D-5 .AND.
+          IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
+              EMCDIF_test = 0.0D0
+          ELSE
+              EMCDIF_test = EMCDIF
+          END IF
+C        Do not try that with open-shell - it does not work./pawsa
+!         IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND. J_removed.EQ.0 .AND.
+     &        GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
-     &         EMCDIF*(GRDNRM-GNRMSV) .LT. -1.0D-10) .AND. BCKSTP)
+     &         EMCDIF_test*(GRDNRM-GNRMSV) .LT. -1.0D-10) .AND. BCKSTP)
      &       THEN
 C              .. test EMCDIF*grddif against -1.0D-10 instead of 0.0D0
 C                 to avoid round-off problems here /hjaaj Sep 2005
-#endif
-c        IF (ITDIIS.GT.1 .AND. 
-c    &       ( ABS(CVEC(INDEVC)) .LT. 0.2D0 .OR.
-c    &         ABS(CVEC(INDEVC)) .GT. 2.0D0 ) .AND.
-c    &       EMCDIF .LT. D0 .AND. GRDNRM .GT. GNRMSV) THEN
              WRITE(LUPRI,'(1P/A,2(/A,G11.3),/A,I3,A)')
      &       '!!! Info: DIIS restarted because it was stalled ...',
      &       ' - energy changed by  ',EMCDIF,
      &       ' - gradient changed by',GRDNRM - GNRMSV,
      &       ' - or strange C vector coeff. for current index (=',
      &       INDEVC,') :'
-             WRITE (LUPRI,'(6F12.6)') (CVEC(I),I=1,NEVC)
-             IF (EMCDIF .LT. D0) THEN
+             WRITE (LUPRI,'(10F12.6)') (CVEC(I),I=1,NEVC)
+             IF (EMCDIF .LE. ABS(EMCSCF)*1.0D-12) THEN
                 JNDEVC = INDEVC
              ELSE
 C               ... use previous Fock matrix if energy increased
@@ -1288,6 +1284,8 @@ C
              CVEC(1) = D1
              JTDIIS  = 1
              NEVC    = 1
+             INDEVC  = 1
+             BMAT(1) = BMAT( (JNDEVC*(JNDEVC+1))/2 )
 C            also restrict orbital rotation with a level shift
 c            the formula is empirical EMCDIF is positive here.
              SHFTLVL = MAX(-12D0,SHFTLVL - MIN(4.0D0,ABS(EMCDIF)*10.D0))
@@ -1298,11 +1296,11 @@ c            and slow down  the level shifting annealing...
 c            make sure we get right HOMO-LUMO gap in the end.
              IF(ITDIIS.GT.1.AND.ABS(EMCDIF).LE.5.D-5) SHFTLVL = 0.D0
          END IF
-C hjaaj 22-Jun-20005-B
+C hjaaj 22-Jun-2005-B
 C        Level shift is only working for closed shell calculations ...
 C          (open shell problems reported by users ...)
          IF (NASHT .GT. 0) SHFTLVL = 0.0D0
-C hjaaj 22-Jun-20005-E
+C hjaaj 22-Jun-2005-E
          GNRMSV = GRDNRM
 C
 C        Iteration accepted; save current CMO for restart
@@ -1557,7 +1555,7 @@ C
       END IF
 #if defined (BUILD_PELIB)
       if (peqm) then
-        if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+        if (nasht == 0 .or. hsfock) then
            call pe_master(runtype='energy',
      &                    denmats=daosav(:,1), nmats=1,
      &                    dalwrk=wrk(kfree:lfree))

@@ -10,20 +10,50 @@ module dec_typedef_module
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
   !Could someone please rename ri to something less generic. TK!!
-  private
-  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,ccorbital,ri,&
-       & fullmolecule,ccatom,FullMP2grad,mp2dens,mp2grad,&
-       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
-       & SPgridbox
+!  private
+!  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
+!       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
+!       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
+!       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
+
+
+
+
+  ! MODIFY FOR NEW MODEL
+  !> Specify the parameters for ccModel here. NEVER HARDCODE THE NUMBER
+  integer,parameter :: MODEL_NONE   = 0
+  integer,parameter :: MODEL_MP2    = 1
+  integer,parameter :: MODEL_CC2    = 2
+  integer,parameter :: MODEL_CCSD   = 3
+  integer,parameter :: MODEL_CCSDpT = 4
+  integer,parameter :: MODEL_RPA    = 5
+
+
   ! IMPORTANT: Number of possible energies to calculate using the DEC scheme
   ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
   ! MODIFY FOR NEW MODEL
   ! MODIFY FOR NEW CORRECTION
   integer, parameter :: ndecenergies = 14
+  !> Specify numbers for storing of fragment energies
+  integer,parameter :: FRAGMODEL_LAGMP2 = 1  ! MP2 Lagrangian partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCMP2 = 2  ! MP2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTMP2 = 3 ! MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCCC2 = 4  ! CC2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCC2 = 5 ! CC2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCCCSD = 6 ! CCSD occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCCSD= 7 ! CCSD virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT = 8   ! (T) contribution, occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT = 9  ! (T) contribution, virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT4 = 10 ! Fourth order (T) contribution, occ partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT4 =11 ! Fourth order (T) contribution, virt partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT5 = 12 ! Fifth order (T) contribution, occ partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT5 =13 ! Fifth order (T) contribution, virt partitioning scheme
+  integer,parameter :: FRAGMODEL_F12 = 14    ! MP2-F12 energy correction
+
 
   !> \author Kasper Kristensen
   !> \date June 2010
-  !> \brief Contains settings for DEC calculation
+  !> \brief Contains settings for DEC calculation, see default settings in dec_set_default_config.
   type DECsettings
 
      ! ****************************************************************************************
@@ -68,8 +98,10 @@ module dec_typedef_module
 
      !> Restart options
      !> ***************
-     !> Restart calculation if some of the fragments were calculated in a previous calculation
-     logical :: restart
+     !> Use HF info generated in previous run (does not necessarily require DECrestart to be true)
+     logical :: HFrestart
+     !> Restart DEC calculation using fragment info files (requires HFrestart to be true)
+     logical :: DECrestart
      !> Creating files for restart: Time (in seconds) passing before backing up restart files
      real(realk) :: TimeBackup
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)
@@ -156,6 +188,8 @@ module dec_typedef_module
      !> Construct Fock matrix from RI integrals (obsolete for the moment)
      !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
      logical :: fock_with_ri
+     !> logial to set whether special communication processes should be spawned
+     logical :: spawn_comm_proc
 
      !> F12 settings
      !> ************
@@ -187,9 +221,6 @@ module dec_typedef_module
      !> General HACK parameters, to be used for easy debugging
      logical :: hack
      logical :: hack2
-     !> Full calculation where individual pair and single energies are calculated in ONE energy calc.
-     !> Only implemented for MP2 and only for debugging purposes.
-     logical :: mp2energydebug
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
      !> test the array structure
@@ -202,6 +233,8 @@ module dec_typedef_module
      integer :: PL
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
+     !> Print fragment energies for full CC calculation
+     logical :: full_print_frag_energies
      ! --
 
      !> Output options 
@@ -251,20 +284,25 @@ module dec_typedef_module
      integer :: FOTlevel
      !> Max accepted FOT level
      integer :: maxFOTlevel
-     !> Use occupied/virtual hybrid partitioning scheme
-     !> This is a temporary solution for models where the Lagrangian has not yet been implemented.
-     !> The Lagrangian fragment energy is then simply defined as the average value of the two energies
-     !> for the occupied and virtual partitioning schemes.
-     logical :: HybridScheme
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
-     !> Use MP2 optimized fragments (default)
-     logical :: use_mp2_frag
+     !> Use MP2 energies for expansion part of fragment optimization
+     logical :: fragopt_exp_mp2
+     !> Use MP2 energies for reduction part of fragment optimization
+     logical :: fragopt_red_mp2
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
+     !> How to construct correlation density defining fragment-adapted orbitals?
+     !> THIS IS WORK IN PROGRESS AND SHOULD BE MODIFIED!!!
+     !> For now, for atomic site P: 
+     !> CorrDensScheme=1:   Only EOS ampllitudes enter corr. dens . (ij \in P)
+     !> CorrDensScheme=2:   EOS and EOS-coupling amplitudes         (i\in P, j \in [P] or vice versa)
+     !> CorrDensScheme=3:   All AOS ampllitudes                     (ij \in [P])
+     !> Note that scheme 2 is only meaningful for occupied partitioning scheme.
+     integer :: CorrDensScheme
      ! --  
 
      !> Pair fragments
@@ -273,12 +311,17 @@ module dec_typedef_module
      real(realk) :: pair_distance_threshold
      !> Pair cutoff set manually (will overwrite default pair cutoff defined by FOTlevel)
      logical :: paircut_set
-     !> Pair distance beyond which reduced fragments are used
-     real(realk) :: PairReductionDistance
      !> When pair regression fit is performed, pair distances smaller than PairMinDist are ignored
      real(realk) :: PairMinDist
      !> Skip pair analysis (debug)
      logical :: checkpairs
+     !> Fragment-adapted threshold for throwing away orbitals in atomic fragments
+     !> that constitute pair fragment (currently on a testing basis)
+     real(realk) :: pairFOthr
+     !> Do some pairs at MP2 level
+     logical :: PairMP2
+     !> Estimate pair interaction energies using simple estimates?
+     logical :: PairEstimate
      ! --
 
 
@@ -380,7 +423,7 @@ module dec_typedef_module
   end type array4
 
 
-  type ccorbital
+  type decorbital
 
      !> Number of the orbital in full molecular basis
      integer :: orbitalnumber
@@ -392,7 +435,7 @@ module dec_typedef_module
      !> List of significant atoms
      integer, pointer :: atoms(:) => null()
 
-  end type ccorbital
+  end type decorbital
 
 
   !> Three dimensional array
@@ -412,6 +455,7 @@ module dec_typedef_module
 
 
   !> All information about full molecule and HF calculation
+  !> REMEMBER TO UPDATE mpi_bcast_fullmolecule IF YOU MODIFY THIS!!!
   type fullmolecule
 
      !> Number of electrons
@@ -439,9 +483,9 @@ module dec_typedef_module
      integer, pointer :: atom_end(:) => null()
 
      !> Occupied MO coefficients (mu,i)
-     real(realk), pointer :: ypo(:,:) => null()
+     real(realk), pointer :: Co(:,:) => null()
      !> Virtual MO coefficients (mu,a)
-     real(realk), pointer :: ypv(:,:) => null()
+     real(realk), pointer :: Cv(:,:) => null()
      !> CABS MO coefficients (mu,x)
      real(realk), pointer :: cabsMOs(:,:) => null()
 
@@ -461,11 +505,20 @@ module dec_typedef_module
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
 
+     !> Pair distance table giving interatomic distances
+     real(realk),pointer :: DistanceTable(:,:) => null()
+     !> Table describing which model should be used for given fragment calculation:
+     !> model=0:  Skip fragment (only relevant for pairs)
+     !> model=MODEL_MP2:  Do MP2
+     !> etc., see MODEL_* definitions below
+     integer,pointer :: ccmodel(:,:) => null()
+
   end type fullmolecule
 
 
   !> Atomic fragment / Atomic pair fragment
-  type ccatom
+  !> IMPORTANT: IF YOU MODIFY THIS STRUCTURE, REMEMBER TO CHANGE mpicopy_fragment ACCORDINGLY!!!
+  type decfrag
 
      !> Number of atom in full molecule
      integer :: atomic_number=0
@@ -485,6 +538,9 @@ module dec_typedef_module
      !> Pair fragment?
      logical :: pairfrag
 
+     !> CC model to use for fragment (see MODEL_* in this file)
+     integer :: ccmodel
+
      !> Occupied orbital EOS indices 
      integer, pointer :: occEOSidx(:) => null()
      !> Unoccupied orbital EOS indices 
@@ -498,44 +554,17 @@ module dec_typedef_module
      integer,pointer :: coreidx(:) => null()
 
 
-     ! Special info for reduced fragment of lower accuracy
-     !****************************************************
-     !> Number of occupied AOS orbitals 
-     integer :: REDnoccAOS=0
-     !> Total number of unoccupied orbitals (AOS)
-     integer :: REDnunoccAOS=0
-     !> Occupied orbital indices (AOS) for reduced fragment
-     integer, pointer :: REDoccAOSidx(:) => null()
-     !> All unoccupied orbital indices (AOS)
-     integer, pointer :: REDunoccAOSidx(:) => null()
-
      !> Indices of occupied EOS in AOS basis
      integer, pointer :: idxo(:) => null()
      !> Indices of unoccupied EOS in AOS basis
      integer, pointer :: idxu(:) => null()
 
-     ! MODIFY FOR NEW MODEL
-     ! MODIFY FOR NEW CORRECTION
-     !> DEC fragment energies stored in the following manner:
-     !> 1. MP2 Lagrangian partitioning scheme
-     !> 2. MP2 occupied partitioning scheme
-     !> 3. MP2 virtual partitioning scheme
-     !> 4. CC2 occupied partitioning scheme
-     !> 5. CC2 virtual partitioning scheme
-     !> 6. CCSD occupied partitioning scheme
-     !> 7. CCSD virtual partitioning scheme
-     !> 8. (T) contribution, occupied partitioning scheme
-     !> 9. (T) contribution, virtual partitioning scheme
-     !> 10. Fourth order (T) contribution, occupied partitioning scheme
-     !> 11. Fourth order (T) contribution, virtual partitioning scheme
-     !> 12. Fifth order (T) contribution, occupied partitioning scheme
-     !> 13. Fifth order (T) contribution, virtual partitioning scheme
-     !> 14. MP2-F12 energy correction
-
-     real(realk),dimension(ndecenergies) :: energies
+     !> DEC fragment energies are stored in the energies array
+     !> according to the global integers "FRAGMODEL_*" defined below.
      ! Note 1: Only the energies requested for the model in question are calculated!
      ! Note 2: Obviously you need to change the the global integer "ndecenergies"
      !         at the top of this file if you add new models!!!
+     real(realk),dimension(ndecenergies) :: energies
 
 
      !> The energy definitions below are only used for fragment optimization (FOP)
@@ -549,7 +578,7 @@ module dec_typedef_module
      !> Lagrangian energy 
      !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
      real(realk) :: LagFOP
-  
+
      !> Contributions to the fragment Lagrangian energy from each individual
      !  occupied or virtual orbital.
      real(realk),pointer :: OccContribs(:) => null()
@@ -561,15 +590,15 @@ module dec_typedef_module
      integer, pointer :: EOSatoms(:) => null()
 
 
-     !> Information used only when the ccatom is a pair fragment
+     !> Information used only when the decfrag is a pair fragment
      !> ********************************************************
      !> Distance between single fragments used to generate pair
      real(realk) :: pairdist
 
      !> Total occupied orbital space (orbital type)
-     type(ccorbital), pointer :: occAOSorb(:) => null()
+     type(decorbital), pointer :: occAOSorb(:) => null()
      !> Total unoccupied orbital space (orbital type)
-     type(ccorbital), pointer :: unoccAOSorb(:) => null()
+     type(decorbital), pointer :: unoccAOSorb(:) => null()
 
      !> Number of atoms (atomic extent)
      integer :: number_atoms=0
@@ -599,9 +628,9 @@ module dec_typedef_module
      real(realk),pointer :: S(:,:) => null()
 
      !> Occupied MO coefficients (only valence space for frozen core approx)
-     real(realk), pointer :: ypo(:,:) => null()
+     real(realk), pointer :: Co(:,:) => null()
      !> Virtual MO coefficients
-     real(realk), pointer :: ypv(:,:) => null()
+     real(realk), pointer :: Cv(:,:) => null()
      !> Cabs MO coefficients
      real(realk),pointer :: cabsMOs(:,:) => null()     
      !> Core MO coefficients 
@@ -622,13 +651,15 @@ module dec_typedef_module
      ! End of EXPENSIVE BOX
      ! ==============================================================
 
-     
+
      ! Information used for fragment-adapted orbitals
      ! *******************************************
      !> Correlation density matrices in local AOS basis
      real(realk), pointer :: OccMat(:,:) => null()  ! occ AOS-EOS
      real(realk), pointer :: VirtMat(:,:) => null()  ! virt AOS-EOS
      !> Threshold to use for throwing away fragment-adapted occupied (1) or virtual (2) orbitals
+     !> For pair fragment PQ this refers to the threshold used to throw away FOs from
+     !> the underlying atomic fragments P and Q.
      real(realk) :: RejectThr(2)
      !> Control of whether corr dens matrices have been set (true) or simply initialized (false)
      logical :: CDset
@@ -644,6 +675,10 @@ module dec_typedef_module
      logical :: FAset
      real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: number_basis,noccFA
      real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: number_basis,nunoccFA
+     !> Eigenvalues for correlation density matrices 
+     !> --> only set for atomic fragments (pairfrag=.false.) and when FAset=.true.
+     real(realk),pointer :: CDocceival(:) => null()    ! dimension noccFA
+     real(realk),pointer :: CDunocceival(:) => null()  ! dimension nunoccFA
 
 
      !> Information used only for the CC2 and CCSD models to describe
@@ -674,7 +709,7 @@ module dec_typedef_module
      real(realk) :: slavetime
 
 
-  end type ccatom
+  end type decfrag
 
 
   !> MP2 gradient matrices for full molecule.
@@ -914,13 +949,13 @@ module dec_typedef_module
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.
-   TYPE traceback
-      INTEGER :: na,ng,ident
-   END TYPE traceback
-    
+  TYPE traceback
+     INTEGER :: na,ng,ident
+  END TYPE traceback
 
-   !> Integral batch handling
-   TYPE batchTOorb
+
+  !> Integral batch handling
+  TYPE batchTOorb
      INTEGER,pointer :: orbindex(:)
      INTEGER :: norbindex
   END TYPE batchTOorb
@@ -944,10 +979,12 @@ module dec_typedef_module
      !> point with minimum x and y values and maximum z value.
      real(4), pointer :: val(:,:,:)
   end type SPgridbox
-  
+
 
   !> Information about DEC calculation
   !> We keep it as a global parameter for now.
   type(DECsettings) :: DECinfo
+
+
 
 end module dec_typedef_module

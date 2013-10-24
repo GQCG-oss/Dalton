@@ -88,26 +88,26 @@ C     Determine dimension of array TMPMAT
 C
 C     Expectation values of differentiated integrals (all atoms)
       IF (ITYPE .EQ. 2) THEN
-         NUMGRA = MXCOOR
-         NUMHES = NUMGRA*NUMGRA
-         NTMPMT = NUMGRA + NUMHES
-C     Direct calculation of Fock matrices 
+         L_GRA = MXCOOR
+         L_HES = L_GRA*L_GRA
+         L_TMPMT = L_GRA + L_HES
+C     Direct calculation of Fock matrices
 C        using skeleton matrix approach (AO basis)
       ELSE IF (ITYPE .EQ. 3) THEN
-         NUMFCK = NDMAT*N2BASX
+         L_FCK = NDMAT*N2BASX
          NUMSKP = 8
 #if defined(_CRAYT3E) && !defined(NO_BINSUM)
-         NTMPMT = NUMSKP
+         L_TMPMT = NUMSKP
 #else
-         NTMPMT = NUMFCK + NUMSKP
+         L_TMPMT = L_FCK + NUMSKP
 #endif
 C     Derivatives with respect to magnetic field(DDFOCK=T)
       ELSE IF (ITYPE .EQ. -5) THEN
-         NUMSUS = 9
-         NTMPMT = 3*N2BASX + NUMSUS
+         L_SUS = 9
+         L_TMPMT = 3*N2BASX + L_SUS
       ELSE IF (ITYPE .EQ. 8) THEN
 C     Derivative Fock matrix for specified atom
-         NTMPMT = 3*NUCDEG(IATOM)*N2BASX
+         L_TMPMT = 3*NUCDEG(IATOM)*N2BASX
       END IF
 C
 C     Determine number of tasks pr. batch - NTASK.
@@ -128,7 +128,7 @@ C
 C
 C     Be sure to allocate enough workspace for array SORTED
 C
-      IF (NTMPMT .LT. (MTOTTK + 2)) NTMPMT = MTOTTK + 2
+      IF (L_TMPMT .LT. (MTOTTK + 2)) L_TMPMT = MTOTTK + 2
 C
       KFRSAV = 1
       KFREE  = KFRSAV
@@ -139,25 +139,25 @@ C
       if(itype /= 3) rma_model = .false.
 
       if(.not.rma_model)then
-        CALL MEMGET('REAL',KTMPMT,NTMPMT,WORK,KFREE,LFREE)     
+        CALL MEMGET('REAL',KTMPMT,L_TMPMT,WORK,KFREE,LFREE)
       else
         if(itype == 2)then ! expectation values
-          CALL MEMGET('REAL',KTMPMT,NTMPMT,WORK,KFREE,LFREE)     
+          CALL MEMGET('REAL',KTMPMT,L_TMPMT,WORK,KFREE,LFREE)
         else ! fock matrices in some way
-          CALL MEMGET('REAL',KTMPMT,     0,WORK,KFREE,LFREE)     
+          CALL MEMGET('REAL',KTMPMT,     0,WORK,KFREE,LFREE)
         end if
       end if
 
-      CALL MEMGET('INTE',KINDEX,3*NINDEX,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KTIMES,MTOTTK,  WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KTKCPU,MTOTTK,  WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KTSORT,MTOTTK+2,WORK,KFREE,LFREE)     
-      CALL MEMGET('INTE',KWHICH,MTOTTK,  WORK,KFREE,LFREE)     
+      CALL MEMGET('INTE',KINDEX,3*NINDEX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTIMES,MTOTTK,  WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTKCPU,MTOTTK,  WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTSORT,MTOTTK+2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KWHICH,MTOTTK,  WORK,KFREE,LFREE)
 C
       CALL HER_PARDRV_1(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                WORK(KTMPMT),WORK(KINDEX),WORK(KTIMES),
      &                WORK(KTKCPU),WORK(KWHICH),WORK(KFREE),LFREE,
-     &                NINDEX,NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,
+     &                NINDEX,L_TMPMT,L_GRA,L_HES,L_SUS,L_FCK,
      &                ITYPE,MAXDER,IATOM,NODV,NOPV,
      &                NOCONT,TKTIME,RETUR,IPRINT,
      &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP,
@@ -175,7 +175,7 @@ C  /* Deck her_pardr1 */
       SUBROUTINE HER_PARDRV_1(
      &   FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &   TMPMAT,INDEX,TIMES,TSKCPU,IWHICH,WORK,LWORK,
-     &   NINDEX,NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,
+     &   NINDEX,L_TMPMT,L_GRA,L_HES,L_SUS,L_FCK,
      &   ITYPE,MAXDIF,IATOM,NODV,NOPV,
      &   NOCONT,TKTIME,RETUR,IPRINT,
      &   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP,SORTING)
@@ -236,14 +236,14 @@ C           NMLINE - Number of lines in MOLECULE.INP
 C           MLINE  - MOLECULE.INP as internal file
 C           NDMAT  - Number of density-matrices
 C           DMAT   - Density-matrices.
-C           HFXFAC - HF exchange factor             
+C           HFXFAC - HF exchange factor
 C
 C
 C
 C NOTE: If the program get short of memory in calculation of
 C       right hand sides (itype = 8) one can reduce the temporary
 C       matrix TMPMAT used in HER_RVRES from 3*N2BASX to NNBASX by
-C       looping over Fock matrices in HER_SDRES and HER_RVRES  
+C       looping over Fock matrices in HER_SDRES and HER_RVRES
 C       and then performing a send each time rather than transferring
 C       all matrices in one batch.
 C
@@ -269,7 +269,7 @@ C
 #include "maxorb.h"
 C
 C Used from common blocks
-C 
+C
 C MXORB : MXSHEL (used for INFPAR)
 C GNRINF: NEWBAS
 C SIRIPC: NEWGEO
@@ -332,7 +332,7 @@ C
 C
 Cef begin
 C---------------------------------------------------------------
-C   INDEX may need to be reinitialized after CALL HER_SDINIT.  
+C   INDEX may need to be reinitialized after CALL HER_SDINIT.
 C---------------------------------------------------------------
 C
       IF (AOSAVE .AND. (.NOT. INITX)) THEN
@@ -353,15 +353,15 @@ C
         nelement            = n2basx*ndmat ! for itype == 3: ndmat == nfmat
 
 
-!       sknecht: idea for RMA window on master: assign shmem-MASTER to some other member of the master group (via key-value in comm_split) 
-!                                               and introduce an integer list which keeps track of which FMAT(i) 
-!                                               was assigned to which process thus introducing a memory split within the numa-node(s) which could be advantageous. 
+!       sknecht: idea for RMA window on master: assign shmem-MASTER to some other member of the master group (via key-value in comm_split)
+!                                               and introduce an integer list which keeps track of which FMAT(i)
+!                                               was assigned to which process thus introducing a memory split within the numa-node(s) which could be advantageous.
 !                                               caution: not making MASTER to shmem-master may hold some pitfalls...
 
 
 #ifdef VAR_MPI
 !       test dmat on shared file
-        write(shared_dmat_file,'(a12,i4)') 
+        write(shared_dmat_file,'(a12,i4)')
      &  'dmat_shared.',communication_info_mpi%intra_node_group_id
         call mpi_file_open(
      &                     communication_info_mpi%
@@ -372,7 +372,7 @@ C
      &                     mpi_mode_DELETE_ON_CLOSE,
      &                     mpi_info_null,
      &                     rma_win_info%dmat_fh,
-     &                     ierr   
+     &                     ierr
      &                    )
         displacement = 0
         call mpi_file_set_view(
@@ -380,18 +380,18 @@ C
      &                         displacement,
      &                         mpi_real8,
      &                         mpi_real8,
-     &                         'native',   
+     &                         'native',
      &                         mpi_info_null,
-     &                         ierr   
+     &                         ierr
      &                        )
         if(communication_info_mpi%my_intra_node_id == 0)then
           nelement4 = nelement
           call mpi_file_write(
      &                        rma_win_info%dmat_fh,
-     &                        dmat,                
-     &                        nelement4,            
-     &                        mpi_real8,            
-     &                        istat,                
+     &                        dmat,
+     &                        nelement4,
+     &                        mpi_real8,
+     &                        istat,
      &                        ierr
      &                       )
         end if
@@ -411,7 +411,7 @@ C
      &                      .false.,
      &                      'no_locks',
      &                      'true')
-        
+
 #endif
 !       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
 !    &            rma_win_info%dmat_win,mynum
@@ -426,8 +426,8 @@ C--------------------------------------
 C     Receive final results from nodes.
 C--------------------------------------
 C
-      CALL HER_RVRES(FMAT,TMPMAT,HESSEE,TIMES,TSKCPU,IWHICH,NTMPMT,
-     &               NUMGRA,NUMHES,NUMSUS,NUMFCK,ITYPE,IPRINT,DINTSKP)
+      CALL HER_RVRES(FMAT,TMPMAT,HESSEE,TIMES,TSKCPU,IWHICH,L_TMPMT,
+     &               L_GRA,L_HES,L_SUS,L_FCK,ITYPE,IPRINT,DINTSKP)
 C
 C-----------------------------------------
 C     Sort the integral-calculation times.
@@ -507,15 +507,15 @@ C
          ELSE IF (AOSAVE .AND. .NOT.INITX) THEN
             INDEX(1,IPLACE) = I
          END IF
-C     
+C
          ICOUNT=ICOUNT+1
  100  CONTINUE
 C
-C The code piece below is a trick to make the 2-dim INDEX-array work with old code for 
+C The code piece below is a trick to make the 2-dim INDEX-array work with old code for
 C the routines PARLOP()/DOPAR() which assume a 1-dim INDEX array
       IF (.NOT.AOSAVE) THEN
          DO 111 I = 1, NINDEX
-            INDEX(1+MOD(I-1,3),1+INT((I-1)/3)) = INDEX(1,I) 
+            INDEX(1+MOD(I-1,3),1+INT((I-1)/3)) = INDEX(1,I)
  111     CONTINUE
       END IF
 C
@@ -680,8 +680,8 @@ CTROND      J2TYP  = I2TYP
       JCEDIF = ICEDIF
       JFTHRS = IFTHRS
 C     logicals
-      JNODV  = NODV 
-      JNOPV  = NOPV 
+      JNODV  = NODV
+      JNOPV  = NOPV
       JNOCNT = NOCONT
       JRETUR = RETUR
       JTKTIM = TKTIME
@@ -699,7 +699,7 @@ C
       CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
 C
-Cef begin 
+Cef begin
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
 C     IF (AOSAVE .AND. NEWGEO) THEN
 C         CALL IZERO(INDX_SHL,MXTSK)
@@ -730,8 +730,12 @@ C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
          CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
          CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
-         CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
+         CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
+         CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
          CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
@@ -759,19 +763,19 @@ C
       CALL MPIXBCAST(IFCTYP,NFMAT,'INTEGER',MASTER)
 !     distribute density matrices - that can be huge chunks... # first
       CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
-      
+
       if(rma_model)then
 
-        ! set # of fmat/dmat outside the RMA window ==> min = 1 otherwise we introduce some stupid communication 
+        ! set # of fmat/dmat outside the RMA window ==> min = 1 otherwise we introduce some stupid communication
         !                                                       overhead in regular SCF calculations...
         nmat_wo_win_env = ' '
         call getenv('NO_RMA_MTX',nmat_wo_win_env)
         read(nmat_wo_win_env,'(i6)') rma_win_info%nmat_max_wo_win
 
 !       sanity checks: minimum == 1; maximum == ndmat
-        if(rma_win_info%nmat_max_wo_win <= 0 ) 
+        if(rma_win_info%nmat_max_wo_win <= 0 )
      &     rma_win_info%nmat_max_wo_win  = 1
-        if(rma_win_info%nmat_max_wo_win  > ndmat) 
+        if(rma_win_info%nmat_max_wo_win  > ndmat)
      &     rma_win_info%nmat_max_wo_win  = ndmat
 
         CALL MPIXBCAST(rma_win_info%nmat_max_wo_win,1,'INTEGER',MASTER)
@@ -820,15 +824,15 @@ C
 C  /molinc/
          CALL PVMXPACK(NMLINE,1,'INTEGER')
 C  /molinp/
-         CALL PVMXPACK(MLINE,80*NMLINE,'STRING')
+         CALL PVMXPACK(MLINE,len_MLINE*NMLINE,'STRING')
 C  /inforb/
          CALL PVMXPACK(MULD2H,NINFI,'INTEGER')
 C  /infpar/
-         CALL PVMXPACK(NODTOT,NPARI,'INTEGER')      
+         CALL PVMXPACK(NODTOT,NPARI,'INTEGER')
 C  /dorps/
-         CALL PVMXPACK(DOREPS(0),NDORL,'LOGICAL')      
+         CALL PVMXPACK(DOREPS(0),NDORL,'LOGICAL')
 C  dosym()
-         CALL PVMXPACK(DOSYM,NSYML,'LOGICAL')      
+         CALL PVMXPACK(DOSYM,NSYML,'LOGICAL')
 C  comr12
          CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
          CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
@@ -866,7 +870,7 @@ C
       END
 C  /* Deck her_rvres */
       SUBROUTINE HER_RVRES(FMAT,TMPMAT,HESSEE,TIMES,TSKCPU,IWHICH,
-     &                     NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,ITYPE,
+     &                     L_TMPMT,L_GRA,L_HES,L_SUS,L_FCK,ITYPE,
      &                     IPRINT,DINTSKP)
 
 !     module dependencies
@@ -919,15 +923,15 @@ C
       IF (TIMING) CALL DZERO(TIMES,MTOTTK)
 C
       IF (ITYPE .EQ. 2) THEN
-         CALL DZERO(GRADEE,NUMGRA)
-         CALL DZERO(HESSEE,NUMHES)
+         CALL DZERO(GRADEE,L_GRA)
+         CALL DZERO(HESSEE,L_HES)
       ELSE IF (ITYPE .EQ. 3) THEN
          if(.not.rma_model)then
-           CALL DZERO(FMAT,NUMFCK)
+           CALL DZERO(FMAT,L_FCK)
            CALL DZERO(DINTSKP,8)
          end if
 #if defined(_CRAYT3E) && !defined(NO_BINSUM)
-         CALL BIN_SUM(NUMFCK, FMAT)
+         CALL BIN_SUM(L_FCK, FMAT)
          CALL BIN_SUM(8, DINTSKP)
 #endif
       ELSE IF (ITYPE .EQ. -5) THEN
@@ -936,10 +940,10 @@ COBL/AMT
 C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
          IF (.NOT. DONETWOLOP)THEN
              DONETWOLOP = .TRUE.
-             CALL DZERO(SUS2EL,NUMSUS)
+             CALL DZERO(SUS2EL,L_SUS)
          END IF
       ELSE IF (ITYPE .EQ. 8) THEN
-         CALL DZERO(FMAT,NTMPMT)
+         CALL DZERO(FMAT,L_TMPMT)
       END IF
 C
 C---------------------------
@@ -953,27 +957,27 @@ C
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG7)
          IF (ITYPE .EQ. 2) THEN
-            CALL MPIXRECV(TMPMAT(1),NUMGRA,'DOUBLE',NWHO,MTAG7)
-            CALL MPIXRECV(TMPMAT(NUMGRA+1),NUMHES,'DOUBLE',NWHO,MTAG7)
-            CALL DAXPY(NUMGRA,D1,TMPMAT,1,GRADEE,1)
-            CALL DAXPY(NUMHES,D1,TMPMAT(NUMGRA+1),1,HESSEE,1)
+            CALL MPIXRECV(TMPMAT(1),L_GRA,'DOUBLE',NWHO,MTAG7)
+            CALL MPIXRECV(TMPMAT(L_GRA+1),L_HES,'DOUBLE',NWHO,MTAG7)
+            CALL DAXPY(L_GRA,D1,TMPMAT,1,GRADEE,1)
+            CALL DAXPY(L_HES,D1,TMPMAT(L_GRA+1),1,HESSEE,1)
 #if !defined(_CRAYT3E) && !defined(NO_BINSUM)
          ELSE IF (ITYPE .EQ. 3) THEN
             if(.not.rma_model)then
-              CALL MPIXRECV(TMPMAT,NUMFCK,'DOUBLE',NWHO,MTAG7)
-              CALL MPIXRECV(TMPMAT(1+NUMFCK),8,'DOUBLE',NWHO,MTAG7)
-              CALL DAXPY(NUMFCK,D1,TMPMAT,1,FMAT,1)
-              CALL DAXPY(8,D1,TMPMAT(NUMFCK+1),1,DINTSKP,1)
+              CALL MPIXRECV(TMPMAT,L_FCK,'DOUBLE',NWHO,MTAG7)
+              CALL MPIXRECV(TMPMAT(1+L_FCK),8,'DOUBLE',NWHO,MTAG7)
+              CALL DAXPY(L_FCK,D1,TMPMAT,1,FMAT,1)
+              CALL DAXPY(8,D1,TMPMAT(L_FCK+1),1,DINTSKP,1)
             end if
 #endif
          ELSE IF (ITYPE .EQ. 8) THEN
-            CALL MPIXRECV(TMPMAT(1),NTMPMT,'DOUBLE',NWHO,MTAG7)
-            CALL DAXPY(NTMPMT,D1,TMPMAT,1,FMAT,1)
+            CALL MPIXRECV(TMPMAT(1),L_TMPMT,'DOUBLE',NWHO,MTAG7)
+            CALL DAXPY(L_TMPMT,D1,TMPMAT,1,FMAT,1)
          ELSE IF (ITYPE .EQ. -5) THEN
             CALL MPIXRECV(TMPMAT(1),3*N2BASX,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(3*N2BASX,D1,TMPMAT,1,FMAT,1)
-            CALL MPIXRECV(TMPMAT(1),NUMSUS,'DOUBLE',NWHO,MTAG7)
-            CALL DAXPY(NUMSUS,D1,TMPMAT,1,SUS2EL,1)
+            CALL MPIXRECV(TMPMAT(1),L_SUS,'DOUBLE',NWHO,MTAG7)
+            CALL DAXPY(L_SUS,D1,TMPMAT,1,SUS2EL,1)
          END IF
 C
          CALL MPIXRECV(ITASKS,1,'INTEGER',NWHO,MTAG7)
@@ -991,21 +995,21 @@ C
 #endif
 #if defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG7)
-         CALL PVMXUNPACK(TMPMAT,NTMPMT,'DOUBLE')
+         CALL PVMXUNPACK(TMPMAT,L_TMPMT,'DOUBLE')
 C
          IF (ITYPE .EQ. 2) THEN
-            CALL DAXPY(NUMGRA,D1,TMPMAT(1),1,GRADEE,1)
-            CALL DAXPY(NUMHES,D1,TMPMAT(NUMGRA+1),1,HESSEE,1)
+            CALL DAXPY(L_GRA,D1,TMPMAT(1),1,GRADEE,1)
+            CALL DAXPY(L_HES,D1,TMPMAT(L_GRA+1),1,HESSEE,1)
 C
          ELSE IF (ITYPE .EQ. 3) THEN
-            CALL DAXPY(NUMFCK,D1,TMPMAT,1,FMAT,1)
-            CALL DAXPY(8,D1,TMPMAT(NUMFCK+1),1,DINTSKP,1)
+            CALL DAXPY(L_FCK,D1,TMPMAT,1,FMAT,1)
+            CALL DAXPY(8,D1,TMPMAT(L_FCK+1),1,DINTSKP,1)
 C
          ELSE IF (ITYPE .EQ. 8) THEN
-            CALL DAXPY(NTMPMT,D1,TMPMAT(1),1,FMAT,1)
+            CALL DAXPY(L_TMPMT,D1,TMPMAT(1),1,FMAT,1)
          ELSE IF (ITYPE .EQ. -5) THEN
             CALL DAXPY(3*N2BASX,D1,TMPMAT(1),1,FMAT,1)
-            CALL DAXPY(NUMSUS,D1,TMPMAT(3*N2BASX+1),1,SUS2EL,1)
+            CALL DAXPY(L_SUS,D1,TMPMAT(3*N2BASX+1),1,SUS2EL,1)
          END IF
 C
 C        Unpack the number of tasks received by the node.
@@ -1225,7 +1229,7 @@ C
       integer, allocatable           :: IORBS(:)
       integer, allocatable           :: JORBS(:)
       integer, allocatable           :: KORBS(:)
-      
+
 C     This is a slave in a parallel run; check for programming error
       IF (.NOT.SLAVE) THEN
          CALL QUIT('ERROR: in HER_NODSTR but not SLAVE')
@@ -1263,7 +1267,7 @@ C     This is a slave in a parallel run; check for programming error
         write (luerr,*) mynum,
      &      ': ALLOCATE command failed to allocate'//
      &      ' the requested memory. Error code:',i
-        write (luerr,*) 
+        write (luerr,*)
      &      'Reduce the memory demands and be welcome back'
         call quit('Failed to allocate memory')
       end if
@@ -1286,7 +1290,7 @@ C     This is a slave in a parallel run; check for programming error
 !
       nelement_d     = n2basx*ndmat
       nelement_f     = n2basx*nfmat
-      if(rma_model .and. 
+      if(rma_model .and.
      &   communication_info_mpi%my_shmem_node_id /= 0)then
           nelement_d = n2basx*rma_win_info%nmat_max_wo_win
           nelement_f = n2basx*rma_win_info%nmat_max_wo_win
@@ -1298,7 +1302,7 @@ C     This is a slave in a parallel run; check for programming error
       call dzero(fmat_buff,nelement_f)
 
 !     set local work memory size
-      lwork = lwork_save - ( 9 * npao / (8/sizeof(int))) - 
+      lwork = lwork_save - ( 9 * npao / (8/sizeof(int))) -
      &        nelement_d - nelement_f
 
       allocate(work(0:lwork+1),stat=i)
@@ -1354,7 +1358,7 @@ C     ===================
 !    &                      'true')
 
 !       test dmat on shared file
-        write(shared_dmat_file,'(a12,i4)') 
+        write(shared_dmat_file,'(a12,i4)')
      &  'dmat_shared.',communication_info_mpi%intra_node_group_id
         call mpi_file_open(
      &                     communication_info_mpi%
@@ -1365,28 +1369,25 @@ C     ===================
      &                     mpi_mode_DELETE_ON_CLOSE,
      &                     mpi_info_null,
      &                     rma_win_info%dmat_fh,
-     &                     ierr   
-     &                    )
+     &                     ierr )
         displacement = 0
         call mpi_file_set_view(
      &                         rma_win_info%dmat_fh,
      &                         displacement,
      &                         mpi_real8,
      &                         mpi_real8,
-     &                         'native',   
+     &                         'native',
      &                         mpi_info_null,
-     &                         ierr   
-     &                        )
+     &                         ierr )
         if(communication_info_mpi%my_intra_node_id == 0)then
           nelement4 = nelement
           call mpi_file_write(
      &                        rma_win_info%dmat_fh,
      &                        dmat_buff,
-     &                        nelement4,            
-     &                        mpi_real8,            
-     &                        istat,                
-     &                        ierr
-     &                       )
+     &                        nelement4,
+     &                        mpi_real8,
+     &                        istat,
+     &                        ierr )
         end if
         call mpi_barrier(communication_info_mpi%
      &                   communication_intranode,ierr)
@@ -1566,9 +1567,9 @@ C
 
         call qenter('HER_RVINIT - 1 -')
 C
-C       Since REAINI is not initialized outside of SETHER, make sure slaves                            
-C       initialize it properly                                                                        
-C                                                                                                       
+C       Since REAINI is not initialized outside of SETHER, make sure slaves
+C       initialize it properly
+C
         IF (FIRST_TIME_CALLED) THEN
            RELCAL = .FALSE.
            TSTINP = .FALSE.
@@ -1621,12 +1622,16 @@ C
      &          ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
 C  /molinp/
               CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
-C Arnfinn nov -08: Receiving number of QM atom types: 
+C Arnfinn nov -08: Receiving number of QM atom types:
               CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
               CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
-              CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
+              CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 C  /cbirea/
+              CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+              CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
               CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
               CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
@@ -1669,7 +1674,7 @@ C
 C  /molinp/
            CALL PVMXUNPACK(NMLINE,1,'INTEGER')
 C  /molinc/
-           CALL PVMXUNPACK(MLINE,80*NMLINE,'STRING')
+           CALL PVMXUNPACK(MLINE,len_MLINE*NMLINE,'STRING')
 C  /inforb/
            CALL PVMXUNPACK(MULD2H,NINFI,'INTEGER')
 C  /infpar/
@@ -1718,8 +1723,8 @@ C       set local/common block information from PARINT.
         ICEDIF = JCEDIF
         IFTHRS = JFTHRS
         NOCONT = JNOCNT
-        NODV   = JNODV 
-        NOPV   = JNOPV 
+        NODV   = JNODV
+        NOPV   = JNOPV
         RETUR  = JRETUR
         TKTIME = JTKTIM
         SOLVNT = JSOLVN
@@ -1754,7 +1759,7 @@ C
            ISTBNU(NUCIND) = 7
            CHARGE(NUCIND) = D0
            CALL NUCPRO(WORK(KFREE),LFREE)
-           NEWGEO = .FALSE.   
+           NEWGEO = .FALSE.
         END IF
 C
         IF (NEWGEO) RDINPC = .FALSE.
@@ -1826,12 +1831,12 @@ C
 !       call flshfo(lupri)
       end if
 
-      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)     
-      
+      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
+
       IF(ITYPE.EQ.3) THEN
         CALL MPIXBCAST(N2RED,1,'INTEGER',MASTER)
-        CALL MEMGET('REAL',KDMRAO,NDMAT*N2RED,WORK,KFREE,LFREE)     
-        CALL MEMGET('REAL',KGABAO,      N2RED,WORK,KFREE,LFREE)     
+        CALL MEMGET('REAL',KDMRAO,NDMAT*N2RED,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KGABAO,      N2RED,WORK,KFREE,LFREE)
         CALL MPIXBCAST(WORK(KDMRAO),NDMAT*N2RED,'DOUBLE',MASTER)
         CALL MPIXBCAST(WORK(KGABAO),N2RED,'DOUBLE',MASTER)
       ELSE
@@ -1847,17 +1852,17 @@ C
 C     Unpack density matrices.
 C
       CALL PVMXUNPACK(NDMAT,1,'INTEGER')
-      CALL MEMGET('REAL',KDMAT,NDMAT*N2BASX,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KFMAT,NFMAT*N2BASX,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KDMAT,NDMAT*N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFMAT,NFMAT*N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
       CALL PVMXUNPACK(WORK(KDMAT),N2BASX*NDMAT,'DOUBLE')
       CALL PVMXUNPACK(ISYMDM,NFMAT,'INTEGER')
       CALL PVMXUNPACK(IFCTYP,NFMAT,'INTEGER')
 C
       IF(ITYPE.EQ.3) THEN
         CALL PVMXUNPACK(N2RED,1,'INTEGER')
-        CALL MEMGET('REAL',KDMRAO,NDMAT*N2RED,WORK,KFREE,LFREE)     
-        CALL MEMGET('REAL',KGABAO,N2RED,WORK,KFREE,LFREE)     
+        CALL MEMGET('REAL',KDMRAO,NDMAT*N2RED,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KGABAO,N2RED,WORK,KFREE,LFREE)
         CALL PVMXUNPACK(WORK(KDMRAO),N2RED*NDMAT,'DOUBLE')
         CALL PVMXUNPACK(WORK(KGABAO),N2RED,'DOUBLE')
         KLAST  = KGABAO + N2RED
@@ -1882,7 +1887,7 @@ Cef begin
      &     ISYMDM,IFCTYP,ADISTR,ITYPE,JSTRSH,NPRIMS,NCONTS,
      &     IORBSH,I2TYP,ICEDIF,IFTHRS,
      &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
-C     
+C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 
 !     module dependencies
@@ -1893,7 +1898,7 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "aovec.h"
-#include "maxorb.h" 
+#include "maxorb.h"
 #include "dummy.h"
 #include "mtags.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
@@ -1901,7 +1906,7 @@ C
      &        DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DONE,
      &        SOFOCK,RELCAL
-      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*), 
+      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*),
      & IODDHR(*), INDHER(*), WORK(LWORK), ISYMDM(*), IFCTYP(*),
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(MXSHEL,MXAOVC),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK), IJS(NTASK),
@@ -1959,16 +1964,16 @@ C       Screening proceeds in three steps as documented by DINTSKP:
 C         Step 1: Screening on integral batches
 C           DINTSKP(1,1) - total number of integrals
 C           DINTSKP(2,1) - number of integrals skipped (batchwise)
-C         Step 2: Screening on individual integrals 
+C         Step 2: Screening on individual integrals
 C                 while unpacking indices
 C           DINTSKP(1,2) - number of integrals remaining after step 1
 C           DINTSKP(2,2) - number of integrals skipped
 C         Step 3a: Screening on Coulomb contributions
-C           DINTSKP(1,3) - NCM times number of integrals remaining 
+C           DINTSKP(1,3) - NCM times number of integrals remaining
 C                         after step 2
 C           DINTSKP(2,3) - NCM times number of integrals skipped
 C         Step 3b: Screening on exchange contributions
-C           DINTSKP(1,4) - NEM times number of integrals remaining 
+C           DINTSKP(1,4) - NEM times number of integrals remaining
 C                         after step 2
 C           DINTSKP(2,4) - NEM times number of integrals skipped
 C
@@ -2045,29 +2050,29 @@ C
       ITOTNT = 1
       LINTMP = .FALSE.
       I_SHL = 1
-C     
-C     
+C
+C
  100  CONTINUE
 C
-      IF (AOSAVE) THEN 
-C     
+      IF (AOSAVE) THEN
+C
          IF (NTASK .GT. 1) THEN
             CALL QUIT('NTASK > 1 is not ported to AOSAVE = TRUE.')
          END IF
-C     
+C
 #if defined (VAR_MPI)
          CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG5)
          CALL MPIXSEND(IPLACE,1,'INTEGER',MASTER,MTAG51)
-C     
+C
          IF (IPLACE .NE. 0) THEN
             INTSAV = 0
-            IF (LINTSV) THEN 
+            IF (LINTSV) THEN
                INTSAV = 1
             END IF
             CALL MPIXSEND(INTSAV,1,'INTEGER',MASTER,MTAG52)
          END IF
          LINTSV = .FALSE.
-C     
+C
 #endif
 #if defined (VAR_PVM)
          CALL PVMXINITSEND(NCODE)
@@ -2075,12 +2080,12 @@ C
          CALL PVMXSEND(MASTER,MTAG5)
 #endif
 C
-C     Receive IJ labels for NTASK new (IJ|**) integrals 
+C     Receive IJ labels for NTASK new (IJ|**) integrals
 C
          CALL IZERO(IJS,NTASK)
-C     
+C
 #if defined (VAR_MPI)
-         CALL MPIXRECV(DONE,1,'LOGICAL',MASTER,MTAG6)     
+         CALL MPIXRECV(DONE,1,'LOGICAL',MASTER,MTAG6)
          IF (DONE) GOTO 300
          CALL MPIXRECV(IJS,NTASK,'INTEGER',MASTER,MTAG61)
          IF (IJS(1) .EQ. 0) THEN
@@ -2089,14 +2094,14 @@ C
          END IF
          CALL MPIXRECV(IINTSV,NTASK,'INTEGER',MASTER,MTAG64)
 C         write(lupri,*) 'MYNUM,IJS(1),IINTSV',MYNUM,IJS,IINTSV
-C     
+C
          IF (IINTSV .EQ. 1) THEN
             LINTSV = .TRUE.
          ELSE
             LINTSV = .FALSE.
          END IF
          CALL MPIXRECV(IPLACE,1,'INTEGER',MASTER,MTAG62)
-C     
+C
 #endif
 #if defined (VAR_PVM)
          CALL PVMXRECV(MASTER,MTAG6)
@@ -2104,11 +2109,11 @@ C
          IF (DONE) GOTO 300
          CALL PVMXUNPACK(IJS,NTASK,'INTEGER')
 #endif
-C     
+C
 C ELSE below is for the compability to old code: AOSAVE = FALSE
 C
       ELSE
-C     
+C
 #if defined (VAR_MPI)
          CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG5)
 #endif
@@ -2117,11 +2122,11 @@ C
          CALL PVMXPACK(MYNUM,1,'INTEGER')
          CALL PVMXSEND(MASTER,MTAG5)
 #endif
-C     
-C     Receive IJ labels for NTASK new (IJ|**) integrals 
-C     
+C
+C     Receive IJ labels for NTASK new (IJ|**) integrals
+C
          CALL IZERO(IJS,NTASK)
-C     
+C
 #if defined (VAR_MPI)
          CALL MPIXRECV(DONE,1,'LOGICAL',MASTER,MTAG6)
          IF (DONE) GOTO 300
@@ -2133,7 +2138,7 @@ C
          IF (DONE) GOTO 300
          CALL PVMXUNPACK(IJS,NTASK,'INTEGER')
 #endif
-C     
+C
 C     END IF below corresponds to: IF (AOSAVE)... ELSE
       END IF
 C
@@ -2141,18 +2146,18 @@ C
          WRITE(LUPRI,'(5X,A,I4)')
      &        'Receiving IJ-batches: ',(IJS(KK),KK=1,NTASK)
       END IF
-C     
+C
       DO 200, I = 1,NTASK
-C     
+C
          IJSHEL = IJS(I)
-C     
-C        print *,'MYNUM,NTASK',MYNUM,NTASK 
+C
+C        print *,'MYNUM,NTASK',MYNUM,NTASK
 C	print *,'IJS(1:NTASK)'
 C         write(lupri,*), 'NTASK',NTASK
 C   DO 299 LL=1,NTASK
 C       DO 299 LL=1,55
 C        write(lupri,*),'MYNUM, LL =  ',MYNUM,LL,'IJS(LL) = ',IJS(LL)
-C 299     CONTINUE 
+C 299     CONTINUE
          IF (IJSHEL .EQ. 0) THEN
             ICOUNT = ICOUNT + I - 1
             GO TO 100
@@ -2293,7 +2298,7 @@ C              *******************************
 C
 c               IPRINT = 0
                IPRINT = JPRINT
-C               
+C
 C     Note DUMMY should be HESSEE, K.Ruud-96
 C
                CALL TWOODS(FMAT,DMAT,NDMAT,GMAT,HESSEE,WORK,LWORK,
@@ -2316,12 +2321,12 @@ C
  500        CONTINUE
 C
  400  CONTINUE
-C     
+C
          IF (TIMING) THEN
             CPUTK2 = SECOND()
             CPUTSK = CPUTK2 - CPUTK1
             IF (.NOT.AOSAVE) IPLACE = ICOUNT + I
-C            IPLACE = ICOUNT + I     
+C            IPLACE = ICOUNT + I
             IWHICH(IPLACE) = IJSHEL
             TSKCPU(IPLACE) = CPUTSK
          END IF
@@ -2403,7 +2408,7 @@ C
       CALL HER_SDRES(FMAT,HESSEE,NDMAT,DINTSKP,TSKCPU,IWHICH,ICOUNT,
      &     ITYPE,JPRINT)
 Cef 10.mai begin
-C This is a fix for an unresolved error in the AOSAVE-related code. 
+C This is a fix for an unresolved error in the AOSAVE-related code.
 C The price of the fix is a bit lower memory efficiency.
         MSAVE = .FALSE.
 Cef 10.mai end
@@ -2458,22 +2463,22 @@ C
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDRES','*',103)
 C
-      NUMGRA = MXCOOR
-      NUMHES = MXCOOR*MXCOOR
-      NUMSUS = 9
+      L_GRA = MXCOOR
+      L_HES = MXCOOR*MXCOOR
+      L_SUS = 9
 C
 #if defined (VAR_MPI)
       CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG7)
 C
       IF (ITYPE .EQ. 2) THEN
-         CALL MPIXSEND(GRADEE,NUMGRA,'DOUBLE',MASTER,MTAG7)
-         CALL MPIXSEND(HESSEE,NUMHES,'DOUBLE',MASTER,MTAG7)
+         CALL MPIXSEND(GRADEE,L_GRA,'DOUBLE',MASTER,MTAG7)
+         CALL MPIXSEND(HESSEE,L_HES,'DOUBLE',MASTER,MTAG7)
       ELSE IF (ITYPE .EQ. 3) THEN
 #if defined(_CRAYT3E) && !defined(NO_BINSUM)
          CALL BIN_SUM(NDMAT*N2BASX, FMAT)
          CALL BIN_SUM(8, DINTSKP)
 #else
-         if(.not.rma_model)then 
+         if(.not.rma_model)then
            CALL MPIXSEND(FMAT,NDMAT*N2BASX,'DOUBLE',MASTER,MTAG7)
            CALL MPIXSEND(DINTSKP,8,'DOUBLE',MASTER,MTAG7)
          end if
@@ -2481,7 +2486,7 @@ C
       ELSE IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
          CALL MPIXSEND(FMAT,NFMAT*N2BASX,'DOUBLE',MASTER,MTAG7)
          IF (ITYPE .EQ. -5) THEN
-            CALL MPIXSEND(SUS2EL,NUMSUS ,'DOUBLE',MASTER,MTAG7)
+            CALL MPIXSEND(SUS2EL,L_SUS ,'DOUBLE',MASTER,MTAG7)
          END IF
       END IF
 C
@@ -2516,7 +2521,7 @@ C
 
 !       now all fmatS inside the RMA window... if any
         if(rma_win_info%nmat_max_wo_win < ndmat)then
-          
+
           call mpi_barrier(communication_info_mpi%
      &                     communication_shmemnode,
      &                     ierr)
@@ -2541,15 +2546,15 @@ C
 #if defined (VAR_PVM)
       CALL PVMXINITSEND(NCODE)
       IF (ITYPE .EQ. 2) THEN
-         CALL PVMXPACK(GRADEE,NUMGRA,'DOUBLE')
-         CALL PVMXPACK(HESSEE,NUMHES,'DOUBLE')
+         CALL PVMXPACK(GRADEE,L_GRA,'DOUBLE')
+         CALL PVMXPACK(HESSEE,L_HES,'DOUBLE')
       ELSE IF (ITYPE .EQ. 3) THEN
          CALL PVMXPACK(FMAT,NDMAT*N2BASX,'DOUBLE')
          CALL PVMXPACK(DINTSKP,8,'DOUBLE')
       ELSE IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
          CALL PVMXPACK(FMAT,NFMAT*N2BASX,'DOUBLE')
          IF (ITYPE .EQ. -5) THEN
-            CALL PVMXPACK(SUS2EL,NUMSUS,'DOUBLE')
+            CALL PVMXPACK(SUS2EL,L_SUS,'DOUBLE')
          END IF
       END IF
 C
@@ -2720,7 +2725,7 @@ C
      &    'limit. Reduce number of nodes or recompile program. ',
      &    'Allocated (NODTOT) :',NODTOT,'Limit (MAXNOD)     :',MAXNOD
          CALL RECOMPI
-         CALL QUIT('ERROR: Number of nodes requested is too large.')        
+         CALL QUIT('ERROR: Number of nodes requested is too large.')
       ENDIF
 C
       RETURN
@@ -2728,7 +2733,7 @@ C
 #if defined(_CRAYT3E) && !defined(NO_BINSUM)
       SUBROUTINE BIN_SUM(N, SUM)
 C     ******************************************************************
-C     *  
+C     *
 C     *  Performs a binary tree sum of SUM(0:N-1) across all PE's and
 C     *  leaves the result in SUM at node 0. This is equivalent to
 C     *
@@ -2867,13 +2872,13 @@ C
 C
       IF (TOFILE) CALL QUIT('Parallel calculations do not allow for '//
      &     'storing PCM-integrals on disk')
-C     
+C
 C     Wake up the slaves
-C     
+C
       NNBASX = NBAST*(NBAST + 1)/2
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
-C     
+C
       CALL MPIXBCAST(KSYMP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(EXP1VL,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
@@ -2908,7 +2913,7 @@ C
       END DO
 C
 C     Collect data from all slaves
-C     
+C
       IF (EXP1VL) THEN
          CALL DZERO(WORK,NTS)
          CALL MPI_REDUCE(WORK,EXPVAL,NTS,MPI_DOUBLE_PRECISION,
@@ -3085,14 +3090,14 @@ C
 #include "infpar.h"
 #include "wrkrsp.h"
 #include "mpif.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 C
       IF (TOFILE) CALL QUIT('Parallel calculations do not allow for '//
      &     'storing PCM-integrals on disk')
-C     
+C
 C     Wake up the slaves
-C     
+C
       IPRTYP = J1XP_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
@@ -3135,7 +3140,7 @@ C
       END DO
 C
 C     Collect data from all slaves
-C     
+C
       NDIMZ = MAX(N2ORBX,NTS)
       CALL DZERO(WORK,NOSIM*NDIMZ)
       CALL DZERO(VTEX,NTS*NOSIM)
@@ -3247,7 +3252,7 @@ C Transform V(MO) from triangular to square format
             JJ1XAC = KJ1XAC + (IOSIM - 1) * N2ASHX
             JPCMX  = KPCMX + (IOSIM - 1)*N2ORBX
             CALL ONEXH1(WORK(JUBO),WORK(KJ1SQ),WORK(JJ1X))
-C     
+C
             IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
             IF (IPRPCM .GE. 15) THEN
                WRITE (LUPRI,'(/A)') ' J1X_mo matrix:'
@@ -3261,7 +3266,7 @@ C
             END IF
 C
 C     Expectation value of transformed potential on tesserae:
-C                     <0|\tilde{V}|0> 
+C                     <0|\tilde{V}|0>
 C
             IF (KSYMOP .EQ. 1) THEN
                IF (TRPLET) THEN
@@ -3301,7 +3306,7 @@ C Transform V(MO) from triangular to square format
                JJ1X = KJ1XSQ + (IOSIM - 1) * N2ORBX
                JJ1XAC = KJ1XAC + (IOSIM - 1) * N2ASHX
                CALL ONEXH1(WORK(JUBO),WORK(KJ1SQ),WORK(JJ1X))
-C     
+C
                IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
                IF (IPRPCM .GE. 15) THEN
                   WRITE (LUPRI,'(/A)') ' J1X_mo matrix (KSYMOP):'
@@ -3315,7 +3320,7 @@ C
                END IF
 C
 C     Expectation value of transformed potential on tesserae:
-C                     <0|\tilde{V}|0> 
+C                     <0|\tilde{V}|0>
 C
                IF (TRPLET) THEN
                   FACTOR = SLVTLM(WORK(KUDV),WORK(JJ1XAC),WORK(JJ1X),
@@ -3368,12 +3373,12 @@ C
 #include "infpar.h"
 #include "mtags.h"
 #include "pcm.h"
-#include "mpif.h"      
-C defined parallel calculation types  
+#include "mpif.h"
+C defined parallel calculation types
 #include "iprtyp.h"
-C     
+C
 C     Wake up the slaves
-C     
+C
       IPRTYP = J2XP_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
@@ -3415,7 +3420,7 @@ C
       CALL DZERO(WORK,NTS)
       CALL MPI_REDUCE(WORK,TCHG,NTS,MPI_DOUBLE_PRECISION,MPI_SUM,0,
      &                MPI_COMM_WORLD,IERR)
-C      
+C
       RETURN
       END
 C /* Deck JX2S */
@@ -3528,23 +3533,23 @@ C
      $                NBAST,NORBT)
             CALL DSPTSI(NORBT,WRK(KTLMA),WRK(KTELM))
 C with no transformation we copy the array from KTELM to KTLMA
-            IF (IKLVL.EQ.0) THEN 
+            IF (IKLVL.EQ.0) THEN
                CALL DZERO(WRK(KTLMA),N2ORBX)
                CALL DCOPY(N2ORBX,WRK(KTELM),1,WRK(KTLMA),1)
             END IF
-C First transformation of charges: q^e_{ab} --> q^e_{ab}({}^1\kappa) 
+C First transformation of charges: q^e_{ab} --> q^e_{ab}({}^1\kappa)
             IF (IKLVL.GE.1) THEN
                CALL DZERO(WRK(KTLMA),N2ORBX)
                CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KTELM),WRK(KTLMA),ISYM)
                ISYM = MULD2H(ISYM,ISYMV1)
             END IF
-C Second transformation of charges: q^e_{ab}({}^1\kappa) --> q^e_{ab}({}^1\kappa {}^2\kappa) 
+C Second transformation of charges: q^e_{ab}({}^1\kappa) --> q^e_{ab}({}^1\kappa {}^2\kappa)
             IF (IKLVL.GE.2) THEN
                CALL DZERO(WRK(KTLMB),N2ORBX)
                CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),ISYM)
                CALL DCOPY(N2ORBX,WRK(KTLMB),1,WRK(KTLMA),1)
                ISYM = MULD2H(ISYM,ISYMV2)
-            END IF 
+            END IF
 C Third transformation of charges: hope you can figure out the formula.....
             IF (IKLVL.GE.3) THEN
                CALL DZERO(WRK(KTLMA),N2ORBX)

@@ -176,25 +176,25 @@ CTRL[6]=6
 ERROR[6]="CTOCD-DZ MAGNETIZABILITIES NOT CORRECT"
 
 # Total magnetizability tensor
-CRIT1=`$GREP "Bx * \-2\.47459[0-9]* * (\-0| \-| 0|  )\.0* * (\-0| \-| 0|  )\.0*" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.0* * \-2\.30318[0-9]* * (\-0| \-| 0|  )\.0*" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.0* * (\-0| \-| 0|  )\.0* * \-2\.42109" $log | wc -l`
+CRIT1=`$GREP "Bx * \-2\.47459[0-9]* * \-*0*\.0* * \-*0*\.0*" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.0* * \-2\.30318[0-9]* * \-*0*\.0*" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.0* * \-*0*\.0* * \-2\.42109" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="TOTAL CTOCD-DZ MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Diamagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * \-2\.91280[0-9]* * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.42296[0-9]* * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-2\.65411" $log | wc -l`
+CRIT1=`$GREP "Bx *   \-2\.91280....... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 *   \-2\.42296....... * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 *   \-2\.65411......." $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="CTOCD-DZ DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Paramagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * (0| )\.43821[0-9]* * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * (0| )\.11977[0-9]* * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * (0| )\.2330" $log | wc -l`
+CRIT1=`$GREP "Bx * (0| )\.43821....... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 * (0| )\.11978....... * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 * (0| )\.23301......." $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=6
 ERROR[9]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
@@ -266,7 +266,7 @@ CTRL[17]=1
 ERROR[17]="CTOCD-DZ DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR OXYGEN NOT CORRECT"
 
 # Diamagnetic and paramagnetic contributions
-CRIT1=`$GREP "Diamagnetic contribution\: * 21\.9512[0-9]* * Paramagnetic\: * 6\.2167(7|8)" $log | wc -l`
+CRIT1=`$GREP "Diamagnetic contribution\: * 21\.9512.. * Paramagnetic\: * 6\.2167.." $log | wc -l`
 TEST[18]=`expr	$CRIT1`
 CTRL[18]=2
 ERROR[18]="CTOCD-DZ DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR HYDROGEN, GAUGE ORIG ON ATOM, NOT CORRECT"
@@ -275,7 +275,7 @@ ERROR[18]="CTOCD-DZ DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR HYDROGEN, GAU
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

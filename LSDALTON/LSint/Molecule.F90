@@ -561,6 +561,44 @@ ENDIF
 
 END SUBROUTINE DETERMINE_NBAST
 
+SUBROUTINE DETERMINE_NBAST2(MOLECULE,BASINFO,spherical,UNCONTRACTED,nbast)
+implicit none
+INTEGER,intent(inout) :: nbast
+TYPE(BASISSETINFO),intent(in)  :: BASINFO
+TYPE(MOLECULEINFO),intent(in)  :: MOLECULE
+LOGICAL,OPTIONAL    :: spherical,UNCONTRACTED
+!
+INTEGER             :: I,TOTcont,R,K,type,icharge
+Logical             :: spher, uncont
+!
+! Defaults
+spher  = .true.
+uncont = .false.
+! Optional settings
+IF (present(spherical)) spher = spherical
+IF (present(UNCONTRACTED)) uncont = UNCONTRACTED
+
+TOTcont=0
+R = BASINFO%Labelindex
+DO I=1,MOLECULE%nAtoms
+   IF(R.EQ. 0)THEN
+      icharge = INT(MOLECULE%ATOM(I)%charge)
+      type = BASINFO%chargeindex(icharge) 
+   ELSE
+      type=MOLECULE%ATOM(I)%IDtype(R)
+   ENDIF
+   IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
+      IF(uncont)THEN
+         TOTcont=TOTcont+BASINFO%ATOMTYPE(type)%Totnprim
+      ELSE !DEFAULT
+         TOTcont=TOTcont+BASINFO%ATOMTYPE(type)%Totnorb      
+      ENDIF
+   ENDIF
+ENDDO
+nbast=TOTcont
+
+END SUBROUTINE DETERMINE_NBAST2
+
 SUBROUTINE GET_GEOMETRY(LUPRI,IPRINT,MOLECULE,natoms,X,Y,Z)
 IMPLICIT NONE
 INTEGER            :: LUPRI,IPRINT,natoms

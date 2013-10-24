@@ -4,7 +4,7 @@
 ! Information for geometry optimization
 ! controlled in abaopt.F, abaop2.F, and abarint.F
 !
-      PARAMETER (MX_IFREEZ = 200)
+      PARAMETER      (MX_IFREEZ = 200)
       LOGICAL         GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM,           ! please keep same order as below, for easier checking
      &                DOSPE,  DOPRE,  FINPRE, VRML,   VRBOND, VREIGV,
      &                VRCORD, VRVIBA, VRML_SYM, VISUAL, INITHS, HSFILE,

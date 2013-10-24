@@ -295,8 +295,13 @@ C        unless .NR ALWAYS (FLAG(39)) is set, e.g. for core relax calc.
          IF (.NOT.FLAG(39)) FLAG(38) = .TRUE.
 C
 C        High-spin Fock matrices for all open-shell calcs with dft or direct
-         HSFOCK=(((DODFT.OR.DIRCAL).AND. NASHT .GE. 1) .OR. HSROHF)
+!         HSFOCK=(((DODFT.OR.DIRCAL).AND. NASHT .GE. 1) .OR. HSROHF)
+!        Sep 2013 hjaaj: now HSFOCK also for NASHT.eq.1 because we
+!        have some evidence that the open shell Fock matrix from HSFOCK
+!        gives better convergence than the one from "single open shell"
+         HSFOCK = NASHT .GE. 1
          IF (CORHOL.OR.CORRLX) HSFOCK = .FALSE.
+         IF (HSFOCK) HSROHF = .TRUE.
 C
 C
          CALL GETTIM(TSTART,WSTART)
@@ -485,6 +490,7 @@ C
       IF ( (DORHF .OR. DOMP2) .AND.
      &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) ) THEN
          HSROHF = .FALSE.
+         HSFOCK = .FALSE.
 C        ... otherwise error in some MCSCF routines
 C            where HSROHF specifications erroneously will be used
          FLAG(25)   = FLAGSV(25)
