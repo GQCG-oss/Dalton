@@ -705,24 +705,32 @@ C
          DOWALK = .FALSE.
          CALL OPTMIN(WORK(1),LMWORK,WRKDLM)
       ELSE IF (OPTWLK) THEN
+         IF (QM3)
+     &      CALL QUIT('ERROR: .WALK is not implemented for .QM3')
          RNHERM = .TRUE.
          RNABAC = .TRUE.
-         IF (.NOT. NMWALK) THEN
+         IF (NMWALK) THEN
+            CALL TITLER('Commencing numerical differentiation '//
+     &         'based on .NMDDRV',' ',200)
+            MOLGRD = .FALSE.
+         ELSE IF (IWKTYP .EQ. 6) THEN
+            CALL TITLER('Commencing numerical differentiation '//
+     &         'based on .WALK',' ',200)
             DOWALK = .TRUE.
             MOLGRD = .TRUE.
             MOLHES = .TRUE.
          ELSE
-            MOLGRD = .FALSE.
+            CALL TITLER(
+     &      'Commencing geometry optimization based on .WALK',' ',200)
+            DOWALK = .TRUE.
+            MOLGRD = .TRUE.
+            MOLHES = .TRUE.
          END IF
          START  = .TRUE.
          GEOCNV = .FALSE.
          NEWWLK = .TRUE.
          IPREAD_orig = IPREAD
          IPREAD_reduced = -2
-         CALL TITLER('Commencing geometry optimization using .WALK',
-     &   ' ',200)
-         IF (QM3)
-     &      CALL QUIT('Geometry optimization not implemented for .QM3')
 C        ---------------------------------------
 C        loop over geometries
 C        ---------------------------------------
@@ -943,7 +951,11 @@ C
 C        ---------------------------------------------------------------
 C
          IF (GEOCNV) THEN
-            CALL TITLER('Geometry walk has converged',' ',200)
+            IF (IWKTYP .EQ. 6) THEN
+              CALL TITLER('Nummerical differentiation finished',' ',200)
+            ELSE
+              CALL TITLER('Geometry walk has converged',' ',200)
+            END IF
 C
 C     We need to read in starting geometry before doing the vibrational
 C     analysis in a ROA calculation, K.Ruud and G.Hangartner, Oct.-96
@@ -955,7 +967,9 @@ C
             ELSE IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.
                SOLVNT = .FALSE.
+               IPREAD = IPREAD_orig
                CALL EXEHER(WORK(0),LMWORK,WRKDLM)
+               NEWGEO = .TRUE.
                CALL EXESIR(WORK(0),LMWORK,WRKDLM)
                SOLVNT = FLAG(16)
               IF (SOLVNT) THEN
@@ -1560,10 +1574,16 @@ C     ... default print level for statistics /hjaaj apr 2000
       END IF
 #endif
       IF (OPTWLK) THEN
-         WRITE (LUPRI,'(4X,A/6X,A,I5/6X,A,I5)')
-     &      'Geometry optimization',
+         IF (NMWALK) THEN
+            WRITE (LUPRI,'(4X,A/6X,A,I5)') 
+     &      'Numerical derivatives will be calculated',
+     &        'Number of different geometries:', ITERMX
+         ELSE
+            WRITE (LUPRI,'(4X,A/6X,A,I5/6X,A,I5)')
+     &      'Geometry walk module activated.',
      &        'Starting at iteration:', ITERNR,
-     &        'Maximum number of iterations:', ITERMX
+     &        'Maximum number of steps:', ITERMX
+         END IF
       ELSE IF (ITERNR .GT. 0) THEN
          NINFO = NINFO + 1
          WRITE (LUPRI,'(4X,A/4X,A/6X,A/4X,A)') SEPARATOR,
@@ -1615,8 +1635,6 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (RNABAC) WRITE (LUPRI,'(4X,A)')
      &     'Static molecular property section will be executed'//
      &          ' (ABACUS module)'
-      IF (NMWALK) WRITE (LUPRI,'(4X,A)') 
-     &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
         if (peqm) write(lupri,'(4x,a)')
