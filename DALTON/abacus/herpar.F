@@ -306,7 +306,7 @@ C
       DATA FIRST/.TRUE./
 C
       CALL QENTER('HER_PARDRV_1')
-      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_PARDRV_1','*',103)
+      IF (IPRINT .GT. 4) CALL TITLER('Output from HER_PARDRV_1','*',103)
 C
 C     Take calculation time of each IJ pair?
 C
@@ -474,7 +474,7 @@ C
       DIMENSION INDEX(3,NINDEX), NPOS(0:MTOTTK+1)
       LOGICAL TIMING
 C
-      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_INDEKS','*',103)
+      IF (IPRINT .GT. 4) CALL TITLER('Output from HER_INDEKS','*',103)
 C
 C     This subroutine determines in which order integrals will be calculated.
 C
@@ -920,7 +920,7 @@ C
 #endif
 C
       CALL QENTER('HER_RVRES')
-      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVRES','*',103)
+      IF (IPRINT .GT. 4) CALL TITLER('Output from HER_RVRES','*',103)
 C
 C     Clean matrices.
 C
@@ -1104,7 +1104,7 @@ C
 C
       DIMENSION  TIMES(MTOTTK), NPOS(0:MTOTTK+1), SORTED(0:MTOTTK+1)
 C
-      IF (IPRINT .GT. 3) CALL TITLER('Output from PARSRT','*',103)
+      IF (IPRINT .GT. 4) CALL TITLER('Output from PARSRT','*',103)
 C
 C------------------------------------------------------
 C     The array TIMES containing CPU-times is sorted by
@@ -1624,7 +1624,7 @@ Cef end
 C
         IF (TIMING) THEN
            IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
-     &          ' Receiving new orbital inf.',
+     &          ' Receiving new orbital and geometry information',
      &          ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
 C  /molinp/
               CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
@@ -2302,7 +2302,7 @@ C              *******************************
 C              ***** Calculate integrals *****
 C              *******************************
 C
-c               IPRINT = 0
+c              IPRINT = 0
                IPRINT = JPRINT
 C
 C     Note DUMMY should be HESSEE, K.Ruud-96

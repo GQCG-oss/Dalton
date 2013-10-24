@@ -98,8 +98,7 @@ C
       IF (KLAST .GT. LWORK)
      &   CALL STOPIT('PARDRV','RVTIM',KLAST,LWORK)
 C
-      CALL RVTIM(NSTAT,WORK(KCPUS),WORK(KWALLS),NODNAM(1),NODTOT,
-     &           IPRPAR,IPRINT)
+      CALL RVTIM(NSTAT,WORK(KCPUS),WORK(KWALLS),NODNAM(1),NODTOT,IPRINT)
 C
       IF (IPRPAR .GT. 0) THEN
          CALL GETTIM(CPU2,WALL2)
@@ -128,7 +127,7 @@ C
       RETURN
       END
 C  /* Deck rvtim */
-      SUBROUTINE RVTIM(NSTAT,CPUS,WALLS,NODNAM,NODTOT,IPRPAR,IPRINT)
+      SUBROUTINE RVTIM(NSTAT,CPUS,WALLS,NODNAM,NODTOT,IPRINT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -160,8 +159,8 @@ C
 C
   100 CONTINUE
 C
-      IF (IPRPAR .LE. 0) GOTO 9000
-      IF (IPRPAR .GT. 1) THEN
+      IF (IPRINT .LE. 0) GOTO 9000
+      IF (IPRINT .GT. 1) THEN
          CALL AROUND('Overall statistics for distribution of batches')
 C
          WRITE(LUPRI,'(9X,5(A,4X))')   'Nodename',
