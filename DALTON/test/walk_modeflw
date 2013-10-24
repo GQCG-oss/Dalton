@@ -83,7 +83,7 @@ else
 fi
 
 # WALK module
-CRIT1=`$GREP "Commencing geometry optimization using \.WALK" $log | wc -l`
+CRIT1=`$GREP "Commencing geometry optimization based on \.WALK" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="WALK MODULE NOT USED"
