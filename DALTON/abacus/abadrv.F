@@ -685,7 +685,7 @@ C  /* Deck abainp */
 C
 C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
-C             (Feb 2003: one of **START, **PROPE, or **FINAL)
+C             (one of **START, **EACH , or **PROPE)
 C
 #include "implicit.h"
 #include "iratdef.h"
@@ -961,9 +961,9 @@ C         if reading input from a terminal
   910 CONTINUE
   920 CONTINUE
 C     ... WRDSRC not found in input file;
-C         if WRDSRC .eq. '**START' we also try for '**PROPER'
-C         such that any '**PROPER' input will now also apply for initial
-C         geometry if not overridden with '**START' /Feb 2003 hjaaj
+C         if WRDSRC .eq. '**START' we also try for '**EACH '
+C         such that any '**EACH ' input will now also apply for initial
+C         geometry if not overridden with '**START'
          IF (WORD1 .EQ. '**START') THEN
             REWIND (LUCMD,IOSTAT=IOS)
             WORD1 = '**EACH '
