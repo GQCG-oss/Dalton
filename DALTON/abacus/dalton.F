@@ -443,8 +443,13 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          call print_binary_info(lupri)
 
 #if defined (VAR_MPI)
-         IF (NODTOT .GT. 0) WRITE(LUPRI,'(/A,I5,A)')
-     &   " * Parallel with MPI: Using", NODTOT+1, " CPUs."
+         IF (NODTOT .GT. 0) THEN
+            WRITE(LUPRI,'(/A,I5,A)')
+     &      " * Parallel with MPI: Using", NODTOT+1, " CPUs."
+         ELSE
+            WRITE(LUPRI,'(/A,I5,A)')
+     &      " * Sequential calculation using 1 CPU"
+         END IF
 #endif
 
 #ifdef VAR_OMP
@@ -557,6 +562,7 @@ C ahs only print if number of cores are less than 20
              WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
      &        MMCORE
            END IF
+           CALL FLSHFO(LUPRI)
          END IF
          IF (PARIO) THEN
             CALL DALTON_GNRLINP
