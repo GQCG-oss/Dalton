@@ -636,7 +636,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
 C
       CALL QENTER('WLKDRV')
       IF (IPRWLK .GT. 3) CALL TIMER ('START ',TIMEIN,TIMOUT)
@@ -846,7 +845,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
 #include "taymol.h"
 C
 C
@@ -1552,7 +1550,6 @@ C
 C
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKPRJ','*',103)
 C
@@ -1710,7 +1707,6 @@ C  /* Deck wlkeig */
 C
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKEIG','*',103)
 C
@@ -2631,7 +2627,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
 C defined parallel calculation types  
 #include "iprtyp.h"
 C
@@ -5872,7 +5867,6 @@ C  /* Deck wlkirm */
       LOGICAL DONWTN, INDXOK
       DIMENSION GRDDIA(NCART), EVAL(NCART), Q(NCART)
 #include "trkoor.h"
-#include "prkoor.h"
 C
       DONWTN = .FALSE.
       CALL DZERO(Q,NCART)
@@ -6219,13 +6213,17 @@ C          XMIN ; FUNCT(..,XMIN,..) < 0
 C  Output: XDET ; FUNCT(..,XDET,..) = 0
 C
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION GDDIA(*),HESDIA(*)
       PARAMETER ( MAXIT=100 , D2=2.0D0 , D0=0.0D0 , DTEST=1.0D-7 )
       EXTERNAL FUNCT
       IFAIL = 0
       FMAX  = FUNCT(GDDIA,HESDIA,XMAX,NCORD,TRUSTR)
       FMIN  = FUNCT(GDDIA,HESDIA,XMIN,NCORD,TRUSTR)
-      IF ( (FMAX.LT.D0) .OR. (FMIN.GT.D0) )  RETURN
+      IF ( (FMAX.LT.D0) .OR. (FMIN.GT.D0) ) THEN
+         WRITE(LUPRI,*) 'WLKBIS problem: FMIN, FMAX =',FMIN,FMAX
+         RETURN
+      END IF
 C
       ITER = 0
  100  CONTINUE

@@ -914,6 +914,7 @@ C     *************************
 C     ***** Print Section *****
 C     *************************
 C
+
       IF (IPRINT .GT. 0) THEN
          IF (EXPGRA) THEN
             CALL HEADER('One-electron part of alpha gradient',-1)
@@ -940,17 +941,6 @@ C
                CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
                CALL HEADER('Nuclear solvent part of gradient',-1)
                CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
-!            IF (PEQM) THEN
-!               CALL HEADER('Polarizable Embedding 
-!     &                                  energy contributions',-1)
-!               WRITE(LUPRI,'(3(/A,F15.10))')
-!     &            ' Nuclear PE energy:',EPENN,
-!     &            ' Electr. PE energy:',EPETT,
-!     &            ' Total   solvent energy:',EPENN+EPETT
-!               CALL HEADER('Electronic solvent part of gradient',-1)
-!               CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
-!               CALL HEADER('Nuclear solvent part of gradient',-1)
-!               CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
             ELSE IF (PCM) THEN
                CALL HEADER('PCM Solvent energy contributions',-1)
                WRITE(LUPRI,'(3(/A,F15.10))')
@@ -963,6 +953,10 @@ C
                CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
                CALL HEADER('Cavity solvent part of the gradient',-1)
                CALL PRIGRD(GSOLCV,WORK(KCSTRA),WORK(KSCTRA))
+            END IF
+            IF (PEQM) THEN
+               CALL HEADER('Polarizable Embedding part of gradient',-1)
+               CALL PRIGRD(PEGRAD,WORK(KCSTRA),WORK(KSCTRA))
             END IF
             IF (DFTRUN) THEN
                CALL HEADER('DFT contribution to gradient',-1)

@@ -251,6 +251,8 @@ C
 #include "cbivib.h"
 C
       CALL QENTER('VIBCTL')
+
+      WRITE(LUPRI,*) 'i VIBCTL HESFIL', HESFIL
       LUHES = -1
       CALL TIMER('START ',TIMSTR,TIMEND)
       CALL TITLER
@@ -445,6 +447,8 @@ C  /* Deck isomol */
      &                  CAAT,WRK,LWRK,NUMIS,MAXIS,NATTYP,NATOMS,NCORD,
      &                  DIPDER,POLAR,RAMPRP)
 C
+        use pe_variables, only: peqm
+C
 C    This subroutine loops over isotopic molecules, calling routines for
 C
 C      1) rotational analysis (ROTANA)
@@ -508,20 +512,23 @@ C     ******************************************************************
 C     **** Project out trans-rot coordinates from molecular Hessian ****
 C     ******************************************************************
 C
-      KTRROV = 1
-      KWRK1  = KTRROV + 6*NCORD
-      IF (SOLVNT) KWRK1 = KTRROV + 9*NCORD
-      IF (KWRK1 .GE. LWRK) CALL STOPIT('ISOMOL','VIBHES',KWRK1,LWRK)
-      CALL VIBHES(IPRINT,NCORD,GEOM,KTRRO,GRAD,HESS,WRK(KTRROV),
+C     Nanna todo: to be generalized
+      IF (.NOT. PEQM) THEN
+         KTRROV = 1
+         KWRK1  = KTRROV + 6*NCORD
+         IF (SOLVNT) KWRK1 = KTRROV + 9*NCORD
+         IF (KWRK1 .GE. LWRK) CALL STOPIT('ISOMOL','VIBHES',KWRK1,LWRK)
+         CALL VIBHES(IPRINT,NCORD,GEOM,KTRRO,GRAD,HESS,WRK(KTRROV),
      &            NATTYP,WRK(KWRK1))
-      IF (NINTCM .GT. 0 .AND. KTRRO .NE. NCORD - NINTCM) THEN
-         WRITE (LUPRI,'(/A,I2,A,/,A,I2)') ' Number of defined'//
-     &     ' internal coordinates',NINTCM,' is not consistent',
-     &     ' with the number of independent external coordinates',KTRRO
-         CALL QUIT
-     &       ('ABACUS.VIBANA: Inconsistency in number of coordinates')
+         IF (NINTCM .GT. 0 .AND. KTRRO .NE. NCORD - NINTCM) THEN
+            WRITE (LUPRI,'(/A,I2,A,/,A,I2)') ' Number of defined'//
+     &        ' internal coordinates',NINTCM,' is not consistent',
+     &        ' with the number of independent external coordinates',
+     &          KTRRO
+            CALL QUIT
+     &      ('ABACUS.VIBANA: Inconsistency in number of coordinates')
+         END IF
       END IF
-C
 C     *************************************
 C     ***** Isotope selection vectors *****
 C     *************************************
@@ -539,7 +546,7 @@ C
       NOTALL = .FALSE.
       NONE   = .TRUE.
       DO 150 IREP = 0, MAXREP
-         IF (NCRREP(IREP,1) .GT. NTRREP(IREP)) THEN
+         IF (NCRREP(IREP,1) .GT. NPRREP(IREP)) THEN
             IF (.NOT.DOREPS(IREP)) THEN
                NOTALL = .TRUE.
             ELSE
