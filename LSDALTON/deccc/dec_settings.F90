@@ -82,7 +82,6 @@ contains
     DECinfo%approximated_norm_threshold  = 0.1E0_realk
     DECinfo%check_lcm_orbitals           = .false.
     DECinfo%use_canonical                = .false.
-    DECinfo%user_defined_orbitals        = .false.
     DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken                     = .false.
     DECinfo%Distance                     = .false.
@@ -290,20 +289,10 @@ contains
 
           ! CHOICE OF ORBITALS
           ! ==================
-          ! By default canonical orbitals are used for full molecular calculation, 
-          ! while local orbitals are used for DEC calculation.
-          ! These default choices can be overruled by these keywords:
-
-          ! Use canonical orbitals 
+          ! By default orbitals from the lcm_orbitals.u file are used for DEC or full calculation.
+          ! Canonical orbitals can be invoked by this keyword
        case('.CANONICAL') 
           DECinfo%use_canonical=.true.
-          DECinfo%user_defined_orbitals=.true.
-
-          ! Do not use canonical orbitals
-       case('.NOTCANONICAL') 
-          DECinfo%use_canonical=.false.
-          DECinfo%user_defined_orbitals=.true.
-
 
 
           ! DEC CALCULATION 
@@ -555,18 +544,6 @@ contains
     end if SimulateFullCalc
 
 
-    ! Which orbitals to use?
-    ! Default full calculation: Canonical orbitals
-    ! Default DEC calculation : Local orbitals
-    ! --> unless user has manually specified otherwise!
-    if(.not. DECinfo%user_defined_orbitals) then  
-       if(DECinfo%full_molecular_cc) then
-          DECinfo%use_canonical = .true.
-       else
-          DECinfo%use_canonical = .false.
-       end if
-    end if
-
 
     ! Set CC residual threshold to be 0.01*FOT
     ! - unless it was specified explicitly in the input.
@@ -602,6 +579,12 @@ contains
        DECinfo%purifyMOs=.true.
     end if
 
+    ! Check in the case of a DEC calculation that the cc-restart-files are not written
+    if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
+       DECinfo%CCSDnosaferun = .true.
+    endif
+
+
 #ifdef RELEASE
 if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=MODEL_MP2) then
    call lsquit('Error in input: DEC scheme only implemented for MP2 model!',-1)
@@ -623,7 +606,6 @@ end if
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
     write(lupri,*) 'use_canonical ', DECitem%use_canonical
-    write(lupri,*) 'user_defined_orbitals ', DECitem%user_defined_orbitals
     write(lupri,*) 'simulate_full ', DECitem%simulate_full
     write(lupri,*) 'simulate_natoms ', DECitem%simulate_natoms
     write(lupri,*) 'InclFullMolecule ', DECitem%InclFullMolecule

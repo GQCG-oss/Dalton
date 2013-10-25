@@ -166,10 +166,14 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
     l2=0
     l3=0
     !do l1=-3,3
-  do n1=1,num_latvectors
-      call mat_init(nfdensity(n1),nbast,nbast)
-      call mat_zero(nfdensity(n1))
-  enddo
+  !do n1=1,num_latvectors
+  !    call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+  !    call mat_init(nfdensity(n1),nbast,nbast)
+  !    call mat_zero(nfdensity(n1))
+  !enddo
+  call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+  call mat_init(nfdensity(n1),nbast,nbast)
+  call mat_zero(nfdensity(n1))
 
 #ifdef DEBUGPBC
 
@@ -345,6 +349,10 @@ else
 #endif
 
 #ifdef DEBUGPBC
+      write(lupri,*) 'density used'
+      call mat_to_full(nfdensity(n1), 1.0_realk,lattice%lvec(n1)%d_mat)
+      call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast,lupri)
+      write(*,*) 'density used'
       write(lupri,*) 'Density first'
       call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
 #endif
@@ -420,6 +428,7 @@ else
 !  ENDDO
 
   do i=1,num_latvectors
+     if(nfdensity(i)%init_magic_tag.NE.mat_init_magic_value) CYCLE
      call mat_free(nfdensity(i))
   enddo
   call mem_dealloc(nfdensity)

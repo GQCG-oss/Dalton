@@ -845,8 +845,10 @@ DO jk=1,(lmax+1)**2
       !call find_latt_index(nf,x2,y2,z2,fdim,ll,ll%max_layer)
 
       if(sphermom(nk)%is_defined) then
-        rhojk(jk)=rhojk(jk)-&
-               mat_dotproduct(nfdensity(nk),sphermom(nk)%getmultipole(jk))
+        if(nfdensity(nk)%init_magic_tag.EQ.mat_init_magic_value) THEN
+          rhojk(jk)=rhojk(jk)-&
+                 mat_dotproduct(nfdensity(nk),sphermom(nk)%getmultipole(jk))
+        endif
       endif
    ENDDO
 ENDDO
@@ -996,62 +998,7 @@ DO nk=1,num_latvec
      !endif
 
      if(.not. ll%store_mats) then
-!=======
-!      !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),rhojk)+&
-!                ! dot_product(tlat(lm,1:nrlm),nucmom)
-!      !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),rhojk)!+&
-!      !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
-!      !tlatlmnu(lm)=dot_product(tlat(lm,1:nrlm),nucmom)
-!
-!      !Construct fock matrix
-!      ll%lvec(nk)%fck_vec(delta)=ll%lvec(nk)%fck_vec(delta)&
-!      -sphermom(nf)%getmultipole(lm)%elms(delta)*tlatlm(lm)
-!
-!     ! write(*,*) 'debug 2',nk,x2,y2,nfsze,nf
-!      !write(*,*) 'debug 3',ll%lvec(nk)%oper(2)%elms(delta)+3.2
-!
-!    !  call mat_daxpy(-tlatlm(lm),sphermom(nf)%getmultipole(lm),ll%lvec(nk)%oper(2))
-!
-!      !if(ll%lvec(nk)%oper(2)%init_magic_tag.NE.mat_init_magic_value) then
-!      !    call mat_init(ll%lvec(nk)%oper(2),nbast,nbast)
-!      !    call mat_zero(ll%lvec(nk)%oper(2))
-!      !endif
-!      if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
-!        farfieldtmp%elms(delta)=farfieldtmp%elms(delta)&
-!                  - sphermom(nf)%getmultipole(lm)%elms(delta)*tlatlm(lm)
-!
-!         call mat_copy(1.0_realk,farfieldtmp,ll%lvec(nk)%oper(1))
-!      !ll%lvec(nk)%oper(2)%elms(delta) = ll%lvec(nk)%oper(2)%elms(delta)&
-!                  !- sphermom(nf)%getmultipole(lm)%elms(delta)*tlatlm(lm)
-!
-!         !For debugging only
-!        ! debug_tm%elms(delta)=debug_tm%elms(delta)&
-!        ! -sphermom(nf)%getmultipole(lm)%elms(delta)*tlatlm(lm)
-!      !ll%lvec(nk)%oper(1)%elms(delta) = ll%lvec(nk)%oper(1)%elms(delta)&
-!      !            - sphermom(nf)%getmultipole(lm)%elms(delta)*tlatlmnu(lm)
-!
-!      !Denne skal helst ikke være her, husk å kontraktere med tlatlm,først
-!      !E_ff=E_ff-mat_dotproduct(sphermom(nf)%getmultipole(lm),nfdensity(nk))
-!
-!      !write(*,*) 'For debug prupose',sphermom(nf)%getmultipole(lm)%elms
-!      !E_ff=E_ff+mat_dotproduct(ll%lvec(nk)%oper(1),nfdensity(nf))
-!      !E_nn=E_nn+dot_product(nucmom,tlatlmnu)
-!    !  write(*,*) 'debug 4'
-!
-!      !for k dependency
-!      endif
-!      mmfck(nf,delta)=mmfck(nf,delta)-&
-!      sphermom(nf)%getmultipole(lm)%elms(delta)*tlatlm(lm)
-!      !if(abs(sphermom(nf)%getmultipole(lm)%elms(delta)) .gt. 1E-6) then
-!ENDDO !lm
-!ENDDO !delta
-!    !call mat_daxpy(1.0_realk,ll%lvec(nk)%oper(2),ll%lvec(nk)%oper(3))
-!!   if(iter .eq. 1) then
-!      if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
-!        E_ff=E_ff-mat_dotproduct(farfieldtmp,nfdensity(nk))
-!      endif
-!      if(.not. ll%store_mats) then
-!>>>>>>> f8d9d04e643a20302b4083f7c7f643b6bb47fcc1
+
         if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
           !should be with V_z-el as well
           call mat_daxpy(1._realk,farfieldtmp,g_2(nk))

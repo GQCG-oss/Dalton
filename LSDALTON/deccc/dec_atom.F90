@@ -372,7 +372,7 @@ contains
        write(DECinfo%output,'(a)')      ' -- Target + Buffer --'
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Occ AOS    : ',Fragment%noccAOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Unocc AOS  : ',Fragment%nunoccAOS
-       write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Basis      : ',Fragment%number_basis
+       write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Basis      : ',Fragment%nbasis
        write(DECinfo%output,*)
     end if
 
@@ -434,8 +434,8 @@ contains
     fragment%nunoccEOS = 0
     fragment%noccAOS = 0
     fragment%nunoccAOS = 0
-    fragment%number_atoms = 0
-    fragment%number_basis = 0
+    fragment%natoms = 0
+    fragment%nbasis = 0
 
     fragment%t1dims=0
     fragment%t1 => null()
@@ -609,9 +609,9 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals
-    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%nocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Atomic fragment where all quantities are expressed in local basis
     !> The transformation coefficients between AO and fragment-adapted basis
     !> will be stored in LocalFragment%CoccFA and LocalFragment%CunoccFA.
@@ -931,13 +931,13 @@ contains
        call mem_dealloc(LocalFragment%CunoccFA)
     end if
     nullify(LocalFragment%CoccFA,LocalFragment%CunoccFA)
-    call mem_alloc(LocalFragment%CoccFA,LocalFragment%number_basis,LocalFragment%noccFA)
-    call dec_simple_dgemm(LocalFragment%number_basis,LocalFragment%noccAOS,&
+    call mem_alloc(LocalFragment%CoccFA,LocalFragment%nbasis,LocalFragment%noccFA)
+    call dec_simple_dgemm(LocalFragment%nbasis,LocalFragment%noccAOS,&
          & LocalFragment%noccFA,LocalFragment%Co,OUred,LocalFragment%CoccFA,'n','n')
 
     ! Virtual space (same strategy as for occ space)
-    call mem_alloc(LocalFragment%CunoccFA,LocalFragment%number_basis,LocalFragment%nunoccFA)
-    call dec_simple_dgemm(LocalFragment%number_basis,LocalFragment%nunoccAOS,&
+    call mem_alloc(LocalFragment%CunoccFA,LocalFragment%nbasis,LocalFragment%nunoccFA)
+    call dec_simple_dgemm(LocalFragment%nbasis,LocalFragment%nunoccAOS,&
          & LocalFragment%nunoccFA,LocalFragment%Cv,VUred,LocalFragment%CunoccFA,'n','n')
     LocalFragment%FAset=.true.
 
@@ -967,9 +967,9 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals
-    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%nocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Atomic fragment where all quantities are expressed in local basis
     !> and where fragment-adapted MO coefficients have been stored in 
     !> CoccFA and CunoccFA (see fragment_adapted_transformation_matrices).
@@ -996,12 +996,12 @@ contains
 
     ! Init fragment identical to local fragment
     ! *****************************************
-    call mem_alloc(VirtLocal,MyMolecule%numvirt)
+    call mem_alloc(VirtLocal,MyMolecule%nunocc)
     VirtLocal=.false.
     do i=1,LocalFragment%nunoccAOS
        VirtLocal(LocalFragment%unoccAOSidx(i)) = .true.
     end do
-    call mem_alloc(OccLocal,MyMolecule%numocc)
+    call mem_alloc(OccLocal,MyMolecule%nocc)
     OccLocal=.false.
     do i=1,LocalFragment%noccAOS
        OccLocal(LocalFragment%occAOSidx(i)) = .true.
@@ -1029,8 +1029,8 @@ contains
     end if
 
 
-    call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%numvirt,&
-         & MyMolecule%numocc, VirtLocal, OccLocal,OccOrbitals,UnoccOrbitals,MyMolecule,&
+    call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%nunocc,&
+         & MyMolecule%nocc, VirtLocal, OccLocal,OccOrbitals,UnoccOrbitals,MyMolecule,&
          & mylsitem,FOfragment,.true.,pairfrag,FA=.true.)
 
     ! Copy special pair fragment info
@@ -1079,9 +1079,9 @@ contains
     end if
 
     ! Copy MOs
-    call mem_alloc(FOfragment%Co,FOfragment%number_basis,FOfragment%noccAOS)
+    call mem_alloc(FOfragment%Co,FOfragment%nbasis,FOfragment%noccAOS)
     FOfragment%Co = LocalFragment%CoccFA
-    call mem_alloc(FOfragment%Cv,FOfragment%number_basis,FOfragment%nunoccAOS)
+    call mem_alloc(FOfragment%Cv,FOfragment%nbasis,FOfragment%nunoccAOS)
     FOfragment%Cv = LocalFragment%CunoccFA
 
 
@@ -1098,12 +1098,12 @@ contains
 
     ! Occ space
     call mem_alloc(FOfragment%ppfock,FOfragment%noccAOS,FOfragment%noccAOS)
-    call dec_simple_basis_transform1(FOfragment%number_basis,FOfragment%noccAOS,&
+    call dec_simple_basis_transform1(FOfragment%nbasis,FOfragment%noccAOS,&
          & FOfragment%Co,FOfragment%fock,FOfragment%ppfock)
 
     ! Virt space
     call mem_alloc(FOfragment%qqfock,FOfragment%nunoccAOS,FOfragment%nunoccAOS)
-    call dec_simple_basis_transform1(FOfragment%number_basis,FOfragment%nunoccAOS,&
+    call dec_simple_basis_transform1(FOfragment%nbasis,FOfragment%nunoccAOS,&
          & FOfragment%Cv,FOfragment%fock,FOfragment%qqfock)
 
 
@@ -1249,11 +1249,11 @@ contains
     ! as this will destroy the overall MPI framework.
     if(infpar%mynum/=infpar%master) then
        call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
-         fragment%number_atoms,DECinfo%output,0)
+         fragment%natoms,DECinfo%output,0)
     end if
 #else
        call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
-         fragment%number_atoms,DECinfo%output,0)
+         fragment%natoms,DECinfo%output,0)
 #endif
 
     ! Basis info has now been set
@@ -1274,7 +1274,7 @@ contains
     real(realk),pointer :: XOS(:,:)
 
     ! Dimensions
-    nbasis = fragment%number_basis
+    nbasis = fragment%nbasis
     noccAOS = fragment%noccAOS
     nunoccAOS = fragment%nunoccAOS
     ncore = fragment%ncore
@@ -1536,7 +1536,7 @@ contains
        write(DECinfo%output,'(1X,a,20i4)')  'PCS: EOS atoms in fragment 2          :', Fragment2%EOSatoms
        write(DECinfo%output,'(1X,a,i4)')    'PCS: Number of orbitals in virt total :', PairFragment%nunoccAOS
        write(DECinfo%output,'(1X,a,i4)')    'PCS: Number of orbitals in occ total  :', PairFragment%noccAOS
-       write(DECinfo%output,'(1X,a,i4)')    'PCS: Number of basis functions        :', PairFragment%number_basis
+       write(DECinfo%output,'(1X,a,i4)')    'PCS: Number of basis functions        :', PairFragment%nbasis
        write(DECinfo%output,'(1X,a,F12.3)') 'PCS: Pair distance (Angstrom)         :', PairDist*bohr_to_angstrom
        write(DECinfo%output,*)
     end if
@@ -1973,12 +1973,12 @@ contains
 
     ! Occupied space
     fragmentPQ%noccFA = fragmentPQ%noccAOS 
-    call mem_alloc(fragmentPQ%CoccFA,fragmentPQ%number_basis,fragmentPQ%noccFA)
+    call mem_alloc(fragmentPQ%CoccFA,fragmentPQ%nbasis,fragmentPQ%noccFA)
     fragmentPQ%CoccFA = fragmentPQ%Co
 
     ! Unoccupied space
     fragmentPQ%nunoccFA = fragmentPQ%nunoccAOS 
-    call mem_alloc(fragmentPQ%CunoccFA,fragmentPQ%number_basis,fragmentPQ%nunoccFA)
+    call mem_alloc(fragmentPQ%CunoccFA,fragmentPQ%nbasis,fragmentPQ%nunoccFA)
     fragmentPQ%CunoccFA = fragmentPQ%Cv
 
     fragmentPQ%FAset=.true.
@@ -2030,7 +2030,7 @@ contains
 
     noccFA = pairfragment%noccFA
     nunoccFA = pairfragment%nunoccFA
-    nbasisFA = pairfragment%number_basis
+    nbasisFA = pairfragment%nbasis
 
     call atomic_fragment_free(pairfragment)
 
@@ -2039,7 +2039,7 @@ contains
 
 
   !> \brief Initialize atomic fragment extent info for fragment
-  !> (fragment%number_atoms, fragment%number_basis, fragment%atoms_idx)
+  !> (fragment%natoms, fragment%nbasis, fragment%atoms_idx)
   !> and orbital info in DEC format (fragment%occAOSorb and fragment%unoccAOSorb)
   !> \author Kasper Kristensen
   !> \date March 2013
@@ -2050,9 +2050,9 @@ contains
     !> FUll molecular info
     type(fullmolecule), intent(in) :: MyMolecule
     !> Information about DEC occupied orbitals
-    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%nocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Fragment info
     type(decfrag), intent(inout) :: fragment
     integer :: i,j,idx
@@ -2099,8 +2099,8 @@ contains
     end do
 
     ! assign atomic extent
-    fragment%number_atoms = count(which_atoms)
-    call mem_alloc(fragment%atoms_idx,Fragment%number_atoms)
+    fragment%natoms = count(which_atoms)
+    call mem_alloc(fragment%atoms_idx,Fragment%natoms)
     idx=0
     do i=1,MyMolecule%natoms
        if(which_atoms(i)) then
@@ -2111,16 +2111,16 @@ contains
     call mem_dealloc(which_atoms)
 
     ! count number of basis functions on selected atoms
-    fragment%number_basis = 0
-    do i=1,fragment%number_atoms
-       fragment%number_basis = fragment%number_basis &
+    fragment%nbasis = 0
+    do i=1,fragment%natoms
+       fragment%nbasis = fragment%nbasis &
             & + MyMolecule%atom_size(fragment%atoms_idx(i))
     end do
 
     ! Set basis function indices
-    call mem_alloc(fragment%basis_idx,fragment%number_basis)
+    call mem_alloc(fragment%basis_idx,fragment%nbasis)
     idx=0
-    do i=1,fragment%number_atoms
+    do i=1,fragment%natoms
        do j=1,MyMolecule%atom_size(fragment%atoms_idx(i))
           idx=idx+1
           ! Basis function index 
@@ -2129,8 +2129,8 @@ contains
     end do
 
     ! Sanity check
-    if(idx/=fragment%number_basis) then
-       print *, 'Counter,nbasis: ', idx,fragment%number_basis
+    if(idx/=fragment%nbasis) then
+       print *, 'Counter,nbasis: ', idx,fragment%nbasis
        call lsquit('init_atomic_fragment_extent: Counter does not equal number &
             & of basis functions!',-1)
     end if
@@ -2159,14 +2159,14 @@ contains
 
     if(.not. fragment%fragmentadapted) then
        ! allocate C^o(nbasis,occ) C^v(nbasis,unocc)
-       call mem_alloc(fragment%Co, fragment%number_basis,  fragment%noccAOS   )
-       call mem_alloc(fragment%Cv, fragment%number_basis,  fragment%nunoccAOS )
+       call mem_alloc(fragment%Co, fragment%nbasis,  fragment%noccAOS   )
+       call mem_alloc(fragment%Cv, fragment%nbasis,  fragment%nunoccAOS )
        ! Core
        fragment%Co=0.0E0_realk
        fragment%Cv=0.0E0_realk
     end if
 
-    call mem_alloc(fragment%CoreMO, fragment%number_basis, fragment%ncore)
+    call mem_alloc(fragment%CoreMO, fragment%nbasis, fragment%ncore)
     fragment%CoreMO=0.0E0_realk
 
     !F12-calculation CABS MO and CABS AO
@@ -2178,18 +2178,18 @@ contains
     endif
 
     ! truncate basis to this set of atoms
-    nocc = MyMolecule%numocc
-    nunocc = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nunocc = MyMolecule%nunocc
     nbasis = MyMolecule%nbasis
     natoms = MyMolecule%natoms
     dimsAO(1)=nbasis
     dimsAO(2)=nbasis
 
     ! Overlap matrix for fragment
-    call mem_alloc(fragment%S,fragment%number_basis,fragment%number_basis)
+    call mem_alloc(fragment%S,fragment%nbasis,fragment%nbasis)
     call adjust_square_matrix(MyMolecule%overlap,fragment%S,fragment%atoms_idx, &
          & MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end, &
-         & nbasis,natoms,fragment%number_basis,Fragment%number_atoms)
+         & nbasis,natoms,fragment%nbasis,Fragment%natoms)
 
 
     FitOrbitalsForFragment: if(DECinfo%FitOrbitals) then ! fit orbitals for fragment to exact orbitals
@@ -2200,8 +2200,8 @@ contains
        dims(1) = nocc
        dims(2) = nbasis
        S = array2_init(dims)
-       call mem_alloc(correct_vector_moS,fragment%number_basis)
-       call mem_alloc(approximated_orbital,fragment%number_basis)
+       call mem_alloc(correct_vector_moS,fragment%nbasis)
+       call mem_alloc(approximated_orbital,fragment%nbasis)
 
        ! Fragment Co
        ! half transform overlap
@@ -2218,7 +2218,7 @@ contains
              ! for each orbital truncate half transformed overlap orbital
              correct_vector_moS = 0.0E0_realk
              bas_offset = 1
-             do k=1,Fragment%number_atoms
+             do k=1,Fragment%natoms
                 atom_k = fragment%atoms_idx(k)
                 correct_vector_moS(bas_offset:bas_offset + MyMolecule%atom_size(atom_k) - 1) = &
                      S%val(full_orb_idx,MyMolecule%atom_start(atom_k):MyMolecule%atom_end(atom_k))
@@ -2228,7 +2228,7 @@ contains
              ! fit orbital
              approximated_orbital = 0.0E0_realk
              call solve_linear_equations(fragment%S,approximated_orbital, &
-                  correct_vector_moS,fragment%number_basis)
+                  correct_vector_moS,fragment%nbasis)
              fragment%Co(:,i) = approximated_orbital
 
           end do
@@ -2244,7 +2244,7 @@ contains
           ! for each orbital truncate half transformed overlap orbital
           correct_vector_moS = 0.0E0_realk
           bas_offset = 1
-          do k=1,Fragment%number_atoms
+          do k=1,Fragment%natoms
              atom_k = fragment%atoms_idx(k)
              correct_vector_moS(bas_offset:bas_offset + MyMolecule%atom_size(atom_k) - 1) = &
                   S%val(full_orb_idx,MyMolecule%atom_start(atom_k):MyMolecule%atom_end(atom_k))
@@ -2254,7 +2254,7 @@ contains
           ! fit orbital
           approximated_orbital = 0.0E0_realk
           call solve_linear_equations(fragment%S,approximated_orbital, &
-               correct_vector_moS,fragment%number_basis)
+               correct_vector_moS,fragment%nbasis)
           fragment%coreMO(:,i) = approximated_orbital
 
        end do
@@ -2280,7 +2280,7 @@ contains
 
              correct_vector_moS = 0.0E0_realk
              bas_offset = 1
-             do k=1,Fragment%number_atoms
+             do k=1,Fragment%natoms
                 atom_k = fragment%atoms_idx(k)
                 correct_vector_moS(bas_offset:bas_offset + MyMolecule%atom_size(atom_k) - 1) = &
                      S%val(full_orb_idx,MyMolecule%atom_start(atom_k):MyMolecule%atom_end(atom_k))
@@ -2290,7 +2290,7 @@ contains
              ! fit orbital
              approximated_orbital = 0.0E0_realk
              call solve_linear_equations(fragment%S,approximated_orbital, &
-                  correct_vector_moS,fragment%number_basis)
+                  correct_vector_moS,fragment%nbasis)
              fragment%Cv(:,i) = approximated_orbital
           end do
 
@@ -2314,12 +2314,12 @@ contains
        ! Fragment Co
        call adjust_basis_matrix(MyMolecule%Co,fragment%Co,fragment%occAOSidx, &
             fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nocc,natoms, &
-            fragment%number_basis,fragment%noccAOS,Fragment%number_atoms)
+            fragment%nbasis,fragment%noccAOS,Fragment%natoms)
 
        ! Fragment Cv
        call adjust_basis_matrix(MyMolecule%Cv,fragment%Cv,fragment%unoccAOSidx, &
             fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nunocc,natoms, &
-            fragment%number_basis,fragment%nunoccAOS,Fragment%number_atoms)
+            fragment%nbasis,fragment%nunoccAOS,Fragment%natoms)
 
     end if FitOrbitalsForFragment
 
@@ -2335,11 +2335,11 @@ contains
  
 
  ! adjust fock matrix in ao basis
- call mem_alloc(fragment%fock,fragment%number_basis,fragment%number_basis)
+ call mem_alloc(fragment%fock,fragment%nbasis,fragment%nbasis)
  fragment%fock=0.0E0_realk
  call adjust_square_matrix(MyMolecule%fock,fragment%fock,fragment%atoms_idx,MyMolecule%atom_size, &
       MyMolecule%atom_start,MyMolecule%atom_end,MyMolecule%nbasis,MyMolecule%natoms, &
-      fragment%number_basis,Fragment%number_atoms)
+      fragment%nbasis,Fragment%natoms)
 
 
  ! adjust fock matrices in mo basis
@@ -2350,12 +2350,12 @@ contains
 
     ! Occ-occ block  (valence-valence for frozen core)
     call mem_alloc(fragment%ppfock,fragment%noccAOS,fragment%noccAOS)
-    call dec_simple_basis_transform1(fragment%number_basis,fragment%noccAOS,&
+    call dec_simple_basis_transform1(fragment%nbasis,fragment%noccAOS,&
          & fragment%Co,fragment%fock,fragment%ppfock) 
 
     ! Virtual-virtual block
     call mem_alloc(fragment%qqfock,fragment%nunoccAOS,fragment%nunoccAOS)
-    call dec_simple_basis_transform1(fragment%number_basis,fragment%nunoccAOS,&
+    call dec_simple_basis_transform1(fragment%nbasis,fragment%nunoccAOS,&
          & fragment%Cv,fragment%fock,fragment%qqfock) 
 
  end if SkipFock
@@ -2363,7 +2363,7 @@ contains
  ! Core-core block
  if(fragment%ncore>0) then
     call mem_alloc(fragment%ccfock,fragment%ncore,fragment%ncore)
-    call dec_simple_basis_transform1(fragment%number_basis,fragment%ncore,&
+    call dec_simple_basis_transform1(fragment%nbasis,fragment%ncore,&
          & fragment%coreMO,fragment%fock,fragment%ccfock) 
  end if
 
@@ -2548,9 +2548,9 @@ end subroutine atomic_fragment_basis
     !> LSitem info
     type(lsitem),intent(inout)        :: MyLsitem
     !> Occupied orbitals in DEC format
-    type(decorbital),intent(in)     :: OccOrbitals(MyMolecule%numocc)
+    type(decorbital),intent(in)     :: OccOrbitals(MyMolecule%nocc)
     !> Unoccupied orbitals in DEC format
-    type(decorbital),intent(in)     :: UnoccOrbitals(MyMolecule%numvirt)
+    type(decorbital),intent(in)     :: UnoccOrbitals(MyMolecule%nunocc)
     !> Construct Fock matrix and MO coeff for fragments?
     logical,intent(in) :: DoBasis
     !> Atomic fragments. NOTE: Only those fragments specified by bookkeeping will be initialized here.
@@ -2673,8 +2673,8 @@ end subroutine atomic_fragment_basis
     implicit none
     type(fullmolecule),intent(in)  :: MyMolecule
     type(lsitem),intent(inout)        :: MyLsitem
-    type(decorbital),intent(in)     :: OccOrbitals(MyMolecule%numocc)
-    type(decorbital),intent(in)     :: UnoccOrbitals(MyMolecule%numvirt)
+    type(decorbital),intent(in)     :: OccOrbitals(MyMolecule%nocc)
+    type(decorbital),intent(in)     :: UnoccOrbitals(MyMolecule%nunocc)
     type(decfrag),intent(inout)        :: fragment
     integer, intent(in) :: runit
     !> Construct Fock matrix and MO coeff for fragment?
@@ -2715,7 +2715,7 @@ end subroutine atomic_fragment_basis
     end if
 
     ! Logical vector keeping track of which occupied AOS orbitals are included in fragment
-    call mem_alloc(occ_list,MyMolecule%numocc)
+    call mem_alloc(occ_list,MyMolecule%nocc)
     occ_list=.false.
     do i=1,noccAOS
        occ_list(occAOSidx(i)) = .true.
@@ -2743,7 +2743,7 @@ end subroutine atomic_fragment_basis
     end if
 
     ! Logical vector keeping track of which virtual AOS orbitals are included in fragment
-    call mem_alloc(virt_list,MyMolecule%numvirt)
+    call mem_alloc(virt_list,MyMolecule%nunocc)
     virt_list=.false.
     do i=1,nvirtAOS
        virt_list(virtAOSidx(i)) = .true.
@@ -2770,7 +2770,7 @@ end subroutine atomic_fragment_basis
     end do
 
     ! Initialize fragment
-    call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%numvirt, MyMolecule%numocc,&
+    call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%nunocc, MyMolecule%nocc,&
          & virt_list,occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
 
 
@@ -2807,8 +2807,8 @@ end subroutine atomic_fragment_basis
 
     ! Fragment-adapted orbitals
     if(fragment%FAset) then
-       call mem_alloc(Fragment%CoccFA,Fragment%number_basis,Fragment%noccFA)
-       call mem_alloc(Fragment%CunoccFA,Fragment%number_basis,Fragment%nunoccFA)
+       call mem_alloc(Fragment%CoccFA,Fragment%nbasis,Fragment%noccFA)
+       call mem_alloc(Fragment%CunoccFA,Fragment%nbasis,Fragment%nunoccFA)
        call mem_alloc(Fragment%CDocceival,Fragment%noccFA)
        call mem_alloc(Fragment%CDunocceival,Fragment%nunoccFA)
        read(runit) fragment%CoccFA
@@ -2954,9 +2954,9 @@ end subroutine atomic_fragment_basis
     ! Fragment orbital space
     O = MyFragment%noccAOS ! Number of occupied orbitals
     V = MyFragment%nunoccAOS ! Number of virtual orbitals
-    A = MyFragment%number_basis ! Number of atomic orbitals
+    A = MyFragment%nbasis ! Number of atomic orbitals
     ! Maximum batch dimension in integral subroutines
-    Bint = max_batch_dimension(MyFragment%mylsitem,MyFragment%number_basis)
+    Bint = max_batch_dimension(MyFragment%mylsitem,MyFragment%nbasis)
     B=Bint
     Oeos = MyFragment%noccEOS ! Number of occupied EOS orbitals
     Veos = MyFragment%nunoccEOS ! Number of unoccupied EOS orbitals
@@ -3019,7 +3019,7 @@ if(DECinfo%PL>0) then
     write(DECinfo%output,'(1X,a,i9)') 'ME: Number of virtual orbitals    = ', &
          & MyFragment%nunoccAOS
     write(DECinfo%output,'(1X,a,i9)') 'ME: Number of atomic orbitals     = ', &
-         & MyFragment%number_basis
+         & MyFragment%nbasis
     write(DECinfo%output,'(1X,a,i9)') 'ME: Maximum number of batches     = ', Bint
     write(DECinfo%output,'(1X,a,g16.6)') 'ME: Offset memory  (GB)           = ', offset_memory
     write(DECinfo%output,'(1X,a,g16.6)') 'ME: Memory in use, fragment  (GB) = ', fragmem
@@ -3759,9 +3759,9 @@ if(DECinfo%PL>0) then
     !> Fragment info
     type(decfrag),intent(inout) :: MyFragment
     !> Density = Cocc Cocc^T 
-    real(realk),intent(inout),dimension(MyFragment%number_basis,MyFragment%number_basis) :: dens
+    real(realk),intent(inout),dimension(MyFragment%nbasis,MyFragment%nbasis) :: dens
 
-    call get_density_from_occ_orbitals(MyFragment%number_basis,MyFragment%noccAOS,MyFragment%Co,dens)
+    call get_density_from_occ_orbitals(MyFragment%nbasis,MyFragment%noccAOS,MyFragment%Co,dens)
 
   end subroutine get_density_for_fragment
 
@@ -3774,9 +3774,9 @@ if(DECinfo%PL>0) then
     !> Fragment info
     type(decfrag),intent(inout) :: MyFragment
     !> Density = Cocc Cocc^T 
-    real(realk),intent(inout),dimension(MyFragment%number_basis,MyFragment%number_basis) :: dens
+    real(realk),intent(inout),dimension(MyFragment%nbasis,MyFragment%nbasis) :: dens
 
-    call get_density_from_occ_orbitals(MyFragment%number_basis,MyFragment%ncore,MyFragment%coreMO,dens)
+    call get_density_from_occ_orbitals(MyFragment%nbasis,MyFragment%ncore,MyFragment%coreMO,dens)
 
   end subroutine get_coredensity_for_fragment
 
@@ -3872,7 +3872,7 @@ if(DECinfo%PL>0) then
 
        ! Set AO basis logical vector
        ! ===========================
-       do j=1,AtomicFragments(atom)%number_basis
+       do j=1,AtomicFragments(atom)%nbasis
           idx=AtomicFragments(atom)%basis_idx(j)  ! index for AO basis function
           fragbasis(idx,atom) = .true.  ! idx is included in "atom" fragment
        end do
@@ -3887,7 +3887,7 @@ if(DECinfo%PL>0) then
           occdim = AtomicFragments(atom)%noccAOS
           unoccdim = AtomicFragments(atom)%nunoccAOS
        end if
-       basisdim = AtomicFragments(atom)%number_basis
+       basisdim = AtomicFragments(atom)%nbasis
 
        ! Max and average dimensions
        maxocc = max(maxocc,occdim)
@@ -4427,7 +4427,7 @@ if(DECinfo%PL>0) then
     jobs%jobsdone(1:nold) = oldjobs%jobsdone(1:nold)
     jobs%nslaves(1:nold) = oldjobs%nslaves(1:nold)
     jobs%nocc(1:nold) = oldjobs%nocc(1:nold)
-    jobs%nvirt(1:nold) = oldjobs%nvirt(1:nold)
+    jobs%nunocc(1:nold) = oldjobs%nunocc(1:nold)
     jobs%nbasis(1:nold) = oldjobs%nbasis(1:nold)
     jobs%ntasks(1:nold) = oldjobs%ntasks(1:nold)
     jobs%flops(1:nold) = oldjobs%flops(1:nold)
@@ -4607,7 +4607,7 @@ if(DECinfo%PL>0) then
     jobscopy%jobsdone = jobs%jobsdone
     jobscopy%nslaves = jobs%nslaves
     jobscopy%nocc = jobs%nocc
-    jobscopy%nvirt = jobs%nvirt
+    jobscopy%nunocc = jobs%nunocc
     jobscopy%nbasis = jobs%nbasis
     jobscopy%ntasks = jobs%ntasks
     jobscopy%flops = jobs%flops
@@ -4818,28 +4818,28 @@ if(DECinfo%PL>0) then
     !> Which unoccupied FOs to include from atomic fragments P and Q (see get_pairFO_union)
     logical,intent(in) :: WhichUnoccP(fragmentP%nunoccFA), WhichUnoccQ(fragmentQ%nunoccFA)
     !> Occupied MO coefficients
-    real(realk),intent(inout) :: CoccPQ(FragmentPQ%number_basis,noccPQ)
+    real(realk),intent(inout) :: CoccPQ(FragmentPQ%nbasis,noccPQ)
     !> Unoccupied MO coefficients
-    real(realk),intent(inout) :: CunoccPQ(FragmentPQ%number_basis,nunoccPQ)
+    real(realk),intent(inout) :: CunoccPQ(FragmentPQ%nbasis,nunoccPQ)
     integer :: i,j,ix,jx,orbidx
     integer,pointer :: Pbasis(:), Qbasis(:), PQbasis(:)
     integer,pointer :: fragP_in_pair(:),fragQ_in_pair(:)
 
 
     ! Set list of orbitals in full molecular list
-    call mem_alloc(Pbasis,FragmentP%number_basis)
-    call mem_alloc(Qbasis,FragmentQ%number_basis)
-    call mem_alloc(PQbasis,FragmentPQ%number_basis)
+    call mem_alloc(Pbasis,FragmentP%nbasis)
+    call mem_alloc(Qbasis,FragmentQ%nbasis)
+    call mem_alloc(PQbasis,FragmentPQ%nbasis)
     call which_orbitals_in_atomic_extents(MyMolecule,FragmentP,Pbasis)
     call which_orbitals_in_atomic_extents(MyMolecule,FragmentQ,Qbasis)
     call which_orbitals_in_atomic_extents(MyMolecule,FragmentPQ,PQbasis)
 
     ! Set list of atomic fragment extent in pair fragment extent list
-    call mem_alloc(fragP_in_pair,FragmentP%number_basis)
-    call mem_alloc(fragQ_in_pair,FragmentQ%number_basis)
-    call atomicfragAE_in_pairfragAE(FragmentP%number_basis,FragmentPQ%number_basis,&
+    call mem_alloc(fragP_in_pair,FragmentP%nbasis)
+    call mem_alloc(fragQ_in_pair,FragmentQ%nbasis)
+    call atomicfragAE_in_pairfragAE(FragmentP%nbasis,FragmentPQ%nbasis,&
          & Pbasis,PQbasis,fragP_in_pair)
-    call atomicfragAE_in_pairfragAE(FragmentQ%number_basis,FragmentPQ%number_basis,&
+    call atomicfragAE_in_pairfragAE(FragmentQ%nbasis,FragmentPQ%nbasis,&
          & Qbasis,PQbasis,fragQ_in_pair)
 
 
@@ -4871,7 +4871,7 @@ if(DECinfo%PL>0) then
     do j=1,fragmentP%noccFA
        if(WhichOccP(j)) then ! "j" is XOS orbital that we want to include
           orbidx = orbidx+1  ! Orbital index for pair MOs
-          do i=1,FragmentP%number_basis
+          do i=1,FragmentP%nbasis
              ix = fragP_in_pair(i)
              CoccPQ(ix,orbidx) = FragmentP%CoccFA(i,j)
           end do
@@ -4882,7 +4882,7 @@ if(DECinfo%PL>0) then
     do j=1,fragmentQ%noccFA
        if(WhichOccQ(j)) then ! "j" is XOS orbital that we want to include
           orbidx = orbidx +1   ! Orbital index for pair MOs
-          do i=1,FragmentQ%number_basis
+          do i=1,FragmentQ%nbasis
              ix = fragQ_in_pair(i)
              CoccPQ(ix,orbidx) = FragmentQ%CoccFA(i,j)
           end do
@@ -4902,7 +4902,7 @@ if(DECinfo%PL>0) then
     do j=1,fragmentP%nunoccFA
        if(WhichUnoccP(j)) then ! "j" is XOS orbital that we want to include
           orbidx = orbidx+1  ! Orbital index for pair MOs
-          do i=1,FragmentP%number_basis
+          do i=1,FragmentP%nbasis
              ix = fragP_in_pair(i)
              CunoccPQ(ix,orbidx) = FragmentP%CunoccFA(i,j)
           end do
@@ -4913,7 +4913,7 @@ if(DECinfo%PL>0) then
     do j=1,fragmentQ%nunoccFA
        if(WhichUnoccQ(j)) then ! "j" is XOS orbital that we want to include
           orbidx = orbidx +1   ! Orbital index for pair MOs
-          do i=1,FragmentQ%number_basis
+          do i=1,FragmentQ%nbasis
              ix = fragQ_in_pair(i)
              CunoccPQ(ix,orbidx) = FragmentQ%CunoccFA(i,j)
           end do
@@ -4944,11 +4944,11 @@ if(DECinfo%PL>0) then
     !> Fragment
     type(decfrag),intent(inout) :: fragment
     !> Which atomic orbitals in full AO list are included in atomic fragment extent?
-    integer,intent(inout) :: which_orbitals(fragment%number_basis)
+    integer,intent(inout) :: which_orbitals(fragment%nbasis)
     integer :: i,j,idx,atom
 
     idx=0
-    do i=1,fragment%number_atoms  ! loop over atoms in fragment
+    do i=1,fragment%natoms  ! loop over atoms in fragment
        atom = fragment%atoms_idx(i)  ! atom index in full atom list
 
        do j=1,MyMolecule%atom_size(atom)  ! loop over basis functions for atom
@@ -4959,7 +4959,7 @@ if(DECinfo%PL>0) then
     end do
 
     ! Sanity check
-    if(idx/=fragment%number_basis) then
+    if(idx/=fragment%nbasis) then
        call lsquit('which_orbitals_in_atomic_extents: &
             & counter does not match number of basis functions in atomic &
             & fragment extent!',-1)
@@ -5018,9 +5018,9 @@ if(DECinfo%PL>0) then
     end if
 
     ! AO basis dimension consistent
-    if(MyFragment%number_basis /= nbasis) then
+    if(MyFragment%nbasis /= nbasis) then
        print '(a,i8)','basis input', nbasis
-       print '(a,i8)','basis frag ', MyFragment%number_basis
+       print '(a,i8)','basis frag ', MyFragment%nbasis
        call lsquit('extract_XOS_orbitals_occ: AO basis dimension mismatch!',-1)
     end if
 
@@ -5081,9 +5081,9 @@ if(DECinfo%PL>0) then
     end if
 
     ! AO basis dimension consistent
-    if(MyFragment%number_basis /= nbasis) then
+    if(MyFragment%nbasis /= nbasis) then
        print '(a,i8)','basis input', nbasis
-       print '(a,i8)','basis frag ', MyFragment%number_basis
+       print '(a,i8)','basis frag ', MyFragment%nbasis
        call lsquit('extract_XOS_orbitals_unocc: AO basis dimension mismatch!',-1)
     end if
 
@@ -5145,9 +5145,9 @@ if(DECinfo%PL>0) then
     end if
 
     ! AO basis dimension consistent
-    if(MyFragment%number_basis /= nbasis) then
+    if(MyFragment%nbasis /= nbasis) then
        print '(a,i8)','basis input', nbasis
-       print '(a,i8)','basis frag ', MyFragment%number_basis
+       print '(a,i8)','basis frag ', MyFragment%nbasis
        call lsquit('put_XOS_orbitals_occ: AO basis dimension mismatch!',-1)
     end if
 
@@ -5209,9 +5209,9 @@ if(DECinfo%PL>0) then
     end if
 
     ! AO basis dimension consistent
-    if(MyFragment%number_basis /= nbasis) then
+    if(MyFragment%nbasis /= nbasis) then
        print '(a,i8)','basis input', nbasis
-       print '(a,i8)','basis frag ', MyFragment%number_basis
+       print '(a,i8)','basis frag ', MyFragment%nbasis
        call lsquit('put_XOS_orbitals_unocc: AO basis dimension mismatch!',-1)
     end if
 
@@ -5269,10 +5269,10 @@ if(DECinfo%PL>0) then
     end if
 
     myjob%nocc(1) = myfragment%noccAOS
-    myjob%nvirt(1) = myfragment%nunoccAOS
-    myjob%nbasis(1) = myfragment%number_basis
+    myjob%nunocc(1) = myfragment%nunoccAOS
+    myjob%nbasis(1) = myfragment%nbasis
     myjob%ntasks(1) = myfragment%ntasks
-    myjob%jobsize(1) = myjob%nocc(1)*myjob%nvirt(1)*myjob%nbasis(1)
+    myjob%jobsize(1) = myjob%nocc(1)*myjob%nunocc(1)*myjob%nbasis(1)
 
   end subroutine copy_fragment_info_job
 
@@ -5721,7 +5721,7 @@ if(DECinfo%PL>0) then
 
     ! Number of basis functions
     ! --> same as for local fragment, simply copy dimension
-    nbasisPQ = fragmentPQ%number_basis
+    nbasisPQ = fragmentPQ%nbasis
 
 
   end subroutine get_pairFO_union

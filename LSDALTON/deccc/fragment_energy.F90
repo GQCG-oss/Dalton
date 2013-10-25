@@ -119,13 +119,13 @@ contains
     !> Full molecule lsitem
     type(lsitem), intent(inout) :: mylsitem
     !> Occupied orbitals for full molecule
-    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%nocc), intent(in) :: OccOrbitals
     !> Unoccupied orbitals for full molecule
-    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Which atoms are in the occupied fragment space
-    logical, dimension(MyMolecule%numocc),intent(in) :: OccAOS
+    logical, dimension(MyMolecule%nocc),intent(in) :: OccAOS
     !> Which atoms are in the unoccupied fragment space
-    logical, dimension(MyMolecule%numvirt),intent(in) :: UnoccAOS
+    logical, dimension(MyMolecule%nunocc),intent(in) :: UnoccAOS
     !> Atomic Fragment to be determined (NOT pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
@@ -140,8 +140,8 @@ contains
 
     ! Init fragment type based on logical vectors
     DoBasis=.true.
-    call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%numvirt, &
-         & MyMolecule%numocc, UnoccAOS, &
+    call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%nunocc, &
+         & MyMolecule%nocc, UnoccAOS, &
          & occAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,MyFragment,DoBasis,.false.)
 
 
@@ -234,9 +234,9 @@ contains
     !> LS item info                                                                                    
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals                                                         
-    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%nocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Atomic fragment 
     type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
@@ -359,7 +359,7 @@ contains
 
           ! call ccsd(t) driver and single fragment evaluation
           call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nunoccAOS,&
-                             & MyFragment%number_basis,MyFragment%ppfock,&
+                             & MyFragment%nbasis,MyFragment%ppfock,&
                              & MyFragment%qqfock,MyFragment%Co,&
                              & MyFragment%Cv,MyFragment%mylsitem,&
                              & t2,ccsdpt_t1,ccsdpt_t2)
@@ -847,9 +847,9 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals
-    type(decorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(MyMolecule%nocc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
-    type(decorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Fragment 1 in the pair fragment
     type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
@@ -1022,7 +1022,7 @@ contains
 
        ! call ccsd(t) driver and pair fragment evaluation
        call ccsdpt_driver(PairFragment%noccAOS,PairFragment%nunoccAOS,&
-                          & PairFragment%number_basis,PairFragment%ppfock,&
+                          & PairFragment%nbasis,PairFragment%ppfock,&
                           & PairFragment%qqfock,PairFragment%Co,&
                           & PairFragment%Cv,PairFragment%mylsitem,&
                           & t2,ccsdpt_t1,ccsdpt_t2)
@@ -1373,8 +1373,8 @@ contains
 
 
     ncore = MyMolecule%ncore
-    nOcc = MyMolecule%numocc
-    nUnocc = MyMolecule%numvirt
+    nOcc = MyMolecule%nocc
+    nUnocc = MyMolecule%nunocc
     nBasis = MyMolecule%nbasis
     nAtoms = MyMolecule%natoms
 
@@ -1389,7 +1389,7 @@ contains
        ! Frozen core: Only valence orbitals
        nocc = MyMolecule%nval
     else
-       nocc = MyMolecule%numocc
+       nocc = MyMolecule%nocc
     end if
 
 
@@ -2141,7 +2141,7 @@ contains
     ! Get MP2 amplitudes for fragment
     ! *******************************
     ! Integrals (ai|bj)
-    call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%number_basis,&
+    call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
          & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
          & AtomicFragment%Cv, AtomicFragment%Co, g)
     ! Amplitudes
@@ -2455,7 +2455,7 @@ end subroutine optimize_atomic_fragment
     write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in occ total  :', &
          & AtomicFragment%noccFA
     write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
-         & AtomicFragment%number_basis
+         & AtomicFragment%nbasis
     write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
          & AtomicFragment%EoccFOP
     if(.not. DECinfo%onlyoccpart) then
@@ -2674,7 +2674,7 @@ end subroutine optimize_atomic_fragment
     write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in occ total  :', &
          & AtomicFragment%noccAOS
     write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
-         & AtomicFragment%number_basis
+         & AtomicFragment%nbasis
     write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
          & AtomicFragment%EoccFOP
     if(.not. DECinfo%onlyoccpart) then
@@ -2819,7 +2819,7 @@ end subroutine optimize_atomic_fragment
        MyMolecule%ccmodel(MyAtom,MyAtom) = MODEL_MP2
 
        ! Integrals (ai|bj)
-       call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%number_basis,&
+       call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
             & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
             & AtomicFragment%Cv, AtomicFragment%Co, g)
        ! MP2 amplitudes
@@ -2874,7 +2874,7 @@ end subroutine optimize_atomic_fragment
     write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in occ total  :', &
          & Fragment%noccAOS
     write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of basis functions        :', &
-         & Fragment%number_basis
+         & Fragment%nbasis
     write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied Fragment energy         :', &
          & Fragment%EoccFOP
     if(.not. DECinfo%OnlyOccPart) then

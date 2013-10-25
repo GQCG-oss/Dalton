@@ -221,7 +221,7 @@ contains
     type(decorbital), intent(inout), dimension(size_of_set) :: orbital_set
     ! Note: MyMolecule is only changed if modbasis=.true.!
     type(fullmolecule), intent(in) :: MyMolecule
-    integer, intent(in) :: offset  ! 0 - for occupied, numocc - for virtual set
+    integer, intent(in) :: offset  ! 0 - for occupied, nocc - for virtual set
     real(realk), intent(in) :: mulliken_threshold2
     logical, intent(in) :: simple_mulliken_threshold2
     real(realk),intent(in) :: approximated_norm_threshold
@@ -246,8 +246,8 @@ contains
     nbasis = MyMolecule%nbasis
     natoms = MyMolecule%natoms
     call mem_alloc(basis,nbasis,nbasis)
-    basis(1:nbasis,1:MyMolecule%numocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%numocc)
-    basis(1:nbasis,MyMolecule%numocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%numvirt)
+    basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
+    basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
     call mem_alloc(gross_charge,natoms)
 
     ! half transformed overlap
@@ -936,8 +936,8 @@ contains
 
     ! Init stuff
     nbasis=MyMolecule%nbasis
-    nocc=MyMolecule%numocc
-    nvirt=MyMolecule%numvirt
+    nocc=MyMolecule%nocc
+    nvirt=MyMolecule%nunocc
     call mem_alloc(C,nbasis,nbasis)
     C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
     C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
@@ -994,8 +994,8 @@ contains
 
     nbasis = MyMolecule%nbasis
     call mem_alloc(basis,nbasis,nbasis)
-    basis(1:nbasis,1:MyMolecule%numocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%numocc)
-    basis(1:nbasis,MyMolecule%numocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%numvirt)
+    basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
+    basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
 
     ! Get S^{1/2} matrix
     ! ******************
@@ -1031,8 +1031,8 @@ contains
     integer :: nocc,nvirt
 
     ! Init stuff
-    nocc=MyMolecule%numocc
-    nvirt=MyMolecule%numvirt
+    nocc=MyMolecule%nocc
+    nvirt=MyMolecule%nunocc
     call mem_alloc(C,nbasis,nbasis)
     C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
     C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
@@ -1081,7 +1081,7 @@ contains
     integer :: atom,catom(1),nocc,nvirt
     real(realk) :: XMO,YMO,ZMO,XATOM,YATOM,ZATOM,XDIST,YDIST,ZDIST
     real(realk) :: SQDIST(nAtoms)    
-    nocc=MyMolecule%numocc
+    nocc=MyMolecule%nocc
     ! Init stuff
     IF(orbI.GT.nocc)THEN
        !virtual orbital
@@ -1179,8 +1179,8 @@ contains
 
     ! Init stuff
     nbasis=MyMolecule%nbasis
-    nocc=MyMolecule%numocc
-    nvirt=MyMolecule%numvirt
+    nocc=MyMolecule%nocc
+    nvirt=MyMolecule%nunocc
     call mem_alloc(C,nbasis,nbasis)
     C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
     C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
@@ -1324,8 +1324,8 @@ contains
     ! Initialize stuff
     ! ****************
     nbasis = MyMolecule%nbasis
-    nocc = MyMolecule%numocc
-    nunocc = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nunocc = MyMolecule%nunocc
     call mat_init(Ccan,nbasis,nbasis)
     call mat_init(F,nbasis,nbasis)
     call mat_init(S,nbasis,nbasis)
