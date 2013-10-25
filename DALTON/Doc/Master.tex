@@ -2,12 +2,18 @@
 \usepackage{a4}
 \usepackage{makeidx}
 % separate longtable is needed for tetex-latex-2.0.2-21.3
-\usepackage{supertabular,longtable,hyperref}
+\usepackage{supertabular,longtable}
 \usepackage{color}
 % Specifies the document style.
 \usepackage{bibentry}
 \usepackage[numbers]{natbib}
-
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
+ breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=true]
+ {hyperref}
+\usepackage[dvipsnames,svgnames,x11names,hyperref]{xcolor}
+\hypersetup{
+ urlcolor=webbrown,linkcolor=blue,citecolor=red}
 
 \newcommand{\ignore}[1]{}
 \newcommand{\nobibentry}[1]{{\let\nocite\ignore\bibentry{#1}}}
@@ -15,6 +21,7 @@
 \newcommand{\bibfnamefont}[1]{#1}
 \newcommand{\bibnamefont}[1]{#1}
 
+\newcommand{\newbibentry}[1]{{\begin{NoHyper}\bibentry{#1}\end{NoHyper}}}
 
 \typeout{***               }
 \typeout{***   Modification history: }
