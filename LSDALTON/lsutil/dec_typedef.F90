@@ -18,9 +18,14 @@ module dec_typedef_module
 
 
 
+  ! ***************************************************************************************
+  !                         PARAMETERS DEFINING DEC MODELS
+  ! ***************************************************************************************
+  ! Do never ever use hardcoded values of these numbers inside the DEC routines!
 
-  ! MODIFY FOR NEW MODEL
-  !> Specify the parameters for ccModel here. NEVER HARDCODE THE NUMBER
+
+  ! Overall CC model: MODIFY FOR NEW MODEL!
+  ! ---------------------------------------
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
   integer,parameter :: MODEL_CC2    = 2
@@ -29,12 +34,14 @@ module dec_typedef_module
   integer,parameter :: MODEL_RPA    = 5
 
 
-  ! IMPORTANT: Number of possible energies to calculate using the DEC scheme
-  ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
-  ! MODIFY FOR NEW MODEL
-  ! MODIFY FOR NEW CORRECTION
+  ! DEC fragment energies: MODIFY FOR NEW MODEL & MODIFY FOR NEW CORRECTION
+  ! -----------------------------------------------------------------------
+  ! Given a CC model, there are typically more than one DEC fragment energy to consider.
+  ! Parameters defining the fragment energies are given here.
+
+  !> Number of different fragment energies
   integer, parameter :: ndecenergies = 14
-  !> Specify numbers for storing of fragment energies
+  !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2 = 1  ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2 = 2  ! MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTMP2 = 3 ! MP2 virtual partitioning scheme
@@ -76,12 +83,7 @@ module dec_typedef_module
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
      !> Enforce canonical orbitals in calculation 
-     !> (only meaningful for full_molecular_cc or simulate_full)
      logical :: use_canonical
-     !> Default: Full calculation uses canonical orbitals, while DEC calculation uses local orbitals.
-     !> This can be overruled by inpiut keywords (see config_dec_input).
-     !> If the default choice was overruled "user_defined_orbitals" is set to true.
-     logical :: user_defined_orbitals
      !> Simulate full molecular calculation in DEC mode  (debug)
      logical :: simulate_full
      !> How many atoms to use in simulation mode   (debug)
@@ -959,6 +961,26 @@ module dec_typedef_module
      INTEGER,pointer :: orbindex(:)
      INTEGER :: norbindex
   END TYPE batchTOorb
+
+  !> MO Integral batch info:
+  type MObatchInfo
+
+    !> number of batches:
+    integer :: nPbatch
+    integer :: nRbatch
+    !> dimension of each of the nPbatch:
+    integer, pointer :: Pdims(:) 
+    !> dimension of each of the nRbatch:
+    integer, pointer :: Rdims(:)
+    !> MO index corresponding to the starting point of each batch:
+    integer, pointer :: PStarts(:) 
+    integer, pointer :: RStarts(:) 
+    !> starting index of each batch in the full array:
+    integer, pointer :: PR_index(:) 
+    !> starting index of each batch in the packed array:
+    integer, pointer :: PR_packInd(:) 
+    
+  end type
 
   !> \brief Grid box handling for analyzing orbitals in specific parts of space
   !> for single precision real grid points

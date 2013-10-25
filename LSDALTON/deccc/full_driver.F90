@@ -66,12 +66,13 @@ contains
     else
        if(DECinfo%ccModel==MODEL_MP2) then
 
-          if(DECinfo%full_print_frag_energies) then
-             ! Call debug routine which calculates individual fragment contributions
-             call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
-          else
-             ! simple canonical MP2 calculation
+          if(DECinfo%use_canonical .and. (.not.  DECinfo%full_print_frag_energies) ) then
+             ! simple conventional MP2 calculation, only works for canonical orbitals
              call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+          else
+             ! Call routine which calculates individual fragment contributions and prints them,
+             ! works both for canonical and local orbitals
+             call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
           end if
 
        else
