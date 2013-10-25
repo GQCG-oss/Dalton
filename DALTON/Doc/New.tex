@@ -33,13 +33,16 @@ Main authors: Juan I. Melo \\
    \cite{melomaldojcp12} \\
 \item{\bf  Empirical dispersion corrections DFT-D2, DFT-D3 and DFT-D3BJ:}  \\
 Main authors: Andrew Teale \\
+\item{\bf  More general ECP module.} \\
+Main authors: Bin Gao \\
 \item{\bf  Subsystems CC using Cholesky decomposition.} \\
 \item{\bf  Static exchange (STEX) for X-ray spectroscopy.} \\
 \item{\bf  Quadratic response for open-shell DFT.} \\
 \item{\bf  Various performance improvements and a few bug fixes. Including:} \\
 \begin{enumerate}
    \item{\bf  Fixed and enhanced MOLDEN interface file}
-   \item{\bf  Parallel exponent gradient calculation (.EXPGRA)}
+   \item{\bf  Parallel exponent gradient calculation (.EXPGRA), contributed by Frank Jensen}
+   \item{\bf  Generation of Gaussian CUBE files (new .CUBE option), by Bin Gau}
 \end{enumerate}
 \end{enumerate}
 
@@ -427,7 +430,7 @@ two-electron Breit-Pauli spin--orbit operator.
 \item {\bf ECP} Effective Core Potentials can now be used for calculations
 of energies and response functions in which the basis set does not
 depend on the applied perturbations. That is, molecular gradients and
-Hessians, as well as London orbital-based magnetic properties, can not
+Hessians, as well as London orbital-based magnetic properties, {\em cannot}
 be calculated with ECPs.
 
 \item {\bf Douglas-Kroll} The Douglas-Kroll scalar relativistic Hamiltonian
