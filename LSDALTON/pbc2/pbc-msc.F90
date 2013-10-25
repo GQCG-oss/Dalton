@@ -78,7 +78,7 @@ IMPLICIT NONE
   
   type BZpoint_t
      ! This is a data structure to represent a single k-point
-     logical :: self_dual, is_gamma
+     logical :: self_dual, is_gamma,is_singular
      integer :: ix_orig
      integer :: n(3)
      integer :: ninv(3)

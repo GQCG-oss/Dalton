@@ -211,11 +211,12 @@ SUBROUTINE pbc_zggeigsolve(kindex,A,B,smatk,N,M,eigv,lupri)
 
 END SUBROUTINE pbc_zggeigsolve
 
-SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,Ndim)
+SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,is_singular,Ndim)
   IMPLICIT NONE
   INTEGER,intent(in) :: Ndim
   COMPLEX(complexk),INTENT(IN) :: sabk(Ndim,Ndim)
   COMPLEX(complexk),INTENT(INOUT) :: U(Ndim,Ndim),Uinv(ndim,ndim)
+  LOGICAL,INTENT(INOUT) :: is_singular
   !Local
   REAL(realk) :: W(ndim),wtemp
   REAL(realk),pointer :: rwork(:)
@@ -227,6 +228,7 @@ SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,Ndim)
 
 
  lwork=2*Ndim-1
+ is_singular = .false.
  ! lwork=2*Ndim+ndim
   call mem_alloc(work,max(1,lwork))
   call mem_alloc(rwork,max(1,3*Ndim-2))
@@ -277,6 +279,7 @@ SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,Ndim)
         w(i)=0.0_realk
         sk(:,i)=cmplx(0.,0.,complexk)
         diag(:,i)=cmplx(0.,0.,complexk)
+        is_singular=.true.
       endif
 
   enddo
@@ -500,10 +503,10 @@ SUBROUTINE pbc_dcomputeenergy()
 END SUBROUTINE pbc_dcomputeenergy
 
 
-SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex,lupri)
+SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex,is_singular,lupri)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: ndim,lupri,kindex
-  LOGICAL,INTENT(IN) :: is_gamma
+  LOGICAL,INTENT(IN) :: is_gamma,is_singular
   COMPLEX(COMPLEXK),INTENT(IN) :: fock_old(ndim,ndim),Uk(ndim,ndim)
   COMPLEX(COMPLEXK),INTENT(IN) :: Uinv(ndim,ndim)
   COMPLEX(COMPLEXK), INTENT(IN) :: Sabk(ndim,ndim)
@@ -525,10 +528,6 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
   !lrwork=1 + 5**ndim+2*Ndim**2
   liwork= 3+5*Ndim
 
-  !call mem_alloc(rwork,max(1,3*Ndim-2))
-  call mem_alloc(rwork,lrwork)
-  call mem_alloc(work,max(1,lwork))
-  call mem_alloc(iwork,max(1,liwork))
 
   DO i=1,ndim
    eigv(i)=0.0d0
@@ -544,7 +543,14 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
   alpha=CMPLX(1.,0.,complexk)
   beta=CMPLX(0.,0.,complexk)
 
-  call pbc_unitary_transform(Ndim,fock_old,Uk,tfock)
+  if(is_singular) then
+    !call mem_alloc(rwork,max(1,3*Ndim-2))
+    write(lupri,*) 'For kpoint',kindex,'we have a singularity FV=VE, C=UV'
+    call mem_alloc(rwork,lrwork)
+    call mem_alloc(work,max(1,lwork))
+    call mem_alloc(iwork,max(1,liwork))
+
+    call pbc_unitary_transform(Ndim,fock_old,Uk,tfock)
 
 #ifdef DEBUGPBC
     write(*,*) 'transformed fock matrix', kindex
@@ -556,55 +562,55 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
     ENDDO
 #endif
 
-  !call zheevd('V','U',Ndim,tfock,Ndim,eigv,work,Lwork,Rwork,lrwork,&
-   ! Iwork,liwork,info)
-  call zheev('V','U',Ndim,tfock,Ndim,eigv,work,Lwork,Rwork,info)
-         
-  if(info .ne. 0) THEN
-    write(lupri,*) 'ERROR: zheev problems, info=', info
-    call write_zmatrix(tfock,ndim,ndim)
-    write(*,*) 'ERROR: zheev problems, info=', info
-    call LSQUIT('pbc_solve_kfcsc_mat: INFO not zero, while solving eigenvalue',lupri)
-  endif
+    !call zheevd('V','U',Ndim,tfock,Ndim,eigv,work,Lwork,Rwork,lrwork,&
+    ! Iwork,liwork,info)
+    call zheev('V','U',Ndim,tfock,Ndim,eigv,work,Lwork,Rwork,info)
+           
+    if(info .ne. 0) THEN
+      write(lupri,*) 'ERROR: zheev problems, info=', info
+      call write_zmatrix(tfock,ndim,ndim)
+      write(*,*) 'ERROR: zheev problems, info=', info
+      call LSQUIT('pbc_solve_kfcsc_mat: INFO not zero, while solving eigenvalue',lupri)
+    endif
 
-  call mem_dealloc(work)
-  call mem_dealloc(rwork)
-  call mem_dealloc(iwork)
+    call mem_dealloc(work)
+    call mem_dealloc(rwork)
+    call mem_dealloc(iwork)
 
 #ifdef DEBUGPBC
     write(*,*) 'Is tC a solution', kindex
-  call zgemm('N','N',Ndim,Ndim,Ndim,alpha,C_tmp,Ndim,&
-             tfock,Ndim,beta,sabk_tmp,Ndim)
-  !call zgemm('N','N',Ndim,Ndim,Ndim,alpha,Sabk2,Ndim,&
-  !           tfock,Ndim,beta,Atmp,Ndim)
-  write(*,*) 'FC'
-  call write_zmatrix(Sabk_tmp,ndim,ndim)
-  write(*,*) 'CE'
-  do i=1,ndim
-   Atmp(:,i)=tfock(:,i)*eigv(i)
-  enddo
-  call write_zmatrix(Atmp,ndim,ndim)
-  do i=1,ndim
-    do j=1,ndim
-    Btmp(i,j)=sabk_tmp(i,j)-Atmp(i,j)
+    call zgemm('N','N',Ndim,Ndim,Ndim,alpha,C_tmp,Ndim,&
+               tfock,Ndim,beta,sabk_tmp,Ndim)
+    !call zgemm('N','N',Ndim,Ndim,Ndim,alpha,Sabk2,Ndim,&
+    !           tfock,Ndim,beta,Atmp,Ndim)
+    write(*,*) 'FC'
+    call write_zmatrix(Sabk_tmp,ndim,ndim)
+    write(*,*) 'CE'
+    do i=1,ndim
+     Atmp(:,i)=tfock(:,i)*eigv(i)
     enddo
-    enddo
-  write(*,*) 'FC-CE'
-  call write_zmatrix(Btmp,ndim,ndim)
-  write(*,*) 'normF(FC-CE)'
-  write(*,*) zlange('F',ndim,ndim,Btmp,ndim,work)
+    call write_zmatrix(Atmp,ndim,ndim)
+    do i=1,ndim
+      do j=1,ndim
+      Btmp(i,j)=sabk_tmp(i,j)-Atmp(i,j)
+      enddo
+      enddo
+    write(*,*) 'FC-CE'
+    call write_zmatrix(Btmp,ndim,ndim)
+    write(*,*) 'normF(FC-CE)'
+    write(*,*) zlange('F',ndim,ndim,Btmp,ndim,work)
 
-  !call write_zmatrix(Btmp,ndim,ndim)
-!  call zgemm('C','N',Ndim,Ndim,Ndim,alpha,tfock,Ndim,&
-!             C_tmp,Ndim,beta,sabk_tmp,Ndim)
-!  call zgemm('N','N',Ndim,Ndim,Ndim,alpha,sabk_tmp,Ndim,&
-!             tfock,Ndim,beta,C_tmp,Ndim)
-!  call write_zmatrix(C_tmp,ndim,ndim)
+    !call write_zmatrix(Btmp,ndim,ndim)
+!    call zgemm('C','N',Ndim,Ndim,Ndim,alpha,tfock,Ndim,&
+!               C_tmp,Ndim,beta,sabk_tmp,Ndim)
+!    call zgemm('N','N',Ndim,Ndim,Ndim,alpha,sabk_tmp,Ndim,&
+!               tfock,Ndim,beta,C_tmp,Ndim)
+!    call write_zmatrix(C_tmp,ndim,ndim)
 #endif
 
-  !C=UC^~
-  call zgemm('N','N',Ndim,Ndim,Ndim,alpha,Uk,Ndim,&
-             tfock,Ndim,beta,C_tmp,Ndim)
+    !C=UC^~
+    call zgemm('N','N',Ndim,Ndim,Ndim,alpha,Uk,Ndim,&
+               tfock,Ndim,beta,C_tmp,Ndim)
 
 #ifdef DEBUGPBC
     write(*,*) 'U matrix', kindex
@@ -614,50 +620,52 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
     write(*,*) 'C matrix', kindex
     call write_zmatrix(c_tmp,ndim,ndim)
     write(*,*) 'Is C a solution', kindex
-  call zgemm('N','N',Ndim,Ndim,Ndim,alpha,Fock_old,Ndim,&
+    call zgemm('N','N',Ndim,Ndim,Ndim,alpha,Fock_old,Ndim,&
              C_tmp,Ndim,beta,sabk_tmp,Ndim)
     write(*,*) 'The untransformed FC'
-  call write_zmatrix(Sabk_tmp,Ndim,Ndim)
-  !call zgemm('C','N',Ndim,Ndim,Ndim,alpha,C_tmp,Ndim,&
-  !           fock_old,Ndim,beta,sabk_tmp,Ndim)
-  !call zgemm('N','N',Ndim,Ndim,Ndim,alpha,sabk_tmp,Ndim,&
-  !           C_tmp,Ndim,beta,sabk2,Ndim)
-  call zgemm('N','N',Ndim,Ndim,Ndim,alpha,sabk2,Ndim,&
+    call write_zmatrix(Sabk_tmp,Ndim,Ndim)
+    !call zgemm('C','N',Ndim,Ndim,Ndim,alpha,C_tmp,Ndim,&
+    !           fock_old,Ndim,beta,sabk_tmp,Ndim)
+    !call zgemm('N','N',Ndim,Ndim,Ndim,alpha,sabk_tmp,Ndim,&
+    !           C_tmp,Ndim,beta,sabk2,Ndim)
+    call zgemm('N','N',Ndim,Ndim,Ndim,alpha,sabk2,Ndim,&
              c_tmp,Ndim,beta,Atmp,Ndim)
 
-  do i=1,ndim-1
-   Atmp(:,i)=Atmp(:,i)*eigv(i)
-   if(eigv(i) .gt. eigv(i+1))then
-     write(*,*) 'Error in eigen values for fock'
-     call lsquit('In solve_kfsc: eigenvalues',lupri)
-   endif
-  enddo
-  write(*,*) 'SCE'
-  call write_zmatrix(Atmp,Ndim,Ndim)
-  do i=1,ndim
-    do j=1,ndim
-    Btmp(i,j)=sabk_tmp(i,j)-Atmp(i,j)
+    do i=1,ndim-1
+     Atmp(:,i)=Atmp(:,i)*eigv(i)
+     if(eigv(i) .gt. eigv(i+1))then
+       write(*,*) 'Error in eigen values for fock'
+       call lsquit('In solve_kfsc: eigenvalues',lupri)
+     endif
     enddo
-  enddo
-  write(*,*) 'FC-CE'
-  call write_zmatrix(Btmp,Ndim,Ndim)
-  write(*,*) 'normF(FC-CE)'
-  write(*,*) zlange('F',ndim,ndim,Btmp,ndim,work)
-!    write(lupri,*) 'overlap matrix'
-!    call write_zmatrix(Sabk_tmp,ndim,ndim,lupri)
+    write(*,*) 'SCE'
+    call write_zmatrix(Atmp,Ndim,Ndim)
+    do i=1,ndim
+      do j=1,ndim
+      Btmp(i,j)=sabk_tmp(i,j)-Atmp(i,j)
+      enddo
+    enddo
+    write(*,*) 'FC-CE'
+    call write_zmatrix(Btmp,Ndim,Ndim)
+    write(*,*) 'normF(FC-CE)'
+    write(*,*) zlange('F',ndim,ndim,Btmp,ndim,work)
+!      write(lupri,*) 'overlap matrix'
+!      call write_zmatrix(Sabk_tmp,ndim,ndim,lupri)
 
-  call zgemm('C','N',Ndim,Ndim,Ndim,alpha,C_tmp,Ndim,&
-             Sabk,Ndim,beta,tfock,Ndim)
+    call zgemm('C','N',Ndim,Ndim,Ndim,alpha,C_tmp,Ndim,&
+               Sabk,Ndim,beta,tfock,Ndim)
 
-  call zgemm('N','N',Ndim,Ndim,Ndim,alpha,tfock,Ndim,&
-             c_tmp,Ndim,beta,Sabk2,Ndim)
+    call zgemm('N','N',Ndim,Ndim,Ndim,alpha,tfock,Ndim,&
+               c_tmp,Ndim,beta,Sabk2,Ndim)
 !
-  write(*,*) 'C*SC'
-  call write_zmatrix(Sabk2,Ndim,Ndim)
+    write(*,*) 'C*SC'
+    call write_zmatrix(Sabk2,Ndim,Ndim)
 
 #endif
+  else
 
-!    call pbc_zeigsolve(c_tmp,Sabk_tmp,ndim,ndim,eigv,is_gamma,lupri)
+    call pbc_zeigsolve(c_tmp,Sabk_tmp,ndim,ndim,eigv,is_gamma,lupri)
+  endif
 
 
 !
@@ -878,11 +886,11 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       call pbc_zdevectorize_mat(smatk,ndim,ndim,bz%smat%zelms)
 
       !diagonalizes Sk, Uk transform operators
-      call pbc_diagonalize_ovl(smatk,bz%kpnt(k)%Uk,bz%kpnt(k)%Uinv,Ndim)
+      call pbc_diagonalize_ovl(smatk,bz%kpnt(k)%Uk,bz%kpnt(k)%Uinv,bz%kpnt(k)%is_singular,Ndim)
 
       !solves F(k)C(k)=S(k)C(k)e(k)
       call solve_kfcsc_mat(bz%kpnt(k)%is_gamma,ndim,fock,smatk,&
-      C_k,bz%kpnt(k)%Uk,bz%kpnt(k)%Uinv,bz%keigv((k-1)*ndim+1:k*ndim),k,lupri)
+      C_k,bz%kpnt(k)%Uk,bz%kpnt(k)%Uinv,bz%keigv((k-1)*ndim+1:k*ndim),k,bz%kpnt(k)%is_singular,lupri)
       
       !write(*,*) bz%keigv((k-1)*ndim+1:k*ndim)
 
@@ -1195,7 +1203,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
       !solves F(k)C(k)=S(k)C(k)e(k)
       call solve_kfcsc_mat(bz%kpnt(kpt)%is_gamma,ndim,fock,smatk,&
-      C_k,bz%kpnt(kpt)%Uk,bz%kpnt(kpt)%Uinv,bz%keigv((kpt-1)*ndim+1:kpt*ndim),kpt,lupri)
+      C_k,bz%kpnt(kpt)%Uk,bz%kpnt(kpt)%Uinv,bz%keigv((kpt-1)*ndim+1:kpt*ndim),kpt,bz%kpnt(kpt)%is_singular,lupri)
 
       !write(*,*) bz%keigv((k-1)*ndim+1:k*ndim)
       
