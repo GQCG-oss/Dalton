@@ -30,7 +30,7 @@ cat > pbc2_h2mol.info <<'%EOF%'
 #######################################################################
 cat > pbc2_h2mol.mol <<'%EOF%'
 BASIS
-H-431G Aux=Ahlrichs-Coulomb-Fit
+4-31G Aux=Ahlrichs-Coulomb-Fit
 LDA molecular hessian without symmetry
 Ethane LDA molecular hessian without symmetry
 Atomtypes=1 Charge=0 Nosymmetry PBC Angstrom
