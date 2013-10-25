@@ -1829,6 +1829,11 @@ C
             ICHECK = 2
          END IF
       END IF
+C
+      IF (MCTYPE .GT. 0 .AND. PARCAL) THEN
+         IF (RNRESP) CALL PARQUIT('MCSCF in RESPONSE')
+         IF (RNABAC) CALL PARQUIT('MCSCF in ABACUS')
+      END IF
 
 C
 C *****  END OF INPUT PROCESSING *****
@@ -2014,11 +2019,7 @@ C
 C
 C -- local variables and constants
 C
-#if defined(BUILD_GEN1INT)
       PARAMETER (NTBMOD = 26)
-#else
-      PARAMETER (NTBMOD = 25)
-#endif
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
 C needed for lucita: nsym, norb
@@ -2033,13 +2034,8 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-#if defined(BUILD_GEN1INT)
-     *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',
+     *            '*AUXILL','*LUCITA','*STEX  ','*CHOACT','*CUBE  ',
      *            '*END OF'/
-#else
-     *            '*AUXILL','*LUCITA','*STEX  ','*CHOACT',
-     *            '*END OF'/
-#endif
 C
 C
 C  ***************************************************
@@ -2059,11 +2055,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-#if defined(BUILD_GEN1INT)
-     *                2900,3000,2400,3200,3300,3600,3400,8000), I
-#else
-     *                2900,3000,2400,3200,3300,3400,8000), I
-#endif
+     *                2900,3000,2400,3200,3300,3400,3500,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2141,14 +2133,17 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
        GO TO 910
  3300  CALL STXINP(WORD,INPERR,ALLOPT)
        GO TO 910
-#if defined(BUILD_GEN1INT)
-C added by Bin Gao, to generate cube files to visualize the results
-C March 9, 2012
- 3600  call gen1int_host_cube_init(LUCMD, LUPRI, WORD)
-       goto 910
-#endif
  3400  CALL CC_ACTINP(WORD,NSYM)
        GO TO 910
+C added by Bin Gao, to generate cube files to visualize the results
+C March 9, 2012
+ 3500  CONTINUE
+#if defined(BUILD_GEN1INT)
+       call gen1int_host_cube_init(LUCMD, LUPRI, WORD)
+#else
+       call quit('.CUBE not active in this version')
+#endif
+       goto 910
 C  Here if "*END OF"
  8000  CONTINUE
        IF (ALLOPT .AND. .NOT.PTABMO) THEN

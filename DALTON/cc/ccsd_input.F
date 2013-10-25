@@ -411,8 +411,11 @@ C
      *          WORD .EQ. '*CC    ')
       IF (NEWDEF) THEN
          IF (PARCAL) THEN
-           WRITE(LUPRI,*) "WARNING: CC is not parallelized!"
-           WRITE(LUPRI,*) "For parallelization speedup, please use OMP"
+           WRITE(LUPRI,*) "ERROR: CC is not MPI parallelized!"
+           ! WRITE(LUPRI,*) "For parallelization speedup, please use OMP"
+           ! hjaaj Oct 2013: no OpenMP in current code !
+           WRITE(LUPRI,*)
+     &     "For parallelization speedup, e.g. use parallel MKL"
            CALL PARQUIT("CC")
          ENDIF
          WORD1 = WORD
