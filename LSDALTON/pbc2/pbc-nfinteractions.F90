@@ -459,6 +459,12 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,molecule,nbast,lattice,&
        !DO k=1,nbast*nbast
        !   lattice%lvec(idx)%Sl_mat=S1%elms(k)
        !ENDDO
+
+#ifdef DEBUGPBC
+       write(lupri,*) 'OVERLAP MAT',il1
+       call mat_print(lattice%lvec(idx)%oper(1),1,nbast,1,nbast,lupri)
+#endif
+
        if(.not. lattice%store_mats) then
          call mat_copy(1D0,lattice%lvec(idx)%oper(1),ovl(idx))
        endif
@@ -620,7 +626,9 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_kin)
        call mat_print(lattice%lvec(idx)%oper(1),1,nbast,1,nbast,lupri)
 #endif
 
-       E_kin=E_kin+mat_dotproduct(lattice%lvec(idx)%oper(1),nfdensity(idx))
+       if(nfdensity(idx)%init_magic_tag.EQ.mat_init_magic_value) THEN
+         E_kin=E_kin+mat_dotproduct(lattice%lvec(idx)%oper(1),nfdensity(idx))
+       endif
 
        DO k=1,nbast*nbast
           lattice%lvec(idx)%fck_vec(k)=lattice%lvec(idx)%oper(1)%elms(k)
@@ -911,7 +919,9 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_en)
 !
 !      write(lupri,*) il11,il12,il13
 !
-       E_en=E_en+mat_dotproduct(lattice%lvec(index1)%oper(1),nfdensity(index1))
+       if(nfdensity(index1)%init_magic_tag.EQ.mat_init_magic_value) THEN
+         E_en=E_en+mat_dotproduct(lattice%lvec(index1)%oper(1),nfdensity(index1))
+       endif
        call mat_daxpy(1.D0,lattice%lvec(index1)%oper(1),f_1(index1))
 !      call pbc_readopmat2(il11,il12,il13,matris,nbast,'NUCVNF2',.true.,.false.)
 !      call write_matrix(matris,nbast,nbast)
@@ -980,7 +990,7 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
   TYPE(lvec_list_t),intent(inout) ::lattice
   COMPLEX(complexk) :: phase
   INTEGER,SAVE :: iter=0
-  INTEGER(short) :: valm1
+  INTEGER(short) :: valm1, nf1,nf2,nf3
   CHARACTER(len=10) :: numstr0,numstr1,numstr2,numstr3
   CHARACTER(len=40) :: filename
   CHARACTER(len=12) :: diis,stiter
@@ -1033,138 +1043,183 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
   il1=int(lattice%lvec(index1)%lat_coord(1))
   il2=int(lattice%lvec(index1)%lat_coord(2))
   il3=int(lattice%lvec(index1)%lat_coord(3))
-  !ir1=-il1
-  !ir2=-il2
-  !ir3=-il3
-  !call find_latt_index(indred,ir1,ir2,ir3,fdim,lattice,lattice%max_layer)
   
-  !call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),2)
-  !call  II_get_maxGabelm_ScreenMat(lupri,luerr,setting,Gab1)
-  !if(index1 .eq. 11) write(*,*) 'index1 =11'
-  !if(abs(il1) .gt. lattice%nneighbour) CYCLE
-  !if(abs(il2) .gt. lattice%nneighbour) CYCLE
-  !if(abs(il3) .gt. lattice%nneighbour) CYCLE
 !  CALL LSTIMER('START',TS,TE,LUPRI)
   lattice%lvec(index1)%g2_computed=.false.
   lattice%lvec(index1)%J_computed=.false.
   gab1=lattice%lvec(index1)%maxgab
 
   if(gab1  .lt. -18) CYCLE
+ ! if(lattice%lvec(index1)%is_redundant) then
+ !   call find_latt_index(indred,-il1,-il2,-il3,fdim,lattice,lattice%max_layer)
+ !   if(lattice%lvec(indred)%g2_computed) then
+ !     lattice%lvec(index1)%g2_computed=.true.
+ !     lattice%lvec(index1)%J_computed=.true.
+ !   endif
+ ! endif
+
+ ! if(.not. lattice%lvec(index1)%is_redundant) then
+ !   call find_latt_index(indred,-il1,-il2,-il3,fdim,lattice,lattice%max_layer)
+
+    DO index2=1,num_latvectors
+
+       !call find_latt_vectors(index2,il21,il22,il23,fdim,lattice)
+       il21=int(lattice%lvec(index2)%lat_coord(1))
+       il22=int(lattice%lvec(index2)%lat_coord(2))
+       il23=int(lattice%lvec(index2)%lat_coord(3))
+
+       gab2=lattice%lvec(index2)%maxgab
+
+       if(gab2  .lt. -18) CYCLE
+
+      if(abs(il21) .gt. lattice%ndmat) CYCLE !then 
+      if( abs(il22) .gt.lattice%ndmat) CYCLE
+      if(abs(il23) .gt. lattice%ndmat) CYCLE !then 
+      if(nfdensity(index2)%init_magic_tag.NE.mat_init_magic_value) CYCLE
+
+      !if(abs(il21) .le. lattice%nf .and. abs(il22) .le. lattice%nf) THEN
+      !  if(abs(il23) .le. lattice%nf) THEN
 
 
-
-  DO index2=1,num_latvectors
-
-     !call find_latt_vectors(index2,il21,il22,il23,fdim,lattice)
-     il21=int(lattice%lvec(index2)%lat_coord(1))
-     il22=int(lattice%lvec(index2)%lat_coord(2))
-     il23=int(lattice%lvec(index2)%lat_coord(3))
+     DO index3=1,num_latvectors
 
 
-   DO index3=1,num_latvectors
+      !call find_latt_vectors(index3,il31,il32,il33,fdim,lattice)
+      il31=int(lattice%lvec(index3)%lat_coord(1))
+      il32=int(lattice%lvec(index3)%lat_coord(2))
+      il33=int(lattice%lvec(index3)%lat_coord(3))
+
+      if(abs(il31) .le. lattice%nf .and. abs(il32) .le. lattice%nf) THEN
+        if(abs(il33) .le. lattice%nf) THEN
+
+      !if(abs(il31) .gt. lattice%ndmat) CYCLE !then 
+      !if( abs(il32) .gt.lattice%ndmat) CYCLE
+      !if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
+      !if(nfdensity(index3)%init_magic_tag.NE.mat_init_magic_value) CYCLE
+
+!     ToDo Remove: base on CS screening at some point
+
+      l1=il21+il31
+      if( abs(l1) .gt.lattice%max_layer) CYCLE
+      
+      l2=il22+il32
+      if( abs(l2) .gt.lattice%max_layer) CYCLE
+      
+      l3=il23+il33
+      if( abs(l3) .gt.lattice%max_layer) CYCLE
+      
+      call find_latt_index(newcell,l1,l2,l3,fdim,lattice,lattice%max_layer)
+
+      !call find_latt_index(checknf,il31,il32,il33,&
+                            !fdim,lattice,lattice%max_layer)
+
+      !gab2=lattice%lvec(index3)%maxgab
+
+      !if(gab2  .lt. -18) CYCLE
+      
+      ! ToDo Should be turned on at some point
+      
+      !nf1=lattice%nf
+      !nf2=lattice%nf
+      !nf3=lattice%nf
+      !if(il1 .lt. 0)nf1=-lattice%nf
+      !if(il2 .lt. 0)nf2=-lattice%nf
+      !if(il3 .lt. 0)nf3=-lattice%nf
+
+      !if(il21+il1 .gt. lattice%nf .and. il1 .gt. 0 ) cycle
+      !if(il21 .lt. nf1 .and. il1 .lt. 0) CYCLE
+      !if(il21 .lt. nf1
+
+         gabmaxsum=gab1+gab2
+         call mat_abs_max_elm(nfdensity(index2),valmax)
+         if(valmax .gt. 0._realk) valm1=int(log10(valmax),kind=short)
+
+         !if(valm1  .lt. -18) CYCLE
+         if(valm1+gabmaxsum  .ge. -12) Then
+         !if(gabmaxsum +valm1 .ge. -10) Then
+          write(lupri,*) 'computing coul before gabmaxsum',il1,il2,il3,gabmaxsum
+         !if(gabmaxsum  .ge. -12) Then
+           compute_int=.true.
+           lattice%lvec(index1)%g2_computed=.true.
+           lattice%lvec(index1)%J_computed=.true.
+           !lattice%lvec(indred)%is_redundant=.true.
+           !lattice%lvec(indred)%g2_computed=.true.
+          !call TYPEDEF_setmolecules(setting,latt_cell(index2),3,latt_cell(newcell),4)
+          !call  II_get_maxGabelm_ScreenMat(lupri,luerr,setting,Gab2)
+           if(lattice%lvec(index1)%oper(2)%init_magic_tag.NE.mat_init_magic_value) then
+              call mat_init(lattice%lvec(index1)%oper(2),nbast,nbast)
+              call mat_zero(lattice%lvec(index1)%oper(2))
+           endif
+ !          if(lattice%lvec(indred)%oper(2)%init_magic_tag.NE.mat_init_magic_value) then
+ !             call mat_init(lattice%lvec(indred)%oper(2),nbast,nbast)
+ !             call mat_zero(lattice%lvec(indred)%oper(2))
+ !          endif
+ !          lattice%lvec(indred)%g2_computed=.true.
+ !          lattice%lvec(indred)%J_computed=.true.
 
 
-    !call find_latt_vectors(index3,il31,il32,il33,fdim,lattice)
-    il31=int(lattice%lvec(index3)%lat_coord(1))
-    il32=int(lattice%lvec(index3)%lat_coord(2))
-    il33=int(lattice%lvec(index3)%lat_coord(3))
+          !if(lattice%lvec(indred)%oper(2)%init_magic_tag.NE.mat_init_magic_value) then
+          !    call mat_init(lattice%lvec(indred)%oper(2),nbast,nbast)
+          !    call mat_zero(lattice%lvec(indred)%oper(2))
+          !endif
 
+          !setting%samefrag=.true.
+          maxl1=max(il1,maxl1)
+          maxl2=max(il2,maxl2)
+          maxl3=max(il3,maxl3)
+#ifdef DEBUGPBC
+          write(lupri,*) 'computing coul mat for',il1,il2,il3
+#endif
 
-    if(abs(il31) .gt. lattice%ndmat) CYCLE !then 
-    if( abs(il32) .gt.lattice%ndmat) CYCLE
-    if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
-
-!   ToDo Remove: base on CS screening at some point
-
-    l1=il21+il31
-    if( abs(l1) .gt.lattice%max_layer) CYCLE
-    
-    l2=il22+il32
-    if( abs(l2) .gt.lattice%max_layer) CYCLE
-    
-    l3=il23+il33
-    if( abs(l3) .gt.lattice%max_layer) CYCLE
-    
-    call find_latt_index(newcell,l1,l2,l3,fdim,lattice,lattice%max_layer)
-
-    call find_latt_index(checknf,il31,il32,il33,&
-                          fdim,lattice,lattice%max_layer)
-
-    gab2=lattice%lvec(checknf)%maxgab
-
-    if(gab2  .lt. -18) CYCLE
-    
-    ! ToDo Should be turned on at some point
-
-    if(abs(il21) .le. lattice%nf .and. abs(il22) .le. lattice%nf) THEN
-      if(abs(il23) .le. lattice%nf) THEN
-
-       gabmaxsum=gab1+gab2
-       call mat_abs_max_elm(nfdensity(index3),valmax)
-       if(valmax .gt. 0._realk) valm1=int(log10(valmax),kind=short)
-
-       if(valm1  .lt. -18) CYCLE
-       !if(gabmaxsum +valm1 .ge. -10) Then
-        write(lupri,*) 'computing coul before gabmaxsum',il1,il2,il3,gabmaxsum
-       if(gabmaxsum  .ge. -12) Then
-         compute_int=.true.
-         lattice%lvec(index1)%g2_computed=.true.
-         lattice%lvec(index1)%J_computed=.true.
-         !lattice%lvec(indred)%is_redundant=.true.
-         !lattice%lvec(indred)%g2_computed=.true.
-        !call TYPEDEF_setmolecules(setting,latt_cell(index2),3,latt_cell(newcell),4)
-        !call  II_get_maxGabelm_ScreenMat(lupri,luerr,setting,Gab2)
-        if(lattice%lvec(index1)%oper(2)%init_magic_tag.NE.mat_init_magic_value) then
-            call mat_init(lattice%lvec(index1)%oper(2),nbast,nbast)
-            call mat_zero(lattice%lvec(index1)%oper(2))
-        endif
-
-        !if(lattice%lvec(indred)%oper(2)%init_magic_tag.NE.mat_init_magic_value) then
-        !    call mat_init(lattice%lvec(indred)%oper(2),nbast,nbast)
-        !    call mat_zero(lattice%lvec(indred)%oper(2))
-        !endif
-
-        !setting%samefrag=.true.
-        maxl1=max(il1,maxl1)
-        maxl2=max(il2,maxl2)
-        maxl3=max(il3,maxl3)
-        write(lupri,*) 'computing coul mat for',il1,il2,il3
-
-        call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),&
-             2,latt_cell(index2),3,latt_cell(newcell),4)
-
-
-        call mat_zero(F_tmp(1))
-        call II_get_coulomb_mat(lupri,luerr,setting,nfdensity(checknf:checknf),&
-             &F_tmp,1)
-
-        !call mat_daxpy(0.5_realk,F_tmp(1),F(1))
-        call mat_daxpy(0.5_realk,F_tmp(1),lattice%lvec(index1)%oper(2))
-       endif
-      endif
-    endif
-
-
-   ENDDO
-  ENDDO
-  !if(iter .eq. 2) stop
-  !store the matrix here
- ! CALL LSTIMER('coul one cell',TS,TE,LUPRI)
-
-  
-  !if(abs(il1) .eq. 1) then
-  !  write(lupri,*) 'coulomb ',il1,iter
-  !  call mat_print(F(1),1,nbast,1,nbast,lupri)
-  !endif
+          call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),&
+               2,latt_cell(index3),3,latt_cell(newcell),4)
 
 #ifdef DEBUGPBC
-  if(compute_int) write(lupri,*) 'COULOMB MAT',il1
-  if(compute_int) call mat_print(lattice%lvec(index1)%oper(2),1,nbast,1,nbast,lupri)
+write(lupri,*) 'TYPEDEF coul mat for',il1,il2,il3
+#endif
+
+
+          call mat_zero(F_tmp(1))
+          call II_get_coulomb_mat(lupri,luerr,setting,nfdensity(index2:index2),&
+               &F_tmp,1)
+#ifdef DEBUGPBC
+write(lupri,*) 'computed coul mat for',il1,il2,il3
+#endif
+
+          !call mat_daxpy(0.5_realk,F_tmp(1),F(1))
+          call mat_daxpy(0.5_realk,F_tmp(1),lattice%lvec(index1)%oper(2))
+         endif
+       endif
+     endif
+
+#ifdef DEBUGPBC
+      write(lupri,*) 'computing coul mat for l3',il31
+#endif
+
+     ENDDO
+#ifdef DEBUGPBC
+      write(lupri,*) 'computing coul mat for l2',il21
+#endif
+!      endif
+!    endif
+    ENDDO
+
+ !   if(il1 .ne. 0 .or. il2 .ne. 0 .or. il3 .ne. 0) then
+ !     call mat_trans(lattice%lvec(index1)%oper(2),lattice%lvec(indred)%oper(2))
+ !     lattice%lvec(indred)%is_redundant=.true.
+ !   endif
+
+ ! endif !is_redundant
+
+
+#ifdef DEBUGPBC
+  if(lattice%lvec(index1)%g2_computed) write(lupri,*) 'COULOMB MAT',il1
+  if(lattice%lvec(index1)%g2_computed) call mat_print(lattice%lvec(index1)%oper(2),1,nbast,1,nbast,lupri)
 #endif
    
 
 #ifdef DEBUGPBC
-     if(compute_int) then
+     if(lattice%lvec(index1)%g2_computed) then
        st=0
        Coulombn2=0._realk
        Coulombnst=0._realk
@@ -1188,7 +1243,7 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
 
      !  write(lupri,*) 'comparing overlap elements with old pbc code'
      !  write(lupri,*) il1,il2,il3
-     if(compute_int) then
+     if(lattice%lvec(index1)%g2_computed) then
        
        iunit=-1
        write(numstr0,'(I5)')  iter
@@ -1211,7 +1266,7 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
      endif !comparing
 #endif
 
-     if(compute_int) Then
+     if(lattice%lvec(index1)%J_computed) Then
        if(.not. lattice%store_mats) then
          call mat_init(g_2(index1),nbast,nbast)
          call mat_copy(1._realk,lattice%lvec(index1)%oper(2),g_2(index1))
@@ -1228,29 +1283,16 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
           .and.abs(il3) .le. lattice%ndmat)then
         !call mat_max_elm(lattice%lvec(index1)%oper(2),valmax)
         !write(*,*) 'max JOP element for lx',valmax,il1
-        E_nfC=E_nfC+&
-        0.5*mat_dotproduct(lattice%lvec(index1)%oper(2),nfdensity(index1))
-          !write(*,*) 'Debug 2 nfdens',il1,il2,il3
+       if(nfdensity(index1)%init_magic_tag.EQ.mat_init_magic_value) THEN
+         E_nfC=E_nfC+&
+         0.5*mat_dotproduct(lattice%lvec(index1)%oper(2),nfdensity(index1))
+       endif
       endif
      endif
 
-     !if(compute_int.and. indred .ne. index1) then
-     !  call mat_trans(lattice%lvec(index1)%oper(2),lattice%lvec(indred)%oper(2)) 
-     !  if(.not. lattice%store_mats) then
-     !    call mat_init(g_2(indred),nbast,nbast)
-     !    call mat_copy(1._realk,lattice%lvec(indred)%oper(2),g_2(indred))
-     !  endif
-     ! if((abs(ir1) .le. lattice%ndmat .and. abs(ir2) .le. lattice%ndmat)&
-     !     .and.abs(ir3) .le. lattice%ndmat)then
-     !   !call mat_max_elm(lattice%lvec(index1)%oper(2),valmax)
-     !   !write(*,*) 'max JOP element for lx',valmax,il1
-     !   E_nfC=E_nfC+&
-     !   0.5*mat_dotproduct(lattice%lvec(indred)%oper(2),nfdensity(indred))
-     !     !write(*,*) 'Debug 2 nfdens',il1,il2,il3
-     ! endif
 
      !endif
-     if(compute_int) write(lupri,*) 'Coulomb mat for layer',il1,il2,il3,index1
+     !if(lattice%lvec(index1)%g2_computed) write(lupri,*) 'Coulomb mat for layer',il1,il2,il3,index1
      compute_int=.false.
      !endif !is_redundant
      !lattice%lvec(index1)%is_redundant=.false.
@@ -1264,6 +1306,7 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
     call mat_zero(F(1))
 
 !    write(lupri,*) 'index1',index1, num_latvectors
+  lattice%lvec(index1)%is_redundant=.false.
   ENDDO
   lattice%col1=maxl1
   lattice%col2=maxl2
@@ -1315,7 +1358,7 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
   INTEGER :: il31,il32,il33, newcell,il1,il2,il3,checknf1,checknf2,checknf3
   INTEGER :: index1,index2,index3,checknf,gabind
   INTEGER :: l1,l2,l3, num_latvectors, natoms,iunit,maxl1,maxl2,maxl3
-  INTEGER :: gabl1,gabl2,gabl3,s,t,st
+  INTEGER :: gabl1,gabl2,gabl3,s,t,st,indred
   INTEGER, DIMENSION(3) :: fdim
   integer(short) :: gab1,gab2,maxgabsum
   REAL(realk) :: latt_vec_std(3),origin(3)!,debug_mat(nbast,nbast)
@@ -1375,93 +1418,122 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
   !if(abs(il2) .gt. lattice%kx2) CYCLE
   !if(abs(il3) .gt. lattice%kx3) CYCLE
 !  CALL LSTIMER('START',TS,TE,LUPRI)
-  call mat_init(lattice%lvec(index1)%oper(1),nbast,nbast)
-  call mat_zero(lattice%lvec(index1)%oper(1))
-  
+  !call mat_init(lattice%lvec(index1)%oper(1),nbast,nbast)
+  !call mat_zero(lattice%lvec(index1)%oper(1))
+  !
+  !lattice%lvec(index1)%Kx_computed=.false.
   lattice%lvec(index1)%Kx_computed=.false.
 
-  DO index2=1,num_latvectors
+ ! if(lattice%lvec(index1)%is_redundant) then
+ !   call find_latt_index(indred,-il1,-il2,-il3,fdim,lattice,lattice%max_layer)
+ !   if(lattice%lvec(indred)%Kx_computed) then
+ !     lattice%lvec(index1)%g2_computed=.true.
+ !     lattice%lvec(index1)%Kx_computed=.true.
+ !   endif
+ ! endif
 
-     !call find_latt_vectors(index2,il21,il22,il23,fdim,lattice)
-     il21=int(lattice%lvec(index2)%lat_coord(1))
-     il22=int(lattice%lvec(index2)%lat_coord(2))
-     il23=int(lattice%lvec(index2)%lat_coord(3))
-     gab1=lattice%lvec(index2)%maxgab
-     if(gab1 .lt. -18) CYCLE
+ ! if(.not. lattice%lvec(index1)%is_redundant) then
+ !   call find_latt_index(indred,-il1,-il2,-il3,fdim,lattice,lattice%max_layer)
 
-     !Skal kun ha avstand til origo ikke latt_std_vec her
-     !call calc_distance(distance,lattice%lvec(index2)%std_coord,latt_vec_std)
+    DO index2=1,num_latvectors
 
+       !call find_latt_vectors(index2,il21,il22,il23,fdim,lattice)
+       il21=int(lattice%lvec(index2)%lat_coord(1))
+       il22=int(lattice%lvec(index2)%lat_coord(2))
+       il23=int(lattice%lvec(index2)%lat_coord(3))
+       gab1=lattice%lvec(index2)%maxgab
+       if(gab1 .lt. -18) CYCLE
 
-   DO index3=1,num_latvectors
-
-
-    !call find_latt_vectors(index3,il31,il32,il33,fdim,lattice)
-    il31=int(lattice%lvec(index3)%lat_coord(1))
-    il32=int(lattice%lvec(index3)%lat_coord(2))
-    il33=int(lattice%lvec(index3)%lat_coord(3))
-
-    if(abs(il31) .gt. lattice%ndmat) CYCLE! then
-    if(abs(il32) .gt. lattice%ndmat) CYCLE !then 
-    if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
-
-!   ToDo Remove: base on CS screening at some point
-    l1=il21+il31
-    if( abs(l1) .gt.lattice%max_layer) CYCLE
-    !l1 blir større enn max slik at newcell blir negativ
-    !sjekk dette, er ikke sikker på om l1 skal være slik.
-    !Likedan man l2 og l3
-    
-    l2=il22+il32
-    if( abs(l2) .gt.lattice%max_layer) CYCLE
-    
-    l3=il23+il33
-    if( abs(l3) .gt.lattice%max_layer) CYCLE
-    gabl1=l1-il1
-    gabl2=l2-il2
-    gabl3=l3-il3
-    if( abs(gabl1) .gt.lattice%max_layer) CYCLE
-    if( abs(gabl2) .gt.lattice%max_layer) CYCLE
-    if( abs(gabl3) .gt.lattice%max_layer) CYCLE
+       !Skal kun ha avstand til origo ikke latt_std_vec her
+       !call calc_distance(distance,lattice%lvec(index2)%std_coord,latt_vec_std)
 
 
-    call find_latt_index(newcell,l1,l2,l3,fdim,lattice,lattice%max_layer)
-    !call find_latt_index(checknf,il31,il32,il33,&
-    !                      fdim,lattice,lattice%max_layer)
-
-    call find_latt_index(gabind,gabl1,gabl2,gabl3,fdim,lattice,lattice%max_layer)
-
-    gab2=lattice%lvec(gabind)%maxGab
-    if(gab2 .lt. -18) CYCLE
-    maxgabsum=gab1+gab2
-    call mat_abs_max_elm(nfdensity(index3),valmax)
-    if(valmax.gt.0._realk) valm1=int(log10(valmax),kind=short)
+     DO index3=1,num_latvectors
 
 
-    !if(maxgabsum+valm1 .ge. -10) Then
-    if(maxgabsum .ge. -10) Then
-      !write(lupri,*) 'maxgabsum',maxgabsum,valm1,valmax,il31
-      !write(lupri,*) 'gab1,gab2',gab1,gab2
-      compute_int=.true.
-      lattice%lvec(index1)%g2_computed=.true.
-      lattice%lvec(index1)%Kx_computed=.true.
-      maxl1=max(abs(il1),maxl1)
-      maxl2=max(abs(il2),maxl2)
-      maxl3=max(abs(il3),maxl3)
+      !call find_latt_vectors(index3,il31,il32,il33,fdim,lattice)
+      il31=int(lattice%lvec(index3)%lat_coord(1))
+      il32=int(lattice%lvec(index3)%lat_coord(2))
+      il33=int(lattice%lvec(index3)%lat_coord(3))
 
-      call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),3,latt_cell(index2),2,latt_cell(newcell),4)
+      if(abs(il31) .gt. lattice%ndmat) CYCLE! then
+      if(abs(il32) .gt. lattice%ndmat) CYCLE !then 
+      if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
+      if(nfdensity(index3)%init_magic_tag.NE.mat_init_magic_value) CYCLE
 
-      call mat_zero(K_tmp(1))
-      call II_get_exchange_mat(lupri,luerr,setting,nfdensity(index3:index3),&
-           &                   1,.false.,K_tmp)
+!     ToDo Remove: base on CS screening at some point
+      l1=il21+il31
+      if( abs(l1) .gt.lattice%max_layer) CYCLE
+      !l1 blir større enn max slik at newcell blir negativ
+      !sjekk dette, er ikke sikker på om l1 skal være slik.
+      !Likedan man l2 og l3
+      
+      l2=il22+il32
+      if( abs(l2) .gt.lattice%max_layer) CYCLE
+      
+      l3=il23+il33
+      if( abs(l3) .gt.lattice%max_layer) CYCLE
+      gabl1=l1-il1
+      gabl2=l2-il2
+      gabl3=l3-il3
+      if( abs(gabl1) .gt.lattice%max_layer) CYCLE
+      if( abs(gabl2) .gt.lattice%max_layer) CYCLE
+      if( abs(gabl3) .gt.lattice%max_layer) CYCLE
 
-      call mat_daxpy(1.D0,K_tmp(1),Kx)
-      call mat_daxpy(0.5D0,K_tmp(1),lattice%lvec(index1)%oper(1))
-    endif
 
-   ENDDO
-  ENDDO
-     
+      call find_latt_index(newcell,l1,l2,l3,fdim,lattice,lattice%max_layer)
+      !call find_latt_index(checknf,il31,il32,il33,&
+      !                      fdim,lattice,lattice%max_layer)
+
+      call find_latt_index(gabind,gabl1,gabl2,gabl3,fdim,lattice,lattice%max_layer)
+
+      gab2=lattice%lvec(gabind)%maxGab
+      if(gab2 .lt. -18) CYCLE
+      maxgabsum=gab1+gab2
+      call mat_abs_max_elm(nfdensity(index3),valmax)
+      if(valmax.gt.0._realk) valm1=int(log10(valmax),kind=short)
+
+
+      !if(maxgabsum+valm1 .ge. -10) Then
+      if(maxgabsum .ge. -10) Then
+        !write(lupri,*) 'maxgabsum',maxgabsum,valm1,valmax,il31
+        if(lattice%lvec(index1)%oper(1)%init_magic_tag.NE.mat_init_magic_value) then
+          call mat_init(lattice%lvec(index1)%oper(1),nbast,nbast)
+          call mat_zero(lattice%lvec(index1)%oper(1))
+        endif
+        !write(lupri,*) 'gab1,gab2',gab1,gab2
+        compute_int=.true.
+        lattice%lvec(index1)%g2_computed=.true.
+        lattice%lvec(index1)%Kx_computed=.true.
+        maxl1=max(abs(il1),maxl1)
+        maxl2=max(abs(il2),maxl2)
+        maxl3=max(abs(il3),maxl3)
+
+        call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),3,latt_cell(index2),2,latt_cell(newcell),4)
+
+        call mat_zero(K_tmp(1))
+        call II_get_exchange_mat(lupri,luerr,setting,nfdensity(index3:index3),&
+             &                   1,.false.,K_tmp)
+
+        call mat_daxpy(1.D0,K_tmp(1),Kx)
+        call mat_daxpy(0.5D0,K_tmp(1),lattice%lvec(index1)%oper(1))
+
+       ! if(lattice%lvec(indred)%oper(1)%init_magic_tag.NE.mat_init_magic_value) then
+       !   call mat_init(lattice%lvec(indred)%oper(1),nbast,nbast)
+       !   call mat_zero(lattice%lvec(indred)%oper(1))
+       ! endif
+      endif
+
+     ENDDO
+    ENDDO
+
+ !   if((il1 .ne. 0 .or. il2 .ne. 0 .or. il3 .ne. 0) .and. lattice%lvec(index1)%Kx_computed) then
+ !     call mat_trans(lattice%lvec(index1)%oper(1),lattice%lvec(indred)%oper(1))
+ !     lattice%lvec(indred)%is_redundant=.true.
+ !   endif
+
+ ! endif !is_redundant
+ !    
 
 
 !  CALL LSTIMER('xch one cell',TS,TE,LUPRI)
@@ -1469,7 +1541,7 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
      if(lattice%compare_elmnts ) then
        !compare integrals with the old pbc code
 
-       if(compute_int)then
+       if(lattice%lvec(index1)%Kx_computed)then
        
        iunit=-1
        write(numstr0,'(I5)')  iter
@@ -1503,12 +1575,14 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
      ! FOR debug only
 #ifdef DEBUGPBC
      write(lupri,*) 'Exchange mat', il1
-     call mat_print(lattice%lvec(index1)%oper(1),1,nbast,1,nbast,lupri)
+     if(lattice%lvec(index1)%oper(1)%init_magic_tag.EQ.mat_init_magic_value) THEN
+       call mat_print(lattice%lvec(index1)%oper(1),1,nbast,1,nbast,lupri)
+     endif
 #endif
 
 
     !if(iter .eq. 1) then
-    if(compute_int) then
+    if(lattice%lvec(index1)%Kx_computed) then
 #ifdef DEBUGPBC
        st=0
        exchang2=0._realk
@@ -1539,20 +1613,22 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
       endif
       if((abs(il1) .le. lattice%ndmat .and. abs(il2) .le. lattice%ndmat)&
         .and. abs(il3) .le. lattice%ndmat)then
-        E_hfx=E_hfx+0.5*mat_dotproduct(lattice%lvec(index1)%oper(1),nfdensity(index1))
+        if(nfdensity(index1)%init_magic_tag.EQ.mat_init_magic_value) THEN
+          E_hfx=E_hfx+0.5*mat_dotproduct(lattice%lvec(index1)%oper(1),nfdensity(index1))
+        endif
       endif
-      !DEBUG only
-     !write(lupri,*) 'Exchange', il1
-     !call mat_to_full(lattice%lvec(index1)%oper(1),1D0,debug_mat)
-     !call pbc_matlab_print(debug_mat,nbast,nbast,'KOP',lupri)
+
     endif
     compute_int=.false.
+    lattice%lvec(index1)%is_redundant=.false.
     !else                                            !exact exhange 
     !  call pbc_get_file_and_write(lattice,nbast,nbast,index1,5,1,diis)
     !endif
 
     !CALL mat_print(lattice%lvec(index1)%oper(1),1,nbast,1,nbast,lupri)
-    call mat_free(lattice%lvec(index1)%oper(1))
+    if(lattice%lvec(index1)%oper(1)%init_magic_tag.EQ.mat_init_magic_value) then
+      call mat_free(lattice%lvec(index1)%oper(1))
+    endif
     !CALL mat_print(F(1),1,F_tmp(1)%nrow,1,F_tmp(1)%ncol,6)
     call mat_zero(Kx)
 
