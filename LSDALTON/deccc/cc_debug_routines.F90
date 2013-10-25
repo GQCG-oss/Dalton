@@ -2939,10 +2939,10 @@ module cc_debug_routines_module
     implicit none
 
     !> MO pack integrals; amplitudes and residuals:
+    integer, intent(in) :: nbas, nocc, nvir
     real(realk), intent(inout) :: omega2(nvir,nvir,nocc,nocc)
     real(realk), intent(in) :: pack_gmo(:), t1(nvir,nocc)
     real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc) 
-    integer, intent(in) :: nbas, nocc, nvir
 
     !> Batches info:
     type(MObatchInfo), intent(in) :: MOinfo
