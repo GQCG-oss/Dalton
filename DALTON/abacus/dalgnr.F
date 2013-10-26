@@ -695,6 +695,7 @@ C
       end if
 
       IPRINT = IPRUSR
+      IPRUSR_orig = IPRUSR
 C
       WLKREJ = .FALSE.
       IF (OPTNEW) THEN
@@ -951,6 +952,7 @@ C
 C        ---------------------------------------------------------------
 C
          IF (GEOCNV) THEN
+            IPRUSR = IPRUSR_orig
             IF (IWKTYP .EQ. 6) THEN
               CALL TITLER('Nummerical differentiation finished',' ',200)
             ELSE
@@ -962,14 +964,15 @@ C     analysis in a ROA calculation, K.Ruud and G.Hangartner, Oct.-96
 C
             WRINDX = .TRUE.
             IF (IWKTYP .EQ. 6 .AND. NUMHES) THEN
+               NEWGEO = .TRUE.
                CALL ABAINP('**PROPE',WORK(1),LMWORK)
                CALL VIBCTL(WORK(1),LMWORK)
             ELSE IF (IWKTYP .EQ. 6) THEN
+               NEWGEO = .TRUE.
                RDINPC = .FALSE.
                SOLVNT = .FALSE.
                IPREAD = IPREAD_orig
                CALL EXEHER(WORK(0),LMWORK,WRKDLM)
-               NEWGEO = .TRUE.
                CALL EXESIR(WORK(0),LMWORK,WRKDLM)
                SOLVNT = FLAG(16)
               IF (SOLVNT) THEN
