@@ -6883,7 +6883,7 @@ C
 C     Write out molecule specific information in new input format
 C
 #include "implicit.h"
-      CHARACTER*80 TMPLN
+      CHARACTER*(*) TMPLN
       CHARACTER*1 KASYM(3,3), ID3
       LOGICAL AUTOSY, NOSYM, DOCART, DOOWN
 C
@@ -6915,7 +6915,6 @@ C
       IF (NOSYM) THEN
          WRITE (TMPLN(ISTART:),'(A11)') 'NOSYMMETRY'
          ISTART = ISTART + 12
-Ckr      END IF
 C
       ELSE
          IF (.NOT. AUTOSY) THEN
@@ -6928,20 +6927,22 @@ C
                   ISTART = ISTART + 1
                END DO
             END DO
+            ISTART = ISTART + 1
          END IF
       END IF
 C
       IF (DOCART) THEN
-         WRITE (TMPLN(ISTART:),'(X,A10)') 'CARTESIAN '
+         WRITE (TMPLN(ISTART:),'(A10)') 'CARTESIAN '
          ISTART = ISTART + 10
       END IF
       IF (DOOWN) THEN
-         WRITE (TMPLN(ISTART:),'(X,A10)') 'OWN '
+         WRITE (TMPLN(ISTART:),'(A4)') 'OWN '
          ISTART = ISTART + 4
       END IF
 C
       IF (ID3 .NE. ' ') THEN
-         WRITE (TMPLN(ISTART:),'(X,A7)') 'ANGSTROM'
+         WRITE (TMPLN(ISTART:),'(A7)') 'ANGSTROM'
+         ISTART = ISTART + 8
       END IF
       RETURN
       END
