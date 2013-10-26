@@ -6932,16 +6932,16 @@ C
       END IF
 C
       IF (DOCART) THEN
-         WRITE (TMPLN(ISTART:),'(A10)') 'CARTESIAN '
+         WRITE (TMPLN(ISTART:),'(X,A10)') 'CARTESIAN '
          ISTART = ISTART + 10
       END IF
       IF (DOOWN) THEN
-         WRITE (TMPLN(ISTART:),'(A10)') 'OWN '
+         WRITE (TMPLN(ISTART:),'(X,A10)') 'OWN '
          ISTART = ISTART + 4
       END IF
 C
       IF (ID3 .NE. ' ') THEN
-         WRITE (TMPLN(ISTART:),'(A7)') 'ANGSTROM'
+         WRITE (TMPLN(ISTART:),'(X,A7)') 'ANGSTROM'
       END IF
       RETURN
       END
