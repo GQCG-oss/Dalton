@@ -1,4 +1,4 @@
-!
+
 !...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
@@ -26,6 +26,7 @@ C
 C File: herpar.F
 C
 C Some history:
+C Original : PVM
 C June 1995: ported to MPI by Kenneth Ruud
 C
 C  /* Deck her_pardrv */
@@ -48,9 +49,9 @@ C
       LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL, rma_model_save
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), WORK(LWORK)
-CTROND
+
       DIMENSION GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
-CTROND
+
 C
 C Used from common blocks:
 C
@@ -229,8 +230,8 @@ C           RETUR  - Program will exit after spec. shells
 C           TKTIME - Take time in TWOINT
 C           TIMING - Take time for each integralbatch IJ
 C           DOREPS -
-C           DOSYM  -
 C           DOCOOR -
+C           DOSYM  -
 C           MULD2H - Start address for common block INFORB.
 C           NMLINE - Number of lines in MOLECULE.INP
 C           MLINE  - MOLECULE.INP as internal file
@@ -641,7 +642,10 @@ Cef end
       character(len=6) :: nmat_wo_win_env
 
       CALL QENTER('HER_SDINIT')
-      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDINIT','*',103)
+      IF (IPRINT .GT. 3) THEN
+         CALL TITLER('Output from HER_SDINIT','*',103)
+         WRITE(LUPRI,'(/A,I5)') 'Parallel type (ITYPE) is',ITYPE
+      END IF
 C
 C     Calculate the number of Fock matrices that will be
 C     returned from slaves to master.
@@ -744,7 +748,7 @@ C  /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C  /infpar/
          CALL MPIXBCAST(NODTOT,NPARI,'INTEGER',MASTER)
-C  /dorps/
+C  /dorps/ DOREPS, DOCOOR (NDORL covers both)
          CALL MPIXBCAST(DOREPS(0),NDORL,'LOGICAL',MASTER)
 C  dosym()
          CALL MPIXBCAST(DOSYM,NSYML,'LOGICAL',MASTER)
@@ -920,7 +924,10 @@ C
 #endif
 C
       CALL QENTER('HER_RVRES')
-      IF (IPRINT .GT. 4) CALL TITLER('Output from HER_RVRES','*',103)
+      IF (IPRINT .GT. 4) THEN
+         CALL TITLER('Output from HER_RVRES','*',103)
+         WRITE(LUPRI,'(/A,I5)') 'Parallel type (ITYPE) is',ITYPE
+      END IF
 C
 C     Clean matrices.
 C
@@ -1243,8 +1250,11 @@ C     This is a slave in a parallel run; check for programming error
       END IF
 
       CALL QENTER('HER_NODSTR')
+      iprint = 2 ! DEBUG hjaaj
 
-      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_NODSTR','*',103)
+      IF (IPRINT .GE. 2) THEN
+         CALL TITLER('Output from HER_NODSTR','*',103)
+      END IF
 
 !     Start timing
       CALL GETTIM(CPU1,WALL1)
@@ -1283,9 +1293,9 @@ C     This is a slave in a parallel run; check for programming error
 !     =================================================================
 !
       CALL HER_RVINIT(WORK(1),KFREE,LFREE,
-     &                NDMAT,ISYMDM,IFCTYP,ITYPE,IATOM,
-     &                MAXDIF,NODV,NOPV,NOCONT,RETUR,TKTIME,
-     &                JSTRS,NPRIM,NCONT,
+     &                NDMAT,ISYMDM,IFCTYP,ITYPE,
+     &                IATOM,MAXDIF,NODV,NOPV,NOCONT,
+     &                RETUR,TKTIME,JSTRS,NPRIM,NCONT,
      &                IORBS,JORBS,KORBS,IPRINT,
      &                I2TYP,ICEDIF,IFTHRS,
      &                N2RED,dmat_buff,fmat_buff,KHESEE,KDMRAO,
@@ -1329,6 +1339,11 @@ C     This is a slave in a parallel run; check for programming error
      &                I2TYP,ICEDIF,IFTHRS,
      &                N2RED,dmat_buff,fmat_buff,KHESEE,KDMRAO,
      &                KGABAO,KDMRSO,.false.)
+      IF (IPRINT .GE. 2) THEN
+         WRITE(LUPRI,'(/A,4I5)')
+     &   'After HER_RVINIT; ITYPE, IATOM, NDMAT, MAXDIF =',
+     &   ITYPE,IATOM,NDMAT,MAXDIF
+      END IF
 C
 C     Initialize matrices
 C     ===================
@@ -1564,7 +1579,11 @@ C
 #include "cbisol.h"
 #include "incore.h"
 C
-      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVINIT','*',103)
+!     IF (IPRINT .GT. 2) THEN
+         CALL TITLER('Output from HER_RVINIT','*',103)
+         WRITE(LUPRI,*) 'Set Common blocks is ',set_cb_blocks
+         WRITE(LUPRI,*) 'IPRINT            is ',IPRINT
+!     END IF
 
 !     part - 1 - receive data on common blocks
 !     ----------------------------------------
@@ -1621,11 +1640,11 @@ C         CALL CLEAR_INCOREMEM()
         END IF
 Cef end
         TIMING = FIRST .OR. NEWBAS .OR. NEWGEO
+        IF (IPRINT .GE. 2) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
+     &       ' Receive new orbital and geometry information ?',
+     &       ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
 C
         IF (TIMING) THEN
-           IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
-     &          ' Receiving new orbital and geometry information',
-     &          ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
 C  /molinp/
               CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn nov -08: Receiving number of QM atom types:
@@ -1643,7 +1662,7 @@ C  /inforb/
               CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C  /infpar/
               CALL MPIXBCAST(NODTOT,NPARI,'INTEGER',MASTER)
-C  /dorps/
+C  /dorps/ DOREPS, DOCOOR (NDORL covers both)
               CALL MPIXBCAST(DOREPS(0),NDORL,'LOGICAL',MASTER)
 C  dosym()
               CALL MPIXBCAST(DOSYM,NSYML,'LOGICAL',MASTER)
@@ -1674,7 +1693,7 @@ C
         TIMING = FIRST .OR. NEWBAS .OR. NEWGEO
 C
         IF (TIMING) THEN
-           IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
+           IF (IPRINT .GE. 2) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
      &          ' Receiving new orbital inf.',
      &          ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
 C  /molinp/
@@ -1689,7 +1708,7 @@ C
            DO 100 I = 1, NODTOT
               IF (NODEID(I) .EQ. MYTID) MYNUM = I
  100       CONTINUE
-C  /dorps/
+C  /dorps/ DOREPS, DOCOOR (NDORL covers both)
            CALL PVMXUNPACK(DOREPS(0),NDORL,'LOGICAL')
 C  dosym()
            CALL PVMXUNPACK(DOSYM,NSYML,'LOGICAL')
@@ -1796,6 +1815,11 @@ C
      &                   MASTER)
         end if
 #endif
+        if (jtype .eq. 2 .and. iprint .gt. 5) then
+           write(lupri,*) ' HER_RVINIT -1 - type 2, NDMAT =', NDMAT
+           write(lupri,*) ' HER_RVINIT -1 - type 2, DOCOOR:'
+           write(lupri,'(10(3L2,4X))') ((DOCOOR(i,j),i=1,3), j=1,mxcent)
+        end if
         call qexit('HER_RVINIT - 1 -')
         return
 
@@ -1830,10 +1854,11 @@ C
 
 
       else
-!       write(lupri,*) 'slave dmat',nbast,n2basx,ndmat
+!       write(lupri,*) 'slave ndmat, nbast',ndmat,nbast
 !       call flshfo(lupri)
         call mpixbcast(dmat_buff,n2basx*ndmat,'DOUBLE',master)
-!       call output(dmat_buff,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+!       ncols = MIN(5,nbast)
+!       call output(dmat_buff,1,nbast,1,ncols,nbast,nbast,-1,lupri)
 !       call flshfo(lupri)
       end if
 
@@ -1941,7 +1966,11 @@ C Begin logging the event
 C      call MPE_Log_event(evIDb2,0,'')
 C
       CALL QENTER('PARLOP')
-      IF (JPRINT .GT. 3) CALL TITLER('Output from PARLOP','*',103)
+      IF (JPRINT .GT. 3) THEN
+         CALL TITLER('Output from PARLOP','*',103)
+         WRITE(LUPRI,'(/A,I5)') 'Parallel type (ITYPE) is',ITYPE
+         WRITE(LUPRI,*) 'MAXDER, EXPECT',MAXDER,EXPECT
+      END IF
 C
       FIRST = .TRUE.
       DIRAC = RELCAL
@@ -2319,9 +2348,9 @@ C
 C
                IF (RETUR) THEN
                   IF (ISHELA .EQ. IPRNTA .AND.
-     &                 ISHELB .EQ. IPRNTB .AND.
-     &                 ISHELC .EQ. IPRNTC .AND.
-     &                 ISHELD .EQ. IPRNTD) GOTO 9999
+     &                ISHELB .EQ. IPRNTB .AND.
+     &                ISHELC .EQ. IPRNTC .AND.
+     &                ISHELD .EQ. IPRNTD) GOTO 9999
                END IF
 C
  500        CONTINUE
@@ -2441,6 +2470,7 @@ C  /* Deck her_sdres */
 #endif
 !
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "mtags.h"
@@ -2468,7 +2498,10 @@ C
        integer (kind=mpi_offset_kind) :: offset_mat
 #endif
 C
-      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDRES','*',103)
+      IF (IPRINT .GT. 3) THEN
+         CALL TITLER('Output from HER_SDRES','*',103)
+         WRITE(LUPRI,'(/A,I5)') 'Parallel type (ITYPE) is',ITYPE
+      END IF
 C
       L_GRA = MXCOOR
       L_HES = MXCOOR*MXCOOR

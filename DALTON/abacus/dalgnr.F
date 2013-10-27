@@ -968,11 +968,11 @@ C
                CALL ABAINP('**PROPE',WORK(1),LMWORK)
                CALL VIBCTL(WORK(1),LMWORK)
             ELSE IF (IWKTYP .EQ. 6) THEN
-               NEWGEO = .TRUE.
                RDINPC = .FALSE.
                SOLVNT = .FALSE.
                IPREAD = IPREAD_orig
                CALL EXEHER(WORK(0),LMWORK,WRKDLM)
+               NEWGEO = .TRUE.
                CALL EXESIR(WORK(0),LMWORK,WRKDLM)
                SOLVNT = FLAG(16)
               IF (SOLVNT) THEN
@@ -1004,6 +1004,8 @@ C
                CALL NUCPRO(WORK(1),LMWORK)
               END IF
             END IF
+            NEWGEO = .TRUE. ! EXESIR resets NEWGEO to .false.
+                            ! but we need to copy abacus info to slaves
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL EXEABA(WORK(0),LMWORK,WRKDLM)
 C
