@@ -286,6 +286,30 @@ C
       CALL QUIT(TEXT)
       RETURN
       END
+C  /* Deck parqarn */
+      SUBROUTINE PARWARN(TEXT)
+C Purpose:
+C   Warning message if code is not optimized (parallelized) for parallel calculations.
+
+      IMPLICIT NONE
+
+#include "priunit.h"
+      CHARACTER TEXT*(*)
+      INTEGER LUPRIN
+C
+C
+      IF (LUPRI .GE. 0) THEN
+         LUPRIN = LUPRI
+      ELSE IF (LUERR .GE. 0) THEN
+         LUPRIN = LUERR
+      ELSE
+         LUPRIN = 6
+      END IF
+      WRITE (LUPRIN,'(//3A/A/)') 'WARNING: ',TEXT,
+     & 'module is not optimized for parallel calculations!',
+     & 'WARNING: you will get better efficiency with a sequential run'
+      RETURN
+      END
 C  /* Deck opendx */
       SUBROUTINE OPENDX (LUDX,NAME,NELEM,STATUS,OLDDX)
 C

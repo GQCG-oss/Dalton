@@ -1445,7 +1445,7 @@ cs
       END IF
       IF (ABASOP) THEN
 CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
-         IF (PARCAL) CALL PARQUIT('ABAINP')
+         IF (PARCAL) CALL PARQUIT('ABASOP')
 CKeinSPASmehr
          IF (CCPPA) THEN
             WRITE(LUPRI,'(A,A,/,18X,A,/,A,A)')
