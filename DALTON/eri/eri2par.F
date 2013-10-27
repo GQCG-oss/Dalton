@@ -987,7 +987,7 @@ C
 
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
          IF (IPRINT .GT. 0)
-     &      write (lupri,'(/A,I5,A,I8,A,I5/AI5)')
+     &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5)')
      &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
      &      'Print level is',IPRINT
 
