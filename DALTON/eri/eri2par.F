@@ -56,7 +56,11 @@ C
 !     IPRPAR = 11
       IPRINT = MAX(IPRINT,IPRPAR)
 C
-      IF (IPRINT .GT. 3) CALL TITLER('Output from PARDRV','*',103)
+      IF (IPRINT .GT. 3) THEN
+         CALL TITLER('Output from PARDRV','*',103)
+         WRITE(LUPRI,'(/A,I5)')
+     &      'Parallel type (ITYPE) is',ITYPE
+      END IF
       IF (IPRPAR .GT. 0) CALL GETTIM(CPU1,WALL1)
 C
       IF (DEBUG) THEN
@@ -983,7 +987,9 @@ C
 
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
          IF (IPRINT .GT. 0)
-     &      write (lupri,*) 'Node',MYNUM,' received job IPRTYP =',IPRTYP
+     &      write (lupri,'(/A,I5,A,I8,A,I5/AI5)')
+     &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
+     &      'Print level is',IPRINT
 
 !        allocate memory here if we don't call hermit (more to follow...).
 !        idea: move allocation down to main driver routines of modules as we might want to use
