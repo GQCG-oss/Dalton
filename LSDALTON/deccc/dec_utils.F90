@@ -1596,7 +1596,7 @@ contains
     ! ***************************************************************
     O = MyFragment%noccAOS
     V = MyFragment%nunoccAOS
-    A = MyFragment%number_basis
+    A = MyFragment%nbasis
     GB = 1.000E9_realk ! 1 GB
 
     ! Use type decfrag to calculate memory use
@@ -1775,8 +1775,8 @@ retval=0
     write(DECinfo%output,'(1X,a,i8)') '#core orbitals =', MyFragment%ncore
     write(DECinfo%output,'(1X,a,i8)') 'Red Frag: Size occ AOS  =', MyFragment%noccAOS
     write(DECinfo%output,'(1X,a,i8)') 'Red Frag: Size virt AOS =', MyFragment%nunoccAOS
-    write(DECinfo%output,'(1X,a,i8)') 'Atoms in atomic extent =', MyFragment%number_atoms
-    write(DECinfo%output,'(1X,a,i8)') 'Number of basis functions =', MyFragment%number_basis
+    write(DECinfo%output,'(1X,a,i8)') 'Atoms in atomic extent =', MyFragment%natoms
+    write(DECinfo%output,'(1X,a,i8)') 'Number of basis functions =', MyFragment%nbasis
     do i=1,ndecenergies
        write(DECinfo%output,'(1X,a,i5,f16.10)') 'Idx, Fragenergy ', i,MyFragment%energies(i)
     end do
@@ -1826,7 +1826,7 @@ retval=0
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'Atomic extent indices (frag,full in terms of atoms)'
-       do i=1,MyFragment%number_atoms
+       do i=1,MyFragment%natoms
           write(DECinfo%output,*) i, MyFragment%atoms_idx(i)
        end do
        write(DECinfo%output,*)
@@ -1848,7 +1848,7 @@ retval=0
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'AO fock matrix (column, elements in column)'
-       do i=1,MyFragment%number_basis
+       do i=1,MyFragment%nbasis
           write(DECinfo%output,*) i, MyFragment%fock(:,i)
        end do
        write(DECinfo%output,*)
@@ -3260,7 +3260,7 @@ retval=0
     ! MPI fragment statistics
     write(funit) jobs%nslaves
     write(funit) jobs%nocc
-    write(funit) jobs%nvirt
+    write(funit) jobs%nunocc
     write(funit) jobs%nbasis
     write(funit) jobs%ntasks
     write(funit) jobs%flops
@@ -3295,7 +3295,7 @@ retval=0
        call read_64bit_to_32bit(funit,njobs,jobs%jobsdone)
        call read_64bit_to_32bit(funit,njobs,jobs%nslaves)
        call read_64bit_to_32bit(funit,njobs,jobs%nocc)
-       call read_64bit_to_32bit(funit,njobs,jobs%nvirt)
+       call read_64bit_to_32bit(funit,njobs,jobs%nunocc)
        call read_64bit_to_32bit(funit,njobs,jobs%nbasis)
        call read_64bit_to_32bit(funit,njobs,jobs%ntasks)
     elseif(DECinfo%convert32to64) then
@@ -3307,7 +3307,7 @@ retval=0
        call read_32bit_to_64bit(funit,njobs,jobs%jobsdone)
        call read_32bit_to_64bit(funit,njobs,jobs%nslaves)
        call read_32bit_to_64bit(funit,njobs,jobs%nocc)
-       call read_32bit_to_64bit(funit,njobs,jobs%nvirt)
+       call read_32bit_to_64bit(funit,njobs,jobs%nunocc)
        call read_32bit_to_64bit(funit,njobs,jobs%nbasis)
        call read_32bit_to_64bit(funit,njobs,jobs%ntasks)
     else
@@ -3320,7 +3320,7 @@ retval=0
 
        read(funit) jobs%nslaves
        read(funit) jobs%nocc
-       read(funit) jobs%nvirt
+       read(funit) jobs%nunocc
        read(funit) jobs%nbasis
        read(funit) jobs%ntasks
     end if
@@ -3360,7 +3360,7 @@ retval=0
     ! MPI fragment statistics
     call mem_alloc(jobs%nslaves,njobs)
     call mem_alloc(jobs%nocc,njobs)
-    call mem_alloc(jobs%nvirt,njobs)
+    call mem_alloc(jobs%nunocc,njobs)
     call mem_alloc(jobs%nbasis,njobs)
     call mem_alloc(jobs%ntasks,njobs)
     call mem_alloc(jobs%flops,njobs)
@@ -3368,7 +3368,7 @@ retval=0
     call mem_alloc(jobs%load,njobs)
     jobs%nslaves=0
     jobs%nocc=0
-    jobs%nvirt=0
+    jobs%nunocc=0
     jobs%nbasis=0
     jobs%ntasks=0
     jobs%flops=0.0E0_realk
@@ -3418,9 +3418,9 @@ retval=0
        nullify(jobs%nocc)
     end if
 
-    if(associated(jobs%nvirt)) then
-       call mem_dealloc(jobs%nvirt)
-       nullify(jobs%nvirt)
+    if(associated(jobs%nunocc)) then
+       call mem_dealloc(jobs%nunocc)
+       nullify(jobs%nunocc)
     end if
 
     if(associated(jobs%nbasis)) then
@@ -3483,7 +3483,7 @@ retval=0
     jobs%jobsdone(position) = singlejob%jobsdone(1)
     jobs%nslaves(position) = singlejob%nslaves(1)
     jobs%nocc(position) = singlejob%nocc(1)
-    jobs%nvirt(position) = singlejob%nvirt(1)
+    jobs%nunocc(position) = singlejob%nunocc(1)
     jobs%nbasis(position) = singlejob%nbasis(1)
     jobs%ntasks(position) = singlejob%ntasks(1)
     jobs%flops(position) = singlejob%flops(1)

@@ -1771,7 +1771,8 @@ The **DEC and **CC implementations employ massive parallelism and will be highly
 
 \textbf{Special note}: It is highly recommended that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
 
-The **DEC section uses local orbitals by default, while the **CC section uses canonical orbitals by default.
+The **DEC and **CC sections use local orbitals by default, although the orbitals are converted to the (semi-)canonical basis when the MP2
+and CC equations are solved.
 Below keywords for the **DEC section and **CC section and relevant test cases are given. 
 
 \vspace{1 cm}

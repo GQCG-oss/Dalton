@@ -101,7 +101,7 @@ contains
     real(realk), pointer :: X2ijkl(:,:,:,:) 
 
     !> number of AO orbitals
-    integer :: number_basis, nbasis
+    integer :: nbasis
     !> number of occupied MO orbitals in EOS 
     integer :: noccEOS, nunoccEOS, noccfull
     !> number of occupied + virtual MO orbitals in EOS 
@@ -117,7 +117,7 @@ contains
     real(realk) :: X1energy, X2energy, X3energy, X4energy
     real(realk) :: tmp
 
-    nbasis   = MyFragment%number_basis
+    nbasis   = MyFragment%nbasis
     noccEOS  = MyFragment%noccEOS
     nunoccEOS = MyFragment%nunoccEOS
     noccfull = noccEOS
@@ -164,7 +164,7 @@ contains
     ! ***********************************************************
     ! Creating a CoccEOS matrix 
     ! ***********************************************************
-    call mem_alloc(CoccEOS, MyFragment%number_basis, noccEOS)
+    call mem_alloc(CoccEOS, MyFragment%nbasis, noccEOS)
     do i=1, MyFragment%noccEOS
        ix = MyFragment%idxo(i)
        CoccEOS(:,i) = MyFragment%Co(:,ix)
@@ -173,7 +173,7 @@ contains
     ! ***********************************************************
     ! Creating a CocvAOS matrix 
     ! ***********************************************************
-    call mem_alloc(CocvAOS, MyFragment%number_basis, nocvAOS)
+    call mem_alloc(CocvAOS, MyFragment%nbasis, nocvAOS)
      do i=1, MyFragment%noccAOS
        CocvAOS(:,i) = MyFragment%Co(:,i)
     end do
@@ -350,7 +350,7 @@ contains
     real(realk), pointer :: V2ijkl(:,:,:,:) 
 
     !> number of AO orbitals
-    integer :: number_basis, nbasis
+    integer :: nbasis
     !> number of occupied MO orbitals in EOS 
     integer :: noccEOS 
     !> number of occupied + virtual MO orbitals in EOS 
@@ -366,11 +366,11 @@ contains
     real(realk) :: tmp
     logical,pointer :: dopair_occ(:,:)
 
-    nbasis  = PairFragment%number_basis
+    nbasis  = PairFragment%nbasis
     noccEOS = PairFragment%noccEOS
     nocvAOS = PairFragment%noccAOS + PairFragment%nunoccAOS
 
-    call mem_alloc(CoccEOS, Pairfragment%number_basis, noccEOS)
+    call mem_alloc(CoccEOS, Pairfragment%nbasis, noccEOS)
     ! ***********************************************************
     ! Creating a CoccEOS matrix 
     ! ***********************************************************
@@ -379,7 +379,7 @@ contains
        CoccEOS(:,i) = PairFragment%Co(:,ix)
     end do
 
-    call mem_alloc(CocvAOS, PairFragment%number_basis, nocvAOS)
+    call mem_alloc(CocvAOS, PairFragment%nbasis, nocvAOS)
     ! ***********************************************************
     ! Creating a CocvAOS matrix 
     ! ***********************************************************

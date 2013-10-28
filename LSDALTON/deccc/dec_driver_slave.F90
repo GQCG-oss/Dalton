@@ -644,15 +644,15 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      iter=1
      call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
      call get_currently_available_memory(MemFree)
-     call get_max_batch_sizes(scheme,MyFragment%number_basis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
+     call get_max_batch_sizes(scheme,MyFragment%nbasis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
           & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,dummy,(.not.DECinfo%solver_par))
   end if
 
 
   ! Get number of gamma batches
-  call mem_alloc(orb2batchGamma,MyFragment%number_basis)
+  call mem_alloc(orb2batchGamma,MyFragment%nbasis)
   call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
-       & MyFragment%number_basis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
+       & MyFragment%nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
        & batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
   call mem_dealloc(orb2batchGamma)
   call mem_dealloc(batchdimGamma)
@@ -660,9 +660,9 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   call mem_dealloc(batchindexGamma)
 
   ! Get number of alpha batches
-  call mem_alloc(orb2batchAlpha,MyFragment%number_basis)
+  call mem_alloc(orb2batchAlpha,MyFragment%nbasis)
   call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimAlpha,&
-       & MyFragment%number_basis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
+       & MyFragment%nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
        & batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
   call mem_dealloc(orb2batchAlpha)
   call mem_dealloc(batchdimAlpha)

@@ -74,8 +74,8 @@ contains
     ! Print DEC info
     call print_dec_info()
 
-    nOcc = MyMolecule%numocc
-    nUnocc = MyMolecule%numvirt
+    nOcc = MyMolecule%nocc
+    nUnocc = MyMolecule%nunocc
     nBasis = MyMolecule%nbasis
     nAtoms = MyMolecule%natoms
 

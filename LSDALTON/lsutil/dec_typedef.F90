@@ -18,9 +18,14 @@ module dec_typedef_module
 
 
 
+  ! ***************************************************************************************
+  !                         PARAMETERS DEFINING DEC MODELS
+  ! ***************************************************************************************
+  ! Do never ever use hardcoded values of these numbers inside the DEC routines!
 
-  ! MODIFY FOR NEW MODEL
-  !> Specify the parameters for ccModel here. NEVER HARDCODE THE NUMBER
+
+  ! Overall CC model: MODIFY FOR NEW MODEL!
+  ! ---------------------------------------
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
   integer,parameter :: MODEL_CC2    = 2
@@ -29,12 +34,14 @@ module dec_typedef_module
   integer,parameter :: MODEL_RPA    = 5
 
 
-  ! IMPORTANT: Number of possible energies to calculate using the DEC scheme
-  ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
-  ! MODIFY FOR NEW MODEL
-  ! MODIFY FOR NEW CORRECTION
+  ! DEC fragment energies: MODIFY FOR NEW MODEL & MODIFY FOR NEW CORRECTION
+  ! -----------------------------------------------------------------------
+  ! Given a CC model, there are typically more than one DEC fragment energy to consider.
+  ! Parameters defining the fragment energies are given here.
+
+  !> Number of different fragment energies
   integer, parameter :: ndecenergies = 14
-  !> Specify numbers for storing of fragment energies
+  !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2 = 1  ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2 = 2  ! MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTMP2 = 3 ! MP2 virtual partitioning scheme
@@ -76,12 +83,7 @@ module dec_typedef_module
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
      !> Enforce canonical orbitals in calculation 
-     !> (only meaningful for full_molecular_cc or simulate_full)
      logical :: use_canonical
-     !> Default: Full calculation uses canonical orbitals, while DEC calculation uses local orbitals.
-     !> This can be overruled by inpiut keywords (see config_dec_input).
-     !> If the default choice was overruled "user_defined_orbitals" is set to true.
-     logical :: user_defined_orbitals
      !> Simulate full molecular calculation in DEC mode  (debug)
      logical :: simulate_full
      !> How many atoms to use in simulation mode   (debug)
@@ -467,13 +469,13 @@ module dec_typedef_module
      !> Number of auxiliary basis functions
      integer :: nauxbasis
      !> Number of occupied orbitals (core + valence)
-     integer :: numocc
+     integer :: nocc
      !> Number of core orbitals
      integer :: ncore
-     !> Number of valence orbitals (numocc-ncore)
+     !> Number of valence orbitals (nocc-ncore)
      integer :: nval
      !> Number of unoccupied orbitals
-     integer :: numvirt
+     integer :: nunocc
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()
@@ -601,9 +603,9 @@ module dec_typedef_module
      type(decorbital), pointer :: unoccAOSorb(:) => null()
 
      !> Number of atoms (atomic extent)
-     integer :: number_atoms=0
+     integer :: natoms=0
      !> Number of basis functions
-     integer :: number_basis=0
+     integer :: nbasis=0
      !> Atomic indices
      integer, pointer :: atoms_idx(:) => null()
      !> Corresponding basis function indices
@@ -673,8 +675,8 @@ module dec_typedef_module
      !> Index 1: Local,   Index 2: Fragment-adapted
      !> Has fragment-adapted MO coeff been set (not done by default fragment initialization)?
      logical :: FAset
-     real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: number_basis,noccFA
-     real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: number_basis,nunoccFA
+     real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: nbasis,noccFA
+     real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: nbasis,nunoccFA
      !> Eigenvalues for correlation density matrices 
      !> --> only set for atomic fragments (pairfrag=.false.) and when FAset=.true.
      real(realk),pointer :: CDocceival(:) => null()    ! dimension noccFA
@@ -718,8 +720,8 @@ module dec_typedef_module
   type FullMP2grad
      !> Number of occupied orbitals in full molecule
      integer :: nocc
-     !> Number of virtual orbitals in full molecule
-     integer :: nvirt
+     !> Number of unoccupied orbitals in full molecule
+     integer :: nunocc
      !> Number of basis functions in full molecule
      integer :: nbasis
      !> Number of atoms in full molecule
@@ -812,8 +814,8 @@ module dec_typedef_module
      integer :: CentralAtom2
      !> Number of basis functions in fragment
      integer :: nbasis
-     !> Number of virtual AOS orbitals in fragment
-     integer :: nvirt
+     !> Number of unoccupied AOS orbitals in fragment
+     integer :: nunocc
      !> Number of occupied AOS orbitals in fragment (only valence for frozen core)
      integer :: nocc
      !> Number of occupied core+valence AOS orbitals (only different from nocc for frozen core)
@@ -933,8 +935,8 @@ module dec_typedef_module
      integer,pointer:: nslaves(:)
      !> Number of occupied orbitals for given fragment (AOS)
      integer,pointer :: nocc(:)
-     !> Number of virtual orbitals for given fragment (AOS)
-     integer,pointer :: nvirt(:)
+     !> Number of unoccupied orbitals for given fragment (AOS)
+     integer,pointer :: nunocc(:)
      !> Number of basis functions for given fragment
      integer,pointer :: nbasis(:)
      !> Number of MPI tasks used for integral/transformation (nalpha*ngamma)
@@ -959,6 +961,26 @@ module dec_typedef_module
      INTEGER,pointer :: orbindex(:)
      INTEGER :: norbindex
   END TYPE batchTOorb
+
+  !> MO Integral batch info:
+  type MObatchInfo
+
+    !> number of batches:
+    integer :: nPbatch
+    integer :: nRbatch
+    !> dimension of each of the nPbatch:
+    integer, pointer :: Pdims(:) 
+    !> dimension of each of the nRbatch:
+    integer, pointer :: Rdims(:)
+    !> MO index corresponding to the starting point of each batch:
+    integer, pointer :: PStarts(:) 
+    integer, pointer :: RStarts(:) 
+    !> starting index of each batch in the full array:
+    integer, pointer :: PR_index(:) 
+    !> starting index of each batch in the packed array:
+    integer, pointer :: PR_packInd(:) 
+    
+  end type
 
   !> \brief Grid box handling for analyzing orbitals in specific parts of space
   !> for single precision real grid points
