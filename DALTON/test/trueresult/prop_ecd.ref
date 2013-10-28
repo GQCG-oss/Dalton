@@ -42,9 +42,9 @@
        A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
        A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
        L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
@@ -128,35 +128,47 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:38:52 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:02:30 2013
+     Host name              : c10-6.local                             
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_prop_ecd
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /home/arnfinn/release_dalton/DALTON/test/2013-10-21T15_02-testjob-pid-51661
+   2) /home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | arnfinn
+ Host                     | stallo-2.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Fortran compiler         | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/ifort
+ C compiler               | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icpc
+ C++ compiler version     | icpc (ICC) 13.0.1 20121010
+ BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
+                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
+                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
+                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
+                          | mp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
+                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
+                          | nmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 9e5bb7f558e1ee66d0614a37cb4fb8c71086ba4e
+ Configuration time       | 2013-10-15 12:56:50.249803
 
 
    Content of the .dal input file
@@ -333,7 +345,7 @@ Point group: C2
 
   Total number of coordinates:   18
   C#1 / 1 :     1  x   0.0000000000    2  y   0.0000000000    3  z   1.2585575992
-  C#1 / 2 :     4  x   0.0000000000    5  y  -0.0000000000    6  z  -1.2585575992
+  C#1 / 2 :     4  x   0.0000000000    5  y   0.0000000000    6  z  -1.2585575992
   H#1 / 1 :     7  x   0.5377536942    8  y  -1.7212362540    9  z   2.2540237479
   H#1 / 2 :    10  x   0.5377536942   11  y   1.7212362540   12  z  -2.2540237479
   H#3 / 1 :    13  x  -0.1391858880   14  y   1.7884651506   15  z   2.3236809426
@@ -519,8 +531,8 @@ Point group: C2
  Number of two-electron integrals written:      142062 ( 34.8% )
  Megabytes written:                              1.628
 
- >>>> Total CPU  time used in HERMIT:   0.11 seconds
- >>>> Total wall time used in HERMIT:   0.11 seconds
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
+ >>>> Total wall time used in HERMIT:   0.08 seconds
 
 
                         .----------------------------------.
@@ -553,8 +565,8 @@ Point group: C2
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:52 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:02:30 2013
+     Host name              : c10-6.local                             
 
  Title     : C2H4                                                        
 
@@ -602,7 +614,7 @@ Point group: C2
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  16 electrons.
 
@@ -634,18 +646,18 @@ Point group: C2
       Virial theorem: -V/T =      2.000142
 @      MULPOP C#1 _1 -0.35; C#1 _2 -0.35; H#1 _1  0.18; H#1 _2  0.18; H#3 _1  0.17; H#3 _2  0.17; 
  -----------------------------------------------------------------------------
-@  7  -77.9967697480       7.48D-05  -5.00D-08     5   3
+@  7  -77.9967697471       9.75D-05  -4.92D-08     5   3
       Virial theorem: -V/T =      2.000141
 @      MULPOP C#1 _1 -0.35; C#1 _2 -0.35; H#1 _1  0.18; H#1 _2  0.18; H#3 _1  0.17; H#3 _2  0.17; 
  -----------------------------------------------------------------------------
-@  8  -77.9967697490       1.32D-05  -1.07D-09     5   3
-      Virial theorem: -V/T =      2.000142
+@  8  -77.9967697490       1.59D-05  -1.90D-09     5   3
+      Virial theorem: -V/T =      2.000141
 @      MULPOP C#1 _1 -0.35; C#1 _2 -0.35; H#1 _1  0.18; H#1 _2  0.18; H#3 _1  0.17; H#3 _2  0.17; 
  -----------------------------------------------------------------------------
-@  9  -77.9967697491       2.00D-06  -4.30D-11     5   3
+@  9  -77.9967697491       2.84D-06  -5.92D-11     5   3
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -77.996769749089    2.00D-06
+@     Converged SCF energy, gradient:    -77.996769749088    2.84D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -658,20 +670,20 @@ Point group: C2
 
  Sym       Hartree-Fock orbital energies
 
-  1    -11.24502348    -1.04455245    -0.58263596    -0.51456731    -0.36674093
-         0.02596792     0.03820328     0.04981213     0.05607893     0.14971285
+  1    -11.24502322    -1.04455233    -0.58263588    -0.51456725    -0.36674081
+         0.02596792     0.03820328     0.04981213     0.05607893     0.14971284
 
-  2    -11.24335644    -0.78582531    -0.64773776     0.02522219     0.03496341
-         0.04912827     0.07839313     0.11501189
+  2    -11.24335618    -0.78582525    -0.64773770     0.02522219     0.03496341
+         0.04912827     0.07839313     0.11501193
 
     E(LUMO) :     0.02522219 au (symmetry 2)
-  - E(HOMO) :    -0.36674093 au (symmetry 1)
+  - E(HOMO) :    -0.36674081 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.39196312 au
+    gap     :     0.39196300 au
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.022       0.023
+ >>>> CPU and wall time for SCF :       0.055       0.075
 
 
                        .-----------------------------------.
@@ -683,15 +695,15 @@ Point group: C2
 @    Spatial symmetry:            1
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -77.996769749089                 
+@    Final HF energy:             -77.996769749088                 
 @    Nuclear repulsion:            33.252690102091
-@    Electronic energy:          -111.249459851180
+@    Electronic energy:          -111.249459851179
 
-@    Final gradient norm:           0.000001997601
+@    Final gradient norm:           0.000002840360
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:52 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:02:30 2013
+     Host name              : c10-6.local                             
 
  (Only coefficients >0.0100 are printed.)
 
@@ -706,7 +718,7 @@ Point group: C2
    5 C#1 :1s    -0.0001   0.0094  -0.0054  -0.0001  -0.0003  -0.9266   0.0810
    6 C#1 :2px    0.0000   0.0112   0.0448   0.1542   0.4328   0.0051   0.0546
    7 C#1 :2py   -0.0000  -0.0011  -0.0063  -0.3434   0.1475   0.0002  -0.0006
-   8 C#1 :2pz   -0.0006  -0.1330   0.4763  -0.0226  -0.0501   0.0487  -0.0042
+   8 C#1 :2pz   -0.0006  -0.1331   0.4763  -0.0226  -0.0501   0.0487  -0.0042
    9 C#1 :2px   -0.0000   0.0007   0.0085   0.0409   0.2109  -0.0006  -0.0330
   10 C#1 :2py    0.0000   0.0020  -0.0044  -0.1034   0.0152   0.0015  -0.0173
   11 C#1 :2pz    0.0003   0.0251   0.0484  -0.0037  -0.0144  -0.0170   0.0056
@@ -728,7 +740,7 @@ Point group: C2
    1 C#1 :1s     0.7065  -0.1266  -0.0013  -0.0084  -0.0003
    2 C#1 :1s     0.0029   0.2613   0.0015   0.0184   0.0006
    3 C#1 :1s    -0.0012   0.2742   0.0088   0.0169   0.0014
-   4 C#1 :1s     0.0020  -0.1316   0.0070  -0.8797  -0.0160
+   4 C#1 :1s     0.0020  -0.1315   0.0070  -0.8797  -0.0160
    5 C#1 :1s     0.0011  -0.1825  -0.0018  35.7308  -0.2829
    6 C#1 :2px    0.0000   0.0200  -0.0408   0.0021  -0.0098
    7 C#1 :2py   -0.0000  -0.0041   0.3780   0.0010   0.0510
@@ -748,12 +760,12 @@ Point group: C2
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
- >>>> Total wall time used in SIRIUS :      0.03 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.09 seconds
+ >>>> Total wall time used in SIRIUS :      0.12 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:52 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:02:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -800,13 +812,13 @@ Point group: C2
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:52 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:02:30 2013
+     Host name              : c10-6.local                             
   <<<<<<<<<< Output from EXCITA >>>>>>>>>> 
 
 
- Integral transformation: Total CPU and WALL times (sec)       0.043       0.045
- >>>  Time used in EXCITA     is   0.48 seconds
+ Integral transformation: Total CPU and WALL times (sec)       0.072       0.080
+ >>>  Time used in EXCITA     is   0.28 seconds
 
 
    ***************************************************************************
@@ -815,15 +827,15 @@ Point group: C2
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:53 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:02:31 2013
+     Host name              : c10-6.local                             
 
 
                              Molecular geometry (au)
                              -----------------------
 
  C#1 _1     0.0000000000            0.0000000000            1.2585575992
- C#1 _2     0.0000000000           -0.0000000000           -1.2585575992
+ C#1 _2     0.0000000000            0.0000000000           -1.2585575992
  H#1 _1     0.5377536942           -1.7212362540            2.2540237479
  H#1 _2     0.5377536942            1.7212362540           -2.2540237479
  H#3 _1    -0.1391858880            1.7884651506            2.3236809426
@@ -846,11 +858,11 @@ Point group: C2
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1203650006 au
-     Mass-velocity correction:                  -0.1499336468 au
+     Darwin correction:                          0.1203650009 au
+     Mass-velocity correction:                  -0.1499336473 au
 
-     Total relativistic correction:             -0.0295686461 au (0.0379%)
-     Non-relativistic + relativistic energy:   -78.0263383952 au
+     Total relativistic correction:             -0.0295686464 au (0.0379%)
+     Non-relativistic + relativistic energy:   -78.0263383955 au
 
 
 
@@ -859,7 +871,7 @@ Point group: C2
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.164354           0.417747           1.393453
+              0.164355           0.417748           1.393457
 
 
                              Dipole moment components
@@ -867,7 +879,7 @@ Point group: C2
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.16435423         0.41774676         1.39345319
+      x      0.16435465         0.41774782         1.39345674
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -883,23 +895,23 @@ Point group: C2
                  Sym.   Mode   Frequency    Frequency
                 ex. st.  No.      (au)         (eV)
                ----------------------------------------
-                   1      1     0.251717     6.849564
-                   1      2     0.286551     7.797453
-                   1      3     0.309268     8.415619
-                   1      4     0.315071     8.573525
-                   1      5     0.357947     9.740222
-                   1      6     0.368135    10.017472
-                   1      7     0.380247    10.347038
-                   1      8     0.390742    10.632635
+                   1      1     0.251717     6.849561
+                   1      2     0.286551     7.797450
+                   1      3     0.309268     8.415616
+                   1      4     0.315071     8.573522
+                   1      5     0.357946     9.740220
+                   1      6     0.368135    10.017469
+                   1      7     0.380247    10.347035
+                   1      8     0.390742    10.632632
                ----------------------------------------
-                   2      1     0.248586     6.764378
-                   2      2     0.273424     7.440247
-                   2      3     0.279423     7.603474
-                   2      4     0.323006     8.789438
-                   2      5     0.335031     9.116656
-                   2      6     0.341675     9.297436
-                   2      7     0.349583     9.512649
-                   2      8     0.358428     9.753336
+                   2      1     0.248586     6.764377
+                   2      2     0.273424     7.440244
+                   2      3     0.279422     7.603471
+                   2      4     0.323006     8.789435
+                   2      5     0.335031     9.116653
+                   2      6     0.341674     9.297436
+                   2      7     0.349583     9.512647
+                   2      8     0.358428     9.753335
                ========================================
 
 
@@ -913,17 +925,17 @@ Point group: C2
    1        2     0.286551    -0.0927  0.0000  0.0000   -0.0988  0.0000  0.0000
    1        3     0.309268     0.2739  0.0000  0.0000    0.2567  0.0000  0.0000
    1        4     0.315071     0.0026  0.0000  0.0000   -0.0006  0.0000  0.0000
-   1        5     0.357947     0.2671  0.0000  0.0000    0.1876  0.0000  0.0000
+   1        5     0.357946     0.2671  0.0000  0.0000    0.1876  0.0000  0.0000
    1        6     0.368135     0.1280  0.0000  0.0000    0.1127  0.0000  0.0000
    1        7     0.380247    -0.3745  0.0000  0.0000   -0.3382  0.0000  0.0000
    1        8     0.390742     0.0434  0.0000  0.0000    0.0469  0.0000  0.0000
  ------------------------------------------------------------------------------
    2        1     0.248586     0.0000 -0.0040 -1.0926    0.0000 -0.0010 -1.3159
    2        2     0.273424     0.0000  0.0180 -0.1681    0.0000  0.0283 -0.2076
-   2        3     0.279423     0.0000  0.2249 -0.0861    0.0000  0.2290 -0.0900
+   2        3     0.279422     0.0000  0.2249 -0.0861    0.0000  0.2290 -0.0900
    2        4     0.323006     0.0000  0.0117 -0.0036    0.0000  0.0071  0.0126
    2        5     0.335031     0.0000 -0.1674  0.0595    0.0000 -0.1739  0.0732
-   2        6     0.341675     0.0000 -0.0482  0.4587    0.0000 -0.0320  0.5332
+   2        6     0.341674     0.0000 -0.0482  0.4587    0.0000 -0.0320  0.5332
    2        7     0.349583     0.0000 -0.0461  0.5185    0.0000 -0.0360  0.6223
    2        8     0.358428     0.0000  0.1050 -0.2896    0.0000  0.1119 -0.2785
  ------------------------------------------------------------------------------
@@ -937,23 +949,23 @@ Point group: C2
  Symm.  Mode   Frequency         Conventional                  London
  ex.st.  No.     (eV)        x        y       z         x        y        z
  ==============================================================================
-   1      1     6.8496   -0.15514 -0.00000 -0.00000  -0.16512 -0.00000 -0.00000
-   1      2     7.7975    0.00491 -0.00000 -0.00000   0.00488 -0.00000 -0.00000
-   1      3     8.4156   -0.12729 -0.00000 -0.00000  -0.13643 -0.00000 -0.00000
-   1      4     8.5735   -0.00127 -0.00000 -0.00000  -0.00095 -0.00000 -0.00000
-   1      5     9.7402   -0.10834 -0.00000 -0.00000  -0.11995 -0.00000 -0.00000
-   1      6    10.0175   -0.01278 -0.00000 -0.00000  -0.01371 -0.00000 -0.00000
-   1      7    10.3470    0.20417 -0.00000 -0.00000   0.22464 -0.00000 -0.00000
-   1      8    10.6326   -0.01882 -0.00000 -0.00000  -0.01857 -0.00000 -0.00000
+   1      1     6.8496   -0.15514  0.00000  0.00000  -0.16512  0.00000  0.00000
+   1      2     7.7975    0.00491  0.00000  0.00000   0.00488  0.00000  0.00000
+   1      3     8.4156   -0.12729  0.00000  0.00000  -0.13643  0.00000  0.00000
+   1      4     8.5735   -0.00127  0.00000  0.00000  -0.00095  0.00000  0.00000
+   1      5     9.7402   -0.10834  0.00000  0.00000  -0.11995  0.00000  0.00000
+   1      6    10.0175   -0.01278  0.00000  0.00000  -0.01371  0.00000  0.00000
+   1      7    10.3470    0.20417  0.00000  0.00000   0.22464  0.00000  0.00000
+   1      8    10.6326   -0.01882  0.00000  0.00000  -0.01857  0.00000  0.00000
  ------------------------------------------------------------------------------
-   2      1     6.7644   -0.00000  0.07575  0.25472  -0.00000  0.08428  0.27576
-   2      2     7.4402   -0.00000 -0.00992  0.02624  -0.00000 -0.01159  0.02579
-   2      3     7.6035   -0.00000  0.00450 -0.00510  -0.00000  0.00796 -0.00544
-   2      4     8.7894   -0.00000 -0.02768 -0.15486  -0.00000 -0.02495 -0.16515
-   2      5     9.1167   -0.00000 -0.06557  0.03428  -0.00000 -0.02756  0.03597
-   2      6     9.2974   -0.00000 -0.12259  0.53644  -0.00000 -0.13988  0.55973
-   2      7     9.5126   -0.00000 -0.11737  0.26733  -0.00000 -0.12610  0.28446
-   2      8     9.7533   -0.00000 -0.83770 -0.10357  -0.00000 -0.89516 -0.10794
+   2      1     6.7644    0.00000  0.07575  0.25472   0.00000  0.08428  0.27576
+   2      2     7.4402    0.00000 -0.00992  0.02624   0.00000 -0.01159  0.02579
+   2      3     7.6035    0.00000  0.00450 -0.00510   0.00000  0.00796 -0.00544
+   2      4     8.7894    0.00000 -0.02768 -0.15486   0.00000 -0.02495 -0.16515
+   2      5     9.1167    0.00000 -0.06557  0.03428   0.00000 -0.02756  0.03597
+   2      6     9.2974    0.00000 -0.12259  0.53643   0.00000 -0.13988  0.55973
+   2      7     9.5126    0.00000 -0.11737  0.26733   0.00000 -0.12610  0.28446
+   2      8     9.7533    0.00000 -0.83770 -0.10357   0.00000 -0.89516 -0.10794
  ------------------------------------------------------------------------------
 
 
@@ -980,8 +992,8 @@ Point group: C2
    2      3     7.6035        0.0108   0.0113       0.684    0.702    1.090
    2      4     8.7894        0.0000   0.0000       0.110   -1.010   -1.062
    2      5     9.1167        0.0071   0.0080       6.137    6.558    3.501
-   2      6     9.2974        0.0485   0.0650     118.800  136.693  142.810
-   2      7     9.5126        0.0632   0.0906      67.902   80.420   85.594
+   2      6     9.2974        0.0485   0.0650     118.799  136.692  142.809
+   2      7     9.5126        0.0632   0.0906      67.903   80.422   85.596
    2      8     9.7533        0.0227   0.0215     -27.336  -30.587  -33.045
  --------------------------------------------------------------------------
 
@@ -1040,17 +1052,17 @@ Point group: C2
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.74 seconds
- >>>> Total wall time used in ABACUS:   0.75 seconds
+ >>>> Total CPU  time used in ABACUS:   0.44 seconds
+ >>>> Total wall time used in ABACUS:   0.53 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.89 seconds
- >>>> Total wall time used in DALTON:   0.90 seconds
+ >>>> Total CPU  time used in DALTON:   0.62 seconds
+ >>>> Total wall time used in DALTON:   0.77 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:53 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:02:31 2013
+     Host name              : c10-6.local                             

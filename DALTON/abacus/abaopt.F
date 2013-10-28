@@ -2466,7 +2466,7 @@ C        *** orbitals. tar 01-2001                       ***
 C
          IF (NMWALK.AND.DOCCSD) THEN
             KWORD = 2
-            KLAST = KWORD + 80*KMLINE
+            KLAST = KWORD + LEN_MLINE*KMLINE
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded ' //
      &                                       'in fndexs.')
             CALL FNDEXS(WORK(KWORD),IPRINT)
@@ -7121,7 +7121,7 @@ C
       CNVGRD = .FALSE.
       CNVSTP = .FALSE.
       ICOOR = NCART
-      IF (REDINT .OR. DELINT) ICOOR = IINTCR
+      IF (REDINT .OR. DELINT) ICOOR = ICRTCR
       IF (CONOPT) GNRM = SQRT(DDOT(IINTCR,GRDINT,1,GRDINT,1))
 C
 C     First, the convergence criteria of Baker.
@@ -7807,10 +7807,16 @@ C
       IF (ISCL .GE. 2) ELMMX = ELMMX/SCLVEC(1)
       DO 10 I = 2, IDIM
          ELM = ABS(VEC(I))
+
+         ! this is a workaround for a problem that zero elm
+         ! is divided by zero SCLVEC(I)
+         if (elm < tiny(0.0d0)) cycle
+
          IF (ISCL .GE. 1) ELM = ELM/SCLVEC(I)
          IF (ISCL .GE. 2) ELM = ELM/SCLVEC(I)
          IF (ELM .GT. ELMMX) ELMMX = ELM
  10   CONTINUE
+
       RETURN
       END
 

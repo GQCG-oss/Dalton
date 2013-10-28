@@ -42,9 +42,9 @@
        A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
        A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
        L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
@@ -128,35 +128,47 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:38:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:03:15 2013
+     Host name              : c10-6.local                             
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_prop_nolondon
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /home/arnfinn/release_dalton/DALTON/test/2013-10-21T15_03-testjob-pid-51944
+   2) /home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | arnfinn
+ Host                     | stallo-2.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Fortran compiler         | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/ifort
+ C compiler               | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icpc
+ C++ compiler version     | icpc (ICC) 13.0.1 20121010
+ BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
+                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
+                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
+                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
+                          | mp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
+                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
+                          | nmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 9e5bb7f558e1ee66d0614a37cb4fb8c71086ba4e
+ Configuration time       | 2013-10-15 12:56:50.249803
 
 
    Content of the .dal input file
@@ -520,9 +532,9 @@ Point group: C2v
  Number of two-electron integrals written:       75206 ( 24.7% )
  Megabytes written:                              0.866
 
- >>>  Time used in TWOINT     is   0.13 seconds
- >>>> Total CPU  time used in HERMIT:   0.13 seconds
- >>>> Total wall time used in HERMIT:   0.14 seconds
+ >>>  Time used in TWOINT     is   0.11 seconds
+ >>>> Total CPU  time used in HERMIT:   0.12 seconds
+ >>>> Total wall time used in HERMIT:   0.13 seconds
 
 
                         .----------------------------------.
@@ -556,8 +568,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:03:15 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      Calculation of no-London shielding constants through ABACUS             
@@ -607,7 +619,7 @@ Point group: C2v
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  10 electrons.
 
@@ -639,31 +651,31 @@ Point group: C2v
       Virial theorem: -V/T =      2.000774
 @      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-@  7  -76.0607842024       3.22D-04  -3.34D-07     3   1   1   0
+@  7  -76.0607841970       3.68D-04  -3.28D-07     3   1   1   0
+      Virial theorem: -V/T =      2.000808
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+@  8  -76.0607842183       6.03D-05  -2.13D-08     3   1   1   0
       Virial theorem: -V/T =      2.000809
 @      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
-@  8  -76.0607842185       4.12D-05  -1.61D-08     3   1   1   0
-      Virial theorem: -V/T =      2.000809
-@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
- -----------------------------------------------------------------------------
-@  9  -76.0607842187       7.64D-06  -1.83D-10     3   1   1   0
+@  9  -76.0607842187       9.75D-06  -3.71D-10     3   1   1   0
       Virial theorem: -V/T =      2.000810
 @      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
-@ 10  -76.0607842187       1.38D-06  -8.58D-12     3   1   1   0
+@ 10  -76.0607842187       2.86D-06  -1.21D-11     3   1   1   0
       Virial theorem: -V/T =      2.000810
 @      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
-@ 11  -76.0607842187       2.21D-07  -3.41D-13     3   1   1   0
+@ 11  -76.0607842187       6.12D-07  -1.36D-12     3   1   1   0
 
 @ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:    -76.060784218682    2.21D-07
+@     Converged SCF energy, gradient:    -76.060784218682    6.12D-07
     - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.014       0.014
+ >>>> CPU and wall time for SCF :       0.036       0.056
 
 
  >>>>> Output from SIRIUS MP2 module <<<<<
@@ -683,39 +695,39 @@ Point group: C2v
 
  Hartree-Fock orbital energies, symmetry 1, number of occupied SCF orbitals is    3
 
-       -20.56238099    -1.35070292    -0.58322553     0.13488236     0.46314710
-         0.61795220     0.96390625     1.24752064     1.69113078     2.01359247
-         2.63200618     3.49717243     3.65989625     4.20360190     6.56227717
-         7.19443823    20.57248744    23.27802619    94.32736807
+       -20.56238099    -1.35070291    -0.58322550     0.13488237     0.46314711
+         0.61795221     0.96390625     1.24752064     1.69113078     2.01359249
+         2.63200619     3.49717244     3.65989626     4.20360191     6.56227717
+         7.19443823    20.57248745    23.27802619    94.32736808
 
  Hartree-Fock orbital energies, symmetry 2, number of occupied SCF orbitals is    1
 
-        -0.50745990     0.47365390     1.30684668     2.03588081     3.06713277
-         6.59507911    23.12059735
+        -0.50745991     0.47365389     1.30684668     2.03588081     3.06713278
+         6.59507911    23.12059736
 
  Hartree-Fock orbital energies, symmetry 3, number of occupied SCF orbitals is    1
 
-        -0.71596731     0.19111002     0.50061393     0.67340607     1.74928910
-         2.12363466     2.66276194     3.17158895     4.26606044     6.89290269
-        23.35853256
+        -0.71596732     0.19111002     0.50061393     0.67340606     1.74928911
+         2.12363466     2.66276195     3.17158896     4.26606045     6.89290270
+        23.35853258
 
  Hartree-Fock orbital energies, symmetry 4, number of occupied SCF orbitals is    0
 
-         1.26154317     2.98152149
+         1.26154318     2.98152150
 
-    E(LUMO) :     0.13488236   (in symmetry 1)
-  - E(HOMO) :    -0.50745990   (in symmetry 2)
+    E(LUMO) :     0.13488237   (in symmetry 1)
+  - E(HOMO) :    -0.50745991   (in symmetry 2)
   --------------------------
-    gap     :     0.64234226
+    gap     :     0.64234228
 
- Integral transformation: Total CPU and WALL times (sec)       0.017       0.018
+ Integral transformation: Total CPU and WALL times (sec)       0.033       0.038
 
  MP2 move   0.117186 electrons to unoccupied HF orbitals
 
 
 @   Hartree-Fock total energy   :           -76.0607842187
-@   + MP2 contribution          :            -0.2501840646
-@   = MP2 second order energy   :           -76.3109682833
+@   + MP2 contribution          :            -0.2501840641
+@   = MP2 second order energy   :           -76.3109682828
 
  Natural orbital occupation numbers, symmetry 1
  Sum =     5.99958557; RHF =     6.00000000; Difference =    -0.00041443
@@ -728,7 +740,7 @@ Point group: C2v
  Natural orbital occupation numbers, symmetry 2
  Sum =     1.99505853; RHF =     2.00000000; Difference =    -0.00494147
 
-         1.96805137     0.02040443     0.00557570     0.00058235     0.00030663
+         1.96805138     0.02040443     0.00557570     0.00058235     0.00030663
          0.00011477     0.00002328
 
  Natural orbital occupation numbers, symmetry 3
@@ -743,9 +755,9 @@ Point group: C2v
 
          0.00616699     0.00036350
 
- Time used for MP2 natural orbitals :       0.022 CPU seconds,       0.022 wall seconds.
+ Time used for MP2 natural orbitals :       0.038 CPU seconds,       0.046 wall seconds.
 
- >>>> CPU and wall time for MP2 :       0.022       0.022
+ >>>> CPU and wall time for MP2 :       0.038       0.046
 
 
                        .-----------------------------------.
@@ -761,11 +773,11 @@ Point group: C2v
 @    Nuclear repulsion:             9.183706230245
 @    Electronic energy:           -85.244490448927
 
-@    Final gradient norm:           0.000000220760
+@    Final gradient norm:           0.000000611571
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:03:16 2013
+     Host name              : c10-6.local                             
 
 
  INFO: Sorry, plot of MOs with Molden is only implemented for spherical GTOs
@@ -833,12 +845,12 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      0.04 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.09 seconds
+ >>>> Total wall time used in SIRIUS :      0.12 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:03:16 2013
+     Host name              : c10-6.local                             
 
  NOTE:    1 informational messages have been issued.
  Check output, result, and error files for "INFO".
@@ -886,7 +898,7 @@ Point group: C2v
 
  Old direct access AO file found, SORTA skipped.
 
- Integral transformation: Total CPU and WALL times (sec)       0.041       0.041
+ Integral transformation: Total CPU and WALL times (sec)       0.056       0.062
 
  Center of mass dipole origin  :    0.000000    0.000000   -0.000015
 
@@ -899,8 +911,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:03:16 2013
+     Host name              : c10-6.local                             
 
  TRACTL_1: Integral transformation abandoned,
            the required MO integrals are already available.
@@ -912,8 +924,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:03:16 2013
+     Host name              : c10-6.local                             
 
 
                              Molecular geometry (au)
@@ -952,7 +964,7 @@ Point group: C2v
   ---------------------------------------------------------------
 
   Isotropic magnetizability:      -3.0371   -239.6605    -14.4327
-  Diamagnetic contribution:       -3.3113   -261.2962    -15.7356
+  Diamagnetic contribution:       -3.3113   -261.2961    -15.7356
   Paramagnetic contribution:       0.2742     21.6357      1.3029
   1st anisotropy:                 -0.0377     -2.9713     -0.1789
   2nd anisotropy:                  0.0626      4.9428      0.2977
@@ -963,8 +975,8 @@ Point group: C2v
   --------------------------------------------
 
   khi_aa      -3.0538   -240.9748    -14.5118      1.0000    0.0000    0.0000
-  khi_bb      -2.9954   -236.3653    -14.2343      0.0000    1.0000    0.0000
-  khi_cc      -3.0622   -241.6414    -14.5520      0.0000    0.0000    1.0000
+  khi_bb      -2.9954   -236.3653    -14.2342      0.0000    1.0000    0.0000
+  khi_cc      -3.0622   -241.6413    -14.5520      0.0000    0.0000    1.0000
 
 
                         Total magnetizability tensor (au)
@@ -972,9 +984,9 @@ Point group: C2v
 
                        Bx                  By                  Bz
 
-  Bx        -3.053778606738     -0.000000000000     -0.000000000000
-  By        -0.000000000000     -2.995363912271     -0.000000000000
-  Bz        -0.000000000000     -0.000000000000     -3.062225720384
+  Bx        -3.053778750888      0.000000000000      0.000000000000
+  By         0.000000000000     -2.995363793349      0.000000000000
+  Bz         0.000000000000      0.000000000000     -3.062225666376
 
 
 
@@ -983,9 +995,9 @@ Point group: C2v
 
                        Bx                  By                  Bz
 
-  Bx        -3.509385997376      0.000000000000      0.000000000000
-  By         0.000000000000     -3.123016266801      0.000000000000
-  Bz         0.000000000000      0.000000000000     -3.301507604046
+  Bx        -3.509386014932      0.000000000000      0.000000000000
+  By         0.000000000000     -3.123016256278      0.000000000000
+  Bz         0.000000000000      0.000000000000     -3.301507491499
 
 
 
@@ -994,9 +1006,9 @@ Point group: C2v
 
                        Bx                  By                  Bz
 
-  Bx         0.455607390638     -0.000000000000     -0.000000000000
-  By        -0.000000000000      0.127652354530     -0.000000000000
-  Bz        -0.000000000000     -0.000000000000      0.239281883662
+  Bx         0.455607264044      0.000000000000      0.000000000000
+  By         0.000000000000      0.127652462929      0.000000000000
+  Bz         0.000000000000      0.000000000000      0.239281825123
 
 
 
@@ -1019,21 +1031,21 @@ Point group: C2v
   Molecular rotational g-tensor
   -----------------------------
 
-  Isotropic g-tensor       :       0.72231053
+  Isotropic g-tensor       :       0.72231051
   Nuclear contribution     :       0.97453340
   Diamagnetic contribution :       0.00000000
-  Electronic contribution  :      -0.25222287
-  1st anisotropy:                 -0.01765609
-  2nd anisotropy:                  0.06561649
+  Electronic contribution  :      -0.25222289
+  1st anisotropy:                 -0.01765636
+  2nd anisotropy:                  0.06561661
 
 
 
   Molecular rotational g-tensor in principal axis system (a.u.):
   --------------------------------------------------------------
 
-   A            0.71053980      0.00000000      0.00000000
-   B            0.00000000      0.76605486      0.00000000
-   C            0.00000000      0.00000000      0.69033693
+   A            0.71053960      0.00000000      0.00000000
+   B            0.00000000      0.76605491      0.00000000
+   C            0.00000000      0.00000000      0.69033701
 
 
   Nuclear contribution in principal axis system (a.u.):
@@ -1047,9 +1059,9 @@ Point group: C2v
   Electronic contribution in principal axis system (a.u.):
   --------------------------------------------------------
 
-   A           -0.23344449      0.00000000      0.00000000
-   B            0.00000000     -0.23340087      0.00000000
-   C            0.00000000      0.00000000     -0.28982325
+   A           -0.23344469      0.00000000      0.00000000
+   B            0.00000000     -0.23340081      0.00000000
+   C            0.00000000      0.00000000     -0.28982317
 
 
   Diamagnetic contribution in principal axis system (a.u.):
@@ -1073,22 +1085,22 @@ Point group: C2v
     Symmetry 2
                        By
 
-        O    y   355.21827469
-        H    y    78.24710807
-        H    z   -15.20511996
+        O    y   355.21816974
+        H    y    78.24711272
+        H    z   -15.20510790
 
     Symmetry 3
                        Bx
 
-        O    x   297.16194985
-        H    x    46.81780501
+        O    x   297.16200295
+        H    x    46.81780565
 
     Symmetry 4
                        Bz
 
-        O    z   304.75557428
-        H    y   -19.14051108
-        H    z    59.89596133
+        O    z   304.75560836
+        H    y   -19.14051395
+        H    z    59.89596029
 
 
 
@@ -1098,10 +1110,10 @@ Point group: C2v
 
 
   Shielding constant:    319.0453 ppm
-  Anisotropy:             54.2595 ppm
+  Anisotropy:             54.2594 ppm
   Asymmetry:               0.2099    
 
-  S parameter:            54.6566 ppm
+  S parameter:            54.6564 ppm
   A parameter:             0.0000 ppm
 
 
@@ -1112,9 +1124,9 @@ Point group: C2v
  String on input: "O       "
                     Bx             By             Bz
 
-  O      x   297.16194985     0.00000000     0.00000000
-  O      y     0.00000000   355.21827469     0.00000000
-  O      z     0.00000000     0.00000000   304.75557428
+  O      x   297.16200295     0.00000000     0.00000000
+  O      y     0.00000000   355.21816974     0.00000000
+  O      z     0.00000000     0.00000000   304.75560836
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1123,10 +1135,10 @@ Point group: C2v
                  Bx         By         Bz            Bx         By         Bz
 
   O      x   415.6127     0.0000     0.0000     -118.4507     0.0000     0.0000
-  O      y     0.0000   413.6581     0.0000        0.0000   -58.4398     0.0000
+  O      y     0.0000   413.6581     0.0000        0.0000   -58.4399     0.0000
   O      z     0.0000     0.0000   415.5063        0.0000     0.0000  -110.7507
 
-  Diamagnetic contribution:    414.925692         Paramagnetic:     -95.880426
+  Diamagnetic contribution:    414.925692         Paramagnetic:     -95.880432
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1135,16 +1147,16 @@ Point group: C2v
                  Bx         By         Bz            Bx         By         Bz
 
   O      x     0.0000     0.0000     0.0000      -21.8833     0.0000     0.0000
-  O      y     0.0000     0.0000     0.0000        0.0000    36.1730     0.0000
+  O      y     0.0000     0.0000     0.0000        0.0000    36.1729     0.0000
   O      z     0.0000     0.0000     0.0000        0.0000     0.0000   -14.2897
 
 
   Principal values and axes:
   --------------------------
 
-  O         297.161950  =  319.05  -  21.88:     1.000000  0.000000  0.000000
-  O         304.755574  =  319.05  -  14.29:     0.000000  0.000000  1.000000
-  O         355.218275  =  319.05  +  36.17:     0.000000  1.000000  0.000000
+  O         297.162003  =  319.05  -  21.88:     1.000000  0.000000  0.000000
+  O         304.755608  =  319.05  -  14.29:     0.000000  0.000000  1.000000
+  O         355.218170  =  319.05  +  36.17:     0.000000  1.000000  0.000000
 
 
   Chemical shielding for H   _1:
@@ -1156,7 +1168,7 @@ Point group: C2v
   Asymmetry:               0.1035    
 
   S parameter:            20.2022 ppm
-  A parameter:             0.9838 ppm
+  A parameter:             0.9839 ppm
 
 
   Total shielding tensor (ppm):
@@ -1166,9 +1178,9 @@ Point group: C2v
  String on input: "H__1    "
                     Bx             By             Bz
 
-  H   _1 x    23.40890251     0.00000000     0.00000000
-  H   _1 y     0.00000000    39.12355404    -9.57025554
-  H   _1 z     0.00000000    -7.60255998    29.94798067
+  H   _1 x    23.40890283     0.00000000     0.00000000
+  H   _1 y     0.00000000    39.12355636    -9.57025698
+  H   _1 z     0.00000000    -7.60255395    29.94798015
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1189,16 +1201,16 @@ Point group: C2v
                  Bx         By         Bz            Bx         By         Bz
 
   H   _1 x     0.0000     0.0000     0.0000       -7.4179     0.0000     0.0000
-  H   _1 y     0.0000     0.0000    -0.9838        0.0000     8.2967    -8.5864
-  H   _1 z     0.0000     0.9838     0.0000        0.0000    -8.5864    -0.8788
+  H   _1 y     0.0000     0.0000    -0.9839        0.0000     8.2967    -8.5864
+  H   _1 z     0.0000     0.9839     0.0000        0.0000    -8.5864    -0.8788
 
 
   Principal values and axes:
   --------------------------
 
   H   _1     23.408903  =   30.83  -   7.42:     1.000000  0.000000  0.000000
-  H   _1     24.800564  =   30.83  -   6.03:     0.000000  0.514170  0.857688
-  H   _1     44.270971  =   30.83  +  13.44:     0.000000  0.857688 -0.514170
+  H   _1     24.800566  =   30.83  -   6.03:     0.000000  0.514170  0.857688
+  H   _1     44.270970  =   30.83  +  13.44:     0.000000  0.857688 -0.514170
 
 
   Chemical shielding for H   _2:
@@ -1210,7 +1222,7 @@ Point group: C2v
   Asymmetry:               0.1035    
 
   S parameter:            20.2022 ppm
-  A parameter:             0.9838 ppm
+  A parameter:             0.9839 ppm
 
 
   Total shielding tensor (ppm):
@@ -1220,9 +1232,9 @@ Point group: C2v
  String on input: "H__2    "
                     Bx             By             Bz
 
-  H   _2 x    23.40890251     0.00000000     0.00000000
-  H   _2 y     0.00000000    39.12355404     9.57025554
-  H   _2 z     0.00000000     7.60255998    29.94798067
+  H   _2 x    23.40890283     0.00000000     0.00000000
+  H   _2 y     0.00000000    39.12355636     9.57025698
+  H   _2 z     0.00000000     7.60255395    29.94798015
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1243,16 +1255,16 @@ Point group: C2v
                  Bx         By         Bz            Bx         By         Bz
 
   H   _2 x     0.0000     0.0000     0.0000       -7.4179     0.0000     0.0000
-  H   _2 y     0.0000     0.0000     0.9838        0.0000     8.2967     8.5864
-  H   _2 z     0.0000    -0.9838     0.0000        0.0000     8.5864    -0.8788
+  H   _2 y     0.0000     0.0000     0.9839        0.0000     8.2967     8.5864
+  H   _2 z     0.0000    -0.9839     0.0000        0.0000     8.5864    -0.8788
 
 
   Principal values and axes:
   --------------------------
 
   H   _2     23.408903  =   30.83  -   7.42:     1.000000  0.000000  0.000000
-  H   _2     24.800564  =   30.83  -   6.03:     0.000000 -0.514170  0.857688
-  H   _2     44.270971  =   30.83  +  13.44:     0.000000  0.857688  0.514170
+  H   _2     24.800566  =   30.83  -   6.03:     0.000000 -0.514170  0.857688
+  H   _2     44.270970  =   30.83  +  13.44:     0.000000  0.857688  0.514170
 
 
                          +--------------------------------+
@@ -1266,7 +1278,7 @@ Point group: C2v
 
 @1 atom   shielding       dia      para     skew      span     (aniso     asym)
 @1 ----------------------------------------------------------------------------
-@1 O       319.0453  414.9257  -95.8804    0.7384   58.0563   54.2595    0.2099
+@1 O       319.0453  414.9257  -95.8804    0.7384   58.0562   54.2594    0.2099
 @1 H   _1   30.8268   24.8735    5.9533    0.8666   20.8621   20.1662    0.1035
 @1 H   _2   30.8268   24.8735    5.9533    0.8666   20.8621   20.1662    0.1035
 
@@ -1283,9 +1295,9 @@ Point group: C2v
 
 @2 atom   shielding       dia      para     aniso      asym        S        A
 @2 ----------------------------------------------------------------------------
-@2 O       319.0453  414.9257  -95.8804   54.2595    0.2099   54.6566    0.0000
-@2 H   _1   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9838
-@2 H   _2   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9838
+@2 O       319.0453  414.9257  -95.8804   54.2594    0.2099   54.6564    0.0000
+@2 H   _1   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9839
+@2 H   _2   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9839
 
 
 
@@ -1330,17 +1342,17 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.18 seconds
- >>>> Total wall time used in ABACUS:   0.18 seconds
+ >>>> Total CPU  time used in ABACUS:   0.42 seconds
+ >>>> Total wall time used in ABACUS:   0.56 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.40 seconds
- >>>> Total wall time used in DALTON:   0.40 seconds
+ >>>> Total CPU  time used in DALTON:   0.71 seconds
+ >>>> Total wall time used in DALTON:   0.91 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:54 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 15:03:16 2013
+     Host name              : c10-6.local                             
