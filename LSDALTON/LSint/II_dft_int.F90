@@ -2461,7 +2461,7 @@ TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
    RETURN
 END SUBROUTINE II_DFTDISP
 
-SUBROUTINE II_DFTsetFunc(Func,hfweight)
+SUBROUTINE II_DFTsetFunc(Func,hfweight,useXCfun,lupri)
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
@@ -2470,9 +2470,16 @@ use lsmpi_type
 implicit none
 Character(len=80),intent(IN) :: Func
 Real(realk),intent(INOUT)    :: hfweight
+logical,intent(IN)           :: useXCfun
+integer,intent(IN)           :: lupri
 integer                      :: ierror
-CALL DFTsetFunc(Func,hfweight,ierror)
-IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
+IF(.NOT.useXCfun)THEN
+   CALL DFTsetFunc(Func,hfweight,ierror)
+   IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
+ELSE
+   call xcfun_host_init(Func,hfweight,lupri)
+ENDIF
+
 #ifdef VAR_MPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN

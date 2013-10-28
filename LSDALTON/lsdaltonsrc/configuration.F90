@@ -357,12 +357,8 @@ DO
                      !different from zero. 
                      !note the 40 is harcoded in DFTsetFunc routine in general.c 
                      config%integral%dft%dftfunc = WORD
-                     IF(.NOT.USEXCFUN)THEN
-                        CALL II_DFTsetFunc(WORD,hfweight)
-                     ELSE
-!                        CALL II_DFTsetFunc(WORD,hfweight)
-                        call xcfun_host_init(WORD,hfweight,lupri)
-                     ENDIF
+                     
+                     CALL II_DFTsetFunc(WORD,hfweight,USEXCFUN,lupri)
                      config%integral%exchangeFactor = hfweight
                      config%integral%dft%HFexchangeFac = hfweight
 #ifdef BUILD_CGTODIFF

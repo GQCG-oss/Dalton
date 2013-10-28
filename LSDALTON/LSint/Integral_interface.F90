@@ -5308,7 +5308,8 @@ call mat_zero(F2(1))
 !Subtract XC-correction
 
 !****Calculation of Level 2 XC matrix from level 2 Density matrix starts here
-call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight) !Here hfweight is only used as a dummy variable
+call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight,&
+     &             setting%scheme%dft%xcfun,lupri) !Here hfweight is only used as a dummy variable
 !Print the functional used at this stage 
 !call DFTREPORT(lupri) 
 !use this call to add a functional instead of replacing it. 
@@ -5348,7 +5349,8 @@ CALL mat_daxpy(GGAXfactor,F3(1),dXC)
 EdXC = (EX3(1)-EX2(1))*GGAXfactor
 
 !Restore dft functional to original
-IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
+IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),&
+       &                               hfweight,setting%scheme%dft%xcfun,lupri)
          
 !the remainder =================================================
 !call mat_zero(TMPF)
@@ -5671,7 +5673,8 @@ DO idmat=1,ndrhs
    
    ! XC-correction
    !****Calculation of Level 2 XC gradient from level 2 Density matrix starts here
-   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
+   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight,&
+     &                setting%scheme%dft%xcfun,lupri)
    
    !choose the ADMM Level 2 grid
    setting%scheme%dft%igrid = Grid_ADMML2
@@ -5753,7 +5756,8 @@ ENDDO !idmat
 call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)
 
 !Restore dft functional to original
-IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
+IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),&
+      &                                hfweight,setting%scheme%dft%xcfun,lupri)
 !
 CONTAINS
    SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
