@@ -50,7 +50,7 @@ DFT%CS00ZND1=0.2332E0_realk
 DFT%CS00ZND2=0.315E0_realk
 !DFT%CS00ZND2=0.0116E0_realk
 DFT%HFexchangeFac=0.0E0_realk
-DFT%XCFUN=.FALSE.
+DFT%XCFUN=.TRUE.
 call init_gridObject(dft,DFT%gridObject)
 call init_DFTfunc(dft)
 end subroutine DFT_set_default_config

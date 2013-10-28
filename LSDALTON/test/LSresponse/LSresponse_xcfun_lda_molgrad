@@ -51,8 +51,6 @@ H6     -2.1888617992     -1.9457507963     0.0000000000
 #  DALTON INPUT
 #######################################################################
 cat > LSresponse_xcfun_lda_molgrad.dal <<'%EOF%'
-**INTEGRALS
-.XCFUN
 **WAVE FUNCTIONS
 .DFT
 SLATERX

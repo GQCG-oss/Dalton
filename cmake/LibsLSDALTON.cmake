@@ -131,25 +131,23 @@ add_library(
 
 add_dependencies(xcfun_interface lsutillib_precision)
 
-if(ENABLE_XCFUN)
-    set(ExternalProjectCMakeArgs
-        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DPARENT_INCLUDE_DIR=${PROJECT_SOURCE_DIR}/include
-        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
-        -DPARENT_DEFINITIONS="-DVAR_LSDALTON"
-        )
-    add_external(xcfun)
-    add_dependencies(xcfun_interface xcfun)
-    add_definitions(-DVAR_XCFUN)
-    set(EXTERNAL_LIBS
-        ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
-        ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
-        ${EXTERNAL_LIBS}
-        )
-endif()
+set(ExternalProjectCMakeArgs
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DPARENT_INCLUDE_DIR=${PROJECT_SOURCE_DIR}/include
+    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+    -DPARENT_DEFINITIONS="-DVAR_LSDALTON"
+    )
+add_external(xcfun)
+add_dependencies(xcfun_interface xcfun)
+add_definitions(-DVAR_XCFUN)
+set(EXTERNAL_LIBS
+    ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
+    ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
+    ${EXTERNAL_LIBS}
+    )
 
 if(ENABLE_INTEREST)
     add_definitions(-DVAR_INTEREST)
@@ -157,9 +155,7 @@ if(ENABLE_INTEREST)
         interestlib
         ${INTERESTLIB_SOURCES}
         )
-    if(ENABLE_XCFUN)
-        target_link_libraries(interestlib xcfun_interface)
-    endif()
+    target_link_libraries(interestlib xcfun_interface)
 endif()
 
 add_library(
@@ -168,9 +164,7 @@ add_library(
     ${FMM_C_SOURCES}
     )
 
-if(ENABLE_XCFUN)
-    target_link_libraries(fmmlib xcfun_interface)
-endif()
+target_link_libraries(fmmlib xcfun_interface)
 
 add_dependencies(fmmlib lsutillib_precision)
 add_dependencies(fmmlib lsutillib_common)

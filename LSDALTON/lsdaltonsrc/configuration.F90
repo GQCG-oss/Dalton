@@ -77,7 +77,7 @@ subroutine config_set_default_config(config)
 implicit none
    !> Contains info, settings and data for entire calculation
    type(ConfigItem), intent(inout) :: config
-  USEXCFUN = .FALSE.  
+  USEXCFUN = .TRUE.  
   nullify(config%solver)
   allocate(config%solver)
   call arh_set_default_config(config%solver)
@@ -1052,10 +1052,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
-        CASE ('.XCFUN')
+        CASE ('.XCOLD')
 #ifdef VAR_XCFUN
-           USEXCFUN = .TRUE. 
-           INTEGRAL%DFT%XCFUN = .TRUE.
+           USEXCFUN = .FALSE. 
+           INTEGRAL%DFT%XCFUN = .FALSE.
            print*,'USEXCFUN',USEXCFUN
 #else
            call lsquit('.XCFUN requires ENABLE_XCFUN', -1)
