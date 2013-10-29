@@ -304,6 +304,9 @@ add_executable(
     ${LINK_FLAGS}
     )
 
+# we always want to compile lslib_tester.x along with lsdalton.x
+add_dependencies(lsdalton.x lslib_tester.x)
+
 if(MPI_FOUND)
     # Simen's magic fix for Mac/GNU/OpenMPI
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
