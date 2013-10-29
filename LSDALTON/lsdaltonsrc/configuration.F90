@@ -214,7 +214,7 @@ INTEGER            :: LUPRI
 !> Contains info, settings and data for entire calculation
 type(ConfigItem), intent(inout) :: config
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
-INTEGER            :: IDUMMY,IPOS,IPOS2,COUNTER
+INTEGER            :: IDUMMY,IPOS,IPOS2,IPOS3,COUNTER
 character(len=80)  :: WORD,TMPWORD
 character(len=2)   :: PROMPT
 LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS
