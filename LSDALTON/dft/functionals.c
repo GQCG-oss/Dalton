@@ -265,51 +265,6 @@ dftreport_(integer *lupri)
         selected_func->report(*lupri);
 }
 
-/* check if for the functional used the empirical disp. corr. is defined */
-void   
-dftdispcheck_(void)
-{
-    int res = 0;
-    const char *bp86  = "BP86" ;
-    const char *blyp  = "BLYP" ;
-    const char *pbe   = "PBE"  ;
-    const char *b3lyp = "B3LYP";
-    const char *tpss  = "TPSS" ;
-    if (strcasecmp(selected_func->name, bp86 )==0) res = 1;
-    if (strcasecmp(selected_func->name, blyp )==0) res = 1;
-    if (strcasecmp(selected_func->name, pbe  )==0) res = 1;
-    if (strcasecmp(selected_func->name, b3lyp)==0) res = 1;
-    if (strcasecmp(selected_func->name, tpss )==0) res = 1;
-
-    if (res == 0) {
-       printf("###########################################################################################################\n");
-       printf("The empirical dispersion correction is only defined for the following functionals:\n\n");
-       printf("   BP86\n   BLYP\n   PBE\n   B3LYP\n   TPSS\n\n");
-       printf("At the moment these functionals have to be specified in the DALTON.INP with these names explicitly,\n"); 
-       printf("defining the functionals by specifying the exchange and correlation parts explicitly is not yet possible.\n");
-       printf("TPSS is not implemented yet.\n");
-       printf("###########################################################################################################\n");
-       dalton_quit("Empirical dispersion correction not defined for the choosen functional");
-    }
-}
-
-/* give the s6 factor for the functional, needed in the empirical disp. corr. */
-void
-disp_funcfac_(real *res)
-{
-    *res = 0.0;
-    const char *bp86  = "BP86" ;
-    const char *blyp  = "BLYP" ;
-    const char *pbe   = "PBE"  ;
-    const char *b3lyp = "B3LYP";
-    const char *tpss  = "TPSS" ;
-    if (strcasecmp(selected_func->name, bp86 )==0) *res = 1.05;
-    if (strcasecmp(selected_func->name, blyp )==0) *res = 1.20;
-    if (strcasecmp(selected_func->name, pbe  )==0) *res = 0.75;
-    if (strcasecmp(selected_func->name, b3lyp)==0) *res = 1.05;
-    if (strcasecmp(selected_func->name, tpss )==0) *res = 1.00;
-}
-
 void
 dftlistfuncs_(void)
 {

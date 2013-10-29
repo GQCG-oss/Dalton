@@ -2215,9 +2215,6 @@ REAL(realk), PARAMETER ::  CONV1=1.88972612E0_realk   ! convert angstrom to bohr
 REAL(realk), PARAMETER ::  CONV2=17.3452771E0_realk   ! convert Joule*nm^6/mol to Bohr^6*hartree
                                        !    1 Bohr = 52.9177 * 10^-3 nm
                                        !    1 Hartree = 2.6255*10^6 Joule/mol
-!  external function
-!EXTERNAL DISP_FUNCFAC
-!  external types
 TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
 !
 ! van der Waals radii for the elements H-Xe in Angstrom
@@ -2421,7 +2418,7 @@ TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
 
 !     final dispersion correction
 !     S6 factor is functional dependant
-      CALL DISP_FUNCFAC(S6)
+      S6 = II_DISP_FUNCFAC(SETTING%SCHEME%DFT%dftfunc,lupri)
       SETTING%EDISP = -S6 * E
 
 !     Add derivative
@@ -2459,6 +2456,30 @@ TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
       END IF
 
    RETURN
+CONTAINS
+  ! Give the s6 factor for the functional, needed in the empirical disp. corr.
+  FUNCTION II_DISP_FUNCFAC(Func,lupri)
+    implicit none
+    Character(len=80),intent(IN) :: func
+    Integer,intent(IN)           :: lupri
+    Real(realk) :: S6,II_DISP_FUNCFAC
+    
+    IF (insensitveEQUIV(func,"BP86")) THEN
+      S6 = 1.05D0
+    ELSE IF (insensitveEQUIV(func,"BLYP")) THEN
+      S6 = 1.20D0
+    ELSE IF (insensitveEQUIV(func,"PBE")) THEN
+      S6 = 0.75D0
+    ELSE IF (insensitveEQUIV(func,"B3LYP")) THEN
+      S6 = 1.05D0
+    ELSE IF (insensitveEQUIV(func,"TPSS")) THEN
+      S6 = 1.00D0
+    ELSE 
+      CALL LSQUIT('Non-valid functional in II_DISP_FUNCFAC',-1)
+    ENDIF
+    II_DISP_FUNCFAC = S6
+  END FUNCTION II_DISP_FUNCFAC
+
 END SUBROUTINE II_DFTDISP
 
 SUBROUTINE II_DFTsetFunc(Func,hfweight,useXCfun,lupri)
@@ -2511,4 +2532,5 @@ ELSE
 ENDIF
 #endif
 END SUBROUTINE II_DFTaddFunc
+
 END MODULE IIDFTINT

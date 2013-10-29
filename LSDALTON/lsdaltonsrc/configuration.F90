@@ -352,11 +352,15 @@ DO
                         WRITE(LUPRI,*) 'config%integral%CAMmu',config%integral%CAMmu
                      END IF
                      hfweight=0E0_realk 
+                     ! Remove starting blancks
+                     DO IPOS=1,LEN(WORD)
+                       IF (WORD(IPOS:IPOS).NE." ") EXIT
+                     ENDDO
                      !it is assumed that hfweight is set to zero and only  
                      !changed if the functional require a HF weight  
                      !different from zero. 
                      !note the 40 is harcoded in DFTsetFunc routine in general.c 
-                     config%integral%dft%dftfunc = WORD
+                     config%integral%dft%dftfunc = WORD(IPOS:)
                      
                      CALL II_DFTsetFunc(WORD,hfweight,USEXCFUN,lupri)
                      config%integral%exchangeFactor = hfweight
@@ -2524,7 +2528,7 @@ DO
       CASE ('.HARDNESS' ); READ(LUCMD,*) DALTON%DFT%HRDNES
       CASE ('.DISPER' )
          DALTON%DFT%DODISP = .TRUE.
-         CALL DFTDISPCHECK()
+         CALL II_DFTDISPCHECK(DALTON%DFT%dftfunc,lupri)
       CASE DEFAULT
          WRITE (LUPRI,'(/,3A,/)') ' Keyword ',WORD,&
               & ' not recognized in *DFT INPUT'

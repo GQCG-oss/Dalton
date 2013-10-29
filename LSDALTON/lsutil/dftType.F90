@@ -3,6 +3,7 @@
 !> \date 2010-02-21
 MODULE dft_typetype
 use precision
+use LS_UTIL, only : insensitveEQUIV
 
 ! choose reasonably large. Exceeding this limit means that boxes are too large.
 Integer, parameter :: MXBLLEN=128  
@@ -206,5 +207,39 @@ end subroutine set_admmfun
 !!$  call lsquit('Filename error in get_dft_grid',-1)
 !!$ENDIF
 !!$END SUBROUTINE get_dft_grid
+
+! check if for the functional used the empirical disp. corr. is defined
+SUBROUTINE II_dftdispcheck(func,lupri)
+implicit none
+Character(len=80),intent(IN) :: func
+Integer,intent(IN)           :: lupri
+!
+Logical :: disp
+
+disp = .FALSE.
+IF (insensitveEQUIV(func,"BP86"))  disp = .TRUE.
+IF (insensitveEQUIV(func,"BLYP"))  disp = .TRUE.
+IF (insensitveEQUIV(func,"PBE"))   disp = .TRUE.
+IF (insensitveEQUIV(func,"B3LYP")) disp = .TRUE.
+!  IF (insensitveEQUIV(func,"TPSS"))  disp = .TRUE. !!!TPSS not yet implemented in LSDALTON
+
+IF (disp .EQV. .FALSE.) THEN
+  write(lupri,'(A)') "###########################################################################################################"
+  write(lupri,'(A)') "The empirical dispersion correction is only defined for the following functionals:"
+  write(lupri,'(A)') "   BP86"
+  write(lupri,'(A)') "   BLYP"
+  write(lupri,'(A)') "   PBE"
+  write(lupri,'(A)') "   B3LYP"
+!  write(lupri,'(A)') "   TPSS"
+  write(lupri,'(A)') ""
+  write(lupri,'(A)') "At the moment these functionals have to be specified in the LSDALTON.INP with these names explicitly,"
+  write(lupri,'(A)') "defining the functionals by specifying the exchange and correlation parts explicitly is not yet possible."
+!  write(lupri,'(A)') "TPSS is not implemented yet."
+  write(lupri,'(A)') ""
+  write(lupri,'(A)') "###########################################################################################################"
+  call lsquit("Empirical dispersion correction not defined for the choosen functional",lupri)
+ENDIF
+END SUBROUTINE II_dftdispcheck
+
 
 END MODULE dft_typetype
