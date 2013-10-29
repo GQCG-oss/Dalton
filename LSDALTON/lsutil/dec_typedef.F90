@@ -510,8 +510,8 @@ module dec_typedef_module
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()
      !> Table describing which model should be used for given fragment calculation:
-     !> model=0:  Skip fragment (only relevant for pairs)
-     !> model=MODEL_MP2:  Do MP2
+     !> model=MODEL_NONE:  Skip fragment (only relevant for pairs)
+     !> model=MODEL_MP2 :  Do MP2
      !> etc., see MODEL_* definitions below
      integer,pointer :: ccmodel(:,:) => null()
 
@@ -594,7 +594,7 @@ module dec_typedef_module
 
      !> Information used only when the decfrag is a pair fragment
      !> ********************************************************
-     !> Distance between single fragments used to generate pair
+     !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
 
      !> Total occupied orbital space (orbital type)
@@ -799,7 +799,7 @@ module dec_typedef_module
      ! where E2 is the Hessian transformation, see dec_solve_kappa_equation.
 
 
-     ! Single fragment:
+     ! atomic fragment:
      ! ij in X_{ij} belongs to CentralAtom
      ! ab in X_{ij} belongs to CentralAtom
      !
@@ -820,9 +820,9 @@ module dec_typedef_module
      integer :: nocc
      !> Number of occupied core+valence AOS orbitals (only different from nocc for frozen core)
      integer :: nocctot
-     !> Fragment energy (for single fragment or pair fragment)
+     !> Fragment energy (for atomic fragment or pair fragment)
      real(realk) :: energy
-     !> Only pair frags: Distance between (super) fragments in pair (zero for single fragments)
+     !> Only pair frags: Distance between fragments in pair (zero for atomic fragments)
      real(realk) :: pairdist
 
      !> Number of EOS atoms (1 for atomic fragment, 2 for pair fragment)
@@ -914,15 +914,15 @@ module dec_typedef_module
   !> Ideally they are listed in order of size with the largest jobs first.
   !> Also includes MPI performance statistics for each job.
   type joblist
-     ! Number of superfragment jobs
+     ! Number of fragment jobs
      integer :: njobs
 
      ! All pointers below has the dimension njobs
      ! ------------------------------------------
 
-     ! Atom 1 in super fragment (dimension: njobs)
+     ! Atom 1 in fragment (dimension: njobs)
      integer,pointer :: atom1(:) 
-     ! Atom 2 in super fragment (dimension: njobs)   (NOTE: atom2=0 for single fragments)
+     ! Atom 2 in fragment (dimension: njobs)   (NOTE: atom2=0 for atomic fragments)
      integer,pointer :: atom2(:) 
      ! Size of job (dimension: njobs)
      integer,pointer :: jobsize(:) 
