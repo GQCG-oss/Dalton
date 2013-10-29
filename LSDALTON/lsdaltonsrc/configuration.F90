@@ -307,7 +307,8 @@ DO
 !                     IF(WORD(1:3) .EQ. 'LDA') 
                      IPOS = INDEX(WORD,'CAM')
                      IPOS2 = INDEX(WORD,'cam')                     
-                     IF(IPOS .NE. 0 .OR. IPOS2 .NE. 0)THEN !CAM
+                     IPOS3 = INDEX(WORD,'Cam')                     
+                     IF((IPOS.NE.0.OR.IPOS2.NE.0).OR.IPOS3.NE.0)THEN !CAM
                         config%integral%CAM=.TRUE.
                         IPOS = INDEX(WORD,'alpha')
                         IF (IPOS .NE. 0) THEN
