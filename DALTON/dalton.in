@@ -390,7 +390,7 @@ if [ $optn -gt 1 ] ; then
              cat $PBS_NODEFILE | sort | uniq
              for node in `cat $PBS_NODEFILE | sort | uniq`
              do
-                if [ ${node} == $HOSTNAME ]
+                if [ ${node} == ${HOSTNAME%\.local} ]
                 then
                     continue
                 else
