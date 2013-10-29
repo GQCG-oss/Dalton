@@ -1057,7 +1057,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
 #ifdef VAR_XCFUN
            USEXCFUN = .FALSE. 
            INTEGRAL%DFT%XCFUN = .FALSE.
-           print*,'USEXCFUN',USEXCFUN
 #else
            call lsquit('.XCFUN requires ENABLE_XCFUN', -1)
 #endif
