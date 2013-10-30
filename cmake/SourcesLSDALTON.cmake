@@ -339,6 +339,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/ls_math.F90
     LSDALTON/lsutil/SphCartMatrices.F90
     LSDALTON/lsutil/OverlapDistributionType.F90
+    LSDALTON/lsutil/pbc_lattice_type.F90
     )
 set(LSUTIL_MATRIXO_SOURCES
     LSDALTON/lsutil/matop_csr.F90
@@ -370,7 +371,6 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/IntegralOutput_operations.F90 
     LSDALTON/lsutil/TYPE-OP.F90
     LSDALTON/lsutil/GCtrans.F90
-    LSDALTON/lsutil/pbc_lattice_type.F90
     LSDALTON/lsutil/Build_AOBATCH.F90
     LSDALTON/lsutil/lspdm_basic.F90
     LSDALTON/lsutil/tensor_basic.F90

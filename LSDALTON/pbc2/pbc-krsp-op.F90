@@ -215,19 +215,18 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
         ENDDO
        ENDDO
        !call write_matrix(work,nbast,nbast)
-       write(*,*) 'debug test for 3 dim'
        call mat_set_from_full(work,1.0_realk,tmp_density)
        call mat_daxpy(1.D0,tmp_density,density(layer))
-     endif
 
      if(k==Nk)then
-       if (l1 == ll%ndmat .or. l2 == ll%ndmat .or.l3== ll%ndmat)then
+       if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
          call mat_abs_max_elm(density(layer),maxdens)
          if(maxdens .gt. 1e-12)then
            write(*,*) 'maybe to hard density cutoff, max element for&
             &layer', l1,l2,l3,maxdens
          endif
        endif
+     endif
      endif
 
   enddo
