@@ -606,7 +606,7 @@ contains
     end if
 
 #ifndef MOD_UNRELEASED
-if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=MODEL_MP2) then
+if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=1) then
    call lsquit('Error in input: DEC scheme only implemented for MP2 model!',-1)
 end if
 #endif
