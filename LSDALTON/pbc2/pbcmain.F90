@@ -283,6 +283,7 @@ else
       !do i=1,num_latvectors
       !  call init_lvec_data(lattice%lvec(i),nbast)
       !enddo
+      call mem_alloc(lattice%lvec(k)%d_mat,nbast,nbast)
       if(.not.lattice%read_file) then
         lattice%lvec(k)%d_mat(1,1)=0.18197943668877323D0
         lattice%lvec(k)%d_mat(1,2)=0.28409190914049431D0
@@ -333,6 +334,7 @@ else
       enddo
       write(*,*) 'density used'
       !call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast)
+      call mem_dealloc(lattice%lvec(n1)%d_mat)
 
     else !TESTCASE
 
@@ -482,13 +484,13 @@ else
     numtostring1=adjustl(numtostring1)
     mattxt='minFmat1'//trim(numtostring1)//'00.dat'
       !call pbc_readopmat2(0,0,0,matris,2,'OVERLAP',.true.,.false.)
-    CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
-    call find_latt_index(k,n1,0,0,fdim,lattice,lattice%max_layer)
-    write(iunit,*) k
-    DO j=1,nbast
-       write(iunit,*) (lattice%lvec(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
-    ENDDO
-    call lsclose(iunit,'KEEP')
+    !CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
+    !call find_latt_index(k,n1,0,0,fdim,lattice,lattice%max_layer)
+    !write(iunit,*) k
+    !DO j=1,nbast
+    !   write(iunit,*) (lattice%lvec(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
+    !ENDDO
+    !call lsclose(iunit,'KEEP')
     enddo !n1
     write(*,*) 'Fock matrix written to disk'
     write(lupri,*) 'Fock matrix written to disk'
@@ -646,7 +648,8 @@ else
   END SELECT
 
 
-  call free_lvec_list(lattice)
+  !call free_lvec_list(lattice)
+  call mem_dealloc(lattice%lvec)
   write(lupri,*) 'Program ended successfully !'
   write(*,*) 'Program ended successfully !'
 

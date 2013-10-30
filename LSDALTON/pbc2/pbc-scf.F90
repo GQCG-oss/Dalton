@@ -242,8 +242,8 @@ SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,is_singular,Ndim)
   alpha=CMPLX(1.,0.,complexk)
   beta=CMPLX(0.,0.,complexk)
 
-  write(*,*) 'sk in U'
-  call write_zmatrix(sk,Ndim,Ndim)
+  !write(*,*) 'sk in U'
+  !call write_zmatrix(sk,Ndim,Ndim)
 
   call zheev('V','U',Ndim,Sk,Ndim,W,work,Lwork,Rwork,info)
   !call zgesvd('A','A',Ndim,Ndim,Sk,Ndim,W,Atmp,Ndim,tmp,Ndim,work,lwork,&
@@ -391,8 +391,8 @@ SUBROUTINE pbc_zdiagonalize(sigma,A,ndim,V,U)
   call zgemm('C','N',ndim,ndim,ndim,alpha,U,ndim,A,ndim,&
         beta,D,ndim)
 
-  Write(*,*) 'U dagger fock'
-  call write_zmatrix(D,ndim,ndim)
+!  Write(*,*) 'U dagger fock'
+!  call write_zmatrix(D,ndim,ndim)
 
   call zgemm('N','N',ndim,ndim,ndim,alpha,D,ndim,U,ndim,&
         beta,A,ndim)
@@ -828,12 +828,12 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   call mem_alloc(tlat,(maxmultmom+1)**2,(maxmultmom+1)**2)
 
   !read the tlatticetensor to build up the multipole moments
-  write(lupri,*) 'Debug again'
+!  write(lupri,*) 'Debug again'
   call read_pbc_tlattice(tlat,maxmultmom,'Tlatticetensor.dat',lupri)
  
   !config%molecule%nelectrons
   !write(*,*) 'number of electrons' molecule%nelecetrons
-  write(lupri,*) 'Debug again'
+!  write(lupri,*) 'Debug again'
   
 
 
@@ -900,14 +900,14 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       !if(bz%kpnt(k)%is_gamma ) write(lupri,*) 'C_0'
       !if(bz%kpnt(k)%is_gamma ) call write_zmatrix(C_0,ndim,ndim,lupri)
       
-      write(lupri,*) 'Debug again get kdens'
+!      write(lupri,*) 'Debug again get kdens'
       call pbc_get_kdensity(D_k,C_k,ndim,molecule%nelectrons/2 &
           ,lupri)
       
       !write(*,*) 'Debug volbz',bz%nk,bz%nk_nosym
-      write(lupri,*) 'Debug again get k to real'
+!      write(lupri,*) 'Debug again get k to real'
       call kspc_2_rspc_loop_k(nfdensity,Bz%NK,D_k,lattice,kvec,bz%kpnt(k)%weight,BZ%NK_nosym,ndim,k)
-      write(lupri,*) 'Debug again after k to real'
+!      write(lupri,*) 'Debug again after k to real'
           
 
 
@@ -927,7 +927,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   !  endif
 
    ENDDO
-      write(lupri,*) 'Debug again after k '
+!      write(lupri,*) 'Debug again after k '
 
    !do i=1,numrealvec
    !call find_latt_vectors(i,il1,il2,il3,fdim,lattice)
@@ -1036,6 +1036,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
      !lattice%compare_elmnts=.false.
 
     CALL LSTIMER('START ',TS,TE,LUPRI)
+    write(*,*) 'DEBUG fform_fck'
     call pbc_fform_fck(maxmultmom,tlat,lattice%tlmax,ndim,nfsze,lattice,nfdensity,nucmom,&
                    g_2,E_ff,E_nn,lupri)
     CALL LSTIMER('pbc farfield',TS,TE,LUPRI)
@@ -1228,6 +1229,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
     !  call pbc_cell_energy(lattice,Bz,ndim,ndim,D_k,kvec,Ecell,kpt,&
     !  molecule%nelectrons/2,lupri)
     !endif
+    ! II_DFTINT
 
     enddo !kpt
     CALL LSTIMER('k point energy',TST,TET,LUPRI)
@@ -1791,7 +1793,7 @@ SUBROUTINE pbc_get_weighted_fock(i,ndiis,stdiis,nbast,weight,Aop,lupri)
     stiter=adjustl(stiter)
     tmpdiis='diis_'//trim(stiter)//'_'
     !write(*,*) 'Debug 3 inside get_weights'
-    write(lupri,*) 'Filename for fock matrix, ', tmpdiis
+!    write(lupri,*) 'Filename for fock matrix, ', tmpdiis
 
     call pbc_read_matrix(tmp_mat,nbast,nbast,7,2,tmpdiis)
     !write(*,*) 'Debug 4 inside get_weights'
@@ -1822,7 +1824,8 @@ SUBROUTINE pbc_get_weighted_fock(i,ndiis,stdiis,nbast,weight,Aop,lupri)
    !  call pbc_fockmat_write(Aop,nbast,nbast,7,2)
    ! write(*,*) 'Debug 6 inside get_weights'
 
-  deallocate(tmp_mat%lvec)
+  !deallocate(tmp_mat%lvec)
+  call mem_dealloc(tmp_mat%lvec)
 END SUBROUTINE pbc_get_weighted_fock
 
 
