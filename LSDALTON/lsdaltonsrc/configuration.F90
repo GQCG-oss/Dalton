@@ -48,7 +48,7 @@ use davidson_settings, only: davidson_default_SCF, davidson_default
 use molecule_type, only: free_moleculeinfo
 use readmolefile, only: read_molfile_and_build_molecule
 use IntegralInterfaceMOD, only: ii_get_nucpot
-use ks_settings, only: ks_free_incremental_fock,insensitveEQUIV 
+use ks_settings, only: ks_free_incremental_fock,ii_dftdispcheck
 use memory_handling, only: mem_alloc,mem_dealloc
 use dft_typetype
 use plt_driver_module
