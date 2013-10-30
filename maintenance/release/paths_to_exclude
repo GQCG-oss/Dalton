@@ -29,6 +29,7 @@ LSDALTON/test/pbc2/pbc2_h2fock
 LSDALTON/test/pbc2/pbc2_h2SCF_iter1
 LSDALTON/test/pbc2/pbc2_h2STO6G
 LSDALTON/doc_LSDALTON/TODO_BEFORE_RELEASE2013
+LSDALTON/deccc/dec_readme
 DALTON/Doc_cc
 DALTON/test/cc3_findiff
 DALTON/test/cc3_h2o_resid_noddy
@@ -41,3 +42,4 @@ DALTON/test_cc
 external/gen1int/.git
 external/xcfun/.git
 external/pelib/.git
+external/ls-matrix-defop/.git

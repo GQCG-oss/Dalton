@@ -1,4 +1,4 @@
-*#!/bin/sh
+#!/bin/sh
 #
 # This is the script for generating files for a specific Dalton test job.
 #
@@ -90,6 +90,11 @@ if [ `uname` = Linux ]; then
    GREP="egrep -a"
 else
    GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
 fi
 
 # Basis set

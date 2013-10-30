@@ -56,7 +56,11 @@ C
 !     IPRPAR = 11
       IPRINT = MAX(IPRINT,IPRPAR)
 C
-      IF (IPRINT .GT. 3) CALL TITLER('Output from PARDRV','*',103)
+      IF (IPRINT .GT. 3) THEN
+         CALL TITLER('Output from PARDRV','*',103)
+         WRITE(LUPRI,'(/A,I5)')
+     &      'Parallel type (ITYPE) is',ITYPE
+      END IF
       IF (IPRPAR .GT. 0) CALL GETTIM(CPU1,WALL1)
 C
       IF (DEBUG) THEN
@@ -79,7 +83,7 @@ C
 #endif
       IF (IPRTYP.EQ.1) THEN
          if (iprint .gt. 3)
-     &        write (lupri,*) 'Calling parallel HERMIT routines.'
+     &      write (lupri,*) 'Calling parallel HERMIT routines.'
          CALL HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
@@ -87,21 +91,20 @@ C
      &                   DINTSKP,RELCAL)
       ELSE
          if (iprint .gt. 3)
-     &    write (lupri,*) 'Calling parallel ERI routines.'
+     &      write (lupri,*) 'Calling parallel ERI routines.'
          CALL ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,IPRINT)
       END IF
 C
+      KCPUS  = 1
+      KWALLS = KCPUS  + NODTOT
+      KLAST  = KWALLS + NODTOT
+      IF (KLAST .GT. LWORK)
+     &   CALL STOPIT('PARDRV','RVTIM',KLAST,LWORK)
+C
+      CALL RVTIM(NSTAT,WORK(KCPUS),WORK(KWALLS),NODNAM(1),NODTOT,IPRINT)
+C
       IF (IPRPAR .GT. 0) THEN
-         KCPUS  = 1
-         KWALLS = KCPUS  + NODTOT
-         KLAST  = KWALLS + NODTOT
-         IF (KLAST .GT. LWORK)
-     &      CALL STOPIT('PARDRV','RVTIM',KLAST,LWORK)
-C
-         CALL RVTIM(NSTAT,WORK(KCPUS),WORK(KWALLS),NODNAM(1),NODTOT,
-     &              IPRPAR,IPRINT)
-C
          CALL GETTIM(CPU2,WALL2)
          CPU    = CPU2 - CPU1
          WALL   = WALL2 - WALL1
@@ -128,7 +131,7 @@ C
       RETURN
       END
 C  /* Deck rvtim */
-      SUBROUTINE RVTIM(NSTAT,CPUS,WALLS,NODNAM,NODTOT,IPRPAR,IPRINT)
+      SUBROUTINE RVTIM(NSTAT,CPUS,WALLS,NODNAM,NODTOT,IPRINT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -160,19 +163,20 @@ C
 C
   100 CONTINUE
 C
-      IF (IPRPAR .GT. 1) THEN
+      IF (IPRINT .LE. 0) GOTO 9000
+      IF (IPRINT .GT. 1) THEN
          CALL AROUND('Overall statistics for distribution of batches')
 C
          WRITE(LUPRI,'(9X,5(A,4X))')   'Nodename',
-     &                                  'Batches',
-     &                                  'CPU time',
-     &                                  'Wall time',
-     &                                  'Efficiency'
+     &                                 'Batches',
+     &                                 'CPU time',
+     &                                 'Wall time',
+     &                                 'Efficiency'
          WRITE(LUPRI,'(9X,5(A,4X)/)')  '--------',
-     &                                  '-------',
-     &                                  '--------',
-     &                                  '---------',
-     &                                  '----------'
+     &                                 '-------',
+     &                                 '--------',
+     &                                 '---------',
+     &                                 '----------'
 C
          DO 200 NWHO = 1, NODTOT
             IF (WALLS(NWHO) .NE. 0.0D0) THEN
@@ -193,8 +197,9 @@ C
       WRITE(LUPRI,'(/A,I5.2,A,I2.2,A,I2.2)')
      &     '>>>> Total CPU  time used in NODES  so far   :',
      &     IHOURS,':',IMINS,':',ISECS
+      CALL FLSHFO(LUPRI)
 C
-      RETURN
+ 9000 RETURN
       END
 C  /* Deck eri_pardrv */
       SUBROUTINE ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
@@ -954,9 +959,9 @@ C
 C
       RETURN
       END
-C  /* Deck nodedriver */
+C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
-      SUBROUTINE NODEDRIVER(MWORK,WRKDLM)
+      SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
       use polarizable_embedding, only: pe_mpi
 #include "implicit.h"
@@ -969,20 +974,29 @@ C defined parallel calculation types
 #include "iprtyp.h"
       real(8), allocatable :: work(:)
 C
-      CALL QENTER('NODEDRIVER')
+      CALL QENTER('DALTON_NODEDRIVER')
+      CALL GETTIM(CSTR,WSTR)
+      N_TASKS = 0
 C
 C     Get calculation type (IPRTYP)
 C
   100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN
+         N_TASKS = N_TASKS + 1
+
+         CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+         IF (IPRINT .GT. 0)
+     &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5)')
+     &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
+     &      'Print level is',IPRINT
 
 !        allocate memory here if we don't call hermit (more to follow...).
 !        idea: move allocation down to main driver routines of modules as we might want to use
 !              dynamic memory allocation down there (for MPI performance/MPI standard compliance reasons)
 !              which is severely hampered by a "static" WORK for everything.
 !              sknecht - feb 2013.
-         if(iprtyp /= her_work .and. .not.(allocated(work)))then
+         if(iprtyp /= HER_WORK .and. .not.(allocated(work)))then
 !          allocate memory using f90 utilities
            allocate(work(0:mwork+1),stat=i)
 !          Set memory traps
@@ -999,7 +1013,6 @@ C
            end if
          end if
 
-         CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
 C  new calculation type needs to be added in include/iprtyp.h
          IF      (IPRTYP.EQ.HER_WORK) THEN
             CALL HER_NODSTR(MWORK,wrkdlm,IPRINT)
@@ -1013,6 +1026,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL DFT_CSLAVE(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_GRAD_WORK) THEN
             CALL DFT_GRAD_SLAVE(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.DFT_EXPGRAD_WORK) THEN
+            CALL DFT_EXPG_SLAVE(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_BRHS_WORK) THEN
             CALL DFT_BRHS_SLAVE(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_HESSTAT_WORK) THEN
@@ -1097,18 +1112,35 @@ C added by Bin Gao, May 12, 2012
 #endif
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
-     &         '(NODEDRIVER) ERROR on slave',MYTID,
+     &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
      &         ': Unknown calculation type request',IPRTYP
-            CALL QUIT('NODEDRIVER: Unknown calculation type')
+            WRITE(*,'(/A,I5,A,I10)')
+     &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
+     &         ': Unknown calculation type request',IPRTYP
+            CALL QUIT('DALTON_NODEDRIVER: Unknown calculation type')
          END IF
 C
          GO TO 100
-      END IF
+      END IF ! IPRTYP .gt. 0
 
 !     release memory
       if(allocated(work)) deallocate(work)
 C
-      CALL QEXIT('NODEDRIVER')
+      IF (MYNUM .LE. 20) THEN
+         CALL GETTIM(CEND,WEND)
+         CTOT = CEND - CSTR
+         WTOT = WEND - WSTR
+C
+         WRITE (LUPRI,'(/A,I10/)') 'Number of tasks performed:',N_TASKS
+         CALL TIMTXT('>>>> Total CPU  time used:',CTOT,LUPRI)
+         CALL TIMTXT('>>>> Total wall time used:',WTOT,LUPRI)
+C
+C        Stamp date and time and hostname to output
+C
+         CALL TSTAMP(' ',LUPRI)
+      END IF
+C
+      CALL QEXIT('DALTON_NODEDRIVER')
       RETURN
       END
 #endif
@@ -1466,7 +1498,7 @@ C
 C
       CALL GETTIM(CPU2,WALL2)
 C
-      TMGARR(1)  = CPU2 - CPU1
+      TMGARR(1) = CPU2  - CPU1
       TMGARR(2) = WALL2 - WALL1
 C
 #if defined (VAR_MPI)

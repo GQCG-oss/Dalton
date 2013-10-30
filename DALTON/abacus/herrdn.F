@@ -2352,6 +2352,9 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+#if defined (BUILD_PELIB)
+      use polarizable_embedding, only: pe_init
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -2364,6 +2367,7 @@ C*****************************************************************************
 #include "dcbgen.h"
       PARAMETER (LUCME = -1)
 #else
+#include "gnrinf.h"
 #include "inftap.h"
 #endif
 #include "symmet.h"
@@ -2391,7 +2395,6 @@ C*****************************************************************************
 #include "aosotr.h"
 #include "r12int.h"
 #include "qm3.h"
-#include "gnrinf.h"
 C
       IF (DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
@@ -2589,6 +2592,12 @@ C     ***** Printing of atomic coordinates *****
 C     ******************************************
 C
       IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
+
+#if defined (BUILD_PELIB)
+      if (.NOT.SLAVE .and. peqm) then
+        call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
+      end if
+#endif
 C
  1010 FORMAT(I14,' large AO-blocks of ',A1,' type')
  1020 FORMAT(I14,' small AO-blocks of ',A1,' type')
@@ -4544,10 +4553,6 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-      use polarizable_embedding, only: pe_init
-#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4727,12 +4732,6 @@ C
       IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
-
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
-      end if
-#endif
 
       RETURN
       END
@@ -6665,19 +6664,19 @@ C
       END IF
       RETURN
       END
-      SUBROUTINE LINE4(LINE,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
+      SUBROUTINE LINE4(LINE,NONTYP,NSYMOP,CRT,KCHARG1,THRS,ADDSYM,KASYM,
      &                 ID3,DOCART,DOOWN)
 C
 C     Read in the fourth input line using the new input scheme
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
+! gnrinf.h : peqm
+#include "gnrinf.h"
+
       LOGICAL ADDSYM, DOCART, DOOWN
       CHARACTER*80 LINE
       CHARACTER CRT*1, ID3*1, SYMTXT*2
@@ -6745,10 +6744,10 @@ C
                WRITE (LUPRI,*) LINE
                CALL QUIT('Incorrect input for molecular charge')
             ELSE
-               READ (LINE(IPOS+IPOS2:),*) KCHARG
+               READ (LINE(IPOS+IPOS2:),*) KCHARG1
             END IF
          ELSE
-            KCHARG = 0
+            KCHARG1 = 0
          END IF
 C
 C     Angstrom?
@@ -6840,7 +6839,7 @@ C     Since the number of atom types have not been specified,
 C     assume old input format
 C
          READ (LINE,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
-     &        NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
+     &        NONTYP,KCHARG1,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
          IF (LINE(21:30) .EQ. '          ') THRS = -1.0D0
 C        ... tell READIN that user hasn't specified THRS
          ADDSYM = (SYMTXT(1:2) .EQ. '  ')
@@ -6884,7 +6883,7 @@ C
 C     Write out molecule specific information in new input format
 C
 #include "implicit.h"
-      CHARACTER*80 TMPLN
+      CHARACTER*(*) TMPLN
       CHARACTER*1 KASYM(3,3), ID3
       LOGICAL AUTOSY, NOSYM, DOCART, DOOWN
 C
@@ -6916,7 +6915,6 @@ C
       IF (NOSYM) THEN
          WRITE (TMPLN(ISTART:),'(A11)') 'NOSYMMETRY'
          ISTART = ISTART + 12
-Ckr      END IF
 C
       ELSE
          IF (.NOT. AUTOSY) THEN
@@ -6929,6 +6927,7 @@ C
                   ISTART = ISTART + 1
                END DO
             END DO
+            ISTART = ISTART + 1
          END IF
       END IF
 C
@@ -6937,12 +6936,13 @@ C
          ISTART = ISTART + 10
       END IF
       IF (DOOWN) THEN
-         WRITE (TMPLN(ISTART:),'(A10)') 'OWN '
+         WRITE (TMPLN(ISTART:),'(A4)') 'OWN '
          ISTART = ISTART + 4
       END IF
 C
       IF (ID3 .NE. ' ') THEN
          WRITE (TMPLN(ISTART:),'(A7)') 'ANGSTROM'
+         ISTART = ISTART + 8
       END IF
       RETURN
       END
