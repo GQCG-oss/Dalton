@@ -38,7 +38,7 @@
 !> \date 2011-12-10
 module gen1int_matrix
 
-#if defined(BUILD_OPENRSP)
+#ifdef BUILD_OPENRSP
   ! matrix module in OpenRSP
   use matrix_lowlevel, &
            MatIsClosedShell    => mat_is_closed_shell, &
