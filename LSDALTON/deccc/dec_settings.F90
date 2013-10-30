@@ -605,8 +605,8 @@ contains
        DECinfo%purifyMOs=.true.
     end if
 
-#ifdef RELEASE
-if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=1) then
+#ifndef MOD_UNRELEASED
+if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=MODEL_MP2) then
    call lsquit('Error in input: DEC scheme only implemented for MP2 model!',-1)
 end if
 #endif
