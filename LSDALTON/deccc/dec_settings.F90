@@ -586,7 +586,11 @@ contains
        write(DECinfo%output,*) 'Memory not defined for **DEC or **CC calculation!'
        write(DECinfo%output,*) 'Please specify using .MEMORY keyword (in gigabytes)'
        write(DECinfo%output,*) ''
+#ifdef VAR_MPI
        write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, then use'
+#else
+       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, then use'
+#endif
        write(DECinfo%output,*) '.MEMORY'
        write(DECinfo%output,*) '16.0'
        write(DECinfo%output,*) ''
