@@ -27,8 +27,14 @@ Compiles but does not pass all tests
 Compiles but untested on the following platforms
 ------------------------------------------------
 
-* foo
-* bar
+* SGI Altix ICE 8200 (Hyperion)
+* Cray XE6 (Lindgren)
+
+
+Currently does not compile (but we plan to patch it)
+----------------------------------------------------
+
+* IBM AIX, XL 7.1
 
 
 LSDALTON
@@ -43,14 +49,8 @@ Tested on the following platforms
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
 
 
-Compiles but does not pass all tests
-------------------------------------
-
-* platform/os, compiler, libs (list of tests that fail)
-
-
 Compiles but untested on the following platforms
 ------------------------------------------------
 
-* foo
-* bar
+* SGI Altix ICE 8200 (Hyperion)
+* Cray XE6 (Lindgren)
