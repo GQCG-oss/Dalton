@@ -23,6 +23,11 @@ macro(add_dalton_perl_test _name _labels)
 endmacro()
 
 # all tests here should contain the label "dalton"
+
+# NEVER comment out tests, this will bite you in future in a terrible way
+# also to minimize conflict release/master use the existing variables to distinguish
+# tests which are run only on master
+
 # "long" cc2_r12 tests are placed apart on purpose to make it less likely that they
 # are run at the same time (then they can be significantly slower)
 
