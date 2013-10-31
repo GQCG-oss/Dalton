@@ -201,6 +201,11 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
      if((abs(l1) .le. ll%ndmat .and. abs(l2) .le. ll%ndmat)&
      & .and. abs(l3) .le. ll%ndmat) then
 
+     if(density(layer)%init_magic_tag .NE. mat_init_magic_value) THEN
+       call mat_init(density(layer),nbast,nbast)
+       call mat_zero(density(layer))
+     endif
+
      call mat_zero(tmp_density)
 
      phase1=kvec(1)*ll%lvec(layer)%std_coord(1)
