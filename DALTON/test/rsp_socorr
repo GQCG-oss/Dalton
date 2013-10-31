@@ -127,6 +127,7 @@ fi
 
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
+CRIT1b=`$GREP "Calculation of one\-electron Hamiltonian integrals\." $log | wc -l`
 CRIT2=`$GREP "The following one\-electron property integrals are calculated" $log | wc -l`
 CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
 CRIT4=`$GREP "\- spatial spin\-orbit integrals" $log | wc -l`
@@ -135,9 +136,10 @@ CRIT6=`$GREP "\(Dirac delta function integrals\)" $log | wc -l`
 CRIT7=`$GREP "\- paramagnetic spin\-orbit integrals" $log | wc -l`
 CRIT8=`$GREP "\(nuclear moment \- electron orbit coupling\)" $log | wc -l`
 CRIT9=`$GREP "two-electron integrals are transformed to P-supermatrix elements" $log | wc -l`
+CRIT9b=`$GREP "Fock matrices are calculated directly and in parallel without use of integrals on disk" $log |wc -l`
 CRIT10=`$GREP "Integrals for all indirect spin\-spin coupling and/or shielding tensors are calculated\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT1b \+ $CRIT9b`
 CTRL[1]=10
 ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
@@ -214,7 +216,7 @@ ERROR[7]="QUADRATIC RESPONSE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

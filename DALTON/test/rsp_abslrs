@@ -90,16 +90,16 @@ CTRL[1]=1
 ERROR[1]="HF energy is NOT CORRECT"
 
 # ?
-CRIT1=`$GREP " XDIPLEN * XDIPLEN * 0*\.442500 * 51\.727... * 5\.690" $log | wc -l`
-CRIT2=`$GREP " YDIPLEN * YDIPLEN * 0*\.442500 * 51\.727... * 5\.691" $log | wc -l`
-CRIT3=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.442500 * 51\.727... * 5\.690" $log | wc -l`
-CRIT4=`$GREP " XDIPLEN * XDIPLEN * 0*\.475000 * \-57\.450... * 228\.05" $log | wc -l`
-CRIT5=`$GREP " YDIPLEN * YDIPLEN * 0*\.475000 * \-57\.453... * 228\.05" $log | wc -l`
-CRIT6=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.475000 * \-57\.448... * 228\.05" $log | wc -l`
-CRIT7=`$GREP " XDIPLEN * XDIPLEN * 0*\.490000 * \-43\.396... * 18\.891" $log | wc -l`
-CRIT8=`$GREP " YDIPLEN * YDIPLEN * 0*\.490000 * \-43\.396... * 18\.891" $log | wc -l`
-CRIT9=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.490000 * \-43\.396... * 18\.891" $log | wc -l`
-TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+CRIT1=`$GREP " XDIPLEN * XDIPLEN * 0*\.442500 * 51\.72[67]... * 5\.69[01]" $log | wc -l`
+CRIT2=`$GREP " YDIPLEN * YDIPLEN * 0*\.442500 * 51\.72[67]... * 5\.69[01]" $log | wc -l`
+CRIT3=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.442500 * 51\.72[67]... * 5\.69[01]" $log | wc -l`
+CRIT4=`$GREP " XDIPLEN * XDIPLEN * 0*\.475000 * \-57\.4[34].... * 228\.0[56]" $log | wc -l`
+CRIT5=`$GREP " YDIPLEN * YDIPLEN * 0*\.475000 * \-57\.4[34].... * 228\.0[56]" $log | wc -l`
+CRIT6=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.475000 * \-57\.4[34].... * 228\.0[56]" $log | wc -l`
+CRIT7=`$GREP " XDIPLEN * XDIPLEN * 0*\.490000 * \-43\.39[67]... * 18\.89[12]" $log | wc -l`
+CRIT8=`$GREP " YDIPLEN * YDIPLEN * 0*\.490000 * \-43\.39[67]... * 18\.89[12]" $log | wc -l`
+CRIT9=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.490000 * \-43\.39[67]... * 18\.89[12]" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[2]=9
 ERROR[2]="Polarizability is NOT CORRECT"
@@ -107,7 +107,7 @@ ERROR[2]="Polarizability is NOT CORRECT"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
       echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
       PASSED=0
    fi

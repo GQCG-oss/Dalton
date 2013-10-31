@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,206 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 21:03:18 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 19:24:39 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_cc2_r12_aux_ch4_sym_lhtr
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE FUNCTION                                
+.DIRECT                                           
+*MOLBAS                                           
+.R12AUX                                           
+**INTEGRALS                                       
+.R12                                              
+**WAVE FUNCTIONS                                  
+.CC                                               
+*ORBITAL INPUT                                    
+.NOSUPSYM                                         
+.MOSTART                                          
+ H1DIAG                                           
+*SCF INPUT                                        
+.THRESHOLD                                        
+ 1D-10                                            
+*CC INPUT                                         
+.CC2                                              
+.PRINT                                            
+ 3                                                
+.FROIMP                                           
+  1 0 0 0                                         
+  0 0 0 0                                         
+.THRENR                                           
+ 1.0D-10                                          
+*CCEXCI                                           
+.THREXC                                           
+ 1.D-8                                            
+.NCCEXCI                                          
+ 4 4 4 4                                          
+.LHTR                                             
+*R12 INPUT                                        
+#.NO HYB                                          
+#.R12XXL                                          
+#.NO B                                            
+#.NO A'                                           
+#.NO 2                                            
+.CC2                                              
+ 1A                                               
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+6-311G** 6-311++G(3df,3pd)                                                     
+CH4: CC2-R12/Ansatz1 excitation energies with symmetry                         
+                                                                               
+    4    2 XY XZ                                                               
+ 1      6.    1                                                                
+C      0.000000000000000   0.000000000000000   0.000000000000000       *       
+ 1      1.    1                                                                
+H      1.276731000000000   1.276731000000000   1.276731000000000       *       
+ 2      6.    1                                                                
+C      0.000000000000000   0.000000000000000   0.000000000000000       *       
+ 2      1.    1                                                                
+H      1.276731000000000   1.276731000000000   1.276731000000000       *       
 
 
        *******************************************************************
@@ -105,17 +228,13 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
     Wave function sections will be executed (SIRIUS module)
  --------------------------------------------------------------------------------
-
-
- INFO : "*READIN" is deprecated, use instead "*MOLBAS"
-
 
 
  Changes of defaults for *MOLBAS:
@@ -143,8 +262,8 @@
   Nuclear charge:   6.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    1
-  Used basis set file for basis set for elements with Z =   6 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311G**"
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-311G**"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311G**                                                                        
@@ -154,8 +273,8 @@
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    1
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311G**"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-311G**"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311G**                                                                        
@@ -165,8 +284,8 @@
   Nuclear charge:   6.00000
   Number of symmetry independent centers:    1
   This is an auxiliary basis for R12, MBSI:    2
-  Used basis set file for basis set for elements with Z =   6 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311++G(3df,3pd)"
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-311++G(3df,3pd)"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311++G(3df,3pd)                                                               
@@ -176,8 +295,8 @@
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   This is an auxiliary basis for R12, MBSI:    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311++G(3df,3pd)"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-311++G(3df,3pd)"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311++G(3df,3pd)                                                               
@@ -262,7 +381,7 @@ Point group: D2
   ------------------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -353,8 +472,16 @@ Point group: D2
  H   _4:    1.910933    1.910933    1.910933    0.000000
 
 
-  Max interatomic separation is    1.9109 Angstrom (    3.6111 Bohr)
+  Max    interatomic separation is    1.9109 Angstrom (    3.6111 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+  Min YX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    4    1
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -400,7 +527,7 @@ Point group: D2
             4.580578            4.580578            4.580578 cm-1
 
 
-@  Nuclear repulsion energy :   12.514560078913
+@  Nuclear repulsion energy :   12.514560078913 Hartree
 
 
   Symmetry Orbitals
@@ -618,8 +745,8 @@ Point group: D2
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.11 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.10 seconds
+ >>>> Total wall time used in HERMIT:   0.10 seconds
 
 
                         .----------------------------------.
@@ -637,16 +764,16 @@ Point group: D2
  >>>> Detected R12 input:
  Direct Fock matrix formation switched on!
  Scale factors for CC excitations manifolds:
- for bra states (projection manifold):  1.00000000000000000     
- for ket states (operator manifold)  :  1.00000000000000000     
+ for bra states (projection manifold):   1.0000000000000000     
+ for ket states (operator manifold)  :   1.0000000000000000     
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 19:24:39 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:03:18 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      CH4: CC2-R12/Ansatz1 excitation energies with symmetry                  
@@ -655,32 +782,29 @@ Point group: D2
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
-
-               Fock matrices are calculated directly
-               without use of integrals on disk.
+ Fock matrices are calculated directly without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART H1DIAG" input option.
+ ".MOSTART H1DIAG" input option
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -693,24 +817,12 @@ Point group: D2
 
       -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    2    1    1    1
+@    Occupied SCF orbitals               5 |    2    1    1    1
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-10
-
-
- Changes of defaults for CC:
- ---------------------------
-
-
- -This is a direct atomic orbital integral based
-  calculation for coupled cluster wave function
-
- -Implicit frozen core calculation
- -Excitation energies calculated
-  
 
 
  Changes of defaults for CC:
@@ -731,78 +843,79 @@ Point group: D2
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   1  -26.9208461510       1.74D+01  -2.69D+01    2  1  1  1
+   1  Screening settings (-IFTHRS, DIFDEN)   -7    T
+@  1  -26.9208461562       1.74D+01  -2.69D+01     2   1   1   1
       Virial theorem: -V/T =      1.397424
-      MULPOP  C      -3.96; H   _1  0.99; H   _2  0.99; H   _3  0.99; H   _4  0.99; 
+@      MULPOP C      -3.96; H   _1  0.99; H   _2  0.99; H   _3  0.99; H   _4  0.99; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   2  -34.5740137487       5.98D+00  -7.65D+00    2  1  1  1
+   2  Screening settings (-IFTHRS, DIFDEN)   -7    T
+@  2  -34.5740142129       5.98D+00  -7.65D+00     2   1   1   1
       Virial theorem: -V/T =      2.092202
-      MULPOP  C       7.24; H   _1 -1.81; H   _2 -1.81; H   _3 -1.81; H   _4 -1.81; 
+@      MULPOP C       7.24; H   _1 -1.81; H   _2 -1.81; H   _3 -1.81; H   _4 -1.81; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   3  -38.7812868927       4.97D+00  -4.21D+00    2  1  1  1
+   3  Screening settings (-IFTHRS, DIFDEN)   -7    T
+@  3  -38.7812870349       4.97D+00  -4.21D+00     2   1   1   1
       Virial theorem: -V/T =      1.865551
-      MULPOP  C      -2.05; H   _1  0.51; H   _2  0.51; H   _3  0.51; H   _4  0.51; 
+@      MULPOP C      -2.05; H   _1  0.51; H   _2  0.51; H   _3  0.51; H   _4  0.51; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   4  -40.0920858822       1.21D+00  -1.31D+00    2  1  1  1
+   4  Screening settings (-IFTHRS, DIFDEN)   -7    T
+@  4  -40.0920858983       1.21D+00  -1.31D+00     2   1   1   1
       Virial theorem: -V/T =      1.982551
-      MULPOP  C      -0.78; H   _1  0.19; H   _2  0.19; H   _3  0.19; H   _4  0.19; 
+@      MULPOP C      -0.78; H   _1  0.19; H   _2  0.19; H   _3  0.19; H   _4  0.19; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   5  -40.1914985475       6.81D-02  -9.94D-02    2  1  1  1
+   5  Screening settings (-IFTHRS, DIFDEN)   -7    T
+@  5  -40.1914985533       6.81D-02  -9.94D-02     2   1   1   1
       Virial theorem: -V/T =      2.012916
-      MULPOP  C      -0.36; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.36; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   6  -40.1917302489       2.39D-02  -2.32D-04    2  1  1  1
+   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
+@  6  -40.1917302493       2.39D-02  -2.32D-04     2   1   1   1
       Virial theorem: -V/T =      2.011954
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   7  -40.1917714459       1.96D-03  -4.12D-05    2  1  1  1
+   7  Screening settings (-IFTHRS, DIFDEN)   -9    T
+@  7  -40.1917714460       1.96D-03  -4.12D-05     2   1   1   1
       Virial theorem: -V/T =      2.011289
-      MULPOP  C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
+@      MULPOP C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   8  -40.1917720842       2.24D-04  -6.38D-07    2  1  1  1
+   8  Screening settings (-IFTHRS, DIFDEN)  -11    F
+@  8  -40.1917720842       2.24D-04  -6.38D-07     2   1   1   1
       Virial theorem: -V/T =      2.011253
-      MULPOP  C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
+@      MULPOP C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
  -----------------------------------------------------------------------------
-   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   9  -40.1917720926       2.77D-05  -8.32D-09    2  1  1  1
+   9  Screening settings (-IFTHRS, DIFDEN)  -11    T
+@  9  -40.1917720926       2.77D-05  -8.32D-09     2   1   1   1
       Virial theorem: -V/T =      2.011254
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  10  -40.1917720926       1.90D-06  -6.95D-11    2  1  1  1
+  10  Screening settings (-IFTHRS, DIFDEN)  -13    F
+@ 10  -40.1917720926       1.91D-06  -7.01D-11     2   1   1   1
       Virial theorem: -V/T =      2.011255
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  11  -40.1917720926       2.04D-07  -2.27D-13    2  1  1  1
+  11  Screening settings (-IFTHRS, DIFDEN)  -16    F
+@ 11  -40.1917720926       2.04D-07  -3.27D-13     2   1   1   1
       Virial theorem: -V/T =      2.011255
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  12  -40.1917720926       3.20D-08  -5.68D-14    2  1  1  1
+  12  Screening settings (-IFTHRS, DIFDEN)  -16    T
+@ 12  -40.1917720926       3.20D-08   0.00D+00     2   1   1   1
       Virial theorem: -V/T =      2.011255
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  13  -40.1917720926       6.94D-10   5.68D-14    2  1  1  1
+  13  Screening settings (-IFTHRS, DIFDEN)  -16    T
+@ 13  -40.1917720926       6.94D-10   0.00D+00     2   1   1   1
       Virial theorem: -V/T =      2.011255
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  14  -40.1917720926       1.71D-11  -2.84D-14    2  1  1  1
+  14  Screening settings (-IFTHRS, DIFDEN)  -16    T
+@ 14  -40.1917720926       1.71D-11   1.42D-14     2   1   1   1
 
- *** DIIS converged in  14 iterations !
-   - total time used in SIRFCK :              0.67 seconds
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:    -40.191772092640    1.71D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -848,7 +961,9 @@ Point group: D2
    2      0.000000000000
    3      0.000000000000
    4      0.000000000000
- >>> Time used in R12AUX is   0.31 seconds
+ >>>  Time used in R12AUX     is   0.28 seconds
+
+ >>>> CPU and wall time for SCF :       0.842       0.854
 
 
                        .-----------------------------------.
@@ -856,19 +971,19 @@ Point group: D2
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -40.191772092642                 
-     Nuclear repulsion:            12.514560078913
-     Electronic energy:           -52.706332171555
+@    Final HF energy:             -40.191772092640                 
+@    Nuclear repulsion:            12.514560078913
+@    Electronic energy:           -52.706332171553
 
-     Final gradient norm:           0.000000000017
+@    Final gradient norm:           0.000000000017
 
  
-     Date and time (Linux)  : Wed Mar 16 19:24:40 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:03:19 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -934,12 +1049,12 @@ Point group: D2
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.04 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.86 seconds
+ >>>> Total wall time used in SIRIUS :      0.87 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:24:40 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:03:19 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -1002,31 +1117,31 @@ Point group: D2
  Core memory required by CCSD_R12 :         131493  (double words)
 
  Computation of (ip'|r12|jq) integrals done
- >>> Time used in R  [5] is   1.70 seconds
+ >>>  Time used in R  [5]     is   1.49 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of V^aj_kl intermediate done
 
  >>> Time used for V^aj_kl is    0.06 seconds
 
  Computation of (ip'|1/r12|jq) integrals done
- >>> Time used in 1/R[5] is   1.65 seconds
+ >>>  Time used in 1/R[5]     is   1.59 seconds
  Computation of (i* p'|r12|jq) integrals done
- >>> Time used in R  [5] is   1.69 seconds
+ >>>  Time used in R  [5]     is   1.48 seconds
  Computation of (i'p|r12|jq) integrals done
- >>> Time used in R  [5] is   2.72 seconds
- >>> Time used in TWOINT is   0.39 seconds
- >>> Time used in TWOINT is   0.51 seconds
- >>> Time used in TWOINT is   0.37 seconds
- >>> Time used in TWOINT is   0.89 seconds
- >>> Time used in TWOINT is   0.84 seconds
- >>> Time used in TWOINT is   0.10 seconds
- >>> Time used in TWOINT is   0.14 seconds
- >>> Time used in TWOINT is   0.13 seconds
- >>> Time used in TWOINT is   0.19 seconds
- >>> Time used in TWOINT is   0.31 seconds
- >>> Time used in TWOINT is   0.33 seconds
+ >>>  Time used in R  [5]     is   2.58 seconds
+ >>>  Time used in TWOINT     is   0.42 seconds
+ >>>  Time used in TWOINT     is   0.57 seconds
+ >>>  Time used in TWOINT     is   0.37 seconds
+ >>>  Time used in TWOINT     is   0.91 seconds
+ >>>  Time used in TWOINT     is   0.79 seconds
+ >>>  Time used in TWOINT     is   0.11 seconds
+ >>>  Time used in TWOINT     is   0.15 seconds
+ >>>  Time used in TWOINT     is   0.13 seconds
+ >>>  Time used in TWOINT     is   0.18 seconds
+ >>>  Time used in TWOINT     is   0.32 seconds
+ >>>  Time used in TWOINT     is   0.30 seconds
  Computation of (ip'|[T,r12]|jq) integrals done
- >>> Time used in T,R[5] is   4.71 seconds
+ >>>  Time used in T,R[5]     is   4.93 seconds
 
 
                  +-----------------------------------------------+
@@ -1088,8 +1203,8 @@ Point group: D2
        -0.125452553   -0.143957687   -0.047677939   -0.049635241
 
               MP2-R12/B   correlation energy =   -0.193592928
- Time for MP2-R12 part cpu:   12.486100673675537     
- Time for MP2-R12 part wall:   12.000000000000000     
+ Time for MP2-R12 part cpu :   12.087999999999999     
+ Time for MP2-R12 part wall:   13.597000002861023     
    
 
  *******************************************************************
@@ -1110,157 +1225,157 @@ Point group: D2
           Number of t2' amplitudes for R12 part   :        40
           Total number of amplitudes in ccsd      :      2889
 
- Iter.  1: Coupled cluster MP2-R12/A energy :     -40.3918078441921367
-     Conventional correlation energy:    -0.1731304917316407
-     R12 correlation energy         :    -0.0269052598187431
-     Total correlation energy       :    -0.2000357515503839
+ Iter.  1: Coupled cluster MP2-R12/A energy :     -40.3918078441910637
+     Conventional correlation energy:    -0.1731304917318397
+     R12 correlation energy         :    -0.0269052598187604
+     Total correlation energy       :    -0.2000357515506001
 
 
        Iteration no.:  1
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.24 seconds
+       Time used in   RHS - TOTAL  :       1.05 seconds
        Norm^2 of omega1 after ccvec:        0.1281490663D-02
-       Norm^2 of omega2 after ccvec:        0.9856215349D-28
-       Norm^2 of Omegar12  in NXTAM:        0.2878209129D-27
- Iter.  1: Coupled cluster CC2-R12/A energy :     -40.3916935949266076
-     Conventional correlation energy:    -0.1730162424661188
-     R12 correlation energy         :    -0.0269052598187316
-     Total correlation energy       :    -0.1999215022848504
+       Norm^2 of omega2 after ccvec:        0.7584165741D-28
+       Norm^2 of Omegar12  in NXTAM:        0.2881687117D-27
+ Iter.  1: Coupled cluster CC2-R12/A energy :     -40.3916935949253286
+     Conventional correlation energy:    -0.1730162424661117
+     R12 correlation energy         :    -0.0269052598187516
+     Total correlation energy       :    -0.1999215022848633
 
 
        Iteration no.:  2
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.24 seconds
+       Time used in   RHS - TOTAL  :       1.04 seconds
        Norm^2 of omega1 after ccvec:        0.1355310791D-04
        Norm^2 of omega2 after ccvec:        0.7541966207D-04
        Norm^2 of Omegar12  in NXTAM:        0.1272005591D-07
- Iter.  2: Coupled cluster CC2-R12/A energy :     -40.3926474070658585
-     Conventional correlation energy:    -0.1739375589877525
-     R12 correlation energy         :    -0.0269377554363520
-     Total correlation energy       :    -0.2008753144241045
+ Iter.  2: Coupled cluster CC2-R12/A energy :     -40.3926474070642811
+     Conventional correlation energy:    -0.1739375589874470
+     R12 correlation energy         :    -0.0269377554363706
+     Total correlation energy       :    -0.2008753144238176
 
 
        Iteration no.:  3
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.24 seconds
+       Time used in   RHS - TOTAL  :       1.05 seconds
        Norm^2 of omega1 after ccvec:        0.3853339210D-05
        Norm^2 of omega2 after ccvec:        0.2505889213D-05
        Norm^2 of Omegar12  in NXTAM:        0.8832973634D-09
- Iter.  3: Coupled cluster CC2-R12/A energy :     -40.3929293001417804
-     Conventional correlation energy:    -0.1742190653202726
-     R12 correlation energy         :    -0.0269381421797517
-     Total correlation energy       :    -0.2011572075000244
+ Iter.  3: Coupled cluster CC2-R12/A energy :     -40.3929293001403167
+     Conventional correlation energy:    -0.1742190653200808
+     R12 correlation energy         :    -0.0269381421797748
+     Total correlation energy       :    -0.2011572074998556
 
 
        Iteration no.:  4
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.24 seconds
-       Norm^2 of omega1 after ccvec:        0.9533520955D-07
+       Time used in   RHS - TOTAL  :       1.04 seconds
+       Norm^2 of omega1 after ccvec:        0.9533520956D-07
        Norm^2 of omega2 after ccvec:        0.8330092142D-07
-       Norm^2 of Omegar12  in NXTAM:        0.2876420562D-10
- Iter.  4: Coupled cluster CC2-R12/A energy :     -40.3929132109694535
-     Conventional correlation energy:    -0.1741991662351339
-     R12 correlation energy         :    -0.0269419520925631
-     Total correlation energy       :    -0.2011411183276970
+       Norm^2 of Omegar12  in NXTAM:        0.2876420559D-10
+ Iter.  4: Coupled cluster CC2-R12/A energy :     -40.3929132109681532
+     Conventional correlation energy:    -0.1741991662351055
+     R12 correlation energy         :    -0.0269419520925849
+     Total correlation energy       :    -0.2011411183276904
 
 
        Iteration no.:  5
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.24 seconds
-       Norm^2 of omega1 after ccvec:        0.3689478232D-08
-       Norm^2 of omega2 after ccvec:        0.1606970216D-08
-       Norm^2 of Omegar12  in NXTAM:        0.5914472432D-12
- Iter.  5: Coupled cluster CC2-R12/A energy :     -40.3929126311025399
-     Conventional correlation energy:    -0.1741981045874539
-     R12 correlation energy         :    -0.0269424338733311
-     Total correlation energy       :    -0.2011405384607850
+       Time used in   RHS - TOTAL  :       1.03 seconds
+       Norm^2 of omega1 after ccvec:        0.3689478231D-08
+       Norm^2 of omega2 after ccvec:        0.1606970215D-08
+       Norm^2 of Omegar12  in NXTAM:        0.5914472453D-12
+ Iter.  5: Coupled cluster CC2-R12/A energy :     -40.3929126311009910
+     Conventional correlation energy:    -0.1741981045871768
+     R12 correlation energy         :    -0.0269424338733525
+     Total correlation energy       :    -0.2011405384605292
 
 
        Iteration no.:  6
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.24 seconds
-       Norm^2 of omega1 after ccvec:        0.4573432137D-10
-       Norm^2 of omega2 after ccvec:        0.5393229532D-10
-       Norm^2 of Omegar12  in NXTAM:        0.1049127446D-13
- Iter.  6: Coupled cluster CC2-R12/A energy :     -40.3929124267547550
-     Conventional correlation energy:    -0.1741977787616094
-     R12 correlation energy         :    -0.0269425553513885
-     Total correlation energy       :    -0.2011403341129979
+       Time used in   RHS - TOTAL  :       1.01 seconds
+       Norm^2 of omega1 after ccvec:        0.4573432127D-10
+       Norm^2 of omega2 after ccvec:        0.5393229533D-10
+       Norm^2 of Omegar12  in NXTAM:        0.1049127457D-13
+ Iter.  6: Coupled cluster CC2-R12/A energy :     -40.3929124267536253
+     Conventional correlation energy:    -0.1741977787617515
+     R12 correlation energy         :    -0.0269425553514102
+     Total correlation energy       :    -0.2011403341131617
 
 
        Iteration no.:  7
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.24 seconds
-       Norm^2 of omega1 after ccvec:        0.1441141793D-11
-       Norm^2 of omega2 after ccvec:        0.7042952783D-12
-       Norm^2 of Omegar12  in NXTAM:        0.1797110579D-15
- Iter.  7: Coupled cluster CC2-R12/A energy :     -40.3929123970222079
-     Conventional correlation energy:    -0.1741977266025785
-     R12 correlation energy         :    -0.0269425777778737
-     Total correlation energy       :    -0.2011403043804522
+       Time used in   RHS - TOTAL  :       1.01 seconds
+       Norm^2 of omega1 after ccvec:        0.1441141821D-11
+       Norm^2 of omega2 after ccvec:        0.7042952740D-12
+       Norm^2 of Omegar12  in NXTAM:        0.1797109946D-15
+ Iter.  7: Coupled cluster CC2-R12/A energy :     -40.3929123970207300
+     Conventional correlation energy:    -0.1741977266023795
+     R12 correlation energy         :    -0.0269425777778898
+     Total correlation energy       :    -0.2011403043802694
 
 
        Iteration no.:  8
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.24 seconds
-       Norm^2 of omega1 after ccvec:        0.5073465873D-13
-       Norm^2 of omega2 after ccvec:        0.3283218507D-13
-       Norm^2 of Omegar12  in NXTAM:        0.1888759188D-17
- Iter.  8: Coupled cluster CC2-R12/A energy :     -40.3929123945933597
-     Conventional correlation energy:    -0.1741977247000008
-     R12 correlation energy         :    -0.0269425772516003
-     Total correlation energy       :    -0.2011403019516012
+       Time used in   RHS - TOTAL  :       1.00 seconds
+       Norm^2 of omega1 after ccvec:        0.5073465452D-13
+       Norm^2 of omega2 after ccvec:        0.3283218461D-13
+       Norm^2 of Omegar12  in NXTAM:        0.1888755112D-17
+ Iter.  8: Coupled cluster CC2-R12/A energy :     -40.3929123945921091
+     Conventional correlation energy:    -0.1741977247000221
+     R12 correlation energy         :    -0.0269425772516248
+     Total correlation energy       :    -0.2011403019516470
 
 
        Iteration no.:  9
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.24 seconds
-       Norm^2 of omega1 after ccvec:        0.5485070036D-15
-       Norm^2 of omega2 after ccvec:        0.7534514187D-15
-       Norm^2 of Omegar12  in NXTAM:        0.5263140636D-19
- Iter.  9: Coupled cluster CC2-R12/A energy :     -40.3929123941244583
-     Conventional correlation energy:    -0.1741977244726556
-     R12 correlation energy         :    -0.0269425770100441
-     Total correlation energy       :    -0.2011403014826997
+       Time used in   RHS - TOTAL  :       1.01 seconds
+       Norm^2 of omega1 after ccvec:        0.5485053234D-15
+       Norm^2 of omega2 after ccvec:        0.7534519185D-15
+       Norm^2 of Omegar12  in NXTAM:        0.5263231727D-19
+ Iter.  9: Coupled cluster CC2-R12/A energy :     -40.3929123941237336
+     Conventional correlation energy:    -0.1741977244732027
+     R12 correlation energy         :    -0.0269425770100655
+     Total correlation energy       :    -0.2011403014832682
 
 
        Iteration no.: 10
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.25 seconds
-       Norm^2 of omega1 after ccvec:        0.4116341994D-16
-       Norm^2 of omega2 after ccvec:        0.5076798246D-16
-       Norm^2 of Omegar12  in NXTAM:        0.5772102895D-20
- Iter. 10: Coupled cluster CC2-R12/A energy :     -40.3929123947399020
-     Conventional correlation energy:    -0.1741977250651416
-     R12 correlation energy         :    -0.0269425770330055
-     Total correlation energy       :    -0.2011403020981472
+       Time used in   RHS - TOTAL  :       1.01 seconds
+       Norm^2 of omega1 after ccvec:        0.4116321076D-16
+       Norm^2 of omega2 after ccvec:        0.5076765859D-16
+       Norm^2 of Omegar12  in NXTAM:        0.5771910620D-20
+ Iter. 10: Coupled cluster CC2-R12/A energy :     -40.3929123947382891
+     Conventional correlation energy:    -0.1741977250648006
+     R12 correlation energy         :    -0.0269425770330229
+     Total correlation energy       :    -0.2011403020978235
 
 
        Iteration no.: 11
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.24 seconds
-       Norm^2 of omega1 after ccvec:        0.3248882661D-17
-       Norm^2 of omega2 after ccvec:        0.2070356556D-17
-       Norm^2 of Omegar12  in NXTAM:        0.1824178386D-21
- Iter. 11: Coupled cluster CC2-R12/A energy :     -40.3929123947580848
-     Conventional correlation energy:    -0.1741977250822728
-     R12 correlation energy         :    -0.0269425770340593
-     Total correlation energy       :    -0.2011403021163322
+       Time used in   RHS - TOTAL  :       1.00 seconds
+       Norm^2 of omega1 after ccvec:        0.3248829485D-17
+       Norm^2 of omega2 after ccvec:        0.2070319977D-17
+       Norm^2 of Omegar12  in NXTAM:        0.1823580365D-21
+ Iter. 11: Coupled cluster CC2-R12/A energy :     -40.3929123947565998
+     Conventional correlation energy:    -0.1741977250820526
+     R12 correlation energy         :    -0.0269425770340820
+     Total correlation energy       :    -0.2011403021161345
 
 
- CC2-R12/A energy converged to within   0.10D-09 is    -40.392912395
- Final 2-norm of the CC vector function:  2.30634759D-09
+ CC2-R12/A energy converged to within   0.10D-09 is          -40.392912394757
+ Final 2-norm of the CC vector function:  2.30632813D-09
  R12       energy converged to within   0.10D-09 is     -0.026942577
 
 
@@ -1355,21 +1470,21 @@ Point group: D2
  | 2 2 1 1 |   1   1   1   1 |        1        1 |          704 |   -0.006649  |
  | 2 2 1 1 |   2   2   1   1 |        2        2 |          706 |   -0.008194  |
  | 2 2 1 1 |   3   3   1   1 |        3        3 |          709 |   -0.009329  |
- | 1 2 2 1 |   5   1   1   1 |       14        1 |          795 |    0.006700  |
+ | 1 2 2 1 |   4   1   1   1 |       13        1 |          782 |    0.006885  |
  | 1 2 2 1 |   2   2   1   1 |       11        2 |          760 |    0.007055  |
  | 1 2 2 1 |   1   3   1   1 |       10        3 |          751 |    0.006672  |
  | 1 2 2 1 |   2   3   1   1 |       11        3 |          761 |    0.007452  |
  | 1 1 2 2 |   1   1   1   1 |       10       10 |          758 |   -0.008883  |
  | 1 1 2 2 |   2   1   1   1 |       11       10 |          768 |   -0.006866  |
  | 1 1 2 2 |   2   2   1   1 |       11       11 |          769 |   -0.014153  |
- | 1 1 2 2 |   4   4   1   1 |       13       13 |          794 |   -0.009404  |
- | 1 1 2 2 |   5   5   1   1 |       14       14 |          808 |   -0.015319  |
+ | 1 1 2 2 |   4   4   1   1 |       13       13 |          794 |   -0.015877  |
+ | 1 1 2 2 |   5   5   1   1 |       14       14 |          808 |   -0.008847  |
  | 4 1 3 2 |   2   2   1   1 |       21       11 |          924 |    0.008682  |
- | 4 1 3 2 |   2   5   1   1 |       21       14 |          927 |    0.010898  |
- | 4 1 3 2 |   5   5   1   1 |       24       14 |          993 |    0.007793  |
+ | 4 1 3 2 |   2   4   1   1 |       21       13 |          926 |    0.011038  |
+ | 4 1 3 2 |   5   4   1   1 |       24       13 |          992 |    0.007852  |
  | 3 1 4 2 |   2   2   1   1 |       30       11 |         1149 |    0.008682  |
- | 3 1 4 2 |   2   4   1   1 |       30       13 |         1151 |    0.008461  |
- | 3 1 4 2 |   2   5   1   1 |       30       14 |         1152 |    0.007659  |
+ | 3 1 4 2 |   2   4   1   1 |       30       13 |         1151 |    0.008029  |
+ | 3 1 4 2 |   2   5   1   1 |       30       14 |         1152 |    0.008110  |
  | 4 4 3 3 |   1   1   1   1 |       20       20 |          913 |   -0.006691  |
  | 4 4 3 3 |   2   1   1   1 |       21       20 |          933 |    0.006767  |
  | 4 4 3 3 |   2   2   1   1 |       21       21 |          934 |   -0.018920  |
@@ -1384,7 +1499,7 @@ Point group: D2
  | 3 3 1 1 |   1   1   1   1 |        1        1 |         1407 |   -0.006649  |
  | 3 3 1 1 |   2   2   1   1 |        2        2 |         1409 |   -0.008194  |
  | 3 3 1 1 |   3   3   1   1 |        3        3 |         1412 |   -0.009329  |
- | 1 3 3 1 |   4   1   1   1 |       22        1 |         1638 |   -0.007942  |
+ | 1 3 3 1 |   5   1   1   1 |       23        1 |         1660 |   -0.007950  |
  | 1 3 3 1 |   2   2   1   1 |       20        2 |         1598 |    0.007055  |
  | 1 3 3 1 |   1   3   1   1 |       19        3 |         1580 |    0.006672  |
  | 1 3 3 1 |   2   3   1   1 |       20        3 |         1599 |    0.007452  |
@@ -1394,16 +1509,16 @@ Point group: D2
  | 4 4 2 2 |   5   2   1   1 |       14       11 |         1508 |   -0.007659  |
  | 4 4 2 2 |   5   5   1   1 |       14       14 |         1511 |   -0.008984  |
  | 1 4 3 2 |   2   2   1   1 |       20       11 |         1607 |    0.008682  |
- | 1 4 3 2 |   4   2   1   1 |       22       11 |         1648 |   -0.010863  |
- | 1 4 3 2 |   4   5   1   1 |       22       14 |         1651 |   -0.007224  |
+ | 1 4 3 2 |   5   2   1   1 |       23       11 |         1670 |   -0.011009  |
+ | 1 4 3 2 |   5   5   1   1 |       23       14 |         1673 |   -0.007363  |
  | 2 4 4 2 |   2   2   1   1 |       30       11 |         1852 |   -0.014852  |
  | 1 1 3 3 |   1   1   1   1 |       19       19 |         1596 |   -0.008883  |
  | 1 1 3 3 |   2   1   1   1 |       20       19 |         1615 |   -0.006866  |
  | 1 1 3 3 |   2   2   1   1 |       20       20 |         1616 |   -0.014153  |
- | 1 1 3 3 |   4   4   1   1 |       22       22 |         1659 |   -0.019363  |
+ | 1 1 3 3 |   5   5   1   1 |       23       23 |         1682 |   -0.019391  |
  | 2 1 4 3 |   2   2   1   1 |       30       20 |         1861 |    0.008682  |
- | 2 1 4 3 |   2   4   1   1 |       30       22 |         1863 |   -0.011132  |
- | 2 1 4 3 |   5   4   1   1 |       33       22 |         1956 |   -0.007487  |
+ | 2 1 4 3 |   2   5   1   1 |       30       23 |         1864 |   -0.011008  |
+ | 2 1 4 3 |   5   5   1   1 |       33       23 |         1957 |   -0.007363  |
  | 2 2 4 4 |   1   1   1   1 |       29       29 |         1841 |   -0.006691  |
  | 2 2 4 4 |   2   1   1   1 |       30       29 |         1870 |    0.006767  |
  | 2 2 4 4 |   2   2   1   1 |       30       30 |         1871 |   -0.018920  |
@@ -1412,7 +1527,7 @@ Point group: D2
  | 4 4 1 1 |   1   1   1   1 |        1        1 |         2110 |   -0.006649  |
  | 4 4 1 1 |   2   2   1   1 |        2        2 |         2112 |   -0.008194  |
  | 4 4 1 1 |   3   3   1   1 |        3        3 |         2115 |   -0.009329  |
- | 1 4 4 1 |   5   1   1   1 |       32        1 |         2606 |   -0.007056  |
+ | 1 4 4 1 |   4   1   1   1 |       31        1 |         2575 |   -0.006885  |
  | 1 4 4 1 |   2   2   1   1 |       29        2 |         2517 |    0.007055  |
  | 1 4 4 1 |   1   3   1   1 |       28        3 |         2490 |    0.006672  |
  | 1 4 4 1 |   2   3   1   1 |       29        3 |         2518 |    0.007452  |
@@ -1423,29 +1538,27 @@ Point group: D2
  | 3 3 2 2 |   5   5   1   1 |       14       14 |         2214 |   -0.008984  |
  | 2 3 3 2 |   2   2   1   1 |       20       11 |         2310 |   -0.014852  |
  | 1 3 4 2 |   2   2   1   1 |       29       11 |         2526 |    0.008682  |
- | 1 3 4 2 |   4   2   1   1 |       31       11 |         2585 |    0.007744  |
- | 1 3 4 2 |   5   2   1   1 |       32       11 |         2616 |   -0.008383  |
+ | 1 3 4 2 |   4   2   1   1 |       31       11 |         2585 |   -0.008029  |
+ | 1 3 4 2 |   5   2   1   1 |       32       11 |         2616 |    0.008111  |
  | 2 2 3 3 |   1   1   1   1 |       19       19 |         2299 |   -0.006691  |
  | 2 2 3 3 |   2   1   1   1 |       20       19 |         2318 |    0.006767  |
  | 2 2 3 3 |   2   2   1   1 |       20       20 |         2319 |   -0.018920  |
  | 2 2 3 3 |   5   2   1   1 |       23       20 |         2382 |   -0.007659  |
  | 2 2 3 3 |   5   5   1   1 |       23       23 |         2385 |   -0.008984  |
  | 1 2 4 3 |   2   2   1   1 |       29       20 |         2535 |    0.008682  |
- | 1 2 4 3 |   5   2   1   1 |       32       20 |         2625 |   -0.011157  |
- | 1 2 4 3 |   5   5   1   1 |       32       23 |         2628 |   -0.007894  |
+ | 1 2 4 3 |   4   2   1   1 |       31       20 |         2594 |   -0.011038  |
+ | 1 2 4 3 |   4   5   1   1 |       31       23 |         2597 |   -0.007852  |
  | 1 1 4 4 |   1   1   1   1 |       28       28 |         2515 |   -0.008883  |
  | 1 1 4 4 |   2   1   1   1 |       29       28 |         2543 |   -0.006866  |
  | 1 1 4 4 |   2   2   1   1 |       29       29 |         2544 |   -0.014153  |
- | 1 1 4 4 |   4   4   1   1 |       31       31 |         2605 |   -0.008318  |
- | 1 1 4 4 |   5   5   1   1 |       32       32 |         2637 |   -0.016406  |
+ | 1 1 4 4 |   4   4   1   1 |       31       31 |         2605 |   -0.015876  |
+ | 1 1 4 4 |   5   5   1   1 |       32       32 |         2637 |   -0.008848  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.1444
 
-
           Printed all single excitations greater than 0.003975
-
 
           Printed all double excitations greater than 0.006619
 
@@ -1474,7 +1587,7 @@ Point group: D2
 
 
 
-       Time used in   RHS - TOTAL  :       1.27 seconds
+       Time used in   RHS - TOTAL  :       1.02 seconds
 
 
             E-intermediates calculated 
@@ -1509,32 +1622,32 @@ Point group: D2
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-     1 :     20     11     29     21     30     12      1
-  MIN AND MAX IN SELECTED SUPSPACE   0.75401585626275125        1.0633632596764748     
+     1 :     29     20     11     30     21     12      1
+  MIN AND MAX IN SELECTED SUPSPACE   0.75401585626248346        1.0633632596757949     
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_1___1
  IOPTSV is    33 ... program continues nevertheless.
  Vector nr.  1 of type RE and symmetry  1 was ot found on file.
  Start vector guessed from diagonal
- ... selected element no. 20
+ ... selected element no. 29
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_1___2
  IOPTSV is    33 ... program continues nevertheless.
  Vector nr.  2 of type RE and symmetry  1 was ot found on file.
  Start vector guessed from diagonal
- ... selected element no. 11
+ ... selected element no. 20
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_1___3
  IOPTSV is    33 ... program continues nevertheless.
  Vector nr.  3 of type RE and symmetry  1 was ot found on file.
  Start vector guessed from diagonal
- ... selected element no. 29
+ ... selected element no. 11
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_1___4
  IOPTSV is    33 ... program continues nevertheless.
  Vector nr.  4 of type RE and symmetry  1 was ot found on file.
  Start vector guessed from diagonal
- ... selected element no. 21
+ ... selected element no. 30
 
 
 
@@ -1545,414 +1658,446 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.57119667
-       2      0.57436003
-       3      0.62827804
-       4      0.71381125
+               Column   1
+       1       0.57119667
+       2       0.57436003
+       3       0.62827804
+       4       0.71381125
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 5.11497D-01
- ROOT:  2 RESIDUAL TOT: 5.09629D-01
- ROOT:  3 RESIDUAL TOT: 4.99477D-01
- ROOT:  4 RESIDUAL TOT: 4.76196D-01
+ ROOT:  1 RESIDUAL TOT: 5.11210D-01
+ ROOT:  2 RESIDUAL TOT: 5.09820D-01
+ ROOT:  3 RESIDUAL TOT: 4.99449D-01
+ ROOT:  4 RESIDUAL TOT: 4.76064D-01
       1       4         0.01     0.51E+00
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.57119667
-       2      0.57436003
-       3      0.62827804
-       4      0.71381125
+               Column   1
+       1       0.57119667
+       2       0.57436003
+       3       0.62827804
+       4       0.71381125
+    ==== End of matrix output ====
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.42
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49513545
-       2      0.49715865
-       3      0.54946634
-       4      0.64407228
+               Column   1
+       1       0.49513125
+       2       0.49716105
+       3       0.54946602
+       4       0.64407152
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 5.13936D-02
- ROOT:  2 RESIDUAL TOT: 5.48585D-02
- ROOT:  3 RESIDUAL TOT: 9.18175D-02
- ROOT:  4 RESIDUAL TOT: 5.78547D-02
+ ROOT:  1 RESIDUAL TOT: 5.13837D-02
+ ROOT:  2 RESIDUAL TOT: 5.48629D-02
+ ROOT:  3 RESIDUAL TOT: 9.18168D-02
+ ROOT:  4 RESIDUAL TOT: 5.78563D-02
       2       4         0.01     0.92E-01
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.49513545
-       2      0.49715865
-       3      0.54946634
-       4      0.64407228
+               Column   1
+       1       0.49513125
+       2       0.49716105
+       3       0.54946602
+       4       0.64407152
+    ==== End of matrix output ====
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49151681
-       2      0.49265856
-       3      0.54506227
-       4      0.64292679
+               Column   1
+       1       0.49151920
+       2       0.49265525
+       3       0.54506019
+       4       0.64292755
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 3.67696D-02
- ROOT:  2 RESIDUAL TOT: 4.61859D-02
- ROOT:  3 RESIDUAL TOT: 3.27002D-02
- ROOT:  4 RESIDUAL TOT: 1.25899D-02
+ ROOT:  1 RESIDUAL TOT: 3.67668D-02
+ ROOT:  2 RESIDUAL TOT: 4.62029D-02
+ ROOT:  3 RESIDUAL TOT: 3.26937D-02
+ ROOT:  4 RESIDUAL TOT: 1.25874D-02
       3       4         0.01     0.46E-01
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.49151681
-       2      0.49265856
-       3      0.54506227
-       4      0.64292679
+               Column   1
+       1       0.49151920
+       2       0.49265525
+       3       0.54506019
+       4       0.64292755
+    ==== End of matrix output ====
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.42
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48998244
-       2      0.49026499
-       3      0.54122867
-       4      0.64260959
+               Column   1
+       1       0.48998169
+       2       0.49026563
+       3       0.54122918
+       4       0.64260909
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 1.16308D-02
- ROOT:  2 RESIDUAL TOT: 1.63825D-02
- ROOT:  3 RESIDUAL TOT: 2.97529D-02
- ROOT:  4 RESIDUAL TOT: 8.91864D-03
+ ROOT:  1 RESIDUAL TOT: 1.16283D-02
+ ROOT:  2 RESIDUAL TOT: 1.63842D-02
+ ROOT:  3 RESIDUAL TOT: 2.97540D-02
+ ROOT:  4 RESIDUAL TOT: 8.92041D-03
       4       4         0.01     0.30E-01
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48998244
-       2      0.49026499
-       3      0.54122867
-       4      0.64260959
+               Column   1
+       1       0.48998169
+       2       0.49026563
+       3       0.54122918
+       4       0.64260909
+    ==== End of matrix output ====
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48980535
-       2      0.48981265
-       3      0.54036449
-       4      0.64231649
+               Column   1
+       1       0.48980543
+       2       0.48981275
+       3       0.54036394
+       4       0.64231689
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 1.12806D-02
- ROOT:  2 RESIDUAL TOT: 5.42085D-03
- ROOT:  3 RESIDUAL TOT: 1.56738D-02
+ ROOT:  1 RESIDUAL TOT: 1.12802D-02
+ ROOT:  2 RESIDUAL TOT: 5.42397D-03
+ ROOT:  3 RESIDUAL TOT: 1.56729D-02
  ROOT:  4 RESIDUAL TOT: 1.40605D-02
       5       4         0.01     0.16E-01
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48980535
-       2      0.48981265
-       3      0.54036449
-       4      0.64231649
+               Column   1
+       1       0.48980543
+       2       0.48981275
+       3       0.54036394
+       4       0.64231689
+    ==== End of matrix output ====
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48982924
-       2      0.48985460
-       3      0.54030829
-       4      0.64109065
+               Column   1
+       1       0.48982924
+       2       0.48985439
+       3       0.54030763
+       4       0.64109118
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 2.02163D-03
- ROOT:  2 RESIDUAL TOT: 3.64562D-03
- ROOT:  3 RESIDUAL TOT: 6.06363D-03
- ROOT:  4 RESIDUAL TOT: 3.09194D-02
+ ROOT:  1 RESIDUAL TOT: 2.02221D-03
+ ROOT:  2 RESIDUAL TOT: 3.64626D-03
+ ROOT:  3 RESIDUAL TOT: 6.06440D-03
+ ROOT:  4 RESIDUAL TOT: 3.09373D-02
       6       4         0.01     0.31E-01
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48982924
-       2      0.48985460
-       3      0.54030829
-       4      0.64109065
+               Column   1
+       1       0.48982924
+       2       0.48985439
+       3       0.54030763
+       4       0.64109118
+    ==== End of matrix output ====
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48980960
-       2      0.48981165
-       3      0.54028605
-       4      0.64056721
+               Column   1
+       1       0.48980959
+       2       0.48981165
+       3       0.54028609
+       4       0.64056721
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 4.84917D-04
- ROOT:  2 RESIDUAL TOT: 3.72169D-04
- ROOT:  3 RESIDUAL TOT: 1.25790D-03
- ROOT:  4 RESIDUAL TOT: 1.03227D-02
+ ROOT:  1 RESIDUAL TOT: 4.85054D-04
+ ROOT:  2 RESIDUAL TOT: 3.72222D-04
+ ROOT:  3 RESIDUAL TOT: 1.25818D-03
+ ROOT:  4 RESIDUAL TOT: 1.03246D-02
       7       4         0.01     0.10E-01
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48980960
-       2      0.48981165
-       3      0.54028605
-       4      0.64056721
+               Column   1
+       1       0.48980959
+       2       0.48981165
+       3       0.54028609
+       4       0.64056721
+    ==== End of matrix output ====
  Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48981309
-       2      0.48981342
-       3      0.54027465
-       4      0.64054950
+               Column   1
+       1       0.48981310
+       2       0.48981342
+       3       0.54027462
+       4       0.64054955
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 1.05222D-04
- ROOT:  2 RESIDUAL TOT: 8.70918D-05
- ROOT:  3 RESIDUAL TOT: 3.51978D-04
- ROOT:  4 RESIDUAL TOT: 3.11975D-03
+ ROOT:  1 RESIDUAL TOT: 1.05246D-04
+ ROOT:  2 RESIDUAL TOT: 8.70855D-05
+ ROOT:  3 RESIDUAL TOT: 3.52019D-04
+ ROOT:  4 RESIDUAL TOT: 3.12014D-03
       8       4         0.01     0.31E-02
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48981309
-       2      0.48981342
-       3      0.54027465
-       4      0.64054950
+               Column   1
+       1       0.48981310
+       2       0.48981342
+       3       0.54027462
+       4       0.64054955
+    ==== End of matrix output ====
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48981360
-       2      0.48981361
-       3      0.54027344
-       4      0.64054741
+               Column   1
+       1       0.48981359
+       2       0.48981361
+       3       0.54027344
+       4       0.64054741
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 1.48613D-05
- ROOT:  2 RESIDUAL TOT: 1.43623D-05
- ROOT:  3 RESIDUAL TOT: 7.12694D-05
- ROOT:  4 RESIDUAL TOT: 7.58910D-04
+ ROOT:  1 RESIDUAL TOT: 1.48569D-05
+ ROOT:  2 RESIDUAL TOT: 1.43625D-05
+ ROOT:  3 RESIDUAL TOT: 7.12641D-05
+ ROOT:  4 RESIDUAL TOT: 7.58694D-04
       9       4         0.01     0.76E-03
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48981360
-       2      0.48981361
-       3      0.54027344
-       4      0.64054741
+               Column   1
+       1       0.48981359
+       2       0.48981361
+       3       0.54027344
+       4       0.64054741
+    ==== End of matrix output ====
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027326
-       4      0.64054569
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027326
+       4       0.64054569
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 1.85040D-06
- ROOT:  2 RESIDUAL TOT: 2.00524D-06
- ROOT:  3 RESIDUAL TOT: 1.04508D-05
- ROOT:  4 RESIDUAL TOT: 1.24775D-04
+ ROOT:  1 RESIDUAL TOT: 1.85089D-06
+ ROOT:  2 RESIDUAL TOT: 2.00624D-06
+ ROOT:  3 RESIDUAL TOT: 1.04524D-05
+ ROOT:  4 RESIDUAL TOT: 1.24811D-04
      10       4         0.01     0.12E-03
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027326
-       4      0.64054569
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027326
+       4       0.64054569
+    ==== End of matrix output ====
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027322
-       4      0.64054519
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027322
+       4       0.64054519
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 3.14216D-07
- ROOT:  2 RESIDUAL TOT: 2.45850D-07
- ROOT:  3 RESIDUAL TOT: 1.42971D-06
- ROOT:  4 RESIDUAL TOT: 1.83250D-05
+ ROOT:  1 RESIDUAL TOT: 3.14400D-07
+ ROOT:  2 RESIDUAL TOT: 2.45882D-07
+ ROOT:  3 RESIDUAL TOT: 1.43007D-06
+ ROOT:  4 RESIDUAL TOT: 1.83295D-05
      11       4         0.01     0.18E-04
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027322
-       4      0.64054519
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027322
+       4       0.64054519
+    ==== End of matrix output ====
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        0.44
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027321
-       4      0.64054511
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027321
+       4       0.64054511
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 2.92851D-08
- ROOT:  2 RESIDUAL TOT: 5.55673D-08
- ROOT:  3 RESIDUAL TOT: 1.95342D-07
- ROOT:  4 RESIDUAL TOT: 2.70188D-06
+ ROOT:  1 RESIDUAL TOT: 2.94044D-08
+ ROOT:  2 RESIDUAL TOT: 5.55184D-08
+ ROOT:  3 RESIDUAL TOT: 1.95379D-07
+ ROOT:  4 RESIDUAL TOT: 2.70221D-06
      12       4         0.01     0.27E-05
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027321
-       4      0.64054511
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027321
+       4       0.64054511
+    ==== End of matrix output ====
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.38
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027321
-       4      0.64054511
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027321
+       4       0.64054511
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 3.65809D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.65809D-09
- ROOT:  2 RESIDUAL TOT: 8.24962D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.24962D-09
- ROOT:  3 RESIDUAL TOT: 2.57773D-08
- ROOT:  4 RESIDUAL TOT: 4.32486D-07
+ ROOT:  1 RESIDUAL TOT: 3.65820D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.65820D-09
+ ROOT:  2 RESIDUAL TOT: 8.24925D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.24925D-09
+ ROOT:  3 RESIDUAL TOT: 2.57640D-08
+ ROOT:  4 RESIDUAL TOT: 4.32343D-07
      13       4         0.01     0.43E-06
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027321
-       4      0.64054511
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027321
+       4       0.64054511
+    ==== End of matrix output ====
  Dimension of the reduced space:    54
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.38
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027321
-       4      0.64054511
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027321
+       4       0.64054511
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 3.13647D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.13647D-09
- ROOT:  2 RESIDUAL TOT: 8.24963D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.24963D-09
- ROOT:  3 RESIDUAL TOT: 4.00602D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 4.00602D-09
- ROOT:  4 RESIDUAL TOT: 7.34633D-08
+ ROOT:  1 RESIDUAL TOT: 3.13585D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.13585D-09
+ ROOT:  2 RESIDUAL TOT: 8.24948D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.24948D-09
+ ROOT:  3 RESIDUAL TOT: 4.00431D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 4.00431D-09
+ ROOT:  4 RESIDUAL TOT: 7.34467D-08
      14       2         0.01     0.73E-07
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027321
-       4      0.64054511
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027321
+       4       0.64054511
+    ==== End of matrix output ====
  Dimension of the reduced space:    55
- >>> TIME USED IN THIS MICRO ITERATION        0.39
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027321
-       4      0.64054511
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027321
+       4       0.64054511
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 2.72528D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.72528D-09
- ROOT:  2 RESIDUAL TOT: 8.24963D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.24963D-09
- ROOT:  3 RESIDUAL TOT: 2.03565D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.03565D-09
- ROOT:  4 RESIDUAL TOT: 1.04637D-08
+ ROOT:  1 RESIDUAL TOT: 2.72505D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.72505D-09
+ ROOT:  2 RESIDUAL TOT: 8.24948D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.24948D-09
+ ROOT:  3 RESIDUAL TOT: 2.03704D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.03704D-09
+ ROOT:  4 RESIDUAL TOT: 1.04702D-08
      15       1         0.01     0.10E-07
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027321
-       4      0.64054511
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027321
+       4       0.64054511
+    ==== End of matrix output ====
  Dimension of the reduced space:    56
- >>> TIME USED IN THIS MICRO ITERATION        0.38
+ >>> TIME USED IN THIS MICRO ITERATION        0.32
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027321
-       4      0.64054511
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027321
+       4       0.64054511
+    ==== End of matrix output ====
   
- ROOT:  1 RESIDUAL TOT: 2.76955D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.76955D-09
- ROOT:  2 RESIDUAL TOT: 8.24963D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.24963D-09
- ROOT:  3 RESIDUAL TOT: 1.73700D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.73700D-09
- ROOT:  4 RESIDUAL TOT: 1.55223D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 1.55223D-09
+ ROOT:  1 RESIDUAL TOT: 2.76853D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.76853D-09
+ ROOT:  2 RESIDUAL TOT: 8.24948D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.24948D-09
+ ROOT:  3 RESIDUAL TOT: 1.73766D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.73766D-09
+ ROOT:  4 RESIDUAL TOT: 1.55145D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 1.55145D-09
      16       1         0.01     0.82E-08
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48981354
-       2      0.48981354
-       3      0.54027321
-       4      0.64054511
+               Column   1
+       1       0.48981354
+       2       0.48981354
+       3       0.54027321
+       4       0.64054511
+    ==== End of matrix output ====
  Dimension of the reduced space:    56
- >>> TIME USED IN THIS MICRO ITERATION        0.38
+ >>> TIME USED IN THIS MICRO ITERATION        0.33
 
     --------------------------------------
     converged in 16 iterations
@@ -1961,15 +2106,15 @@ Try to use right eigenvector as start for a left eigenvector.
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.11
+         CC_TRDRV            0.09
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.11
+         Total time          0.10
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   6.74 seconds
- >>>> Total wall time used in CCEQ_SOLV:  10.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   5.70 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   6.21 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1989,7 +2134,7 @@ Try to use right eigenvector as start for a left eigenvector.
  eigenvector was orthogonalized against  1 degenerate vectors
 
 
- eigenvector for state  1      0.48981354has been renormalized... scaling factor:  0.99999822    
+ eigenvector for state  1      0.48981354has been renormalized... scaling factor:  0.99995422    
 
  degenerate eigenvector found:  2        0.4898135435
  eigenvector was orthogonalized against  1 degenerate vectors
@@ -2015,10 +2160,10 @@ Try to use right eigenvector as start for a left eigenvector.
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -39.903098851325723
-@@    1    2           -39.903098851303035
-@@    1    3           -39.852639182876736
-@@    1    4           -39.752367287379094
+@@    1    1           -39.903098851323513
+@@    1    2           -39.903098851301301
+@@    1    3           -39.852639182874761
+@@    1    4           -39.752367287378704
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2032,11 +2177,11 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
 
-          Single Excitation Contribution :              92.6452 %
+          Single Excitation Contribution :              92.6473 %
 
-          Double Excitation Contribution :               7.3548 %
+          Double Excitation Contribution :               7.3527 %
 
-          ||T1||/||T2||                  :               3.5492
+          ||T1||/||T2||                  :               3.5497
 
           Norm of Total Amplitude Vector :               0.9996
 
@@ -2045,26 +2190,24 @@ Try to use right eigenvector as start for a left eigenvector.
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   2   |   1       1     |       11          |              |   -0.382395  |
- | 3   3   |   1       1     |       20          |              |    0.767119  |
- | 4   4   |   1       1     |       29          |              |   -0.384724  |
+ | 2   2   |   1       1     |       11          |              |   -0.377074  |
+ | 3   3   |   1       1     |       20          |              |   -0.390019  |
+ | 4   4   |   1       1     |       29          |              |    0.767093  |
  +-----------------------------------------------------------------------------+
- | 3 2 3 2 |   3   1   1   1 |       22       11 |          242 |   -0.046271  |
- | 3 2 3 2 |   1   3   1   1 |       20       13 |          203 |    0.050015  |
- | 4 2 4 2 |   1   1   1   1 |       29       11 |          417 |    0.051999  |
- | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |   -0.069352  |
- | 4 3 4 3 |   3   1   1   1 |       31       20 |          485 |    0.050101  |
- | 4 3 4 3 |   1   3   1   1 |       29       22 |          428 |   -0.046379  |
+ | 3 2 3 2 |   1   1   1   1 |       20       11 |          201 |    0.051997  |
+ | 4 2 4 2 |   3   1   1   1 |       31       11 |          476 |   -0.046021  |
+ | 4 2 4 2 |   1   3   1   1 |       29       13 |          419 |    0.049817  |
+ | 4 3 4 3 |   3   1   1   1 |       31       20 |          485 |   -0.046626  |
+ | 4 3 4 3 |   1   3   1   1 |       29       22 |          428 |    0.050296  |
+ | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |   -0.069350  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.9484
 
+          Printed all single excitations greater than 0.160422
 
-          Printed all single excitations greater than 0.160421
-
-
-          Printed all double excitations greater than 0.045200
+          Printed all double excitations greater than 0.045193
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  2
@@ -2078,11 +2221,11 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
 
-          Single Excitation Contribution :              92.6480 %
+          Single Excitation Contribution :              92.6459 %
 
-          Double Excitation Contribution :               7.3520 %
+          Double Excitation Contribution :               7.3541 %
 
-          ||T1||/||T2||                  :               3.5499
+          ||T1||/||T2||                  :               3.5493
 
           Norm of Total Amplitude Vector :               0.9996
 
@@ -2091,23 +2234,22 @@ Try to use right eigenvector as start for a left eigenvector.
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   2   |   1       1     |       11          |              |    0.665028  |
- | 4   4   |   1       1     |       29          |              |   -0.663682  |
+ | 2   2   |   1       1     |       11          |              |    0.668059  |
+ | 3   3   |   1       1     |       20          |              |   -0.660575  |
  +-----------------------------------------------------------------------------+
- | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |   -0.060123  |
- | 4 2 4 2 |   3   1   1   1 |       31       11 |          476 |    0.055654  |
- | 4 2 4 2 |   1   3   1   1 |       29       13 |          419 |   -0.055641  |
- | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |    0.060001  |
+ | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |   -0.060397  |
+ | 3 2 3 2 |   3   1   1   1 |       22       11 |          242 |    0.055681  |
+ | 3 2 3 2 |   1   3   1   1 |       20       13 |          203 |   -0.055608  |
+ | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |    0.059720  |
+ | 4 3 4 3 |   1   1   1   1 |       29       20 |          426 |    0.045284  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.9466
+          Norm of Printed Amplitude Vector :             0.9477
 
+          Printed all single excitations greater than 0.160421
 
-          Printed all single excitations greater than 0.160423
-
-
-          Printed all double excitations greater than 0.045191
+          Printed all double excitations greater than 0.045197
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  3
@@ -2152,9 +2294,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9686
 
-
           Printed all single excitations greater than 0.160234
-
 
           Printed all double excitations greater than 0.045856
 
@@ -2170,11 +2310,11 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
 
-          Single Excitation Contribution :              93.3538 %
+          Single Excitation Contribution :              93.3547 %
 
-          Double Excitation Contribution :               6.6462 %
+          Double Excitation Contribution :               6.6453 %
 
-          ||T1||/||T2||                  :               3.7478
+          ||T1||/||T2||                  :               3.7481
 
           Norm of Total Amplitude Vector :               0.9994
 
@@ -2183,22 +2323,20 @@ Try to use right eigenvector as start for a left eigenvector.
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   2   |   2       1     |       12          |              |   -0.388626  |
- | 3   3   |   2       1     |       21          |              |    0.777279  |
- | 4   4   |   2       1     |       30          |              |   -0.388653  |
+ | 2   2   |   2       1     |       12          |              |   -0.388577  |
+ | 3   3   |   2       1     |       21          |              |   -0.388705  |
+ | 4   4   |   2       1     |       30          |              |    0.777283  |
  +-----------------------------------------------------------------------------+
- | 3 2 3 2 |   2   1   1   1 |       21       11 |          221 |   -0.052277  |
- | 4 3 4 3 |   1   2   1   1 |       29       21 |          427 |   -0.052277  |
+ | 4 2 4 2 |   2   1   1   1 |       30       11 |          446 |   -0.052277  |
+ | 4 3 4 3 |   2   1   1   1 |       30       20 |          455 |   -0.052277  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.9548
 
+          Printed all single excitations greater than 0.161034
 
-          Printed all single excitations greater than 0.161033
-
-
-          Printed all double excitations greater than 0.042967
+          Printed all double excitations greater than 0.042964
 
  --------------------------
  Symmetry class Nr.:     1
@@ -2222,8 +2360,8 @@ Try to use right eigenvector as start for a left eigenvector.
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-     1 :     10     29     20     30     21      1     11
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844033839        1.1959103517886787     
+     1 :     10     20     29     21     30      1     11
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843953759        1.1959103517882204     
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_2___1
  IOPTSV is    33 ... program continues nevertheless.
@@ -2235,19 +2373,19 @@ Try to use right eigenvector as start for a left eigenvector.
  IOPTSV is    33 ... program continues nevertheless.
  Vector nr.  6 of type RE and symmetry  2 was ot found on file.
  Start vector guessed from diagonal
- ... selected element no. 29
+ ... selected element no. 20
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_2___3
  IOPTSV is    33 ... program continues nevertheless.
  Vector nr.  7 of type RE and symmetry  2 was ot found on file.
  Start vector guessed from diagonal
- ... selected element no. 20
+ ... selected element no. 29
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_2___4
  IOPTSV is    33 ... program continues nevertheless.
  Vector nr.  8 of type RE and symmetry  2 was ot found on file.
  Start vector guessed from diagonal
- ... selected element no. 30
+ ... selected element no. 21
 
 
 
@@ -2258,11 +2396,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48695364
-       2      0.56437622
-       3      0.56675298
-       4      0.73918018
+               Column   1
+       1       0.48695364
+       2       0.56437622
+       3       0.56675298
+       4       0.73918018
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.63022D-01
  ROOT:  2 RESIDUAL TOT: 4.78902D-01
@@ -2272,22 +2411,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48695364
-       2      0.56437622
-       3      0.56675298
-       4      0.73918018
+               Column   1
+       1       0.48695364
+       2       0.56437622
+       3       0.56675298
+       4       0.73918018
+    ==== End of matrix output ====
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.42
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41868009
-       2      0.48937543
-       3      0.49416858
-       4      0.66644772
+               Column   1
+       1       0.41868009
+       2       0.48937543
+       3       0.49416858
+       4       0.66644772
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.15392D-02
  ROOT:  2 RESIDUAL TOT: 5.59029D-02
@@ -2297,22 +2438,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41868009
-       2      0.48937543
-       3      0.49416858
-       4      0.66644772
+               Column   1
+       1       0.41868009
+       2       0.48937543
+       3       0.49416858
+       4       0.66644772
+    ==== End of matrix output ====
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41699367
-       2      0.48250224
-       3      0.49129669
-       4      0.66035597
+               Column   1
+       1       0.41699367
+       2       0.48250224
+       3       0.49129669
+       4       0.66035597
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.89972D-02
  ROOT:  2 RESIDUAL TOT: 4.66763D-02
@@ -2322,22 +2465,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41699367
-       2      0.48250224
-       3      0.49129669
-       4      0.66035597
+               Column   1
+       1       0.41699367
+       2       0.48250224
+       3       0.49129669
+       4       0.66035597
+    ==== End of matrix output ====
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648949
-       2      0.48098990
-       3      0.49029330
-       4      0.64645962
+               Column   1
+       1       0.41648949
+       2       0.48098990
+       3       0.49029330
+       4       0.64645962
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.24619D-03
  ROOT:  2 RESIDUAL TOT: 1.14645D-02
@@ -2347,22 +2492,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648949
-       2      0.48098990
-       3      0.49029330
-       4      0.64645962
+               Column   1
+       1       0.41648949
+       2       0.48098990
+       3       0.49029330
+       4       0.64645962
+    ==== End of matrix output ====
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648375
-       2      0.48096237
-       3      0.49029654
-       4      0.63990721
+               Column   1
+       1       0.41648375
+       2       0.48096237
+       3       0.49029654
+       4       0.63990721
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.35883D-03
  ROOT:  2 RESIDUAL TOT: 3.94230D-03
@@ -2372,22 +2519,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648375
-       2      0.48096237
-       3      0.49029654
-       4      0.63990721
+               Column   1
+       1       0.41648375
+       2       0.48096237
+       3       0.49029654
+       4       0.63990721
+    ==== End of matrix output ====
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        0.42
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41649120
-       2      0.48095237
-       3      0.49032269
-       4      0.63802646
+               Column   1
+       1       0.41649120
+       2       0.48095237
+       3       0.49032269
+       4       0.63802646
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.09134D-04
  ROOT:  2 RESIDUAL TOT: 1.39806D-03
@@ -2397,22 +2546,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41649120
-       2      0.48095237
-       3      0.49032269
-       4      0.63802646
+               Column   1
+       1       0.41649120
+       2       0.48095237
+       3       0.49032269
+       4       0.63802646
+    ==== End of matrix output ====
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648832
-       2      0.48093743
-       3      0.49031023
-       4      0.63778951
+               Column   1
+       1       0.41648832
+       2       0.48093743
+       3       0.49031023
+       4       0.63778951
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.47555D-05
  ROOT:  2 RESIDUAL TOT: 3.29630D-04
@@ -2422,22 +2573,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648832
-       2      0.48093743
-       3      0.49031023
-       4      0.63778951
+               Column   1
+       1       0.41648832
+       2       0.48093743
+       3       0.49031023
+       4       0.63778951
+    ==== End of matrix output ====
  Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648847
-       2      0.48093849
-       3      0.49031014
-       4      0.63772284
+               Column   1
+       1       0.41648847
+       2       0.48093849
+       3       0.49031014
+       4       0.63772284
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.20508D-05
  ROOT:  2 RESIDUAL TOT: 8.81761D-05
@@ -2447,22 +2600,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648847
-       2      0.48093849
-       3      0.49031014
-       4      0.63772284
+               Column   1
+       1       0.41648847
+       2       0.48093849
+       3       0.49031014
+       4       0.63772284
+    ==== End of matrix output ====
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648853
-       2      0.48093871
-       3      0.49031049
-       4      0.63771548
+               Column   1
+       1       0.41648853
+       2       0.48093871
+       3       0.49031049
+       4       0.63771548
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.97537D-06
  ROOT:  2 RESIDUAL TOT: 1.26469D-05
@@ -2472,22 +2627,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648853
-       2      0.48093871
-       3      0.49031049
-       4      0.63771548
+               Column   1
+       1       0.41648853
+       2       0.48093871
+       3       0.49031049
+       4       0.63771548
+    ==== End of matrix output ====
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771560
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771560
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.49473D-07
  ROOT:  2 RESIDUAL TOT: 2.00904D-06
@@ -2497,22 +2654,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771560
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771560
+    ==== End of matrix output ====
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031047
-       4      0.63771586
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031047
+       4       0.63771586
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.20552D-08
  ROOT:  2 RESIDUAL TOT: 2.38849D-07
@@ -2522,22 +2681,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031047
-       4      0.63771586
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031047
+       4       0.63771586
+    ==== End of matrix output ====
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.65631D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.65631D-09
@@ -2548,22 +2709,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
  Dimension of the reduced space:    51
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.29242D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.29242D-09
@@ -2576,27 +2739,29 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        0.41
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.89229D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.89229D-09
- ROOT:  2 RESIDUAL TOT: 3.55961D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.55961D-09
+ ROOT:  2 RESIDUAL TOT: 3.55962D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.55962D-09
  ROOT:  3 RESIDUAL TOT: 4.66937D-09
  ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 4.66937D-09
  ROOT:  4 RESIDUAL TOT: 1.76571D-07
@@ -2604,22 +2769,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
  Dimension of the reduced space:    53
- >>> TIME USED IN THIS MICRO ITERATION        0.37
+ >>> TIME USED IN THIS MICRO ITERATION        0.32
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.79121D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.79121D-09
@@ -2632,22 +2799,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
  Dimension of the reduced space:    54
- >>> TIME USED IN THIS MICRO ITERATION        0.38
+ >>> TIME USED IN THIS MICRO ITERATION        0.31
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.76175D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.76175D-09
@@ -2661,13 +2830,14 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
  Dimension of the reduced space:    54
- >>> TIME USED IN THIS MICRO ITERATION        0.37
+ >>> TIME USED IN THIS MICRO ITERATION        0.31
 
     --------------------------------------
     converged in 16 iterations
@@ -2676,15 +2846,15 @@ Try to use right eigenvector as start for a left eigenvector.
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.11
+         CC_TRDRV            0.09
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.11
+         Total time          0.09
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   6.68 seconds
- >>>> Total wall time used in CCEQ_SOLV:  10.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   5.67 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   6.17 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2712,18 +2882,18 @@ Try to use right eigenvector as start for a left eigenvector.
  Excitation no.       Hartree               eV 
  --------------       -------               --
          1            0.4164885173       11.3332290642
-         2            0.4809386481       13.0870063358
+         2            0.4809386481       13.0870063359
          3            0.4903104751       13.3420267213
-         4            0.6377158351       17.3531306053
+         4            0.6377158351       17.3531306052
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -39.976423877423699
-@@    2    2           -39.911973746622593
-@@    2    3           -39.902601919615456
-@@    2    4           -39.755196559672939
+@@    2    1           -39.976423877423613
+@@    2    2           -39.911973746620305
+@@    2    3           -39.902601919613893
+@@    2    4           -39.755196559672719
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2764,9 +2934,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9677
 
-
           Printed all single excitations greater than 0.161036
-
 
           Printed all double excitations greater than 0.042954
 
@@ -2795,21 +2963,19 @@ Try to use right eigenvector as start for a left eigenvector.
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 3   4   |   1       1     |       29          |              |   -0.660110  |
- | 4   3   |   1       1     |       20          |              |    0.660110  |
+ | 3   4   |   1       1     |       29          |              |    0.660110  |
+ | 4   3   |   1       1     |       20          |              |   -0.660110  |
  +-----------------------------------------------------------------------------+
- | 1 3 2 3 |   2   1   1   1 |       11       20 |          714 |   -0.043355  |
- | 3 3 4 3 |   1   3   1   1 |       29       22 |          806 |   -0.052451  |
- | 1 4 2 4 |   2   1   1   1 |       11       29 |         1047 |    0.043355  |
- | 4 4 3 4 |   1   3   1   1 |       20       31 |         1130 |    0.052451  |
+ | 1 3 2 3 |   2   1   1   1 |       11       20 |          714 |    0.043355  |
+ | 3 3 4 3 |   1   3   1   1 |       29       22 |          806 |    0.052451  |
+ | 1 4 2 4 |   2   1   1   1 |       11       29 |         1047 |   -0.043355  |
+ | 4 4 3 4 |   1   3   1   1 |       20       31 |         1130 |   -0.052451  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.9385
 
-
           Printed all single excitations greater than 0.161199
-
 
           Printed all double excitations greater than 0.042342
 
@@ -2850,9 +3016,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9586
 
-
           Printed all single excitations greater than 0.161416
-
 
           Printed all double excitations greater than 0.041506
 
@@ -2881,21 +3045,19 @@ Try to use right eigenvector as start for a left eigenvector.
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 3   4   |   2       1     |       30          |              |    0.669446  |
- | 4   3   |   2       1     |       21          |              |   -0.669446  |
+ | 3   4   |   2       1     |       30          |              |   -0.669446  |
+ | 4   3   |   2       1     |       21          |              |    0.669446  |
  +-----------------------------------------------------------------------------+
- | 1 3 2 3 |   2   2   1   1 |       11       21 |          751 |    0.047080  |
- | 3 3 4 3 |   1   2   1   1 |       29       21 |          769 |    0.055672  |
- | 1 4 2 4 |   2   2   1   1 |       11       30 |         1084 |   -0.047080  |
- | 4 4 3 4 |   1   2   1   1 |       20       30 |         1093 |   -0.055672  |
+ | 1 3 2 3 |   2   2   1   1 |       11       21 |          751 |   -0.047080  |
+ | 3 3 4 3 |   1   2   1   1 |       29       21 |          769 |   -0.055672  |
+ | 1 4 2 4 |   2   2   1   1 |       11       30 |         1084 |    0.047080  |
+ | 4 4 3 4 |   1   2   1   1 |       20       30 |         1093 |    0.055672  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.9523
 
-
           Printed all single excitations greater than 0.161568
-
 
           Printed all double excitations greater than 0.040909
 
@@ -2924,8 +3086,8 @@ Try to use right eigenvector as start for a left eigenvector.
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-     1 :     19     29     10     11     30      1     20
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844033806        1.1959103517886782     
+     1 :     19     10     29     11     30      1     20
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843953159        1.1959103517882144     
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_3___1
  IOPTSV is    33 ... program continues nevertheless.
@@ -2937,13 +3099,13 @@ Try to use right eigenvector as start for a left eigenvector.
  IOPTSV is    33 ... program continues nevertheless.
  Vector nr. 10 of type RE and symmetry  3 was ot found on file.
  Start vector guessed from diagonal
- ... selected element no. 29
+ ... selected element no. 10
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_3___3
  IOPTSV is    33 ... program continues nevertheless.
  Vector nr. 11 of type RE and symmetry  3 was ot found on file.
  Start vector guessed from diagonal
- ... selected element no. 10
+ ... selected element no. 29
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_3___4
  IOPTSV is    33 ... program continues nevertheless.
@@ -2960,11 +3122,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48695364
-       2      0.56437622
-       3      0.56675298
-       4      0.73918018
+               Column   1
+       1       0.48695364
+       2       0.56437622
+       3       0.56675298
+       4       0.73918018
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.63022D-01
  ROOT:  2 RESIDUAL TOT: 4.78902D-01
@@ -2974,22 +3137,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48695364
-       2      0.56437622
-       3      0.56675298
-       4      0.73918018
+               Column   1
+       1       0.48695364
+       2       0.56437622
+       3       0.56675298
+       4       0.73918018
+    ==== End of matrix output ====
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41868009
-       2      0.48937543
-       3      0.49416858
-       4      0.66644772
+               Column   1
+       1       0.41868009
+       2       0.48937543
+       3       0.49416858
+       4       0.66644772
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.15392D-02
  ROOT:  2 RESIDUAL TOT: 5.59029D-02
@@ -2999,22 +3164,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41868009
-       2      0.48937543
-       3      0.49416858
-       4      0.66644772
+               Column   1
+       1       0.41868009
+       2       0.48937543
+       3       0.49416858
+       4       0.66644772
+    ==== End of matrix output ====
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41699367
-       2      0.48250224
-       3      0.49129669
-       4      0.66035597
+               Column   1
+       1       0.41699367
+       2       0.48250224
+       3       0.49129669
+       4       0.66035597
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.89972D-02
  ROOT:  2 RESIDUAL TOT: 4.66763D-02
@@ -3024,22 +3191,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41699367
-       2      0.48250224
-       3      0.49129669
-       4      0.66035597
+               Column   1
+       1       0.41699367
+       2       0.48250224
+       3       0.49129669
+       4       0.66035597
+    ==== End of matrix output ====
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.42
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648949
-       2      0.48098990
-       3      0.49029330
-       4      0.64645962
+               Column   1
+       1       0.41648949
+       2       0.48098990
+       3       0.49029330
+       4       0.64645962
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.24619D-03
  ROOT:  2 RESIDUAL TOT: 1.14645D-02
@@ -3049,22 +3218,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648949
-       2      0.48098990
-       3      0.49029330
-       4      0.64645962
+               Column   1
+       1       0.41648949
+       2       0.48098990
+       3       0.49029330
+       4       0.64645962
+    ==== End of matrix output ====
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648375
-       2      0.48096237
-       3      0.49029654
-       4      0.63990721
+               Column   1
+       1       0.41648375
+       2       0.48096237
+       3       0.49029654
+       4       0.63990721
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.35883D-03
  ROOT:  2 RESIDUAL TOT: 3.94230D-03
@@ -3074,22 +3245,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648375
-       2      0.48096237
-       3      0.49029654
-       4      0.63990721
+               Column   1
+       1       0.41648375
+       2       0.48096237
+       3       0.49029654
+       4       0.63990721
+    ==== End of matrix output ====
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        0.42
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41649120
-       2      0.48095237
-       3      0.49032269
-       4      0.63802646
+               Column   1
+       1       0.41649120
+       2       0.48095237
+       3       0.49032269
+       4       0.63802646
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.09134D-04
  ROOT:  2 RESIDUAL TOT: 1.39806D-03
@@ -3099,22 +3272,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41649120
-       2      0.48095237
-       3      0.49032269
-       4      0.63802646
+               Column   1
+       1       0.41649120
+       2       0.48095237
+       3       0.49032269
+       4       0.63802646
+    ==== End of matrix output ====
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648832
-       2      0.48093743
-       3      0.49031023
-       4      0.63778951
+               Column   1
+       1       0.41648832
+       2       0.48093743
+       3       0.49031023
+       4       0.63778951
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.47555D-05
  ROOT:  2 RESIDUAL TOT: 3.29630D-04
@@ -3124,22 +3299,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648832
-       2      0.48093743
-       3      0.49031023
-       4      0.63778951
+               Column   1
+       1       0.41648832
+       2       0.48093743
+       3       0.49031023
+       4       0.63778951
+    ==== End of matrix output ====
  Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648847
-       2      0.48093849
-       3      0.49031014
-       4      0.63772284
+               Column   1
+       1       0.41648847
+       2       0.48093849
+       3       0.49031014
+       4       0.63772284
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.20508D-05
  ROOT:  2 RESIDUAL TOT: 8.81761D-05
@@ -3149,22 +3326,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648847
-       2      0.48093849
-       3      0.49031014
-       4      0.63772284
+               Column   1
+       1       0.41648847
+       2       0.48093849
+       3       0.49031014
+       4       0.63772284
+    ==== End of matrix output ====
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648853
-       2      0.48093871
-       3      0.49031049
-       4      0.63771548
+               Column   1
+       1       0.41648853
+       2       0.48093871
+       3       0.49031049
+       4       0.63771548
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.97537D-06
  ROOT:  2 RESIDUAL TOT: 1.26469D-05
@@ -3174,22 +3353,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648853
-       2      0.48093871
-       3      0.49031049
-       4      0.63771548
+               Column   1
+       1       0.41648853
+       2       0.48093871
+       3       0.49031049
+       4       0.63771548
+    ==== End of matrix output ====
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771560
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771560
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.49473D-07
  ROOT:  2 RESIDUAL TOT: 2.00904D-06
@@ -3199,22 +3380,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771560
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771560
+    ==== End of matrix output ====
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031047
-       4      0.63771586
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031047
+       4       0.63771586
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.20552D-08
  ROOT:  2 RESIDUAL TOT: 2.38849D-07
@@ -3224,22 +3407,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031047
-       4      0.63771586
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031047
+       4       0.63771586
+    ==== End of matrix output ====
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.65631D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.65631D-09
@@ -3250,22 +3435,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
  Dimension of the reduced space:    51
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.29242D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.29242D-09
@@ -3278,22 +3465,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        0.41
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.89229D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.89229D-09
@@ -3306,22 +3495,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
  Dimension of the reduced space:    53
- >>> TIME USED IN THIS MICRO ITERATION        0.40
+ >>> TIME USED IN THIS MICRO ITERATION        0.32
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.79121D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.79121D-09
@@ -3334,22 +3525,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
  Dimension of the reduced space:    54
- >>> TIME USED IN THIS MICRO ITERATION        0.38
+ >>> TIME USED IN THIS MICRO ITERATION        0.32
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.76175D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.76175D-09
@@ -3363,13 +3556,14 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
  Dimension of the reduced space:    54
- >>> TIME USED IN THIS MICRO ITERATION        0.37
+ >>> TIME USED IN THIS MICRO ITERATION        0.32
 
     --------------------------------------
     converged in 16 iterations
@@ -3378,15 +3572,15 @@ Try to use right eigenvector as start for a left eigenvector.
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.11
+         CC_TRDRV            0.09
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.11
+         Total time          0.09
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   6.69 seconds
- >>>> Total wall time used in CCEQ_SOLV:  10.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   5.60 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   5.89 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3414,18 +3608,18 @@ Try to use right eigenvector as start for a left eigenvector.
  Excitation no.       Hartree               eV 
  --------------       -------               --
          1            0.4164885173       11.3332290642
-         2            0.4809386481       13.0870063358
+         2            0.4809386481       13.0870063359
          3            0.4903104751       13.3420267213
-         4            0.6377158351       17.3531306053
+         4            0.6377158351       17.3531306052
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -39.976423877423684
-@@    3    2           -39.911973746622607
-@@    3    3           -39.902601919615464
-@@    3    4           -39.755196559672939
+@@    3    1           -39.976423877423613
+@@    3    2           -39.911973746620312
+@@    3    3           -39.902601919613900
+@@    3    4           -39.755196559672719
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3466,9 +3660,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9677
 
-
           Printed all single excitations greater than 0.161036
-
 
           Printed all double excitations greater than 0.042954
 
@@ -3509,9 +3701,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9385
 
-
           Printed all single excitations greater than 0.161199
-
 
           Printed all double excitations greater than 0.042342
 
@@ -3552,9 +3742,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9586
 
-
           Printed all single excitations greater than 0.161416
-
 
           Printed all double excitations greater than 0.041506
 
@@ -3595,9 +3783,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9523
 
-
           Printed all single excitations greater than 0.161568
-
 
           Printed all double excitations greater than 0.040909
 
@@ -3627,7 +3813,7 @@ Try to use right eigenvector as start for a left eigenvector.
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :     28     10     19     11     20      1     29
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844033839        1.1959103517886787     
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843953725        1.1959103517882199     
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_4___1
  IOPTSV is    33 ... program continues nevertheless.
@@ -3662,11 +3848,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48695364
-       2      0.56437622
-       3      0.56675298
-       4      0.73918018
+               Column   1
+       1       0.48695364
+       2       0.56437622
+       3       0.56675298
+       4       0.73918018
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.63022D-01
  ROOT:  2 RESIDUAL TOT: 4.78902D-01
@@ -3676,22 +3863,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.48695364
-       2      0.56437622
-       3      0.56675298
-       4      0.73918018
+               Column   1
+       1       0.48695364
+       2       0.56437622
+       3       0.56675298
+       4       0.73918018
+    ==== End of matrix output ====
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.42
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41868009
-       2      0.48937543
-       3      0.49416858
-       4      0.66644772
+               Column   1
+       1       0.41868009
+       2       0.48937543
+       3       0.49416858
+       4       0.66644772
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.15392D-02
  ROOT:  2 RESIDUAL TOT: 5.59029D-02
@@ -3701,22 +3890,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41868009
-       2      0.48937543
-       3      0.49416858
-       4      0.66644772
+               Column   1
+       1       0.41868009
+       2       0.48937543
+       3       0.49416858
+       4       0.66644772
+    ==== End of matrix output ====
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41699367
-       2      0.48250224
-       3      0.49129669
-       4      0.66035597
+               Column   1
+       1       0.41699367
+       2       0.48250224
+       3       0.49129669
+       4       0.66035597
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.89972D-02
  ROOT:  2 RESIDUAL TOT: 4.66763D-02
@@ -3726,22 +3917,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41699367
-       2      0.48250224
-       3      0.49129669
-       4      0.66035597
+               Column   1
+       1       0.41699367
+       2       0.48250224
+       3       0.49129669
+       4       0.66035597
+    ==== End of matrix output ====
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.42
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648949
-       2      0.48098990
-       3      0.49029330
-       4      0.64645962
+               Column   1
+       1       0.41648949
+       2       0.48098990
+       3       0.49029330
+       4       0.64645962
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.24619D-03
  ROOT:  2 RESIDUAL TOT: 1.14645D-02
@@ -3751,22 +3944,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648949
-       2      0.48098990
-       3      0.49029330
-       4      0.64645962
+               Column   1
+       1       0.41648949
+       2       0.48098990
+       3       0.49029330
+       4       0.64645962
+    ==== End of matrix output ====
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648375
-       2      0.48096237
-       3      0.49029654
-       4      0.63990721
+               Column   1
+       1       0.41648375
+       2       0.48096237
+       3       0.49029654
+       4       0.63990721
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.35883D-03
  ROOT:  2 RESIDUAL TOT: 3.94230D-03
@@ -3776,22 +3971,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648375
-       2      0.48096237
-       3      0.49029654
-       4      0.63990721
+               Column   1
+       1       0.41648375
+       2       0.48096237
+       3       0.49029654
+       4       0.63990721
+    ==== End of matrix output ====
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41649120
-       2      0.48095237
-       3      0.49032269
-       4      0.63802646
+               Column   1
+       1       0.41649120
+       2       0.48095237
+       3       0.49032269
+       4       0.63802646
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 4.09134D-04
  ROOT:  2 RESIDUAL TOT: 1.39806D-03
@@ -3801,22 +3998,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41649120
-       2      0.48095237
-       3      0.49032269
-       4      0.63802646
+               Column   1
+       1       0.41649120
+       2       0.48095237
+       3       0.49032269
+       4       0.63802646
+    ==== End of matrix output ====
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648832
-       2      0.48093743
-       3      0.49031023
-       4      0.63778951
+               Column   1
+       1       0.41648832
+       2       0.48093743
+       3       0.49031023
+       4       0.63778951
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.47555D-05
  ROOT:  2 RESIDUAL TOT: 3.29630D-04
@@ -3826,22 +4025,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648832
-       2      0.48093743
-       3      0.49031023
-       4      0.63778951
+               Column   1
+       1       0.41648832
+       2       0.48093743
+       3       0.49031023
+       4       0.63778951
+    ==== End of matrix output ====
  Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648847
-       2      0.48093849
-       3      0.49031014
-       4      0.63772284
+               Column   1
+       1       0.41648847
+       2       0.48093849
+       3       0.49031014
+       4       0.63772284
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.20508D-05
  ROOT:  2 RESIDUAL TOT: 8.81761D-05
@@ -3851,22 +4052,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648847
-       2      0.48093849
-       3      0.49031014
-       4      0.63772284
+               Column   1
+       1       0.41648847
+       2       0.48093849
+       3       0.49031014
+       4       0.63772284
+    ==== End of matrix output ====
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648853
-       2      0.48093871
-       3      0.49031049
-       4      0.63771548
+               Column   1
+       1       0.41648853
+       2       0.48093871
+       3       0.49031049
+       4       0.63771548
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 1.97537D-06
  ROOT:  2 RESIDUAL TOT: 1.26469D-05
@@ -3876,22 +4079,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648853
-       2      0.48093871
-       3      0.49031049
-       4      0.63771548
+               Column   1
+       1       0.41648853
+       2       0.48093871
+       3       0.49031049
+       4       0.63771548
+    ==== End of matrix output ====
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771560
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771560
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.49473D-07
  ROOT:  2 RESIDUAL TOT: 2.00904D-06
@@ -3901,22 +4106,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771560
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771560
+    ==== End of matrix output ====
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031047
-       4      0.63771586
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031047
+       4       0.63771586
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.20552D-08
  ROOT:  2 RESIDUAL TOT: 2.38849D-07
@@ -3926,22 +4133,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031047
-       4      0.63771586
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031047
+       4       0.63771586
+    ==== End of matrix output ====
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.37
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 5.65631D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.65631D-09
@@ -3952,55 +4161,59 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
  Dimension of the reduced space:    51
- >>> TIME USED IN THIS MICRO ITERATION        0.43
+ >>> TIME USED IN THIS MICRO ITERATION        0.36
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 3.29242D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.29242D-09
  ROOT:  2 RESIDUAL TOT: 9.32726D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.32726D-09
- ROOT:  3 RESIDUAL TOT: 5.34364D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.34364D-09
+ ROOT:  3 RESIDUAL TOT: 5.34365D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.34365D-09
  ROOT:  4 RESIDUAL TOT: 8.08890D-07
      13       3         0.01     0.81E-06
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771583
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771583
+    ==== End of matrix output ====
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        0.41
+ >>> TIME USED IN THIS MICRO ITERATION        0.35
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.89229D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.89229D-09
- ROOT:  2 RESIDUAL TOT: 3.55962D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.55962D-09
+ ROOT:  2 RESIDUAL TOT: 3.55961D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.55961D-09
  ROOT:  3 RESIDUAL TOT: 4.66937D-09
  ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 4.66937D-09
  ROOT:  4 RESIDUAL TOT: 1.76571D-07
@@ -4008,22 +4221,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
  Dimension of the reduced space:    53
- >>> TIME USED IN THIS MICRO ITERATION        0.38
+ >>> TIME USED IN THIS MICRO ITERATION        0.32
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.79121D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.79121D-09
@@ -4036,22 +4251,24 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
  Dimension of the reduced space:    54
- >>> TIME USED IN THIS MICRO ITERATION        0.37
+ >>> TIME USED IN THIS MICRO ITERATION        0.32
 
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
   
  ROOT:  1 RESIDUAL TOT: 2.76175D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.76175D-09
@@ -4065,13 +4282,14 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Lowest eigenvalues in this iteration: 
 
-              Column   1
-       1      0.41648852
-       2      0.48093865
-       3      0.49031048
-       4      0.63771584
+               Column   1
+       1       0.41648852
+       2       0.48093865
+       3       0.49031048
+       4       0.63771584
+    ==== End of matrix output ====
  Dimension of the reduced space:    54
- >>> TIME USED IN THIS MICRO ITERATION        0.38
+ >>> TIME USED IN THIS MICRO ITERATION        0.32
 
     --------------------------------------
     converged in 16 iterations
@@ -4080,15 +4298,15 @@ Try to use right eigenvector as start for a left eigenvector.
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.11
+         CC_TRDRV            0.09
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.11
+         Total time          0.09
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   6.68 seconds
- >>>> Total wall time used in CCEQ_SOLV:  10.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   5.65 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   6.06 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4116,18 +4334,18 @@ Try to use right eigenvector as start for a left eigenvector.
  Excitation no.       Hartree               eV 
  --------------       -------               --
          1            0.4164885173       11.3332290642
-         2            0.4809386481       13.0870063358
+         2            0.4809386481       13.0870063359
          3            0.4903104751       13.3420267213
-         4            0.6377158351       17.3531306053
+         4            0.6377158351       17.3531306052
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -39.976423877423699
-@@    4    2           -39.911973746622600
-@@    4    3           -39.902601919615464
-@@    4    4           -39.755196559672939
+@@    4    1           -39.976423877423613
+@@    4    2           -39.911973746620305
+@@    4    3           -39.902601919613893
+@@    4    4           -39.755196559672719
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4168,9 +4386,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9677
 
-
           Printed all single excitations greater than 0.161036
-
 
           Printed all double excitations greater than 0.042954
 
@@ -4211,9 +4427,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9385
 
-
           Printed all single excitations greater than 0.161199
-
 
           Printed all double excitations greater than 0.042342
 
@@ -4254,9 +4468,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9586
 
-
           Printed all single excitations greater than 0.161416
-
 
           Printed all double excitations greater than 0.041506
 
@@ -4297,9 +4509,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Norm of Printed Amplitude Vector :             0.9523
 
-
           Printed all single excitations greater than 0.161568
-
 
           Printed all double excitations greater than 0.040909
 
@@ -4318,7 +4528,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Ground state energy is target 
 
- Ecorr =                    -40.39291239475808481529
+ Ecorr =                    -40.39291239475659978098
 
  *******************************************************************
   
@@ -4400,14 +4610,20 @@ Try to use right eigenvector as start for a left eigenvector.
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :      47.332      51.123
+
+ 
+     Date and time (Linux)  : Sun Sep  8 21:04:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  55.88 seconds
- >>>> Total wall time used in DALTON:  1 minute  12 seconds
+ >>>> Total CPU  time used in DALTON:  48.30 seconds
+ >>>> Total wall time used in DALTON:  52.11 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:25:51 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:04:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

@@ -17,6 +17,8 @@ F90_OBJS = \
 	configuration.o \
 	LSlib.o \
 	Profile.o\
+	IchorTesting.o\
+	IchorProfile.o\
 	LSDALTON.o
 SMALLF90_OBJS = \
         lsdalton_wrapper.o

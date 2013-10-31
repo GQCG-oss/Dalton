@@ -36,6 +36,7 @@ endif()
 
 if(ENABLE_CSR)
     add_definitions(-DVAR_MKL)
+    add_definitions(-DVAR_CSR)
 endif()
 
 if(ENABLE_SCALAPACK)
@@ -48,4 +49,8 @@ endif()
 
 if(ENABLE_DEBUGPBC)
     add_definitions(-DDEBUGPBC)
+endif()
+
+if(ENABLE_RSP)
+    add_definitions(-DVAR_RSP)
 endif()

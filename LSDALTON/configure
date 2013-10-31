@@ -156,7 +156,7 @@ esac
 # thus define only two for each computer type.
 # Check first local libraries (hoping they were installed there for a
 # reason), then system-provided libraries.
-dirlist="$DIRLIST /lib /usr/local/lib /usr/lib64 /usr/lib /usr/local/lib/ATLAS"
+dirlist="$DIRLIST /lib /usr/local/lib /usr/lib64 /usr/lib /usr/local/lib/ATLAS /opt/local/lib"
 
 case $WHICH in
     rs6000)   liblist='libessl.a libblas.a'
@@ -168,9 +168,9 @@ case $WHICH in
               compf90list='ifort ifc pgf90 gfortran'
               ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
-              complist='gfortran'
-              compf90list='gfortran'
-              ccmplist='gcc';;
+              complist='gfortran gfortran-mp-4.7 gfortran-mp-4.8'
+              compf90list='gfortran gfortran-mp-4.7 gfortran-mp-4.8'
+              ccmplist='gcc gcc-mp-4.7 gcc-mp-4.8';;
 esac
 #
 if [ $WHICH = "linux" ]; then
@@ -496,22 +496,25 @@ elif [ -n "$LIB" ]; then
 fi      
 
 
-#ask for OpenMP support
+#ask for Debug support
 useDEBUG="false"
-if [ $WHICH = "rs6000" ] || [ $WHICH = "linux" ]; then
- get_yes_or_no 'Do you want to use debug compiler options ?' n
- if [ "$answer" = "y" ]; then
-    useDEBUG="true"
- fi
+get_yes_or_no 'Do you want to use debug compiler options ?' n
+if [ "$answer" = "y" ]; then
+   useDEBUG="true"
 fi
 
 #ask for OpenMP support
 useOMP="false"
-if [ $WHICH = "rs6000" ] || [ $WHICH = "linux" ]; then
- get_yes_or_no 'Do you want to install the program with OpenMP parallelization?' y
- if [ "$answer" = "y" ]; then
-    useOMP="true"
- fi
+get_yes_or_no 'Do you want to install the program with OpenMP parallelization?' y
+if [ "$answer" = "y" ]; then
+   useOMP="true"
+fi
+
+#ask for Fortran2003 support
+Fortran2003Comp="true"
+get_yes_or_no 'Does the Fortran compiler support the Fortran 2003 features like procedure pointers and iso_c_bindings?' y
+if [ "$answer" = "n" ]; then
+   Fortran2003Comp="false"
 fi
 
 #ask for BSM support
@@ -850,12 +853,15 @@ case "$WHICH" in
                LIB="-lgcc"
                cpp=${cpp}" -DVAR_LINSCA -DIMPLICIT_NONE"
 # use Vector Libraries for BLAS and LAPACK
-               pdpackextras='linpack.o eispack.o'
+               pdpackextras='linpack.o eispack.o invroutines.o cholesky.o'
           else
              echo "Sorry - Do not know how to handle $F90 options for darwin'"
              exit 1
           fi;;
 esac
+
+#        git clone git@repo.ctcc.no:matrix-defop.git matrix-defop
+
 
 # add OpenMP compiler flag and library
 if [ $useOMP = "true" ]; then
@@ -897,10 +903,20 @@ echo $f90root/lib/$libversion
     esac
 fi
 
+# if the compiler can handle 2003 standard, at some point a test should be introduced here
+if [ $Fortran2003Comp = "true" ]; then
+    cpp="$cpp -DCOMPILER_UNDERSTANDS_FORTRAN_2003"
+fi
+
 # If single precision (needs more work)
 if [ $SPver = "true" ]; then
     cpp=${cpp}" -DSYS_REAL"
 fi
+
+#USE_MPI_MOD_F90 there needs to be a test
+#if [ $FortranMPIMOD = "true" ]; then
+#    cpp="$cpp -DUSE_MPI_MOD_F90"
+#fi
 
 # If 64-bit integers (needs more work - libraries!)
 if [ $int64 = "true" ]; then
@@ -922,6 +938,7 @@ fi
 # If CSR matrices should be enabled (needs more work - libraries!)
 if [ $csr = "true" ]; then
    cpp="${cppsep} -DVAR_MKL"
+   cpp="${cppsep} -DVAR_CSR"
 fi
 
 #if [ $useBSM = "true" ]; then

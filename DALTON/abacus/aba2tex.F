@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -284,8 +284,9 @@ C defined parallel calculation types
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
-      LOGICAL DDFOCK, NOBLK, ZFS2EL, PARCAL_IS_OK, PARCAL_SAVE
-      INTEGER IFCTYP(MXDMAT), ISYMDM(MXDMAT)
+      LOGICAL   DDFOCK, NOBLK, ZFS2EL, PARCAL_IS_OK, PARCAL_SAVE
+      INTEGER   IFCTYP(MXDMAT), ISYMDM(MXDMAT)
+      DIMENSION ALPGR1(MXPRIM)
 C
 C     Control routine for calculation of expectation values
 C     of differentiated two-electron integrals
@@ -321,7 +322,7 @@ C
       IF (NACTEL .EQ. 0) NODV = .TRUE.
       IF (NACTEL .LE. 1 .OR. HSROHF) THEN
          NOPV   = .TRUE.
-         IF (HSROHF .AND. (DIPDER .OR. MOLHES)) THEN
+         IF (HSROHF .AND. NASHT .GT. 1 .AND. (DIPDER .OR. MOLHES)) THEN
             WRITE(LUPRI,'(/A)')
      &          ' ERROR: Dipole gradients and molecular '//
      &          'not implemented for high-spin restricted open-shell HF'
@@ -505,6 +506,9 @@ C
             IPRTYP = HER_WORK
             HFXM0 = HFXMU
             HFXMU = D0
+cfrj-st     alpgrd here contains 1e-contribution, save for camb3lyp kludge fix
+            CALL DCOPY(MXPRIM,ALPGRD,1,ALPGR1,1)
+cfrj-end
             CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
      &                  WORK(KLAST),WORK(KNSTAT),WORK(KHESEE),LWRK,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
@@ -525,12 +529,18 @@ C
                IATOM = 1
                IF (NFMAT .GT. 0) CALL DCOPY(NFMAT*N2BASX,WORK(KFMAT),1,
      &                                      WORK(KFCTMP),1)
+cfrj-st
+               CALL DZERO(ALPGRD,MXPRIM)
+cfrj-end
                CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
      &              WORK(KLAST),WORK(KNSTAT),WORK(KHESEE),LWRK,
      &              ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
      &              RETUR,IPRINT,IPRTYP,
      &              IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
      &              DUMMY)
+cfrj-st camb3lyp looses the 1e-contribution during the second call to pardrv, reason unknown, kludge fix by zeroing array above and manually adding it again
+               CALL DAXPY(MXPRIM,1.0D0,ALPGR1,1,ALPGRD,1)
+cfrj-end
                IF (NFMAT .GT. 0) CALL DAXPY(NFMAT*N2BASX,1D0,
      &                                     WORK(KFCTMP),1,WORK(KFMAT),1)
                HFXFAC = HFXFC0

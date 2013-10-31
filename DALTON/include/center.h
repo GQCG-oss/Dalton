@@ -4,7 +4,7 @@
 C
       DOUBLE PRECISION THACOC, THACVI
 C
-      INTEGER NBCENT, IBCENT, NBSCEN, KBSCEN, 
+      INTEGER NBCENT, IBCENT, NBSCEN, KBSCEN,
      &        NACATM, LACTAT, LACBAS, NACTBS, NABSTO,
      &        NACTOC, NACTVI, NINAOC, NINAVI,
      &        IORACT, NORACT, NACTFR, NEXTBS, IEXTBS,
@@ -18,12 +18,12 @@ C
      &                NBCENT(MXCENT,8), IBCENT(MXCENT,8),
      &                NBSCEN(MXCENT), KBSCEN(MXBSCE,MXCENT),
      &                NACATM, LACTAT(MXACAT), LACBAS(MXACBS),
-     &                NACTBS(8), NABSTO, NACTFR, 
+     &                NACTBS(8), NABSTO, NACTFR,
      &                IORACT(8), NORACT(8),
      &                NACTOC(8), NACTVI(8), NINAOC(8), NINAVI(8),
      &                NEXTBS(8), IEXTBS(MXEXBS,8),
-     &                NOCVEC(MXCENT,8), NVIVEC(MXCENT,8), 
-     &                NACINP, LACINP(MXACAT), 
+     &                NOCVEC(MXCENT,8), NVIVEC(MXCENT,8),
+     &                NACINP, LACINP(MXACAT),
      &                NFRACT(8), MXVECL, MXOCC(8), MXVIR(8),
      &                NABSOC, NABSVI, NACBSV(8),LACBSV(MXACBS),
      &                ACTSEL, ATOMIC, ACTFRE, DIFADD, SELDIR,

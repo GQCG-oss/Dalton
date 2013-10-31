@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2077,7 +2077,10 @@ C
       LMCORE = MMCORE
       JSCORE = ISCORE
 C
-      IF (IPRINT .GE. 5) CALL TITLER('Output from SYMLOP','*',103)
+      IF (IPRINT .GE. 5) THEN
+         CALL TITLER('Output from SYMLOP','*',103)
+         WRITE (LUPRI,*) 'EXPECT, MAXDER =',EXPECT,MAXDER
+      END IF
 C
       IF (.NOT.(EXPECT.OR.DIRFCK.OR.DDFOCK.OR.DIA2SO.OR.ZFS2EL)
      &     .AND. NSOINT.EQ.0 .AND. LAST) THEN
@@ -2640,14 +2643,14 @@ C        Reset MMCORE,ISCORE since we did not save anything useful in this call.
                   MMCORE = LMCORE
                   ISCORE = JSCORE
 C
-               END IF
-            END IF
- 300     CONTINUE
-      END IF
- 200  CONTINUE
-      END IF
+               END IF    ! IF (AOSAVE .AND. ...
+            END IF     ! IF (IBTAND(ISYMT,IBTOR(MULAB,MULCD)) .EQ. 0) THEN
+ 300        CONTINUE   ! DO 300 ISYMT = 0, MAXOPR
+         END IF        ! IF (IBTAND(ISYMS,IBTOR(MULC,MULD)) .EQ. 0) THEN
+ 200     CONTINUE      ! DO 200 ISYMS = 0, MAXOPR
+      END IF           ! IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
 C
- 100  CONTINUE
+ 100  CONTINUE         ! DO 100 ISYMR = 0,MAXOPR
 C
 C     ********************************
 C     ***** Process SO integrals *****
@@ -2661,6 +2664,8 @@ C        A) Undifferentiated integrals
 C        =============================
 C
          IF (UNDIFF) THEN
+            IF (IPRINT.GE.5) WRITE(LUPRI,*)
+     &      'SYMLOP: processing undifferentiated integrals'
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             IF (.NOT.ADISTR) THEN
                IF (DCCR12) THEN
@@ -2695,6 +2700,8 @@ C        B) Differentiated integrals
 C        ===========================
 C
          ELSE IF (PERTUR .OR. SPNORB) THEN
+            IF (IPRINT.GE.5) WRITE(LUPRI,*)
+     &      'SYMLOP: processing differentiated integrals'
 #ifndef VAR_INT64
            IF (NBASIS .GT. 255) THEN
               CALL QENTER('DR2OUT')
@@ -2716,6 +2723,8 @@ C        C) London orbitals
 C        ==================
 C
          ELSE IF (LONDON) THEN
+            IF (IPRINT.GE.5) WRITE(LUPRI,*)
+     &      'SYMLOP: processing London integrals'
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             CALL MG2OUT(SOINT,FIRST,LAST,THRESH,IPNTNO,IPNTRP,IPNTLG,
      &                  NINDAB,NINDCD,IPRINT)
@@ -2729,6 +2738,8 @@ C        D) Direct calculation of Fock matrices in SO basis
 C        ==================================================
 C
          ELSE IF (SOFOCK) THEN
+            IF (IPRINT.GE.5) WRITE(LUPRI,*)
+     &      'SYMLOP: processing SOFOCK integrals'
             CALL QUIT(
      &      'SOFOCK call of FCKOUT not implemented in this version')
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
@@ -2745,6 +2756,8 @@ C        E) Calculation of distributions
 C        ===============================
 C
          ELSE IF (DISTRI) THEN
+            IF (IPRINT.GE.5) WRITE(LUPRI,*)
+     &      'SYMLOP: processing distributions'
             CALL QUIT(
      &      'DISTRI call of FCKOUT not implemented in this version')
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
@@ -2758,6 +2771,8 @@ C    &                  FIRST,LAST,THRESH,SQ12EL,IPRINT)
             FIRST = .FALSE.
          END IF
       ELSE IF (EXPECT) THEN
+         IF (IPRINT.GE.5) WRITE(LUPRI,*)
+     &      'SYMLOP: processing expectation values'
          IF (IPRINT .GE. 6)
      &      CALL PRIGRD(GRADEE,WORK,WORK(1+MXCOOR*MXCOOR))
       END IF
@@ -4968,7 +4983,7 @@ C
       RETURN
       END
 C
-C  /* Deck CLEARMEM */
+C  /* Deck CLEAR_INCOREMEM */
       SUBROUTINE CLEAR_INCOREMEM()
 C
 #include "maxorb.h"

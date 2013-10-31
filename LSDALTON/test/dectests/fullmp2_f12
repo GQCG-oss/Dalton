@@ -57,7 +57,9 @@ TRILEVEL
 **CC
 .MP2
 .F12
-.NOTCANONICAL
+.MEMORY
+2.0
+.CANONICAL
 *END OF INPUT
 %EOF%
 #######################################################################

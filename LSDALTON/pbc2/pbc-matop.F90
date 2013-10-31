@@ -189,14 +189,14 @@ INTEGER :: layer
 INTEGER :: l1,l2,l3
 
 do layer =1,size(Aop%lvec)
-   l1=int(Aop%lvec(layer)%lat_coord(1))
-   l2=int(Aop%lvec(layer)%lat_coord(2))
-   l3=int(Aop%lvec(layer)%lat_coord(3))
+   if(Aop%lvec(layer)%f1_computed .or. Aop%lvec(layer)%g2_computed) then
+     l1=int(Aop%lvec(layer)%lat_coord(1))
+     l2=int(Aop%lvec(layer)%lat_coord(2))
+     l3=int(Aop%lvec(layer)%lat_coord(3))
 
-   if((abs(l1) .le. Aop%fc1 .and. abs(l2) .le. Aop%fc2) .and. abs(l3) .le. Aop%fc3)then
 #ifdef DEBUGPBC
      write(lu,*) 'Fock matrix',l1
-     call mat_print(Aop%lvec(layer)%oper(oper2),1,4,1,4,lu)
+     call mat_print(Aop%lvec(layer)%oper(oper2),1,nrows,1,ncols,lu)
 #endif
      call pbc_get_file_and_write(Aop,nrows,ncols,layer,oper1,oper2,diis)
    endif
@@ -236,6 +236,11 @@ do layer =1,size(Aop%lvec)
 
     filename=adjustl(filename)
     filename=trim(filename)
+
+#ifdef DEBUGPBC
+    write(6,*) 'dmat, for l1 = ' , l1
+    call mat_print(dmat(layer),1,nrows,1,ncols,6)
+#endif
 
     call LSOPEN(iunit,filename,'unknown','UNFORMATTED')
 

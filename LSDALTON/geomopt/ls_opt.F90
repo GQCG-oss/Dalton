@@ -3369,6 +3369,7 @@ use files
 Implicit Real(realk) (A-H,O-Z)
       Integer :: lupri
       TYPE(opt_setting) :: optinfo
+      PARAMETER (ZERGRD = 1.0E-7_realk)
       PARAMETER (D0 = 0.0E0_realk , DP5 = 0.5E0_realk)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       Real(realk) EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -3444,9 +3445,8 @@ Implicit Real(realk) (A-H,O-Z)
             END IF
             INSIDE = .FALSE.
             IF (optinfo%StepNorm .LT. optinfo%TrustRad) INSIDE = .TRUE.
-            call lsquit('ZERGRD not defined FIXME ',-1)
-!            call ls_LSHFT0(optinfo%ICartCoord,NVEC,&
-!                 &  MIN(optinfo%TrustRad,optinfo%StepNorm),RNU,ZERGRD,INSIDE,lupri,optinfo)
+            call ls_LSHFT0(optinfo%ICartCoord,NVEC,&
+                 &  MIN(optinfo%TrustRad,optinfo%StepNorm),RNU,ZERGRD,INSIDE,lupri,optinfo)
             optinfo%StepNorm = SQRT(DDOT(NVEC,optinfo%STPDIA,1,optinfo%STPDIA,1))
             IF (optinfo%IPrint .GT. 5) THEN
                WRITE(LUPRI,'(/A,F15.10)')' Norm, boundary step:', optinfo%StepNorm

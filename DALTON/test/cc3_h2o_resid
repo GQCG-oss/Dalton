@@ -126,6 +126,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Final *HF energy:" $log | $GREP "\-74.9656569916" | wc -l`
 CRIT2=`$GREP "Total MP2   energy:  *\-75.00556505" $log | wc -l`
@@ -160,11 +165,11 @@ CTRL[3]=5
 ERROR[3]="CC3 OSCILLATOR STRENGTH IS NOT CORRECT"
 
 # CC3 excited state polarizabilities
-CRIT1=`$GREP "(-0|-)\.1000 *(0|)\.1000 *(-0|-)\.84323190" $log | wc -l`
-CRIT2=`$GREP "XDIPLEN *(|-|-0|0)\.0000 *XDIPLEN *(|-|-0|0)\.0000 *1\.2969444" $log | wc -l`
-CRIT3=`$GREP "(-0|-)\.1000 *(0|)\.1000 *1\.7005047" $log | wc -l`
-CRIT4=`$GREP "YDIPLEN *(|-|-0|0)\.0000 *YDIPLEN *(|-|-0|0)\.0000 *15\.132611" $log | wc -l`
-CRIT5=`$GREP "(-0|-)\.1000 *(0|)\.1000 *-14\.913389" $log | wc -l`
+CRIT1=`$GREP "(-0|-)\.1000 *(0| )\.1000 *(-0|-)\.84323190" $log | wc -l`
+CRIT2=`$GREP "XDIPLEN *( |-|-0|0)\.0000 *XDIPLEN *( |-|-0|0)\.0000 *1\.2969444" $log | wc -l`
+CRIT3=`$GREP "(-0|-)\.1000 *(0| )\.1000 *1\.7005047" $log | wc -l`
+CRIT4=`$GREP "YDIPLEN *( |-|-0|0)\.0000 *YDIPLEN *( |-|-0|0)\.0000 *15\.132611" $log | wc -l`
+CRIT5=`$GREP "(-0|-)\.1000 *(0| )\.1000 *-14\.913389" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`  
 CTRL[4]=5
 ERROR[4]="CC3 EXCITED STATE POLARIZABILITIES NOT CORRECT"

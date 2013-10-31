@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -125,6 +125,9 @@ C
      &          DIFAB(3), DIFCD(3), HESSEE(*),
      &          IXPAB(NUCA*NUCB,2), IXPCD(NUCC*NUCD,2),
      &          IFCTYP(NDMAT)
+
+C Used from common blocks:
+C  inforb.h : NASHT
 #include "twocom.h"
 #include "dftcom.h"
 #include "symmet.h"
@@ -132,9 +135,11 @@ C
 #include "expopt.h"
 #include "dirprt.h"
 #include "infinp.h"
+#include "inforb.h"
 #include "rspprp.h"
 #include "esg.h"
 #include "ibtfun.h"
+C     statement functions:
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -365,7 +370,7 @@ C
                                  PVAL = PFAC*(DTAB*DTCD
      &                                - XFAC*DP25*(DTAC*DTBD+DTAD*DTBC)
      &                                + PAOVAL)
-                              ELSE IF (HSROHF .OR. 
+                              ELSE IF ((HSROHF .AND. NASHT .GT. 1) .OR. 
      &                                (DFTADD .AND. .NOT. NODV)) THEN
                                  PVAL = PFAC*(DTAB*DTCD
      &                                - XFAC*DP25*(DTAC*DTBD + DVAC*DVBD

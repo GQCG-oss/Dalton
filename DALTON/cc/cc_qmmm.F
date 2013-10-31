@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1056,23 +1056,6 @@ C 3) The quadrupole contribution
          CALL DAXPY(NNBASX,ONE,WORK(KMULTI),1,NSAO,1)
 
       END IF
-C 4) The octopole contribution
-      IF (NMULT .GE. 3) THEN
-         CALL DZERO(WORK(KMULTI),NNBASX)
-         CALL GPOPEN(LUQMMM,'MU3INT','OLD',' ',
-     &            'UNFORMATTED',IDUMMY,.FALSE.)
-         REWIND (LUQMMM)
-         CALL READT(LUQMMM,NNBASX,WORK(KMULTI))
-         CALL GPCLOSE(LUQMMM,'KEEP')
-         IF (IPQMMM .GT. 14) THEN
-            WRITE(LUPRI,*) 'CCMM_ELSTAT: Print the stored 
-     &        octupole integrals:'
-            CALL OUTPAK(WORK(KMULTI),NBAST,1,LUPRI)
-         END IF
-
-         CALL DAXPY(NNBASX,ONE,WORK(KMULTI),1,NSAO,1)
-
-      END IF
 C
 
       CALL QEXIT('CCMM_ELSTAT')
@@ -1931,26 +1914,7 @@ C              C) The quadrupole contribution
               ELF(LRI+1) = ELF(LRI+1)+ELFLDY
               ELF(LRI+2) = ELF(LRI+2)+ELFLDZ
             ENDIF 
-         
-C           D) The octopole contribution
-            IF (NMULT .GE. 3) THEN
-              ELFLDX = 0.0D0
-              ELFLDY = 0.0D0
-              ELFLDZ = 0.0D0
-              CALL GET_OCTUPOLE_ELFLD(
-     *                  MUL3MM(1,SITEJ),MUL3MM(2,SITEJ),MUL3MM(3,SITEJ),
-     *                  MUL3MM(4,SITEJ),MUL3MM(5,SITEJ),MUL3MM(6,SITEJ),
-     *                  MUL3MM(7,SITEJ),MUL3MM(8,SITEJ),MUL3MM(9,SITEJ),
-     *                  MUL3MM(10,SITEJ),
-     *                  MMCORD(1,SITEJ),MMCORD(2,SITEJ),MMCORD(3,SITEJ),
-     *                  MMCORD(1,SITEI),MMCORD(2,SITEI),MMCORD(3,SITEI),
-     *                  ELFLDX,ELFLDY,ELFLDZ)
-              ELF(LRI+0) = ELF(LRI+0)+ELFLDX
-              ELF(LRI+1) = ELF(LRI+1)+ELFLDY
-              ELF(LRI+2) = ELF(LRI+2)+ELFLDZ
-            ENDIF
           ENDIF
-    
         END IF
  200  CONTINUE
 

@@ -51,7 +51,7 @@ H              2.675323   -2.516779   -0.000673
 #######################################################################
 cat > pehf_damp.pot <<'%EOF%'
 ! Two water molecules with enlarged isotropic polarizability
-coordinates
+@COORDINATES
 10
 AA
 O   -3.3285510  -0.1032300  -0.0004160
@@ -64,7 +64,8 @@ H   0.8416780   1.9718070   -0.0008200
 H   1.6325590   3.2983010   0.0041540
 X   1.2919875   2.1565840   -0.0007825
 X   1.6874280   2.8198310   0.0017045
-monopoles
+@MULTIPOLES
+ORDER 0
 6
 1    -0.7423294438  
 2     0.3699305781  
@@ -72,7 +73,7 @@ monopoles
 6    -0.7424407021  
 7     0.3699635356  
 8     0.3724771666  
-dipoles
+ORDER 1
 10
 1        0.0303539300        0.3280749969        0.0000894127
 2       -0.1005787187       -0.0557286568       -0.0000906399
@@ -84,7 +85,7 @@ dipoles
 8        0.0058194611       -0.1165815150       -0.0005822607
 9        0.1562106237        0.0289341838       -0.0001592549
 10       0.0501665747       -0.1493857957       -0.0008283012
-quadrupoles
+ORDER 2
 10
 1       -3.9516312016       -0.0561791973        0.0008348984       -4.5778807726        0.0000430036       -5.0206878337
 2       -0.5774205281       -0.0533068952       -0.0000246837       -0.6043997755       -0.0000510833       -0.5595888419
@@ -96,7 +97,7 @@ quadrupoles
 8       -0.5562677027        0.0450154899        0.0002165578       -0.6244100291       -0.0004104801       -0.5583164804
 9        0.9309922644        0.2280573432       -0.0002276453        0.2429875998       -0.0003906527        0.2330344430
 10       0.2176177849       -0.1663997493       -0.0007688598        0.9642929866        0.0038606681        0.2416297737
-octopoles
+ORDER 3
 10
 1       -0.0150265431       -0.0987395310       -0.0000662324        0.0267925411       -0.0002404801        0.0219905017        0.0316173819       -0.0000537894        0.2063402594        0.0001754735
 2       -0.1619181713        0.0850921795        0.0000929568       -0.1146181832        0.0000703947       -0.1289664836        0.0249611871       -0.0000856861       -0.0002388295       -0.0003063695
@@ -108,22 +109,15 @@ octopoles
 8       -0.2048195849       -0.1193833899       -0.0004155498       -0.0283899604        0.0001497946       -0.0584957773       -0.0907038156        0.0007682659       -0.1181777112       -0.0013985302
 9       -0.9479164549       -0.3465723180        0.0000503448       -0.2208226146       -0.0005070175       -0.0203355542       -0.7822646206       -0.0024267913       -0.1000074397       -0.0013521451
 10       0.3960654724        0.3304373259        0.0011603890        0.0383098210       -0.0006969579        0.0790638970        1.2632196844        0.0054054256        0.0723757018        0.0006068808
-isoalphas
+@POLARIZABILITIES
+ORDER 1 1
 2
-1   50.0
-6   50.0
-exclists
-5
+1   50.0 0.0 0.0 50.0 0.0 50.0
+6   50.0 0.0 0.0 50.0 0.0 50.0
+EXCLISTS
+2 5
 1 2 3 4 5
-2 1 3 4 5
-3 1 2 4 5
-4 1 2 3 5
-5 1 2 3 4
 6 7 8 9 10
-7 6 8 9 10
-8 6 7 9 10
-9 6 7 8 10
-10 6 7 8 9
 %EOF%
 #######################################################################
 #  DALTON INPUT
@@ -184,7 +178,7 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Convergence
 #
-CRIT1=`$GREP "*** DIIS converged in  10 iterations" $log | wc -l`
+CRIT1=`$GREP " DIIS converged in  12 iterations" $log | wc -l`
 TEST[2]=`expr $CRIT1 `
 CTRL[2]=1
 ERROR[2]="CONVERGENCE PROBLEM"
@@ -193,12 +187,12 @@ ERROR[2]="CONVERGENCE PROBLEM"
 # Energies
 #
 CRIT1=`$GREP "Monopoles * (\-|\-0)\.015707......" $log | wc -l`
-CRIT2=`$GREP "Dipoles * (|0)\.004251......" $log | wc -l`
+CRIT2=`$GREP "Dipoles * ( |0)\.004251......" $log | wc -l`
 CRIT3=`$GREP "Quadrupoles * (\-|\-0)\.004995......" $log | wc -l`
 CRIT4=`$GREP "Octopoles * (\-|\-0)\.002314......" $log | wc -l`
-CRIT5=`$GREP "Electronic * (\-|\-0)\.074496......" $log | wc -l`
-CRIT6=`$GREP "Nuclear * (|0)\.072657......" $log | wc -l`
-CRIT7=`$GREP "Multipole * (|0)\.000323......" $log | wc -l`
+CRIT5=`$GREP "Electronic * (\-|\-0)\.074497......" $log | wc -l`
+CRIT6=`$GREP "Nuclear * ( |0)\.072657......" $log | wc -l`
+CRIT7=`$GREP "Multipole * ( |0)\.000323......" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.020281......" $log | wc -l`
 CRIT9=`$GREP "Final HF energy: * \-188\.318084......" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
@@ -208,8 +202,8 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Induced dipole moments in environment
 #
-CRIT1=`$GREP "*  1 * (|0)\.140114.. * (|0)\.193037.. * (|0)\.000042.." $log | wc -l`
-CRIT2=`$GREP "*  6 * (\-|\-0)\.289498.. * (|0)\.050489.. * (|0)\.000094.." $log | wc -l`
+CRIT1=`$GREP "  1 * ( |0)\.140114.. * ( |0)\.193038.. * ( |0)\.000042.." $log | wc -l`
+CRIT2=`$GREP "  6 * (\-|\-0)\.289498.. * ( |0)\.050488.. * ( |0)\.000094.." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[4]=2
 ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
@@ -258,7 +252,7 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Convergence
 #
-CRIT1=`$GREP "*** DIIS converged in  10 iterations" $log | wc -l`
+CRIT1=`$GREP " DIIS converged in  12 iterations" $log | wc -l`
 TEST[2]=`expr $CRIT1 `
 CTRL[2]=1
 ERROR[2]="CONVERGENCE PROBLEM"
@@ -267,12 +261,12 @@ ERROR[2]="CONVERGENCE PROBLEM"
 # Energies
 #
 CRIT1=`$GREP "Monopoles * (\-|\-0)\.015707......" $log | wc -l`
-CRIT2=`$GREP "Dipoles * (|0)\.004251......" $log | wc -l`
+CRIT2=`$GREP "Dipoles * ( |0)\.004251......" $log | wc -l`
 CRIT3=`$GREP "Quadrupoles * (\-|\-0)\.004995......" $log | wc -l`
 CRIT4=`$GREP "Octopoles * (\-|\-0)\.002314......" $log | wc -l`
-CRIT5=`$GREP "Electronic * (\-|\-0)\.074496......" $log | wc -l`
-CRIT6=`$GREP "Nuclear * (|0)\.072657......" $log | wc -l`
-CRIT7=`$GREP "Multipole * (|0)\.000323......" $log | wc -l`
+CRIT5=`$GREP "Electronic * (\-|\-0)\.074497......" $log | wc -l`
+CRIT6=`$GREP "Nuclear * ( |0)\.072657......" $log | wc -l`
+CRIT7=`$GREP "Multipole * ( |0)\.000323......" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.020281......" $log | wc -l`
 CRIT9=`$GREP "Final HF energy: * \-188\.318084......" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
@@ -282,8 +276,8 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Induced dipole moments in environment
 #
-CRIT1=`$GREP "*  1 * (|0)\.140114.. * (|0)\.193037.. * (|0)\.000042.." $log | wc -l`
-CRIT2=`$GREP "*  6 * (\-|\-0)\.289498.. * (|0)\.050489.. * (|0)\.000094.." $log | wc -l`
+CRIT1=`$GREP "  1 * ( |0)\.140114.. * ( |0)\.193038.. * ( |0)\.000042.." $log | wc -l`
+CRIT2=`$GREP "  6 * (\-|\-0)\.289498.. * ( |0)\.050488.. * ( |0)\.000094.." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[4]=2
 ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"

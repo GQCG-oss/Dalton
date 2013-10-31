@@ -3,12 +3,14 @@
 
 MODULE lattice_vectors
 use precision
+!use memory_handling
 use matrix_module, only: matrix
 use typedeftype, only: lssetting
 use molecule_typetype, only: MOLECULEINFO
 use molecule_type, only: init_Moleculeinfo, copy_atom
 use matrix_operations, only: mat_free
 use lattice_type
+use memory_handling
 
 CONTAINS
 
@@ -110,7 +112,7 @@ END SUBROUTINE translate_atom
 SUBROUTINE set_lattice_cells(lattice_cell,num_latvectors,molecule,ll,lupri)
   implicit none
   ! local variables
-  INTEGER :: IATOM, index
+  INTEGER :: IATOM, idex
   INTEGER, INTENT(IN) :: num_latvectors,lupri
   TYPE(MOLECULEINFO), INTENT(IN) :: molecule
   TYPE(moleculeinfo), INTENT(INOUT), DIMENSION(num_latvectors) :: lattice_cell
@@ -121,29 +123,29 @@ SUBROUTINE set_lattice_cells(lattice_cell,num_latvectors,molecule,ll,lupri)
   write(lupri,*) 'Number of atoms ', molecule%natoms
   !call build_lvec_list(ll)
 !     write(lupri,*) 'before loop'
-  DO index=1,num_latvectors
+  DO idex=1,num_latvectors
 !  DO index=-ll%max_layer,max_layer
 !  Allocate(lattice_cell(index)%atom(molecule%natoms))
-     write(mollabel,'(A12,I9)') 'PBC-Molecule',index
-     call init_Moleculeinfo(lattice_cell(index),molecule%natoms,mollabel)
+     write(mollabel,'(A12,I9)') 'PBC-Molecule',idex
+     call init_Moleculeinfo(lattice_cell(idex),molecule%natoms,mollabel)
 
 
 !     write(*,*) 'before copy_atom'
      DO iatom=1,molecule%natoms
-      call copy_atom(molecule,iatom,lattice_cell(index),iatom,6)
+      call copy_atom(molecule,iatom,lattice_cell(idex),iatom,6)
      ENDDO
 !     write(*,*) 'after copy_atom',molecule%natoms
      DO IATOM=1,molecule%natoms
 !     write(*,*) 'inside loop copy_atom'
-        lattice_cell(index)%atom(IATOM)%CENTER(1)= &
-        &  molecule%atom(IATOM)%CENTER(1)-ll%lvec(index)%std_coord(1)
+        lattice_cell(idex)%atom(IATOM)%CENTER(1)= &
+        &  molecule%atom(IATOM)%CENTER(1)-ll%lvec(idex)%std_coord(1)
 !     write(*,*) 'inside loop copy_atom'
 
-        lattice_cell(index)%atom(IATOM)%CENTER(2)= &
-        &  molecule%atom(IATOM)%CENTER(2)-ll%lvec(index)%std_coord(2)
+        lattice_cell(idex)%atom(IATOM)%CENTER(2)= &
+        &  molecule%atom(IATOM)%CENTER(2)-ll%lvec(idex)%std_coord(2)
 
-        lattice_cell(index)%atom(IATOM)%CENTER(3)= &
-        &  molecule%atom(IATOM)%CENTER(3)-ll%lvec(index)%std_coord(3)
+        lattice_cell(idex)%atom(IATOM)%CENTER(3)= &
+        &  molecule%atom(IATOM)%CENTER(3)-ll%lvec(idex)%std_coord(3)
 !        write(*,*) 'x', lattice_cell(index)%atom(IATOM)%CENTER(1)
 !        write(*,*) 'y', lattice_cell(index)%atom(IATOM)%CENTER(2)
 !        write(*,*) 'z', lattice_cell(index)%atom(IATOM)%CENTER(3)
@@ -210,7 +212,7 @@ SUBROUTINE build_lvec_list(ll,nbast)
   implicit none
   INTEGER, intent(in) ::nbast
   type(lvec_list_t), intent(inout) :: ll
-  INTEGER:: l1, l2,l3, fdim(3),alstat,index
+  INTEGER:: l1, l2,l3, fdim(3),alstat,idx
 
   ! invent some basic lattice data
 !  ll%ldef%avec(1:3,1) = (/ 9.2822, 0.0, 0.0 /)
@@ -230,32 +232,34 @@ SUBROUTINE build_lvec_list(ll,nbast)
 
 !  max_layer = 1
   ll%num_entries = (2*ll%max_layer*fdim(1)+1)*(2*ll%max_layer*fdim(2)+1)*(2*ll%max_layer*fdim(3)+1) 
-  allocate(ll%lvec(ll%num_entries), STAT=alstat)
+  !allocate(ll%lvec(ll%num_entries), STAT=alstat)
+  call mem_alloc(ll%lvec,ll%num_entries)!, STAT=alstat)
 !  allocate(ll%lvec(-ll%max_layer:ll%max_layer), STAT=alstat)
 !  if (alstat .eq. ???) then
 !     quit('mem alloc failed')
 !  end if
 
-  index = 1
+  idx = 1
 !  index = -ll%max_layer
 
   do l3 = -ll%max_layer*fdim(3), ll%max_layer*fdim(3)
   do l2 = -ll%max_layer*fdim(2), ll%max_layer*fdim(2)
   do l1 = -ll%max_layer*fdim(1), ll%max_layer*fdim(1)
-     ll%lvec(index)%lat_coord(1:3) = (/ real(l1), real(l2), real(l3) /)
-     call latt_2_std_coord(ll%lvec(index)%lat_coord,ll%lvec(index)%std_coord,ll%ldef%avec)  
-     allocate(ll%lvec(index)%fck_vec(nbast*nbast))
-     allocate(ll%lvec(index)%fck_mat(nbast,nbast))
-     allocate(ll%lvec(index)%Sl_vec(nbast*nbast))
-     allocate(ll%lvec(index)%Sl_mat(nbast,nbast))
-     allocate(ll%lvec(index)%d_vec(nbast*nbast))
-     allocate(ll%lvec(index)%d_mat(nbast,nbast))
-     ll%lvec(index)%fck_vec=0 
-     ll%lvec(index)%fck_mat=0 
-     ll%lvec(index)%Sl_vec=0 
-     ll%lvec(index)%Sl_mat=0 
-     ll%lvec(index)%is_redundant=.false.
-     index = index + 1
+     ll%lvec(idx)%lat_coord(1:3) = (/ real(l1), real(l2), real(l3) /)
+     call latt_2_std_coord(ll%lvec(idx)%lat_coord,ll%lvec(idx)%std_coord,ll%ldef%avec)  
+     !allocate(ll%lvec(idx)%fck_vec(nbast*nbast))
+     !allocate(ll%lvec(idx)%fck_mat(nbast,nbast))
+     !allocate(ll%lvec(idx)%Sl_vec(nbast*nbast))
+     !allocate(ll%lvec(idx)%Sl_mat(nbast,nbast))
+     !allocate(ll%lvec(idx)%d_vec(nbast*nbast))
+     !allocate(ll%lvec(idx)%d_mat(nbast,nbast))
+     !ll%lvec(idx)%fck_vec=0 
+     !ll%lvec(idx)%fck_mat=0 
+     !ll%lvec(idx)%Sl_vec=0 
+     !ll%lvec(idx)%Sl_mat=0 
+     ll%lvec(idx)%is_redundant=.false.
+     ll%lvec(idx)%Vz_computed=.false.
+     idx = idx + 1
   end do
   end do
   end do
@@ -278,7 +282,7 @@ SUBROUTINE build_nflvec_list(ll,nbast)
   implicit none
   INTEGER, intent(in) ::nbast
   type(lvec_list_t), intent(inout) :: ll
-  INTEGER:: l1, l2,l3, fdim(3),alstat,index
+  INTEGER:: l1, l2,l3, fdim(3),alstat,idx
 
   fdim(1:3) = 0
   if (ll%ldef%is_active(1)) fdim(1) = 1
@@ -290,19 +294,19 @@ SUBROUTINE build_nflvec_list(ll,nbast)
   ll%nf_entries = (2*ll%nneighbour*fdim(1)+1)*(2*ll%nneighbour*fdim(2)+1)*(2*ll%nneighbour*fdim(3)+1) 
   allocate(ll%nflvec(ll%nf_entries), STAT=alstat)
 
-  index=1
+  idx=1
   do l3 = -ll%nneighbour*fdim(3), ll%nneighbour*fdim(3)
   do l2 = -ll%nneighbour*fdim(2), ll%nneighbour*fdim(2)
   do l1 = -ll%nneighbour*fdim(1), ll%nneighbour*fdim(1)
-     ll%nflvec(index)%lat_coord(1:3) = (/ real(l1), real(l2), real(l3) /)
-     call latt_2_std_coord(ll%nflvec(index)%lat_coord,ll%nflvec(index)%std_coord,ll%ldef%avec)  
-     allocate(ll%nflvec(index)%fck_vec(nbast*nbast))
-     allocate(ll%nflvec(index)%fck_mat(nbast,nbast))
-     allocate(ll%nflvec(index)%d_vec(nbast*nbast))
-     allocate(ll%nflvec(index)%d_mat(nbast,nbast))
-     ll%nflvec(index)%fck_vec=0 
-     ll%nflvec(index)%fck_mat=0 
-     index = index + 1
+     ll%nflvec(idx)%lat_coord(1:3) = (/ real(l1), real(l2), real(l3) /)
+     call latt_2_std_coord(ll%nflvec(idx)%lat_coord,ll%nflvec(idx)%std_coord,ll%ldef%avec)  
+     !allocate(ll%nflvec(idx)%fck_vec(nbast*nbast))
+     !allocate(ll%nflvec(idx)%fck_mat(nbast,nbast))
+     !allocate(ll%nflvec(idx)%d_vec(nbast*nbast))
+     !allocate(ll%nflvec(idx)%d_mat(nbast,nbast))
+     !ll%nflvec(idx)%fck_vec=0 
+     !ll%nflvec(idx)%fck_mat=0 
+     idx = idx + 1
   end do
   end do
   end do
@@ -334,7 +338,7 @@ integer :: x,y,z
 !call free_lvec_data(lvec_list%nflvec,size(lvec_list%nflvec))
  !do i=1,size(lvec_list%lvec)
  !   call find_latt_vectors(i,x,y,x,fdim,lvec_list)
- deallocate(lvec_list%lvec)
+ call mem_dealloc(lvec_list%lvec)
     
 
 END SUBROUTINE free_lvec_list

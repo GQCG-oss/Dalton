@@ -31,7 +31,7 @@
 !   TX = 2 : i-transform        : -iqi = a  - bj
 !   TX = 3 : j-transform        : -jqj = a* + b*j
 !   TX = 4 : k-transform        : -kqk = a* - b*j
-!  
+!
       INTEGER IQMULT(4, 4, 4), IQPHASE(4, 4, 4), IQSIGN(4, 2, 4)
       COMMON /QALGEBRA/ IQMULT, IQPHASE, IQSIGN
 

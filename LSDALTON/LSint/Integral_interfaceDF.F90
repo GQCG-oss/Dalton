@@ -46,8 +46,12 @@ type(matrixp)       :: Intmat(1)
 
 IF (SETTING%SCHEME%PARI_J) THEN
    IF (SETTING%SCHEME%SIMPLE_PARI) THEN
-      IF(ndmat.NE. 1)CALL LSQUIT('For the time being the pari code is &
-           &not implemted for more than 1 density matrix - spam Simen Reine and Patrik',lupri)
+      IF(ndmat.NE. 1) THEN
+           WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+           WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+           CALL LSQUIT('For the time being the pari code is &
+           &not implemted for more than 1 density matrix - spam Simen Reine and Patrick Merlot',lupri)
+      ENDIF
       CALL II_get_pari_df_coulomb_mat_simple(LUPRI,LUERR,SETTING,D(1),F(1))
    ELSE 
       CALL II_get_pari_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
@@ -58,8 +62,12 @@ ELSE IF (SETTING%SCHEME%OVERLAP_DF_J) THEN
      IF(matrix_type .EQ. mtype_unres_dense)&
           &CALL LSQUIT('Density fitting not implemented for unrestricted - spam Simen Reine',lupri)
    ENDIF
-   IF(ndmat.NE. 1)CALL LSQUIT('For the time being II_get_overlap_df_coulomb_mat is &
-        &not implemted for more than 1 density matrix - spam Simen Reine and Patrik',lupri)
+   IF(ndmat.NE. 1) THEN
+        WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+        WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+        CALL LSQUIT('For the time being II_get_overlap_df_coulomb_mat is &
+         &not implemted for more than 1 density matrix - spam Simen Reine and Patrik',lupri)
+   ENDIF
   CALL II_get_overlap_df_coulomb_mat(LUPRI,LUERR,SETTING,D(1),F(1))
 ELSE
   CALL II_get_regular_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
@@ -609,16 +617,31 @@ logical                    :: saveRecalcGab
 integer                    :: idmat,nmat,nrow,ncol
 TYPE(LSTENSOR),pointer     :: regCSfull,auxCSfull
 
-IF (ndmat.GT.1) CALL LSQUIT('Error in II_get_pari_df_coulomb_mat: ndmat>1 not tested',-1)
-
+IF (ndmat.GT.1) THEN
+   WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+   WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+   CALL LSQUIT('Error in II_get_pari_df_coulomb_mat: ndmat>1 not tested',-1)
+ENDIF
 nrow = D(1)%nrow
 ncol = D(1)%ncol
 IF ((F(1)%nrow.NE.nrow).OR.(F(1)%ncol.NE.ncol)) CALL LSQUIT('Error in II_get_pari_df_coulomb_mat F/D',-1)
 
 IF (matrix_type .EQ. mtype_unres_dense)THEN
-  IF (SETTING%SCHEME%NON_ROBUST_PARI) CALL LSQUIT('Error in II_get_pari_df_coulomb_mat. NR and unrestricted',-1)
-  IF(setting%IntegralTransformGC) CALL LSQUIT('Error in II_get_pari_df_coulomb_mat. GC and unrestricted',-1)
-  IF (SETTING%SCHEME%FMM) call lsquit('Not allowed combination in II_get_pari_df_coulomb_mat. FMM and unrestricted',-1)
+  IF (SETTING%SCHEME%NON_ROBUST_PARI) THEN 
+     WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+     WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+     CALL LSQUIT('Error in II_get_pari_df_coulomb_mat. NR and unrestricted',-1)
+  ENDIF
+  IF(setting%IntegralTransformGC) THEN
+    WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+    WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+    CALL LSQUIT('Error in II_get_pari_df_coulomb_mat. GC and unrestricted',-1)
+  ENDIF
+  IF (SETTING%SCHEME%FMM) THEN
+    WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+    WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+    call lsquit('Not allowed combination in II_get_pari_df_coulomb_mat. FMM and unrestricted',-1)
+  ENDIF
   nmat = 2*ndmat
   call mem_alloc(Dfull,nrow,ncol,nmat)
   DO Idmat=1,ndmat
@@ -1371,16 +1394,31 @@ logical               :: saveRecalcGab
 integer :: idmat,nmat,nrow,ncol
 TYPE(LSTENSOR),pointer :: regCSfull,auxCSfull
 
-IF (ndmat.GT.1) CALL LSQUIT('Error in II_get_pari_df_exchange_mat: ndmat>1 not tested',-1)
-
+IF (ndmat.GT.1) THEN
+   WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+   WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+   CALL LSQUIT('Error in II_get_pari_df_exchange_mat: ndmat>1 not tested',-1)
+ENDIF
 nrow = D(1)%nrow
 ncol = D(1)%ncol
 IF ((F(1)%nrow.NE.nrow).OR.(F(1)%ncol.NE.ncol)) CALL LSQUIT('Error in II_get_pari_df_exchange_mat F/D',-1)
 
 IF (matrix_type .EQ. mtype_unres_dense)THEN
-  IF (SETTING%SCHEME%NON_ROBUST_PARI) CALL LSQUIT('Error in II_get_pari_df_exchange_mat. NR and unrestricted',-1)
-  IF(setting%IntegralTransformGC) CALL LSQUIT('Error in II_get_pari_df_exchange_mat. GC and unrestricted',-1)
-  IF (SETTING%SCHEME%FMM) call lsquit('Not allowed combination in II_get_pari_df_exchange_mat. FMM and unrestricted',-1)
+  IF (SETTING%SCHEME%NON_ROBUST_PARI) THEN 
+   WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+   WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+   CALL LSQUIT('Error in II_get_pari_df_exchange_mat. NR and unrestricted',-1)
+  ENDIF
+  IF(setting%IntegralTransformGC) THEN
+     WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+     WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+     CALL LSQUIT('Error in II_get_pari_df_exchange_mat. GC and unrestricted',-1)
+  ENDIF
+  IF (SETTING%SCHEME%FMM) THEN
+     WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+     WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+     call lsquit('Not allowed combination in II_get_pari_df_exchange_mat. FMM and unrestricted',-1)
+  ENDIF
   nmat = 2*ndmat
   call mem_alloc(Dfull,nrow,ncol,nmat)
   DO Idmat=1,ndmat
@@ -1774,7 +1812,11 @@ SUBROUTINE II_get_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
      print*,'nbast',nbast
      Call lsquit('dim mismatch in II_get_df_exchange2',-1)
   ENDIF
-  IF (ndmat.GT.1) CALL LSQUIT('Error in II_get_pari_df_exchange_mat: ndmat>1 not tested',-1)
+  IF (ndmat.GT.1) THEN
+      WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+      WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+     CALL LSQUIT('Error in II_get_pari_df_exchange_mat: ndmat>1 not tested',-1)
+  ENDIF
   !set threshold 
   SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
   

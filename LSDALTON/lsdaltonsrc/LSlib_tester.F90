@@ -1,7 +1,25 @@
 !#define LSLIB_RESTART
 PROGRAM lslib_test
-use files
-use lsmpi_type, only: lsmpi_finalize
+use precision
+implicit none
+real(realk) :: t1,t2
+logical :: OnMaster,meminfo_slaves
+Integer :: lupri,luerr
+luerr          = 0
+lupri          = 0
+! setup the calculation 
+call lsinit_all(OnMaster,lupri,luerr,t1,t2)
+
+IF(OnMaster) call LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
+
+! free everything take time and close the files
+call lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
+
+CONTAINS
+
+SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
+  use files
+  use lsmpi_type, only: lsmpi_finalize
 #ifdef LSLIB_RESTART
   use configuration
   use TYPEDEF
@@ -13,29 +31,25 @@ use lsmpi_type, only: lsmpi_finalize
   use integralinterfaceMod
   use memory_handling
 #endif
-implicit none
-Integer             :: nbast,natoms,nelectrons,lupri,luerr,i,j,k,l,n,m,o,x,y,z,iGrad,iHess,iCubic,ij
+  implicit none
+  logical, intent(in) :: OnMaster
+  logical, intent(out):: meminfo_slaves
+  integer, intent(inout) :: lupri, luerr
+  Integer             :: nbast,natoms,nelectrons,i,j,k,l,n,m,o,x,y,z,iGrad,iHess,iCubic,ij
 #ifdef LSLIB_RESTART
   type(matrix) :: D
-  logical :: dens_exsist, OnMaster=.true., gcbasis
+  logical :: dens_exsist, DiskOnMaster=.true., gcbasis
   integer :: restart_lun
 #else
-Integer,parameter   :: realk = 8
+  Integer,parameter   :: realk = 8
 #endif
-Real(realk),pointer :: Smat(:,:),Dmat(:,:,:),TempMat(:,:,:),TempGrad(:,:,:),DFD(:,:,:),h1(:,:),Fmat(:,:,:)
-Real(realk),pointer :: TempHess(:,:,:,:,:)
-Real(realk),pointer :: TempCubic(:,:,:,:,:,:,:)
-Real(realk)         :: tmp1,tmp2,EXC(2),constant
-Real(realk),pointer :: eri(:,:,:,:,:)
-Integer,external    :: LSlib_get_nbasis
-logical :: diff,i1,j1,k1,l1
-
-call lsinit_all()
-
-LUPRI=-1
-LUERR=-1
-CALL LSOPEN(LUPRI,'LSDALTON.OUT','NEW','FORMATTED')
-CALL LSOPEN(LUERR,'LSDALTON.ERR','UNKNOWN','FORMATTED')
+  Real(realk),pointer :: Smat(:,:),Dmat(:,:,:),TempMat(:,:,:),TempGrad(:,:,:),DFD(:,:,:),h1(:,:),Fmat(:,:,:)
+  Real(realk),pointer :: TempHess(:,:,:,:,:)
+  Real(realk),pointer :: TempCubic(:,:,:,:,:,:,:)
+  Real(realk)         :: tmp1,tmp2,EXC(2),constant
+  Real(realk),pointer :: eri(:,:,:,:,:)
+  Integer,external    :: LSlib_get_nbasis
+  logical :: diff,i1,j1,k1,l1
 
 CALL LSlib_get_dimensions(nbast,natoms,nelectrons,lupri,luerr)
 write(lupri,'(A,I8,A,I8,A,I8)') 'Starting lslib_test with nbast =',nbast,', natoms =', natoms,&
@@ -69,7 +83,7 @@ allocate(eri(nbast,nbast,nbast,nbast,1))
       restart_lun = -1  !initialization
       call lsopen(restart_lun,'dens.restart','OLD','UNFORMATTED')
       rewind restart_lun
-      call mat_read_from_disk(restart_lun,D,OnMaster)
+      call mat_read_from_disk(restart_lun,D,DiskOnMaster)
       call mat_read_info_from_disk(restart_lun,gcbasis)
       call lsclose(restart_lun,'KEEP')
       WRITE(LUPRI,*)
@@ -1296,14 +1310,12 @@ deallocate(Dmat)
 deallocate(Smat)
 deallocate(DFD)
 
-call lsfree_all()
-call lsmpi_finalize(lupri,.FALSE.)
+meminfo_slaves = .FALSE.
 
 write(lupri,'(A)') ''
 write(lupri,'(A)') '*** LSlib tester completed ***'
 write(lupri,'(A)') ''
 
-CALL LSCLOSE(LUPRI,'KEEP')
-CALL LSCLOSE(LUERR,'KEEP')
+END SUBROUTINE LSLIB_TEST_DRIVER
 
-END PROGRAM lslib_test
+END PROGRAM LSLIB_TEST

@@ -96,6 +96,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #       !  First-order DPT corrections to the ground-state energy  !
 #        Total first-order DPT correction:     -0.091121192
 #        Total first-order DPT correction:     -0.091209180
@@ -155,7 +160,7 @@ ERROR[9]="CCSD(T) orbit-orbit correction not correct"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

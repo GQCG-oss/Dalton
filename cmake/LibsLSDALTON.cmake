@@ -46,13 +46,15 @@ set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_t2f.F90
     )
-foreach(_source ${MANUAL_REORDERING_SOURCES})
-    set_source_files_properties(${_source} PROPERTIES GENERATED 1)
-endforeach()
+
 get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-add_custom_target(
-    generate_man_reord
+add_custom_command(
+    OUTPUT
+    ${MANUAL_REORDERING_SOURCES}
+    COMMAND
     python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
+    DEPENDS
+    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
     )
 unset(LIST_OF_DEFINITIONS)
 
@@ -61,7 +63,6 @@ add_library(
     ${MANUAL_REORDERING_SOURCES}
     ${LSUTIL_COMMON_SOURCES}
     )
-add_dependencies(lsutillib_common generate_man_reord)
 
 target_link_libraries(lsutillib_common matrixmlib)
 
@@ -87,14 +88,14 @@ set(ExternalProjectCMakeArgs
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     )
-add_external(matrix-defop)
-set(LIBS
+add_external(ls-matrix-defop)
+set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libmatrix-defop.a
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
-add_dependencies(matrix-defop matrixmlib)
-add_dependencies(matrix-defop matrixolib)
+add_dependencies(ls-matrix-defop matrixmlib)
+add_dependencies(ls-matrix-defop matrixolib)
 
 add_library(
     pdpacklib
@@ -143,10 +144,10 @@ if(ENABLE_XCFUN)
     add_external(xcfun)
     add_dependencies(xcfun_interface xcfun)
     add_definitions(-DVAR_XCFUN)
-    set(LIBS
+    set(EXTERNAL_LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
-        ${LIBS}
+        ${EXTERNAL_LIBS}
         )
 endif()
 
@@ -180,6 +181,11 @@ if(ENABLE_INTEREST)
 endif()
 
 add_library(
+    ichorintlib
+    ${ICHORINT_SOURCES}
+    )
+
+add_library(
     dftfunclib
     ${DFTFUNC_SOURCES}
     ${DFTFUNC_F_SOURCES}
@@ -196,6 +202,7 @@ target_link_libraries(lsintlib dftfunclib)
 add_dependencies(lsintlib pdpacklib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)
+add_dependencies(lsintlib ichorintlib)
 
 add_library(
     pbclib
@@ -240,15 +247,15 @@ set(ExternalProjectCMakeArgs
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     )
-add_external(openrsp)
-set(LIBS
+add_external(ls-openrsp)
+set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libopenrsp.a
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
-add_dependencies(openrsp matrix-defop)
-add_dependencies(openrsp solverutillib)
-add_dependencies(openrsp rspsolverlib)
+add_dependencies(ls-openrsp ls-matrix-defop)
+add_dependencies(ls-openrsp solverutillib)
+add_dependencies(ls-openrsp rspsolverlib)
 
 add_library(
     linearslib
@@ -256,8 +263,8 @@ add_library(
     )
 
 target_link_libraries(linearslib rspsolverlib)
-add_dependencies(linearslib openrsp)
-add_dependencies(linearslib matrix-defop)
+add_dependencies(linearslib ls-openrsp)
+add_dependencies(linearslib ls-matrix-defop)
 
 if(DEVELOPMENT_CODE)
     add_library(
@@ -303,6 +310,9 @@ add_executable(
     ${LINK_FLAGS}
     )
 
+# we always want to compile lslib_tester.x along with lsdalton.x
+add_dependencies(lsdalton.x lslib_tester.x)
+
 if(MPI_FOUND)
     # Simen's magic fix for Mac/GNU/OpenMPI
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
@@ -337,6 +347,7 @@ set(LIBS_TO_MERGE
     lsutillib
     fmmlib
     dftfunclib
+    ichorintlib
     lsint
     pbclib
     ddynamlib
@@ -365,7 +376,7 @@ MERGE_STATIC_LIBS(
 target_link_libraries(
     lsdalton
     lsdaltonmain
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
 target_link_libraries(

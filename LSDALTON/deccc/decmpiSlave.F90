@@ -70,7 +70,7 @@
       case(DEFAULTGROUPS);
          call lsmpi_default_mpi_group
       case(PDMA4SLV);
-         call PDM_ARRAY_SLAVE
+         call PDM_ARRAY_SLAVE(comm)
 #ifdef VAR_SCALAPACK
       case(GRIDINIT);
          call PDM_GRIDINIT_SLAVE

@@ -103,6 +103,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Geometry optimization
 CRIT1=`$GREP "2nd Order Geometry Optimization" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
@@ -205,7 +210,7 @@ ERROR[10]="LAST ITERATION NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
      PASSED=0
    fi

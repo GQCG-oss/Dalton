@@ -304,8 +304,8 @@ Do
 !                 Case('.VR-BON')
 !                 Case('.VR-EIG')
                  Case('.INITHE')
-                   Write(lupri,*)'INITHE optinon is not availvable in LSDALTON'
-                   Call LSQuit('Hessian not availvable in LSDALTON',lupri)
+                   Write(lupri,*)'INITHE optinon is not available in LSDALTON'
+                   Call LSQuit('Hessian not available in LSDALTON',lupri)
                  Case('.INITEV')
                    Read(lucmd,*) optinfo%EvLini
                  Case('.HESFIL')
@@ -324,8 +324,8 @@ Do
                  Case('.BFGS  ')
                    optinfo%BFGS = .TRUE. 
                  Case('.NEWTON')
-                   Write(lupri,*)'NEWTON optinon is not availvable in LSDALTON'
-                   Call LSQuit('Hessian not availvable in LSDALTON',lupri)
+                   Write(lupri,*)'NEWTON optinon is not available in LSDALTON'
+                   Call LSQuit('Hessian not available in LSDALTON',lupri)
                  Case('.QUADSD')
                     Call lsquit('.QUADSD not implemented in LSDALTON',lupri)
 !                   optinfo%QuadSD = .TRUE.
@@ -343,13 +343,13 @@ Do
                     optinfo%CartCoord = .TRUE. 
                     optinfo%RedInt = .FALSE.
                  Case('.REDINT')
-                    optinfo%RedInt = .TRUE.
-                    optinfo%CartCoord = .FALSE.
                     If (optinfo%CartCoord) then
                        Call LSQuit('The user must choose&
-                 & between optimization in cartesian or&
-                 & internal coordinates', lupri)
-                    Endif
+                                 & between optimization in cartesian or&
+                                 & internal coordinates', lupri)
+                    Endif       
+                    optinfo%RedInt = .TRUE.
+                    optinfo%CartCoord = .FALSE.
                  Case('.INIRED')
                     optinfo%InrdHess = .TRUE.
                  Case('.1STORD')
@@ -795,12 +795,12 @@ ELSE
            & removing a number of dihedral coordinates.'
       END IF
 !
-      IF (.NOT. (optinfo%HessFile .OR. optinfo%InmdHess .OR. optinfo%CMBMod &
+      IF (.NOT. (optinfo%HessFile .OR. optinfo%InmdHess .OR. optinfo%ModHes .OR. optinfo%CMBMod &
       .OR. optinfo%InrdHess .OR. (optinfo%EVLINI .GT. -0.9E0_realk))) THEN
          IF (optinfo%SADDLE) THEN
             optinfo%NOAUX  = .TRUE.
          ELSE
-            optinfo%InmdHess = .TRUE.
+            IF (.NOT.optinfo%CartCoord) optinfo%InmdHess = .TRUE.
          END IF
       END IF
 !

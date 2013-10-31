@@ -87,6 +87,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # LDA energy
 CRIT1=`$GREP "Final * DFT energy: * -91\.3247231" $log | wc -l`
 TEST[1]=$CRIT1
@@ -94,11 +99,12 @@ CTRL[1]=1
 ERROR[1]="LDA ENERGY NOT CORRECT"
 
 # Dipole moment
-CRIT1=`$GREP  "( |0)\.8738" $log | wc -l`
-CRIT2=`$GREP  "( -|-0)\.8703" $log | wc -l`
-CRIT3=`$GREP  "( -|-0)\.0784" $log | wc -l`
-TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
-CTRL[2]=3
+CRIT1=`$GREP  "( |0)\.8738.. * 2\.2210.. * 7\.4087.." $log | wc -l`
+CRIT2=`$GREP  "  x * ( -|-0)\.078425.. * ( -|-0)\.199338.. * ( -|-0)\.664922.." $log | wc -l`
+CRIT3=`$GREP  "  y * ( -|-0| |0)\.000000.. * ( -|-0| |0)\.000000.. * ( -|-0| |0)\.000000.." $log | wc -l`
+CRIT4=`$GREP  "  z * ( -|-0)\.870311.. * \-2\.21211... * \-7\.37880..." $log | wc -l`
+TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3 \+ $CRIT4`
+CTRL[2]=4
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 
@@ -149,7 +155,7 @@ ERROR[5]="SHILEDINGS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

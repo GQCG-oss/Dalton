@@ -84,9 +84,10 @@ def main():
     reordmod  = os.path.getmtime(installdir+"reorder_frontend.F90")
 #    scriptmod = time.ctime(os.path.getmtime(sys.argv[0]))
     scriptmod = os.path.getmtime(sys.argv[0])
-    if(scriptmod>reordmod):
-      print "REORDER GENERATOR IS NEWER THAN REORDERING FILES - GENERATING NEW ONES"
-      writenew = True
+  # radovan: this should not be done here but taken care of by (c)make
+  # if(scriptmod>reordmod):
+  #   print "REORDER GENERATOR IS NEWER THAN REORDERING FILES - GENERATING NEW ONES"
+  #   writenew = True
   if(not os.path.exists(installdir+"reord2d_2_reord.F90")):
     writenew = True
   if(not os.path.exists(installdir+"reord3d_1_reord.F90")):

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -31,25 +31,31 @@ C
 C Purpose:
 C To compute eq.27 for the inactive density matrix and its counterpart
 C for the active density matrix, following
-C the direct RPA article of Jensen et al C CP,119, 297 (1988).
-C That is to compute Inactive and Active  density matrices
-C later to be used for calculating one-index transformed
-C anti-symmetric Fock matrices over Atomic Orbitals.
+C the direct RPA article of Jensen et al., Chem. Phys. 119, 297 (1988).
+C That is to compute Inactive and Active density matrices
+C to be used for calculating one-index transformed
+C Fock matrices over Atomic Orbitals.
 C
 C It follows TR1DEN in SIRIUS, which in turn
 C follows appendix C in Chem. Phys. 104 (1986) 229.
 C
-C DXCAO and DXVAO must be reserved as square (unfolded) matrices
+C DXCAO and DXVAO must be reserved as square matrices (NBAST,NBAST)
 C
-C General formula: DX(p,q) = sum(t) Bo(t,p) D(t,q)
-C Thus: DXC(p,i) = 2*Bo(i,p)
-C       DXV(p,u) = sum(v) DV(v,u) Bo(v,p) = sum(v) DV(u,v) Bo(v,p)
+C General formula: DX(p,q) = sum(t) Bo(t,p) D(t,q) - D(p,t) Bo(q,t)
+C Thus: DXC(p,i) =   2 Bo(i,p)
+C       DXC(i,p) = - 2 Bo(p,i)
+C       DXV(p,u) =   sum(v) DV(v,u) Bo(v,p)
+C       DXV(u,p) = - sum(v) DV(u,v) Bo(p,v)
 C
 C Input:
 C   CMO(*)  molecular orbital coefficients
 C   UBO(*)  kappa matrix (orbital part of B), unpacked
 C   DV(*)   active part of one-electron density matrix
 C           (over MO's)
+C
+C Output:
+C   if NISHT>0: DXCAO(*) = half of DXC in AO basis (the factor 2 above is handled outside)
+C   if NASHT>0: DXVAO(*) = DXV in AO basis
 C
 C Scratch:
 C   WRK(LFRSAV)
@@ -87,7 +93,7 @@ C      IF (SOPPA) THEN
 C     JJE 2013-07-20: allow for entry into deq27 if SOPRPA == .true.
 C                     due to PE module
       IF (SOPPA .and. (.not. SOPRPA)) THEN
-         CALL QDUMP(6)
+         CALL QDUMP(LUPRI)
          CALL QUIT('DEQ27 fatal error: SOPPA not implemented yet!')
       END IF
 C
@@ -103,7 +109,7 @@ C
       IF (NASHT .GT. 0) THEN
 C
 C     *************************************************
-C     D-I and D-II:  D = D-I - D-II   Active matrices
+C     D_I and D_II:  D = D_I - D_II   Active matrices
 C     *************************************************
 C     DXVAO-I: loop over symmetries then put result in DXVAO
 C
@@ -124,24 +130,24 @@ C
 C **     step 1 of active dm:
 C *****  first calculate one-index transformation of second index
 C *****  of DV(uv), the active density matrix.
-C        DXV(p,u) = sum(v) Bo(v,p) DV(v,u)
+C        DXV_I(u,p) = sum(v) Bo(v,p) DV(v,u)
          IASHI = IASH(ISYM)
          IF (NASHI .EQ. 0 .OR. NORBJ .EQ. 0) GO TO 2000
          CALL DGEMM('T','N',NORBJ,NASHI,NASHI,1.D0,
-     &              UBO(IORBI+NISHI+1,IORBJ+1),NORBT,
-     &              DV(IASHI+1,IASHI+1),NASHT,0.D0,
-     &              WRK(KDXV),NORBJ)
+     &              UBO(IORBI+NISHI+1,IORBJ+1),NORBT, ! (v,p)T
+     &              DV(IASHI+1,IASHI+1),NASHT,0.D0,   ! (v,u)
+     &              WRK(KDXV),NORBJ)                  ! (p,u)
 C **     step 2 of active dm:
          CALL DGEMM('N','N',NBASJ,NASHI,NORBJ,1.D0,
-     &              CMO(ICMOJ+1),NBASJ,
-     &              WRK(KDXV),NORBJ,0.D0,
-     &              WRK(KDXAO1),NBASJ)
+     &              CMO(ICMOJ+1),NBASJ,               ! (pi,p)
+     &              WRK(KDXV),NORBJ,0.D0,             ! (p,u)
+     &              WRK(KDXAO1),NBASJ)                ! (pi,u)
          IOFMOV = ICMOI + 1 + NISHI*NBASI
          IDXAO2 = KDXAO2 + IBAS(JSYM)*NBAST + IBAS(ISYM)
          CALL DGEMM('N','T',NBASI,NBASJ,NASHI,1.D0,
-     &              CMO(IOFMOV),NBASI,
-     &              WRK(KDXAO1),NBASJ,0.D0,
-     &              WRK(IDXAO2),NBAST)
+     &              CMO(IOFMOV),NBASI,                ! (upsilon,u)
+     &              WRK(KDXAO1),NBASJ,0.D0,           ! (pi,u)T
+     &              WRK(IDXAO2),NBAST)                ! (pi,upsilon)
 C **  this symmetry block finished
  2000 CONTINUE
 C
@@ -170,29 +176,30 @@ C
 C **     step 1 of active dm:
 C *****  first calculate one-index transformation of second index
 C *****  of DV(uv), the active density matrix.
-C        DXV(p,u) = sum(v) Bo(v,p) DV(v,u)
+C        DXV_II(u,p) = sum(v) Bo(v,p) DV(u,v)
+C        DXV_I(p,u) = sum(v) Bo(v,p) DV(v,u)
          IASHI = IASH(ISYM)
          IASHJ = IASH(JSYM)
          IF( NASHJ .EQ. 0 .OR. NORBI .EQ. 0) GO TO 3000
          CALL DGEMM('N','N',NORBI,NASHJ,NASHJ,1.D0,
-     &              UBO(IORBI+1,IORBJ+NISHJ+1),NORBT,
-     &              DV(IASHJ+1,IASHJ+1),NASHT,0.D0,
-     &              WRK(KDXV),NORBI)
+     &              UBO(IORBI+1,IORBJ+NISHJ+1),NORBT,  ! (p,u)
+     &              DV(IASHJ+1,IASHJ+1),NASHT,0.D0,    ! (u,v)
+     &              WRK(KDXV),NORBI)                   ! (p,v)
 C **     step 2 of active dm:
          CALL DGEMM('N','N',NBASI,NASHJ,NORBI,1.D0,
-     &              CMO(ICMOI+1),NBASI,
-     &              WRK(KDXV),NORBI,0.D0,
-     &              WRK(KDXAO1),NBASI)
+     &              CMO(ICMOI+1),NBASI,                ! (pi,p)
+     &              WRK(KDXV),NORBI,0.D0,              ! (p,v)
+     &              WRK(KDXAO1),NBASI)                 ! (pi,v)
          IOFMOV = ICMOJ + 1 + NISHJ*NBASJ
          IDXAO2 = KDXAO2 + IBAS(JSYM)*NBAST + IBAS(ISYM)
          CALL DGEMM('N','T',NBASI,NBASJ,NASHJ,1.D0,
-     &              WRK(KDXAO1),NBASI,
-     &              CMO(IOFMOV),NBASJ,0.D0,
-     &              WRK(IDXAO2),NBAST)
+     &              WRK(KDXAO1),NBASI,                 ! (pi,v)
+     &              CMO(IOFMOV),NBASJ,0.D0,            ! (beta,v)T
+     &              WRK(IDXAO2),NBAST)                 ! (pi,beta)
 C **  this symmetry block finished
  3000 CONTINUE
 C
-C subtract D_II from  D-I
+C subtract D_II from  D_I
          CALL DAXPY(N2BASX,DM1,WRK(KDXAO2),1,DXVAO,1)
       END IF
 C
@@ -201,7 +208,7 @@ C
       IF (NISHT .GT. 0) THEN
 C
 C     *************************************************
-C     D-I and D-II:  D = D-I - D-II   Inactive matrices
+C     D_I and D_II:  D = D_I - D_II   Inactive matrices
 C     *************************************************
 C     DXCAO-I: loop over symmetries then put result in DXCAO
 C     see eq. 22
@@ -220,17 +227,18 @@ C     see eq. 22
          NBASJ = NBAS(JSYM)
 C
 C **     the inactive one-index transformed dm:
-C        DXC(p,i) = 2*Bo(i,p)
+C        DXC_I(i,p) = Bo(i,p) -> DXCAO_I(iota,pi)
+
          IF (NBASI*NBASJ*NORBJ .NE. 0) THEN
             CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,1.D0,
-     &                 CMO(ICMOJ+1),NBASJ,
-     &                 UBO(IORBI+1,IORBJ+1),NORBT,0.D0,
-     &                 WRK(KDXAO1),NBASJ)
+     &                 CMO(ICMOJ+1),NBASJ,              ! (pi,p)
+     &                 UBO(IORBI+1,IORBJ+1),NORBT,0.D0, ! (i,p)T
+     &                 WRK(KDXAO1),NBASJ)               ! (pi,i)
             IDXAO2 = KDXAO2 + IBAS(JSYM)*NBAST + IBAS(ISYM)
             CALL DGEMM('N','T',NBASI,NBASJ,NISHI,1.D0,
-     &                 CMO(ICMOI+1),NBASI,
-     &                 WRK(KDXAO1),NBASJ,0.D0,
-     &                 WRK(IDXAO2),NBAST)
+     &                 CMO(ICMOI+1),NBASI,              ! (iota,i)
+     &                 WRK(KDXAO1),NBASJ,0.D0,          ! (pi,i)T
+     &                 WRK(IDXAO2),NBAST)               ! (iota,pi)
          END IF
 C **  this symmetry block finished
  4000 CONTINUE
@@ -255,24 +263,24 @@ C
          NBASJ = NBAS(JSYM)
 C
 C **     the inactive one-index transformed dm:
-C        UBO not transposed for D-II (see eq. 25)
 C
-C        DXC(p,i) = 2*Bo(i,p)
+C        DXC_II(p,i) = Bo(p,i) -> DXCAO_II(pi,iota)
+
          IF (NBASI*NBASJ*NORBJ .NE. 0) THEN
             CALL DGEMM('N','N',NBASJ,NISHI,NORBJ,1.D0,
-     &                 CMO(ICMOJ+1),NBASJ,
-     &                 UBO(IORBJ+1,IORBI+1),NORBT,0.D0,
-     &                 WRK(KDXAO1),NBASJ)
+     &                 CMO(ICMOJ+1),NBASJ,                ! (pi,p)
+     &                 UBO(IORBJ+1,IORBI+1),NORBT,0.D0,   ! (p,i)
+     &                 WRK(KDXAO1),NBASJ)                 ! (pi,i)
             IDXAO2 = KDXAO2 + IBAS(ISYM)*NBAST + IBAS(JSYM)
             CALL DGEMM('N','T',NBASJ,NBASI,NISHI,1.D0,
-     &                 WRK(KDXAO1),NBASJ,
-     &                 CMO(ICMOI+1),NBASI,0.D0,
-     &                 WRK(IDXAO2),NBAST)
+     &                 WRK(KDXAO1),NBASJ,                 ! (pi,i)
+     &                 CMO(ICMOI+1),NBASI,0.D0,           ! (iota,i)T
+     &                 WRK(IDXAO2),NBAST)                 ! (pi,iota)
          END IF
 C **  this symmetry block finished
  5000 CONTINUE
 C
-C do the subtraction in eq.27.
+C do the subtraction in eq. 27.
 C
          CALL DAXPY(N2BASX,DM1,WRK(KDXAO2),1,DXCAO,1)
 C
@@ -285,3 +293,4 @@ C
 C *** end of subroutine DEQ27
 C
       END
+!  -- end of rsp/deq27.F --

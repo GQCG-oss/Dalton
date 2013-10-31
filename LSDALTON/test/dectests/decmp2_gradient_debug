@@ -68,6 +68,8 @@ TIGHT
 .INCLUDEFULLMOLECULE
 .MANUAL_BATCHSIZES
 3  3
+.MEMORY
+2.0
 *END OF INPUT  
 %EOF%
 #######################################################################
