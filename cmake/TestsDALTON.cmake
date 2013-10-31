@@ -263,7 +263,6 @@ if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
     add_dalton_test(cc3_LIH1s1p_noddy_pol         "dalton;cc;cc3;short")
     add_dalton_test(cc3_tmom_fdif                 "dalton;cc;cc3;medium")
     add_dalton_test(cc3_twophot3_noddy            "dalton;cc;cc3;medium")
-
     add_dalton_test(prop_vibana                   "dalton;long")
 endif()
 
@@ -342,7 +341,6 @@ add_dalton_test(rsp_fullhfc                   "dalton;medium;dft")
 
 add_dalton_test(geoopt_prop3                  "dalton;long")
 add_dalton_test(geoopt_prop3_ex               "dalton;long")
-##add_dalton_test(prop_vibana                   "dalton;long")
 add_dalton_test(rsp_excipolar                 "dalton;long")
 add_dalton_test(rsp_twophot                   "dalton;long")
 add_dalton_test(walk_solvmag                  "dalton;long")
@@ -478,8 +476,11 @@ add_dalton_test(pcmsoppa_excit                "dalton;pcm")
 
 add_dalton_test(cc2_r12_aux_ch4_sym_a3        "dalton;ccr12;longccr12")
 
+if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
 if(ENABLE_MPI)
 if(DEFINED ENV{DALTON_NUM_MPI_PROCS})
+  # radovan: note that this file is read at configure time but
+  #          DALTON_NUM_MPI_PROCS is often not set before runtime/testtime
   if($ENV{DALTON_NUM_MPI_PROCS} GREATER 1)
     add_dalton_test(energy_parallel               "dalton;parallel")
     add_dalton_test(geoopt_parallel               "dalton;parallel")
@@ -487,6 +488,7 @@ if(DEFINED ENV{DALTON_NUM_MPI_PROCS})
     add_dalton_test(rsp_parallel                  "dalton;parallel")
     add_dalton_test(dft_parallell_properties      "dalton;parallel;dft")
   endif()
+endif()
 endif()
 endif()
 
