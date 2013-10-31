@@ -14,6 +14,7 @@ Tested on the following platforms
 
 * Horseshoe cluster (Linux x86_64), Intel 13.1.3, MKL 11.0.5, OpenMPI 1.6.3
 * Horseshoe cluster (Linux x86_64), GNU 4.6.3, MKL 11.0.5, OpenMPI 1.6.3
+* Horseshoe cluster (Linux x86_64), GNU 4.4.6, builtin math libraries
 * CrunchBang 11, GNU 4.7.2, system native BLAS/LAPACK, OpenMPI 1.6.5
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
 
@@ -44,7 +45,9 @@ LSDALTON
 Tested on the following platforms
 ---------------------------------
 
-* Horseshoe cluster (Linux x86_64), Intel 13.1.3, MKL 11.0.5
+* Horseshoe cluster (Linux x86_64), Intel 13.1.3, MKL 11.0.5, OpenMPI 1.6.3
+* Horseshoe cluster (Linux x86_64), GNU 4.6.3, MKL 11.0.5, OpenMPI 1.6.3
+* Horseshoe cluster (Linux x86_64), GNU 4.4.6, builtin math libraries
 * CrunchBang 11, GNU 4.7.2, system native BLAS/LAPACK, OpenMPI 1.6.5
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
 
