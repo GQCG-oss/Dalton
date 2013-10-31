@@ -6232,7 +6232,8 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      longintbufferInt(71) = mem_allocated_mpi
      longintbufferInt(72) = max_mem_used_mpi
 #ifdef MOD_UNRELEASED
-     longintbufferInt(73) = mem_allocated_lstensor
+     longintbufferInt(73) = mem_allocated_lvec_data
+     longintbufferInt(74) = mem_allocated_lattice_cell
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!
