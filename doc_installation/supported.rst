@@ -22,7 +22,7 @@ Tested on the following platforms
 Compiles but does not pass all tests
 ------------------------------------
 
-* platform/os, compiler, libs (list of tests that fail)
+* Linux x86_64, Intel 11.4.191, OpenMPI 1.6.5 (failing tests: cc2_412_aux, rsp_hyperpolar, rsp_dckerr, rsp_excipolar, geoopt_dckerr)
 
 
 Compiles but untested on the following platforms
