@@ -22,7 +22,9 @@ macro(add_dalton_perl_test _name _labels)
     endif()
 endmacro()
 
-# ALL tests here should contain the label "dalton"
+# all tests here should contain the label "dalton"
+# "long" cc2_r12 tests are placed apart on purpose to make it less likely that they
+# are run at the same time (then they can be significantly slower)
 
 add_dalton_test(gen1int_fluorobenzene_cart  "dalton;gen1int;short;parallel")
 add_dalton_test(gen1int_fluorobenzene_spher "dalton;gen1int;short;parallel")
@@ -146,6 +148,8 @@ add_dalton_test(rsp_g_b3lypx          "dalton;rsp;medium;dft")
 add_dalton_test(rsp_abslrs            "dalton;rsp;short;parallel")
 add_dalton_test(rsp_cpp_mcd           "dalton;rsp;medium;parallel;dft")
 
+add_dalton_test(cc3r12_n2_sym_exc             "dalton;ccr12;cc3;longccr12")
+
 add_dalton_test(walk_gradex  "dalton;walk;short;parallel")
 add_dalton_test(walk_image   "dalton;walk;short;parallel")
 add_dalton_test(walk_modeflw "dalton;walk;short;parallel")
@@ -157,11 +161,15 @@ add_dalton_test(r12_sym    "dalton;short")
 add_dalton_test(dpt_h2s    "dalton;short")
 add_dalton_test(spin_local "dalton;medium;dft;parallel")
 
+add_dalton_test(cc3r12_n2_sym_exc_lhtr        "dalton;ccr12;cc3;longccr12")
+
 add_dalton_test(prop_exci_ao       "dalton;prop;aosoppa;medium")
 add_dalton_test(prop_exci_aorpa    "dalton;prop;aosoppa;short")
 add_dalton_test(prop_exci_aorpad   "dalton;prop;aosoppa;short")
 add_dalton_test(prop_exci_aosoppa  "dalton;prop;aosoppa;medium")
 add_dalton_test(prop_exci_aosoppcc "dalton;prop;aosoppa;medium")
+
+add_dalton_test(cc2_r12_aux_ch4_cbs2a         "dalton;ccr12;longccr12")
 
 add_dalton_test(hfmm_1        "dalton;qm3;short;parallel")
 add_dalton_test(hfmmpcm_1     "dalton;qm3;medium;parallel")
@@ -446,14 +454,6 @@ add_dalton_test(cc2_r12_aux_ch4_cbs1          "dalton;ccr12;medium")
 add_dalton_test(cc2_r12_aux_ch4_cbs2          "dalton;ccr12;medium")
 add_dalton_test(cc2_r12_aux_ch4_cbs3          "dalton;ccr12;medium")
 
-add_dalton_test(cc2_r12_aux_ch4_a2            "dalton;ccr12;longccr12")
-add_dalton_test(cc2_r12_aux_ch4_sym_a2        "dalton;ccr12;longccr12")
-add_dalton_test(cc2_r12_aux_ch4_sym_a3        "dalton;ccr12;longccr12")
-add_dalton_test(cc2_r12_aux_benzene_sym_fop   "dalton;ccr12;longccr12")
-add_dalton_test(cc3r12_n2_sym_exc             "dalton;ccr12;cc3;longccr12")
-add_dalton_test(cc3r12_n2_sym_exc_lhtr        "dalton;ccr12;cc3;longccr12")
-add_dalton_test(cc2_r12_aux_ch4_cbs2a         "dalton;ccr12;longccr12")
-
 add_dalton_test(dpt_hf                        "dalton;dpt")
 add_dalton_test(dpt_h2s                       "dalton;dpt")
 add_dalton_test(dpt_h2s_finp                  "dalton;dpt")
@@ -463,14 +463,20 @@ add_dalton_test(dpt_hbr                       "dalton;dpt")
 add_dalton_test(dpt_hbr_finp                  "dalton;dpt")
 add_dalton_test(dpt_h2s_ff                    "dalton;dpt")
 
+add_dalton_test(cc2_r12_aux_ch4_a2            "dalton;ccr12;longccr12")
+
 add_dalton_test(dft_disp_d2                   "dalton;dft")
 add_dalton_test(dft_disp_d3                   "dalton;dft")
 add_dalton_test(dft_disp_d3bj                 "dalton;dft")
 add_dalton_test(dft_ac_grac                   "dalton;dft")
 
+add_dalton_test(cc2_r12_aux_ch4_sym_a2        "dalton;ccr12;longccr12")
+
 add_dalton_test(soppa_vibavg_twobas           "dalton;prop")
 add_dalton_test(dcpt2                         "dalton")
 add_dalton_test(pcmsoppa_excit                "dalton;pcm")
+
+add_dalton_test(cc2_r12_aux_ch4_sym_a3        "dalton;ccr12;longccr12")
 
 #if(ENABLE_MPI)
 #add_dalton_test(energy_parallel               "dalton;parallel")
@@ -504,3 +510,5 @@ if(NOT ENABLE_MPI)
 add_dalton_perl_test(rsp_zfs_mc2       "dalton;perl;mcscf")
 add_dalton_perl_test(mcscf             "dalton;perl;pcm")
 endif()
+
+add_dalton_test(cc2_r12_aux_benzene_sym_fop   "dalton;ccr12;longccr12")
