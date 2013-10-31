@@ -17,6 +17,7 @@ Tested on the following platforms
 * Horseshoe cluster (Linux x86_64), GNU 4.4.6, builtin math libraries
 * CrunchBang 11, GNU 4.7.2, system native BLAS/LAPACK, OpenMPI 1.6.5
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
+* Fedora 15, GNU 4.6.0, system native BLAS/LAPACK
 
 
 Compiles but does not pass all tests
@@ -50,6 +51,7 @@ Tested on the following platforms
 * Horseshoe cluster (Linux x86_64), GNU 4.4.6, builtin math libraries
 * CrunchBang 11, GNU 4.7.2, system native BLAS/LAPACK, OpenMPI 1.6.5
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
+* Fedora 15, GNU 4.6.0, system native BLAS/LAPACK
 
 
 Compiles but untested on the following platforms
