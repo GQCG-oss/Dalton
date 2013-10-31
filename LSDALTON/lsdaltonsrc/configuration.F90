@@ -217,11 +217,13 @@ INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,IPOS3,COUNTER
 character(len=80)  :: WORD,TMPWORD
 character(len=2)   :: PROMPT
-LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS
+LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,WAVE
 !LINSCA variables:
 real(realk)        :: shift, min_density_overlap, maxratio, zero
 integer            :: nvec, i
 Real(realk)  :: hfweight 
+
+WAVE = .FALSE.
 
 STARTGUESS = .FALSE.
 Config%integral%cfg_lsdalton = .TRUE.
@@ -264,9 +266,11 @@ DO
    ENDIF
    IF (WORD(1:10) == '**INTEGRAL') THEN
       READWORD = .TRUE.
+      IF (WAVE) CALL LSQUIT('**INTEGRAL section must be defined before **WAVE FUN in the lsdalton input',lupri)
       CALL INTEGRAL_INPUT(config%integral,readword,word,lucmd,lupri)
    ENDIF
    IF ((WORD(1:10) == '**WAVE FUN').OR.(WORD(1:10) == '**WAVEFUNC')) THEN
+      WAVE = .TRUE.
       READWORD=.TRUE.
       DO   
          IF(READWORD) THEN
