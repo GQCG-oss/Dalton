@@ -3287,7 +3287,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       WRITE(config%lupri,'(A)')' '
       WRITE(config%lupri,'(A)')'We perform the calculation in the Grand Canonical basis'
       WRITE(config%lupri,'(A)')'(see PCCP 2009, 11, 5805-5813)'
-      WRITE(config%lupri,'(A)')'To use the stanard input basis use .NOGCBASIS'
+      WRITE(config%lupri,'(A)')'To use the standard input basis use .NOGCBASIS'
       
       IF(ls%input%dalton%NOGCINTEGRALTRANSFORM)THEN
          WRITE(config%lupri,'(A)')' '
