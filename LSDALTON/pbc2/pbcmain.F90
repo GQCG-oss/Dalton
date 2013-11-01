@@ -1,6 +1,6 @@
-#ifdef MOD_UNRELEASED
 !GIVE MODULE NAME
 MODULE pbc_setup
+#ifdef MOD_UNRELEASED
   USE precision
   USE fundamental
   USE TYPEDEF
@@ -166,10 +166,14 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
     l2=0
     l3=0
     !do l1=-3,3
-  do n1=1,num_latvectors
-      call mat_init(nfdensity(n1),nbast,nbast)
-      call mat_zero(nfdensity(n1))
-  enddo
+  !do n1=1,num_latvectors
+  !    call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+  !    call mat_init(nfdensity(n1),nbast,nbast)
+  !    call mat_zero(nfdensity(n1))
+  !enddo
+  call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+  call mat_init(nfdensity(n1),nbast,nbast)
+  call mat_zero(nfdensity(n1))
 
 #ifdef DEBUGPBC
 
@@ -279,6 +283,7 @@ else
       !do i=1,num_latvectors
       !  call init_lvec_data(lattice%lvec(i),nbast)
       !enddo
+      call mem_alloc(lattice%lvec(k)%d_mat,nbast,nbast)
       if(.not.lattice%read_file) then
         lattice%lvec(k)%d_mat(1,1)=0.18197943668877323D0
         lattice%lvec(k)%d_mat(1,2)=0.28409190914049431D0
@@ -329,6 +334,7 @@ else
       enddo
       write(*,*) 'density used'
       !call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast)
+      call mem_dealloc(lattice%lvec(n1)%d_mat)
 
     else !TESTCASE
 
@@ -345,6 +351,10 @@ else
 #endif
 
 #ifdef DEBUGPBC
+      write(lupri,*) 'density used'
+      call mat_to_full(nfdensity(n1), 1.0_realk,lattice%lvec(n1)%d_mat)
+      call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast,lupri)
+      write(*,*) 'density used'
       write(lupri,*) 'Density first'
       call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
 #endif
@@ -420,6 +430,7 @@ else
 !  ENDDO
 
   do i=1,num_latvectors
+     if(nfdensity(i)%init_magic_tag.NE.mat_init_magic_value) CYCLE
      call mat_free(nfdensity(i))
   enddo
   call mem_dealloc(nfdensity)
@@ -473,13 +484,13 @@ else
     numtostring1=adjustl(numtostring1)
     mattxt='minFmat1'//trim(numtostring1)//'00.dat'
       !call pbc_readopmat2(0,0,0,matris,2,'OVERLAP',.true.,.false.)
-    CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
-    call find_latt_index(k,n1,0,0,fdim,lattice,lattice%max_layer)
-    write(iunit,*) k
-    DO j=1,nbast
-       write(iunit,*) (lattice%lvec(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
-    ENDDO
-    call lsclose(iunit,'KEEP')
+    !CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
+    !call find_latt_index(k,n1,0,0,fdim,lattice,lattice%max_layer)
+    !write(iunit,*) k
+    !DO j=1,nbast
+    !   write(iunit,*) (lattice%lvec(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
+    !ENDDO
+    !call lsclose(iunit,'KEEP')
     enddo !n1
     write(*,*) 'Fock matrix written to disk'
     write(lupri,*) 'Fock matrix written to disk'
@@ -637,7 +648,8 @@ else
   END SELECT
 
 
-  call free_lvec_list(lattice)
+  !call free_lvec_list(lattice)
+  call mem_dealloc(lattice%lvec)
   write(lupri,*) 'Program ended successfully !'
   write(*,*) 'Program ended successfully !'
 
@@ -703,5 +715,10 @@ END SUBROUTINE pbc_init_recvec
 !  !ENDDO
 !
 !END SUBROUTINE pbc_scf
-END MODULE pbc_setup
+#else
+contains
+  subroutine pbc_setup_empty()
+  end subroutine pbc_setup_empty
 #endif
+
+END MODULE pbc_setup

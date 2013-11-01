@@ -42,9 +42,9 @@
        A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
        A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
        L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
@@ -128,35 +128,47 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_effgeom_fromE2
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /home/arnfinn/release_dalton/DALTON/test/2013-10-21T14_48-testjob-pid-48119
+   2) /home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | arnfinn
+ Host                     | stallo-2.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Fortran compiler         | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/ifort
+ C compiler               | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icpc
+ C++ compiler version     | icpc (ICC) 13.0.1 20121010
+ BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
+                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
+                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
+                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
+                          | mp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
+                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
+                          | nmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 9e5bb7f558e1ee66d0614a37cb4fb8c71086ba4e
+ Configuration time       | 2013-10-15 12:56:50.249803
 
 
    Content of the .dal input file
@@ -239,7 +251,7 @@ O          0.0000000000            0.0000000000            1.0823225614
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -247,7 +259,7 @@ O          0.0000000000            0.0000000000            1.0823225614
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/STO-3G"
 
 
                       SYMADD: Requested addition of symmetry
@@ -468,7 +480,7 @@ Represented as:      C2v
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -507,8 +519,8 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -554,7 +566,7 @@ Represented as:      C2v
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -586,26 +598,38 @@ Represented as:      C2v
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225449514       1.74D-05  -2.41D-09     5   1   1   0
+@  7  -111.225449514       2.16D-05  -2.39D-09     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225449514       1.18D-06  -3.27D-11     5   1   1   0
+@  8  -111.225449514       4.17D-07  -5.16D-11     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225449514       3.99D-09  -1.42D-13     5   1   1   0
+@  9  -111.225449514       4.20D-08  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225449514       2.47D-12   2.84D-14     5   1   1   0
+@ 10  -111.225449514       9.50D-09   5.68D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225449514       7.84D-15  -2.84D-14     5   1   1   0
+@ 11  -111.225449514       1.28D-09  -2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225449514       2.85D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225449514       4.20D-12  -2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225449514       6.47D-13   0.00D+00     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225449514136    7.84D-15
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225449514136    6.47D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -632,7 +656,7 @@ Represented as:      C2v
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.021       0.045
 
 
                        .-----------------------------------.
@@ -648,11 +672,11 @@ Represented as:      C2v
 @    Nuclear repulsion:            22.174535444365
 @    Electronic energy:          -133.399984958501
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
  (Only coefficients >0.0100 are printed.)
 
@@ -683,12 +707,12 @@ Represented as:      C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.06 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -758,22 +782,22 @@ Represented as:      C2v
  3. irep:
   1.00  0.77  0.17 -0.50 -0.94 -0.94 -0.50  0.17  0.77  1.00  0.77  0.17 -0.50 -0.94 -0.94 -0.50  0.17  0.77
   0.00  0.64  0.98  0.87  0.34 -0.34 -0.87 -0.98 -0.64  0.00  0.64  0.98  0.87  0.34 -0.34 -0.87 -0.98 -0.64
- -0.00 -0.64 -0.98 -0.87 -0.34  0.34  0.87  0.98  0.64  0.00  0.64  0.98  0.87  0.34 -0.34 -0.87 -0.98 -0.64
+  0.00 -0.64 -0.98 -0.87 -0.34  0.34  0.87  0.98  0.64  0.00  0.64  0.98  0.87  0.34 -0.34 -0.87 -0.98 -0.64
   1.00  0.77  0.17 -0.50 -0.94 -0.94 -0.50  0.17  0.77 -1.00 -0.77 -0.17  0.50  0.94  0.94  0.50 -0.17 -0.77
  4. irep:
   1.00  0.17 -0.94 -0.50  0.77  0.77 -0.50 -0.94  0.17  1.00  0.17 -0.94 -0.50  0.77  0.77 -0.50 -0.94  0.17
   0.00  0.98  0.34 -0.87 -0.64  0.64  0.87 -0.34 -0.98  0.00  0.98  0.34 -0.87 -0.64  0.64  0.87 -0.34 -0.98
- -0.00 -0.98 -0.34  0.87  0.64 -0.64 -0.87  0.34  0.98  0.00  0.98  0.34 -0.87 -0.64  0.64  0.87 -0.34 -0.98
+  0.00 -0.98 -0.34  0.87  0.64 -0.64 -0.87  0.34  0.98  0.00  0.98  0.34 -0.87 -0.64  0.64  0.87 -0.34 -0.98
   1.00  0.17 -0.94 -0.50  0.77  0.77 -0.50 -0.94  0.17 -1.00 -0.17  0.94  0.50 -0.77 -0.77  0.50  0.94 -0.17
  5. irep:
   1.00 -0.50 -0.50  1.00 -0.50 -0.50  1.00 -0.50 -0.50  1.00 -0.50 -0.50  1.00 -0.50 -0.50  1.00 -0.50 -0.50
   0.00  0.87 -0.87 -0.00  0.87 -0.87 -0.00  0.87 -0.87  0.00  0.87 -0.87 -0.00  0.87 -0.87 -0.00  0.87 -0.87
- -0.00 -0.87  0.87  0.00 -0.87  0.87  0.00 -0.87  0.87  0.00  0.87 -0.87 -0.00  0.87 -0.87 -0.00  0.87 -0.87
+  0.00 -0.87  0.87  0.00 -0.87  0.87  0.00 -0.87  0.87  0.00  0.87 -0.87 -0.00  0.87 -0.87 -0.00  0.87 -0.87
   1.00 -0.50 -0.50  1.00 -0.50 -0.50  1.00 -0.50 -0.50 -1.00  0.50  0.50 -1.00  0.50  0.50 -1.00  0.50  0.50
  6. irep:
   1.00 -0.94  0.77 -0.50  0.17  0.17 -0.50  0.77 -0.94  1.00 -0.94  0.77 -0.50  0.17  0.17 -0.50  0.77 -0.94
   0.00  0.34 -0.64  0.87 -0.98  0.98 -0.87  0.64 -0.34  0.00  0.34 -0.64  0.87 -0.98  0.98 -0.87  0.64 -0.34
- -0.00 -0.34  0.64 -0.87  0.98 -0.98  0.87 -0.64  0.34  0.00  0.34 -0.64  0.87 -0.98  0.98 -0.87  0.64 -0.34
+  0.00 -0.34  0.64 -0.87  0.98 -0.98  0.87 -0.64  0.34  0.00  0.34 -0.64  0.87 -0.98  0.98 -0.87  0.64 -0.34
   1.00 -0.94  0.77 -0.50  0.17  0.17 -0.50  0.77 -0.94 -1.00  0.94 -0.77  0.50 -0.17 -0.17  0.50 -0.77  0.94
                                       
 
@@ -801,10 +825,10 @@ Represented as:      C2v
 
 Symmetry   1       1       3       3       3       3
         0.0000  0.0000  1.0000  0.0000  0.0000  0.0000
-        0.0000  0.0000  0.0000  0.0000  1.0000  0.0000
+        0.0000  0.0000 -0.0000  0.0000  1.0000  0.0000
         1.0000  0.0000  0.0000  0.0000  0.0000  0.0000
         0.0000  0.0000  0.0000  1.0000  0.0000  0.0000
-        0.0000  0.0000  0.0000  0.0000  0.0000  1.0000
+        0.0000  0.0000  0.0000 -0.0000  0.0000  1.0000
         0.0000  1.0000  0.0000  0.0000  0.0000  0.0000
                              
                              
@@ -861,7 +885,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -902,8 +926,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -949,7 +973,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -981,26 +1005,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007406
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225369952       1.62D-05  -2.37D-09     5   1   1   0
+@  7  -111.225369952       2.07D-05  -2.35D-09     5   1   1   0
       Virial theorem: -V/T =      2.007406
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225369952       1.08D-06  -2.85D-11     5   1   1   0
+@  8  -111.225369952       4.07D-07  -4.81D-11     5   1   1   0
       Virial theorem: -V/T =      2.007406
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225369952       3.51D-09  -1.42D-13     5   1   1   0
+@  9  -111.225369952       4.14D-08  -5.68D-14     5   1   1   0
       Virial theorem: -V/T =      2.007406
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225369952       2.22D-12   5.68D-14     5   1   1   0
+@ 10  -111.225369952       9.29D-09   2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007406
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225369952       2.01D-14   0.00D+00     5   1   1   0
+@ 11  -111.225369952       1.18D-09  -2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007406
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225369952       2.93D-10   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007406
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225369952       5.77D-12   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007406
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225369952       7.82D-13   0.00D+00     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225369952367    2.01D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225369952367    7.82D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1027,7 +1063,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.041
 
 
                        .-----------------------------------.
@@ -1043,20 +1079,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.277450468327
 @    Electronic energy:          -133.502820420694
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.06 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1106,7 +1142,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -1147,8 +1183,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -1194,7 +1230,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -1226,26 +1262,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007558
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225371681       1.86D-05  -2.47D-09     5   1   1   0
+@  7  -111.225371681       2.25D-05  -2.45D-09     5   1   1   0
       Virial theorem: -V/T =      2.007558
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225371681       1.28D-06  -3.75D-11     5   1   1   0
+@  8  -111.225371681       4.27D-07  -5.54D-11     5   1   1   0
       Virial theorem: -V/T =      2.007558
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225371681       4.48D-09  -5.68D-14     5   1   1   0
+@  9  -111.225371681       4.27D-08   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007558
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225371681       2.74D-12  -5.68D-14     5   1   1   0
+@ 10  -111.225371681       9.75D-09   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007558
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225371681       1.22D-14   0.00D+00     5   1   1   0
+@ 11  -111.225371681       1.33D-09   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007558
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225371681       2.66D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007558
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225371681       3.26D-12  -2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007558
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225371681       5.20D-13   5.68D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225371680644    1.22D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225371680644    5.20D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1265,14 +1313,14 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53655347     0.30396160
 
-    E(LUMO) :     0.30396160 au (symmetry 3)
+    E(LUMO) :     0.30396160 au (symmetry 2)
   - E(HOMO) :    -0.44471074 au (symmetry 1)
   ------------------------------------------
     gap     :     0.74867234 au
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.042
 
 
                        .-----------------------------------.
@@ -1286,22 +1334,22 @@ Symmetry   1       1       3       3       3       3
 
 @    Final HF energy:            -111.225371680644                 
 @    Nuclear repulsion:            22.072566919883
-@    Electronic energy:          -133.297938600527
+@    Electronic energy:          -133.297938600526
 
-@    Final gradient norm:           0.000000000000
-
- 
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.06 seconds
+
+ 
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1351,7 +1399,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -1392,8 +1440,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -1439,7 +1487,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -1471,26 +1519,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007558
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225371681       1.86D-05  -2.47D-09     5   1   1   0
+@  7  -111.225371681       2.25D-05  -2.45D-09     5   1   1   0
       Virial theorem: -V/T =      2.007558
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225371681       1.28D-06  -3.75D-11     5   1   1   0
+@  8  -111.225371681       4.27D-07  -5.54D-11     5   1   1   0
       Virial theorem: -V/T =      2.007558
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225371681       4.48D-09  -5.68D-14     5   1   1   0
+@  9  -111.225371681       4.27D-08   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007558
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225371681       2.74D-12  -5.68D-14     5   1   1   0
+@ 10  -111.225371681       9.75D-09   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007558
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225371681       1.22D-14   0.00D+00     5   1   1   0
+@ 11  -111.225371681       1.33D-09   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007558
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225371681       2.66D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007558
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225371681       3.26D-12  -2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007558
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225371681       5.20D-13   5.68D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225371680644    1.22D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225371680644    5.20D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1510,14 +1570,14 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53655347     0.30396160
 
-    E(LUMO) :     0.30396160 au (symmetry 3)
+    E(LUMO) :     0.30396160 au (symmetry 2)
   - E(HOMO) :    -0.44471074 au (symmetry 1)
   ------------------------------------------
     gap     :     0.74867234 au
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.039
 
 
                        .-----------------------------------.
@@ -1531,22 +1591,22 @@ Symmetry   1       1       3       3       3       3
 
 @    Final HF energy:            -111.225371680644                 
 @    Nuclear repulsion:            22.072566919883
-@    Electronic energy:          -133.297938600527
+@    Electronic energy:          -133.297938600526
 
-@    Final gradient norm:           0.000000000000
-
- 
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.06 seconds
+
+ 
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1637,8 +1697,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -1684,7 +1744,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -1716,26 +1776,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007406
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225369952       1.62D-05  -2.37D-09     5   1   1   0
+@  7  -111.225369952       2.07D-05  -2.35D-09     5   1   1   0
       Virial theorem: -V/T =      2.007406
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225369952       1.08D-06  -2.85D-11     5   1   1   0
+@  8  -111.225369952       4.07D-07  -4.81D-11     5   1   1   0
       Virial theorem: -V/T =      2.007406
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225369952       3.51D-09  -1.42D-13     5   1   1   0
+@  9  -111.225369952       4.14D-08  -5.68D-14     5   1   1   0
       Virial theorem: -V/T =      2.007406
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225369952       2.22D-12   5.68D-14     5   1   1   0
+@ 10  -111.225369952       9.29D-09   2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007406
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225369952       2.01D-14   0.00D+00     5   1   1   0
+@ 11  -111.225369952       1.18D-09  -2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007406
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225369952       2.93D-10   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007406
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225369952       5.77D-12   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007406
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225369952       7.82D-13   0.00D+00     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225369952367    2.01D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225369952367    7.82D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1762,7 +1834,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.004
+ >>>> CPU and wall time for SCF :       0.021       0.040
 
 
                        .-----------------------------------.
@@ -1778,20 +1850,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.277450468327
 @    Electronic energy:          -133.502820420694
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1882,8 +1954,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -1929,7 +2001,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -1961,26 +2033,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225449514       1.74D-05  -2.41D-09     5   1   1   0
+@  7  -111.225449514       2.16D-05  -2.39D-09     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225449514       1.18D-06  -3.27D-11     5   1   1   0
+@  8  -111.225449514       4.17D-07  -5.16D-11     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225449514       3.99D-09  -1.14D-13     5   1   1   0
+@  9  -111.225449514       4.20D-08   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225449514       2.49D-12  -2.84D-14     5   1   1   0
+@ 10  -111.225449514       9.50D-09  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225449514       1.38D-14   2.84D-14     5   1   1   0
+@ 11  -111.225449514       1.28D-09   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225449514       2.85D-10   5.68D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225449514       4.20D-12   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225449514       6.47D-13  -2.84D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225449513703    1.38D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225449513703    6.47D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -2007,7 +2091,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.039
 
 
                        .-----------------------------------.
@@ -2023,20 +2107,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.174298828332
 @    Electronic energy:          -133.399748342035
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -2127,8 +2211,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -2174,7 +2258,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -2206,26 +2290,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225449514       1.74D-05  -2.41D-09     5   1   1   0
+@  7  -111.225449514       2.16D-05  -2.39D-09     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225449514       1.18D-06  -3.27D-11     5   1   1   0
+@  8  -111.225449514       4.17D-07  -5.16D-11     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225449514       3.99D-09  -1.14D-13     5   1   1   0
+@  9  -111.225449514       4.20D-08   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225449514       2.49D-12  -2.84D-14     5   1   1   0
+@ 10  -111.225449514       9.50D-09  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225449514       1.38D-14   2.84D-14     5   1   1   0
+@ 11  -111.225449514       1.28D-09   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225449514       2.85D-10   5.68D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225449514       4.20D-12   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225449514       6.47D-13  -2.84D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225449513703    1.38D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225449513703    6.47D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -2252,7 +2348,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.005
+ >>>> CPU and wall time for SCF :       0.020       0.040
 
 
                        .-----------------------------------.
@@ -2268,20 +2364,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.174298828332
 @    Electronic energy:          -133.399748342035
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:28 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -2331,7 +2427,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -2372,8 +2468,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -2419,7 +2515,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -2451,26 +2547,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225449514       1.74D-05  -2.41D-09     5   1   1   0
+@  7  -111.225449514       2.16D-05  -2.39D-09     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225449514       1.18D-06  -3.27D-11     5   1   1   0
+@  8  -111.225449514       4.17D-07  -5.16D-11     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225449514       3.99D-09  -8.53D-14     5   1   1   0
+@  9  -111.225449514       4.20D-08   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225449514       2.48D-12  -2.84D-14     5   1   1   0
+@ 10  -111.225449514       9.50D-09   2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225449514       1.50D-14   5.68D-14     5   1   1   0
+@ 11  -111.225449514       1.28D-09  -5.68D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225449514       2.85D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225449514       4.21D-12   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225449514       6.38D-13   5.68D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225449514136    1.50D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225449514136    6.38D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -2497,7 +2605,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.004
+ >>>> CPU and wall time for SCF :       0.021       0.041
 
 
                        .-----------------------------------.
@@ -2513,20 +2621,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.174535444365
 @    Electronic energy:          -133.399984958501
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.06 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -2576,7 +2684,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -2617,8 +2725,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -2664,7 +2772,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -2696,26 +2804,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007322
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225127700       1.52D-05  -2.35D-09     5   1   1   0
+@  7  -111.225127700       1.99D-05  -2.33D-09     5   1   1   0
       Virial theorem: -V/T =      2.007322
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225127700       9.81D-07  -2.49D-11     5   1   1   0
+@  8  -111.225127700       3.98D-07  -4.50D-11     5   1   1   0
       Virial theorem: -V/T =      2.007322
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225127700       3.05D-09  -5.68D-14     5   1   1   0
+@  9  -111.225127700       4.08D-08  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007322
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225127700       1.96D-12   0.00D+00     5   1   1   0
+@ 10  -111.225127700       9.11D-09  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007322
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225127700       2.60D-14   0.00D+00     5   1   1   0
+@ 11  -111.225127700       1.07D-09   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007322
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225127700       2.88D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007322
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225127700       7.90D-12   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007322
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225127700       9.10D-13  -2.84D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225127699826    2.60D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225127699826    9.10D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -2742,7 +2862,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.042
 
 
                        .-----------------------------------.
@@ -2758,20 +2878,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.381325231716
 @    Electronic energy:          -133.606452931542
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.06 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -2821,7 +2941,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -2862,8 +2982,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -2909,7 +3029,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -2941,26 +3061,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007625
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225141597       1.98D-05  -2.56D-09     5   1   1   0
+@  7  -111.225141597       2.34D-05  -2.54D-09     5   1   1   0
       Virial theorem: -V/T =      2.007625
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225141597       1.38D-06  -4.29D-11     5   1   1   0
+@  8  -111.225141597       4.39D-07  -5.96D-11     5   1   1   0
       Virial theorem: -V/T =      2.007625
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225141597       4.97D-09  -1.42D-13     5   1   1   0
+@  9  -111.225141597       4.35D-08  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007625
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225141597       2.98D-12   2.84D-14     5   1   1   0
+@ 10  -111.225141597       1.01D-08   2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007625
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225141597       2.09D-14  -2.84D-14     5   1   1   0
+@ 11  -111.225141597       1.34D-09  -5.68D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007625
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225141597       2.42D-10   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007625
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225141597       2.74D-12   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007625
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225141597       4.02D-13  -5.68D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225141596582    2.09D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225141596582    4.02D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -2987,7 +3119,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.004
+ >>>> CPU and wall time for SCF :       0.021       0.040
 
 
                        .-----------------------------------.
@@ -3006,17 +3138,17 @@ Symmetry   1       1       3       3       3       3
 @    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.06 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -3066,7 +3198,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -3107,8 +3239,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -3154,7 +3286,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -3186,26 +3318,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225449514       1.74D-05  -2.41D-09     5   1   1   0
+@  7  -111.225449514       2.16D-05  -2.39D-09     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225449514       1.18D-06  -3.27D-11     5   1   1   0
+@  8  -111.225449514       4.17D-07  -5.16D-11     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225449514       3.99D-09  -8.53D-14     5   1   1   0
+@  9  -111.225449514       4.20D-08   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225449514       2.48D-12  -2.84D-14     5   1   1   0
+@ 10  -111.225449514       9.50D-09   2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225449514       1.50D-14   5.68D-14     5   1   1   0
+@ 11  -111.225449514       1.28D-09  -5.68D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225449514       2.85D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225449514       4.21D-12   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225449514       6.38D-13   5.68D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225449514136    1.50D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225449514136    6.38D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -3232,7 +3376,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.039
 
 
                        .-----------------------------------.
@@ -3248,20 +3392,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.174535444365
 @    Electronic energy:          -133.399984958501
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -3352,8 +3496,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -3399,7 +3543,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -3431,26 +3575,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225449514       1.74D-05  -2.41D-09     5   1   1   0
+@  7  -111.225449514       2.16D-05  -2.39D-09     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225449514       1.18D-06  -3.27D-11     5   1   1   0
+@  8  -111.225449514       4.17D-07  -5.16D-11     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225449514       3.99D-09  -1.42D-13     5   1   1   0
+@  9  -111.225449514       4.20D-08   2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225449514       2.49D-12   2.84D-14     5   1   1   0
+@ 10  -111.225449514       9.50D-09  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225449514       1.44D-14  -2.84D-14     5   1   1   0
+@ 11  -111.225449514       1.28D-09   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225449514       2.85D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225449514       4.20D-12   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225449514       6.41D-13   2.84D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225449514136    1.44D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225449514136    6.41D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -3470,14 +3626,14 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53992472     0.30614399
 
-    E(LUMO) :     0.30614399 au (symmetry 2)
+    E(LUMO) :     0.30614399 au (symmetry 3)
   - E(HOMO) :    -0.44513175 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75127574 au
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.005
+ >>>> CPU and wall time for SCF :       0.020       0.040
 
 
                        .-----------------------------------.
@@ -3493,20 +3649,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.174535444365
 @    Electronic energy:          -133.399984958501
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -3556,7 +3712,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -3597,8 +3753,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -3644,7 +3800,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -3676,26 +3832,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007486
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225449507       1.74D-05  -2.41D-09     5   1   1   0
+@  7  -111.225449507       2.16D-05  -2.39D-09     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225449507       1.18D-06  -3.27D-11     5   1   1   0
+@  8  -111.225449507       4.17D-07  -5.16D-11     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225449507       3.99D-09  -8.53D-14     5   1   1   0
+@  9  -111.225449507       4.20D-08   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225449507       2.49D-12  -1.14D-13     5   1   1   0
+@ 10  -111.225449507       9.50D-09   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225449507       1.40D-14   5.68D-14     5   1   1   0
+@ 11  -111.225449507       1.28D-09  -2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225449507       2.84D-10  -2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225449507       4.20D-12   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225449507       6.46D-13   5.68D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225449507367    1.40D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225449507367    6.46D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -3722,7 +3890,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.038
 
 
                        .-----------------------------------.
@@ -3738,20 +3906,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.173589025678
 @    Electronic energy:          -133.399038533044
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -3829,8 +3997,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -3876,7 +4044,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -3908,26 +4076,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225449514       1.74D-05  -2.41D-09     5   1   1   0
+@  7  -111.225449514       2.16D-05  -2.39D-09     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225449514       1.18D-06  -3.27D-11     5   1   1   0
+@  8  -111.225449514       4.17D-07  -5.16D-11     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225449514       3.99D-09  -5.68D-14     5   1   1   0
+@  9  -111.225449514       4.20D-08  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225449514       2.48D-12  -5.68D-14     5   1   1   0
+@ 10  -111.225449514       9.50D-09   8.53D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225449514       1.72D-14   2.84D-14     5   1   1   0
+@ 11  -111.225449514       1.28D-09  -5.68D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225449514       2.85D-10   5.68D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225449514       4.21D-12  -2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225449514       6.51D-13   0.00D+00     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225449514136    1.72D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225449514136    6.51D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -3954,7 +4134,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.038
 
 
                        .-----------------------------------.
@@ -3970,20 +4150,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.174535444365
 @    Electronic energy:          -133.399984958501
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -4007,15 +4187,15 @@ Symmetry   1       1       3       3       3       3
                         Gradient in cartesian coordinates
                         ---------------------------------
 
- C          0.0000000000            0.0000000000            0.0000864139
- O          0.0000000000            0.0000000000           -0.0000864139
+ C          0.0000000000            0.0000000000            0.0000864138
+ O          0.0000000000            0.0000000000           -0.0000864138
 
 
                      Gradient in Dalton symmetry coordinates
                      ---------------------------------------
 
-                         C    z     0.0000864139
-                         O    z    -0.0000864139
+                         C    z     0.0000864138
+                         O    z    -0.0000864138
 
 
                     Numerical hessian in symmetry coordinates
@@ -4026,13 +4206,16 @@ Symmetry   1       1       3       3       3       3
                          Hessian in symmetry coordinates
                          -------------------------------
 
-              1           1           3           3           3           3
-    1      1.573953
-    1     -1.574330    1.573953
-    3      0.000000    0.000000    0.000009
-    3      0.000000    0.000000   -0.000034    0.000009
-    3      0.000000    0.000000    0.000000    0.000000    0.000009
-    3      0.000000    0.000000    0.000000    0.000000   -0.000034    0.000009
+
+        Notation: irrep/coordinate number
+
+           1/   1      1/   2      3/   3      3/   4      3/   5      3/   6
+ 1/   1    1.573953
+ 1/   2   -1.574330    1.573953
+ 3/   3    0.000000    0.000000    0.000009
+ 3/   4    0.000000    0.000000   -0.000034    0.000009
+ 3/   5    0.000000    0.000000    0.000000    0.000000    0.000009
+ 3/   6    0.000000    0.000000    0.000000    0.000000   -0.000034    0.000009
                                        
 
 
@@ -4146,7 +4329,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -4187,8 +4370,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -4234,7 +4417,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -4266,26 +4449,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007374
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225292868       1.58D-05  -2.36D-09     5   1   1   0
+@  7  -111.225292868       2.04D-05  -2.34D-09     5   1   1   0
+      Virial theorem: -V/T =      2.007374
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@  8  -111.225292868       4.03D-07  -4.69D-11     5   1   1   0
       Virial theorem: -V/T =      2.007373
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225292868       1.04D-06  -2.69D-11     5   1   1   0
+@  9  -111.225292868       4.11D-08   2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007373
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225292868       3.32D-09  -1.14D-13     5   1   1   0
+@ 10  -111.225292868       9.21D-09  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007373
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225292868       2.11D-12   5.68D-14     5   1   1   0
+@ 11  -111.225292868       1.13D-09   2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007373
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225292868       8.74D-15  -2.84D-14     5   1   1   0
+@ 12  -111.225292868       2.93D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007373
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225292868       6.55D-12   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007373
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225292868       8.26D-13   0.00D+00     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225292868345    8.74D-15
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225292868345    8.26D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -4312,7 +4507,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.039
 
 
                        .-----------------------------------.
@@ -4325,23 +4520,23 @@ Symmetry   1       1       3       3       3       3
 @    Total charge of molecule:    0
 
 @    Final HF energy:            -111.225292868345                 
-@    Nuclear repulsion:            22.318887960581
-@    Electronic energy:          -133.544180828926
+@    Nuclear repulsion:            22.318887960580
+@    Electronic energy:          -133.544180828925
 
-@    Final gradient norm:           0.000000000000
-
- 
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
+
+ 
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -4391,7 +4586,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -4432,8 +4627,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -4479,7 +4674,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -4511,26 +4706,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007585
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225297627       1.91D-05  -2.50D-09     5   1   1   0
+@  7  -111.225297627       2.29D-05  -2.48D-09     5   1   1   0
       Virial theorem: -V/T =      2.007585
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225297627       1.32D-06  -3.96D-11     5   1   1   0
+@  8  -111.225297627       4.32D-07  -5.71D-11     5   1   1   0
       Virial theorem: -V/T =      2.007585
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225297627       4.68D-09  -8.53D-14     5   1   1   0
+@  9  -111.225297627       4.30D-08  -8.53D-14     5   1   1   0
       Virial theorem: -V/T =      2.007585
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225297627       2.83D-12   0.00D+00     5   1   1   0
+@ 10  -111.225297627       9.87D-09   2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007585
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225297627       1.04D-14   0.00D+00     5   1   1   0
+@ 11  -111.225297627       1.34D-09   5.68D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007585
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225297627       2.56D-10  -5.68D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007585
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225297627       3.02D-12   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007585
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225297627       4.69D-13   2.84D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225297626678    1.04D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225297626678    4.69D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -4550,14 +4757,14 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53521154     0.30309406
 
-    E(LUMO) :     0.30309406 au (symmetry 3)
+    E(LUMO) :     0.30309406 au (symmetry 2)
   - E(HOMO) :    -0.44454024 au (symmetry 1)
   ------------------------------------------
     gap     :     0.74763430 au
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.005
+ >>>> CPU and wall time for SCF :       0.020       0.039
 
 
                        .-----------------------------------.
@@ -4570,23 +4777,23 @@ Symmetry   1       1       3       3       3       3
 @    Total charge of molecule:    0
 
 @    Final HF energy:            -111.225297626678                 
-@    Nuclear repulsion:            22.032038194663
-@    Electronic energy:          -133.257335821341
+@    Nuclear repulsion:            22.032038194665
+@    Electronic energy:          -133.257335821343
 
 @    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -4636,7 +4843,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -4677,8 +4884,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -4724,7 +4931,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -4756,26 +4963,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007251
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.224813072       1.44D-05  -2.33D-09     5   1   1   0
+@  7  -111.224813072       1.92D-05  -2.31D-09     5   1   1   0
       Virial theorem: -V/T =      2.007251
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.224813072       9.06D-07  -2.23D-11     5   1   1   0
+@  8  -111.224813072       3.91D-07  -4.29D-11     5   1   1   0
       Virial theorem: -V/T =      2.007251
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.224813072       2.69D-09  -5.68D-14     5   1   1   0
+@  9  -111.224813072       4.04D-08   2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007251
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.224813072       1.74D-12   5.68D-14     5   1   1   0
+@ 10  -111.224813072       8.99D-09  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007251
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.224813072       1.59D-14  -8.53D-14     5   1   1   0
+@ 11  -111.224813072       9.84D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007251
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.224813072       2.75D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007251
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.224813072       9.80D-12   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007251
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.224813072       9.93D-13   2.84D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.224813071598    1.59D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.224813071598    9.93D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -4802,7 +5021,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.038
 
 
                        .-----------------------------------.
@@ -4815,23 +5034,23 @@ Symmetry   1       1       3       3       3       3
 @    Total charge of molecule:    0
 
 @    Final HF energy:            -111.224813071598                 
-@    Nuclear repulsion:            22.465132213149
-@    Electronic energy:          -133.689945284748
+@    Nuclear repulsion:            22.465132213147
+@    Electronic energy:          -133.689945284745
 
-@    Final gradient norm:           0.000000000000
-
- 
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
+
+ 
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -4881,7 +5100,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -4922,8 +5141,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -4969,7 +5188,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -5001,26 +5220,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007676
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.224851244       2.09D-05  -2.64D-09     5   1   1   0
+@  7  -111.224851244       2.42D-05  -2.63D-09     5   1   1   0
+      Virial theorem: -V/T =      2.007676
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@  8  -111.224851244       4.49D-07  -6.33D-11     5   1   1   0
       Virial theorem: -V/T =      2.007675
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.224851244       1.46D-06  -4.77D-11     5   1   1   0
+@  9  -111.224851244       4.42D-08   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007675
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.224851244       5.36D-09  -1.71D-13     5   1   1   0
+@ 10  -111.224851244       1.03D-08  -5.68D-14     5   1   1   0
       Virial theorem: -V/T =      2.007675
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.224851244       3.18D-12   0.00D+00     5   1   1   0
+@ 11  -111.224851244       1.32D-09   5.68D-14     5   1   1   0
       Virial theorem: -V/T =      2.007675
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.224851244       1.35D-14   0.00D+00     5   1   1   0
+@ 12  -111.224851244       2.21D-10   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007675
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.224851244       2.47D-12   0.00D+00     5   1   1   0
+      Virial theorem: -V/T =      2.007675
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.224851244       3.31D-13   0.00D+00     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.224851244150    1.35D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.224851244150    3.31D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -5047,7 +5278,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.005       0.004
+ >>>> CPU and wall time for SCF :       0.020       0.039
 
 
                        .-----------------------------------.
@@ -5060,23 +5291,23 @@ Symmetry   1       1       3       3       3       3
 @    Total charge of molecule:    0
 
 @    Final HF energy:            -111.224851244150                 
-@    Nuclear repulsion:            21.891360673100
-@    Electronic energy:          -133.116211917249
+@    Nuclear repulsion:            21.891360673102
+@    Electronic energy:          -133.116211917252
 
 @    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -5113,7 +5344,7 @@ Symmetry   1       1       3       3       3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -5154,8 +5385,8 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      CO                                                                      
@@ -5201,7 +5432,7 @@ Symmetry   1       1       3       3       3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    7
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  14 electrons.
 
@@ -5233,26 +5464,38 @@ Symmetry   1       1       3       3       3       3
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  7  -111.225449514       1.74D-05  -2.41D-09     5   1   1   0
+@  7  -111.225449514       2.16D-05  -2.39D-09     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  8  -111.225449514       1.18D-06  -3.27D-11     5   1   1   0
+@  8  -111.225449514       4.17D-07  -5.16D-11     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@  9  -111.225449514       3.99D-09  -5.68D-14     5   1   1   0
+@  9  -111.225449514       4.20D-08  -2.84D-14     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 10  -111.225449514       2.48D-12  -5.68D-14     5   1   1   0
+@ 10  -111.225449514       9.50D-09   0.00D+00     5   1   1   0
       Virial theorem: -V/T =      2.007485
 @      MULPOP C       0.20; O      -0.20; 
  -----------------------------------------------------------------------------
-@ 11  -111.225449514       1.72D-14   2.84D-14     5   1   1   0
+@ 11  -111.225449514       1.28D-09  -2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 12  -111.225449514       2.85D-10   5.68D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 13  -111.225449514       4.20D-12   2.84D-14     5   1   1   0
+      Virial theorem: -V/T =      2.007485
+@      MULPOP C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+@ 14  -111.225449514       6.43D-13  -2.84D-14     5   1   1   0
 
-@ *** DIIS converged in  11 iterations !
-@     Converged SCF energy, gradient:   -111.225449514136    1.72D-14
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -111.225449514136    6.43D-13
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -5279,7 +5522,7 @@ Symmetry   1       1       3       3       3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.005
+ >>>> CPU and wall time for SCF :       0.020       0.038
 
 
                        .-----------------------------------.
@@ -5295,20 +5538,20 @@ Symmetry   1       1       3       3       3       3
 @    Nuclear repulsion:            22.174535444365
 @    Electronic energy:          -133.399984958501
 
-@    Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -5350,8 +5593,11 @@ Symmetry   1       1       3       3       3       3
                           Hessian in normal coordinates
                           -----------------------------
 
-              1
-    1      3.085332
+
+        Notation: irrep/coordinate number
+
+           1/   1
+ 1/   1    3.085332
                                        
 
 
@@ -5406,7 +5652,7 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
                             Cartesian coordinates (au)
                             --------------------------
 
- C          0.0000000000            0.0000000000           -0.0033776818
+ C          0.0000000000            0.0000000000           -0.0033776817
  O          0.0000000000            0.0000000000            0.0025341533
 
 
@@ -5439,8 +5685,8 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:30 2013
+     Host name              : c10-6.local                             
 
 
    ***************************************************************************
@@ -5449,8 +5695,8 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:30 2013
+     Host name              : c10-6.local                             
 
 
                              Molecular geometry (au)
@@ -5545,9 +5791,9 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.28 seconds
- >>>> Total wall time used in DALTON:   0.29 seconds
+ >>>> Total CPU  time used in DALTON:   0.86 seconds
+ >>>> Total wall time used in DALTON:   1.78 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:48 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:48:30 2013
+     Host name              : c10-6.local                             

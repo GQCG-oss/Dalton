@@ -355,9 +355,9 @@ c     & '          This input will be ignored. Calculation continues.'
             IF (NFRVAL .GT. 0) THEN
                IF (NFRVLT .EQ. 0) NFRVLT = NFRVAL
                J = MIN(MXFR,NFRVAL)
-               WRITE (LUPRI,'(A,I4/A,5F10.6:/,(28X,5F10.6))')
-     &            ' Number of frequencies     :',NFRVLT,
-     &            ' Frequencies               :',
+               WRITE (LUPRI,'(A,I4/A,5F10.6:/,(33X,5F10.6))')
+     &         ' Number of frequencies          :',NFRVLT,
+     &         ' Frequencies                    :',
      &            (FRVAL(I), I=1,J)
              IF (NFRVLT .GT. MXFR) THEN
                WRITE(LUPRI,'(/A/A,I5/A)')
@@ -374,7 +374,7 @@ c     & '          This input will be ignored. Calculation continues.'
      &         ' optical activity G tensor.'
             IF (ABSORP) THEN
                WRITE(LUPRI,'(A,F10.6,A)') 
-     &         ' Damping parameter equals  :',DAMPING, ' a.u.'
+     &         ' Damping parameter equals       :',DAMPING, ' a.u.'
             END IF
             WRITE (LUPRI,'(A,I4)')
      &         ' Print level                    :',IPRLNR

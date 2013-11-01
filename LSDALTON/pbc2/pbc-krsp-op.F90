@@ -29,7 +29,7 @@ COMPLEX(complexk)             :: phase
 
    if(oper .eq. 2) then !Fock matrix
 
-     if((abs(l1) .le. Armat%fc1 .and. abs(l2) .le. Armat%fc2) .and. abs(l3) .le. Armat%fc3)then
+     if(armat%lvec(layer)%f1_computed .or. armat%lvec(layer)%g2_computed)then
        phase1=kvec(1)*Armat%lvec(layer)%std_coord(1)
        phase2=kvec(2)*Armat%lvec(layer)%std_coord(2)
        phase3=kvec(3)*Armat%lvec(layer)%std_coord(3)
@@ -41,7 +41,7 @@ COMPLEX(complexk)             :: phase
    !Overlap
    !and oneparticl
 
-     if((abs(l1) .le. Armat%oneop1 .and. abs(l2) .le. Armat%oneop2) .and. abs(l3) .le. Armat%oneop3)then
+     if(armat%lvec(layer)%f1_computed )then
        phase1=kvec(1)*Armat%lvec(layer)%std_coord(1)
        phase2=kvec(2)*Armat%lvec(layer)%std_coord(2)
        phase3=kvec(3)*Armat%lvec(layer)%std_coord(3)
@@ -52,7 +52,7 @@ COMPLEX(complexk)             :: phase
    elseif(oper .eq. 4) then
    !Coulomb
 
-     if((abs(l1) .le. Armat%col1 .and. abs(l2) .le. Armat%col2) .and. abs(l3) .le. Armat%col3)then
+     if(armat%lvec(layer)%J_computed)then
        phase1=kvec(1)*Armat%lvec(layer)%std_coord(1)
        phase2=kvec(2)*Armat%lvec(layer)%std_coord(2)
        phase3=kvec(3)*Armat%lvec(layer)%std_coord(3)
@@ -63,7 +63,7 @@ COMPLEX(complexk)             :: phase
    elseif(oper .eq. 5) then
    !exchange
 
-     if((abs(l1) .le. Armat%Kx1 .and. abs(l2) .le. Armat%Kx2) .and. abs(l3) .le. Armat%Kx3)then
+     if(armat%lvec(layer)%Kx_computed)then
        phase1=kvec(1)*Armat%lvec(layer)%std_coord(1)
        phase2=kvec(2)*Armat%lvec(layer)%std_coord(2)
        phase3=kvec(3)*Armat%lvec(layer)%std_coord(3)
@@ -93,14 +93,13 @@ REAL(realk)                   :: phase1,phase2,phase3
 COMPLEX(complexk)             :: phase
 
  DO layer = 1, numvecs
-   l1=int(ll%lvec(layer)%lat_coord(1))
-   l2=int(ll%lvec(layer)%lat_coord(2))
-   l3=int(ll%lvec(layer)%lat_coord(3))
 
-   innegligible= (abs(l1) .le. realcut(1) .and.abs(l2) .le. realcut(2) )
-   innegligible=(innegligible .and. abs(l3) .le. realcut(3) )
+   if(ll%lvec(layer)%f1_computed )then
+     l1=int(ll%lvec(layer)%lat_coord(1))
+     l2=int(ll%lvec(layer)%lat_coord(2))
+     l3=int(ll%lvec(layer)%lat_coord(3))
+
                   
-   if(innegligible) then
      phase1=kvec(1)*ll%lvec(layer)%std_coord(1)
      phase2=kvec(2)*ll%lvec(layer)%std_coord(2)
      phase3=kvec(3)*ll%lvec(layer)%std_coord(3)
@@ -218,16 +217,16 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
        !call write_matrix(work,nbast,nbast)
        call mat_set_from_full(work,1.0_realk,tmp_density)
        call mat_daxpy(1.D0,tmp_density,density(layer))
-     endif
 
      if(k==Nk)then
-       if (l1 == ll%ndmat .or. l2 == ll%ndmat .or.l3== ll%ndmat)then
+       if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
          call mat_abs_max_elm(density(layer),maxdens)
          if(maxdens .gt. 1e-12)then
            write(*,*) 'maybe to hard density cutoff, max element for&
             &layer', l1,l2,l3,maxdens
          endif
        endif
+     endif
      endif
 
   enddo

@@ -147,10 +147,10 @@ contains
     molecule%nelectrons = get_num_electrons(mylsitem)
     molecule%nbasis = get_num_basis_functions(mylsitem)
     molecule%nauxbasis = get_num_aux_basis_functions(mylsitem)
-    molecule%numocc = molecule%nelectrons/2
-    molecule%numvirt = molecule%nbasis - molecule%numocc
+    molecule%nocc = molecule%nelectrons/2
+    molecule%nunocc = molecule%nbasis - molecule%nocc
     molecule%ncore = count_ncore(mylsitem)
-    molecule%nval = molecule%numocc - molecule%ncore
+    molecule%nval = molecule%nocc - molecule%ncore
 
     ! Which basis functions are on which atoms?
     call molecule_get_atomic_sizes(molecule,mylsitem)
@@ -179,8 +179,8 @@ contains
     write(DECinfo%output,'(a,i6)')   'FULL: Number of aux. basis func. : ',molecule%nauxbasis
     write(DECinfo%output,'(a,i6)')   'FULL: Number of core orbitals    : ',molecule%ncore
     write(DECinfo%output,'(a,i6)')   'FULL: Number of valence orbitals : ',molecule%nval
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of occ. orbitals    : ',molecule%numocc
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%numvirt
+    write(DECinfo%output,'(a,i6)')   'FULL: Number of occ. orbitals    : ',molecule%nocc
+    write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%nunocc
     write(DECinfo%output,*)
 
   end subroutine molecule_init_basics
@@ -249,12 +249,12 @@ contains
 
     call mem_alloc(tmp,nbasis,nbasis)
     ! Put occ orbitals into tmp
-    do i=1,Molecule%numocc
+    do i=1,Molecule%nocc
        tmp(1:nbasis,i) = Molecule%Co(1:nbasis,i)
     end do
     ! Put virt orbitals into tmp
-    do i=1,Molecule%numvirt
-       tmp(1:nbasis,i+Molecule%numocc) = Molecule%Cv(1:nbasis,i)
+    do i=1,Molecule%nunocc
+       tmp(1:nbasis,i+Molecule%nocc) = Molecule%Cv(1:nbasis,i)
     end do
     
     ! All orbitals into C
@@ -375,8 +375,8 @@ contains
     real(realk), pointer :: eival(:), C(:,:)
 
     nbasis = molecule%nbasis
-    nocc = molecule%numocc
-    nunocc = molecule%numvirt
+    nocc = molecule%nocc
+    nunocc = molecule%nunocc
 
     ! Canonical MO coefficients
     call mem_alloc(C,nbasis,nbasis)
@@ -502,8 +502,8 @@ contains
     
     ! Init stuff
     nbasis = molecule%nbasis
-    nocc = molecule%numocc
-    nvirt = molecule%numvirt
+    nocc = molecule%nocc
+    nvirt = molecule%nunocc
     natoms = molecule%natoms
 
 !    inquire(file='carmommatrix',exist=carmom_exist)
@@ -710,8 +710,8 @@ contains
     integer :: nbasis,nocc,nvirt
 
     nbasis = molecule%nbasis
-    nocc = molecule%numocc
-    nvirt = molecule%numvirt
+    nocc = molecule%nocc
+    nvirt = molecule%nunocc
     call mem_alloc(molecule%Co,nbasis,nocc)
     call mem_alloc(molecule%Cv,nbasis,nvirt)
 
@@ -730,8 +730,8 @@ contains
     type(array2) :: ppfock, qqfock, Co,Cv,Co2,Cv2,fock
     integer :: nocc, nvirt, oo(2), bo(2), bv(2), vv(2), bb(2),nbasis
 
-    nocc = molecule%numocc
-    nvirt = molecule%numvirt
+    nocc = molecule%nocc
+    nvirt = molecule%nunocc
     nbasis = molecule%nbasis
     oo(1)=nocc
     oo(2)=nocc
@@ -791,8 +791,8 @@ contains
 
     ! Number of occupied (O), Virtual (V), atomic basis functions (A)
     ! ***************************************************************
-    O = MyMolecule%numocc
-    V = MyMolecule%numvirt
+    O = MyMolecule%nocc
+    V = MyMolecule%nunocc
     A = MyMolecule%nbasis
 
 
@@ -935,15 +935,15 @@ contains
 !!$    call mat_free(AOint_mat)
 !!$
 !!$    ! Init interaction matrix: Occupied,virtual dimension
-!!$    call mem_alloc(molecule%orbint,molecule%numocc,molecule%numvirt)
+!!$    call mem_alloc(molecule%orbint,molecule%nocc,molecule%nunocc)
 !!$
 !!$    ! Transform to MO basis
-!!$    call dec_diff_basis_transform1(molecule%nbasis,molecule%numocc,molecule%numvirt,&
+!!$    call dec_diff_basis_transform1(molecule%nbasis,molecule%nocc,molecule%nunocc,&
 !!$         & molecule%Co, molecule%Cv, AOint, molecule%orbint)
 !!$
 !!$    ! Take absolute value (should not be necessary but do it to be on the safe side)
-!!$    do j=1,molecule%numvirt
-!!$       do i=1,molecule%numocc
+!!$    do j=1,molecule%nunocc
+!!$       do i=1,molecule%nocc
 !!$          molecule%orbint(i,j) = abs(molecule%orbint(i,j))
 !!$       end do
 !!$    end do

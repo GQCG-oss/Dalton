@@ -63,7 +63,7 @@ TRILEVEL
 3
 .ccThr
 1e-7
-.Memory
+.MEMORY
 1.0
 *END OF INPUT
 %EOF%

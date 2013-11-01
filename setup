@@ -95,7 +95,8 @@ def parse_input():
             action='store',
             choices=('sequential', 'parallel', 'cluster'),
             default='none',
-            help='pass -mkl=STRING flag to the compiler and linker [default: None]')
+            help='pass -mkl=STRING flag to the compiler and linker (sequential: link using the non-threaded libraries; parallel: link using the OMP threaded libraries; cluster: link using the MKL CLuster libraries) [default: None]')
+
     group.add_argument('--blas',
             action='store',
             default='auto',

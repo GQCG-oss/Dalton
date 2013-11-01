@@ -263,9 +263,11 @@ if [ $optn -gt 1 ] ; then
       if [ -a $MPI -a -x $MPI ]; then
 	 if [ $optlam -eq 0 ] ; then
 	    $MPIRUN -np $optn $MPI
+	    lsdalton_exitcode=$?
 	 else
 	    lamboot -v  $WRKDIR/$optlam
 	    $MPIRUN -np $optn $MPI
+	    lsdalton_exitcode=$?
 	    wipe    -v  $WRKDIR/$optlam
 	 fi
       else

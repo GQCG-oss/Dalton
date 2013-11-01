@@ -572,9 +572,6 @@ C     EVECS(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -595,13 +592,6 @@ C
 #include "gnrinf.h"
 #include "mxcent.h"
 #include "wavpcm.h"
-C
-      logical :: polemb = .false.
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        polemb = .true.
-      end if
-#endif
 C
       CALL QENTER('RSPELI')
 C
@@ -676,8 +666,8 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM
-     &             .or. QMNPMM .or. WAVPCM .or. polemb) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm
+     &             .or. QMNPMM .or. WAVPCM) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF

@@ -1092,7 +1092,7 @@ C        *****  B,F,C,D... matrix test calls  *****
 C        ******************************************
 C--------------------------------------------------
 C
-         IF ( .TRUE. ) THEN
+         IF ( .FALSE. ) THEN
 C
             IF (CCS .or. CC2 .or. CCSD) THEN
 C              !NOTE: Only CC_FTSTNEW, CC_BTST are compatible with CC-R12!

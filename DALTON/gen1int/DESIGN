@@ -18,7 +18,7 @@ program, with the requirement that the parallelization environment and input arg
 are already set on all involved processors.
 
 For instance, Dalton/Dirac use the manager/worker scheme, and the manager first needs to
-wake up the workers (broadcasts appropriate integer, see subroutine \fn(NODEDRIVER) in
+wake up the workers (broadcasts appropriate integer, see subroutine \fn(DALTON_NODEDRIVER) in
 eri/eri2par.F), and broadcasts all input arguments. Therefore, to facilitate the job, we
 implemented these in file gen1int_host.F90. Also, there are some Fortran 77 codes in
 Dalton/Dirac which might use Gen1Int interface. It is thus more appropriate to use

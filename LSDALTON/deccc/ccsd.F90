@@ -5018,8 +5018,8 @@ contains
 
     ! Dimensions
     nbasis = MyMolecule%nbasis
-    nocc = MyMolecule%numocc
-    nvirt = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
     bo(1) = nbasis
     bo(2) = nocc
     bv(1) = nbasis
@@ -5058,7 +5058,7 @@ contains
 
     ! Dimensions
     ! **********
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
     nocc = MyFragment%noccAOS
     nvirt = MyFragment%nunoccAOS
     bo(1) = nbasis

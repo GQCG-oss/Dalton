@@ -74,8 +74,8 @@ contains
     ! Print DEC info
     call print_dec_info()
 
-    nOcc = MyMolecule%numocc
-    nUnocc = MyMolecule%numvirt
+    nOcc = MyMolecule%nocc
+    nUnocc = MyMolecule%nunocc
     nBasis = MyMolecule%nbasis
     nAtoms = MyMolecule%natoms
 
@@ -421,7 +421,7 @@ contains
     ! Initialize local groups 
     call init_mpi_groups(groupsize,DECinfo%output)
 
-    ! Wake up local masters for fragment jobs
+    ! Wake up all slaves for fragment jobs
     call ls_mpibcast(DECDRIVER,master,MPI_COMM_LSDALTON)
 
     ! Send DEC input information to slaves
@@ -493,9 +493,8 @@ contains
              ! cycle if no orbitals assigned to atom or fragment is already done
              if( (.not. dofrag(i)) .or. fragdone(i)) cycle
           else
-             i=k  ! not a real calculation, used for MPI quit signal
+             i=k  ! not an actual calculation, used for MPI quit signal
           end if
-          ! if i>natoms then this is a dummy calculation used to finalize local MPI masters
 
 
           ! ************************************************************************
