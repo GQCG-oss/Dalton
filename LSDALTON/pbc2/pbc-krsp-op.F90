@@ -48,6 +48,9 @@ COMPLEX(complexk)             :: phase
        phase=CMPLX(0.,(phase1+phase2+phase3),COMPLEXK)
        Bkmat%Smat%zelms=Bkmat%Smat%zelms+Armat%lvec(layer)%oper(1)%elms*exp(phase)
      endif
+     if(Armat%lvec(layer)%oper(1)%init_magic_tag .eq. mat_init_magic_value)then
+       call mat_free(Armat%lvec(layer)%oper(1))
+     endif
      
    elseif(oper .eq. 4) then
    !Coulomb

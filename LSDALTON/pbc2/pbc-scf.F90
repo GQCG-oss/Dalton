@@ -855,6 +855,9 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   call mem_alloc(Ovl,numrealvec)
   call mem_alloc(g_2,numrealvec)
 
+  write(lupri,*) 'Density first'
+  call mat_print(nfdensity(n1),1,ndim,1,ndim,lupri)
+
 
 !  DO i=1,numrealvec  
 !     il1=int(lattice%lvec(i)%lat_coord(1))
@@ -1001,6 +1004,9 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
 
       if(lattice%store_mats)then
+        !get the overlap matrices S^0l
+        call pbc_read_matrix(lattice,ndim,ndim,1,1,'            ')
+        !Transform overlap matrix 0l to k
         call pbc_rspc_to_kspc_mat(lattice,Bz,ndim,kvec,1)
       else
         ! transforms overlap to kspace
@@ -1043,7 +1049,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   Ecell=0.0_realk
   diis_exit = .false. !when diis_exit the iterations are finished
   ! self consistent iterations
-  DO WHILE(tol .lt. lattice%num_its)! 20)!should have an input parameter
+  DO WHILE(tol .le. lattice%num_its)! 20)!should have an input parameter
     CALL LSTIMER('START ',TOT,TWT,LUPRI)
     k=k+1
     i=i+1
@@ -1260,6 +1266,8 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       endif
 
        if(lattice%store_mats)then
+        !get the overlap matrices S^0l
+        call pbc_read_matrix(lattice,ndim,ndim,1,1,'            ')
         !We need k-space overlap
         call pbc_rspc_to_kspc_mat(lattice,Bz,ndim,kvec,1)
       else
@@ -1428,6 +1436,8 @@ SUBROUTINE pbc_get_fock_mat(lattice,g_2,f_1,ndim,realcut,numrealvec,diismats,lup
   CHARACTER(LEN=12) :: diismats
   INTEGER,intent(OUT) :: realcut(3)
   !LOCAL VARIABLES
+  INTEGER             :: i,j
+  real(realk)         :: focknorm !For finding time usage
   real(realk)         :: TS,TE !For finding time usage
 
 

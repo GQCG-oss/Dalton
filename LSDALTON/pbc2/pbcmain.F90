@@ -224,6 +224,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
   write(*,*) 'density written to LSDALTON.OUT'
 
+
   elseif(lattice%read_file) then
 
         call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
@@ -250,6 +251,74 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         CALL lsCLOSE(IUNIT,'KEEP')
   
         Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+
+    elseif(lattice%testcase) THEN !THIS IS FOR DEBUGGING
+      iunit = 345
+      scfit=1
+    !  write(string1,'(I5)')  scfit
+    !  string1=adjustl(string1)
+    !  write(numtostring1,'(I5)')  l1
+    !  write(numtostring2,'(I5)')  l2
+    !  write(numtostring3,'(I5)')  l3
+    !  numtostring1=adjustl(numtostring1)
+    !  numtostring2=adjustl(numtostring2)
+    !  numtostring3=adjustl(numtostring3)
+
+    !  write(*,*) string1,numtostring1,numtostring2,numtostring3
+
+    !  write(mattxt,'(A20)') 'PBCDMAT'//trim(string1)//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)
+
+
+      call find_latt_index(k,0,0,0,fdim,lattice,lattice%max_layer)
+      !do i=1,num_latvectors
+      !  call init_lvec_data(lattice%lvec(i),nbast)
+      !enddo
+      call mem_alloc(lattice%lvec(k)%d_mat,nbast,nbast)
+      if(.not.lattice%read_file) then
+        write(lupri,*) 'READING density mat'
+        lattice%lvec(k)%d_mat(1,1)=0.18197943668877323D0
+        lattice%lvec(k)%d_mat(1,2)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(1,3)=0.18197943668877323D0
+        lattice%lvec(k)%d_mat(1,4)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(2,1)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(2,2)=0.44350182805060839D0
+        lattice%lvec(k)%d_mat(2,3)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(2,4)=0.44350182805060839D0
+        lattice%lvec(k)%d_mat(3,1)=0.18197943668877323D0
+        lattice%lvec(k)%d_mat(3,2)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(3,3)=0.18197943668877323D0
+        lattice%lvec(k)%d_mat(3,4)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(4,1)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(4,2)=0.44350182805060839D0
+        lattice%lvec(k)%d_mat(4,3)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(4,4)=0.44350182805060839D0
+        Call mat_set_from_full(lattice%lvec(k)%d_mat,1.D0,nfdensity(k))
+        call mem_dealloc(lattice%lvec(k)%d_mat)
+      else
+        mattxt=adjustl(lattice%debugdensfile)
+        mattxt=trim(mattxt)
+        write(*,*) mattxt
+        CALL lsOPEN(IUNIT,mattxt,'old','UNFORMATTED')
+        !OPEN(UNIT=iunit,FILE=trim(mattxt),STATUS='OLD',IOSTAT=ierror)
+        read(iunit) nbasterik
+        if(nbasterik .ne. nbast) then
+          write(*,*) 'Not the right dimensions for the density matrix'
+          write(*,*) 'are you sure you have the same basis or molecule?'
+          write(lupri,*) 'Not the right dimensions for the density matrix'
+          write(lupri,*) 'are you sure you have the same basis or molecule?'
+          call LSquit('Not correct dimension in density matrix',lupri)
+        endif
+        DO j=1,nbasterik
+         read(iunit) (lattice%lvec(k)%d_mat(i,j),i=1,nbasterik)
+        ENDDO
+        CALL lsCLOSE(IUNIT,'KEEP')
+
+      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+      Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+      !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
+      call mem_dealloc(lattice%lvec(k)%d_mat)
+    endif
+        
 
 else
 
@@ -351,10 +420,10 @@ else
 #endif
 
 #ifdef DEBUGPBC
-      write(lupri,*) 'density used'
-      call mat_to_full(nfdensity(n1), 1.0_realk,lattice%lvec(n1)%d_mat)
-      call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast,lupri)
-      write(*,*) 'density used'
+      !write(lupri,*) 'density used'
+      !call mat_to_full(nfdensity(n1), 1.0_realk,lattice%lvec(n1)%d_mat)
+      !call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast,lupri)
+      !write(*,*) 'density used'
       write(lupri,*) 'Density first'
       call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
 #endif
@@ -444,40 +513,40 @@ else
 !
 #ifdef DEBUGPBC
   if(lattice%compare_elmnts) then
-    write(*,*) 'hei'
+    !write(*,*) 'hei'
     call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
     num_latvectors,latt_cell,nfsze,maxmultmom,bz,tlat,lupri,luerr)
   endif
 
-    focknorm=0.0d0
-    write(lupri,*) num_latvectors
-     do i=1,num_latvectors
-      do j=1,nbast*nbast
-         focknorm=focknorm + lattice%lvec(i)%fck_vec(j)**2
-      enddo
-     enddo
+!    focknorm=0.0d0
+!    write(lupri,*) num_latvectors
+!     do i=1,num_latvectors
+!      do j=1,nbast*nbast
+!         focknorm=focknorm + lattice%lvec(i)%fck_vec(j)**2
+!      enddo
+!     enddo
 #endif
     !CALL lsOPEN(IUNIT,'pbch2_t.dat','UNKNOWN','FORMATTED')
     !E_cell=E_kin+E_en+E_J+E_K+E_ff+E_nuc+E_nnff
     write(lupri,'(A,I4)') 'numbers of lattice vectors', num_latvectors
     write(lupri,'(A,I8)') 'number of basis', nbast
-#ifdef DEBUGPBC
-    write(lupri,'(A,F16.6)')  'Norm of fock matrix', focknorm
-#endif
-    write(lupri,'(A,F16.6)')  'Cell energy', E_cell
-    write(lupri,'(A,F16.6)')  'Electronic energy', E_cell-E_nuc-E_ff-E_K-E_nnff
-    write(lupri,'(A,F16.6)')  'Nuclear repulsion energy', E_nuc
-    write(lupri,'(A,F16.6)')  'N. F. Coulomb energy', E_J
-    write(lupri,'(A,F16.6)')  'Exact xch energy', E_K
-    write(lupri,'(A,F16.6)')  'Far field', E_ff+E_nnff
-    write(*,'(A,F16.6)')  'N. F. Coulomb energy', E_J
-    write(*,'(A,F16.6)')  'Exact xch energy', E_K
-    write(*,'(A,F16.6,X,F16.6)')  'Far field', E_ff, E_nnff
-    write(*,*)  'Far field', E_ff, E_nnff
-    write(*,'(A,F16.6)')  'Cell energy', E_cell
-    write(*,'(A,F16.6,X,F16.6,X,F16.6)')  'one part energy', E_kin+E_en,E_kin,E_en
-    write(*,'(A,F16.6)')  'Electronic energy', E_cell-E_nnff-E_ff-E_K-E_nuc
-    write(*,'(A,F16.6)')  'Nuclear repulsion energy', E_nuc
+!#ifdef DEBUGPBC
+!    write(lupri,'(A,F16.6)')  'Norm of fock matrix', focknorm
+!#endif
+!    write(lupri,'(A,F16.6)')  'Cell energy', E_cell
+!    write(lupri,'(A,F16.6)')  'Electronic energy', E_cell-E_nuc-E_ff-E_K-E_nnff
+!    write(lupri,'(A,F16.6)')  'Nuclear repulsion energy', E_nuc
+!    write(lupri,'(A,F16.6)')  'N. F. Coulomb energy', E_J
+!    write(lupri,'(A,F16.6)')  'Exact xch energy', E_K
+!    write(lupri,'(A,F16.6)')  'Far field', E_ff+E_nnff
+!    write(*,'(A,F16.6)')  'N. F. Coulomb energy', E_J
+!    write(*,'(A,F16.6)')  'Exact xch energy', E_K
+!    write(*,'(A,F16.6,X,F16.6)')  'Far field', E_ff, E_nnff
+!    write(*,*)  'Far field', E_ff, E_nnff
+!    write(*,'(A,F16.6)')  'Cell energy', E_cell
+!    write(*,'(A,F16.6,X,F16.6,X,F16.6)')  'one part energy', E_kin+E_en,E_kin,E_en
+!    write(*,'(A,F16.6)')  'Electronic energy', E_cell-E_nnff-E_ff-E_K-E_nuc
+!    write(*,'(A,F16.6)')  'Nuclear repulsion energy', E_nuc
     !CALL lsCLOSE(IUNIT,'KEEP')
     
 
