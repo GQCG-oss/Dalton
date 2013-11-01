@@ -21,7 +21,13 @@ Tested on the following platforms
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
 * Fedora 15, GNU 4.6.0, system native BLAS/LAPACK
 * Scientific Linux 6.0, GNU 4.4.4, ATLAS 64-bit version
-
+* Rocks Linux 6.1, GNU 4.4.7, MKL 11.0.0, OpenMPI 1.6.2
+* Rocks Linux 6.1, GNU 4.6.2, MKL 11.0.0, OpenMPI 1.6.4
+* Rocks Linux 6.1, GNU 4.7.2, MKL 11.0.0, OpenMPI 1.6.2
+* Rocks Linux 6.1, Intel 12.1.2, MKL 11.0.0
+* Rocks Linux 6.1, Intel 13.1.2, MKL 11.0.0
+* Rocks Linux 6.1, Intel 13.0.1, MKL 11.0.0, OpenMPI 1.6.2
+* Rocks Linux 6.1, Intel 13.0.1, MKL 11.0.0, OpenMPI 1.6.5
 
 Compiles but does not pass all tests
 ------------------------------------
