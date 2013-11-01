@@ -58,6 +58,14 @@ Tested on the following platforms
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
 * Fedora 15, GNU 4.6.0, system native BLAS/LAPACK
 * Fedora 15, Intel 11.4.191, OpenMPI 1.6.5
+* Fedora 18, GNU 4.7.2, MKL 11.0.5 
+* Fedora 18, Intel 13.1.3 MKL 11.0.5 
+* CentOS 5.x/6.x Linux 64 bit,  GNU 4.4.3, MKL 10.2.7
+* CentOS 5.x/6.x Linux 64 bit,  GNU 4.4.3, MKL 10.2.7, OpenMPI 1.6.3
+* CentOS 5.x/6.x Linux 64 bit,  PGI 12.4-0, ACML 4,1.0
+* CentOS 5.x/6.x Linux 64 bit,  Intel 12.4-0, MKL 10.1.1.019
+* CentOS 5.x/6.x Linux 64 bit,  Intel 11.1, MKL 10.2.7, OpenMPI 1.4.4
+* CentOS 5.x/6.x Linux 64 bit,  Intel 13.0.1, MKL 11.0.1, OpenMPI 1.4.1
 
 
 Compiles but untested on the following environments
@@ -66,3 +74,5 @@ Compiles but untested on the following environments
 * Ubuntu 12.04, Intel 14.0.0, MKL 11.0
 * SGI Altix ICE 8200 (Hyperion)
 * Cray XE6 (Lindgren)
+
+
