@@ -17,17 +17,17 @@ Tested on the following platforms
 * CentOS 6.3, GNU 4.4.6, builtin BLAS/LAPACK, OpenMPI 1.6.4
 * CentOS 6.3, GNU 4.4.6, ATLAS 3.8.4, OpenMPI 1.6.4
 * CentOS 6.3, GNU 4.4.6, system native BLAS/LAPACK 3.2.1, OpenMPI 1.6.4
+* CentOS 6.4, Rocks Linux 6.0, GNU 4.4.7, MKL 11.0.0, OpenMPI 1.6.2
+* CentOS 6.4, Rocks Linux 6.1, GNU 4.6.2, MKL 11.0.0, OpenMPI 1.6.4
+* CentOS 6.4, Rocks Linux 6.0, GNU 4.7.2, MKL 11.0.0, OpenMPI 1.6.2
+* CentOS 6.4, Rocks Linux 6.0, Intel 12.1.2, MKL 11.0.0
+* CentOS 6.4, Rocks Linux 6.0, Intel 13.1.2, MKL 11.0.0
+* CentOS 6.4, Rocks Linux 6.0, Intel 13.0.1, MKL 11.0.0, OpenMPI 1.6.2
+* CentOS 6.4, Rocks Linux 6.1, Intel 13.0.1, MKL 11.0.0, OpenMPI 1.6.5
 * CrunchBang 11, GNU 4.7.2, system native BLAS/LAPACK, OpenMPI 1.6.5
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
 * Fedora 15, GNU 4.6.0, system native BLAS/LAPACK
 * Scientific Linux 6.0, GNU 4.4.4, ATLAS 64-bit version
-* Rocks Linux 6.1, GNU 4.4.7, MKL 11.0.0, OpenMPI 1.6.2
-* Rocks Linux 6.1, GNU 4.6.2, MKL 11.0.0, OpenMPI 1.6.4
-* Rocks Linux 6.1, GNU 4.7.2, MKL 11.0.0, OpenMPI 1.6.2
-* Rocks Linux 6.1, Intel 12.1.2, MKL 11.0.0
-* Rocks Linux 6.1, Intel 13.1.2, MKL 11.0.0
-* Rocks Linux 6.1, Intel 13.0.1, MKL 11.0.0, OpenMPI 1.6.2
-* Rocks Linux 6.1, Intel 13.0.1, MKL 11.0.0, OpenMPI 1.6.5
 * MAC OS X 10.9, GNU 4.8.2, Apple vecLib, MPICH 3.1rc1
 
 
