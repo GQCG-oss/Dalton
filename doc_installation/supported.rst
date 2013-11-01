@@ -28,6 +28,7 @@ Tested on the following platforms
 * Rocks Linux 6.1, Intel 13.1.2, MKL 11.0.0
 * Rocks Linux 6.1, Intel 13.0.1, MKL 11.0.0, OpenMPI 1.6.2
 * Rocks Linux 6.1, Intel 13.0.1, MKL 11.0.0, OpenMPI 1.6.5
+* MAC OS X 10.9, GNU 4.8.2, Apple vecLib, MPICH 3.1rc1
 
 
 Compiles but does not pass all tests
@@ -74,6 +75,7 @@ Tested on the following platforms
 * CentOS 6.3 Linux 64 bit, Intel 12.4-0, MKL 10.1.1.019
 * CentOS 6.3 Linux 64 bit, Intel 11.1, MKL 10.2.7, OpenMPI 1.4.4
 * CentOS 6.3 Linux 64 bit, Intel 13.0.1, MKL 11.0.1, OpenMPI 1.4.1
+* MAC OS X 10.9, GNU 4.8.2, Apple vecLib, MPICH 3.1rc1
 
 
 Compiles but untested on the following environments
