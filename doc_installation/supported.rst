@@ -28,9 +28,10 @@ Compiles but does not pass all tests
 * Fedora 15, Intel 11.4.191, OpenMPI 1.6.5 (failing tests: cc2_412_aux, rsp_hyperpolar, rsp_dckerr, rsp_excipolar, geoopt_dckerr)
 
 
-Compiles but untested on the following platforms
-------------------------------------------------
+Compiles but untested on the following environments
+---------------------------------------------------
 
+* Ubuntu 12.04, Intel 14.0.0, MKL 11.0
 * SGI Altix ICE 8200 (Hyperion)
 * Cray XE6 (Lindgren)
 
@@ -59,8 +60,9 @@ Tested on the following platforms
 * Fedora 15, Intel 11.4.191, OpenMPI 1.6.5
 
 
-Compiles but untested on the following platforms
-------------------------------------------------
+Compiles but untested on the following environments
+---------------------------------------------------
 
+* Ubuntu 12.04, Intel 14.0.0, MKL 11.0
 * SGI Altix ICE 8200 (Hyperion)
 * Cray XE6 (Lindgren)
