@@ -29,6 +29,7 @@ Tested on the following platforms
 * Rocks Linux 6.1, Intel 13.0.1, MKL 11.0.0, OpenMPI 1.6.2
 * Rocks Linux 6.1, Intel 13.0.1, MKL 11.0.0, OpenMPI 1.6.5
 
+
 Compiles but does not pass all tests
 ------------------------------------
 
@@ -39,8 +40,8 @@ Compiles but untested on the following environments
 ---------------------------------------------------
 
 * Ubuntu 12.04, Intel 14.0.0, MKL 11.0
-* SGI Altix ICE 8200 (Hyperion)
-* Cray XE6 (Lindgren)
+* SGI Altix ICE 8200, Intel 11.1
+* Cray XE6, Intel 12.1.5
 
 
 Currently does not compile (but we plan to patch it)
@@ -79,5 +80,5 @@ Compiles but untested on the following environments
 ---------------------------------------------------
 
 * Ubuntu 12.04, Intel 14.0.0, MKL 11.0
-* SGI Altix ICE 8200 (Hyperion)
-* Cray XE6 (Lindgren)
+* SGI Altix ICE 8200, Intel 11.1
+* Cray XE6, Intel 12.1.5
