@@ -6056,7 +6056,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
           ! For the Linux example this would be the position of "2" in 366072
           length = LEN(string)
           do i=length,1,-1
-             if( (string(i-5:i)=='M free') .or. (string(i-5:i)=='k free') ) then
+             if( (string(i-5:i)=='M free') .or. (string(i-5:i)=='k free') .or.  (string(i-5:i)=='M unus') ) then
 
                 ! This is a double-check that the memory file has the correct format
                 doublecheck=.true.
