@@ -858,107 +858,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   write(lupri,*) 'Density first'
   call mat_print(nfdensity(n1),1,ndim,1,ndim,lupri)
 
-
-!  DO i=1,numrealvec  
-!     il1=int(lattice%lvec(i)%lat_coord(1))
-!     il2=int(lattice%lvec(i)%lat_coord(2))
-!     il3=int(lattice%lvec(i)%lat_coord(3))
-!     if(abs(il1) .gt. lattice%ndmat) CYCLE
-!     if(abs(il2) .gt. lattice%ndmat) CYCLE
-!     if(abs(il3) .gt. lattice%ndmat) CYCLE 
-!     call mat_init(nfdensity(i),ndim,ndim)
-!     call mat_zero(nfdensity(i))
-!  ENDDO
-
-  !get the fock matrices f^0l
-  !realcut(1)=lattice%fc1
-  !realcut(2)=lattice%fc2
-  !realcut(3)=lattice%fc3
-!  call pbc_get_fock_mat(lattice,g_2,f_1,ndim,realcut,numrealvec,diismats,lupri)
-
-   !DO k=1,BZ%nk
-!
-!      call pbc_get_kpoint(k,kvec)
-!
-!      call zero_pbc_elstr(Bz%fck)
-!      call zero_pbc_elstr(Bz%Smat)
-!
-!      call pbc_rspc_to_kspc_mat(lattice,Bz,ndim,kvec,2)
-!
-!      call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
-!      call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
-!
-!
-!      !solves F(k)C(k)=S(k)C(k)e(k)
-!      call solve_kfcsc_mat(bz%kpnt(k)%is_gamma,ndim,fock,smatk,&
-!      C_k,bz%kpnt(k)%Uk,bz%kpnt(k)%Uinv,bz%keigv((k-1)*ndim+1:k*ndim),k,bz%kpnt(k)%is_singular,lupri)
-!      
-!      !write(*,*) bz%keigv((k-1)*ndim+1:k*ndim)
-!
-!      if(bz%kpnt(k)%is_gamma ) C_0(:,:)=C_k(:,:)
-!      !if(bz%kpnt(k)%is_gamma ) write(lupri,*) 'C_k'
-!      !if(bz%kpnt(k)%is_gamma ) call write_zmatrix(C_k,ndim,ndim,lupri)
-!      !if(bz%kpnt(k)%is_gamma ) write(lupri,*) 'C_0'
-!      !if(bz%kpnt(k)%is_gamma ) call write_zmatrix(C_0,ndim,ndim,lupri)
-!      
-!!      write(lupri,*) 'Debug again get kdens'
-!      call pbc_get_kdensity(D_k,C_k,ndim,molecule%nelectrons/2 &
-!          ,lupri)
-!      
-!      !write(*,*) 'Debug volbz',bz%nk,bz%nk_nosym
-!!      write(lupri,*) 'Debug again get k to real'
-!      call kspc_2_rspc_loop_k(nfdensity,Bz%NK,D_k,lattice,kvec,bz%kpnt(k)%weight,BZ%NK_nosym,ndim,k)
-!!      write(lupri,*) 'Debug again after k to real'
-!          
-!
-!
-!      !if(k.eq. 1) write(lupri,*) 'First C coefficient for k = 0'
-!      !write(lupri,*) 'First C coefficients for k'
-!      !if(k .eq. 1) call write_zmatrix(kdep_tmp(k)%kcdensitymat,ndim,ndim,lupri)
-!      !call write_zmatrix(kdep_tmp(k)%kcdensitymat,ndim,ndim,lupri)
-!
-!
-!    !  write(*,*) 'C(0)'
-!    !  call write_zmatrix(pbc_it(1)%kdep_it(k)%kcdensitymat,ndim,ndim)
-!    !  stop
-!
-!
-!      !write(lupri,*) 'eigenvalues'
-!      !write(lupri,*) kdep_tmp(k)%keigv
-!  !  endif
-!
-!      write(lupri,*) 'Debug again after k '
-
-   !do i=1,numrealvec
-   !call find_latt_vectors(i,il1,il2,il3,fdim,lattice)
-   !if(abs(il1) .gt. lattice%ndmat) CYCLE
-   !if(abs(il2) .gt. lattice%ndmat) CYCLE
-   !if(abs(il3) .gt. lattice%ndmat) CYCLE
-   !write(lupri,*) 'Dmat 0l', il1,il2,il3
-   !call mat_to_full(nfdensity(i),1._realk,dmat)
-   !call pbc_matlab_print(dmat,ndim,ndim,'dmat',lupri)
-   !write(lupri,*) 'Dmat 0l', il1,il2,il3
-   !call mat_print(nfdensity(i),1,ndim,1,ndim,lupri)
-   !enddo
-   !write(*,*) 'density',nfdensity(13)%elms
-   !call pbc_densitymat_write(nfdensity,lattice,ndim,ndim,8,diis)
-!   call pbc_densitymat_write(nfdensity,lattice,ndim,ndim,8,'            ')
-!
-!   call pbc_get_onehamenergy(numrealvec,f_1,nfdensity,E_1)
-!
-!   call print_bands(bz,ndim,'band-energy')
-!   call pbc_trans_k_energy(lattice,cellenergies,nfsze,ndim,molecule%nelectrons,bz)
-!   !E_cell=E_1+E_j+E_K!+E_ff+E_nuc!+E_nn
-!   write(lupri,*) 'E(HOMO) =', cellenergies(1)
-!   write(lupri,*) 'E(LUMO) =', cellenergies(2)
-!   write(*,*) 'E(HOMO) =', cellenergies(1)
-!   write(*,*) 'E(LUMO) =', cellenergies(2)
-!   !write(lupri,*) 'Ecell =', E_cell
-!   !write(*,*) 'E electrons E_NF =', E_cell
-!
-!   !stop
-!   call pbc_free_read_matrices(lattice)
-
   allocate(latt_cell(numrealvec))
 
   call set_refcell(refcell,molecule)
@@ -1022,25 +921,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
    ENDDO
 !
-!      if(lattice%store_mats)then
-!        call pbc_rspc_to_kspc_mat(lattice,Bz,ndim,kvec,1)
-!      else
-!        realcut(1)=lattice%oneop1
-!        realcut(2)=lattice%oneop2
-!        realcut(3)=lattice%oneop3
-!
-!        ! transforms overlap to kspace
-!        call pbc_trans_mat_to_kspc(ovl,numrealvec,lattice,Bz,ndim,kvec,realcut)
-!      endif
-!
-!      call pbc_zdevectorize_mat(fock,ndim,ndim,bz%fck%zelms)
-!
-!      call pbc_zdevectorize_mat(smatk,ndim,ndim,bz%smat%zelms)
-!
-!      !diagonalizes Sk, Uk transform operators
-!      call pbc_diagonalize_ovl(smatk,bz%kpnt(k)%Uk,bz%kpnt(k)%Uinv,bz%kpnt(k)%is_singular,Ndim)
-
-
 
   k=0
   i=0 !either 0 or 1, check it, for zero no errors
@@ -1109,30 +989,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
     call pbc_fform_fck(maxmultmom,tlat,lattice%tlmax,ndim,lattice,nfdensity,nucmom,&
                    g_2,E_ff,E_nn,lupri)
     CALL LSTIMER('pbc farfield',TS,TE,LUPRI)
-
-!  if(lattice%compare_elmnts) then
-!    call COMPARE_MATRICES(lupri,ndim,numrealvec,nfsze,maxmultmom,lattice)
-!  endif
-
-!  if(k.eq. 2) then
-!    iunit=-1
-!    do n1=-3,3
-!      write(numtostring1,'(I5)') n1
-!      numtostring1=adjustl(numtostring1)
-!      mattxt='minFmatm3'//trim(numtostring1)//'00.dat'
-!        !call pbc_readopmat2(0,0,0,matris,2,'OVERLAP',.true.,.false.)
-!      CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
-!      call find_latt_index(indexx,n1,0,0,fdim,lattice,lattice%max_layer)
-!      write(iunit,*) ndim
-!      DO j=1,ndim
-!         write(iunit,*) (lattice%lvec(indexx)%fck_vec(i+(j-1)*ndim),i=1,ndim)
-!      ENDDO
-!      call lsclose(iunit,'KEEP')
-!    enddo
-!    write(*,*) 'Fock matrix written to disk'
-!    write(lupri,*) 'Fock matrix written to disk'
-!    i=2
-!  endif
 
 
   !get the fock matrices f^0l
