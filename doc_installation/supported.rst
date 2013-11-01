@@ -20,12 +20,13 @@ Tested on the following platforms
 * CrunchBang 11, GNU 4.7.2, system native BLAS/LAPACK, OpenMPI 1.6.5
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
 * Fedora 15, GNU 4.6.0, system native BLAS/LAPACK
+* Scientific Linux 6.0, GNU 4.4.4, ATLAS 64-bit version
 
 
 Compiles but does not pass all tests
 ------------------------------------
 
-* Fedora 15, Intel 11.4.191, OpenMPI 1.6.5 (failing tests: cc2_412_aux, rsp_hyperpolar, rsp_dckerr, rsp_excipolar, geoopt_dckerr)
+* Fedora 15, Intel 11.4.191, OpenMPI 1.6.5 (failing tests: cc2_r12_aux, rsp_hyperpolar, rsp_dckerr, rsp_excipolar, geoopt_dckerr)
 
 
 Compiles but untested on the following environments
