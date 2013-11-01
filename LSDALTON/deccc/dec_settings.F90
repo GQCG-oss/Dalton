@@ -566,13 +566,21 @@ contains
        call lsquit('Full singles polarization has been temporarily disabled!',-1)
     end if
 
-    if(DECinfo%full_print_frag_energies) then
-       if(DECinfo%ccmodel/=MODEL_MP2 .and. DECinfo%ccmodel/=MODEL_CCSD) then
-          print *, 'MODEL: ', DECinfo%cc_models(DECinfo%ccmodel)
-          call lsquit('Printing of fragment energies not implemented for this CC model!',-1)
-       end if
+    if(.not. DECinfo%memory_defined) then
+       write(DECinfo%output,*) 'Memory not defined for **DEC or **CC calculation!'
+       write(DECinfo%output,*) 'Please specify using .MEMORY keyword (in gigabytes)'
+       write(DECinfo%output,*) ''
+#ifdef VAR_MPI
+       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, then use'
+#else
+       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, then use'
+#endif
+       write(DECinfo%output,*) '.MEMORY'
+       write(DECinfo%output,*) '16.0'
+       write(DECinfo%output,*) ''
+       call lsquit('**DEC or **CC calculation requires specification of available memory using &
+            & .MEMORY keyword!',-1)
     end if
-
 
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
@@ -584,12 +592,6 @@ contains
        DECinfo%CCSDnosaferun = .true.
     endif
 
-
-#ifdef RELEASE
-if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=MODEL_MP2) then
-   call lsquit('Error in input: DEC scheme only implemented for MP2 model!',-1)
-end if
-#endif
 
   end subroutine check_dec_input
   

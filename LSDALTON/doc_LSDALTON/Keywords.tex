@@ -1769,7 +1769,7 @@ Furthermore, conventional coupled-cluster energies for the MP2, CC2, and CCSD mo
 
 The **DEC and **CC implementations employ massive parallelism and will be highly effective only if many computing nodes are available.
 
-\textbf{Special note}: It is highly recommended that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
+\textbf{Special note}: It is mandatory that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
 
 The **DEC and **CC sections use local orbitals by default, although the orbitals are converted to the (semi-)canonical basis when the MP2
 and CC equations are solved.
@@ -1790,9 +1790,9 @@ Thus, the higher the FOT, the smaller is the error of the DEC calculation compar
 
 \item[\Key{MEMORY}] \verb| | \newline
 \verb|<Memory in gigabytes>| \newline
-It is highly recommended to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
-If this keyword is not set, the program will try to estimate the available memory using a system call. While this will usually work fine it might fail on some architectures.
-(This keyword can also be used in **CC section).
+It is mandatory to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
+If this keyword is not set, the program will stop with a quit statement informing about an error in the LSDALTON.INP file.
+(This keyword must also be used in **CC section).
 
 
 \item[\Key{PAIRTHR}] \verb| | \newline
@@ -1880,9 +1880,9 @@ Use the frozen core approximation (can also be used in **DEC section).
 
 \item[\Key{MEMORY}] \verb| | \newline
 \verb|<Memory in gigabytes>| \newline
-It is highly recommended to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
-If this keyword is not set, the program will try to estimate the available memory using a system call. While this will usually work fine it might fail on some architectures.
-(This keyword can also be used in **DEC section).
+It is mandatory to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
+If this keyword is not set, the program will stop with a quit statement informing about an error in the LSDALTON.INP file.
+(This keyword must also be used in **DEC section).
 
 \item[\Key{CCMAXITER}]  \verb| | \newline
 Maximum number of iterations in CC solver.
