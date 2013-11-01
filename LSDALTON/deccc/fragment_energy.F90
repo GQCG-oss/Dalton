@@ -387,10 +387,7 @@ contains
     ! MODIFY FOR NEW MODEL!
     ! Two possible situations:
     ! (1) Your new model fits into the standard CC energy expression. 
-    !     In this case you should grep for
-    !     "MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION"
-    !     in the DEC files and introduce your model in the same way as the other models,
-    !     see FRAGMODEL_* in dec_typedef.F90.
+    !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
     ! (2) Your model does NOT fit into the standard CC energy expression.
     !     In this case you need to make a new atomic fragment energy subroutine and call it from
     !     here instead of calling get_atomic_fragment_energy.
@@ -962,10 +959,7 @@ contains
     ! MODIFY FOR NEW MODEL!
     ! Two possible situations:
     ! (1) Your new model fits into the standard CC energy expression. 
-    !     In this case you should grep for
-    !     "MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION"
-    !     in the DEC files and introduce your model in the same way as the other models,
-    !     see FRAGMODEL_* in dec_typedef.F90.
+    !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
     ! (2) Your model does NOT fit into the standard CC energy expression.
     !     In this case you need to make a new pair interaction energy subroutine and call it from
     !     here instead of calling get_pair_fragment_energy.
@@ -3245,7 +3239,7 @@ end subroutine optimize_atomic_fragment
 
 
 
-  ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
+  ! MODIFY FOR NEW MODEL
   !> \brief When fragment energies have been calculated, put them
   !> into the energies array according to the given model
   !> (see FRAGMODEL_* in dec_typedef.F90).

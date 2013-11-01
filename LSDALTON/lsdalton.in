@@ -176,7 +176,7 @@ export DALTON_TMPDIR
 echo
 echo "   ******************************************* "
 echo "   **** OUTPUT FROM LSDALTON SHELL SCRIPT **** "
-echo "   ****        Release 2011               **** "
+echo "   ****        Release 2013               **** "
 echo "   ******************************************* "
 echo; echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"

@@ -178,11 +178,11 @@ contains
     !> The DEC item
     type(decsettings),intent(inout) :: DECitem
 
-    DECitem%cc_models(1)='MP2     '
-    DECitem%cc_models(2)='CC2     '
-    DECitem%cc_models(3)='CCSD    '
-    DECitem%cc_models(4)='CCSD(T) '
-    DECitem%cc_models(5)='RPA     '
+    DECitem%cc_models(MODEL_MP2)='MP2     '
+    DECitem%cc_models(MODEL_CC2)='CC2     '
+    DECitem%cc_models(MODEL_CCSD)='CCSD    '
+    DECitem%cc_models(MODEL_CCSDpT)='CCSD(T) '
+    DECitem%cc_models(MODEL_RPA)='RPA     '
 
   end subroutine dec_set_model_names
 

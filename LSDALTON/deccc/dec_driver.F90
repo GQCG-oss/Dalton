@@ -751,7 +751,7 @@ contains
     end if
 
     ! MODIFY FOR NEW MODEL
-    ! Set output energy
+    ! Set output energy: We choose occupied partitioning scheme energy as general output
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! MP2, use occ energy
@@ -765,6 +765,9 @@ contains
     case(MODEL_CCSDpT)
        ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
        Ecorr = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
+    case default
+       write(DECinfo%output,*) 'main_fragment_driver: Needs implementation for model ', DECinfo%ccmodel
+       call lsquit('main_fragment_driver: Needs implementation for model!',-1)
     end select
 
     ! If singles polarization was considered, we need to
