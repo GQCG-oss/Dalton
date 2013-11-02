@@ -1292,7 +1292,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
 END subroutine INTEGRAL_INPUT
 
 #ifdef MOD_UNRELEASED
-!> \brief Read the $INFO section under **GEOHESSIAN in the input file LSDALTON.INP
+!> \brief Read the **GEOHESSIAN section in the input file LSDALTON.INP
 !> \author Patrick Merlot
 !> \date 14/09/2012
 subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
@@ -1353,7 +1353,7 @@ subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
 END subroutine GEOHESSIAN_INPUT
 #endif
 
-!> \brief Read the $INFO section under *LINSCA in input file LSDALTON.INP and set configuration structure accordingly.
+!> \brief Read the **INFO section in input file LSDALTON.INP and set configuration structure accordingly.
 !> \author S. Host
 !> \date March 2010
 SUBROUTINE config_info_input(config,lucmd,readword,word)
