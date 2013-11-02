@@ -1809,8 +1809,6 @@ contains
        ! MODIFY FOR NEW MODEL
        ! If you implement a new model, please insert call to energy routine here,
        ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
-       ! Note: This routine uses massive parallelization, if you do not want your model to use
-       ! this you do not need to make modifications here.
        EnergyForCCmodel: select case(CCmodel)
        case( MODEL_MP2 )
           ! MP2
