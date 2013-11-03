@@ -12,6 +12,7 @@ import string
 import re
 import subprocess
 import shutil
+import datetime
 
 sys.path.append('cmake')
 from argparse import ArgumentParser
@@ -333,6 +334,7 @@ def print_build_help(build_path):
 def save_setup_command(argv, build_path):
     file_name = os.path.join(build_path, 'setup_command')
     f = open(file_name, 'w')
+    f.write('# setup command was executed '+datetime.datetime.now().strftime("%d-%B-%Y %H:%M:%S"+"\n"))
     f.write(" ".join(argv[:])+"\n")
     f.close()
 
