@@ -48,6 +48,9 @@ COMPLEX(complexk)             :: phase
        phase=CMPLX(0.,(phase1+phase2+phase3),COMPLEXK)
        Bkmat%Smat%zelms=Bkmat%Smat%zelms+Armat%lvec(layer)%oper(1)%elms*exp(phase)
      endif
+     if(Armat%lvec(layer)%oper(1)%init_magic_tag .eq. mat_init_magic_value)then
+       call mat_free(Armat%lvec(layer)%oper(1))
+     endif
      
    elseif(oper .eq. 4) then
    !Coulomb
@@ -200,6 +203,11 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
      l3=int(ll%lvec(layer)%lat_coord(3))
      if((abs(l1) .le. ll%ndmat .and. abs(l2) .le. ll%ndmat)&
      & .and. abs(l3) .le. ll%ndmat) then
+
+     if(density(layer)%init_magic_tag .NE. mat_init_magic_value) THEN
+       call mat_init(density(layer),nbast,nbast)
+       call mat_zero(density(layer))
+     endif
 
      call mat_zero(tmp_density)
 
