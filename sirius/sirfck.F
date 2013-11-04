@@ -1,5 +1,7 @@
 !define SIRFCK_DEBUG
 #undef SIRFCK_DEBUG
+!define SIRFCK_MANU_SRHFX 
+#undef SIRFCK_MANU_SRHFX 
 !
 !...   Copyright (c) 2011 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -624,6 +626,15 @@ C              remove any "do exchange" bits
                EJKVSR = D0
             END IF
             EJSR = EJSR - EJKVSR ! Jsr or Jsr+Ksr from DC+DV
+!            
+#ifdef SIRFCK_MANU_SRHFX
+! Manu: write the srHFX energy when the HFEXCH option is
+! used in srDFT
+!
+            iprsrdft_save=iprsrdft
+            iprsrdft = 1
+#endif
+!
             if (iprsrdft .gt. 0 .and.
      &         nsr_dmat.eq.1 .and. HFXFAC .NE. 0.0D0) then
                CALL DZERO(WRK(KFSRAO),N2BASX)
@@ -631,10 +642,15 @@ C              remove any "do exchange" bits
                CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFSRAO),
      &                   DMAT,NSR_DMAT,ISYMDM,IFCTYP_x,WRK(KLAST),LWRK)
                EKSR = DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KFSRAO),1)
+               write(lupri,*) 'srHFX energy =', EKSR
                EJSR = EJSR - EKSR
             else
                EKSR = D0
             end if
+           
+#ifdef SIRFCK_MANU_SRHFX
+            iprsrdft = iprsrdft_save ! restore
+#endif
 !
 ! Finished with short-range Hartree and normal HF exchange term,
 ! now for any spin density exchange term:
