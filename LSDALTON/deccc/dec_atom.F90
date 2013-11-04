@@ -4425,6 +4425,7 @@ if(DECinfo%PL>0) then
     jobs%atom2(1:nold) = oldjobs%atom2(1:nold)
     jobs%jobsize(1:nold) = oldjobs%jobsize(1:nold)
     jobs%jobsdone(1:nold) = oldjobs%jobsdone(1:nold)
+    jobs%dofragopt(1:nold) = oldjobs%dofragopt(1:nold)
     jobs%nslaves(1:nold) = oldjobs%nslaves(1:nold)
     jobs%nocc(1:nold) = oldjobs%nocc(1:nold)
     jobs%nunocc(1:nold) = oldjobs%nunocc(1:nold)
@@ -4605,6 +4606,7 @@ if(DECinfo%PL>0) then
     jobscopy%atom2 = jobs%atom2
     jobscopy%jobsize = jobs%jobsize
     jobscopy%jobsdone = jobs%jobsdone
+    jobscopy%dofragopt = jobs%dofragopt
     jobscopy%nslaves = jobs%nslaves
     jobscopy%nocc = jobs%nocc
     jobscopy%nunocc = jobs%nunocc
