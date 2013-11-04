@@ -234,258 +234,262 @@ contains
 !> for those  fragments requested by main master.
 !> \author Kasper Kristensen
 !> \date May 2012
-subroutine fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
-     & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
+  subroutine fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
+       & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
 
-  implicit none
+    implicit none
 
-  !> Number of atoms in the molecule
-  integer,intent(in) :: natoms
-  !> Number of occupied orbitals in the molecule
-  integer,intent(in) :: nocc
-  !> Number of unoccupied orbitals in the molecule
-  integer,intent(in) :: nunocc
-  !> Occupied orbitals, DEC format
-  type(decorbital),intent(in) :: OccOrbitals(nocc)
-  !> Unoccupied orbitals, DEC format
-  type(decorbital),intent(in) :: UnoccOrbitals(nunocc)
-  !> Full molecular info (not changed at output)
-  type(fullmolecule),intent(inout) :: MyMolecule
-  !> LS item structure
-  type(lsitem),intent(inout) :: MyLsitem
-  !> Atomic fragments
-  type(decfrag),dimension(natoms),intent(inout) :: AtomicFragments
-  !> Job list for  fragments
-  type(joblist),intent(inout) :: jobs
-  type(joblist) :: singlejob
-  type(decfrag) :: PairFragment
-  type(decfrag) :: MyFragment
-  integer :: job,atomA,atomB,i,slavejob,ntasks
-  real(realk) :: flops_slaves
-  type(mp2grad) :: grad
-  logical :: morejobs, divide, split,only_update
-  real(realk) :: fragenergy(ndecenergies),tottime
-  real(realk) :: t1cpu, t2cpu, t1wall, t2wall
-  real(realk) :: t1cpuacc, t2cpuacc, t1wallacc, t2wallacc
-  real(realk) :: flops
-  integer(kind=ls_mpik) :: master
-  master = 0
-  fragenergy=0.0_realk
-  only_update=.true.
+    !> Number of atoms in the molecule
+    integer,intent(in) :: natoms
+    !> Number of occupied orbitals in the molecule
+    integer,intent(in) :: nocc
+    !> Number of unoccupied orbitals in the molecule
+    integer,intent(in) :: nunocc
+    !> Occupied orbitals, DEC format
+    type(decorbital),intent(in) :: OccOrbitals(nocc)
+    !> Unoccupied orbitals, DEC format
+    type(decorbital),intent(in) :: UnoccOrbitals(nunocc)
+    !> Full molecular info (not changed at output)
+    type(fullmolecule),intent(inout) :: MyMolecule
+    !> LS item structure
+    type(lsitem),intent(inout) :: MyLsitem
+    !> Atomic fragments
+    type(decfrag),dimension(natoms),intent(inout) :: AtomicFragments
+    !> Job list for  fragments
+    type(joblist),intent(inout) :: jobs
+    type(joblist) :: singlejob
+    type(decfrag) :: PairFragment
+    type(decfrag) :: MyFragment
+    integer :: job,atomA,atomB,i,slavejob,ntasks
+    real(realk) :: flops_slaves
+    type(mp2grad) :: grad
+    logical :: morejobs, divide, split,only_update
+    real(realk) :: fragenergy(ndecenergies),tottime
+    real(realk) :: t1cpu, t2cpu, t1wall, t2wall
+    real(realk) :: t1cpuacc, t2cpuacc, t1wallacc, t2wallacc
+    real(realk) :: flops
+    integer(kind=ls_mpik) :: master
+    master = 0
+    fragenergy=0.0_realk
+    only_update=.true.
 
-  call LSTIMER('START',t1cpuacc,t1wallacc,DECinfo%output)
-
-
-
-  ! ********************************************************************
-  ! *               POST-FRAGOPT FRAGMENT CALCULATIONS                 *
-  ! ********************************************************************
-
-  ! Local master asks main master for fragment jobs
-  slavejob=QUITMOREJOBS
-  divide=.true.
-
-  ! Send empty job in first round
-  job=0
-  morejobs=.true.
-  ! Job list containing only a single job which will be overwritten in each new fragment calculation
-  call init_joblist(1,singlejob)
+    call LSTIMER('START',t1cpuacc,t1wallacc,DECinfo%output)
 
 
-  AskForJob: do while(morejobs)
+
+    ! ********************************************************************
+    ! *               POST-FRAGOPT FRAGMENT CALCULATIONS                 *
+    ! ********************************************************************
+
+    ! Local master asks main master for fragment jobs
+    slavejob=QUITMOREJOBS
+    divide=.true.
+
+    ! Send empty job in first round
+    job=0
+    morejobs=.true.
+    ! Job list containing only a single job which will be overwritten in each new fragment calculation
+    call init_joblist(1,singlejob)
 
 
-     ! Send finished job to master
-     ! ***************************
-     ! (If job=0 it is an empty job not containing any real information)
-     call ls_mpisendrecv(job,MPI_COMM_LSDALTON,infpar%mynum,master)
-
-     ! If real job: Send info to master
-     SendToMaster: if(job>0) then
-
-        ! Update stuff (same for single and pair)
-        ! ***************************************
-
-        FragoptCheck1: if(singlejob%dofragopt(1)) then  
-           ! Job is fragment optimization --> send atomic fragment info to master
-           call mpi_send_recv_single_fragment(MyFragment,MPI_COMM_LSDALTON,&
-                & infpar%mynum,master,singlejob)
-           call atomic_fragment_free_simple(MyFragment)
-
-        else
-
-           ! No fragment optimization done --> send fragment energy to master
-
-           if(DECinfo%first_order) then ! also send density,gradient
-              call mpi_send_recv_mp2grad(MPI_COMM_LSDALTON,infpar%mynum,master,&
-                   & grad,fragenergy,singlejob,only_update)
-              call free_mp2grad(grad)
-           else ! just energy
-              call mpi_send_recv_fragmentenergy(MPI_COMM_LSDALTON,infpar%mynum,master,&
-                   & fragenergy,singlejob)
-           end if
-
-        end if FragoptCheck1
+    AskForJob: do while(morejobs)
 
 
-     end if SendToMaster
+       ! Send finished job to master
+       ! ***************************
+       ! (If job=0 it is an empty job not containing any real information)
+       call ls_mpisendrecv(job,MPI_COMM_LSDALTON,infpar%mynum,master)
+
+       ! If real job: Send info to master
+       SendToMaster: if(job>0) then
+
+          ! Update stuff (same for single and pair)
+          ! ***************************************
+
+          FragoptCheck1: if(jobs%dofragopt(job)) then  
+             ! Job is fragment optimization --> send atomic fragment info to master
+             call mpi_send_recv_single_fragment(MyFragment,MPI_COMM_LSDALTON,&
+                  & infpar%mynum,master,singlejob)
+             call atomic_fragment_free_simple(MyFragment)
+
+          else
+
+             ! No fragment optimization done --> send fragment energy to master
+
+             if(DECinfo%first_order) then ! also send density,gradient
+                call mpi_send_recv_mp2grad(MPI_COMM_LSDALTON,infpar%mynum,master,&
+                     & grad,fragenergy,singlejob,only_update)
+                call free_mp2grad(grad)
+             else ! just energy
+                call mpi_send_recv_fragmentenergy(MPI_COMM_LSDALTON,infpar%mynum,master,&
+                     & fragenergy,singlejob)
+             end if
+
+          end if FragoptCheck1
 
 
-     ! Receive new job task
-     ! ********************
-     call ls_mpisendrecv(job,MPI_COMM_LSDALTON,master,infpar%mynum)
-
-     ! Carry out fragment optimization (job>0), or finish if all jobs are done (job=-1)
-     ! ********************************************************************************
-     DoJob: IF(job==-1) then
-        call LSTIMER('START',t2cpuacc,t2wallacc,DECinfo%output)
-        print '(a,i6,a,g14.6)', 'Slave ', infpar%mynum, ' exits  fragments. Time: ',&
-             & t2wallacc-t1wallacc
-        morejobs=.false.
-     else
-
-        ! Timing and flops
-        call LSTIMER('START',t1cpu,t1wall,DECinfo%output)
-        call start_flop_counter()
-
-        atomA=jobs%atom1(job)
-        atomB=jobs%atom2(job)
-
-        ! Find number of tasks required by integral program
-        ! *************************************************
-        if(atomA==atomB) then ! single fragment
-
-           ! Init basis for fragment
-           call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
-                & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
-
-           call get_number_of_integral_tasks_for_mpi(AtomicFragments(atomA),ntasks)
-        else ! pair fragment
-
-           ! init pair
-           call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
-                & MyMolecule,mylsitem,.true.,PairFragment)
-           call get_number_of_integral_tasks_for_mpi(PairFragment,ntasks)
-
-        end if
-
-        ! Divide local group into two smaller groups if:
-        ! number of tasks < (#nodes in local group)*(magic factor)
-        !
-        ! The magic factor (DECinfo%MPIsplit) should in general be larger than 1, 
-        ! and it can be changed by .MPIsplit keyword.
-        !
-        ! Thus, we obtain optimal MPI performance for the individual fragment
-        ! calculations if the number of tasks is significantly larger
-        ! than the number of nodes in the local group.
-        ! Also check that the local group is larger than just 1 node.
-        !
-
-        split=.false.
-        divide=.true.
-        ! Special case: Never divide for fragment optimization
-        if(jobs%dofragopt(job)) divide=.false.
-
-        DoDivide: do while(divide)
-           if( (ntasks < infpar%lg_nodtot*DECinfo%MPIsplit) .and. (infpar%lg_nodtot>1)  ) then
-
-              print '(a,4i8)', 'DIVIDE! Job, tasks, mynode, #nodes: ', &
-                   & job,ntasks,infpar%mynum,infpar%lg_nodtot
-
-              ! Kick slaves out of local group
-              call ls_mpibcast(slavejob,master,infpar%lg_comm)
-
-              ! Divide local group into two smaller groups
-              call dec_half_local_group
-              split=.true.
-           else
-              divide=.false.
-           end if
-        end do DoDivide
-
-        print '(a,i8,a,i8)', 'Slave ', infpar%mynum, ' will do  job ', job
-
-        ! Communicator in setting may have changed due to division of local group
-        ! Ensure that the correct local communicator is used.
-        if(split) then
-           if(atomA==atomB) then
-              AtomicFragments(atomA)%mylsitem%setting%comm = infpar%lg_comm
-           else
-              PairFragment%mylsitem%setting%comm = infpar%lg_comm
-           end if
-        end if
+       end if SendToMaster
 
 
-        ! RUN FRAGMENT CALCULATION
-        ! ************************
+       ! Receive new job task
+       ! ********************
+       call ls_mpisendrecv(job,MPI_COMM_LSDALTON,master,infpar%mynum)
 
-        FragoptCheck2: if(jobs%dofragopt(job)) then
-           ! Sanity check
-           if(atomA/=atomB) then
-              call lsquit('fragments_slave: Fragment optimization requested for pair fragment!',-1)
-           end if
+       ! Carry out fragment optimization (job>0), or finish if all jobs are done (job=-1)
+       ! ********************************************************************************
+       DoJob: IF(job==-1) then
+          call LSTIMER('START',t2cpuacc,t2wallacc,DECinfo%output)
+          print '(a,i6,a,g14.6)', 'Slave ', infpar%mynum, ' exits  fragments. Time: ',&
+               & t2wallacc-t1wallacc
+          morejobs=.false.
+       else
 
-           ! Fragment optimization
-           call optimize_atomic_fragment(atomA,MyFragment,MyMolecule%nAtoms, &
-                & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
-                & MyMolecule,mylsitem,.true.)
-           call copy_fragment_info_job(MyFragment,singlejob)
+          ! Timing and flops
+          call LSTIMER('START',t1cpu,t1wall,DECinfo%output)
+          call start_flop_counter()
 
-        else
+          atomA=jobs%atom1(job)
+          atomB=jobs%atom2(job)
+
+          ! Find number of tasks required by integral program
+          ! *************************************************
+          if(atomA==atomB) then ! single fragment
+             FragoptCheck2: if(.not. jobs%dofragopt(job)) then
+                ! Init basis for fragment
+                call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
+                     & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
+
+                call get_number_of_integral_tasks_for_mpi(AtomicFragments(atomA),ntasks)
+             else
+                ! Set ntasks to be huge such that no division occur (double-checked) for fragment opt.
+                ntasks=huge(ntasks)
+             end if FragoptCheck2
+          else ! pair fragment
+
+             ! init pair
+             call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
+                  & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
+                  & MyMolecule,mylsitem,.true.,PairFragment)
+             call get_number_of_integral_tasks_for_mpi(PairFragment,ntasks)
+
+          end if
+
+          ! Divide local group into two smaller groups if:
+          ! number of tasks < (#nodes in local group)*(magic factor)
+          !
+          ! The magic factor (DECinfo%MPIsplit) should in general be larger than 1, 
+          ! and it can be changed by .MPIsplit keyword.
+          !
+          ! Thus, we obtain optimal MPI performance for the individual fragment
+          ! calculations if the number of tasks is significantly larger
+          ! than the number of nodes in the local group.
+          ! Also check that the local group is larger than just 1 node.
+          !
+
+          split=.false.
+          divide=.true.
+          ! Special case: Never divide for fragment optimization
+          if(jobs%dofragopt(job)) divide=.false.
+
+          DoDivide: do while(divide)
+             if( (ntasks < infpar%lg_nodtot*DECinfo%MPIsplit) .and. (infpar%lg_nodtot>1)  ) then
+
+                print '(a,4i8)', 'DIVIDE! Job, tasks, mynode, #nodes: ', &
+                     & job,ntasks,infpar%mynum,infpar%lg_nodtot
+
+                ! Kick slaves out of local group
+                call ls_mpibcast(slavejob,master,infpar%lg_comm)
+
+                ! Divide local group into two smaller groups
+                call dec_half_local_group
+                split=.true.
+             else
+                divide=.false.
+             end if
+          end do DoDivide
+
+          print '(a,i8,a,i8)', 'Slave ', infpar%mynum, ' will do  job ', job
+
+          ! Communicator in setting may have changed due to division of local group
+          ! Ensure that the correct local communicator is used.
+          if(split) then
+             if(atomA==atomB) then
+                AtomicFragments(atomA)%mylsitem%setting%comm = infpar%lg_comm
+             else
+                PairFragment%mylsitem%setting%comm = infpar%lg_comm
+             end if
+          end if
 
 
-           SingleOrPair: if( atomA == atomB ) then ! single  fragment
+          ! RUN FRAGMENT CALCULATION
+          ! ************************
 
-              call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                   & AtomicFragments(atomA),grad=grad)
-              flops_slaves = AtomicFragments(atomA)%flops_slaves
-              tottime = AtomicFragments(atomA)%slavetime ! time used by all local slaves
-              fragenergy = AtomicFragments(atomA)%energies
-              call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
-              call atomic_fragment_free_basis_info(AtomicFragments(atomA))
+          FragoptCheck3: if(jobs%dofragopt(job)) then
+             ! Sanity check
+             if(atomA/=atomB) then
+                call lsquit('fragments_slave: Fragment optimization requested for pair fragment!',-1)
+             end if
 
-           else ! pair  fragment
+             ! Fragment optimization
+             call optimize_atomic_fragment(atomA,MyFragment,MyMolecule%nAtoms, &
+                  & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
+                  & MyMolecule,mylsitem,.true.)
+             call copy_fragment_info_job(MyFragment,singlejob)
 
-              call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                   & AtomicFragments(atomA), AtomicFragments(atomB), &
-                   & natoms,PairFragment,grad)
-              flops_slaves = PairFragment%flops_slaves
-              tottime = PairFragment%slavetime ! time used by all local slaves
-              fragenergy=PairFragment%energies
-
-              call copy_fragment_info_job(PairFragment,singlejob)
-              ! Free pair
-              call atomic_fragment_free(PairFragment)
-
-           end if SingleOrPair
-
-        end if FragoptCheck2
+          else
 
 
-        ! Set fragment job info
-        ! *********************
-        call LSTIMER('START',t2cpu,t2wall,DECinfo%output)
-        call end_flop_counter(flops) ! flops for local master
-        singlejob%LMtime(1) = t2wall - t1wall  ! wall time used by local master
-        tottime = tottime + singlejob%LMtime(1) ! total time for all local slaves and local master
-        singlejob%flops(1) = flops + flops_slaves  ! FLOPS for local master + local slaves
-        singlejob%nslaves(1) = infpar%lg_nodtot ! Sizes of local slot (local master + local slaves)
-        ! load distribution: { tottime / time(local master) } / number of nodes (ideally 1.0)
-        singlejob%load(1) = (tottime/singlejob%LMtime(1))/real(singlejob%nslaves(1))
-        singlejob%jobsdone(1) = .true.
+             SingleOrPair: if( atomA == atomB ) then ! single  fragment
 
-        print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
-             & job, singlejob%LMtime(1)
-     end if DoJob
+                call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+                     & AtomicFragments(atomA),grad=grad)
+                flops_slaves = AtomicFragments(atomA)%flops_slaves
+                tottime = AtomicFragments(atomA)%slavetime ! time used by all local slaves
+                fragenergy = AtomicFragments(atomA)%energies
+                call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
+                call atomic_fragment_free_basis_info(AtomicFragments(atomA))
+
+             else ! pair  fragment
+
+                call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+                     & AtomicFragments(atomA), AtomicFragments(atomB), &
+                     & natoms,PairFragment,grad)
+                flops_slaves = PairFragment%flops_slaves
+                tottime = PairFragment%slavetime ! time used by all local slaves
+                fragenergy=PairFragment%energies
+
+                call copy_fragment_info_job(PairFragment,singlejob)
+                ! Free pair
+                call atomic_fragment_free(PairFragment)
+
+             end if SingleOrPair
+
+          end if FragoptCheck3
 
 
-  end do AskForJob
+          ! Set fragment job info
+          ! *********************
+          call LSTIMER('START',t2cpu,t2wall,DECinfo%output)
+          call end_flop_counter(flops) ! flops for local master
+          singlejob%LMtime(1) = t2wall - t1wall  ! wall time used by local master
+          tottime = tottime + singlejob%LMtime(1) ! total time for all local slaves and local master
+          singlejob%flops(1) = flops + flops_slaves  ! FLOPS for local master + local slaves
+          singlejob%nslaves(1) = infpar%lg_nodtot ! Sizes of local slot (local master + local slaves)
+          ! load distribution: { tottime / time(local master) } / number of nodes (ideally 1.0)
+          singlejob%load(1) = (tottime/singlejob%LMtime(1))/real(singlejob%nslaves(1))
+          singlejob%jobsdone(1) = .true.
+
+          print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
+               & job, singlejob%LMtime(1)
+       end if DoJob
 
 
-  call free_joblist(singlejob)
+    end do AskForJob
 
-end subroutine fragments_slave
+
+    call free_joblist(singlejob)
+
+  end subroutine fragments_slave
 
 
 !> \brief Get number of tasks in integral loop (nalpha*ngamma)

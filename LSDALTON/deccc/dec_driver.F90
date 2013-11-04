@@ -427,6 +427,7 @@ contains
     ! Initialize job list for atomic fragment optimizations
     ! HACK
     DECinfo%pair_distance_threshold=0.0_realk
+    calcAF=.true.
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
     jobs%dofragopt=.true. ! HACK
@@ -1007,8 +1008,6 @@ contains
              ! Job is fragment optimization --> receive atomic fragment info from slave
              call mpi_send_recv_single_fragment(AtomicFragments(jobdone),MPI_COMM_LSDALTON,&
                   & sender,master,singlejob)
-             ! Save fragment info to file atomicfragments.info
-             call add_fragment_to_file(AtomicFragments(jobdone),jobs)
 
           else
 
@@ -1028,6 +1027,10 @@ contains
 
           ! Put received job into total job list at position "jobdone"
           call put_job_into_joblist(singlejob,jobdone,jobs)
+          FragoptCheck2: if(jobs%dofragopt(jobdone)) then
+             ! Save fragment info to file atomicfragments.info
+             call add_fragment_to_file(AtomicFragments(jobdone),jobs)
+          end if FragoptCheck2
           ! Done with single job for now
           call free_joblist(singlejob)
 
