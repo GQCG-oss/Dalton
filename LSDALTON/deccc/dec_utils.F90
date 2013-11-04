@@ -4290,16 +4290,13 @@ retval=0
     case default
        ! MODIFY FOR NEW MODEL
        ! If you implement new model, please print the fragment energies here,
-       ! see decfrag type def. to determine the number for your model (see FRAGMODEL_* definitions
-       ! in dec_typedef.F90).
+       ! see FRAGMODEL_* definitions in dec_typedef.F90.
        write(DECinfo%output,*) 'WARNING: print_all_fragment_energies needs implementation &
             & for model: ', DECinfo%ccmodel
     end select
 
     ! MODIFY FOR NEW CORRECTION
-    ! E.g. for F12:
     if(DECInfo%F12) then
-
        print *, "(DEC_driver) Total energy for MP2-F12: ", energies(FRAGMODEL_F12)
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a,g20.10)') 'MP2F12-V_gr_term occupied correlation energy : ', energies(FRAGMODEL_F12)

@@ -122,7 +122,7 @@ contains
 
     ! Remaining local slaves should exit local slave routine (but there will be more jobs)
     job=QUITMOREJOBS
-    if(infpar%lg_mynum==0 .and. infpar%lg_nodtot>1) then
+    if(infpar%lg_mynum==master .and. infpar%lg_nodtot>1) then
        call ls_mpibcast(job,master,infpar%lg_comm)
     end if
 
@@ -181,7 +181,7 @@ contains
     call init_mpi_groups(groupsize,DECinfo%output)
 
     ! Local master/slave assigment might have changed - reset
-    if(infpar%lg_mynum/=0) then ! local slave
+    if(infpar%lg_mynum/=master) then ! local slave
        localslave=.true.
     else ! local master
        localslave = .false.
@@ -199,7 +199,7 @@ contains
        !
        ! 1. lg_morejobs=.true.
        ! There are more jobs to be done - divide local group, and then go back to local slave position
-       ! unless this rank has become a new local master (infpar%lg_mynum=0)
+       ! unless this rank has become a new local master (infpar%lg_mynum=master)
        !
        ! 2. lg_morejobs=.false.
        ! There are no more jobs to be done - quit do-loop regardless of current rank number
@@ -210,8 +210,8 @@ contains
        ! (redefine globals infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm)
        call dec_half_local_group
 
-       ! Check if the current rank has become a local master (rank=0 within local group)
-       if(infpar%lg_mynum==0) localslave=.false.
+       ! Check if the current rank has become a local master (rank=master within local group)
+       if(infpar%lg_mynum==master) localslave=.false.
 
     end do
 
@@ -223,7 +223,7 @@ contains
 
     ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
     job=QUITNOMOREJOBS
-    if(infpar%lg_mynum==0 .and. infpar%lg_nodtot>1) then
+    if(infpar%lg_mynum==master .and. infpar%lg_nodtot>1) then
        call ls_mpibcast(job,master,infpar%lg_comm)
     end if
 
@@ -503,12 +503,12 @@ subroutine fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
         ! Divide local group into two smaller groups if:
         ! number of tasks < (#nodes in local group)*(magic factor)
         !
-        ! The magic factor is 10 by default and can be changed by .MPIsplit keyword.
+        ! The magic factor (DECinfo%MPIsplit) should in general be larger than 1, 
+        ! and it can be changed by .MPIsplit keyword.
         !
         ! Thus, we obtain optimal MPI performance for the individual fragment
         ! calculations if the number of tasks is significantly larger
         ! than the number of nodes in the local group.
-        ! (The factor 10 is a "rule-of-thumb").
         ! Also check that the local group is larger than just 1 node.
 
         split=.false.

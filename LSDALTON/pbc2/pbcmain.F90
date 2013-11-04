@@ -153,14 +153,14 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   write(*,*) 'Number of k points', Bz%nk
   write(lupri,*) 'Number of k points', Bz%nk
 
-  call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
-  nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)
-  write(*,*) 'nfsize: ',nfsze
-  write(lupri,*) 'nfsize: ',nfsze
+!  call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
+!  nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)
+  !write(*,*) 'nfsize: ',nfsze
+  !write(lupri,*) 'nfsize: ',nfsze
   call mem_alloc(nfdensity,num_latvectors)
-  call mem_alloc(f_1,num_latvectors)
-  call mem_alloc(Ovl,num_latvectors)
-  call mem_alloc(g_2,num_latvectors)
+!  call mem_alloc(f_1,num_latvectors)
+!  call mem_alloc(Ovl,num_latvectors)
+!  call mem_alloc(g_2,num_latvectors)
     k=0
     l1=0
     l2=0
@@ -224,6 +224,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
   write(*,*) 'density written to LSDALTON.OUT'
 
+
   elseif(lattice%read_file) then
 
         call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
@@ -250,6 +251,74 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         CALL lsCLOSE(IUNIT,'KEEP')
   
         Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+
+    elseif(lattice%testcase) THEN !THIS IS FOR DEBUGGING
+      iunit = 345
+      scfit=1
+    !  write(string1,'(I5)')  scfit
+    !  string1=adjustl(string1)
+    !  write(numtostring1,'(I5)')  l1
+    !  write(numtostring2,'(I5)')  l2
+    !  write(numtostring3,'(I5)')  l3
+    !  numtostring1=adjustl(numtostring1)
+    !  numtostring2=adjustl(numtostring2)
+    !  numtostring3=adjustl(numtostring3)
+
+    !  write(*,*) string1,numtostring1,numtostring2,numtostring3
+
+    !  write(mattxt,'(A20)') 'PBCDMAT'//trim(string1)//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)
+
+
+      call find_latt_index(k,0,0,0,fdim,lattice,lattice%max_layer)
+      !do i=1,num_latvectors
+      !  call init_lvec_data(lattice%lvec(i),nbast)
+      !enddo
+      call mem_alloc(lattice%lvec(k)%d_mat,nbast,nbast)
+      if(.not.lattice%read_file) then
+        write(lupri,*) 'READING density mat'
+        lattice%lvec(k)%d_mat(1,1)=0.18197943668877323D0
+        lattice%lvec(k)%d_mat(1,2)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(1,3)=0.18197943668877323D0
+        lattice%lvec(k)%d_mat(1,4)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(2,1)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(2,2)=0.44350182805060839D0
+        lattice%lvec(k)%d_mat(2,3)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(2,4)=0.44350182805060839D0
+        lattice%lvec(k)%d_mat(3,1)=0.18197943668877323D0
+        lattice%lvec(k)%d_mat(3,2)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(3,3)=0.18197943668877323D0
+        lattice%lvec(k)%d_mat(3,4)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(4,1)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(4,2)=0.44350182805060839D0
+        lattice%lvec(k)%d_mat(4,3)=0.28409190914049431D0
+        lattice%lvec(k)%d_mat(4,4)=0.44350182805060839D0
+        Call mat_set_from_full(lattice%lvec(k)%d_mat,1.D0,nfdensity(k))
+        call mem_dealloc(lattice%lvec(k)%d_mat)
+      else
+        mattxt=adjustl(lattice%debugdensfile)
+        mattxt=trim(mattxt)
+        write(*,*) mattxt
+        CALL lsOPEN(IUNIT,mattxt,'old','UNFORMATTED')
+        !OPEN(UNIT=iunit,FILE=trim(mattxt),STATUS='OLD',IOSTAT=ierror)
+        read(iunit) nbasterik
+        if(nbasterik .ne. nbast) then
+          write(*,*) 'Not the right dimensions for the density matrix'
+          write(*,*) 'are you sure you have the same basis or molecule?'
+          write(lupri,*) 'Not the right dimensions for the density matrix'
+          write(lupri,*) 'are you sure you have the same basis or molecule?'
+          call LSquit('Not correct dimension in density matrix',lupri)
+        endif
+        DO j=1,nbasterik
+         read(iunit) (lattice%lvec(k)%d_mat(i,j),i=1,nbasterik)
+        ENDDO
+        CALL lsCLOSE(IUNIT,'KEEP')
+
+      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+      Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+      !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
+      call mem_dealloc(lattice%lvec(k)%d_mat)
+    endif
+        
 
 else
 
@@ -283,6 +352,7 @@ else
       !do i=1,num_latvectors
       !  call init_lvec_data(lattice%lvec(i),nbast)
       !enddo
+      call mem_alloc(lattice%lvec(k)%d_mat,nbast,nbast)
       if(.not.lattice%read_file) then
         lattice%lvec(k)%d_mat(1,1)=0.18197943668877323D0
         lattice%lvec(k)%d_mat(1,2)=0.28409190914049431D0
@@ -333,6 +403,7 @@ else
       enddo
       write(*,*) 'density used'
       !call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast)
+      call mem_dealloc(lattice%lvec(n1)%d_mat)
 
     else !TESTCASE
 
@@ -349,52 +420,18 @@ else
 #endif
 
 #ifdef DEBUGPBC
-      write(lupri,*) 'density used'
-      call mat_to_full(nfdensity(n1), 1.0_realk,lattice%lvec(n1)%d_mat)
-      call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast,lupri)
-      write(*,*) 'density used'
+      !write(lupri,*) 'density used'
+      !call mat_to_full(nfdensity(n1), 1.0_realk,lattice%lvec(n1)%d_mat)
+      !call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast,lupri)
+      !write(*,*) 'density used'
       write(lupri,*) 'Density first'
       call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
 #endif
 
-  CALL LSTIMER('START ',TS,TE,LUPRI)
-  call pbc_overlap_k(lupri,luerr,setting,input%molecule,nbast,&
-      lattice,latt_cell,refcell,num_latvectors,ovl)
-  CALL LSTIMER('pbc_overlap_k',TS,TE,LUPRI)
- 
-  !CALCULATES kinetic energy of electrons
-  CALL LSTIMER('START ',TS,TE,LUPRI)
-  call pbc_kinetic_k(lupri,luerr,setting,input%molecule,nbast,&
-   lattice,latt_cell,refcell,num_latvectors,nfdensity,f_1,E_kin)
-  CALL LSTIMER('pbc_kinetic_k',TS,TE,LUPRI)
-
-  !CALCULATES electron nuclei attraction
-  CALL LSTIMER('START ',TS,TE,LUPRI)
-  call pbc_nucattrc_k(lupri,luerr,setting,input%molecule,nbast,&
-     lattice,latt_cell,refcell,num_latvectors,nfdensity,f_1,E_en)
-  CALL LSTIMER('pbc_nucattrc_k',TS,TE,LUPRI)
-
-  !CALCULATES nuclear repulsion
-  CALL LSTIMER('START ',TS,TE,LUPRI)
-  CALL pbc_nucpot(lupri,luerr,setting,input%molecule,lattice,&
-                  latt_cell,refcell,num_latvectors,E_nuc)
-  CALL LSTIMER('pbc_nucpot',TS,TE,LUPRI)
-
-  
+  !Preparation for the far field contribution, setup multipole
+  !moments and the Tlattice
   maxmultmom=lattice%lmax
   Tlmax=lattice%Tlmax
-  
-
-  !CALL LSTIMER('START ',TS,TE,LUPRI)
-  !call find_cutoff_twop(lupri,luerr,setting,nbast,lattice,&
-  !            latt_cell, refcell,num_latvectors,nfdensity)
-  !CALL LSTIMER('pbc_find_twop',TS,TE,LUPRI)
- 
-
-  CALL LSTIMER('START ',TS,TE,LUPRI)
-  call pbc_electron_rep_k(lupri,luerr,setting,input%molecule,nbast,&
-     lattice,latt_cell,refcell,num_latvectors,nfdensity,g_2,E_J)
-  CALL LSTIMER('pbc Coul',TS,TE,LUPRI)
 
   CALL LSTIMER('START ',TS,TE,LUPRI)
   call pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,&
@@ -403,75 +440,21 @@ else
   
   call mem_alloc(Tlat,(Tlmax+1)**2,(Tlmax+1)**2)
 
+  write(*,*) 'density used ',num_latvectors
   call pbc_controlmm(20,Tlat,Tlmax,maxmultmom,.false.,lattice%ldef%avec,&
-     nbast,lupri,nfdensity,num_latvectors,nfsze,lattice,g_2,E_ff,E_nnff,refcell)
-
-  CALL LSTIMER('START ',TS,TE,LUPRI)
-  call pbc_exact_xc_k(lupri,luerr,setting,input%molecule,nbast,&
-     lattice,latt_cell,refcell,num_latvectors,nfdensity,g_2,E_K)
-  CALL LSTIMER('pbc Xchange',TS,TE,LUPRI)
-
-  write(lupri,*) 'nlayers exch',lattice%kx1,lattice%kx2,lattice%kx3
-  write(*,*) 'nlayers exch',lattice%kx1,lattice%kx2,lattice%kx3
-
-  lattice%fc1=max(lattice%oneop1,lattice%col1)
-  lattice%fc1=max(lattice%fc1,lattice%Kx1)
-  lattice%fc2=max(lattice%oneop2,lattice%col2)
-  lattice%fc2=max(lattice%fc2,lattice%Kx2)
-  lattice%fc3=max(lattice%oneop3,lattice%col3)
-  lattice%fc3=max(lattice%fc3,lattice%Kx3)
-
-
-!  DO n1=1,Bz%nk
-!  call pbc_zdevectorize_mat(kdep(n1)%kfockmat,nbast,nbast,kdep(n1)%kfockvec)
-!  call pbc_zdevectorize_mat(kdep(n1)%koverlapmat,nbast,nbast,kdep(n1)%koverlapvec)
-!  ENDDO
-
-  do i=1,num_latvectors
-     if(nfdensity(i)%init_magic_tag.NE.mat_init_magic_value) CYCLE
-     call mat_free(nfdensity(i))
-  enddo
-  call mem_dealloc(nfdensity)
+     nbast,lupri,nfdensity,num_latvectors,lattice,E_ff,E_nnff,refcell)
 
 #ifdef DEBUGPBC
   if(lattice%compare_elmnts) then
-    write(*,*) 'hei'
+    !write(*,*) 'hei'
     call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
     num_latvectors,latt_cell,nfsze,maxmultmom,bz,tlat,lupri,luerr)
   endif
 
-    focknorm=0.0d0
-    write(lupri,*) num_latvectors
-     do i=1,num_latvectors
-      do j=1,nbast*nbast
-         focknorm=focknorm + lattice%lvec(i)%fck_vec(j)**2
-      enddo
-     enddo
 #endif
-    !CALL lsOPEN(IUNIT,'pbch2_t.dat','UNKNOWN','FORMATTED')
-    E_cell=E_kin+E_en+E_J+E_K+E_ff+E_nuc+E_nnff
     write(lupri,'(A,I4)') 'numbers of lattice vectors', num_latvectors
     write(lupri,'(A,I8)') 'number of basis', nbast
-#ifdef DEBUGPBC
-    write(lupri,'(A,F16.6)')  'Norm of fock matrix', focknorm
-#endif
-    write(lupri,'(A,F16.6)')  'Cell energy', E_cell
-    write(lupri,'(A,F16.6)')  'Electronic energy', E_cell-E_nuc-E_ff-E_K-E_nnff
-    write(lupri,'(A,F16.6)')  'Nuclear repulsion energy', E_nuc
-    write(lupri,'(A,F16.6)')  'N. F. Coulomb energy', E_J
-    write(lupri,'(A,F16.6)')  'Exact xch energy', E_K
-    write(lupri,'(A,F16.6)')  'Far field', E_ff+E_nnff
-    write(*,'(A,F16.6)')  'N. F. Coulomb energy', E_J
-    write(*,'(A,F16.6)')  'Exact xch energy', E_K
-    write(*,'(A,F16.6,X,F16.6)')  'Far field', E_ff, E_nnff
-    write(*,*)  'Far field', E_ff, E_nnff
-    write(*,'(A,F16.6)')  'Cell energy', E_cell
-    write(*,'(A,F16.6,X,F16.6,X,F16.6)')  'one part energy', E_kin+E_en,E_kin,E_en
-    write(*,'(A,F16.6)')  'Electronic energy', E_cell-E_nnff-E_ff-E_K-E_nuc
-    write(*,'(A,F16.6)')  'Nuclear repulsion energy', E_nuc
-    !CALL lsCLOSE(IUNIT,'KEEP')
     
-
   if(lattice%compare_elmnts) then
 
     allocate(k_fock(nbast,nbast))
@@ -481,14 +464,15 @@ else
     write(numtostring1,*) n1
     numtostring1=adjustl(numtostring1)
     mattxt='minFmat1'//trim(numtostring1)//'00.dat'
-      !call pbc_readopmat2(0,0,0,matris,2,'OVERLAP',.true.,.false.)
-    CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
-    call find_latt_index(k,n1,0,0,fdim,lattice,lattice%max_layer)
-    write(iunit,*) k
-    DO j=1,nbast
-       write(iunit,*) (lattice%lvec(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
-    ENDDO
-    call lsclose(iunit,'KEEP')
+
+    !call pbc_readopmat2(0,0,0,matris,2,'OVERLAP',.true.,.false.)
+    !CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
+    !call find_latt_index(k,n1,0,0,fdim,lattice,lattice%max_layer)
+    !write(iunit,*) k
+    !DO j=1,nbast
+    !   write(iunit,*) (lattice%lvec(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
+    !ENDDO
+    !call lsclose(iunit,'KEEP')
     enddo !n1
     write(*,*) 'Fock matrix written to disk'
     write(lupri,*) 'Fock matrix written to disk'
@@ -507,7 +491,6 @@ else
     call mem_dealloc(Tlat)
 
   else
-
     call mem_dealloc(Tlat)
     !call init_pbc_elstr(bz%fck,nbast,nbast)
     !call init_pbc_elstr(bz%smat,nbast,nbast)
@@ -516,24 +499,29 @@ else
 	enddo
     deallocate(latt_cell)
 
-    E_1=E_kin+E_en+E_nuc
-    if(lattice%num_its .gt. 0) call pbc_startzdiis(input%molecule,setting,nbast,lattice,&
-    num_latvectors,nfsze,maxmultmom,bz,ovl,f_1,g_2,E_nuc,lupri,luerr)
+  call pbc_startzdiis(input%molecule,setting,nbast,lattice,&
+  num_latvectors,maxmultmom,bz,nfdensity(n1),lupri,luerr)
+  call mat_free(nfdensity(n1))
+  call mem_dealloc(nfdensity)
+
+ !   E_1=E_kin+E_en+E_nuc
+ !   if(lattice%num_its .gt. 0) call pbc_startzdiis(input%molecule,setting,nbast,lattice,&
+ !   num_latvectors,nfsze,maxmultmom,bz,ovl,f_1,g_2,E_nuc,lupri,luerr)
 
   endif
 
-	do i=1,num_latvectors
-     if(f_1(i)%init_magic_tag.EQ.mat_init_magic_value) then
-       call mat_free(f_1(i))
-     endif
-     if(ovl(i)%init_magic_tag.EQ.mat_init_magic_value) then
-       call mat_free(ovl(i))
-     endif
-	enddo
-    call mem_dealloc(f_1)
-    call mem_dealloc(g_2)
-    call mem_dealloc(ovl)
-	call free_Moleculeinfo(refcell)
+!	do i=1,num_latvectors
+    ! if(f_1(i)%init_magic_tag.EQ.mat_init_magic_value) then
+    !   call mat_free(f_1(i))
+    ! endif
+    ! if(ovl(i)%init_magic_tag.EQ.mat_init_magic_value) then
+    !   call mat_free(ovl(i))
+    ! endif
+    !    enddo
+    !call mem_dealloc(f_1)
+    !call mem_dealloc(g_2)
+    !call mem_dealloc(ovl)
+        call free_Moleculeinfo(refcell)
 
 
 
@@ -646,7 +634,8 @@ else
   END SELECT
 
 
-  call free_lvec_list(lattice)
+  !call free_lvec_list(lattice)
+  call mem_dealloc(lattice%lvec)
   write(lupri,*) 'Program ended successfully !'
   write(*,*) 'Program ended successfully !'
 

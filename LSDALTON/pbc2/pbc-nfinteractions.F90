@@ -630,9 +630,9 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_kin)
          E_kin=E_kin+mat_dotproduct(lattice%lvec(idx)%oper(1),nfdensity(idx))
        endif
 
-       DO k=1,nbast*nbast
-          lattice%lvec(idx)%fck_vec(k)=lattice%lvec(idx)%oper(1)%elms(k)
-       ENDDO
+!       DO k=1,nbast*nbast
+!          lattice%lvec(idx)%fck_vec(k)=lattice%lvec(idx)%oper(1)%elms(k)
+!       ENDDO
 
 #ifdef DEBUGPBC
 !       write(*,*) 'kinetic DEBUGPBC'
@@ -849,10 +849,10 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_en)
        !STOP
        i=0
 
-       DO k=1,nbast*nbast
-          lattice%lvec(index1)%fck_vec(k)=lattice%lvec(index1)%fck_vec(k)&
-          +lattice%lvec(index1)%oper(1)%elms(k)
-       ENDDO
+!       DO k=1,nbast*nbast
+!          lattice%lvec(index1)%fck_vec(k)=lattice%lvec(index1)%fck_vec(k)&
+!          +lattice%lvec(index1)%oper(1)%elms(k)
+!       ENDDO
 
 #ifdef DEBUGPBC
        write(lupri,*) 'Hamilton',il11
@@ -890,9 +890,10 @@ latt_cell,refcell,numvecs,nfdensity,f_1,E_en)
          filename='minham'//trim(numstr1)//trim(numstr2)//trim(numstr3)//'.dat'
 !!         call pbc_readopmat2(0,0,0,matris,2,'OVERLAP',.true.,.false.)
          CALL lsOPEN(IUNIT,filename,'unknown','FORMATTED')
-         DO j=1,nbast
-            write(iunit,*) (lattice%lvec(index1)%fck_vec(i+(j-1)*nbast),i=1,nbast)
-         ENDDO
+         !DO j=1,nbast
+         !   write(iunit,*) (lattice%lvec(index1)%fck_vec(i+(j-1)*nbast),i=1,nbast)
+         !ENDDO
+         call mat_print(f_1(index1),1,H%nrow,1,H%ncol,iunit)
          call lsclose(iunit,'KEEP')
 
          filename='minnuc'//trim(numstr1)//trim(numstr2)//trim(numstr3)//'.dat'
@@ -1271,10 +1272,10 @@ write(lupri,*) 'computed coul mat for',il1,il2,il3
          call mat_init(g_2(index1),nbast,nbast)
          call mat_copy(1._realk,lattice%lvec(index1)%oper(2),g_2(index1))
        endif
-       DO k=1,nbast*nbast
-          lattice%lvec(index1)%fck_vec(k)=lattice%lvec(index1)%fck_vec(k)&
-          +lattice%lvec(index1)%oper(2)%elms(k)!+0.5d0*Kx(1)%elms(k)
-       ENDDO
+      ! DO k=1,nbast*nbast
+      !    lattice%lvec(index1)%fck_vec(k)=lattice%lvec(index1)%fck_vec(k)&
+      !    +lattice%lvec(index1)%oper(2)%elms(k)!+0.5d0*Kx(1)%elms(k)
+      ! ENDDO
      ! ToDo mat_to_full
 
 !    call mat_daxpy(1.0_realk,lattice%lvec(index1)%oper(2),lattice%lvec(index1)%oper(3))
@@ -1424,16 +1425,16 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
   !lattice%lvec(index1)%Kx_computed=.false.
   lattice%lvec(index1)%Kx_computed=.false.
 
- ! if(lattice%lvec(index1)%is_redundant) then
- !   call find_latt_index(indred,-il1,-il2,-il3,fdim,lattice,lattice%max_layer)
- !   if(lattice%lvec(indred)%Kx_computed) then
- !     lattice%lvec(index1)%g2_computed=.true.
- !     lattice%lvec(index1)%Kx_computed=.true.
- !   endif
- ! endif
+  if(lattice%lvec(index1)%is_redundant) then
+    call find_latt_index(indred,-il1,-il2,-il3,fdim,lattice,lattice%max_layer)
+    if(lattice%lvec(indred)%Kx_computed) then
+      lattice%lvec(index1)%g2_computed=.true.
+      lattice%lvec(index1)%Kx_computed=.true.
+    endif
+  endif
 
- ! if(.not. lattice%lvec(index1)%is_redundant) then
- !   call find_latt_index(indred,-il1,-il2,-il3,fdim,lattice,lattice%max_layer)
+  if(.not. lattice%lvec(index1)%is_redundant) then
+    call find_latt_index(indred,-il1,-il2,-il3,fdim,lattice,lattice%max_layer)
 
     DO index2=1,num_latvectors
 
@@ -1495,7 +1496,7 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
 
 
       !if(maxgabsum+valm1 .ge. -10) Then
-      if(maxgabsum .ge. -10) Then
+      if(maxgabsum+valm1 .ge. -10) Then
         !write(lupri,*) 'maxgabsum',maxgabsum,valm1,valmax,il31
         if(lattice%lvec(index1)%oper(1)%init_magic_tag.NE.mat_init_magic_value) then
           call mat_init(lattice%lvec(index1)%oper(1),nbast,nbast)
@@ -1518,21 +1519,21 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
         call mat_daxpy(1.D0,K_tmp(1),Kx)
         call mat_daxpy(0.5D0,K_tmp(1),lattice%lvec(index1)%oper(1))
 
-       ! if(lattice%lvec(indred)%oper(1)%init_magic_tag.NE.mat_init_magic_value) then
-       !   call mat_init(lattice%lvec(indred)%oper(1),nbast,nbast)
-       !   call mat_zero(lattice%lvec(indred)%oper(1))
-       ! endif
+        if(lattice%lvec(indred)%oper(1)%init_magic_tag.NE.mat_init_magic_value) then
+          call mat_init(lattice%lvec(indred)%oper(1),nbast,nbast)
+          call mat_zero(lattice%lvec(indred)%oper(1))
+        endif
       endif
 
      ENDDO
     ENDDO
 
- !   if((il1 .ne. 0 .or. il2 .ne. 0 .or. il3 .ne. 0) .and. lattice%lvec(index1)%Kx_computed) then
- !     call mat_trans(lattice%lvec(index1)%oper(1),lattice%lvec(indred)%oper(1))
- !     lattice%lvec(indred)%is_redundant=.true.
- !   endif
+    if((il1**2 + il2**2 +il3**2 .gt. 0) .and. lattice%lvec(index1)%Kx_computed) then
+      call mat_trans(lattice%lvec(index1)%oper(1),lattice%lvec(indred)%oper(1))
+      lattice%lvec(indred)%is_redundant=.true.
+    endif
 
- ! endif !is_redundant
+  endif !is_redundant
  !    
 
 
