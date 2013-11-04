@@ -1225,7 +1225,7 @@ contains
   !> for fragment job list AFTER fragment optimization is done.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine bcast_post_fragopt_joblist(jobs,comm)
+  subroutine bcast_dec_fragment_joblist(jobs,comm)
 
     implicit none
     !> Job list (send from master to slaves via communicator)
@@ -1247,7 +1247,7 @@ contains
     call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,comm)
 
 
-  end subroutine bcast_post_fragopt_joblist
+  end subroutine bcast_dec_fragment_joblist
 
 
 

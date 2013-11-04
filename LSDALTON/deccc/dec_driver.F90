@@ -196,7 +196,7 @@ contains
 
 
     ! Find out which atoms have one or more orbitals assigned
-    call which_atom_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
+    call which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
 
     ! Define which model to use in each pair calculation (info stored in MyMolecule%ccmodel)
     ! (Also calculate estimated correlation energy and estimated error by skipping pairs).
@@ -298,7 +298,7 @@ contains
     FragEnergies=0E0_realk
 
     ! Find out which atoms have one or more orbitals assigned
-    call which_atom_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
+    call which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
     njobs = count(dofrag)
 
 
@@ -384,10 +384,8 @@ contains
 
        end if EstimatedFragments
 
-    else ! create new empty job list to be updated
-       call init_joblist(njobs,jobs)
-       jobidx=0
     end if
+
 
 
     ! ************************************************************************
@@ -396,30 +394,6 @@ contains
 
 
 #ifdef VAR_MPI
-
-    ! Number of workers (slaves) = Number of nodes minus master itself
-    nworkers = infpar%nodtot -1
-    if(nworkers<1) then
-       call lsquit('DEC calculations using MPI require at least two MPI processes!',-1)
-    end if
-
-    ! MPI local group size
-    if(DECinfo%MPIgroupsize>0) then ! group size was defined explicitly in input
-       groupsize=DECinfo%MPIgroupsize
-    else 
-       ! If nworkers > njobs, then half the atomic fragments will start immediately
-       if(njobs>0) then
-          groupsize = ceiling(real(nworkers)/real(njobs))
-          groupsize = min(2*groupsize,nworkers)
-       else  ! sanity precaution to not divide by zero
-          groupsize=nworkers
-       end if
-    end if
-
-    write(DECinfo%output,*) '*** MPI GROUPSIZE SET TO ', groupsize
-
-    ! Initialize local groups 
-    call init_mpi_groups(groupsize,DECinfo%output)
 
     ! Wake up all slaves for fragment jobs
     call ls_mpibcast(DECDRIVER,master,MPI_COMM_LSDALTON)
@@ -450,10 +424,17 @@ contains
     DECinfo%first_order=.false.
     DECinfo%gradient=.false.
 
+    ! Initialize job list for atomic fragment optimizations
+    ! HACK
+    DECinfo%pair_distance_threshold=0.0_realk
+    call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
+         &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
+    jobs%dofragopt=.true. ! HACK
+    njobs = jobs%njobs
+    print *, 'njobs', njobs
+    DECinfo%pair_distance_threshold=1000.0_realk
 
-    ! Sort atomic fragments according to estimated size
-    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,mymolecule%DistanceTable,&
-         & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
+
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -464,106 +445,112 @@ contains
     call LSTIMER('DEC INIT',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-    ! loop over all atoms
-    ! MPI: Extra loop for each local worker to finalize things correctly
-    counter=0
-    jobdone=0
-    EstimatedCalculation: if(esti) then
-       ! Just use atomic fragment with predefined sizes to estimate fragment energies below
-       init_radius = 2.0_realk/bohr_to_angstrom
-       do i=1,natoms
-          if(.not. dofrag(i)) cycle
-          MyAtom=i
-          call atomic_fragment_init_within_distance(MyAtom,&
-               & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-               & MyMolecule,mylsitem,.false.,init_radius,AtomicFragments(MyAtom))
-       end do
-       ! This means that we have to calculate atomic fragments together with pair fragments below,
-       ! i.e., the atomic fragment energies have not yet been calculated.
-       calcAF=.true.
-
-    else
-       ! Calculate atomic fragment by adapting orbital spaces to FOT
-       calcAF=DECinfo%repeatAF
-
-       DoAtomicFragments: do k=1,natoms+nworkers
-
-          if(k<=natoms) then ! start up new calculation
-             i = af_list(k)  ! atom to consider
-             ! cycle if no orbitals assigned to atom or fragment is already done
-             if( (.not. dofrag(i)) .or. fragdone(i)) cycle
-          else
-             i=k  ! not an actual calculation, used for MPI quit signal
-          end if
+    ! Optimize atomic fragments
+    call fragment_jobs(post_fragopt_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,&
+         & OccOrbitals,UnoccOrbitals,jobs,AtomicFragments,&
+         & FragEnergies,esti,fullgrad,t1old,t1new)
 
 
-          ! ************************************************************************
-          ! *               DEC-MPI ATOMIC FRAGMENT OPTIMIZATION SCHEME            *
-          ! ***********************************************************************
-#ifdef VAR_MPI
-          ! Counter used to distinquish real (counter<=njobs) and quit (counter>njobs) calculations
-          counter=counter+1
-
-          ! Check for local masters to do a job
-          CALL MPI_PROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_LSDALTON,MPISTATUS,IERR)
-          ! Receive information about which job was done by local master
-          ! (if jobdone=0 it is an empty job used just for starting up the scheme)
-          call ls_mpisendrecv(jobdone,MPI_COMM_LSDALTON,MPISTATUS(MPI_SOURCE),master)
-
-          ! If job done is NOT an empty job -> book keeping and receive fragment info
-          if(jobdone/=0) then
-             write(DECinfo%output,*) 'Received atomic fragment: ', jobdone, &
-                  & ' -- missing #jobs: ', jobs%njobs-count(jobs%jobsdone)-1
-             comm = MPI_COMM_LSDALTON
-             sender = MPISTATUS(MPI_SOURCE)
-             ! Receive fragment info
-             call mpi_send_recv_single_fragment(AtomicFragments(jobdone),comm,&
-                  & sender,master,singlejob)
-
-             ! Increase job counter and put received job info into big job list
-             jobidx = jobidx+1
-             call put_job_into_joblist(singlejob,jobidx,jobs)
-             ! Done with singlejob for now
-             call free_joblist(singlejob)
-             ! Save fragment info to file atomicfragments.info
-             call add_fragment_to_file(AtomicFragments(jobdone),jobs)
-
-          end if
-
-          ! Send new job task to local master
-          if(counter <= njobs) then
-             newjob=i
-             write(DECinfo%output,*) 'Optimizing single fragment:', newjob
-          else  ! send quit signal to local master
-             newjob=-1
-          end if
-          call ls_mpisendrecv(newjob,MPI_COMM_LSDALTON,master,MPISTATUS(MPI_SOURCE))
-#else
-
-          ! No MPI: Master performs all jobs.
-          if(DECinfo%SinglesPolari) then ! singles effects for full molecule
-             call optimize_atomic_fragment(i,AtomicFragments(i),nAtoms, &
-                  & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
-                  & MyMolecule,mylsitem,.true.,t1full=t1old)
-          else
-             call optimize_atomic_fragment(i,AtomicFragments(i),nAtoms, &
-                  & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
-                  & MyMolecule,mylsitem,.true.)
-          end if
-
-          ! Copy fragment information into joblist
-          call copy_fragment_info_job(AtomicFragments(i),singlejob)
-          ! Increase job counter and put received job info into big job list
-          jobidx = jobidx+1
-          singlejob%jobsdone(1) = .true.
-          call put_job_into_joblist(singlejob,jobidx,jobs)
-          ! Save fragment info to file atomicfragments.info
-          call add_fragment_to_file(AtomicFragments(i),jobs)
-
-#endif
-
-
-       end do DoAtomicFragments
+!!$    ! loop over all atoms
+!!$    ! MPI: Extra loop for each local worker to finalize things correctly
+!!$    counter=0
+!!$    jobdone=0
+!!$    EstimatedCalculation: if(esti) then
+!!$       ! Just use atomic fragment with predefined sizes to estimate fragment energies below
+!!$       init_radius = 2.0_realk/bohr_to_angstrom
+!!$       do i=1,natoms
+!!$          if(.not. dofrag(i)) cycle
+!!$          MyAtom=i
+!!$          call atomic_fragment_init_within_distance(MyAtom,&
+!!$               & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+!!$               & MyMolecule,mylsitem,.false.,init_radius,AtomicFragments(MyAtom))
+!!$       end do
+!!$       ! This means that we have to calculate atomic fragments together with pair fragments below,
+!!$       ! i.e., the atomic fragment energies have not yet been calculated.
+!!$       calcAF=.true.
+!!$
+!!$    else
+!!$       ! Calculate atomic fragment by adapting orbital spaces to FOT
+!!$       calcAF=DECinfo%repeatAF
+!!$
+!!$       DoAtomicFragments: do k=1,natoms+nworkers
+!!$
+!!$          if(k<=natoms) then ! start up new calculation
+!!$             i = af_list(k)  ! atom to consider
+!!$             ! cycle if no orbitals assigned to atom or fragment is already done
+!!$             if( (.not. dofrag(i)) .or. fragdone(i)) cycle
+!!$          else
+!!$             i=k  ! not an actual calculation, used for MPI quit signal
+!!$          end if
+!!$
+!!$
+!!$          ! ************************************************************************
+!!$          ! *               DEC-MPI ATOMIC FRAGMENT OPTIMIZATION SCHEME            *
+!!$          ! ***********************************************************************
+!!$#ifdef VAR_MPI
+!!$          ! Counter used to distinquish real (counter<=njobs) and quit (counter>njobs) calculations
+!!$          counter=counter+1
+!!$
+!!$          ! Check for local masters to do a job
+!!$          CALL MPI_PROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_LSDALTON,MPISTATUS,IERR)
+!!$          ! Receive information about which job was done by local master
+!!$          ! (if jobdone=0 it is an empty job used just for starting up the scheme)
+!!$          call ls_mpisendrecv(jobdone,MPI_COMM_LSDALTON,MPISTATUS(MPI_SOURCE),master)
+!!$
+!!$          ! If job done is NOT an empty job -> book keeping and receive fragment info
+!!$          if(jobdone/=0) then
+!!$             write(DECinfo%output,*) 'Received atomic fragment: ', jobdone, &
+!!$                  & ' -- missing #jobs: ', jobs%njobs-count(jobs%jobsdone)-1
+!!$             comm = MPI_COMM_LSDALTON
+!!$             sender = MPISTATUS(MPI_SOURCE)
+!!$             ! Receive fragment info
+!!$             call mpi_send_recv_single_fragment(AtomicFragments(jobdone),comm,&
+!!$                  & sender,master,singlejob)
+!!$
+!!$             ! Increase job counter and put received job info into big job list
+!!$             jobidx = jobidx+1
+!!$             call put_job_into_joblist(singlejob,jobidx,jobs)
+!!$             ! Done with singlejob for now
+!!$             call free_joblist(singlejob)
+!!$             ! Save fragment info to file atomicfragments.info
+!!$             call add_fragment_to_file(AtomicFragments(jobdone),jobs)
+!!$
+!!$          end if
+!!$
+!!$          ! Send new job task to local master
+!!$          if(counter <= njobs) then
+!!$             newjob=i
+!!$             write(DECinfo%output,*) 'Optimizing single fragment:', newjob
+!!$          else  ! send quit signal to local master
+!!$             newjob=-1
+!!$          end if
+!!$          call ls_mpisendrecv(newjob,MPI_COMM_LSDALTON,master,MPISTATUS(MPI_SOURCE))
+!!$#else
+!!$
+!!$          ! No MPI: Master performs all jobs.
+!!$          if(DECinfo%SinglesPolari) then ! singles effects for full molecule
+!!$             call optimize_atomic_fragment(i,AtomicFragments(i),nAtoms, &
+!!$                  & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
+!!$                  & MyMolecule,mylsitem,.true.,t1full=t1old)
+!!$          else
+!!$             call optimize_atomic_fragment(i,AtomicFragments(i),nAtoms, &
+!!$                  & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
+!!$                  & MyMolecule,mylsitem,.true.)
+!!$          end if
+!!$
+!!$          ! Copy fragment information into joblist
+!!$          call copy_fragment_info_job(AtomicFragments(i),singlejob)
+!!$          ! Increase job counter and put received job info into big job list
+!!$          jobidx = jobidx+1
+!!$          singlejob%jobsdone(1) = .true.
+!!$          call put_job_into_joblist(singlejob,jobidx,jobs)
+!!$          ! Save fragment info to file atomicfragments.info
+!!$          call add_fragment_to_file(AtomicFragments(i),jobs)
+!!$
+!!$#endif
+!!$
+!!$
+!!$       end do DoAtomicFragments
 
        ! Save fragment energies and set model for atomic fragments appropriately
        do i=1,natoms
@@ -598,7 +585,7 @@ contains
        call free_joblist(singlejob)
 #endif
 
-    end if EstimatedCalculation
+!!$    end if EstimatedCalculation ! HACK
 
     ! Done with atomic fragment job list
     call free_joblist(jobs)
@@ -634,13 +621,7 @@ contains
 
 #ifdef VAR_MPI
 
-    ! Fragment MPI communication
-    ! **************************
-
-    ! 1. Communicate list of which atoms are EOS atoms
-    call ls_mpibcast(dofrag,natoms,master,MPI_COMM_LSDALTON)
-
-    ! 2. Communicate fragments (single fragments) to slaves
+    ! Communicate atomic fragments (single fragments) to slaves
     call mpi_bcast_many_fragments(natoms,dofrag,AtomicFragments,MPI_COMM_LSDALTON)
 
 #endif
@@ -727,7 +708,6 @@ contains
     call LSTIMER('DEC ALLFRAG',tcpu,twall,DECinfo%output)
 
 #ifdef VAR_MPI
-    call MPI_COMM_FREE(infpar%lg_comm,IERR)
     ! Set all MPI groups equal to the world group
     call lsmpi_default_mpi_group
     ! Print MPI statistics
@@ -909,7 +889,7 @@ contains
     integer(kind=ls_mpik) ::master, sender, groupsize,IERR
     logical :: only_update
 #ifdef VAR_MPI
-    INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
+    INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE)
 #endif
     master = 0
     fragenergy=0.0_realk
@@ -919,6 +899,9 @@ contains
 #ifdef VAR_MPI
     ! Number of workers = Number of nodes minus master itself
     nworkers = infpar%nodtot -1
+    if(nworkers<1) then
+       call lsquit('DEC calculations using MPI require at least two MPI processes!',-1)
+    end if
 #else
     nworkers=0   ! master node does all jobs
     siz=1
@@ -955,27 +938,27 @@ contains
     end if
 
 
-    ! Send fragment job list to slaves and redefine MPI groups
+
+    ! Define MPI groups and send fragment job list to slaves
 #ifdef VAR_MPI
 
-       ! Send fragment job list
-       call bcast_post_fragopt_joblist(jobs,MPI_COMM_LSDALTON)
+    ! MPI local group size: 64 or number of slaves
+    ! --> this should done in a more sophisticated manner...
+    if(DECinfo%MPIgroupsize>0) then
+       ! group size was defined explicitly in input
+       groupsize=DECinfo%MPIgroupsize
+    else
+       groupsize=min(64,nworkers)
+    end if
+
+    write(DECinfo%output,*) '*** MPI GROUPSIZE SET TO ', groupsize
 
 
-       ! Reset MPI group structure for post-fragopt fragments
-       ! ****************************************************
-       ! New groupsize: 64 or number of slaves
-       if(DECinfo%MPIgroupsize>0) then ! group size was defined explicitly in input
-          groupsize=DECinfo%MPIgroupsize
-       else
-          groupsize=min(64,nworkers)
-       end if
-       write(DECinfo%output,'(1X,a,i8)') 'REDEFINE GROUPSIZE TO ', groupsize
-       call lsmpi_barrier(MPI_COMM_LSDALTON)
-       call MPI_COMM_FREE(infpar%lg_comm,IERR)
+    ! Initialize local groups 
+    call init_mpi_groups(groupsize,DECinfo%output)
 
-       ! Initialize new group
-       call init_mpi_groups(groupsize,DECinfo%output)
+    ! Send fragment job list
+    call bcast_dec_fragment_joblist(jobs,MPI_COMM_LSDALTON)
 
 #endif
 
@@ -988,7 +971,7 @@ contains
 
        ! Counter used to distinquish real (counter<=jobstodo) and quit (counter>jobstodo) calculations
        counter=counter+1
-       
+
        if(k<=jobs%njobs) then
           if(jobs%jobsdone(k)) cycle  ! job is already done
        end if
@@ -1011,24 +994,37 @@ contains
        ! ******************************************************
        ! Receive stuff from local master and update
        ReceiveJob: if(jobdone>0) then
-       write(DECinfo%output,'(a,i8,a,i8,a,i8)') 'Master received job', jobdone, &
-            & ' from ', MPISTATUS(MPI_SOURCE), ' -- missing #jobs: ', &
-            & jobs%njobs-count(jobs%jobsdone)-1
+          write(DECinfo%output,'(a,i8,a,i8,a,i8)') 'Master received job', jobdone, &
+               & ' from ', MPISTATUS(MPI_SOURCE), ' -- missing #jobs: ', &
+               & jobs%njobs-count(jobs%jobsdone)-1
 
           sender = MPISTATUS(MPI_SOURCE)
 
           ! Receive fragment info (and update density or gradient)
           ! ------------------------------------------------------
-          if(DECinfo%first_order) then ! gradient
-             call nullify_mp2grad(grad)
-             call mpi_send_recv_mp2grad(MPI_COMM_LSDALTON,sender,master,&
-                  & grad,fragenergy,singlejob,only_update)
-             call update_full_mp2gradient(grad,fullgrad)
-             call free_mp2grad(grad)
-          else ! just energy
-             call mpi_send_recv_fragmentenergy(MPI_COMM_LSDALTON,sender,master,&
-                  & fragenergy, singlejob)
-          end if
+          FragoptCheck1: if(jobs%dofragopt(jobdone)) then
+
+             ! Job is fragment optimization --> receive atomic fragment info from slave
+             call mpi_send_recv_single_fragment(AtomicFragments(jobdone),MPI_COMM_LSDALTON,&
+                  & sender,master,singlejob)
+             ! Save fragment info to file atomicfragments.info
+             call add_fragment_to_file(AtomicFragments(jobdone),jobs)
+
+          else
+
+             ! No fragment optimization - receive energy (and possibly gradient) information
+             if(DECinfo%first_order) then ! gradient
+                call nullify_mp2grad(grad)
+                call mpi_send_recv_mp2grad(MPI_COMM_LSDALTON,sender,master,&
+                     & grad,fragenergy,singlejob,only_update)
+                call update_full_mp2gradient(grad,fullgrad)
+                call free_mp2grad(grad)
+             else ! just energy
+                call mpi_send_recv_fragmentenergy(MPI_COMM_LSDALTON,sender,master,&
+                     & fragenergy, singlejob)
+             end if
+
+          end if FragoptCheck1
 
           ! Put received job into total job list at position "jobdone"
           call put_job_into_joblist(singlejob,jobdone,jobs)
@@ -1082,7 +1078,7 @@ contains
        call ls_mpisendrecv(newjob,MPI_COMM_LSDALTON,master,MPISTATUS(MPI_SOURCE))
 
 #else
-! NO MPI --> "Master" does all fragment jobs
+       ! NO MPI --> "Master" does all fragment jobs
 
        ! Identify job "k"
        atomA = jobs%atom1(k)
@@ -1189,6 +1185,7 @@ contains
     end do JobLoop
 
 #ifndef VAR_MPI
+    call MPI_COMM_FREE(infpar%lg_comm,IERR)
     call free_joblist(singlejob)
 #endif
 
