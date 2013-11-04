@@ -16,7 +16,7 @@ set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${EXPORT_DIR};/")
 
 include(CPack)
 
-set(DIRS_TO_RELEASE basis cmake CMakeLists.txt COPYING CTestConfig.cmake DALTON external LSDALTON setup VERSION doc_installation .gitignore)
+set(DIRS_TO_RELEASE basis cmake CMakeLists.txt COPYING CTestConfig.cmake DALTON external LSDALTON setup VERSION doc_installation .gitignore CHANGELOG.rst)
 
 add_custom_target(
     release
