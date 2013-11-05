@@ -35,7 +35,7 @@ SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
   logical, intent(in) :: OnMaster
   logical, intent(out):: meminfo_slaves
   integer, intent(inout) :: lupri, luerr
-  Integer             :: nbast,natoms,nelectrons,i,j,k,l,n,m,o,x,y,z,iGrad,iHess,iCubic,ij
+  Integer             :: nbast,natoms,nelectrons,i,j,k,l,n,m,o,x,y,z,iGrad,iHess,iCubic,ij,nDerivPacked
 #ifdef LSLIB_RESTART
   type(matrix) :: D
   logical :: dens_exsist, DiskOnMaster=.true., gcbasis
@@ -45,7 +45,7 @@ SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
 #endif
   Real(realk),pointer :: Smat(:,:),Dmat(:,:,:),TempMat(:,:,:),TempGrad(:,:,:),DFD(:,:,:),h1(:,:),Fmat(:,:,:)
   Real(realk),pointer :: TempHess(:,:,:,:,:)
-  Real(realk),pointer :: TempCubic(:,:,:,:,:,:,:)
+  Real(realk),pointer :: TempCubic(:,:,:,:)
   Real(realk)         :: tmp1,tmp2,EXC(2),constant
   Real(realk),pointer :: eri(:,:,:,:,:)
   Integer,external    :: LSlib_get_nbasis
@@ -753,44 +753,44 @@ write(lupri,'(A80,2F18.10)') 'Coulomb Hessian from diff-eri (Mulliken): RMS and 
 deallocate(TempHess)
 
 #endif
-#if 0
+#if 1
 !*****************************************************************************
 !******                             Coulomb third derivative from differentiated 4-center ERI (Mulliken)
 !*****************************************************************************
 
 deallocate(eri)
 nullify(eri)
-allocate(eri(nbast,nbast,nbast,nbast,27*nAtoms*nAtoms*nAtoms))
-call ls_dzero(eri,nbast*nbast*nbast*nbast*27*nAtoms*nAtoms*nAtoms)
+nDerivPacked = 3*nAtoms*(3*nAtoms+1)*(3*nAtoms+2)/6
+allocate(eri(nbast,nbast,nbast,nbast,nDerivPacked))
+call ls_dzero(eri,nbast*nbast*nbast*nbast*nDerivPacked)
 
-CALL LSlib_get_4center_eri_geoderiv(eri,nbast,3,27*nAtoms*nAtoms*nAtoms,.FALSE.,lupri,luerr)
+CALL LSlib_get_4center_eri_geoderiv(eri,nbast,3,nDerivPacked,.FALSE.,lupri,luerr)
 
 nullify(TempCubic)
-allocate(TempCubic(3,nAtoms,3,nAtoms,3,nAtoms,1))
+allocate(TempCubic(3*nAtoms,3*nAtoms,3*nAtoms,1))
 call ls_dzero(TempCubic,natoms*3*nAtoms*3*nAtoms*3)
 
 iCubic = 0
-DO n=1,nAtoms
-  DO x=1,3
-    DO m=1,nAtoms
-      DO y=1,3
-        DO o=1,nAtoms
-          DO z=1,3
-            iCubic = iCubic+1
-            DO l=1,nbast
-             DO k=1,nbast
-              DO j=1,nbast
-               DO i=1,nbast
-!               TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
-!    &             2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
-                TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + 0.25_realk*eri(i,j,k,l,iCubic)
-             ENDDO
-            ENDDO
-           ENDDO
-          ENDDO
+DO n=1,3*nAtoms
+  DO m=n,3*nAtoms
+    DO o=m,3*nAtoms
+      iCubic = iCubic+1
+      DO l=1,nbast
+       DO k=1,nbast
+        DO j=1,nbast
+         DO i=1,nbast
+!         TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
+!    &       2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
+          TempCubic(o,m,n,1) = TempCubic(o,m,n,1) + 0.25_realk*eri(i,j,k,l,iCubic)
          ENDDO
         ENDDO
+       ENDDO
       ENDDO
+      TempCubic(o,n,m,1) = TempCubic(o,m,n,1)
+      TempCubic(m,o,n,1) = TempCubic(o,m,n,1)
+      TempCubic(m,n,o,1) = TempCubic(o,m,n,1)
+      TempCubic(n,m,o,1) = TempCubic(o,m,n,1)
+      TempCubic(n,o,m,1) = TempCubic(o,m,n,1)
     ENDDO
   ENDDO
 ENDDO
@@ -799,18 +799,12 @@ tmp1 = 0.0_realk
 tmp2 = 0.0_realk
 iCubic = 0
 DO n=1,nAtoms
-  DO x=1,3
-    DO m=1,nAtoms
-      DO y=1,3
-        DO o=1,nAtoms
-          DO z=1,3
-            iCubic = iCubic+1
-            tmp1=tmp1+TempCubic(z,o,y,m,x,n,1)*TempCubic(z,o,y,m,x,n,1)
-            tmp2=tmp2+TempCubic(z,o,y,m,x,n,1)*iCubic
- write(*,'(A,7I4,F21.9)') 'Cubic force components:',iCubic,o,m,n,z,y,x,TempCubic(z,o,y,m,x,n,1)
-          ENDDO
-        ENDDO
-      ENDDO
+  DO m=1,nAtoms
+    DO o=1,nAtoms
+      iCubic = iCubic+1
+      tmp1=tmp1+TempCubic(o,m,n,1)*TempCubic(o,m,n,1)
+      tmp2=tmp2+TempCubic(o,m,n,1)*iCubic
+      write(*,'(A,4I4,F21.9)') 'Cubic force components:',iCubic,o,m,n,TempCubic(o,m,n,1)
     ENDDO
   ENDDO
 ENDDO
@@ -924,37 +918,37 @@ write(lupri,'(A80,2F18.10)') 'Nuclear-electron attraction Hessian: RMS and index
 
 deallocate(eri)
 nullify(eri)
-allocate(eri(nbast,nbast,1,1,27*nAtoms*nAtoms*nAtoms))
-call ls_dzero(eri,nbast*nbast*1*1*27*nAtoms*nAtoms*nAtoms)
+nDerivPacked = 3*nAtoms*(3*nAtoms+1)*(3*nAtoms+2)/6
+allocate(eri(nbast,nbast,1,1,nDerivPacked))
+call ls_dzero(eri,nbast*nbast*1*1*nDerivPacked)
 
-CALL LSlib_get_1el_geoderiv(eri,'nucel',nbast,nAtoms,3,27*nAtoms*nAtoms*nAtoms,lupri,luerr)
+CALL LSlib_get_1el_geoderiv(eri,'nucel',nbast,nAtoms,3,nDerivPacked,lupri,luerr)
 
 nullify(TempCubic)
-allocate(TempCubic(3,nAtoms,3,nAtoms,3,nAtoms,1))
+allocate(TempCubic(3*nAtoms,3*nAtoms,3*nAtoms,1))
 call ls_dzero(TempCubic,natoms*3*nAtoms*3*nAtoms*3)
 
 iCubic = 0
-DO n=1,nAtoms
-  DO x=1,3
-    DO m=1,nAtoms
-      DO y=1,3
-        DO o=1,nAtoms
-          DO z=1,3
-            iCubic = iCubic+1
-            DO l=1,1
-             DO k=1,1
-              DO j=1,nbast
-               DO i=1,nbast
-!               TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
-!    &             2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
-                TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + eri(i,j,k,l,iCubic)
-             ENDDO
+DO n=1,3*nAtoms
+  DO m=n,3*nAtoms
+    DO o=m,3*nAtoms
+      iCubic = iCubic+1
+      DO l=1,1
+        DO k=1,1
+          DO j=1,nbast
+            DO i=1,nbast
+!           TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
+!  &           2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
+            TempCubic(o,m,n,1) = TempCubic(o,m,n,1) + eri(i,j,k,l,iCubic)
             ENDDO
-           ENDDO
           ENDDO
-         ENDDO
         ENDDO
       ENDDO
+      TempCubic(o,n,m,1) = TempCubic(o,m,n,1)
+      TempCubic(m,o,n,1) = TempCubic(o,m,n,1)
+      TempCubic(m,n,o,1) = TempCubic(o,m,n,1)
+      TempCubic(n,m,o,1) = TempCubic(o,m,n,1)
+      TempCubic(n,o,m,1) = TempCubic(o,m,n,1)
     ENDDO
   ENDDO
 ENDDO
@@ -963,18 +957,12 @@ tmp1 = 0.0_realk
 tmp2 = 0.0_realk
 iCubic = 0
 DO n=1,nAtoms
-  DO x=1,3
-    DO m=1,nAtoms
-      DO y=1,3
-        DO o=1,nAtoms
-          DO z=1,3
-            iCubic = iCubic+1
-            tmp1=tmp1+TempCubic(z,o,y,m,x,n,1)*TempCubic(z,o,y,m,x,n,1)
-            tmp2=tmp2+TempCubic(z,o,y,m,x,n,1)*iCubic
-!write(*,*) 'debug:TempCubic',z,o,y,m,x,n,TempCubic(z,o,y,m,x,n,1)
-          ENDDO
-        ENDDO
-      ENDDO
+  DO m=1,nAtoms
+    DO o=1,nAtoms
+        iCubic = iCubic+1
+        tmp1=tmp1+TempCubic(o,m,n,1)*TempCubic(o,m,n,1)
+        tmp2=tmp2+TempCubic(o,m,n,1)*iCubic
+!write(*,*) 'debug:TempCubic',o,m,n,TempCubic(o,m,n,1)
     ENDDO
   ENDDO
 ENDDO
@@ -1082,37 +1070,37 @@ write(lupri,'(A80,2F18.10)') 'Overlap Hessian: RMS and index-weighted sum',&
 
 deallocate(eri)
 nullify(eri)
-allocate(eri(nbast,nbast,1,1,27*nAtoms*nAtoms*nAtoms))
-call ls_dzero(eri,nbast*nbast*1*1*27*nAtoms*nAtoms*nAtoms)
+nDerivPacked = 3*nAtoms*(3*nAtoms+1)*(3*nAtoms+2)/6
+allocate(eri(nbast,nbast,1,1,nDerivPacked))
+call ls_dzero(eri,nbast*nbast*1*1*nDerivPacked)
 
-CALL LSlib_get_1el_geoderiv(eri,'overlap',nbast,nAtoms,3,27*nAtoms*nAtoms*nAtoms,lupri,luerr)
+CALL LSlib_get_1el_geoderiv(eri,'overlap',nbast,nAtoms,3,nDerivPacked,lupri,luerr)
 
 nullify(TempCubic)
-allocate(TempCubic(3,nAtoms,3,nAtoms,3,nAtoms,1))
+allocate(TempCubic(3*nAtoms,3*nAtoms,3*nAtoms,1))
 call ls_dzero(TempCubic,natoms*3*nAtoms*3*nAtoms*3)
 
 iCubic = 0
-DO n=1,nAtoms
-  DO x=1,3
-    DO m=1,nAtoms
-      DO y=1,3
-        DO o=1,nAtoms
-          DO z=1,3
-            iCubic = iCubic+1
-            DO l=1,1
-             DO k=1,1
-              DO j=1,nbast
-               DO i=1,nbast
-!               TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
-!    &             2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
-                TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + eri(i,j,k,l,iCubic)
-             ENDDO
-            ENDDO
-           ENDDO
-          ENDDO
+DO n=1,3*nAtoms
+  DO m=n,3*nAtoms
+    DO o=m,3*nAtoms
+      iCubic = iCubic+1
+      DO l=1,1
+       DO k=1,1
+        DO j=1,nbast
+         DO i=1,nbast
+!         TempCubic(o,m,n,1) = TempCubic(o,m,n,1) + &
+!  &         2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
+          TempCubic(o,m,n,1) = TempCubic(o,m,n,1) + eri(i,j,k,l,iCubic)
          ENDDO
         ENDDO
+       ENDDO
       ENDDO
+      TempCubic(o,n,m,1) = TempCubic(o,m,n,1)
+      TempCubic(m,o,n,1) = TempCubic(o,m,n,1)
+      TempCubic(m,n,o,1) = TempCubic(o,m,n,1)
+      TempCubic(n,m,o,1) = TempCubic(o,m,n,1)
+      TempCubic(n,o,m,1) = TempCubic(o,m,n,1)
     ENDDO
   ENDDO
 ENDDO
@@ -1120,18 +1108,12 @@ ENDDO
 tmp1 = 0.0_realk
 tmp2 = 0.0_realk
 iCubic = 0
-DO n=1,nAtoms
-  DO x=1,3
-    DO m=1,nAtoms
-      DO y=1,3
-        DO o=1,nAtoms
-          DO z=1,3
-            iCubic = iCubic+1
-            tmp1=tmp1+TempCubic(z,o,y,m,x,n,1)*TempCubic(z,o,y,m,x,n,1)
-            tmp2=tmp2+TempCubic(z,o,y,m,x,n,1)*iCubic
-          ENDDO
-        ENDDO
-      ENDDO
+DO n=1,3*nAtoms
+  DO m=1,3*nAtoms
+    DO o=1,3*nAtoms
+      iCubic = iCubic+1
+      tmp1=tmp1+TempCubic(o,m,n,1)*TempCubic(o,m,n,1)
+      tmp2=tmp2+TempCubic(o,m,n,1)*iCubic
     ENDDO
   ENDDO
 ENDDO
@@ -1240,37 +1222,37 @@ write(lupri,'(A80,2F18.10)') 'Kinetic Hessian using 1el_diff: RMS and index-weig
 
 deallocate(eri)
 nullify(eri)
-allocate(eri(nbast,nbast,1,1,27*nAtoms*nAtoms*nAtoms))
-call ls_dzero(eri,nbast*nbast*1*1*27*nAtoms*nAtoms*nAtoms)
+nDerivPacked = 3*nAtoms*(3*nAtoms+1)*(3*nAtoms+2)/6
+allocate(eri(nbast,nbast,1,1,nDerivPacked))
+call ls_dzero(eri,nbast*nbast*1*1*nDerivPacked)
 
-CALL LSlib_get_1el_geoderiv(eri,'kinetic',nbast,nAtoms,3,27*nAtoms*nAtoms*nAtoms,lupri,luerr)
+CALL LSlib_get_1el_geoderiv(eri,'kinetic',nbast,nAtoms,3,nDerivPacked,lupri,luerr)
 
 nullify(TempCubic)
-allocate(TempCubic(3,nAtoms,3,nAtoms,3,nAtoms,1))
+allocate(TempCubic(3*nAtoms,3*nAtoms,3*nAtoms,1))
 call ls_dzero(TempCubic,natoms*3*nAtoms*3*nAtoms*3)
 
 iCubic = 0
-DO n=1,nAtoms
-  DO x=1,3
-    DO m=1,nAtoms
-      DO y=1,3
-        DO o=1,nAtoms
-          DO z=1,3
-            iCubic = iCubic+1
-            DO l=1,1
-             DO k=1,1
-              DO j=1,nbast
-               DO i=1,nbast
-!               TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
-!    &             2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
-                TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + eri(i,j,k,l,iCubic)
-             ENDDO
-            ENDDO
-           ENDDO
-          ENDDO
+DO n=1,3*nAtoms
+  DO m=n,3*nAtoms
+    DO o=o,3*nAtoms
+      iCubic = iCubic+1
+      DO l=1,1
+       DO k=1,1
+        DO j=1,nbast
+         DO i=1,nbast
+!         TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
+!  &         2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
+          TempCubic(o,m,n,1) = TempCubic(o,m,n,1) + eri(i,j,k,l,iCubic)
          ENDDO
         ENDDO
+       ENDDO
       ENDDO
+      TempCubic(o,n,m,1) = TempCubic(o,m,n,1)
+      TempCubic(m,o,n,1) = TempCubic(o,m,n,1)
+      TempCubic(m,n,o,1) = TempCubic(o,m,n,1)
+      TempCubic(n,m,o,1) = TempCubic(o,m,n,1)
+      TempCubic(n,o,m,1) = TempCubic(o,m,n,1)
     ENDDO
   ENDDO
 ENDDO
@@ -1278,18 +1260,12 @@ ENDDO
 tmp1 = 0.0_realk
 tmp2 = 0.0_realk
 iCubic = 0
-DO n=1,nAtoms
-  DO x=1,3
-    DO m=1,nAtoms
-      DO y=1,3
-        DO o=1,nAtoms
-          DO z=1,3
-            iCubic = iCubic+1
-            tmp1=tmp1+TempCubic(z,o,y,m,x,n,1)*TempCubic(z,o,y,m,x,n,1)
-            tmp2=tmp2+TempCubic(z,o,y,m,x,n,1)*iCubic
-          ENDDO
-        ENDDO
-      ENDDO
+DO n=1,3*nAtoms
+  DO m=1,3*nAtoms
+    DO o=1,3*nAtoms
+      iCubic = iCubic+1
+      tmp1=tmp1+TempCubic(o,m,n,1)*TempCubic(o,m,n,1)
+      tmp2=tmp2+TempCubic(o,m,n,1)*iCubic
     ENDDO
   ENDDO
 ENDDO
