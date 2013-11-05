@@ -14,7 +14,7 @@ If you want to implement energies for a new model/correction in DEC, then please
 
 (i)
 Define whether you want to introduce a new MODEL (e.g. CC3)    OR
-a new CORRECTION (e.g. F12) which can be added to various existing models.
+a new CORRECTION (e.g. F12) which can be added to various existing models/corrections.
 
 (ii)
 The global integers MODEL_* in dec_typedef.F90 define the various models.
