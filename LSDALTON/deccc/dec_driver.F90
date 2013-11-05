@@ -425,7 +425,11 @@ contains
 
     call LSTIMER('DEC INIT',tcpu,twall,DECinfo%output)
 
-    ! HACK - call fragment opt routine here!
+
+    ! FRAGMENT OPTIMIZATION AND (POSSIBLY) ESTIMATED FRAGMENTS
+    ! ********************************************************
+    call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+         & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
 
     call LSTIMER('DEC ATOMFRAG',tcpu,twall,DECinfo%output)
 
@@ -1067,7 +1071,7 @@ contains
   !> \author Kasper Kristensen
   !> \date November 2013
   subroutine fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-       & MyMolecule,mylsitem,DoBasis,dofrag,esti,AtomicFragments,FragEnergies)
+       & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
 
     implicit none
     !> Full molecule info (CC model for each pair fragment resulting from estimate analysis is stored 
@@ -1154,11 +1158,11 @@ contains
     mastertime = twall2-twall1
     if(esti) then
 #ifdef VAR_MPI
-       call print_MPI_fragment_statistics(fragoptjobs,mastertime,'FRAGMENT OPT. + ESTIM.')
+       call print_MPI_fragment_statistics(jobs,mastertime,'FRAGMENT OPT. + ESTIM.')
 #endif
     else
 #ifdef VAR_MPI
-       call print_MPI_fragment_statistics(jobs,mastertime,'FRAGMENT OPT.')
+       call print_MPI_fragment_statistics(fragoptjobs,mastertime,'FRAGMENT OPT.')
 #endif
     end if
 
