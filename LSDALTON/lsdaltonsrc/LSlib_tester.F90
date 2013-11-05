@@ -798,9 +798,9 @@ ENDDO
 tmp1 = 0.0_realk
 tmp2 = 0.0_realk
 iCubic = 0
-DO n=1,nAtoms
-  DO m=1,nAtoms
-    DO o=1,nAtoms
+DO n=1,3*nAtoms
+  DO m=1,3*nAtoms
+    DO o=1,3*nAtoms
       iCubic = iCubic+1
       tmp1=tmp1+TempCubic(o,m,n,1)*TempCubic(o,m,n,1)
       tmp2=tmp2+TempCubic(o,m,n,1)*iCubic

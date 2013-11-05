@@ -1878,15 +1878,23 @@ DO iPassP=1,P%nPasses
           same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
           same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
           IF ((i1.EQ.i2).AND..NOT.same12) THEN
-             IF ((i1.EQ.i3).AND..NOT.same13) THEN
+             IF (((i1.EQ.i3).AND..NOT.same13).AND.((i2.EQ.i3).AND..NOT.same23)) THEN
                nPermute=6
+             ELSEIF ((i1.EQ.i3).AND..NOT.same13) THEN
+               nPermute=4
+             ELSEIF ((i2.EQ.i3).AND..NOT.same23) THEN
+               nPermute=4
              ELSE
-               nPermute=3
+               nPermute=2
              ENDIF
           ELSEIF ((i1.EQ.i3).AND..NOT.same13) THEN
-             nPermute=3
+             IF ((i2.EQ.i3).AND..NOT.same23) THEN
+               nPermute=4
+             ELSE
+               nPermute=2
+             ENDIF
           ELSEIF ((i2.EQ.i3).AND..NOT.same23) THEN
-             nPermute=3
+             nPermute=2
           ENDIF
  
             
