@@ -10,13 +10,13 @@ export LD_LIBRARY_PATH=/com/pgi/linux86-64/11.10/bin:/com/pgi/linux86-64/11.10/l
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
-git checkout Dalton2013_release
+#git checkout Dalton2013_release
 git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 export OMP_NUM_THREADS=3
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
-./setup --fc=pgf90 --cc=pgcc --omp -D BUILDNAME="RB-Grendel-linux-PGI-release"
+./setup --fc=pgf90 --cc=pgcc --omp -D BUILDNAME="MB-Grendel-linux-PGI-release"
 #--explicit-libs="-Llib -L/com/acml-4.1.0-pgi/pgi64_mp_int64/lib -lacml -lacml_mv -lm -lpthread -lrt -pgf90libs"
 #--scratch=$SCRATCH_DIR 
 #./setup --fc=pgf90 --cc=pgcc --internal-math --omp --scratch=$SCRATCH_DIR -D BUILDNAME="Grendel-linux-PGI-release"
