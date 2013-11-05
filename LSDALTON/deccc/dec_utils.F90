@@ -3257,6 +3257,7 @@ retval=0
     write(funit) jobs%jobsize
     write(funit) jobs%jobsdone
     write(funit) jobs%dofragopt
+    write(funit) jobs%esti
 
     ! MPI fragment statistics
     write(funit) jobs%nslaves
@@ -3295,6 +3296,7 @@ retval=0
        call read_64bit_to_32bit(funit,njobs,jobs%jobsize)
        call read_64bit_to_32bit(funit,njobs,jobs%jobsdone)
        call read_64bit_to_32bit(funit,njobs,jobs%dofragopt)
+       call read_64bit_to_32bit(funit,njobs,jobs%esti)
        call read_64bit_to_32bit(funit,njobs,jobs%nslaves)
        call read_64bit_to_32bit(funit,njobs,jobs%nocc)
        call read_64bit_to_32bit(funit,njobs,jobs%nunocc)
@@ -3308,6 +3310,7 @@ retval=0
        call read_32bit_to_64bit(funit,njobs,jobs%jobsize)
        call read_32bit_to_64bit(funit,njobs,jobs%jobsdone)
        call read_32bit_to_64bit(funit,njobs,jobs%dofragopt)
+       call read_32bit_to_64bit(funit,njobs,jobs%esti)
        call read_32bit_to_64bit(funit,njobs,jobs%nslaves)
        call read_32bit_to_64bit(funit,njobs,jobs%nocc)
        call read_32bit_to_64bit(funit,njobs,jobs%nunocc)
@@ -3321,6 +3324,7 @@ retval=0
        read(funit) jobs%jobsize
        read(funit) jobs%jobsdone
        read(funit) jobs%dofragopt
+       read(funit) jobs%esti
 
        read(funit) jobs%nslaves
        read(funit) jobs%nocc
@@ -3356,11 +3360,13 @@ retval=0
     call mem_alloc(jobs%jobsize,njobs)
     call mem_alloc(jobs%jobsdone,njobs)
     call mem_alloc(jobs%dofragopt,njobs)
+    call mem_alloc(jobs%esti,njobs)
     jobs%atom1=0
     jobs%atom2=0
     jobs%jobsize=0
     jobs%jobsdone=.false. ! no jobs are done
     jobs%dofragopt=.false. 
+    jobs%esti=.false.
 
     ! MPI fragment statistics
     call mem_alloc(jobs%nslaves,njobs)
@@ -3416,6 +3422,11 @@ retval=0
     if(associated(jobs%dofragopt)) then
        call mem_dealloc(jobs%dofragopt)
        nullify(jobs%dofragopt)
+    end if
+
+    if(associated(jobs%esti)) then
+       call mem_dealloc(jobs%esti)
+       nullify(jobs%esti)
     end if
 
     if(associated(jobs%nslaves)) then
@@ -3492,6 +3503,7 @@ retval=0
     jobs%jobsize(position) = singlejob%jobsize(1)
     jobs%jobsdone(position) = singlejob%jobsdone(1)
     jobs%dofragopt(position) = singlejob%dofragopt(1)
+    jobs%esti(position) = singlejob%esti(1)
     jobs%nslaves(position) = singlejob%nslaves(1)
     jobs%nocc(position) = singlejob%nocc(1)
     jobs%nunocc(position) = singlejob%nunocc(1)

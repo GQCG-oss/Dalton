@@ -3884,7 +3884,7 @@ if(DECinfo%PL>0) then
   !> \author Kasper Kristensen
   !> \date January 2013
   subroutine create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
-       &OccOrbitals,UnoccOrbitals,AtomicFragments,which_fragments,jobs)
+       &OccOrbitals,UnoccOrbitals,AtomicFragments,which_fragments,esti,jobs)
 
     implicit none
     !> Calculate atomic fragments (true) or just pair fragments (false)
@@ -3907,6 +3907,8 @@ if(DECinfo%PL>0) then
     type(decfrag),dimension(natoms),intent(in) :: AtomicFragments
     !> which_fragments(i) is true if atom "i" is central in one of the fragments
     logical, dimension(natoms),intent(in) :: which_fragments
+    !> Use estimated fragments?
+    logical,intent(in) :: esti
     !> Job list of fragments listed according to size
     type(joblist),intent(inout) :: jobs
     integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags
@@ -4077,7 +4079,7 @@ if(DECinfo%PL>0) then
     call init_joblist(njobs,jobs)
 
     call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-         & FragBasis,which_fragments, mymolecule%DistanceTable, jobs)
+         & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs)
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -4145,6 +4147,7 @@ if(DECinfo%PL>0) then
     joblist12%jobsize(1:joblist1%njobs) = joblist1%jobsize
     joblist12%jobsdone(1:joblist1%njobs) = joblist1%jobsdone
     joblist12%dofragopt(1:joblist1%njobs) = joblist1%dofragopt
+    joblist12%esti(1:joblist1%njobs) = joblist1%esti
     joblist12%nslaves(1:joblist1%njobs) = joblist1%nslaves
     joblist12%nocc(1:joblist1%njobs) = joblist1%nocc
     joblist12%nunocc(1:joblist1%njobs) = joblist1%nunocc
@@ -4161,6 +4164,7 @@ if(DECinfo%PL>0) then
     joblist12%jobsize(startidx:njobs) = joblist2%jobsize
     joblist12%jobsdone(startidx:njobs) = joblist2%jobsdone
     joblist12%dofragopt(startidx:njobs) = joblist2%dofragopt
+    joblist12%esti(startidx:njobs) = joblist2%esti
     joblist12%nslaves(startidx:njobs) = joblist2%nslaves
     joblist12%nocc(startidx:njobs) = joblist2%nocc
     joblist12%nunocc(startidx:njobs) = joblist2%nunocc
@@ -4241,7 +4245,7 @@ if(DECinfo%PL>0) then
   !> \author Kasper Kristensen
   !> \date April 2013
   subroutine set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-       & FragBasis,which_fragments, DistanceTable, jobs)
+       & FragBasis,which_fragments, DistanceTable, esti,jobs)
 
     implicit none
     !> Full molecule info
@@ -4266,6 +4270,8 @@ if(DECinfo%PL>0) then
     logical,dimension(natoms),intent(in) :: which_fragments
     !> Distance table with interatomic distances
     real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
+    !> Use estimated fragments?
+    logical,intent(in) :: esti
     !> Job list for fragments
     type(joblist),intent(inout) :: jobs
     logical,pointer :: occpairAOS(:), unoccpairAOS(:),basispair(:)
@@ -4371,6 +4377,9 @@ if(DECinfo%PL>0) then
 
     ! No jobs have been done
     jobs%jobsdone=.false.
+
+    ! Estimated fragments?
+    jobs%esti=esti
 
     ! Clean up
     call mem_dealloc(atom1)
@@ -4577,6 +4586,7 @@ if(DECinfo%PL>0) then
     jobs%jobsize(1:nold) = oldjobs%jobsize(1:nold)
     jobs%jobsdone(1:nold) = oldjobs%jobsdone(1:nold)
     jobs%dofragopt(1:nold) = oldjobs%dofragopt(1:nold)
+    jobs%esti(1:nold) = oldjobs%esti(1:nold)
     jobs%nslaves(1:nold) = oldjobs%nslaves(1:nold)
     jobs%nocc(1:nold) = oldjobs%nocc(1:nold)
     jobs%nunocc(1:nold) = oldjobs%nunocc(1:nold)
@@ -4758,6 +4768,7 @@ if(DECinfo%PL>0) then
     jobscopy%jobsize = jobs%jobsize
     jobscopy%jobsdone = jobs%jobsdone
     jobscopy%dofragopt = jobs%dofragopt
+    jobscopy%esti = jobs%esti
     jobscopy%nslaves = jobs%nslaves
     jobscopy%nocc = jobs%nocc
     jobscopy%nunocc = jobs%nunocc

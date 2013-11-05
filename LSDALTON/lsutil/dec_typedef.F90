@@ -930,6 +930,8 @@ module dec_typedef_module
      logical,pointer :: jobsdone(:) 
      ! Does job require fragment optimization?
      logical,pointer :: dofragopt(:)
+     ! Does job use estimated fragments?
+     logical,pointer :: esti(:)
 
      ! MPI statistics
 

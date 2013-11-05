@@ -470,7 +470,7 @@ contains
     ! Get job list 
     calcAF = DECinfo%RepeatAF
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
-         &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
+         &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,.false.,jobs)
     njobs = jobs%njobs
 
     ! Zero fragment energies if they are recalculated
@@ -1134,12 +1134,15 @@ contains
        ! Get job list for estimated fragments
        calcAF = .true. 
        ! for now we also calculate estimated atomic fragments for analysis purposes 
-       ! (they are not really needed)
+       ! (they are not really needed for the actual DEC scheme)
        call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
-            &OccOrbitals,UnoccOrbitals,EstAtomicFragments,dofrag,estijobs)
+            &OccOrbitals,UnoccOrbitals,EstAtomicFragments,dofrag,esti,estijobs)
 
        ! Merge job list of atomic fragment optimization and estimated fragments (in this order)
        call concatenate_joblists(fragoptjobs,estijobs,jobs)
+
+       ! HERE
+       ! call fragment_jobs with both AtomicFragments and EstAtomicFragments as inputs.
 
        call mem_dealloc(EstAtomicFragments)
     else
