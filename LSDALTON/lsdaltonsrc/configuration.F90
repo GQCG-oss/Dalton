@@ -1471,7 +1471,7 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         WRITE(config%LUPRI,*) ' Keyword ',WORD,' not recognized in config_info_input'
         CALL lsQUIT('Illegal keyword in config_info_input.',config%lupri)
      END SELECT
-  ENDIF
+  ENDDO INFOLOOP
 END SUBROUTINE config_info_input
 
 
