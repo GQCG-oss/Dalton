@@ -22,7 +22,7 @@ export LD_LIBRARY_PATH=/home/com/intel/composer_xe_2011_sp1.8.273/compiler/lib/i
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
-git checkout Dalton2013_release
+#git checkout Dalton2013_release
 git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 export OMP_NUM_THREADS=3
 source /home/com/intel/composer_xe_2011_sp1.11.339/bin/ifortvars.sh intel64
@@ -33,7 +33,7 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 
-./setup --fc=ifort --cc=icc --int64 --blas=none --lapack=none --explicit-libs="-Llib -L$MATH_ROOT/lib/intel64 -lmkl_solver_ilp64 -Wl,--start-group -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group -openmp -lpthread" --omp -D BUILDNAME="RB-Grendel-linux-ifort12.1.5-omp64int-release"
+./setup --fc=ifort --cc=icc --int64 --blas=none --lapack=none --explicit-libs="-Llib -L$MATH_ROOT/lib/intel64 -lmkl_solver_ilp64 -Wl,--start-group -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group -openmp -lpthread" --omp -D BUILDNAME="MB-Grendel-linux-ifort12.1.5-omp64int-release"
 #cp /home/tkjaer/NightlyTestingCdash/git_revision_info.f90 $TMP_DIR/lsutil/.
 #cp /home/tkjaer/NightlyTestingCdash/compilation_info.f90 $TMP_DIR/lsutil/.
 cd $TMP_DIR/build
