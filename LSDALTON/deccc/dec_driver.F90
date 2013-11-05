@@ -1001,12 +1001,19 @@ contains
 
           sender = MPISTATUS(MPI_SOURCE)
 
+          ! Which atoms are involved in "jobdone"
+          atomA = jobs%atom1(jobdone)
+          atomB = jobs%atom2(jobdone)
+
           ! Receive fragment info (and update density or gradient)
           ! ------------------------------------------------------
           FragoptCheck1: if(jobs%dofragopt(jobdone)) then
 
+             ! Sanity precaution - only fragopt for atomic fragments.
+             if(atomA/=atomB) call lsquit('fragment_jobs: Fragment opt. only for atomic frags!',-1)
+
              ! Job is fragment optimization --> receive atomic fragment info from slave
-             call mpi_send_recv_single_fragment(AtomicFragments(jobdone),MPI_COMM_LSDALTON,&
+             call mpi_send_recv_single_fragment(AtomicFragments(atomA),MPI_COMM_LSDALTON,&
                   & sender,master,singlejob)
 
           else
@@ -1035,8 +1042,6 @@ contains
           call free_joblist(singlejob)
 
           ! Save fragment energy (symmetric for pairs)
-          atomA = jobs%atom1(jobdone)
-          atomB = jobs%atom2(jobdone)
           do j=1,ndecenergies
              if(atomA==atomB) then
                 FragEnergies(atomA,atomA,j) = fragenergy(j)
