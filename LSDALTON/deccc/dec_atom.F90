@@ -380,6 +380,46 @@ contains
 
   end subroutine atomic_fragment_init_orbital_specific
 
+  
+  !> \brief Initialize atomic fragments by simply including neighbouring atoms within
+  !> a certain distance.
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine init_estimated_atomic_fragments(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+       & MyMolecule,mylsitem,DoBasis,init_radius,dofrag,AtomicFragments)
+
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Information about DEC occupied orbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Make fragment basis (MO coeff and Fock matrix for fragment)?
+    logical, intent(in) :: DoBasis
+    !> Distance beyond which to include neighbour atoms
+    real(realk),intent(in) :: init_radius
+    !> List of which atoms have orbitals assigned
+    logical,intent(in),dimension(MyMolecule%natoms) :: dofrag
+    !> Fragments to construct
+    type(decfrag), intent(inout), dimension(MyMolecule%natoms) :: AtomicFragments
+    integer :: i,MyAtom
+
+    do i=1,MyMolecule%natoms
+       if(.not. dofrag(i)) cycle
+       MyAtom=i
+       call atomic_fragment_init_within_distance(MyAtom,&
+            & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+            & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
+    end do
+
+  end subroutine init_estimated_atomic_fragments
 
 
   !> \brief Nullify everything and set variables to zero
@@ -4077,9 +4117,12 @@ if(DECinfo%PL>0) then
   end subroutine create_dec_joblist_driver
 
 
+
   !> \brief Construct a job list, joblist12, which contains the jobs of two existing job lists,
   !> joblist1 and joblist2 in the order [joblist1 joblist2], with the internal job orderings within
   !> joblist1 or joblist2 unchanged.
+  !> \author Kasper Kristensen
+  !> \date November 2013
   subroutine concatenate_joblists(joblist1,joblist2,joblist12)
     implicit none
     !> Joblists 1 and 2
