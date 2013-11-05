@@ -3782,6 +3782,63 @@ if(DECinfo%PL>0) then
 
 
 
+  !> \brief Create job list for DEC fragment optimization calculations.
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine create_dec_joblist_fragopt(natoms,nocc,nunocc,DistanceTable,&
+       & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,jobs)
+    implicit none
+
+    !> Number of atoms in full molecule
+    integer, intent(in) :: nAtoms
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Distance table for all atoms in the molecule
+    real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
+    !> Information about DEC occupied orbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Logical vector telling which atoms have orbitals assigned
+    logical,dimension(natoms),intent(in) :: dofrag
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Job list of fragments listed according to size (all pointers in the type are initialized here)
+    type(joblist),intent(inout) :: jobs
+    integer,dimension(natoms) :: af_list
+    integer :: njobs,i
+
+    ! Get list of atomic fragment ordered according to their (very roughly) estimated sizes
+    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
+         & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
+
+    ! Init job list with number of jobs corresponding to number of atoms with orbitals assigned
+    njobs = count(dofrag)
+    call init_joblist(njobs,jobs)
+
+
+    ! Set members of job list
+    ! ***********************
+
+    do i=1,njobs
+
+       ! Atoms according to list based on estimated sizes
+       jobs%atom1(i) = af_list(i)
+       jobs%atom2(i) = af_list(i)  ! atomic fragment, so atom1=atom2
+
+       ! Job size is not known because fragment size is not known - simply set it to 1 for all atoms.
+       jobs%jobsize(i) = 1
+
+       ! Do fragment optimization!
+       jobs%dofragopt(i) = .true.
+    end do
+
+    ! All other members of job list were set appropriately by the call to init_joblist.
+    
+  end subroutine create_dec_joblist_fragopt
+
 
   !> \brief Create job list for DEC calculations remaining after fragment optimization.
   !> \author Kasper Kristensen

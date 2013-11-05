@@ -425,16 +425,8 @@ contains
     DECinfo%gradient=.false.
 
     ! Initialize job list for atomic fragment optimizations
-    ! HACK
-    DECinfo%pair_distance_threshold=0.0_realk
-    calcAF=.true.
-    call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
-         &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
-    jobs%dofragopt=.true. ! HACK
-    njobs = jobs%njobs
-    print *, 'njobs', njobs
-    DECinfo%pair_distance_threshold=1000.0_realk
-
+    call create_dec_joblist_fragopt(natoms,nocc,nunocc,MyMolecule%DistanceTable,&
+         & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,jobs)
 
 
     write(DECinfo%output,*)
@@ -586,7 +578,6 @@ contains
        call free_joblist(singlejob)
 #endif
 
-!!$    end if EstimatedCalculation ! HACK
 
     ! Done with atomic fragment job list
     call free_joblist(jobs)
@@ -604,6 +595,7 @@ contains
     DECinfo%gradient = grad_save
 
     ! Get job list 
+    calcAF = DECinfo%RepeatAF
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
     njobs = jobs%njobs
