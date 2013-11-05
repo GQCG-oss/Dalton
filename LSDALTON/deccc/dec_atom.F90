@@ -4077,6 +4077,57 @@ if(DECinfo%PL>0) then
   end subroutine create_dec_joblist_driver
 
 
+  !> \brief Construct a job list, joblist12, which contains the jobs of two existing job lists,
+  !> joblist1 and joblist2 in the order [joblist1 joblist2], with the internal job orderings within
+  !> joblist1 or joblist2 unchanged.
+  subroutine concatenate_joblists(joblist1,joblist2,joblist12)
+    implicit none
+    !> Joblists 1 and 2
+    type(joblist),intent(in) :: joblist1, joblist2
+    !> Output joblist containing [joblist1 joblist2]
+    type(joblist),intent(inout) :: joblist12
+    integer :: njobs,startidx
+    
+    ! Number of jobs in combined job list: Sum of original job lists
+    njobs = joblist1%njobs + joblist2%njobs
+    call init_joblist(njobs,joblist12)
+    
+
+    ! Copy information
+    ! ****************
+
+    ! Joblist 1 --> Joblist12
+    joblist12%atom1(1:joblist1%njobs) = joblist1%atom1
+    joblist12%atom2(1:joblist1%njobs) = joblist1%atom2
+    joblist12%jobsize(1:joblist1%njobs) = joblist1%jobsize
+    joblist12%jobsdone(1:joblist1%njobs) = joblist1%jobsdone
+    joblist12%dofragopt(1:joblist1%njobs) = joblist1%dofragopt
+    joblist12%nslaves(1:joblist1%njobs) = joblist1%nslaves
+    joblist12%nocc(1:joblist1%njobs) = joblist1%nocc
+    joblist12%nunocc(1:joblist1%njobs) = joblist1%nunocc
+    joblist12%nbasis(1:joblist1%njobs) = joblist1%nbasis
+    joblist12%ntasks(1:joblist1%njobs) = joblist1%ntasks
+    joblist12%flops(1:joblist1%njobs) = joblist1%flops
+    joblist12%LMtime(1:joblist1%njobs) = joblist1%LMtime
+    joblist12%load(1:joblist1%njobs) = joblist1%load
+
+    ! Joblist 2 --> Joblist12
+    startidx=joblist1%njobs+1
+    joblist12%atom1(startidx:njobs) = joblist2%atom1
+    joblist12%atom2(startidx:njobs) = joblist2%atom2
+    joblist12%jobsize(startidx:njobs) = joblist2%jobsize
+    joblist12%jobsdone(startidx:njobs) = joblist2%jobsdone
+    joblist12%dofragopt(startidx:njobs) = joblist2%dofragopt
+    joblist12%nslaves(startidx:njobs) = joblist2%nslaves
+    joblist12%nocc(startidx:njobs) = joblist2%nocc
+    joblist12%nunocc(startidx:njobs) = joblist2%nunocc
+    joblist12%nbasis(startidx:njobs) = joblist2%nbasis
+    joblist12%ntasks(startidx:njobs) = joblist2%ntasks
+    joblist12%flops(startidx:njobs) = joblist2%flops
+    joblist12%LMtime(startidx:njobs) = joblist2%LMtime
+    joblist12%load(startidx:njobs) = joblist2%load
+
+  end subroutine concatenate_joblists
 
 
   ! \brief Get main info about size for pair fragment from sets of logical arrays
