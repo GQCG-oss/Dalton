@@ -54,6 +54,15 @@ if(ENABLE_PELIB)
         )
 endif()
 
+if(ENABLE_QMMM_CUDA)
+    add_subdirectory(external/qmmm_cuda)
+    add_dependencies(dalton qmmm_cuda)
+    set(DALTON_LIBS
+        ${PROJECT_BINARY_DIR}/lib/libqmmm_cuda.a
+        ${DALTON_LIBS}
+        )
+endif()
+
 add_executable(
     dalton.x
     ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F

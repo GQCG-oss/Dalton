@@ -45,6 +45,7 @@ option(ENABLE_LSEEK          "Enable lseek"                                     
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
 option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
+option(ENABLE_QMMM_CUDA      "Enable QMMM CUDA library"                         ON)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
