@@ -751,6 +751,7 @@ contains
     end if
 
     ! MODIFY FOR NEW MODEL
+    ! MODIFY FOR NEW CORRECTION: Add correction to output energy
     ! Set output energy: We choose occupied partitioning scheme energy as general output
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)

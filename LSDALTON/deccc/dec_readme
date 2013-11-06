@@ -33,7 +33,7 @@ increase ndecenergies by N.
 
 (iv)
 New model:
-* Set defaults for your model in dec_set_default_config and dec_set_model_names.
+* Define your model in dec_set_model_names.
 * Add model to input keyword(s) in config_dec_input. 
 (For example, see what is done for CCSD and do something similar).
 
