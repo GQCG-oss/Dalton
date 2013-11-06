@@ -753,7 +753,7 @@ write(lupri,'(A80,2F18.10)') 'Coulomb Hessian from diff-eri (Mulliken): RMS and 
 deallocate(TempHess)
 
 #endif
-#if 1
+#if 0
 !*****************************************************************************
 !******                             Coulomb third derivative from differentiated 4-center ERI (Mulliken)
 !*****************************************************************************
@@ -956,9 +956,9 @@ ENDDO
 tmp1 = 0.0_realk
 tmp2 = 0.0_realk
 iCubic = 0
-DO n=1,nAtoms
-  DO m=1,nAtoms
-    DO o=1,nAtoms
+DO n=1,3*nAtoms
+  DO m=1,3*nAtoms
+    DO o=1,3*nAtoms
         iCubic = iCubic+1
         tmp1=tmp1+TempCubic(o,m,n,1)*TempCubic(o,m,n,1)
         tmp2=tmp2+TempCubic(o,m,n,1)*iCubic
@@ -1235,7 +1235,7 @@ call ls_dzero(TempCubic,natoms*3*nAtoms*3*nAtoms*3)
 iCubic = 0
 DO n=1,3*nAtoms
   DO m=n,3*nAtoms
-    DO o=o,3*nAtoms
+    DO o=m,3*nAtoms
       iCubic = iCubic+1
       DO l=1,1
        DO k=1,1
@@ -1269,7 +1269,7 @@ DO n=1,3*nAtoms
     ENDDO
   ENDDO
 ENDDO
-write(lupri,'(A80,2F18.10)') 'Cubic kinetic enerh derivative integrals: RMS and index-weighted sum',&
+write(lupri,'(A80,2F18.10)') 'Cubic kinetic energy derivative integrals: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/natoms/natoms/27),tmp2/natoms/natoms/natoms/27
 deallocate(TempCubic)
 !*****************************************************************************

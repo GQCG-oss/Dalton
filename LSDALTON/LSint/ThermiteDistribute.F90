@@ -1877,94 +1877,32 @@ DO iPassP=1,P%nPasses
           same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
           same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
           same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
-          IF ((i1.EQ.i2).AND..NOT.same12) THEN
-             IF (((i1.EQ.i3).AND..NOT.same13).AND.((i2.EQ.i3).AND..NOT.same23)) THEN
+          IF ((i1.EQ.i2).AND.(i1.EQ.i3)) THEN
+             IF (same12.AND.same13) THEN !All the same AO index
+               nPermute=1
+             ELSE IF (same12.OR.same13.OR.same23) THEN !Two are the same AO index
+               nPermute=3
+             ELSE !All different AO indeces
                nPermute=6
-             ELSEIF ((i1.EQ.i3).AND..NOT.same13) THEN
-               nPermute=4
-             ELSEIF ((i2.EQ.i3).AND..NOT.same23) THEN
-               nPermute=4
-             ELSE
-               nPermute=2
              ENDIF
-          ELSEIF ((i1.EQ.i3).AND..NOT.same13) THEN
-             IF ((i2.EQ.i3).AND..NOT.same23) THEN
-               nPermute=4
-             ELSE
-               nPermute=2
-             ENDIF
-          ELSEIF ((i2.EQ.i3).AND..NOT.same23) THEN
+          ELSE IF (i1.EQ.i2) THEN
              nPermute=2
+             IF (same12) nPermute=1
+          ELSE IF (i1.EQ.i3) THEN
+             nPermute=2
+             IF (same13) nPermute=1
+          ELSE IF (i2.EQ.i3) THEN
+             nPermute=2
+             IF (same23) nPermute=1
           ENDIF
- 
-            
-!         Dim5(1) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom1-1)+i1
-!         Dim5(2) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom2-1)+i2
-!         Dim5(3) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iAtom1-1)+i1
-!         Dim5(4) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom3-1)+i3
-!         Dim5(5) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom3-1)+i3
-!         Dim5(6) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iAtom2-1)+i2
-!         same12 = (Dim5(1).EQ.Dim5(2)).AND.(derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
-!         same13 = (Dim5(3).EQ.Dim5(4)).AND.(derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
-!         same23 = (Dim5(5).EQ.Dim5(6)).AND.(derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
-!         nPermute = 6
-!         IF (same12) THEN
-!           IF (same13) THEN !All are the same
-!             nPermute=1
-!           ELSE 
-!             nPermute=3
-!             Dim5(2) = Dim5(3)
-!             Dim5(3) = Dim5(4)
-!           ENDIF
-!         ELSE IF (same13) THEN
-!           nPermute=3
-!         ELSE IF (same23) THEN
-!           nPermute=3
-!           Dim5(3) = dim5(5)
-!         ENDIF
           IF (translate) THEN
             call lsquit('Error in generalDistributePQ - geoDerivORder 3 and translate not implemented',-1)
-!            ! 3 2 1
-!            Dim5(7) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i3-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom1-1)+i1
-!            Dim5(8) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
-!            Dim5(9) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
-!
-!            ! 3 1 2
-!            Dim5(10) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i3-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom2-1)+i2
-!            Dim5(11) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iAtom2-1)+i2
-!            Dim5(12) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iTrans-1)+i2
-!
-!            ! 2 3 1
-!            Dim5(13) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i2-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iAtom1-1)+i1
-!            Dim5(14) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iTrans-1)+i3-1) + 3*(iAtom1-1)+i1
-!            Dim5(15) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iTrans-1)+i1
-!
-!            ! 2 1 3
-!            Dim5(16) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i2-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom3-1)+i3
-!            Dim5(17) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iAtom3-1)+i3
-!            Dim5(18) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iTrans-1)+i3
-!
-!            ! 1 2 3
-!            Dim5(19) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i1-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom3-1)+i3
-!            Dim5(20) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom3-1)+i3
-!            Dim5(21) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i3
-!
-!            ! 1 3 2
-!            Dim5(22) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i1-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iAtom2-1)+i2
-!            Dim5(23) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iTrans-1)+i3-1) + 3*(iAtom2-1)+i2
-!            Dim5(24) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iTrans-1)+i2
-!
-!!           Dim5(13) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iAtom2-1)+i2
-            
           ENDIF
        ELSE IF (input%geoDerivOrder.GE. 4)THEN
          call lsquit('Error in generalDistributePQ - geoDerivORder > 3 not implemented',-1)
        ENDIF
        DO iPermute=1,nPermute
         iDim5 = Dim5(iPermute)
-IF (iDim5.GT.ndim5output) THEN
-  write(*,*) 'debug:',iPermute,iAtom1,iAtom2,iAtom3,i1,i2,i3,Dim5(iPermute),ndim5output
-ENDIF
         IF (negative(iPermute)) THEN
           QPmat6 => QPmat5
         ELSE
