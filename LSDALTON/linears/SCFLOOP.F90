@@ -225,7 +225,6 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
          CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)
       endif
       CALL LSTIMER('FCK_FO ',TIMSTR,TIMEND,config%LUPRI)
-      if (iteration.EQ.config%opt%cfg_max_linscf_iterations) exit
 
       if (config%solver%step_accepted)Then
          IF(config%opt%cfg_oao_gradnrm)THEN

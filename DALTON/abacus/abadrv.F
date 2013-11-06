@@ -685,11 +685,8 @@ C  /* Deck abainp */
 C
 C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
-C             (Feb 2003: one of **START, **PROPE, or **FINAL)
+C             (one of **START, **EACH , or **PROPE)
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"
@@ -706,8 +703,8 @@ C
      *          WORDL*12
       DIMENSION IPOINT(MXCOOR), IDOSYM(8), WORK(LWORK)
 C
-#include "abainf.h"
 #include "gnrinf.h"
+#include "abainf.h"
 #include "energy.h"
 #include "orgcom.h"
 #include "dorps.h"
@@ -964,9 +961,9 @@ C         if reading input from a terminal
   910 CONTINUE
   920 CONTINUE
 C     ... WRDSRC not found in input file;
-C         if WRDSRC .eq. '**START' we also try for '**PROPER'
-C         such that any '**PROPER' input will now also apply for initial
-C         geometry if not overridden with '**START' /Feb 2003 hjaaj
+C         if WRDSRC .eq. '**START' we also try for '**EACH '
+C         such that any '**EACH ' input will now also apply for initial
+C         geometry if not overridden with '**START'
          IF (WORD1 .EQ. '**START') THEN
             REWIND (LUCMD,IOSTAT=IOS)
             WORD1 = '**EACH '
@@ -1448,7 +1445,7 @@ cs
       END IF
       IF (ABASOP) THEN
 CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
-         IF (PARCAL) CALL PARQUIT('ABAINP')
+         IF (PARCAL) CALL PARQUIT('ABASOP')
 CKeinSPASmehr
          IF (CCPPA) THEN
             WRITE(LUPRI,'(A,A,/,18X,A,/,A,A)')
@@ -1749,7 +1746,7 @@ c            CALL QUIT('Not supported input in ABAINP')
      &      '        Diamagnetic first and second order ',
      &      '        Paramagnetic second singlet and triplet order ',
      &      '     - Remember to set GAUGEO on INTEGRAL SECTION',
-     &      '        GAUGEO Should be placed at selected nucleus'
+     &   '        GAUGEO Should be placed at selected nucleus, in a.u.'
       ENDIF
       IF (ABASOP) THEN
          IERR = 0

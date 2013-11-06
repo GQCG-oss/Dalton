@@ -147,10 +147,10 @@ contains
     molecule%nelectrons = get_num_electrons(mylsitem)
     molecule%nbasis = get_num_basis_functions(mylsitem)
     molecule%nauxbasis = get_num_aux_basis_functions(mylsitem)
-    molecule%numocc = molecule%nelectrons/2
-    molecule%numvirt = molecule%nbasis - molecule%numocc
+    molecule%nocc = molecule%nelectrons/2
+    molecule%nunocc = molecule%nbasis - molecule%nocc
     molecule%ncore = count_ncore(mylsitem)
-    molecule%nval = molecule%numocc - molecule%ncore
+    molecule%nval = molecule%nocc - molecule%ncore
 
     ! Which basis functions are on which atoms?
     call molecule_get_atomic_sizes(molecule,mylsitem)
@@ -158,6 +158,16 @@ contains
     ! Memory use for full molecule
     call calculate_fullmolecule_memory(molecule,memory_use)
     DECinfo%fullmolecule_memory = memory_use
+
+    !> Interatomic distances in atomic units
+    call mem_alloc(molecule%DistanceTable,molecule%natoms,molecule%natoms)
+    molecule%DistanceTable=0.0E0_realk
+    call GetDistances(molecule%DistanceTable,molecule%natoms,mylsitem,DECinfo%output) 
+
+    !> Which model to use for different pair calculations?
+    !> At this initialization step - use the input CC model for all pairs
+    call mem_alloc(molecule%ccmodel,molecule%natoms,molecule%natoms)
+    molecule%ccmodel = DECinfo%ccmodel
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
@@ -169,8 +179,8 @@ contains
     write(DECinfo%output,'(a,i6)')   'FULL: Number of aux. basis func. : ',molecule%nauxbasis
     write(DECinfo%output,'(a,i6)')   'FULL: Number of core orbitals    : ',molecule%ncore
     write(DECinfo%output,'(a,i6)')   'FULL: Number of valence orbitals : ',molecule%nval
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of occ. orbitals    : ',molecule%numocc
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%numvirt
+    write(DECinfo%output,'(a,i6)')   'FULL: Number of occ. orbitals    : ',molecule%nocc
+    write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%nunocc
     write(DECinfo%output,*)
 
   end subroutine molecule_init_basics
@@ -239,12 +249,12 @@ contains
 
     call mem_alloc(tmp,nbasis,nbasis)
     ! Put occ orbitals into tmp
-    do i=1,Molecule%numocc
-       tmp(1:nbasis,i) = Molecule%ypo(1:nbasis,i)
+    do i=1,Molecule%nocc
+       tmp(1:nbasis,i) = Molecule%Co(1:nbasis,i)
     end do
     ! Put virt orbitals into tmp
-    do i=1,Molecule%numvirt
-       tmp(1:nbasis,i+Molecule%numocc) = Molecule%ypv(1:nbasis,i)
+    do i=1,Molecule%nunocc
+       tmp(1:nbasis,i+Molecule%nocc) = Molecule%Cv(1:nbasis,i)
     end do
     
     ! All orbitals into C
@@ -351,7 +361,7 @@ contains
 
   !> \brief Set orbitals used in DEC to canonical orbitals (only for testing).
   !> Assumes that Fock matrix is stored in molecule%fock when this subroutine is called.
-  !> After this call molecule%ypo and molecule%ypv will contain the occupied and virtual MO
+  !> After this call molecule%Co and molecule%Cv will contain the occupied and virtual MO
   !> coefficients, respectively, while molecule%ppfock and molecule%qqfock will be the occ-occ
   !> and virt-virt blocks of the diagonal canonical MO Fock matrix.
   !> \author Kasper Kristensen
@@ -365,8 +375,8 @@ contains
     real(realk), pointer :: eival(:), C(:,:)
 
     nbasis = molecule%nbasis
-    nocc = molecule%numocc
-    nunocc = molecule%numvirt
+    nocc = molecule%nocc
+    nunocc = molecule%nunocc
 
     ! Canonical MO coefficients
     call mem_alloc(C,nbasis,nbasis)
@@ -378,8 +388,8 @@ contains
     call solve_eigenvalue_problem(nbasis,molecule%fock,molecule%overlap,eival,C)
 
     ! Set MO coefficients
-    Molecule%ypo = C(:,1:nocc)   ! occupied 
-    Molecule%ypv = C(:,nocc+1:nbasis)   ! unoccupied
+    Molecule%Co = C(:,1:nocc)   ! occupied 
+    Molecule%Cv = C(:,nocc+1:nbasis)   ! unoccupied
 
     ! Set Fock matrix in canonical MO basis 
     Molecule%ppfock=0.0_realk
@@ -492,8 +502,8 @@ contains
     
     ! Init stuff
     nbasis = molecule%nbasis
-    nocc = molecule%numocc
-    nvirt = molecule%numvirt
+    nocc = molecule%nocc
+    nvirt = molecule%nunocc
     natoms = molecule%natoms
 
 !    inquire(file='carmommatrix',exist=carmom_exist)
@@ -530,8 +540,8 @@ contains
        call mat_init(Xocc,nocc,nocc)
        call mat_init(Xvirt,nvirt,nvirt)
 
-       call mat_set_from_full(Molecule%ypo(1:nbasis,1:nocc), 1E0_realk,Cocc)
-       call mat_set_from_full(Molecule%ypv(1:nbasis,1:nvirt), 1E0_realk,Cvirt)
+       call mat_set_from_full(Molecule%Co(1:nbasis,1:nocc), 1E0_realk,Cocc)
+       call mat_set_from_full(Molecule%Cv(1:nbasis,1:nvirt), 1E0_realk,Cvirt)
 
        call mem_alloc(molecule%carmomocc,3,nocc)
        call mem_alloc(molecule%carmomvirt,3,nvirt)
@@ -571,12 +581,12 @@ contains
     if(DECinfo%SkipReadIn) return
 
     ! Delete transformation matrices for general basis
-    if(associated(molecule%ypo)) then
-       call mem_dealloc(molecule%ypo)
+    if(associated(molecule%Co)) then
+       call mem_dealloc(molecule%Co)
     end if
 
-    if(associated(molecule%ypv)) then
-       call mem_dealloc(molecule%ypv)
+    if(associated(molecule%Cv)) then
+       call mem_dealloc(molecule%Cv)
     end if
 
     !Deallocate CABS MO!
@@ -626,6 +636,14 @@ contains
 
     if(associated(molecule%AtomCenters)) then
        call mem_dealloc(molecule%AtomCenters)
+    end if
+
+    if(associated(molecule%DistanceTable)) then
+       call mem_dealloc(molecule%DistanceTable)
+    end if
+
+    if(associated(molecule%ccmodel)) then
+       call mem_dealloc(molecule%ccmodel)
     end if
 
   end subroutine molecule_finalize
@@ -692,14 +710,14 @@ contains
     integer :: nbasis,nocc,nvirt
 
     nbasis = molecule%nbasis
-    nocc = molecule%numocc
-    nvirt = molecule%numvirt
-    call mem_alloc(molecule%ypo,nbasis,nocc)
-    call mem_alloc(molecule%ypv,nbasis,nvirt)
+    nocc = molecule%nocc
+    nvirt = molecule%nunocc
+    call mem_alloc(molecule%Co,nbasis,nocc)
+    call mem_alloc(molecule%Cv,nbasis,nvirt)
 
     ! assign
-    molecule%ypo = C(1:nbasis,1:nocc)
-    molecule%ypv = C(1:nbasis,nocc+1:nbasis)
+    molecule%Co = C(1:nbasis,1:nocc)
+    molecule%Cv = C(1:nbasis,nocc+1:nbasis)
 
   end subroutine molecule_generate_basis
 
@@ -709,11 +727,11 @@ contains
 
     implicit none
     type(fullmolecule), intent(inout) :: molecule
-    type(array2) :: ppfock, qqfock, ypo,ypv,yho,yhv,fock
+    type(array2) :: ppfock, qqfock, Co,Cv,Co2,Cv2,fock
     integer :: nocc, nvirt, oo(2), bo(2), bv(2), vv(2), bb(2),nbasis
 
-    nocc = molecule%numocc
-    nvirt = molecule%numvirt
+    nocc = molecule%nocc
+    nvirt = molecule%nunocc
     nbasis = molecule%nbasis
     oo(1)=nocc
     oo(2)=nocc
@@ -730,21 +748,21 @@ contains
     fock = array2_init(bb,molecule%fock)
 
     ! Occ-occ block
-    ypo = array2_init(bo,molecule%ypo)
-    yho = array2_init(bo,molecule%ypo)
-    ppfock = array2_similarity_transformation(ypo,fock,yho,oo)
-    call array2_free(ypo)
-    call array2_free(yho)
+    Co = array2_init(bo,molecule%Co)
+    Co2 = array2_init(bo,molecule%Co)
+    ppfock = array2_similarity_transformation(Co,fock,Co2,oo)
+    call array2_free(Co)
+    call array2_free(Co2)
     call mem_alloc(molecule%ppfock,nocc,nocc)
     molecule%ppfock(1:nocc,1:nocc) = ppfock%val(1:nocc,1:nocc)
     call array2_free(ppfock)
 
     ! Virt-virt block
-    ypv = array2_init(bv,molecule%ypv)
-    yhv = array2_init(bv,molecule%ypv)
-    qqfock = array2_similarity_transformation(ypv,fock,yhv,vv)
-    call array2_free(ypv)
-    call array2_free(yhv)
+    Cv = array2_init(bv,molecule%Cv)
+    Cv2 = array2_init(bv,molecule%Cv)
+    qqfock = array2_similarity_transformation(Cv,fock,Cv2,vv)
+    call array2_free(Cv)
+    call array2_free(Cv2)
     call array2_free(fock)
     call mem_alloc(molecule%qqfock,nvirt,nvirt)
     molecule%qqfock(1:nvirt,1:nvirt) = qqfock%val(1:nvirt,1:nvirt)
@@ -773,8 +791,8 @@ contains
 
     ! Number of occupied (O), Virtual (V), atomic basis functions (A)
     ! ***************************************************************
-    O = MyMolecule%numocc
-    V = MyMolecule%numvirt
+    O = MyMolecule%nocc
+    V = MyMolecule%nunocc
     A = MyMolecule%nbasis
 
 
@@ -917,15 +935,15 @@ contains
 !!$    call mat_free(AOint_mat)
 !!$
 !!$    ! Init interaction matrix: Occupied,virtual dimension
-!!$    call mem_alloc(molecule%orbint,molecule%numocc,molecule%numvirt)
+!!$    call mem_alloc(molecule%orbint,molecule%nocc,molecule%nunocc)
 !!$
 !!$    ! Transform to MO basis
-!!$    call dec_diff_basis_transform1(molecule%nbasis,molecule%numocc,molecule%numvirt,&
-!!$         & molecule%ypo, molecule%ypv, AOint, molecule%orbint)
+!!$    call dec_diff_basis_transform1(molecule%nbasis,molecule%nocc,molecule%nunocc,&
+!!$         & molecule%Co, molecule%Cv, AOint, molecule%orbint)
 !!$
 !!$    ! Take absolute value (should not be necessary but do it to be on the safe side)
-!!$    do j=1,molecule%numvirt
-!!$       do i=1,molecule%numocc
+!!$    do j=1,molecule%nunocc
+!!$       do i=1,molecule%nocc
 !!$          molecule%orbint(i,j) = abs(molecule%orbint(i,j))
 !!$       end do
 !!$    end do

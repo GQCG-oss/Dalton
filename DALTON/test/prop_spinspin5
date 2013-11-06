@@ -225,6 +225,5 @@ else
   echo THERE IS A PROBLEM
   exit 1
 fi
-
-' > prop_spinspin5.check
+%EOF%
 #######################################################################

@@ -12,6 +12,7 @@ import string
 import re
 import subprocess
 import shutil
+import datetime
 
 sys.path.append('cmake')
 from argparse import ArgumentParser
@@ -95,7 +96,8 @@ def parse_input():
             action='store',
             choices=('sequential', 'parallel', 'cluster'),
             default='none',
-            help='pass -mkl=STRING flag to the compiler and linker [default: None]')
+            help='pass -mkl=STRING flag to the compiler and linker (sequential: link using the non-threaded libraries; parallel: link using the OMP threaded libraries; cluster: link using the MKL CLuster libraries) [default: None]')
+
     group.add_argument('--blas',
             action='store',
             default='auto',
@@ -173,6 +175,10 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable interest external library [default: %(default)s]')
+    group.add_argument('--ichor',
+            action='store_true',
+            default=False,
+            help='enable ichor integrals library [default: %(default)s]')
     
     group = parser.add_argument_group('pass extra flags to the compiler')
     group.add_argument('--extra-fc-flags',
@@ -337,6 +343,7 @@ def print_build_help(build_path):
 def save_setup_command(argv, build_path):
     file_name = os.path.join(build_path, 'setup_command')
     f = open(file_name, 'w')
+    f.write('# setup command was executed '+datetime.datetime.now().strftime("%d-%B-%Y %H:%M:%S"+"\n"))
     f.write(" ".join(argv[:])+"\n")
     f.close()
 

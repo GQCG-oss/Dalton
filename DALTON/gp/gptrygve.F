@@ -48,6 +48,7 @@ C
       WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
       WRITE (LUPRI, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
       WRITE (LUPRI, '()')
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C  /* Deck timer */
@@ -166,6 +167,7 @@ Cx    WRITE (LUPRI,'(//150A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
 Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '| ', HEAD(1:LHEAD), ' |'
 Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
       WRITE (LUPRI,'()')
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C  /* Deck stopit */
@@ -282,6 +284,30 @@ C
       WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,
      & ' not implemented for parallel calculations!'
       CALL QUIT(TEXT)
+      RETURN
+      END
+C  /* Deck parqarn */
+      SUBROUTINE PARWARN(TEXT)
+C Purpose:
+C   Warning message if code is not optimized (parallelized) for parallel calculations.
+
+      IMPLICIT NONE
+
+#include "priunit.h"
+      CHARACTER TEXT*(*)
+      INTEGER LUPRIN
+C
+C
+      IF (LUPRI .GE. 0) THEN
+         LUPRIN = LUPRI
+      ELSE IF (LUERR .GE. 0) THEN
+         LUPRIN = LUERR
+      ELSE
+         LUPRIN = 6
+      END IF
+      WRITE (LUPRIN,'(//3A/A/)') 'WARNING: ',TEXT,
+     & 'module is not optimized for parallel calculations!',
+     & 'WARNING: you will get better efficiency with a sequential run'
       RETURN
       END
 C  /* Deck opendx */

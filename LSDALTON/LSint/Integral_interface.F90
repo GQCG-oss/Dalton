@@ -5540,8 +5540,8 @@ CONTAINS
      CALL mat_free(S22inv)
      CALL mat_free(S23)
      CALL mat_free(S22)
-     ! call io_add_filename(setting%IO,Filename,LUPRI)
-     ! call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+     call io_add_filename(setting%IO,Filename,LUPRI)
+     call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
    ENDIF
    ! IF constraining the total charge
    ! Lagrangian multiplier for conservation of the total nb. of electrons

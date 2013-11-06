@@ -178,7 +178,7 @@ CTRL[11]=12
 ERROR[11]="FINAL GEOMETRY NOT CORRECT"
 
 # Final SCF energy:
-CRIT1=`$GREP "Total energy * \-76\.053423553[0-9] au \(Hartrees\)" $log | wc -l`
+CRIT1=`$GREP "Total energy * \-76\.05342355[0-9][0-9] au \(Hartrees\)" $log | wc -l`
 TEST[12]=`expr $CRIT1`
 CTRL[12]=1
 ERROR[12]="FINAL ENERGY NOT CORRECT"

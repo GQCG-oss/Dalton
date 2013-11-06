@@ -3187,7 +3187,7 @@ contains
     !> Array where EOS indices are extracted
     type(array4),intent(inout) :: Arr
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Occupied (true) or virtual (false) scheme
     logical,intent(in) :: occupied
     type(array4) :: Arr_copy
@@ -3279,7 +3279,7 @@ contains
     !> Original array with AOS fragment indices for both occ and virt spaces
     type(array4),intent(in) :: Arr_orig
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     integer :: nocc, nvirt
 
     ! Number of occ and virt orbitals on central atom in fragment
@@ -3888,7 +3888,7 @@ contains
   subroutine remove_core_orbitals_from_last_index(MyFragment,A,B)
     implicit none
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Original array
     type(array4),intent(in) :: A
     !> New array where core indices for the last index are removed
@@ -3973,7 +3973,7 @@ contains
     type(array4),intent(inout) :: t2
     !> Atomic (or pair) fragment; the virtual correlation density which implicitly defines 
     !> the fragment-adapted orbital basis is stored in MyFragment%VirtMat
-    type(ccatom),intent(in) :: MyFragment
+    type(decfrag),intent(in) :: MyFragment
     real(realk),pointer :: U(:,:),eival(:),Ured(:,:),tmp(:,:,:,:),tmp2(:,:,:,:)
     integer :: nvirt,nvirtFO,i,idx,nocc,dims(4)
     real(realk) :: thr

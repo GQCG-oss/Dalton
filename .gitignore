@@ -20,4 +20,5 @@ DALTON/Doc/*.idx
 DALTON/Doc/*.ilg
 DALTON/Doc/*.ind
 DALTON/Doc/*.toc
+DALTON/Doc/Master.out
 *~

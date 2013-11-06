@@ -7,6 +7,7 @@ Installing Dalton |version|
    :maxdepth: 2
 
    general.rst
+   supported.rst
    admins.rst
    math.rst
    scratch.rst

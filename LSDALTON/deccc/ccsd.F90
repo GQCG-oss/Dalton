@@ -657,10 +657,12 @@ contains
   !    nullify(xv_p)
   !    nullify(yv_p)
   !end subroutine get_ccsd_residual_integral_driven_oldarray_wrapper
-  subroutine ccsd_residual_wrapper(w_cp,delta_fock,omega2,t2,&
+  subroutine ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2,t2,&
              & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
              & xv,yo,yv,nb,MyLsItem,omega1,iter,local,rest)
     implicit none
+    !> CC model
+    integer,intent(inout) :: ccmodel
     logical, intent(in)   :: w_cp
     type(array)           :: delta_fock
     type(array)           :: omega2
@@ -714,6 +716,7 @@ contains
       call ls_mpi_buffer(nv,infpar%master)
       call ls_mpi_buffer(iter,infpar%master)
       call ls_mpi_buffer(local,infpar%master)
+      call ls_mpi_buffer(ccmodel,infpar%master)
       call ls_mpi_buffer(rest,infpar%master)
 
       if(parent)addr01=delta_fock%addr_loc
@@ -780,7 +783,7 @@ contains
     endif
 
 #endif
-    call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2,t2,&
+    call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
      & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
      & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
 
@@ -836,12 +839,15 @@ contains
   !
   !rest = tells the routine wheter the calculation has been restarted from
   !amplitude files
-  subroutine get_ccsd_residual_integral_driven(deltafock,omega2,t2,fock,govov,no,nv,&
+  subroutine get_ccsd_residual_integral_driven(ccmodel,deltafock,omega2,t2,fock,govov,no,nv,&
        ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
 #ifdef VAR_OMP
     use omp_lib,only:omp_get_wtime
 #endif
     implicit none
+
+    !> CC model
+    integer,intent(inout) :: ccmodel
     !> Number of basis functions
     integer,intent(in) :: nb
     !> Number of occupied orbitals
@@ -1122,7 +1128,7 @@ contains
 
     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
       call ls_mpibcast(CCSDDATA,infpar%master,infpar%lg_comm)
-      call mpi_communicate_ccsd_calcdata(omega2,t2,govov,xo,xv,yo,&
+      call mpi_communicate_ccsd_calcdata(ccmodel,omega2,t2,govov,xo,xv,yo,&
       &yv,MyLsItem,nb,nv,no,iter,scheme,local)
     endif StartUpSlaves
       
@@ -1268,7 +1274,7 @@ contains
     call mem_alloc(Gbi,nb*no)
 
 
-    if( DECinfo%ccModel > MODEL_CC2 )then
+    if( Ccmodel > MODEL_CC2 )then
 
 #ifdef VAR_MPI
       call mem_alloc(sio4,sio4_c,int(i8*nor*no2,kind=long))
@@ -1329,7 +1335,7 @@ contains
     !      &(8.0E0_realk*o2v*MaxActualDimGamma*2)/(1024.0E0_realk*1024.0E0_realk*1024.0E0_realk)
     call mem_alloc(uigcj,int((i8*o2v)*MaxActualDimGamma,kind=8))
 
-    if( DECinfo%ccModel > MODEL_CC2 )then
+    if( Ccmodel > MODEL_CC2 )then
       sio4=0.0E0_realk
     endif
 
@@ -1499,7 +1505,7 @@ contains
        call lsmpi_poke()
 
        !VVOO
-       if ( DECinfo%ccModel > MODEL_CC2 ) then
+       if ( Ccmodel > MODEL_CC2 ) then
         !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
         call dgemm('n','n',la*no*lg,no,nb,1.0E0_realk,w1,la*no*lg,yo,nb,0.0E0_realk,w3,la*no*lg)
         call lsmpi_poke()
@@ -1558,7 +1564,7 @@ contains
        endif
 
 
-       if ( DECinfo%ccModel > MODEL_CC2 .and. ( iter/=1.or.restart ) ) then
+       if ( Ccmodel > MODEL_CC2 .and. ( iter/=1.or.restart ) ) then
         ! gvoov = (vo|ov) constructed from w2               = I [alpha j b  gamma]
         !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
         call dgemm('n','n',la*no*nv,no,lg,1.0E0_realk,w2,la*no*nv,yo(fg),nb,0.0E0_realk,w1,la*no*nv)
@@ -1587,13 +1593,13 @@ contains
 
 #ifdef VAR_MPI
        if(scheme/=4.and.iter==1.and.lock_outside) call arr_unlock_wins(govov,.true.)
-       if((scheme==2.or.scheme==3).and.DECinfo%ccModel>MODEL_CC2.and.lock_outside) call arr_unlock_wins(gvvooa,.true.)
-       if (DECinfo%ccModel>MODEL_CC2.and.(iter/=1.or.restart).and.(scheme==2.or.scheme==3).and.lock_outside) then
+       if((scheme==2.or.scheme==3).and.Ccmodel>MODEL_CC2.and.lock_outside) call arr_unlock_wins(gvvooa,.true.)
+       if (Ccmodel>MODEL_CC2.and.(iter/=1.or.restart).and.(scheme==2.or.scheme==3).and.lock_outside) then
          call arr_unlock_wins(gvoova,.true.)
        endif
 #endif
 
-      if( DECinfo%ccmodel > MODEL_CC2 )then
+      if( Ccmodel > MODEL_CC2 )then
         if(fa<=fg+lg-1)then
         !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
         !element in the alpha batch has a smaller index as the last element in
@@ -1618,7 +1624,7 @@ contains
       call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2,no*lg*la,yo,nb,0.0E0_realk,w0,no*lg*la)
       call lsmpi_poke()
       ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
-      if( DECinfo%ccModel > MODEL_CC2 )call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
+      if( Ccmodel > MODEL_CC2 )call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
       call lsmpi_poke()
 
 
@@ -1700,7 +1706,7 @@ contains
     wait_time = stopp - startt
     max_wait_time = wait_time
 
-    if( DECinfo%ccmodel>MODEL_CC2 .and. scheme==3 )then
+    if( Ccmodel>MODEL_CC2 .and. scheme==3 )then
 #if VAR_MPI
       if(lock_outside)then
         call arr_lock_wins(gvoova,'s',mode)
@@ -1738,7 +1744,7 @@ contains
 
        ! The following block is structured like this due to performance reasons
        !***********************************************************************
-       if(DECinfo%ccModel > MODEL_CC2)then
+       if(Ccmodel > MODEL_CC2)then
 
          call lsmpi_allreduce(sio4,int((i8*nor)*no2,kind=8),infpar%lg_comm,double_2G_nel)
 
@@ -1834,7 +1840,7 @@ contains
 #endif
     endif
 
-    if(DECinfo%ccModel>MODEL_CC2)then
+    if(Ccmodel>MODEL_CC2)then
 
       !get B2.2 contributions
       !**********************
@@ -2033,7 +2039,7 @@ contains
 
 
     !Transform inactive Fock matrix into the different mo subspaces
-    if (DECinfo%ccModel>MODEL_CC2) then
+    if (Ccmodel>MODEL_CC2) then
       ! -> Foo
       call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1,no)
       call dgemm('n','n',no,no,nb,1.0E0_realk,w1,no,yo,nb,0.0E0_realk,ppfock,no)
@@ -2122,7 +2128,7 @@ contains
 
     !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY
     !***********************************************************
-    call calculate_E2_and_permute(ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,&
+    call calculate_E2_and_permute(ccmodel,ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,&
     &no,nv,nb,omega2,o2v2,scheme,print_debug,lock_outside)
 
     call mem_dealloc(Had)
@@ -2159,9 +2165,11 @@ contains
 
   end subroutine get_ccsd_residual_integral_driven
 
-  subroutine calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,&
+  subroutine calculate_E2_and_permute(ccmodel,ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,&
   &omega2,o2v2,s,pd,lock_outside)
     implicit none
+    !> CC model
+    integer,intent(inout) :: ccmodel
     integer(kind=8),intent(in)::o2v2
     real(realk),intent(inout)::ppf(:)
     real(realk),intent(inout)::qqf(:)
@@ -2201,7 +2209,7 @@ contains
 #ifdef VAR_MPI
     master=(infpar%lg_mynum==infpar%master)
     if((s==2.or.s==1).and.master)then
-      call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
+      call share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
     endif
 #endif
 
@@ -2210,14 +2218,14 @@ contains
       !calculate first part of doubles E term and its permutation
       ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
       call dcopy(no2,ppf,1,w1,1)
-      if (DECinfo%ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w1,no)
+      if (Ccmodel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w1,no)
       ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
       call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,w1,no,1.0E0_realk,omega2%elm1,v2o)
      
       !calculate second part of doubles E term
       ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
       call dcopy(nv2,qqf,1,w1,1)
-      if (DECinfo%ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w1,nv)
+      if (Ccmodel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w1,nv)
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       call dgemm('n','n',nv,o2v,nv,1.0E0_realk,w1,nv,t2%elm1,nv,1.0E0_realk,omega2%elm1,nv)
      
@@ -2271,7 +2279,7 @@ contains
       !calculate first part of doubles E term and its permutation
       ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
       call dcopy(no2,ppf,1,w2,1)
-      if (DECinfo%ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
+      if (ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
       ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
       !if(me==0) call array_convert(t2,w1,t2%nelms)
       if(.not.lock_outside)then
@@ -2317,7 +2325,7 @@ contains
       !calculate second part of doubles E term
       ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
       call dcopy(nv2,qqf,1,w2,1)
-      if (DECinfo%ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
+      if (ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
 
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       if(.not.lock_outside)then
@@ -4506,39 +4514,39 @@ contains
 
   !> \brief T1 transformations
   subroutine getT1transformation(t1,xocc,xvirt,yocc,yvirt, &
-       & ypo,ypv,yho,yhv)
+       & Co,Cv,Co2,Cv2)
 
     implicit none
     type(array2), intent(inout) :: t1
-    type(array2), intent(inout) :: ypo,ypv,yho,yhv
+    type(array2), intent(inout) :: Co,Cv,Co2,Cv2
     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
 
     ! Occupied X and Y matrices
-    call getT1transformation_occ(t1,xocc,yocc,ypo,yho,yhv)
+    call getT1transformation_occ(t1,xocc,yocc,Co,Co2,Cv2)
 
     ! Virtual X and Y matrices
-    call getT1transformation_virt(t1,xvirt,yvirt,ypo,ypv,yhv)
+    call getT1transformation_virt(t1,xvirt,yvirt,Co,Cv,Cv2)
 
 
   end subroutine getT1transformation
 
 
   !> \brief T1 transformations for occupied X and Y matrices
-  subroutine getT1transformation_occ(t1,xocc,yocc,ypo,yho,yhv)
+  subroutine getT1transformation_occ(t1,xocc,yocc,Co,Co2,Cv2)
 
     implicit none
     type(array2), intent(inout) :: t1
-    type(array2), intent(inout) :: ypo,yho,yhv
+    type(array2), intent(inout) :: Co,Co2,Cv2
     type(array2), intent(inout) :: xocc,yocc
 
     ! xocc
     call array2_zero(xocc)
-    call array2_copy(xocc,ypo)
+    call array2_copy(xocc,Co)
 
     ! yocc
     call array2_zero(yocc)
-    call array2_copy(yocc,yho)
-    call array2_matmul(yhv,t1,yocc,'n','n',1.0E0_realk,1.0E0_realk)
+    call array2_copy(yocc,Co2)
+    call array2_matmul(Cv2,t1,yocc,'n','n',1.0E0_realk,1.0E0_realk)
 
 
   end subroutine getT1transformation_occ
@@ -4546,21 +4554,21 @@ contains
 
 
   !> \brief T1 transformations for virtual X and Y matrices
-  subroutine getT1transformation_virt(t1,xvirt,yvirt,ypo,ypv,yhv)
+  subroutine getT1transformation_virt(t1,xvirt,yvirt,Co,Cv,Cv2)
 
     implicit none
     type(array2), intent(inout) :: t1
-    type(array2), intent(inout) :: ypo,ypv,yhv
+    type(array2), intent(inout) :: Co,Cv,Cv2
     type(array2), intent(inout) :: xvirt,yvirt
 
     ! xvirt
     call array2_zero(xvirt)
-    call array2_copy(xvirt,ypv)
-    call array2_matmul(ypo,t1,xvirt,'n','t',-1.0E0_realk,1.0E0_realk)
+    call array2_copy(xvirt,Cv)
+    call array2_matmul(Co,t1,xvirt,'n','t',-1.0E0_realk,1.0E0_realk)
 
     ! yvirt
     call array2_zero(yvirt)
-    call array2_copy(yvirt,yhv)
+    call array2_copy(yvirt,Cv2)
 
   end subroutine getT1transformation_virt
 
@@ -4782,31 +4790,31 @@ contains
     type(array2),intent(inout) :: t1
     !> T1-transformed Fock matrix in the AO basis (also initialized here)
     type(array2),intent(inout) :: fockt1
-    type(array2) :: ypo,yho,ypv
+    type(array2) :: Co,Co2,Cv
     integer :: nbasis,nocc,nvirt
     integer,dimension(2) :: bo,bv
 
     ! Dimensions
     nbasis = MyMolecule%nbasis
-    nocc = MyMolecule%numocc
-    nvirt = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
     bo(1) = nbasis
     bo(2) = nocc
     bv(1) = nbasis
     bv(2) = nvirt
 
     ! Initialize stuff in array2 format
-    ypo = array2_init(bo,MyMolecule%ypo)
-    yho = array2_init(bo,MyMolecule%ypo)
-    ypv = array2_init(bv,MyMolecule%ypv)
+    Co = array2_init(bo,MyMolecule%Co)
+    Co2 = array2_init(bo,MyMolecule%Co)
+    Cv = array2_init(bv,MyMolecule%Cv)
 
     ! Get T1-transformed Fock matrix in AO basis
-    call Get_AOt1Fock(mylsitem,t1,fockt1,nocc,nvirt,nbasis,ypo,yho,ypv)
+    call Get_AOt1Fock(mylsitem,t1,fockt1,nocc,nvirt,nbasis,Co,Co2,Cv)
 
     ! Free stuff
-    call array2_free(ypo)
-    call array2_free(yho)
-    call array2_free(ypv)
+    call array2_free(Co)
+    call array2_free(Co2)
+    call array2_free(Cv)
 
 
   end subroutine fullmolecular_get_AOt1Fock
@@ -4818,17 +4826,17 @@ contains
   subroutine fragment_get_AOt1Fock(MyFragment,fockt1)
     implicit none
     !> Fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> T1-transformed Fock matrix in the AO basis (also initialized here)
     type(array2),intent(inout) :: fockt1
     type(array2) :: t1
-    type(array2) :: ypo,yho,ypv
+    type(array2) :: Co,Co2,Cv
     integer :: nbasis,nocc,nvirt
     integer,dimension(2) :: bo,bv,vo
 
     ! Dimensions
     ! **********
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
     nocc = MyFragment%noccAOS
     nvirt = MyFragment%nunoccAOS
     bo(1) = nbasis
@@ -4840,9 +4848,9 @@ contains
 
     ! Initialize stuff in array2 format
     ! *********************************
-    ypo = array2_init(bo,MyFragment%ypo)
-    yho = array2_init(bo,MyFragment%ypo)   ! particle and hole coefficients are identical
-    ypv = array2_init(bv,MyFragment%ypv)
+    Co = array2_init(bo,MyFragment%Co)
+    Co2 = array2_init(bo,MyFragment%Co)   ! particle and hole coefficients are identical
+    Cv = array2_init(bv,MyFragment%Cv)
 
     ! Set t1 equal to the t1 associated with the fragment
     ! ***************************************************
@@ -4857,18 +4865,18 @@ contains
 
     ! Get T1-transformed Fock matrix in AO basis
     fockt1=array2_init([nbasis,nbasis])
-    call Get_AOt1Fock(MyFragment%mylsitem,t1,fockt1,nocc,nvirt,nbasis,ypo,yho,ypv)
+    call Get_AOt1Fock(MyFragment%mylsitem,t1,fockt1,nocc,nvirt,nbasis,Co,Co2,Cv)
 
     ! Free stuff
-    call array2_free(ypo)
-    call array2_free(yho)
-    call array2_free(ypv)
+    call array2_free(Co)
+    call array2_free(Co2)
+    call array2_free(Cv)
 
 
   end subroutine fragment_get_AOt1Fock
 
 
-  subroutine Get_AOt1Fock_arraywrapper(mylsitem,t1,fockt1,nocc,nvirt,nbasis,ypo,yho,ypv)
+  subroutine Get_AOt1Fock_arraywrapper(mylsitem,t1,fockt1,nocc,nvirt,nbasis,Co,Co2,Cv)
     implicit none
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
@@ -4884,41 +4892,41 @@ contains
     !> Number of basis functions (atomic fragment extent or full molecule)
     integer,intent(in) :: nbasis
     !> Occupied MOs (particle)
-    type(array),intent(inout) :: ypo
+    type(array),intent(inout) :: Co
     !> Occupied MOs (hole - currently particle=hole always)
-    type(array),intent(inout) :: yho
+    type(array),intent(inout) :: Co2
     !> Virtual MOs (hole)
-    type(array),intent(inout) :: ypv
+    type(array),intent(inout) :: Cv
 
     type(array2) :: fockt1_a2
-    type(array2) :: ypo_a2
-    type(array2) :: yho_a2
-    type(array2) :: ypv_a2
+    type(array2) :: Co_a2
+    type(array2) :: Co2_a2
+    type(array2) :: Cv_a2
 
     fockt1_a2%dims=fockt1%dims
-    ypo_a2%dims=ypo%dims
-    yho_a2%dims=yho%dims
-    ypv_a2%dims=ypv%dims
+    Co_a2%dims=Co%dims
+    Co2_a2%dims=Co2%dims
+    Cv_a2%dims=Cv%dims
 
     call ass_D1to2(fockt1%elm1,fockt1_a2%val,fockt1%dims)
-    call ass_D1to2(ypo%elm1,ypo_a2%val,ypo%dims)
-    call ass_D1to2(yho%elm1,yho_a2%val,yho%dims)
-    call ass_D1to2(ypv%elm1,ypv_a2%val,ypv%dims)
+    call ass_D1to2(Co%elm1,Co_a2%val,Co%dims)
+    call ass_D1to2(Co2%elm1,Co2_a2%val,Co2%dims)
+    call ass_D1to2(Cv%elm1,Cv_a2%val,Cv%dims)
 
-    call Get_AOt1Fock(mylsitem,t1,fockt1_a2,nocc,nvirt,nbasis,ypo_a2,yho_a2,ypv_a2)
+    call Get_AOt1Fock(mylsitem,t1,fockt1_a2,nocc,nvirt,nbasis,Co_a2,Co2_a2,Cv_a2)
 
 
     nullify(fockt1_a2%val)
-    nullify(ypo_a2%val)
-    nullify(yho_a2%val)
-    nullify(ypv_a2%val)
+    nullify(Co_a2%val)
+    nullify(Co2_a2%val)
+    nullify(Cv_a2%val)
 
     !call print_norm(fockt1)
   end subroutine Get_AOt1Fock_arraywrapper
 
   !> \brief Get T1 transformed Fock matrix in the AO basis using
   !> either fragment or full molecular T1 amplitudes.
-  subroutine Get_AOt1Fock_oa(mylsitem,t1,fockt1,nocc,nvirt,nbasis,ypo,yho,ypv)
+  subroutine Get_AOt1Fock_oa(mylsitem,t1,fockt1,nocc,nvirt,nbasis,Co,Co2,Cv)
     implicit none
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
@@ -4934,11 +4942,11 @@ contains
     !> Number of basis functions (atomic fragment extent or full molecule)
     integer,intent(in) :: nbasis
     !> Occupied MOs (particle)
-    type(array2),intent(inout) :: ypo
+    type(array2),intent(inout) :: Co
     !> Occupied MOs (hole - currently particle=hole always)
-    type(array2),intent(inout) :: yho
+    type(array2),intent(inout) :: Co2
     !> Virtual MOs (hole)
-    type(array2),intent(inout) :: ypv
+    type(array2),intent(inout) :: Cv
     type(array2) :: xocc,yocc
     type(matrix) :: fockmat,dens,h1
     integer :: i,idx1,idx2
@@ -4954,7 +4962,7 @@ contains
     ! Get T1-modified occupied orbitals xocc and yocc
     xocc=array2_init(bo)
     yocc=array2_init(bo)
-    call getT1transformation_occ(t1,xocc,yocc,ypo,yho,ypv)
+    call getT1transformation_occ(t1,xocc,yocc,Co,Co2,Cv)
 
     ! Get effective T1 density: Yocc Xocc^T
     call mat_init(dens,nbasis,nbasis)
@@ -5106,7 +5114,7 @@ contains
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
     real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
     !> integers
@@ -5205,14 +5213,14 @@ contains
   !> Only for occupied partitioning scheme.
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_ccsd_full_occ(natoms,ccsd_matrix,orbitals_assigned,distance_table)
+  subroutine print_ccsd_full_occ(natoms,ccsd_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: ccsd_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: ccsd_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -5223,12 +5231,12 @@ contains
        call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
             & 'CCSD occupied single energies','AF_CCSD_OCC')
        call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
-            & Distance_table, 'CCSD occupied pair energies','PF_CCSD_OCC')
+            & Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
     else
        call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
             & 'CCD occupied single energies','AF_CCD_OCC')
        call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
-            & Distance_table, 'CCD occupied pair energies','PF_CCD_OCC')
+            & Distancetable, 'CCD occupied pair energies','PF_CCD_OCC')
     endif
 
   end subroutine print_ccsd_full_occ
@@ -5266,7 +5274,7 @@ subroutine ccsd_data_preparation()
   type(array)  :: om2,t2,govov
   type(lsitem) :: MyLsItem
   logical :: local
-  integer :: nbas,nocc,nvirt,scheme
+  integer :: nbas,nocc,nvirt,scheme,ccmodel
   integer(kind=long) :: nelms
   integer      :: iter,k,n4,i
   real(realk),pointer  :: xodata(:),xvdata(:),yodata(:),yvdata(:),&
@@ -5277,7 +5285,7 @@ subroutine ccsd_data_preparation()
 
   !note that for the slave all allocatable arguments are just dummy indices
   !the allocation and broadcasting happens in here
-  call mpi_communicate_ccsd_calcdata(om2,t2,govov,xodata,xvdata,yodata,yvdata,&
+  call mpi_communicate_ccsd_calcdata(ccmodel,om2,t2,govov,xodata,xvdata,yodata,yvdata,&
   &MyLsItem,nbas,nvirt,nocc,iter,scheme,local)
   
   if(.not.local)then
@@ -5338,7 +5346,7 @@ subroutine ccsd_data_preparation()
 
   ! Calculate contribution to integrals/amplitudes for slave
   ! ********************************************************
-  call get_ccsd_residual_integral_driven(df,om2,t2,f,govov,nocc,nvirt,&
+  call get_ccsd_residual_integral_driven(ccmodel,df,om2,t2,f,govov,nocc,nvirt,&
        ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
 
   ! FREE EVERYTHING
@@ -5382,21 +5390,21 @@ subroutine calculate_E2_and_permute_slave()
   use ccsd_module, only:calculate_E2_and_permute
   implicit none
   real(realk),pointer :: ppf(:),qqf(:),xo(:),yv(:),Gbi(:),Had(:)
-  integer :: no,nv,nb,s
+  integer :: no,nv,nb,s,ccmodel
   type(array) :: t2,omega2
   real(realk),pointer :: w1(:)
   logical :: lo
   integer(kind=8) :: o2v2
 
 
-  call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
+  call share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
   o2v2 = int((i8*no)*no*nv*nv,kind=8)
   call mem_alloc(ppf,no*no)
   call mem_alloc(qqf,nv*nv)
   call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
   call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
   call mem_alloc(w1,o2v2)
-  call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,o2v2,s,.false.,lo)
+  call calculate_E2_and_permute(ccmodel,ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,o2v2,s,.false.,lo)
 
   call mem_dealloc(ppf)
   call mem_dealloc(qqf)
@@ -5431,11 +5439,11 @@ subroutine get_master_comm_proc_to_wrapper
   integer               :: nb
   type(lsitem)          :: MyLsItem
   type(array)           :: omega1
-  integer               :: iter
+  integer               :: iter,ccmodel
   logical               :: local
   logical               :: rest
   
-  call ccsd_residual_wrapper(w_cp,delta_fock,omega2,t2,&
+  call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2,t2,&
              & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
              & xv,yo,yv,nb,MyLsItem,omega1,iter,local,rest)
 

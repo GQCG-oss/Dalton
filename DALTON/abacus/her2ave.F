@@ -125,6 +125,9 @@ C
      &          DIFAB(3), DIFCD(3), HESSEE(*),
      &          IXPAB(NUCA*NUCB,2), IXPCD(NUCC*NUCD,2),
      &          IFCTYP(NDMAT)
+
+C Used from common blocks:
+C  inforb.h : NASHT
 #include "twocom.h"
 #include "dftcom.h"
 #include "symmet.h"
@@ -132,9 +135,11 @@ C
 #include "expopt.h"
 #include "dirprt.h"
 #include "infinp.h"
+#include "inforb.h"
 #include "rspprp.h"
 #include "esg.h"
 #include "ibtfun.h"
+C     statement functions:
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
