@@ -47,7 +47,7 @@ contains
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
     integer :: nunocc,nocc,natoms,siz
     type(lsitem) :: MyLsitem
-    type(decfrag),pointer :: AtomicFragments(:)
+    type(decfrag),pointer :: AtomicFragments(:),EstAtomicFragments(:)
     type(fullmolecule) :: MyMolecule
     type(decorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
     logical,pointer :: dofrag(:)
@@ -101,6 +101,7 @@ contains
 
     ! Atomic fragments
     call mem_alloc(AtomicFragments,natoms)
+    call mem_alloc(EstAtomicFragments,natoms)
 
 
     ! *************************************************************
@@ -115,8 +116,16 @@ contains
     StepLoop: do step=1,2
 
 
-       ! Special for step 2
-       ! ******************
+       ! Special for step 1: Get estimated fragments
+       ! *******************************************
+       if(step==1 .and. esti) then
+          ! Get optimized atomic fragments from master node
+          call mpi_bcast_many_fragments(natoms,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)          
+       end if
+       
+
+       ! Special for step 2: Reset first-order keywords and get optimized fragments
+       ! **************************************************************************
        Step2: if(step==2) then
 
           ! Restore first order keywords for second step
@@ -124,7 +133,7 @@ contains
           DECinfo%first_order = FO_save
           DECinfo%gradient = grad_save
 
-          ! Get optimized atomic fragments from master node
+          ! Get FOT-optimized atomic fragments from master node
           call mpi_bcast_many_fragments(natoms,dofrag,AtomicFragments,MPI_COMM_LSDALTON)
 
        end if Step2
@@ -202,7 +211,17 @@ contains
 
        ! Free existing group communicators
        call MPI_COMM_FREE(infpar%lg_comm, IERR)
-       
+
+       ! Clean up estimated fragments used in step 1
+       CleanupStep1: if(step==1 .and. esti) then
+          do i=1,natoms
+             if(dofrag(i)) then
+                call atomic_fragment_free_simple(EstAtomicFragments(i))
+             end if
+          end do
+          call mem_dealloc(EstAtomicFragments)
+       end if CleanupStep1
+
     end do StepLoop
 
 
@@ -213,16 +232,16 @@ contains
           call atomic_fragment_free_simple(AtomicFragments(i))
        end if
     end do
+    call mem_dealloc(AtomicFragments)
     do i=1,nOcc
        call orbital_free(OccOrbitals(i))
     end do
     do i=1,nUnocc
        call orbital_free(UnoccOrbitals(i))
     end do
-    call mem_dealloc(dofrag)
-    call mem_dealloc(AtomicFragments)
     call mem_dealloc(OccOrbitals)
     call mem_dealloc(UnoccOrbitals)
+    call mem_dealloc(dofrag)
     call ls_free(MyLsitem)
     call molecule_finalize(MyMolecule)
 
@@ -235,7 +254,7 @@ contains
 !> \author Kasper Kristensen
 !> \date May 2012
   subroutine fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
-       & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
+       & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,EstAtomicFragments)
 
     implicit none
 
@@ -256,7 +275,9 @@ contains
     !> Atomic fragments
     type(decfrag),dimension(natoms),intent(inout) :: AtomicFragments
     !> Job list for  fragments
-    type(joblist),intent(inout) :: jobs
+    type(joblist),intent(in) :: jobs
+    !> Estimated atomic fragments
+    type(decfrag),dimension(natoms),intent(inout),optional :: EstAtomicFragments
     type(joblist) :: singlejob
     type(decfrag) :: PairFragment
     type(decfrag) :: MyFragment
@@ -274,6 +295,13 @@ contains
     only_update=.true.
 
     call LSTIMER('START',t1cpuacc,t1wallacc,DECinfo%output)
+
+    if(any(jobs%esti)) then
+       if(.not. present(EstAtomicFragments)) then
+          call lsquit('fragment_slaves: Estimated pair fragments requested, but estimated & 
+               & atomic fragments are not present!',-1)
+       end if
+    end if
 
 
 
@@ -367,9 +395,16 @@ contains
           else ! pair fragment
 
              ! init pair
-             call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                  & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
-                  & MyMolecule,mylsitem,.true.,PairFragment)
+             if(jobs%esti(job)) then
+                ! Estimated pair fragment
+                call merged_fragment_init(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
+                     & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
+                     & MyMolecule,mylsitem,.true.,PairFragment)
+             else
+                call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
+                     & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
+                     & MyMolecule,mylsitem,.true.,PairFragment)
+             end if
              call get_number_of_integral_tasks_for_mpi(PairFragment,ntasks)
 
           end if
@@ -451,9 +486,17 @@ contains
 
              else ! pair  fragment
 
-                call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                     & AtomicFragments(atomA), AtomicFragments(atomB), &
-                     & natoms,PairFragment,grad)
+                if(jobs%esti(job)) then
+                   ! Estimated pair fragment
+                   call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+                        & EstAtomicFragments(atomA), EstAtomicFragments(atomB), &
+                        & natoms,PairFragment,grad)
+                else
+                   ! Pair fragment according to FOT precision
+                   call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+                        & AtomicFragments(atomA), AtomicFragments(atomB), &
+                        & natoms,PairFragment,grad)
+                end if
                 flops_slaves = PairFragment%flops_slaves
                 tottime = PairFragment%slavetime ! time used by all local slaves
                 fragenergy=PairFragment%energies
