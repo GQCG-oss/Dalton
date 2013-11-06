@@ -66,9 +66,7 @@ contains
     type(decorbital), pointer :: OccOrbitals(:)
     type(decorbital), pointer :: UnoccOrbitals(:)
     real(realk),pointer :: FragEnergiesOcc(:,:)
-    real(realk) :: Ecorr_est,Eskip_est
     integer :: nBasis,nOcc,nUnocc,nAtoms,i
-    logical :: esti
 
 
     ! Print DEC info
@@ -85,22 +83,14 @@ contains
     call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
          & OccOrbitals, UnoccOrbitals)
 
-    ! -- Define different models for different pair fragments based on 
-    !    the estimated energy contributions from each pair
-    if(DECinfo%PairEstimate) then
-       call estimate_fragment_driver(D,MyMolecule,mylsitem,&
-            & nocc,nunocc,OccOrbitals,UnoccOrbitals,Ecorr_est,Eskip_est)
-    end if
-
 
     ! *************************************************
     ! Optimize all atomic fragments and calculate pairs
     ! *************************************************
     call mem_alloc(FragEnergiesOcc,MyMolecule%natoms,MyMolecule%natoms)
-    esti=.false.
     call main_fragment_driver(MyMolecule,mylsitem,D,&
          &OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc,esti)
+         & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc)
 
 
     ! Delete orbitals
@@ -129,90 +119,6 @@ contains
   end subroutine DEC_wrapper
 
 
-
-
-  !> \brief Calculate all atomic fragment energies
-  !> and all pair interaction energies using small predefined orbital spaces
-  !> to ESTIMATE the various energy contributions. Based on these estimates,
-  !> determine which CC model to use for the various pair fragments in the actual pair calculations
-  !> where orbital spaces are chosen according to the FOT
-  !> (either use input CC model, MP2, or simply skip pair).
-  !> Information is stored in MyMolecule%ccmodel.
-  !> \author Kasper Kristensen
-  !> \date October 2013
-  subroutine estimate_fragment_driver(D,MyMolecule,mylsitem,&
-       & nocc,nunocc,OccOrbitals,UnoccOrbitals,Ecorr_est,Eskip_est)
-
-    implicit none
-    !> Density matrix (not used as such, but need to be present for call to main driver)
-    type(matrix),intent(in) :: D
-    !> Number of occupied orbitals in full molecule (not changed, inout for MPI reasons)
-    integer,intent(inout) :: nOcc
-    !> Number of unoccupied orbitals in full molecule (not changed, inout for MPI reasons)
-    integer,intent(inout) :: nUnocc
-    !> LSDalton info
-    type(lsitem), intent(inout) :: mylsitem
-    !> Occupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
-    type(decorbital), intent(inout) :: OccOrbitals(nocc)
-    !> Unoccupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
-    type(decorbital), intent(inout) :: UnoccOrbitals(nunocc)
-    !> Full molecule info, model for pair fragment calculations are stored in MyMolecule%ccmodel.
-    type(fullmolecule), intent(inout) :: MyMolecule
-   !> Estimated correlation energy from all estimated atomic and pair fragments
-    real(realk),intent(inout) :: Ecorr_est
-    !> Estimated correlation energy from the pairs that will be skipped in the calculation
-    real(realk),intent(inout) :: Eskip_est
-    logical,dimension(MyMolecule%natoms) :: dofrag
-    integer :: natoms
-    logical :: dens_save,FO_save,grad_save,fragadapt_save,esti
-    real(realk),pointer :: FragEnergiesOcc(:,:)
-    real(realk) :: EHF_dummy,molgrad_dummy(3,MyMolecule%natoms),Eerr_dummy
-
-
-    ! Not pretty, but we have to turn off fragment-adapted orbitals and first-order stuff
-    ! Original settings are restored at the end of this routine
-    fragadapt_save=DECinfo%fragadapt
-    dens_save = DECinfo%MP2density
-    FO_save = DECinfo%first_order
-    grad_save = DECinfo%gradient
-    DECinfo%fragadapt=.false.
-    DECinfo%MP2density=.false.
-    DECinfo%first_order=.false.
-    DECinfo%gradient=.false.
-
-
-    ! All estimates are done using MP2, set model for all fragments to MP2
-    ! (MyMolecule%ccmodel is then redefined below based on these estimates)
-    MyMolecule%ccmodel = MODEL_MP2
-
-    natoms=MyMolecule%natoms
-
-    ! Calculate fragment energies at MP2 level using small fragments and occupied partitioning
-    call mem_alloc(FragEnergiesOcc,natoms,natoms)
-    esti=.true.
-    call main_fragment_driver(MyMolecule,mylsitem,D,OccOrbitals,UnoccOrbitals,&
-         & natoms,nocc,nunocc,EHF_dummy,Ecorr_est,molgrad_dummy,Eerr_dummy,&
-         & FragEnergiesOcc,esti)
-
-
-    ! Find out which atoms have one or more orbitals assigned
-    call which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
-
-    ! Define which model to use in each pair calculation (info stored in MyMolecule%ccmodel)
-    ! (Also calculate estimated correlation energy and estimated error by skipping pairs).
-    call define_pair_calculations(natoms,dofrag,FragEnergiesOcc,MyMolecule,Ecorr_est,Eskip_est)
-
-    call mem_dealloc(FragEnergiesOcc)
-
-    ! Reset original settings
-    DECinfo%fragadapt = fragadapt_save
-    DECinfo%MP2density = dens_save
-    DECinfo%first_order = FO_save
-    DECinfo%gradient = grad_save
-
-  end subroutine estimate_fragment_driver
-
-
   !> \brief Calculate all atomic fragment energies
   !> and all pair interaction energies, and add them
   !> to get the correlation energy for the full molecule
@@ -221,7 +127,7 @@ contains
   !> \date October 2010
   subroutine main_fragment_driver(MyMolecule,mylsitem,D,&
        & OccOrbitals,UnoccOrbitals, &
-       & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc,esti)
+       & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc)
 
     implicit none
     !> Number of occupied orbitals in full molecule (not changed, inout for MPI reasons)
@@ -250,9 +156,7 @@ contains
     real(realk),intent(inout) :: Eerr
     !> Fragment energies for occupied partitioning scheme
     real(realk),dimension(natoms,natoms),intent(inout) :: FragEnergiesOcc
-    !> Is this a calculation with predefined small orbital spaces used to estimate frag energies?
-    !> (This is effectively intent(in), only intent(inout) in practice for MPI purposes).
-    logical,intent(inout) :: esti
+    logical :: esti
     ! Fragment energies
     real(realk) :: FragEnergies(natoms,natoms,ndecenergies)
     type(decfrag),pointer :: AtomicFragments(:)
@@ -301,6 +205,13 @@ contains
     call which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
     njobs = count(dofrag)
 
+    if(DECinfo%PairEstimate .and. count(dofrag)>1) then
+       ! Use estimated pair fragments to determine which pair fragments to calculate at the FOT level
+       ! (only if there actually are any pair fragments)
+       esti = .true.
+    else
+       esti=.false.
+    end if
 
     ! Special treatment of singles amplitudes
     ! ***************************************
@@ -430,6 +341,8 @@ contains
     ! ********************************************************
     call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
          & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
+    ! Done with estimates
+    esti=.false.
 
     call LSTIMER('DEC ATOMFRAG',tcpu,twall,DECinfo%output)
 
@@ -560,12 +473,7 @@ contains
 
     ! Plot pair interaction energies using occ. partitioning scheme
     ! *************************************************************
-    if(esti) then       
-       ! Always MP2 model
-       call get_occfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesOcc)
-    else
-       call get_occfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
-    end if
+    call get_occfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
     call plot_pair_energies(natoms,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
          & MyMolecule%DistanceTable,dofrag)
 
@@ -577,10 +485,10 @@ contains
     ! Set all MPI groups equal to the world group
     call lsmpi_default_mpi_group
     ! Print MPI statistics
-    if(esti) then
-       call print_MPI_fragment_statistics(jobs,mastertime,'EST FRAGMENTS')
-    else
+    if(DECinfo%RepeatAF) then
        call print_MPI_fragment_statistics(jobs,mastertime,'ALL FRAGMENTS')
+    else
+       call print_MPI_fragment_statistics(jobs,mastertime,'PAIR FRAGMENTS')
     end if
 #endif
 
@@ -591,10 +499,8 @@ contains
     end do
 
     ! Print all fragment energies
-    if(.not. esti) then
-       call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
-            & mymolecule%DistanceTable,energies)
-    end if
+    call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
+         & mymolecule%DistanceTable,energies)
 
     ! MODIFY FOR NEW MODEL
     ! Set output energy: We choose occupied partitioning scheme energy as general output
@@ -657,9 +563,7 @@ contains
     call get_estimated_energy_error(natoms,energies,Eerr)
 
     ! Print short summary
-    if(.not. esti) then
-       call print_total_energy_summary(EHF,Ecorr,Eerr)
-    end if
+    call print_total_energy_summary(EHF,Ecorr,Eerr)
 
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output)
 
@@ -1036,7 +940,7 @@ contains
              ! Estimated pair fragment
              call merged_fragment_init(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
                   & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
-                  & MyMolecule,mylsitem,.true.,PairFragment)
+                  & MyMolecule,mylsitem,.true.,PairFragment,esti=.true.)
           else
              ! Pair fragment according to FOT precision
              call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
@@ -1137,9 +1041,10 @@ contains
     type(decfrag), intent(inout),dimension(MyMolecule%natoms) :: AtomicFragments
     !> Fragment energies 
     real(realk),intent(inout) :: FragEnergies(MyMolecule%natoms,MyMolecule%natoms,ndecenergies)
+    real(realk),pointer :: FragEnergiesOcc(:,:)
     type(decfrag),pointer :: EstAtomicFragments(:)
     logical :: DoBasis,calcAF
-    real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime
+    real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est
     integer :: natoms,i,j,k
     type(joblist) :: jobs,fragoptjobs,estijobs
 
@@ -1163,6 +1068,16 @@ contains
 
        ! fragment opt. AND estimate pair fragments
        ! *****************************************
+
+       ! All estimates are done using MP2, set model for all fragments to MP2
+       ! (MyMolecule%ccmodel is then redefined below based on these estimates)
+       do i=1,natoms
+          do j=i+1,natoms
+             MyMolecule%ccmodel(i,j) = MODEL_MP2
+             MyMolecule%ccmodel(j,i) = MODEL_MP2
+          end do
+       end do
+
 
        ! Init estimated atomic fragments by including orbitals assigned to neighbour atoms
        ! within 2 Angstrom.
@@ -1189,6 +1104,11 @@ contains
             & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
             & EstAtomicFragments=EstAtomicFragments)
 
+       do i=1,natoms
+          if(dofrag(i)) then
+             call atomic_fragment_free_simple(EstAtomicFragments(i))
+          end if
+       end do
        call mem_dealloc(EstAtomicFragments)
     else
 
@@ -1197,6 +1117,29 @@ contains
 
        call fragment_jobs(.false.,nocc,nunocc,natoms,MyMolecule,mylsitem,&
             & OccOrbitals,UnoccOrbitals,fragoptjobs,AtomicFragments,FragEnergies,esti)
+
+    end if
+
+
+
+    if(esti) then
+       ! Get estimated pair fragment energies for occupied partitioning scheme
+       call mem_alloc(FragEnergiesOcc,natoms,natoms)
+       ! Always MP2 model for estimated fragments
+       call get_occfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesOcc)
+       call plot_pair_energies(natoms,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
+            & MyMolecule%DistanceTable,dofrag)
+
+       ! We do not want to consider atomic fragment energies now so zero them
+       ! (they might be zero already but in this way we avoid wrong print out below).
+       do i=1,natoms
+          FragEnergiesOcc(i,i)=0.0_realk
+       end do
+
+       ! Define which model to use in each pair calculation (info stored in MyMolecule%ccmodel)
+       ! (Also calculate estimated correlation energy and estimated error by skipping pairs).
+       call define_pair_calculations(natoms,dofrag,FragEnergiesOcc,MyMolecule,Epair_est,Eskip_est)
+       call mem_dealloc(FragEnergiesOcc)
 
     end if
 

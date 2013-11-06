@@ -101,7 +101,6 @@ contains
 
     ! Atomic fragments
     call mem_alloc(AtomicFragments,natoms)
-    call mem_alloc(EstAtomicFragments,natoms)
 
 
     ! *************************************************************
@@ -120,6 +119,7 @@ contains
        ! *******************************************
        if(step==1 .and. esti) then
           ! Get optimized atomic fragments from master node
+          call mem_alloc(EstAtomicFragments,natoms)
           call mpi_bcast_many_fragments(natoms,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)          
        end if
        
@@ -197,8 +197,15 @@ contains
 
        ! Receive  fragment jobs from master and carry those out
        ! ======================================================
-       call fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
-            & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
+       if(step==1 .and. esti) then
+          ! Calculate estimated pair fragment energies
+          call fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
+               & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,&
+               & EstAtomicFragments=EstAtomicFragments)
+       else
+          call fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
+               & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
+       end if
 
        ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
        job=QUITNOMOREJOBS
@@ -399,7 +406,7 @@ contains
                 ! Estimated pair fragment
                 call merged_fragment_init(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
                      & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
-                     & MyMolecule,mylsitem,.true.,PairFragment)
+                     & MyMolecule,mylsitem,.true.,PairFragment,esti=.true.)
              else
                 call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
                      & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &

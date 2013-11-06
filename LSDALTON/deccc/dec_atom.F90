@@ -1440,7 +1440,7 @@ contains
   !> \author Kasper Kristensen
   !> \date December 2011
   subroutine merged_fragment_init(Fragment1,Fragment2,nunocc, nocc, natoms, &
-       & OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,DoBasis,pairfragment)
+       & OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,DoBasis,pairfragment,esti)
 
 
     implicit none
@@ -1466,13 +1466,20 @@ contains
     logical, intent(in) :: DoBasis
     !> Pair fragment to be constructed
     type(decfrag),intent(inout) :: pairfragment
+    !> Use estimated fragments? (If this is the case FOs are effectively turned off)
+    logical,intent(in),optional :: esti
     logical, dimension(nunocc) :: Unocc_list
     logical, dimension(nocc) :: Occ_list
-    logical :: pairfrag
+    logical :: pairfrag,estimated_frags
     logical,pointer :: EOSatoms(:)
     integer :: i,j,idx
     real(realk) :: pairdist
 
+    ! Use estimated fragments?
+    estimated_frags=.false.
+    if(present(esti)) then
+       if(esti) estimated_frags=.true.
+    end if
 
     pairfrag=.true.
 
@@ -1581,7 +1588,7 @@ contains
        write(DECinfo%output,*)
     end if
 
-    if(DECinfo%fragadapt) then 
+    if(DECinfo%fragadapt .and. (.not. estimated_frags) ) then 
        call pair_fragment_adapted_transformation_matrices(MyMolecule,nocc,nunocc,&
             & OccOrbitals,UnoccOrbitals, Fragment1,Fragment2,PairFragment)
    end if
@@ -5899,7 +5906,7 @@ if(DECinfo%PL>0) then
   !> definitions in dec_typedef.F90.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine define_pair_calculations(natoms,dofrag,FragEnergies,MyMolecule,Ecorr_est,Eskip_est)
+  subroutine define_pair_calculations(natoms,dofrag,FragEnergies,MyMolecule,Epair_est,Eskip_est)
     implicit none
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
@@ -5910,8 +5917,8 @@ if(DECinfo%PL>0) then
     real(realk),intent(in) :: FragEnergies(natoms,natoms)
     !> Full molecule structure, where only MyMolecule%ccmodel is modified
     type(fullmolecule),intent(inout) :: MyMolecule
-    !> Estimated correlation energy from all estimated atomic and pair fragments
-    real(realk),intent(inout) :: Ecorr_est
+    !> Estimated correlation energy from estimated pair fragments
+    real(realk),intent(inout) :: Epair_est
     !> Estimated correlation energy from the pairs that will be skipped in the calculation
     real(realk),intent(inout) :: Eskip_est
     integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit
@@ -5989,7 +5996,7 @@ if(DECinfo%PL>0) then
           
           ! Skip if no orbitals assigned to atom Q
           Qidx = atomindices(Q)
-          if(.not. dofrag(Qidx)) cycle Qloop2
+          if(.not. dofrag(Qidx) .or. Qidx==P) cycle Qloop2
 
           ! Accumulated estimated energy from smallest pair interaction energies
           Eacc = Eacc + EPQ(Q)
@@ -6016,7 +6023,7 @@ if(DECinfo%PL>0) then
           Qstart=Qquit
           Qloop3: do Q=Qstart,1,-1
              Qidx = atomindices(Q)
-             if(.not. dofrag(Qidx)) cycle Qloop3
+             if(.not. dofrag(Qidx) .or. Qidx==P) cycle Qloop3
 
              Eacc = Eacc + EPQ(Q)
              if(Eacc < DECinfo%FOT) then
@@ -6058,13 +6065,13 @@ if(DECinfo%PL>0) then
     end do
 
     ! Estimate correlation energy by adding all estimated atomic and pair fragment energy contributions
-    call add_dec_energies(natoms,FragEnergies,dofrag,Ecorr_est)
+    call add_dec_energies(natoms,FragEnergies,dofrag,Epair_est)
 
     ! Estimate energy contribution from pairs which will be skipped from the calculation
     call estimate_energy_of_skipped_pairs(natoms,FragEnergies,dofrag,MyMolecule,Eskip_est)
 
     ! Print summary for pair analysis and estimated energies
-    call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est,&
+    call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Epair_est,Eskip_est,&
          & FragEnergies,MyMolecule%DistanceTable)
 
   end subroutine define_pair_calculations
@@ -6073,7 +6080,7 @@ if(DECinfo%PL>0) then
   !> \brief Print summary of analysis used to define pair calculations (see define_pair_calculations).
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est,&
+  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Epair_est,Eskip_est,&
        & FragEnergies,DistanceTable)
     implicit none
     !> Number of atoms in molecule
@@ -6086,8 +6093,8 @@ if(DECinfo%PL>0) then
     integer,intent(in) :: NCC
     !> Which atomic sites have orbitals assigned?
     logical,intent(in),dimension(natoms) :: dofrag
-    !> Estimated correlation energy from all estimated atomic and pair fragments
-    real(realk),intent(in) :: Ecorr_est
+    !> Estimated correlation energy from estimated pair fragments
+    real(realk),intent(in) :: Epair_est
     !> Estimated correlation energy from the pairs that will be skipped in the calculation
     real(realk),intent(in) :: Eskip_est
     !> Estimated fragment energies
@@ -6111,13 +6118,11 @@ if(DECinfo%PL>0) then
     end if
     write(DECinfo%output,'(1X,a,i10)') 'Pairs to be skipped from calculation  ', Nskip
     write(DECinfo%output,*) 
-    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated total correlation energy:        ', Ecorr_est
+    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated pair correlation energy:         ', Epair_est
     write(DECinfo%output,'(1X,a,g20.10)') 'Estimated contribution from skipped pairs: ', Eskip_est
     write(DECinfo%output,*) 
     write(DECinfo%output,*) 
-    ! Also print all estimated fragment energies. Maybe this should be removed at some point
-    call print_atomic_fragment_energies(natoms,FragEnergies,dofrag,&
-         & 'Estimated occupied single energies','AF_ESTIMATE')
+    ! Also print estimated pair fragment energies. Maybe this should be removed at some point
     call print_pair_fragment_energies(natoms,FragEnergies,dofrag,&
          & DistanceTable, 'Estimated occupied pair energies','PF_ESTIMATE')
     write(DECinfo%output,*) 
