@@ -476,6 +476,9 @@ contains
              call optimize_atomic_fragment(atomA,MyFragment,MyMolecule%nAtoms, &
                   & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
                   & MyMolecule,mylsitem,.true.)
+             flops_slaves = MyFragment%flops_slaves
+             tottime = MyFragment%slavetime ! time used by all local slaves
+             fragenergy = MyFragment%energies
              call copy_fragment_info_job(MyFragment,singlejob)
 
           else
@@ -528,6 +531,8 @@ contains
           ! load distribution: { tottime / time(local master) } / number of nodes (ideally 1.0)
           singlejob%load(1) = (tottime/singlejob%LMtime(1))/real(singlejob%nslaves(1))
           singlejob%jobsdone(1) = .true.
+          singlejob%esti(1) = jobs%esti(job)
+          singlejob%dofragopt(1) = jobs%dofragopt(job)
 
           print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
                & job, singlejob%LMtime(1)

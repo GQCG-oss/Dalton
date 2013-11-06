@@ -2476,7 +2476,7 @@ end subroutine atomic_fragment_basis
 
     ! Sanity check: Job has been done for fragment in question
     do i=1,jobs%njobs
-       if(jobs%atom1(i)==fragment%atomic_number) then
+       if(jobs%dofragopt(i) .and. jobs%atom1(i)==fragment%atomic_number) then
           if(.not. jobs%jobsdone(i)) then
              call lsquit('add_fragment_to_file: Fragment calculation is not done!',-1)
           end if

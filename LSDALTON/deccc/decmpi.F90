@@ -1504,7 +1504,7 @@ contains
 
     implicit none
     !> Fragment job list
-    type(joblist),intent(in) :: jobs
+    type(joblist),intent(inout) :: jobs
     !> Time measured by global master when fragments were calculated
     real(realk),intent(in) :: mastertime
     !> String to print describing job list
@@ -1536,6 +1536,11 @@ contains
     write(DECinfo%output,*) '           (Sum of effective work times for ALL MPI processes in slot)'
     write(DECinfo%output,*) '         / (slotsiz * [Local master time] )'
     write(DECinfo%output,*)
+    write(DECinfo%output,*) 'Note: Load print is currently only implemented for MP2 calculations'
+    write(DECinfo%output,*) '      and not for atomic fragment optimizations.'
+    write(DECinfo%output,*) '      The Load given below is set to -1 for cases where it is not implemented'
+    write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
+    write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,5X,a)') 'Job', '#occ', &
          & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load'
@@ -1543,6 +1548,7 @@ contains
     totflops=0.0E0_realk
     tottime_actual = 0.0E0_realk
     slavetime= 0.0_realk
+
 
     minflop = huge(1.0)
     maxflop=tiny(1.0)
@@ -1555,7 +1561,11 @@ contains
        N=N+1
 
        ! Giga flops for fragment
+#ifdef VAR_PAPI
        Gflops = jobs%flops(i)*1.0e-9
+#else
+       Gflops=-1.0_realk
+#endif
        ! Update total number of flops
        totflops = totflops + Gflops
        ! Update total time used by ALL nodes (including dead time by local slaves)
@@ -1563,9 +1573,14 @@ contains
        ! Effective slave time (WITHOUT dead time by slaves)
        slavetime = slavetime + jobs%load(i)*jobs%nslaves(i)*jobs%LMtime(i)
 
-       write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
-            & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
-
+       if(DECinfo%ccmodel==MODEL_MP2 .and. (.not. jobs%dofragopt(i))) then
+          write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
+               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
+       else
+          jobs%load(i)=-1.0_realk
+          write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
+               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
+       end if
 
        ! Accumulated Gflops per sec
        tmp = Gflops/jobs%LMtime(i)
@@ -1613,10 +1628,13 @@ contains
        write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MAXIMUM Gflops/s per MPI process = ', &
             & maxflop, ' for job ', maxidx
 #endif
-       write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
-       write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
-       write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
-       write(DECinfo%output,*) '-----------------------------------------------------------------------------'
+    write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
+       if(DECinfo%ccmodel==MODEL_MP2 .and. (.not. any(jobs%dofragopt)) ) then
+          ! Only print local loss when it is actually implemented
+          write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
+          write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
+       end if
+    write(DECinfo%output,*) '-----------------------------------------------------------------------------'
 
     end if
     write(DECinfo%output,*)
