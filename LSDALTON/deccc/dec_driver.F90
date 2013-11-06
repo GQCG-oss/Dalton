@@ -713,7 +713,7 @@ contains
   !> \date May 2012
   subroutine fragment_jobs(post_fragopt_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
        & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
-       & fullgrad,t1old,t1new)
+       & fullgrad,t1old,t1new,EstAtomicFragments)
 
     implicit none
     !> Restart fragments
@@ -734,7 +734,7 @@ contains
     type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !>  fragment job list
     type(joblist),intent(inout) :: jobs
-    !> Atomic fragments
+    !> Atomic fragments with orbital spaces according to the FOT
     type(decfrag),dimension(natoms),intent(inout) :: AtomicFragments
     !> Fragment energies, see FRAGMODEL_* in dec_typedef.F90
     real(realk),intent(inout) :: FragEnergies(natoms,natoms,ndecenergies)
@@ -746,7 +746,8 @@ contains
     type(array2),intent(in),optional :: t1old
     !> New t1 amplitudes (see main_fragment_driver for details)
     type(array2),intent(inout),optional :: t1new
-    type(decfrag) :: PairFragment
+    !> Atomic fragments with estimated orbital spaces
+    type(decfrag),dimension(natoms),intent(in),optional :: EstAtomicFragments
     integer :: k,atomA,atomB,i,j,counter,jobdone,nworkers,newjob,jobstodo,siz
     type(mp2grad) :: grad
     type(joblist) :: singlejob,jobsold
@@ -761,6 +762,29 @@ contains
     fragenergy=0.0_realk
     only_update=.true.
 
+    ! Sanity check for estimated fragments
+    if(any(jobs%esti)) then
+       if(.not. present(EstAtomicFragments)) then
+          call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
+               & atomic fragments are not present!',-1)
+       end if
+    end if
+
+    ! Sanity check for singles polarization effects
+    if(DECinfo%SinglesPolari) then
+       if( (.not. present(t1old)) .or. (.not. present(t1new)) ) then
+          call lsquit('fragment_jobs: Singles polarization requested but no &
+               & t1 amplitudes present!',-1)
+       end if
+    end if
+
+    ! Sanity check for first order properties
+    if(DECinfo%first_order) then
+       if(.not. present(fullgrad)) then
+          call lsquit('fragment_jobs: First order properties requested but gradient structure &
+               & is not present!',-1)
+       end if
+    end if
 
 #ifdef VAR_MPI
     ! Number of workers = Number of nodes minus master itself
@@ -959,79 +983,22 @@ contains
        ! atomA=atomB  : Single fragment job
        ! atomA/=atomB : Pair fragment job
 
-       if(atomA==atomB) then ! single
-          print '(1X,a,i8,a,i15,a,i8)', 'Job: ', k, ' of size ', jobs%jobsize(k),&
-               &  ' is single fragment: ', atomA
-
-          ! Fragment "atomA" is stored in AtomicFragments(atomA).
-          ! However, the basis information has not yet been initialized
-
-          ! Get single fragment energy (and possibly density or gradient)
-          ! *******************************************************************
-          if(DECinfo%SinglesPolari) then
-             call atomic_driver_advanced(nocc,nunocc,&
-                  & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
-                  & AtomicFragments(atomA),grad,t1old=t1old,t1new=t1new)
+       if(DECinfo%SinglesPolari) then
+          call specific_fragment_no_mpi(nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+               & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,atomA,atomB,k,grad,&
+               & singlejob,t1old=t1old,t1new=t1new)
+       else
+          if(jobs%esti(k)) then
+             ! Use estimated pair fragments
+             call specific_fragment_no_mpi(nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+                  & UnoccOrbitals,jobs,EstAtomicFragments,FragEnergies,esti,atomA,atomB,k,grad,&
+                  & singlejob)
           else
-
-             ! Init fragment basis information
-             call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
-                  & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
-
-             ! Call main driver to get energy (and possibly density or gradient)
-             call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                  & AtomicFragments(atomA),grad=grad)
-
-             ! Free basis info again
-             call atomic_fragment_free_basis_info(AtomicFragments(atomA))
-
+             ! Use pair fragments corresponding to FOT precision
+             call specific_fragment_no_mpi(nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+                  & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,atomA,atomB,k,grad,&
+                  & singlejob)
           end if
-
-          ! Update energies
-          do j=1,ndecenergies
-             FragEnergies(atomA,atomA,j) = AtomicFragments(atomA)%energies(j)
-          end do
-
-          ! Copy fragment information into joblist
-          call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
-          singlejob%jobsdone(1) = .true.
-
-       else ! pair calculation
-
-          print '(1X,a,i8,a,i15,a,2i8)', 'Job: ', k, ' of size ', jobs%jobsize(k),&
-               &  ' is pair fragment: ', atomA,atomB
-
-          ! Get energy (and possibly density or gradient)
-          ! *********************************************
-
-          ! Init pair
-          call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-               & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
-               & MyMolecule,mylsitem,.true.,PairFragment)
-
-
-          if(DECinfo%SinglesPolari) then
-             call pair_driver_singles(natoms,nocc,nunocc,&
-                  & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
-                  & AtomicFragments(atomA), AtomicFragments(atomB),PairFragment,t1old,t1new)
-          else
-             call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                  & AtomicFragments(atomA), AtomicFragments(atomB),&
-                  & natoms,PairFragment,grad)
-          end if
-
-          ! Update pair energies
-          do j=1,ndecenergies
-             fragenergies(atomA,atomB,j) = PairFragment%energies(j)
-             fragenergies(atomB,atomA,j) = PairFragment%energies(j)
-          end do
-
-          ! Copy fragment information into joblist
-          call copy_fragment_info_job(PairFragment,singlejob)
-          singlejob%jobsdone(1) = .true.
-
-          call atomic_fragment_free(PairFragment)
-
        end if
 
 
@@ -1064,6 +1031,135 @@ contains
 
 
   end subroutine fragment_jobs
+
+
+
+  !> \brief Perform atomic fragment or pair fragment calculation based on input from
+  !> fragment_jobs when MPI is not used.
+  !> \author Kasper Kristensen
+  !> \date November 2012
+  subroutine specific_fragment_no_mpi(nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+       & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,atomA,atomB,k,grad,singlejob,t1old,t1new)
+
+    implicit none
+    !> Number of occupied orbitals in full molecule
+    integer,intent(in) :: nOcc
+    !> Number of unoccupied orbitals in full molecule
+    integer,intent(in) :: nUnocc
+    !> Number of atoms in full molecule
+    integer,intent(in) :: nAtoms
+    !> Full molecule info (will be unchanged at output)
+    type(fullmolecule), intent(inout) :: MyMolecule
+    !> LSDalton info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Occupied orbitals in DEC format 
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
+    !> Unoccupied orbitals in DEC format 
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !>  fragment job list
+    type(joblist),intent(inout) :: jobs
+    !> Atomic fragments with orbital spaces according to the FOT
+    type(decfrag),dimension(natoms),intent(inout) :: AtomicFragments
+    !> Fragment energies, see FRAGMODEL_* in dec_typedef.F90
+    real(realk),intent(inout) :: FragEnergies(natoms,natoms,ndecenergies)
+    !> Is this a calculation with predefined small orbital spaces used to estimate frag energies?
+    logical,intent(in) :: esti
+    !> Atoms in fragment (atomA=atomB for atomic fragments)
+    integer,intent(in) :: atomA,atomB
+    !> Job counter used in fragment_jobs
+    integer,intent(in) :: k
+    !> DEC-MP2 gradient contributions from fragment
+    type(mp2grad),intent(inout) :: grad
+    !> Information about fragment job
+    type(joblist),intent(inout) :: singlejob
+    !> Old t1 amplitudes (see main_fragment_driver for details)
+    type(array2),intent(in),optional :: t1old
+    !> New t1 amplitudes (see main_fragment_driver for details)
+    type(array2),intent(inout),optional :: t1new
+    integer :: j
+    type(decfrag) :: PairFragment
+
+
+    ! atomA=atomB  : Single fragment job
+    ! atomA/=atomB : Pair fragment job
+
+    if(atomA==atomB) then ! single
+       print '(1X,a,i8,a,i15,a,i8)', 'Job: ', k, ' of size ', jobs%jobsize(k),&
+            &  ' is single fragment: ', atomA
+
+       ! Fragment "atomA" is stored in AtomicFragments(atomA).
+       ! However, the basis information has not yet been initialized
+
+       ! Get single fragment energy (and possibly density or gradient)
+       ! *******************************************************************
+       if(DECinfo%SinglesPolari) then
+          call atomic_driver_advanced(nocc,nunocc,&
+               & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
+               & AtomicFragments(atomA),grad,t1old=t1old,t1new=t1new)
+       else
+
+          ! Init fragment basis information
+          call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
+               & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
+
+          ! Call main driver to get energy (and possibly density or gradient)
+          call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+               & AtomicFragments(atomA),grad=grad)
+
+          ! Free basis info again
+          call atomic_fragment_free_basis_info(AtomicFragments(atomA))
+
+       end if
+
+       ! Update energies
+       do j=1,ndecenergies
+          FragEnergies(atomA,atomA,j) = AtomicFragments(atomA)%energies(j)
+       end do
+
+       ! Copy fragment information into joblist
+       call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
+       singlejob%jobsdone(1) = .true.
+
+    else ! pair calculation
+
+       print '(1X,a,i8,a,i15,a,2i8)', 'Job: ', k, ' of size ', jobs%jobsize(k),&
+            &  ' is pair fragment: ', atomA,atomB
+
+       ! Get energy (and possibly density or gradient)
+       ! *********************************************
+
+       ! Init pair
+       call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
+            & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
+            & MyMolecule,mylsitem,.true.,PairFragment)
+
+
+       if(DECinfo%SinglesPolari) then
+          call pair_driver_singles(natoms,nocc,nunocc,&
+               & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
+               & AtomicFragments(atomA), AtomicFragments(atomB),PairFragment,t1old,t1new)
+       else
+          call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+               & AtomicFragments(atomA), AtomicFragments(atomB),&
+               & natoms,PairFragment,grad)
+       end if
+
+       ! Update pair energies
+       do j=1,ndecenergies
+          fragenergies(atomA,atomB,j) = PairFragment%energies(j)
+          fragenergies(atomB,atomA,j) = PairFragment%energies(j)
+       end do
+
+       ! Copy fragment information into joblist
+       call copy_fragment_info_job(PairFragment,singlejob)
+       singlejob%jobsdone(1) = .true.
+
+       call atomic_fragment_free(PairFragment)
+
+    end if
+
+
+  end subroutine specific_fragment_no_mpi
 
 
   !> \brief Carry out fragment optimizations and (possibly) calculate 
@@ -1099,7 +1195,7 @@ contains
     type(decfrag),pointer :: EstAtomicFragments(:)
     logical :: DoBasis,calcAF
     real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime
-    integer :: natoms
+    integer :: natoms,i,j,k
     type(joblist) :: jobs,fragoptjobs,estijobs
 
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
@@ -1131,18 +1227,17 @@ contains
        call init_estimated_atomic_fragments(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
             & MyMolecule,mylsitem,DoBasis,init_radius,dofrag,EstAtomicFragments)
 
-       ! Get job list for estimated fragments
-       calcAF = .true. 
-       ! for now we also calculate estimated atomic fragments for analysis purposes 
-       ! (they are not really needed for the actual DEC scheme)
+       ! Get job list for estimated pair fragments
+       calcAF = .false.  ! No atomic fragments, just pairs
        call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
             &OccOrbitals,UnoccOrbitals,EstAtomicFragments,dofrag,esti,estijobs)
 
        ! Merge job list of atomic fragment optimization and estimated fragments (in this order)
        call concatenate_joblists(fragoptjobs,estijobs,jobs)
 
-       ! HERE
-       ! call fragment_jobs with both AtomicFragments and EstAtomicFragments as inputs.
+       call fragment_jobs(.false.,nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+            & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
+            & EstAtomicFragments=EstAtomicFragments)
 
        call mem_dealloc(EstAtomicFragments)
     else
@@ -1154,6 +1249,17 @@ contains
             & OccOrbitals,UnoccOrbitals,fragoptjobs,AtomicFragments,FragEnergies,esti)
 
     end if
+
+
+    ! Zero all pair fragment energies to make sure that there are no leftovers from estimated pairs.
+    do k=1,ndecenergies
+       do j=1,natoms
+          do i=j+1,natoms
+             FragEnergies(i,j,k) = 0.0_realk
+             FragEnergies(j,i,k) = 0.0_realk
+          end do
+       end do
+    end do
 
 
     ! Timings and statistics print
