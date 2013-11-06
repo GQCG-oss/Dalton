@@ -31,7 +31,7 @@ At the same time, you need to increase the global integer ndecenergies in lsutil
 E.g. if your new model/correction requires N additional energies to be stored, 
 increase ndecenergies by N.
 
-(iii)
+(iv)
 New model:
 * Set defaults for your model in dec_set_default_config and dec_set_model_names.
 * Add model to input keyword(s) in config_dec_input. 
@@ -43,7 +43,7 @@ New correction:
 * Set defaults in dec_set_default_config and add input keyword(s) in config_dec_input.
 (For example, see what is done for F12 and do something similar).
 
-(iv)
+(v)
 For new model (e.g. RPA): Grep for "MODIFY FOR NEW MODEL" in all files in the DEC code. These are the main places you need to change to include your new model. It is hopefully clear from the context and the comments in the code what needs to be done to include the new model.
 
 For new correction (e.g. F12): Grep for "MODIFY FOR NEW CORRECTION" in all files in the DEC code. These are the main places you need to change to include your new model. It is hopefully clear from the context and the comments in the code what needs to be to include the new correction".
