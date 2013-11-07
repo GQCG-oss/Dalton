@@ -591,10 +591,10 @@ contains
     type(array2),intent(in),optional :: t1old
     !> New t1 amplitudes (see main_fragment_driver for details)
     type(array2),intent(inout),optional :: t1new
-    !> Job list for atomic fragment optimization 
+    !> Job list for atomic fragment optimization  (only when esti=true)
     !> Identical to the first part of "jobs" job list but necessary for restart reasons.
     type(joblist),intent(inout),optional :: fragoptjobs
-    !> Job list for estimated pair fragment calculations
+    !> Job list for estimated pair fragment calculations  (only when esti=true)
     !> Identical to the second part of "jobs" job list but necessary for restart reasons.
     type(joblist),intent(inout),optional :: estijobs
     !> Atomic fragments with estimated orbital spaces (intent(in) for practical purposes)
@@ -620,7 +620,7 @@ contains
     nfragopt = count(jobs%dofragopt)
 
     ! Sanity check for atomic fragment optimization 
-    if(dofragopt) then
+    if(dofragopt .and. esti) then
        if(.not. present(fragoptjobs) ) then
           call lsquit('fragment_jobs: Atomic fragment optimization in job list, but &
                & fragment opt. job list is not present!',-1)
@@ -934,10 +934,14 @@ contains
 
 
           FragoptCheck3: if(jobs%dofragopt(jobdone)) then
-             ! Also put job into fragopt job list to enable restart below
-             call put_job_into_joblist(singlejob,jobdone,fragoptjobs)
-             ! Save fragment info to file atomicfragments.info
-             call add_fragment_to_file(AtomicFragments(atomA),fragoptjobs)
+             if(esti) then
+                ! Also put job into fragopt job list to enable restart when using estimated fragments
+                call put_job_into_joblist(singlejob,jobdone,fragoptjobs)
+                ! Save fragment info to file atomicfragments.info
+                call add_fragment_to_file(AtomicFragments(atomA),fragoptjobs)
+             else
+                call add_fragment_to_file(AtomicFragments(atomA),jobs)
+             end if
           end if FragoptCheck3
 
           ! Time dt since last backup
@@ -945,7 +949,10 @@ contains
           dt = t2wall - t1wall
 
           ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
-          Backup: if( (dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) then
+          Backup: if( ( (dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. &
+               & (.not. all(jobs%dofragopt)) ) then
+             ! Note: If only fragment optimization jobs are requested this is not necessary
+             ! because the fragment energies are anyway stored in add_fragment_to_file above.
 
              if(esti) then
                 ! Save info for estimated pair fragments restart
@@ -1031,7 +1038,7 @@ contains
     call create_dec_joblist_fragopt(natoms,nocc,nunocc,MyMolecule%DistanceTable,&
          & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
     if(DECinfo%DECrestart) then
-       write(DECinfo%output,*) 'Restarting atomic fragment optimizatons....'
+       write(DECinfo%output,*) 'Restarting atomic fragment optimizations....'
        call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
             & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
     end if
@@ -1098,8 +1105,7 @@ contains
        ! Just fragment opt.
        ! ******************
        call fragment_jobs(nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
-            & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
-            & fragoptjobs=fragoptjobs)
+            & UnoccOrbitals,fragoptjobs,AtomicFragments,FragEnergies,esti)
 
     end if
 
