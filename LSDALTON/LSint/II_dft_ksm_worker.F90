@@ -1811,13 +1811,14 @@ REAL(REALK),intent(in) :: GAOMAX
 !
 REAL(REALK),pointer :: EXPVAL(:,:),VXC(:,:),EXPGRAD(:,:,:)
 REAL(REALK) :: VX(27),DFTENE,GRD,GRDA,MIXEDGRDA
-INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred,W1,W2,W3,W4,W5,W6,W7,W8
+INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred,W1,W2,W3,W4,W5,W6,W7,W8,X,Y,Z,XYZ
 LOGICAL     :: DOCALC
 Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk,D3 = 3E0_realk
 Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
 REAL(REALK) :: GRD2,GRDA2,GRDA3
 REAL(REALK) :: fRZ,fRG,fZZ,fRRR,fRRZ,fRRG,fRRGX,fRZZ,fZZZ,gradY,gradZ,gradYZ,A,B,C
 REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(35,1)
+REAL(realk) :: FDERIV(4,4,4),E1(4),E2(4),TMP
 NBMAT = DFTDATA%NBMAT
 IF(NBMAT.NE. 2)call lsquit('QRSP XC error',lupri)
 call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
@@ -1851,23 +1852,25 @@ IF(DOCALC)THEN
    IF(GRD.LT. 1E-40_realk) GRD = 1E-40_realk
    GRDA = D05*GRD
    IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
-    !get the functional derivatives 
-    GRD2 = GRD*GRD
-    GRDA2 = GRDA*GRDA
-    GRDA3 = GRDA2*GRDA
-    gradY = D05*(EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1) &
-         &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1) &
-         &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-    gradZ = D05*(EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1) &
-         &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1) &
-         &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
-    gradYZ = (EXPGRAD(1,IPNT,2)*EXPGRAD(1,IPNT,1) &
-         &+EXPGRAD(2,IPNT,2)*EXPGRAD(2,IPNT,1) &
-         &+EXPGRAD(3,IPNT,2)*EXPGRAD(3,IPNT,1))
 #ifdef VAR_XCFUN
     IF(.NOT.USEXCFUN)THEN
 #endif
+       !get the functional derivatives 
        CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+
+       GRD2 = GRD*GRD
+       GRDA2 = GRDA*GRDA
+       GRDA3 = GRDA2*GRDA
+       gradY = D05*(EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+       gradZ = D05*(EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
+       gradYZ = (EXPGRAD(1,IPNT,2)*EXPGRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,2)*EXPGRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,2)*EXPGRAD(3,IPNT,1))
+
        fRZ = (VX(8)+VX(9))/GRD              !(drvs.df1010 + drvs.df1001)/(2*grada)
        fRG = D2*VX(10)                      !2*drvs.df10001   
        fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA) !(drvs.df0020 + drvs.df0011)/(4*grada2)-drvs.df0010/(4*grada3)
@@ -1893,12 +1896,16 @@ IF(DOCALC)THEN
             & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*gradYZ
        B = D8*fZZ*gradY + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
        C = D8*fZZ*gradZ + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
+
+       VXC(2,IPNT) = D2*A*GRAD(1,IPNT,1) + D2*B*EXPGRAD(1,IPNT,2) + D2*C*EXPGRAD(1,IPNT,1)
+       VXC(3,IPNT) = D2*A*GRAD(2,IPNT,1) + D2*B*EXPGRAD(2,IPNT,2) + D2*C*EXPGRAD(2,IPNT,1)
+       VXC(4,IPNT) = D2*A*GRAD(3,IPNT,1) + D2*B*EXPGRAD(3,IPNT,2) + D2*C*EXPGRAD(3,IPNT,1)
        
 #ifdef VAR_XCFUN
     ELSE
        DO IBMAT = 1,NBMAT
        ! Input:
-       !rho   = XCFUNINPUT(1,1)
+       !rho    = XCFUNINPUT(1,1)
        !grad_x = XCFUNINPUT(2,1)
        !grad_y = XCFUNINPUT(3,1)
        !grad_z = XCFUNINPUT(4,1)
@@ -1947,70 +1954,45 @@ IF(DOCALC)THEN
        ! out(33,1) d^3 Exc / d ny ny nz
        ! out(34,1) d^3 Exc / d ny nz nz
        ! out(35,1) d^3 Exc / d nz nz nz
-
-!Quadratic XCold
-       fRZ = D4*(XCFUNOUTPUT(18,1)+XCFUNOUTPUT(19,1))*WGHT(IPNT)/GRD !(1010+1001)/(2*grada)
-
-       fRZ = (VX(8)+VX(9))/GRD              !(drvs.df1010 + drvs.df1001)/(2*grada)
-       fRG = D2*VX(10)                      !2*drvs.df10001   
-       fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA) !(drvs.df0020 + drvs.df0011)/(4*grada2)-drvs.df0010/(4*grada3)
-       fRRR = VX(15)+D3*VX(16)              !(drvs.df3000 + 3*drvs.df2100) 
-       fRRZ = (VX(17)+VX(18)+D2*VX(20))/GRD !(drvs.df2010+drvs.df2001+2*drvs.df1110)/(2*grada)
-       fRRG = VX(19)+VX(21)                 !drvs.df20001+drvs.df11001
-       fRRGX = D2*(VX(19)+VX(21))           !2*(drvs.df20001+drvs.df11001)
-       fRZZ = (VX(22)+VX(24)+D2*VX(23))/GRD2 - (VX(8)+VX(9))/(GRD2*GRDA)  !(drvs.df1020+drvs.df0120+2*drvs.df1011)/(4*grada2)-(drvs.df1010+drvs.df1001)/(4*grada3)
-       fZZZ = ((VX(25)+D3*VX(26))/(GRDA3)-D3*(VX(11)+VX(12))/(GRDA2*GRDA2)+D3*VX(3)/(GRDA3*GRDA2))/D8
-       !((drvs.df0030 + 3*drvs.df0021)/grada3& 
-       !         &-3*(drvs.df0020 + drvs.df0011)/(grada2*grada2)&
-       !         &+3*drvs.df0010/(grada3*grada2))/8.0
-       VXC(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &!OK
-            &+D4*(fRRZ*EXPVAL(IPNT,1)*gradZ+fRRZ*EXPVAL(IPNT,2)*gradY) & !OK
-            &+D8*gradZ*gradY*fRZZ &! OK
-            &+D4*gradYZ*fRZ &! OK  
-            &+D4*fRRG*EXPVAL(IPNT,1)*gradZ &! OK
-            &+D4*fRRG*EXPVAL(IPNT,2)*gradY+D2*fRG*gradYZ !OK
        
-       A = D8*fZZZ*gradY*gradZ &
-            & + D4*(fRZZ*EXPVAL(IPNT,1)*gradZ + fRZZ*EXPVAL(IPNT,2)*gradY) &
-            & + D2*fRRZ*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &
-            & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*gradYZ
-       B = D8*fZZ*gradY + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
-       C = D8*fZZ*gradZ + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
-       
-!Linear response 
-          !the \Omega_{\mu \nu} part
-          VXC(1,IPNT) = &
-               &   D4*XCFUNOUTPUT(6,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT) &
-               & + D4*XCFUNOUTPUT(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D4*XCFUNOUTPUT(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D4*XCFUNOUTPUT(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
-          !the \frac{\partial \Omega_{\mu \nu}}{\partial x} part
-          VXC(2,IPNT) = &
-               &   D8*XCFUNOUTPUT(7,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
-          !the \frac{\partial \Omega_{\mu \nu}}{\partial y} part             
-          VXC(3,IPNT) = &
-               &   D8*XCFUNOUTPUT(8,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
-          !the \frac{\partial \Omega_{\mu \nu}}{\partial z} part =
-          !     (d^2 Exc/d rho d gz)kappa + (d^2 Exc/d gx d gz)dkappa/dx
-          !+ (d^2 Exc/d gy d gz)dkappa/dy + (d^2 Exc/d gz d gz)dkappa/dz 
-          VXC(4,IPNT) = &
-               &   D8*XCFUNOUTPUT(9,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+       ! Constructing intermediates for the VXC automated loop
+       XYZ = 15
+       DO X=1,4
+         DO Y=X,4
+           DO Z=Y,4
+             XYZ = XYZ + 1
+             FDERIV(X,Y,Z) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(X,Z,Y) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Y,X,Z) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Y,Z,X) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Z,X,Y) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Z,Y,X) = XCFUNOUTPUT(XYZ,1)
+           ENDDO
+         ENDDO
+       ENDDO
+       E1(1) = EXPVAL(IPNT,1)
+       E1(2) = EXPGRAD(1,IPNT,1)
+       E1(3) = EXPGRAD(2,IPNT,1)
+       E1(4) = EXPGRAD(3,IPNT,1)
+       E2(1) = EXPVAL(IPNT,2)
+       E2(2) = EXPGRAD(1,IPNT,2)
+       E2(3) = EXPGRAD(2,IPNT,2)
+       E2(4) = EXPGRAD(3,IPNT,2)
+
+       ! VXC loop
+       DO X=1,4
+         VXC(X,IPNT) = 0E0_realk
+         DO Y=1,4
+           TMP = D8*E1(Y)*WGHT(IPNT)
+           IF (X.GE.2) TMP = D2*TMP
+           DO Z=1,4
+             VXC(X,IPNT) = VXC(X,IPNT) + FDERIV(Z,Y,X)*E2(Z)*TMP
+           ENDDO
+         ENDDO
        ENDDO
 
-       call lsquit('xcfun version of quadratic response not implemented',-1)
-    ENDIF
-    VXC(2,IPNT) = D2*A*GRAD(1,IPNT,1) + D2*B*EXPGRAD(1,IPNT,2) + D2*C*EXPGRAD(1,IPNT,1)
-    VXC(3,IPNT) = D2*A*GRAD(2,IPNT,1) + D2*B*EXPGRAD(2,IPNT,2) + D2*C*EXPGRAD(2,IPNT,1)
-    VXC(4,IPNT) = D2*A*GRAD(3,IPNT,1) + D2*B*EXPGRAD(3,IPNT,2) + D2*C*EXPGRAD(3,IPNT,1)
+       ENDDO !IPNT
+     ENDIF !XCFUN
 #endif
    ELSE
     VXC(:,IPNT) = 0.0E0_realk
