@@ -2680,7 +2680,7 @@ REAL(REALK) :: fR,fRR,fZ,fRZ,fZZ,fRG,fZG,fGG,fG,A,B
 REAL(REALK) :: VXC1(NBLEN),VXC2(3,NBLEN),VXC3(NBLEN),VXC4(3,NBLEN)
 REAL(REALK),parameter :: D2=2E0_realk, D4=4E0_realk, DUMMY = 0E0_realk, D05=0.5E0_realk, D025=0.25E0_realk 
 REAL(REALK),parameter :: D8=8E0_realk
-REAL(REALK) :: XCFUNINPUT2(4,1),XCFUNOUTPUT2(15,1)
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(15,1)
 INTEGER     :: I,J,nred,nbmat,IPNT,W1,W2,W3,W4,W7,W8,W5,W6,W9,W10
 logical :: DOCALC
 nbmat=1
@@ -2744,54 +2744,16 @@ IF(DOCALC)THEN
        VXC4(3,IPNT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,1)
 #ifdef VAR_XCFUN
       ELSE
-       call lsquit('xcfun version of II_DFT_GEODERIV_KOHNSHAMGGA not implemented',-1)
-       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
-       fZ  = VX(3)                    !drvs.df0010;
-       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
-       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
-       fRG = D05*VX(10)             !0.5*drvs.df10001;   
-       fZG = D05*VX(13)             !0.5*drvs.df00101; 
-       fGG = D025*VX(14)            !0.25*drvs.df00002; 
-       fG  = D05*VX(5)               !0.5*drvs.df00001;  
-       MIXEDGRDA = (EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
-            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-
-       VXC1(IPNT) = D4*VX(1)
-       print*,'VXC1(IPNT)',VXC1(IPNT)
-       A = D2*(VX(3)/GRDA + VX(5))
-       VXC2(1,IPNT) = A*GRAD(1,IPNT,1)
-       VXC2(2,IPNT) = A*GRAD(2,IPNT,1)
-       VXC2(3,IPNT) = A*GRAD(3,IPNT,1)
-       print*,'VXC2(1,IPNT)',VXC2(1,IPNT)
-       print*,'VXC2(2,IPNT)',VXC2(2,IPNT)
-       print*,'VXC2(3,IPNT)',VXC2(3,IPNT)
-       !the LDA part
-       VXC3(IPNT) =D4*fRR*EXPVAL(IPNT,1)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
-       print*,'VXC3(IPNT)',VXC3(IPNT)
-       !the non LDA parts
-       A = D4*((fRZ/GRD + fRG)*EXPVAL(IPNT,1)&
-            & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
-       B= D4*(fZ/GRD + fG)
-       VXC4(1,IPNT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,1)
-       VXC4(2,IPNT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,1)
-       VXC4(3,IPNT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,1)
-       print*,'VXC4(1,IPNT)',VXC4(1,IPNT)
-       print*,'VXC4(2,IPNT)',VXC4(2,IPNT)
-       print*,'VXC4(3,IPNT)',VXC4(3,IPNT)
-
-       XCFUNINPUT2(1,1) = RHO(IPNT,1)
-       XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
-       XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
-       XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
        ! Input:
-       !rho   = XCFUNINPUT(1,1)
+       !rho    = XCFUNINPUT(1,1)
        !grad_x = XCFUNINPUT(2,1)
        !grad_y = XCFUNINPUT(3,1)
        !grad_z = XCFUNINPUT(4,1)
-       call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,15,XCFUNOUTPUT2,2)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT,15,XCFUNOUTPUT,2)
        ! Output
        ! Order 0
        ! out(1,1) Exc
@@ -2812,39 +2774,31 @@ IF(DOCALC)THEN
        ! out(14,1) d^2 Exc / d ny nz
        ! out(15,1) d^2 Exc / d nz nz
        !the \Omega_{\mu \nu} part
-       VXC1(IPNT) = D2*XCFUNOUTPUT2(2,1)*WGHT(IPNT)
-       print*,'NEW VXC1(IPNT)',VXC1(IPNT)
-       VXC2(1,IPNT) = D4*XCFUNOUTPUT2(3,1)*WGHT(IPNT)
-       VXC2(2,IPNT) = D4*XCFUNOUTPUT2(4,1)*WGHT(IPNT)
-       VXC2(3,IPNT) = D4*XCFUNOUTPUT2(5,1)*WGHT(IPNT)
-       print*,'NEW VXC2(1,IPNT)',VXC2(1,IPNT)
-       print*,'NEW VXC2(2,IPNT)',VXC2(2,IPNT)
-       print*,'NEW VXC2(3,IPNT)',VXC2(3,IPNT)
+       VXC1(IPNT)   = D4*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+       VXC2(1,IPNT) = D4*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+       VXC2(2,IPNT) = D4*XCFUNOUTPUT(4,1)*WGHT(IPNT)
+       VXC2(3,IPNT) = D4*XCFUNOUTPUT(5,1)*WGHT(IPNT)
 
        VXC3(IPNT) = &
-               &   D4*XCFUNOUTPUT2(6,1)*WGHT(IPNT)*EXPVAL(IPNT,1) &
-               & + D4*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-               & + D4*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-               & + D4*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
-       print*,'NEW VXC3(IPNT)',VXC3(IPNT)
+               &   D4*XCFUNOUTPUT(6,1)*WGHT(IPNT)*EXPVAL(IPNT,1) &
+               & + D4*XCFUNOUTPUT(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+               & + D4*XCFUNOUTPUT(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+               & + D4*XCFUNOUTPUT(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
        VXC4(1,IPNT) = &
-            &   D8*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
-            & + D8*XCFUNOUTPUT2(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
+            &   D4*XCFUNOUTPUT(7,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
+            & + D4*XCFUNOUTPUT(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+            & + D4*XCFUNOUTPUT(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+            & + D4*XCFUNOUTPUT(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
        VXC4(2,IPNT) = &
-            &   D8*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
-            & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
+            &   D4*XCFUNOUTPUT(8,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
+            & + D4*XCFUNOUTPUT(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+            & + D4*XCFUNOUTPUT(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+            & + D4*XCFUNOUTPUT(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
        VXC4(3,IPNT) = &
-            &   D8*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
-            & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
-       print*,'NEW VXC4(1,IPNT)',VXC4(1,IPNT)
-       print*,'NEW VXC4(2,IPNT)',VXC4(2,IPNT)
-       print*,'NEW VXC4(3,IPNT)',VXC4(3,IPNT)
+            &   D4*XCFUNOUTPUT(9,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
+            & + D4*XCFUNOUTPUT(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+            & + D4*XCFUNOUTPUT(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+            & + D4*XCFUNOUTPUT(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
       ENDIF
 #endif
     ELSE
