@@ -4091,7 +4091,11 @@ if(DECinfo%PL>0) then
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*) '*****************************************************'
-    write(DECinfo%output,*) '*               DEC FRAGMENT JOB LIST               *'
+    if(esti) then
+       write(DECinfo%output,*) '*      DEC ESTIMATED FRAGMENT JOB LIST              *'
+    else
+       write(DECinfo%output,*) '*               DEC FRAGMENT JOB LIST               *'
+    end if
     write(DECinfo%output,*) '*****************************************************'
     write(DECinfo%output,*) 'Number of jobs = ', njobs
     write(DECinfo%output,*)

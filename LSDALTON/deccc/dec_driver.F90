@@ -650,8 +650,9 @@ contains
     type(array2),intent(in),optional :: t1old
     !> New t1 amplitudes (see main_fragment_driver for details)
     type(array2),intent(inout),optional :: t1new
-    !> Atomic fragments with estimated orbital spaces
-    type(decfrag),dimension(natoms),intent(in),optional :: EstAtomicFragments
+    !> Atomic fragments with estimated orbital spaces (intent(in) for practical purposes)
+    type(decfrag),dimension(natoms),intent(inout),optional :: EstAtomicFragments
+    type(decfrag) :: PairFragment
     integer :: k,atomA,atomB,i,j,counter,jobdone,nworkers,newjob,jobstodo,siz
     type(mp2grad) :: grad
     type(joblist) :: singlejob,jobsold
@@ -905,16 +906,27 @@ contains
                   & AtomicFragments(atomA),grad,t1old=t1old,t1new=t1new)
           else
 
-             ! Init fragment basis information
-             call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
-                  & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
+             FragoptCheck3: if(jobs%dofragopt(k)) then
 
-             ! Call main driver to get energy (and possibly density or gradient)
-             call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                  & AtomicFragments(atomA),grad=grad)
+                ! Fragment optimization
+                call optimize_atomic_fragment(atomA,AtomicFragments(atomA),MyMolecule%nAtoms, &
+                     & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
+                     & MyMolecule,mylsitem,.true.)
 
-             ! Free basis info again
-             call atomic_fragment_free_basis_info(AtomicFragments(atomA))
+             else
+
+                ! Init fragment basis information
+                call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
+                     & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
+
+                ! Call main driver to get energy (and possibly density or gradient)
+                call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+                     & AtomicFragments(atomA),grad=grad)
+
+                ! Free basis info again
+                call atomic_fragment_free_basis_info(AtomicFragments(atomA))
+
+             end if FragoptCheck3
 
           end if
 
@@ -926,6 +938,8 @@ contains
           ! Copy fragment information into joblist
           call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
           singlejob%jobsdone(1) = .true.
+          singlejob%esti(1) = jobs%esti(k)
+          singlejob%dofragopt(1) = jobs%dofragopt(k)
 
        else ! pair calculation
 
@@ -1001,8 +1015,9 @@ contains
 
     end do JobLoop
 
-#ifndef VAR_MPI
+#ifdef VAR_MPI
     call MPI_COMM_FREE(infpar%lg_comm,IERR)
+#else
     call free_joblist(singlejob)
 #endif
 

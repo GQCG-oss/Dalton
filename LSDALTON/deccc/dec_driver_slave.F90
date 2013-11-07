@@ -313,7 +313,7 @@ contains
 
 
     ! ********************************************************************
-    ! *               POST-FRAGOPT FRAGMENT CALCULATIONS                 *
+    ! *                        FRAGMENT CALCULATIONS                     *
     ! ********************************************************************
 
     ! Local master asks main master for fragment jobs
