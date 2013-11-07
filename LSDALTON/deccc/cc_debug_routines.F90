@@ -591,6 +591,10 @@ module cc_debug_routines_module
 
            call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
 
+        else
+           print *, 'MODEL = ', DECinfo%cc_models(DECinfo%ccmodel)
+           call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
+
         end if SelectCoupledClusterModel
 
         if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
@@ -739,6 +743,9 @@ module cc_debug_routines_module
               ccenergy = RPA_energy(t2(iter),gmo)
               sosex = SOSEX_contribution(t2(iter),gmo)
               ccenergy=ccenergy+sosex
+           else
+              print *, 'MODEL = ', DECinfo%cc_models(DECinfo%ccmodel)
+              call lsquit('ccsolver_debug: Energy for model is not implemented!',-1)
            end if EnergyForCCmodel
         endif
 

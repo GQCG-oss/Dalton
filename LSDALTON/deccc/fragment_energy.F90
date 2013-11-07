@@ -3150,9 +3150,9 @@ end subroutine optimize_atomic_fragment
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
 #ifdef MOD_UNRELEASED
     case(MODEL_CCSDpT)
-       ! CCSD(T)
-       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCpT)
-       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTpT)
+       ! CCSD(T): CCSD contribution + (T) contribution
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCCSD) + fragment%energies(FRAGMODEL_OCCpT)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCCSD) + fragment%energies(FRAGMODEL_VIRTpT)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
 !endif mod_unreleased
@@ -3197,9 +3197,9 @@ end subroutine optimize_atomic_fragment
        fragment%energies(FRAGMODEL_VIRTCCSD) = fragment%EvirtFOP
 #ifdef MOD_UNRELEASED 
     case(MODEL_CCSDpT)
-       ! CCSD(T)
-       fragment%energies(FRAGMODEL_OCCpT) = fragment%EoccFOP 
-       fragment%energies(FRAGMODEL_VIRTpT) = fragment%EvirtFOP
+       ! (T) contribution =  CCSD(T) contribution minus CCSD contribution
+       fragment%energies(FRAGMODEL_OCCpT) = fragment%EoccFOP - fragment%energies(FRAGMODEL_OCCCCSD)
+       fragment%energies(FRAGMODEL_VIRTpT) = fragment%EvirtFOP - fragment%energies(FRAGMODEL_VIRTCCSD)
 !endif mod_unreleased
 #endif
     case default
