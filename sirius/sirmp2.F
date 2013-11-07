@@ -618,7 +618,7 @@ C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
 !  using HERFCK ...                  
 !                 write(lupri,*) 'Before calling herfck E_srHFX = ',
 !    &            ESRHFX 
-
+!  
                   IPRHER = IPRFCK/100 
                   AO2INTFILE_LABEL_SAVE =  AO2INTFILE_LABEL
                   AO2INTFILE_LABEL      = 'AOSR2INT'
@@ -639,10 +639,51 @@ C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
      &                                1,WRK(KVSRAO),1) ! Ksr
 
 !                 write(lupri,*) 'E_srHFX = ', ESRHFX 
+!     
+!***********************************************************
+! *** Compute the lrHFX term for analysis purposes ***
+!
+                  ELRHFX = D0
+!  using HERFCK ...                  
+!
+                  DOSRIN = .FALSE. ! set up
+                  SRINTS = .FALSE. ! set up
+                  DIRFCK = .TRUE. 
+                  HFXFAC_SAVE = HFXFAC
+                  HFXFAC = 1.0D0         ! otherwise integrals are
+!                                          multiplied by zero :-/
+
+!                 WRK(KDAO) may have been destroyed by HERFCK so we copy
+!                 WRK(KDHFAO) again
+
+                  CALL DZERO(WRK(KDAO),N2BASX) ! reset to zero just to be sure 
+                  CALL DCOPY(N2BASX,WRK(KDHFAO),1,WRK(KDAO),1)
+
+                  IF (LUINTA .LE. 0) 
+     &            CALL GPOPEN(LUINTA,AO2INTFILE_LABEL_SAVE,
+     &                        'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+                  CALL GPCLOSE(LUINTA,'DELETE')
+                  CALL DZERO(WRK(KVSRAO),N2BASX) ! reset WRK(KVSRAO) to zero so that
+!                                                  it can now be used
+!                                                  for the lrHFX potential 
+                  CALL HERFCK(WRK(KVSRAO),WRK(KDAO),1,
+     &                        0,12,IPRHER,WRK(KFREE),LFREE)
+!                 NB! WRK(KDAO) may be destroyed inside HERFCK, do not use below!
+!                 write(lupri,*) 'print VSRAO after calling sirfck2'
+!                 CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,
+!    &                        NBAST,1,LUPRI)
+!     
+                  HFXFAC = HFXFAC_SAVE   ! recover its initial value
+!                                          (before call to herfck)
+
+                  ELRHFX   = DP5*DDOT(N2BASX,WRK(KDHFAO),
+     &                                1,WRK(KVSRAO),1) ! Klr
+
+!                 write(lupri,*) 'E_lrHFX = ', ELRHFX 
+!***********************************************************
 !                   
                   CALL MEMREL('Releasing memory',
      &                          WRK,KFRSAV,KDHFMO,KFREE,LFREE)  
-!     
 ! *** We can now sum up all the contributions *** 
 
 ! Manu debug b
@@ -651,6 +692,8 @@ C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
                   write(lupri,*) 'EMY =', EMY
                   write(lupri,*) 'ESRDFT =', ESRDFT
                   write(lupri,*) 'ESRHFX =', ESRHFX 
+                  write(lupri,*) 'ELRHFX =', ELRHFX 
+                  write(lupri,*) 'EHFX (lr+sr) =', ELRHFX+ESRHFX 
                   write(lupri,*) 'ESRDFTCMD =', ESRDFTCMD 
                   EHF1it = EMY-ESRDFT+ESRHFX
                   write(lupri,*) 'EHF1it', EHF1it 
