@@ -165,12 +165,12 @@ contains
     logical :: dens_save ! Internal control of MP2 density keyword
     logical :: FO_save  ! Internal control of first order property keyword
     logical :: grad_save  ! Internal control of MP2 gradient keyword
-    logical :: dofrag(natoms), fragdone(natoms)
+    logical :: dofrag(natoms)
     type(array2) :: t1old,fockt1,t1new
-    logical :: redo,post_fragopt_restart
+    logical :: redo
     type(mp2grad) :: grad
     type(fullmp2grad) :: fullgrad
-    integer :: jobdone,newjob, nworkers, njobs, siz, jobidx
+    integer :: jobdone,newjob, nworkers, siz, jobidx
     integer(kind=ls_mpik) :: groupsize
     integer :: af_list(natoms),MPIdatatype,MyAtom
     type(joblist) :: jobs
@@ -178,7 +178,7 @@ contains
     ! (T) contribution to fragment energies for occupied (:,:,1), and virtual (:,:,2) schemes 
     !> (:,:,3): Occupied E[4] contribution;  (:,:,4): Virtual E[4] contribution
     !> (:,:,5): Occupied E[5] contribution;  (:,:,6): Virtual E[5] contribution
-    logical :: atomic_fragment_restart,calcAF
+    logical :: calcAF
     integer(kind=ls_mpik) :: master,IERR,comm,sender
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
@@ -203,7 +203,6 @@ contains
 
     ! Find out which atoms have one or more orbitals assigned
     call which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
-    njobs = count(dofrag)
 
     if(DECinfo%PairEstimate .and. count(dofrag)>1) then
        ! Use estimated pair fragments to determine which pair fragments to calculate at the FOT level
@@ -225,77 +224,6 @@ contains
        t1old = array2_init_plain(dims)
     end if
 
-
-    ! Restart option: In case some fragments are already done and stored in atomicfragments.info.
-    fragdone=.false.
-    post_fragopt_restart=.false.
-    if(DECinfo%DECrestart) then  
-
-       EstimatedFragments: if(esti) then       
-          ! No atomic fragment optimization for estimated fragments
-          atomic_fragment_restart=.false.
-          ! Check for estimate fragment energy restart file
-          post_fragopt_restart = fragment_restart_file_exist(.false.,esti)
-          call init_joblist(njobs,jobs)
-          if(post_fragopt_restart) then
-             write(DECinfo%output,'(a)') 'Restarting estimated fragment calculations...'
-          end if
-       else
-          call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
-               & UnoccOrbitals,.false.,AtomicFragments,jobs,atomic_fragment_restart)
-
-          AFrestartfileexist: if(atomic_fragment_restart) then
-             ! Atomic fragment restart files exist - we restart...
-
-             write(DECinfo%output,'(a,i8)') 'RESTARTING ATOMIC FRAGMENTS - jobs to do ', &
-                  & count(dofrag)-count(jobs%jobsdone)
-
-             ! Restart pair fragments only if all atomic fragments are done AND fragment file exists
-             if(count(dofrag) == count(jobs%jobsdone)) then
-                post_fragopt_restart = fragment_restart_file_exist(DECinfo%first_order,esti)
-                if(post_fragopt_restart) then
-                   write(DECinfo%output,'(a)') 'Fragment optimization is done, restart remaining fragments'
-                else
-                   write(DECinfo%output,'(a)') 'Fragment optimization is done, but no restart file &
-                        & for remaining fragments'
-                   write(DECinfo%output,'(a)') '--> We will calculate remaining fragments from scratch!'
-                end if
-             end if
-
-             ! Make list of dimension natoms telling which atomic fragments are already done
-             ! (note that number of jobs in job list is equal to count(dofrag) which
-             !  in general is smaller than natoms because not all atoms have orbitals assigned.
-             !  When all calculations are done dofrag=fragdone).
-             do i=1,jobs%njobs
-                if(jobs%jobsdone(i)) then  ! job number "i" is done
-                   ! Job number "i" in job list corresponds to atom number jobs%atom1(i)
-                   fragdone(jobs%atom1(i)) = .true.
-                end if
-             end do
-
-             ! Sanity checks
-             if(count(fragdone) /= count(jobs%jobsdone) ) then
-                write(DECinfo%output,*) 'jobsdone / fragdone: ', count(jobs%jobsdone),count(fragdone)
-                call lsquit('Main driver: Inconsistency in atomic fragment restart job list 1',-1)
-             end if
-             if(count(dofrag) /= jobs%njobs) then
-                write(DECinfo%output,*) 'dofrag / njobs: ', count(dofrag),jobs%njobs
-                call lsquit('Main driver: Inconsistency in atomic fragment restart job list 2',-1)
-             end if
-
-             ! Subtract number of fragments already done from job count
-             njobs = njobs - count(jobs%jobsdone)
-             jobidx = count(jobs%jobsdone) ! counter used for putting new jobs into job list
-
-          else
-             ! Atomic fragment restart files do not exist --> calculate from scratch
-             call init_joblist(njobs,jobs)
-             jobidx=0
-          end if AFrestartfileexist
-
-       end if EstimatedFragments
-
-    end if
 
 
 
@@ -352,7 +280,7 @@ contains
           do j=1,ndecenergies
              FragEnergies(i,i,j) = AtomicFragments(i)%energies(j)
           end do
-          
+
           ! If atomic fragments are to be repeated we need to reset original model
           ! for fragments here! For example, if fragment optimization was done
           ! at the MP2 level, then AtomicFragments(i)%ccmodel is MODEL_MP2 now.
@@ -361,10 +289,10 @@ contains
           if(DECinfo%RepeatAF) then
              AtomicFragments(i)%ccmodel = DECinfo%ccmodel
           end if
-          
+
        end if
     end do
-       
+
 
     ! Now all atomic fragment energies have been calculated and the
     ! fragment information has been stored in AtomicFragments.
@@ -384,7 +312,6 @@ contains
     calcAF = DECinfo%RepeatAF
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,.false.,jobs)
-    njobs = jobs%njobs
 
     ! Zero fragment energies if they are recalculated
     if(calcAF) then
@@ -400,7 +327,7 @@ contains
 
 #ifdef VAR_MPI
 
-    ! Communicate atomic fragments (single fragments) to slaves
+    ! Communicate atomic fragments to slaves
     call mpi_bcast_many_fragments(natoms,dofrag,AtomicFragments,MPI_COMM_LSDALTON)
 
 #endif
@@ -447,8 +374,23 @@ contains
        write(DECinfo%output,*) '*** Calculating single and pair interaction energies ***'
        write(DECinfo%output,*)
 
-       ! Calculate all fragments (both single and pairs)
-       call fragment_jobs(post_fragopt_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,&
+
+       ! ************************************************************************
+       ! Calculate pair fragments (and also atomic fragments if DECinfo%RepeatAF)
+       ! ************************************************************************
+
+       ! Restart?
+       if(DECinfo%DECrestart) then
+          if(DECinfo%first_order) then ! density or gradient
+             write(DECinfo%output,*) 'Restarting pair fragments - energy and first order prop...'
+             call read_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
+          else
+             write(DECinfo%output,*) 'Restarting pair fragments - energy...'
+             call read_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
+          end if
+       end if
+
+       call fragment_jobs(nocc,nunocc,natoms,MyMolecule,mylsitem,&
             & OccOrbitals,UnoccOrbitals,jobs,AtomicFragments,&
             & FragEnergies,esti,fullgrad=fullgrad,t1old=t1old,t1new=t1new)
 
@@ -616,13 +558,11 @@ contains
   !> the relevant quantities (energy, density, gradient, t1).
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine fragment_jobs(post_fragopt_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+  subroutine fragment_jobs(nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
        & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
-       & fullgrad,t1old,t1new,EstAtomicFragments)
+       & fullgrad,t1old,t1new,fragoptjobs,estijobs,EstAtomicFragments)
 
     implicit none
-    !> Restart fragments
-    logical,intent(in) :: post_fragopt_restart
     !> Number of occupied orbitals in full molecule
     integer,intent(in) :: nOcc
     !> Number of unoccupied orbitals in full molecule
@@ -651,16 +591,22 @@ contains
     type(array2),intent(in),optional :: t1old
     !> New t1 amplitudes (see main_fragment_driver for details)
     type(array2),intent(inout),optional :: t1new
+    !> Job list for atomic fragment optimization 
+    !> Identical to the first part of "jobs" job list but necessary for restart reasons.
+    type(joblist),intent(inout),optional :: fragoptjobs
+    !> Job list for estimated pair fragment calculations
+    !> Identical to the second part of "jobs" job list but necessary for restart reasons.
+    type(joblist),intent(inout),optional :: estijobs
     !> Atomic fragments with estimated orbital spaces (intent(in) for practical purposes)
     type(decfrag),dimension(natoms),intent(inout),optional :: EstAtomicFragments
     type(decfrag) :: PairFragment
-    integer :: k,atomA,atomB,i,j,counter,jobdone,nworkers,newjob,jobstodo,siz
+    integer :: k,atomA,atomB,i,j,counter,jobdone,nworkers,newjob,siz,nfragopt,estipos
     type(mp2grad) :: grad
-    type(joblist) :: singlejob,jobsold
+    type(joblist) :: singlejob
     real(realk) :: fragenergy(ndecenergies)
     real(realk) :: t1cpu, t2cpu, t1wall, t2wall, dt
     integer(kind=ls_mpik) ::master, sender, groupsize,IERR
-    logical :: only_update
+    logical :: only_update,dofragopt
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE)
 #endif
@@ -668,11 +614,28 @@ contains
     fragenergy=0.0_realk
     only_update=.true.
 
+    ! Do any fragment optimizations?
+    dofragopt=any(jobs%dofragopt)
+    ! Number of fragment optimizations
+    nfragopt = count(jobs%dofragopt)
+
+    ! Sanity check for atomic fragment optimization 
+    if(dofragopt) then
+       if(.not. present(fragoptjobs) ) then
+          call lsquit('fragment_jobs: Atomic fragment optimization in job list, but &
+               & fragment opt. job list is not present!',-1)
+       end if
+    end if
+
     ! Sanity check for estimated fragments
     if(any(jobs%esti)) then
        if(.not. present(EstAtomicFragments)) then
           call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
                & atomic fragments are not present!',-1)
+       end if
+       if(.not. present(estijobs) ) then
+          call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
+               & pair fragment job list is not present!',-1)
        end if
     end if
 
@@ -695,6 +658,7 @@ contains
        end if
     end if
 
+
 #ifdef VAR_MPI
     ! Number of workers = Number of nodes minus master itself
     nworkers = infpar%nodtot -1
@@ -707,34 +671,7 @@ contains
     call init_joblist(siz,singlejob)
 #endif
 
-    ! Restart in case some fragments are already done
-    if(post_fragopt_restart) then
 
-       ! Copy existing job list (only used for sanity check)
-       call copy_joblist(jobs,jobsold)
-
-       ! Free existing job list 
-       call free_joblist(jobs)
-
-       ! Overwrite with job list read from file
-       if(DECinfo%first_order) then ! density or gradient
-          call read_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
-       else
-          call read_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
-       end if
-
-       ! Sanity check for job list read from file
-       call fragment_sanity_check(jobs,jobsold)
-       ! Done with old job list
-       call free_joblist(jobsold)
-
-       ! Only do jobs which are not already finished
-       jobstodo = jobs%njobs - count(jobs%jobsdone)
-       write(DECinfo%output,'(a,2i8)') 'RESTARTING FRAGMENTS - jobs to do ',  jobstodo
-    else
-       ! Do all jobs
-       jobstodo = jobs%njobs
-    end if
 
 
 
@@ -761,14 +698,14 @@ contains
 
 #endif
 
-
     ! Timing for backup
     call LSTIMER('START',t1cpu,t1wall,DECinfo%output)
 
     counter=0
     JobLoop: do k=1,jobs%njobs+nworkers
 
-       ! Counter used to distinquish real (counter<=jobstodo) and quit (counter>jobstodo) calculations
+       ! Counter used to distinquish real (counter<=jobs%njobs) and quit (counter>jobs%njobs) 
+       ! calculations
        counter=counter+1
 
        if(k<=jobs%njobs) then
@@ -830,14 +767,6 @@ contains
 
           end if FragoptCheck1
 
-          ! Put received job into total job list at position "jobdone"
-          call put_job_into_joblist(singlejob,jobdone,jobs)
-          FragoptCheck2: if(jobs%dofragopt(jobdone)) then
-             ! Save fragment info to file atomicfragments.info
-             call add_fragment_to_file(AtomicFragments(jobdone),jobs)
-          end if FragoptCheck2
-          ! Done with single job for now
-          call free_joblist(singlejob)
 
           ! Save fragment energy (symmetric for pairs)
           do j=1,ndecenergies
@@ -849,31 +778,7 @@ contains
              end if
           end do
 
-
-          ! Backup files to be able to do restart
-          ! *************************************
-
-          ! Time dt since last backup
-          call LSTIMER('START',t2cpu,t2wall,DECinfo%output)
-          dt = t2wall - t1wall
-
-          ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
-          Backup: if( (dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) then
-
-             ! Save info for restart
-             if(DECinfo%first_order) then  ! density and/or gradient 
-                call write_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
-             else ! just energy
-                call write_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
-             end if
-
-             ! Reset timer
-             call LSTIMER('START',t1cpu,t1wall,DECinfo%output)
-
-          end if Backup
-
        end if ReceiveJob
-
 
        ! Send new job task to local master
        if(counter <= jobs%njobs) then
@@ -886,14 +791,18 @@ contains
 #else
        ! NO MPI --> "Master" does all fragment jobs
 
-       ! Identify job "k"
-       atomA = jobs%atom1(k)
-       atomB = jobs%atom2(k)
+       ! Job to do: "k"
+       jobdone=k
+
+
+       ! Identify job
+       atomA = jobs%atom1(jobdone)
+       atomB = jobs%atom2(jobdone)
        ! atomA=atomB  : Single fragment job
        ! atomA/=atomB : Pair fragment job
 
        if(atomA==atomB) then ! single
-          print '(1X,a,i8,a,i15,a,i8)', 'Job: ', k, ' of size ', jobs%jobsize(k),&
+          print '(1X,a,i8,a,i15,a,i8)', 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
                &  ' is single fragment: ', atomA
 
           ! Fragment "atomA" is stored in AtomicFragments(atomA).
@@ -907,7 +816,7 @@ contains
                   & AtomicFragments(atomA),grad,t1old=t1old,t1new=t1new)
           else
 
-             FragoptCheck3: if(jobs%dofragopt(k)) then
+             FragoptCheck2: if(jobs%dofragopt(jobdone)) then
 
                 ! Fragment optimization
                 call optimize_atomic_fragment(atomA,AtomicFragments(atomA),MyMolecule%nAtoms, &
@@ -927,7 +836,7 @@ contains
                 ! Free basis info again
                 call atomic_fragment_free_basis_info(AtomicFragments(atomA))
 
-             end if FragoptCheck3
+             end if FragoptCheck2
 
           end if
 
@@ -939,19 +848,19 @@ contains
           ! Copy fragment information into joblist
           call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
           singlejob%jobsdone(1) = .true.
-          singlejob%esti(1) = jobs%esti(k)
-          singlejob%dofragopt(1) = jobs%dofragopt(k)
+          singlejob%esti(1) = jobs%esti(jobdone)
+          singlejob%dofragopt(1) = jobs%dofragopt(jobdone)
 
        else ! pair calculation
 
-          print '(1X,a,i8,a,i15,a,2i8)', 'Job: ', k, ' of size ', jobs%jobsize(k),&
+          print '(1X,a,i8,a,i15,a,2i8)', 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
                &  ' is pair fragment: ', atomA,atomB
 
           ! Get energy (and possibly density or gradient)
           ! *********************************************
 
           ! Init pair
-          if(jobs%esti(k)) then
+          if(jobs%esti(jobdone)) then
              ! Estimated pair fragment
              call merged_fragment_init(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
                   & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
@@ -968,7 +877,7 @@ contains
                   & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),PairFragment,t1old,t1new)
           else
-             if(jobs%esti(k)) then
+             if(jobs%esti(jobdone)) then
                 call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                      & EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
                      & natoms,PairFragment,grad)
@@ -988,11 +897,12 @@ contains
           ! Copy fragment information into joblist
           call copy_fragment_info_job(PairFragment,singlejob)
           singlejob%jobsdone(1) = .true.
+          singlejob%esti(1) = jobs%esti(jobdone)
+          singlejob%dofragopt(1) = jobs%dofragopt(jobdone)
 
           call atomic_fragment_free(PairFragment)
 
        end if
-
 
        ! Update stuff (same for single and pair)
        ! ***************************************
@@ -1001,18 +911,66 @@ contains
           call free_mp2grad(grad)
        end if
 
-
-       ! Save info for restart
-       ! *********************
-       ! Put received job into total job list
-       call put_job_into_joblist(singlejob,k,jobs)
-       if(DECinfo%first_order) then  ! density and/or gradient 
-          call write_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
-       else ! just energy
-          call write_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
-       end if
-
 #endif
+
+
+
+       RestartStuff: if(jobdone>0) then
+
+          ! Backup files to be able to do restart
+          ! *************************************
+
+          ! Put received job into total job list at position "jobdone"
+          call put_job_into_joblist(singlejob,jobdone,jobs)
+
+          ! For estimated fragments we also need to store in estijobs to be able to make restart
+          ! files below
+          if(jobs%esti(jobdone)) then
+             ! Compensate for the fact that estijobs contains only estimated pair fragments
+             ! and NOT atomic fragments when putting job info into joblist.
+             estipos = jobdone-nfragopt
+             call put_job_into_joblist(singlejob,estipos,estijobs)
+          end if
+
+
+          FragoptCheck3: if(jobs%dofragopt(jobdone)) then
+             ! Also put job into fragopt job list to enable restart below
+             call put_job_into_joblist(singlejob,jobdone,fragoptjobs)
+             ! Save fragment info to file atomicfragments.info
+             call add_fragment_to_file(AtomicFragments(atomA),fragoptjobs)
+          end if FragoptCheck3
+
+          ! Time dt since last backup
+          call LSTIMER('START',t2cpu,t2wall,DECinfo%output)
+          dt = t2wall - t1wall
+
+          ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
+          Backup: if( (dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) then
+
+             if(esti) then
+                ! Save info for estimated pair fragments restart
+                call write_fragment_energies_for_restart(natoms,FragEnergies,estijobs,esti)
+             else
+                ! Standard fragments, save info for restart
+                if(DECinfo%first_order) then  ! density and/or gradient 
+                   call write_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
+                else ! just energy
+                   call write_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
+                end if
+
+             end if
+
+             ! Reset timer
+             call LSTIMER('START',t1cpu,t1wall,DECinfo%output)
+
+          end if Backup
+
+#ifdef VAR_MPI
+          call free_joblist(singlejob)
+#endif
+
+       end if RestartStuff
+
 
     end do JobLoop
 
@@ -1072,6 +1030,11 @@ contains
     ! Initialize job list for atomic fragment optimizations
     call create_dec_joblist_fragopt(natoms,nocc,nunocc,MyMolecule%DistanceTable,&
          & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
+    if(DECinfo%DECrestart) then
+       write(DECinfo%output,*) 'Restarting atomic fragment optimizatons....'
+       call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
+            & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
+    end if
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -1112,13 +1075,17 @@ contains
        calcAF = .false.  ! No atomic fragments, just pairs
        call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
             &OccOrbitals,UnoccOrbitals,EstAtomicFragments,dofrag,esti,estijobs)
+       if(DECinfo%DECrestart) then
+          write(DECinfo%output,*) 'Restarting pair fragment estimate calculations...'
+          call read_fragment_energies_for_restart(natoms,FragEnergies,estijobs,esti)
+       end if
 
        ! Merge job list of atomic fragment optimization and estimated fragments (in this order)
        call concatenate_joblists(fragoptjobs,estijobs,jobs)
 
-       call fragment_jobs(.false.,nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+       call fragment_jobs(nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
             & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
-            & EstAtomicFragments=EstAtomicFragments)
+            & fragoptjobs=fragoptjobs,estijobs=estijobs,EstAtomicFragments=EstAtomicFragments)
 
        do i=1,natoms
           if(dofrag(i)) then
@@ -1130,9 +1097,9 @@ contains
 
        ! Just fragment opt.
        ! ******************
-
-       call fragment_jobs(.false.,nocc,nunocc,natoms,MyMolecule,mylsitem,&
-            & OccOrbitals,UnoccOrbitals,fragoptjobs,AtomicFragments,FragEnergies,esti)
+       call fragment_jobs(nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+            & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
+            & fragoptjobs=fragoptjobs)
 
     end if
 

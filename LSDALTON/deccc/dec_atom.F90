@@ -2503,7 +2503,7 @@ end subroutine atomic_fragment_basis
     ! Write minimum (but necessary) fragment info by appending to existing file
     ! *************************************************************************
 
-    ! Init stuff
+    ! Init stuff. Yes, I know this hardcored funit is not pretty, but I need to circumvent lsopen...
     funit = 99
     FileName='atomicfragments.info'
 
@@ -2586,7 +2586,7 @@ end subroutine atomic_fragment_basis
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,UnoccOrbitals,&
-       & DoBasis,fragments,jobs,restart_files_exist)
+       & DoBasis,fragments,jobs)
     implicit none
     !> Number of atoms in the full molecule
     integer,intent(in) :: natoms
@@ -2604,8 +2604,6 @@ end subroutine atomic_fragment_basis
     type(decfrag), intent(inout),dimension(natoms) :: fragments
     !> Job list
     type(joblist),intent(inout) :: jobs
-    !> Do restart files exist?
-    logical,intent(inout) :: restart_files_exist
     character(len=40) :: FileName
     integer :: funit, i, MyAtom, ndone,idx,j
     logical :: file_exist
@@ -2620,12 +2618,9 @@ end subroutine atomic_fragment_basis
 
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
-    if(file_exist) then ! something wrong
-       restart_files_exist=.true.
-    else
-       write(DECinfo%output,*) 'You requested DEC restart but no restart files exist!'
+    if(.not. file_exist) then 
+       write(DECinfo%output,*) 'You requested DEC atomic fragment restart but no restart files exist!'
        write(DECinfo%output,*) '--> I will calculate all atomic fragments from scratch...'
-       restart_files_exist=.false.
        return
     end if
 
@@ -2703,7 +2698,6 @@ end subroutine atomic_fragment_basis
     end do
 
     call lsclose(funit,'KEEP')
-
 
   end subroutine restart_atomic_fragments_from_file
 
@@ -4472,9 +4466,9 @@ if(DECinfo%PL>0) then
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
     if(.not. file_exist) then
-       print *, 'filename: ', filename
-       call lsquit('read_fragment_energies_for_restart: &
-            & Restart file does not exist!',-1)
+       write(DECinfo%output,*) 'WARNING: Restart file: ', FileName
+       write(DECinfo%output,*) 'does not exist! I therefore calculate it from scratch...'
+       return
     end if
 
     ! Create a new file fragenergies.info

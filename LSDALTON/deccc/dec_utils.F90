@@ -3272,8 +3272,9 @@ retval=0
   end subroutine write_fragment_joblist_to_file
 
 
-  !> Read fragment job list from file (includes initialization of job list).
-  !> Also read pair cutoff distance in case that was changed during the original calculation.
+  !> Read fragment job list from file assuming that joblist has already been initialized 
+  !> with the proper dimensions.
+  !> Also read pair cutoff distance.
   !> \author Kasper Kristensen
   !> \date November 2012
   subroutine read_fragment_joblist_from_file(jobs,funit)
@@ -3290,7 +3291,11 @@ retval=0
 
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(funit,njobs)
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file1: Error in number of jobs!',-1)
+       end if
        call read_64bit_to_32bit(funit,njobs,jobs%atom1)
        call read_64bit_to_32bit(funit,njobs,jobs%atom2)
        call read_64bit_to_32bit(funit,njobs,jobs%jobsize)
@@ -3304,7 +3309,11 @@ retval=0
        call read_64bit_to_32bit(funit,njobs,jobs%ntasks)
     elseif(DECinfo%convert32to64) then
        call read_32bit_to_64bit(funit,njobs)
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file2: Error in number of jobs!',-1)
+       end if
        call read_32bit_to_64bit(funit,njobs,jobs%atom1)
        call read_32bit_to_64bit(funit,njobs,jobs%atom2)
        call read_32bit_to_64bit(funit,njobs,jobs%jobsize)
@@ -3318,7 +3327,11 @@ retval=0
        call read_32bit_to_64bit(funit,njobs,jobs%ntasks)
     else
        read(funit) njobs
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file3: Error in number of jobs!',-1)
+       end if
        read(funit) jobs%atom1
        read(funit) jobs%atom2
        read(funit) jobs%jobsize
@@ -3336,6 +3349,14 @@ retval=0
     read(funit) jobs%flops
     read(funit) jobs%LMtime
     read(funit) jobs%load
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) 'JOB LIST RESTART'
+    write(DECinfo%output,'(1X,a,i10)') '-- total number of jobs : ', jobs%njobs
+    write(DECinfo%output,'(1X,a,i10)') '-- number of jobs done  : ', count(jobs%jobsdone)
+    write(DECinfo%output,'(1X,a,i10)') '-- number of jobs to do : ', jobs%njobs-count(jobs%jobsdone)
+    write(DECinfo%output,*)
+
 
   end subroutine read_fragment_joblist_from_file
 
