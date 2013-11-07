@@ -206,7 +206,7 @@ CONTAINS
                    endif
                 ENDDO
                 WRITE(LUFILE,'(A)')'!  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines '
-                WRITE(LUFILE,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1'
+                WRITE(LUFILE,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1'
                 IF(.NOT.Seg1Prim)THEN
                    call initString(2)          
                    call AddToString('integer :: iPrim')
@@ -1159,7 +1159,7 @@ subroutine DetermineSequentialRegion(iTUVstart,nTUVQ_tmp,CARTDIR,TUVindexX)
   implicit none
   integer :: iTUVstart,nTUVQ_tmp,CARTDIR,TUVindexX(:,:)
   !Local
-  integer :: nSegMax,nseg,iOld,ituvQ,iTUVQplus1
+  integer :: nSegMax,nseg,iOld,ituvQ,iTUVQplus1,NumberSeqRegions
   logical :: InsidesequentialRegion
   nSegMax = 0
   nSeg = 0
@@ -1186,9 +1186,9 @@ subroutine DetermineSequentialRegion(iTUVstart,nTUVQ_tmp,CARTDIR,TUVindexX)
      iOld = iTUVQplus1
   ENDDO
   IF(nSegMax.GT.5)THEN
-     print*,'nSegMax',nSegMax
-     print*,'ARRAY: ',TUVindexX(iTUVstart:nTUVQ_tmp,CARTDIR)
-     print*,'NumberSeqRegions',NumberSeqRegions
+!     print*,'nSegMax',nSegMax
+!     print*,'ARRAY: ',TUVindexX(iTUVstart:nTUVQ_tmp,CARTDIR)
+!     print*,'NumberSeqRegions',NumberSeqRegions
   ENDIF
   
 
