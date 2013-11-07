@@ -2660,7 +2660,7 @@ C
       WRITE (LUINT_LUCITA) ('********',I=1,3), 'EODATA  '
       CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       WRITE(LUPRI,'(//A,i2)') 
      & 'lucita_putdens_generic: 1-particle spin density matrix :',iab
