@@ -13,6 +13,11 @@ F90_OBJS = \
         IchorGammaTabulation.o \
         IchorEri_CoulombIntegral_McM_seg_seg_SSSS.o \
         IchorEri_CoulombIntegral_OBS_general.o \
+        IchorEri_CoulombIntegral_OBS_Gen.o \
+        IchorEri_CoulombIntegral_OBS_SegQ.o \
+        IchorEri_CoulombIntegral_OBS_SegP.o \
+        IchorEri_CoulombIntegral_OBS_Seg.o \
+        IchorEri_CoulombIntegral_OBS_Seg1Prim.o \
         IchorEri.o \
         AGC_VerticalRecurrenceQPA.o \
         AGC_VerticalRecurrenceQPB.o \
