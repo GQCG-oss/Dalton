@@ -219,15 +219,19 @@ contains
        ! Free existing group communicators
        call MPI_COMM_FREE(infpar%lg_comm, IERR)
 
-       ! Clean up estimated fragments used in step 1
-       CleanupStep1: if(step==1 .and. esti) then
+       ! Clean up estimated fragments used in step 1 and receive CC models to use for all pairs
+       CleanupAndUpdateCCmodel: if(step==1 .and. esti) then
           do i=1,natoms
              if(dofrag(i)) then
                 call atomic_fragment_free_simple(EstAtomicFragments(i))
              end if
           end do
           call mem_dealloc(EstAtomicFragments)
-       end if CleanupStep1
+
+          ! Receive CC models to use for each pair based on estimates
+          call ls_mpibcast(MyMolecule%ccmodel,natoms,natoms,master,MPI_COMM_LSDALTON)
+
+       end if CleanupAndUpdateCCmodel
 
     end do StepLoop
 
@@ -396,8 +400,10 @@ contains
 
                 call get_number_of_integral_tasks_for_mpi(AtomicFragments(atomA),ntasks)
              else
-                ! Set ntasks to be huge such that no division occur (double-checked) for fragment opt.
-                ntasks=huge(ntasks)
+                ! Set ntasks to be zero to initialize it to something, although it is not used for
+                ! fragment optimizations.
+                ! Note that the groups never divide for fragment optimizations below.
+                ntasks=0
              end if FragoptCheck2
           else ! pair fragment
 
