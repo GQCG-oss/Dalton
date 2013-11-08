@@ -912,6 +912,7 @@ ENDDO
 write(lupri,'(A80,2F18.10)') 'Nuclear-electron attraction Hessian: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
 
+#if 0
 !*****************************************************************************
 !******                             Third derivative nuclear-electron attraction integrals 
 !*****************************************************************************
@@ -969,6 +970,8 @@ ENDDO
 write(lupri,'(A80,2F18.10)') 'Cubic nuclear-electron attraction derivative integrals: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/natoms/natoms/27),tmp2/natoms/natoms/natoms/27
 deallocate(TempCubic)
+#endif
+
 !*****************************************************************************
 !******                             First derivative overlap integrals
 !*****************************************************************************
@@ -1064,6 +1067,7 @@ write(lupri,'(A80,2F18.10)') 'Overlap Hessian: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
 
 
+#if 0
 !*****************************************************************************
 !******                             Third derivative overlap integrals 
 !*****************************************************************************
@@ -1120,6 +1124,8 @@ ENDDO
 write(lupri,'(A80,2F18.10)') 'Cubic overlap derivative integrals: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/natoms/natoms/27),tmp2/natoms/natoms/natoms/27
 deallocate(TempCubic)
+#endif
+
 !*****************************************************************************
 !******                             First derivative kinetic energy integrals
 !*****************************************************************************
@@ -1216,6 +1222,7 @@ write(lupri,'(A80,2F18.10)') 'Kinetic Hessian using 1el_diff: RMS and index-weig
      &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
 
 
+#if 0
 !*****************************************************************************
 !******                             Third derivative kinetic energy integrals 
 !*****************************************************************************
@@ -1272,6 +1279,8 @@ ENDDO
 write(lupri,'(A80,2F18.10)') 'Cubic kinetic energy derivative integrals: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/natoms/natoms/27),tmp2/natoms/natoms/natoms/27
 deallocate(TempCubic)
+#endif
+
 !*****************************************************************************
 !******                             First derivative kinetic energy integrals
 !*****************************************************************************
