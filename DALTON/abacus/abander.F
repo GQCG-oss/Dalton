@@ -303,9 +303,6 @@ C     **** Subroutine that keeps track of the analytical ****
 C     **** for a given wave-function. NAORDR gives the   ****
 C     **** order of the analytical derivative.           ****
 C     *******************************************************
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -356,11 +353,9 @@ CAMT Only gradients for empirical disp correction so far
       ELSE
          NAORDR = 2
       END IF
-#if defined (BUILD_PELIB)
       if (peqm) then
         naordr = 0
       end if
-#endif
 C
       WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
      &          'energy-derivatives available:', NAORDR
@@ -642,11 +637,6 @@ chj      KDCOEF = KDPMTX +   IFRSTD*NMORDR*LDPMTX
          KNIDPC = KTEST
       END IF
 C
-C     *** Space for backup of MOLECULE.INP ***
-C
-      KMBKLN = KLAST
-      KLAST  = KMBKLN + 80*NMLINE
-C
 C     *** Space for backup of isotopes if abacus is run. ***
 C
       IF (NAORDR.GT.0) THEN
@@ -675,7 +665,7 @@ C     supposedly not are used, are used anyway.
      &            WORK(KENTST),WORK(KGRIRP),WORK(KCHRCT),WORK(KTRNRC),
      &            WORK(KTRMSS),WORK(KDKIN) ,WORK(KFREQ), WORK(KRNNRM),
      &            WORK(KLAST) ,WORK(KDPMTX),WORK(KNIDPC),WORK(KICRIR),
-     &            WORK(KISOTP),WORK(KMBKLN),LWRK1,NDERIV,NDIME,
+     &            WORK(KISOTP),LWRK1,NDERIV,NDIME,
      &            NINNER,MAXADR,LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
       IF (WORK(KTEST) .NE. -999.9D0) THEN
          CALL QUIT('WORK(KTEST) has been modified!')
@@ -756,7 +746,7 @@ C  /* Deck numdr1 */
       SUBROUTINE NUMDR1(DERIV,FUVAL,COOR,CSTART,SYMCOR,DCOEFF,TSTGDR,
      &                  TSTSDR,ENTST,GRIREP,CHRCTR,TRNCCR,TRAMSS,DKIN,
      &                  FREQ,RNNORM,WORK,KDPMTX,NMIDPC,ICRIRP,ISOTMP,
-     &                  MBKLIN,LWORK,NDERIV,NDIME,NINTIN,MAXADR,
+     &                  LWORK,NDERIV,NDIME,NINTIN,MAXADR,
      &                  LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
 #include "implicit.h"
 #include "priunit.h"
@@ -783,10 +773,9 @@ C  /* Deck numdr1 */
 #include "fcsym.h"
       LOGICAL EXHER, EXSIR, EXABA, GTCOMP, RSTDON, SYMDET, NPRBKP,
      &        NSPNBK
-      CHARACTER*80 MBKLIN, PRTEXT
-      CHARACTER*8 ANDER
+      CHARACTER*(len_MLINE) MBKLIN(NMLINE) ! automatic array for backup of MLINE
+      CHARACTER*8 ANDER, PRTEXT
       CHARACTER*6 TXT
-      DIMENSION MBKLIN(NMLINE)
       DIMENSION DERIV(NDERIV), FUVAL(NINTIN,NDIME), CSTART(3*NCOOR),
      &          COOR(3*NCOOR), SYMCOR(NCOOR,NCOOR),
      &          DCOEFF(LDPMTX,IFRSTD), TSTGDR(NCOOR), ENTST(LTHTST),
@@ -1353,7 +1342,7 @@ C
 C
       LOGICAL CALCMP, CLNRGY, LASTE, NOSYM, TOTSM, SYMDET, RSTDON,
      &        ALRCAL, PRTNR, CPRPBK
-      CHARACTER*80 MBKLIN
+      CHARACTER*(len_MLINE) MBKLIN
       DIMENSION MBKLIN(NMBKLN)
       DIMENSION FUVAL(NINTIN,NDIME), COOR(NCOOR), CSTART(NCOOR),
      &          DERIV(NDERIV), DCOEFF(LDPMTX,IFRSTD),
@@ -1840,7 +1829,7 @@ c
 #include "huckel.h"
       LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, EXSIR, EXHER, EXABA, EXESG,
      &        ALRCAL, PRPCAL, FNDKEY
-      CHARACTER*80 MBKLIN
+      CHARACTER*(*) MBKLIN
       DIMENSION MBKLIN(NMBKLN)
       DIMENSION FUVAL(NINTIN,NDIME), COOR (NCOOR), SYMCOR(NCOOR,NCOOR),
      &          CSTART(NCOOR), EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR),
@@ -1913,8 +1902,7 @@ C
 C     *** Information needed for .MANUAL keyword. ***
 C
       IF (MANUAL) THEN
-         WRITE (LUPRI,'(A)') '                                    '
-         WRITE (LUPRI,'(5X,A,I5)') 'Manual geometry calculated', IDIME
+         WRITE (LUPRI,'(/5X,A,I5)') 'Manual geometry calculated', IDIME
          IF (PRTNR) THEN
             WRITE (LUPRI,'(5X,A,I5)') 'Partner geometry',
      &           IDIME - IINNER + NPRTNR(NMPRTN)
@@ -1973,13 +1961,13 @@ C
 c               CALL DALCHG(INDSTP,ICRIRP,IRSRDR,IPRINT,NCOOR,NMORDR,
 c     &                     .FALSE.)
 C
-C              *** Update MOLECULE.INP file. ***
+C              *** Update MOLECULE.INP file and molinp.h common block ***
 C
                KNATOM = 1
                KNLINE = KNATOM + NUCIND
                KNATIN = KNLINE + NUCIND
-               CALL UPCOMB(COOR,WORK(KNATOM),WORK(KNLINE),WORK(KNATIN),
-     &                     MBKLIN,NMBKLN,LASTE)
+               CALL UPD_MOLINP(COOR,WORK(KNATOM),WORK(KNLINE),
+     &                         WORK(KNATIN),MBKLIN,NMBKLN,LASTE)
 C
 C              *** Reset necessary variables ***
 C
@@ -2130,8 +2118,11 @@ C
       RETURN
       END
 C
-C  /* Deck upcomb */
-      SUBROUTINE UPCOMB(COOR,NATOM,NLINE,NATIND,MBKLIN,NMBKLN,LASTE)
+C  /* Deck upd_molinp */
+      SUBROUTINE UPD_MOLINP(COOR,NATOM,NLINE,NATIND,MBKLIN,NMBKLN,LASTE)
+C
+C     Update MOLECULE.INP file and molinp.h commonb block.
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2148,14 +2139,14 @@ C
 #include "inftap.h"
       LOGICAL BIG, USED, LASTE, DOCART, DOOWN, AUTOSY, NOSYM, ADDSYM,
      &        NEWINP, NEWATO
-      CHARACTER*6 CHR
-      CHARACTER*4 NAME
-      CHARACTER*80 MBKLIN, BSNM
-      CHARACTER*11 TMPTXT
-      CHARACTER*1 KASYM(3,3), ID3, CRT
-      DIMENSION MBKLIN(NMBKLN), JCO1(MXAQN)
+      CHARACTER*6   CHR
+      CHARACTER*4   NAME
+      CHARACTER*(*) MBKLIN(NMBKLN)
+      CHARACTER*80  BSNM
+      CHARACTER*11  TMPTXT
+      CHARACTER*1   KASYM(3,3), ID3, CRT
       DIMENSION COOR(3,NCOOR/3), NATOM(NUCIND), NLINE(NUCIND),
-     &          NATIND(NUCIND)
+     &          NATIND(NUCIND), JCO1(MXAQN)
 #include "ibtfun.h"
 C
 C     Updates geometry in common block
@@ -3261,7 +3252,7 @@ C    /*Deck pritdr*/
 #include "numder.h"
 #include "fcsym.h"
 #include "cbinum.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       LOGICAL PRWHLE
       DIMENSION TDER(NCOOR,NCOOR,NCOOR), TMPTDR(NTMPDM),
      &          SYMTDR(NCOOR,NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
@@ -3347,7 +3338,7 @@ C     *** coordinates. Tracor is the transformation matrix.   ***
 C     ***********************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION CR1TDR(NCOOR,NCOOR,NCOOR), CR2TDR(NCOOR,NCOOR,NCOOR),
      &          TRCOOR(NCOOR,NCOOR)
 C
@@ -3402,7 +3393,7 @@ C
 #include "numder.h"
 #include "fcsym.h"
 #include "cbinum.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION FDER(NCOOR,NCOOR,NCOOR,NCOOR), TMPFDR(NTMPDM),
      &          SYMFDR(NCOOR,NCOOR,NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
 C
@@ -3491,7 +3482,7 @@ C     *** coordinates                                        ***
 C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION CR1FDR(NCOOR,NCOOR,NCOOR,NCOOR),
      &          CR2FDR(NCOOR,NCOOR,NCOOR,NCOOR), TRCOOR(NCOOR,NCOOR)
 C
@@ -4098,7 +4089,7 @@ C     *** Printing of third derivatives in TEXT coordinates. ***
 C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION TDER(NDIM,NDIM,NDIM)
 
 C
@@ -4141,7 +4132,7 @@ C     *** Printing of fourth derivative in TEXT coordinates. ***
 C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION FDER(NDIM,NDIM,NDIM,NDIM)
 C
 C     *** Header print. ***
@@ -4203,7 +4194,7 @@ C
 #include "numder.h"
 #include "pvibav.h"
       LOGICAL CPRPBK, PRWHLE
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION TDER(NDIMT), FDER(NDIMF), TSTGDR(NCOOR), CSTART(NCOOR),
      &          TSTSDR(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR),
      &          TTMPDR(NCOOR,NCOOR,NCOOR),
@@ -4382,7 +4373,7 @@ C
 #include "taymol.h"
 #include "cbiwlk.h"
 #include "numder.h"
-      CHARACTER TEXT*80
+      CHARACTER TEXT*(*)
       DIMENSION SYMCOR(NCOOR,NCOOR), CGRAD(NCOOR), ICRIRP(NCOOR,2),
      &          WORK(LWORK)
 C
@@ -4463,7 +4454,7 @@ C     /*Deck gsphes*/
 #include "cbinum.h"
       INTEGER BEGIN, LAST
       LOGICAL HESEXS
-      CHARACTER TEXT*80
+      CHARACTER TEXT*(*)
       DIMENSION SYMCOR(NCOOR,NCOOR), SMCINV(NCOOR,NCOOR),
      &          CHESS1(NCOOR,NCOOR), CHESS2(NCOOR,NCOOR),
      &          WORK(LWORK), ICRIRP(NCOOR,    2)
@@ -5397,7 +5388,7 @@ C
 #include "fcsym.h"
 #include "ccorb.h"
       LOGICAL FIRST
-      CHARACTER*80 WORD(KMLINE)
+      CHARACTER*(len_MLINE) WORD(KMLINE)
       DIMENSION ICRIRP(NCOOR,2), INDSTP(NTORDR)
 C
       CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -6549,7 +6540,7 @@ C
 #include "ccorb.h"
 #include "pgroup.h"
       LOGICAL SAMIRP
-      CHARACTER*80 WORD(KMLINE)
+      CHARACTER*(len_MLINE) WORD(KMLINE)
 C
 C     *** Reducing symmetry of frozen orbitals. ***
 C
@@ -6589,7 +6580,7 @@ C
       LOGICAL SAMIRP
       DIMENSION NCURNT(8), NBCKUP(8)
       CHARACTER*7 SWORD
-      CHARACTER*80 WORD(KMLINE)
+      CHARACTER*(len_MLINE) WORD(KMLINE)
 C
       CALL STCCSM(NSYM)
 C

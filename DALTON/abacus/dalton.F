@@ -259,7 +259,7 @@ C
      &  '(AOSOPPA, non-adiabatic coupling, magnetic properties)',
      *'Vebjoern Bakken,','University of Oslo,','Norway',
      &  '(DALTON; geometry optimizer, symmetry detection)',
-     *'Radovan Bast,','KTH Stockholm','Sweden',
+     *'Radovan Bast,','KTH Stockholm,','Sweden',
      &  '(DALTON installation and execution frameworks)',
      *'Linus Boman,','NTNU,', 'Norway',
      &  '(Cholesky decomposition and subsystems)',
@@ -351,7 +351,7 @@ C
      &  '(QM/MM)',
      *'Martin J. Packer,','University of Sheffield,','UK',
      &  '(SOPPA)',
-     *'Filip Pawlowski,','Kazimierz Wielki University','Poland',
+     *'Filip Pawlowski,','Kazimierz Wielki University,','Poland',
      &  '(CC3)',
      *'Thomas B. Pedersen,','University of Oslo,','Norway',
      &  '(Cholesky decomposition)',
@@ -443,8 +443,13 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          call print_binary_info(lupri)
 
 #if defined (VAR_MPI)
-         IF (NODTOT .GT. 0) WRITE(LUPRI,'(/A,I5,A)')
-     &   " * Parallel with MPI: Using", NODTOT+1, " CPUs."
+         IF (NODTOT .GT. 0) THEN
+            WRITE(LUPRI,'(/A,I5,A)')
+     &      " * Parallel with MPI: Using", NODTOT+1, " CPUs."
+         ELSE
+            WRITE(LUPRI,'(/A,I5,A)')
+     &      " * Sequential calculation using 1 CPU"
+         END IF
 #endif
 
 #ifdef VAR_OMP
@@ -540,9 +545,10 @@ C
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
 C ahs only print if number of cores are less than 20
-         IF (NODTOT .LE. 20) THEN
+         IF (MYNUM .LE. 20) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
+           WRITE(LUPRI,'(/A)') ' * Release: DALTON2013.0'
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN
@@ -556,21 +562,7 @@ C ahs only print if number of cores are less than 20
              WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
      &        MMCORE
            END IF
-           CALL TITLER('DALTON - An electronic structure program',
-     &               '*',111)
-           WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
-           CALL TSTAMP('INIT',LUPRI)
-           IF (GBYTES .GE. 1.D0) THEN
-             WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
-     &        LMWORK,' =',GBYTES,' gigabytes.'
-           ELSE
-             WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
-     &        LMWORK,' =',XMBYTES,' megabytes.'
-           END IF
-           IF (AOSAVE) THEN
-             WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
-     &        MMCORE
-           END IF
+           CALL FLSHFO(LUPRI)
          END IF
          IF (PARIO) THEN
             CALL DALTON_GNRLINP
@@ -607,7 +599,7 @@ C
             CALL SENDNAME(MASTER,MYNUM)
 
 !           call main co-workers driver routine
-            call nodedriver(lmwork,wrkdlm)
+            call dalton_nodedriver(lmwork,wrkdlm)
          END IF
       END IF
 

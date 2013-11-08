@@ -29,7 +29,7 @@ contains
   !> \author Kasper Kristensen
   !> \date November 2011
   subroutine GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
-       & OccOrbitals, UnoccOrbitals, DistanceTable)
+       & OccOrbitals, UnoccOrbitals)
 
     implicit none
     !> Full molecule structure ( Note: MyMolecule is only changed if modbasis=.true.!)
@@ -43,11 +43,9 @@ contains
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
     !> Occupied orbitals to be generated
-    type(ccorbital),intent(inout) :: OccOrbitals(nocc)
+    type(decorbital),intent(inout) :: OccOrbitals(nocc)
     !> Unoccupied orbitals to be generated
-    type(ccorbital),intent(inout) :: UnoccOrbitals(nunocc)
-    !> Distance table for atoms
-    real(realk) :: DistanceTable(natoms,natoms)
+    type(decorbital),intent(inout) :: UnoccOrbitals(nunocc)
 
 
     OrbitalGeneration: if(DECinfo%read_dec_orbitals) then ! Read DEC orbitals form file
@@ -70,15 +68,15 @@ contains
 
           ! For Boughton-Pulay, reassign orbitals originally assigned to hydrogen
           if(DECinfo%AbsorbHatoms) then
-             call reassign_orbitals(nocc,OccOrbitals,natoms,DistanceTable,mylsitem)
-             call reassign_orbitals(nunocc,UnOccOrbitals,natoms,DistanceTable,mylsitem)
+             call reassign_orbitals(nocc,OccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
+             call reassign_orbitals(nunocc,UnOccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
           end if
 
        else ! Simple Lowdin charge procedure to determine atomic extent
 
           write(DECinfo%output,*) 'Generating DEC orbitals using simple Lowdin charge analysis'
 
-          call GenerateOrbitals_simple(nocc,nunocc,natoms,DistanceTable, &
+          call GenerateOrbitals_simple(nocc,nunocc,natoms, &
                & MyMolecule,MyLsitem,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
           if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nocc,DECinfo%output)
           if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
@@ -123,7 +121,7 @@ contains
   function orbital_init(orb_number,central_atom,num_atoms,list_atoms) result(myorbital)
 
     implicit none
-    type(ccorbital) :: myorbital
+    type(decorbital) :: myorbital
     integer, intent(in) :: orb_number
     integer, intent(in) :: central_atom
     integer, intent(in) :: num_atoms
@@ -150,7 +148,7 @@ contains
 
     implicit none
     !> Orbital to initialize
-    type(ccorbital) :: myorbital
+    type(decorbital) :: myorbital
     !> Orbital index
     integer, intent(in) :: orb_number
     !> Central atom for orbital
@@ -197,9 +195,9 @@ contains
     implicit none
 
     !> Original orbital
-    type(ccorbital),intent(in) :: OriginalOrbital
+    type(decorbital),intent(in) :: OriginalOrbital
     !> Copy of original orbitals
-    type(ccorbital),intent(inout) :: OrbitalCopy
+    type(decorbital),intent(inout) :: OrbitalCopy
 
     OrbitalCopy%orbitalnumber = OriginalOrbital%orbitalnumber
     OrbitalCopy%centralatom = OriginalOrbital%centralatom
@@ -220,10 +218,10 @@ contains
     implicit none
     integer, intent(in) :: size_of_set,lu_output
     logical,intent(in) :: modbasis !modify basis
-    type(ccorbital), intent(inout), dimension(size_of_set) :: orbital_set
+    type(decorbital), intent(inout), dimension(size_of_set) :: orbital_set
     ! Note: MyMolecule is only changed if modbasis=.true.!
     type(fullmolecule), intent(in) :: MyMolecule
-    integer, intent(in) :: offset  ! 0 - for occupied, numocc - for virtual set
+    integer, intent(in) :: offset  ! 0 - for occupied, nocc - for virtual set
     real(realk), intent(in) :: mulliken_threshold2
     logical, intent(in) :: simple_mulliken_threshold2
     real(realk),intent(in) :: approximated_norm_threshold
@@ -248,8 +246,8 @@ contains
     nbasis = MyMolecule%nbasis
     natoms = MyMolecule%natoms
     call mem_alloc(basis,nbasis,nbasis)
-    basis(1:nbasis,1:MyMolecule%numocc) = MyMolecule%ypo(1:nbasis,1:MyMolecule%numocc)
-    basis(1:nbasis,MyMolecule%numocc+1:nbasis) = MyMolecule%ypv(1:nbasis,1:MyMolecule%numvirt)
+    basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
+    basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
     call mem_alloc(gross_charge,natoms)
 
     ! half transformed overlap
@@ -496,7 +494,7 @@ contains
   !>    + one atomic fragment for all hydrogens (if any) assigned to that heavy atom.
   !> \author Kasper Kristensen
   !> \date September 2011
-  subroutine GenerateOrbitals_simple(nocc,nunocc,natoms,DistanceTable, &
+  subroutine GenerateOrbitals_simple(nocc,nunocc,natoms, &
        & MyMolecule,MyLsitem,approximated_norm_threshold,OccOrbitals,UnoccOrbitals)
 
     implicit none
@@ -506,8 +504,6 @@ contains
     integer, intent(in) :: nunocc
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
-    !> Distance table for atoms
-    real(realk) :: DistanceTable(natoms,natoms)
     !> Molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> General LS info
@@ -515,9 +511,9 @@ contains
     !> Threshold for orbital norm (see above)
     real(realk),intent(in) :: approximated_norm_threshold
     !> Occupied orbitals to create
-    type(ccorbital), intent(inout), dimension(nocc) :: OccOrbitals
+    type(decorbital), intent(inout), dimension(nocc) :: OccOrbitals
     !> Unoccupied orbitals to create
-    type(ccorbital), intent(inout), dimension(nunocc) :: UnoccOrbitals
+    type(decorbital), intent(inout), dimension(nunocc) :: UnoccOrbitals
     integer :: i,j,atom,central_atom,n,norbital_extent,nbasis,heavyatom,ni
     integer, pointer :: list_of_atoms_to_consider(:)
     real(realk) :: error,charge,mindist,twall,tcpu,maxlowdin
@@ -696,8 +692,8 @@ contains
 
     AbsorbHydrogenAtoms: if(DECinfo%AbsorbHatoms) then 
        ! Reassign orbitals originally assigned to hydrogen
-       call reassign_orbitals(nocc,OccOrbitals,natoms,DistanceTable,mylsitem)
-       call reassign_orbitals(nunocc,UnOccOrbitals,natoms,DistanceTable,mylsitem)
+       call reassign_orbitals(nocc,OccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
+       call reassign_orbitals(nunocc,UnOccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
 
     else ! we want fragments of hydrogen atoms
 
@@ -720,8 +716,8 @@ contains
                 do j=1,natoms
                    if(.not. which_hydrogens(j)) then ! atom "j" is a heavy atom
 
-                      if(DistanceTable(i,j) < mindist) then
-                         mindist = DistanceTable(i,j)
+                      if(MyMolecule%DistanceTable(i,j) < mindist) then
+                         mindist = MyMolecule%DistanceTable(i,j)
                          heavyatom = j
                       end if
 
@@ -940,11 +936,11 @@ contains
 
     ! Init stuff
     nbasis=MyMolecule%nbasis
-    nocc=MyMolecule%numocc
-    nvirt=MyMolecule%numvirt
+    nocc=MyMolecule%nocc
+    nvirt=MyMolecule%nunocc
     call mem_alloc(C,nbasis,nbasis)
-    C(1:nbasis,1:nocc) = MyMolecule%ypo(1:nbasis,1:nocc)
-    C(1:nbasis,nocc+1:nbasis) = MyMolecule%ypv(1:nbasis,1:nvirt)
+    C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
+    C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
     S => MyMolecule%overlap ! AO overlap
     atom_start => MyMolecule%atom_start
     atom_end => MyMolecule%atom_end
@@ -998,8 +994,8 @@ contains
 
     nbasis = MyMolecule%nbasis
     call mem_alloc(basis,nbasis,nbasis)
-    basis(1:nbasis,1:MyMolecule%numocc) = MyMolecule%ypo(1:nbasis,1:MyMolecule%numocc)
-    basis(1:nbasis,MyMolecule%numocc+1:nbasis) = MyMolecule%ypv(1:nbasis,1:MyMolecule%numvirt)
+    basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
+    basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
 
     ! Get S^{1/2} matrix
     ! ******************
@@ -1035,11 +1031,11 @@ contains
     integer :: nocc,nvirt
 
     ! Init stuff
-    nocc=MyMolecule%numocc
-    nvirt=MyMolecule%numvirt
+    nocc=MyMolecule%nocc
+    nvirt=MyMolecule%nunocc
     call mem_alloc(C,nbasis,nbasis)
-    C(1:nbasis,1:nocc) = MyMolecule%ypo(1:nbasis,1:nocc)
-    C(1:nbasis,nocc+1:nbasis) = MyMolecule%ypv(1:nbasis,1:nvirt)
+    C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
+    C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
     charges=0.0E0_realk
     atom_start => MyMolecule%atom_start
     atom_end => MyMolecule%atom_end
@@ -1085,7 +1081,7 @@ contains
     integer :: atom,catom(1),nocc,nvirt
     real(realk) :: XMO,YMO,ZMO,XATOM,YATOM,ZATOM,XDIST,YDIST,ZDIST
     real(realk) :: SQDIST(nAtoms)    
-    nocc=MyMolecule%numocc
+    nocc=MyMolecule%nocc
     ! Init stuff
     IF(orbI.GT.nocc)THEN
        !virtual orbital
@@ -1183,11 +1179,11 @@ contains
 
     ! Init stuff
     nbasis=MyMolecule%nbasis
-    nocc=MyMolecule%numocc
-    nvirt=MyMolecule%numvirt
+    nocc=MyMolecule%nocc
+    nvirt=MyMolecule%nunocc
     call mem_alloc(C,nbasis,nbasis)
-    C(1:nbasis,1:nocc) = MyMolecule%ypo(1:nbasis,1:nocc)
-    C(1:nbasis,nocc+1:nbasis) = MyMolecule%ypv(1:nbasis,1:nvirt)
+    C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
+    C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
     atom_start => MyMolecule%atom_start
     atom_end => MyMolecule%atom_end
 
@@ -1208,7 +1204,7 @@ contains
 
     implicit none
     integer, intent(in) :: num_orbitals,lu_output
-    type(ccorbital), dimension(num_orbitals), intent(in) :: orbitals
+    type(decorbital), dimension(num_orbitals), intent(in) :: orbitals
     integer :: i,j
 
     write(lu_output,'(/,a)') 'Orbital Atom #Atoms List of atoms'
@@ -1228,7 +1224,7 @@ contains
   !> \brief Write orbital to file
   subroutine orbital_write(orb,iunit)
     implicit none
-    type(ccorbital), intent(in) :: orb
+    type(decorbital), intent(in) :: orb
     integer, intent(in) :: iunit
 
     write(iunit) orb%orbitalnumber
@@ -1242,7 +1238,7 @@ contains
   !> \brief Read orbital from file
   function orbital_read(iunit) result(orb)
     implicit none
-    type(ccorbital) :: orb
+    type(decorbital) :: orb
     integer, intent(in) :: iunit
     integer :: i
     integer(kind=8) :: orbitalnumber64,centralatom64,numberofatoms64
@@ -1257,7 +1253,7 @@ contains
        read(iunit) numberofatoms64
        call mem_alloc(atoms64,numberofatoms64)
        read(iunit) atoms64
-       ! Convert 64 bit integers to 32 bit and store in ccorbital type
+       ! Convert 64 bit integers to 32 bit and store in decorbital type
        orb%orbitalnumber = int(orbitalnumber64,4)
        orb%centralatom = int(centralatom64,4)
        orb%numberofatoms = int(numberofatoms64,4)
@@ -1274,7 +1270,7 @@ contains
        read(iunit) numberofatoms32
        call mem_alloc(atoms32,numberofatoms32)
        read(iunit) atoms32
-       ! Convert 32 bit integers to 32 bit and store in ccorbital type
+       ! Convert 32 bit integers to 32 bit and store in decorbital type
        orb%orbitalnumber = orbitalnumber32
        orb%centralatom = centralatom32
        orb%numberofatoms = numberofatoms32
@@ -1328,8 +1324,8 @@ contains
     ! Initialize stuff
     ! ****************
     nbasis = MyMolecule%nbasis
-    nocc = MyMolecule%numocc
-    nunocc = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nunocc = MyMolecule%nunocc
     call mat_init(Ccan,nbasis,nbasis)
     call mat_init(F,nbasis,nbasis)
     call mat_init(S,nbasis,nbasis)
@@ -1373,8 +1369,8 @@ contains
     ! ****************
     call mat_init(Cocc_lcm,nbasis,nocc)
     call mat_init(Cvirt_lcm,nbasis,nunocc)
-    call mat_set_from_full(MyMolecule%ypo(1:nbasis,1:nocc), 1E0_realk,Cocc_lcm)
-    call mat_set_from_full(MyMolecule%ypv(1:nbasis,1:nunocc), 1E0_realk,Cvirt_lcm)
+    call mat_set_from_full(MyMolecule%Co(1:nbasis,1:nocc), 1E0_realk,Cocc_lcm)
+    call mat_set_from_full(MyMolecule%Cv(1:nbasis,1:nunocc), 1E0_realk,Cvirt_lcm)
 
 
     ! Construct canonical/LCM overlap matrix for occupied space
@@ -1565,9 +1561,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
     !> Occupied orbital info for full molecule
-    type(ccorbital), dimension(nocc), intent(in) :: OccOrbitals
+    type(decorbital), dimension(nocc), intent(in) :: OccOrbitals
     !> Unoccupied orbital info for full molecule
-    type(ccorbital), dimension(nunocc), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nunocc), intent(in) :: UnoccOrbitals
     character(len=16) :: FileName
     integer :: funit,i
 
@@ -1616,9 +1612,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
     !> Occupied orbital info for full molecule
-    type(ccorbital), dimension(nocc), intent(inout) :: OccOrbitals
+    type(decorbital), dimension(nocc), intent(inout) :: OccOrbitals
     !> Unoccupied orbital info for full molecule
-    type(ccorbital), dimension(nunocc), intent(inout) :: UnoccOrbitals
+    type(decorbital), dimension(nunocc), intent(inout) :: UnoccOrbitals
     character(len=16) :: FileName
     integer :: funit,i
 
@@ -1667,7 +1663,7 @@ contains
     !> Number of orbitals
     integer, intent(in) :: norb
     !> Orbital info for full molecule
-    type(ccorbital), dimension(norb), intent(inout) :: Orbitals
+    type(decorbital), dimension(norb), intent(inout) :: Orbitals
     !> Number of atoms in molecule
     integer, intent(in) :: natoms
     !> Distance table for atoms in molecule
@@ -1777,7 +1773,7 @@ contains
 
 
   !> \brief Reassign orbitals such that no hydrogen atoms have orbitals assigned using a simple 
-  !> integer input rather than the ccorbital input used in reassign_orbitals.
+  !> integer input rather than the decorbital input used in reassign_orbitals.
   !> This is done by reassigning orbitals originally assigned to an H atom to the nearest neighbour atom.
   !> (Special case: If the nearest neighbour is also H, then no reassignment is made).
   !> \author Kasper Kristensen
@@ -1861,7 +1857,7 @@ contains
     !> Number of orbitals
     integer, intent(in) :: norb
     !> Orbital info for full molecule (either occupied or virtual)
-    type(ccorbital), dimension(norb), intent(inout) :: Orbitals
+    type(decorbital), dimension(norb), intent(inout) :: Orbitals
     !> Donor atom
     integer, intent(in) :: donor
     !> Acceptor atom
@@ -1901,9 +1897,9 @@ contains
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
     !> Occupied orbital info for full molecule
-    type(ccorbital), dimension(nocc), intent(inout) :: OccOrbitals
+    type(decorbital), dimension(nocc), intent(inout) :: OccOrbitals
     !> Unoccupied orbital info for full molecule
-    type(ccorbital), dimension(nunocc), intent(inout) :: UnoccOrbitals
+    type(decorbital), dimension(nunocc), intent(inout) :: UnoccOrbitals
     !> Number of atoms in the molecule
     integer, intent(in) :: natoms
     !> Number of atomic sites with orbitals assigned in the simulation (default: 1)
@@ -2021,7 +2017,7 @@ contains
     !> Total number of orbitals in Orbitals vector
     integer, intent(in) :: norb
     !> Orbital vector (may either be occupied or virtual orbitals)
-    type(ccorbital), dimension(norb), intent(in) :: Orbitals
+    type(decorbital), dimension(norb), intent(in) :: Orbitals
     !> Number of atoms in the molecule
     integer, intent(in) :: natoms
     !> Not consider orbitals with indices 1:offset (default: consider all orbitals)
@@ -2111,9 +2107,9 @@ contains
     !> Number of unoccupied orbitals
     integer, intent(in) :: nunocc
     !> Occupied orbitals
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms)
     integer :: i, occ_max_orbital_extent, unocc_max_orbital_extent, occ_idx, unocc_idx,j
     real(realk) :: occ_av_orbital_extent, unocc_av_orbital_extent
@@ -2231,9 +2227,9 @@ contains
     !> Number of unoccupied orbitals
     integer, intent(in) :: nunocc
     !> Occupied orbitals
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Full molecule info
     type(fullmolecule),intent(in) :: MyMolecule
     integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms)
@@ -2280,7 +2276,7 @@ contains
     ! - fragment opt where reduction step is done at the MP2 level
     !   but where the target CC model is not MP2.
     if(DECinfo%first_order .or. nfrags==1 .or. DECinfo%InclFullMolecule &
-         & .or. (DECinfo%ccmodel/=1 .and. DECinfo%fragopt_red_mp2 ) ) then
+         & .or. (DECinfo%ccmodel/=MODEL_MP2 .and. DECinfo%fragopt_red_mp2 ) ) then
        DECinfo%RepeatAF=.true.
     else
        DECinfo%RepeatAF=.false.
@@ -2300,7 +2296,7 @@ contains
     !> Number of orbitals
     integer, intent(in) :: norb
     !> List of orbitals
-    type(ccorbital), intent(in) :: Orbitals(norb)
+    type(decorbital), intent(in) :: Orbitals(norb)
     !> Maximum orbital extent
     integer, intent(inout) :: max_orbital_extent
     !> Average orbital extent
@@ -2334,6 +2330,46 @@ contains
 
   end subroutine get_orbital_extent_info
 
+
+
+  !> \brief Determine which atoms have one or more orbitals assigned.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
+
+    implicit none
+    !> Number of occupied orbitals in full molecule
+    integer,intent(in) :: nOcc
+    !> Number of unoccupied orbitals in full molecule
+    integer,intent(in) :: nUnocc
+    !> Number of atoms in full molecule
+    integer,intent(in) :: nAtoms
+    !> Occupied orbitals in DEC format
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
+    !> Unoccupied orbitals in DEC format
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !> dofrag(P) is true/false if atom P has one or more/zero orbitals assigned.
+    logical,intent(inout) :: dofrag(natoms)
+    integer, dimension(natoms) :: nocc_per_atom, nunocc_per_atom
+    integer :: i
+
+    ! Number of orbitals per atom
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnOccOrbitals,nunocc,natoms)
+
+    ! Which fragments to consider
+    dofrag=.true.
+    do i=1,natoms
+       if(DECinfo%onlyoccpart) then
+          ! Only consider occupied orbitals
+          if( (nocc_per_atom(i)==0) ) dofrag(i)=.false.
+       else
+          ! Consider occupied as well as unoccupied orbitals
+          if( (nocc_per_atom(i)==0) .and. (nunocc_per_atom(i)==0) ) dofrag(i)=.false.
+       end if
+    end do
+
+  end subroutine which_atoms_have_orbitals_assigned
 
 
 end module orbital_operations

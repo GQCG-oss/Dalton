@@ -38,7 +38,7 @@ C  /* Deck opinpu */
 #include "infinp.h"
 #include "gnrinf.h"
 #include "cbiwlk.h"
-      PARAMETER (NTABLE = 75, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
+      PARAMETER (NTABLE = 76, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
      &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-4, DEFDSP = 1.0D-3)
       LOGICAL NEWDEF, TRSTCH, TRSTFC, FIRST, REMCRD
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -62,7 +62,7 @@ C
      &            '.NOAUX ', '.BFGSR1', '.STABIL', '.GEOANA', ! 64
      &            '.ADDCRD', '.NOADDA', '.RREDUN', '.NATNRM', ! 68
      &            '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT', ! 72
-     &            '.NOHSWR', '.FREEZE', '.FRZITR'/
+     &            '.NOHSWR', '.FREEZE', '.FRZITR', '.MEDIUM'/ ! 76
 C
       DATA FIRST /.TRUE./
 C
@@ -160,6 +160,7 @@ C
       NOAUX  = .FALSE.
       NODIHE = .FALSE.
       NOADDA = .FALSE.
+      PRJTRO = .TRUE.  ! Project translation-rotation out of gradient and Hessian
       REDRED = .FALSE.
       LINDHD = .TRUE.
 C     ... hjaaj Mar 2004: disable generalization of Lindh
@@ -222,7 +223,7 @@ C
      &                  41,42,43,44,45,46,47,48,49,50,
      &                  51,52,53,54,55,56,57,58,59,60,
      &                  61,62,63,64,65,66,67,68,69,70,
-     &                  71,72,73,74,75), I
+     &                  71,72,73,74,75,76), I
                END IF
  200        CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -437,18 +438,18 @@ C           .VR-SYM
             GOTO 100
  67         REDRED = .TRUE.
             GOTO 100
- 68         NATNRM = .TRUE.
+ 68         NATNRM = .TRUE.  ! .NATNRM
             GOTO 100
- 69         ICNLVL = 1
+ 69         ICNLVL = 1       ! .VLOOSE
             ICHGTH = ICHGTH + 1
             GOTO 100
- 70         ICNLVL = 2
+ 70         ICNLVL = 2       ! .LOOSE
             ICHGTH = ICHGTH + 1
             GOTO 100
- 71         ICNLVL = 4
+ 71         ICNLVL = 4       ! .TIGHT
             ICHGTH = ICHGTH + 1
             GOTO 100
- 72         ICNLVL = 5
+ 72         ICNLVL = 5       ! .VTIGHT
             ICHGTH = ICHGTH + 1
             GOTO 100
  73         NOHSWR = .TRUE.
@@ -469,10 +470,19 @@ C           .VR-SYM
                   CALL QUIT('Illegal frozen atom.')
                END IF
                IFREEZ(0) = IFREEZ(0) + 1
+               IF (IFREEZ(0) .GT. MX_IFREEZ) THEN
+                  WRITE(LUPRI,*) 'ERROR for .FREEZE Input,'//
+     &               ' max number frozen atoms is',MX_IFREEZ
+                  CALL QUIT('Too many atoms frozen with .FREEZE')
+               END IF
                IFREEZ(IFREEZ(0)) = NFRZ
  474        CONTINUE
+            IF (IFREEZ(0) .GT. 0) PRJTRO = .FALSE. ! Do not project out translation-rotation if some coordinates are frozen.
             GOTO 100
  75         READ (LUCMD,*) ITRFRZ
+            GOTO 100
+ 76         ICNLVL = 3       ! .MEDIUM
+            ICHGTH = ICHGTH + 1
             GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
@@ -918,12 +928,10 @@ C
             WRITE(LUPRI,'(A)')
      &           ' .GRDINI only has effect when 1st order ' //
      &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(A/)') ' Keyword ignored.'
          ELSE
-            WRITE(LUPRI,'(A)') ' Hessian will be reinitialized' //
+            WRITE(LUPRI,'(A/)') ' Hessian will be reinitialized' //
      &           ' when the norm of the gradient increases.'
-            WRITE(LUPRI,*)
          END IF
       END IF
 C
@@ -952,8 +960,7 @@ C
      &        ' Keyword ignored.'
       END IF
       IF (DOPRE) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A)') ' Preoptimization will be' //
+         WRITE(LUPRI,'(/A)') ' Preoptimization will be' //
      &        ' performed with the basis set(s):'
          DO 244 I = 1, NUMPRE
             WRITE(LUPRI,'(A,A60)') '      ',PREBTX(I)
@@ -1052,10 +1059,10 @@ C
       END IF
 C
       IF (BAKER) THEN
-         WRITE(LUPRI,'(/A/)')
+         WRITE(LUPRI,'(A/)')
      &        ' Baker''s convergence criteria will be used.'
          IF (NATNRM) THEN
-            WRITE(LUPRI,'(/A/)')
+            WRITE(LUPRI,'(A/)')
      &        ' INFO:  .NATNRM is ignored when .BAKER requested!'
             NATNRM = .FALSE.
          END IF
@@ -1076,7 +1083,7 @@ C
      &           'convergence threshold in '//WORD1)
          ELSE IF (ICNLVL .GT. 0) THEN
 C
-C     VLOOSE, LOOSE, TIGHT and VTIGHT are simply predefined threshold for
+C     VLOOSE, LOOSE, MEDIUM, TIGHT and VTIGHT are simply predefined threshold for
 C     the gradient convergence criteria
 C            
             IF (ICNLVL .EQ. 1) THEN
@@ -1085,6 +1092,9 @@ C
             ELSE IF (ICNLVL .EQ. 2) THEN
                GRDTHR = 1.D-4
                THRSTP = 1.D-4
+            ELSE IF (ICNLVL .EQ. 3) THEN
+               GRDTHR = 1.D-5
+               THRSTP = 1.D-5
             ELSE IF (ICNLVL .EQ. 4) THEN
                GRDTHR = 1.D-6
                THRSTP = 1.D-6
@@ -1124,12 +1134,11 @@ C
 C     The old (and still default) convergence setup
 C
          IF (ICNLVL .GT. 0) THEN
-            WRITE(LUPRI,*) 'Keywords VLOOSE, LOOSE, TIGHT and VTIGHT '//
+            WRITE(LUPRI,'(/A/A/)')
+     &        'Keywords VLOOSE, LOOSE, MEDIUM, TIGHT and VTIGHT '//
      &           'currently only have effect',
      &           'when .NATNRM is specified.'
-            WRITE(LUPRI,*)
          END IF
-         IF (GRDTHR .NE. DEFTH2) THEN
             WRITE(LUPRI,'(A,1P,D13.2)')
      &           ' Convergence threshold for gradient set to : ', GRDTHR
             IF ((GRDTHR .LE. D0) .OR. (GRDTHR .GT. 0.1D0)) THEN
@@ -1138,8 +1147,6 @@ C
      &           ' threshold reset to:', DEFTH2
                GRDTHR = DEFTH2
             END IF
-         END IF
-         IF (THRERG .NE. DEFTHE) THEN
             WRITE(LUPRI,'(A,1P,D13.2)')
      &           ' Convergence threshold for energy set to   : ', THRERG
             IF ((THRERG .LE. D0) .OR. (THRERG .GT. 0.1D0)) THEN
@@ -1147,9 +1154,7 @@ C
      &           ' Threshold negative or larger than 0.1,'//
      &           ' threshold reset to:', DEFTHE
                THRERG = DEFTHE
-            END IF
          END IF
-         IF (THRSTP .NE. DEFTH2) THEN
             WRITE(LUPRI,'(A,1P,D13.2)')
      &           ' Convergence threshold for step set to     : ', THRSTP
             IF ((THRSTP .LE. D0) .OR. (THRSTP .GT. 0.1D0)) THEN
@@ -1158,8 +1163,6 @@ C
      &           ' threshold reset to:', DEFTH2
                THRSTP = DEFTH2
             END IF
-         END IF
-         IF (ICONDI .NE. 2) THEN
             WRITE(LUPRI,'(A,I3)')
      &           ' Number of convergence criteria set to     : ', ICONDI
             IF ((ICONDI .LT. 1) .OR. (ICONDI .GT. 3)) THEN
@@ -1168,7 +1171,6 @@ C
                WRITE(LUPRI,'(A,I3)')
      &              ' Number reset to:', ICONDI
             END IF
-         END IF
       END IF
 C
       IF (DISPLA .NE. DEFDSP) THEN
@@ -1477,7 +1479,6 @@ C  /* Deck runopt */
 #include "symmet.h"
 #include "nuclei.h"
 #include "taymol.h"
-#include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
 #include "molde.h"
@@ -1720,7 +1721,8 @@ C
 C     Note that the contents of WORK(KTEMP1) is passed on
 C     from PROJGH to DIAHES below.
 C
-         CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
+         IF (PRJTRO)  ! project out trans-rot coordinates
+     &   CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
      &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4))
          IF (LNSRCH .AND. RATFUN .AND. (ITRNMR .GT. 0))
      &        CALL LINSRC(NCART,MXCOOR,EGRAD,GRDARR(1,1),CSTEP,
@@ -1933,7 +1935,8 @@ C
      &           WORK(KTEMP5),WORK(KWRK2),LWRK2)
             IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS + 1
          ELSE
-            CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
+            IF (PRJTRO)  ! project out trans-rot coordinates
+     &      CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
      &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4))
             IF (LNSRCH .AND. RATFUN .AND. (ITRNMR .GT. 0))
      &           CALL LINSRC(NCART,MXCOOR,EGRAD,GRDARR(1,1),CSTEP,
@@ -2463,7 +2466,7 @@ C        *** orbitals. tar 01-2001                       ***
 C
          IF (NMWALK.AND.DOCCSD) THEN
             KWORD = 2
-            KLAST = KWORD + 80*KMLINE
+            KLAST = KWORD + LEN_MLINE*KMLINE
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded ' //
      &                                       'in fndexs.')
             CALL FNDEXS(WORK(KWORD),IPRINT)
@@ -5111,21 +5114,23 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
-#include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
       NCRTOT = 0
       NTMAT = 0
       NCART = NCRREP(0,1)
-      NPROJ = NTRREP(0)
       DO 5 I = 0, 7
          DOREPW(I) = .FALSE.
  5    CONTINUE
-      IF (IPRINT .GT. 5) CALL HEADER('Coordinates in CNTCRD',-1)
+      IF (IPRINT .GT. 5) CALL HEADER('Coordinates counted in CNTCRD',-1)
       DO 10 I  = 0, MAXREP
-         NPRREP(I) = NTRREP(I)
+         IF (PRJTRO) THEN   ! project out tra-rot
+            NPRREP(I) = NTRREP(I)
+         ELSE
+            NPRREP(I) = 0
+         END IF
          NCR = NCRREP(I,1)
-         NPR = NTRREP(I)
+         NPR = NPRREP(I)
          DOREPW(I) = (NCR .GT. NPR)
          IF (DOREPW(I)) THEN
             NCRTOT = NCRTOT + NCR
@@ -5139,6 +5144,7 @@ C
             WRITE(LUPRI,'(A,L5)')' Dorepw               :', DOREPW(I)
          END IF
  10   CONTINUE
+      NPROJ = NPRREP(0)
       IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A,I5)')
      &  ' Total number of Cartesian coordinates:', NCRTOT
       RETURN
@@ -5195,7 +5201,6 @@ C  /* Deck projgh */
 #include "maxaqn.h"
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
       DIMENSION TMPMAT(MXCOOR,MXCOOR), TMPMT2(MXCOOR)
@@ -5317,8 +5322,6 @@ C
       DIMENSION TMPHES(MX2CRD,MX2CRD)
       DIMENSION HESPCK(NCRDHS*NCRDHS)
       DIMENSION WORK(LWORK)
-      LOGICAL PRJTRO
-      PRJTRO = .TRUE.
 C
       CALL DZERO(GRDDIA,MXRCRD)
       CALL WLKEIG(EGRAD,ALLHES,EVAL,EVCTMP,GRDDIA,TMAT,THRLDP,
@@ -6117,7 +6120,7 @@ C
       END IF
       CALL DZERO(STPDIA,NCART)
       CALL DZERO(STPSYM,NCART)
-      NPROJ = NTRREP(0)
+      NPROJ = NPRREP(0)
       NVEC = NCART-NPROJ
       IF (IPRINT .GT. 2) CALL TITLER('Output from FNDSTP','*',103)
 C
@@ -6671,7 +6674,7 @@ C
  17      CONTINUE
  15   CONTINUE
       NCR = NCRREP(ISYMBR,1)
-      NVC = NCR - NTRREP(ISYMBR)
+      NVC = NCR - NPRREP(ISYMBR)
       DO 19 I = 1, NVC
          STPDIA(I) = 1.0D0/SQRT(NVC*1.0D0)
  19   CONTINUE
@@ -7118,7 +7121,7 @@ C
       CNVGRD = .FALSE.
       CNVSTP = .FALSE.
       ICOOR = NCART
-      IF (REDINT .OR. DELINT) ICOOR = IINTCR
+      IF (REDINT .OR. DELINT) ICOOR = ICRTCR
       IF (CONOPT) GNRM = SQRT(DDOT(IINTCR,GRDINT,1,GRDINT,1))
 C
 C     First, the convergence criteria of Baker.
@@ -7410,8 +7413,10 @@ C
          SPECAS = (HESMIN .LT. D0) .AND. (GRDMIN .LT. ZERGRD)
       END IF
       GRDNRM = SQRT(DDOT(NONTRO,GRDDIA,1,GRDDIA,1))
+      HESMAX = MAXVAL( EVAL(1:NONTRO) )
       IF (IPRINT .GT. 5) THEN
          WRITE (LUPRI,'(A,1P,D12.5)') ' HESMIN: ', HESMIN
+         WRITE (LUPRI,'(A,1P,D12.5)') ' HESMAX: ', HESMAX
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDMIN: ', GRDMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDNRM: ', GRDNRM
          WRITE (LUPRI,'(A,1P,D12.5)') ' ZERGRD: ', ZERGRD
@@ -7425,9 +7430,16 @@ C
          IF (IPRINT .GT. 3) WRITE (LUPRI,'(/A/)') ' General case.'
 C
 C        Determine level shift
+C        hjaaj Oct 2013:
+C           We want to find the RNU for which the step length SL is TRUSTR
+C           We want RNU = 0 (Newton step) or RNU > 0 (restricted step)
+C           We know that SL = norm(- (Hess + RNU)^-1 grad )
+C                   Thus SL ≥ norm(grad) / (HESMAX + RNU)
+C                   and  SL ≤ norm(grad) / (HESMIN + RNU)
+C           From this you can derive the formulas for XMIN and XMAX
 C
-         XMIN = GRDNRM/TRUSTR - MIN(HESMIN,D0)
-         XMAX = MAX(D0, - HESMIN + DP5*GRDMIN/TRUSTR)
+         XMIN = MAX(D0,GRDNRM/TRUSTR - HESMIN)
+         XMAX = MAX(D0,GRDNRM/TRUSTR - HESMAX)
          IF (IPRINT .GT. 5) THEN
             WRITE (LUPRI,'(/A,2(1P,D12.5,2X))')
      *         ' XMIN and XMAX before WLKBIS (WSTPLN) minimum walk: ',
@@ -7795,10 +7807,16 @@ C
       IF (ISCL .GE. 2) ELMMX = ELMMX/SCLVEC(1)
       DO 10 I = 2, IDIM
          ELM = ABS(VEC(I))
+
+         ! this is a workaround for a problem that zero elm
+         ! is divided by zero SCLVEC(I)
+         if (elm < tiny(0.0d0)) cycle
+
          IF (ISCL .GE. 1) ELM = ELM/SCLVEC(I)
          IF (ISCL .GE. 2) ELM = ELM/SCLVEC(I)
          IF (ELM .GT. ELMMX) ELMMX = ELM
  10   CONTINUE
+
       RETURN
       END
 

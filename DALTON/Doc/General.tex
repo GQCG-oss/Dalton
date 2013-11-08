@@ -974,12 +974,14 @@ timing for all nodes will be
 given if the print level is 4 or higher.
 \end{description}
 
-\subsection{Polarizable embedding environment model: \Sec{PEQM}}
-\label{subsec:peqm} \index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}
+\subsection{Polarizable embedding model: \Sec{PEQM}}
+\label{subsec:peqm} \index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}\index{multiscale model}\index{multiscale}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
 
-This input section controls calculations using the polarizable
-embedding (PE) model to describe environment effects on a core
-molecular system. The core system is defined by the \molinp\ file. The environment can be described by multipole moment expansions
+This input section controls calculations using polarizable
+embedding (PE) model which can include effects from a structured
+environment on a core molecular system described using quantum mechanics.
+The core system is defined by the \molinp\ file.
+The environment can be described by multipole moment expansions
 and anisotropic dipole-dipole polarizabilities provided in the \potinp\
 file. See Chapter~\ref{ch:embedding} for an introduction to
 calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA and Ref.~\cite{pecc} for PE-CC.
@@ -1067,13 +1069,13 @@ Debug output. Prints the total electric field and the induced dipole moments in 
 
 \end{description}
 
-\subsection{QM/MM environment model: \Sec{QM3}}
+\subsection{QM/MM model: \Sec{QM3}}
 \label{sec:qm3}
 
 Not documented. Examples can be found by grepping for "QM3" in the "DALTON/test" directory in the distribution. See also \Key{PEQM} and \Sec{PEQM} 
 (introduction in Chapter~\ref{ch:embedding}) for a newer more general and efficient implementation with many of the same capabilities.
 
-\subsection{PCM environment model: \Sec{PCM}}
+\subsection{Polarizable continuum model: \Sec{PCM}}
 \label{subsec:pcm}
 
 This input section, together with the \Sec{PCMCAV} input section,

@@ -82,7 +82,6 @@ contains
     DECinfo%approximated_norm_threshold  = 0.1E0_realk
     DECinfo%check_lcm_orbitals           = .false.
     DECinfo%use_canonical                = .false.
-    DECinfo%user_defined_orbitals        = .false.
     DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken                     = .false.
     DECinfo%Distance                     = .false.
@@ -101,7 +100,6 @@ contains
     DECinfo%PL=0
     DECinfo%PurifyMOs=.false.
     DECinfo%precondition_with_full=.false.
-    DECinfo%HybridScheme=.false.
     DECinfo%FragmentExpansionSize = 5
     DECinfo%fragadapt=.false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
@@ -114,12 +112,12 @@ contains
     DECinfo%CorrDensScheme=1
 
     ! -- Pair fragments
-    DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
+    DECinfo%pair_distance_threshold=20.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set=.false.
-    ! Pair reduction distance - set high to avoid using in practice right now...
-    DECinfo%PairReductionDistance = 1000000.0E0_realk
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr = 0.0_realk
+    DECinfo%PairMP2=.false.
+    DECinfo%PairEstimate=.false.
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory=0E0_realk
@@ -180,11 +178,11 @@ contains
     !> The DEC item
     type(decsettings),intent(inout) :: DECitem
 
-    DECitem%cc_models(1)='MP2     '
-    DECitem%cc_models(2)='CC2     '
-    DECitem%cc_models(3)='CCSD    '
-    DECitem%cc_models(4)='CCSD(T) '
-    DECitem%cc_models(5)='RPA     '
+    DECitem%cc_models(MODEL_MP2)='MP2     '
+    DECitem%cc_models(MODEL_CC2)='CC2     '
+    DECitem%cc_models(MODEL_CCSD)='CCSD    '
+    DECitem%cc_models(MODEL_CCSDpT)='CCSD(T) '
+    DECitem%cc_models(MODEL_RPA)='RPA     '
 
   end subroutine dec_set_model_names
 
@@ -291,20 +289,10 @@ contains
 
           ! CHOICE OF ORBITALS
           ! ==================
-          ! By default canonical orbitals are used for full molecular calculation, 
-          ! while local orbitals are used for DEC calculation.
-          ! These default choices can be overruled by these keywords:
-
-          ! Use canonical orbitals 
+          ! By default orbitals from the lcm_orbitals.u file are used for DEC or full calculation.
+          ! Canonical orbitals can be invoked by this keyword
        case('.CANONICAL') 
           DECinfo%use_canonical=.true.
-          DECinfo%user_defined_orbitals=.true.
-
-          ! Do not use canonical orbitals
-       case('.NOTCANONICAL') 
-          DECinfo%use_canonical=.false.
-          DECinfo%user_defined_orbitals=.true.
-
 
 
           ! DEC CALCULATION 
@@ -437,18 +425,12 @@ contains
        case('.MAXITER'); read(input,*) DECinfo%MaxIter
        case('.DECPRINT'); read(input,*) DECinfo%PL
        case('.MULLIKENTHR'); read(input,*) DECinfo%mulliken_threshold
-       case('.SKIPPAIRS') 
-          DECinfo%pair_distance_threshold=0.0E0_realk
-          DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
        case('.CHECKPAIRS') 
           DECinfo%checkpairs=.true.
-       case('.PAIRREDDIST') 
-          read(input,*) DECinfo%PairReductionDistance 
-       case('.PAIRREDDISTANGSTROM') 
-          read(input,*) DECinfo%PairReductionDistance 
-          DECinfo%PairReductionDistance = DECinfo%PairReductionDistance/bohr_to_angstrom
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
        case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
+       case('.PAIRMP2'); DECinfo%PairMP2=.true.
+       case('.PAIRESTIMATE'); DECinfo%PairEstimate=.true.
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
@@ -543,9 +525,6 @@ contains
           call lsquit('Calculation of molecular gradient is only implemented for MP2!', DECinfo%output)
        end if
 
-       ! Turn on the occupied/virtual hybrid scheme
-       DECinfo%HybridScheme=.true.
-
     end if BeyondMp2
 
 
@@ -564,22 +543,6 @@ contains
        DECinfo%InclFullMolecule = .true.
     end if SimulateFullCalc
 
-
-    if(DECinfo%ccmodel==MODEL_CCSDpT .and. DECinfo%DECrestart) then
-       call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
-    end if
-
-    ! Which orbitals to use?
-    ! Default full calculation: Canonical orbitals
-    ! Default DEC calculation : Local orbitals
-    ! --> unless user has manually specified otherwise!
-    if(.not. DECinfo%user_defined_orbitals) then  
-       if(DECinfo%full_molecular_cc) then
-          DECinfo%use_canonical = .true.
-       else
-          DECinfo%use_canonical = .false.
-       end if
-    end if
 
 
     ! Set CC residual threshold to be 0.01*FOT
@@ -603,24 +566,32 @@ contains
        call lsquit('Full singles polarization has been temporarily disabled!',-1)
     end if
 
-    if(DECinfo%full_print_frag_energies) then
-       if(DECinfo%ccmodel/=MODEL_MP2 .and. DECinfo%ccmodel/=MODEL_CCSD) then
-          print *, 'MODEL: ', DECinfo%cc_models(DECinfo%ccmodel)
-          call lsquit('Printing of fragment energies not implemented for this CC model!',-1)
-       end if
+    if(.not. DECinfo%memory_defined) then
+       write(DECinfo%output,*) 'Memory not defined for **DEC or **CC calculation!'
+       write(DECinfo%output,*) 'Please specify using .MEMORY keyword (in gigabytes)'
+       write(DECinfo%output,*) ''
+#ifdef VAR_MPI
+       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, then use'
+#else
+       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, then use'
+#endif
+       write(DECinfo%output,*) '.MEMORY'
+       write(DECinfo%output,*) '16.0'
+       write(DECinfo%output,*) ''
+       call lsquit('**DEC or **CC calculation requires specification of available memory using &
+            & .MEMORY keyword!',-1)
     end if
-
 
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
        DECinfo%purifyMOs=.true.
     end if
 
-#ifdef RELEASE
-if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=MODEL_MP2) then
-   call lsquit('Error in input: DEC scheme only implemented for MP2 model!',-1)
-end if
-#endif
+    ! Check in the case of a DEC calculation that the cc-restart-files are not written
+    if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
+       DECinfo%CCSDnosaferun = .true.
+    endif
+
 
   end subroutine check_dec_input
   
@@ -637,7 +608,6 @@ end if
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
     write(lupri,*) 'use_canonical ', DECitem%use_canonical
-    write(lupri,*) 'user_defined_orbitals ', DECitem%user_defined_orbitals
     write(lupri,*) 'simulate_full ', DECitem%simulate_full
     write(lupri,*) 'simulate_natoms ', DECitem%simulate_natoms
     write(lupri,*) 'InclFullMolecule ', DECitem%InclFullMolecule
@@ -707,16 +677,16 @@ end if
     write(lupri,*) 'MaxIter ', DECitem%MaxIter
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
-    write(lupri,*) 'HybridScheme ', DECitem%HybridScheme
     write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
     write(lupri,*) 'fragopt_exp_mp2 ', DECitem%fragopt_exp_mp2
     write(lupri,*) 'fragopt_red_mp2 ', DECitem%fragopt_red_mp2
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
-    write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
+    write(lupri,*) 'PairMP2 ', DECitem%PairMP2
+    write(lupri,*) 'PairEstimate ', DECitem%PairEstimate
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'MP2density ', DECitem%MP2density
     write(lupri,*) 'gradient ', DECitem%gradient
@@ -735,7 +705,7 @@ end if
 
 
   !> \brief Set DEC parameters in DEC structure according to FOT level,
-  !> e.g. FOT itself, pair cut-off, and orbital extent threshold are set here.
+  !> e.g. FOT itself and orbital extent threshold are set here.
   !> See details inside subroutine.
   !> \author Kasper Kristensen
   !> \date November 2012
@@ -747,37 +717,9 @@ end if
     !> FOTlevel: Defines the precision of the whole calculation:
     !>           In general FOT=10^{-FOTlevel}
     !>           So a large FOTlevel means HIGH precision.
-    !>           Reasonable pair cutoff distances are associated with each FOT level.
-    !>           If necessary, the paircut off is increased
-    !>           in a self-adaptive black box manner during
-    !>           the calculation.
     !>           It is also possible to adapt the orbital threshold to the given FOT,
-    !>           however, for now we simply set the orbital threshold to 0.01 for all levels.
+    !>           however, for now we simply set the orbital threshold to 0.05 for all levels.
     !> 
-    !> FOTlevel = 1: 
-    !> FOT=10^{-1}, pair_distance_threshold=4Angstrom.
-    !>
-    !> FOTlevel = 2: 
-    !> FOT=10^{-2}, pair_distance_threshold=6Angstrom.
-    !> 
-    !> FOTlevel = 3: 
-    !> FOT=10^{-3}, pair_distance_threshold=8Angstrom.
-    !> 
-    !> FOTlevel = 4: 
-    !> FOT=10^{-4}, pair_distance_threshold=10Angstrom.
-    !>
-    !> FOTlevel = 5: 
-    !> FOT=10^{-5}, pair_distance_threshold=12Angstrom.
-    !> 
-    !> FOTlevel = 6: 
-    !> FOT=10^{-6}, pair_distance_threshold=14Angstrom.
-    !>
-    !> FOTlevel = 7: 
-    !> FOT=10^{-7}, pair_distance_threshold=16Angstrom.
-    !> 
-    !> FOTlevel = 8: 
-    !> FOT=10^{-8}, pair_distance_threshold=18Angstrom.
-    !>
     !> Default: FOTlevel=4. If FOTlevel is not 1,2,3,4,5,6,7, or 8, the program will quit.
 
     ! Set FOT level
@@ -787,58 +729,49 @@ end if
 
     case(1)
        DECinfo%FOT = 1.0E-1_realk
-       ! Use FOT-adapted pair cutoff and simple orbital threshold
-       ! only if these were not set set manually
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=4.0E0_realk/bohr_to_angstrom
+       ! Define simple orbital threshold here only if it was not set manually
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(2)
        DECinfo%FOT = 1.0E-2_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=6.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(3)
        DECinfo%FOT = 1.0E-3_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=8.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(4)
        DECinfo%FOT = 1.0E-4_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(5)
        DECinfo%FOT = 1.0E-5_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=12.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(6)
        DECinfo%FOT = 1.0E-6_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=14.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(7)
        DECinfo%FOT = 1.0E-7_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=16.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(8)
        DECinfo%FOT = 1.0E-8_realk
-       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=18.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
           DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if

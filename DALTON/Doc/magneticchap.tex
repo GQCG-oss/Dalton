@@ -271,9 +271,9 @@ calculations.
 %------------------------------------------------------------
 % by jmelo May-2013
 
-\section{LRESC corrections to Nuclear shielding constants}\label{sec:lresc}
+\section{Relativistic corrections to Nuclear shielding constants}\label{sec:lresc}
 
-Linear Response Elimination of Small Component scheme provides the calculation
+Linear Response Elimination of Small Component scheme (LRESC) provides the calculation
 of first and second order relativistic corrections to nuclear shielding constants. 
 This corrections are invoked through the keyword \Key{LRESC} on the \Sec{*PROPERTIES} input module. Detailed description of the LRESC theoretical scheme and discussions are on this papers. 
 
@@ -301,6 +301,8 @@ Third order corrections are not included in the present version of the code, any
 \begin{verbatim}
 **DALTON INPUT
 .RUN PROPERTIES
+**INTEGRLAS 
+.LRINTS  ! mandatory, to have all necessary integrals computed to use in LRESC module.
 **WAVE FUNCTIONS
 .HF
 **PROPERTIES
@@ -308,8 +310,9 @@ Third order corrections are not included in the present version of the code, any
 **END OF DALTON INPUT
 \end{verbatim}
 
+The integrals computed under \Key{LRINTS} are described in INTEGRALS chapter Section \ref{sec:herinp}
 
-There are a few keywords to get more control over the output and the amount of corrections to be calculated. A detailed description on each correction can be found in Ref.~\cite{melomaldojcp12}. Regarding basis sets convergence, benchmark calculations where presented on XXXXX . The complete list of control keywords are:
+There are a few keywords to get more control over the output and the amount of corrections to be calculated. A detailed physical description on each correction can be found in Ref.~\cite{melomaldojcp12}. Regarding basis sets convergence, benchmark calculations where presented on Ref.~\cite{melomaldojcp12},~\cite{melomaldotca11},~\cite{melojcp03} . The complete list of control keywords are:
 
 \begin{list}{}{\itemsep 0.10cm \parsep 0.0cm}
 \item[\Key{PRINT}] Controls the print level, for debugging purpose.
@@ -319,7 +322,7 @@ There are a few keywords to get more control over the output and the amount of c
 \item[\Key{PARA1T}] Only Paramagnetic Triplet First order corrections are calculated 
 \item[\Key{PARA3S}] (not implemented yet) Only Paramagnetic Singlet Third order corrections are calculated. 
 \item[\Key{PARA3T}] (not implemented yet) Only Paramagnetic Triplet Third order corrections are calculated. 
-\item[\Key{DIAM0S}] Only Diamagnetic Singlet Zeroth order corrections are calculated 
+\item[\Key{DIAM0S}] Only Diamagnetic Singlet Zeroth order corrections are calculated
 \item[\Key{DIAM1S}] Only Diamagnetic Singlet First order corrections are calculated 
 \end{list}
 
@@ -331,8 +334,8 @@ Default Values, and some tips for better running:
 \item First Atom on input list is selected, unless specified with \Key{SELECT}. 
 \item Center of Mass gauge origin for atomic integrals. As mentioned, \Key{GAUGEO} on 
 \Sec{*INTEGRALS} must be placed in the position of the selected nucleus. Default value is the center of mass.
-\item All LRESC terms will be calculated, unless some (or more) of them are asked for. (PARA1S, PARA1T, DIAM0S and/or DIAM1S). 
-\item Only uncontracted basis set is recommended. Integrals under \Key{DIAM0S} only supports uncontraced basis sets.
+\item All LRESC terms will be calculated, unless some (or more) of them are asked for : PARA1S, PARA1T, DIAM0S and/or DIAM1S. See example below.
+\item Uncontracted basis set is recommended. 
 \item No symmetry for molecule specification. 
 \item Hartree-Fock and DFT schemes supported for the ground state Wave Function.
 \end{itemize}
@@ -342,8 +345,9 @@ Default Values, and some tips for better running:
 \begin{verbatim}
 (...)
 *INTEGRALS
+.LRINTS
 .GAUGEO 
-a b c        !where a b c are the atomic cartesian coordinates of the selected nucleus
+a b c        ! a b c atomic cartesian coordinates of selected nucleus (in a.u.)
 (...)
 **PROPERTIES
 .LRESC
@@ -352,7 +356,7 @@ a b c        !where a b c are the atomic cartesian coordinates of the selected n
 .PRINT
 JIMPRT       ! reads one integer , for debugging
 .SELECT
-LRATOM       ! reads one integer corresponding to the place of the nucleus on input file 
+LRATOM       ! reads one integer corresponding to the order of selected nucleus list on input file 
 .DIAM0S      ! calculation of diamagnetic  zeroth order terms
 .DIAM1S      ! calculation of diamagnetic  first order terms
 .PARA1S      ! calculation of paramagnetic first(singlet) order terms
@@ -884,7 +888,7 @@ A.~Ligabue, S.~P.~A. Sauer and P.~Lazzeretti
 A.~Ligabue, S.~P.~A. Sauer and P.~Lazzeretti
 \newblock {\em J.Chem.Phys.}, {\bf 126},\hspace{0.25em}154111, (2007).
 \item CC3:
-I.~G.~Cuesta, J.~S{\'a}nchez, A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s, F.~Paw{\l}owski
+I.~G.~Cuesta, J.~S{\'a}nchez, A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s, F.~Pawlowski
  and P.~Lazzeretti,
 \newblock {\em Phys.Chem.Chem.Phys.}, {\bf 12},\hspace{0.25em}6163, (2010).
 \end{list}

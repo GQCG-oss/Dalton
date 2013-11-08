@@ -117,7 +117,7 @@ contains
     ! (See below)
 
     !> Atomic fragment (or pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see notation inside]
     type(array4),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see notation inside]
@@ -261,7 +261,7 @@ end if
     nullify(batch2orbGamma)
     nullify(batchindexGamma)
     nullify(mini1,mini2,mini3,mini4)
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
     nocc = MyFragment%noccAOS   ! occupied AOS (only valence for frozen core)
     nvirt = MyFragment%nunoccAOS   ! virtual AOS
     noccEOS = MyFragment%noccEOS  ! occupied EOS
@@ -341,7 +341,7 @@ end if
        call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
             & EVocc, EVvirt)
        LoccTALL = array2_init([nocc,nbasis])
-       call mat_transpose(nbasis,nocc,1.0E0_realk,MyFragment%ypo,0.0E0_realk,LoccTALL%val)
+       call mat_transpose(nbasis,nocc,1.0E0_realk,MyFragment%Co,0.0E0_realk,LoccTALL%val)
     end if
 
 
@@ -357,8 +357,8 @@ end if
     call array2_free(tmparray2)
 
 
-    ! Extract occupied and virtual EOS indices from columns of MyFragment%ypo
-    ! and MyFragment%ypv, i.e. the local EOS molecular orbital coefficients
+    ! Extract occupied and virtual EOS indices from columns of MyFragment%Co
+    ! and MyFragment%Cv, i.e. the local EOS molecular orbital coefficients
     LoccEOS = array2_init_plain([nbasis,noccEOS])
     call extract_occupied_EOS_MO_indices(LoccEOS,MyFragment)
     LvirtEOS = array2_init_plain([nbasis,nvirtEOS])
@@ -510,7 +510,7 @@ end if
     call mat_transpose(nvirtEOS,nvirt,1.0E0_realk,UvirtEOS,0.0E0_realk,UvirtEOST)
     call mat_transpose(nbasis,noccEOS,1.0E0_realk,LoccEOS%val,0.0E0_realk,LoccEOST)
     call mat_transpose(nbasis,nvirtEOS,1.0E0_realk,LvirtEOS%val,0.0E0_realk,LvirtEOST)
-    call mat_transpose(nbasis,nvirt,1.0E0_realk,MyFragment%ypv,0.0E0_realk,LvirtT)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,MyFragment%Cv,0.0E0_realk,LvirtT)
 
 
     ! ***************************************************************
@@ -2004,7 +2004,7 @@ end subroutine Get_ijba_integrals
     implicit none
 
     !> Atomic fragment (or pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
     type(array4),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
@@ -2038,7 +2038,7 @@ end subroutine Get_ijba_integrals
     implicit none
 
     !> Atomic fragment (or pair fragment)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
     type(array4),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
@@ -2080,7 +2080,7 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   implicit none
 
   !> Fragment info
-  type(ccatom),intent(inout) :: MyFragment
+  type(decfrag),intent(inout) :: MyFragment
   !> Are integrals needed for first-order properties also requested
   logical,intent(in) :: first_order_integrals
   !> Batch sizes used for MP2 integral/amplitude calculation (see mp2_batch_construction type)
@@ -2125,7 +2125,7 @@ nthreads=1
   end if
   noccEOS=MyFragment%noccEOS
   nvirtEOS=MyFragment%nunoccEOS
-  nbasis = MyFragment%number_basis
+  nbasis = MyFragment%nbasis
 
 
 
@@ -2367,7 +2367,7 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
   implicit none
 
   !> Fragment info
-  type(ccatom),intent(inout) :: MyFragment
+  type(decfrag),intent(inout) :: MyFragment
   !> Are integrals needed for first-order properties also requested
   logical,intent(in) :: first_order_integrals
   !> Maximum size of AO batch Alpha
@@ -2396,7 +2396,7 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
   ! **********************************************
   nocc=MyFragment%noccAOS  ! occupied AOS (only valence for frozen core)
   nvirt = MyFragment%nunoccAOS   ! virtual AOS
-  nbasis = MyFragment%number_basis      ! number of basis functions in atomic extent
+  nbasis = MyFragment%nbasis      ! number of basis functions in atomic extent
   noccEOS = MyFragment%noccEOS  ! occupied EOS
   nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
   if(DECinfo%frozencore .and. first_order_integrals) then
@@ -2662,7 +2662,7 @@ subroutine MP2_integrals_and_amplitudes_workhorse_slave()
   implicit none
 
   !> Fragment information
-  type(ccatom) :: MyFragment
+  type(decfrag) :: MyFragment
   !> Batch sizes
   type(mp2_batch_construction) :: bat
   !> Calculate intgrals for first order MP2 properties?

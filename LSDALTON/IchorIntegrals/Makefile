@@ -19,15 +19,15 @@ F90_OBJS = \
         AGC_VerticalRecurrenceQPC.o \
         AGC_VerticalRecurrenceQPD.o \
         AGC_TransferRecurrenceQPAtoC.o \
+        AGC_TransferRecurrenceQPAtoD.o \
         AGC_TransferRecurrenceQPDtoA.o \
         AGC_TransferRecurrenceQPCtoA.o \
-        AGC_TransferRecurrenceQPAtoD.o \
         AGC_TransferRecurrenceQPBtoC.o \
         AGC_TransferRecurrenceQPBtoD.o \
-        AGC_TransferRecurrenceQPCtoB.o \
         AGC_TransferRecurrenceQPDtoB.o \
-        AGC_HorizontalRecurrencePBtoA.o \
+        AGC_TransferRecurrenceQPCtoB.o \
         AGC_HorizontalRecurrencePAtoB.o \
+        AGC_HorizontalRecurrencePBtoA.o \
         AGC_HorizontalRecurrenceQCtoD.o \
         AGC_HorizontalRecurrenceQDtoC.o \
         AGC_SphContractOBS1.o \

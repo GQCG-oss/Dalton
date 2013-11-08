@@ -91,7 +91,7 @@ else
 fi
 
 # Check 1:
-CRIT1=`$GREP "E_disp:   *  -0.002241" $log | wc -l`
+CRIT1=`$GREP "E_disp *: *  -0.002241" $log | wc -l`
 TEST[1]=`expr $CRIT1`
 CTRL[1]=2
 ERROR[1]="1ST DISPERSION ENERGY NOT CORRECT"
