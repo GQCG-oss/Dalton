@@ -1035,8 +1035,11 @@ CONTAINS
   
   subroutine IchorCoulombIntegral_OBS_general_sizeSegQ(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQP,nContQP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     implicit none
+    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
+    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
+    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP
     ! local variables
     integer :: AngmomID
     
@@ -1500,8 +1503,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(    4)
-    real(realk) :: TMPArrayA(    4,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(    4)
+    real(realk) :: TMPA(    4,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -1549,8 +1552,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(   10)
-    real(realk) :: TMPArrayA(   10,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(   10)
+    real(realk) :: TMPA(   10,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -1598,8 +1601,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(   20)
-    real(realk) :: TMPArrayA(   20,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(   20)
+    real(realk) :: TMPA(   20,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -1647,8 +1650,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(   35)
-    real(realk) :: TMPArrayA(   35,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(   35)
+    real(realk) :: TMPA(   35,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -1696,8 +1699,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(   16)
-    real(realk) :: TMPArrayA(   16,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(   16)
+    real(realk) :: TMPA(   16,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -1745,8 +1748,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(   40)
-    real(realk) :: TMPArrayA(   40,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(   40)
+    real(realk) :: TMPA(   40,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -1794,8 +1797,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(   80)
-    real(realk) :: TMPArrayA(   80,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(   80)
+    real(realk) :: TMPA(   80,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -1843,8 +1846,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(  140)
-    real(realk) :: TMPArrayA(  140,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(  140)
+    real(realk) :: TMPA(  140,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -1892,8 +1895,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(  100)
-    real(realk) :: TMPArrayA(  100,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(  100)
+    real(realk) :: TMPA(  100,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -1941,8 +1944,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(  200)
-    real(realk) :: TMPArrayA(  200,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(  200)
+    real(realk) :: TMPA(  200,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -1990,8 +1993,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(  350)
-    real(realk) :: TMPArrayA(  350,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(  350)
+    real(realk) :: TMPA(  350,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -2039,8 +2042,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(  400)
-    real(realk) :: TMPArrayA(  400,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(  400)
+    real(realk) :: TMPA(  400,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -2088,8 +2091,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray(  700)
-    real(realk) :: TMPArrayA(  700,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray(  700)
+    real(realk) :: TMPA(  700,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -2137,8 +2140,8 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
-    real(realk) :: B,ABTMP,TMPArray( 1225)
-    real(realk) :: TMPArrayA( 1225,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,TMPArray( 1225)
+    real(realk) :: TMPA( 1225,nPrimB)
     do iPassQ = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -2173,3 +2176,4 @@ CONTAINS
     enddo
   end subroutine PrimitiveContractionSegQ1225
 
+END MODULE IchorEriCoulombintegralOBSGeneralModSegQ

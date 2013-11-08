@@ -953,8 +953,11 @@ CONTAINS
   
   subroutine IchorCoulombIntegral_OBS_general_sizeSeg1Prim(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQP,nContQP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     implicit none
+    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
+    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
+    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP
     ! local variables
     integer :: AngmomID
     
@@ -1292,3 +1295,4 @@ CONTAINS
     END SELECT
   end subroutine IchorCoulombIntegral_OBS_general_sizeSeg1Prim
   
+END MODULE IchorEriCoulombintegralOBSGeneralModSeg1Prim

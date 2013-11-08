@@ -1035,8 +1035,11 @@ CONTAINS
   
   subroutine IchorCoulombIntegral_OBS_general_sizeSegP(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQP,nContQP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     implicit none
+    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
+    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
+    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP
     ! local variables
     integer :: AngmomID
     
@@ -1464,7 +1467,7 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContQ
     integer,intent(in) :: nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(nPrimC,iPrimD,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPasses)
     real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nPasses)
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
@@ -1512,7 +1515,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,    4
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,    4
@@ -1559,7 +1562,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,   10
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,   10
@@ -1606,7 +1609,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,   20
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,   20
@@ -1653,7 +1656,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,   35
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,   35
@@ -1700,7 +1703,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,   16
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,   16
@@ -1747,7 +1750,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,   40
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,   40
@@ -1794,7 +1797,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,   80
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,   80
@@ -1841,7 +1844,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,  140
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,  140
@@ -1888,7 +1891,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,  100
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,  100
@@ -1935,7 +1938,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,  200
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,  200
@@ -1982,7 +1985,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,  350
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,  350
@@ -2029,7 +2032,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,  400
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,  400
@@ -2076,7 +2079,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1,  700
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1,  700
@@ -2123,7 +2126,7 @@ CONTAINS
        do iPrimC=1,nPrimC
         CCCTMP = CCC(iPrimC,iContC)
         do iTUV=1, 1225
-         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)
+         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)
         enddo
        enddo
        do iTUV=1, 1225
@@ -2147,3 +2150,4 @@ CONTAINS
      enddo
     enddo
   end subroutine PrimitiveContractionSegP1225
+END MODULE IchorEriCoulombintegralOBSGeneralModSegP

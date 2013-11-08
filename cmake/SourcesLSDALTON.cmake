@@ -227,6 +227,11 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorGammaTabulation.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_general.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Gen.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_SegQ.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_SegP.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Seg.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Seg1Prim.F90
     LSDALTON/IchorIntegrals/IchorEri.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPA.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPB.F90

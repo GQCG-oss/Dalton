@@ -1197,8 +1197,11 @@ CONTAINS
   
   subroutine IchorCoulombIntegral_OBS_general_sizeGen(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQP,nContQP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     implicit none
+    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
+    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
+    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP
     ! local variables
     integer :: AngmomID
     
@@ -1635,7 +1638,6 @@ CONTAINS
     real(realk) :: tmpArray3(nPrimB)
     !Scaling p**4*c*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nPassQ
     do iPassQ = 1,nPasses
-     iContQP = 0
      do iContC=1,nContC
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
@@ -1671,7 +1673,7 @@ CONTAINS
          do iPrimB=1,nPrimB
           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iPrimB)
          enddo
-         AUXarrayCont(iContC,iContD,iContA,iContB) = TMP
+         AUXarrayCont(iContC,iContD,iContA,iContB,iPassQ) = TMP
         enddo
        enddo
       enddo
@@ -1729,7 +1731,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,    4
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,    4
@@ -1765,7 +1767,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,    4
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -1824,7 +1826,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,   10
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,   10
@@ -1860,7 +1862,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,   10
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -1919,7 +1921,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,   20
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,   20
@@ -1955,7 +1957,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,   20
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2014,7 +2016,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,   35
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,   35
@@ -2050,7 +2052,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,   35
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2109,7 +2111,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,   16
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,   16
@@ -2145,7 +2147,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,   16
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2204,7 +2206,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,   40
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,   40
@@ -2240,7 +2242,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,   40
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2299,7 +2301,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,   80
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,   80
@@ -2335,7 +2337,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,   80
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2394,7 +2396,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,  140
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,  140
@@ -2430,7 +2432,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,  140
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2489,7 +2491,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,  100
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,  100
@@ -2525,7 +2527,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,  100
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2584,7 +2586,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,  200
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,  200
@@ -2620,7 +2622,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,  200
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2679,7 +2681,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,  350
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,  350
@@ -2715,7 +2717,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,  350
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2774,7 +2776,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,  400
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,  400
@@ -2810,7 +2812,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,  400
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2869,7 +2871,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1,  700
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1,  700
@@ -2905,7 +2907,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1,  700
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -2964,7 +2966,7 @@ CONTAINS
           DCCTMP = DCC(iPrimD,iContD)
           !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
           do iTUV=1, 1225
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray(iTUV,iPrimD,iPrimA,iPrimB)
+           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
          enddo
          do iTUV=1, 1225
@@ -3000,7 +3002,7 @@ CONTAINS
           enddo
          enddo
          do iTUV=1, 1225
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
          enddo
         enddo
        enddo
@@ -3008,5 +3010,4 @@ CONTAINS
      enddo
     enddo
   end subroutine PrimitiveContractionGen1225
-  
-END MODULE IchorEriCoulombintegralOBSGeneralMod
+END MODULE IchorEriCoulombintegralOBSGeneralModGen

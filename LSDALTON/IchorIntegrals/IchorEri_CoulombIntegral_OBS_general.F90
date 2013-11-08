@@ -9,6 +9,10 @@ use IchorprecisionModule
 use IchorCommonModule
 use IchorMemory
 public :: IchorCoulombIntegral_OBS_general,IchorCoulombIntegral_OBS_general_size  
+  
+CONTAINS
+  
+  
   subroutine IchorCoulombIntegral_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
@@ -116,31 +120,33 @@ public :: IchorCoulombIntegral_OBS_general,IchorCoulombIntegral_OBS_general_size
   
   subroutine IchorCoulombIntegral_OBS_general_size(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQP,nContQP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,Psegmented,Qsegmented)
     implicit none
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
-    integer,intent(in) :: nPrimQP,nContQP
+    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP
+    logical,intent(in) :: Psegmented,Qsegmented
     IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
      call IchorCoulombIntegral_OBS_general_sizeSeg1Prim(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQP,nContQP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSEIF(Psegmented.AND.Qsegmented)THEN
      call IchorCoulombIntegral_OBS_general_sizeSeg(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQP,nContQP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSEIF(Psegmented)THEN
      call IchorCoulombIntegral_OBS_general_sizeSegP(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQP,nContQP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSEIF(Qsegmented)THEN
      call IchorCoulombIntegral_OBS_general_sizeSegQ(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQP,nContQP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSE
      call IchorCoulombIntegral_OBS_general_sizeGen(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQP,nContQP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ENDIF
   end subroutine IchorCoulombIntegral_OBS_general_size
   
+END MODULE IchorEriCoulombintegralOBSGeneralMod
