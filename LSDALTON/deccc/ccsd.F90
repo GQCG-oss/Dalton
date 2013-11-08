@@ -1107,11 +1107,8 @@ contains
       !allocate the dense part of the arrays if all can be kept in local memory.
       !do that for master only, as the slaves recieve the data via StartUpSlaves
       if((scheme==4).and.govov%itype/=DENSE)then
-        print *,"allocate dense"
         if(iter==1) call memory_allocate_array_dense_pc(govov)
-        print *,"allocate dense - done copying"
         if(iter/=1) call array_cp_tiled2dense(govov,.false.)
-        print *,"copying done"
       endif 
 #endif
     endif
@@ -1247,21 +1244,31 @@ contains
     call mem_alloc(tpl,int(i8*nor*nvr,kind=long))
     call mem_alloc(tmi,int(i8*nor*nvr,kind=long))
     call get_tpl_and_tmi(t2%elm1,nv,no,tpl,tmi)
+    if(master.and.print_debug)then
+      write(msg,*)"NORM(tpl)   :"
+      call print_norm(tpl,int(nor*nvr,kind=8),msg)
+      write(msg,*)"NORM(tmi)    :"
+      call print_norm(tmi,int(nor*nvr,kind=8),msg)
+    endif
 
     !get u2 in pdm or local
     if(scheme==2)then
       u2=array_init([nv,nv,no,no],4,TILED_DIST,ALL_INIT)
       call array_zero(u2)
       if(master)then 
-        call array_add(u2,2.0E0_realk,t2%elm1,order=[2,1,3,4])
+        call array_add(u2, 2.0E0_realk,t2%elm1,order=[2,1,3,4])
         call array_add(u2,-1.0E0_realk,t2%elm1,order=[2,1,4,3])
       endif
       call array_mv_dense2tiled(t2,.true.)
     else
       u2=array_init([nv,nv,no,no],4)
       !calculate u matrix: t[c d i j] -> t[d c i j], 2t[d c i j] - t[d c j i] = u [d c i j]
-      call array_reorder_4d(2.0E0_realk,t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
+      call array_reorder_4d( 2.0E0_realk,t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
       call array_reorder_4d(-1.0E0_realk,t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
+    endif
+    if(master.and.print_debug.and.scheme/=2)then
+      write(msg,*)"NORM(u2)    :"
+      call print_norm(u2%elm1,int(nor*nvr,kind=8),msg)
     endif
 
     call mem_alloc(Had,nv*nb)
@@ -1374,10 +1381,17 @@ contains
       call distribute_mpi_jobs(mpi_task_distribution,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
            &batchdimGamma,myload,scheme,no,nv,nb,batch2orbAlpha,batch2orbGamma)
     else
+      if(master)print*,"master allocating memory",nbatchesGamma
       call mem_alloc(mpi_task_distribution,mpi_ctasks,nbatchesGamma) 
+      if(master)print*,"master alloc done"
       mpi_task_distribution = 0
+      if(master)print*,"master assignment done"
       if(master) mpi_task_distribution(1) = infpar%lg_nodtot
+      if(master)print*,"master 2. assignment done"
       call lsmpi_win_create(mpi_task_distribution,win_in_g,nbatchesGamma,infpar%lg_comm)
+      if(master)print*,"master win done"
+      if(master)print*,mpi_task_distribution
+      if(master)print*,nbatchesGamma
     endif
     !startt = omp_get_wtime()
 #endif
@@ -2412,6 +2426,7 @@ contains
          enddo
        else
          !BE CAREFUL THIS IS HIGHLY EXPERIMENTAL CODE
+         print *,"getting stuff"
          if(fr)then
            a=infpar%lg_mynum
          else
@@ -2420,6 +2435,7 @@ contains
            call lsmpi_get_acc(el,a,infpar%master,g,dynamic)
            call lsmpi_win_unlock(infpar%master,dynamic)
          endif
+         print *,"got stuff"
        endif
        if(fr) fr=.false.
 #endif
