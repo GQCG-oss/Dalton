@@ -2814,6 +2814,7 @@ contains
 #else
 
     CBAI = array_init(dims,4)
+    call array_zero(CBAI)
 
 #endif
 

@@ -387,10 +387,7 @@ contains
     ! MODIFY FOR NEW MODEL!
     ! Two possible situations:
     ! (1) Your new model fits into the standard CC energy expression. 
-    !     In this case you should grep for
-    !     "MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION"
-    !     in the DEC files and introduce your model in the same way as the other models,
-    !     see FRAGMODEL_* in dec_typedef.F90.
+    !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
     ! (2) Your model does NOT fit into the standard CC energy expression.
     !     In this case you need to make a new atomic fragment energy subroutine and call it from
     !     here instead of calling get_atomic_fragment_energy.
@@ -962,10 +959,7 @@ contains
     ! MODIFY FOR NEW MODEL!
     ! Two possible situations:
     ! (1) Your new model fits into the standard CC energy expression. 
-    !     In this case you should grep for
-    !     "MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION"
-    !     in the DEC files and introduce your model in the same way as the other models,
-    !     see FRAGMODEL_* in dec_typedef.F90.
+    !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
     ! (2) Your model does NOT fit into the standard CC energy expression.
     !     In this case you need to make a new pair interaction energy subroutine and call it from
     !     here instead of calling get_pair_fragment_energy.
@@ -3156,9 +3150,9 @@ end subroutine optimize_atomic_fragment
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
 #ifdef MOD_UNRELEASED
     case(MODEL_CCSDpT)
-       ! CCSD(T)
-       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCpT)
-       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTpT)
+       ! CCSD(T): CCSD contribution + (T) contribution
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCCSD) + fragment%energies(FRAGMODEL_OCCpT)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCCSD) + fragment%energies(FRAGMODEL_VIRTpT)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
 !endif mod_unreleased
@@ -3203,9 +3197,9 @@ end subroutine optimize_atomic_fragment
        fragment%energies(FRAGMODEL_VIRTCCSD) = fragment%EvirtFOP
 #ifdef MOD_UNRELEASED 
     case(MODEL_CCSDpT)
-       ! CCSD(T)
-       fragment%energies(FRAGMODEL_OCCpT) = fragment%EoccFOP 
-       fragment%energies(FRAGMODEL_VIRTpT) = fragment%EvirtFOP
+       ! (T) contribution =  CCSD(T) contribution minus CCSD contribution
+       fragment%energies(FRAGMODEL_OCCpT) = fragment%EoccFOP - fragment%energies(FRAGMODEL_OCCCCSD)
+       fragment%energies(FRAGMODEL_VIRTpT) = fragment%EvirtFOP - fragment%energies(FRAGMODEL_VIRTCCSD)
 !endif mod_unreleased
 #endif
     case default
@@ -3245,7 +3239,7 @@ end subroutine optimize_atomic_fragment
 
 
 
-  ! MODIFY FOR NEW MODEL THAT FITS INTO STANDARD CC ENERGY EXPRESSION
+  ! MODIFY FOR NEW MODEL
   !> \brief When fragment energies have been calculated, put them
   !> into the energies array according to the given model
   !> (see FRAGMODEL_* in dec_typedef.F90).

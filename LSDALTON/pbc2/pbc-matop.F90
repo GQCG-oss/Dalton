@@ -387,7 +387,9 @@ Do layer=1,size(Aop%lvec)
    case(1) !overlap
      if((abs(l1) .le. Aop%oneop1 .and. abs(l2) .le. Aop%oneop2)&
      & .and. abs(l3) .le. Aop%oneop3)then
-     !  call mat_init(Aop%lvec(layer)%oper(oper2),nrows,ncols)
+        if(Aop%lvec(layer)%oper(oper2)%init_magic_tag .ne. mat_init_magic_value)then
+          call mat_init(Aop%lvec(layer)%oper(oper2),nrows,ncols)
+        endif
        call mat_zero(Aop%lvec(layer)%oper(oper2))
        call pbc_get_file_and_read(Aop,nrows,ncols,layer,1,oper2,diis)
      endif

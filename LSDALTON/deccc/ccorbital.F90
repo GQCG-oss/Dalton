@@ -2276,7 +2276,7 @@ contains
     ! - fragment opt where reduction step is done at the MP2 level
     !   but where the target CC model is not MP2.
     if(DECinfo%first_order .or. nfrags==1 .or. DECinfo%InclFullMolecule &
-         & .or. (DECinfo%ccmodel/=1 .and. DECinfo%fragopt_red_mp2 ) ) then
+         & .or. (DECinfo%ccmodel/=MODEL_MP2 .and. DECinfo%fragopt_red_mp2 ) ) then
        DECinfo%RepeatAF=.true.
     else
        DECinfo%RepeatAF=.false.
@@ -2335,7 +2335,7 @@ contains
   !> \brief Determine which atoms have one or more orbitals assigned.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine which_atom_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
+  subroutine which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
 
     implicit none
     !> Number of occupied orbitals in full molecule
@@ -2369,7 +2369,7 @@ contains
        end if
     end do
 
-  end subroutine which_atom_have_orbitals_assigned
+  end subroutine which_atoms_have_orbitals_assigned
 
 
 end module orbital_operations

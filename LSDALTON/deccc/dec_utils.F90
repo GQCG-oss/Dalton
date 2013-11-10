@@ -3256,6 +3256,8 @@ retval=0
     write(funit) jobs%atom2
     write(funit) jobs%jobsize
     write(funit) jobs%jobsdone
+    write(funit) jobs%dofragopt
+    write(funit) jobs%esti
 
     ! MPI fragment statistics
     write(funit) jobs%nslaves
@@ -3270,8 +3272,9 @@ retval=0
   end subroutine write_fragment_joblist_to_file
 
 
-  !> Read fragment job list from file (includes initialization of job list).
-  !> Also read pair cutoff distance in case that was changed during the original calculation.
+  !> Read fragment job list from file assuming that joblist has already been initialized 
+  !> with the proper dimensions.
+  !> Also read pair cutoff distance.
   !> \author Kasper Kristensen
   !> \date November 2012
   subroutine read_fragment_joblist_from_file(jobs,funit)
@@ -3288,11 +3291,17 @@ retval=0
 
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(funit,njobs)
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file1: Error in number of jobs!',-1)
+       end if
        call read_64bit_to_32bit(funit,njobs,jobs%atom1)
        call read_64bit_to_32bit(funit,njobs,jobs%atom2)
        call read_64bit_to_32bit(funit,njobs,jobs%jobsize)
        call read_64bit_to_32bit(funit,njobs,jobs%jobsdone)
+       call read_64bit_to_32bit(funit,njobs,jobs%dofragopt)
+       call read_64bit_to_32bit(funit,njobs,jobs%esti)
        call read_64bit_to_32bit(funit,njobs,jobs%nslaves)
        call read_64bit_to_32bit(funit,njobs,jobs%nocc)
        call read_64bit_to_32bit(funit,njobs,jobs%nunocc)
@@ -3300,11 +3309,17 @@ retval=0
        call read_64bit_to_32bit(funit,njobs,jobs%ntasks)
     elseif(DECinfo%convert32to64) then
        call read_32bit_to_64bit(funit,njobs)
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file2: Error in number of jobs!',-1)
+       end if
        call read_32bit_to_64bit(funit,njobs,jobs%atom1)
        call read_32bit_to_64bit(funit,njobs,jobs%atom2)
        call read_32bit_to_64bit(funit,njobs,jobs%jobsize)
        call read_32bit_to_64bit(funit,njobs,jobs%jobsdone)
+       call read_32bit_to_64bit(funit,njobs,jobs%dofragopt)
+       call read_32bit_to_64bit(funit,njobs,jobs%esti)
        call read_32bit_to_64bit(funit,njobs,jobs%nslaves)
        call read_32bit_to_64bit(funit,njobs,jobs%nocc)
        call read_32bit_to_64bit(funit,njobs,jobs%nunocc)
@@ -3312,11 +3327,17 @@ retval=0
        call read_32bit_to_64bit(funit,njobs,jobs%ntasks)
     else
        read(funit) njobs
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file3: Error in number of jobs!',-1)
+       end if
        read(funit) jobs%atom1
        read(funit) jobs%atom2
        read(funit) jobs%jobsize
        read(funit) jobs%jobsdone
+       read(funit) jobs%dofragopt
+       read(funit) jobs%esti
 
        read(funit) jobs%nslaves
        read(funit) jobs%nocc
@@ -3328,6 +3349,14 @@ retval=0
     read(funit) jobs%flops
     read(funit) jobs%LMtime
     read(funit) jobs%load
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) 'JOB LIST RESTART'
+    write(DECinfo%output,'(1X,a,i10)') '-- total number of jobs : ', jobs%njobs
+    write(DECinfo%output,'(1X,a,i10)') '-- number of jobs done  : ', count(jobs%jobsdone)
+    write(DECinfo%output,'(1X,a,i10)') '-- number of jobs to do : ', jobs%njobs-count(jobs%jobsdone)
+    write(DECinfo%output,*)
+
 
   end subroutine read_fragment_joblist_from_file
 
@@ -3347,15 +3376,18 @@ retval=0
     jobs%njobs = njobs
 
     ! Set all pointers to be of size njobs and equal to 0
-    nullify(jobs%atom1,jobs%atom2,jobs%jobsize)
     call mem_alloc(jobs%atom1,njobs)
     call mem_alloc(jobs%atom2,njobs)
     call mem_alloc(jobs%jobsize,njobs)
     call mem_alloc(jobs%jobsdone,njobs)
+    call mem_alloc(jobs%dofragopt,njobs)
+    call mem_alloc(jobs%esti,njobs)
     jobs%atom1=0
     jobs%atom2=0
     jobs%jobsize=0
     jobs%jobsdone=.false. ! no jobs are done
+    jobs%dofragopt=.false. 
+    jobs%esti=.false.
 
     ! MPI fragment statistics
     call mem_alloc(jobs%nslaves,njobs)
@@ -3406,6 +3438,16 @@ retval=0
     if(associated(jobs%jobsdone)) then
        call mem_dealloc(jobs%jobsdone)
        nullify(jobs%jobsdone)
+    end if
+
+    if(associated(jobs%dofragopt)) then
+       call mem_dealloc(jobs%dofragopt)
+       nullify(jobs%dofragopt)
+    end if
+
+    if(associated(jobs%esti)) then
+       call mem_dealloc(jobs%esti)
+       nullify(jobs%esti)
     end if
 
     if(associated(jobs%nslaves)) then
@@ -3481,6 +3523,8 @@ retval=0
     jobs%atom2(position) = singlejob%atom2(1)
     jobs%jobsize(position) = singlejob%jobsize(1)
     jobs%jobsdone(position) = singlejob%jobsdone(1)
+    jobs%dofragopt(position) = singlejob%dofragopt(1)
+    jobs%esti(position) = singlejob%esti(1)
     jobs%nslaves(position) = singlejob%nslaves(1)
     jobs%nocc(position) = singlejob%nocc(1)
     jobs%nunocc(position) = singlejob%nunocc(1)
@@ -4290,16 +4334,13 @@ retval=0
     case default
        ! MODIFY FOR NEW MODEL
        ! If you implement new model, please print the fragment energies here,
-       ! see decfrag type def. to determine the number for your model (see FRAGMODEL_* definitions
-       ! in dec_typedef.F90).
+       ! see FRAGMODEL_* definitions in dec_typedef.F90.
        write(DECinfo%output,*) 'WARNING: print_all_fragment_energies needs implementation &
             & for model: ', DECinfo%ccmodel
     end select
 
     ! MODIFY FOR NEW CORRECTION
-    ! E.g. for F12:
     if(DECInfo%F12) then
-
        print *, "(DEC_driver) Total energy for MP2-F12: ", energies(FRAGMODEL_F12)
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a,g20.10)') 'MP2F12-V_gr_term occupied correlation energy : ', energies(FRAGMODEL_F12)

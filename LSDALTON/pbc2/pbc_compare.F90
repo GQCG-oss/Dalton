@@ -212,11 +212,11 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
      ll,latt_cell,refcell,numrealvec,nfdensity,g_2,E_J)
 
    !This is needed to form fck
-  call pbc_comp_nucmom(refcell,nucmom,lmax,nfsze,lupri)
+  call pbc_comp_nucmom(refcell,nucmom,lmax,lupri)
 
   !fixme nucmom 
 !   call lsquit('fixme nucmom no value assigned to this variable',-1)
-   call pbc_fform_fck(ll%tlmax,tlat,ll%lmax,ndim,nfsze,ll,nfdensity,nucmom,&
+   call pbc_fform_fck(ll%tlmax,tlat,ll%lmax,ndim,ll,nfdensity,nucmom,&
                    g_2,E_ff,E_nn,lupri)
 
   CALL pbc_nucpot(lupri,luerr,setting,molecule,ll,&
