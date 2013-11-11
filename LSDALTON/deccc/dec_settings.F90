@@ -117,7 +117,7 @@ contains
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr = 0.0_realk
     DECinfo%PairMP2=.false.
-    DECinfo%PairEstimate=.false.
+    DECinfo%PairEstimate=.true.
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory=0E0_realk
@@ -430,7 +430,7 @@ contains
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
        case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
        case('.PAIRMP2'); DECinfo%PairMP2=.true.
-       case('.PAIRESTIMATE'); DECinfo%PairEstimate=.true.
+       case('.NOTPAIRESTIMATE'); DECinfo%PairEstimate=.false.
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom

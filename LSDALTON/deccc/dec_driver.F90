@@ -1037,6 +1037,8 @@ contains
     real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est
     integer :: natoms,i,j,k
     type(joblist) :: jobs,fragoptjobs,estijobs
+    integer(kind=ls_mpik) :: master
+    master=0
 
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
@@ -1085,6 +1087,9 @@ contains
 #ifdef VAR_MPI
        ! Send estimated fragment information to slaves
        call mpi_bcast_many_fragments(natoms,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)
+
+       ! Send CC models to use for each pair based on estimates (always MP2, but keep it general)
+       call ls_mpibcast(MyMolecule%ccmodel,natoms,natoms,master,MPI_COMM_LSDALTON)
 #endif
 
        ! Get job list for estimated pair fragments
