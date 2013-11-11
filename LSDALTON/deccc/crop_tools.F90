@@ -351,26 +351,28 @@ module crop_tools_module
        !end if
     end if
 
-    if(.not.multiplier_job)then
-      print *
-      print *, '### Starting CC iterations'
-      print *, '### ----------------------'
-      print '(1X,a)',  '###  Iteration     Residual norm          CC energy'
+    if(.not.fj)then
+       if(.not.multiplier_job)then
+         print *
+         print *, '### Starting CC iterations'
+         print *, '### ----------------------'
+         print '(1X,a)',  '###  Iteration     Residual norm          CC energy'
 
-      write(DECinfo%output,*)
-      write(DECinfo%output,*) '### Starting CC iterations'
-      write(DECinfo%output,*) '### ----------------------'
-      write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm          CC energy'
-    else
-      print *
-      print *, '### Starting  Lagrangian iterations'
-      print *, '### -------------------------------'
-      print '(1X,a)',  '###  Iteration     Residual norm'
+         write(DECinfo%output,*)
+         write(DECinfo%output,*) '### Starting CC iterations'
+         write(DECinfo%output,*) '### ----------------------'
+         write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm          CC energy'
+       else
+         print *
+         print *, '### Starting  Lagrangian iterations'
+         print *, '### -------------------------------'
+         print '(1X,a)',  '###  Iteration     Residual norm'
 
-      write(DECinfo%output,*)
-      write(DECinfo%output,*) '### Starting Lagrangian iterations'
-      write(DECinfo%output,*) '### ------------------------------'
-      write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm'
+         write(DECinfo%output,*)
+         write(DECinfo%output,*) '### Starting Lagrangian iterations'
+         write(DECinfo%output,*) '### ------------------------------'
+         write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm'
+       endif
     endif
      
   end subroutine print_ccjob_header
@@ -380,19 +382,22 @@ module crop_tools_module
   !norm = norm of the total residual
   !ce = correlation energy
   !gm = multipliers yes or no?
-  subroutine print_ccjob_iterinfo(it,norm,ce,gm)
+  !fj = fragment job?
+  subroutine print_ccjob_iterinfo(it,norm,ce,gm,fj)
     implicit none
     integer,intent(in)     :: it
     real(realk),intent(in) :: norm,ce
-    logical, intent(in)    :: gm
-    if( gm ) then
-      print '(1X,a,2X,i4,5X,g19.9,4X)',  '### ',it, norm
-      write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X)') &
-         &   '### ',it, norm
-    else
-      print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',it, norm,ce
-      write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
-         &   '### ',it, norm,ce
+    logical, intent(in)    :: gm,fj
+    if( .not. fj )then
+       if( gm ) then
+         print '(1X,a,2X,i4,5X,g19.9,4X)',  '### ',it, norm
+         write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X)') &
+            &   '### ',it, norm
+       else
+         print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)',  '### ',it, norm,ce
+         write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X,g19.9)') &
+            &   '### ',it, norm,ce
+       endif
     endif
     
   end subroutine print_ccjob_iterinfo
@@ -419,44 +424,47 @@ module crop_tools_module
      tnorm = sqrt(snorm+dnorm)
      snorm = sqrt(snorm)
      dnorm = sqrt(dnorm)
-
-     write(DECinfo%output,*)
-     write(DECinfo%output,'(/,a)') '-------------------------------'
-     write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '
-     write(DECinfo%output,'(a,/)') '-------------------------------'
-     if(bi) then
-        if(gm)then
-          write(DECinfo%output,'(a)')     'Yeeehaw! left-transformations converged!'
-        else
-          write(DECinfo%output,'(a)')     'Hooray! CC equation is solved!'
-        endif
-     else
-        write(DECinfo%output,'(a,i4,a)')  'Equation not solved in ', &
-             & DECinfo%ccMaxIter, ' iterations!'
-        call lsquit('CC equation not solved!',DECinfo%output)
-     end if
-     write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total cpu time    = ',tec-tsc,' s'
-     write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total wall time   = ',tew-tsw,' s'
-
-     if(fj) then
-        write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ce
-     else
-        if(gm)then
-          if(DECinfo%use_singles)then
-            write(DECinfo%output,'(a,f16.10)')  'Singles multiplier norm  = ',snorm
+     if( .not. fj )then
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(/,a)') '-------------------------------'
+       write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '
+       write(DECinfo%output,'(a,/)') '-------------------------------'
+       if(bi) then
+          if(gm)then
+            write(DECinfo%output,'(a)')     'Yeeehaw! left-transformations converged!'
+          else
+            write(DECinfo%output,'(a)')     'Hooray! CC equation is solved!'
           endif
-          write(DECinfo%output,'(a,f16.10)')  'Doubles multiplier norm  = ',dnorm
-          write(DECinfo%output,'(a,f16.10)')  'Total multiplier norm    = ',tnorm
-        else
-          if(DECinfo%use_singles)then
-            write(DECinfo%output,'(a,f16.10)')  'Singles amplitudes norm  = ',snorm
+       else
+          write(DECinfo%output,'(a,i4,a)')  'Equation not solved in ', &
+               & DECinfo%ccMaxIter, ' iterations!'
+          call lsquit('CC equation not solved!',DECinfo%output)
+       end if
+       write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total cpu time    = ',tec-tsc,' s'
+       write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total wall time   = ',tew-tsw,' s'
+
+       if(fj) then
+          write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ce
+       else
+          if(gm)then
+            if(DECinfo%use_singles)then
+              write(DECinfo%output,'(a,f16.10)')  'Singles multiplier norm  = ',snorm
+            endif
+            write(DECinfo%output,'(a,f16.10)')  'Doubles multiplier norm  = ',dnorm
+            write(DECinfo%output,'(a,f16.10)')  'Total multiplier norm    = ',tnorm
+          else
+            if(DECinfo%use_singles)then
+              write(DECinfo%output,'(a,f16.10)')  'Singles amplitudes norm  = ',snorm
+            endif
+            write(DECinfo%output,'(a,f16.10)')  'Doubles amplitudes norm  = ',dnorm
+            write(DECinfo%output,'(a,f16.10)')  'Total amplitudes norm    = ',tnorm
+            write(DECinfo%output,'(a,f16.10)')  'Corr. energy             = ',ce
           endif
-          write(DECinfo%output,'(a,f16.10)')  'Doubles amplitudes norm  = ',dnorm
-          write(DECinfo%output,'(a,f16.10)')  'Total amplitudes norm    = ',tnorm
-          write(DECinfo%output,'(a,f16.10)')  'Corr. energy             = ',ce
-        endif
-     end if
-     write(DECinfo%output,'(a,i5)') 'Number of CC iterations  =', li
+       end if
+       write(DECinfo%output,'(a,i5)') 'Number of CC iterations  =', li
+     else
+       print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)', 'converged cc fragment job',li,tnorm,ce
+     endif
   end subroutine print_ccjob_summary
 
   !> \brief: transform ccsd_doubles, ccsdpt_singles and ccsdpt_doubles from canonical to local basis

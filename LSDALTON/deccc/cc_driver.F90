@@ -1880,7 +1880,7 @@ contains
        call flush(DECinfo%output)
 #endif
 
-        call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,.false.)
+        call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,.false.,fragment_job)
 
        last_iter = iter
        if(break_iterations) exit
@@ -2006,8 +2006,10 @@ contains
 #endif
 
 #ifdef MOD_UNRELEASED
-    call array4_print_statistics(DECinfo%output)
-    call array_print_mem_info(DECinfo%output,.true.,.false.)
+    if( .not. fragment_job )then
+      call array4_print_statistics(DECinfo%output)
+      call array_print_mem_info(DECinfo%output,.true.,.false.)
+    endif
 #endif
 
   end subroutine ccsolver_par

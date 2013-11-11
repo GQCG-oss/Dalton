@@ -818,7 +818,7 @@ module cc_debug_routines_module
 
         !Print Iter info
         !---------------
-        call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,get_mult)
+        call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,get_mult,fragment_job)
 
         last_iter = iter
         if(break_iterations) exit
