@@ -121,6 +121,9 @@ contains
           ! Get optimized atomic fragments from master node
           call mem_alloc(EstAtomicFragments,natoms)
           call mpi_bcast_many_fragments(natoms,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)          
+
+          ! Receive CC models to use for each pair based on estimates
+          call ls_mpibcast(MyMolecule%ccmodel,natoms,natoms,master,MPI_COMM_LSDALTON)
        end if
        
 
