@@ -269,6 +269,15 @@ contains
     ! ********************************************************
     call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
          & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
+
+    ! Send CC models to use for all pairs based on estimates
+    if(esti) then
+#ifdef VAR_MPI
+       call ls_mpibcast(MyMolecule%ccmodel,natoms,natoms,master,MPI_COMM_LSDALTON)
+#endif
+    end if
+
+
     ! Done with estimates
     esti=.false.
 
