@@ -249,11 +249,13 @@ SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,is_singular,Ndim)
   !call zgesvd('A','A',Ndim,Ndim,Sk,Ndim,W,Atmp,Ndim,tmp,Ndim,work,lwork,&
   !               rwork,info)
   
+ 
   call mem_dealloc(work)
   call mem_dealloc(rwork)
   
   do i=1,ndim
      j=ndim-i+1
+     write(*,*) 'Eigenvalues of smat', w(i)
      if (i .lt. j) then
        !swap eigenvectors
        Btmp(:,1)=Sk(:,i)
