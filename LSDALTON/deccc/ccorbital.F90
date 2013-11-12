@@ -2335,7 +2335,7 @@ contains
   !> \brief Determine which atoms have one or more orbitals assigned.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine which_atom_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
+  subroutine which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
 
     implicit none
     !> Number of occupied orbitals in full molecule
@@ -2369,7 +2369,7 @@ contains
        end if
     end do
 
-  end subroutine which_atom_have_orbitals_assigned
+  end subroutine which_atoms_have_orbitals_assigned
 
 
 end module orbital_operations
