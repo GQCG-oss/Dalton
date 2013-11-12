@@ -227,7 +227,7 @@ SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,is_singular,Ndim)
   INTEGER :: info,i,j,lwork,lworkd
 
 
- lwork=2*Ndim-1
+ lwork=5*Ndim-1
  lworkd=5*Ndim-1
  is_singular = .false.
  ! lwork=2*Ndim+ndim
@@ -259,6 +259,7 @@ SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,is_singular,Ndim)
   write(*,*)  w
  
   call mem_dealloc(work)
+  call mem_dealloc(workd)
   call mem_dealloc(rwork)
   
   do i=1,ndim
@@ -912,6 +913,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 !
       call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
       call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
+      call pbc_get_kpoint(k,kvec)
 
       if(lattice%store_mats)then
         !get the overlap matrices S^0l
