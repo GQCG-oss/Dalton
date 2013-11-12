@@ -1713,7 +1713,7 @@ contains
   !> \brief Print a simple "ascii-art" plot of the largest pair energies.
   !> \author Kasper Kristensen
   !> \date October 2012
-  subroutine plot_pair_energies(natoms,paircut,FragEnergies,DistanceTable,dofrag)
+  subroutine plot_pair_energies(natoms,paircut,FragEnergies,MyMolecule,dofrag)
 
     implicit none
     !> Number of atoms in molecule
@@ -1722,31 +1722,41 @@ contains
     real(realk),intent(in) :: paircut
     !> Fragment energies 
     real(realk),dimension(natoms,natoms),intent(in) :: FragEnergies
-    !> Distances between atoms
-    real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
+    !> Full molecule structure
+    type(fullmolecule),intent(in) :: MyMolecule
     !> dofrag(P) is true if P has orbitals assigned
     logical,intent(in) :: dofrag(natoms)
     real(realk),pointer :: DistAng(:,:), xpoints(:), ypoints(:), xpoints2(:), ypoints2(:)
     integer :: mindist, maxdist, tmp, distInt,idx,npoints2
     real(realk) :: cutAng,endpoint,ln10
-    integer :: i,j,npoints,k,interval
+    integer :: i,j,npoints,k,interval,npairfrags
     character(len=16) :: xlabel, ylabel
     logical,pointer :: anypoints(:)
 
+    ! Get number of pair fragments in relevant plotting interval
+    npairfrags = get_num_of_pair_fragments(MyMolecule,dofrag,DECinfo%PairMinDist,&
+         & DECinfo%pair_distance_threshold)
+    ! Only relevant to plot at least two points
+    if(npairfrags < 2) return
+
+
     ! Get distance table and pair cut off in Angstrom
     call mem_alloc(DistAng,natoms,natoms)
-    DistAng = bohr_to_angstrom*DistanceTable
+    DistAng = bohr_to_angstrom*MyMolecule%DistanceTable
     cutAng = bohr_to_angstrom*paircut
 
     ! Minimum and maximum pair distances
     mindist=1000
     maxdist=0
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle
-       do j=i+1,natoms
+    iloop: do i=1,natoms
+       if(.not. dofrag(i)) cycle iloop
+       jloop: do j=i+1,natoms
 
-          if(DistAng(i,j) > cutAng) cycle
-          if(.not. dofrag(j)) cycle
+          if(DistAng(i,j) > cutAng) cycle jloop
+          if(.not. dofrag(j)) cycle jloop
+          if(MyMolecule%ccmodel(i,j)==MODEL_NONE) cycle jloop
+
+          
 
           ! Nearest integer smaller than actual pair distance +0.5Angstrom
           ! (this is most appropriate when we consider intervals of 1 Angstrom below,
@@ -1760,8 +1770,8 @@ contains
           ! Max
           if(maxdist < tmp) maxdist = tmp
 
-       end do
-    end do
+       end do jloop
+    end do iloop
 
 
     ! We now consider the following intervals:

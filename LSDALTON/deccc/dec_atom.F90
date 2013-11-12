@@ -5919,9 +5919,9 @@ if(DECinfo%PL>0) then
     real(realk),intent(inout) :: Epair_est
     !> Estimated correlation energy from the pairs that will be skipped in the calculation
     real(realk),intent(inout) :: Eskip_est
-    integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit
+    integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit,Pmax,Qmax
     real(realk),dimension(natoms) :: EPQ
-    real(realk) :: Eacc
+    real(realk) :: Eacc,Epairmax
     integer,dimension(natoms) :: atomindices
 
 
@@ -5967,7 +5967,7 @@ if(DECinfo%PL>0) then
 
     ! Init stuff
     MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model as initialization model
-   
+
 
     ! Loop over all atoms P
     Ploop: do P=1,natoms
@@ -5991,7 +5991,7 @@ if(DECinfo%PL>0) then
        ! **************************************
        Eacc = 0.0_realk
        Qloop2: do Q=natoms,1,-1
-          
+
           ! Skip if no orbitals assigned to atom Q
           Qidx = atomindices(Q)
           if(.not. dofrag(Qidx) .or. Qidx==P) cycle Qloop2
@@ -6048,6 +6048,9 @@ if(DECinfo%PL>0) then
     NCC=0
     NMP2=0
     Nskip=0
+    Epairmax=0.0_realk
+    Pmax=0
+    Qmax=0
     do P=1,natoms
        if(.not. dofrag(P)) cycle
        do Q=1,P-1
@@ -6059,8 +6062,26 @@ if(DECinfo%PL>0) then
           elseif(MyMolecule%ccmodel(P,Q)==MODEL_NONE) then
              Nskip=Nskip+1
           end if
+
+          ! Find max pair energy and associated indices (for sanity check below)
+          if(Epairmax < abs(FragEnergies(P,Q))) then
+             Epairmax = abs(FragEnergies(P,Q))
+             Pmax=P
+             Qmax=Q
+          end if
+
        end do
     end do
+
+    ! Sanity check to avoid empty job list --> Always have at least one pair
+    ! (only relevant for debug molecules)
+    if(NCC+NMP2==0) then
+       ! Simply calculate the pair with the largest (absolute) estimated energy
+       MyMolecule%ccmodel(Pmax,Qmax) = DECinfo%ccmodel
+       MyMolecule%ccmodel(Qmax,Pmax) = DECinfo%ccmodel
+       NCC=1
+       Nskip = Nskip-1
+    end if
 
     ! Estimate correlation energy by adding all estimated atomic and pair fragment energy contributions
     call add_dec_energies(natoms,FragEnergies,dofrag,Epair_est)
