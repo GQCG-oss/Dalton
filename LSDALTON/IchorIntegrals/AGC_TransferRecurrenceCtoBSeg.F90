@@ -26,7 +26,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
   DO iPassQ = 1,nPasses
-   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+   DO iTUVQ=1,  4
+    DO iTUVP=1,  4
+     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    Xcd = Qdistance12(1,iPassQ)
    Ycd = Qdistance12(2,iPassQ)
    Zcd = Qdistance12(3,iPassQ)
@@ -110,7 +114,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
   DO iPassQ = 1,nPasses
-   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+   DO iTUVQ=1, 10
+    DO iTUVP=1,  4
+     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    Xcd = Qdistance12(1,iPassQ)
    Ycd = Qdistance12(2,iPassQ)
    Zcd = Qdistance12(3,iPassQ)
@@ -221,7 +229,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
   DO iPassQ = 1,nPasses
-   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+   DO iTUVQ=1, 20
+    DO iTUVP=1,  4
+     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    Xcd = Qdistance12(1,iPassQ)
    Ycd = Qdistance12(2,iPassQ)
    Zcd = Qdistance12(3,iPassQ)
@@ -381,7 +393,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
   DO iPassQ = 1,nPasses
-   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+   DO iTUVQ=1, 10
+    DO iTUVP=1, 10
+     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    Xcd = Qdistance12(1,iPassQ)
    Ycd = Qdistance12(2,iPassQ)
    Zcd = Qdistance12(3,iPassQ)
@@ -673,7 +689,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
   DO iPassQ = 1,nPasses
-   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+   DO iTUVQ=1, 35
+    DO iTUVP=1,  4
+     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    Xcd = Qdistance12(1,iPassQ)
    Ycd = Qdistance12(2,iPassQ)
    Zcd = Qdistance12(3,iPassQ)
@@ -788,7 +808,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
   DO iPassQ = 1,nPasses
-   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+   DO iTUVQ=1, 20
+    DO iTUVP=1, 10
+     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    Xcd = Qdistance12(1,iPassQ)
    Ycd = Qdistance12(2,iPassQ)
    Zcd = Qdistance12(3,iPassQ)
@@ -1033,7 +1057,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
   DO iPassQ = 1,nPasses
-   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+   DO iTUVQ=1, 35
+    DO iTUVP=1, 10
+     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    Xcd = Qdistance12(1,iPassQ)
    Ycd = Qdistance12(2,iPassQ)
    Zcd = Qdistance12(3,iPassQ)
@@ -1279,7 +1307,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
   DO iPassQ = 1,nPasses
-   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+   DO iTUVQ=1, 20
+    DO iTUVP=1, 20
+     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    Xcd = Qdistance12(1,iPassQ)
    Ycd = Qdistance12(2,iPassQ)
    Zcd = Qdistance12(3,iPassQ)
@@ -1751,7 +1783,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
   DO iPassQ = 1,nPasses
-   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+   DO iTUVQ=1, 35
+    DO iTUVP=1, 20
+     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    Xcd = Qdistance12(1,iPassQ)
    Ycd = Qdistance12(2,iPassQ)
    Zcd = Qdistance12(3,iPassQ)
@@ -2236,7 +2272,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg
   Yab = Pdistance12(2)
   Zab = Pdistance12(3)
   DO iPassQ = 1,nPasses
-   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+   DO iTUVQ=1, 35
+    DO iTUVP=1, 35
+     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    Xcd = Qdistance12(1,iPassQ)
    Ycd = Qdistance12(2,iPassQ)
    Zcd = Qdistance12(3,iPassQ)

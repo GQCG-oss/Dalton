@@ -107,7 +107,7 @@ CONTAINS
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,1,Pdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,1,Pdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -118,9 +118,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
         call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
@@ -129,16 +129,16 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
         call VerticalRecurrenceSeg2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,1,Pdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,1,Pdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -149,9 +149,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,9,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,9,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -160,17 +160,17 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,9,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,9,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
         call VerticalRecurrenceSeg2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,1,Pdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(1,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,1,Pdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(1,nPasses,TMParray1,CDAB     )
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2010)  !Angmom(A= 2,B= 0,C= 1,D= 0) combi
@@ -180,9 +180,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -191,9 +191,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -202,10 +202,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nPasses,TMParray2,CDAB     )
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -213,10 +213,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nPasses,TMParray2,CDAB     )
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
         call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -224,17 +224,17 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(35,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(35,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nPasses,TMParray2,CDAB     )
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
         call VerticalRecurrenceSeg3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,1,Pdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(1,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,1,Pdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(1,nPasses,TMParray1,CDAB     )
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2110)  !Angmom(A= 2,B= 1,C= 1,D= 0) combi
@@ -244,9 +244,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -255,9 +255,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -266,10 +266,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nPasses,TMParray2,CDAB     )
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -277,10 +277,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nPasses,TMParray2,CDAB     )
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
         call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -288,17 +288,17 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(35,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(35,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nPasses,TMParray2,CDAB     )
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
         call VerticalRecurrenceSeg4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,1,Pdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(1,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,1,Pdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(1,nPasses,TMParray1,CDAB     )
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2210)  !Angmom(A= 2,B= 2,C= 1,D= 0) combi
@@ -308,9 +308,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,25,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,25,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -319,9 +319,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,25,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,25,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -330,10 +330,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,25,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(25,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,25,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(25,nPasses,TMParray2,CDAB     )
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
         call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -341,10 +341,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,25,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(25,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,25,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(25,nPasses,TMParray2,CDAB     )
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
         call VerticalRecurrence8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -352,10 +352,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(35,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,25,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(25,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(35,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,25,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(25,nPasses,TMParray2,CDAB     )
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
         call VerticalRecurrenceSeg1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -363,7 +363,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,1,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,1,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
         call VerticalRecurrenceSeg2D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
@@ -372,8 +372,8 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,1,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(1,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,1,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(1,nPasses,TMParray1,CDAB     )
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
         call VerticalRecurrenceSeg1C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -381,7 +381,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,1,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,1,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
         call VerticalRecurrenceSeg2C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
@@ -390,7 +390,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,1,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,1,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
         call VerticalRecurrenceSeg3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
@@ -399,8 +399,8 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,1,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(1,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,1,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(1,nPasses,TMParray1,CDAB     )
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
         call VerticalRecurrenceSeg2C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -408,8 +408,8 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,1,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(1,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,1,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(1,nPasses,TMParray1,CDAB     )
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
         call VerticalRecurrenceSeg3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -417,8 +417,8 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,1,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(1,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,1,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(1,nPasses,TMParray1,CDAB     )
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
         call VerticalRecurrenceSeg4C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -426,14 +426,14 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,1,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(1,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,1,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(1,nPasses,TMParray1,CDAB     )
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
         call VerticalRecurrenceSeg1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,1,Pdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,1,Pdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -444,9 +444,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
         call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
@@ -455,10 +455,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nPasses,TMParray1,CDAB     )
     CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
         call VerticalRecurrence2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -466,9 +466,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
         call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
@@ -477,9 +477,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
         call VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
@@ -488,10 +488,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nPasses,TMParray1,CDAB     )
     CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
         call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -499,10 +499,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nPasses,TMParray1,CDAB     )
     CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
         call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -510,10 +510,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nPasses,TMParray1,CDAB     )
     CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -521,17 +521,17 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nPasses,TMParray1,CDAB     )
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
         call VerticalRecurrenceSeg2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,1,Pdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA0(1,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,1,Pdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(1,nPasses,TMParray1,CDAB     )
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
@@ -541,9 +541,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -552,10 +552,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nPasses,TMParray2,CDAB     )
     CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
         call VerticalRecurrence3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -563,9 +563,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -574,9 +574,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
         call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
@@ -585,10 +585,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nPasses,TMParray2,CDAB     )
     CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -596,10 +596,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nPasses,TMParray2,CDAB     )
     CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -607,10 +607,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nPasses,TMParray2,CDAB     )
     CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
         call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -618,10 +618,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA0(35,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(35,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nPasses,TMParray2,CDAB     )
     CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
         call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -629,9 +629,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
         call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
@@ -640,10 +640,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nPasses,TMParray1,CDAB     )
     CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
         call VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -651,10 +651,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nPasses,TMParray1,CDAB     )
     CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
         call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -662,10 +662,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nPasses,TMParray1,CDAB     )
     CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
         call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -673,10 +673,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nPasses,TMParray1,CDAB     )
     CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -684,10 +684,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nPasses,TMParray1,CDAB     )
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -695,9 +695,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,9,Qdistance12,TMParray1,CDAB     ,lupri)
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,9,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -706,10 +706,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,9,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(9,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,9,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(9,nPasses,TMParray1,CDAB     )
     CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
         call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -717,10 +717,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,9,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(9,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,9,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(9,nPasses,TMParray1,CDAB     )
     CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -728,10 +728,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,9,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(9,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,9,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(9,nPasses,TMParray1,CDAB     )
     CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -739,10 +739,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,9,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(9,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,9,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(9,nPasses,TMParray1,CDAB     )
     CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
         call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -750,17 +750,17 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,9,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(9,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,9,Qdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(9,nPasses,TMParray1,CDAB     )
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
         call VerticalRecurrenceSeg3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,1,Pdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA1(1,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,1,Pdistance12,TMParray2,TMParray1,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(1,nPasses,TMParray1,CDAB     )
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
@@ -770,9 +770,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
         call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -781,10 +781,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nPasses,TMParray2,CDAB     )
     CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -792,9 +792,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
         call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -803,9 +803,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
         call VerticalRecurrence6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -814,10 +814,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nPasses,TMParray2,CDAB     )
     CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
         call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -825,10 +825,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nPasses,TMParray2,CDAB     )
     CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
         call VerticalRecurrence6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -836,10 +836,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nPasses,TMParray2,CDAB     )
     CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
         call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -847,10 +847,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA1(35,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(35,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nPasses,TMParray2,CDAB     )
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -858,9 +858,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -869,10 +869,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nPasses,TMParray2,CDAB     )
     CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
         call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -880,10 +880,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nPasses,TMParray2,CDAB     )
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -891,9 +891,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -902,10 +902,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nPasses,TMParray2,CDAB     )
     CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -913,10 +913,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nPasses,TMParray2,CDAB     )
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -924,9 +924,9 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,25,Qdistance12,TMParray2,CDAB     ,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,25,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -935,10 +935,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,25,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(25,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,25,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(25,nPasses,TMParray2,CDAB     )
     CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
         call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
@@ -946,10 +946,10 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nPasses,TMParray1,TMParray2)
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,25,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(25,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,25,Qdistance12,TMParray1,TMParray2,lupri)
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(25,nPasses,TMParray2,CDAB     )
     CASE DEFAULT
         CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_Seg',-1)
     END SELECT
@@ -970,36 +970,29 @@ CONTAINS
     TMParray1maxSize = 1
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,1)
-       TMParray1maxSize = MAX(TMParray1maxSize,1)
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,4)
-       TMParray1maxSize = MAX(TMParray1maxSize,4)
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,10)
-       TMParray1maxSize = MAX(TMParray1maxSize,10)
-       TMParray2maxSize = MAX(TMParray2maxSize,6)
+       TMParray1maxSize = MAX(TMParray1maxSize,6)
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,4)
-       TMParray1maxSize = MAX(TMParray1maxSize,4)
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,10)
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20)
-       TMParray1maxSize = MAX(TMParray1maxSize,20)
+       TMParray1maxSize = MAX(TMParray1maxSize,18)
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,10)
-       TMParray1maxSize = MAX(TMParray1maxSize,10)
-       TMParray2maxSize = MAX(TMParray2maxSize,6)
+       TMParray1maxSize = MAX(TMParray1maxSize,6)
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20)
-       TMParray1maxSize = MAX(TMParray1maxSize,20)
+       TMParray1maxSize = MAX(TMParray1maxSize,18)
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35)
-       TMParray1maxSize = MAX(TMParray1maxSize,35)
+       TMParray1maxSize = MAX(TMParray1maxSize,36)
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,4)
-       TMParray1maxSize = MAX(TMParray1maxSize,3)
     CASE( 101)  !Angmom(A= 0,B= 1,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,10*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,16)
@@ -1016,10 +1009,12 @@ CONTAINS
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40)
+       TMParray2maxSize = MAX(TMParray2maxSize,30)
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,80)
        TMParray2maxSize = MAX(TMParray2maxSize,60)
+       TMParray1maxSize = MAX(TMParray1maxSize,54)
     CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40)
@@ -1029,14 +1024,15 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,80)
        TMParray2maxSize = MAX(TMParray2maxSize,60)
+       TMParray1maxSize = MAX(TMParray1maxSize,54)
     CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,140)
        TMParray2maxSize = MAX(TMParray2maxSize,105)
+       TMParray1maxSize = MAX(TMParray1maxSize,108)
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,10)
        TMParray1maxSize = MAX(TMParray1maxSize,6)
-       TMParray2maxSize = MAX(TMParray2maxSize,5)
     CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40)
@@ -1057,11 +1053,13 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,100)
        TMParray2maxSize = MAX(TMParray2maxSize,60)
+       TMParray1maxSize = MAX(TMParray1maxSize,50)
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,200)
        TMParray2maxSize = MAX(TMParray2maxSize,120)
        TMParray1maxSize = MAX(TMParray1maxSize,100)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
     CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,100)
@@ -1073,14 +1071,15 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,200)
        TMParray2maxSize = MAX(TMParray2maxSize,120)
        TMParray1maxSize = MAX(TMParray1maxSize,100)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
     CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,84*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,350)
        TMParray2maxSize = MAX(TMParray2maxSize,210)
        TMParray1maxSize = MAX(TMParray1maxSize,175)
+       TMParray2maxSize = MAX(TMParray2maxSize,180)
     CASE(1000)  !Angmom(A= 1,B= 0,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,4)
-       TMParray1maxSize = MAX(TMParray1maxSize,3)
     CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,10*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,16)
@@ -1097,10 +1096,12 @@ CONTAINS
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40)
+       TMParray2maxSize = MAX(TMParray2maxSize,30)
     CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,80)
        TMParray2maxSize = MAX(TMParray2maxSize,60)
+       TMParray1maxSize = MAX(TMParray1maxSize,54)
     CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40)
@@ -1110,77 +1111,102 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,80)
        TMParray2maxSize = MAX(TMParray2maxSize,60)
+       TMParray1maxSize = MAX(TMParray1maxSize,54)
     CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,140)
        TMParray2maxSize = MAX(TMParray2maxSize,105)
+       TMParray1maxSize = MAX(TMParray1maxSize,108)
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,10)
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40)
+       TMParray2maxSize = MAX(TMParray2maxSize,36)
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,100)
-       TMParray2maxSize = MAX(TMParray2maxSize,54)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
+       TMParray1maxSize = MAX(TMParray1maxSize,54)
     CASE(1110)  !Angmom(A= 1,B= 1,C= 1,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40)
+       TMParray2maxSize = MAX(TMParray2maxSize,36)
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,35)
+       TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
+       TMParray1maxSize = MAX(TMParray1maxSize,100)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
     CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,200)
+       TMParray2maxSize = MAX(TMParray2maxSize,180)
+       TMParray1maxSize = MAX(TMParray1maxSize,162)
     CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,100)
-       TMParray2maxSize = MAX(TMParray2maxSize,54)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
+       TMParray1maxSize = MAX(TMParray1maxSize,54)
     CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,200)
+       TMParray2maxSize = MAX(TMParray2maxSize,180)
+       TMParray1maxSize = MAX(TMParray1maxSize,162)
     CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,84*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,350)
+       TMParray2maxSize = MAX(TMParray2maxSize,315)
+       TMParray1maxSize = MAX(TMParray1maxSize,324)
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20)
-       TMParray1maxSize = MAX(TMParray1maxSize,15)
+       TMParray1maxSize = MAX(TMParray1maxSize,18)
     CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,80)
-       TMParray2maxSize = MAX(TMParray2maxSize,60)
+       TMParray2maxSize = MAX(TMParray2maxSize,72)
+       TMParray1maxSize = MAX(TMParray1maxSize,60)
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,200)
-       TMParray2maxSize = MAX(TMParray2maxSize,150)
-       TMParray1maxSize = MAX(TMParray1maxSize,90)
+       TMParray2maxSize = MAX(TMParray2maxSize,180)
+       TMParray1maxSize = MAX(TMParray1maxSize,150)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
     CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,80)
-       TMParray2maxSize = MAX(TMParray2maxSize,60)
+       TMParray2maxSize = MAX(TMParray2maxSize,72)
+       TMParray1maxSize = MAX(TMParray1maxSize,60)
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,200)
+       TMParray2maxSize = MAX(TMParray2maxSize,180)
+       TMParray1maxSize = MAX(TMParray1maxSize,150)
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,84*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,400)
-       TMParray2maxSize = MAX(TMParray2maxSize,300)
+       TMParray2maxSize = MAX(TMParray2maxSize,360)
+       TMParray1maxSize = MAX(TMParray1maxSize,300)
+       TMParray2maxSize = MAX(TMParray2maxSize,270)
     CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,200)
-       TMParray2maxSize = MAX(TMParray2maxSize,150)
-       TMParray1maxSize = MAX(TMParray1maxSize,90)
+       TMParray2maxSize = MAX(TMParray2maxSize,180)
+       TMParray1maxSize = MAX(TMParray1maxSize,150)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
     CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,84*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,400)
-       TMParray2maxSize = MAX(TMParray2maxSize,300)
+       TMParray2maxSize = MAX(TMParray2maxSize,360)
+       TMParray1maxSize = MAX(TMParray1maxSize,300)
+       TMParray2maxSize = MAX(TMParray2maxSize,270)
     CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,120*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,700)
-       TMParray2maxSize = MAX(TMParray2maxSize,525)
+       TMParray2maxSize = MAX(TMParray2maxSize,630)
+       TMParray1maxSize = MAX(TMParray1maxSize,525)
+       TMParray2maxSize = MAX(TMParray2maxSize,540)
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,10)
        TMParray1maxSize = MAX(TMParray1maxSize,6)
-       TMParray2maxSize = MAX(TMParray2maxSize,5)
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40)
@@ -1201,11 +1227,13 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,100)
        TMParray2maxSize = MAX(TMParray2maxSize,60)
+       TMParray1maxSize = MAX(TMParray1maxSize,50)
     CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,200)
        TMParray2maxSize = MAX(TMParray2maxSize,120)
        TMParray1maxSize = MAX(TMParray1maxSize,100)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,100)
@@ -1217,83 +1245,109 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,200)
        TMParray2maxSize = MAX(TMParray2maxSize,120)
        TMParray1maxSize = MAX(TMParray1maxSize,100)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,84*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,350)
        TMParray2maxSize = MAX(TMParray2maxSize,210)
        TMParray1maxSize = MAX(TMParray1maxSize,175)
+       TMParray2maxSize = MAX(TMParray2maxSize,180)
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,20)
-       TMParray1maxSize = MAX(TMParray1maxSize,15)
+       TMParray1maxSize = MAX(TMParray1maxSize,18)
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,80)
-       TMParray2maxSize = MAX(TMParray2maxSize,60)
+       TMParray2maxSize = MAX(TMParray2maxSize,72)
+       TMParray1maxSize = MAX(TMParray1maxSize,60)
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,200)
-       TMParray2maxSize = MAX(TMParray2maxSize,150)
-       TMParray1maxSize = MAX(TMParray1maxSize,90)
+       TMParray2maxSize = MAX(TMParray2maxSize,180)
+       TMParray1maxSize = MAX(TMParray1maxSize,150)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
     CASE(2110)  !Angmom(A= 2,B= 1,C= 1,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,80)
-       TMParray2maxSize = MAX(TMParray2maxSize,60)
+       TMParray2maxSize = MAX(TMParray2maxSize,72)
+       TMParray1maxSize = MAX(TMParray1maxSize,60)
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,200)
+       TMParray2maxSize = MAX(TMParray2maxSize,180)
+       TMParray1maxSize = MAX(TMParray1maxSize,150)
     CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,84*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,400)
-       TMParray2maxSize = MAX(TMParray2maxSize,300)
+       TMParray2maxSize = MAX(TMParray2maxSize,360)
+       TMParray1maxSize = MAX(TMParray1maxSize,300)
+       TMParray2maxSize = MAX(TMParray2maxSize,270)
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,200)
-       TMParray2maxSize = MAX(TMParray2maxSize,150)
-       TMParray1maxSize = MAX(TMParray1maxSize,90)
+       TMParray2maxSize = MAX(TMParray2maxSize,180)
+       TMParray1maxSize = MAX(TMParray1maxSize,150)
+       TMParray2maxSize = MAX(TMParray2maxSize,90)
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,84*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,400)
-       TMParray2maxSize = MAX(TMParray2maxSize,300)
+       TMParray2maxSize = MAX(TMParray2maxSize,360)
+       TMParray1maxSize = MAX(TMParray1maxSize,300)
+       TMParray2maxSize = MAX(TMParray2maxSize,270)
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,120*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,700)
-       TMParray2maxSize = MAX(TMParray2maxSize,525)
+       TMParray2maxSize = MAX(TMParray2maxSize,630)
+       TMParray1maxSize = MAX(TMParray1maxSize,525)
+       TMParray2maxSize = MAX(TMParray2maxSize,540)
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,35)
-       TMParray1maxSize = MAX(TMParray1maxSize,25)
+       TMParray1maxSize = MAX(TMParray1maxSize,36)
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,140)
-       TMParray2maxSize = MAX(TMParray2maxSize,100)
+       TMParray2maxSize = MAX(TMParray2maxSize,144)
+       TMParray1maxSize = MAX(TMParray1maxSize,100)
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,84*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,350)
-       TMParray2maxSize = MAX(TMParray2maxSize,250)
-       TMParray1maxSize = MAX(TMParray1maxSize,150)
+       TMParray2maxSize = MAX(TMParray2maxSize,360)
+       TMParray1maxSize = MAX(TMParray1maxSize,250)
+       TMParray2maxSize = MAX(TMParray2maxSize,150)
     CASE(2210)  !Angmom(A= 2,B= 2,C= 1,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,56*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,140)
-       TMParray2maxSize = MAX(TMParray2maxSize,100)
+       TMParray2maxSize = MAX(TMParray2maxSize,144)
+       TMParray1maxSize = MAX(TMParray1maxSize,100)
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,84*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,350)
+       TMParray2maxSize = MAX(TMParray2maxSize,360)
+       TMParray1maxSize = MAX(TMParray1maxSize,250)
     CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,120*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,700)
-       TMParray2maxSize = MAX(TMParray2maxSize,500)
+       TMParray2maxSize = MAX(TMParray2maxSize,720)
+       TMParray1maxSize = MAX(TMParray1maxSize,500)
+       TMParray2maxSize = MAX(TMParray2maxSize,450)
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,84*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,350)
-       TMParray2maxSize = MAX(TMParray2maxSize,250)
-       TMParray1maxSize = MAX(TMParray1maxSize,150)
+       TMParray2maxSize = MAX(TMParray2maxSize,360)
+       TMParray1maxSize = MAX(TMParray1maxSize,250)
+       TMParray2maxSize = MAX(TMParray2maxSize,150)
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,120*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,700)
-       TMParray2maxSize = MAX(TMParray2maxSize,500)
+       TMParray2maxSize = MAX(TMParray2maxSize,720)
+       TMParray1maxSize = MAX(TMParray1maxSize,500)
+       TMParray2maxSize = MAX(TMParray2maxSize,450)
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
        TMParray2maxSize = MAX(TMParray2maxSize,165*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,1225)
-       TMParray2maxSize = MAX(TMParray2maxSize,875)
+       TMParray2maxSize = MAX(TMParray2maxSize,1260)
+       TMParray1maxSize = MAX(TMParray1maxSize,875)
+       TMParray2maxSize = MAX(TMParray2maxSize,900)
     CASE DEFAULT
         CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_general_size',-1)
     END SELECT

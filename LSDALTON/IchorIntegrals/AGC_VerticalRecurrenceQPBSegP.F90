@@ -42,7 +42,7 @@ subroutine VerticalRecurrenceSegP1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   By = -Bcenter(2)
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     AUXarray(1,iPrimQ,iPassQ)=0.0E0_realk
     AUXarray(2,iPrimQ,iPassQ)=0.0E0_realk
     AUXarray(3,iPrimQ,iPassQ)=0.0E0_realk
@@ -145,7 +145,7 @@ subroutine VerticalRecurrenceSegP2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,   10
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -271,7 +271,7 @@ subroutine VerticalRecurrenceSegP3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,   20
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -425,7 +425,7 @@ subroutine VerticalRecurrenceSegP4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,   35
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -625,7 +625,7 @@ subroutine VerticalRecurrenceSegP5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,   56
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -898,7 +898,7 @@ subroutine VerticalRecurrenceSegP6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,   84
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -1281,7 +1281,7 @@ subroutine VerticalRecurrenceSegP7B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,  120
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -1823,7 +1823,7 @@ subroutine VerticalRecurrenceSegP8B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,  165
      AUXarray(iTUV,iP)=0.0E0_realk

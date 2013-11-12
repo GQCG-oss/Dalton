@@ -31,7 +31,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ
    Zcd = Qdistance12(3,iPassQ)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
-    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+    DO iTUVQ=1,  4
+     DO iTUVP=1,  4
+      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+     ENDDO
+    ENDDO
     expP = Pexp(iPrimP)
     invexpP = D1/Pexp(iPrimP)
     inv2expP = D05*invexpP
@@ -115,7 +119,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ
    Zcd = Qdistance12(3,iPassQ)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
-    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+    DO iTUVQ=1, 10
+     DO iTUVP=1,  4
+      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+     ENDDO
+    ENDDO
     expP = Pexp(iPrimP)
     invexpP = D1/Pexp(iPrimP)
     inv2expP = D05*invexpP
@@ -226,7 +234,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ
    Zcd = Qdistance12(3,iPassQ)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
-    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+    DO iTUVQ=1, 20
+     DO iTUVP=1,  4
+      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+     ENDDO
+    ENDDO
     expP = Pexp(iPrimP)
     invexpP = D1/Pexp(iPrimP)
     inv2expP = D05*invexpP
@@ -386,7 +398,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ
    Zcd = Qdistance12(3,iPassQ)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
-    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+    DO iTUVQ=1, 10
+     DO iTUVP=1, 10
+      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+     ENDDO
+    ENDDO
     expP = Pexp(iPrimP)
     invexpP = D1/Pexp(iPrimP)
     inv2expP = D05*invexpP
@@ -678,7 +694,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ
    Zcd = Qdistance12(3,iPassQ)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
-    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+    DO iTUVQ=1, 35
+     DO iTUVP=1,  4
+      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+     ENDDO
+    ENDDO
     expP = Pexp(iPrimP)
     invexpP = D1/Pexp(iPrimP)
     inv2expP = D05*invexpP
@@ -793,7 +813,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ
    Zcd = Qdistance12(3,iPassQ)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
-    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+    DO iTUVQ=1, 20
+     DO iTUVP=1, 10
+      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+     ENDDO
+    ENDDO
     expP = Pexp(iPrimP)
     invexpP = D1/Pexp(iPrimP)
     inv2expP = D05*invexpP
@@ -1038,7 +1062,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ
    Zcd = Qdistance12(3,iPassQ)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
-    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+    DO iTUVQ=1, 35
+     DO iTUVP=1, 10
+      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+     ENDDO
+    ENDDO
     expP = Pexp(iPrimP)
     invexpP = D1/Pexp(iPrimP)
     inv2expP = D05*invexpP
@@ -1284,7 +1312,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ
    Zcd = Qdistance12(3,iPassQ)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
-    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+    DO iTUVQ=1, 20
+     DO iTUVP=1, 20
+      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+     ENDDO
+    ENDDO
     expP = Pexp(iPrimP)
     invexpP = D1/Pexp(iPrimP)
     inv2expP = D05*invexpP
@@ -1756,7 +1788,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ
    Zcd = Qdistance12(3,iPassQ)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
-    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+    DO iTUVQ=1, 35
+     DO iTUVP=1, 20
+      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+     ENDDO
+    ENDDO
     expP = Pexp(iPrimP)
     invexpP = D1/Pexp(iPrimP)
     inv2expP = D05*invexpP
@@ -2241,7 +2277,11 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ
    Zcd = Qdistance12(3,iPassQ)
    IP = (iPassQ-1)*nPrimQ*nPrimP
    DO iPrimP=1, nPrimP
-    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+    DO iTUVQ=1, 35
+     DO iTUVP=1, 35
+      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk
+     ENDDO
+    ENDDO
     expP = Pexp(iPrimP)
     invexpP = D1/Pexp(iPrimP)
     inv2expP = D05*invexpP

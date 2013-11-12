@@ -370,11 +370,19 @@ CONTAINS
                 WRITE(LUFILE,'(A)')'  Zab = Pdistance12(3)'
                 WRITE(LUFILE,'(A)')'  DO iPassQ = 1,nPasses'
                 IF(Seg)THEN
-                   WRITE(LUFILE,'(A)')'   Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk'
+                   WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                   WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                      WRITE(LUFILE,'(A)')'     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk'
+                      WRITE(LUFILE,'(A)')'    ENDDO'
+                      WRITE(LUFILE,'(A)')'   ENDDO'
                 ENDIF
                 IF(SegP)THEN
-                   WRITE(LUFILE,'(A)')'   DO iPrimP = 1,nPrimP'
-                   WRITE(LUFILE,'(A)')'    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk'
+                   WRITE(LUFILE,'(A)')'   DO iPrimQ = 1,nPrimQ'
+                   WRITE(LUFILE,'(A,I3)')'    DO iTUVQ=1,',nTUVQ
+                   WRITE(LUFILE,'(A,I3)')'     DO iTUVP=1,',nTUVP
+                   WRITE(LUFILE,'(A)')'      Aux2(iTUVP,iTUVQ,iPrimQ,iPassQ) = 0.0E0_realk'
+                   WRITE(LUFILE,'(A)')'     ENDDO'
+                   WRITE(LUFILE,'(A)')'    ENDDO'
                    WRITE(LUFILE,'(A)')'   ENDDO'
                 ENDIF                   
                 WRITE(LUFILE,'(A)')'   Xcd = Qdistance12(1,iPassQ)'
@@ -388,7 +396,11 @@ CONTAINS
                    WRITE(LUFILE,'(A)')'   iPrimP=1'
                 ENDIF
                 IF(SegQ)THEN
-                   WRITE(LUFILE,'(A)')'    Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk'
+                   WRITE(LUFILE,'(A,I3)')'    DO iTUVQ=1,',nTUVQ
+                   WRITE(LUFILE,'(A,I3)')'     DO iTUVP=1,',nTUVP
+                      WRITE(LUFILE,'(A)')'      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk'
+                      WRITE(LUFILE,'(A)')'     ENDDO'
+                      WRITE(LUFILE,'(A)')'    ENDDO'
                 ENDIF
                 WRITE(LUFILE,'(A)')'    expP = Pexp(iPrimP)'
                 IF(.NOT.Seg1Prim)THEN
@@ -397,16 +409,30 @@ CONTAINS
                    WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(1)'
                 ENDIF
                 WRITE(LUFILE,'(A)')'    inv2expP = D05*invexpP'
-                IF(.NOT.Seg1Prim)THEN
-                   WRITE(LUFILE,'(A,A)')'    ',ToPrimLabel
-                   !          WRITE(LUFILE,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'          
-                   WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Xab'
-                   WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Yab'
-                   WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Zab'
-                ELSE
-                   WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = -',ToExpLabel,'exp(1)*Xab'
-                   WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = -',ToExpLabel,'exp(1)*Yab'
-                   WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = -',ToExpLabel,'exp(1)*Zab'
+                IF(ToExpLabel.EQ.'A')THEN
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A,A)')'    ',ToPrimLabel
+                      !          WRITE(LUFILE,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'          
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Xab'
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Yab'
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Zab'
+                   ELSE
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = -',ToExpLabel,'exp(1)*Xab'
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = -',ToExpLabel,'exp(1)*Yab'
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = -',ToExpLabel,'exp(1)*Zab'
+                   ENDIF
+                ELSE !B
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A,A)')'    ',ToPrimLabel
+                      !          WRITE(LUFILE,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'          
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Xab'
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Yab'
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Zab'
+                   ELSE
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = ',ToExpLabel,'exp(1)*Xab'
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = ',ToExpLabel,'exp(1)*Yab'
+                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = ',ToExpLabel,'exp(1)*Zab'
+                   ENDIF
                 ENDIF
                 !          WRITE(LUFILE,'(A)')'    expBX = Bexp(iPrimB)*Zab'
                 !          WRITE(LUFILE,'(A)')'    expBY = Bexp(iPrimB)*Zab'

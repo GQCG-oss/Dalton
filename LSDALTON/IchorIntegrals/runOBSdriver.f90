@@ -819,6 +819,7 @@ PROGRAM TUV
   WRITE(LUMOD4,'(A)')'       tmpA(iPrimB) = tmp'
   WRITE(LUMOD4,'(A)')'      enddo'
   WRITE(LUMOD4,'(A)')'      do iContB=1,nContB'
+  WRITE(LUMOD4,'(A)')'       tmp = 0.0E0_realk'
   WRITE(LUMOD4,'(A)')'       do iPrimB=1,nPrimB'
   WRITE(LUMOD4,'(A)')'        tmp = tmp + BCC(iPrimB,iContB)*tmpA(iPrimB)'
   WRITE(LUMOD4,'(A)')'       enddo'
@@ -1129,8 +1130,8 @@ PROGRAM TUV
          WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContQ'
          WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimC,nContC,nPrimD,nContD'
          WRITE(LUMOD5,'(A)')'    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
-         WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimQ,nPrimP,nPasses)'
-         WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContQ,nPasses)'
+         WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimC,nPrimD,nPasses)'
+         WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContC,nContD,nPasses)'
          WRITE(LUMOD5,'(A)')'    !'
          WRITE(LUMOD5,'(A)')'    integer :: iPassQ,iContC,iContD,iPrimC,iPrimD,iTUV'
          WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: TMPArray(',nTUVP*nTUVQ,')'
@@ -1162,7 +1163,7 @@ PROGRAM TUV
          WRITE(LUMOD5,'(A)')'        enddo'
          WRITE(LUMOD5,'(A)')'       enddo'
          WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD5,'(A)')'        AUXarrayCont(iContC,iContD,iPassQ) = tmparray(iTUV)'
+         WRITE(LUMOD5,'(A)')'        AUXarrayCont(iTUV,iContC,iContD,iPassQ) = tmparray(iTUV)'
          WRITE(LUMOD5,'(A)')'       enddo'
          WRITE(LUMOD5,'(A)')'      enddo'
          WRITE(LUMOD5,'(A)')'     enddo'
@@ -1927,6 +1928,10 @@ contains
              STOP 'SegPPrimCont'
           ENDIF          
           WRITE(LUMOD3,'(A)')'              & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD)'
+          !swap 
+          TMPSTRING = STRINGIN
+          STRINGIN  = STRINGOUT
+          STRINGOUT  = TMPSTRING
        ELSEIF(SegQ)THEN
           IF(nTUVQ*nTUVP.LT.10)THEN       
              WRITE(LUMOD3,'(A,I1,A,A,A,A,A)')'         call PrimitiveContractionSegQ',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
@@ -1940,6 +1945,10 @@ contains
              STOP 'SegQPrimCont'
           ENDIF          
           WRITE(LUMOD3,'(A)')'              & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB)'
+          !swap 
+          TMPSTRING = STRINGIN
+          STRINGIN  = STRINGOUT
+          STRINGOUT  = TMPSTRING
        ELSE
           WRITE(LUMOD3,'(A)')'        !Primitive Contraction have already been done'
        ENDIF
@@ -1957,13 +1966,12 @@ contains
        ENDIF
        WRITE(LUMOD3,'(A)')'              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&'
        WRITE(LUMOD3,'(A)')'              & nContC,nPrimD,nContD)'
+       !swap 
+       TMPSTRING = STRINGIN
+       STRINGIN  = STRINGOUT
+       STRINGOUT  = TMPSTRING
     ENDIF
     !    WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-
-    !swap 
-    TMPSTRING = STRINGIN
-    STRINGIN  = STRINGOUT
-    STRINGOUT  = TMPSTRING
 
     !================= DONE WITH PRIMITIVE CONTRACTION ================================================================
 
@@ -2022,6 +2030,10 @@ contains
        call AddToString(SPEC)
        IF(Gen)THEN
           call AddToString('(nContQP*nPasses,')
+       ELSEIF(SegQ)THEN
+          call AddToString('(nContP*nPasses,')
+       ELSEIF(SegP)THEN
+          call AddToString('(nContQ*nPasses,')
        ELSE
           call AddToString('(nPasses,')
        ENDIF
@@ -2109,6 +2121,10 @@ contains
        call AddToString(nTUVQ)
        IF(Gen)THEN
           call AddToString(',nContQP*nPasses,')
+       ELSEIF(SegP)THEN
+          call AddToString(',nContQ*nPasses,')
+       ELSEIF(SegQ)THEN
+          call AddToString(',nContP*nPasses,')
        ELSE
           call AddToString(',nPasses,')
        ENDIF
@@ -2192,6 +2208,10 @@ contains
        call AddToString(SPEC)
        IF(Gen)THEN
           call AddToString('(nContQP,nPasses,')
+       ELSEIF(SegP)THEN
+          call AddToString('(nContQ,nPasses,')
+       ELSEIF(SegQ)THEN
+          call AddToString('(nContP,nPasses,')
        ELSE
           call AddToString('(1,nPasses,')
        ENDIF
@@ -2271,6 +2291,10 @@ contains
        call AddToString(nlmA*nlmB)
        IF(Gen)THEN
           call AddToString(',nContQP*nPasses,')
+       ELSEIF(SegQ)THEN
+          call AddToString(',nContP*nPasses,')
+       ELSEIF(SegP)THEN
+          call AddToString(',nContQ*nPasses,')
        ELSE
           call AddToString(',nPasses,')
        ENDIF
@@ -2373,22 +2397,24 @@ contains
     PerformSphericaQAndPlaceInTmp = .FALSE. !always false as placed in CDAB 
     IF(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
        !RHS Spherical Transformation placed in CDAB
-       IF(AngmomC.EQ.0.OR.AngmomD.EQ.0)THEN
+       IF(AngmomC.EQ.0.AND.AngmomD.EQ.0)THEN
+          !no RHS Horizontal Recurrence Relation
+          PerformHorizontQAndPlaceInTmp = .FALSE. 
+       ELSE
           !RHS Horizontal Recurrence Relation
           PerformHorizontQAndPlaceInTmp = .TRUE. 
-       ELSE
-          PerformHorizontQAndPlaceInTmp = .FALSE. 
        ENDIF
        IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
           PerformSphericaPAndPlaceInTmp = .TRUE. 
        ELSE
           PerformSphericaPAndPlaceInTmp = .FALSE. 
        ENDIF
-       IF(AngmomA.EQ.0.OR.AngmomB.EQ.0)THEN
+       IF(AngmomA.EQ.0.AND.AngmomB.EQ.0)THEN
+          !no LHS Horizontal Recurrence Relation
+          PerformHorizontPAndPlaceInTmp = .FALSE. 
+       ELSE
           !LHS Horizontal Recurrence Relation
           PerformHorizontPAndPlaceInTmp = .TRUE. 
-       ELSE
-          PerformHorizontPAndPlaceInTmp = .FALSE. 
        ENDIF
        IF(Seg.OR.Seg1Prim)THEN
           PerformBasisContAndPlaceInTmp = .FALSE. 
@@ -2403,18 +2429,18 @@ contains
        PerformVerticalAndPlaceInTmp = .TRUE. 
     ELSE
        PerformHorizontQAndPlaceInTmp = .FALSE.        
-       IF(AngmomC.EQ.0.OR.AngmomD.EQ.0)THEN
+       IF(.NOT.(AngmomC.EQ.0.AND.AngmomD.EQ.0))THEN
           !RHS Horizontal Recurrence Relation place in CDAB
           IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
              PerformSphericaPAndPlaceInTmp = .TRUE. 
           ELSE
              PerformSphericaPAndPlaceInTmp = .FALSE. 
           ENDIF
-          IF(AngmomA.EQ.0.OR.AngmomB.EQ.0)THEN
+          IF(AngmomA.EQ.0.AND.AngmomB.EQ.0)THEN
+             PerformHorizontPAndPlaceInTmp = .FALSE. 
+          ELSE
              !LHS Horizontal Recurrence Relation
              PerformHorizontPAndPlaceInTmp = .TRUE. 
-          ELSE
-             PerformHorizontPAndPlaceInTmp = .FALSE. 
           ENDIF
           IF(Seg.OR.Seg1Prim)THEN
              PerformBasisContAndPlaceInTmp = .FALSE. 
@@ -2431,11 +2457,11 @@ contains
           PerformSphericaPAndPlaceInTmp = .FALSE. 
           IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
              !LHS Spherical Transformation placed in CDAB
-             IF(AngmomA.EQ.0.OR.AngmomB.EQ.0)THEN
+             IF(AngmomA.EQ.0.AND.AngmomB.EQ.0)THEN
+                PerformHorizontPAndPlaceInTmp = .FALSE. 
+             ELSE
                 !LHS Horizontal Recurrence Relation
                 PerformHorizontPAndPlaceInTmp = .TRUE. 
-             ELSE
-                PerformHorizontPAndPlaceInTmp = .FALSE. 
              ENDIF
              IF(Seg.OR.Seg1Prim)THEN
                 PerformBasisContAndPlaceInTmp = .FALSE. 
@@ -2450,7 +2476,7 @@ contains
              PerformVerticalAndPlaceInTmp = .TRUE.             
           ELSE
              PerformHorizontPAndPlaceInTmp = .FALSE. 
-             IF(AngmomA.EQ.0.OR.AngmomB.EQ.0)THEN
+             IF(.NOT.(AngmomA.EQ.0.AND.AngmomB.EQ.0))THEN
                 !LHS Horizontal Recurrence Relation placed in CDAB
                 IF(Seg.OR.Seg1Prim)THEN
                    PerformBasisContAndPlaceInTmp = .FALSE. 
@@ -2489,6 +2515,7 @@ contains
     ENDIF
 
     IF(PerformVerticalAndPlaceInTmp)THEN
+!       WRITE(LUMOD3,'(A)')'       ! Vertical Recurrence'
        call initString(7)
        call AddToString(STRINGOUT)
        call AddToString('maxSize = MAX(')
@@ -2517,6 +2544,7 @@ contains
        STRINGOUT  = TMPSTRING
     ENDIF
     IF(PerformTranserAndPlaceInTmp)THEN
+!       WRITE(LUMOD3,'(A)')'       ! Transfer Recurrence'
        call initString(7)
        call AddToString(STRINGOUT)
        call AddToString('maxSize = MAX(')
@@ -2541,6 +2569,7 @@ contains
        STRINGOUT  = TMPSTRING
     ENDIF
     IF(PerformBasisContAndPlaceInTmp)THEN
+!       WRITE(LUMOD3,'(A)')'       ! BasisCont Recurrence'
        call initString(7)
        call AddToString(STRINGOUT)
        call AddToString('maxSize = MAX(')
@@ -2563,6 +2592,7 @@ contains
        STRINGOUT  = TMPSTRING
     ENDIF
     IF(PerformHorizontPAndPlaceInTmp)THEN
+!       WRITE(LUMOD3,'(A)')'       ! Horizontal LHS Recurrence'
        call initString(7)
        call AddToString(STRINGOUT)
        call AddToString('maxSize = MAX(')
@@ -2585,6 +2615,7 @@ contains
        STRINGOUT  = TMPSTRING       
     ENDIF
     IF(PerformSphericaPAndPlaceInTmp)THEN
+!       WRITE(LUMOD3,'(A)')'       ! Spherical LHS'
        call initString(7)
        call AddToString(STRINGOUT)
        call AddToString('maxSize = MAX(')
@@ -2607,6 +2638,7 @@ contains
        STRINGOUT  = TMPSTRING
     ENDIF
     IF(PerformHorizontQAndPlaceInTmp)THEN
+!       WRITE(LUMOD3,'(A)')'       ! Horizontal RHS Recurrence'
        call initString(7)
        call AddToString(STRINGOUT)
        call AddToString('maxSize = MAX(')

@@ -21,7 +21,7 @@ CONTAINS
     integer :: LUMODC1,LUMODC2,LUMODC3,LUMODC4,LUMODC5
     integer :: LUMODD1,LUMODD2,LUMODD3,LUMODD4,LUMODD5
     integer :: non1Prim(16),pure1Prim(4),ia,ib,ic,id
-    logical :: Gen,SegQ,SegP,Seg
+    logical :: Gen,SegQ,SegP,Seg,Seg1Prim
 
     LUMODA1=1; LUMODA2=2; LUMODA3=3; LUMODA4=4; LUMODA5=5
     LUMODB1=6; LUMODB2=7; LUMODB3=8; LUMODB4=9; LUMODB5=10
@@ -156,7 +156,7 @@ CONTAINS
        !seg
        WRITE(LUMODA4,'(A)')'   AUXarray(iPassQ)=0.0E0_realk'
        !segP
-       WRITE(LUMODA3,'(A)')'   DO iPrimQ=1, nPrimP'
+       WRITE(LUMODA3,'(A)')'   DO iPrimQ=1, nPrimQ'
        WRITE(LUMODA3,'(A)')'    AUXarray(iPrimQ,iPassQ)=0.0E0_realk'
        WRITE(LUMODA3,'(A)')'   ENDDO'
     do IA=1,4
@@ -448,7 +448,7 @@ CONTAINS
     enddo
     !segP
     do I=3,18,5
-       WRITE(I,'(A)')'   DO iPrimQ=1, nPrimP'
+       WRITE(I,'(A)')'   DO iPrimQ=1, nPrimQ'
        WRITE(I,'(A)')'    AUXarray(1,iPrimQ,iPassQ)=0.0E0_realk'
        WRITE(I,'(A)')'    AUXarray(2,iPrimQ,iPassQ)=0.0E0_realk'
        WRITE(I,'(A)')'    AUXarray(3,iPrimQ,iPassQ)=0.0E0_realk'
@@ -536,12 +536,21 @@ CONTAINS
        WRITE(I,'(A)')'     Yqc = Qcent(2,iPrimQ,iPassQ) + Cy'
        WRITE(I,'(A)')'     Zqc = Qcent(3,iPrimQ,iPassQ) + Cz'
     enddo
+    I=pure1Prim(3)
+    WRITE(I,'(A)')'     Xqc = Qcent(1,iPassQ) + Cx'
+    WRITE(I,'(A)')'     Yqc = Qcent(2,iPassQ) + Cy'
+    WRITE(I,'(A)')'     Zqc = Qcent(3,iPassQ) + Cz'
     do J=13,16
        I=non1Prim(J)
        WRITE(I,'(A)')'     Xqd = Qcent(1,iPrimQ,iPassQ) + Dx'
        WRITE(I,'(A)')'     Yqd = Qcent(2,iPrimQ,iPassQ) + Dy'
        WRITE(I,'(A)')'     Zqd = Qcent(3,iPrimQ,iPassQ) + Dz'
     enddo
+    I=pure1Prim(4)
+    WRITE(I,'(A)')'     Xqd = Qcent(1,iPassQ) + Dx'
+    WRITE(I,'(A)')'     Yqd = Qcent(2,iPassQ) + Dy'
+    WRITE(I,'(A)')'     Zqd = Qcent(3,iPassQ) + Dz'
+    
     do J=1,8
        I=non1Prim(J)
        WRITE(I,'(A)')'     alphaP = reducedExponents(iPrimQ,iPrimP)*invexpP'    
@@ -983,7 +992,7 @@ CONTAINS
        !segP
        do I=3,18,5
           WRITE(I,'(A)')'   iP = (iPassQ-1)*nPrimQ'
-          WRITE(I,'(A)')'   DO iPrimQ=1, nPrimP'
+          WRITE(I,'(A)')'   DO iPrimQ=1, nPrimQ'
           WRITE(I,'(A)')'    iP = iP + 1'
           WRITE(I,'(A,i5)')'    DO iTUV=1,',nTUV
           WRITE(I,'(A)')'     AUXarray(iTUV,iP)=0.0E0_realk'
@@ -1111,12 +1120,20 @@ CONTAINS
           WRITE(I,'(A)')'     Yqc = Qcent(2,iPrimQ,iPassQ) + Cy'
           WRITE(I,'(A)')'     Zqc = Qcent(3,iPrimQ,iPassQ) + Cz'
        enddo
+       I=pure1Prim(3)
+       WRITE(I,'(A)')'     Xqc = Qcent(1,iPassQ) + Cx'
+       WRITE(I,'(A)')'     Yqc = Qcent(2,iPassQ) + Cy'
+       WRITE(I,'(A)')'     Zqc = Qcent(3,iPassQ) + Cz'       
        do J=13,16
           I=non1Prim(J)
           WRITE(I,'(A)')'     Xqd = Qcent(1,iPrimQ,iPassQ) + Dx'
           WRITE(I,'(A)')'     Yqd = Qcent(2,iPrimQ,iPassQ) + Dy'
           WRITE(I,'(A)')'     Zqd = Qcent(3,iPrimQ,iPassQ) + Dz'
        enddo
+       I=pure1Prim(4)
+       WRITE(I,'(A)')'     Xqd = Qcent(1,iPassQ) + Dx'
+       WRITE(I,'(A)')'     Yqd = Qcent(2,iPassQ) + Dy'
+       WRITE(I,'(A)')'     Zqd = Qcent(3,iPassQ) + Dz'
        do J=1,8
           I=non1Prim(J)
           WRITE(I,'(A)')'     alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP'    
@@ -1233,12 +1250,12 @@ CONTAINS
           ENDDO
        enddo
        do I=1,20
-          Gen = .FALSE.; SegQ = .FALSE.; SegP = .FALSE.; Seg = .FALSE.;
+          Gen = .FALSE.; SegQ = .FALSE.; SegP = .FALSE.; Seg = .FALSE.; Seg1Prim = .FALSE.
           IF(MOD(I,5).EQ.1)Gen = .TRUE.
           IF(MOD(I,5).EQ.2)SegQ = .TRUE.
           IF(MOD(I,5).EQ.3)SegP = .TRUE.
           IF(MOD(I,5).EQ.4)Seg = .TRUE.
-          IF(MOD(I,5).EQ.0)Seg = .TRUE.
+          IF(MOD(I,5).EQ.0)Seg = .TRUE.;Seg1Prim=.TRUE.
           !Gen,SegQ,SegP,Seg
           allocate(CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
           CREATED  = .FALSE.
@@ -1310,7 +1327,7 @@ CONTAINS
                    ENDDO
                 ENDDO
 
-                call WriteTwoTerms(J,JTMP,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed,I,Gen,SegQ,SegP,Seg)
+                call WriteTwoTerms(J,JTMP,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed,I,Gen,SegQ,SegP,Seg,seg1prim)
 
 
                 DO Tp=JTMP,0,-1       
@@ -1332,13 +1349,13 @@ CONTAINS
                          !only one possible way to construct it
                          IF(TREC)THEN
                             !                      print*,'!A TRECURRENCE iTUV',iTUV
-                            call TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,nTUVprev)
+                            call TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
                          ELSEIF(UREC)THEN
                             !                      print*,'!A URECURRENCE iTUV',iTUV
-                            call URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,nTUVprev)
+                            call URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
                          ELSEIF(VREC)THEN
                             !                      print*,'!A VRECURRENCE iTUV',iTUV
-                            call VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,nTUVprev)
+                            call VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
                          ENDIF
                       ELSE
                          !several ways to construct it
@@ -1354,25 +1371,25 @@ CONTAINS
                             !we chose the one term possibility
                             IF(.NOT.(TREC.AND.TREC2).AND.TREC)THEN
                                !                         print*,'!B TRECURRENCE iTUV',iTUV
-                               CALL TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,nTUVprev)
+                               CALL TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
                             ELSEIF(.NOT.(UREC.AND.UREC2).AND.UREC)THEN
                                !                         print*,'!B URECURRENCE iTUV',iTUV
-                               CALL URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,nTUVprev)
+                               CALL URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
                             ELSEIF(.NOT.(VREC.AND.VREC2).AND.VREC)THEN
                                !                         print*,'!B VRECURRENCE iTUV',iTUV
-                               CALL VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,nTUVprev)
+                               CALL VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
                             ENDIF
                          ELSE
                             !chose one of the possibilities
                             IF(TREC)THEN
                                !                         print*,'!C TRECURRENCE iTUV',iTUV
-                               CALL TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,nTUVprev)
+                               CALL TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
                             ELSEIF(UREC)THEN
                                !                         print*,'!C URECURRENCE iTUV',iTUV
-                               call URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,nTUVprev)
+                               call URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
                             ELSEIF(VREC)THEN
                                !                         print*,'!D VRECURRENCE iTUV',iTUV
-                               call VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,nTUVprev)
+                               call VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
                             ENDIF
                          ENDIF
                       ENDIF
@@ -1489,11 +1506,11 @@ ENDDO
 end subroutine TwoTerms1
 
 subroutine WriteTwoTerms(J1,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,&
-     & TwoTermTUVLIST,JTMP,TwoTermsUsed,LUPRI,Gen,SegQ,SegP,Seg)
+     & TwoTermTUVLIST,JTMP,TwoTermsUsed,LUPRI,Gen,SegQ,SegP,Seg,seg1prim)
 implicit none
 integer :: Tp,Up,Vp,J,ituvP,TM1,ituvP2,ituvP3,JMAX,ituvp0,ituvp1,JTMP,I,J1
 integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
-logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg
+logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg,seg1prim
 integer :: nTUVLIST,nTUVLISTactual,LUPRI
 integer :: TwoTermTUVLIST(nTUVLIST)
 logical :: Unique,TREC,UREC,VREC,TwoTermsUsed(nTUVLIST)
@@ -1677,11 +1694,11 @@ ENDIF
 
 end subroutine VRECURRENCETWOTERMS
 
-subroutine TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+subroutine TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
 implicit none
 integer :: Tp,Up,Vp,J,ituvP,TM1,ituvP2,ituvP3,JMAX,ituvp0,ituvp1,I,iTwoTerms,lupri,nTUVprev
 integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
-logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg
+logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg,seg1prim
 integer :: nTUVLIST,nTUVLISTactual,JTMP,TM2
 integer :: TwoTermTUVLIST(nTUVLIST)
 character(len=3) :: DIRECTIONSTRING
@@ -1706,25 +1723,25 @@ IF(TM2.GE.0)THEN
 ENDIF
 IF(lupri.LT.6)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Xpa','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Xpa','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
 ELSEIF(lupri.LT.11)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Xpb','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Xpb','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
 ELSEIF(lupri.LT.16)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Xqc','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Xqc','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
 ELSEIF(lupri.LT.21)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Xqd','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Xqd','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
 ENDIF
 end subroutine TRECURRENCE
 
 
-subroutine URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+subroutine URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
 implicit none
 integer :: Tp,Up,Vp,J,ituvP,TM1,ituvP2,ituvP3,JMAX,ituvp0,ituvp1,I,iTwoTerms,lupri,nTUVprev
 integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
-logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg
+logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg,seg1prim
 integer :: nTUVLIST,nTUVLISTactual,JTMP,TM2
 integer :: TwoTermTUVLIST(nTUVLIST)
 
@@ -1746,24 +1763,24 @@ IF(TM2.GE.0)THEN
 ENDIF
 IF(lupri.LT.6)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Ypa','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Ypa','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
 ELSEIF(lupri.LT.11)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Ypb','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Ypb','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
 ELSEIF(lupri.LT.16)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Yqc','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Yqc','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
 ELSEIF(lupri.LT.21)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Yqd','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Yqd','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
 ENDIF
 end subroutine URECURRENCE
 
-subroutine VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+subroutine VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
 implicit none
 integer :: Tp,Up,Vp,J,ituvP,TM1,ituvP2,ituvP3,JMAX,ituvp0,ituvp1,I,iTwoTerms,lupri,nTUVprev
 integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
-logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg
+logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg,Seg1Prim
 integer :: nTUVLIST,nTUVLISTactual,JTMP,TM2
 integer :: TwoTermTUVLIST(nTUVLIST)
 
@@ -1785,26 +1802,26 @@ IF(TM2.GE.0)THEN
 ENDIF
 IF(lupri.LT.6)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Zpa','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Zpa','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
 ELSEIF(lupri.LT.11)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Zpb','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Zpb','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
 ELSEIF(lupri.LT.16)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Zqc','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Zqc','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
 ELSEIF(lupri.LT.21)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Zqd','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,nTUVprev)
+        & 'Zqd','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
 ENDIF
 
 end subroutine VRECURRENCE
 
 SUBROUTINE XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
      & DIRECTIONSTRING1,DIRECTIONSTRING2,TM1,TM2,lupri,&
-     & Gen,SegQ,SegP,Seg,nTUVprev)
+     & Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
 implicit none
 integer :: J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,TM1,TM2,lupri,nTUVprev
-logical :: Gen,SegQ,SegP,Seg
+logical :: Gen,SegQ,SegP,Seg,Seg1Prim
 character(len=3) :: DIRECTIONSTRING1 !Xpa
 character(len=8) :: DIRECTIONSTRING2 !alphaXpq
    
@@ -1835,7 +1852,9 @@ IF(J.EQ.1)THEN
          !add loop
          IF(ituvP0.EQ.nTUVprev+1)THEN
             WRITE(lupri,'(A,I5)')'     do iTUV = 1,',nTUVprev
-            IF(Seg)THEN
+            IF(Seg1Prim)THEN
+               WRITE(lupri,'(A)')'      AuxArray(iTUV,IPassQ) = TMPAuxarray(iTUV)'
+            ELSEIF(Seg)THEN
                WRITE(lupri,'(A)')'      AuxArray(iTUV,IPassQ) = AuxArray(iTUV,IPassQ) + TMPAuxarray(iTUV)'
             ELSE !segQ or SegP
                WRITE(lupri,'(A)')'      AuxArray(iTUV,IP) = AuxArray(iTUV,IP) + TMPAuxarray(iTUV)'
@@ -1851,14 +1870,16 @@ IF(J.EQ.1)THEN
             call AddToString(',IP)')
          ENDIF
          call AddToString(' = ')
-         call AddToString('AuxArray(')
-         call AddToString(ituvP0)
-         IF(Seg)THEN
-            call AddToString(',IPassQ)')
-         ELSE !segQ or SegP or Gen
-            call AddToString(',IP)')
+         IF(.NOT.Seg1Prim)THEN
+            call AddToString('AuxArray(')
+            call AddToString(ituvP0)
+            IF(Seg)THEN
+               call AddToString(',IPassQ)')
+            ELSE !segQ or SegP or Gen
+               call AddToString(',IP)')
+            ENDIF
+            call AddToString(' + ')
          ENDIF
-         call AddToString(' + ')
          !      call AddToString('Xpa')
          call AddToString(DIRECTIONSTRING1) !Xpa
          call AddToString('*TMPAuxArray(')

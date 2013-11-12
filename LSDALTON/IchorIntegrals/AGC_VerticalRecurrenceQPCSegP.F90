@@ -44,7 +44,7 @@ subroutine VerticalRecurrenceSegP1C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
      invexpQ(iPrimQ) = D1/Qexp(iPrimQ)
   ENDDO
   DO iPassQ = 1,nPasses
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     AUXarray(1,iPrimQ,iPassQ)=0.0E0_realk
     AUXarray(2,iPrimQ,iPassQ)=0.0E0_realk
     AUXarray(3,iPrimQ,iPassQ)=0.0E0_realk
@@ -152,7 +152,7 @@ subroutine VerticalRecurrenceSegP2C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,   10
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -283,7 +283,7 @@ subroutine VerticalRecurrenceSegP3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,   20
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -442,7 +442,7 @@ subroutine VerticalRecurrenceSegP4C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,   35
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -647,7 +647,7 @@ subroutine VerticalRecurrenceSegP5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,   56
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -925,7 +925,7 @@ subroutine VerticalRecurrenceSegP6C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,   84
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -1313,7 +1313,7 @@ subroutine VerticalRecurrenceSegP7C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,  120
      AUXarray(iTUV,iP)=0.0E0_realk
@@ -1860,7 +1860,7 @@ subroutine VerticalRecurrenceSegP8C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
   DO iPassQ = 1,nPasses
    iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimP
+   DO iPrimQ=1, nPrimQ
     iP = iP + 1
     DO iTUV=1,  165
      AUXarray(iTUV,iP)=0.0E0_realk
