@@ -721,6 +721,7 @@ contains
 !       export 1-/2-particle density matrix to MCSCF format
 !       ---------------------------------------------------
 !
+!#ifdef largeFCInotneeded
         idum = 0
         call memman(idum,idum,'MARK  ',idum,'Xpden1')
         if(i12  > 1) call memman(k_dens2_scratch,nacob**4,'ADDL  ',2,'PVfull')
@@ -758,6 +759,7 @@ contains
         end if
 !
         call memman(kdum ,idum,'FLUSM ',2,'Xpden1')
+!#endif
 
 !       natural orbital occupation numbers
 !       ----------------------------------
@@ -772,7 +774,7 @@ contains
           write(luwrt,'(/a)') ' IPRDEN lowered explicitly in return_Xp_density_matrix '
           iprden = 1
 #endif
-          if(ispnden == 1 .and. mod(lucita_cfg_nr_active_e,2) /= 0)then
+          if(ispnden == 1 .and. lucita_cfg_is_spin_multiplett /= 0)then
             write(luwrt,'(/a)') ' natural orbital occupation numbers for alpha-spin orbitals'
             call lnatorb(work(ksrho1a),nsmob,ntoobs,nacobs,ninobs,                                 &
                          ireost,work(k_scratch1),work(k_scratch2),work(k_scratch3),nacob,          &
