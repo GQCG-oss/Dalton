@@ -2999,8 +2999,10 @@ REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,DUMMY = 0E0_realk,D05=0.5E0_r
 REAL(REALK),parameter :: D8=8E0_realk,D3=3E0_realk,D16=16E0_realk
 REAL(REALK) :: fR,fZ,fRZ,fZZ,fRG,fZG,fGG,fG,B,facW,factorRZ,A,fRR,fRRR,fRRZ,fRRG
 REAL(REALK) :: fRRGX,fRZZ,fZZZ,gradA,gradB,gradAB,C
-INTEGER     :: I,J,nred,nbmat,IPNT,W1,W2,W3,W4,W7,W8,W5,W6
+INTEGER     :: I,J,nred,nbmat,IPNT,W1,W2,W3,W4,W7,W8,W5,W6,X,Y,Z,XY,XYZ
 logical :: DOCALC
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(35,1)
+REAL(realk) :: FDERIV(4,4,4),E1(4),E2(4),TMP,F2(4,4),VXCTMP(4,2)
 nbmat=DFTDATA%nBMAT
 IF(nbmat.NE. 2)call LSQUIT('II_DFT_geoderiv_linrspGGA requires 2 matrices',lupri)
 DOCALC = .FALSE.
@@ -3099,20 +3101,129 @@ IF(DOCALC)THEN
        VXC3(4,IPNT) = A*GRAD(3,IPNT,1) + B*EXPGRAD(3,IPNT,2) + C*EXPGRAD(3,IPNT,1)
 #ifdef VAR_XCFUN
     ELSE
-        call lsquit('xcfun version of II_DFT_GEODERIV_LINRSPGGA not implemented',-1)
-    ENDIF
+       ! Input:
+       !rho    = XCFUNINPUT(1,1)
+       !grad_x = XCFUNINPUT(2,1)
+       !grad_y = XCFUNINPUT(3,1)
+       !grad_z = XCFUNINPUT(4,1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT,35,XCFUNOUTPUT,3)
+       ! Output
+       ! Order 0
+       ! out(1,1) Exc
+       ! Order 1
+       ! out(2,1) d^1 Exc / d n
+       ! out(3,1) d^1 Exc / d nx
+       ! out(4,1) d^1 Exc / d ny
+       ! out(5,1) d^1 Exc / d nz
+       ! Order 2
+       ! out(6,1) d^2 Exc / d n n
+       ! out(7,1) d^2 Exc / d n nx
+       ! out(8,1) d^2 Exc / d n ny
+       ! out(9,1) d^2 Exc / d n nz
+       ! out(10,1) d^2 Exc / d nx nx
+       ! out(11,1) d^2 Exc / d nx ny
+       ! out(12,1) d^2 Exc / d nx nz
+       ! out(13,1) d^2 Exc / d ny ny
+       ! out(14,1) d^2 Exc / d ny nz
+       ! out(15,1) d^2 Exc / d nz nz
+       ! Order 3
+       ! out(16,1) d^3 Exc / d n n n
+       ! out(17,1) d^3 Exc / d n n nx
+       ! out(18,1) d^3 Exc / d n n ny
+       ! out(19,1) d^3 Exc / d n n nz
+       ! out(20,1) d^3 Exc / d n nx nx
+       ! out(21,1) d^3 Exc / d n nx ny
+       ! out(22,1) d^3 Exc / d n nx nz
+       ! out(23,1) d^3 Exc / d n ny ny
+       ! out(24,1) d^3 Exc / d n ny nz
+       ! out(25,1) d^3 Exc / d n nz nz
+       ! out(26,1) d^3 Exc / d nx nx nx
+       ! out(27,1) d^3 Exc / d nx nx ny
+       ! out(28,1) d^3 Exc / d nx nx nz
+       ! out(29,1) d^3 Exc / d nx ny ny
+       ! out(30,1) d^3 Exc / d nx ny nz
+       ! out(31,1) d^3 Exc / d nx nz nz
+       ! out(32,1) d^3 Exc / d ny ny ny
+       ! out(33,1) d^3 Exc / d ny ny nz
+       ! out(34,1) d^3 Exc / d ny nz nz
+       ! out(35,1) d^3 Exc / d nz nz nz
+       
+       ! Constructing intermediates for the VXC automated loop
+       XYZ = 15
+       XY  = 5
+       DO X=1,4
+         DO Y=X,4
+           XY = XY + 1
+           F2(X,Y) = XCFUNOUTPUT(XY,1)
+           F2(Y,X) = XCFUNOUTPUT(XY,1)
+           DO Z=Y,4
+             XYZ = XYZ + 1
+             FDERIV(X,Y,Z) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(X,Z,Y) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Y,X,Z) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Y,Z,X) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Z,X,Y) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Z,Y,X) = XCFUNOUTPUT(XYZ,1)
+           ENDDO
+         ENDDO
+       ENDDO
+       E1(1) = EXPVAL(IPNT,1)
+       E1(2) = EXPGRAD(1,IPNT,1)
+       E1(3) = EXPGRAD(2,IPNT,1)
+       E1(4) = EXPGRAD(3,IPNT,1)
+       E2(1) = EXPVAL(IPNT,2)
+       E2(2) = EXPGRAD(1,IPNT,2)
+       E2(3) = EXPGRAD(2,IPNT,2)
+       E2(4) = EXPGRAD(3,IPNT,2)
+
+       ! VXC3 loop
+       DO X=1,4
+         VXC3(X,IPNT) = 0E0_realk
+         DO Y=1,4
+           TMP = D8*E1(Y)*WGHT(IPNT)
+           DO Z=1,4
+             VXC3(X,IPNT) = VXC3(X,IPNT) + FDERIV(Z,Y,X)*E2(Z)*TMP
+           ENDDO
+         ENDDO
+       ENDDO
+
+       ! VXC2 loop
+       DO X=1,4
+         VXCTMP(X,1) = 0E0_realk
+         VXCTMP(X,2) = 0E0_realk
+         DO Y=1,4
+           TMP = -D8*WGHT(IPNT)*F2(Y,X)
+           VXCTMP(X,1) = VXCTMP(X,1) + E1(Y)*TMP
+           VXCTMP(X,2) = VXCTMP(X,2) + E2(Y)*TMP
+         ENDDO
+       ENDDO
+
+       VXC1(1,IPNT)   = VXCTMP(1,1)
+       VXC2(1,IPNT,1) = VXCTMP(2,1)
+       VXC2(2,IPNT,1) = VXCTMP(3,1)
+       VXC2(3,IPNT,1) = VXCTMP(4,1)
+       VXC1(2,IPNT)   = VXCTMP(1,2)
+       VXC2(1,IPNT,2) = VXCTMP(2,2)
+       VXC2(2,IPNT,2) = VXCTMP(3,2)
+       VXC2(3,IPNT,2) = VXCTMP(4,2)
+
+     ENDIF !XCFUN
 #endif
    ELSE
       VXC1(:,IPNT) = 0.0E0_realk
       VXC2(:,IPNT,:) = 0.0E0_realk
       VXC3(:,IPNT) = 0.0E0_realk
-   ENDIF
-  END DO
+   ENDIF !RHO/GRAD THR
+  END DO !IPNT
   CALL II_DFT_distgeoderiv2_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
        &NBAST,VXC1,VXC2,VXC3,GAO(:,:,:),DFTDATA%GRAD,DFTDATA%orb2atom,&
        &DFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
- ENDIF
-ENDIF
+ ENDIF !NRED
+ENDIF !DOCALC
 END SUBROUTINE II_DFT_GEODERIV_LINRSPGGA
 
 !> \brief main kohn-sham matrix driver
