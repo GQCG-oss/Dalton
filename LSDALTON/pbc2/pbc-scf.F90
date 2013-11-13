@@ -1482,6 +1482,8 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,lupri)
       ENDDO  
       !write(lupri,*) 'dk'
       !call write_zmatrix(ddensity,nbast,nbast,lupri)
+      write(*,*) 'dk'
+      call write_zmatrix(ddensity,nbast,nbast)
       !deallocate(density_tmp)
       call mem_dealloc(density_tmp)
 
@@ -1552,12 +1554,12 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
         endif
         endif
 
-        if(tol .eq. 0 .or. tol .eq. 1) weight(1)=1.0d0
+        if(tol .le. 1) weight(1)=1.0d0
 
         write(*,*) 
         write(*,*) 'Iteration nr. ', tol
-!        write(*,*) 'Weights'
-!        write(*,*) weight
+        write(*,*) 'Weights'
+        write(*,*) weight
         write(lupri,*) 
         write(lupri,*) 'Iteration nr. ', tol
         write(lupri,*) 'Weights'
