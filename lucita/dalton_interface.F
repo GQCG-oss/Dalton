@@ -3193,10 +3193,10 @@ C
       subroutine lu2dens2sir2dens(pv_sirius,pv_lu,pv_full_scratch,nasht,
      &                            ireost,ireots,nr_sym,nr_gas,rhotype)
 !
-!     purpose: reorder integrals from dalton-sirius format to internal
+!     purpose: reorder 2e-RDM from dalton-sirius format to internal
 !              lucita format.
 !
-!              2-electron integrals: on output symmetry-reduced list
+!              2e-RDM: on output symmetry-reduced list
 !
 !     -----------------------------------------------------------------
       implicit none
