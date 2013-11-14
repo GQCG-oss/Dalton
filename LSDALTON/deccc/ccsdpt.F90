@@ -205,10 +205,13 @@ contains
 
     ! create job distribution list
     ! first, determine common batch size from number of tasks and nodes
-    ntasks = (nocc**2 + nocc)/2
+
+    ! in the ij matrix, ntasks is the number of elements in the lower triangular matrix
+    ! always an even number [ n(n+1) is always an even number ]
+    ntasks = int((nocc**2 + nocc)/2)
     b_size = int(ntasks/nodtotal)
 
-    ! ij_array stores all jobs for composite ij indices in decending order
+    ! ij_array stores all jobs for composite ij indices in descending order
     call mem_alloc(ij_array,ntasks)
     ! init list (one more than b_size since mod(ntasks,nodtotal) is not necessearily zero
     call mem_alloc(jobs,b_size + 1)
@@ -649,12 +652,28 @@ contains
     !> integers
     integer :: counter,offset,fill_1,fill_2
 
-    ! since i .ge. j, the composite ij indices will make up a lower triangular matrix
+    ! since i .ge. j, the composite ij indices will make up a lower triangular matrix.
     ! for each ij, k (where j .ge. k) jobs have to be carried out.
     ! thus, the largest jobs for a given i-value will be those that have the largest j-value,
     ! and the largest jobs will thus be those for which the ij index appears near the diagonal.
     ! as the value of j specifies how large a given job is, we fill up the ij_array with jobs
-    ! for j-values in decending order.
+    ! for j-values in descending order.
+
+    ! the below is the lower triangular part of the ij (5*5) matrix written in row-major order
+
+    ! ||  1               ||
+    ! ||  2   3           ||
+    ! ||  4   5  6        ||
+    ! ||  7   8  9 10     ||
+    ! ||  11 12 13 14 15  ||
+
+    ! examples of ij --> i,j conversion
+    ! - ij index 15 corresponds to (i,j)=(5,5) and thus to k=1,2,3,4,5
+    ! - ij index 9  corresponds to (i,j)=(4,3) and thus to k=1,2,3
+    ! - ij index 11  corresponds to (i,j)=(5,1) and thus to k=1
+
+    ! we want ij_array to look like this
+    ! (15 , 14 , 10 , 13 , 9 , 6 , 12 , 8 , 5 , 3 , 11 , 7 , 4 , 2 , 1)
 
     ! counter specifies the index of ij_array
     counter = 1
@@ -666,7 +685,7 @@ contains
 
        if (fill_1 .eq. 0) then
 
-          ! this is largest possible job
+          ! this is largest possible job, i.e., the (no,no)-th entry in the ij matrix
           ij_array(counter) = ntasks
           ! increment counter
           counter = counter + 1
@@ -677,16 +696,19 @@ contains
 
              if (fill_2 .eq. 0) then
 
-                ! this is the largest i-value, for which we have to do k number of jobs
+                ! this is the largest i-value, for which we have to do k number of jobs, 
+                ! that is, we are at the no'th row essentially moving from right towards left.
                 ij_array(counter) = ntasks - fill_1
                 ! increment counter
                 counter = counter + 1
 
              else
 
-                ! we loop through the i-value keeping the j-value (and k-value of course) fixed
-                ! we thus loop from i == nocc up towards the diagonal of the lower triangular matrix
+                ! we loop through the i-values keeping the j-value (and k-range) fixed
+                ! we thus loop from i == no up towards the diagonal of the lower triangular matrix
                 offset = offset + (no - fill_2)
+                ! 'ntasks - fill_1' gives the current column, while 'offset' moves us up through the rows
+                ! while staying below or on the diagonal.(still row-major numbering)
                 ij_array(counter) = ntasks - fill_1 - offset
                 ! increment counter
                 counter = counter + 1
@@ -763,9 +785,11 @@ contains
     !> integers
     integer :: gauss_sum,gauss_sum_old,series
 
-    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements
+    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements.
+    ! in column 1, there are N rows, in column 2, there are (N-1) rows, ...,  in
+    ! column (N-1), there are 2 rows, and in column N, there are 1 row.
     ! this is a gauss sum of 1 + 2 + 3 + ... + N-2 + N-1 + N
-    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum)
+    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum).
     ! if gauss_sum for a given i (series) is smaller than ij, we loop.
     ! when gauss_sum is greater than ij, we use the value of i for the present loop cycle
     ! and calculate the value of j from the present ij and previous gauss_sum values.
@@ -773,7 +797,7 @@ contains
 
     do series = 1,no
 
-       gauss_sum = (series**2 + series)/2
+       gauss_sum = int((series**2 + series)/2)
 
        if (gauss_sum .lt. ij) then
 
