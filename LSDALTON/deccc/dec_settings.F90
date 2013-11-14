@@ -28,8 +28,6 @@ contains
     ! Max memory measured in GB. By default set to 2 GB
     DECinfo%memory            = 2.0E0_realk
     DECinfo%memory_defined    = .false.
-    DECinfo%frozencore        = .false.
-    DECinfo%ncalc             = 0
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc = .false. ! full molecular cc
@@ -45,6 +43,8 @@ contains
     DECinfo%TimeBackup        = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals = .false.
     DECinfo%CheckPairs        = .false.
+    DECinfo%frozencore        = .false.
+    DECinfo%ncalc             = 0
     call dec_set_model_names(DECinfo)
 
 
