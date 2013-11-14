@@ -1731,7 +1731,7 @@ IF(DOCALC)THEN
         !1 = E
         !2 = fR
         !3 = fRR
-        !3 = fRRR
+        !4 = fRRR
         DO IBMAT = 1,NBMAT
            fRRR = XCFUNOUTPUT(4,1)*WGHT(IPNT)
            VXC(IPNT) =D8*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)
@@ -2579,6 +2579,7 @@ REAL(REALK) :: fR(NBLEN),fRR(NBLEN)
 REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,DUMMY = 0E0_realk 
 INTEGER     :: I,J,nred,nbmat,ipnt
 logical :: DOCALC
+REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(4,1)
 nbmat=1
 DOCALC = .FALSE.
 DO IPNT = 1, NBLEN
@@ -2602,7 +2603,13 @@ IF(DOCALC)THEN
       fRR(IPNT) = D2*(VX(6) + VX(7))*EXPVAL(IPNT,1) 
 #ifdef VAR_XCFUN
     ELSE
-       call lsquit('xcfun version of II_DFT_GEODERIV_KOHNSHAMLDA not implemented',-1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       call xcfun2_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+       !1 = E
+       !2 = fR
+       !3 = fRR
+       fR(IPNT)  = D4*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+       fRR(IPNT) = D4*XCFUNOUTPUT(3,1)*WGHT(IPNT)*EXPVAL(IPNT,1)
     ENDIF
 #endif
    ELSE
@@ -2890,8 +2897,11 @@ REAL(REALK),intent(in) :: GAOMAX
 REAL(REALK) :: VX(27),DFTENE,EXPVAL(NBLEN,2)
 REAL(REALK) :: fRRR(NBLEN),fRR(2,NBLEN),A
 REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,D3=3E0_realk,DUMMY = 0E0_realk 
+REAL(REALK),parameter :: D8=8E0_realk
 INTEGER     :: I,J,nred,nbmat,IPNT
 logical :: DOCALC
+REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(4,1)
+
 nbmat=DFTDATA%nBMAT
 IF(nbmat.NE. 2)call LSQUIT('II_DFT_geoderiv_linrspLDA requires 2 matrices',lupri)
 DOCALC = .FALSE.
@@ -2918,7 +2928,15 @@ IF(DOCALC)THEN
       fRRR(IPNT) = A*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)
 #ifdef VAR_XCFUN
      ELSE
-        call lsquit('xcfun version of II_DFT_GEODERIV_LINRSPLDA not implemented',-1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       call xcfun3_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+       !1 = E
+       !2 = fR
+       !3 = fRR
+       !4 = fRRR
+       fRR(1,IPNT) =  D8*XCFUNOUTPUT(3,1)*WGHT(IPNT)*EXPVAL(IPNT,1)
+       fRR(2,IPNT) =  D8*XCFUNOUTPUT(3,1)*WGHT(IPNT)*EXPVAL(IPNT,2)
+       fRRR(IPNT)  =  D8*XCFUNOUTPUT(4,1)*WGHT(IPNT)*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)
      ENDIF
 #endif
    ELSE
