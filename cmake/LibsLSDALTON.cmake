@@ -132,6 +132,7 @@ add_library(
 add_dependencies(xcfun_interface lsutillib_precision)
 
 set(ExternalProjectCMakeArgs
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
     -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
