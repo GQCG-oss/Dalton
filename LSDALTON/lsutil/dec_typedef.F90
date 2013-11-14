@@ -288,10 +288,10 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
-     !> Use MP2 energies for expansion part of fragment optimization
-     logical :: fragopt_exp_mp2
-     !> Use MP2 energies for reduction part of fragment optimization
-     logical :: fragopt_red_mp2
+     !> Model to use for fragment expansion
+     integer :: fragopt_exp_model
+     !> Model to use for fragment reduction
+     integer :: fragopt_red_model
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Repeat atomic fragment calculations after fragment optimization?
