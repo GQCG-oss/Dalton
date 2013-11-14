@@ -601,11 +601,12 @@ contains
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> \author Patrick Ettenhuber
   !> \date January 2013
-  function array_minit(dims,nmodes,local,atype)result(arr)
+  function array_minit(dims,nmodes,local,atype,tdims)result(arr)
     !> the output array
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in)              :: nmodes, dims(nmodes)
+    integer, intent(in),optional     :: tdims(nmodes)
     logical, intent(in),optional     :: local
     character(4),intent(in),optional :: atype
     character(4)  :: at
@@ -620,8 +621,16 @@ contains
 
 #ifdef VAR_MPI
     if(loc) then
-      arr=array_init_standard(dims,nmodes,pdm=NO_PDM)
-      arr%atype='LDAR'
+      select case(at)
+      case('LDAR','REAR','REPD')
+        arr=array_init_standard(dims,nmodes,pdm=NO_PDM)
+        arr%atype='LDAR'
+      case('TDAR','TDPD')
+        arr=array_init_tiled(dims,nmodes,pdm=NO_PDM)
+        arr%atype='LTAR'
+      case default
+        call lsquit("ERROR(array_minit): atype not known",-1)
+      end select
     else
       select case(at)
       case('LDAR')
@@ -630,7 +639,11 @@ contains
         arr%atype        = 'LDAR'
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
-        arr              = array_init_tiled(dims,nmodes,pdm=MASTER_INIT)
+        if(present(tdims))then
+          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT,tdims=tdims)
+        else
+          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT)
+        endif
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = TILED_DIST
         arr%atype        = 'TDAR'
@@ -642,7 +655,11 @@ contains
         arr%atype        = 'REAR'
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
-        arr              = array_init_tiled(dims,nmodes,pdm=MASTER_INIT)
+        if(present(tdims))then
+          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT,tdims=tdims)
+        else
+          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT)
+        endif
         CreatedPDMArrays = CreatedPDMArrays+1
         call memory_allocate_array_dense_pc(arr)
         arr%itype        = DENSE
@@ -661,11 +678,12 @@ contains
     arr=array_init(dims,nmodes)
 #endif
   end function array_minit
-  function array_ainit(dims,nmodes,local,atype)result(arr)
+  function array_ainit(dims,nmodes,local,atype,tdims)result(arr)
     !> the output array
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in)              :: nmodes, dims(nmodes)
+    integer, intent(in),optional     :: tdims(nmodes)
     logical, intent(in),optional     :: local
     character(4),intent(in),optional :: atype
     character(4)  :: at
@@ -679,8 +697,17 @@ contains
 
 #ifdef VAR_MPI
     if(loc) then
-      arr=array_init_standard(dims,nmodes,pdm=NO_PDM)
-      arr%atype='LDAR'
+      select case(at)
+      case('LDAR','REAR','REPD','TDAR','TDPD')
+        !if local recast to a local dense array
+        arr=array_init_standard(dims,nmodes,pdm=NO_PDM)
+        arr%atype='LDAR'
+      !case('TDAR','TDPD')
+      !  arr=array_init_tiled(dims,nmodes,pdm=NO_PDM)
+      !  arr%atype='LTAR'
+      case default
+        call lsquit("ERROR(array_minit): atype not known",-1)
+      end select
     else
       select case(at)
       case('LDAR')
@@ -689,7 +716,11 @@ contains
         arr%atype        = 'LDAR'
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
-        arr              = array_init_tiled(dims,nmodes,pdm=ALL_INIT)
+        if(present(tdims))then
+          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT,tdims=tdims)
+        else
+          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT)
+        endif
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = TILED_DIST
         arr%atype        = 'TDAR'
@@ -701,7 +732,11 @@ contains
         arr%atype        = 'REAR'
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
-        arr              = array_init_tiled(dims,nmodes,pdm=ALL_INIT)
+        if(present(tdims))then
+          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT,tdims=tdims)
+        else
+          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT)
+        endif
         CreatedPDMArrays = CreatedPDMArrays+1
         call memory_allocate_array_dense(arr)
         arr%itype        = DENSE

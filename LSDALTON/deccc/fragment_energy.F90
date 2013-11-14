@@ -2023,9 +2023,9 @@ contains
     end if
 
 
-    ! Do fragment expansion at the MP2 level?
-    if(DECinfo%fragopt_exp_mp2) then
-       MyMolecule%ccmodel(MyAtom,Myatom) = MODEL_MP2
+    ! Do fragment expansion at different level than target model?
+    if(DECinfo%fragopt_exp_model /= DECinfo%ccmodel) then
+       MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_exp_model
     end if
 
 
@@ -2051,7 +2051,6 @@ contains
  !                             Expansion loop
  ! ======================================================================
 
- ! Expansion is done using the MP2 model if DECinfo%fragopt_exp_mp2=true).
  EXPANSION_LOOP: do iter = 1,DECinfo%maxiter
 
     ! Save information for current fragment (in case current fragment is the final one)
@@ -2159,19 +2158,12 @@ contains
 
  ! Which model for reduction loop?
  ! *******************************
- if(DECinfo%fragopt_red_mp2) then
-    ! Do reduction with MP2 calculations --> set model to be MP2.
-    MyMolecule%ccmodel(MyAtom,Myatom) = MODEL_MP2
- else
-    ! Use original model for reduction loop --> restore original model
-    MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
- end if
-
+ MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
 
 
  ! Save energies in converged space of local orbitals
  ! **************************************************
- if(DECinfo%fragopt_exp_mp2 .eqv. DECinfo%fragopt_red_mp2) then
+ if(DECinfo%fragopt_exp_model .eq. DECinfo%fragopt_red_model) then
     ! If the same model is used for expansion and reduction
     ! (e.g. using MP2 for expansion AND reduction  
     !   - or - using CCSD for expansion and reduction)
@@ -2182,13 +2174,14 @@ contains
  else
     ! Different model in expansion and reduction steps - Calculate new reference energy
     ! for converged fragment from expansion loop.
+    AtomicFragment%ccmodel = MyMolecule%ccmodel(MyAtom,Myatom)
     call atomic_fragment_energy_and_prop(AtomicFragment)
     LagEnergyDiff=0.0_realk
     OccEnergyDiff=0.0_realk
     VirtEnergyDiff=0.0_realk
     iter=0
-    write(DECinfo%output,*) 'FOP Calculated reference atomic fragment energy for relevant CC model'
-    write(DECinfo%output,*) 'FOP CC model number: ', MyMolecule%ccmodel(MyAtom,Myatom)
+    write(DECinfo%output,'(2a)') 'FOP Calculated ref atomic fragment energy for relevant CC model: ', &
+         & DECinfo%cc_models(MyMolecule%ccmodel(MyAtom,Myatom))
     call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
     LagEnergyOld = AtomicFragment%LagFOP
     OccEnergyOld= AtomicFragment%EoccFOP

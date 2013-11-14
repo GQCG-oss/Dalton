@@ -28,8 +28,6 @@ contains
     ! Max memory measured in GB. By default set to 2 GB
     DECinfo%memory            = 2.0E0_realk
     DECinfo%memory_defined    = .false.
-    DECinfo%frozencore        = .false.
-    DECinfo%ncalc             = 0
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc = .false. ! full molecular cc
@@ -45,6 +43,8 @@ contains
     DECinfo%TimeBackup        = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals = .false.
     DECinfo%CheckPairs        = .false.
+    DECinfo%frozencore        = .false.
+    DECinfo%ncalc             = 0
     call dec_set_model_names(DECinfo)
 
 
@@ -103,8 +103,8 @@ contains
     DECinfo%FragmentExpansionSize = 5
     DECinfo%fragadapt=.false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
-    DECinfo%fragopt_exp_mp2=.true.  ! Use MP2 fragments for expansion procedure
-    DECinfo%fragopt_red_mp2=.true.  ! Use MP2 fragments for reduction procedure
+    DECinfo%fragopt_exp_model=MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
+    DECinfo%fragopt_red_model=MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
     DECinfo%OnlyOccPart=.false.
     ! Repeat atomic fragment calcs after fragment optimization
     DECinfo%RepeatAF=.true.
@@ -201,6 +201,7 @@ contains
     integer,intent(in) :: output
     !> Word read from input
     character(len=80),intent(inout) :: word
+    character(len=80) :: myword
     !> Is this a full calculation (fullcalc=true, input **CC) 
     !> or a DEC calculation (fullcalc=false, input=**DEC)
     logical,intent(in) :: fullcalc
@@ -265,9 +266,26 @@ contains
           ! ============
 
           ! CC model
-       case('.MP2'); DECinfo%ccModel=MODEL_MP2; DECinfo%use_singles=.false.  ! both DEC and full calc
-       case('.CC2'); DECinfo%ccModel=MODEL_CC2; DECinfo%use_singles=.true.   ! only for full calc
-       case('.CCSD'); DECinfo%ccModel=MODEL_CCSD; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.  ! only for full calc
+       case('.MP2') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles=.false.  
+       case('.CC2')
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles=.true. 
+       case('.CCD') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%CCDhack=.true.
+          DECinfo%use_singles=.true. 
+          DECinfo%solver_par=.true.
+       case('.CCSD')
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
+       case('.CCSD(T)') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
+       case('.RPA')
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles=.false.; DECinfo%CCDEBUG=.true.
 
 
           ! CC SOLVER INFO
@@ -397,18 +415,17 @@ contains
        case('.SPAWN_COMM_PROC'); DECinfo%spawn_comm_proc=.true.
        case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
-       case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=MODEL_CCSD; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
-       case('.CCSD(T)'); DECinfo%ccModel=MODEL_CCSDpT; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
-       case('.RPA'); DECinfo%ccModel=MODEL_RPA; DECinfo%use_singles=.false.; DECinfo%CCDEBUG=.true.
-       case('.NOTMP2EXP') 
-          DECinfo%fragopt_exp_mp2=.false.
-       case('.NOTMP2RED') 
-          DECinfo%fragopt_red_mp2=.false.
+       case('.FRAGEXPMODEL') 
+          read(input,*) myword
+          call find_model_number_from_input(myword,DECinfo%fragopt_exp_model)
+       case('.FRAGREDMODEL') 
+          read(input,*) myword
+          call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.F12'); DECinfo%F12=.true.
        case('.F12DEBUG'); DECinfo%F12DEBUG=.true.
@@ -678,8 +695,8 @@ contains
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
-    write(lupri,*) 'fragopt_exp_mp2 ', DECitem%fragopt_exp_mp2
-    write(lupri,*) 'fragopt_red_mp2 ', DECitem%fragopt_red_mp2
+    write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
+    write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
@@ -783,5 +800,35 @@ contains
 
 
   end subroutine set_input_for_fot_level
+
+
+  !> MODIFY FOR NEW MODEL
+  !> \brief For a given model input (e.g. .MP2 or .CCSD) find model number associated with input.
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine find_model_number_from_input(myword,modelnumber)
+    implicit none
+    !> Word read from input
+    character(len=80),intent(in) :: myword
+    !> Model number corresponding to input (see MODEL_* in dec_typedef.F90)
+    integer,intent(inout) :: modelnumber
+
+    SELECT CASE(MYWORD)
+
+    case('.MP2'); modelnumber=MODEL_MP2
+    case('.CC2'); modelnumber=MODEL_CC2
+    case('.CCSD'); modelnumber=MODEL_CCSD
+    case('.CCD'); modelnumber=MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
+    case('.CCSD(T)'); modelnumber=MODEL_CCSDpT
+    case('.RPA'); modelnumber=MODEL_RPA
+
+    case default
+       print *, 'Model not found: ', myword
+       call lsquit('Requested model not found!',-1)
+
+    end SELECT
+
+  end subroutine find_model_number_from_input
+
 
 end MODULE DEC_settings_mod
