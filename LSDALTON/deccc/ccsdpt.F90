@@ -144,6 +144,14 @@ contains
 
     call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
 
+    !!! DEBUG
+    print *,'jaik:'
+    call array4_print_norm_nrm(jaik)
+    print *,'abij:'
+    call array4_print_norm_nrm(abij)
+    print *,'cbai:'
+    call array_print_norm_nrm(cbai)
+
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
     call array2_free(C_can_virt)
@@ -573,6 +581,12 @@ contains
 
 #endif
 
+    !!! DEBUG
+    print *,'ccsdpt_doubles_2:'
+    call array4_print_norm_nrm(ccsdpt_doubles_2)
+    print *,'ccsdpt_doubles (before):'
+    call array4_print_norm_nrm(ccsdpt_doubles)
+
     ! now everything resides on the master...
 
     ! collect ccsdpt_doubles and ccsdpt_doubles_2 into ccsdpt_doubles array4 structure
@@ -581,6 +595,10 @@ contains
     call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_2%val,ccsdpt_doubles_2%dims(1),&
                                &ccsdpt_doubles_2%dims(2),ccsdpt_doubles_2%dims(3),ccsdpt_doubles_2%dims(4),&
                                &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%val)
+
+    !!! DEBUG
+    print *,'ccsdpt_doubles (after):'
+    call array4_print_norm_nrm(ccsdpt_doubles)
 
     ! release ccsdpt_doubles_2 array4 structure
     call array4_free(ccsdpt_doubles_2)
