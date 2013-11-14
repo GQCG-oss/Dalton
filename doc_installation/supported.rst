@@ -32,6 +32,7 @@ Tested on the following platforms
 * Fedora 18, GNU 4.7.2, ATLAS 3.8.4
 * Scientific Linux 6.0, GNU 4.4.4, ATLAS 64-bit version
 * MAC OS X 10.9, GNU 4.8.2, Apple vecLib, MPICH 3.1rc1
+* Cray XE6, Intel 12.1.5
 
 
 Compiles but does not pass all tests
@@ -45,7 +46,6 @@ Compiles but untested on the following environments
 
 * Ubuntu 12.04, Intel 14.0.0, MKL 11.0
 * SGI Altix ICE 8200, Intel 11.1
-* Cray XE6, Intel 12.1.5
 
 
 Currently does not compile (but we plan to patch it)
