@@ -861,6 +861,7 @@ contains
 
 
     if(DECinfo%fragadapt .and. PairFragment%FAset) then
+       print *,"should not here"
        ! Init new fragment with fragment-adapted orbitals'
        call init_fragment_adapted(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
             & PairFragment,FOfragment)
@@ -868,7 +869,7 @@ contains
        ! Run calculation using fragment with fragment-adapted orbitals
        call pair_fragment_energy_and_prop(Fragment1,Fragment2, &
             & natoms, mymolecule%DistanceTable, FOfragment,grad)
-
+    
        ! Copy stuff from FO fragment to original fragment
        call copy_mpi_main_info_from_FOfragment(FOfragment,PairFragment)
 
@@ -878,6 +879,7 @@ contains
        ! Run calculation using input fragment
        call pair_fragment_energy_and_prop(Fragment1,Fragment2, &
             & natoms, mymolecule%DistanceTable, PairFragment,grad)       
+
     end if
 
   end subroutine pair_driver

@@ -4083,10 +4083,11 @@ contains
       nba=(nb/(magic*nnod))
       if(nba<minbsize)nba=minbsize
     endif
+
     if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
       do while((nb/nba)*(nb/nbg)<magic*nnod)
         nbg=nbg-1
-        if(nbg<0)exit
+        if(nbg<1)exit
       enddo
       if(nbg<minbsize)nbg=minbsize
     endif

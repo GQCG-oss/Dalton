@@ -335,6 +335,7 @@ contains
 
 
     AskForJob: do while(morejobs)
+      
 
 
        ! Send finished job to master
@@ -402,6 +403,7 @@ contains
                      & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
 
                 call get_number_of_integral_tasks_for_mpi(AtomicFragments(atomA),ntasks)
+  
              else
                 ! Set ntasks to be zero to initialize it to something, although it is not used for
                 ! fragment optimizations.
@@ -546,6 +548,7 @@ contains
           print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
                & job, singlejob%LMtime(1)
        end if DoJob
+   
 
 
     end do AskForJob
@@ -601,6 +604,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   else  ! CC2 or CCSD
      iter=1
      call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
+     call get_currently_available_memory(MemFree)
      call get_currently_available_memory(MemFree)
      call get_max_batch_sizes(scheme,MyFragment%nbasis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
           & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,dummy,(.not.DECinfo%solver_par))
