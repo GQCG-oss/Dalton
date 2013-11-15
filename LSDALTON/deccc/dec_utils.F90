@@ -1761,7 +1761,7 @@ retval=0
     write(DECinfo%output,*)
     if(MyFragment%nEOSatoms==2) then
        pair=.false.
-       write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%atomic_number
+       write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%EOSatoms(1)
     else
        pair=.true.
        write(DECinfo%output,'(1X,a,2i6)') 'PAIR FRAGMENT, atomic numbers:', &
