@@ -2167,7 +2167,8 @@ REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
 REAL(REALK),intent(in) :: GAOMAX
 !
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk,D05 = 0.5E0_realk
-REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A,XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
+Real(realk), parameter :: D4 = 4.0E0_realk
+REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A,XCFUNINPUT(4,1),XCFUNOUTPUT(5,1)
 REAL(REALK),pointer :: VXC(:,:)
 INTEGER     :: I,J
 IDMAT = 1
@@ -2202,12 +2203,19 @@ DO IPNT = 1, NBLEN
          ENDIF
 #ifdef VAR_XCFUN
       ELSE
-         call lsquit('xcfun version of II_DFT_MAGDERIV_KOHNSHAMGGA not implemented',-1)
          XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
-         XCFUNINPUT(2,1) = GRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
-              &+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-              &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1)
-         call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+         XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+         XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+         XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
+         call xcfun_gga_components_xc_single_eval(XCFUNINPUT,5,XCFUNOUTPUT,1)
+         ! Output
+         ! Order 0
+         ! out(1,1) Exc
+         ! Order 1
+         ! out(2,1) d^1 Exc / d rho
+         ! out(3,1) d^1 Exc / d grad_x
+         ! out(4,1) d^1 Exc / d grad_y
+         ! out(5,1) d^1 Exc / d grad_z
 
          IF(DFTDATA%LB94)THEN
             call lsquit('error lb94 xcfun',-1)
@@ -2216,10 +2224,9 @@ DO IPNT = 1, NBLEN
          ENDIF
 
          VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
-         VXC(2,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
-         VXC(3,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
-         VXC(4,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
-         call lsquit('XCFUN',-1)
+         VXC(2,IPNT) = D4*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+         VXC(3,IPNT) = D4*XCFUNOUTPUT(4,1)*WGHT(IPNT)
+         VXC(4,IPNT) = D4*XCFUNOUTPUT(5,1)*WGHT(IPNT)
       ENDIF
 #endif
    ELSE
