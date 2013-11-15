@@ -522,8 +522,6 @@ module dec_typedef_module
   !> IMPORTANT: IF YOU MODIFY THIS STRUCTURE, REMEMBER TO CHANGE mpicopy_fragment ACCORDINGLY!!!
   type decfrag
 
-     !> Number of atom in full molecule
-     integer :: atomic_number=0
      !> Number of occupied EOS orbitals 
      integer :: noccEOS=0
      !> Number of unoccupied EOS orbitals 

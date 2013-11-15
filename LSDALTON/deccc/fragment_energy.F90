@@ -741,7 +741,7 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*) '**********************************************************************'
     write(DECinfo%output,'(1X,a,i7)') 'Energy summary for fragment: ', &
-         & MyFragment%atomic_number
+         & MyFragment%EOSatoms(1)
     write(DECinfo%output,*) '**********************************************************************'
     write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', Eocc
     if(.not. DECinfo%onlyoccpart) then
@@ -1310,7 +1310,7 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*) '*****************************************************************************'
     write(DECinfo%output,'(1X,a,2i7)') 'Energy summary for pair fragment: ', &
-         & Fragment1%atomic_number, Fragment2%atomic_number
+         & Fragment1%EOSatoms(1), Fragment2%EOSatoms(1)
     write(DECinfo%output,*) '*****************************************************************************'
 
     write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair occ energy  = ', pairdist,Eocc
@@ -2865,7 +2865,7 @@ end subroutine optimize_atomic_fragment
     write(DECinfo%output,'(1X,a,i4)') 'FOP              Fragment information, loop', iter
     write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
     write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Fragment number                  :', &
-         & fragment%atomic_number
+         & fragment%EOSatoms(1)
     write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in virt total :', &
          & Fragment%nunoccAOS
     write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in occ total  :', &
