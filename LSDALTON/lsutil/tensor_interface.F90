@@ -622,12 +622,12 @@ contains
 #ifdef VAR_MPI
     if(loc) then
       select case(at)
-      case('LDAR','REAR','REPD')
+      case('LDAR','REAR','REPD','TDAR','TDPD')
         arr=array_init_standard(dims,nmodes,pdm=NO_PDM)
         arr%atype='LDAR'
-      case('TDAR','TDPD')
-        arr=array_init_tiled(dims,nmodes,pdm=NO_PDM)
-        arr%atype='LTAR'
+      !case('TDAR','TDPD')
+      !  arr=array_init_tiled(dims,nmodes,pdm=NO_PDM)
+      !  arr%atype='LTAR'
       case default
         call lsquit("ERROR(array_minit): atype not known",-1)
       end select
