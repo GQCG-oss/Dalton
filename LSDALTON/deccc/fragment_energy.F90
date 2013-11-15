@@ -861,7 +861,6 @@ contains
 
 
     if(DECinfo%fragadapt .and. PairFragment%FAset) then
-       print *,"should not here"
        ! Init new fragment with fragment-adapted orbitals'
        call init_fragment_adapted(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
             & PairFragment,FOfragment)
