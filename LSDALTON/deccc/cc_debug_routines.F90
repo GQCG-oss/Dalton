@@ -2554,7 +2554,7 @@ module cc_debug_routines_module
       ! Prepare MO transfo. of integrals:
       call get_MO_batches_size(min_mem, max_mem, nbas, nPbatch, dimP, &
            & 2*nbas*nbas, 2*nbas*nbas*MaxActualdimGamma)
-      gmosize = int(i8*nbas*nbas*dimR*dimP,kind=long)
+      gmosize = int(i8*nbas*nbas*dimP*dimP,kind=long)
     else
       ! then the whole integrals have to be stored in core:
       !

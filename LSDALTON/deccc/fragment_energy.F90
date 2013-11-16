@@ -741,7 +741,7 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*) '**********************************************************************'
     write(DECinfo%output,'(1X,a,i7)') 'Energy summary for fragment: ', &
-         & MyFragment%atomic_number
+         & MyFragment%EOSatoms(1)
     write(DECinfo%output,*) '**********************************************************************'
     write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', Eocc
     if(.not. DECinfo%onlyoccpart) then
@@ -868,7 +868,7 @@ contains
        ! Run calculation using fragment with fragment-adapted orbitals
        call pair_fragment_energy_and_prop(Fragment1,Fragment2, &
             & natoms, mymolecule%DistanceTable, FOfragment,grad)
-
+    
        ! Copy stuff from FO fragment to original fragment
        call copy_mpi_main_info_from_FOfragment(FOfragment,PairFragment)
 
@@ -878,6 +878,7 @@ contains
        ! Run calculation using input fragment
        call pair_fragment_energy_and_prop(Fragment1,Fragment2, &
             & natoms, mymolecule%DistanceTable, PairFragment,grad)       
+
     end if
 
   end subroutine pair_driver
@@ -1310,7 +1311,7 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*) '*****************************************************************************'
     write(DECinfo%output,'(1X,a,2i7)') 'Energy summary for pair fragment: ', &
-         & Fragment1%atomic_number, Fragment2%atomic_number
+         & Fragment1%EOSatoms(1), Fragment2%EOSatoms(1)
     write(DECinfo%output,*) '*****************************************************************************'
 
     write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair occ energy  = ', pairdist,Eocc
@@ -1713,7 +1714,7 @@ contains
   !> \brief Print a simple "ascii-art" plot of the largest pair energies.
   !> \author Kasper Kristensen
   !> \date October 2012
-  subroutine plot_pair_energies(natoms,paircut,FragEnergies,DistanceTable,dofrag)
+  subroutine plot_pair_energies(natoms,paircut,FragEnergies,MyMolecule,dofrag)
 
     implicit none
     !> Number of atoms in molecule
@@ -1722,31 +1723,41 @@ contains
     real(realk),intent(in) :: paircut
     !> Fragment energies 
     real(realk),dimension(natoms,natoms),intent(in) :: FragEnergies
-    !> Distances between atoms
-    real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
+    !> Full molecule structure
+    type(fullmolecule),intent(in) :: MyMolecule
     !> dofrag(P) is true if P has orbitals assigned
     logical,intent(in) :: dofrag(natoms)
     real(realk),pointer :: DistAng(:,:), xpoints(:), ypoints(:), xpoints2(:), ypoints2(:)
     integer :: mindist, maxdist, tmp, distInt,idx,npoints2
     real(realk) :: cutAng,endpoint,ln10
-    integer :: i,j,npoints,k,interval
+    integer :: i,j,npoints,k,interval,npairfrags
     character(len=16) :: xlabel, ylabel
     logical,pointer :: anypoints(:)
 
+    ! Get number of pair fragments in relevant plotting interval
+    npairfrags = get_num_of_pair_fragments(MyMolecule,dofrag,DECinfo%PairMinDist,&
+         & DECinfo%pair_distance_threshold)
+    ! Only relevant to plot at least two points
+    if(npairfrags < 2) return
+
+
     ! Get distance table and pair cut off in Angstrom
     call mem_alloc(DistAng,natoms,natoms)
-    DistAng = bohr_to_angstrom*DistanceTable
+    DistAng = bohr_to_angstrom*MyMolecule%DistanceTable
     cutAng = bohr_to_angstrom*paircut
 
     ! Minimum and maximum pair distances
     mindist=1000
     maxdist=0
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle
-       do j=i+1,natoms
+    iloop: do i=1,natoms
+       if(.not. dofrag(i)) cycle iloop
+       jloop: do j=i+1,natoms
 
-          if(DistAng(i,j) > cutAng) cycle
-          if(.not. dofrag(j)) cycle
+          if(DistAng(i,j) > cutAng) cycle jloop
+          if(.not. dofrag(j)) cycle jloop
+          if(MyMolecule%ccmodel(i,j)==MODEL_NONE) cycle jloop
+
+          
 
           ! Nearest integer smaller than actual pair distance +0.5Angstrom
           ! (this is most appropriate when we consider intervals of 1 Angstrom below,
@@ -1760,8 +1771,8 @@ contains
           ! Max
           if(maxdist < tmp) maxdist = tmp
 
-       end do
-    end do
+       end do jloop
+    end do iloop
 
 
     ! We now consider the following intervals:
@@ -2013,9 +2024,9 @@ contains
     end if
 
 
-    ! Do fragment expansion at the MP2 level?
-    if(DECinfo%fragopt_exp_mp2) then
-       MyMolecule%ccmodel(MyAtom,Myatom) = MODEL_MP2
+    ! Do fragment expansion at different level than target model?
+    if(DECinfo%fragopt_exp_model /= DECinfo%ccmodel) then
+       MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_exp_model
     end if
 
 
@@ -2041,7 +2052,6 @@ contains
  !                             Expansion loop
  ! ======================================================================
 
- ! Expansion is done using the MP2 model if DECinfo%fragopt_exp_mp2=true).
  EXPANSION_LOOP: do iter = 1,DECinfo%maxiter
 
     ! Save information for current fragment (in case current fragment is the final one)
@@ -2149,19 +2159,12 @@ contains
 
  ! Which model for reduction loop?
  ! *******************************
- if(DECinfo%fragopt_red_mp2) then
-    ! Do reduction with MP2 calculations --> set model to be MP2.
-    MyMolecule%ccmodel(MyAtom,Myatom) = MODEL_MP2
- else
-    ! Use original model for reduction loop --> restore original model
-    MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
- end if
-
+ MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
 
 
  ! Save energies in converged space of local orbitals
  ! **************************************************
- if(DECinfo%fragopt_exp_mp2 .eqv. DECinfo%fragopt_red_mp2) then
+ if(DECinfo%fragopt_exp_model .eq. DECinfo%fragopt_red_model) then
     ! If the same model is used for expansion and reduction
     ! (e.g. using MP2 for expansion AND reduction  
     !   - or - using CCSD for expansion and reduction)
@@ -2172,13 +2175,14 @@ contains
  else
     ! Different model in expansion and reduction steps - Calculate new reference energy
     ! for converged fragment from expansion loop.
+    AtomicFragment%ccmodel = MyMolecule%ccmodel(MyAtom,Myatom)
     call atomic_fragment_energy_and_prop(AtomicFragment)
     LagEnergyDiff=0.0_realk
     OccEnergyDiff=0.0_realk
     VirtEnergyDiff=0.0_realk
     iter=0
-    write(DECinfo%output,*) 'FOP Calculated reference atomic fragment energy for relevant CC model'
-    write(DECinfo%output,*) 'FOP CC model number: ', MyMolecule%ccmodel(MyAtom,Myatom)
+    write(DECinfo%output,'(2a)') 'FOP Calculated ref atomic fragment energy for relevant CC model: ', &
+         & DECinfo%cc_models(MyMolecule%ccmodel(MyAtom,Myatom))
     call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
     LagEnergyOld = AtomicFragment%LagFOP
     OccEnergyOld= AtomicFragment%EoccFOP
@@ -2862,7 +2866,7 @@ end subroutine optimize_atomic_fragment
     write(DECinfo%output,'(1X,a,i4)') 'FOP              Fragment information, loop', iter
     write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
     write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Fragment number                  :', &
-         & fragment%atomic_number
+         & fragment%EOSatoms(1)
     write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in virt total :', &
          & Fragment%nunoccAOS
     write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in occ total  :', &
