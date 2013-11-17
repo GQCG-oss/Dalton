@@ -2001,7 +2001,7 @@ contains
 
 #ifdef VAR_MPI
     if ( w_cp ) call lspdm_shut_down_comm_procs
-    print *,"ALL DONE"
+    !print *,"ALL DONE"
     !stop 0
 #endif
 

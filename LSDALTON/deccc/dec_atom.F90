@@ -75,7 +75,7 @@ contains
     !> elements in the fragment are NOT set here. Rather they should be
     !> set AFTER calling this routine (see init_fragment_adapted).
     logical,intent(in),optional :: FA
-    integer :: j,idx,i,listidx,natoms,startidx
+    integer :: j,idx,i,natoms,startidx
     integer :: CentralAtom
     real(realk) :: tcpu, twall
     logical,pointer :: occ_listEFF(:),occEOS(:),unoccEOS(:)
@@ -95,9 +95,6 @@ contains
 
     ! To be on the safe side, initialize everything to zero or null
     call atomic_fragment_nullify(fragment)
-
-    ! -- Assign things --
-    fragment%atomic_number = MyAtom
 
 
     ! ATOMIC VS. PAIR FRAGMENT
@@ -162,8 +159,7 @@ contains
 
        ! Loop over atoms in pair fragment list (just one atom, MyAtom, if it is not a pairfragment)
        do i=1,fragment%nEOSatoms
-          listidx=fragment%EOSatoms(i)
-          if( CentralAtom==listidx ) then ! Orbital is included in the EOS
+          if( CentralAtom== fragment%EOSatoms(i) ) then ! Orbital is included in the EOS
              fragment%noccEOS = fragment%noccEOS + 1
              occEOS(j)=.true.
           end if
@@ -185,8 +181,7 @@ contains
 
        ! Loop over atoms in pair fragment list (just one atom, Myatom, if it is not a pairfragment)
        do i=1,fragment%nEOSatoms
-          listidx=fragment%EOSatoms(i)
-          if( CentralAtom==listidx ) then ! Orbital is included in the EOS
+          if( CentralAtom==fragment%EOSatoms(i) ) then ! Orbital is included in the EOS
              fragment%nunoccEOS = fragment%nunoccEOS + 1
              unoccEOS(j)=.true.
 
@@ -239,6 +234,9 @@ contains
     fragment%occEOSidx=0
     fragment%occAOSidx=0
 
+    ! Note that the procedure below ensures that the EOS orbitals are always
+    ! listed before the remaining AOS orbitals
+
     ! Loop over EOS orbitals
     idx=0
     do j=startidx,nOcc   ! no core orbitals in EOS for frozen core approx
@@ -263,8 +261,6 @@ contains
     if(idx /= fragment%noccAOS) &
          & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%noccAOS',-1)
 
-    ! Note that the above procedure ensures that the EOS orbitals are always
-    ! listed before the remaining AOS orbitals
 
 
     ! Virtual EOS orbital indices
@@ -365,7 +361,7 @@ contains
 
     if(DECinfo%PL>0) then
        write(DECinfo%output,*)
-       write(DECinfo%output,*) 'FRAGINIT: Initialized fragment :', Fragment%atomic_number
+       write(DECinfo%output,*) 'FRAGINIT: Initialized fragment :', Fragment%EOSatoms(1)
        write(DECinfo%output,'(a)')      ' -- Target --'
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Occ EOS     : ',Fragment%noccEOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Unocc EOS   : ',Fragment%nunoccEOS
@@ -380,6 +376,46 @@ contains
 
   end subroutine atomic_fragment_init_orbital_specific
 
+  
+  !> \brief Initialize atomic fragments by simply including neighbouring atoms within
+  !> a certain distance.
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine init_estimated_atomic_fragments(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+       & MyMolecule,mylsitem,DoBasis,init_radius,dofrag,AtomicFragments)
+
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Information about DEC occupied orbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Make fragment basis (MO coeff and Fock matrix for fragment)?
+    logical, intent(in) :: DoBasis
+    !> Distance beyond which to include neighbour atoms
+    real(realk),intent(in) :: init_radius
+    !> List of which atoms have orbitals assigned
+    logical,intent(in),dimension(MyMolecule%natoms) :: dofrag
+    !> Fragments to construct
+    type(decfrag), intent(inout), dimension(MyMolecule%natoms) :: AtomicFragments
+    integer :: i,MyAtom
+
+    do i=1,MyMolecule%natoms
+       if(.not. dofrag(i)) cycle
+       MyAtom=i
+       call atomic_fragment_init_within_distance(MyAtom,&
+            & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+            & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
+    end do
+
+  end subroutine init_estimated_atomic_fragments
 
 
   !> \brief Nullify everything and set variables to zero
@@ -429,7 +465,6 @@ contains
     fragment%CDunocceival => null()
 
     fragment%basisinfoisset=.false.
-    fragment%atomic_number = 0
     fragment%noccEOS = 0
     fragment%nunoccEOS = 0
     fragment%noccAOS = 0
@@ -1024,7 +1059,7 @@ contains
        MyAtom=0  ! no central atom because it is a pair fragment
 
     else
-       MyAtom = LocalFragment%atomic_number
+       MyAtom = LocalFragment%EOSatoms(1)
        pairfrag=.false.
     end if
 
@@ -1400,7 +1435,7 @@ contains
   !> \author Kasper Kristensen
   !> \date December 2011
   subroutine merged_fragment_init(Fragment1,Fragment2,nunocc, nocc, natoms, &
-       & OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,DoBasis,pairfragment)
+       & OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,DoBasis,pairfragment,esti)
 
 
     implicit none
@@ -1426,13 +1461,20 @@ contains
     logical, intent(in) :: DoBasis
     !> Pair fragment to be constructed
     type(decfrag),intent(inout) :: pairfragment
+    !> Use estimated fragments? (If this is the case FOs are effectively turned off)
+    logical,intent(in),optional :: esti
     logical, dimension(nunocc) :: Unocc_list
     logical, dimension(nocc) :: Occ_list
-    logical :: pairfrag
+    logical :: pairfrag,estimated_frags
     logical,pointer :: EOSatoms(:)
     integer :: i,j,idx
     real(realk) :: pairdist
 
+    ! Use estimated fragments?
+    estimated_frags=.false.
+    if(present(esti)) then
+       if(esti) estimated_frags=.true.
+    end if
 
     pairfrag=.true.
 
@@ -1522,7 +1564,7 @@ contains
 
     ! Set remaining information special for pair
     ! ******************************************
-    PairFragment%atomic_number = fragment1%atomic_number ! atom 1 in pair
+    PairFragment%EOSatoms(1) = fragment1%EOSatoms(1) ! atom 1 in pair
     ! Distance between original fragments
     PairFragment%pairdist =  pairdist
     call mem_dealloc(EOSatoms)
@@ -1541,7 +1583,7 @@ contains
        write(DECinfo%output,*)
     end if
 
-    if(DECinfo%fragadapt) then 
+    if(DECinfo%fragadapt .and. (.not. estimated_frags) ) then 
        call pair_fragment_adapted_transformation_matrices(MyMolecule,nocc,nunocc,&
             & OccOrbitals,UnoccOrbitals, Fragment1,Fragment2,PairFragment)
    end if
@@ -2429,7 +2471,7 @@ end subroutine atomic_fragment_basis
 
     ! Sanity check: Job has been done for fragment in question
     do i=1,jobs%njobs
-       if(jobs%atom1(i)==fragment%atomic_number) then
+       if(jobs%dofragopt(i) .and. jobs%atom1(i)==fragment%EOSatoms(1)) then
           if(.not. jobs%jobsdone(i)) then
              call lsquit('add_fragment_to_file: Fragment calculation is not done!',-1)
           end if
@@ -2456,7 +2498,7 @@ end subroutine atomic_fragment_basis
     ! Write minimum (but necessary) fragment info by appending to existing file
     ! *************************************************************************
 
-    ! Init stuff
+    ! Init stuff. Yes, I know this hardcored funit is not pretty, but I need to circumvent lsopen...
     funit = 99
     FileName='atomicfragments.info'
 
@@ -2491,7 +2533,7 @@ end subroutine atomic_fragment_basis
     integer :: i
 
 
-    write(wunit) fragment%atomic_number
+    write(wunit) fragment%EOSatoms(1)
 
     ! Occupied AOS orbitals
     write(wunit) fragment%noccAOS
@@ -2539,7 +2581,7 @@ end subroutine atomic_fragment_basis
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,UnoccOrbitals,&
-       & DoBasis,fragments,jobs,restart_files_exist)
+       & DoBasis,fragments,jobs)
     implicit none
     !> Number of atoms in the full molecule
     integer,intent(in) :: natoms
@@ -2557,8 +2599,6 @@ end subroutine atomic_fragment_basis
     type(decfrag), intent(inout),dimension(natoms) :: fragments
     !> Job list
     type(joblist),intent(inout) :: jobs
-    !> Do restart files exist?
-    logical,intent(inout) :: restart_files_exist
     character(len=40) :: FileName
     integer :: funit, i, MyAtom, ndone,idx,j
     logical :: file_exist
@@ -2573,12 +2613,9 @@ end subroutine atomic_fragment_basis
 
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
-    if(file_exist) then ! something wrong
-       restart_files_exist=.true.
-    else
-       write(DECinfo%output,*) 'You requested DEC restart but no restart files exist!'
+    if(.not. file_exist) then 
+       write(DECinfo%output,*) 'You requested DEC atomic fragment restart but no restart files exist!'
        write(DECinfo%output,*) '--> I will calculate all atomic fragments from scratch...'
-       restart_files_exist=.false.
        return
     end if
 
@@ -2656,7 +2693,6 @@ end subroutine atomic_fragment_basis
     end do
 
     call lsclose(funit,'KEEP')
-
 
   end subroutine restart_atomic_fragments_from_file
 
@@ -3646,7 +3682,7 @@ if(DECinfo%PL>0) then
     ! ************************************************************
     SizeMeasure=0
     do i=1,natoms
-       atomtype = MyLsitem%input%molecule%atom(i)%Atomic_number ! atom type for atom "i"
+       atomtype = MyLsitem%input%molecule%atom(i)%atomic_number ! atom type for atom "i"
        SizeMeasure(i) = interactions(i)*atomtype*norb(i)
     end do
 
@@ -3782,12 +3818,69 @@ if(DECinfo%PL>0) then
 
 
 
+  !> \brief Create job list for DEC fragment optimization calculations.
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine create_dec_joblist_fragopt(natoms,nocc,nunocc,DistanceTable,&
+       & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,jobs)
+    implicit none
+
+    !> Number of atoms in full molecule
+    integer, intent(in) :: nAtoms
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Distance table for all atoms in the molecule
+    real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
+    !> Information about DEC occupied orbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Logical vector telling which atoms have orbitals assigned
+    logical,dimension(natoms),intent(in) :: dofrag
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Job list of fragments listed according to size (all pointers in the type are initialized here)
+    type(joblist),intent(inout) :: jobs
+    integer,dimension(natoms) :: af_list
+    integer :: njobs,i
+
+    ! Get list of atomic fragment ordered according to their (very roughly) estimated sizes
+    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
+         & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
+
+    ! Init job list with number of jobs corresponding to number of atoms with orbitals assigned
+    njobs = count(dofrag)
+    call init_joblist(njobs,jobs)
+
+
+    ! Set members of job list
+    ! ***********************
+
+    do i=1,njobs
+
+       ! Atoms according to list based on estimated sizes
+       jobs%atom1(i) = af_list(i)
+       jobs%atom2(i) = af_list(i)  ! atomic fragment, so atom1=atom2
+
+       ! Job size is not known because fragment size is not known - simply set it to 1 for all atoms.
+       jobs%jobsize(i) = 1
+
+       ! Do fragment optimization!
+       jobs%dofragopt(i) = .true.
+    end do
+
+    ! All other members of job list were set appropriately by the call to init_joblist.
+    
+  end subroutine create_dec_joblist_fragopt
+
 
   !> \brief Create job list for DEC calculations remaining after fragment optimization.
   !> \author Kasper Kristensen
   !> \date January 2013
   subroutine create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
-       &OccOrbitals,UnoccOrbitals,AtomicFragments,which_fragments,jobs)
+       &OccOrbitals,UnoccOrbitals,AtomicFragments,which_fragments,esti,jobs)
 
     implicit none
     !> Calculate atomic fragments (true) or just pair fragments (false)
@@ -3810,6 +3903,8 @@ if(DECinfo%PL>0) then
     type(decfrag),dimension(natoms),intent(in) :: AtomicFragments
     !> which_fragments(i) is true if atom "i" is central in one of the fragments
     logical, dimension(natoms),intent(in) :: which_fragments
+    !> Use estimated fragments?
+    logical,intent(in) :: esti
     !> Job list of fragments listed according to size
     type(joblist),intent(inout) :: jobs
     integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags
@@ -3980,12 +4075,16 @@ if(DECinfo%PL>0) then
     call init_joblist(njobs,jobs)
 
     call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-         & FragBasis,which_fragments, mymolecule%DistanceTable, jobs)
+         & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs)
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*) '*****************************************************'
-    write(DECinfo%output,*) '*               DEC FRAGMENT JOB LIST               *'
+    if(esti) then
+       write(DECinfo%output,*) '*      DEC ESTIMATED FRAGMENT JOB LIST              *'
+    else
+       write(DECinfo%output,*) '*               DEC FRAGMENT JOB LIST               *'
+    end if
     write(DECinfo%output,*) '*****************************************************'
     write(DECinfo%output,*) 'Number of jobs = ', njobs
     write(DECinfo%output,*)
@@ -4020,6 +4119,62 @@ if(DECinfo%PL>0) then
   end subroutine create_dec_joblist_driver
 
 
+
+  !> \brief Construct a job list, joblist12, which contains the jobs of two existing job lists,
+  !> joblist1 and joblist2 in the order [joblist1 joblist2], with the internal job orderings within
+  !> joblist1 or joblist2 unchanged.
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine concatenate_joblists(joblist1,joblist2,joblist12)
+    implicit none
+    !> Joblists 1 and 2
+    type(joblist),intent(in) :: joblist1, joblist2
+    !> Output joblist containing [joblist1 joblist2]
+    type(joblist),intent(inout) :: joblist12
+    integer :: njobs,startidx
+    
+    ! Number of jobs in combined job list: Sum of original job lists
+    njobs = joblist1%njobs + joblist2%njobs
+    call init_joblist(njobs,joblist12)
+    
+
+    ! Copy information
+    ! ****************
+
+    ! Joblist 1 --> Joblist12
+    joblist12%atom1(1:joblist1%njobs) = joblist1%atom1
+    joblist12%atom2(1:joblist1%njobs) = joblist1%atom2
+    joblist12%jobsize(1:joblist1%njobs) = joblist1%jobsize
+    joblist12%jobsdone(1:joblist1%njobs) = joblist1%jobsdone
+    joblist12%dofragopt(1:joblist1%njobs) = joblist1%dofragopt
+    joblist12%esti(1:joblist1%njobs) = joblist1%esti
+    joblist12%nslaves(1:joblist1%njobs) = joblist1%nslaves
+    joblist12%nocc(1:joblist1%njobs) = joblist1%nocc
+    joblist12%nunocc(1:joblist1%njobs) = joblist1%nunocc
+    joblist12%nbasis(1:joblist1%njobs) = joblist1%nbasis
+    joblist12%ntasks(1:joblist1%njobs) = joblist1%ntasks
+    joblist12%flops(1:joblist1%njobs) = joblist1%flops
+    joblist12%LMtime(1:joblist1%njobs) = joblist1%LMtime
+    joblist12%load(1:joblist1%njobs) = joblist1%load
+
+    ! Joblist 2 --> Joblist12
+    startidx=joblist1%njobs+1
+    joblist12%atom1(startidx:njobs) = joblist2%atom1
+    joblist12%atom2(startidx:njobs) = joblist2%atom2
+    joblist12%jobsize(startidx:njobs) = joblist2%jobsize
+    joblist12%jobsdone(startidx:njobs) = joblist2%jobsdone
+    joblist12%dofragopt(startidx:njobs) = joblist2%dofragopt
+    joblist12%esti(startidx:njobs) = joblist2%esti
+    joblist12%nslaves(startidx:njobs) = joblist2%nslaves
+    joblist12%nocc(startidx:njobs) = joblist2%nocc
+    joblist12%nunocc(startidx:njobs) = joblist2%nunocc
+    joblist12%nbasis(startidx:njobs) = joblist2%nbasis
+    joblist12%ntasks(startidx:njobs) = joblist2%ntasks
+    joblist12%flops(startidx:njobs) = joblist2%flops
+    joblist12%LMtime(startidx:njobs) = joblist2%LMtime
+    joblist12%load(startidx:njobs) = joblist2%load
+
+  end subroutine concatenate_joblists
 
 
   ! \brief Get main info about size for pair fragment from sets of logical arrays
@@ -4090,7 +4245,7 @@ if(DECinfo%PL>0) then
   !> \author Kasper Kristensen
   !> \date April 2013
   subroutine set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-       & FragBasis,which_fragments, DistanceTable, jobs)
+       & FragBasis,which_fragments, DistanceTable, esti,jobs)
 
     implicit none
     !> Full molecule info
@@ -4115,6 +4270,8 @@ if(DECinfo%PL>0) then
     logical,dimension(natoms),intent(in) :: which_fragments
     !> Distance table with interatomic distances
     real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
+    !> Use estimated fragments?
+    logical,intent(in) :: esti
     !> Job list for fragments
     type(joblist),intent(inout) :: jobs
     logical,pointer :: occpairAOS(:), unoccpairAOS(:),basispair(:)
@@ -4221,6 +4378,9 @@ if(DECinfo%PL>0) then
     ! No jobs have been done
     jobs%jobsdone=.false.
 
+    ! Estimated fragments?
+    jobs%esti=esti
+
     ! Clean up
     call mem_dealloc(atom1)
     call mem_dealloc(atom2)
@@ -4301,9 +4461,9 @@ if(DECinfo%PL>0) then
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
     if(.not. file_exist) then
-       print *, 'filename: ', filename
-       call lsquit('read_fragment_energies_for_restart: &
-            & Restart file does not exist!',-1)
+       write(DECinfo%output,*) 'WARNING: Restart file: ', FileName
+       write(DECinfo%output,*) 'does not exist! I therefore calculate it from scratch...'
+       return
     end if
 
     ! Create a new file fragenergies.info
@@ -4425,6 +4585,8 @@ if(DECinfo%PL>0) then
     jobs%atom2(1:nold) = oldjobs%atom2(1:nold)
     jobs%jobsize(1:nold) = oldjobs%jobsize(1:nold)
     jobs%jobsdone(1:nold) = oldjobs%jobsdone(1:nold)
+    jobs%dofragopt(1:nold) = oldjobs%dofragopt(1:nold)
+    jobs%esti(1:nold) = oldjobs%esti(1:nold)
     jobs%nslaves(1:nold) = oldjobs%nslaves(1:nold)
     jobs%nocc(1:nold) = oldjobs%nocc(1:nold)
     jobs%nunocc(1:nold) = oldjobs%nunocc(1:nold)
@@ -4605,6 +4767,8 @@ if(DECinfo%PL>0) then
     jobscopy%atom2 = jobs%atom2
     jobscopy%jobsize = jobs%jobsize
     jobscopy%jobsdone = jobs%jobsdone
+    jobscopy%dofragopt = jobs%dofragopt
+    jobscopy%esti = jobs%esti
     jobscopy%nslaves = jobs%nslaves
     jobscopy%nocc = jobs%nocc
     jobscopy%nunocc = jobs%nunocc
@@ -5261,8 +5425,8 @@ if(DECinfo%PL>0) then
 
     ! Copy info
     if(myfragment%nEOSatoms==1) then ! atomic fragment
-       myjob%atom1(1) = myfragment%atomic_number
-       myjob%atom2(1) = myfragment%atomic_number   
+       myjob%atom1(1) = myfragment%EOSatoms(1)
+       myjob%atom2(1) = myfragment%EOSatoms(1)   
     else
        myjob%atom1(1) = myfragment%EOSatoms(1)
        myjob%atom2(1) = myfragment%EOSatoms(2)
@@ -5735,7 +5899,7 @@ if(DECinfo%PL>0) then
   !> definitions in dec_typedef.F90.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine define_pair_calculations(natoms,dofrag,FragEnergies,MyMolecule,Ecorr_est,Eskip_est)
+  subroutine define_pair_calculations(natoms,dofrag,FragEnergies,MyMolecule,Epair_est,Eskip_est)
     implicit none
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
@@ -5746,13 +5910,13 @@ if(DECinfo%PL>0) then
     real(realk),intent(in) :: FragEnergies(natoms,natoms)
     !> Full molecule structure, where only MyMolecule%ccmodel is modified
     type(fullmolecule),intent(inout) :: MyMolecule
-    !> Estimated correlation energy from all estimated atomic and pair fragments
-    real(realk),intent(inout) :: Ecorr_est
+    !> Estimated correlation energy from estimated pair fragments
+    real(realk),intent(inout) :: Epair_est
     !> Estimated correlation energy from the pairs that will be skipped in the calculation
     real(realk),intent(inout) :: Eskip_est
-    integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit
+    integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit,Pmax,Qmax
     real(realk),dimension(natoms) :: EPQ
-    real(realk) :: Eacc
+    real(realk) :: Eacc,Epairmax
     integer,dimension(natoms) :: atomindices
 
 
@@ -5798,7 +5962,7 @@ if(DECinfo%PL>0) then
 
     ! Init stuff
     MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model as initialization model
-   
+
 
     ! Loop over all atoms P
     Ploop: do P=1,natoms
@@ -5822,10 +5986,10 @@ if(DECinfo%PL>0) then
        ! **************************************
        Eacc = 0.0_realk
        Qloop2: do Q=natoms,1,-1
-          
+
           ! Skip if no orbitals assigned to atom Q
           Qidx = atomindices(Q)
-          if(.not. dofrag(Qidx)) cycle Qloop2
+          if(.not. dofrag(Qidx) .or. Qidx==P) cycle Qloop2
 
           ! Accumulated estimated energy from smallest pair interaction energies
           Eacc = Eacc + EPQ(Q)
@@ -5852,7 +6016,7 @@ if(DECinfo%PL>0) then
           Qstart=Qquit
           Qloop3: do Q=Qstart,1,-1
              Qidx = atomindices(Q)
-             if(.not. dofrag(Qidx)) cycle Qloop3
+             if(.not. dofrag(Qidx) .or. Qidx==P) cycle Qloop3
 
              Eacc = Eacc + EPQ(Q)
              if(Eacc < DECinfo%FOT) then
@@ -5879,6 +6043,9 @@ if(DECinfo%PL>0) then
     NCC=0
     NMP2=0
     Nskip=0
+    Epairmax=0.0_realk
+    Pmax=0
+    Qmax=0
     do P=1,natoms
        if(.not. dofrag(P)) cycle
        do Q=1,P-1
@@ -5890,17 +6057,35 @@ if(DECinfo%PL>0) then
           elseif(MyMolecule%ccmodel(P,Q)==MODEL_NONE) then
              Nskip=Nskip+1
           end if
+
+          ! Find max pair energy and associated indices (for sanity check below)
+          if(Epairmax < abs(FragEnergies(P,Q))) then
+             Epairmax = abs(FragEnergies(P,Q))
+             Pmax=P
+             Qmax=Q
+          end if
+
        end do
     end do
 
+    ! Sanity check to avoid empty job list --> Always have at least one pair
+    ! (only relevant for debug molecules)
+    if(NCC+NMP2==0) then
+       ! Simply calculate the pair with the largest (absolute) estimated energy
+       MyMolecule%ccmodel(Pmax,Qmax) = DECinfo%ccmodel
+       MyMolecule%ccmodel(Qmax,Pmax) = DECinfo%ccmodel
+       NCC=1
+       Nskip = Nskip-1
+    end if
+
     ! Estimate correlation energy by adding all estimated atomic and pair fragment energy contributions
-    call add_dec_energies(natoms,FragEnergies,dofrag,Ecorr_est)
+    call add_dec_energies(natoms,FragEnergies,dofrag,Epair_est)
 
     ! Estimate energy contribution from pairs which will be skipped from the calculation
     call estimate_energy_of_skipped_pairs(natoms,FragEnergies,dofrag,MyMolecule,Eskip_est)
 
     ! Print summary for pair analysis and estimated energies
-    call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est,&
+    call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Epair_est,Eskip_est,&
          & FragEnergies,MyMolecule%DistanceTable)
 
   end subroutine define_pair_calculations
@@ -5909,7 +6094,7 @@ if(DECinfo%PL>0) then
   !> \brief Print summary of analysis used to define pair calculations (see define_pair_calculations).
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Ecorr_est,Eskip_est,&
+  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Epair_est,Eskip_est,&
        & FragEnergies,DistanceTable)
     implicit none
     !> Number of atoms in molecule
@@ -5922,8 +6107,8 @@ if(DECinfo%PL>0) then
     integer,intent(in) :: NCC
     !> Which atomic sites have orbitals assigned?
     logical,intent(in),dimension(natoms) :: dofrag
-    !> Estimated correlation energy from all estimated atomic and pair fragments
-    real(realk),intent(in) :: Ecorr_est
+    !> Estimated correlation energy from estimated pair fragments
+    real(realk),intent(in) :: Epair_est
     !> Estimated correlation energy from the pairs that will be skipped in the calculation
     real(realk),intent(in) :: Eskip_est
     !> Estimated fragment energies
@@ -5947,13 +6132,11 @@ if(DECinfo%PL>0) then
     end if
     write(DECinfo%output,'(1X,a,i10)') 'Pairs to be skipped from calculation  ', Nskip
     write(DECinfo%output,*) 
-    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated total correlation energy:        ', Ecorr_est
+    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated pair correlation energy:         ', Epair_est
     write(DECinfo%output,'(1X,a,g20.10)') 'Estimated contribution from skipped pairs: ', Eskip_est
     write(DECinfo%output,*) 
     write(DECinfo%output,*) 
-    ! Also print all estimated fragment energies. Maybe this should be removed at some point
-    call print_atomic_fragment_energies(natoms,FragEnergies,dofrag,&
-         & 'Estimated occupied single energies','AF_ESTIMATE')
+    ! Also print estimated pair fragment energies. Maybe this should be removed at some point
     call print_pair_fragment_energies(natoms,FragEnergies,dofrag,&
          & DistanceTable, 'Estimated occupied pair energies','PF_ESTIMATE')
     write(DECinfo%output,*) 

@@ -21,6 +21,12 @@ INTEGER                       :: layer,l1,l2,l3
 REAL(realk)                   :: phase1,phase2,phase3
 COMPLEX(complexk)             :: phase
 
+ if(oper .eq. 1) then
+   Bkmat%Smat%zelms(:)=CMPLX(0.,0.,COMPLEXK)
+ else
+   Bkmat%fck%zelms(:)=CMPLX(0.,0.,COMPLEXK)
+ endif
+
 
  DO layer = 1, size(Armat%lvec)
    l1=int(Armat%lvec(layer)%lat_coord(1))
@@ -94,6 +100,8 @@ LOGICAL                       :: innegligible
 INTEGER                       :: layer,l1,l2,l3
 REAL(realk)                   :: phase1,phase2,phase3
 COMPLEX(complexk)             :: phase
+
+ Bkmat%Smat%zelms(:) = CMPLX(0.,0.,COMPLEXK)
 
  DO layer = 1, numvecs
 
@@ -234,6 +242,8 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
             &layer', l1,l2,l3,maxdens
          endif
        endif
+       write(*,*) 'density real',l1,l2,l3
+       call mat_print(density(layer),1,nbast,1,nbast,6)
      endif
      endif
 

@@ -1389,90 +1389,88 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         READWORD=.FALSE.
         EXIT INFOLOOP
      ENDIF
-     IF(PROMPT(1:1) .EQ. '.') THEN
-        SELECT CASE(WORD)
-        CASE('.DEBUG_SCF_MEM')
-           call Set_PrintSCFmemory(.TRUE.)
-        CASE('.DEBUG_MPI_MEM')
-           config%mpi_mem_monitor = .true.
-        CASE('.DEBUG_ARH_LINTRA')
-           config%solver%DEBUG_ARH_LINTRA = .true.
-        CASE('.DEBUG_ARH_PRECOND')
-           config%solver%DEBUG_ARH_PRECOND = .true.
-        CASE('.DEBUG_CONVERT')
-           config%opt%DEBUG_CONVERT = .true.
-           READ(LUCMD,*) config%opt%cfg_which_conversion 
-           !CASE('.DEBUG_DCHANGE')
-           !     DEBUG_DCHANGE = .true.
-        CASE('.DEBUG_DD')
-           READ(LUCMD,*) config%solver%cfg_nits_debug
-           config%decomp%cfg_check_converged_solution = .true.
-           config%solver%DEBUG_DD = .true.
-        CASE('.DEBUG_DD_LINTRA')
-           config%solver%DEBUG_DD_LINTRA = .true.
-        CASE('.DEBUG_DD_HOMOLUMO')
-           config%solver%DEBUG_DD_HOMOLUMO = .true.
-        CASE('.DEBUG_DIAG_REDSPACE')
-           config%solver%DEBUG_DIAG_REDSPACE = .true.
-        CASE('.DEBUG_DIAG_HESSIAN')
-           config%opt%DEBUG_DIAG_HESSIAN = .true.
-        CASE('.DEBUG_HESSIAN')
-           config%solver%DEBUG_HESSIAN = .true.
-        CASE('.DEBUG_HESSIAN_EXACT')
-           config%solver%DEBUG_HESSIAN_EXACT = .true. ; config%solver%DEBUG_HESSIAN = .true.
-        CASE('.DEBUG_IDEMPOTENCY')
-           config%diag%DEBUG_IDEMPOTENCY = .true.
-           !CASE('.DEBUG_OAO_GRADIENT')
-           !     DEBUG_OAO_GRADIENT = .true.
-           !CASE('.DEBUG_RH_MU_E')
-           !     DEBUG_RH_MU_E = .true.
-           !     READ(LUCMD,*) cfg_nits_debug,  cfg_mu_max_debug 
-           !     READ(LUCMD,*) (cfg_its_debug(i),i=1,cfg_nits_debug)
-           !CASE('.DEBUG_RSP')
-           !     DEBUG_RSP = .true.
-           !CASE('.DEBUG_RSP_LINSCA')
-           !     DEBUG_RSP_LINSCA = .true.
-        CASE('.INFO_CROP')
-           config%solver%INFO_CROP = .true.
-        CASE('.INFO_LEVELSHIFT')
-           config%solver%INFO_LEVELSHIFT    = .true.
-        CASE('.INFO_STABILITY')
-           config%decomp%INFO_STABILITY      = .true.
-        CASE('.INFO_DIIS')
-           config%av%INFO_DIIS = .true.
-           config%av%INFO_WEIGHT_FINAL = .true. 
-        CASE('.INFO_LINEQ')
-           config%solver%INFO_LINEQ = .true.
-        CASE('.INFO_MATOP')
-           config%opt%INFO_MATOP = .true.
-           !CASE('.INFO_ORB_E')
-           !     INFO_ORB_E = .true.
-        CASE('.INFO_STABILITY_REDSPACE')
-           config%decomp%info_stability_redspace = .true.
-        CASE('.INFO_RH')
-           config%diag%INFO_RH_ITERATIONS    = .true.
-           config%diag%INFO_RH_MU            = .true. 
-           config%diag%INFO_RH_GAP           = .true.
-        CASE('.INFO_RH_DETAIL')
-           !config%diag%INFO_RH_EPRED         = .true.
-           config%diag%INFO_RH_GAP           = .true.
-           config%diag%INFO_RH_GRADIENT      = .true.
-           config%diag%INFO_RH_ITERATIONS    = .true.
-           config%diag%INFO_RH_MU            = .true.
-        CASE('.INFO_RSP')
-           config%response%rspsolverinput%INFO_RSP = .true.
-        CASE('.INFO_RSP_REDSPACE')
-           config%response%rspsolverinput%INFO_RSP_REDSPACE = .true.
-           !CASE('.INFO_TIME_MAT_OPERATIONS')
-           !     INFO_TIME_MAT_OPERATIONS = .true.
-           !     call mat_timings
-        CASE('.INFO_WEIGHT')
-           config%av%INFO_WEIGHT_FINAL = .true.
-        CASE DEFAULT
-           WRITE(config%LUPRI,*) ' Keyword ',WORD,' not recognized in config_info_input'
-           CALL lsQUIT('Illegal keyword in config_info_input.',config%lupri)
-        END SELECT
-     ENDIF
+     SELECT CASE(WORD)
+     CASE('.DEBUG_SCF_MEM')
+        call Set_PrintSCFmemory(.TRUE.)
+     CASE('.DEBUG_MPI_MEM')
+        config%mpi_mem_monitor = .true.
+     CASE('.DEBUG_ARH_LINTRA')
+        config%solver%DEBUG_ARH_LINTRA = .true.
+     CASE('.DEBUG_ARH_PRECOND')
+        config%solver%DEBUG_ARH_PRECOND = .true.
+     CASE('.DEBUG_CONVERT')
+        config%opt%DEBUG_CONVERT = .true.
+        READ(LUCMD,*) config%opt%cfg_which_conversion 
+        !CASE('.DEBUG_DCHANGE')
+        !     DEBUG_DCHANGE = .true.
+     CASE('.DEBUG_DD')
+        READ(LUCMD,*) config%solver%cfg_nits_debug
+        config%decomp%cfg_check_converged_solution = .true.
+        config%solver%DEBUG_DD = .true.
+     CASE('.DEBUG_DD_LINTRA')
+        config%solver%DEBUG_DD_LINTRA = .true.
+     CASE('.DEBUG_DD_HOMOLUMO')
+        config%solver%DEBUG_DD_HOMOLUMO = .true.
+     CASE('.DEBUG_DIAG_REDSPACE')
+        config%solver%DEBUG_DIAG_REDSPACE = .true.
+     CASE('.DEBUG_DIAG_HESSIAN')
+        config%opt%DEBUG_DIAG_HESSIAN = .true.
+     CASE('.DEBUG_HESSIAN')
+        config%solver%DEBUG_HESSIAN = .true.
+     CASE('.DEBUG_HESSIAN_EXACT')
+        config%solver%DEBUG_HESSIAN_EXACT = .true. ; config%solver%DEBUG_HESSIAN = .true.
+     CASE('.DEBUG_IDEMPOTENCY')
+        config%diag%DEBUG_IDEMPOTENCY = .true.
+        !CASE('.DEBUG_OAO_GRADIENT')
+        !     DEBUG_OAO_GRADIENT = .true.
+        !CASE('.DEBUG_RH_MU_E')
+        !     DEBUG_RH_MU_E = .true.
+        !     READ(LUCMD,*) cfg_nits_debug,  cfg_mu_max_debug 
+        !     READ(LUCMD,*) (cfg_its_debug(i),i=1,cfg_nits_debug)
+        !CASE('.DEBUG_RSP')
+        !     DEBUG_RSP = .true.
+        !CASE('.DEBUG_RSP_LINSCA')
+        !     DEBUG_RSP_LINSCA = .true.
+     CASE('.INFO_CROP')
+        config%solver%INFO_CROP = .true.
+     CASE('.INFO_LEVELSHIFT')
+        config%solver%INFO_LEVELSHIFT    = .true.
+     CASE('.INFO_STABILITY')
+        config%decomp%INFO_STABILITY      = .true.
+     CASE('.INFO_DIIS')
+        config%av%INFO_DIIS = .true.
+        config%av%INFO_WEIGHT_FINAL = .true. 
+     CASE('.INFO_LINEQ')
+        config%solver%INFO_LINEQ = .true.
+     CASE('.INFO_MATOP')
+        config%opt%INFO_MATOP = .true.
+        !CASE('.INFO_ORB_E')
+        !     INFO_ORB_E = .true.
+     CASE('.INFO_STABILITY_REDSPACE')
+        config%decomp%info_stability_redspace = .true.
+     CASE('.INFO_RH')
+        config%diag%INFO_RH_ITERATIONS    = .true.
+        config%diag%INFO_RH_MU            = .true. 
+        config%diag%INFO_RH_GAP           = .true.
+     CASE('.INFO_RH_DETAIL')
+        !config%diag%INFO_RH_EPRED         = .true.
+        config%diag%INFO_RH_GAP           = .true.
+        config%diag%INFO_RH_GRADIENT      = .true.
+        config%diag%INFO_RH_ITERATIONS    = .true.
+        config%diag%INFO_RH_MU            = .true.
+     CASE('.INFO_RSP')
+        config%response%rspsolverinput%INFO_RSP = .true.
+     CASE('.INFO_RSP_REDSPACE')
+        config%response%rspsolverinput%INFO_RSP_REDSPACE = .true.
+        !CASE('.INFO_TIME_MAT_OPERATIONS')
+        !     INFO_TIME_MAT_OPERATIONS = .true.
+        !     call mat_timings
+     CASE('.INFO_WEIGHT')
+        config%av%INFO_WEIGHT_FINAL = .true.
+     CASE DEFAULT
+        WRITE(config%LUPRI,*) ' Keyword ',WORD,' not recognized in config_info_input'
+        CALL lsQUIT('Illegal keyword in config_info_input.',config%lupri)
+     END SELECT
   ENDDO INFOLOOP
 END SUBROUTINE config_info_input
 

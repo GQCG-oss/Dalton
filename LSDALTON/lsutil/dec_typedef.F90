@@ -288,10 +288,10 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
-     !> Use MP2 energies for expansion part of fragment optimization
-     logical :: fragopt_exp_mp2
-     !> Use MP2 energies for reduction part of fragment optimization
-     logical :: fragopt_red_mp2
+     !> Model to use for fragment expansion
+     integer :: fragopt_exp_model
+     !> Model to use for fragment reduction
+     integer :: fragopt_red_model
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Repeat atomic fragment calculations after fragment optimization?
@@ -522,8 +522,6 @@ module dec_typedef_module
   !> IMPORTANT: IF YOU MODIFY THIS STRUCTURE, REMEMBER TO CHANGE mpicopy_fragment ACCORDINGLY!!!
   type decfrag
 
-     !> Number of atom in full molecule
-     integer :: atomic_number=0
      !> Number of occupied EOS orbitals 
      integer :: noccEOS=0
      !> Number of unoccupied EOS orbitals 
@@ -928,6 +926,10 @@ module dec_typedef_module
      integer,pointer :: jobsize(:) 
      ! Is a given job done (true) or not (false) (dimension: njobs)
      logical,pointer :: jobsdone(:) 
+     ! Does job require fragment optimization?
+     logical,pointer :: dofragopt(:)
+     ! Does job use estimated fragments?
+     logical,pointer :: esti(:)
 
      ! MPI statistics
 
