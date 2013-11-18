@@ -18,9 +18,14 @@ module dec_typedef_module
 
 
 
+  ! ***************************************************************************************
+  !                         PARAMETERS DEFINING DEC MODELS
+  ! ***************************************************************************************
+  ! Do never ever use hardcoded values of these numbers inside the DEC routines!
 
-  ! MODIFY FOR NEW MODEL
-  !> Specify the parameters for ccModel here. NEVER HARDCODE THE NUMBER
+
+  ! Overall CC model: MODIFY FOR NEW MODEL!
+  ! ---------------------------------------
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
   integer,parameter :: MODEL_CC2    = 2
@@ -29,12 +34,14 @@ module dec_typedef_module
   integer,parameter :: MODEL_RPA    = 5
 
 
-  ! IMPORTANT: Number of possible energies to calculate using the DEC scheme
-  ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
-  ! MODIFY FOR NEW MODEL
-  ! MODIFY FOR NEW CORRECTION
+  ! DEC fragment energies: MODIFY FOR NEW MODEL & MODIFY FOR NEW CORRECTION
+  ! -----------------------------------------------------------------------
+  ! Given a CC model, there are typically more than one DEC fragment energy to consider.
+  ! Parameters defining the fragment energies are given here.
+
+  !> Number of different fragment energies
   integer, parameter :: ndecenergies = 14
-  !> Specify numbers for storing of fragment energies
+  !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2 = 1  ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2 = 2  ! MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTMP2 = 3 ! MP2 virtual partitioning scheme
@@ -76,12 +83,7 @@ module dec_typedef_module
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
      !> Enforce canonical orbitals in calculation 
-     !> (only meaningful for full_molecular_cc or simulate_full)
      logical :: use_canonical
-     !> Default: Full calculation uses canonical orbitals, while DEC calculation uses local orbitals.
-     !> This can be overruled by inpiut keywords (see config_dec_input).
-     !> If the default choice was overruled "user_defined_orbitals" is set to true.
-     logical :: user_defined_orbitals
      !> Simulate full molecular calculation in DEC mode  (debug)
      logical :: simulate_full
      !> How many atoms to use in simulation mode   (debug)
@@ -286,10 +288,10 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
-     !> Use MP2 energies for expansion part of fragment optimization
-     logical :: fragopt_exp_mp2
-     !> Use MP2 energies for reduction part of fragment optimization
-     logical :: fragopt_red_mp2
+     !> Model to use for fragment expansion
+     integer :: fragopt_exp_model
+     !> Model to use for fragment reduction
+     integer :: fragopt_red_model
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Repeat atomic fragment calculations after fragment optimization?
@@ -508,8 +510,8 @@ module dec_typedef_module
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()
      !> Table describing which model should be used for given fragment calculation:
-     !> model=0:  Skip fragment (only relevant for pairs)
-     !> model=MODEL_MP2:  Do MP2
+     !> model=MODEL_NONE:  Skip fragment (only relevant for pairs)
+     !> model=MODEL_MP2 :  Do MP2
      !> etc., see MODEL_* definitions below
      integer,pointer :: ccmodel(:,:) => null()
 
@@ -520,8 +522,6 @@ module dec_typedef_module
   !> IMPORTANT: IF YOU MODIFY THIS STRUCTURE, REMEMBER TO CHANGE mpicopy_fragment ACCORDINGLY!!!
   type decfrag
 
-     !> Number of atom in full molecule
-     integer :: atomic_number=0
      !> Number of occupied EOS orbitals 
      integer :: noccEOS=0
      !> Number of unoccupied EOS orbitals 
@@ -592,7 +592,7 @@ module dec_typedef_module
 
      !> Information used only when the decfrag is a pair fragment
      !> ********************************************************
-     !> Distance between single fragments used to generate pair
+     !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
 
      !> Total occupied orbital space (orbital type)
@@ -797,7 +797,7 @@ module dec_typedef_module
      ! where E2 is the Hessian transformation, see dec_solve_kappa_equation.
 
 
-     ! Single fragment:
+     ! atomic fragment:
      ! ij in X_{ij} belongs to CentralAtom
      ! ab in X_{ij} belongs to CentralAtom
      !
@@ -818,9 +818,9 @@ module dec_typedef_module
      integer :: nocc
      !> Number of occupied core+valence AOS orbitals (only different from nocc for frozen core)
      integer :: nocctot
-     !> Fragment energy (for single fragment or pair fragment)
+     !> Fragment energy (for atomic fragment or pair fragment)
      real(realk) :: energy
-     !> Only pair frags: Distance between (super) fragments in pair (zero for single fragments)
+     !> Only pair frags: Distance between fragments in pair (zero for atomic fragments)
      real(realk) :: pairdist
 
      !> Number of EOS atoms (1 for atomic fragment, 2 for pair fragment)
@@ -912,20 +912,24 @@ module dec_typedef_module
   !> Ideally they are listed in order of size with the largest jobs first.
   !> Also includes MPI performance statistics for each job.
   type joblist
-     ! Number of superfragment jobs
+     ! Number of fragment jobs
      integer :: njobs
 
      ! All pointers below has the dimension njobs
      ! ------------------------------------------
 
-     ! Atom 1 in super fragment (dimension: njobs)
+     ! Atom 1 in fragment (dimension: njobs)
      integer,pointer :: atom1(:) 
-     ! Atom 2 in super fragment (dimension: njobs)   (NOTE: atom2=0 for single fragments)
+     ! Atom 2 in fragment (dimension: njobs)   (NOTE: atom2=0 for atomic fragments)
      integer,pointer :: atom2(:) 
      ! Size of job (dimension: njobs)
      integer,pointer :: jobsize(:) 
      ! Is a given job done (true) or not (false) (dimension: njobs)
      logical,pointer :: jobsdone(:) 
+     ! Does job require fragment optimization?
+     logical,pointer :: dofragopt(:)
+     ! Does job use estimated fragments?
+     logical,pointer :: esti(:)
 
      ! MPI statistics
 

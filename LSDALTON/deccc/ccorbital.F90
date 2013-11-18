@@ -667,7 +667,7 @@ contains
     call mem_alloc(which_hydrogens,natoms)
     which_hydrogens=.false.
     do atom=1,natoms
-       if(myLsitem%input%molecule%Atom(atom)%Atomic_number==1) then
+       if(myLsitem%input%molecule%Atom(atom)%atomic_number==1) then
           which_hydrogens(atom)=.true.
        end if
     end do
@@ -1696,7 +1696,7 @@ contains
        centralatom = Orbitals(i)%centralatom
 
        ! Atomic number for central atom
-       atomnumber = myLsitem%input%molecule%Atom(centralatom)%Atomic_number
+       atomnumber = myLsitem%input%molecule%Atom(centralatom)%atomic_number
 
        ! Reassign if centralatom is hydrogen and IF:
        ! Nearest neighbor is not H (CHECK 2)
@@ -1735,7 +1735,7 @@ contains
           end if
 
           ! CHECK 2: Neighbor is not hydrogen
-          neighbor_atomnumber = myLsitem%input%molecule%Atom(neighbor)%Atomic_number
+          neighbor_atomnumber = myLsitem%input%molecule%Atom(neighbor)%atomic_number
           CheckNeighbor: if(neighbor_atomnumber == 1) then ! No reassignment
              if(DECinfo%PL>0) then
                 write(DECinfo%output,*)
@@ -1816,7 +1816,7 @@ contains
        centralatom = centralatoms(i)
 
        ! Atomic number for central atom
-       atomnumber = myLsitem%input%molecule%Atom(centralatom)%Atomic_number
+       atomnumber = myLsitem%input%molecule%Atom(centralatom)%atomic_number
 
        ! Reassign if centralatom is hydrogen and IF:
        ! Nearest neighbor is not H (CHECK 1)
@@ -1830,7 +1830,7 @@ contains
           neighbor = TrackMatrix(2,centralatom)
 
           ! CHECK 1: Neighbor is not hydrogen
-          neighbor_atomnumber = myLsitem%input%molecule%Atom(neighbor)%Atomic_number
+          neighbor_atomnumber = myLsitem%input%molecule%Atom(neighbor)%atomic_number
           if(neighbor_atomnumber == 1) reassign=.false.
 
           ! CHECK 2: Distance to neighbor is smaller than maximum accepted distance
@@ -2273,10 +2273,9 @@ contains
     ! Cases where it is necessary to repeat atomic fragment calcs:
     ! - first order properties are requested
     ! - only one fragment 
-    ! - fragment opt where reduction step is done at the MP2 level
-    !   but where the target CC model is not MP2.
+    ! - fragment opt where reduction step is done for a different model than the target CC model.
     if(DECinfo%first_order .or. nfrags==1 .or. DECinfo%InclFullMolecule &
-         & .or. (DECinfo%ccmodel/=1 .and. DECinfo%fragopt_red_mp2 ) ) then
+         & .or. (DECinfo%ccmodel/=DECinfo%fragopt_red_model ) ) then
        DECinfo%RepeatAF=.true.
     else
        DECinfo%RepeatAF=.false.
@@ -2335,7 +2334,7 @@ contains
   !> \brief Determine which atoms have one or more orbitals assigned.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine which_atom_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
+  subroutine which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
 
     implicit none
     !> Number of occupied orbitals in full molecule
@@ -2369,7 +2368,7 @@ contains
        end if
     end do
 
-  end subroutine which_atom_have_orbitals_assigned
+  end subroutine which_atoms_have_orbitals_assigned
 
 
 end module orbital_operations

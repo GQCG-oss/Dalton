@@ -189,11 +189,11 @@ INTEGER :: layer
 INTEGER :: l1,l2,l3
 
 do layer =1,size(Aop%lvec)
-   l1=int(Aop%lvec(layer)%lat_coord(1))
-   l2=int(Aop%lvec(layer)%lat_coord(2))
-   l3=int(Aop%lvec(layer)%lat_coord(3))
+   if(Aop%lvec(layer)%f1_computed .or. Aop%lvec(layer)%g2_computed) then
+     l1=int(Aop%lvec(layer)%lat_coord(1))
+     l2=int(Aop%lvec(layer)%lat_coord(2))
+     l3=int(Aop%lvec(layer)%lat_coord(3))
 
-   if((abs(l1) .le. Aop%fc1 .and. abs(l2) .le. Aop%fc2) .and. abs(l3) .le. Aop%fc3)then
 #ifdef DEBUGPBC
      write(lu,*) 'Fock matrix',l1
      call mat_print(Aop%lvec(layer)%oper(oper2),1,nrows,1,ncols,lu)
@@ -387,7 +387,9 @@ Do layer=1,size(Aop%lvec)
    case(1) !overlap
      if((abs(l1) .le. Aop%oneop1 .and. abs(l2) .le. Aop%oneop2)&
      & .and. abs(l3) .le. Aop%oneop3)then
-     !  call mat_init(Aop%lvec(layer)%oper(oper2),nrows,ncols)
+        if(Aop%lvec(layer)%oper(oper2)%init_magic_tag .ne. mat_init_magic_value)then
+          call mat_init(Aop%lvec(layer)%oper(oper2),nrows,ncols)
+        endif
        call mat_zero(Aop%lvec(layer)%oper(oper2))
        call pbc_get_file_and_read(Aop,nrows,ncols,layer,1,oper2,diis)
      endif

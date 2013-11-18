@@ -108,28 +108,28 @@ C
      *            '" not recognized in *WALK input.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in *WALK input')
-    1          CONTINUE
+    1          CONTINUE   ! .RESTAR
                   START = .FALSE.
                GO TO 100
-    2          CONTINUE
+    2          CONTINUE   ! .PRINT
                   READ (LUCMD,*) IPRWLK
                   IF (IPRWLK .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
-    3          CONTINUE
+    3          CONTINUE   ! .INDEX
                   READ (LUCMD,*) IWKIND
                GO TO 100
-    4          CONTINUE
+    4          CONTINUE   ! .TRUST
                   READ (LUCMD,*) TRUSTR, TRUSTI, TRUSTD
                   SETRAD = .TRUE.
                GO TO 100
-    5          CONTINUE
+    5          CONTINUE   ! .ANHARM
                   V3CAL = .TRUE.
                   IWKVEC(6) = 1
                GO TO 100
-    6          CONTINUE
+    6          CONTINUE   ! .DISPLA
                   READ (LUCMD,*) DISPLC
                GO TO 100
-    7          CONTINUE
+    7          CONTINUE   ! .SCALE
                   ISCVEC(2) = 1
                   DO 7000 ICOOR = 1,3
                      DO 7000 INUC = 1,MXCENT
@@ -140,49 +140,49 @@ C
                      READ (LUCMD,*) IATOM,(SCALCO(J,IATOM), J = 1,3)
  7100             CONTINUE
                GO TO 100
-    8          CONTINUE
+    8          CONTINUE   ! .MODE
                   READ (LUCMD,*) IMODE
                GO TO 100
-    9          CONTINUE
+    9          CONTINUE   ! .TOLERA
                   READ (LUCMD,*) TOLST
                GO TO 100
-   10          CONTINUE
+   10          CONTINUE   ! .HESFIL
                   HESFLW = .TRUE.
                GO TO 100
-   11          CONTINUE
+   11          CONTINUE   ! .NOPRED
                   WFPRED = .FALSE.
                GO TO 100
-   12          CONTINUE
+   12          CONTINUE   ! .MAXNUC
                   READ (LUCMD,*) XMXNUC
                   IF (XMXNUC .EQ. DXMXNU) ICHANG = ICHANG - 1
                GO TO 100
-   13          CONTINUE
+   13          CONTINUE   ! .KEEPSY
                   KEEPSY = .TRUE.
                GO TO 100
-   14          CONTINUE
+   14          CONTINUE   ! .REJECT
                   REJECT = .TRUE.
                   IF (.NOT.SETRAD) TRUSTD = TRSTDR
                GO TO 100
-   15          CONTINUE
+   15          CONTINUE   ! .RATLIM
                   READ (LUCMD,*) RTRMIN, RTRGOD, REJMIN, REJMAX
                GO TO 100
-   16          CONTINUE
+   16          CONTINUE   ! .NEWTON
                   IWKVEC(4) = 1
                GO TO 100
-   17          CONTINUE
+   17          CONTINUE   ! .VIBCNV
                GO TO 100
-   18          CONTINUE
+   18          CONTINUE   ! .GRDEXT
 Cpeo mass-scaled coordinates as default
                   ISCVEC(3) = 1
                   IWKVEC(2) = 1
                GO TO 100
-   19          CONTINUE
+   19          CONTINUE   ! .MODFOL
                   IWKVEC(1) = 1
                GO TO 100
-   20          CONTINUE
+   20          CONTINUE   ! .MASSES
                   ISCVEC(3) = 1
                GO TO 100
-   21          CONTINUE
+   21          CONTINUE   ! .REPS
                   READ (LUCMD,*) NREPS
                   READ (LUCMD,*) (IDOREP(I),I=1,NREPS)
                   DO 21000 IREP = 1, 7
@@ -192,68 +192,68 @@ Cpeo mass-scaled coordinates as default
                      DOREPW(IDOREP(IREP)) = DOSYM(IREP + 1)
 21010             CONTINUE
                GO TO 100
-   22          CONTINUE
+   22          CONTINUE   ! .ZERGRD
                   READ (LUCMD,*) ZERGRD
                GO TO 100
-   23          CONTINUE
+   23          CONTINUE   ! .EIGEN
                   IWKVEC(5) = 1
                   GO TO 100
-   24          CONTINUE
+   24          CONTINUE   ! .DYNAMI
                   IWKVEC(3) = 1
                   GO TO 100
-   25          CONTINUE
+   25          CONTINUE   ! .NOGRAD
                   READ (LUCMD, *) NZEROG
                   READ (LUCMD, *) (IZEROG(I),I=1,NZEROG)
                   GO TO 100
-   26          CONTINUE
+   26          CONTINUE   ! .MOMENT
                   READ (LUCMD,*) NSTMOM
                   DO 265 IP = 1, NSTMOM
                      READ (LUCMD, *) ISTMOM(IP), STRMOM(IP)
   265             CONTINUE
                   GO TO 100
-   27          CONTINUE
+   27          CONTINUE   ! .NUMERI
                   IWKVEC(6) = 1
                   GO TO 100
-   28          CONTINUE
+   28          CONTINUE   ! .HARMON
                   READ (LUCMD,*) ANHFAC
                   GO TO 100
-   29          CONTINUE
+   29          CONTINUE   ! .FRAGME
                   READ (LUCMD, *) NIP
                   READ (LUCMD, *) (IPART(IP), IP=1,NIP)
                   GO TO 100
-   30          CONTINUE
+   30          CONTINUE   ! .IMAGE
                   IMAGE = .TRUE.
                   GO TO 100
-   31          CONTINUE
+   31          CONTINUE   ! (not used any more)
                   GO TO 100
-   32          CONTINUE
+   32          CONTINUE   ! .IRC
                   IWKVEC(7) = 1
                   READ (LUCMD,*) IRCSGN
                   GO TO 100
-   33          CONTINUE
+   33          CONTINUE   ! .MAXTRU
                   READ (LUCMD,*) TRUMX1
                   GO TO 100
-   34          CONTINUE
+   34          CONTINUE   ! .NOORTH
                   NOORTH = .TRUE.
                   GO TO 100
-   35          CONTINUE
+   35          CONTINUE   ! .NATCON
                   NATCON = .TRUE.
                   GO TO 100
- 36            CONTINUE
+ 36            CONTINUE   ! .VIBAVE
                   VIBAVE = .TRUE.
                   IWKVEC(6) = 1
                   GO TO 100
- 37            CONTINUE
+ 37            CONTINUE   ! .NORMAL
                   NMODIF = .TRUE.
                   GO TO 100
- 38            CONTINUE
+ 38            CONTINUE   ! .ECKART
                   ECKART = .TRUE.
                   DO I = 1, NUCDEP
-                     READ (LUCMD,'(7X,F17.10,2F24.10)')
+                     READ (LUCMD,'(7X,F17.10,2F24.10)')  ! 7X to skip atom labels
      &                    (ECKGEO(J,I), J = 1, 3)
                   END DO
                   GO TO 100
- 39            CONTINUE
+ 39            CONTINUE   ! .TEMPER
                   DOTEMP = .TRUE.
                   READ (LUCMD, *) NTEMP
                   IF (NTEMP .GT. MAXTMP) THEN
@@ -265,13 +265,13 @@ Cpeo mass-scaled coordinates as default
                   END IF
                   READ (LUCMD, *) (TEMP(ITMP), ITMP=1,NTEMP)
                   GOTO 100
- 40            CONTINUE
+ 40            CONTINUE   ! .NO CEN
                   DOCENT = .FALSE.
                   GO TO 100
- 41            CONTINUE
+ 41            CONTINUE   ! .REUSE
                   REUSED = .TRUE.
                   GO TO 100
- 42            CONTINUE
+ 42            CONTINUE   ! .ACCURA
                   ACCURT = .TRUE.
                   GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -287,7 +287,7 @@ Cpeo mass-scaled coordinates as default
 C
       IF (.NOT.DOWALK) THEN
          IF (ICHANG .GT. 0) WRITE (LUPRI,'(//A/)')
-     &      ' Walk not requested, *WALK input ignored.'
+     &      ' Walk not requested with .WALK, *WALK input ignored.'
          GO TO 9999
       END IF
 C
@@ -521,10 +521,10 @@ C
                WRITE (LUPRI,'(A)') ' Mass scaling in this run.'
             END IF
          END IF
-         IF (IWKTYP .EQ. 6) THEN
-            IF (ITERMX .EQ. 20) ITERMX = 6*NUCDEP + 1
-            WRITE (LUPRI,'(/A,I5)') 'Maximum number of iterations '//
-     *           'reset in numerical differentiation to ',ITERMX
+         IF (IWKTYP .EQ. 6) THEN ! numerical differentiation
+            ITERMX = 6*NUCDEP + 1
+            WRITE (LUPRI,'(/A,I5)') 'Maximum number of geometry steps '
+     *           //'reset in numerical differentiation to ',ITERMX
          END IF
          IF (NZEROG .GT. 0) THEN
             WRITE (LUPRI,'(/A,16I5)')
@@ -904,8 +904,8 @@ C
          END IF
       ELSE
          TRUSTX = TRUSTR
-         IF (DIPDER .AND. (IWKTYP .EQ. 6 .AND. .NOT.
-     &                    (V3CAL .OR. VIBAVE))) THEN
+         IF (DIPDER .AND.
+     &      (IWKTYP .EQ. 6 .AND. .NOT.(V3CAL .OR. VIBAVE))) THEN
             NXYZ = 0
             DO 100 I = 1, 3
                IF (ISYMAX(I,1) .EQ. 0) NXYZ = NXYZ + 1
@@ -946,6 +946,8 @@ C
 C
 C        Generate normal coordinates for numerical differentiation
 C
+         CALL AROUND(
+     &    'Generating normal coordinates for numerical differentiation')
          KAMASS = 1
          KNATYP = KAMASS + NUCDEP
          KNUMIS = KNATYP + (NUCDEP + 1)/IRAT
@@ -3246,8 +3248,8 @@ C     Print
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Output from WLKTRA',-1)
-         WRITE (LUPRI,'(1X,A,1P,E24.12)') ' EKINPA ', EKINPA
-         WRITE (LUPRI,'(1X,A,1P,E24.12)') ' VREL   ', VREL
+         WRITE (LUPRI,'(A,1P,E24.12)') '  EKINPA ', EKINPA
+         WRITE (LUPRI,'(A,1P,E24.12)') '  VREL   ', VREL
       END IF
       RETURN
       END
@@ -3335,13 +3337,13 @@ C
 C
 C     ***** Print *****
 C
-      IF (IPRINT .GT. 5) THEN
+      IF (IPRINT .GE. 2) THEN
          CALL HEADER('STPSYM in WLKINC',1)
-         CALL OUTPUT(STPSYM,1,1,1,NCART,1,NCART,1,LUPRI)
+         CALL OUTPUT(STPSYM,1,1,1,NCART,1,NCART,-1,LUPRI)
          CALL HEADER('STPCAR in WLKINC',1)
-         CALL OUTPUT(STPCAR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
-         CALL HEADER('COOR in WLKINC',1)
-         CALL OUTPUT(COOR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
+         CALL OUTPUT(COOR,1,3,1,NUCIND,3,NUCIND,-1,LUPRI)
+         CALL HEADER('New COOR in WLKINC',1)
+         CALL OUTPUT(COOR,1,3,1,NUCIND,3,NUCIND,-1,LUPRI)
       END IF
       RETURN
       END
@@ -3415,11 +3417,11 @@ C
 C
 C     ***** Print *****
 C
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 2) THEN
          CALL HEADER('STPCAR in WLKNCI',1)
-         CALL OUTPUT(STPCAR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
-         CALL HEADER('COOR in WLKNCI',1)
-         CALL OUTPUT(COOR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
+         CALL OUTPUT(STPCAR,1,3,1,NUCIND,3,NUCIND,-1,LUPRI)
+         CALL HEADER('New COOR in WLKNCI',1)
+         CALL OUTPUT(COOR,1,3,1,NUCIND,3,NUCIND,-1,LUPRI)
       END IF
       RETURN
       END
@@ -3609,7 +3611,7 @@ C  /* Deck wlkv3 */
      *                 LWORK,NCRTOT,N2CRT,NCART,IPOINT,
      *                 IPRINT)
 C
-C     Determine anharmonic force field by numerical differentiation
+C     Determine anharmonic force field by numerical differentiation.
 C     Currently the entire anharmonic is determined only, using
 C     numerical differentiation of the Hessian. In the future V_imm should
 C     be determined in internal coordinates, using numerical differentiation

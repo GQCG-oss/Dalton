@@ -624,7 +624,6 @@ C
       INTEGER i,imax,j,k
       DOUBLE PRECISION aamax,dum,sum,vv(3)
 #include "priunit.h"
-      call output(a,1,3,1,3,3,3,1,LUPRI)
       do i=1,3
          aamax=0.0d0
          do j=1,3

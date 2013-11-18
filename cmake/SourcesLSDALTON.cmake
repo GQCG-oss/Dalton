@@ -227,19 +227,72 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorGammaTabulation.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_general.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Gen.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_SegQ.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_SegP.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Seg.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Seg1Prim.F90
     LSDALTON/IchorIntegrals/IchorEri.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPA.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPB.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPC.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPD.F90
-    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPAtoC.F90
-    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPAtoD.F90
-    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPDtoA.F90
-    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPCtoA.F90
-    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPBtoC.F90
-    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPBtoD.F90
-    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPDtoB.F90
-    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceQPCtoB.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPASegQ.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPBSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPCSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPDSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPASegP.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPBSegP.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPCSegP.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPDSegP.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPASeg.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPBSeg.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPCSeg.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPDSeg.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPASeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPBSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPCSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPDSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoAGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoAGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoCGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoDGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoBGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoBGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoASegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoASegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoCSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoDSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoBSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoBSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoASegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoASegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoCSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoDSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoBSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoBSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoASeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoASeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoCSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoDSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoBSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoBSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoASeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoASeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoCSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoDSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoBSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoBSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePAtoB.F90
     LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePBtoA.F90
     LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQCtoD.F90
@@ -339,6 +392,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/ls_math.F90
     LSDALTON/lsutil/SphCartMatrices.F90
     LSDALTON/lsutil/OverlapDistributionType.F90
+    LSDALTON/lsutil/pbc_lattice_type.F90
     )
 set(LSUTIL_MATRIXO_SOURCES
     LSDALTON/lsutil/matop_csr.F90
@@ -370,7 +424,6 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/IntegralOutput_operations.F90 
     LSDALTON/lsutil/TYPE-OP.F90
     LSDALTON/lsutil/GCtrans.F90
-    LSDALTON/lsutil/pbc_lattice_type.F90
     LSDALTON/lsutil/Build_AOBATCH.F90
     LSDALTON/lsutil/lspdm_basic.F90
     LSDALTON/lsutil/tensor_basic.F90
