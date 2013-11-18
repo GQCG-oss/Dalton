@@ -964,21 +964,21 @@ module dec_typedef_module
   type MObatchInfo
 
     !> number of batches:
-    integer :: nPbatch
-    integer :: nRbatch
-    !> dimension of each of the nPbatch:
-    integer, pointer :: Pdims(:) 
-    !> dimension of each of the nRbatch:
-    integer, pointer :: Rdims(:)
+    integer :: nbatch1
+    integer :: nbatch2
+    !> dimension of each of the nbatch1:
+    integer, pointer :: dimInd1(:) 
+    !> dimension of each of the nbatch2:
+    integer, pointer :: dimInd2(:)
     !> MO index corresponding to the starting point of each batch:
-    integer, pointer :: PStarts(:) 
-    integer, pointer :: RStarts(:) 
+    integer, pointer :: StartInd1(:) 
+    integer, pointer :: StartInd2(:) 
     !> starting index of each batch in the full array:
-    integer, pointer :: PR_index(:) 
+    integer, pointer :: fullInd(:) 
     !> starting index of each batch in the packed array:
-    integer, pointer :: PR_packInd(:) 
+    integer, pointer :: packInd(:) 
     
-  end type
+  end type MObatchInfo
 
   !> \brief Grid box handling for analyzing orbitals in specific parts of space
   !> for single precision real grid points
