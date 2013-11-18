@@ -1315,7 +1315,9 @@ contains
   !> which never comes...
   !> In other words, synchronization of all nodes in the local groups must be done OUTSIDE this
   !> routine because their communication channel is redefined in here!
-  !> \author Kasper Kristensen
+  !> Here some of the PDM stuff has to be redefined according to the new groups,
+  !> because the PDM memory allocation has to happen in the smaller groups now
+  !> \author Kasper Kristensen, modified by Patrick Ettenhuber
   !> \date May 2012
   subroutine dec_half_local_group
     implicit none
@@ -1337,6 +1339,7 @@ contains
     ! will be overwritten.
     ngroups=2
     call divide_local_mpi_group(ngroups,groupdims)
+    call new_group_reset_persistent_array
 
   end subroutine dec_half_local_group
 

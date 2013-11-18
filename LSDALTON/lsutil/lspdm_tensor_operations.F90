@@ -196,6 +196,11 @@ module lspdm_tensor_operations_module
     & still might be processes running",-1)
   end subroutine free_persistent_array
 
+  subroutine new_group_reset_persistent_array
+    implicit none
+    p_arr%new_offset = 0
+  end subroutine new_group_reset_persistent_array
+  
 
 
   subroutine lspdm_start_up_comm_procs
