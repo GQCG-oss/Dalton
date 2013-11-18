@@ -3222,8 +3222,8 @@ IF(DOCALC)THEN
          VXCTMP(X,2) = 0E0_realk
          DO Y=1,4
            TMP = -D8*WGHT(IPNT)*F2(Y,X)
-           VXCTMP(X,1) = VXCTMP(X,1) + E1(Y)*TMP
-           VXCTMP(X,2) = VXCTMP(X,2) + E2(Y)*TMP
+           VXCTMP(X,1) = VXCTMP(X,1) - E1(Y)*TMP
+           VXCTMP(X,2) = VXCTMP(X,2) - E2(Y)*TMP
          ENDDO
        ENDDO
 
