@@ -1,2 +1,6 @@
 
-# this file will document changes/patches with respect to version 2013.0
+
+2013.1
+------
+
+- Correct the printout of relativistic corrections to the shielding (thanks to M. Jaszunski)
