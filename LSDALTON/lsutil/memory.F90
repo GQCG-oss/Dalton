@@ -2233,53 +2233,65 @@ logical                             :: loc
 #ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
 #endif
+
+
 if(present(comm))then
 #ifdef VAR_MPI
-   loc = .false.
-   if(present(local))loc=local
+    loc = .false.
+    if(present(local))loc=local
 
-   nullify(A%d)
-   info = MPI_INFO_NULL
+    nullify(A%d)
+    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
+    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
 
-   if(IERR/=0)then
-     write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
+    if(IERR/=0)then
+      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
           & mpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+      call memory_error_quit(errmsg)
     endif
 
 #ifdef VAR_HAVE_MPI3
-   if(loc) then
-     bytes = int(0,kind=MPI_ADDRESS_KIND)
-     if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) bytes = n1 * mpi_len_realk
-     call MPI_WIN_ALLOCATE_SHARED(bytes,mpi_len_realk,info,comm,A%c,A%w,IERR)
-   else
-     call MPI_WIN_ALLOCATE(bytes,mpi_len_realk,info,comm,A%c,A%w,IERR)
-   endif
+    if(loc) then
+      bytes = int(0,kind=MPI_ADDRESS_KIND)
+      if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) bytes = n1 * mpi_len_realk
+      call MPI_WIN_ALLOCATE_SHARED(bytes,mpi_len_realk,info,comm,A%c,A%w,IERR)
+    else
+      bytes = n1 * mpi_len_realk
+      call MPI_WIN_ALLOCATE(bytes,mpi_len_realk,info,comm,A%c,A%w,IERR)
+    endif
 #else
-   call lsquit("ERROR(mpi_local_allocate_dV8): not possible withot mpi3",-1)
+    call lsquit("ERROR(mpi_local_allocate_dV8): not possible withot mpi3",-1)
 #endif
 
-   IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in alloc",I5)') IERR
-     CALL memory_error_quit(errmsg)
-   ENDIF
+    IF (IERR.NE. 0) THEN
+      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in alloc",I5)') IERR
+      CALL memory_error_quit(errmsg)
+    ENDIF
 
-   call c_f_pointer(A%c,A%d,[n1])
-   nsize = n1 * mpi_len_realk
-   call mem_allocated_mem_mpi(nsize)
-   A%n = n1
+    call c_f_pointer(A%c,A%d,[n1])
+    nsize = n1 * mpi_len_realk
+    call mem_allocated_mem_mpi(nsize)
+    A%n = n1
 
+    A%t = 2
 #else
-  call lsquit("ERROR(mpi_allocate_dV8):compiled without MPI, this is not&
+  call lsquit("ERROR(mpi_allocate_d):compiled without MPI, this is not&
   &available",-1)
 #endif
 else
+#ifdef VAR_MPI
+  call mem_alloc(A%d,A%c,n1)
+  A%n = n1
+  A%w = 0
+  A%t = 1
+#else
   call mem_alloc(A%d,n1)
   A%c = c_null_ptr
   A%n = n1
   A%w = 0
+  A%t = 0
+#endif
 endif
 END SUBROUTINE mpi_allocate_d
 SUBROUTINE mpi_local_allocate_dV8(A,cip,n1,win,comm,n2) 
@@ -2297,6 +2309,7 @@ integer(kind=8)                     :: assoc
 #ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
    nullify(A)
+   ierr = 0
    info = MPI_INFO_NULL
 
    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
@@ -2515,42 +2528,61 @@ character(120) :: errmsg
 #ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
 #endif
-if(c_associated(A%c))then
-#ifdef VAR_MPI
-   info = MPI_INFO_NULL
-
-   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
-   if(IERR/=0)then
-     write (errmsg,'("ERROR(mpi_deallocate_dV):error in&
-          & mpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
-   endif
-
-   nsize = size(A%d)*mpi_len_realk
-   call mem_deallocated_mem_mpi(nsize)
-
-   if (.not.ASSOCIATED(A%d)) then
-      print *,'Memory previously released!!'
-      call memory_error_quit('ERROR(mpi_deallocate_dV): memory previously released')
-   endif
-
-   call MPI_WIN_FREE(A%w,IERR)
-
-   IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_local_allocate_dV):error in MPI_FREE_MEM",I5)') IERR
-     CALL memory_error_quit(errmsg)
-   ENDIF
-
-   nullify(A%d)
-   A%c = c_null_ptr
-#else
-  call lsquit("ERROR(mpi_deallocate_dV):compiled without MPI, this is not&
-  &available",-1)
-#endif
-else
+!check the allocation type. If 0 a normal allocation was used, normal
+!deallocation will be used, if 1 MPI_ALLOC_MEM was used and it will be deallocd 
+!accordingly,               if 2 MPI_ALLOC_WIN was used and freeing the window
+!will deallocate the pointer
+if(A%t==0)then
   call mem_dealloc(A%d)
   A%n = 0
+elseif(A%t==1)then
+  call mem_dealloc(A%d,A%c)
+  A%n = 0
+elseif(A%t==2)then
+  if(c_associated(A%c).and.associated(A%d))then
+#ifdef VAR_MPI
+    info = MPI_INFO_NULL
+
+    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
+
+    if(IERR/=0)then
+      write (errmsg,'("ERROR(mpi_deallocate_d):error in mpi_type_get_extent",I5)') IERR
+      call memory_error_quit(errmsg)
+    endif
+
+    nsize = size(A%d)*mpi_len_realk
+    call mem_deallocated_mem_mpi(nsize)
+
+    if (.not.associated(A%d)) then
+       print *,'Memory previously released!!'
+       call memory_error_quit('ERROR(mpi_deallocate_d): memory previously released')
+    endif
+
+    call MPI_WIN_FREE(A%w,IERR)
+
+    IF (IERR.NE. 0) THEN
+      write (errmsg,'("ERROR(mpi_deallocate_d):error in MPI_FREE_MEM",I5)') IERR
+      CALL memory_error_quit(errmsg)
+    ENDIF
+
+    nullify(A%d)
+    A%c = c_null_ptr
+
+#else
+    call lsquit("ERROR(mpi_deallocate_d):compiled without MPI, this is not&
+    &available",-1)
+#endif
+
+  else
+    call lsquit("ERROR(mpi_deallocate_d):pointer not allocated",-1)
+  endif
+
+else
+  call lsquit("ERROR(mpi_deallocate_d):wrong type",-1)
 endif
+
+!set back the default after deallocation
+A%t = -1
 END SUBROUTINE mpi_deallocate_d
 
 SUBROUTINE mpi_local_deallocate_dV(A,cip,win)

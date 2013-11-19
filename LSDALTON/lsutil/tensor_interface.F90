@@ -601,7 +601,7 @@ contains
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> \author Patrick Ettenhuber
   !> \date January 2013
-  function array_minit(dims,nmodes,local,atype,tdims)result(arr)
+  function array_minit( dims, nmodes, local, atype, tdims) result(arr)
     !> the output array
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
@@ -611,6 +611,9 @@ contains
     character(4),intent(in),optional :: atype
     character(4)  :: at
     logical :: loc
+
+    !if(arr%initialized)call lsquit("ERROR(array_minit):array already initialized",-1) 
+
     !set defaults
     loc = .true.
     at  = 'LDAR'
@@ -656,9 +659,9 @@ contains
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         if(present(tdims))then
-          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT,tdims=tdims)
+          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT,tdims=tdims,ps_d=.true.)
         else
-          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT)
+          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT,ps_d=.true.)
         endif
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = DENSE
@@ -676,8 +679,10 @@ contains
 #else
     arr=array_init(dims,nmodes)
 #endif
+    arr%initialized=.true.
   end function array_minit
-  function array_ainit(dims,nmodes,local,atype,tdims)result(arr)
+
+  function array_ainit( dims, nmodes, local, atype, tdims )result(arr)
     !> the output array
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
@@ -687,6 +692,9 @@ contains
     character(4),intent(in),optional :: atype
     character(4)  :: at
     logical :: loc
+ 
+    if(arr%initialized)call lsquit("ERROR(array_ainit):array already initialized",-1) 
+ 
     !set defaults
     loc = .true.
     at  = 'LDAR'
@@ -732,9 +740,9 @@ contains
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         if(present(tdims))then
-          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT,tdims=tdims)
+          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT,tdims=tdims,ps_d=.true.)
         else
-          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT)
+          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT,ps_d=.true.)
         endif
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = DENSE
@@ -752,6 +760,7 @@ contains
 #else
     arr=array_init_standard(dims,nmodes,NO_PDM)
 #endif
+    arr%initialized=.true.
   end function array_ainit
 
   !> \author Patrick Ettenhuber
@@ -773,6 +782,8 @@ contains
     integer :: sel_type,pdmtype,atype
     logical :: zeros_in_tiles,wcps
     !choose which kind of array
+
+    if(arr%initialized)call lsquit("ERROR(array_init):array already initialized",-1) 
 
     !DEFAULTS
     atype   = DENSE
@@ -811,8 +822,9 @@ contains
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%atype = 'TDAR'
     end select
-    arr%init_type=pdmtype
-    arr%itype=atype
+    arr%init_type   = pdmtype
+    arr%itype       = atype
+    arr%initialized = .true.
   end function array_init
 
 
@@ -910,7 +922,6 @@ contains
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
     call memory_allocate_array_dense(p_arr%a(addr))
 
-
     !RETURN THE CURRENLY ALLOCATE ARRAY
     arr=p_arr%a(addr)
 
@@ -981,6 +992,9 @@ contains
     implicit none
     !> array to free
     type(array),intent(inout) :: arr
+
+    if(.not.arr%initialized)call lsquit("ERROR(array_free):array not initialized",-1) 
+
     select case(arr%atype)
     case('LDAR')
       call array_free_standard(arr)
@@ -992,7 +1006,7 @@ contains
     case default 
         call lsquit("ERROR(array_free): atype not known",-1)
     end select
-    
+    arr%initialized = .false. 
   end subroutine array_free
 
 
@@ -1005,7 +1019,7 @@ contains
   !so that implementations still run
   !> \author Patrick Ettenhuber
   !> \date January 2013
-  subroutine array_change_atype_to_td(arr,local)
+  subroutine array_change_itype_to_td(arr,local)
     implicit none
     !> array to change the array type
     type(array),intent(inout) :: arr
@@ -1014,13 +1028,13 @@ contains
     if( .not. local )then
       arr%itype=TILED_DIST
       if(associated(arr%elm1))then
-        call memory_deallocate_array_dense(arr)
+        call arr_deallocate_dense(arr)
       endif
     endif
 #else
     return
 #endif
-  end subroutine array_change_atype_to_td
+  end subroutine array_change_itype_to_td
 
   !> \brief change the array type to replicated, no action in case of
   !non-mpi-build
@@ -1105,7 +1119,7 @@ contains
     if(arr%init_type>0)pdm=.true.
     if(change)arr%itype=TILED_DIST
     call array_convert_fort2arr(arr%elm1,arr,arr%nelms)
-    call memory_deallocate_array_dense(arr)
+    call arr_deallocate_dense(arr)
 #else
     return
 #endif
@@ -2077,8 +2091,8 @@ contains
         teststatus=" FAILED"
       endif
     enddo
-    call memory_deallocate_array_dense(test)
-    call memory_deallocate_array_dense(test2)
+    call arr_deallocate_dense(test)
+    call arr_deallocate_dense(test2)
     test%itype=TILED_DIST
     test2%itype=TILED_DIST
     call array_free(test)

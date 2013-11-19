@@ -640,7 +640,7 @@ module lspdm_tensor_operations_module
       ! Hybrid scheme: Mixture of occupied and virtual partitioning schemes
       ! Ehybrid = 1/2* (Eocc + Evirt)
 
-    call memory_deallocate_array_dense(gmo)
+    call arr_deallocate_dense(gmo)
     
     call lsmpi_local_reduction(Eocc,infpar%master)
     call lsmpi_local_reduction(Evirt,infpar%master)
@@ -704,7 +704,7 @@ module lspdm_tensor_operations_module
       nullify(t)
     enddo
 
-    call memory_deallocate_array_dense(gmo)
+    call arr_deallocate_dense(gmo)
     
     call lsmpi_local_reduction(E1,infpar%master)
     call lsmpi_local_reduction(E2,infpar%master)
@@ -3510,6 +3510,20 @@ module lspdm_tensor_operations_module
     print *,"NORM:",nrm
   end subroutine
 
+  subroutine arr_deallocate_dense(arr)
+    implicit none
+    type(array) :: arr
+    integer :: a
+    call memory_deallocate_array_dense(arr)
+    a = 1
+#ifdef VAR_MPI
+    a = infpar%lg_mynum + 1
+#endif
+    if(associated(p_arr%a(arr%addr_p_arr(a))%elm1))then
+      p_arr%a(arr%addr_p_arr(a))%elm1 => null()
+    endif
+  end subroutine arr_deallocate_dense
+
 
   subroutine array_free_pdm(arr)
     implicit none
@@ -3517,13 +3531,20 @@ module lspdm_tensor_operations_module
     logical     :: parent
 #ifdef VAR_MPI
     parent = (infpar%parent_comm == MPI_COMM_NULL)
-    if(arr%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master.and.parent)then
+
+    if( arr%init_type==MASTER_INIT &
+    &   .and.infpar%lg_mynum==infpar%master &
+    &   .and. parent                          )then
+
       call pdm_array_sync(infpar%lg_comm,JOB_FREE_ARR_PDM,arr)
+
     endif
-    if(parent.and.lspdm_use_comm_proc) then
+
+    if( parent .and. lspdm_use_comm_proc ) then
       call pdm_array_sync(infpar%pc_comm,JOB_FREE_ARR_PDM,arr,loc_addr=.true.)
     endif
-    if(parent)then
+
+    if( parent )then
       p_arr%free_addr_on_node(arr%addr_p_arr(infpar%lg_mynum+1))=.true.
       p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
       call array_free_basic(p_arr%a(arr%addr_p_arr(infpar%lg_mynum+1))) 
@@ -4292,7 +4313,7 @@ module lspdm_tensor_operations_module
         call pdm_array_sync(infpar%pc_comm,JOB_PC_DEALLOC_DENSE,arr,loc_addr=.true.)
       endif
 #endif
-      call memory_deallocate_array_dense(arr)
+      call arr_deallocate_dense(arr)
   end subroutine memory_deallocate_array_dense_pc
 
   subroutine lsmpi_put_realkV_w8(buf,nelms,pos,dest,win)

@@ -3,7 +3,6 @@
 !> \author Patrick Ettenhuber, Marcin Ziolkowski, and Kasper Kristensen
 module ccsd_module
 
-
   use precision
   use ptr_assoc_module!,only:ass_D4to1,ass_D2to1,ass_D1to3
   use lstiming!, only: lstimer
@@ -977,20 +976,19 @@ contains
     integer(kind=long) :: xyz,zyx1,zyx2
     logical :: debug
     character(ARR_MSG_LEN) :: msg
-    integer :: def_atype
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef VAR_OMP
     integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
 #endif
     TYPE(DECscreenITEM)    :: DecScreen
+    character(4) :: def_atype
 
 
     ! Set default values for the path throug the routine
     ! **************************************************
     restart                  = .false.
     if(present(rest))restart = rest
-    def_atype                = DENSE
     scheme                   = 0
     dynamic_load             = DECinfo%dyn_load
     startt                   = 0.0E0_realk
@@ -1035,7 +1033,6 @@ contains
 #ifdef VAR_MPI
     lg_me                    = infpar%lg_mynum
     lg_nnod                  = infpar%lg_nodtot
-    def_atype                = TILED_DIST
     lock_outside             = DECinfo%CCSD_MPICH
     mode                     = MPI_MODE_NOCHECK
 
@@ -1303,29 +1300,27 @@ contains
       call mem_alloc( tpl, int(i8*nor*nvr,kind=long) )
       call mem_alloc( tmi, int(i8*nor*nvr,kind=long) )
     endif
-    
+
     !if I am the working process, then
     if( worker ) call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
 
-
-
     !get u2 in pdm or local
     if(scheme==2)then
-      u2=array_ainit( [nv,nv,no,no], 4, local=local, atype='TDAR' )
+      u2 =  array_ainit( [nv,nv,no,no], 4, local=local, atype='TDAR' )
       if(worker)then
-        call array_zero(u2)
+        call array_zero( u2 )
         if(master)then 
-          call array_add(u2,2.0E0_realk,t2%elm1,order=[2,1,3,4])
-          call array_add(u2,-1.0E0_realk,t2%elm1,order=[2,1,4,3])
+          call array_add( u2,  2.0E0_realk, t2%elm1, order=[2,1,3,4] )
+          call array_add( u2, -1.0E0_realk, t2%elm1, order=[2,1,4,3] )
         endif
-        call array_mv_dense2tiled(t2,.true.)
+        call array_mv_dense2tiled( t2, .true. )
       endif
     else
-      u2=array_ainit( [nv,nv,no,no], 4, local=local, atype='LDAR' )
+      u2 = array_ainit( [nv,nv,no,no], 4, local=local, atype='LDAR' )
       !calculate u matrix: t[c d i j] -> t[d c i j], 2t[d c i j] - t[d c j i] = u [d c i j]
       if(worker)then
-        call array_reorder_4d(2.0E0_realk,t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
-        call array_reorder_4d(-1.0E0_realk,t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
+        call array_reorder_4d(  2.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
+        call array_reorder_4d( -1.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
       endif
     endif
 
@@ -1359,19 +1354,15 @@ contains
         &call lsmpi_win_create(sio4%d,sio4w,int(i8*nor*no2,kind=long),infpar%lg_comm)
 #endif
       if(scheme==4)then
-        gvvooa=array_ainit([nv,no,no,nv],4, local=local, atype='LDAR' )
-        gvoova=array_ainit([nv,no,nv,no],4, local=local, atype='LDAR' )
-        if(worker)then
-          call array_zero(gvvooa)
-          call array_zero(gvoova)
-        endif
+        write(def_atype,'(A4)')'LDAR'
       elseif(scheme==2.or.scheme==3)then
-        gvvooa=array_ainit( [nv,no,no,nv], 4, local=local, atype='TDAR' )
-        gvoova=array_ainit( [nv,no,nv,no], 4, local=local, atype='TDAR' )
-        if(worker)then
-          call array_zero(gvvooa)
-          call array_zero(gvoova)
-        endif
+        write(def_atype,'(A4)')'TDAR'
+      endif
+      gvvooa = array_ainit( [nv,no,no,nv],4, local=local, atype=def_atype )
+      gvoova = array_ainit( [nv,no,nv,no],4, local=local, atype=def_atype )
+      if(worker)then
+        call array_zero(gvvooa)
+        call array_zero(gvoova)
       endif
     endif
 
@@ -1504,14 +1495,6 @@ contains
       endif
 
       myload = 0
-      print *,"worker talker",worker,talker,nbatchesAlpha,nbatchesGamma,batchdimAlpha
-      print *,myload,lg_nnod,lg_me,scheme,no,nv,nb
-      do i=1,nbatchesAlpha
-        print *,batch2orbAlpha(i)%orbindex(1)
-      enddo
-      do i=1,nbatchesGamma
-        print *,batch2orbGamma(i)%orbindex(1)
-      enddo
 
       if ( worker ) then
         
@@ -1549,14 +1532,6 @@ contains
 #endif
     myload = 0
 
-<<<<<<< HEAD
-
-
-
-
-
-=======
->>>>>>> 7987505b73c62b73d6a2b65abe1a8f356780de4c
     if(master)call LSTIMER('CCSD part A',time_start,timewall_start,DECinfo%output)
 
     fullRHS=(nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
@@ -1833,7 +1808,6 @@ contains
     end do BatchGamma
 
 
-
     ! Free integral stuff
     ! *******************
     nullify(Mylsitem%setting%LST_GAB_LHS)
@@ -1869,7 +1843,6 @@ contains
     !this might be removable
     if( lspdm_use_comm_proc ) call lsmpi_barrier(infpar%pc_comm)
 
-
     call mem_dealloc(uigcj)
     call mem_dealloc(tpl)
     call mem_dealloc(tmi)
@@ -1879,31 +1852,35 @@ contains
     call mem_dealloc(w2)
     call mem_dealloc(w3)
 
-    !print *,"FINALLY THE LOOPS ARE DONE",infpar%pc_mynum,lg_me
     !call lsmpi_barrier(infpar%pc_comm)
     !if(parent)call lsmpi_barrier(infpar%lg_comm)
-    !call sleep(2)
     !stop 0
 
 
     
 #ifdef VAR_MPI
-    if(scheme==3)then
-       if( lspdm_use_comm_proc ) then
-          call mem_alloc(gvvoo,o2v2,comm=infpar%pc_comm,local=.true.)
-          call mem_alloc(gvoov,o2v2,comm=infpar%pc_comm,local=.true.)
-       else
-          call mem_alloc(gvvoo,o2v2,infpar%lg_comm)
-          call mem_alloc(gvoov,o2v2,infpar%lg_comm)
-       endif
-    endif
-
     ! Finish the MPI part of the Residual calculation
     startt=MPI_wtime()
     call lsmpi_barrier(infpar%lg_comm)
     stopp=MPI_wtime()
     wait_time = stopp - startt
     max_wait_time = wait_time
+
+    if(scheme==3)then
+       if( lspdm_use_comm_proc ) then
+          call mem_alloc(gvvoo,o2v2,comm=infpar%pc_comm,local=.true.)
+          call mem_alloc(gvoov,o2v2,comm=infpar%pc_comm,local=.true.)
+       else
+#ifdef VAR_HAVE_MPI3
+          call mem_alloc(gvvoo,o2v2,comm=infpar%lg_comm)
+          call mem_alloc(gvoov,o2v2,comm=infpar%lg_comm)
+#else
+          call mem_alloc(gvvoo,o2v2)
+          call mem_alloc(gvoov,o2v2)
+#endif
+       endif
+    endif
+
 
     if( Ccmodel>MODEL_CC2 .and. scheme==3 )then
 #if VAR_MPI
@@ -2167,8 +2144,7 @@ contains
     !convert stuff
     !set for correct access again, save as i a j b
     if(.not.local)then
-      if((master.and..not.(scheme==2)).or.scheme==3)&
-      &call memory_deallocate_array_dense(govov)
+      if((master.and..not.(scheme==2)).or.scheme==3) call arr_deallocate_dense(govov)
       govov%itype      = TILED_DIST
     endif
     govov%init_type  = MASTER_INIT
@@ -2598,15 +2574,14 @@ contains
   end subroutine calculate_E2_and_permute
 
 
-  subroutine check_job(s,fr,dyn,a,g,na,ng,static,dynamic,prnt)
+  subroutine check_job(s,fr,dyn,a,g,na,ng,static,win,prnt)
     implicit none
     logical,intent(in) :: dyn,prnt
     logical,intent(inout) :: fr
     integer,intent(in) :: s,g,na,ng
     integer,intent(inout) :: a
     integer :: static(:)
-    !integer(kind=ls_mpik) :: dynamic(:)
-    integer(kind=ls_mpik) :: dynamic
+    integer(kind=ls_mpik) :: win
     real(realk) :: mpi_buf
     integer :: el 
     integer(kind=ls_mpik) :: i, job
@@ -2628,9 +2603,9 @@ contains
            a=infpar%lg_mynum
          else
            el=1
-           call lsmpi_win_lock(infpar%master,dynamic,'e')
-           call lsmpi_get_acc(el,a,infpar%master,g,dynamic)
-           call lsmpi_win_unlock(infpar%master,dynamic)
+           call lsmpi_win_lock(infpar%master,win,'e')
+           call lsmpi_get_acc(el,a,infpar%master,g,win)
+           call lsmpi_win_unlock(infpar%master,win)
          endif
        endif
        if(fr) fr=.false.
@@ -4319,20 +4294,7 @@ contains
 
     !if much more slaves than jobs are available, split the jobs to get at least
     !one for all the slaves
-<<<<<<< HEAD
-    print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
-    !if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
-    !  nba=(nb/(magic*nnod))
-    !  if(nba<minbsize)nba=minbsize
-    !endif
-    !if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
-    !  do while((nb/nba)*(nb/nbg)<magic*nnod)
-    !    nbg=nbg-1
-    !    if(nbg<0)exit
-    !  enddo
-    !  if(nbg<minbsize)nbg=minbsize
-    !endif
-=======
+    !print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
     if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
       nba=(nb/(magic*nnod))
       if(nba<minbsize)nba=minbsize
@@ -4345,7 +4307,6 @@ contains
       enddo
       if(nbg<minbsize)nbg=minbsize
     endif
->>>>>>> 7987505b73c62b73d6a2b65abe1a8f356780de4c
 
     if(scheme==2)then
       mem_used = get_min_mem_req(no,nv,nb,nba,nbg,2,scheme,.false.)
@@ -5592,9 +5553,9 @@ subroutine ccsd_data_preparation()
   endif
   
   if(local)then
-     t2    = array_ainit( [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
-     govov = array_ainit( [nocc,nvirt,nocc,nvirt], 4, local=local, atype='LDAR' )
-     om2   = array_ainit( [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
+      t2     = array_ainit( [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
+      govov  = array_ainit( [nocc,nvirt,nocc,nvirt], 4, local=local, atype='LDAR' )
+      om2    = array_ainit( [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
   else
      t2%init_type=ALL_INIT
      govov%init_type=ALL_INIT

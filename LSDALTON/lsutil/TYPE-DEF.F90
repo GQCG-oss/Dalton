@@ -672,6 +672,8 @@ type mpi_realk
    type(c_ptr)          :: c
    ! mpi_window handle
    integer(kind=ls_mpik):: w
+   ! allocation type, 0 = normal pointer, 1 = MPI_ALLOC_MEM, 3 =  MPI_WIN_ALLOC(LOCAL)
+   integer              :: t
 end type mpi_realk
 
 
