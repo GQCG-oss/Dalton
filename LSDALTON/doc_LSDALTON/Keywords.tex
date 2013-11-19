@@ -798,23 +798,24 @@ The \verb|GRIDX| keywords also imply specific \verb|RADINT| values.
 \item[\Key{ULTRAF}]
 Shortcut keyword for radial integration accuracy $10^{-15}$ and angular expansion order equal to $64$.
 \item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. This correction can be combined with all GGA type functionals
-\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{CasidaSalahub} 
+\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{dixon,CasidaSalahub} 
 \begin{eqnarray}
-V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + V_{LB94,correction}\right),  
+V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + 0.8 \cdot V_{LB94,correction}\right),  
 \end{eqnarray}
 with a Zhan-Nichols-Dixon shift \cite{dixon,ZND}
 \begin{eqnarray}
-\Delta = NZD_{1} \cdot \epsilon_{HOMO} - NZD_{2}
+\Delta = ZND_{1} \cdot \epsilon_{HOMO} - ZND_{2}
 \end{eqnarray}
-Where $NZD_{1} = 0.2332$ and $NZD_{2} = 0.315$. Note that NWCHEM have introduced the same correction but uses a $NZD_{2} = 0.0116$. The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords. Note that this keyword only works with GGA type functionals. The CS00 keyword only work with a method which calculates the HOMO energy.
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD1>|\newline
-Changes the parameter $NZD_{1}$ (default $NZD_{1} = 0.2332$) see .CS00
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD2>|\newline
-Changes the parameter $NZD_{2}$ (default $NZD_{1} = 0.315$) see .CS00
-\item[\Key{CS00}] \verb| | \newline
-\verb|<Delta>|\newline
+Where $ZND_{1} = 0.2332$ and $ZND_{2} = 0.0116$. Note that $ZND_{2} = 0.0116 au. = 0.315 eV$
+The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords. Note that this keyword only works with GGA type functionals. The CS00 keyword only work with a method which calculates the HOMO energy. 
+\item[\Key{CS00 ZND1}] \verb| | \newline
+\verb|<ZND1 in au.>|\newline
+Changes the parameter $ZND_{1}$ (default $ZND_{1} = 0.2332$) see .CS00
+\item[\Key{CS00 ZND1}] \verb| | \newline
+\verb|<ZND2 in au.>|\newline
+Changes the parameter $ZND_{2}$ (default $ZND_{1} = 0.0116$) see .CS00
+\item[\Key{CS00 SHIFT}] \verb| | \newline
+\verb|<Delta in au.>|\newline
 Using the Casida-Salahub correction with a shift of Delta see .CS00
 \end{description}
 
