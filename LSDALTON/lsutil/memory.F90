@@ -365,7 +365,7 @@ INTERFACE mem_alloc
      &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,&
      &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, mpi_allocate_iV,&
      &             mpi_allocate_dV4,mpi_allocate_dV8, mpi_local_allocate_dV8, &
-     &             mpi_local_allocate_dV4,mpi_local_allocate_I8V8,mpi_local_allocate_I4V4,&
+     &             mpi_local_allocate_I8V8,mpi_local_allocate_I4V4,&
      &             mpi_allocate_d,&
 #ifdef MOD_UNRELEASED
      &             lvec_data_allocate_1dim, lattice_cell_allocate_1dim, &
@@ -396,7 +396,6 @@ INTERFACE mem_dealloc
      &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
      &             TRACEBACK_deallocate_1dim,MP2GRAD_deallocate_1dim, &
      &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,&
-     &             mpi_deallocate_iV,mpi_deallocate_dV,mpi_local_deallocate_dV,&
      &             mpi_local_deallocate_I4V,mpi_local_deallocate_I8V,&
      &             mpi_deallocate_d,&
 #ifdef MOD_UNRELEASED

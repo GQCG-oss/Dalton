@@ -4089,12 +4089,15 @@ contains
     implicit none
     integer(kind=4)                  :: n1
     integer(kind=8)                  :: rbuffer(n1)
+    integer(kind=8)                  :: sbuffer(n1)
     integer(kind=ls_mpik),intent(in) :: comm
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: ierr,nelms
     IERR=0
     nelms=n1
-    CALL MPI_ALLREDUCE(MPI_IN_PLACE,RBUFFER,nelms,MPI_INTEGER8,MPI_SUM,&
+    sbuffer = rbuffer
+    if(infpar%mynum==infpar%master)print *,"REPLACE TO MPI_IN_PLACE BEFORE COMMITTING"
+    CALL MPI_ALLREDUCE(sbuffer,RBUFFER,nelms,MPI_INTEGER8,MPI_SUM,&
          &comm,IERR)
     IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif

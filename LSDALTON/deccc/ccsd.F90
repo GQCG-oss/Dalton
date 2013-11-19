@@ -1489,6 +1489,7 @@ contains
 #endif
     endif
 
+
 #ifdef VAR_MPI
     if(.not.dynamic_load)then
 
@@ -1500,9 +1501,18 @@ contains
         call mem_alloc( tasks, tasksc, lenI1, taskslw, infpar%pc_comm, lenI2 )
       else
         call mem_alloc( tasks, tasksc, lenI2 )
+        !call mem_alloc( tasks, lenI2 )
       endif
 
       myload = 0
+      print *,"worker talker",worker,talker,nbatchesAlpha,nbatchesGamma,batchdimAlpha
+      print *,myload,lg_nnod,lg_me,scheme,no,nv,nb
+      do i=1,nbatchesAlpha
+        print *,batch2orbAlpha(i)%orbindex(1)
+      enddo
+      do i=1,nbatchesGamma
+        print *,batch2orbGamma(i)%orbindex(1)
+      enddo
 
       if ( worker ) then
         
@@ -1867,11 +1877,11 @@ contains
     call mem_dealloc(w2)
     call mem_dealloc(w3)
 
-    print *,"FINALLY THE LOOPS ARE DONE",infpar%pc_mynum,lg_me
-    call lsmpi_barrier(infpar%pc_comm)
-    if(parent)call lsmpi_barrier(infpar%lg_comm)
-    call sleep(2)
-    stop 0
+    !print *,"FINALLY THE LOOPS ARE DONE",infpar%pc_mynum,lg_me
+    !call lsmpi_barrier(infpar%pc_comm)
+    !if(parent)call lsmpi_barrier(infpar%lg_comm)
+    !call sleep(2)
+    !stop 0
 
 
     
@@ -1948,7 +1958,8 @@ contains
 
 
     if(.not.dynamic_load)then
-      call mem_dealloc(tasks)
+      call mem_dealloc(tasks,tasksc)
+      !call mem_dealloc(tasks)
     else
       call lsmpi_win_free(tasksw)
       call mem_dealloc(tasks,tasksc)

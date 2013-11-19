@@ -1399,9 +1399,11 @@ module lspdm_tensor_operations_module
 #endif
     endif
 #ifdef VAR_MPI
-    infobuf(1) = lg_me; infobuf(2) = 0; if(pseudo_dense) infobuf(2) = 1
-    call ls_mpibcast(infobuf,2,infpar%master,infpar%pc_comm)
-    lg_me = infobuf(1); pseudo_dense = (infobuf(2) == 1)
+    if( lspdm_use_comm_proc ) then
+       infobuf(1) = lg_me; infobuf(2) = 0; if(pseudo_dense) infobuf(2) = 1
+       call ls_mpibcast(infobuf,2,infpar%master,infpar%pc_comm)
+       lg_me = infobuf(1); pseudo_dense = (infobuf(2) == 1)
+    endif
 #endif
     
 
