@@ -426,7 +426,7 @@ contains
     ! *************************************************************
     call get_occfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
     call plot_pair_energies(natoms,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
-         & MyMolecule%DistanceTable,dofrag)
+         & MyMolecule,dofrag)
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
     mastertime = twall2-twall1
@@ -1037,6 +1037,8 @@ contains
     real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est
     integer :: natoms,i,j,k
     type(joblist) :: jobs,fragoptjobs,estijobs
+    integer(kind=ls_mpik) :: master
+    master=0
 
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
@@ -1085,6 +1087,9 @@ contains
 #ifdef VAR_MPI
        ! Send estimated fragment information to slaves
        call mpi_bcast_many_fragments(natoms,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)
+
+       ! Send CC models to use for each pair based on estimates (always MP2, but keep it general)
+       call ls_mpibcast(MyMolecule%ccmodel,natoms,natoms,master,MPI_COMM_LSDALTON)
 #endif
 
        ! Get job list for estimated pair fragments
@@ -1125,8 +1130,6 @@ contains
        call mem_alloc(FragEnergiesOcc,natoms,natoms)
        ! Always MP2 model for estimated fragments
        call get_occfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesOcc)
-       call plot_pair_energies(natoms,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
-            & MyMolecule%DistanceTable,dofrag)
 
        ! We do not want to consider atomic fragment energies now so zero them
        ! (they might be zero already but in this way we avoid wrong print out below).

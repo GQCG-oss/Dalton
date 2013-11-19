@@ -1288,7 +1288,6 @@ contains
       write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
     endif
     
-
     ! Use the dense amplitudes
     ! ------------------------
    
@@ -1550,11 +1549,14 @@ contains
 #endif
     myload = 0
 
+<<<<<<< HEAD
 
 
 
 
 
+=======
+>>>>>>> 7987505b73c62b73d6a2b65abe1a8f356780de4c
     if(master)call LSTIMER('CCSD part A',time_start,timewall_start,DECinfo%output)
 
     fullRHS=(nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
@@ -4317,6 +4319,7 @@ contains
 
     !if much more slaves than jobs are available, split the jobs to get at least
     !one for all the slaves
+<<<<<<< HEAD
     print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
     !if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
     !  nba=(nb/(magic*nnod))
@@ -4329,6 +4332,20 @@ contains
     !  enddo
     !  if(nbg<minbsize)nbg=minbsize
     !endif
+=======
+    if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
+      nba=(nb/(magic*nnod))
+      if(nba<minbsize)nba=minbsize
+    endif
+
+    if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
+      do while((nb/nba)*(nb/nbg)<magic*nnod)
+        nbg=nbg-1
+        if(nbg<1)exit
+      enddo
+      if(nbg<minbsize)nbg=minbsize
+    endif
+>>>>>>> 7987505b73c62b73d6a2b65abe1a8f356780de4c
 
     if(scheme==2)then
       mem_used = get_min_mem_req(no,nv,nb,nba,nbg,2,scheme,.false.)

@@ -159,7 +159,7 @@ contains
 
     ! Check if it is a pair fragment
     ! ******************************
-    atom1 = fragment%atomic_number
+    atom1 = fragment%EOSatoms(1)
     if(fragment%nEOSatoms==2) then  ! pair fragment
        is_pair=.true.
        write(DECinfo%output,*) 'Initiating MP2 gradient structure for pair fragment ', &
@@ -167,7 +167,7 @@ contains
        atom2 = fragment%EOSatoms(2)
     else
        is_pair=.false.
-       write(DECinfo%output,*) 'Initiating MP2 gradient structure for single fragment ', fragment%atomic_number
+       write(DECinfo%output,*) 'Initiating MP2 gradient structure for single fragment ', fragment%EOSatoms(1)
        atom2 = 0
     end if
 
@@ -290,7 +290,7 @@ contains
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
 
-    write(DECinfo%output,*) 'Calculating MP2 gradient for fragment', MyFragment%atomic_number
+    write(DECinfo%output,*) 'Calculating MP2 gradient for fragment', MyFragment%EOSatoms(1)
 
     ! Init MP2 gradient structure
     call init_mp2grad(MyFragment,grad)
@@ -2021,7 +2021,7 @@ contains
 
     ! Central atom and orbital space sizes
     ! ************************************
-    dens%centralatom = fragment%atomic_number
+    dens%centralatom = fragment%EOSatoms(1)
     dens%centralatom2 = 0    ! only used for pairs
     dens%nbasis = fragment%nbasis
     dens%nunocc = fragment%nunoccAOS

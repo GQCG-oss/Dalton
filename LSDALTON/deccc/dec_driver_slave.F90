@@ -121,6 +121,9 @@ contains
           ! Get optimized atomic fragments from master node
           call mem_alloc(EstAtomicFragments,natoms)
           call mpi_bcast_many_fragments(natoms,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)          
+
+          ! Receive CC models to use for each pair based on estimates
+          call ls_mpibcast(MyMolecule%ccmodel,natoms,natoms,master,MPI_COMM_LSDALTON)
        end if
        
 
@@ -332,6 +335,7 @@ contains
 
 
     AskForJob: do while(morejobs)
+      
 
 
        ! Send finished job to master
@@ -399,6 +403,7 @@ contains
                      & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
 
                 call get_number_of_integral_tasks_for_mpi(AtomicFragments(atomA),ntasks)
+  
              else
                 ! Set ntasks to be zero to initialize it to something, although it is not used for
                 ! fragment optimizations.
@@ -543,6 +548,7 @@ contains
           print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
                & job, singlejob%LMtime(1)
        end if DoJob
+   
 
 
     end do AskForJob

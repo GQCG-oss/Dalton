@@ -75,7 +75,7 @@ contains
     !> elements in the fragment are NOT set here. Rather they should be
     !> set AFTER calling this routine (see init_fragment_adapted).
     logical,intent(in),optional :: FA
-    integer :: j,idx,i,listidx,natoms,startidx
+    integer :: j,idx,i,natoms,startidx
     integer :: CentralAtom
     real(realk) :: tcpu, twall
     logical,pointer :: occ_listEFF(:),occEOS(:),unoccEOS(:)
@@ -95,9 +95,6 @@ contains
 
     ! To be on the safe side, initialize everything to zero or null
     call atomic_fragment_nullify(fragment)
-
-    ! -- Assign things --
-    fragment%atomic_number = MyAtom
 
 
     ! ATOMIC VS. PAIR FRAGMENT
@@ -162,8 +159,7 @@ contains
 
        ! Loop over atoms in pair fragment list (just one atom, MyAtom, if it is not a pairfragment)
        do i=1,fragment%nEOSatoms
-          listidx=fragment%EOSatoms(i)
-          if( CentralAtom==listidx ) then ! Orbital is included in the EOS
+          if( CentralAtom== fragment%EOSatoms(i) ) then ! Orbital is included in the EOS
              fragment%noccEOS = fragment%noccEOS + 1
              occEOS(j)=.true.
           end if
@@ -185,8 +181,7 @@ contains
 
        ! Loop over atoms in pair fragment list (just one atom, Myatom, if it is not a pairfragment)
        do i=1,fragment%nEOSatoms
-          listidx=fragment%EOSatoms(i)
-          if( CentralAtom==listidx ) then ! Orbital is included in the EOS
+          if( CentralAtom==fragment%EOSatoms(i) ) then ! Orbital is included in the EOS
              fragment%nunoccEOS = fragment%nunoccEOS + 1
              unoccEOS(j)=.true.
 
@@ -239,6 +234,9 @@ contains
     fragment%occEOSidx=0
     fragment%occAOSidx=0
 
+    ! Note that the procedure below ensures that the EOS orbitals are always
+    ! listed before the remaining AOS orbitals
+
     ! Loop over EOS orbitals
     idx=0
     do j=startidx,nOcc   ! no core orbitals in EOS for frozen core approx
@@ -263,8 +261,6 @@ contains
     if(idx /= fragment%noccAOS) &
          & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%noccAOS',-1)
 
-    ! Note that the above procedure ensures that the EOS orbitals are always
-    ! listed before the remaining AOS orbitals
 
 
     ! Virtual EOS orbital indices
@@ -365,7 +361,7 @@ contains
 
     if(DECinfo%PL>0) then
        write(DECinfo%output,*)
-       write(DECinfo%output,*) 'FRAGINIT: Initialized fragment :', Fragment%atomic_number
+       write(DECinfo%output,*) 'FRAGINIT: Initialized fragment :', Fragment%EOSatoms(1)
        write(DECinfo%output,'(a)')      ' -- Target --'
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Occ EOS     : ',Fragment%noccEOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Unocc EOS   : ',Fragment%nunoccEOS
@@ -469,7 +465,6 @@ contains
     fragment%CDunocceival => null()
 
     fragment%basisinfoisset=.false.
-    fragment%atomic_number = 0
     fragment%noccEOS = 0
     fragment%nunoccEOS = 0
     fragment%noccAOS = 0
@@ -1064,7 +1059,7 @@ contains
        MyAtom=0  ! no central atom because it is a pair fragment
 
     else
-       MyAtom = LocalFragment%atomic_number
+       MyAtom = LocalFragment%EOSatoms(1)
        pairfrag=.false.
     end if
 
@@ -1569,7 +1564,7 @@ contains
 
     ! Set remaining information special for pair
     ! ******************************************
-    PairFragment%atomic_number = fragment1%atomic_number ! atom 1 in pair
+    PairFragment%EOSatoms(1) = fragment1%EOSatoms(1) ! atom 1 in pair
     ! Distance between original fragments
     PairFragment%pairdist =  pairdist
     call mem_dealloc(EOSatoms)
@@ -2476,7 +2471,7 @@ end subroutine atomic_fragment_basis
 
     ! Sanity check: Job has been done for fragment in question
     do i=1,jobs%njobs
-       if(jobs%dofragopt(i) .and. jobs%atom1(i)==fragment%atomic_number) then
+       if(jobs%dofragopt(i) .and. jobs%atom1(i)==fragment%EOSatoms(1)) then
           if(.not. jobs%jobsdone(i)) then
              call lsquit('add_fragment_to_file: Fragment calculation is not done!',-1)
           end if
@@ -2538,7 +2533,7 @@ end subroutine atomic_fragment_basis
     integer :: i
 
 
-    write(wunit) fragment%atomic_number
+    write(wunit) fragment%EOSatoms(1)
 
     ! Occupied AOS orbitals
     write(wunit) fragment%noccAOS
@@ -3687,7 +3682,7 @@ if(DECinfo%PL>0) then
     ! ************************************************************
     SizeMeasure=0
     do i=1,natoms
-       atomtype = MyLsitem%input%molecule%atom(i)%Atomic_number ! atom type for atom "i"
+       atomtype = MyLsitem%input%molecule%atom(i)%atomic_number ! atom type for atom "i"
        SizeMeasure(i) = interactions(i)*atomtype*norb(i)
     end do
 
@@ -5430,8 +5425,8 @@ if(DECinfo%PL>0) then
 
     ! Copy info
     if(myfragment%nEOSatoms==1) then ! atomic fragment
-       myjob%atom1(1) = myfragment%atomic_number
-       myjob%atom2(1) = myfragment%atomic_number   
+       myjob%atom1(1) = myfragment%EOSatoms(1)
+       myjob%atom2(1) = myfragment%EOSatoms(1)   
     else
        myjob%atom1(1) = myfragment%EOSatoms(1)
        myjob%atom2(1) = myfragment%EOSatoms(2)
@@ -5919,9 +5914,9 @@ if(DECinfo%PL>0) then
     real(realk),intent(inout) :: Epair_est
     !> Estimated correlation energy from the pairs that will be skipped in the calculation
     real(realk),intent(inout) :: Eskip_est
-    integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit
+    integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit,Pmax,Qmax
     real(realk),dimension(natoms) :: EPQ
-    real(realk) :: Eacc
+    real(realk) :: Eacc,Epairmax
     integer,dimension(natoms) :: atomindices
 
 
@@ -5967,7 +5962,7 @@ if(DECinfo%PL>0) then
 
     ! Init stuff
     MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model as initialization model
-   
+
 
     ! Loop over all atoms P
     Ploop: do P=1,natoms
@@ -5991,7 +5986,7 @@ if(DECinfo%PL>0) then
        ! **************************************
        Eacc = 0.0_realk
        Qloop2: do Q=natoms,1,-1
-          
+
           ! Skip if no orbitals assigned to atom Q
           Qidx = atomindices(Q)
           if(.not. dofrag(Qidx) .or. Qidx==P) cycle Qloop2
@@ -6048,6 +6043,9 @@ if(DECinfo%PL>0) then
     NCC=0
     NMP2=0
     Nskip=0
+    Epairmax=0.0_realk
+    Pmax=0
+    Qmax=0
     do P=1,natoms
        if(.not. dofrag(P)) cycle
        do Q=1,P-1
@@ -6059,8 +6057,26 @@ if(DECinfo%PL>0) then
           elseif(MyMolecule%ccmodel(P,Q)==MODEL_NONE) then
              Nskip=Nskip+1
           end if
+
+          ! Find max pair energy and associated indices (for sanity check below)
+          if(Epairmax < abs(FragEnergies(P,Q))) then
+             Epairmax = abs(FragEnergies(P,Q))
+             Pmax=P
+             Qmax=Q
+          end if
+
        end do
     end do
+
+    ! Sanity check to avoid empty job list --> Always have at least one pair
+    ! (only relevant for debug molecules)
+    if(NCC+NMP2==0) then
+       ! Simply calculate the pair with the largest (absolute) estimated energy
+       MyMolecule%ccmodel(Pmax,Qmax) = DECinfo%ccmodel
+       MyMolecule%ccmodel(Qmax,Pmax) = DECinfo%ccmodel
+       NCC=1
+       Nskip = Nskip-1
+    end if
 
     ! Estimate correlation energy by adding all estimated atomic and pair fragment energy contributions
     call add_dec_energies(natoms,FragEnergies,dofrag,Epair_est)

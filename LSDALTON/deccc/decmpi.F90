@@ -232,8 +232,8 @@ contains
           call mpicopy_fragment(Fragments(atom),comm,.false.)
 
           ! Check that the correct fragment number was communicated
-          if(Fragments(atom)%atomic_number /= atom) then
-             print '(a,2i8)', 'Counter atom, actual atom ', atom,Fragments(atom)%atomic_number
+          if(Fragments(atom)%EOSatoms(1) /= atom) then
+             print '(a,2i8)', 'Counter atom, actual atom ', atom,Fragments(atom)%EOSatoms(1)
              call lsquit('mpi_send_recv_many_fragments: Inconsistency between &
                   & counter and actual fragment',-1)
           end if
@@ -299,8 +299,8 @@ contains
           call mpicopy_fragment(Fragments(atom),comm,.false.)
 
           ! Check that the correct fragment number was communicated
-          if(Fragments(atom)%atomic_number /= atom) then
-             print '(a,2i8)', 'Counter atom, actual atom ', atom,Fragments(atom)%atomic_number
+          if(Fragments(atom)%EOSatoms(1) /= atom) then
+             print '(a,2i8)', 'Counter atom, actual atom ', atom,Fragments(atom)%EOSatoms(1)
              call lsquit('mpi_bcast_many_fragments: Inconsistency between &
                   & counter and actual fragment',-1)
           end if
@@ -594,7 +594,6 @@ contains
     ! Integers that are not pointers
     ! ------------------------------
 
-    CALL ls_mpi_buffer(MyFragment%atomic_number,master)
     CALL ls_mpi_buffer(MyFragment%noccEOS,master)
     CALL ls_mpi_buffer(MyFragment%nunoccEOS,master)
     CALL ls_mpi_buffer(MyFragment%noccAOS,master)
@@ -1744,8 +1743,8 @@ contains
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
-    call ls_mpi_buffer(DECitem%fragopt_exp_mp2,Master)
-    call ls_mpi_buffer(DECitem%fragopt_red_mp2,Master)
+    call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)
+    call ls_mpi_buffer(DECitem%fragopt_red_model,Master)
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)

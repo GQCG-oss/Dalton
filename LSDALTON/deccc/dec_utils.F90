@@ -1761,7 +1761,7 @@ retval=0
     write(DECinfo%output,*)
     if(MyFragment%nEOSatoms==2) then
        pair=.false.
-       write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%atomic_number
+       write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%EOSatoms(1)
     else
        pair=.true.
        write(DECinfo%output,'(1X,a,2i6)') 'PAIR FRAGMENT, atomic numbers:', &
@@ -2404,8 +2404,8 @@ retval=0
     ! hardcoded values are changed consistently.
 
     ! Sanity check
-    if(npoints==1) then  ! Skip plot if only 1 point
-       write(DECinfo%output,*) 'Ascii-plot will be skipped because there is only one point!'
+    if(npoints<2) then  ! Skip plot if only 1 point
+       write(DECinfo%output,*) 'Ascii-plot will be skipped because there is less than 2 points!'
        return
     end if
 
@@ -4598,5 +4598,39 @@ retval=0
 
   end function get_fragenergy_restart_filename_backup
 
+
+  !> \brief Get number of pair fragments with interatomic distances in the range [r1,r2].
+  !> This is done by counting the number of entries in MyMolecule%ccmodel(i,j), where j>i 
+  !> AND ccmodel(i,j) is not an empty model (MODEL_NONE) AND atoms "i" and "j"
+  !> both have orbitals assigned AND the distance between "i" and "j" is in the range [r1,r2].
+  function get_num_of_pair_fragments(MyMolecule,dofrag,r1,r2) result(npairfrags)
+    implicit none
+    !> Full molecule structure
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> List of which atoms have orbitals assigned
+    logical,dimension(MyMolecule%natoms),intent(in) :: dofrag
+    !> Minimum distance to consider
+    real(realk),intent(in) :: r1
+    !> Maximum distance to consider
+    real(realk),intent(in) :: r2
+    integer :: npairfrags
+    integer :: i,j
+
+    npairfrags=0
+    iloop: do i=1,MyMolecule%natoms
+       if(.not. dofrag(i)) cycle iloop
+       jloop: do j=i+1,MyMolecule%natoms
+          if(.not. dofrag(j)) cycle jloop
+          if(MyMolecule%ccmodel(i,j) /= MODEL_NONE) then
+             if( MyMolecule%DistanceTable(i,j) .ge. r1 &
+                  & .and. MyMolecule%DistanceTable(i,j) .le. r2 ) then
+                ! Pair fragment (i,j) needs to be calculated
+                npairfrags = npairfrags+1
+             end if
+          end if
+       end do jloop
+    end do iloop
+
+  end function get_num_of_pair_fragments
 
 end module dec_fragment_utils

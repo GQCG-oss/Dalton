@@ -199,6 +199,7 @@ do Ipass = 1,2
        integralsIchor = 0.0E0_realk
 !          setting%scheme%intprint = 1000
 !       WRITE(lupri,*)'IchorDriver'
+       CALL FLUSH(LUPRI)
        call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integralsIchor,spherical)
 !          setting%scheme%intprint = 0
        write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
@@ -216,6 +217,7 @@ do Ipass = 1,2
                       write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
                       write(lupri,'(A,ES16.8)')'DIFF                   ',&
                            & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                      call lsquit('ERROR',-1)
                    ELSE
                       write(lupri,'(A,I2,A,I2,A,I2,A,I2,A,ES16.8,A,ES16.8)')&
                            & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&

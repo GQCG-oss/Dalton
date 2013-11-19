@@ -218,23 +218,26 @@ SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,is_singular,Ndim)
   COMPLEX(complexk),INTENT(INOUT) :: U(Ndim,Ndim),Uinv(ndim,ndim)
   LOGICAL,INTENT(INOUT) :: is_singular
   !Local
-  REAL(realk) :: W(ndim),wtemp
-  REAL(realk),pointer :: rwork(:)
+  REAL(realk) :: W(ndim),wtemp,diagd(ndim,ndim),Wd(ndim)
+  REAL(realk),pointer :: rwork(:),workd(:)
   COMPLEX(complexk),pointer :: Work(:)
   COMPLEX(complexk) :: Sk(Ndim,Ndim),diag(ndim,ndim),tmp(ndim,ndim)
   COMPLEX(complexk) :: Atmp(Ndim,Ndim), Btmp(ndim,ndim)
   COMPLEX(complexk) :: alpha,beta
-  INTEGER :: info,i,j,lwork
+  INTEGER :: info,i,j,lwork,lworkd
 
 
- lwork=2*Ndim-1
+ lwork=5*Ndim-1
+ lworkd=5*Ndim-1
  is_singular = .false.
  ! lwork=2*Ndim+ndim
-  call mem_alloc(work,max(1,lwork))
+  call mem_alloc(work,lwork)
+  call mem_alloc(workd,max(1,lworkd))
   call mem_alloc(rwork,max(1,3*Ndim-2))
   do i=1,Ndim
    do j=1,Ndim
       SK(i,j)=sabk(i,j)
+      diagd(i,j)=real(sabk(i,j))
       diag(i,j)=CMPLX(0.,0.,complexk)
    enddo
   enddo
@@ -242,18 +245,26 @@ SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,is_singular,Ndim)
   alpha=CMPLX(1.,0.,complexk)
   beta=CMPLX(0.,0.,complexk)
 
-  !write(*,*) 'sk in U'
-  !call write_zmatrix(sk,Ndim,Ndim)
+  write(*,*) 'sk in U'
+  call write_zmatrix(sk,Ndim,Ndim)
 
+  call dsyev('V','U',Ndim,diagd,Ndim,Wd,workd,Lworkd,info)
+  write(*,*) 'Eigenvalues of smatd'
+  write(*,*)  wd
   call zheev('V','U',Ndim,Sk,Ndim,W,work,Lwork,Rwork,info)
   !call zgesvd('A','A',Ndim,Ndim,Sk,Ndim,W,Atmp,Ndim,tmp,Ndim,work,lwork,&
   !               rwork,info)
   
+  write(*,*) 'Eigenvalues of smat'
+  write(*,*)  w
+ 
   call mem_dealloc(work)
+  call mem_dealloc(workd)
   call mem_dealloc(rwork)
   
   do i=1,ndim
      j=ndim-i+1
+     write(*,*) 'Eigenvalues of smat', w(i)
      if (i .lt. j) then
        !swap eigenvectors
        Btmp(:,1)=Sk(:,i)
@@ -273,13 +284,14 @@ SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,is_singular,Ndim)
   !tmp(:,:)=cmplx(0.,0.,complexk)
   do i=1,Ndim
       !diag(i,i)=CMPLX(1./sqrt(W(i)),0.,complexk)
-      diag(:,i)=Sk(:,i)/sqrt(W(i))
       !Atmp(:,i)=Atmp(:,i)/sqrt(W(i))
       if(w(i) .lt. 1.e-8) then
         w(i)=0.0_realk
         sk(:,i)=cmplx(0.,0.,complexk)
         diag(:,i)=cmplx(0.,0.,complexk)
         is_singular=.true.
+      else
+        diag(:,i)=Sk(:,i)/sqrt(W(i))
       endif
 
   enddo
@@ -901,6 +913,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 !
       call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
       call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
+      call pbc_get_kpoint(k,kvec)
 
       if(lattice%store_mats)then
         !get the overlap matrices S^0l
@@ -1469,6 +1482,8 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,lupri)
       ENDDO  
       !write(lupri,*) 'dk'
       !call write_zmatrix(ddensity,nbast,nbast,lupri)
+      write(*,*) 'dk'
+      call write_zmatrix(ddensity,nbast,nbast)
       !deallocate(density_tmp)
       call mem_dealloc(density_tmp)
 
@@ -1539,12 +1554,12 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
         endif
         endif
 
-        if(tol .eq. 0 .or. tol .eq. 1) weight(1)=1.0d0
+        if(tol .le. 1) weight(1)=1.0d0
 
         write(*,*) 
         write(*,*) 'Iteration nr. ', tol
-!        write(*,*) 'Weights'
-!        write(*,*) weight
+        write(*,*) 'Weights'
+        write(*,*) weight
         write(lupri,*) 
         write(lupri,*) 'Iteration nr. ', tol
         write(lupri,*) 'Weights'
