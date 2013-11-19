@@ -725,6 +725,7 @@ C
 C
       GAMAVE = D0
 C
+
       DO I=1,3
       DO J=1,3
          IF (GAMMA(I,I,J,J) .EQ. D0) THEN
@@ -777,6 +778,27 @@ C
          WRITE(LUPRI,'(/2(A),F16.6)') '@ Averaged gamma parallel ',
      *     'to the applied field is ', GAMAVE
       END IF
+C
+      IF (GAMALL) THEN
+        WRITE(LUPRI,*) ''
+        WRITE(LUPRI,*) 'List of all the gamma values'
+        WRITE(LUPRI,*) ''
+        DO I = 1, 3
+          DO J = 1, 3
+            DO K = 1, 3
+              DO L = 1, 3
+                IF (GAMMA(I,J,K,L) .NE. D0) THEN
+                  WRITE(LUPRI,'(A,8(A1),F18.8)') 
+     *                 '@ gamma(',DIPOP(I),';',DIPOP(J),',',DIPOP(K),
+     *                 ',',DIPOP(L),')',GAMMA(I,J,K,L)
+                END IF
+              END DO
+            END DO
+          END DO
+        END DO
+      END IF
+
+
 C
 C End of GAMRPI
 C
