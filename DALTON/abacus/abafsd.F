@@ -1706,7 +1706,6 @@ C  /* Deck onedrl */
      &                  LWORK,IPRINT,INTPRI)
 C
 #if defined (BUILD_PELIB)
-       use pe_variables, only: peqm
        use polarizable_embedding, only: pe_master
 #endif
 #include "implicit.h"

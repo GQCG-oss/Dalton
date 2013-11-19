@@ -1596,7 +1596,7 @@ contains
     ! ***************************************************************
     O = MyFragment%noccAOS
     V = MyFragment%nunoccAOS
-    A = MyFragment%number_basis
+    A = MyFragment%nbasis
     GB = 1.000E9_realk ! 1 GB
 
     ! Use type decfrag to calculate memory use
@@ -1761,7 +1761,7 @@ retval=0
     write(DECinfo%output,*)
     if(MyFragment%nEOSatoms==2) then
        pair=.false.
-       write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%atomic_number
+       write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%EOSatoms(1)
     else
        pair=.true.
        write(DECinfo%output,'(1X,a,2i6)') 'PAIR FRAGMENT, atomic numbers:', &
@@ -1775,8 +1775,8 @@ retval=0
     write(DECinfo%output,'(1X,a,i8)') '#core orbitals =', MyFragment%ncore
     write(DECinfo%output,'(1X,a,i8)') 'Red Frag: Size occ AOS  =', MyFragment%noccAOS
     write(DECinfo%output,'(1X,a,i8)') 'Red Frag: Size virt AOS =', MyFragment%nunoccAOS
-    write(DECinfo%output,'(1X,a,i8)') 'Atoms in atomic extent =', MyFragment%number_atoms
-    write(DECinfo%output,'(1X,a,i8)') 'Number of basis functions =', MyFragment%number_basis
+    write(DECinfo%output,'(1X,a,i8)') 'Atoms in atomic extent =', MyFragment%natoms
+    write(DECinfo%output,'(1X,a,i8)') 'Number of basis functions =', MyFragment%nbasis
     do i=1,ndecenergies
        write(DECinfo%output,'(1X,a,i5,f16.10)') 'Idx, Fragenergy ', i,MyFragment%energies(i)
     end do
@@ -1826,7 +1826,7 @@ retval=0
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'Atomic extent indices (frag,full in terms of atoms)'
-       do i=1,MyFragment%number_atoms
+       do i=1,MyFragment%natoms
           write(DECinfo%output,*) i, MyFragment%atoms_idx(i)
        end do
        write(DECinfo%output,*)
@@ -1848,7 +1848,7 @@ retval=0
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'AO fock matrix (column, elements in column)'
-       do i=1,MyFragment%number_basis
+       do i=1,MyFragment%nbasis
           write(DECinfo%output,*) i, MyFragment%fock(:,i)
        end do
        write(DECinfo%output,*)
@@ -2404,8 +2404,8 @@ retval=0
     ! hardcoded values are changed consistently.
 
     ! Sanity check
-    if(npoints==1) then  ! Skip plot if only 1 point
-       write(DECinfo%output,*) 'Ascii-plot will be skipped because there is only one point!'
+    if(npoints<2) then  ! Skip plot if only 1 point
+       write(DECinfo%output,*) 'Ascii-plot will be skipped because there is less than 2 points!'
        return
     end if
 
@@ -3256,11 +3256,13 @@ retval=0
     write(funit) jobs%atom2
     write(funit) jobs%jobsize
     write(funit) jobs%jobsdone
+    write(funit) jobs%dofragopt
+    write(funit) jobs%esti
 
     ! MPI fragment statistics
     write(funit) jobs%nslaves
     write(funit) jobs%nocc
-    write(funit) jobs%nvirt
+    write(funit) jobs%nunocc
     write(funit) jobs%nbasis
     write(funit) jobs%ntasks
     write(funit) jobs%flops
@@ -3270,8 +3272,9 @@ retval=0
   end subroutine write_fragment_joblist_to_file
 
 
-  !> Read fragment job list from file (includes initialization of job list).
-  !> Also read pair cutoff distance in case that was changed during the original calculation.
+  !> Read fragment job list from file assuming that joblist has already been initialized 
+  !> with the proper dimensions.
+  !> Also read pair cutoff distance.
   !> \author Kasper Kristensen
   !> \date November 2012
   subroutine read_fragment_joblist_from_file(jobs,funit)
@@ -3288,39 +3291,57 @@ retval=0
 
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(funit,njobs)
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file1: Error in number of jobs!',-1)
+       end if
        call read_64bit_to_32bit(funit,njobs,jobs%atom1)
        call read_64bit_to_32bit(funit,njobs,jobs%atom2)
        call read_64bit_to_32bit(funit,njobs,jobs%jobsize)
        call read_64bit_to_32bit(funit,njobs,jobs%jobsdone)
+       call read_64bit_to_32bit(funit,njobs,jobs%dofragopt)
+       call read_64bit_to_32bit(funit,njobs,jobs%esti)
        call read_64bit_to_32bit(funit,njobs,jobs%nslaves)
        call read_64bit_to_32bit(funit,njobs,jobs%nocc)
-       call read_64bit_to_32bit(funit,njobs,jobs%nvirt)
+       call read_64bit_to_32bit(funit,njobs,jobs%nunocc)
        call read_64bit_to_32bit(funit,njobs,jobs%nbasis)
        call read_64bit_to_32bit(funit,njobs,jobs%ntasks)
     elseif(DECinfo%convert32to64) then
        call read_32bit_to_64bit(funit,njobs)
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file2: Error in number of jobs!',-1)
+       end if
        call read_32bit_to_64bit(funit,njobs,jobs%atom1)
        call read_32bit_to_64bit(funit,njobs,jobs%atom2)
        call read_32bit_to_64bit(funit,njobs,jobs%jobsize)
        call read_32bit_to_64bit(funit,njobs,jobs%jobsdone)
+       call read_32bit_to_64bit(funit,njobs,jobs%dofragopt)
+       call read_32bit_to_64bit(funit,njobs,jobs%esti)
        call read_32bit_to_64bit(funit,njobs,jobs%nslaves)
        call read_32bit_to_64bit(funit,njobs,jobs%nocc)
-       call read_32bit_to_64bit(funit,njobs,jobs%nvirt)
+       call read_32bit_to_64bit(funit,njobs,jobs%nunocc)
        call read_32bit_to_64bit(funit,njobs,jobs%nbasis)
        call read_32bit_to_64bit(funit,njobs,jobs%ntasks)
     else
        read(funit) njobs
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file3: Error in number of jobs!',-1)
+       end if
        read(funit) jobs%atom1
        read(funit) jobs%atom2
        read(funit) jobs%jobsize
        read(funit) jobs%jobsdone
+       read(funit) jobs%dofragopt
+       read(funit) jobs%esti
 
        read(funit) jobs%nslaves
        read(funit) jobs%nocc
-       read(funit) jobs%nvirt
+       read(funit) jobs%nunocc
        read(funit) jobs%nbasis
        read(funit) jobs%ntasks
     end if
@@ -3328,6 +3349,14 @@ retval=0
     read(funit) jobs%flops
     read(funit) jobs%LMtime
     read(funit) jobs%load
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) 'JOB LIST RESTART'
+    write(DECinfo%output,'(1X,a,i10)') '-- total number of jobs : ', jobs%njobs
+    write(DECinfo%output,'(1X,a,i10)') '-- number of jobs done  : ', count(jobs%jobsdone)
+    write(DECinfo%output,'(1X,a,i10)') '-- number of jobs to do : ', jobs%njobs-count(jobs%jobsdone)
+    write(DECinfo%output,*)
+
 
   end subroutine read_fragment_joblist_from_file
 
@@ -3347,20 +3376,23 @@ retval=0
     jobs%njobs = njobs
 
     ! Set all pointers to be of size njobs and equal to 0
-    nullify(jobs%atom1,jobs%atom2,jobs%jobsize)
     call mem_alloc(jobs%atom1,njobs)
     call mem_alloc(jobs%atom2,njobs)
     call mem_alloc(jobs%jobsize,njobs)
     call mem_alloc(jobs%jobsdone,njobs)
+    call mem_alloc(jobs%dofragopt,njobs)
+    call mem_alloc(jobs%esti,njobs)
     jobs%atom1=0
     jobs%atom2=0
     jobs%jobsize=0
     jobs%jobsdone=.false. ! no jobs are done
+    jobs%dofragopt=.false. 
+    jobs%esti=.false.
 
     ! MPI fragment statistics
     call mem_alloc(jobs%nslaves,njobs)
     call mem_alloc(jobs%nocc,njobs)
-    call mem_alloc(jobs%nvirt,njobs)
+    call mem_alloc(jobs%nunocc,njobs)
     call mem_alloc(jobs%nbasis,njobs)
     call mem_alloc(jobs%ntasks,njobs)
     call mem_alloc(jobs%flops,njobs)
@@ -3368,7 +3400,7 @@ retval=0
     call mem_alloc(jobs%load,njobs)
     jobs%nslaves=0
     jobs%nocc=0
-    jobs%nvirt=0
+    jobs%nunocc=0
     jobs%nbasis=0
     jobs%ntasks=0
     jobs%flops=0.0E0_realk
@@ -3408,6 +3440,16 @@ retval=0
        nullify(jobs%jobsdone)
     end if
 
+    if(associated(jobs%dofragopt)) then
+       call mem_dealloc(jobs%dofragopt)
+       nullify(jobs%dofragopt)
+    end if
+
+    if(associated(jobs%esti)) then
+       call mem_dealloc(jobs%esti)
+       nullify(jobs%esti)
+    end if
+
     if(associated(jobs%nslaves)) then
        call mem_dealloc(jobs%nslaves)
        nullify(jobs%nslaves)
@@ -3418,9 +3460,9 @@ retval=0
        nullify(jobs%nocc)
     end if
 
-    if(associated(jobs%nvirt)) then
-       call mem_dealloc(jobs%nvirt)
-       nullify(jobs%nvirt)
+    if(associated(jobs%nunocc)) then
+       call mem_dealloc(jobs%nunocc)
+       nullify(jobs%nunocc)
     end if
 
     if(associated(jobs%nbasis)) then
@@ -3481,9 +3523,11 @@ retval=0
     jobs%atom2(position) = singlejob%atom2(1)
     jobs%jobsize(position) = singlejob%jobsize(1)
     jobs%jobsdone(position) = singlejob%jobsdone(1)
+    jobs%dofragopt(position) = singlejob%dofragopt(1)
+    jobs%esti(position) = singlejob%esti(1)
     jobs%nslaves(position) = singlejob%nslaves(1)
     jobs%nocc(position) = singlejob%nocc(1)
-    jobs%nvirt(position) = singlejob%nvirt(1)
+    jobs%nunocc(position) = singlejob%nunocc(1)
     jobs%nbasis(position) = singlejob%nbasis(1)
     jobs%ntasks(position) = singlejob%ntasks(1)
     jobs%flops(position) = singlejob%flops(1)
@@ -4290,16 +4334,13 @@ retval=0
     case default
        ! MODIFY FOR NEW MODEL
        ! If you implement new model, please print the fragment energies here,
-       ! see decfrag type def. to determine the number for your model (see FRAGMODEL_* definitions
-       ! in dec_typedef.F90).
+       ! see FRAGMODEL_* definitions in dec_typedef.F90.
        write(DECinfo%output,*) 'WARNING: print_all_fragment_energies needs implementation &
             & for model: ', DECinfo%ccmodel
     end select
 
     ! MODIFY FOR NEW CORRECTION
-    ! E.g. for F12:
     if(DECInfo%F12) then
-
        print *, "(DEC_driver) Total energy for MP2-F12: ", energies(FRAGMODEL_F12)
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a,g20.10)') 'MP2F12-V_gr_term occupied correlation energy : ', energies(FRAGMODEL_F12)
@@ -4540,5 +4581,56 @@ retval=0
 
   end function get_fragenergy_restart_filename
 
+  !> \brief Get filename for for fragment energy restart file used for backing up existing file
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  function get_fragenergy_restart_filename_backup(esti) result(filename)
+    implicit none
+    !> Is this estimated fragment energies?
+    logical,intent(in) :: esti
+    character(len=40) :: FileName
+
+    if(esti) then
+       FileName='estimated_fragenergies.backup'
+    else
+       FileName='fragenergies.backup'
+    end if
+
+  end function get_fragenergy_restart_filename_backup
+
+
+  !> \brief Get number of pair fragments with interatomic distances in the range [r1,r2].
+  !> This is done by counting the number of entries in MyMolecule%ccmodel(i,j), where j>i 
+  !> AND ccmodel(i,j) is not an empty model (MODEL_NONE) AND atoms "i" and "j"
+  !> both have orbitals assigned AND the distance between "i" and "j" is in the range [r1,r2].
+  function get_num_of_pair_fragments(MyMolecule,dofrag,r1,r2) result(npairfrags)
+    implicit none
+    !> Full molecule structure
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> List of which atoms have orbitals assigned
+    logical,dimension(MyMolecule%natoms),intent(in) :: dofrag
+    !> Minimum distance to consider
+    real(realk),intent(in) :: r1
+    !> Maximum distance to consider
+    real(realk),intent(in) :: r2
+    integer :: npairfrags
+    integer :: i,j
+
+    npairfrags=0
+    iloop: do i=1,MyMolecule%natoms
+       if(.not. dofrag(i)) cycle iloop
+       jloop: do j=i+1,MyMolecule%natoms
+          if(.not. dofrag(j)) cycle jloop
+          if(MyMolecule%ccmodel(i,j) /= MODEL_NONE) then
+             if( MyMolecule%DistanceTable(i,j) .ge. r1 &
+                  & .and. MyMolecule%DistanceTable(i,j) .le. r2 ) then
+                ! Pair fragment (i,j) needs to be calculated
+                npairfrags = npairfrags+1
+             end if
+          end if
+       end do jloop
+    end do iloop
+
+  end function get_num_of_pair_fragments
 
 end module dec_fragment_utils

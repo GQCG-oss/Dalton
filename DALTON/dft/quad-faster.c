@@ -114,6 +114,7 @@ qrbl_data_init(QuadBlData *d, real *cmo, integer is_gga, integer max_block_len,
 	      real *dmat,
 	      real *work, integer *lwork)
 {
+    static const real DP5R  =  0.5;
     real dummy;
     integer isym;
     integer nbast = inforb_.nbast;
@@ -144,8 +145,10 @@ qrbl_data_init(QuadBlData *d, real *cmo, integer is_gga, integer max_block_len,
         dalton_quit("no enough mem in %s", __FUNCTION__);
     isym = isetksymop_(&symY);
     FSYM(deq27)(cmo, kappaY, &dummy, d->my,    &dummy, work, lwork);
+    dscal_(&inforb_.n2basx,&DP5R,d->my,&ONEI);    
     isetksymop_(&symZ);
     FSYM(deq27)(cmo, kappaZ, &dummy, d->mz,    &dummy, work, lwork);
+    dscal_(&inforb_.n2basx,&DP5R,d->mz,&ONEI);    
     isetksymop_(&isym);
 #if 0
     fort_print("cmo");

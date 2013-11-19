@@ -1113,11 +1113,8 @@ contains
       !allocate the dense part of the arrays if all can be kept in local memory.
       !do that for master only, as the slaves recieve the data via StartUpSlaves
       if((scheme==4).and.govov%itype/=DENSE)then
-        print *,"allocate dense"
         if(iter==1) call memory_allocate_array_dense_pc(govov)
-        print *,"allocate dense - done copying"
         if(iter/=1) call array_cp_tiled2dense(govov,.false.)
-        print *,"copying done"
       endif 
 #endif
     endif
@@ -1245,7 +1242,6 @@ contains
       write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
     endif
     
-
     ! Use the dense amplitudes
     ! ------------------------
    
@@ -1388,8 +1384,6 @@ contains
     !startt = omp_get_wtime()
 #endif
     myload = 0
-
-
 
     if(master)call LSTIMER('CCSD part A',time_start,timewall_start,DECinfo%output)
 
@@ -4089,10 +4083,11 @@ contains
       nba=(nb/(magic*nnod))
       if(nba<minbsize)nba=minbsize
     endif
+
     if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
       do while((nb/nba)*(nb/nbg)<magic*nnod)
         nbg=nbg-1
-        if(nbg<0)exit
+        if(nbg<1)exit
       enddo
       if(nbg<minbsize)nbg=minbsize
     endif
@@ -4796,8 +4791,8 @@ contains
 
     ! Dimensions
     nbasis = MyMolecule%nbasis
-    nocc = MyMolecule%numocc
-    nvirt = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
     bo(1) = nbasis
     bo(2) = nocc
     bv(1) = nbasis
@@ -4836,7 +4831,7 @@ contains
 
     ! Dimensions
     ! **********
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
     nocc = MyFragment%noccAOS
     nvirt = MyFragment%nunoccAOS
     bo(1) = nbasis

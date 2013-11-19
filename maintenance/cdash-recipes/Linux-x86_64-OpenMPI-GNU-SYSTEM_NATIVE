@@ -1,17 +1,27 @@
 #!/bin/bash
 
-if [[ $# == 0 ]]; then
-    echo "you have to give the branch name as argument to this script"
-    echo "example: $0 master"
-    echo "quitting"
-    exit -1
-fi
-
+# these env variables are machine dependent, adapt to your needs
 export PATH=$HOME/openmpi/gnu/bin:$PATH
 export LD_LIBRARY_PATH=$HOME/openmpi/gnu/lib:$LD_LIBRARY_PATH
-export DALTON_NUM_MPI_PROCS=12
 
-BRANCH=$1
+BRANCH='master'
+NUM_CORES=4
+
+while getopts b:p:n: opt; do
+  case $opt in
+  b)
+      BRANCH=$OPTARG
+      ;;
+  n)
+      NUM_CORES=$OPTARG
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+export DALTON_NUM_MPI_PROCS=$NUM_CORES
+
 BUILDNAME="$BRANCH-$(basename $0)"
 
 CTEST_TEMP_DIR=/tmp/cdash-scratch
@@ -25,7 +35,7 @@ cd $CTEST_TEMP_DIR/compile
 git checkout $BRANCH &> /dev/null
 ./setup --mpi -D BUILDNAME=$BUILDNAME
 cd build
-make -j12 dalton.x
+make -j$NUM_CORES dalton.x
 ctest -D Nightly -L dalton
 
 rm -rf $CTEST_TEMP_DIR

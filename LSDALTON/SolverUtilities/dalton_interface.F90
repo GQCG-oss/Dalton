@@ -83,6 +83,7 @@ END INTERFACE
    ! access to H1 within this module, avoiding re-reading H1 from disk and
    ! avoiding extensive modifications to existing subroutine interfaces.
    type(MATRIX), pointer, save  :: lH1
+   real(realk),parameter :: Gbd_thresh = 1.0E-14_realk
 CONTAINS
   subroutine di_debug_general(lupri,luerr,ls,nbast,S,D,debugProp)
       implicit none
@@ -2282,7 +2283,9 @@ CONTAINS
         integer :: ndmat 
 !       
         logical :: Dsym
-        Dsym = .FALSE. !NONsymmetric Density matrix
+
+        Dsym = .TRUE. !matrix either symmetric or antisymmetric
+        IF(mat_get_isym(Dens,Gbd_thresh).EQ.3) Dsym = .FALSE. !NON symmetric Density matrix
         ndmat = 1
         IF(present(setting))THEN
            !This should be changed to a test like the MATSYM function
@@ -2414,11 +2417,16 @@ CONTAINS
         type(Matrix), intent(inout) :: GbDs(nDmat)  !output
         type(lssetting),optional :: setting !intent(inout)
         !
+        integer :: idmat
         logical :: Dsym
 
-        !This should be changed to a test like the MATSYM
-        ! function for full matrices   
-        Dsym = .FALSE. !NONsymmetric Density matrix
+        Dsym = .TRUE. !all matrices either symmetric or antisymmetric
+        DO idmat = 1,ndmat
+           IF(mat_get_isym(Dens(idmat),Gbd_thresh).EQ.3)THEN
+              Dsym = .FALSE. !NON symmetric Density matrix
+           ENDIF
+           IF(.NOT.Dsym)EXIT
+        ENDDO
         IF(present(setting))THEN
            call II_get_Fock_mat(lupri,luerr,&
               & setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
@@ -2496,10 +2504,13 @@ CONTAINS
                 call lsquit('II_get_Fock_mat incremental scheme not &
                            & allowed in di_GET_GbDsArray_ADMM_setting()',lupri)
             ENDIF
-            !This should be changed to a test like the MATSYM
-            ! function for full matrices   
-            Dsym = .FALSE. !NONsymmetric Density matrix
-
+            Dsym = .TRUE. !all matrices either symmetric or antisymmetric
+            DO iBmat = 1,nBmat
+               IF(mat_get_isym(Bmat(iBmat),Gbd_thresh).EQ.3)THEN
+                  Dsym = .FALSE. !NON symmetric Density matrix
+               ENDIF
+               IF(.NOT.Dsym)EXIT
+            ENDDO
             ! Get rid of Grand canonical
             copy_IntegralTransformGC = setting%IntegralTransformGC
             call mat_init(Dmat_AO,nbast,nbast)

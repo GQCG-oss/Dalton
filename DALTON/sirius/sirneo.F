@@ -692,9 +692,6 @@ C
 C Scratch:
 C  WRK(LFREE)
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
       DIMENSION CREF(*), CMO(*), DV(*), PV(*), FC(*), FV(*)
       DIMENSION G(*), EVAL(*), EVEC(NREDL,*), IBNDX(*), WRK(*)

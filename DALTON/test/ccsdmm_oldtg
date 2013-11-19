@@ -216,6 +216,5 @@ else
   echo THERE IS A PROBLEM 
   exit 1
 fi
-
-' > ccsdmm_oldtg.check
+%EOF%
 #######################################################################

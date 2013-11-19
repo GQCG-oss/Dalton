@@ -56,7 +56,6 @@ C         -----  ICONV can be used for conditional call of
 C                subsequent steps requiring a converged w.f.
 C
 #if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
       use polarizable_embedding, only: pe_master
 #endif
 #ifdef VAR_MPI
@@ -2567,9 +2566,6 @@ C    *) NSYM, NORBT, ...
 C    *) FCDIA, ISMO
 C    *) CMO
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 C
 #include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
@@ -2912,25 +2908,6 @@ Ckr
      &              1,WRK(KWRK2),LWRK2)
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
-      END IF
-C--------------
-C CBN+JK, 03.01.06
-C-------------------
-C Write qm3 solvent part of the Fock matrix to interface file
-
-      IF (QM3) THEN
-         KTMAT = KWRK1
-         KFSOLAO = KTMAT + NNORBT
-         KUCMO = KFSOLAO + NNBASX
-         KWRK2 = KUCMO + NORBT*NBAST
-         LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WR_SIRIFC-QM3',KWRK2,LFREE)
-         CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IPRSOL)
-         CALL UPKCMO(CMO,WRK(KUCMO))
-         CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
-     &             NBAST,NORBT)
-         WRITE (LUSIFC) LAB123,TABLE(7)
-         CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
       END IF
 
 C ****** edh: 24/11/2011 ******

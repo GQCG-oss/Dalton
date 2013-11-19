@@ -10,6 +10,12 @@ module cc_debug_routines_module
    use typedeftype
    use dec_typedef_module
    use tensor_type_def_module
+! begin pablo
+#ifdef VAR_MPI
+  use infpar_module
+  use lsmpi_type
+#endif
+! end pablo 
  
 
    ! DEC DEPENDENCIES (within deccc directory)   
@@ -170,7 +176,12 @@ module cc_debug_routines_module
      integer :: ii,aa
      integer :: MaxSubSpace
      logical :: restart
-     
+
+     ! begin pablo 
+     real(realk),pointer :: pack_gmo(:)
+     type(MObatchInfo) :: MOinfo
+     logical :: small_frag
+     ! end pablo
 
 
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
@@ -397,6 +408,16 @@ module cc_debug_routines_module
      prev_norm        = 1.0E6_realk
 
 
+     ! begin pablo
+     ! criterion will need to be improved/adjusted.
+     small_frag = .false.
+     !if (nbasis<=300) small_frag=.true. 
+     !> get gmo and packed them
+     if (small_frag) then
+       call get_packed_gmo(mylsitem,Co%val,Cv2%val,pack_gmo, &
+            & nbasis,nocc,nvirt,MOinfo)
+     end if
+     ! end pablo
 
 
 
@@ -530,7 +551,28 @@ module cc_debug_routines_module
               call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
               &,t2_final%val,t1(iter)%val,t2(iter)%val,gao,xocc%val,yocc%val,xvirt%val,yvirt%val&
               &,nocc,nvirt,nbasis,MyLsItem)
+           
+           ! begin pablo
+           !> call CCSD code for small fragment:
+           else if (small_frag) then
 
+             ! reorder array like in Patrick's code
+             call array4_reorder(t2(iter),[1,3,2,4]) ! -> t2[ab,ij]
+             call array4_reorder(omega2(iter),[1,3,2,4]) ! -> om2[ab,ij]
+
+             call get_ccsd_residual_small_frag(pack_gmo,t1(iter)%val, &
+                  & t2(iter)%val,omega2(iter)%val,nbasis,nocc,nvirt,MOinfo)
+
+             ! Calculate and print simple A2.2 residual for debug:
+             call ultra_simple_a22(gao,xocc,xvirt,yocc,yvirt,t1(iter),t2(iter),nvirt,nocc)
+
+             ! restor previous order:
+             call array4_reorder(omega2(iter),[1,3,2,4]) ! -> om2[ai,bj]
+             call array4_reorder(t2(iter),[1,3,2,4]) ! -> t2[ai,bj]
+
+             call lsquit('CC iteration cannot continue because the CCSD &
+                        & residual is not fully calculated',DECinfo%output)
+           ! end pablo
            else
 
              u = get_u(t2(iter))
@@ -548,6 +590,10 @@ module cc_debug_routines_module
         elseif(CCmodel==MODEL_RPA) then
 
            call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
+
+        else
+           print *, 'MODEL = ', DECinfo%cc_models(DECinfo%ccmodel)
+           call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
 
         end if SelectCoupledClusterModel
 
@@ -697,6 +743,9 @@ module cc_debug_routines_module
               ccenergy = RPA_energy(t2(iter),gmo)
               sosex = SOSEX_contribution(t2(iter),gmo)
               ccenergy=ccenergy+sosex
+           else
+              print *, 'MODEL = ', DECinfo%cc_models(DECinfo%ccmodel)
+              call lsquit('ccsolver_debug: Energy for model is not implemented!',-1)
            end if EnergyForCCmodel
         endif
 
@@ -2264,5 +2313,1100 @@ module cc_debug_routines_module
       &number)",DECinfo%output)
     endif
   end subroutine save_current_guess_simple
+
+  ! begin pablo
+  !> Purpose: calculate AO int. in batches and transform them to
+  !           full MO basis (non T1-transformed)
+  !           Based on Patrick's CCSD routine: get_ccsd_residual_integral_driven
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    October 2013
+  !
+  subroutine get_packed_gmo(MyLsItem,cmo_occ,cmo_vir,pack_gmo, &
+             & nbas,nocc,nvir,PRbatchInfo)
+
+    implicit none
+
+    integer, intent(in) :: nbas, nocc, nvir
+    real(realk), pointer, intent(out) :: pack_gmo(:)
+    real(realk), intent(in) :: cmo_occ(nbas,nocc), cmo_vir(nbas,nvir)
+    !> dim packed :
+    integer :: i,j,p,q,r,s,pq,rs, job_index, full_ind, pack_ind
+    type(array2) :: cmo_full
+    type(array4) :: pqrs
+    !
+    ! Elementary types needed for the calculation
+    real(realk), pointer :: gao(:), gmo(:)
+    integer(kind=long) :: gaosize, gmosize, pack_gmosize
+    integer :: iter, niter
+    logical :: first_round, dynamic_load, print_debug, local
+    !
+    ! CHECKING and MEASURING variables
+    integer(kind=long) :: maxsize64
+    real(realk) :: MemFree, tcpu, twall, tcpu_start, twall_start, tcpu_end, twall_end
+    real(realk) :: time_start, timewall_start 
+    integer     :: scheme
+    integer(kind=long) :: els2add
+    !   
+    ! variables used for MO BATCH
+    integer :: nRbatch, nPbatch, PR_batch, dimR, dimP
+    integer :: max_mem, min_mem, PR_sta, PR_end, P_sta, P_end, R_sta, R_end
+    type(MObatchInfo), intent(out) :: PRbatchInfo
+    ! 
+    ! variables used for AO BATCH construction and INTEGRAL calculation
+    integer :: alphaB, gammaB, dimAlpha, dimGamma
+    integer :: dim1, dim2, dim3, K, MinAObatch
+    integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
+    integer :: iorb, idx
+    type(batchtoorb), pointer :: batch2orbAlpha(:)
+    type(batchtoorb), pointer :: batch2orbGamma(:)
+    Character            :: INTSPEC(5)
+    logical :: FoundInMem, fullRHS, doscreen
+    integer :: nbatches
+    integer :: MaxAllowedDimAlpha, MaxActualDimAlpha, nbatchesAlpha
+    integer :: MaxAllowedDimGamma, MaxActualDimGamma, nbatchesGamma
+    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), &
+                      & batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchdimGamma(:), &
+                      & batchsizeGamma(:), batchindexGamma(:)
+    !
+    ! MPI variables:
+    logical :: master
+    integer(kind=ls_mpik) :: mynum, nnod, ierr
+    !
+    ! Screening integrals stuff:
+    type(DECscreenITEM) :: DecScreen
+
+    !> LS item with information needed for integrals
+    type(lsitem), intent(inout) :: MyLsItem
+
+
+    ! Set default values for the path throug the routine
+    ! **************************************************
+    scheme           = 0
+    dynamic_load     = DECinfo%dyn_load
+    print_debug      = (DECinfo%PL>2)
+    iter             = 1
+    local            = .false.
+
+    !> info about the scheme for packing MO integrals:
+    !
+    !    MOscheme = 0 => no packing of integrals;       mem = N**4
+    !    MOscheme = 1 => packing using pq>=rs;          mem = N**2*(N**2+1)/2
+    !    MOscheme = 2 => packing using p>=q and r>=s;   mem = [N*(N+1)]**2/4
+    !    MOscheme = 3 => combination of scheme 1 and 2; mem = N*(N+1)*[N*(N+1) + 1]/8
+    !
+
+    ! Set integral info
+    ! *****************
+    INTSPEC(1)       = 'R' !R = Regular Basis set on the 1th center 
+    INTSPEC(2)       = 'R' !R = Regular Basis set on the 2th center 
+    INTSPEC(3)       = 'R' !R = Regular Basis set on the 3th center 
+    INTSPEC(4)       = 'R' !R = Regular Basis set on the 4th center 
+    INTSPEC(5)       = 'C' !C = Coulomb operator
+
+    doscreen = MyLsItem%setting%scheme%cs_screen.OR. &
+             & MyLsItem%setting%scheme%ps_screen
+
+    ! Set MPI related info
+    ! ********************
+    master           = .true.
+    mynum            = int(0,kind=ls_mpik)
+    nnod             = 1
+#ifdef VAR_MPI
+    mynum            = infpar%lg_mynum
+    master           = (infpar%lg_mynum == 0)
+    nnod             = infpar%lg_nodtot
+#endif
+
+    ! Some timings
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    call LSTIMER('START',tcpu_start,twall_start,DECinfo%output)
+    call LSTIMER('START',time_start,timewall_start,DECinfo%output)
+
+    ! Initialize stuff
+    nullify(orb2batchAlpha)
+    nullify(batchdimAlpha)
+    nullify(batchsizeAlpha)
+    nullify(batch2orbAlpha)
+    nullify(batchindexAlpha)
+    nullify(orb2batchGamma)
+    nullify(batchdimGamma)
+    nullify(batchsizeGamma)
+    nullify(batch2orbGamma)
+    nullify(batchindexGamma)
+    nullify(gao)
+    nullify(gmo)
+    nullify(pack_gmo)
+    nullify(PRbatchInfo%Pdims)
+    nullify(PRbatchInfo%Rdims)
+    nullify(PRbatchInfo%PStarts)
+    nullify(PRbatchInfo%RStarts)
+    nullify(PRbatchInfo%PR_index)
+    nullify(PRbatchInfo%PR_packInd)
+    
+
+    cmo_full%dims = [nbas, nbas]
+    call mem_alloc(cmo_full%val,nbas,nbas)
+
+    ! get full MO coeficients:
+    cmo_full%val(:,:nocc)       = cmo_occ
+    cmo_full%val(:,nocc+1:nbas) = cmo_vir
+    !
+    !
+    !==================================================
+    !                  Batch construction             !
+    !==================================================
+
+
+    if (master) then
+      ! Get free memory and determine maximum batch sizes
+      ! -------------------------------------------------
+      call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+      call get_currently_available_memory(MemFree)
+      call get_max_batch_sizes(scheme,nbas,nvir,nocc,MaxAllowedDimAlpha, &
+           & MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter, &
+           & MemFree,.true.,els2add,local)
+    end if
+
+    ! MPI: here you should start the slaves!!
+
+    ! ************************************************
+    ! * Determine batch information for Gamma batch  *
+    ! ************************************************
+
+    ! Orbital to batch information
+    ! ----------------------------
+    call mem_alloc(orb2batchGamma,nbas)
+    call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma, &
+         & nbas,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma, &
+         & nbatchesGamma,orb2BatchGamma,'R')
+
+    if (master.and.DECinfo%PL>1) write(DECinfo%output,*) & 
+               & 'BATCH: Number of Gamma batches   = ', nbatchesGamma, &
+               & 'with maximum size', MaxActualDimGamma 
+
+
+    ! Translate batchindex to orbital index
+    ! -------------------------------------
+    call mem_alloc(batch2orbGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
+       batch2orbGamma(idx)%orbindex = 0
+       batch2orbGamma(idx)%norbindex = 0
+    end do
+    do iorb=1,nbas
+       idx = orb2batchGamma(iorb)
+       batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+       K = batch2orbGamma(idx)%norbindex
+       batch2orbGamma(idx)%orbindex(K) = iorb
+    end do
+
+
+    ! ************************************************
+    ! * Determine batch information for Alpha batch  *
+    ! ************************************************
+
+    ! Orbital to batch information
+    ! ----------------------------
+    call mem_alloc(orb2batchAlpha,nbas)
+    call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha, &
+         & nbas,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha, &
+         & nbatchesAlpha,orb2BatchAlpha,'R')
+
+    if (master.and.DECinfo%PL>1) write(DECinfo%output,*) & 
+        & 'BATCH: Number of Alpha batches   = ', nbatchesAlpha, &
+        & 'with maximum size',MaxActualDimAlpha
+
+
+    ! Translate batchindex to orbital index
+    ! -------------------------------------
+    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+       batch2orbAlpha(idx)%orbindex = 0
+       batch2orbAlpha(idx)%norbindex = 0
+    end do
+    do iorb=1,nbas
+       idx = orb2batchAlpha(iorb)
+       batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+       K = batch2orbAlpha(idx)%norbindex
+       batch2orbAlpha(idx)%orbindex(K) = iorb
+    end do
+
+
+
+    ! ****************************************************
+    ! *  Allocate matrices and determine MO batch info.  *
+    ! ****************************************************
+
+    ! get minimum and maximum memory requirements for MO batches:
+    !
+    !      tmp1 [P_batch, beta, gammaB, delta]
+    !      tmp2 [P_batch, beta, gammaB, s]
+    !      tmp3 [R_batch, s, P_batch, beta]
+    !      gmo  [R_batch, s, P_batch, r] 
+    !
+    min_mem = 2*nbas*nbas*(MaxActualdimGamma + 1)
+    max_mem = 2*nbas*nbas*nbas*(MaxActualdimGamma + nbas)
+
+    if (nnod>1) then  
+      ! Prepare MO transfo. of integrals:
+      call get_MO_batches_size(min_mem, max_mem, nbas, nPbatch, dimP, &
+           & 2*nbas*nbas, 2*nbas*nbas*MaxActualdimGamma)
+      gmosize = int(i8*nbas*nbas*dimP*dimP,kind=long)
+    else
+      ! then the whole integrals have to be stored in core:
+      !
+      !      gmo  [p, q, r, s] nbas**4
+      !
+      gmosize = int(i8*nbas*nbas*nbas*nbas,kind=long)
+      min_mem = nbas*nbas*(2*MaxActualdimGamma + nbas*nbas + 1) 
+      call get_MO_batches_size(min_mem, max_mem, nbas, nPbatch, dimP, &
+           & 2*nbas*nbas, 2*nbas*nbas*MaxActualdimGamma)
+    end if 
+
+    dimR = dimP
+    nRbatch = nPbatch
+    ! DEBUG HACK !!!!
+    if (DECInfo%cc_driver_debug) then
+      dimP = 6
+      dimR = 6
+      nPbatch = (nbas-1)/dimP + 1
+      nRbatch = (nbas-1)/dimR + 1
+      print *, 'debug test dimP, dimR, nPbatch, nRbatch', &
+               & dimP, dimR, nPbatch, nRbatch
+    end if
+    ! DEBUG HACK !!!!
+
+    PRbatchInfo%nRbatch = nRbatch
+    PRbatchInfo%nPbatch = nPbatch
+    call get_MO_batches_info(PRbatchInfo, dimP, dimR, nbas)
+
+    gaosize = int(i8*nbas*nbas*MaxActualDimAlpha*MaxActualDimGamma,kind=long)
+    call mem_alloc(gmo,gmosize)
+    call mem_alloc(gao,gaosize)
+    gmo = 0.0E0_realk
+
+    ! Sanity checks for matrix sizes which need to be filled:
+    if (gmosize>MaxInt.or.gaosize>MaxInt) then
+    call lsquit("ERROR(CCSD):matrix sizes too large, &
+        & please recompile with 64bit integers",-1)
+    endif
+
+
+    ! *******************************************************
+    ! *  This subroutine builds the full screening matrix.
+    call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting, &
+         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+
+    if (mylsitem%setting%scheme%cs_screen .or. &
+         & mylsitem%setting%scheme%ps_screen) then
+
+       call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
+            & nbas,nbatchesAlpha,nbatchesGamma,&
+            & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+
+       call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
+            & nbas,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
+            & batchindexAlpha,batchindexGamma,&
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+    end if
+    ! *******************************************************
+
+    if (master) call lstimer('CCSD part A',time_start,timewall_start,DECinfo%output)
+
+    fullRHS = (nbatchesGamma.eq.1).and.(nbatchesAlpha.eq.1)
+
+
+    !**********************************
+    ! Begin the loop over gamma batches
+    !**********************************
+
+    first_round = .false.
+    if (dynamic_load) first_round = .true.
+
+    BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+
+       dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
+       GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+       GammaEnd   = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
+
+    !**********************************
+    ! Begin the loop over alpha batches
+    !**********************************
+
+    BatchAlpha: do alphaB = 1,nbatchesAlpha    ! AO batches
+      
+#ifdef VAR_MPI
+       !! check if this is my job:
+       !job_index = alphaB + (gammaB-1)*nbatchesAlpha
+       !job_index = mod(job_index, nnod)
+       !if (job_index .ne. mynum) cycle ! this is not my job
+       !print *, "mynum",mynum
+#endif
+
+       dimAlpha   = batchdimAlpha(alphaB)                        ! Dimension of alpha batch
+       AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)           ! First index in alpha batch
+       AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)    ! Last index in alpha batch
+
+       
+       if (doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
+       if (doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
+       !
+       ! Get two-electron int. in exchange form: (alphaB, beta, gammaB, delta):
+       call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
+            & Mylsitem%setting,gao,batchindexAlpha(alphaB),batchindexGamma(gammaB), &
+            & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nbas,dimGamma, &
+            & nbas,nbatches,INTSPEC,fullRHS)
+       call lsmpi_poke()
+
+       ! Loop over MO batches:
+       BatchPR: do PR_batch = 1, nRbatch*nPbatch
+
+         PR_sta = PRbatchInfo%PR_index(PR_batch)
+         PR_end = PRbatchInfo%PR_index(PR_batch+1) - 1
+         P_sta  = PRbatchInfo%PStarts(PR_batch)
+         dimP   = PRbatchInfo%Pdims(PR_batch)
+         R_sta  = PRbatchInfo%RStarts(PR_batch)
+         dimR   = PRbatchInfo%Rdims(PR_batch)
+
+         call gao_to_gmo(gmo(PR_sta:PR_end), gao, cmo_full%val, nbas, &
+              & AlphaStart, dimAlpha, GammaStart, dimGamma, P_sta, dimP, R_sta, dimR)
+
+         ! GMO INT. MAY BE PACKED HERE BEFORE SUM OVER AO BATCHES 
+
+       end do BatchPR
+
+
+    end do BatchAlpha
+    end do BatchGamma
+
+
+    ! Free gamma stuff
+    call mem_dealloc(orb2batchGamma)
+    call mem_dealloc(batchdimGamma)
+    call mem_dealloc(batchsizeGamma)
+    call mem_dealloc(batchindexGamma)
+    do idx=1,nbatchesGamma
+       call mem_dealloc(batch2orbGamma(idx)%orbindex)
+       batch2orbGamma(idx)%orbindex => null()
+    end do
+    call mem_dealloc(batch2orbGamma)
+
+    ! Free alpha stuff
+    call mem_dealloc(orb2batchAlpha)
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchsizeAlpha)
+    call mem_dealloc(batchindexAlpha)
+    do idx=1,nbatchesAlpha
+       call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+       batch2orbAlpha(idx)%orbindex => null()
+    end do
+    call mem_dealloc(batch2orbAlpha)
+
+    pack_gmosize = int(i8*nbas*nbas*nbas*nbas, kind=long) 
+    call mem_alloc(pack_gmo,pack_gmosize)
+
+    ! MO INT. SHOULD BE PACKED HERE (at least):
+    call dcopy(nbas*nbas*nbas*nbas,gmo,1,pack_gmo,1)
+
+    ! Free integrals
+    call mem_dealloc(gao)
+    call mem_dealloc(gmo)
+
+  end subroutine get_packed_gmo
+
+
+  !> Purpose: Transform AO int. into MO int. in batches
+  !           
+  !> Author:  Pablo Baudin
+  !> Date:    October 2013
+  subroutine gao_to_gmo(gmo, gao, cmo_full, nbas, &
+            & AlphaStart, dimAlpha, GammaStart, dimGamma, &
+            & PStart, dimP, RStart, dimR)
+
+    implicit none
+
+    integer, intent(in) :: nbas, PStart, dimP, RStart, dimR
+    integer, intent(in) :: AlphaStart, dimAlpha, GammaStart, dimGamma
+    real(realk), intent(in) :: gao(dimAlpha*nbas*dimGamma*nbas), cmo_full(nbas,nbas)
+    real(realk), intent(inout) :: gmo(:)
+
+    integer :: AlphaEnd, GammaEnd, Pend, Rend
+    real(realk), pointer, dimension(:)   :: tmp1, tmp2, tmp3     => null()
+    real(realk), pointer, dimension(:,:) :: cmo_alpha, cmo_beta  => null()
+    real(realk), pointer, dimension(:,:) :: cmo_gamma, cmo_delta => null()
+   
+
+    AlphaEnd = AlphaStart+dimAlpha-1
+    GammaEnd = GammaStart+dimAlpha-1
+    Pend     = PStart+dimP-1
+    Rend     = RStart+dimR-1
+ 
+    ! allocation stuff:
+    call mem_alloc(cmo_alpha,dimAlpha,dimP)
+    call mem_alloc(cmo_beta,nbas,nbas)
+    call mem_alloc(cmo_gamma,dimGamma,dimR)
+    call mem_alloc(cmo_delta,nbas,nbas)
+
+    call mem_alloc(tmp1, int(i8*nbas*nbas*dimP*dimGamma,kind=long))
+    call mem_alloc(tmp2, int(i8*nbas*nbas*dimP*dimGamma,kind=long))
+    call mem_alloc(tmp3, int(i8*nbas*nbas*dimP*dimR,kind=long))
+
+    ! initialisation of transfo. matrices:
+    cmo_alpha = cmo_full(AlphaStart:AlphaEnd,PStart:Pend)
+    cmo_beta  = cmo_full
+    cmo_gamma = cmo_full(GammaStart:GammaEnd,RStart:Rend)
+    cmo_delta = cmo_full
+
+
+    ! transfo 1st index => [P_batch, beta, gammaB, delta]
+    call dgemm('t','n',dimP,nbas*dimGamma*nbas,dimAlpha,1.0E0_realk, &
+         & cmo_alpha,dimAlpha,gao,dimAlpha,0.0E0_realk,tmp1,dimP)
+    call lsmpi_poke() 
+
+    ! transfo last index => [P_batch, beta, gammaB, s]
+    call dgemm('n','n',dimP*nbas*dimGamma,nbas,nbas,1.0E0_realk, &
+         & tmp1,dimP*nbas*dimGamma,cmo_delta,nbas,0.0E0_realk, &
+         & tmp2,dimP*nbas*dimGamma)
+    call lsmpi_poke() 
+
+    ! reorder array => [gammaB, s, P_batch, beta]
+    call array_reorder_4d(1.0E0_realk,tmp2,dimP,nbas,dimGamma,nbas, &
+         & [3,4,1,2],0.0E0_realk,tmp1)
+    call lsmpi_poke() 
+
+    ! transfo 1st index => [R_batch, s, P_batch, beta]
+    call dgemm('t','n',dimR,nbas*dimP*nbas,dimGamma,1.0E0_realk, &
+         & cmo_gamma,dimGamma,tmp1,dimGamma,0.0E0_realk,tmp3,dimR) 
+    call lsmpi_poke() 
+     
+    ! transfo last index => [R_batch, s, P_batch, q]
+    call dgemm('n','n',dimR*nbas*dimP,nbas,nbas,1.0E0_realk, &                               
+         & tmp3,dimR*nbas*dimP,cmo_beta,nbas,0.0E0_realk, &
+         & tmp1,dimR*nbas*dimP)
+    call lsmpi_poke() 
+
+    ! reorder [R_batch, s, P_batch, q] => [P_batch, q, R_batch, s]
+    ! sum over previous integrals: 
+    call mat_transpose(nbas*dimR,nbas*dimP,1.0E0_realk,tmp1,1.0E0_realk,gmo)
+    call lsmpi_poke() 
+
+
+    ! free array
+    call mem_dealloc(tmp1)
+    call mem_dealloc(tmp2)
+    call mem_dealloc(tmp3)
+
+    call mem_dealloc(cmo_alpha)
+    call mem_dealloc(cmo_beta)
+    call mem_dealloc(cmo_gamma)
+    call mem_dealloc(cmo_delta)
+
+  end subroutine gao_to_gmo
+
+
+  !> Purpose: Provide a balanced number of MO batches for two
+  !           equivalent nested loops.
+  !
+  !  (IN):    max_mem: maximum memory requirement (no batches)
+  !  (IN):    min_mem: minimum memory requirement (dimBatch = 1)
+  !  (IN):    tot_size: total size of the loops (e.g. nbas, nvir or nocc)
+  !
+  !  (OUT):   dimBatch is calculated as solution of:
+  !
+  !           const_A*dimBatch**2 + const_B*dimBatch <= free_mem
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    October 2013
+  subroutine get_MO_batches_size(min_mem, max_mem, tot_size, nBatch, &
+             & dimBatch, const_A, const_B)
+
+    implicit none
+  
+    integer, intent(in) :: min_mem, max_mem, tot_size
+    integer, intent(in) :: const_A, const_B
+    integer, intent(inout) :: nBatch, dimBatch
+     
+    integer :: free_mem
+    real(realk) :: MemFree, deter
+
+
+    call get_currently_available_memory(MemFree)
+    free_mem = int(MemFree*1024**3/realk)
+
+    ! Check than min_mem is available:
+    if ((free_mem-min_mem) < 0) stop &
+       & 'Insufficient memory in MO batches construction'
+
+    ! Check that batching is needed:
+    if ((free_mem-max_mem) >= 0) then
+      nBatch = 1
+      dimBatch = tot_size
+ 
+    else
+     ! solve: const_A*dimBatch**2 + const_B*dimBatch <= free_mem
+     deter = const_B*const_B + 4.0E0_realk*const_A*free_mem
+
+     ! check that constants are all positive:
+     if (deter<0.0E0_realk) stop 'Constants A and B have to be &
+        & positive in MO batches construction' 
+ 
+     dimBatch = int((-const_B + sqrt(deter))/(const_A*2.0E0_realk)) 
+     nBatch   = (tot_size-1)/dimBatch + 1
+    end if
+
+  end subroutine get_MO_batches_size
+
+
+  !> Purpose: Get information regarding MO batches for two 
+  !           equivalent nested loops:
+  !
+  !           PR_index: Starting storage position of PR batch
+  !                     in the full MO int. array. (only relevant
+  !                     if each process stors more than one batch)
+  !           XStarts:  MO starting index of each X batch
+  !           Xdims:    Number of MOs included in each X batch
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    October 2013
+  subroutine get_MO_batches_info(PRbatchInfo, dimP, dimR, TotSize)
+
+    implicit none
+
+    integer, intent(in) :: TotSize
+    integer, intent(inout) :: dimP, dimR
+
+    type(MObatchInfo), intent(inout) :: PRbatchInfo
+
+    integer :: PR_batch, Rbatch, Pbatch, RStart, PStart, nRb, nPb
+
+    ! short cuts:
+    nRb = PRbatchInfo%nRbatch
+    nPb = PRbatchInfo%nPbatch
+
+    ! Allocate arrays:
+    call mem_alloc(PRbatchInfo%PR_index,   int(i8*(nRb*nPb+1),kind=long))
+    call mem_alloc(PRbatchInfo%PR_packInd, int(i8*(nRb*nPb+1),kind=long))
+    call mem_alloc(PRbatchInfo%PStarts,    int(i8*nRb*nPb,kind=long))
+    call mem_alloc(PRbatchInfo%RStarts,    int(i8*nRb*nPb,kind=long))
+    call mem_alloc(PRbatchInfo%Pdims,      int(i8*nRb*nPb,kind=long))
+    call mem_alloc(PRbatchInfo%Rdims,      int(i8*nRb*nPb,kind=long))
+
+    ! Initialization
+    PRbatchInfo%PR_index(1) = 1 
+    PR_batch = 1
+    RStart = 1
+
+    ! Loop over MO batches:
+    BatchR: do Rbatch = 1, nRb
+
+      ! get dimension of last R batch:
+      if (Rbatch == nRb) dimR = TotSize - RStart + 1
+
+      PStart = 1
+      BatchP: do Pbatch = 1, nPb
+
+        ! get dimension of last P batch:
+        if (Pbatch == nPb) dimP = TotSize - PStart + 1
+ 
+        ! Store info about this PR batch:
+        PRbatchInfo%PStarts(PR_batch) = PStart
+        PRbatchInfo%RStarts(PR_batch) = RStart
+        PRbatchInfo%PDims(PR_batch)   = dimP
+        PRbatchInfo%RDims(PR_batch)   = dimR
+
+        ! index for next batch:
+        PRbatchInfo%PR_index(PR_batch+1)  = PRbatchInfo%PR_index(PR_batch) &
+                                          & + dimP*dimR*TotSize*TotSize
+
+        PR_batch = PR_batch + 1
+        PStart = PStart + dimP
+
+      end do BatchP
+      ! restore dimension of P batch
+      dimP = dimR
+      RStart = RStart + dimR
+    end do BatchR
+
+  end subroutine get_MO_batches_info
+
+
+  !> Purpose: Read packed MO int. and calculate A2.2 contribution
+  !           to the CCSD doubles residual. 
+  !           Based on Patrick's routine: get_a22_and_prepb22_terms_ex
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    October 2013
+  subroutine get_ccsd_residual_small_frag(pack_gmo,t1,t2,omega2, &
+             & nbas,nocc,nvir,MOinfo)
+
+    implicit none
+
+    !> MO pack integrals; amplitudes and residuals:
+    integer, intent(in) :: nbas, nocc, nvir
+    real(realk), intent(inout) :: omega2(nvir,nvir,nocc,nocc)
+    real(realk), intent(in) :: pack_gmo(:), t1(nvir,nocc)
+    real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc) 
+
+    !> Batches info:
+    type(MObatchInfo), intent(in) :: MOinfo
+    integer :: ipack, ibatch, P_sta, P_end, R_sta, R_end
+    integer :: dimMO, dimP, dimR, nPb, nRb, PR_batch
+
+    !> Arrays stuff:
+    real(realk), pointer :: x_ap(:), tmp0(:), tmp1(:), tmp2(:), tmp3(:)
+    integer(kind=long) :: tmp0_size, tmp1_size, tmp2_size, tmp3_size
+    integer :: n_ij, n_cd, n_pr, ncopy, rd, c
+
+    !> Symmetric and Anti-Symmetric combinations of doubles amplitude:
+    real(realk), pointer :: tpl(:), tmi(:)
+
+    !> logical to perform contraction p<=r:
+    logical :: pack
+
+    !> debug:
+    real(realk), external :: ddot
+
+
+    ! Initialize stuff
+    nullify(tpl)
+    nullify(tmi)
+    nullify(x_ap)
+    nullify(tmp0)
+    nullify(tmp1)
+    nullify(tmp2)
+    nullify(tmp3)
+
+
+    ! Allocate memory to working arrays:
+    dimMO = MOinfo%Pdims(1)
+    n_ij = nocc*(nocc+1)/2
+    n_cd = nvir*(nvir+1)/2
+
+    call mem_alloc(tpl,  int(i8*n_ij*n_cd, kind=long))
+    call mem_alloc(tmi,  int(i8*n_ij*n_cd, kind=long))
+    call mem_alloc(x_ap, int(i8*nvir*nbas, kind=long))
+
+    tmp0_size = max(nvir*nvir*dimMO*dimMO, n_ij*dimMO*dimMO, nvir*nvir*nocc*nocc)
+    tmp1_size = max(nvir*nvir*dimMO*dimMO, nvir*dimMO*n_ij, dimMO*dimMO*n_ij)
+    tmp2_size = max(n_cd*dimMO*dimMO, n_ij*dimMO*dimMO)
+
+    tmp0_size = int(i8*tmp0_size, kind=long)
+    tmp1_size = int(i8*tmp1_size, kind=long)
+    tmp2_size = int(i8*tmp2_size, kind=long)
+    tmp3_size = int(i8*2*dimMO*dimMO*n_ij, kind=long)
+
+    call mem_alloc(tmp0, tmp0_size)
+    call mem_alloc(tmp1, tmp1_size)
+    call mem_alloc(tmp2, tmp2_size)
+    call mem_alloc(tmp3, tmp3_size)
+
+
+    ! Get symmetric and antisymmetric combinations of doubles amplitude:
+    ! tpl and tmi => [c>=d; i<=j]
+    call get_sym_and_anti(t2,nvir,nvir,.true.,nocc,nocc,.true.,tpl,tmi,.true.)
+
+ 
+    ! Calculate transformation matrix:
+    !  x_ap = delta_ap - t_ai delta_ip
+    x_ap = 0.0E0_realk
+    call daxpy(nvir*nocc, -1.0E0_realk, t1, 1, x_ap, 1)
+    do c = 1, nvir
+      x_ap(nvir*nocc + c + (c-1)*nvir) = 1.0E0_realk
+    end do
+
+
+    ! Begin loop over MO batches
+    omega2 = 0.0E0_realk
+    nPb = MOinfo%nPbatch
+    nRb = MOinfo%nRbatch
+    BatchPR: do PR_batch = 1, nRb*nPb
+
+      P_sta = MOinfo%PStarts(PR_batch)
+      dimP  = MOinfo%Pdims(PR_batch)
+      R_sta = MOinfo%RStarts(PR_batch)
+      dimR  = MOinfo%Rdims(PR_batch)
+
+      ! INTEGRAL ARE NOT PACKED YET BUT SHOULD BE UNPACKED HERE:
+      !
+      ! get PcRd from PqRs:
+      ipack = dimP*nbas*dimR*nocc + dimP*nocc + MOInfo%PR_index(PR_batch)
+      ibatch = 1
+      ncopy = dimP*nvir
+      do rd = 1, dimR*nvir
+        call dcopy(ncopy, pack_gmo(ipack), 1, tmp0(ibatch), 1)
+        ibatch = ibatch + dimP*nvir
+        ipack = ipack + dimP*nbas
+      end do
+      ! tmp0 = g[pc; rd]
+
+
+      ! SYMMETRIC COMBINATION:
+      !
+      ! get g+(pc|rd) = g(pc|rd) + g(pd|rc)
+      !     g-(pc|rd) = g(pc|rd) - g(pd|rc)
+      !
+      if (P_sta==R_sta.and.dimP==dimR) then
+        n_pr = dimP*(dimR+1)/2
+        pack = .true.
+      else if (P_sta<R_sta) then
+        n_pr = dimP*dimR
+        pack = .false.
+      else if (P_sta>R_sta) then
+        ! p<=r empty:
+        print *, 'batch empty start next one'
+        cycle
+      else
+        print *, "batch not square", PR_batch, dimP, dimR
+        stop 'problem with batching in CCSD A2.2 calculation'
+      end if
+      ! 
+      ! get tmp1 = g[cd;pr] <-- g(pc|rd)
+      call array_reorder_4d(1.0E0_realk,tmp0,dimP,nvir,dimR,nvir, &
+                            & [2,4,1,3],0.0E0_realk,tmp1)
+ 
+      call get_sym_and_anti(tmp1,nvir,nvir,.true.,dimP,dimR,pack, &
+             & tmp2,tmp0)
+      ! tmp2 = g+[c>=d; p<=r]
+      ! tmp0 = g-[c>=d; p<=r]
+
+      ! sigma+[p<=r; i<=j] = sum_[c>=d] g+[c>=d; p<=r]' t+[c>=d; i<=j]
+      call dgemm('t','n', n_pr, n_ij, n_cd, 0.5E0_realk, tmp2, n_cd, &
+                & tpl, n_cd, 0.0E0_realk, tmp3, n_pr)
+
+      ! ANTI-SYMMETRIC COMBINATION:
+      !
+      ! sigma-[p<=r; i<=j] = sum_[c>=d] g-[c>=d; p<=r]' t-[c>=d; i<=j]
+      call dgemm('t','n', n_pr, n_ij, n_cd, 0.5E0_realk, tmp0, n_cd, &
+                & tmi, n_cd, 0.0E0_realk, tmp3(n_pr*n_ij+1), n_pr)
+
+
+      ! Add contribution to doubles amplitude residual:
+      call get_A22_MO_ccsd(nocc, nvir, dimP, dimR, n_ij, n_pr, P_sta, R_sta, &
+                          & pack, tmp0, tmp1, tmp2, tmp3, x_ap, omega2)
+ 
+    end do BatchPR
+
+    ! Calculate norm of A2.2:
+    print *, 'ccsd residual A2.2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
+
+
+    ! Free arrays:
+    call mem_dealloc(tpl)
+    call mem_dealloc(tmi)
+    call mem_dealloc(tmp0)
+    call mem_dealloc(tmp1)
+    call mem_dealloc(tmp2)
+    call mem_dealloc(tmp3)
+
+  end subroutine get_ccsd_residual_small_frag
+  
+
+
+  !> Purpose: Calculate the A2.2 part of the doubles amplitudes residual
+  !
+  !           sigma[p<=r; i<=j] = 0.5*(sigma+[p<=r; i<=j] + sigma-[p<=r; i<=j])
+  !           sigma[p>=r; i<=j] = 0.5*(sigma+[p<=r; i<=j] - sigma-[p<=r; i<=j])
+  !
+  !           omega2 += sum_pr x_ap x_br sigma[p r; i<=j]
+  !           omega2 += sum_pr x_bp x_ar sigma[p r; j<i]
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    October 2013
+  subroutine get_A22_MO_ccsd(nocc, nvir, dimP, dimR, n_ij, n_pr, P_sta, R_sta, &
+             & pack, tmp0, tmp1, tmp2, tmp3, x_ap, omega2)
+
+    implicit none
+
+    !> dimensions and indices for arrays:
+    integer, intent(in) :: nocc, nvir, dimP, dimR, P_sta, R_sta
+    !> contracted dimensions for arrays:
+    integer, intent(in) :: n_ij, n_pr
+    !> working arrays:
+    real(realk), intent(inout) :: tmp0(:), tmp1(:), tmp2(:)
+    !> working arrays with sigma+- on input:
+    real(realk), intent(in) :: tmp3(:)
+    !> doubles residual array:
+    real(realk), intent(inout) :: omega2(nvir,nvir,nocc,nocc)
+    !> transformation matrix:
+    real(realk), intent(in) :: x_ap(:)
+    !> sigma indices packed p<=r ??
+    logical, intent(in) :: pack
+
+    !> orbital indices for loops:
+    integer :: ij, r, i, j, b, a
+    !> variable indices for arrays:
+    integer :: pos, pos1, pos2
+    integer :: mv((nvir*nvir)/2), st
+
+
+    ! Calculate sigma[p r; i<=j]
+    !
+    if (pack) then
+      ! Index for sigma
+      pos = 1
+      do ij=1,n_ij
+        do r=1,dimR
+          ! Index for full sigma:
+          pos1 = 1 + (r-1)*dimP + (ij-1)*dimP*dimR
+          pos2 = r + (ij-1)*dimP*dimR
+          !
+          ! Get symmetric combination of sigmas:
+          !
+          ! sigma[p<r; i<=j] = 0.5*(tmp3.1): sigma+[p<=r; i<=j] 
+          !                  + 0.5*(tmp3.2): sigma-[p<=r; i<=j]
+          call dcopy(r-1, tmp3(pos), 1, tmp2(pos1), 1)
+          call daxpy(r-1, 1.0E0_realk, tmp3(pos+n_pr*n_ij), 1, tmp2(pos1), 1)
+          ! 
+          ! Get anti-symmetric combination of sigmas:
+          !
+          ! sigma[p>=r; i<=j] = 0.5*(tmp3.1): sigma+[p<=r; i<=j] 
+          !                   - 0.5*(tmp3.2): sigma-[p<=r; i<=j]
+          call dcopy(r, tmp3(pos), 1, tmp2(pos2), dimP)
+          call daxpy(r, -1.0E0_realk, tmp3(pos+n_pr*n_ij), 1, tmp2(pos2), dimP)
+          !
+          pos = pos + r
+        end do
+      end do
+  
+    ! IF NOT PACK: TREAT SYMMETRIC PART FIRST:
+    else 
+      ! Get symmetric combination of sigmas:
+      !
+      ! sigma[p r; i<=j] = 0.5*(tmp3.1): sigma+[p r; i<=j] 
+      !                  + 0.5*(tmp3.2): sigma-[p r; i<=j]
+      call dcopy(dimP*dimR*n_ij, tmp3, 1, tmp2, 1)
+      call daxpy(dimP*dimR*n_ij, 1.0E0_realk, tmp3(1+n_pr*n_ij), 1, tmp2,1)
+    end if
+
+    ! tmp2 = sigma[p r; i<=j]
+    !
+    ! Transpose sigma matrix from sigma[p; r i<=j ] to sigma[r i<=j; p ]
+    call mat_transpose(dimP, dimR*n_ij, 1.0E0_realk, tmp2, 0.0E0_realk, tmp0)
+    call lsmpi_poke() 
+    !
+    ! Transform r -> b
+    call dgemm('n','n',nvir,n_ij*dimP,dimR,1.0E0_realk,x_ap(1+(R_sta-1)*nvir),nvir, &
+         & tmp0, dimR, 0.0E0_realk, tmp1, nvir)
+    call lsmpi_poke()
+    !
+    ! Transform p -> a; order is now: sigma[a b i j]
+    call dgemm('n','t',nvir,nvir*n_ij,dimP,1.0E0_realk,x_ap(1+(P_sta-1)*nvir),nvir, &
+         & tmp1, nvir*n_ij, 0.0E0_realk, tmp0, nvir)
+    call lsmpi_poke()
+
+
+    ! Sum up sigma PR batches contributions to A2.2 part of CCSD residual:
+    do j=nocc,1,-1
+      do i=j,1,-1
+        pos1=1+((i+j*(j-1)/2)-1)*nvir*nvir
+        pos2=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+        if(j/=1) tmp0(pos2:pos2+nvir*nvir-1) = tmp0(pos1:pos1+nvir*nvir-1)
+      enddo
+    enddo
+    do j=nocc,1,-1
+      do i=j,1,-1
+        pos1=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+        pos2=1+(j-1)*nvir*nvir+(i-1)*nocc*nvir*nvir
+        if(i/=j) tmp0(pos2:pos2+nvir*nvir-1) = tmp0(pos1:pos1+nvir*nvir-1)
+      enddo
+    enddo
+    do j=nocc,1,-1
+      do i=j,1,-1
+        pos1=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+        call alg513(tmp0(pos1:nvir*nvir+pos1-1),nvir,nvir,nvir*nvir,mv,(nvir*nvir)/2,st)
+      enddo
+    enddo
+    call daxpy(int(nocc*nocc*nvir*nvir),1.0E0_realk,tmp0,1,omega2,1)
+    call lsmpi_poke()
+
+
+
+    ! IF NOT PACK: TREAT ANTISYMMETRIC PART:
+    !
+    if (.not.pack) then ! If NOT pack then first treat symmetric part:
+      ! Get symmetric combination of sigmas:
+      !
+      ! sigma[r p; i<=j] = 0.5*(tmp3.1): sigma+[p r; i<=j] 
+      !                  - 0.5*(tmp3.2): sigma-[p r; i<=j]
+      call dcopy(dimP*dimR*n_ij, tmp3, 1, tmp2, 1)
+      call daxpy(dimP*dimR*n_ij, -1.0E0_realk, tmp3(1+n_pr*n_ij), 1, tmp2,1)
+      call array_reorder_4d(1.0E0_realk,tmp2,dimP,dimR,nvir,nvir, &
+                            & [2,1,3,4],0.0E0_realk,tmp1)
+
+      ! tmp1 = sigma[r p; i<=j]
+      !
+      ! Transpose sigma matrix from sigma[r; p i<=j ] to sigma[p i<=j; r ]
+      call mat_transpose(dimR, dimP*n_ij, 1.0E0_realk, tmp1, 0.0E0_realk, tmp0)
+      call lsmpi_poke() 
+      !
+      ! Transform p -> b
+      call dgemm('n','n',nvir,n_ij*dimR,dimP,1.0E0_realk,x_ap(1+(P_sta-1)*nvir),nvir, &
+           & tmp0, dimP, 0.0E0_realk, tmp1, nvir)
+      call lsmpi_poke()
+      !
+      ! Transform r -> a; order is now: sigma[a b i j]
+      call dgemm('n','t',nvir,nvir*n_ij,dimR,1.0E0_realk,x_ap(1+(R_sta-1)*nvir),nvir, &
+           & tmp1, nvir*n_ij, 0.0E0_realk, tmp0, nvir)
+      call lsmpi_poke()
+
+      ! Sum up sigma PR batches contributions to A2.2 part of CCSD residual:
+      do j=nocc,1,-1
+        do i=j,1,-1
+          pos1=1+((i+j*(j-1)/2)-1)*nvir*nvir
+          pos2=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+          if(j/=1) tmp0(pos2:pos2+nvir*nvir-1) = tmp0(pos1:pos1+nvir*nvir-1)
+        enddo
+      enddo
+      do j=nocc,1,-1
+        do i=j,1,-1
+          pos1=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+          pos2=1+(j-1)*nvir*nvir+(i-1)*nocc*nvir*nvir
+          if(i/=j) tmp0(pos2:pos2+nvir*nvir-1) = tmp0(pos1:pos1+nvir*nvir-1)
+        enddo
+      enddo
+      do j=nocc,1,-1
+        do i=j,1,-1
+          pos1=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+          call alg513(tmp0(pos1:nvir*nvir+pos1-1),nvir,nvir,nvir*nvir,mv,(nvir*nvir)/2,st)
+        enddo
+      enddo
+      call daxpy(int(nocc*nocc*nvir*nvir),1.0E0_realk,tmp0,1,omega2,1)
+      call lsmpi_poke()
+
+    end if
+
+  end subroutine get_A22_MO_ccsd
+
+
+  subroutine ultra_simple_a22(gao,xocc,xvirt,yocc,yvirt,t1,t2,nvir,nocc)
+
+    implicit none
+ 
+    type(array4), intent(inout) :: t2 
+    integer, intent(in) :: nocc,nvir
+    type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt,t1
+    type(array4), intent(inout) :: gao
+    type(array4) :: abcd, tmp1
+
+    !> debug:
+    real(realk), pointer :: x_ap(:), newxvirt(:), cmo(:,:)
+    real(realk) :: norm
+    integer :: a,b,c,d
+    real(realk), external :: ddot
+
+
+    abcd = get_gmo_simple(gao,xvirt,yvirt,xvirt,yvirt)
+    call array4_reorder(abcd,[2,4,1,3]) ! (ab|cd) > [b d a c] 
+    tmp1 = array4_init([nvir,nvir,nocc,nocc]) ! tmp1[ab,ij]
+    call array4_contract2(abcd,t2,tmp1)
+    call array4_reorder(tmp1,[1,3,2,4]) ! -> tmp1[ai,bj]
+    call array4_free(abcd)
+ 
+    print *, 'debug: ccsd residual A2.2 norm:', tmp1*tmp1
+    call array4_free(tmp1)
+
+  end subroutine ultra_simple_a22
+
+  !> Purpose: Generalization of Patrick's subroutine to get symmetric
+  !           and antisymmetric combination of arrays.
+  !           dim1 and dim2 have to be identical. And contraction over
+  !           the indices is done depending on pack12/34.
+  !           ampli is an optional parameter needed to take care of the
+  !           diagonal elements of the symmetric amplitudes in the CCSD code
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    October 2013
+  subroutine get_sym_and_anti(array,dim1,dim2,pack12,dim3,dim4,pack34, &
+             & sym,anti,ampli)
+
+    implicit none
+
+    !> dimension of array
+    integer, intent(in) :: dim1, dim2, dim3, dim4
+    !> pack dimensions 12/34:
+    logical, intent(in) :: pack12, pack34
+    !> full array on input 
+    real(realk), intent(in) :: array(dim1,dim2,dim3,dim4)
+    !> symmetric combination on output with p>=q; r<=s depending on pack12/pack34
+    real(realk), pointer, intent(inout) :: sym(:)
+    !> anti-symmetric combination on output with p>=q; r<=s depending on pack12/pack34
+    real(realk), pointer, intent(inout) :: anti(:)
+    !> if array on input is amplitude we may take care of the diagonal 
+    !  part of the symmetric combination for the CCSD code.
+    logical, optional, intent(in) :: ampli
+    logical :: dodiag
+
+    integer :: q, r, s, dim12, ind12, ind34, ncopy
+
+    ! do not treat diagonal by default:
+    dodiag = .false.
+    if (present(ampli)) dodiag = ampli
+
+    ! sanity check:
+    if (dim1/=dim2) then
+      call lsquit("ERROR(get_sym_and_anti): dimensions of array not &
+                 & adapted symmetric and antisymmetric combinations",DECinfo%output)
+    end if
+    if ((pack12.and.dim1/=dim2).or.(pack34.and.dim3/=dim4)) then
+      call lsquit("ERROR(get_sym_and_anti): dimensions of array not &
+                 & adapted for contraction",DECinfo%output)
+    endif
+
+    ! get the dimension of the 2 first indices combined:
+    if (pack12) then
+      dim12 = dim1*(dim2+1)/2
+    else 
+      dim12 = dim1*dim2
+    end if
+
+    do s=1,dim4
+      do r=1,dim3
+        ind12 = 1
+        if (pack34) then 
+          ind34 = r + (s-1)*s/2
+        else 
+          ind34 = r + (s-1)*dim3
+        end if
+
+        do q=1,dim2
+          if (pack12) then
+            ncopy = dim1 - q + 1
+          else
+            ncopy = dim1
+          end if
+
+          !copy the elements cd into sym and anti array:
+          call dcopy(ncopy, array(q,q,r,s), 1, sym(ind12+(ind34-1)*dim12), 1)
+          call dcopy(ncopy, array(q,q,r,s), 1, anti(ind12+(ind34-1)*dim12), 1)
+
+          !add and subtract the counterparts for sym and antisym array respectively:
+          call daxpy(ncopy,-1.0E0_realk,array(q,q,r,s),dim1,anti(ind12+(ind34-1)*dim12),1)
+          call daxpy(ncopy,1.0E0_realk,array(q,q,r,s),dim1,sym(ind12+(ind34-1)*dim12),1)
+
+          if (dodiag) then
+            !take care of symmetric combination diagonal elements to be only half
+            if (pack12) then 
+              sym(ind12+(ind34-1)*dim12)=0.5E0_realk*sym(ind12+(ind34-1)*dim12)
+            else
+              sym(q+ind12+(ind34-1)*dim12)=0.5E0_realk*sym(q+ind12+(ind34-1)*dim12)
+            end if             
+          end if
+         
+          ! count in the triangular part of the matrix
+          if (pack12) then 
+            ind12 = ind12 + dim1 - q + 1
+          else
+            ind12 = ind12 + dim1
+          end if
+        enddo
+      enddo
+    enddo
+  end subroutine get_sym_and_anti
+  ! end pablo
+
 
 end module cc_debug_routines_module

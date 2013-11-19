@@ -1164,9 +1164,6 @@ c
 C
 C PURPOSE:
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h"

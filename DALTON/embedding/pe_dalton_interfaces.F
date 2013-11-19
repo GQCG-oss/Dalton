@@ -838,7 +838,7 @@ C
 !     &                     wrk, nwrk)
 !            end if
             if (nasht > 0) then
-                dcao = dcao + 0.5d0 * dvao
+                dcao = dcao + dvao
 !                if (trplet) then
 !                    dcaotr = dcaotr + 0.50d0 * dvaotr
 !                end if
@@ -858,7 +858,6 @@ C
      &                 fckmats=fckaos, nmats=nosim,
      &                 dalwrk=wrk)
         deallocate(daos)
-        fckaos = 2.0d0 * fckaos
 !        if (trplet) then
 !            allocate(fckaotrs(nosim*nnbasx))
 !            call pe_master(runtype='response', denmats=daotrs,
