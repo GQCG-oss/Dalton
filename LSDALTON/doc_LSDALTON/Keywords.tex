@@ -1594,6 +1594,15 @@ Note that only the LSresponse/LSresponse\_mcd\_calc test case is a good example 
 \item[\Key{MCDEXCIT}] \verb| | \newline
 \verb|<Number of excited states to consider>|\newline
 The $\mathcal{B}$ terms will be calculated for all states, unless they are zero due to selection rules (dipole forbidden)
+\item[\Key{MCDEXSTATES}] \verb| | \newline
+\verb|<Number of specific excited states to consider in MCD calc>|\newline
+\verb|<Specific excited states to consider>|\newline
+This keyword only calculates the $\mathcal{B}$ and possible $\mathcal{A}$ terms for the selected excited states.
+The first line after .MCDEXSTATES contains the number of specific excited states for which the MCD is to be calculated,
+and the second line specifies such states (identified by their index in the .MCDNEXCIT list).
+{\bf Important:} The position of the highest lying excited state
+specified by .MCDEXSTATES must be smaller than or equal to
+the total number of excited states specified by .MCDNEXCIT!
 \item[\Key{DEGENERATE}] \verb| | \newline
 This keyword must be set in input if the molecule has a degenerate state so that $\mathcal{A}$ terms are possible, otherwise all states are assumed non-degenerate and no $\mathcal{A}$ terms will be calculated. When this keyword is set, the $\mathcal{A}$ terms are calculated and a derivative Lorentzian lineshape function is used to simulate the individual $\mathcal{A}$ term contributions to the MCD spectrum (See Ref. \cite{KjaergaardMCD}). The individual $\mathcal{A}$ terms contributions to the MCD spectrum are written to the files AtermAU.dat and Aterm.dat   
 \item[\Key{DAMPEDXCOOR}] \verb| | \newline
