@@ -968,8 +968,7 @@ module dec_typedef_module
   type MObatchInfo
 
     !> number of batches:
-    integer :: nbatch1
-    integer :: nbatch2
+    integer :: nbatch
     !> dimension of each of the nbatch1:
     integer, pointer :: dimInd1(:) 
     !> dimension of each of the nbatch2:
@@ -977,8 +976,6 @@ module dec_typedef_module
     !> MO index corresponding to the starting point of each batch:
     integer, pointer :: StartInd1(:) 
     integer, pointer :: StartInd2(:) 
-    !> starting index of each batch in the full array:
-    integer, pointer :: fullInd(:) 
     !> starting index of each batch in the packed array:
     integer, pointer :: packInd(:) 
     
