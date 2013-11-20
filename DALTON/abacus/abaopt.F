@@ -165,7 +165,7 @@ C
       IF (peqm) THEN 
           PRJTRO = .FALSE.  ! no translation and rotation invariance when PE sites are fixed
           IF (.NOT. CARTCO) CARTCO = .TRUE.
-          IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0    
+          IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0
       END IF
       REDRED = .FALSE.
       LINDHD = .TRUE.
@@ -2802,6 +2802,9 @@ C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
+
+      use pe_variables, only: peqm
+ 
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2816,7 +2819,7 @@ C
 #include "trkoor.h"
 #include "cbiwlk.h"
 #include "pvibav.h"
-      LOGICAL EXHER, EXSIR, EXABA
+      LOGICAL EXHER, EXSIR, EXABA, TMP_PEQM
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
@@ -2835,7 +2838,14 @@ C         NAORDR = 0; Only energies available
 C         NAORDR = 1; Analytical gradients available
 C         NAORDR = 2; Analytical gradients and hessians available.
 C
+      if (peqm .and. iniths) then
+         tmp_peqm = peqm
+         peqm = .false.
+      end if
       CALL FNDANA(NAORDR)
+      
+      if (tmp_peqm) peqm = tmp_peqm
+         
       IF (NAORDR .LT. 2) THEN
          CALL QUIT('2nd order optimization aborted because'//
      &   ' analytical Hessian not available.')
@@ -6464,6 +6474,7 @@ C  /* Deck fndgeo */
 C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
+      use pe_variables, only: peqm
 C
 #include "implicit.h"
 #include "mxcent.h"
@@ -6709,10 +6720,16 @@ C
      &           ') reached.'
             WRITE(LUPRI,'(A)') 'No acceptable step found.'
             WRITE(LUPRI,'(/A)')'***** NOTE! *****'
-            WRITE(LUPRI,'(A)')'As a last resort, ' //
+            if (peqm) then 
+               WRITE(LUPRI,'(A)')'As a last resort, ' //
+     &           'the Hessian is reinitialized using iniths!'
+               iniths = .true.
+            else 
+               WRITE(LUPRI,'(A)')'As a last resort, ' //
      &           'the Hessian is initialized to unity!'
-            EVLINI = 1.0D0
-            TRSTRA = 0.5D0
+               EVLINI = 1.0D0
+               TRSTRA = 0.5D0
+            end if
             GO TO 9999
 C
 C     Otherwise we give up...
@@ -8091,7 +8108,6 @@ C
 #include "optinf.h"
 
       IF (IFREEZ(0) .GT. 0) THEN
-
          NCOORD = 3*NUCDEP
          
          DO, I = 1, IFREEZ(0)
