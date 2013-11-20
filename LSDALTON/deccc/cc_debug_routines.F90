@@ -10,12 +10,11 @@ module cc_debug_routines_module
    use typedeftype
    use dec_typedef_module
    use tensor_type_def_module
-! begin pablo
+! small_frag
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
-! end pablo 
  
 
    ! DEC DEPENDENCIES (within deccc directory)   
@@ -177,11 +176,10 @@ module cc_debug_routines_module
      integer :: MaxSubSpace
      logical :: restart,PNO_CCSD
 
-     ! begin pablo 
+     ! small_frag 
      real(realk), pointer :: pack_gmo(:), govov(:) => null()
      type(MObatchInfo) :: MOinfo
      logical :: small_frag
-     ! end pablo
 
 
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
@@ -409,17 +407,14 @@ module cc_debug_routines_module
      prev_norm        = 1.0E6_realk
 
 
-     ! begin pablo
      ! criterion will need to be improved/adjusted.
      small_frag = .false.
-     if (nbasis<=300) small_frag=.true. 
-     !if(DECinfo%cc_driver_debug) small_frag=.true. 
+     !if (nbasis<=300) small_frag=.true. 
      !> get gmo and packed them
      if (small_frag) then
        call get_packed_gmo(mylsitem,Co%val,Cv2%val,pack_gmo, &
             & nbasis,nocc,nvirt,MOinfo)
      end if
-     ! end pablo
 
 
 
@@ -559,7 +554,6 @@ module cc_debug_routines_module
               &,t2_final%val,t1(iter)%val,t2(iter)%val,gao,xocc%val,yocc%val,xvirt%val,yvirt%val&
               &,nocc,nvirt,nbasis,MyLsItem)
            
-           ! begin pablo
            !> call CCSD code for small fragment:
            else if (small_frag) then
 
@@ -576,14 +570,9 @@ module cc_debug_routines_module
                   & t2(iter)%val,omega2(iter)%val,govov,nbasis,nocc,nvirt,iter,MOinfo, & 
                   & mylsitem,xocc%val,xvirt%val,yocc%val,yvirt%val,delta_fock%val)
             
-             print *, ' '
              ! restor previous order:
              call array4_reorder(omega2(iter),[1,3,2,4]) ! -> om2[ai,bj]
              call array4_reorder(t2(iter),[1,3,2,4]) ! -> t2[ai,bj]
-
-             call lsquit('CC iteration cannot continue because the CCSD &
-                        & residual is not fully calculated',DECinfo%output)
-           ! end pablo
 
            else if(PNO_CCSD)then
               if(small_frag.or.get_mult)then
@@ -854,7 +843,6 @@ module cc_debug_routines_module
      ! Free memory and save final amplitudes
      ! *************************************
 
-     ! begin pablo
      ! free memory
      if (small_frag) then
        call mem_dealloc(pack_gmo)
@@ -865,7 +853,6 @@ module cc_debug_routines_module
        call mem_dealloc(MOinfo%StartInd2)
        call mem_dealloc(MOinfo%packInd)
      end if
-     ! end pablo
 
      ! remove rest of the singles amplitudes and residuals
      do i=last_iter,max(last_iter-MaxSubSpace+1,1),-1
@@ -993,7 +980,160 @@ module cc_debug_routines_module
 
 
 
+   !> \brief Singles residual for CCSD model
+   subroutine getSinglesResidualCCSD(omega1,u,gao,pqfock,qpfock, & 
+               xocc,xvirt,yocc,yvirt,nocc,nvirt)
+ 
+     implicit none
+     type(array2), intent(inout) :: omega1
+     type(array4), intent(inout) :: u,gao
+     type(array2), intent(inout) :: pqfock,qpfock
+     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
+     type(array2) :: tmp
+     type(array4) :: qqpq, pppq
+     integer, intent(in) :: nocc,nvirt
+     integer :: a,i,k,l,c,d
+     real(realk) :: starttime,endtime,aStart,aEnd,bStart,bEnd,cStart,cEnd, &
+               dStart,dEnd
+ 
+    
+     aStart=0.0E0_realk; aEnd=0.0E0_realk
+     bStart=0.0E0_realk; bEnd=0.0E0_realk
+     cStart=0.0E0_realk; cEnd=0.0E0_realk
+     dStart=0.0E0_realk; dEnd=0.0E0_realk
+     starttime=0.0E0_realk; endtime=0.0E0_realk
+ 
+     call cpu_time(starttime)
+ 
+#ifdef SINGLES_EXTRA_SIMPLE    
+ 
+     qqpq = get_gmo_simple(gao,xvirt,yvirt,xocc,yvirt)
+ 
+     do i=1,nocc
+       do a=1,nvirt
+ 
+         do c=1,nvirt
+         do k=1,nocc
+         do d=1,nvirt
+         omega1%val(a,i) = omega1%val(a,i) + & 
+                 u%val(c,k,d,i)*qqpq%val(a,d,k,c)
+         end do
+         end do
+         end do
+ 
+       end do
+     end do
+     print *,'A1 ',omega1*omega1
+ 
+     call array4_free(qqpq)
+ 
+     pppq = get_gmo_simple(gao,xocc,yocc,xocc,yvirt)
+ 
+     do i=1,nocc
+       do a=1,nvirt
+ 
+         do c=1,nvirt
+         do k=1,nocc
+         do l=1,nocc
+ 
+         omega1%val(a,i) = omega1%val(a,i) - &
+             u%val(a,k,c,l) * pppq%val(k,i,l,c)
+ 
+         end do
+         end do
+         end do
+ 
+       end do
+     end do
+     print *,'B1 ',omega1*omega1
+ 
+     call array4_free(pppq)
+ 
+     do i=1,nocc
+       do a=1,nvirt
+       
+         do c=1,nvirt
+           do k=1,nocc
+             omega1%val(a,i) = omega1%val(a,i) + &
+                 u%val(a,i,c,k) * pqfock%val(k,c)
+           end do
+         end do  
+ 
+       end do
+     end do
+     print *,'C1 ',omega1*omega1
+ 
+     omega1%val = omega1%val + qpfock%val
+     print *,'D1 ',omega1*omega1
+ 
+#else
+ 
+     tmp = array2_init([nvirt,nocc])
+ 
+     ! A1
+     call cpu_time(aStart)
+     qqpq = get_gmo_simple(gao,xocc,yvirt,yvirt,xvirt)
+     call array4_reorder(qqpq,[2,1,3,4]) ! qqpq[ic,ab] -> qqpq[ci,ab]
+     call array4_contract3(qqpq,u,tmp)
+     call array4_free(qqpq)
+     call array2_add_to(omega1,1.0E0_realk,tmp)
+     call cpu_time(aEnd)
+     if(DECinfo%cc_driver_debug) then
+       print *,'A1 done, norm : ',omega1*omega1
+     end if
+ 
+     ! B1
+     call cpu_time(bStart)
+     pppq = get_gmo_simple(gao,xocc,yocc,xocc,yvirt)
+     call array4_reorder(u,[4,3,2,1])  ! u[ai,bj] -> u[jb,ia]
+     call array4_reorder(pppq,[3,4,1,2])
+     call array2_zero(tmp)
+     call array4_contract3(u,pppq,tmp)
+     call array2_add_to(omega1,-1.0E0_realk,tmp)
+     call array4_free(pppq)
+     call cpu_time(bEnd)
+     if(DECinfo%cc_driver_debug) then
+       print *,'B1 done, norm: ',omega1*omega1
+     end if
+ 
+     ! C1
+     call cpu_time(cStart)
+     call array2_zero(tmp)
+     call array4_reorder(u,[1,2,4,3]) ! u[jb,ia] -> u[jb,ai] 
+     call array4_contract_array2(u,pqfock,tmp)
+     call array4_reorder(u,[3,4,2,1])
+     call array2_add_to(omega1,1.0E0_realk,tmp)
+     call cpu_time(cEnd)
+     if(DECinfo%cc_driver_debug) then
+       print *,'C1 done, norm: ',omega1*omega1
+     end if
+ 
+     ! D1
+     call cpu_time(dStart)
+     call array2_add_to(omega1,1.0E0_realk,qpfock)
+     call cpu_time(dEnd)
+     if(DECinfo%cc_driver_debug) then
+       print *,'D1 done, norm: ',omega1*omega1
+     end if
+ 
+     call array2_free(tmp)
+     call cpu_time(endtime)
+     if(DECinfo%PL>1) then
+       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD A1 : ',aEnd-aStart,' s'
+       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD B1 : ',bEnd-bStart,' s'
+       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD C1 : ',cEnd-cStart,' s'
+       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD D1 : ',dEnd-dStart,' s'
+       write(DECinfo%output,'(a,f16.3,a)')  &
+          ' time :: CCSD singles : ',endtime-starttime,' s'
+     end if
+ 
+#endif
+ 
+     return
+   end subroutine getSinglesResidualCCSD
 
+
+  
    !> \brief Simple double residual for CCSD
    subroutine getDoublesResidualCCSD_simple(omega2,t2,u,gao,aibj,iajb,nocc,nvirt, &
         ppfock,qqfock,xocc,xvirt,yocc,yvirt)
@@ -2405,8 +2545,7 @@ module cc_debug_routines_module
     
     !> CHECKING and MEASURING variables
     integer(kind=long) :: maxsize64
-    real(realk) :: MemFree, MemNeed, tcpu, twall, tcpu_start, twall_start
-    real(realk) :: tcpu_end, twall_end, time_start, timewall_start 
+    real(realk) :: MemFree, MemNeed, tcpu, twall, time_start, timewall_start 
     integer     :: scheme
     integer(kind=long) :: els2add
        
@@ -2455,7 +2594,6 @@ module cc_debug_routines_module
 
     ! Some timings
     call LSTIMER('START',tcpu,twall,DECinfo%output)
-    call LSTIMER('START',tcpu_start,twall_start,DECinfo%output)
     call LSTIMER('START',time_start,timewall_start,DECinfo%output)
 
     ! Initialize stuff
@@ -2638,7 +2776,7 @@ module cc_debug_routines_module
     end if
     ! *******************************************************
 
-    if (master) call lstimer('CCSD part A',time_start,timewall_start,DECinfo%output)
+    if (master) call lstimer('get_packed_gmo part. 1',time_start,timewall_start,DECinfo%output)
 
     fullRHS = (nbatchesGamma.eq.1).and.(nbatchesAlpha.eq.1)
 
@@ -2741,6 +2879,9 @@ module cc_debug_routines_module
     call mem_dealloc(gao)
     call mem_dealloc(gmo)
     call mem_dealloc(Cov)
+ 
+    ! print timing:
+    call LSTIMER('get_packed_gmo',tcpu,twall,DECinfo%output)
 
   end subroutine get_packed_gmo
 
@@ -3262,10 +3403,9 @@ module cc_debug_routines_module
 
     !> debug:
     real(realk), external :: ddot
+    real(realk) :: tcpu, twall, tcpu1, twall1
     integer :: pos1, pos2, ncopy
     integer :: mv((nvir*nvir)/2), st
-
-    !n_ij = nocc*(nocc+1)/2
 
     ! Initialize stuff
     nullify(xvir)
@@ -3309,6 +3449,10 @@ module cc_debug_routines_module
     if (iter==1) call mem_alloc(govov, tmp_size)
 
 
+    ! start timings:
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+
     !===========================================================================
     ! Calculate transformation matrix:
     !  xvir_ap = delta_ap - t_ai delta_ip
@@ -3340,6 +3484,8 @@ module cc_debug_routines_module
     gvvoo  = 0.0E0_realk
     Nbat = MOinfo%nbatch
 
+    call LSTIMER('small_frag CCSD init.',tcpu1,twall1,DECinfo%output)
+
     !===========================================================================
     ! Begin loop over MO batches
     BatchPQ: do PQ_batch = 1, Nbat*Nbat
@@ -3358,16 +3504,18 @@ module cc_debug_routines_module
 
     end do BatchPQ
 
+    call LSTIMER('small_frag CCSD MO loops',tcpu1,twall1,DECinfo%output)
+
     !===========================================================================
     ! Calculate norm of A2:
-    print 10, 'pablo: residual A2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
+    print 10, 'debug: residual A2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
 
     ! get final B2 term and add it to residual:
     call dgemm('n','n',nvir*nvir,nocc*nocc,nocc*nocc,0.5E0_realk,t2,nvir*nvir, &
               & B2prep,nocc*nocc,0.5E0_realk,omega2,nvir*nvir)
 
     ! Calculate norm of A2 + B2 residual:
-    print 10, 'pablo: residual B2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
+    print 10, 'debug: residual B2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
 
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
@@ -3377,8 +3525,9 @@ module cc_debug_routines_module
                               & nocc,nvir,omega2,4,.false.,0_long)
 
     ! Calculate norm of A2 + B2 + C2 + D2 residual:
-    print 10, 'pablo: residual D2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
+    print 10, 'debug: residual D2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
 
+    call LSTIMER('small_frag CCSD A2, B2, C2, D2',tcpu1,twall1,DECinfo%output)
 
     !===========================================================================
     ! Get Fock matrix
@@ -3426,11 +3575,14 @@ module cc_debug_routines_module
     !Free the AO fock matrix
     call mat_free(iFock)
 
-    !print *, "Pablo(ppfock):", ddot(nocc*nocc,ppfock,1,ppfock,1)
-    !print *, "Pablo(pqfock):", ddot(nocc*nvir,pqfock,1,pqfock,1)
-    !print *, "Pablo(qpfock):", ddot(nvir*nocc,qpfock,1,qpfock,1)
-    !print *, "Pablo(qqfock):", ddot(nvir*nvir,qqfock,1,qqfock,1)
-
+    if (DECinfo%cc_driver_debug) then
+      print *, "MO-CCSD (ppfock):", ddot(nocc*nocc,ppfock,1,ppfock,1)
+      print *, "MO-CCSD (pqfock):", ddot(nocc*nvir,pqfock,1,pqfock,1)
+      print *, "MO-CCSD (qpfock):", ddot(nvir*nocc,qpfock,1,qpfock,1)
+      print *, "MO-CCSD (qqfock):", ddot(nvir*nvir,qqfock,1,qqfock,1)
+      call LSTIMER('small_frag CCSD Fock mat',tcpu1,twall1,DECinfo%output)
+    end if
+ 
     !===========================================================================
     ! GET FINAL SINGLES CCSD RESIDUAL:
     !
@@ -3439,15 +3591,14 @@ module cc_debug_routines_module
     call dgemm('n','n',nvir,nocc,nbas,1.0E0_realk,xvir,nvir,G_Pi,nbas, &
               & 0.0E0_realk,omega1,nvir)
     ! Calculate norm of A1:
-    print *, ' '
-    print 10, 'pablo: residual A1 norm:', ddot(nocc*nvir,omega1,1,omega1,1)
+    print 10, 'debug: residual A1 norm:', ddot(nocc*nvir,omega1,1,omega1,1)
 
     ! Calculate B1 term:
     ! Omega_ai += - H_aQ * yocc_iQ 
     call dgemm('n','t',nvir,nocc,nbas,-1.0E0_realk,H_aQ,nvir,yocc,nocc, &
               & 1.0E0_realk,omega1,nvir)
     ! Calculate norm of A1 + B1:
-    print 10, 'pablo: residual B1 norm:', ddot(nocc*nvir,omega1,1,omega1,1)
+    print 10, 'debug: residual B1 norm:', ddot(nocc*nvir,omega1,1,omega1,1)
 
     ! Calculate C1 term:
     ! Reorder u2[ac, ik] -> u2[ai, kc]
@@ -3458,14 +3609,15 @@ module cc_debug_routines_module
     call dgemv('n',nvir*nocc,nvir*nocc,1.0E0_realk,tmp0,nvir*nocc,pqfock,1, &
               & 1.0E0_realk,omega1,1)
     ! Calculate norm of A1 + B1 + C1:
-    print 10, 'pablo: residual C1 norm:', ddot(nocc*nvir,omega1,1,omega1,1)
+    print 10, 'debug: residual C1 norm:', ddot(nocc*nvir,omega1,1,omega1,1)
 
     ! Calculate D1 term:
     ! Omega_ai += F_ai
     call daxpy(nocc*nvir,1.0E0_realk,qpfock,1,omega1,1)
     ! Calculate norm of full single residual:
-    print 10, 'pablo: residual D1 norm:', ddot(nocc*nvir,omega1,1,omega1,1)
-    print *, ' '
+    print 10, 'debug: residual D1 norm:', ddot(nocc*nvir,omega1,1,omega1,1)
+
+    call LSTIMER('small_frag CCSD singles',tcpu1,twall1,DECinfo%output)
   
 
     !===========================================================================
@@ -3474,9 +3626,12 @@ module cc_debug_routines_module
     ! Get E2 term and introduce permutational symmetry
     call get_E2_and_permute(nbas,nocc,nvir,ppfock,qqfock,tmp0,t2,G_Pi,H_aQ,omega2)
     ! Calculate norm of full double residual:
-    print 10, 'pablo: residual E2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
+    print 10, 'debug: residual E2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
+    call LSTIMER('small_frag CCSD E2',tcpu1,twall1,DECinfo%output)
 
     10 format(a,f20.15)
+
+    call LSTIMER('small_frag CCSD residual',tcpu,twall,DECinfo%output)
 
     ! Free arrays:
     call mem_dealloc(xvir)
@@ -3855,8 +4010,8 @@ module cc_debug_routines_module
   !              G_Pi = sum_ckd u2[cd, ki] g[pd, kc]
   !              H_aQ = sum_ckl u2[ac, kl] g[kq, lc]
   !
-  ! Author:  Pablo Baudin
-  ! Date:    November 2013
+  !> Author:  Pablo Baudin
+  !> Date:    November 2013
   subroutine get_G_and_H_intermeditates(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta, &
                             & gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
 
@@ -4406,7 +4561,7 @@ module cc_debug_routines_module
 
 
 
-    print 10, 'pablo: residual C2 norm:', ddot(no*nv*no*nv,omega2%elm1,1,omega2%elm1,1)
+    print 10, 'debug: residual C2 norm:', ddot(no*nv*no*nv,omega2%elm1,1,omega2%elm1,1)
     10 format(a,f20.15)
 
 
@@ -4623,7 +4778,6 @@ module cc_debug_routines_module
     call mem_dealloc(tmp1)
 
   end subroutine get_E2_and_permute
-  ! end pablo
 
 
   !> \author Patrick Ettenhuber
