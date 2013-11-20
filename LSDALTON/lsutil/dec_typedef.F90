@@ -160,6 +160,8 @@ module dec_typedef_module
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out
      logical :: CCSDmultipliers
+     !> use pnos in dec
+     logical :: use_pnos
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver

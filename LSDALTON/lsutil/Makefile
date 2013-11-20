@@ -3,7 +3,7 @@ all: liblsutil.a
 include ../Makefile.config
 
 reorder_frontend.F90: ./autogen/generate_man_reord.py
-	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS} "nocollapse"
 reord2d_2_reord.F90: ./autogen/generate_man_reord.py
 	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord3d_1_reord.F90: ./autogen/generate_man_reord.py

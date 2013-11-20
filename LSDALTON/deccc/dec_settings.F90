@@ -69,6 +69,7 @@ contains
     DECinfo%CCSD_MPICH           = .false.
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
+    DECinfo%use_pnos             = .false.
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
 
@@ -414,6 +415,7 @@ contains
        case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.
        case('.SPAWN_COMM_PROC'); DECinfo%spawn_comm_proc=.true.
        case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
+       case('.USE_PNOS'); DECinfo%use_pnos=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
