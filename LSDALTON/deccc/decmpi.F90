@@ -993,11 +993,12 @@ contains
   !> \author Patrick Ettenhuber
   !> \date March 2012
   subroutine distribute_mpi_jobs(mpi_task_distribution,nbA,nbG,batchdimAlpha,&
-             & batchdimGamma,myload,ccsdscheme,no,nv,nb,b2oa,b2og)
+             & batchdimGamma,myload,lg_nnod,lg_me,ccsdscheme,no,nv,nb,b2oa,b2og)
     implicit none
 
     integer, intent(inout) :: myload
     integer,intent(in):: nbA,nbG,batchdimAlpha(nbA),batchdimGamma(nbG)
+    integer(kind=ls_mpik),intent(in)::lg_nnod,lg_me
     integer,intent(out)::mpi_task_distribution(nbA*nbG)
     integer,intent(in),optional :: ccsdscheme,no,nv,nb
     type(batchtoorb),intent(in),optional :: b2oa(nbA),b2og(nbG)
@@ -1020,27 +1021,22 @@ contains
     call  mem_alloc(touched,nbA*nbG)
     call  mem_alloc(workloads,nbA*nbG)
     call  mem_alloc(easytrace,nbA*nbG)
-    call  mem_alloc(jobsize_per_node,infpar%lg_nodtot)
-    call  mem_alloc(node_rank_by_job,infpar%lg_nodtot)
+    call  mem_alloc(jobsize_per_node,lg_nnod)
+    call  mem_alloc(node_rank_by_job,lg_nnod)
     call  mem_alloc(trace,nbA*nbG)
     !some needed initializations for the matrices
     touched = .false.
     jobsize_per_node = 0
-    do k=1, infpar%lg_nodtot
+    do k=1, lg_nnod
       node_rank_by_job(k) = k-1
     enddo
-
-    if(DECinfo%PL>0) then
-       print '(a,4i6)', 'LOCAL,GLOBAL,sizeL,sizeG ', &
-            & infpar%lg_mynum, infpar%mynum, infpar%lg_nodtot, infpar%nodtot
-    end if
 
     if (.false.) then
      ! simple modulo distribtution --> tured off for the moment
      ! fill the jobsize_per_node matrix with the values from mpi_task_distribution
       do i=1,nbG
         do j=1,nbA
-          actual_node=MODULO(j-1+(i-1)*MODULO(nbA,infpar%lg_nodtot),infpar%lg_nodtot)
+          actual_node=MODULO(j-1+(i-1)*MODULO(nbA,lg_nnod),lg_nnod)
           mpi_task_distribution((j-1)*nbG+i)=actual_node
           jobsize_per_node(actual_node+1)=jobsize_per_node(actual_node+1) & 
           &+ int(i8*batchdimGamma(i)*batchdimAlpha(j),kind=8)
@@ -1102,9 +1098,9 @@ contains
 
       ! assign new jobs and thereby keep track of the sizes, assign ranks according
       ! to workload after each round
-      do i=1,nbG*nbA-MODULO(nbG*nbA,infpar%lg_nodtot),infpar%lg_nodtot
+      do i=1,nbG*nbA-MODULO(nbG*nbA,lg_nnod),lg_nnod
         !distribute the work according to previous load
-        do k=1, infpar%lg_nodtot
+        do k=1, lg_nnod
           jobsize_per_node(k)=jobsize_per_node(k) + workloads(i+node_rank_by_job(k))
           ialpha = trace(easytrace(i+node_rank_by_job(k))+1)%na
           igamma = trace(easytrace(i+node_rank_by_job(k))+1)%ng
@@ -1115,7 +1111,7 @@ contains
           if(.not. touched((ialpha-1)*nbg+igamma)) then
             touched((ialpha-1)*nbg+igamma) = .true.
           else
-            if (infpar%lg_mynum==0)then
+            if (lg_me==0)then
               call LSQUIT('Element had already been assigned in distribute_mpi_jobs',-1)
             endif
           endif
@@ -1123,16 +1119,16 @@ contains
 
         ! get the new node ranks by counting how many of the nodes have smaller jobs
         ! --> is an initial rank, because it is ordered the other way round as the jobs
-        do k=1, infpar%lg_nodtot
+        do k=1, lg_nnod
           counter = 0
-          do l=1,infpar%lg_nodtot
+          do l=1,lg_nnod
             if (jobsize_per_node(l) < jobsize_per_node(k)) counter=counter+1
           enddo
           node_rank_by_job(k) = counter
         enddo
         ! if some have the same amount of work, just assign jobs uniquely
-        do k=1, infpar%lg_nodtot
-          do l=k+1,infpar%lg_nodtot
+        do k=1, lg_nnod
+          do l=k+1, lg_nnod
             if (node_rank_by_job(k)==node_rank_by_job(l))then
               node_rank_by_job(l) = node_rank_by_job(l) +1
             endif
@@ -1141,10 +1137,10 @@ contains
       enddo
 
       !distribute the rest of the jobs according to load
-      i = nbG*nbA-MODULO(nbG*nbA,infpar%lg_nodtot)
-      do k=1, infpar%lg_nodtot
+      i = nbG*nbA-MODULO(nbG*nbA,lg_nnod)
+      do k=1, lg_nnod
         actual_node= node_rank_by_job(k) + 1
-        if(MODULO(nbG*nbA,infpar%lg_nodtot) >= actual_node)then
+        if(MODULO(nbG*nbA,lg_nnod) >= actual_node)then
           jobsize_per_node(k)=jobsize_per_node(k) + workloads(i+actual_node)
           ialpha = trace(easytrace(i+actual_node)+1)%na
           igamma = trace(easytrace(i+actual_node)+1)%ng
@@ -1152,7 +1148,7 @@ contains
           if(.not. touched((ialpha-1)*nbg+igamma)) then
             touched((ialpha-1)*nbg+igamma) = .true.
           else
-            if (infpar%lg_mynum==0)then
+            if (lg_me==0)then
               call LSQUIT('Element had already been assigned in distribute_mpi_jobs',-1)
             endif
           endif
@@ -1165,7 +1161,7 @@ contains
     all_touched = .true.
     do j=1,nbA
       do i=1,nbG
-        if (mpi_task_distribution((j-1)*nbG+i)==infpar%lg_mynum)then
+        if (mpi_task_distribution((j-1)*nbG+i)==lg_me)then
            la=batchdimAlpha(j)
            lg=batchdimGamma(i)
            if(present(ccsdscheme))then
@@ -1185,8 +1181,8 @@ contains
       enddo
     enddo
 
-    if ((myload64 /= jobsize_per_node(infpar%lg_mynum+1)).or. .not. all_touched)then
-      print *, "something is wrong ... quitting",myload64,jobsize_per_node(infpar%lg_mynum+1),all_touched
+    if ((myload64 /= jobsize_per_node(lg_me+1)).or. .not. all_touched)then
+      print *, "something is wrong ... quitting",myload64,jobsize_per_node(lg_me+1),all_touched
       write(DECinfo%output,*) 'workloads per node:'
       write(DECinfo%output,*) node_rank_by_job
       write(DECinfo%output,*) jobsize_per_node
@@ -1197,7 +1193,7 @@ contains
       print *, jobsize_per_node
       print *, mpi_task_distribution
       print *, touched
-      print *, infpar%lg_mynum,kind(infpar%lg_mynum),kind(jobsize_per_node(infpar%lg_mynum+1)),kind(myload64)
+      print *, lg_me,kind(lg_me),kind(jobsize_per_node(lg_me+1)),kind(myload64)
       call LSQUIT('Problem in distribute_mpi_jobs (64bit 32bit??), (jobsize or unused elements)',-1)
     endif
     myload=myload64
@@ -1315,7 +1311,9 @@ contains
   !> which never comes...
   !> In other words, synchronization of all nodes in the local groups must be done OUTSIDE this
   !> routine because their communication channel is redefined in here!
-  !> \author Kasper Kristensen
+  !> Here some of the PDM stuff has to be redefined according to the new groups,
+  !> because the PDM memory allocation has to happen in the smaller groups now
+  !> \author Kasper Kristensen, modified by Patrick Ettenhuber
   !> \date May 2012
   subroutine dec_half_local_group
     implicit none
@@ -1337,6 +1335,7 @@ contains
     ! will be overwritten.
     ngroups=2
     call divide_local_mpi_group(ngroups,groupdims)
+    call new_group_reset_persistent_array
 
   end subroutine dec_half_local_group
 

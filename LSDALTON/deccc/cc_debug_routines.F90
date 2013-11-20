@@ -175,7 +175,7 @@ module cc_debug_routines_module
      character(ARR_MSG_LEN) :: msg
      integer :: ii,aa
      integer :: MaxSubSpace
-     logical :: restart
+     logical :: restart,PNO_CCSD
 
      ! begin pablo 
      real(realk),pointer :: pack_gmo(:)
@@ -212,6 +212,7 @@ module cc_debug_routines_module
 
 
      get_mult    = (present(m2).and.present(m1))
+     PNO_CCSD    = DECinfo%use_pnos
      MaxSubSpace = DECinfo%ccMaxDIIS
 
      ! title
@@ -323,7 +324,7 @@ module cc_debug_routines_module
 
      ! get two-electron integrals in ao
      if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') 'debug :: calculating AO integrals'
-     ! Only calculate full 4-dimensional AO integrals 
+     ! Always in the DEBUG SOLVER: calculate full 4-dimensional AO integrals 
      call get_full_eri(mylsitem,nbasis,gao)
      if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,/)') 'debug :: AO integrals done'
 
@@ -545,8 +546,13 @@ module cc_debug_routines_module
 
 
         elseif(CCmodel==MODEL_CCSD .or. CCmodel==MODEL_CCSDpT) then  ! CCSD or CCSD(T)
+  
 
            if(get_mult)then
+              if(small_frag.or.PNO_CCSD)then
+                call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
+                &and PNO_CCSD should be true at the same time",-1)
+              endif
 
               call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
               &,t2_final%val,t1(iter)%val,t2(iter)%val,gao,xocc%val,yocc%val,xvirt%val,yvirt%val&
@@ -555,6 +561,11 @@ module cc_debug_routines_module
            ! begin pablo
            !> call CCSD code for small fragment:
            else if (small_frag) then
+
+              if(get_mult.or.PNO_CCSD)then
+                call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
+                &and PNO_CCSD should be true at the same time",-1)
+              endif
 
              ! reorder array like in Patrick's code
              call array4_reorder(t2(iter),[1,3,2,4]) ! -> t2[ab,ij]
@@ -573,6 +584,17 @@ module cc_debug_routines_module
              call lsquit('CC iteration cannot continue because the CCSD &
                         & residual is not fully calculated',DECinfo%output)
            ! end pablo
+
+           else if(PNO_CCSD)then
+              if(small_frag.or.get_mult)then
+                call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
+                &and PNO_CCSD should be true at the same time",-1)
+              endif
+
+              call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
+              &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+              &gao,fragment_job)
+
            else
 
              u = get_u(t2(iter))
@@ -818,7 +840,7 @@ module cc_debug_routines_module
 
         !Print Iter info
         !---------------
-        call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,get_mult)
+        call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,get_mult,fragment_job)
 
         last_iter = iter
         if(break_iterations) exit
@@ -3409,4 +3431,32 @@ module cc_debug_routines_module
   ! end pablo
 
 
+  !> \author Patrick Ettenhuber
+  !> \date November 2013
+  !> \brief this subroutine calculates the ccsd residual by transforming each
+  !>        doubles amplitudes to their respective set of PNO's and then
+  !>        transforming the result vector back to the reference basis. 
+  subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,no,nv,nb,xo,xv,yo,yv,mylsitem,gao,fj)
+    implicit none
+    integer, intent(in) :: no, nv, nb
+    real(realk), intent(in) :: t1(nv,no), t2(nv,no,nv,no)
+    real(realk), intent(inout) :: o1(nv,no), o2(nv,no,nv,no)
+    real(realk), intent(in) :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv)
+    type(lsitem), intent(inout) :: mylsitem
+    type(array4), intent(inout) :: gao
+    logical, intent(in) :: fj
+    !call array4_read(gao)
+    !call array4_dealloc(gao)
+
+    !===============================================================
+    !begin setting up all density matrices and finding the PNO basis
+    !===============================================================
+
+    ! if  we have a fragment job the basis of the atomic (pair) site has to be
+    ! treated in a special way, either LO or FNO basis
+    if(fj)then
+    endif
+
+    !print *,"fuck it I am here"
+  end subroutine get_ccsd_residual_pno_style
 end module cc_debug_routines_module
