@@ -1304,9 +1304,9 @@ contains
 
     if(master.and.print_debug)then
       write(msg,*)"NORM(tpl)   :"
-      call print_norm(tpl,int(nor*nvr,kind=8),msg)
+      call print_norm(tpl%d,int(nor*nvr,kind=8),msg)
       write(msg,*)"NORM(tmi)    :"
-      call print_norm(tmi,int(nor*nvr,kind=8),msg)
+      call print_norm(tmi%d,int(nor*nvr,kind=8),msg)
     endif
 
     !if I am the working process, then
