@@ -351,7 +351,7 @@ module crop_tools_module
        !end if
     end if
 
-    if(.not.fj)then
+    if(.not.fj.or.DECinfo%PL>1)then
        if(.not.multiplier_job)then
          print *
          print *, '### Starting CC iterations'
@@ -388,7 +388,7 @@ module crop_tools_module
     integer,intent(in)     :: it
     real(realk),intent(in) :: norm,ce
     logical, intent(in)    :: gm,fj
-    if( .not. fj )then
+    if( .not. fj .or. DECinfo%PL>1 )then
        if( gm ) then
          print '(1X,a,2X,i4,5X,g19.9,4X)',  '### ',it, norm
          write(DECinfo%output,'(1X,a,2X,i4,5X,g19.9,4X)') &
@@ -424,7 +424,7 @@ module crop_tools_module
      tnorm = sqrt(snorm+dnorm)
      snorm = sqrt(snorm)
      dnorm = sqrt(dnorm)
-     if( .not. fj )then
+     if( .not. fj .or. DECinfo%PL>1)then
        write(DECinfo%output,*)
        write(DECinfo%output,'(/,a)') '-------------------------------'
        write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '

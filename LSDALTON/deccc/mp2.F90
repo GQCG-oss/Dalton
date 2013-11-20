@@ -609,19 +609,19 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       maxdim = maxdim + extra
 
       ! Print for statistics
-      !if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size1 ', bat%size1
-      !if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size2 ', bat%size2
-      !if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size3 ', bat%size3
-      !if(DECinfo%PL>0) write(DECinfo%output,'(a,3i14)') 'Tot sizes ', max1,max2,max3
-      !if(DECinfo%PL>0) write(DECinfo%output,*) 'Static array: elms/GB = ', maxdim, real(maxdim)*8.0e-9
-      if(infpar%lg_mynum == 0)then
-        !call stats_mem(DECinfo%output)
-        write(*,'(a,4i14)') 'size1 ', bat%size1
-        write(*,'(a,4i14)') 'size2 ', bat%size2
-        write(*,'(a,4i14)') 'size3 ', bat%size3
-        write(*,'(a,3i14)') 'Tot sizes ', max1,max2,max3
-        write(*,*) 'Static array: elms/GB = ', maxdim, real(maxdim)*8.0e-9
-      endif
+      if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size1 ', bat%size1
+      if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size2 ', bat%size2
+      if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size3 ', bat%size3
+      if(DECinfo%PL>0) write(DECinfo%output,'(a,3i14)') 'Tot sizes ', max1,max2,max3
+      if(DECinfo%PL>0) write(DECinfo%output,*) 'Static array: elms/GB = ', maxdim, real(maxdim)*8.0e-9
+      !if(infpar%lg_mynum == 0)then
+      !  !call stats_mem(DECinfo%output)
+      !  write(*,'(a,4i14)') 'size1 ', bat%size1
+      !  write(*,'(a,4i14)') 'size2 ', bat%size2
+      !  write(*,'(a,4i14)') 'size3 ', bat%size3
+      !  write(*,'(a,3i14)') 'Tot sizes ', max1,max2,max3
+      !  write(*,*) 'Static array: elms/GB = ', maxdim, real(maxdim)*8.0e-9
+      !endif
       call mem_alloc(arr,maxdim)
       ierr = 0
       if(ierr == 0) then

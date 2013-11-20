@@ -1936,11 +1936,8 @@ contains
 
     ! Save two-electron integrals in the order (virt,occ,virt,occ)
     if(CCmodel == MODEL_MP2) then
-            print *,"not implemented"
-            stop 0
-       !call array4_free(lmo) ! also free lmo integrals
-       !VOVO = array4_duplicate(gmo)
-       !call array4_free(gmo)
+       print *,"not implemented"
+       stop 0
     else
        VOVO = array4_init([no,nv,no,nv])
        call array_convert(iajb,VOVO%val)
