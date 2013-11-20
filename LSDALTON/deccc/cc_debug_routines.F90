@@ -2583,7 +2583,7 @@ module cc_debug_routines_module
       call get_MO_batches_size(min_mem, nbas, Nbatch, dimP, (4*nbas*nbas + nocc*nbas), &
                       & (MaxActualDimAlpha*nbas*nbas + 3*nocc*nvir*nbas + nocc*nocc*nbas))
     end if
-    print *, 'test', dimP, Nbatch
+    print *, 'test: dimP, Nbatch', dimP, Nbatch
  
     gmosize = int(i8*dimP*dimP*nbas*nbas,kind=long)
     call mem_alloc(gmo,gmosize)
@@ -3688,7 +3688,7 @@ module cc_debug_routines_module
     call dcopy(nvir*nvir*nocc*nocc,t2,1,tmp2,1)
     pos1  = 1
     do j = 1,nocc
-      do i = 1,nocc
+      do i = 1,j
         do d = 1, nvir
           pos2 = C_sta + (d-1)*nvir + (i-1)*nvir*nvir + (j-1)*nvir*nvir*nocc
           call dcopy(dimC,tmp2(pos2),1,tmp1(pos1),1)
@@ -3719,7 +3719,7 @@ module cc_debug_routines_module
     end do
      
     ! Get: sigma[pr, ij] = sum_cd g[pr, cd] * t2red[cd, ij]
-    n_ij= nocc*nocc
+    !n_ij= nocc*nocc
     call dgemm('n','n',dimP*nbas,n_ij,dimC*nvir,1.0E0_realk,tmp0,dimP*nbas, &
               & tmp1,dimC*nvir,0.0E0_realk,tmp2,dimP*nbas)
     call lsmpi_poke() 
@@ -3729,16 +3729,53 @@ module cc_debug_routines_module
     !===========================================================================
     ! add sigma to B2 term:
     !
-    ! prep B2 term: sigma[k l, i<=j] <= sigma[p r i<=j]
+    ! prep B2 term: sigma[K l, i j] <= sigma[P r i<=j]
     ! occupied indices do not need to be transformed.
     if (dimK>0) then
-      do j=1,n_ij
+      tmp1 = 0.0E0_realk
+      do i=1,n_ij
         do r=1,nocc
-          pos1 = 1 + (r-1)*dimP + (j-1)*dimP*nbas
-          pos2 = P_sta + (r-1)*nocc + (j-1)*nocc*nocc
-          call daxpy(dimK,1.0E0_realk,tmp2(pos1),1,B2prep(pos2),1) 
+          pos1 = 1 + (r-1)*dimP + (i-1)*dimP*nbas
+          pos2 = P_sta + (r-1)*nocc + (i-1)*nocc*nocc
+          call dcopy(dimK,tmp2(pos1),1,tmp1(pos2),1) 
         end do
       end do
+      do j=nocc,1,-1
+        do i=j,1,-1
+          pos1=1+((i+j*(j-1)/2)-1)*nocc*nocc
+          pos2=1+(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
+          if(j/=1) tmp1(pos2:pos2+nocc*nocc-1) = tmp1(pos1:pos1+nocc*nocc-1)
+        enddo
+      enddo
+      do j=nocc,1,-1
+        do i=j,1,-1
+          pos1=1+(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
+          pos2=1+(j-1)*nocc*nocc+(i-1)*nocc*nocc*nocc
+          if(i/=j) tmp1(pos2:pos2+nocc*nocc-1) = tmp1(pos1:pos1+nocc*nocc-1)
+        enddo
+      enddo
+      do j=1,nocc
+        do i=j+1,nocc
+          pos1=1+(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
+          call alg513(tmp1(pos1:nocc*nocc+pos1-1),nocc,nocc,nocc*nocc,mv,(nocc*nocc)/2,st)
+        enddo
+      enddo
+      call daxpy(nocc*nocc*nocc*nocc,1.0E0_realk,tmp1,1,B2prep,1)
+       
+      ! DEBUG:
+      !do j=1,nocc 
+      !  do i=1,nocc
+      !    do r=1,nocc
+      !      if (i<=j) then
+      !        pos1 = 1 + (r-1)*dimP + (i-1+j*(j-1)/2)*dimP*nbas
+      !      else 
+      !        pos1 = 1 + (r-1)*dimP + (j-1+i*(i-1)/2)*dimP*nbas
+      !      end if
+      !      pos2 = P_sta + (r-1)*nocc + (i-1+(j-1)*nocc)*nocc*nocc
+      !      !call daxpy(dimK,1.0E0_realk,tmp2(pos1),1,B2prep(pos2),1) 
+      !    end do
+      !  end do
+      !end do
     end if
     !===========================================================================
 
@@ -3755,32 +3792,32 @@ module cc_debug_routines_module
 
     ! Transform p -> a; order is now: sigma[a b i j]
     call dgemm('n','t',nvir,nvir*n_ij,dimP,1.0E0_realk,xvir(1+(P_sta-1)*nvir),nvir, &
-              & tmp2, nvir*n_ij, 1.0E0_realk, omega2, nvir)
+              & tmp2, nvir*n_ij, 0.0E0_realk, tmp1, nvir)
     call lsmpi_poke()
 
 
     ! Sum up sigma PQ batches contributions to A2.2 part of CCSD residual:
-    !do j=nocc,1,-1
-    !  do i=j,1,-1
-    !    pos1=1+((i+j*(j-1)/2)-1)*nvir*nvir
-    !    pos2=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
-    !    if(j/=1) tmp1(pos2:pos2+nvir*nvir-1) = tmp1(pos1:pos1+nvir*nvir-1)
-    !  enddo
-    !enddo
-    !do j=nocc,1,-1
-    !  do i=j,1,-1
-    !    pos1=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
-    !    pos2=1+(j-1)*nvir*nvir+(i-1)*nocc*nvir*nvir
-    !    if(i/=j) tmp1(pos2:pos2+nvir*nvir-1) = tmp1(pos1:pos1+nvir*nvir-1)
-    !  enddo
-    !enddo
-    !do j=1,nocc
-    !  do i=j+1,nocc
-    !    pos1=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
-    !    call alg513(tmp1(pos1:nvir*nvir+pos1-1),nvir,nvir,nvir*nvir,mv,(nvir*nvir)/2,st)
-    !  enddo
-    !enddo
-    !call daxpy(nocc*nocc*nvir*nvir,1.0E0_realk,tmp1,1,omega2,1)
+    do j=nocc,1,-1
+      do i=j,1,-1
+        pos1=1+((i+j*(j-1)/2)-1)*nvir*nvir
+        pos2=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+        if(j/=1) tmp1(pos2:pos2+nvir*nvir-1) = tmp1(pos1:pos1+nvir*nvir-1)
+      enddo
+    enddo
+    do j=nocc,1,-1
+      do i=j,1,-1
+        pos1=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+        pos2=1+(j-1)*nvir*nvir+(i-1)*nocc*nvir*nvir
+        if(i/=j) tmp1(pos2:pos2+nvir*nvir-1) = tmp1(pos1:pos1+nvir*nvir-1)
+      enddo
+    enddo
+    do j=1,nocc
+      do i=j+1,nocc
+        pos1=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+        call alg513(tmp1(pos1:nvir*nvir+pos1-1),nvir,nvir,nvir*nvir,mv,(nvir*nvir)/2,st)
+      enddo
+    enddo
+    call daxpy(nocc*nocc*nvir*nvir,1.0E0_realk,tmp1,1,omega2,1)
     call lsmpi_poke()
 
 
