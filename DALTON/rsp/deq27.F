@@ -105,7 +105,7 @@ C
       IF (NASHT .GT. 0) THEN
 C
 C     *************************************************
-C     D_I and D_II:  D = D_I - D_II   Active matrices
+C     D-I and D-II:  D = D-I - D-II   Active matrices
 C     *************************************************
 C     DXVAO-I: loop over symmetries then put result in DXVAO
 C
@@ -194,7 +194,7 @@ C **     step 2 of active dm:
 C **  this symmetry block finished
  3000 CONTINUE
 C
-C subtract D_II from  D_I
+C subtract D-II from  D-I
          CALL DAXPY(N2BASX,DM1,WRK(KDXAO2),1,DXVAO,1)
       END IF
 C
@@ -203,7 +203,7 @@ C
       IF (NISHT .GT. 0) THEN
 C
 C     *************************************************
-C     D_I and D_II:  D = D_I - D_II   Inactive matrices
+C     D-I and D-II:  D = D-I - D-II   Inactive matrices
 C     *************************************************
 C     DXCAO-I: loop over symmetries then put result in DXCAO
 C     see eq. 22

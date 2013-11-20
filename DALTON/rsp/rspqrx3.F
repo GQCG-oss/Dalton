@@ -399,30 +399,30 @@ C
 
 #if defined (BUILD_PELIB)
       if (peqm) then
-        if (.not. tdhf) then 
-!            edh: This part is not ready yet and should quit   
-!            write(lupri,*) '*** WARNING peqm MCSCF QR ***  '
-!            write(lupri,*) '    Highly experimental version'
-!            write(lupri,*) '    Results *WILL* be wrong    '
-            call quit('ERROR: MCSCF quadratic response not'//
-     &                ' implemented with the PE library.')
-!            write(lupri,*)'KFREE', KFREE
-!            write(lupri,*)'LFREE', LFREE
-!
-!             call pe_rspmcqr(vecb, vecc, etrs, xindx, 
-!     &                       wrk(kzymb), wrk(kzymc), wrk(kden1), udv, 
-!     &                       wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
-!     &                       isyma, isymb, isymc, cmo, mjwop)
-        else if (nasht > 0) then
+         if (.not. tdhf .and. .not. trplet) then 
+!           edh: This part is not ready yet and should quit   
+!           write(lupri,*) '*** WARNING peqm MCSCF QR ***  '
+!           write(lupri,*) '    Highly experimental version'
+!           write(lupri,*) '    Results *WILL* be wrong    '
+!           call quit('ERROR: MCSCF quadratic response not'//
+!    &                ' implemented with the PE library.')
+!           write(lupri,*)'KFREE', KFREE
+!           write(lupri,*)'LFREE', LFREE
+
+            call pe_rspmcqr(vecb, vecc, etrs, xindx, 
+     &                      wrk(kzymb), wrk(kzymc), wrk(kden1), udv, 
+     &                      wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
+     &                      isyma, isymb, isymc, cmo, mjwop)
+         else if (nasht > 0) then
             call quit('ERROR: quadratic response not implemented for'//
      &                ' open shell systems with the PE library.')
-        else if (trplet) then
+         else if (trplet) then
             call quit('ERROR: triplets not implemented for quadratic'//
      &                ' response with the PE library.')
-        endif
-        call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
-     &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
-     &                 isyma, isymb, isymc, cmo, mjwop)
+         endif
+         call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
+     &                  udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
+     &                  isyma, isymb, isymc, cmo, mjwop)
       end if
 #endif
 
