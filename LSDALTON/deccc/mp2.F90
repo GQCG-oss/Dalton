@@ -577,7 +577,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       call mem_alloc(decmpitasks,nbatchesAlpha*nbatchesGamma)
       if(wakeslave) then  ! share workload with slave(s)
          call distribute_mpi_jobs(decmpitasks,nbatchesAlpha,nbatchesGamma,&
-              & batchdimAlpha,batchdimGamma,myload)
+              & batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
          if(DECinfo%PL>0) write(DECinfo%output,'(a,i6,a,i15)') 'Rank ', infpar%mynum, ' has load ', myload
       else ! master do all jobs
          decmpitasks=infpar%lg_mynum

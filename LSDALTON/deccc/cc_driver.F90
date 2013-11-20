@@ -1396,8 +1396,8 @@ contains
     ! go to a (pseudo) canonical basis
     call mem_alloc( focc,     no     )
     call mem_alloc( fvirt,    nv     )
-    call mem_alloc( Co_d,    nb, no )
-    call mem_alloc( Cv_d,    nb, nv )
+    call mem_alloc( Co_d,     nb, no )
+    call mem_alloc( Cv_d,     nb, nv )
     call mem_alloc( Co2_d,    nb, no )
     call mem_alloc( Cv2_d,    nb, nv )
     call mem_alloc( ppfock_d, no, no )
@@ -1451,14 +1451,15 @@ contains
     ampl2_dims = [nv,no]
 
     ! create transformation matrices in array form
-    Co  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
-    Cv  = array_minit( virt_dims,2, local=local, atype='LDAR' )
+    Co   = array_minit( occ_dims, 2, local=local, atype='LDAR' )
+    Cv   = array_minit( virt_dims,2, local=local, atype='LDAR' )
     Co2  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
     Cv2  = array_minit( virt_dims,2, local=local, atype='LDAR' )
     fock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
+ 
 
-    call array_convert( Co_d,  Co  )
-    call array_convert( Cv_d,  Cv  )
+    call array_convert( Co_d,   Co   )
+    call array_convert( Cv_d,   Cv   )
     call array_convert( Co2_d,  Co2  )
     call array_convert( Cv2_d,  Cv2  )
     call array_convert( fock_f, fock )
@@ -1919,7 +1920,7 @@ contains
           t2_final = array4_init([nv,no,nv,no])
           call array_cp_tiled2dense(t2(last_iter),.true.)
           call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
-          call array_change_atype_to_td(t2(last_iter),local)
+          call array_change_itype_to_td(t2(last_iter),local)
        end if
 
        ! Free doubles residuals
@@ -2002,11 +2003,12 @@ contains
 #ifdef VAR_MPI
     if ( w_cp ) call lspdm_shut_down_comm_procs
     !print *,"ALL DONE"
+    !call sleep(3)
     !stop 0
 #endif
 
 #ifdef MOD_UNRELEASED
-    if( .not. fragment_job )then
+    if( .not. fragment_job .and. DECinfo%PL>2 )then
       call array4_print_statistics(DECinfo%output)
       call array_print_mem_info(DECinfo%output,.true.,.false.)
     endif
