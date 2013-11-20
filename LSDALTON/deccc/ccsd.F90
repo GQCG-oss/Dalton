@@ -1109,13 +1109,14 @@ contains
            &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local)
       endif
 
+#ifdef VAR_MPI
       !synchronize comm-procs 
       if(lspdm_use_comm_proc)then
         inf(1)=dble(MaxAllowedDimAlpha);inf(2)=dble(MaxAllowedDimGamma);inf(3)=dble(scheme);inf(4)=MemFree
         call ls_mpibcast(inf,inflen,infpar%master,infpar%pc_comm)
         MaxAllowedDimAlpha=int(inf(1));MaxAllowedDimGamma=int(inf(2));scheme=int(inf(3));MemFree=inf(4)
       endif
-
+#endif
 
       !SOME WORDS ABOUT THE CHOSEN SCHEME:
       ! Depending on the availability of memory on the nodes a certain scheme
@@ -1839,9 +1840,9 @@ contains
     ! free arrays only needed in the batched loops
 #ifdef VAR_MPI
     if(talker.and.lock_outside.and.scheme==2)call arr_unlock_wins(omega2,.true.)
-#endif
     !this might be removable
     if( lspdm_use_comm_proc ) call lsmpi_barrier(infpar%pc_comm)
+#endif
 
     call mem_dealloc(uigcj)
     call mem_dealloc(tpl)

@@ -678,6 +678,7 @@ contains
     endif
 #else
     arr=array_init(dims,nmodes)
+    arr%atype='LDAR'
 #endif
     arr%initialized=.true.
   end function array_minit
@@ -759,6 +760,7 @@ contains
     endif
 #else
     arr=array_init_standard(dims,nmodes,NO_PDM)
+    arr%atype='LDAR'
 #endif
     arr%initialized=.true.
   end function array_ainit
