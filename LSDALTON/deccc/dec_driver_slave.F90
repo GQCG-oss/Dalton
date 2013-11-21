@@ -590,13 +590,8 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
 
   ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
   ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
-  if(DECinfo%fragadapt .and. (.not. MyFragment%fragmentadapted) ) then
-     nocc=MyFragment%noccFA
-     nunocc=MyFragment%nunoccFA
-  else
-     nocc=MyFragment%noccAOS
-     nunocc=MyFragment%nunoccAOS
-  end if
+  nocc=MyFragment%noccAOS
+  nunocc=MyFragment%nunoccAOS
 
   ! Determine optimal batchsizes with available memory
   if(MyFragment%ccmodel==MODEL_MP2) then ! MP2

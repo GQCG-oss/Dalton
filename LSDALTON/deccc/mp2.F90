@@ -2116,13 +2116,9 @@ nthreads=1
 
   ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
   ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
-  if(DECinfo%fragadapt .and. (.not. MyFragment%fragmentadapted) ) then
-     nocc=MyFragment%noccFA
-     nvirt=MyFragment%nunoccFA
-  else
-     nocc=MyFragment%noccAOS
-     nvirt=MyFragment%nunoccAOS
-  end if
+  nocc=MyFragment%noccAOS
+  nvirt=MyFragment%nunoccAOS
+
   noccEOS=MyFragment%noccEOS
   nvirtEOS=MyFragment%nunoccEOS
   nbasis = MyFragment%nbasis

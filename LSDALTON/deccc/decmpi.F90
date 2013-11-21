@@ -17,6 +17,7 @@ module decmpi_module
   use tensor_basic_module
   use tensor_interface_module
   use DEC_settings_mod
+  use dec_fragment_utils
 
 contains
 
@@ -608,6 +609,8 @@ contains
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
+    CALL ls_mpi_buffer(MyFragment%noccLOC,master)
+    CALL ls_mpi_buffer(MyFragment%nunoccLOC,master)
 
 
     ! Logicals that are not pointers
@@ -707,6 +710,10 @@ contains
           call mem_alloc(MyFragment%CoccFA,MyFragment%nbasis,MyFragment%noccFA)
           nullify(MyFragment%CunoccFA)
           call mem_alloc(MyFragment%CunoccFA,MyFragment%nbasis,MyFragment%nunoccFA)
+          nullify(MyFragment%ppfockFA)
+          call mem_alloc(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA)
+          nullify(MyFragment%qqfockFA)
+          call mem_alloc(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA)
           if(.not. MyFragment%pairfrag) then
              nullify(MyFragment%CDocceival)
              call mem_alloc(MyFragment%CDocceival,MyFragment%noccFA)
@@ -730,6 +737,8 @@ contains
     if(MyFragment%FAset) then
        call ls_mpi_buffer(MyFragment%CoccFA,MyFragment%nbasis,MyFragment%noccFA,master)
        call ls_mpi_buffer(MyFragment%CunoccFA,MyFragment%nbasis,MyFragment%nunoccFA,master)
+       call ls_mpi_buffer(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA,master)
+       call ls_mpi_buffer(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA,master)
        if(.not. MyFragment%pairfrag) then
           call ls_mpi_buffer(MyFragment%CDocceival,MyFragment%noccFA,master)
           call ls_mpi_buffer(MyFragment%CDunocceival,MyFragment%nunoccFA,master)
@@ -792,23 +801,32 @@ contains
        ! Real pointers
        if(.not. AddToBuffer) then
           call mem_alloc(MyFragment%S,MyFragment%nbasis,MyFragment%nbasis)
-          call mem_alloc(MyFragment%Co,MyFragment%nbasis,MyFragment%noccAOS)
-          call mem_alloc(MyFragment%Cv,MyFragment%nbasis,MyFragment%nunoccAOS)
+          call mem_alloc(MyFragment%CoccLOC,MyFragment%nbasis,MyFragment%noccLOC)
+          call mem_alloc(MyFragment%CunoccLOC,MyFragment%nbasis,MyFragment%nunoccLOC)
           call mem_alloc(MyFragment%coreMO,MyFragment%nbasis,MyFragment%ncore)
           call mem_alloc(MyFragment%fock,MyFragment%nbasis,MyFragment%nbasis)
-          call mem_alloc(MyFragment%ppfock,MyFragment%noccAOS,MyFragment%noccAOS)
           call mem_alloc(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore)
-          call mem_alloc(MyFragment%qqfock,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
+          call mem_alloc(MyFragment%ppfockLOC,MyFragment%noccLOC,MyFragment%noccLOC)
+          call mem_alloc(MyFragment%qqfockLOC,MyFragment%nunoccLOC,MyFragment%nunoccLOC)
        end if
        call ls_mpi_buffer(MyFragment%S,MyFragment%nbasis,MyFragment%nbasis,master)
-       call ls_mpi_buffer(MyFragment%Co,MyFragment%nbasis,MyFragment%noccAOS,master)
-       call ls_mpi_buffer(MyFragment%Cv,MyFragment%nbasis,MyFragment%nunoccAOS,master)
+       call ls_mpi_buffer(MyFragment%CoccLOC,MyFragment%nbasis,MyFragment%noccLOC,master)
+       call ls_mpi_buffer(MyFragment%CunoccLOC,MyFragment%nbasis,MyFragment%nunoccLOC,master)
        call ls_mpi_buffer(MyFragment%coreMO,MyFragment%nbasis,MyFragment%ncore,master)
        call ls_mpi_buffer(MyFragment%fock,MyFragment%nbasis,MyFragment%nbasis,master)
-       call ls_mpi_buffer(MyFragment%ppfock,MyFragment%noccAOS,MyFragment%noccAOS,master)
        call ls_mpi_buffer(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore,master)
-       call ls_mpi_buffer(MyFragment%qqfock,MyFragment%nunoccAOS,&
-            &MyFragment%nunoccAOS,master)
+       call ls_mpi_buffer(MyFragment%ppfockLOC,MyFragment%noccLOC,MyFragment%noccLOC,master)
+       call ls_mpi_buffer(MyFragment%qqfockLOC,MyFragment%nunoccLOC,MyFragment%nunoccLOC,master)
+
+
+       if(.not. AddToBuffer) then
+          if(MyFragment%fragmentadapted) then
+             call fragment_basis_point_to_FOs(MyFragment)
+          else
+             call fragment_basis_point_to_LOs(MyFragment)
+          end if
+       end if
+
 
        ! INTEGRAL LSITEM
        ! '''''''''''''''
