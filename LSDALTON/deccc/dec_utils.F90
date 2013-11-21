@@ -4738,4 +4738,27 @@ retval=0
 
   end subroutine fragment_basis_point_to_LOs
 
+  
+  !> \brief Initialize pointers in fragment structure handling some dimensions.
+  !> These pointers are the only pointers that are not arrays.
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine fragment_init_dimension_pointers(fragment)
+    implicit none
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: fragment
+
+    nullify(fragment%noccAOS)
+    nullify(fragment%nunoccAOS)
+    nullify(fragment%noccLOC)
+    nullify(fragment%nunoccLOC)
+    nullify(fragment%noccFA)
+    nullify(fragment%nunoccFA)
+    allocate(fragment%noccLOC)
+    allocate(fragment%nunoccLOC)
+    allocate(fragment%noccFA)
+    allocate(fragment%nunoccFA)
+
+  end subroutine fragment_init_dimension_pointers
+
 end module dec_fragment_utils

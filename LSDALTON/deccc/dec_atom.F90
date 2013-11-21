@@ -75,17 +75,8 @@ contains
     real(realk) :: tcpu, twall
     logical,pointer :: occ_listEFF(:),occEOS(:),unoccEOS(:)
 
-    ! Integer pointer handling
-    nullify(fragment%noccAOS)
-    nullify(fragment%nunoccAOS)
-    nullify(fragment%noccLOC)
-    nullify(fragment%nunoccLOC)
-    nullify(fragment%noccFA)
-    nullify(fragment%nunoccFA)
-    allocate(fragment%noccLOC)
-    allocate(fragment%nunoccLOC)
-    allocate(fragment%noccFA)
-    allocate(fragment%nunoccFA)
+    ! Integer pointers for some dimensions
+    call fragment_init_dimension_pointers(fragment)
 
     ! Use of fragment-adapted orbitals set to false here, they can be set later using
     ! fragment_adapted_transformation_matrices.
@@ -455,6 +446,10 @@ contains
     fragment%ppfock => null()
     fragment%ccfock => null()
     fragment%qqfock => null()
+    fragment%ppfockLOC => null()
+    fragment%qqfockLOC => null()
+    fragment%ppfockFA => null()
+    fragment%qqfockFA => null()
 
     fragment%OccContribs => null()
     fragment%VirtContribs => null()

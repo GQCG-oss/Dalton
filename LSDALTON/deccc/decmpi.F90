@@ -591,16 +591,18 @@ contains
     integer(kind=ls_mpik) :: master
     master = 0
 
+    ! Integer pointers for some dimensions  
+    if(.not. AddToBuffer) then
+       call fragment_init_dimension_pointers(MyFragment)
+    end if
 
     ! Integers that are not pointers
     ! ------------------------------
 
     CALL ls_mpi_buffer(MyFragment%noccEOS,master)
     CALL ls_mpi_buffer(MyFragment%nunoccEOS,master)
-    CALL ls_mpi_buffer(MyFragment%noccAOS,master)
     CALL ls_mpi_buffer(MyFragment%ncore,master)
     CALL ls_mpi_buffer(MyFragment%nocctot,master)
-    CALL ls_mpi_buffer(MyFragment%nunoccAOS,master)
     CALL ls_mpi_buffer(MyFragment%nEOSatoms,master)
     CALL ls_mpi_buffer(MyFragment%ntasks,master)
     CALL ls_mpi_buffer(MyFragment%t1dims,2,master)
@@ -644,9 +646,9 @@ contains
        nullify(MyFragment%unoccEOSidx)
        call mem_alloc(MyFragment%unoccEOSidx,MyFragment%nunoccEOS)
        nullify(MyFragment%occAOSidx)
-       call mem_alloc(MyFragment%occAOSidx,MyFragment%noccAOS)
+       call mem_alloc(MyFragment%occAOSidx,MyFragment%noccLOC)
        nullify(MyFragment%unoccAOSidx)
-       call mem_alloc(MyFragment%unoccAOSidx,MyFragment%nunoccAOS)
+       call mem_alloc(MyFragment%unoccAOSidx,MyFragment%nunoccLOC)
        nullify(MyFragment%coreidx)
        if(MyFragment%ncore>0) then
           call mem_alloc(MyFragment%coreidx,MyFragment%ncore)
@@ -673,8 +675,8 @@ contains
     ! Buffer handling
     call ls_mpi_buffer(MyFragment%occEOSidx,MyFragment%noccEOS,master)
     call ls_mpi_buffer(MyFragment%unoccEOSidx,MyFragment%nunoccEOS,master)
-    call ls_mpi_buffer(MyFragment%occAOSidx,MyFragment%noccAOS,master)
-    call ls_mpi_buffer(MyFragment%unoccAOSidx,MyFragment%nunoccAOS,master)
+    call ls_mpi_buffer(MyFragment%occAOSidx,MyFragment%noccLOC,master)
+    call ls_mpi_buffer(MyFragment%unoccAOSidx,MyFragment%nunoccLOC,master)
     if(MyFragment%ncore>0) then
        call ls_mpi_buffer(MyFragment%coreidx,MyFragment%ncore,master)
     end if
@@ -694,15 +696,15 @@ contains
     ! (Note: This and much else MPI stuff must be modified for single precision to work!)
     if(.not. AddToBuffer) then
        nullify(MyFragment%OccContribs)
-       call mem_alloc(MyFragment%OccContribs,MyFragment%noccAOS)
+       call mem_alloc(MyFragment%OccContribs,MyFragment%noccLOC)
        nullify(MyFragment%VirtContribs)
-       call mem_alloc(MyFragment%VirtContribs,MyFragment%nunoccAOS)
+       call mem_alloc(MyFragment%VirtContribs,MyFragment%nunoccLOC)
 
        if(MyFragment%CDset) then
           nullify(MyFragment%OccMat)
-          call mem_alloc(MyFragment%OccMat,MyFragment%noccAOS,MyFragment%noccAOS)
+          call mem_alloc(MyFragment%OccMat,MyFragment%noccLOC,MyFragment%noccLOC)
           nullify(MyFragment%VirtMat)
-          call mem_alloc(MyFragment%VirtMat,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
+          call mem_alloc(MyFragment%VirtMat,MyFragment%nunoccLOC,MyFragment%nunoccLOC)
        end if
 
        if(MyFragment%FAset) then
@@ -728,11 +730,11 @@ contains
        end if
     end if
 
-    call ls_mpi_buffer(MyFragment%OccContribs,MyFragment%noccAOS,master)
-    call ls_mpi_buffer(MyFragment%VirtContribs,MyFragment%nunoccAOS,master)
+    call ls_mpi_buffer(MyFragment%OccContribs,MyFragment%noccLOC,master)
+    call ls_mpi_buffer(MyFragment%VirtContribs,MyFragment%nunoccLOC,master)
     if(MyFragment%CDset) then
-       call ls_mpi_buffer(MyFragment%OccMat,MyFragment%noccAOS,MyFragment%noccAOS,master)
-       call ls_mpi_buffer(MyFragment%VirtMat,MyFragment%nunoccAOS,MyFragment%nunoccAOS,master)
+       call ls_mpi_buffer(MyFragment%OccMat,MyFragment%noccLOC,MyFragment%noccLOC,master)
+       call ls_mpi_buffer(MyFragment%VirtMat,MyFragment%nunoccLOC,MyFragment%nunoccLOC,master)
     end if
     if(MyFragment%FAset) then
        call ls_mpi_buffer(MyFragment%CoccFA,MyFragment%nbasis,MyFragment%noccFA,master)
@@ -754,13 +756,13 @@ contains
     ! Allocate decorbitals
     if(.not. AddToBuffer) then
        nullify(MyFragment%occAOSorb)
-       call mem_alloc(MyFragment%occAOSorb,MyFragment%noccAOS)
+       call mem_alloc(MyFragment%occAOSorb,MyFragment%noccLOC)
        nullify(MyFragment%unoccAOSorb)
-       call mem_alloc(MyFragment%unoccAOSorb,MyFragment%nunoccAOS)
+       call mem_alloc(MyFragment%unoccAOSorb,MyFragment%nunoccLOC)
     end if
 
     ! Integers and reals inside decorbital sub-type
-    do i=1,MyFragment%noccAOS ! occ orbitals
+    do i=1,MyFragment%noccLOC ! occ orbitals
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%numberofatoms,master)
@@ -776,7 +778,7 @@ contains
             & MyFragment%occAOSorb(i)%numberofatoms,master)
     end do
 
-    do i=1,MyFragment%nunoccAOS ! unocc orbitals
+    do i=1,MyFragment%nunoccLOC ! unocc orbitals
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%numberofatoms,master)
@@ -819,15 +821,6 @@ contains
        call ls_mpi_buffer(MyFragment%qqfockLOC,MyFragment%nunoccLOC,MyFragment%nunoccLOC,master)
 
 
-       if(.not. AddToBuffer) then
-          if(MyFragment%fragmentadapted) then
-             call fragment_basis_point_to_FOs(MyFragment)
-          else
-             call fragment_basis_point_to_LOs(MyFragment)
-          end if
-       end if
-
-
        ! INTEGRAL LSITEM
        ! '''''''''''''''
        call mpicopy_lsitem(MyFragment%MyLsitem,comm)
@@ -842,6 +835,17 @@ contains
 
     end if ExpensiveBox
 
+
+    if(.not. AddToBuffer) then
+       
+       ! Point to FO data
+       if(MyFragment%fragmentadapted) then
+          call fragment_basis_point_to_FOs(MyFragment)
+       else
+          ! Point to local orbital data
+          call fragment_basis_point_to_LOs(MyFragment)
+       end if
+    end if
 
   End subroutine mpicopy_fragment
 

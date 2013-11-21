@@ -101,6 +101,9 @@ contains
 
     ! Atomic fragments
     call mem_alloc(AtomicFragments,natoms)
+    do i=1,natoms
+       call atomic_fragment_nullify(AtomicFragments(i))
+    end do
 
 
     ! *************************************************************
@@ -120,6 +123,9 @@ contains
        if(step==1 .and. esti) then
           ! Get optimized atomic fragments from master node
           call mem_alloc(EstAtomicFragments,natoms)
+          do i=1,natoms
+             call atomic_fragment_nullify(EstAtomicFragments(i))
+          end do
           call mpi_bcast_many_fragments(natoms,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)          
 
           ! Receive CC models to use for each pair based on estimates
