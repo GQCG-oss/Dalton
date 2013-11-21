@@ -2531,7 +2531,6 @@ module cc_debug_routines_module
     type(batchtoorb), pointer :: batch2orbGamma(:)
     Character :: INTSPEC(5)
     logical :: FoundInMem, fullRHS, doscreen
-    integer :: nbatches
     integer :: MaxAllowedDimAlpha, MaxActualDimAlpha, nbatchesAlpha
     integer :: MaxAllowedDimGamma, MaxActualDimGamma, nbatchesGamma
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), &
@@ -2759,7 +2758,7 @@ module cc_debug_routines_module
     ! *******************************************************
     ! *  This subroutine builds the full screening matrix.
     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting, &
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
 
     if (mylsitem%setting%scheme%cs_screen .or. &
          & mylsitem%setting%scheme%ps_screen) then
@@ -2820,7 +2819,7 @@ module cc_debug_routines_module
        call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
             & Mylsitem%setting,gao,batchindexAlpha(alphaB),batchindexGamma(gammaB), &
             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbas,nbas,dimAlpha, &
-            & dimGamma,fullRHS,nbatches,INTSPEC)
+            & dimGamma,fullRHS,INTSPEC)
        call lsmpi_poke()
       
        ! Loop over MO batches:
