@@ -2,6 +2,8 @@
 !> Subroutines related with construction of CC doubles residual
 !> \author Patrick Ettenhuber, Marcin Ziolkowski, and Kasper Kristensen
 module ccsd_module
+  
+  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr
 
   use precision
   use ptr_assoc_module!,only:ass_D4to1,ass_D2to1,ass_D1to3
@@ -959,7 +961,7 @@ contains
     Character(80),pointer:: BatchfilenamesPS(:,:)
     Character            :: INTSPEC(5)
     logical :: FoundInMem,fullRHS, doscreen
-    integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha,nbatches
+    integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
@@ -1302,15 +1304,15 @@ contains
       call mem_alloc( tmi, int(i8*nor*nvr,kind=long) )
     endif
 
+    !if I am the working process, then
+    if( worker ) call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
+
     if(master.and.print_debug)then
       write(msg,*)"NORM(tpl)   :"
       call print_norm(tpl%d,int(nor*nvr,kind=8),msg)
       write(msg,*)"NORM(tmi)    :"
       call print_norm(tmi%d,int(nor*nvr,kind=8),msg)
     endif
-
-    !if I am the working process, then
-    if( worker ) call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
 
     !get u2 in pdm or local
     if(scheme==2)then
@@ -1462,7 +1464,7 @@ contains
 
     ! This subroutine builds the full screening matrix.
     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(mylsitem%setting%scheme%cs_screen .OR. &
          & mylsitem%setting%scheme%ps_screen)THEN
        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
@@ -1502,8 +1504,8 @@ contains
         if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) lenI1 = nbatchesAlpha*nbatchesGamma
         call mem_alloc( tasks, tasksc, lenI1, taskslw, infpar%pc_comm, lenI2 )
       else
-        call mem_alloc( tasks, tasksc, lenI2 )
-        !call mem_alloc( tasks, lenI2 )
+        !call mem_alloc( tasks, tasksc, lenI2 )
+        call mem_alloc( tasks, lenI2 )
       endif
 
       myload = 0
@@ -1516,7 +1518,6 @@ contains
            &batch2orbGamma)
 
       endif
-     
 
     else
 
@@ -1614,7 +1615,6 @@ contains
        if( worker )call array_reorder_4d(1.0E0_realk,w1%d,no,lg, nv,la,[3,4,1,2],0.0E0_realk,w3%d)
        if( talker )call lsmpi_poke()
 
-
        !print*,"GAMMA:",fg,nbatchesGamma,"ALPHA:",fa,nbatchesAlpha
        !print*,"--------------------------------------------------"
 
@@ -1635,7 +1635,7 @@ contains
          !Mylsitem%setting%scheme%intprint=6
          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1%d,batchindexAlpha(alphaB),&
             &batchindexGamma(gammaB),&
-            &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,nbatches,INTSPEC)
+            &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC)
          !Mylsitem%setting%scheme%intprint=0
          call LSTIMER('START',tcpu2,twall2,DECinfo%output)
        endif
@@ -1656,7 +1656,6 @@ contains
        !Transpose I [gamma delta alpha l]^T -> I [alpha l gamma delta]
        if( worker )call array_reorder_4d(1.0E0_realk,w2%d,lg,nb,la,no,[3,4,1,2],0.0E0_realk,w1%d)
        if( talker )call lsmpi_poke()
-
 
        !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
        if( worker )call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3%d,nv,w1%d,lg*la*no,1.0E0_realk,Had,nv)
@@ -1754,7 +1753,7 @@ contains
 
          call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
             & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-            & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,nbatches,INTSPEC,fullRHS)
+            & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,INTSPEC,fullRHS)
        endif
 
        if( talker )call lsmpi_poke()
@@ -1949,8 +1948,8 @@ contains
 
 
     if(.not.dynamic_load)then
-      call mem_dealloc(tasks,tasksc)
-      !call mem_dealloc(tasks)
+      !call mem_dealloc(tasks,tasksc)
+      call mem_dealloc(tasks)
     else
       call lsmpi_win_free(tasksw)
       call mem_dealloc(tasks,tasksc)
@@ -4309,17 +4308,19 @@ contains
     !if much more slaves than jobs are available, split the jobs to get at least
     !one for all the slaves
     !print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
-    if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
-      nba=(nb/(magic*nnod))
-      if(nba<minbsize)nba=minbsize
-    endif
+    if(.not.manual)then
+      if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
+        nba=(nb/(magic*nnod))
+        if(nba<minbsize)nba=minbsize
+      endif
 
-    if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
-      do while((nb/nba)*(nb/nbg)<magic*nnod)
-        nbg=nbg-1
-        if(nbg<1)exit
-      enddo
-      if(nbg<minbsize)nbg=minbsize
+      if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
+        do while((nb/nba)*(nb/nbg)<magic*nnod)
+          nbg=nbg-1
+          if(nbg<1)exit
+        enddo
+        if(nbg<minbsize)nbg=minbsize
+      endif
     endif
 
     if(scheme==2)then

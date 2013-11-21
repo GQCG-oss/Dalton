@@ -2812,7 +2812,7 @@ contains
     real(realk) :: tcpu, twall
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
     type(array4) :: JAIB
-    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches
+    integer :: MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxActualDimGamma,nbatchesGamma
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
@@ -2947,7 +2947,7 @@ contains
     INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)='C' !C = Coulomb operator
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
-            & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+            & nbatchesAlpha,nbatchesGamma,INTSPEC)
 
     if (doscreen) then
 
@@ -3018,7 +3018,7 @@ contains
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
-               & FullRHS,nbatches,INTSPEC)
+               & FullRHS,INTSPEC)
 
           ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
           m = nbasis*dimGamma*dimAlpha

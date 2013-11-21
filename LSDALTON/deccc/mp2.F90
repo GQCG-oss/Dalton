@@ -550,7 +550,7 @@ end if
     INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)='C' !C = Coulomb operator
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,MyFragment%mylsitem%setting,&
-     &                           nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+     &                           nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,MyFragment%mylsitem%setting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -742,7 +742,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
             & MyFragment%mylsitem%setting, tmp1%p(1:dim1),batchindexAlpha(alphaB),batchindexGamma(gammaB),&
             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,FullRHS,&
-            & nbatches,INTSPEC)
+            & INTSPEC)
 
        call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
@@ -1829,7 +1829,7 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     ! Integral screening stuff
     doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -1877,7 +1877,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
             & mysetting, tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,FullRHS,&
-            & nbatches,INTSPEC)
+            & INTSPEC)
 
 
        ! Transform beta to occupied index "j".
