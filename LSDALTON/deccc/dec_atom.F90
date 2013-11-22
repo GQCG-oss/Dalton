@@ -456,8 +456,8 @@ contains
 
     fragment%OccMat => null()
     fragment%VirtMat => null()
-    fragment%CoccFA => null()
-    fragment%CunoccFA => null()
+    fragment%CoFA => null()
+    fragment%CvFA => null()
     fragment%CDocceival => null()
     fragment%CDunocceival => null()
     fragment%t1 => null()
@@ -905,20 +905,20 @@ contains
     !     (nbasis,noccFA)            (nbasis,noccLOCAL)      (noccLOCAL,noccFA)
     !
     if(Myfragment%FAset) then
-       call mem_dealloc(Myfragment%CoccFA)
-       call mem_dealloc(Myfragment%CunoccFA)
+       call mem_dealloc(Myfragment%CoFA)
+       call mem_dealloc(Myfragment%CvFA)
        call mem_dealloc(Myfragment%ppfockFA)
        call mem_dealloc(Myfragment%qqfockFA)
     end if
-    nullify(Myfragment%CoccFA,Myfragment%CunoccFA,Myfragment%ppfockFA,Myfragment%qqfockFA)
-    call mem_alloc(Myfragment%CoccFA,Myfragment%nbasis,Myfragment%noccFA)
+    nullify(Myfragment%CoFA,Myfragment%CvFA,Myfragment%ppfockFA,Myfragment%qqfockFA)
+    call mem_alloc(Myfragment%CoFA,Myfragment%nbasis,Myfragment%noccFA)
     call dec_simple_dgemm(Myfragment%nbasis,Myfragment%noccAOS,&
-         & Myfragment%noccFA,Myfragment%Co,OUred,Myfragment%CoccFA,'n','n')
+         & Myfragment%noccFA,Myfragment%Co,OUred,Myfragment%CoFA,'n','n')
 
     ! Virtual space (same strategy as for occ space)
-    call mem_alloc(Myfragment%CunoccFA,Myfragment%nbasis,Myfragment%nunoccFA)
+    call mem_alloc(Myfragment%CvFA,Myfragment%nbasis,Myfragment%nunoccFA)
     call dec_simple_dgemm(Myfragment%nbasis,Myfragment%nunoccAOS,&
-         & Myfragment%nunoccFA,Myfragment%Cv,VUred,Myfragment%CunoccFA,'n','n')
+         & Myfragment%nunoccFA,Myfragment%Cv,VUred,Myfragment%CvFA,'n','n')
     MyFragment%FAset=.true.
 
     ! Make fragment MO coefficients point to FOs (but not Fock matrices)
@@ -1403,7 +1403,7 @@ contains
 
 
   !> Set fragment-adapted MO coefficients for
-  !> pair fragment (FragmentPQ%CoccFA andFragmentPQ%CunoccFA).
+  !> pair fragment (FragmentPQ%CoFA andFragmentPQ%CvFA).
   !> \author Kasper Kristensen
   !> \date February 2013
   subroutine pair_fragment_adapted_transformation_matrices(MyMolecule,nocctot,nunocctot,&
@@ -1621,7 +1621,7 @@ contains
     call mem_alloc(MOtmp,nbasisPQ,noccPQ)
     call dec_simple_dgemm(nbasisPQ,noccPQ,noccPQ,CoccPQ,T,MOtmp,'n','n')
 
-    ! Final MO coefficents (EOS orbitals + FA orbitals) are stored in fragmentPQ%CoccFA and found by:
+    ! Final MO coefficents (EOS orbitals + FA orbitals) are stored in fragmentPQ%CoFA and found by:
     ! (i)  Copying existing EOS MO coefficients into the first "noccEOS" columns
     ! (ii) Copying the non-redundant orthogonal orbitals (defined by whichorbitals)
     !      in MOtmp into the remaining columns.
@@ -1629,8 +1629,8 @@ contains
     ! Total number of pair orbitals (EOS +FA)
     fragmentPQ%noccFA = fragmentPQ%noccEOS + noccPQ_FA
 
-    call mem_alloc(fragmentPQ%CoccFA,nbasisPQ,fragmentPQ%noccFA)
-    fragmentPQ%CoccFA = 0.0_realk
+    call mem_alloc(fragmentPQ%CoFA,nbasisPQ,fragmentPQ%noccFA)
+    fragmentPQ%CoFA = 0.0_realk
 
     ! (i) Copy EOS
     ! Note: For FA orbitals we always put EOS orbitals before remaining orbitals,
@@ -1639,7 +1639,7 @@ contains
        ! EOS index for local orbitals in AOS list for local orbitals
        EOSidx = fragmentPQ%idxo(i)
        do mu=1,nbasisPQ
-          fragmentPQ%CoccFA(mu,i) = fragmentPQ%Co(mu,EOSidx)
+          fragmentPQ%CoFA(mu,i) = fragmentPQ%Co(mu,EOSidx)
        end do
     end do
     idx= fragmentPQ%noccEOS  ! counter
@@ -1649,7 +1649,7 @@ contains
        if(whichorbitals(i)) then
           idx = idx+1
           do mu=1,nbasisPQ
-             fragmentPQ%CoccFA(mu,idx) = MOtmp(mu,i)/sqrt(lambda(i))
+             fragmentPQ%CoFA(mu,idx) = MOtmp(mu,i)/sqrt(lambda(i))
           end do
        end if
     end do
@@ -1664,7 +1664,7 @@ contains
        call mem_dealloc(moS)
        call mem_alloc(moS,fragmentPQ%noccFA,fragmentPQ%noccFA)
        call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%noccFA,&
-            &  fragmentPQ%CoccFA,fragmentPQ%S,moS)
+            &  fragmentPQ%CoFA,fragmentPQ%S,moS)
        diagdev=0.0_realk
        nondiagdev=0.0_realk
        do j=1,fragmentPQ%noccFA
@@ -1747,12 +1747,12 @@ contains
     call mem_alloc(MOtmp,nbasisPQ,nunoccPQ)
     call dec_simple_dgemm(nbasisPQ,nunoccPQ,nunoccPQ,CunoccPQ,T,MOtmp,'n','n')
     fragmentPQ%nunoccFA = fragmentPQ%nunoccEOS + nunoccPQ_FA
-    call mem_alloc(fragmentPQ%CunoccFA,nbasisPQ,fragmentPQ%nunoccFA)
-    fragmentPQ%CunoccFA = 0.0_realk
+    call mem_alloc(fragmentPQ%CvFA,nbasisPQ,fragmentPQ%nunoccFA)
+    fragmentPQ%CvFA = 0.0_realk
     do i=1,fragmentPQ%nunoccEOS
        EOSidx = fragmentPQ%idxu(i)
        do mu=1,nbasisPQ
-          fragmentPQ%CunoccFA(mu,i) = fragmentPQ%Cv(mu,EOSidx)
+          fragmentPQ%CvFA(mu,i) = fragmentPQ%Cv(mu,EOSidx)
        end do
     end do
     idx= fragmentPQ%nunoccEOS  ! counter
@@ -1760,7 +1760,7 @@ contains
        if(whichorbitals(i)) then
           idx = idx+1
           do mu=1,nbasisPQ
-             fragmentPQ%CunoccFA(mu,idx) = MOtmp(mu,i)/sqrt(lambda(i))
+             fragmentPQ%CvFA(mu,idx) = MOtmp(mu,i)/sqrt(lambda(i))
           end do
        end if
     end do
@@ -1775,7 +1775,7 @@ contains
        call mem_dealloc(moS)
        call mem_alloc(moS,fragmentPQ%nunoccFA,fragmentPQ%nunoccFA)
        call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%nunoccFA,&
-            &  fragmentPQ%CunoccFA,fragmentPQ%S,moS)
+            &  fragmentPQ%CvFA,fragmentPQ%S,moS)
        diagdev=0.0_realk
        nondiagdev=0.0_realk
        do j=1,fragmentPQ%nunoccFA
@@ -1829,11 +1829,11 @@ contains
     ! Occ space
     call mem_alloc(Myfragment%ppfockFA,Myfragment%noccFA,Myfragment%noccFA)
     call dec_simple_basis_transform1(Myfragment%nbasis,Myfragment%noccFA,&
-         & Myfragment%CoccFA,Myfragment%fock,Myfragment%ppfockFA)
+         & Myfragment%CoFA,Myfragment%fock,Myfragment%ppfockFA)
     ! Virt space
     call mem_alloc(Myfragment%qqfockFA,Myfragment%nunoccFA,Myfragment%nunoccFA)
     call dec_simple_basis_transform1(Myfragment%nbasis,Myfragment%nunoccFA,&
-         & Myfragment%CunoccFA,Myfragment%fock,Myfragment%qqfockFA)
+         & Myfragment%CvFA,Myfragment%fock,Myfragment%qqfockFA)
  
   end subroutine get_fragment_FO_fock
 
@@ -1857,13 +1857,13 @@ contains
 
     ! Occupied space
     fragmentPQ%noccFA = fragmentPQ%noccAOS
-    call mem_alloc(fragmentPQ%CoccFA,fragmentPQ%nbasis,fragmentPQ%noccFA)
-    fragmentPQ%CoccFA = fragmentPQ%Co
+    call mem_alloc(fragmentPQ%CoFA,fragmentPQ%nbasis,fragmentPQ%noccFA)
+    fragmentPQ%CoFA = fragmentPQ%Co
 
     ! Unoccupied space
     fragmentPQ%nunoccFA = fragmentPQ%nunoccAOS
-    call mem_alloc(fragmentPQ%CunoccFA,fragmentPQ%nbasis,fragmentPQ%nunoccFA)
-    fragmentPQ%CunoccFA = fragmentPQ%Cv
+    call mem_alloc(fragmentPQ%CvFA,fragmentPQ%nbasis,fragmentPQ%nunoccFA)
+    fragmentPQ%CvFA = fragmentPQ%Cv
 
     ! FO Fock matrices
     call get_fragment_FO_fock(fragmentPQ)
@@ -2048,11 +2048,11 @@ contains
     integer :: ncabsAO,ncabsMO
 
     ! allocate C^o(nbasis,occ) C^v(nbasis,unocc)
-    call mem_alloc(fragment%CoccLOC, fragment%nbasis,  fragment%noccLOC   )
-    call mem_alloc(fragment%CunoccLOC, fragment%nbasis,  fragment%nunoccLOC )
+    call mem_alloc(fragment%CoLOC, fragment%nbasis,  fragment%noccLOC   )
+    call mem_alloc(fragment%CvLOC, fragment%nbasis,  fragment%nunoccLOC )
     ! Core
-    fragment%CoccLOC=0.0E0_realk
-    fragment%CunoccLOC=0.0E0_realk
+    fragment%CoLOC=0.0E0_realk
+    fragment%CvLOC=0.0E0_realk
 
     call mem_alloc(fragment%CoreMO, fragment%nbasis, fragment%ncore)
     fragment%CoreMO=0.0E0_realk
@@ -2116,7 +2116,7 @@ contains
           approximated_orbital = 0.0E0_realk
           call solve_linear_equations(fragment%S,approximated_orbital, &
                correct_vector_moS,fragment%nbasis)
-          fragment%CoccLOC(:,i) = approximated_orbital
+          fragment%CoLOC(:,i) = approximated_orbital
 
        end do
 
@@ -2175,7 +2175,7 @@ contains
              approximated_orbital = 0.0E0_realk
              call solve_linear_equations(fragment%S,approximated_orbital, &
                   correct_vector_moS,fragment%nbasis)
-             fragment%CunoccLOC(:,i) = approximated_orbital
+             fragment%CvLOC(:,i) = approximated_orbital
           end do
 
        ! remove stuff
@@ -2194,12 +2194,12 @@ contains
        end if
 
        ! Fragment Co
-       call adjust_basis_matrix(MyMolecule%Co,fragment%CoccLOC,fragment%occAOSidx, &
+       call adjust_basis_matrix(MyMolecule%Co,fragment%CoLOC,fragment%occAOSidx, &
             fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nocc,natoms, &
             fragment%nbasis,fragment%noccLOC,Fragment%natoms)
 
        ! Fragment Cv
-       call adjust_basis_matrix(MyMolecule%Cv,fragment%CunoccLOC,fragment%unoccAOSidx, &
+       call adjust_basis_matrix(MyMolecule%Cv,fragment%CvLOC,fragment%unoccAOSidx, &
             fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nunocc,natoms, &
             fragment%nbasis,fragment%nunoccLOC,Fragment%natoms)
 
@@ -2232,12 +2232,12 @@ contains
        ! Occ-occ block  (valence-valence for frozen core)
        call mem_alloc(fragment%ppfockLOC,fragment%noccLOC,fragment%noccLOC)
        call dec_simple_basis_transform1(fragment%nbasis,fragment%noccLOC,&
-            & fragment%CoccLOC,fragment%fock,fragment%ppfockLOC)
+            & fragment%CoLOC,fragment%fock,fragment%ppfockLOC)
 
        ! Virtual-virtual block
        call mem_alloc(fragment%qqfockLOC,fragment%nunoccLOC,fragment%nunoccLOC)
        call dec_simple_basis_transform1(fragment%nbasis,fragment%nunoccLOC,&
-            & fragment%CunoccLOC,fragment%fock,fragment%qqfockLOC)
+            & fragment%CvLOC,fragment%fock,fragment%qqfockLOC)
 
     ! Core-core block
     if(fragment%ncore>0) then
@@ -2410,8 +2410,8 @@ contains
        write(wunit) fragment%RejectThr
     end if
     if(fragment%FAset) then
-       write(wunit) fragment%CoccFA
-       write(wunit) fragment%CunoccFA
+       write(wunit) fragment%CoFA
+       write(wunit) fragment%CvFA
        write(wunit) fragment%CDocceival
        write(wunit) fragment%CDunocceival
     end if
@@ -2689,12 +2689,12 @@ contains
 
     ! Fragment-adapted orbitals
     if(fragment%FAset) then
-       call mem_alloc(Fragment%CoccFA,Fragment%nbasis,Fragment%noccFA)
-       call mem_alloc(Fragment%CunoccFA,Fragment%nbasis,Fragment%nunoccFA)
+       call mem_alloc(Fragment%CoFA,Fragment%nbasis,Fragment%noccFA)
+       call mem_alloc(Fragment%CvFA,Fragment%nbasis,Fragment%nunoccFA)
        call mem_alloc(Fragment%CDocceival,Fragment%noccFA)
        call mem_alloc(Fragment%CDunocceival,Fragment%nunoccFA)
-       read(runit) fragment%CoccFA
-       read(runit) fragment%CunoccFA
+       read(runit) fragment%CoFA
+       read(runit) fragment%CvFA
        read(runit) fragment%CDocceival
        read(runit) fragment%CDunocceival
     end if
@@ -4883,7 +4883,7 @@ contains
           orbidx = orbidx+1  ! Orbital index for pair MOs
           do i=1,FragmentP%nbasis
              ix = fragP_in_pair(i)
-             CoccPQ(ix,orbidx) = FragmentP%CoccFA(i,j)
+             CoccPQ(ix,orbidx) = FragmentP%CoFA(i,j)
           end do
        end if
     end do
@@ -4894,7 +4894,7 @@ contains
           orbidx = orbidx +1   ! Orbital index for pair MOs
           do i=1,FragmentQ%nbasis
              ix = fragQ_in_pair(i)
-             CoccPQ(ix,orbidx) = FragmentQ%CoccFA(i,j)
+             CoccPQ(ix,orbidx) = FragmentQ%CoFA(i,j)
           end do
        end if
     end do
@@ -4914,7 +4914,7 @@ contains
           orbidx = orbidx+1  ! Orbital index for pair MOs
           do i=1,FragmentP%nbasis
              ix = fragP_in_pair(i)
-             CunoccPQ(ix,orbidx) = FragmentP%CunoccFA(i,j)
+             CunoccPQ(ix,orbidx) = FragmentP%CvFA(i,j)
           end do
        end if
     end do
@@ -4925,7 +4925,7 @@ contains
           orbidx = orbidx +1   ! Orbital index for pair MOs
           do i=1,FragmentQ%nbasis
              ix = fragQ_in_pair(i)
-             CunoccPQ(ix,orbidx) = FragmentQ%CunoccFA(i,j)
+             CunoccPQ(ix,orbidx) = FragmentQ%CvFA(i,j)
           end do
        end if
     end do

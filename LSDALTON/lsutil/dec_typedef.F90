@@ -597,6 +597,8 @@ module dec_typedef_module
      !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
 
+     ! NOTE!!! occAOSorb and unoccAOSorb are ILL-DEFINED when fragmentadapted=.true. !!!!
+
      !> Total occupied orbital space (orbital type)
      type(decorbital), pointer :: occAOSorb(:) => null()
      !> Total unoccupied orbital space (orbital type)
@@ -629,9 +631,9 @@ module dec_typedef_module
      !> AO overlap matrix for fragment
      real(realk),pointer :: S(:,:) => null()
 
-     ! Note: Co and Cv will point to CoccLOC and CvirtLOC if local orbitals are used
+     ! Note: Co and Cv will point to CoLOC and CvLOC if local orbitals are used
      !>      (or whatever the input orbitals are)   OR
-     !>      Co and Cv will point to CoccFA and CunoccFA (when FO=.true.)
+     !>      Co and Cv will point to CoFA and CvFA (when FO=.true.)
 
      !> Occupied MO coefficients (only valence space for frozen core approx)
      real(realk), pointer :: Co(:,:) => null()
@@ -654,9 +656,9 @@ module dec_typedef_module
      ! Information for local orbitals
      ! ******************************
      !> Local occupied MO coefficients
-     real(realk), pointer :: CoccLOC(:,:) => null()
-     !> Local unoccupied MO coefficients
-     real(realk), pointer :: CunoccLOC(:,:) => null()
+     real(realk), pointer :: CoLOC(:,:) => null()
+     !> Local virtual MO coefficients
+     real(realk), pointer :: CvLOC(:,:) => null()
      !> Occ-occ block of Fock matrix in local MO basis  (only valence space for frozen core approx)
      real(realk), pointer :: ppfockLOC(:,:) => null()
      !> Virt-virt block of Fock matrix in local MO basis
@@ -699,8 +701,10 @@ module dec_typedef_module
      !> Index 1: Local,   Index 2: Fragment-adapted
      !> Has fragment-adapted MO coeff been set (not done by default fragment initialization)?
      logical :: FAset
-     real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: nbasis,noccFA
-     real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: nbasis,nunoccFA
+     !> Occupied FA coeff
+     real(realk),pointer :: CoFA(:,:) => null()     ! dimension: nbasis,noccFA
+     !> Virtual FA coeff
+     real(realk),pointer :: CvFA(:,:) => null()   ! dimension: nbasis,nunoccFA
      !> Eigenvalues for correlation density matrices 
      !> --> only set for atomic fragments (pairfrag=.false.) and when FAset=.true.
      real(realk),pointer :: CDocceival(:) => null()    ! dimension noccFA

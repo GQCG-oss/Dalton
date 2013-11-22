@@ -708,10 +708,10 @@ contains
        end if
 
        if(MyFragment%FAset) then
-          nullify(MyFragment%CoccFA)
-          call mem_alloc(MyFragment%CoccFA,MyFragment%nbasis,MyFragment%noccFA)
-          nullify(MyFragment%CunoccFA)
-          call mem_alloc(MyFragment%CunoccFA,MyFragment%nbasis,MyFragment%nunoccFA)
+          nullify(MyFragment%CoFA)
+          call mem_alloc(MyFragment%CoFA,MyFragment%nbasis,MyFragment%noccFA)
+          nullify(MyFragment%CvFA)
+          call mem_alloc(MyFragment%CvFA,MyFragment%nbasis,MyFragment%nunoccFA)
           nullify(MyFragment%ppfockFA)
           call mem_alloc(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA)
           nullify(MyFragment%qqfockFA)
@@ -737,8 +737,8 @@ contains
        call ls_mpi_buffer(MyFragment%VirtMat,MyFragment%nunoccLOC,MyFragment%nunoccLOC,master)
     end if
     if(MyFragment%FAset) then
-       call ls_mpi_buffer(MyFragment%CoccFA,MyFragment%nbasis,MyFragment%noccFA,master)
-       call ls_mpi_buffer(MyFragment%CunoccFA,MyFragment%nbasis,MyFragment%nunoccFA,master)
+       call ls_mpi_buffer(MyFragment%CoFA,MyFragment%nbasis,MyFragment%noccFA,master)
+       call ls_mpi_buffer(MyFragment%CvFA,MyFragment%nbasis,MyFragment%nunoccFA,master)
        call ls_mpi_buffer(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA,master)
        call ls_mpi_buffer(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA,master)
        if(.not. MyFragment%pairfrag) then
@@ -803,8 +803,8 @@ contains
        ! Real pointers
        if(.not. AddToBuffer) then
           call mem_alloc(MyFragment%S,MyFragment%nbasis,MyFragment%nbasis)
-          call mem_alloc(MyFragment%CoccLOC,MyFragment%nbasis,MyFragment%noccLOC)
-          call mem_alloc(MyFragment%CunoccLOC,MyFragment%nbasis,MyFragment%nunoccLOC)
+          call mem_alloc(MyFragment%CoLOC,MyFragment%nbasis,MyFragment%noccLOC)
+          call mem_alloc(MyFragment%CvLOC,MyFragment%nbasis,MyFragment%nunoccLOC)
           call mem_alloc(MyFragment%coreMO,MyFragment%nbasis,MyFragment%ncore)
           call mem_alloc(MyFragment%fock,MyFragment%nbasis,MyFragment%nbasis)
           call mem_alloc(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore)
@@ -812,8 +812,8 @@ contains
           call mem_alloc(MyFragment%qqfockLOC,MyFragment%nunoccLOC,MyFragment%nunoccLOC)
        end if
        call ls_mpi_buffer(MyFragment%S,MyFragment%nbasis,MyFragment%nbasis,master)
-       call ls_mpi_buffer(MyFragment%CoccLOC,MyFragment%nbasis,MyFragment%noccLOC,master)
-       call ls_mpi_buffer(MyFragment%CunoccLOC,MyFragment%nbasis,MyFragment%nunoccLOC,master)
+       call ls_mpi_buffer(MyFragment%CoLOC,MyFragment%nbasis,MyFragment%noccLOC,master)
+       call ls_mpi_buffer(MyFragment%CvLOC,MyFragment%nbasis,MyFragment%nunoccLOC,master)
        call ls_mpi_buffer(MyFragment%coreMO,MyFragment%nbasis,MyFragment%ncore,master)
        call ls_mpi_buffer(MyFragment%fock,MyFragment%nbasis,MyFragment%nbasis,master)
        call ls_mpi_buffer(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore,master)

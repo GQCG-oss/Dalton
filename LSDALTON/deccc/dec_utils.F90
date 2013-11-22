@@ -1890,13 +1890,13 @@ retval=0
        if(MyFragment%FAset) then
           write(DECinfo%output,*) 'Occupied FO coefficients (column, elements in column)'
           do i=1,MyFragment%noccFA
-             write(DECinfo%output,*) i, MyFragment%CoccFA(:,i)
+             write(DECinfo%output,*) i, MyFragment%CoFA(:,i)
           end do
           write(DECinfo%output,*)
 
           write(DECinfo%output,*) 'Virtual FO coefficients (column, elements in column)'
           do i=1,MyFragment%nunoccFA
-             write(DECinfo%output,*) i, MyFragment%CunoccFA(:,i)
+             write(DECinfo%output,*) i, MyFragment%CvFA(:,i)
           end do
           write(DECinfo%output,*)
 
@@ -2027,8 +2027,8 @@ retval=0
     end if
 
     if(fragment%FAset) then
-       call mem_dealloc(fragment%CoccFA)
-       call mem_dealloc(fragment%CunoccFA)
+       call mem_dealloc(fragment%CoFA)
+       call mem_dealloc(fragment%CvFA)
        call mem_dealloc(fragment%ppfockFA)
        call mem_dealloc(fragment%qqfockFA)
        if(.not. fragment%pairfrag) then
@@ -2080,12 +2080,12 @@ retval=0
 
     ! Transformation matrices
     nullify(fragment%Co,fragment%Cv)
-    if(associated(fragment%CoccLOC)) then
-       call mem_dealloc(fragment%CoccLOC)
+    if(associated(fragment%CoLOC)) then
+       call mem_dealloc(fragment%CoLOC)
     end if
 
-    if(associated(fragment%CunoccLOC)) then
-       call mem_dealloc(fragment%CunoccLOC)
+    if(associated(fragment%CvLOC)) then
+       call mem_dealloc(fragment%CvLOC)
     end if
     
     ! Free CABS MOs !
@@ -4687,8 +4687,8 @@ retval=0
     end if
 
     ! MO coefficients
-    MyFragment%Co => MyFragment%CoccFA
-    MyFragment%Cv => MyFragment%CunoccFA
+    MyFragment%Co => MyFragment%CoFA
+    MyFragment%Cv => MyFragment%CvFA
 
     ! MO Fock
     if(.not. skipf) then
@@ -4726,8 +4726,8 @@ retval=0
     end if
 
     ! MO coefficients
-    MyFragment%Co => MyFragment%CoccLOC
-    MyFragment%Cv => MyFragment%CunoccLOC
+    MyFragment%Co => MyFragment%CoLOC
+    MyFragment%Cv => MyFragment%CvLOC
 
     ! MO Fock
     MyFragment%ppfock => MyFragment%ppfockLOC
