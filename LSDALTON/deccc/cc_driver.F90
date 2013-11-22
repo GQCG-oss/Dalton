@@ -98,7 +98,7 @@ contains
 
     local=.true.
 #ifdef VAR_MPI
-    if(infpar%lg_nodtot>1)local=.false.
+    if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
 #endif
 
 
@@ -1750,7 +1750,6 @@ contains
           do j=iter,i,-1
              if(DECinfo%use_singles) then
                 if(DECinfo%use_preconditioner_in_b) then
-
                    omega1_prec = precondition_singles( omega1(j), ppfock_prec, qqfock_prec        )
                    omega2_prec = precondition_doubles( omega2(j), ppfock_prec, qqfock_prec, local )
                    B(i,j) =          array_ddot( omega1(i), omega1_prec ) 

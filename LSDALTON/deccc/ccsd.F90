@@ -2,6 +2,8 @@
 !> Subroutines related with construction of CC doubles residual
 !> \author Patrick Ettenhuber, Marcin Ziolkowski, and Kasper Kristensen
 module ccsd_module
+  
+  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr
 
   use precision
   use ptr_assoc_module!,only:ass_D4to1,ass_D2to1,ass_D1to3
@@ -58,7 +60,7 @@ module ccsd_module
          & ccsd_residual_wrapper, get_ccsd_residual_integral_driven, &
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
-         & gett1transformation, getsinglesresidualccsd,fullmolecular_get_aot1fock,calculate_E2_and_permute, &
+         & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
          & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ
     private
 
@@ -959,7 +961,7 @@ contains
     Character(80),pointer:: BatchfilenamesPS(:,:)
     Character            :: INTSPEC(5)
     logical :: FoundInMem,fullRHS, doscreen
-    integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha,nbatches
+    integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
@@ -1302,15 +1304,15 @@ contains
       call mem_alloc( tmi, int(i8*nor*nvr,kind=long) )
     endif
 
+    !if I am the working process, then
+    if( worker ) call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
+
     if(master.and.print_debug)then
       write(msg,*)"NORM(tpl)   :"
       call print_norm(tpl%d,int(nor*nvr,kind=8),msg)
       write(msg,*)"NORM(tmi)    :"
       call print_norm(tmi%d,int(nor*nvr,kind=8),msg)
     endif
-
-    !if I am the working process, then
-    if( worker ) call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
 
     !get u2 in pdm or local
     if(scheme==2)then
@@ -1462,7 +1464,7 @@ contains
 
     ! This subroutine builds the full screening matrix.
     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(mylsitem%setting%scheme%cs_screen .OR. &
          & mylsitem%setting%scheme%ps_screen)THEN
        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
@@ -1502,8 +1504,8 @@ contains
         if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) lenI1 = nbatchesAlpha*nbatchesGamma
         call mem_alloc( tasks, tasksc, lenI1, taskslw, infpar%pc_comm, lenI2 )
       else
-        call mem_alloc( tasks, tasksc, lenI2 )
-        !call mem_alloc( tasks, lenI2 )
+        !call mem_alloc( tasks, tasksc, lenI2 )
+        call mem_alloc( tasks, lenI2 )
       endif
 
       myload = 0
@@ -1516,7 +1518,6 @@ contains
            &batch2orbGamma)
 
       endif
-     
 
     else
 
@@ -1614,7 +1615,6 @@ contains
        if( worker )call array_reorder_4d(1.0E0_realk,w1%d,no,lg, nv,la,[3,4,1,2],0.0E0_realk,w3%d)
        if( talker )call lsmpi_poke()
 
-
        !print*,"GAMMA:",fg,nbatchesGamma,"ALPHA:",fa,nbatchesAlpha
        !print*,"--------------------------------------------------"
 
@@ -1635,7 +1635,7 @@ contains
          !Mylsitem%setting%scheme%intprint=6
          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1%d,batchindexAlpha(alphaB),&
             &batchindexGamma(gammaB),&
-            &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,nbatches,INTSPEC)
+            &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC)
          !Mylsitem%setting%scheme%intprint=0
          call LSTIMER('START',tcpu2,twall2,DECinfo%output)
        endif
@@ -1656,7 +1656,6 @@ contains
        !Transpose I [gamma delta alpha l]^T -> I [alpha l gamma delta]
        if( worker )call array_reorder_4d(1.0E0_realk,w2%d,lg,nb,la,no,[3,4,1,2],0.0E0_realk,w1%d)
        if( talker )call lsmpi_poke()
-
 
        !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
        if( worker )call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3%d,nv,w1%d,lg*la*no,1.0E0_realk,Had,nv)
@@ -1754,7 +1753,7 @@ contains
 
          call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
             & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-            & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,nbatches,INTSPEC,fullRHS)
+            & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,INTSPEC,fullRHS)
        endif
 
        if( talker )call lsmpi_poke()
@@ -1949,8 +1948,8 @@ contains
 
 
     if(.not.dynamic_load)then
-      call mem_dealloc(tasks,tasksc)
-      !call mem_dealloc(tasks)
+      !call mem_dealloc(tasks,tasksc)
+      call mem_dealloc(tasks)
     else
       call lsmpi_win_free(tasksw)
       call mem_dealloc(tasks,tasksc)
@@ -4309,17 +4308,19 @@ contains
     !if much more slaves than jobs are available, split the jobs to get at least
     !one for all the slaves
     !print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
-    if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
-      nba=(nb/(magic*nnod))
-      if(nba<minbsize)nba=minbsize
-    endif
+    if(.not.manual)then
+      if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
+        nba=(nb/(magic*nnod))
+        if(nba<minbsize)nba=minbsize
+      endif
 
-    if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
-      do while((nb/nba)*(nb/nbg)<magic*nnod)
-        nbg=nbg-1
-        if(nbg<1)exit
-      enddo
-      if(nbg<minbsize)nbg=minbsize
+      if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
+        do while((nb/nba)*(nb/nbg)<magic*nnod)
+          nbg=nbg-1
+          if(nbg<1)exit
+        enddo
+        if(nbg<minbsize)nbg=minbsize
+      endif
     endif
 
     if(scheme==2)then
@@ -4541,158 +4542,6 @@ contains
 
 
 
-  !> \brief Singles residual for CCSD model
-  subroutine getSinglesResidualCCSD(omega1,u,gao,pqfock,qpfock, & 
-              xocc,xvirt,yocc,yvirt,nocc,nvirt)
-
-    implicit none
-    type(array2), intent(inout) :: omega1
-    type(array4), intent(inout) :: u,gao
-    type(array2), intent(inout) :: pqfock,qpfock
-    type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
-    type(array2) :: tmp
-    type(array4) :: qqpq, pppq
-    integer, intent(in) :: nocc,nvirt
-    integer :: a,i,k,l,c,d
-    real(realk) :: starttime,endtime,aStart,aEnd,bStart,bEnd,cStart,cEnd, &
-              dStart,dEnd
-
-   
-    aStart=0.0E0_realk; aEnd=0.0E0_realk
-    bStart=0.0E0_realk; bEnd=0.0E0_realk
-    cStart=0.0E0_realk; cEnd=0.0E0_realk
-    dStart=0.0E0_realk; dEnd=0.0E0_realk
-    starttime=0.0E0_realk; endtime=0.0E0_realk
-
-    call cpu_time(starttime)
-
-#ifdef SINGLES_EXTRA_SIMPLE    
-
-    qqpq = get_gmo_simple(gao,xvirt,yvirt,xocc,yvirt)
-
-    do i=1,nocc
-      do a=1,nvirt
-
-        do c=1,nvirt
-        do k=1,nocc
-        do d=1,nvirt
-        omega1%val(a,i) = omega1%val(a,i) + & 
-                u%val(c,k,d,i)*qqpq%val(a,d,k,c)
-        end do
-        end do
-        end do
-
-      end do
-    end do
-    print *,'A1 ',omega1*omega1
-
-    call array4_free(qqpq)
-
-    pppq = get_gmo_simple(gao,xocc,yocc,xocc,yvirt)
-
-    do i=1,nocc
-      do a=1,nvirt
-
-        do c=1,nvirt
-        do k=1,nocc
-        do l=1,nocc
-
-        omega1%val(a,i) = omega1%val(a,i) - &
-            u%val(a,k,c,l) * pppq%val(k,i,l,c)
-
-        end do
-        end do
-        end do
-
-      end do
-    end do
-    print *,'B1 ',omega1*omega1
-
-    call array4_free(pppq)
-
-    do i=1,nocc
-      do a=1,nvirt
-      
-        do c=1,nvirt
-          do k=1,nocc
-            omega1%val(a,i) = omega1%val(a,i) + &
-                u%val(a,i,c,k) * pqfock%val(k,c)
-          end do
-        end do  
-
-      end do
-    end do
-    print *,'C1 ',omega1*omega1
-
-    omega1%val = omega1%val + qpfock%val
-    print *,'D1 ',omega1*omega1
-
-#else
-
-    tmp = array2_init([nvirt,nocc])
-
-    ! A1
-    call cpu_time(aStart)
-    qqpq = get_gmo_simple(gao,xocc,yvirt,yvirt,xvirt)
-    call array4_reorder(qqpq,[2,1,3,4]) ! qqpq[ic,ab] -> qqpq[ci,ab]
-    call array4_contract3(qqpq,u,tmp)
-    call array4_free(qqpq)
-    call array2_add_to(omega1,1.0E0_realk,tmp)
-    call cpu_time(aEnd)
-    if(DECinfo%cc_driver_debug) then
-      print *,'A1 done, norm : ',omega1*omega1
-    end if
-
-    ! B1
-    call cpu_time(bStart)
-    pppq = get_gmo_simple(gao,xocc,yocc,xocc,yvirt)
-    call array4_reorder(u,[4,3,2,1])  ! u[ai,bj] -> u[jb,ia]
-    call array4_reorder(pppq,[3,4,1,2])
-    call array2_zero(tmp)
-    call array4_contract3(u,pppq,tmp)
-    call array2_add_to(omega1,-1.0E0_realk,tmp)
-    call array4_free(pppq)
-    call cpu_time(bEnd)
-    if(DECinfo%cc_driver_debug) then
-      print *,'B1 done, norm: ',omega1*omega1
-    end if
-
-    ! C1
-    call cpu_time(cStart)
-    call array2_zero(tmp)
-    call array4_reorder(u,[1,2,4,3]) ! u[jb,ia] -> u[jb,ai] 
-    call array4_contract_array2(u,pqfock,tmp)
-    call array4_reorder(u,[3,4,2,1])
-    call array2_add_to(omega1,1.0E0_realk,tmp)
-    call cpu_time(cEnd)
-    if(DECinfo%cc_driver_debug) then
-      print *,'C1 done, norm: ',omega1*omega1
-    end if
-
-    ! D1
-    call cpu_time(dStart)
-    call array2_add_to(omega1,1.0E0_realk,qpfock)
-    call cpu_time(dEnd)
-    if(DECinfo%cc_driver_debug) then
-      print *,'D1 done, norm: ',omega1*omega1
-    end if
-
-    call array2_free(tmp)
-    call cpu_time(endtime)
-    if(DECinfo%PL>1) then
-      write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD A1 : ',aEnd-aStart,' s'
-      write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD B1 : ',bEnd-bStart,' s'
-      write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD C1 : ',cEnd-cStart,' s'
-      write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD D1 : ',dEnd-dStart,' s'
-      write(DECinfo%output,'(a,f16.3,a)')  &
-         ' time :: CCSD singles : ',endtime-starttime,' s'
-    end if
-
-#endif
-
-    return
-  end subroutine getSinglesResidualCCSD
-  
   !> \brief Precondition singles 
   function precondition_singles_newarr(omega1,ppfock,qqfock) result(prec)
 

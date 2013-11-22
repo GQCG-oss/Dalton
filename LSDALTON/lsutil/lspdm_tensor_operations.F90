@@ -733,7 +733,7 @@ module lspdm_tensor_operations_module
     integer :: lt,a, b, i, j, dims(4)
     real(realk),pointer :: om(:,:,:,:),pp(:,:),qq(:,:),p(:,:,:,:)
     real(realk) :: nrm
-    integer :: t(4)
+    integer :: t(4),da,db,di,dj
 
 #ifdef VAR_MPI
 
@@ -764,15 +764,20 @@ module lspdm_tensor_operations_module
         dims(j)=(dims(j)-1)*prec%tdim(j)
       enddo
 
+      !workaround for intel OMP error
+      da = prec%ti(lt)%d(1)
+      db = prec%ti(lt)%d(2)
+      di = prec%ti(lt)%d(3)
+      dj = prec%ti(lt)%d(4)
       !count over local indices
       !$OMP PARALLEL DEFAULT(NONE) &
-      !$OMP& SHARED(prec,om,dims,ppfock,qqfock,lt) &
+      !$OMP& SHARED(om,dims,ppfock,qqfock,lt,da,db,di,dj) &
       !$OMP& PRIVATE(i,j,a,b)
       !$OMP DO COLLAPSE(3)
-      do j=1,prec%ti(lt)%d(4)
-        do i=1,prec%ti(lt)%d(3)
-          do b=1,prec%ti(lt)%d(2)
-            do a=1,prec%ti(lt)%d(1)
+      do j=1,dj
+        do i=1,di
+          do b=1,db
+            do a=1,da
      
               om(a,b,i,j) = om(a,b,i,j) / &
                  ( ppfock%elm2(i+dims(3),i+dims(3)) - qqfock%elm2(a+dims(1),a+dims(1)) + &

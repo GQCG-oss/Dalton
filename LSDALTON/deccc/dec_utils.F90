@@ -1890,13 +1890,13 @@ retval=0
        if(MyFragment%FAset) then
           write(DECinfo%output,*) 'Occupied FO coefficients (column, elements in column)'
           do i=1,MyFragment%noccFA
-             write(DECinfo%output,*) i, MyFragment%CoccFA(:,i)
+             write(DECinfo%output,*) i, MyFragment%CoFA(:,i)
           end do
           write(DECinfo%output,*)
 
           write(DECinfo%output,*) 'Virtual FO coefficients (column, elements in column)'
           do i=1,MyFragment%nunoccFA
-             write(DECinfo%output,*) i, MyFragment%CunoccFA(:,i)
+             write(DECinfo%output,*) i, MyFragment%CvFA(:,i)
           end do
           write(DECinfo%output,*)
 
@@ -1955,6 +1955,17 @@ retval=0
     !> Atomic fragment to be freed
     type(decfrag),intent(inout) :: fragment
     integer :: i
+
+    deallocate(fragment%noccLOC)
+    deallocate(fragment%nunoccLOC)
+    deallocate(fragment%noccFA)
+    deallocate(fragment%nunoccFA)
+    nullify(fragment%noccLOC)
+    nullify(fragment%nunoccLOC)
+    nullify(fragment%noccFA)
+    nullify(fragment%nunoccFA)
+    nullify(fragment%noccAOS)
+    nullify(fragment%nunoccAOS)
 
     if(associated(fragment%occEOSidx)) then
        call mem_dealloc(fragment%occEOSidx)
@@ -2016,8 +2027,10 @@ retval=0
     end if
 
     if(fragment%FAset) then
-       call mem_dealloc(fragment%CoccFA)
-       call mem_dealloc(fragment%CunoccFA)
+       call mem_dealloc(fragment%CoFA)
+       call mem_dealloc(fragment%CvFA)
+       call mem_dealloc(fragment%ppfockFA)
+       call mem_dealloc(fragment%qqfockFA)
        if(.not. fragment%pairfrag) then
           call mem_dealloc(fragment%CDocceival)
           call mem_dealloc(fragment%CDunocceival)
@@ -2066,12 +2079,13 @@ retval=0
     end if
 
     ! Transformation matrices
-    if(associated(fragment%Co)) then
-       call mem_dealloc(fragment%Co)
+    nullify(fragment%Co,fragment%Cv)
+    if(associated(fragment%CoLOC)) then
+       call mem_dealloc(fragment%CoLOC)
     end if
 
-    if(associated(fragment%Cv)) then
-       call mem_dealloc(fragment%Cv)
+    if(associated(fragment%CvLOC)) then
+       call mem_dealloc(fragment%CvLOC)
     end if
     
     ! Free CABS MOs !
@@ -2087,12 +2101,14 @@ retval=0
        call mem_dealloc(fragment%fock)
     end if
 
-    if(associated(fragment%qqfock)) then
-       call mem_dealloc(fragment%qqfock)
+    ! Fock matrices
+    nullify(fragment%ppfock,fragment%qqfock)
+    if(associated(fragment%qqfockLOC)) then
+       call mem_dealloc(fragment%qqfockLOC)
     end if
 
-    if(associated(fragment%ppfock)) then
-       call mem_dealloc(fragment%ppfock)
+    if(associated(fragment%ppfockLOC)) then
+       call mem_dealloc(fragment%ppfockLOC)
     end if
 
     if(associated(fragment%ccfock)) then
@@ -4632,5 +4648,117 @@ retval=0
     end do iloop
 
   end function get_num_of_pair_fragments
+
+
+  !> \brief Make pointers for MO coefficients and MO Fock matrices in decfrag type
+  !> point to the fragment-adapted orbitals
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine fragment_basis_point_to_FOs(MyFragment,skipfock)
+    implicit none
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: MyFragment
+    !> Do not change pointers for Fock matrix
+    logical,intent(in),optional :: skipfock
+    logical :: skipf
+
+    skipf=.false.
+    if(present(skipfock)) then
+       if(skipfock) skipf=.true.
+    end if
+   
+    ! Sanity check: Fragment-adapted MO coefficients have been set
+    if(.not. MyFragment%FAset) then
+       call lsquit('fragment_basis_point_to_FOs: Fragment-adapted MO coefficients &
+            & have not been set!',-1)
+    end if
+ 
+    ! Dimensions for fragment-adapted orbitals
+    MyFragment%noccAOS => MyFragment%noccFA
+    MyFragment%nunoccAOS => MyFragment%nunoccFA
+
+    ! Total number of occupied orbitals
+    if(DECinfo%frozencore) then
+       ! core + valence (AOS)
+       Myfragment%nocctot = Myfragment%ncore + Myfragment%noccAOS
+    else
+       ! AOS already contains core orbitals
+       Myfragment%nocctot = Myfragment%noccAOS
+    end if
+
+    ! MO coefficients
+    MyFragment%Co => MyFragment%CoFA
+    MyFragment%Cv => MyFragment%CvFA
+
+    ! MO Fock
+    if(.not. skipf) then
+       MyFragment%ppfock => MyFragment%ppfockFA
+       MyFragment%qqfock => MyFragment%qqfockFA    
+    end if
+
+    ! Pointers point to FO data
+    MyFragment%fragmentadapted=.true.
+
+  end subroutine fragment_basis_point_to_FOs
+
+
+
+  !> \brief Make pointers for MO coefficients and MO Fock matrices in decfrag type
+  !> point to the local orbitals
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine fragment_basis_point_to_LOs(MyFragment)
+    implicit none
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: MyFragment
+ 
+    ! Dimensions for fragment-adapted orbitals
+    MyFragment%noccAOS => MyFragment%noccLOC
+    MyFragment%nunoccAOS => MyFragment%nunoccLOC
+
+    ! Total number of occupied orbitals
+    if(DECinfo%frozencore) then
+       ! core + valence (AOS)
+       Myfragment%nocctot = Myfragment%ncore + Myfragment%noccAOS
+    else
+       ! AOS already contains core orbitals
+       Myfragment%nocctot = Myfragment%noccAOS
+    end if
+
+    ! MO coefficients
+    MyFragment%Co => MyFragment%CoLOC
+    MyFragment%Cv => MyFragment%CvLOC
+
+    ! MO Fock
+    MyFragment%ppfock => MyFragment%ppfockLOC
+    MyFragment%qqfock => MyFragment%qqfockLOC   
+
+    ! Pointers do not point to FO data
+    MyFragment%fragmentadapted=.false.
+
+  end subroutine fragment_basis_point_to_LOs
+
+  
+  !> \brief Initialize pointers in fragment structure handling some dimensions.
+  !> These pointers are the only pointers that are not arrays.
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine fragment_init_dimension_pointers(fragment)
+    implicit none
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: fragment
+
+    nullify(fragment%noccAOS)
+    nullify(fragment%nunoccAOS)
+    nullify(fragment%noccLOC)
+    nullify(fragment%nunoccLOC)
+    nullify(fragment%noccFA)
+    nullify(fragment%nunoccFA)
+    allocate(fragment%noccLOC)
+    allocate(fragment%nunoccLOC)
+    allocate(fragment%noccFA)
+    allocate(fragment%nunoccFA)
+
+  end subroutine fragment_init_dimension_pointers
 
 end module dec_fragment_utils

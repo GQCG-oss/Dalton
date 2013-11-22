@@ -19,7 +19,7 @@ MODULE memory_handling
 #ifdef VAR_MPI
 #ifdef USE_MPI_MOD_F90
 #ifdef VAR_HAVE_MPI3
-   !use mpi_f08
+   !use lsmpi_f08
    use mpi
 #else
    use mpi
@@ -363,14 +363,14 @@ INTERFACE mem_alloc
      &             BATCHTOORB_allocate_1dim,MYPOINTER_allocate_1dim, MYPOINTER_allocate_2dim, &
      &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
      &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,&
-     &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, mpi_allocate_iV,&
-     &             mpi_allocate_dV4,mpi_allocate_dV8, mpi_local_allocate_dV8, &
-     &             mpi_local_allocate_I8V8,mpi_local_allocate_I4V4,&
-     &             mpi_allocate_d,&
+     &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
+     &             lsmpi_allocate_dV4,lsmpi_allocate_dV8, lsmpi_local_allocate_dV8, &
+     &             lsmpi_local_allocate_I8V8,lsmpi_local_allocate_I4V4,&
+     &             lsmpi_allocate_d,&
 #ifdef MOD_UNRELEASED
      &             lvec_data_allocate_1dim, lattice_cell_allocate_1dim, &
 #endif
-     &             mpi_local_allocate_dV4
+     &             lsmpi_local_allocate_dV4
 END INTERFACE
 !
 INTERFACE mem_dealloc
@@ -396,12 +396,12 @@ INTERFACE mem_dealloc
      &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
      &             TRACEBACK_deallocate_1dim,MP2GRAD_deallocate_1dim, &
      &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,&
-     &             mpi_local_deallocate_I4V,mpi_local_deallocate_I8V,&
-     &             mpi_deallocate_d,&
+     &             lsmpi_local_deallocate_I4V,lsmpi_local_deallocate_I8V,&
+     &             lsmpi_deallocate_d,&
 #ifdef MOD_UNRELEASED
      &             lvec_data_deallocate_1dim,lattice_cell_deallocate_1dim, &
 #endif
-     &             mpi_deallocate_iV,mpi_deallocate_dV,mpi_local_deallocate_dV
+     &             lsmpi_deallocate_i8V,lsmpi_deallocate_i4V,lsmpi_deallocate_dV,lsmpi_local_deallocate_dV
 END INTERFACE
 
 
@@ -2045,7 +2045,7 @@ IF (IERR.NE. 0) THEN
 ENDIF
 nullify(A)
 END SUBROUTINE real_deallocate_7dim
-SUBROUTINE mpi_allocate_dV8(A,cip,n) 
+SUBROUTINE lsmpi_allocate_dV8(A,cip,n) 
 implicit none
 integer(kind=8),intent(in)  :: n
 real(realk),pointer :: A(:)
@@ -2054,19 +2054,19 @@ integer (kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
 #ifdef VAR_MPI
-integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    nullify(A)
    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
+   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,lsmpi_len_realk,IERR)
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_dV8):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
-   bytes =n*mpi_len_realk
+   bytes =n*lsmpi_len_realk
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
@@ -2083,9 +2083,9 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
   call lsquit("ERROR(mpi_allocate_dV8):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_allocate_dV8
+END SUBROUTINE lsmpi_allocate_dV8
 !allocate MPI memory
-SUBROUTINE mpi_allocate_dV4(A,cip,n) 
+SUBROUTINE lsmpi_allocate_dV4(A,cip,n) 
 implicit none
 integer(kind=4),intent(in)  :: n
 real(realk),pointer :: A(:)
@@ -2094,19 +2094,19 @@ integer (kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
 #ifdef VAR_MPI
-integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    nullify(A)
    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
+   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,lsmpi_len_realk,IERR)
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_dV4):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
-   bytes =n*mpi_len_realk
+   bytes =n*lsmpi_len_realk
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
@@ -2123,8 +2123,8 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
   call lsquit("ERROR(mpi_allocate_dV4):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_allocate_dV4
-SUBROUTINE mpi_local_allocate_I4V4(A,cip,n1,win,comm,n2) 
+END SUBROUTINE lsmpi_allocate_dV4
+SUBROUTINE lsmpi_local_allocate_I4V4(A,cip,n1,win,comm,n2) 
 implicit none
 integer(kind=4),intent(in)          :: n1
 integer(kind=4),intent(in),optional :: n2
@@ -2145,7 +2145,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int4,lb,bytes
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
@@ -2171,8 +2171,8 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int4,lb,bytes
   call lsquit("ERROR(mpi_allocate_I4V4):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_local_allocate_I4V4
-SUBROUTINE mpi_local_allocate_I8V8(A,cip,n1,win,comm,n2) 
+END SUBROUTINE lsmpi_local_allocate_I4V4
+SUBROUTINE lsmpi_local_allocate_I8V8(A,cip,n1,win,comm,n2) 
 implicit none
 integer(kind=8),intent(in)          :: n1
 integer(kind=8),intent(in),optional :: n2
@@ -2193,7 +2193,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
@@ -2219,8 +2219,8 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
   call lsquit("ERROR(mpi_allocate_I8V8):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_local_allocate_I8V8
-SUBROUTINE mpi_allocate_d(A,n1,comm,local) 
+END SUBROUTINE lsmpi_local_allocate_I8V8
+SUBROUTINE lsmpi_allocate_d(A,n1,comm,local) 
 implicit none
 integer(kind=8),intent(in)          :: n1
 logical,intent(in),optional         :: local
@@ -2231,7 +2231,7 @@ integer (kind=long)                 :: nsize
 character(120)                      :: errmsg
 logical                             :: loc
 #ifdef VAR_MPI
-integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
 #endif
 
 
@@ -2243,22 +2243,22 @@ if(present(comm))then
     nullify(A%d)
     info = MPI_INFO_NULL
 
-    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
+    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,lsmpi_len_realk,IERR)
 
     if(IERR/=0)then
       write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
       call memory_error_quit(errmsg)
     endif
 
 #ifdef VAR_HAVE_MPI3
     if(loc) then
       bytes = int(0,kind=MPI_ADDRESS_KIND)
-      if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) bytes = n1 * mpi_len_realk
-      call MPI_WIN_ALLOCATE_SHARED(bytes,mpi_len_realk,info,comm,A%c,A%w,IERR)
+      if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) bytes = n1 * lsmpi_len_realk
+      call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len_realk,info,comm,A%c,A%w,IERR)
     else
-      bytes = n1 * mpi_len_realk
-      call MPI_WIN_ALLOCATE(bytes,mpi_len_realk,info,comm,A%c,A%w,IERR)
+      bytes = n1 * lsmpi_len_realk
+      call MPI_WIN_ALLOCATE(bytes,lsmpi_len_realk,info,comm,A%c,A%w,IERR)
     endif
 #else
     call lsquit("ERROR(mpi_local_allocate_dV8): not possible withot mpi3",-1)
@@ -2270,7 +2270,7 @@ if(present(comm))then
     ENDIF
 
     call c_f_pointer(A%c,A%d,[n1])
-    nsize = n1 * mpi_len_realk
+    nsize = n1 * lsmpi_len_realk
     call mem_allocated_mem_mpi(nsize)
     A%n = n1
 
@@ -2293,8 +2293,8 @@ else
   A%t = 0
 #endif
 endif
-END SUBROUTINE mpi_allocate_d
-SUBROUTINE mpi_local_allocate_dV8(A,cip,n1,win,comm,n2) 
+END SUBROUTINE lsmpi_allocate_d
+SUBROUTINE lsmpi_local_allocate_dV8(A,cip,n1,win,comm,n2) 
 implicit none
 integer(kind=8),intent(in)          :: n1
 integer(kind=8),intent(in),optional :: n2
@@ -2307,22 +2307,22 @@ integer (kind=long)                 :: nsize
 character(120)                      :: errmsg
 integer(kind=8)                     :: assoc
 #ifdef VAR_MPI
-integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    nullify(A)
    ierr = 0
    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
+   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,lsmpi_len_realk,IERR)
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
-   bytes =n1*mpi_len_realk
+   bytes =n1*lsmpi_len_realk
 #ifdef VAR_HAVE_MPI3
-   call MPI_WIN_ALLOCATE_SHARED(bytes,mpi_len_realk,info,comm,cip,win,IERR)
+   call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len_realk,info,comm,cip,win,IERR)
 #else
    call lsquit("ERROR(mpi_local_allocate_dV8): not possible withot mpi3",-1)
 #endif
@@ -2335,15 +2335,15 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
    if(present(n2))assoc=n2
    call c_f_pointer(cip,A,[assoc])
 
-   nsize = assoc*mpi_len_realk
+   nsize = assoc*lsmpi_len_realk
    call mem_allocated_mem_mpi(nsize)
 
 #else
   call lsquit("ERROR(mpi_allocate_dV8):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_local_allocate_dV8
-SUBROUTINE mpi_local_allocate_dV4(A,cip,n1,win,comm,n2) 
+END SUBROUTINE lsmpi_local_allocate_dV8
+SUBROUTINE lsmpi_local_allocate_dV4(A,cip,n1,win,comm,n2) 
 implicit none
 integer(kind=4),intent(in)          :: n1
 integer(kind=4),intent(in),optional :: n2
@@ -2356,21 +2356,21 @@ integer (kind=long)                 :: nsize
 integer(kind=4)                     :: assoc
 character(120) :: errmsg
 #ifdef VAR_MPI
-integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    nullify(A)
    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
+   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,lsmpi_len_realk,IERR)
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_local_allocate_dV4):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
-   bytes =n1*mpi_len_realk
+   bytes =n1*lsmpi_len_realk
 #ifdef VAR_HAVE_MPI3
-   call MPI_WIN_ALLOCATE_SHARED(bytes,mpi_len_realk,info,comm,cip,win,IERR)
+   call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len_realk,info,comm,cip,win,IERR)
 #else
    call lsquit("ERROR(mpi_local_allocate_dV4): not possible withot mpi3",-1)
 #endif
@@ -2384,19 +2384,19 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
    if(present(n2))assoc=n2
    call c_f_pointer(cip,A,[assoc])
 
-   nsize = assoc*mpi_len_realk
+   nsize = assoc*lsmpi_len_realk
    call mem_allocated_mem_mpi(nsize)
 
 #else
   call lsquit("ERROR(mpi_local_allocate_dV4):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_local_allocate_dV4
+END SUBROUTINE lsmpi_local_allocate_dV4
 
-SUBROUTINE mpi_allocate_iV(A,cip,n)  ! single precision
+SUBROUTINE lsmpi_allocate_i8V(A,cip,n)  ! single precision
 implicit none
 integer,intent(in)  :: n
-integer,pointer :: A(:)
+integer(kind=8),pointer :: A(:)
 type(c_ptr), intent(inout) :: cip
 integer(kind=ls_mpik) :: IERR
 #ifdef VAR_HAVE_MPI3
@@ -2408,23 +2408,23 @@ integer(kind=ls_mpik) :: info
 integer (kind=long) :: nsize
 character(120) :: errmsg
 #ifdef VAR_MPI
-integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
    nullify(A)
 
    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_INTEGER,lb,mpi_intlen,IERR)
+   call MPI_TYPE_GET_EXTENT(MPI_INTEGER8,lb,lsmpi_intlen,IERR)
    if(IERR/=0)then
-     write (errmsg,'("ERROR(mpi_allocate_iV):error in&
-          & mpi_type_get_extent",I5)') IERR
+     write (errmsg,'("ERROR(mpi_allocate_i8V):error in&
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
-   bytes =n*mpi_intlen
+   bytes =n*lsmpi_intlen
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_iV):error in alloc",I5)') IERR
+     write (errmsg,'("ERROR(mpi_allocate_i8V):error in alloc",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
    call c_f_pointer(cip,A,[n])
@@ -2433,53 +2433,137 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    call mem_allocated_mem_mpi(nsize)
 
 #else
-  call lsquit("ERROR(mpi_allocate_iV):compiled without MPI, this is not&
+  call lsquit("ERROR(mpi_allocate_i8V):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_allocate_iV
+END SUBROUTINE lsmpi_allocate_i8V
+SUBROUTINE lsmpi_allocate_i4V(A,cip,n)  ! single precision
+implicit none
+integer,intent(in)  :: n
+integer(kind=4),pointer :: A(:)
+type(c_ptr), intent(inout) :: cip
+integer(kind=ls_mpik) :: IERR
+#ifdef VAR_HAVE_MPI3
+!type(MPI_Info) :: info
+integer(kind=ls_mpik) :: info
+#else
+integer(kind=ls_mpik) :: info
+#endif
+integer (kind=long) :: nsize
+character(120) :: errmsg
+#ifdef VAR_MPI
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
+   nullify(A)
+
+   info = MPI_INFO_NULL
+
+   call MPI_TYPE_GET_EXTENT(MPI_INTEGER4,lb,lsmpi_intlen,IERR)
+   if(IERR/=0)then
+     write (errmsg,'("ERROR(mpi_allocate_i4V):error in&
+          & lsmpi_type_get_extent",I5)') IERR
+     call memory_error_quit(errmsg)
+   endif
+
+   bytes =n*lsmpi_intlen
+   call MPI_ALLOC_MEM(bytes,info,cip,IERR)
+
+   IF (IERR.NE. 0) THEN
+     write (errmsg,'("ERROR(mpi_allocate_i4V):error in alloc",I5)') IERR
+     CALL memory_error_quit(errmsg)
+   ENDIF
+   call c_f_pointer(cip,A,[n])
+
+   nsize = bytes
+   call mem_allocated_mem_mpi(nsize)
+
+#else
+  call lsquit("ERROR(mpi_allocate_i4V):compiled without MPI, this is not&
+  &available",-1)
+#endif
+END SUBROUTINE lsmpi_allocate_i4V
 
 !deallcate MPI memory
-SUBROUTINE mpi_deallocate_iV(A,cip)
+SUBROUTINE lsmpi_deallocate_i8V(A,cip)
 implicit none
-integer,pointer :: A(:)
+integer(kind=8),pointer :: A(:)
 type(c_ptr), intent(inout) :: cip
 integer(kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
 #ifdef VAR_MPI
-integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_INTEGER,lb,mpi_intlen,IERR)
+   call MPI_TYPE_GET_EXTENT(MPI_INTEGER8,lb,lsmpi_intlen,IERR)
    if(IERR/=0)then
-     write (errmsg,'("ERROR(mpi_deallocate_iV):error in&
-          & mpi_type_get_extent",I5)') IERR
+     write (errmsg,'("ERROR(mpi_deallocate_i8V):error in&
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
-   nsize = size(A)*mpi_intlen
+   nsize = size(A)*lsmpi_intlen
    call mem_deallocated_mem_mpi(nsize)
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('ERROR(mpi_deallocate_iV): memory previously released')
+      call memory_error_quit('ERROR(mpi_deallocate_i8V): memory previously released')
    endif
 
    call MPI_FREE_MEM(A,IERR)
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_iV):error in MPI_FREE_MEM",I5)') IERR
+     write (errmsg,'("ERROR(mpi_deallocate_i8V):error in MPI_FREE_MEM",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
    nullify(A)
    cip = c_null_ptr
 #else
-  call lsquit("ERROR(mpi_deallocate_iV):compiled without MPI, this is not&
+  call lsquit("ERROR(mpi_deallocate_i8V):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_deallocate_iV
+END SUBROUTINE lsmpi_deallocate_i8V
+!deallcate MPI memory
+SUBROUTINE lsmpi_deallocate_i4V(A,cip)
+implicit none
+integer(kind=4),pointer :: A(:)
+type(c_ptr), intent(inout) :: cip
+integer(kind=ls_mpik) :: IERR,info
+integer (kind=long) :: nsize
+character(120) :: errmsg
+#ifdef VAR_MPI
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
+   info = MPI_INFO_NULL
 
-SUBROUTINE mpi_deallocate_dV(A,cip)
+   call MPI_TYPE_GET_EXTENT(MPI_INTEGER4,lb,lsmpi_intlen,IERR)
+   if(IERR/=0)then
+     write (errmsg,'("ERROR(mpi_deallocate_i4V):error in&
+          & lsmpi_type_get_extent",I5)') IERR
+     call memory_error_quit(errmsg)
+   endif
+
+   nsize = size(A)*lsmpi_intlen
+   call mem_deallocated_mem_mpi(nsize)
+
+   if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
+      print *,'Memory previously released!!'
+      call memory_error_quit('ERROR(mpi_deallocate_i4V): memory previously released')
+   endif
+
+   call MPI_FREE_MEM(A,IERR)
+   IF (IERR.NE. 0) THEN
+     write (errmsg,'("ERROR(mpi_deallocate_i4V):error in MPI_FREE_MEM",I5)') IERR
+     CALL memory_error_quit(errmsg)
+   ENDIF
+
+   nullify(A)
+   cip = c_null_ptr
+#else
+  call lsquit("ERROR(mpi_deallocate_i4V):compiled without MPI, this is not&
+  &available",-1)
+#endif
+END SUBROUTINE lsmpi_deallocate_i4V
+
+SUBROUTINE lsmpi_deallocate_dV(A,cip)
 implicit none
 real(realk),pointer :: A(:)
 type(c_ptr), intent(inout) :: cip
@@ -2487,17 +2571,17 @@ integer(kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
 #ifdef VAR_MPI
-integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
+   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,lsmpi_len_realk,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_dV):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
-   nsize = size(A)*mpi_len_realk
+   nsize = size(A)*lsmpi_len_realk
    call mem_deallocated_mem_mpi(nsize)
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
@@ -2518,15 +2602,15 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
   call lsquit("ERROR(mpi_deallocate_dV):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_deallocate_dV
-SUBROUTINE mpi_deallocate_d(A)
+END SUBROUTINE lsmpi_deallocate_dV
+SUBROUTINE lsmpi_deallocate_d(A)
 implicit none
 type(mpi_realk)                     :: A
 integer(kind=ls_mpik)               :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
 #ifdef VAR_MPI
-integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
 #endif
 !check the allocation type. If 0 a normal allocation was used, normal
 !deallocation will be used, if 1 MPI_ALLOC_MEM was used and it will be deallocd 
@@ -2543,14 +2627,14 @@ elseif(A%t==2)then
 #ifdef VAR_MPI
     info = MPI_INFO_NULL
 
-    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
+    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,lsmpi_len_realk,IERR)
 
     if(IERR/=0)then
-      write (errmsg,'("ERROR(mpi_deallocate_d):error in mpi_type_get_extent",I5)') IERR
+      write (errmsg,'("ERROR(mpi_deallocate_d):error in lsmpi_type_get_extent",I5)') IERR
       call memory_error_quit(errmsg)
     endif
 
-    nsize = size(A%d)*mpi_len_realk
+    nsize = size(A%d)*lsmpi_len_realk
     call mem_deallocated_mem_mpi(nsize)
 
     if (.not.associated(A%d)) then
@@ -2583,9 +2667,9 @@ endif
 
 !set back the default after deallocation
 A%t = -1
-END SUBROUTINE mpi_deallocate_d
+END SUBROUTINE lsmpi_deallocate_d
 
-SUBROUTINE mpi_local_deallocate_dV(A,cip,win)
+SUBROUTINE lsmpi_local_deallocate_dV(A,cip,win)
 implicit none
 real(realk),pointer                 :: A(:)
 type(c_ptr), intent(inout)          :: cip
@@ -2594,17 +2678,17 @@ integer(kind=ls_mpik)               :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
 #ifdef VAR_MPI
-integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
+integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_len_realk,IERR)
+   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,lsmpi_len_realk,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_dV):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
-   nsize = size(A)*mpi_len_realk
+   nsize = size(A)*lsmpi_len_realk
    call mem_deallocated_mem_mpi(nsize)
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
@@ -2625,8 +2709,8 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_len_realk,lb,bytes
   call lsquit("ERROR(mpi_deallocate_dV):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_local_deallocate_dV
-SUBROUTINE mpi_local_deallocate_I8V(A,cip,win)
+END SUBROUTINE lsmpi_local_deallocate_dV
+SUBROUTINE lsmpi_local_deallocate_I8V(A,cip,win)
 implicit none
 integer(kind=8),pointer             :: A(:)
 type(c_ptr), intent(inout)          :: cip
@@ -2641,7 +2725,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_INTEGER8,lb,lsmpi_int8,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_I8V):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2666,8 +2750,8 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
   call lsquit("ERROR(mpi_deallocate_I8V):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_local_deallocate_I8V
-SUBROUTINE mpi_local_deallocate_I4V(A,cip,win)
+END SUBROUTINE lsmpi_local_deallocate_I8V
+SUBROUTINE lsmpi_local_deallocate_I4V(A,cip,win)
 implicit none
 integer(kind=4),pointer             :: A(:)
 type(c_ptr), intent(inout)          :: cip
@@ -2682,7 +2766,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int4,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_INTEGER4,lb,lsmpi_int4,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_I4V):error in&
-          & mpi_type_get_extent",I5)') IERR
+          & lsmpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2707,7 +2791,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int4,lb,bytes
   call lsquit("ERROR(mpi_deallocate_I4V):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_local_deallocate_I4V
+END SUBROUTINE lsmpi_local_deallocate_I4V
 
 
 !ALlocate complex
