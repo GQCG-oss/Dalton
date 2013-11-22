@@ -467,10 +467,8 @@ C           .VR-SYM
      &              // 'be between 1 and', MXCENT,'!'
                CALL QUIT('Illegal number of frozen atoms.')
             END IF
-            IF (.NOT. CARTCO) THEN 
-               CALL QUIT('FREEZE option only available in Cartesian'
-     &              // ' coords. Set .CARTES keyword in *OPTIMIZE')
-            END IF
+            IF (.NOT. CARTCO) CARTCO = .TRUE.
+            IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0
             DO 474 I = 1, NFREEZ
                READ (LUCMD,*) NFRZ
                IF ((NFRZ .LE. 0) .OR. (NFRZ .GT. MXCENT)) THEN
