@@ -215,18 +215,18 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
   call mem_alloc(work,max(1,lwork))
   call mem_alloc(rwork,max(1,3*Ndim-2))
   call mem_alloc(w,ndim)
-#ifdef DEBUGPBC!{{{
+#ifdef DEBUGPBC!{{{!{{{
   call mem_alloc(workd,max(1,lwork))
   call mem_alloc(wd,ndim)
   call mem_alloc(reals,ndim,ndim)
-#endif!}}}
+#endif!}}}!}}}
   do i=1,Ndim
    do j=1,Ndim
       SK(i,j)=sabk(i,j)
+      diag(i,j)=CMPLX(0.,0.,complexk)
 #ifdef DEBUGPBC!{{{
       reals(i,j)=real(sabk(i,j))
 #endif!}}}
-      diag(i,j)=CMPLX(0.,0.,complexk)
    enddo
   enddo
 
@@ -293,20 +293,20 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
         sk(:,i)=cmplx(0.,0.,complexk)
         diag(:,i)=cmplx(0.,0.,complexk)
         is_singular=.true.
-      !else
+      else
         !diag(:,i)=Sk(:,i)/sqrt(W(i))
+        diag(i,i)=1._realk/sqrt(W(i))
       endif
-      diag(i,i)=1._realk/sqrt(W(i))
   enddo
 
   write(*,*) 'Number of singulars',nsingular
   write(lupri,*) 'Number of singulars',nsingular
 
   nonsingdim=ndim-nsingular
-  call mem_alloc(U,nonsingdim,nonsingdim)
+  call mem_alloc(U,ndim,nonsingdim)
 
-  call zgemm('N','N',nonsingdim,nonsingdim,nonsingdim,alpha,sk,nonsingdim,&
-             diag,nonsingdim,beta,U,nonsingdim)
+  call zgemm('N','N',ndim,nonsingdim,nonsingdim,alpha,sk,ndim,&
+             diag,nonsingdim,beta,U,ndim)
 
 #ifdef DEBUGPBC!{{{
   !call mem_alloc(Uinv,nonsingdim,nonsingdim)
@@ -361,24 +361,28 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
 
 END SUBROUTINE pbc_spectral_decomp_ovl
 
-SUBROUTINE pbc_unitary_transform(Ndim,kfock,Uk,tfock)
+SUBROUTINE pbc_unitary_transform(Ndim,nonsingdim,kfock,Uk,tfock)
   IMPLICIT NONE
-  INTEGER,intent(in) :: Ndim
-  COMPLEX(complexk),INTENT(IN) :: kfock(Ndim,Ndim),Uk(Ndim,ndim)
-  COMPLEX(complexk),INTENT(INOUT) :: tfock(Ndim,Ndim)
+  INTEGER,intent(in) :: Ndim,nonsingdim
+  COMPLEX(complexk),INTENT(IN) :: kfock(Ndim,Ndim),Uk(Ndim,nonsingdim)
+  COMPLEX(complexk),INTENT(INOUT) :: tfock(Nonsingdim,Nonsingdim)
   !LOCAL
-  COMPLEX(complexk) :: tmp(ndim,ndim)
+  COMPLEX(complexk),pointer :: tmp(:,:)
   COMPLEX(complexk) :: alpha,beta
   INTEGER :: i,j
 
   alpha=CMPLX(1.,0.,complexk)
   beta=CMPLX(0.,0.,complexk)
+  call mem_alloc(tmp,ndim,nonsingdim)
 
-  call zgemm('N','N',Ndim,Ndim,Ndim,alpha,kfock,Ndim,&
+  call zgemm('N','N',Ndim,Nonsingdim,Ndim,alpha,kfock,Ndim,&
              Uk,Ndim,beta,tmp,Ndim)
 
-  call zgemm('C','N',Ndim,Ndim,Ndim,alpha,Uk,Ndim,&
-             tmp,Ndim,beta,tfock,Ndim)
+
+  call zgemm('C','N',Nonsingdim,Nonsingdim,Ndim,alpha,Uk,Ndim,&
+             tmp,Ndim,beta,tfock,Nonsingdim)
+
+  call mem_dealloc(tmp)
 
 END SUBROUTINE pbc_unitary_transform
 
@@ -566,8 +570,8 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
   !call mem_alloc(tmp,ndim-nsingular,ndim-nsingular)
   !call mem_alloc(tmpeigv,ndim)
 
-  call mem_alloc(sabk_tmp,ndim,ndim)
-  call mem_alloc(sabk2,ndim,ndim)
+!  call mem_alloc(sabk_tmp,ndim,ndim)
+!  call mem_alloc(sabk2,ndim,ndim)
 #ifdef DEBUGPBC!{{{
   call mem_alloc(Atmp,ndim,ndim)
   call mem_alloc(Btmp,ndim,ndim)
@@ -581,8 +585,8 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
 !  if(.not. is_singular) then
 !   C_tmp(i,j)=fock_old(i,j)
 !  endif
-   Sabk_tmp(i,j)=Sabk(i,j)
-   Sabk2(i,j)=Sabk(i,j)
+!   Sabk_tmp(i,j)=Sabk(i,j)
+!   Sabk2(i,j)=Sabk(i,j)
 #ifdef DEBUGPBC!{{{
 #endif!}}}
   ! fock_old(1,i,j)=fock(i,j)
@@ -600,7 +604,7 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
     call mem_alloc(iwork,max(1,liwork))
     call mem_alloc(tfock,ndim-nsingular,ndim-nsingular)!}}}
 
-    call pbc_unitary_transform(Ndim-nsingular,fock_old,Uk,tfock)
+    call pbc_unitary_transform(Ndim,nonsingdim,fock_old,Uk,tfock)
 
 #ifdef DEBUGPBC!{{{
     write(*,*) 'transformed fock matrix', kindex
@@ -628,8 +632,10 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
     call mem_dealloc(iwork)!}}}
 
     !Transform back to C(k)=U c(k) !tfock=c(k) uk=U, C_mp=C
-    call zgemm('N','N',ndim-nsingular,ndim-nsingular,ndim-nsingular,alpha,Uk,ndim-nsingular,&
-               tfock,ndim-nsingular,beta,C_tmp(1:nonsingdim,1:nonsingdim),nonsingdim)
+    call zgemm('N','N',ndim,nonsingdim,nonsingdim,alpha,Uk,ndim,&
+               tfock,nonsingdim,beta,C_tmp(:,1:nonsingdim),ndim)
+
+    c_tmp(:,nonsingdim+1:ndim)=0._realk
 
 
 #ifdef DEBUGPBC!{{{
@@ -717,8 +723,8 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
 !    !call pbc_zeigsolve(c_tmp,Sabk_tmp,ndim,ndim,eigv,is_gamma,lupri)
 !    call pbc_zggeigsolve(kindex,c_tmp,sabk_tmp,sabk2,ndim,ndim,eigv,lupri)
 !  endif
-     call mem_dealloc(sabk_tmp)
-     call mem_dealloc(sabk2)
+!     call mem_dealloc(sabk_tmp)
+!     call mem_dealloc(sabk2)
 
 END SUBROUTINE solve_kfcsc_mat
 
@@ -1360,7 +1366,7 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,lupri)
   !TYPE(lvec_data_t) :: C_tmp(nfsize)
   !LOCAL VARIABLES
   COMPLEX(COMPLEXK), pointer :: density_tmp(:,:)
-  INTEGER :: i,j,mu,nu
+  INTEGER :: i,j,mu,nu,nosingdim
   COMPLEX(COMPLEXK) :: alpha,beta
 
   alpha=CMPLX(2D0,0d0,complexk)
@@ -1371,15 +1377,17 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,lupri)
       !write(lupri,*) 'C coefficients in density comp'
       !call write_zmatrix(C_tmp,nbast,nbast,lupri)
 
+      nosingdim=nbast-nsingular
 !     allocate(density_tmp(nbast,nbast))
-     call mem_alloc(density_tmp,nbast,nbast)
+     call mem_alloc(density_tmp,nosingdim,nosingdim)
      density_tmp=0d0
+     ddensity   =0d0
      !call zgemm('n','c',nbast,nbast,nbast,alpha,c_tmp,nbast,c_tmp,&
      !           nbast,beta,density_tmp,nbast)
      !write(lupri,*) 'c*c'
 
-     call zgemm('N','C',nbast,nbast,nkmobas,alpha,c_tmp,nbast,&
-             c_tmp,nbast,beta,density_tmp,nbast)
+     call zgemm('N','C',nosingdim,nosingdim,nkmobas,alpha,c_tmp,nosingdim,&
+             c_tmp,nosingdim,beta,density_tmp,nosingdim)
 
    !  DO i=1,nkmobas
    !   DO mu=1,nbast-nsingular
@@ -1391,8 +1399,8 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,lupri)
    !  ENDDO
 
 
-      DO i=1,nbast
-        DO j=1,nbast
+      DO i=1,nosingdim
+        DO j=1,nosingdim
            ddensity(i,j)=density_tmp(i,j)
         ENDDO    
       ENDDO  
