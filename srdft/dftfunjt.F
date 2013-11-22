@@ -2102,6 +2102,132 @@ c           e_pbe * (1 + p6 * mu_ref**6) =  eps_LDA(mu_ref)
 !      print *,'ESRC_PBERIERF: e=',e
       return
       end
+
+C****************************************************************************
+      subroutine ESRC_LYPRIERF(rho,grd,mu,e)
+C*****************************************************************************
+C     rational interpolation for short-range erf correlation functional
+C     Toulouse, Colonna, Savin PRA 70, 062505 (2004)
+C
+C     Input: rho    : density
+C            grd    : norm of gradient of density
+C            mu     : Interaction parameter
+C
+C     Ouput: e             : energy
+C
+C     Author: J. Toulouse
+C     Date  : 12-02-05
+C*****************************************************************************
+      implicit none
+
+      double precision rho, grd, mu
+      double precision e
+
+      double precision mu2, rs, sqrt2
+      double precision d, a, bet, gam
+      double precision grs12, expgrs12, g0, rho13
+      double precision e_lyp, eps_lyp, eps_LDA_fac, mu_ref
+      double precision d1, d2, denom, p6, q7, q8, d2od1, mu6
+
+C     General constants
+#include "pi.h"
+      double precision mu_0, mu_0_m6, mu_0_m7, mu_0_m4
+      common /cb_srclyp_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
+
+C     Constants for g0
+      parameter ( d = 32.D0/(3.D0*pi) )
+      parameter ( a = 3.2581D0 )
+      parameter ( bet = 163.44D0 )
+      parameter ( gam = 4.7125D0 )
+      sqrt2 = sqrt(2.0d0)
+      
+!      print *,'ESRC_LYPRIERF: mu=',mu
+!      print *,'ESRC_LYPRIERF: rho=',rho,' grd=',grd
+
+!     set code for do rational interpolation
+      mu_0 = -1.0D0
+
+!     Variables
+      rs = (3.d0/(4.d0*pi*rho))**(1.d0/3.d0)
+      mu2 =mu*mu
+
+!     LYP correlation energy
+      RHO13 = RHO**(1.0D0/3.0D0)
+      CALL ELYP(e_lyp,rho,RHO13,grd)
+      if (abs(e_lyp) .lt. 1.0D-15) then
+         e = 0.0d0
+         return
+      end if
+      eps_lyp = e_lyp/rho
+!      print *,'ESRC_LYPRIERF: e_lyp=',e_lyp
+
+!     g0 from Burke, Perdew, Ernzerhof
+      grs12 = sqrt(gam+rs)
+      expgrs12 = exp(-a*grs12)
+      g0 = d*(grs12**3+bet)*expgrs12
+
+
+C    modified d1 coefficient from Gori-Giorgi and Savin (submitted)
+C    added by Emmanuel Fromager 13.12.05    
+C      d2 = 2.d0*eps_lyp/(pi*rho*(g0 - 0.5d0))
+C      d1 = -2.d0*(d2**2)*sqrtpi*rho*g0/(3.d0*eps_lyp)
+Cefr   d1 = -2.d0*(d2**2)*sqrt2*sqrtpi*rho*g0/(3.d0*eps_lyp)
+Chjaaj 4-oct-06: this d1 code below gave NaN if eps_lyp .eq. 0.0d0
+C                thus the new code
+      d2 = 2.d0/(pi*rho*(g0 - 0.5d0))
+      d1 = -2.d0*eps_lyp*(d2**2)*sqrt2*sqrtpi*rho*g0/3.d0
+      d2 = d2*eps_lyp
+      if (mu_0 .eq. 0.0d0) then
+         e = e_lyp
+      else if (mu_0 .lt. 0.0d0) then
+C        using e = e_lyp * ( 1 / (1 + d1*mu + d2*mu^2) )
+C        based on the asymptotic Taylor expansion to 3. order
+C        eps_LDA_asymptot3 = 1/d2 *  mu^(-2) - d1/(d2^2) * mu^(-3)
+         denom = 1.d0 + d1*mu + d2*mu2
+         e = e_lyp/denom
+      else
+C        using e = e_lyp * ( (1 + p6*mu^6) / (1 + q7*mu^7 + q8*mu^8) )
+C        based on 
+C        1) the asymptotic Taylor expansion to 3. order
+C           eps_LDA_asymptot3 = 1/d2 *  mu^(-2) - d1/(d2^2) * mu^(-3)
+C        2) the condition that eps(mu) = eps(0) + O(mu^6)
+C        2) the condition that eps(mu_0) = eps_LDA_asymptot3(mu_0)
+C        4) mu_0 is determined by the inflection point
+C           d2(eps_LDA_asymptot3)/dmu^2 : mu_0 = 2 d1/d2
+C        (e = eps * rho)
+         d2od1 = d2 / d1
+C ----- first attempt. fixed mu_0, does not work!!!!
+C        p6 = d2od1/d1 * mu_0_m6 - mu_0_m7 / d1 - d2od1**2 * mu_0_m4
+c --- second attmpt
+C        using mu_ref = alfa * d1/d2:
+C        p6 = alfa**(-4) * d2od1**6 * ( alfa**(-3)*(alfa-1.0d0)*d2od1/d1
+C        - 1.0d0 )
+C        with alfa = 2 (the inflection point):
+!        p6 = 0.0625D0 * d2od1**6 * (0.125D0*d2od1/d1 - 1.0D0 )
+!        q7 = d1 * p6
+!        q8 = d2 * p6
+!        mu6 = mu2**3
+!        e = e_lyp * (1.0D0 + p6 * mu6)
+!    &             / (1.0D0 + mu6 * (q7 * mu + q8 * mu2))
+c --- third attmpt
+c        mu_ref = alfa * d1/d2 = 2.D0 * d1/d2 ! the inflection point
+c        eps_LDA = e_lyp/d2 * ( mu_ref**(-2) - d1od2 * mu_ref**(-3))
+c                = e_lyp/d2 * ( 0.25d0 * d2od1**2 - 0.125d0 * d2od1**2)
+         mu_ref  = 2.0d0 / d2od1
+         if (mu .ge. mu_ref) then
+            e = e_lyp/(d2*mu2) * (1.0d0 - d1 / (d2*mu))
+         else
+c           e_lyp * (1 + p6 * mu_ref**6) =  eps_LDA(mu_ref)
+            eps_LDA_fac = 0.125d0/d2 * d2od1**2
+            p6 = (eps_LDA_fac - 1.0d0) * d2od1**6 * 0.015625d0
+            e = e_lyp * (1.0d0 + p6 * mu2**3)
+         end if
+      end if
+
+!      print *,'ESRC_LYPRIERF: e=',e
+      return
+      end
+
 C
 C  begin Manu
 C****************************************************************************
