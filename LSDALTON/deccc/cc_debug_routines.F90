@@ -30,6 +30,12 @@ module cc_debug_routines_module
    use ccsdpt_module
    use orbital_operations
    use rpa_module
+   type SpaceInfo
+     integer              :: n
+     integer, pointer     :: iaos(:)
+     integer              :: ns1,ns2
+     real(realk), pointer :: d(:,:)
+   end type SpaceInfo
    
 
    contains
@@ -102,7 +108,7 @@ module cc_debug_routines_module
    !  Ettenhuber)
    subroutine ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-        & t1_final,t2_final,VOVO,longrange_singles,m2,m1)
+        & t1_final,t2_final,VOVO,longrange_singles,m2,m1,use_pnos,fraginfo)
 
      implicit none
 
@@ -142,6 +148,8 @@ module cc_debug_routines_module
     
      type(array4),optional,intent(inout) :: m2
      type(array2),optional,intent(inout) :: m1
+     logical,optional,intent(in)         :: use_pnos
+     type(decfrag),optional,intent(in)   :: fraginfo
      !> Include long-range singles effects using singles amplitudes
      !> from previous fragment calculations.
      !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
@@ -175,7 +183,7 @@ module cc_debug_routines_module
      character(ARR_MSG_LEN) :: msg
      integer :: ii,aa
      integer :: MaxSubSpace
-     logical :: restart,PNO_CCSD
+     logical :: restart
 
      ! begin pablo 
      real(realk),pointer :: pack_gmo(:)
@@ -204,15 +212,28 @@ module cc_debug_routines_module
         end if
      end if
 
-     ! Sanity check 3: if CCSD multipliers are requested, make sure that both are
-     ! there
-     if((present(m2).and..not.present(m1)).or.(present(m1).and..not.present(m2)))then
-       call lsquit("ERROR(ccsolver_debug):requested unkown multipliers",-1)
+     if(.not.use_pnos)then
+
+       ! Sanity check 3: if CCSD multipliers are requested, make sure that both are there
+       if((present(m2).and..not.present(m1)).or.(present(m1).and..not.present(m2)))then
+         call lsquit("ERROR(ccsolver_debug):requested unkown multipliers",-1)
+       endif
+
+       ! right now the multipliers can only be calculated for CCSD and without PNO
+       get_mult    = (present(m2).and.present(m1))
+
+     else
+
+       ! Sanity check 4: if PNO use is requested, currently only ccsd is implemented, no
+       !multipliers, though 
+       if(.not.present(m2))then
+         call lsquit("ERROR(ccsolver_debug):PNO ccsd requires mp2 amplitudes passed as m2",-1)
+       endif
+       if( .not.present(fraginfo).and. fragment_job )then
+         call lsquit("ERROR(ccsolver_debug):PNO ccsd requires the fragment information if it is a fragment job",-1)
+       endif
+
      endif
-
-
-     get_mult    = (present(m2).and.present(m1))
-     PNO_CCSD    = DECinfo%use_pnos
      MaxSubSpace = DECinfo%ccMaxDIIS
 
      ! title
@@ -549,9 +570,9 @@ module cc_debug_routines_module
   
 
            if(get_mult)then
-              if(small_frag.or.PNO_CCSD)then
+              if(small_frag.or.use_pnos)then
                 call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
-                &and PNO_CCSD should be true at the same time",-1)
+                &and use_pnos should be true at the same time",-1)
               endif
 
               call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
@@ -562,9 +583,9 @@ module cc_debug_routines_module
            !> call CCSD code for small fragment:
            else if (small_frag) then
 
-              if(get_mult.or.PNO_CCSD)then
+              if(get_mult.or.use_pnos)then
                 call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
-                &and PNO_CCSD should be true at the same time",-1)
+                &and use_pnos should be true at the same time",-1)
               endif
 
              ! reorder array like in Patrick's code
@@ -585,15 +606,20 @@ module cc_debug_routines_module
                         & residual is not fully calculated',DECinfo%output)
            ! end pablo
 
-           else if(PNO_CCSD)then
+           else if(use_pnos)then
               if(small_frag.or.get_mult)then
                 call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
-                &and PNO_CCSD should be true at the same time",-1)
+                &and use_pnos should be true at the same time",-1)
               endif
-
-              call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-              &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-              &gao,fragment_job)
+              if(.not.fragment_job)then
+                call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
+                &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+                &gao,fragment_job,m2%val)
+              else
+                call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
+                &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+                &gao,fragment_job,m2%val,f=fraginfo)
+              endif
 
            else
 
@@ -3436,27 +3462,268 @@ module cc_debug_routines_module
   !> \brief this subroutine calculates the ccsd residual by transforming each
   !>        doubles amplitudes to their respective set of PNO's and then
   !>        transforming the result vector back to the reference basis. 
-  subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,no,nv,nb,xo,xv,yo,yv,mylsitem,gao,fj)
+  subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,no,nv,nb,xo,xv,yo,yv,mylsitem,gao,fj,t_mp2,f)
     implicit none
+    !ARGUMENTS
     integer, intent(in) :: no, nv, nb
     real(realk), intent(in) :: t1(nv,no), t2(nv,no,nv,no)
     real(realk), intent(inout) :: o1(nv,no), o2(nv,no,nv,no)
     real(realk), intent(in) :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv)
     type(lsitem), intent(inout) :: mylsitem
     type(array4), intent(inout) :: gao
+    real(realk), intent(in) :: t_mp2(nv,no,nv,no)
     logical, intent(in) :: fj
-    !call array4_read(gao)
-    !call array4_dealloc(gao)
+    type(decfrag),intent(in),optional :: f
+    !INTERNAL VARIABLES
+    type(SpaceInfo),pointer :: pno_cv(:),pno_S(:)
+    type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:),pno_govov(:),pno_gvovo(:)
+    integer :: nspaces,ns,ns2,c
+    real(realk),pointer :: w1(:),w2(:),w3(:)
+    real(realk),pointer :: gvvvv(:)
+    integer :: nvp,nop
+    real(realk),pointer :: d(:,:)
+
+    if(fj.and..not.present(f))call lsquit("ERROR(get_ccsd_residual_pno_style):wrong input fj without f",-1)
+
+    !DETERMINE NUMBER OF SPACES TO BE CONSIDERED
+    if(fj)then
+                !COUNT PAIRS OUTSIDE EOS                        !COUNT PAIRS WITH 1 IDX IN EOS   !EOS
+      nspaces = ( no - f%noccEOS ) * ( no - f%noccEOS + 1) / 2 + f%noccEOS * ( no - f%noccEOS ) + 1
+    else
+                !ALL PAIRS
+      nspaces = no * ( no + 1 ) / 2
+    endif
+
+    allocate(pno_cv(nspaces))
+    allocate(pno_S(nspaces*(nspaces-1)/2))
+    call mem_alloc(pno_t2,nspaces)
+    call mem_alloc(pno_o2,nspaces)
+    call mem_alloc(w1,nb**4)
+    call mem_alloc(w2,nb**4)
+    call mem_alloc(gvvvv,nv**4)
 
     !===============================================================
     !begin setting up all density matrices and finding the PNO basis
     !===============================================================
 
     ! if  we have a fragment job the basis of the atomic (pair) site has to be
-    ! treated in a special way, either LO or FNO basis
-    if(fj)then
-    endif
+    ! treated in a special way, either LO or FNO basis, this will be element 1
+    ! in all the array arrays
+    if(fj)call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj,f=f)
+    if(.not.fj)call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj)
 
-    !print *,"fuck it I am here"
+    call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces)
+
+    call get_pno_amplitudes(t2,pno_cv,pno_t2,nspaces,no,nv)
+
+    !gvvvv
+    call array4_read(gao)
+    call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yv,nv,xv,nv,yv,nv,w2)
+    call dcopy(nv**4,gao%val,1,gvvvv)
+    call array4_dealloc(gao)
+    
+    LoopContribs:do ns = 1, nspaces
+
+      d   => pno_cv(ns)%d
+      nvp =  pno_cv(ns)%ns1
+      nop =  pno_cv(ns)%n
+      
+      !transform to basis of space gvvvv(acbd) = gvvvv(\bar{a}\bar{c}\bar{b}\bar{d})
+      call dgemm('t','t',nv**3,nvp,nv,1.0E0_realk,d,nvp,gvvvv,nv,0.0E0_realk,w1,nv**3)
+      call dgemm('t','t',nv**2*nvp,nvp,nv,1.0E0_realk,d,nvp,w1,nv,0.0E0_realk,w2,nv**2*nvp)
+      call dgemm('t','t',nv*nvp**2,nvp,nv,1.0E0_realk,d,nvp,w2,nv,0.0E0_realk,w1,nv*nvp**2)
+      call dgemm('t','t',nvp**3,nvp,nv,1.0E0_realk,d,nvp,w1,nv,0.0E0_realk,w1,nvp**3)
+
+      call array_reorder_4d(1.0E0_realk,w1,nvp,nvp,nvp,nvp,[1,3,2,4],0.0E0_realk,w2)
+      call array_reorder_4d(1.0E0_realk,pno_t2(ns)%elm1,nvp,1,nvp,1,[1,3,2,4],0.0E0_realk,w1)
+     
+      call dgemm('n','n',nvp**2,nop**2,nvp**2,1.0E0_realk,w2,nvp**2,w1,nvp**2,0.0E0_realk,w3,nvp**2)
+      
+      d   => null()
+      nvp =  0
+    enddo LoopContribs
+    
+    c = 0
+    do ns = 1, nspaces
+      do ns2 = ns + 1, nspaces
+        c = c + 1
+        call mem_dealloc(pno_S(c)%iaos)
+        call mem_dealloc(pno_S(c)%d)
+      enddo
+      call mem_dealloc(pno_cv(ns)%iaos)
+      call mem_dealloc(pno_cv(ns)%d)
+      call array_free(pno_t2(ns))
+      !call array_free(pno_o2(ns))
+    enddo
+    deallocate(pno_cv)
+    deallocate(pno_S)
+    call mem_dealloc(pno_t2)
+    call mem_dealloc(pno_o2)
+    call mem_dealloc(w1)
+    call mem_dealloc(w2)
+    call mem_dealloc(w3)
+    call mem_dealloc(gvvvv)
+
   end subroutine get_ccsd_residual_pno_style
+
+  subroutine get_pno_overlap_matrices(no,nv,pno_cv,pno_S,n)
+    implicit none
+    integer :: no, nv, n
+    type(SpaceInfo),intent(in) :: pno_cv(n)
+    type(SpaceInfo),intent(inout) :: pno_S(n*(n-1)/2)
+    integer :: i, j, c
+    c = 0
+    do i=1,n
+      do j=i+1,n
+        c = c + 1
+        pno_S(c)%ns1 = pno_cv(i)%ns2
+        pno_S(c)%ns2 = pno_cv(j)%ns2
+        call mem_alloc(pno_S(c)%d,pno_S(c)%ns1,pno_S(c)%ns2)
+        call dgemm('t','n',pno_S(c)%ns1,pno_S(c)%ns2,nv,1.0E0_realk,pno_cv(i)%d,&
+        &pno_cv(i)%ns1,pno_cv(j)%d,pno_cv(j)%ns1,0.0E0_realk,pno_S(c)%d,pno_S(c)%ns1)
+        pno_S(c)%n = 2
+        call mem_alloc(pno_S(c)%iaos,pno_S(c)%n)
+        pno_S(c)%iaos = [i,j]
+      enddo
+    enddo
+  end subroutine get_pno_overlap_matrices
+
+  subroutine get_pno_amplitudes(t2,cv,pno_t2,n,no,nv)
+    implicit none
+    integer, intent(in) :: n,no,nv
+    real(realk),intent(in) :: t2(:,:,:,:)
+    type(SpaceInfo), intent(in) :: cv(n)
+    type(array), intent(inout) :: pno_t2(n)
+    real(realk), pointer :: tmp1(:),tmp2(:)
+    integer :: i,pnv
+    call mem_alloc(tmp1,no**2*nv**2)
+    call mem_alloc(tmp2,no**2*nv**2)
+
+    do i=1,n
+      pnv = cv(i)%ns2
+      pno_t2(i) = array_init([pnv,no,pnv,no],4)
+
+      call dgemm('t','n',pnv,no*2*nv,nv,1.0E0_realk,cv(i)%d,nv,t2,nv,0.0E0_realk,tmp1,pnv)
+      call array_reorder_4d(1.0E0_realk,tmp1,pnv,no,nv,no,[3,4,1,2],0.0E0_realk,tmp2)
+      !the amplitudes are symmetric, also after the transformation, therefore it
+      !is not important in which order they are stored
+      call dgemm('t','n',pnv,no*2*pnv,nv,1.0E0_realk,cv(i)%d,nv,tmp2,nv,0.0E0_realk,pno_t2(i)%elm1,pnv)
+    enddo
+
+    call mem_dealloc(tmp1)
+    call mem_dealloc(tmp2)
+  end subroutine get_pno_amplitudes
+
+  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,fj,f)
+    implicit none
+    !ARGUMENTS
+    integer, intent(in) :: no, nv, nb, n
+    real(realk), intent(in) :: t_mp2(nv,no,nv,no)
+    type(SpaceInfo),pointer :: cv(:)
+    logical,intent(in) :: fj
+    type(decfrag),intent(in),optional :: f
+    !INTERNAL
+    real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
+    integer :: i,j,oi,oj,counter
+    logical :: doit
+    
+    
+
+    if(fj)then
+
+      call solve_eigenvalue_problem_unitoverlap(nv,f%VirtMat,virteival,U)
+      call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1))
+      call mem_alloc(cv(1)%iaos,f%noccEOS)
+      cv(1)%n    = f%noccEOS
+      cv(1)%iaos = f%idxo
+      counter = 1
+
+      doi :do i = 1, no
+        doj: do j = i, no
+
+          !check if both indices occur in occ EOS, if yes -> skip
+          doit=.true.
+          oiloop: do oi = 1, f%noccEOS
+            if(f%idxo(oi) == i)then
+              do oj = 1, f%noccEOS
+                if(f%idxo(oj) == j)then
+                  doit = .false.
+                  exit oiloop
+                endif
+              enddo
+            endif
+          enddo oiloop
+
+          if(doit)then
+            counter = counter + 1
+            call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv)
+            call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
+            call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
+            cv(counter)%n    = 2
+            call mem_alloc(cv(counter)%iaos,cv(counter)%n)
+            cv(counter)%iaos = [i,j]
+          endif
+        enddo doj
+      enddo doi
+    else
+      counter = 0
+      doiful :do i = 1, no
+        dojful: do j = i, no
+          counter = counter + 1
+          call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv)
+          call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
+          call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
+          cv(counter)%n    = 2
+          call mem_alloc(cv(counter)%iaos,cv(counter)%n)
+          cv(counter)%iaos = [i,j]
+        enddo dojful
+      enddo doiful
+    endif
+    
+    if( counter /= n )then
+      call lsquit("ERROR(get_pno_trafo_matrices):counting is not consistent",-1)
+    endif
+  end subroutine get_pno_trafo_matrices
+
+  subroutine calculate_pair_density_matrix(PD,tvv,nv)
+    implicit none
+    !ARGUMENTS
+    integer, intent(in) :: nv
+    real(realk),intent(inout) :: PD(nv,nv)
+    real(realk),intent(in)    :: tvv(nv,nv)
+    !INTERNAL
+    
+    call dgemm('n','t',nv,nv,nv,1.0E0_realk,tvv,nv,tvv,nv,0.0E0_realk,PD,nv)
+    call dgemm('t','n',nv,nv,nv,1.0E0_realk,tvv,nv,tvv,nv,1.0E0_realk,PD,nv)
+
+  end subroutine calculate_pair_density_matrix
+
+  subroutine truncate_trafo_mat_from_EV(U,EV,n,NU)
+    implicit none
+    !ARGUMENTS
+    integer :: n
+    real(realk) :: U(n,n),EV(n)
+    type(SpaceInfo) :: NU
+    !INTERNAL
+    integer :: i,nn
+    real(realk) :: thr
+    !CHANGE THIS THRESHOLD AT SOME POINT
+    thr = -1.0*huge(thr)
+
+    !on finishing the loop i contains the position of the first element that should be in the
+    !transformation
+    do i = 1, n
+      if(EV(i)>thr)then
+        exit
+      endif
+    enddo
+    ! n elements in the transformation
+    nn = n - i + 1
+
+    NU%ns1 = n
+    NU%ns2 = nn
+    call mem_alloc(NU%d,n,nn)
+    NU%d = U(1:n,i:n)
+
+  end subroutine truncate_trafo_mat_from_EV
 end module cc_debug_routines_module

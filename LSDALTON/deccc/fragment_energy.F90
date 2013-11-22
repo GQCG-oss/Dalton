@@ -2153,7 +2153,7 @@ contains
          & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
     call array4_free(g)
     ! Get correlation density matrix for atomic fragment
-    call calculate_corrdens(t2,AtomicFragment)
+    call calculate_corrdens_frag(t2,AtomicFragment)
  end if FragAdapt
 
 
@@ -2825,7 +2825,7 @@ end subroutine optimize_atomic_fragment
             & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
        call array4_free(g)
        ! Get correlation density matrix
-       call calculate_corrdens(t2,AtomicFragment)
+       call calculate_corrdens_frag(t2,AtomicFragment)
        call array4_free(t2)
 
        ! Set MO coefficient matrices corresponding to fragment-adapted orbitals

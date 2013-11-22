@@ -5447,7 +5447,7 @@ if(DECinfo%PL>0) then
   !> and on whether we use both occupied and virtual partitioning schemes (details inside subroutine).
   !> \author Kasper Kristensen
   !> \date August 2013
-  subroutine calculate_corrdens(t2,MyFragment)
+  subroutine calculate_corrdens_frag(t2,MyFragment)
     implicit none
     !> Doubles amplitudes in AOS stored as (a,i,b,j)
     type(array4),intent(in) :: t2
@@ -5485,7 +5485,7 @@ if(DECinfo%PL>0) then
 
     MyFragment%CDset=.true.
 
-  end subroutine calculate_corrdens
+  end subroutine calculate_corrdens_frag
 
 
   !> \brief Calculate occ-occ and virt-virt blocks of correlation density matrix
