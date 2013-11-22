@@ -80,10 +80,11 @@ IMPLICIT NONE
      ! This is a data structure to represent a single k-point
      logical :: self_dual, is_gamma,is_singular
      integer :: ix_orig
-     integer :: n(3)
+     integer :: n(3),nsingular
      integer :: ninv(3)
      real(realk) :: weight
      real(realk) :: lambda(3)
+     real(realk), pointer :: eigv(:)
      COMPLEX(complexk),pointer :: Uk(:,:),Uinv(:,:)
   end type BZpoint_t
 
@@ -97,7 +98,6 @@ IMPLICIT NONE
      type(BZpoint_t) :: kpnt(Max_kpoints)
      type(pbc_elstr_t) :: fck
      type(pbc_elstr_t) :: Smat
-     real(realk), pointer :: keigv(:)
   end type BZgrid_t
 
   type splitBZgrid_t
@@ -185,6 +185,7 @@ SUBROUTINE pbc_init_BZgrid(rlvec,nk1,nk2,nk3,symtxt,BZ,ndim1,ndim2,lupri)
            BZ%kpnt(kindex)%lambda(3) = real(m3, realk) / nk3
            BZ%kpnt(kindex)%is_gamma = is_gamma
            BZ%kpnt(kindex)%self_dual = self_dual
+           BZ%kpnt(kindex)%nsingular = 0
            if (BZ%use_invsym .and. .not. self_dual) then
               k_cnt = k_cnt + 2
               BZ%kpnt(kindex)%weight = 2.0D0
@@ -208,9 +209,27 @@ SUBROUTINE pbc_init_BZgrid(rlvec,nk1,nk2,nk3,symtxt,BZ,ndim1,ndim2,lupri)
 
   call init_pbc_elstr(bz%fck,ndim1,ndim2)
   call init_pbc_elstr(bz%Smat,ndim1,ndim2)
-  allocate(bz%keigv(bz%nk*ndim1))
+  !call mem_alloc(bz%keigv,bz%nk*ndim1)
 
 END SUBROUTINE pbc_init_BZgrid
+
+
+SUBROUTINE pbc_end_BZgrid(BZ)
+  implicit none
+  ! input and output arguments
+  type(BZgrid_t), intent(inout) :: BZ
+  ! local variables
+  integer :: i
+
+  call free_pbc_elstr(bz%fck)
+  call free_pbc_elstr(bz%Smat)
+  do i=1,Bz%nk
+    call mem_dealloc(bz%kpnt(i)%eigv)
+  enddo
+
+END SUBROUTINE pbc_end_BZgrid
+
+
 
 subroutine pbc_get_kpoint(index,kvec)
   implicit none
@@ -321,6 +340,24 @@ kdep%kcdensityvec =0.0_realk
 kdep%kcdensitymat =0.0_realk
 
 END SUBROUTINE zero_pbc_elstr
+
+!free the type(pbc_elstr_t)
+SUBROUTINE free_pbc_elstr(kdep)
+IMPLICIT NONE
+TYPE(pbc_elstr_t),intent(INOUT) :: kdep
+
+deallocate(kdep%kfockvec)
+deallocate(kdep%kfockmat)
+deallocate(kdep%koverlapvec)
+deallocate(kdep%koverlapmat)
+deallocate(kdep%kcdensityvec)
+deallocate(kdep%kcdensitymat)
+deallocate(kdep%kddensityvec)
+deallocate(kdep%kddensitymat)
+deallocate(kdep%zelms)
+deallocate(kdep%keigv)
+END SUBROUTINE free_pbc_elstr
+
 
 
 SUBROUTINE pbc_ddevectorize_mat(MAT,n,m,VEC)
@@ -644,7 +681,7 @@ TYPE(BZgrid_t),intent(iN) :: bz
 !TYPE(pbc_elstr_t),intent(IN) :: kdep(bz%nk)
 !LOCAL VARIABLES
 REAL(realk) :: kpt,kvec(3)
-INTEGER :: i,k,iunit
+INTEGER :: i,k,iunit,nonsingdim
 CHARACTER(LEN=3) :: nline
 
    iunit=-1
@@ -656,9 +693,9 @@ CHARACTER(LEN=3) :: nline
     write(iunit,101,advance=nline) kvec(1) !must convert to k point value
     101 FORMAT(E12.4)
     DO i=1,nbast
-      if(i .eq. nbast) nline = 'yes'
+      if(i .eq. nonsingdim) nline = 'yes'
       !write(iunit,100,advance=nline) real(kdep(k)%keigv(i))
-      write(iunit,100,advance=nline) bz%keigv((k-1)*nbast+i)
+      write(iunit,100,advance=nline) bz%kpnt(k)%eigv(i)
       100 FORMAT(E18.8)
     ENDDO
    ENDDO

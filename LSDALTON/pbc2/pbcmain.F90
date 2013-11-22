@@ -153,27 +153,10 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   write(*,*) 'Number of k points', Bz%nk
   write(lupri,*) 'Number of k points', Bz%nk
 
-!  call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
-!  nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)
-  !write(*,*) 'nfsize: ',nfsze
-  !write(lupri,*) 'nfsize: ',nfsze
-  call mem_alloc(nfdensity,num_latvectors)
-!  call mem_alloc(f_1,num_latvectors)
-!  call mem_alloc(Ovl,num_latvectors)
-!  call mem_alloc(g_2,num_latvectors)
     k=0
     l1=0
     l2=0
     l3=0
-    !do l1=-3,3
-  !do n1=1,num_latvectors
-  !    call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-  !    call mat_init(nfdensity(n1),nbast,nbast)
-  !    call mat_zero(nfdensity(n1))
-  !enddo
-  call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-  call mat_init(nfdensity(n1),nbast,nbast)
-  call mat_zero(nfdensity(n1))
 
 #ifdef DEBUGPBC
 
@@ -217,11 +200,11 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   !write(*,*) 'debugpbc 4'
   !enddo
 
-  call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-  Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+  !call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+  Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,dmat)
   write(*,*) 'density'
   write(lupri,*) 'density'
-  call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
+  call mat_print(dmat,1,nbast,1,nbast,lupri)
   write(*,*) 'density written to LSDALTON.OUT'
 
 
@@ -250,7 +233,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         ENDDO
         CALL lsCLOSE(IUNIT,'KEEP')
   
-        Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+        Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,dmat)
 
     elseif(lattice%testcase) THEN !THIS IS FOR DEBUGGING
       iunit = 345
@@ -292,7 +275,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         lattice%lvec(k)%d_mat(4,2)=0.44350182805060839D0
         lattice%lvec(k)%d_mat(4,3)=0.28409190914049431D0
         lattice%lvec(k)%d_mat(4,4)=0.44350182805060839D0
-        Call mat_set_from_full(lattice%lvec(k)%d_mat,1.D0,nfdensity(k))
+        Call mat_set_from_full(lattice%lvec(k)%d_mat,1.D0,dmat)
         call mem_dealloc(lattice%lvec(k)%d_mat)
       else
         mattxt=adjustl(lattice%debugdensfile)
@@ -314,7 +297,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         CALL lsCLOSE(IUNIT,'KEEP')
 
       call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-      Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+      Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,dmat)
       !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
       call mem_dealloc(lattice%lvec(k)%d_mat)
     endif
@@ -323,14 +306,15 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
 else
 
 
-      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-      call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
+      !call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+      !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
     endif
 
 
 
 #else
 
+    write(*,*) 'before lattice%testcase'
     if(lattice%testcase) THEN !THIS IS FOR DEBUGGING
       iunit = 345
       scfit=1
@@ -395,7 +379,7 @@ else
       !enddo
 
       call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-      Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+      Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,Dmat)
 
       write(lupri,*) 'density used'
       do j=1,nbast
@@ -412,8 +396,8 @@ else
       !   call mat_init(nfdensity(n1),nbast,nbast)
       !   call mat_zero(nfdensity(n1))
       !enddo
-      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-      call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
+      !call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+      !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
 
 
     endif!END ELSEIF TESTCASE DEBUGGING
@@ -425,7 +409,7 @@ else
       !call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast,lupri)
       !write(*,*) 'density used'
       write(lupri,*) 'Density first'
-      call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
+      call mat_print(dmat,1,nbast,1,nbast,lupri)
 #endif
 
   !Preparation for the far field contribution, setup multipole
@@ -433,16 +417,17 @@ else
   maxmultmom=lattice%lmax
   Tlmax=lattice%Tlmax
 
+    write(*,*) 'before call to multipole'
   CALL LSTIMER('START ',TS,TE,LUPRI)
   call pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,&
     &latt_cell,refcell,num_latvectors,maxmultmom)
   CALL LSTIMER('pbc_multipole',TS,TE,LUPRI)
   
-  call mem_alloc(Tlat,(Tlmax+1)**2,(Tlmax+1)**2)
+ ! call mem_alloc(Tlat,(Tlmax+1)**2,(Tlmax+1)**2)
 
-  write(*,*) 'density used ',num_latvectors
-  call pbc_controlmm(20,Tlat,Tlmax,maxmultmom,.false.,lattice%ldef%avec,&
-     nbast,lupri,nfdensity,num_latvectors,lattice,E_ff,E_nnff,refcell)
+ ! write(*,*) 'density used ',num_latvectors
+ ! call pbc_controlmm(20,Tlat,Tlmax,maxmultmom,.false.,lattice%ldef%avec,&
+ !    nbast,lupri,dmat,num_latvectors,lattice,E_ff,E_nnff,refcell)
 
 #ifdef DEBUGPBC
   if(lattice%compare_elmnts) then
@@ -491,18 +476,21 @@ else
     call mem_dealloc(Tlat)
 
   else
-    call mem_dealloc(Tlat)
+!    call mem_dealloc(Tlat)
     !call init_pbc_elstr(bz%fck,nbast,nbast)
     !call init_pbc_elstr(bz%smat,nbast,nbast)
 	do i=1,num_latvectors
 	 call free_Moleculeinfo(latt_cell(i))
 	enddo
     deallocate(latt_cell)
+    write(*,*) 'before call to scf loops'
 
   call pbc_startzdiis(input%molecule,setting,nbast,lattice,&
-  num_latvectors,maxmultmom,bz,nfdensity(n1),lupri,luerr)
-  call mat_free(nfdensity(n1))
-  call mem_dealloc(nfdensity)
+  num_latvectors,maxmultmom,bz,dmat,lupri,luerr)
+
+  call pbc_end_Bzgrid(bZ)
+!  call mat_free(nfdensity(n1))
+!  call mem_dealloc(nfdensity)
 
  !   E_1=E_kin+E_en+E_nuc
  !   if(lattice%num_its .gt. 0) call pbc_startzdiis(input%molecule,setting,nbast,lattice,&

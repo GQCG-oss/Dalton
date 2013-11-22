@@ -733,7 +733,7 @@ end subroutine pbc_Tmatrix_print
 
 
 
-SUBROUTINE pbc_fform_fck(Tlmax,tlat,lmax,nbast,ll,nfdensity,nucmom,&
+SUBROUTINE pbc_ff_fck(Tlmax,tlat,lmax,nbast,ll,nfdensity,nucmom,&
                          g_2,E_ff,E_nn,lupri)
 IMPLICIT NONE
 INTEGER,INTENT(IN) :: Tlmax,lmax,nbast,lupri
@@ -749,13 +749,13 @@ CHARACTER(len=10) :: numstr0,numstr1,numstr2,numstr3
 TYPE(lattice_cell_info_t), pointer :: sphermom(:)
 INTEGER :: num_latvec,nf,nk,nrlm,j,s,t,st
 INTEGER :: y,x2,y2,z2,jk,lm,delta,m,ii,iunit
-integer :: fdim(3),cd,il1,il2,il3
+integer :: fdim(3),cd,il1,il2,il3,indred
 INTEGER(short) :: gab1
 !TYPE(matrix) :: rhojk((lmax+1)**2)
 TYPE(matrix) :: farfieldtmp
-REAL(realk) :: phase1,phase2,phase3,rhojk((lmax+1)**2)
+REAL(realk) :: phase1,phase2,phase3
+REAL(realk),pointer :: rhojk(:)
 !REAL(realk) :: mmfck(nfsze,nbast*nbast),kvec(3)!,debug_mat(nbast,nbast)
-REAL(realk) :: multfull(nbast,nbast), Dfull(nbast,nbast)
 REAL(realk) :: Coulombf2,Coulombfst,Coulomb2,Coulombst
 !REAL(realk) :: PI=3.14159265358979323846D0
 !real(realk) :: tlatlm((lmax+1)**2),tlatlmnu((lmax+1)**2)
@@ -785,6 +785,7 @@ num_latvec=size(ll%lvec)
 nrlm=(lmax+1)**2
 call mem_alloc(tlatlm,nrlm)
 call mem_alloc(tlatlmnu,nrlm)
+call mem_alloc(rhojk,(1+lmax)**2)
 tlatlm=0d0
 tlatlmnu=0d0
 
@@ -896,55 +897,23 @@ write(lupri,*) 'debugsum rhojk^2', debugsumt
 write(*,*) 'debugsumt rhojk^2', debugsumt
 #endif
 !
-!if(debugsumT .gt. 0d0) then
-!  write(*,*) 'debugsumT', debugsumT
-!  write(*,*) sphermom(4)%getmultipole(255)%elms
-!  stop
-!endif
 #ifdef DEBUGPBC
 write(*,*) 'DEBUG 1'
 #endif
 
-!DO lm=1,(lmax+1)**2
-!<<<<<<< HEAD
-!  !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
-!  tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
-!  tlatlmnu(lm)=dot_product(tlat(lm,1:nrlm),nucmom)
-!ENDDO
-!
-!debugsumT=0d0
-!do jk=1,(lmax+1)**2
-!   debugsumt=debugsumt+tlatlm(jk)**2
-!!   write(lupri,*) rhojk(jk)+nucmom(jk)
-!enddo
-!write(lupri,*) 'debugsum tlatlm^2', debugsumt
-!write(*,*) 'debugsumt tlatlm^2', debugsumt
-
-!mmfck=0d0
-!#ifdef DEBUGPBC
-!     write(*,*) 'IAO 1, IAO 2'
-!     call mat_print(sphermom(11)%getmultipole(1),1,nbast,1,nbast,6)
-!     debugsumt=0d0
-!     normsq= 0d0
-!     do jk=1,(lmax+1)**2
-!        debugsumt=debugsumt+sphermom(11)%getmultipole(jk)%elms(1)**2
-!        normsq=normsq+sphermom(11)%getmultipole(jk)%elms(2)**2
-!     enddo
-!     write(*,*) 'debugsum localmom for 1 1', debugsumt
-!     write(*,*) 'debugsum localmom for 1 2', normsq
-!       
-!#endif
-
 DO nk=1,num_latvec
 
    x2=ll%lvec(nk)%lat_coord(1)
-   !y2=ll%nflvec(nf)%lat_coord(2)
-   !z2=ll%nflvec(nf)%lat_coord(3)
+   y2=ll%lvec(nk)%lat_coord(2)
+   z2=ll%lvec(nk)%lat_coord(3)
    !if(abs(x2) .gt. ll%col1) CYCLE
    !if(abs(y2) .gt. ll%col2) CYCLE
    !if(abs(z2) .gt. ll%col3) CYCLE
    !call find_latt_index(nk,x2,y2,z2,fdim,ll,ll%max_layer)
-   if(.not.sphermom(nk)%is_defined) CYCLE
+   if(.not. ll%lvec(nk)%is_redundant) then
+     call find_latt_vectors(nk,x2,y2,z2,fdim,ll)
+     call find_latt_index(indred,-x2,-y2,-z2,fdim,ll,ll%max_layer)
+     if(.not.sphermom(nk)%is_defined) CYCLE
 #ifdef DEBUGPBC
      write(*,*) 'x2',x2,nk
      call mat_init(ll%lvec(nk)%oper(1),nbast,nbast)
@@ -975,7 +944,7 @@ DO nk=1,num_latvec
           ! endif
 
            !if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
-             call mat_daxpy(-tlatlm(lm),sphermom(nk)%getmultipole(lm),farfieldtmp)
+         call mat_daxpy(-tlatlm(lm),sphermom(nk)%getmultipole(lm),farfieldtmp)
           !endif
      
               
@@ -1077,6 +1046,7 @@ DO nk=1,num_latvec
    call mat_free(ll%lvec(nk)%oper(1))
  endif
 #endif
+ endif!is_redundant
    !call mat_free(ll%lvec(nk)%oper(3))
 ENDDO
 #ifdef DEBUGPBC
@@ -1090,9 +1060,9 @@ IF(ll%compare_elmnts ) THEN
   
   iunit=-1
   DO nf=1,num_latvec
-    x2=ll%nflvec(nf)%lat_coord(1)
-    y2=ll%nflvec(nf)%lat_coord(2)
-    z2=ll%nflvec(nf)%lat_coord(3)
+    x2=ll%lvec(nf)%lat_coord(1)
+    y2=ll%lvec(nf)%lat_coord(2)
+    z2=ll%lvec(nf)%lat_coord(3)
     call find_latt_index(nk,x2,y2,z2,fdim,ll,ll%max_layer)
     write(numstr0,'(I5)')  iter
     write(numstr1,'(I5)')  x2
@@ -1149,6 +1119,7 @@ write(*,*) 'Farfield energy', E_ff
 
 call mem_dealloc(tlatlm)
 call mem_dealloc(tlatlmnu)
+call mem_dealloc(rhojk)
 DO ii=1,num_latvec
   if(sphermom(ii)%is_defined) then
     DO y=1,(lmax+1)**2
@@ -1160,7 +1131,7 @@ ENDDO
 call mem_dealloc(sphermom)
 call mat_free(farfieldtmp)
 
-END SUBROUTINE pbc_fform_fck
+END SUBROUTINE pbc_ff_fck
 
 SUBROUTINE pbc_comp_nucmom(refcell,nucmom,lmax,lupri)
 

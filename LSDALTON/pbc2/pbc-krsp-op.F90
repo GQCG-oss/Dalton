@@ -21,6 +21,11 @@ INTEGER                       :: layer,l1,l2,l3
 REAL(realk)                   :: phase1,phase2,phase3
 COMPLEX(complexk)             :: phase
 
+ if(oper .eq. 1) then
+   Bkmat%Smat%zelms(:)=CMPLX(0.,0.,COMPLEXK)
+ else
+   Bkmat%fck%zelms(:)=CMPLX(0.,0.,COMPLEXK)
+ endif
 
  DO layer = 1, size(Armat%lvec)
    l1=int(Armat%lvec(layer)%lat_coord(1))
@@ -95,9 +100,10 @@ INTEGER                       :: layer,l1,l2,l3
 REAL(realk)                   :: phase1,phase2,phase3
 COMPLEX(complexk)             :: phase
 
+ Bkmat%Smat%zelms(:) = CMPLX(0.,0.,COMPLEXK)
  DO layer = 1, numvecs
 
-   if(ll%lvec(layer)%f1_computed )then
+   if(ll%lvec(layer)%ovl_computed )then
      l1=int(ll%lvec(layer)%lat_coord(1))
      l2=int(ll%lvec(layer)%lat_coord(2))
      l3=int(ll%lvec(layer)%lat_coord(3))

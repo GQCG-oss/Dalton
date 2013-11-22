@@ -216,7 +216,7 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
 
   !fixme nucmom 
 !   call lsquit('fixme nucmom no value assigned to this variable',-1)
-   call pbc_fform_fck(ll%tlmax,tlat,ll%lmax,ndim,ll,nfdensity,nucmom,&
+   call pbc_ff_fck(ll%tlmax,tlat,ll%lmax,ndim,ll,nfdensity,nucmom,&
                    g_2,E_ff,E_nn,lupri)
 
   CALL pbc_nucpot(lupri,luerr,setting,molecule,ll,&
