@@ -48,7 +48,7 @@ C     variables for SRCPBERI
       double precision mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
-      PARAMETER  (NXTABLE = 20, NCTABLE = 29) 
+      PARAMETER  (NXTABLE = 20, NCTABLE = 30) 
       CHARACTER*10 XTABLE(NXTABLE),CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
@@ -67,7 +67,7 @@ C
      >             'SRCMULO_B ','SRCMULO_C ','SRCMULO_D ','SRCMULO_E ',
      >             'NULL_S    ','SRCMDLDA  ','LNSCLDAS  ','LNSCLDA   ',
      >             'LSCLDA    ','LNSCPBEGWS','LSCPBEGWS ','LNCLYP    ',
-     >             'LSCLYP    '/
+     >             'LSCLYP    ','SRCLYPRI  ' /
 
 C K. Sharkas and J. Toulouse beg
 C List of lambda-dependent complement density functionals for linear separation of the electron-electron interaction.
@@ -257,7 +257,7 @@ C
         IF (CTABLE(II) .EQ. SRCFUN) THEN
           GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
      &           214,215,216,217,218,219,220,221,222,223,224,225,226,
-     &           227,228,229),II
+     &           227,228,229,230),II
         END IF
  200  CONTINUE
       SETCFUN = .FALSE.
@@ -402,6 +402,12 @@ C Scaled complement correlation LYP functional (KS 08-08-11)
 229   DOLASC_GGALYP = .TRUE.
       GO TO 20
 
+C Rational interpolation LYP functional                             
+230   DOSRC_LYPRI = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+
+
 C
   20  CONTINUE
 C
@@ -411,7 +417,7 @@ CFRAN END
       IF (.NOT.SETCFUN) THEN
           WRITE(LUPRI,'(/2A/A/)')
      > '  SRFUN_INPUT : Invalid or no SR correlation func. specified : '
-     >   ,SRCFUN,'             Corrently implemented functionals are :'
+     >   ,SRCFUN,'             Currently implemented functionals are :'
           DO J = 1,NCTABLE
               WRITE(LUPRI,'(13X,A)') CTABLE(J)
           ENDDO
@@ -490,7 +496,7 @@ C               be calling Becke and LYP functionals.
      >        .OR.DOSRC_PBEGWS.OR.DOSRC_MULOC_GGA.OR.DOSRC_MULOD_GGA
      >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO.OR.DOLAX_PBEGWS.OR.
      >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
-     >        DOLANC_GGALYP.OR.DOLASC_GGALYP
+     >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI
 C
 
       NDER  = 0

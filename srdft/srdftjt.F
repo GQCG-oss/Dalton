@@ -447,6 +447,7 @@ C     functionals
       external ESRX_PBEHSEERF,  ESRX_PBETCSERF, ESRX_PBERIERF
       external ESRX_PBEGWSERF
       external ESRC_PBETCSJERF, ESRC_PBETCSERF, ESRC_PBERIERF
+      external ESRC_LYPRIERF
       external ESRC_PBEWIERF,   ESRC_PBEGWSERF, ESRC_PBELOERF     
 C     spin functionals
       external ESRX_LDAERFSPIN, ESRC_LDAERFSPIN
@@ -644,6 +645,15 @@ C     Initialisations
      >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
      >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
       ENDIF
+
+!     rational interpolation LYP
+      IF(DOSRC_LYPRI) THEN
+        call ESRC_LYPRIERF(rho,RHOGRD,CHIVAL,Ec)
+        call DESR(ESRC_LYPRIERF,rho,RHOGRD,CHIVAL,NORDER,
+     >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
+     >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
+      ENDIF
+
 
 !     PBE local energy formula
       IF(DOSRC_PBELO) THEN

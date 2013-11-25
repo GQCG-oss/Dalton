@@ -98,6 +98,7 @@ C JT 12-02-05 beg
       DOSRX_PBERI  = .FALSE.
       DOSRC_PBERI  = .FALSE.
 C JT 12-02-05 end
+      DOSRC_LYPRI  = .FALSE.
 
 C JT 11-08-09 beg
       DOSRX_PBEGWS = .FALSE.

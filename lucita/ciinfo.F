@@ -1320,10 +1320,12 @@ C        ISM = (IPARI-1)*NML + MNML - 1
       DIMENSION RHO1SM(*),OCCNUM(*),XNAT(*)
 *. Scratch ( Largest symmetry block )
       DIMENSION SCR(*)
+      real*8  :: occsum_tot
 #include "parluci.h"
 *
-      NTESTL = 0
-      NTEST = MAX(NTESTL,IPRDEN)
+      occsum_tot = 0.0d0
+      NTESTL     = 0
+      NTEST      = MAX(NTESTL,IPRDEN)
 *. IOBOFF : Offset for active orbitals in symmetry order
       DO ISMOB = 1, NSMOB
         IF(ISMOB.EQ.1) THEN
@@ -1394,7 +1396,8 @@ C        ISM = (IPARI-1)*NML + MNML - 1
      &    ' Natural occupation numbers for symmetry = ', ISMOB
           WRITE(LUWRT,'(2X ,A)')
      &    ' __________________________________________________'
-          OCCSUM = DSUM(LOB,OCCNUM(IOBOFF),1)
+          OCCSUM     = DSUM(LOB,OCCNUM(IOBOFF),1)
+          occsum_tot = occsum_tot + occsum 
           WRITE(LUWRT,9002) (OCCNUM(IOBOFF+J-1),J=1,LOB)
           WRITE(LUWRT,9003) OCCSUM
 csk       CALL WRTMT_LU(OCCNUM(IOBOFF),1,LOB,1,LOB)
@@ -1407,9 +1410,11 @@ csk       CALL WRTMT_LU(OCCNUM(IOBOFF),1,LOB,1,LOB)
         END IF
       END DO
 *. ( End of loop over orbital symmetries )
+      WRITE(LUWRT,9004) OCCSUM_tot
 *
  9002 FORMAT(/,(5F14.9))
  9003 FORMAT(/'   Sum =',T15,F14.9)
+ 9004 FORMAT(/'   Total sum =',T15,F14.9)
 C
       RETURN
       END

@@ -442,6 +442,7 @@ contains
       integer                          :: luhc_internal
       integer                          :: twopart_densdim
       integer                          :: rhotype
+      integer                          :: rhotype_spin1
       integer                          :: idum
       integer(8)                       :: kdum
       integer(8)                       :: k_scratchsbatch
@@ -720,11 +721,15 @@ contains
 !       export 1-/2-particle density matrix to MCSCF format
 !       ---------------------------------------------------
 !
+!#ifdef largeFCInotneeded
         idum = 0
         call memman(idum,idum,'MARK  ',idum,'Xpden1')
         if(i12  > 1) call memman(k_dens2_scratch,nacob**4,'ADDL  ',2,'PVfull')
         if(i12 == 1) call memman(k_dens2_scratch,       0,'ADDL  ',2,'PVfull')
 
+!       set rhotype for spin-densities after reordering
+        rhotype_spin1 = 1
+        if(lucita_cfg_natural_orb_occ_nr) rhotype_spin1 = rhotype
 
 !       activate for MCSCF/improved CI
         if(integrals_from_mcscf_env)then
@@ -732,9 +737,9 @@ contains
                                       work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
           if(ispnden == 1)then
             call lucita_spinputdens_1p(work(kSRHO1a),work(krho2),int1_or_rho1,int2_or_rho2,          &
-                                       work(k_dens2_scratch),i12,isigden,      1,eigen_state_id,1)
+                                       work(k_dens2_scratch),i12,isigden,rhotype_spin1,eigen_state_id,1)
             call lucita_spinputdens_1p(work(kSRHO1b),work(krho2),int1_or_rho1,int2_or_rho2,          &
-                                       work(k_dens2_scratch),i12,isigden,      1,eigen_state_id,2)
+                                       work(k_dens2_scratch),i12,isigden,rhotype_spin1,eigen_state_id,2)
           end if
 
         else
@@ -747,13 +752,14 @@ contains
                                       work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
           if(ispnden == 1)then
             call lucita_spinputdens_1p(work(ksrho1a),work(krho2),work(k_scratch1),work(k_scratch2),  &
-                                       work(k_dens2_scratch),  1,isigden,      1,eigen_state_id,1)
+                                       work(k_dens2_scratch),  1,isigden,rhotype_spin1,eigen_state_id,1)
             call lucita_spinputdens_1p(work(ksrho1b),work(krho2),work(k_scratch1),work(k_scratch2),  &
-                                       work(k_dens2_scratch),  1,isigden,      1,eigen_state_id,2)
+                                       work(k_dens2_scratch),  1,isigden,rhotype_spin1,eigen_state_id,2)
           end if
         end if
 !
         call memman(kdum ,idum,'FLUSM ',2,'Xpden1')
+!#endif
 
 !       natural orbital occupation numbers
 !       ----------------------------------
@@ -768,6 +774,17 @@ contains
           write(luwrt,'(/a)') ' IPRDEN lowered explicitly in return_Xp_density_matrix '
           iprden = 1
 #endif
+          if(ispnden == 1 .and. lucita_cfg_is_spin_multiplett /= 0)then
+            write(luwrt,'(/a)') ' natural orbital occupation numbers for alpha-spin orbitals'
+            call lnatorb(work(ksrho1a),nsmob,ntoobs,nacobs,ninobs,                                 &
+                         ireost,work(k_scratch1),work(k_scratch2),work(k_scratch3),nacob,          &
+                         work(k_scratch4),1)
+            write(luwrt,'(/a)') ' natural orbital occupation numbers for beta-spin orbitals'
+            call lnatorb(work(ksrho1b),nsmob,ntoobs,nacobs,ninobs,                                 &
+                         ireost,work(k_scratch1),work(k_scratch2),work(k_scratch3),nacob,          &
+                         work(k_scratch4),1)
+            write(luwrt,'(/a)') ' natural orbital occupation numbers for spin-orbitals'
+          end if
 
           call lnatorb(work(krho1),nsmob,ntoobs,nacobs,ninobs,                                     &
                        ireost,work(k_scratch1),work(k_scratch2),work(k_scratch3),nacob,            &
