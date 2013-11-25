@@ -261,7 +261,7 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
   
   do i=1,ndim
      j=ndim-i+1
-     if(w(i) .lt. 0) then
+     if(w(i) .lt. 0._realk) then
        write(*,*) 'Eigenvalue for s matrix is negative'
        write(lupri,*) 'Eigenvalue for s matrix is negative'
        call lsquit('something is wrong',lupri)
@@ -290,8 +290,8 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
       if(w(i) .lt. 1.D-8) then
         nsingular=nsingular+1
         w(i)=0.0_realk
-        sk(:,i)=cmplx(0.,0.,complexk)
-        diag(:,i)=cmplx(0.,0.,complexk)
+        sk(:,i)=cmplx(0._realk,0._realk,complexk)
+        diag(i,i)=cmplx(0._realk,0._realk,complexk)
         is_singular=.true.
       else
         !diag(:,i)=Sk(:,i)/sqrt(W(i))
@@ -570,8 +570,8 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
   !call mem_alloc(tmp,ndim-nsingular,ndim-nsingular)
   !call mem_alloc(tmpeigv,ndim)
 
-!  call mem_alloc(sabk_tmp,ndim,ndim)
-!  call mem_alloc(sabk2,ndim,ndim)
+  call mem_alloc(sabk_tmp,ndim,ndim)
+  call mem_alloc(sabk2,ndim,ndim)
 #ifdef DEBUGPBC!{{{
   call mem_alloc(Atmp,ndim,ndim)
   call mem_alloc(Btmp,ndim,ndim)
@@ -636,6 +636,42 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
                tfock,nonsingdim,beta,C_tmp(:,1:nonsingdim),ndim)
 
     c_tmp(:,nonsingdim+1:ndim)=0._realk
+
+
+    !call zggram_schmidt(C_tmp(:,1:nonsingdim),Sabk,ndim,nonsingdim,ndim,ndim,lupri)
+
+ 
+    !if(is_singular) then
+    !  write(*,*) 'Max element of C', maxval(real(C_tmp))
+    !  write(*,*) 'Is C a solution', kindex
+    !  !call zgemm('N','N',Ndim,Ndim,Ndim,alpha,Sabk,Ndim,&
+    !  !       C_tmp,Ndim,beta,sabk_tmp,Ndim)
+
+    !  !call zgemm('C','N',Ndim,Ndim,Ndim,alpha,c_tmp,Ndim,&
+    !  !       sabk_tmp,Ndim,beta,sabk2,Ndim)
+
+    !   write(*,*) 'C^d S C',eigv(9),eigv(10)
+    !   write(lupri,*) 'C^d S C',maxval(eigv)
+    !   !call write_zmatrix(sabk2,ndim,ndim)
+    !   !call write_zmatrix(sabk2,ndim,ndim,lupri)
+    !   do i=1,ndim
+    !    do j=1,ndim
+    !     if (i .ne. j) then
+    !       if(abs(sabk2(i,j)) .gt. 1e-12)then
+    !         write(lupri,*) 'not diagonal',i,j,sabk2(i,j)
+    !         write(*,*) 'not diagonal',i,j,sabk2(i,j)
+    !       endif
+    !     else
+    !       if(abs(sabk2(i,j)) .ne. 1._realk) then
+    !         write(*,*) 'sabk2(i,i)',sabk2(i,j)
+    !         write(lupri,*) 'sabk2(i,i)',sabk2(i,j)
+    !         write(lupri,*) 'Diagonal elements not 1'
+    !         write(*,*) 'Diagonal elements not 1'
+    !       endif
+    !     endif
+    !    enddo
+    !   enddo
+    !endif
 
 
 #ifdef DEBUGPBC!{{{
@@ -718,6 +754,8 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
 #endif!}}}
 
      call mem_dealloc(tfock)
+     call mem_dealloc(sabk_tmp)
+     call mem_dealloc(sabk2)
 !  else
 !    !call pbc_qz_solver(smatk,c_tmp,ndim,lupri)
 !    !call pbc_zeigsolve(c_tmp,Sabk_tmp,ndim,ndim,eigv,is_gamma,lupri)
@@ -1096,7 +1134,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       
       !gets D(k) from C(k)
       call pbc_get_kdensity(D_k,C_k,ndim,molecule%nelectrons/2 &
-          ,bz%kpnt(kpt)%nsingular,lupri)
+          ,bz%kpnt(kpt)%nsingular,smatk,lupri)
       
       !Converts D(k) to D^0l
       call kspc_2_rspc_loop_k(nfdensity,Bz%Nk,D_k,lattice,kvec,bz%kpnt(kpt)%weight,BZ%NK_nosym,ndim,kpt)
@@ -1355,22 +1393,25 @@ INTEGER :: celli
 END SUBROUTINE  pbc_get_onehamenergy
 
 
-SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,lupri)
+SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: nbast,nkmobas,lupri,nsingular
   !TYPE(matrix),INTENT(INOUT) :: nfdensity(nfsize)
   COMPLEX(COMPLEXK),intent(INOUT) :: ddensity(nbast,nbast)
-  COMPLEX(COMPLEXK),intent(in) :: C_tmp(nbast,nbast)
+  COMPLEX(COMPLEXK),intent(in) :: C_tmp(nbast,nbast),smatk(nbast,nbast)
   !real(realk),intent(INOUT) :: ddensity(nbast,nbast)
+  real(realk) :: nelectrons
   !real(realk),intent(in) :: C_tmp(nbast,nbast)
   !TYPE(lvec_data_t) :: C_tmp(nfsize)
   !LOCAL VARIABLES
   COMPLEX(COMPLEXK), pointer :: density_tmp(:,:)
+  COMPLEX(COMPLEXK), pointer :: tmp(:,:)
   INTEGER :: i,j,mu,nu,nosingdim
   COMPLEX(COMPLEXK) :: alpha,beta
 
   alpha=CMPLX(2D0,0d0,complexk)
   beta =CMPLX(0d0,0d0,complexk)
+  nelectrons=0._realk
   
   i=1
   j=1
@@ -1379,19 +1420,20 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,lupri)
 
       nosingdim=nbast-nsingular
 !     allocate(density_tmp(nbast,nbast))
-     call mem_alloc(density_tmp,nosingdim,nosingdim)
+     call mem_alloc(density_tmp,nbast,nbast)
+     call mem_alloc(tmp,nbast,nbast)
      density_tmp=0d0
      ddensity   =0d0
      !call zgemm('n','c',nbast,nbast,nbast,alpha,c_tmp,nbast,c_tmp,&
      !           nbast,beta,density_tmp,nbast)
      !write(lupri,*) 'c*c'
 
-     call zgemm('N','C',nosingdim,nosingdim,nkmobas,alpha,c_tmp,nosingdim,&
-             c_tmp,nosingdim,beta,density_tmp,nosingdim)
+     call zgemm('N','C',nbast,nbast,nkmobas,alpha,c_tmp,nbast,&
+             c_tmp,nbast,beta,density_tmp,nbast)
 
    !  DO i=1,nkmobas
-   !   DO mu=1,nbast-nsingular
-   !    DO nu=1,nbast-nsingular
+   !   DO mu=1,nbast!-nsingular
+   !    DO nu=1,nbast!-nsingular
    !      density_tmp(mu,nu)=density_tmp(mu,nu)+2D0*c_tmp(mu,i)*conjg(c_tmp(nu,i))
    !     ! write(lupri,*)c_tmp(mu,i)*conjg(c_tmp(nu,i))
    !    ENDDO
@@ -1399,15 +1441,36 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,lupri)
    !  ENDDO
 
 
-      DO i=1,nosingdim
-        DO j=1,nosingdim
+      DO i=1,nbast
+        DO j=1,nbast
            ddensity(i,j)=density_tmp(i,j)
         ENDDO    
       ENDDO  
+
+     alpha=CMPLX(1D0,0d0,complexk)
+
+!     call zgemm('C','N',nosingdim,nbast,nbast,alpha,c_tmp,nbast,&
+!             ddensity,nbast,beta,density_tmp,nosingdim)
+
+     call zgemm('N','N',nbast,nbast,nbast,alpha,density_tmp,nbast,&
+             smatk,nbast,beta,tmp,nbast)
+      
+      do i=1,nosingdim
+         nelectrons=nelectrons+real(tmp(i,i))
+      enddo
+
+      !write(*,*) 'DMo ='
+      !call write_zmatrix(tmp,nbast,nbast)
+      !write(lupri,*) 'DMo ='
+      !call write_zmatrix(tmp(1:nosingdim,1:nosingdim),nosingdim,nosingdim,lupri)
+      write(*,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
+      write(lupri,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
+
       !write(lupri,*) 'dk'
       !call write_zmatrix(ddensity,nbast,nbast,lupri)
       !deallocate(density_tmp)
       call mem_dealloc(density_tmp)
+      call mem_dealloc(tmp)
 
 
 
