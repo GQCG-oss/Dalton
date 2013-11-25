@@ -498,7 +498,6 @@ contains
     !> Lsitem structure
     type(lsitem), intent(inout) :: mylsitem
     character(5),intent(IN) :: intSpec
-    integer :: dummy
     TYPE(DECscreenITEM)   :: DecScreen
     logical :: doscreen
     integer :: ndim(4),i
@@ -521,15 +520,14 @@ contains
     ENDDO
 
     ! Set integral screening
-    dummy=0
     doscreen = mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen
-    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,dummy,1,1,intspecConvert)
+    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,1,1,intspecConvert)
     IF(doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
     IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabRHS
 
     ! Get AO integrals
     call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output,Mylsitem%SETTING,&
-         & gao,1,1,ndim(3),ndim(4),ndim(1),ndim(2),ndim(3),ndim(4),.true.,1,intSpecConvert)
+         & gao,1,1,ndim(3),ndim(4),ndim(1),ndim(2),ndim(3),ndim(4),.true.,intSpecConvert)
     call free_decscreen(DECSCREEN)
     nullify(mylsitem%setting%LST_GAB_RHS)
     nullify(mylsitem%setting%LST_GAB_LHS)

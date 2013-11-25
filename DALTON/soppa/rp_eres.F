@@ -7,6 +7,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, October 1995
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
+C     PFP & SPAS, November 2013: triplet excitation energies
 C
 C     PURPOSE: Driver routine for making a linear transformation of
 C              a trialvector with the SOPPA hessian matricx E[2]. 
@@ -26,12 +27,7 @@ C
 C
 #include "maxorb.h"
 #include "maxash.h"
-CSPAS:12/11-2003: we need MXCOOR for eribuf.h
 #include "mxcent.h"
-CKeinSPASmehr
-CSPAS:10/11-2003: is merged with maxorb.h
-C#include <mxorb.h>
-CKeinSPASmehr
 #include "aovec.h"
 #include "iratdef.h"
 #include "eribuf.h"
@@ -370,9 +366,20 @@ C                 Calculate the AO-Fock matrix.
 C----------------------------------------------
 C
                   DTIME      = SECOND()
-                  CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
-     &                           WORK(KEND4),LWORK4,IDEL,ISYMD,.FALSE.,
-     &                           DUMMY,ISYMTR)
+                  IF (TRIPLET) THEN
+C
+                     CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
+     &                               WORK(KFOCK),WORK(KEND4),
+     &                               LWORK4,IDEL,ISYMD,ISYMTR)
+C
+                  ELSE
+C
+                     CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
+     &                              WORK(KFOCK),WORK(KEND4),
+     &                              LWORK4,IDEL,ISYMD,.FALSE.,
+     &                              DUMMY,ISYMTR)
+C
+                  END IF
                   DTIME      = SECOND()   - DTIME
                   SOTIME(11) = SOTIME(11) + DTIME
 C
@@ -472,6 +479,8 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('RP_ERES')
 C
