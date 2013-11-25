@@ -402,7 +402,7 @@ C Scaled complement correlation LYP functional (KS 08-08-11)
 229   DOLASC_GGALYP = .TRUE.
       GO TO 20
 
-C     Rational interpolation LYP functional
+C Rational interpolation LYP functional                             
 230   DOSRC_LYPRI = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
@@ -417,7 +417,7 @@ CFRAN END
       IF (.NOT.SETCFUN) THEN
           WRITE(LUPRI,'(/2A/A/)')
      > '  SRFUN_INPUT : Invalid or no SR correlation func. specified : '
-     >   ,SRCFUN,'             Corrently implemented functionals are :'
+     >   ,SRCFUN,'             Currently implemented functionals are :'
           DO J = 1,NCTABLE
               WRITE(LUPRI,'(13X,A)') CTABLE(J)
           ENDDO
