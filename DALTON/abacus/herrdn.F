@@ -2353,6 +2353,7 @@ C     Print orbital and geometry input data
 C
 C*****************************************************************************
 #if defined (BUILD_PELIB)
+      use pe_variables, only: pe_mep, pe_savden
       use polarizable_embedding, only: pe_init
 #endif
 #include "implicit.h"
@@ -2594,7 +2595,7 @@ C
       IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
 
 #if defined (BUILD_PELIB)
-      if (.NOT.SLAVE .and. peqm) then
+      if (.NOT.SLAVE .and. peqm .or. pe_mep .or. pe_savden) then
         call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
       end if
 #endif
@@ -4553,10 +4554,6 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: pe_mep, pe_savden
-      use polarizable_embedding, only: pe_init
-#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4737,11 +4734,6 @@ C
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
 
-#if defined (BUILD_PELIB)
-      if (peqm .or. pe_mep .or. pe_savden) then
-        call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
-      end if
-#endif
       RETURN
       END
 C  /* Deck priord */
