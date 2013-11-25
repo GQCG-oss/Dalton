@@ -1199,13 +1199,6 @@ C     local
       INTEGER IDUMMY
       PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 )
 C
-      logical :: polemb = .false.
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        polemb = .true.
-      end if
-#endif
-C
       CALL QENTER('ABS_LINE2')
 C
 C     Allocate work space for density and Fock matrices
@@ -1271,7 +1264,7 @@ c
 C
 C     FLAG(16) MEANS SOLVENT CALCULATION
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. polemb) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. PEQM) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
      &               XTMP,WRK(KFREE),LFREE)
       ENDIF

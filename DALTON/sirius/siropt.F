@@ -55,12 +55,10 @@ C         .gt.0  MCSCF converged.
 C         -----  ICONV can be used for conditional call of
 C                subsequent steps requiring a converged w.f.
 C
-#if defined (BUILD_PELIB)
-      use polarizable_embedding, only: pe_master
-#endif
 #ifdef VAR_MPI
       use par_mcci_io
 #endif
+      use polarizable_embedding, only: pe_master
 
 #include "implicit.h"
 
@@ -2565,7 +2563,6 @@ C    *) label 'TRCCINT"
 C    *) NSYM, NORBT, ...
 C    *) FCDIA, ISMO
 C    *) CMO
-C
 C
 #include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)

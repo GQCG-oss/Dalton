@@ -497,13 +497,8 @@ C------------------
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT.QMMM
      &     .AND. .NOT.AOSAVE   .AND. .NOT.CHOINT
-     &     .AND. .NOT.QMNPMM
+     &     .AND. .NOT.QMNPMM   .AND. .NOT.PEQM
 C
-#if defined (BUILD_PELIB)
-      if (peqm .or. pe_savden) then
-        dodifden = .false.
-      end if
-#endif
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
