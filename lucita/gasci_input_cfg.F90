@@ -32,6 +32,7 @@ module gasci_input_cfg
   logical, public :: gasci_input_timing_par           =  .false.
   logical, public :: gasci_input_natural_orb_occ_nr   =  .true.
   logical, public :: gasci_input_skip_4index_trafo    =  .false.
+  logical, public :: gasci_input_fci_dump             =  .false.
 
 ! double precision block
 

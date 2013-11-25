@@ -1986,7 +1986,9 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
                   do j = 1, max_number_of_ptg_irreps
                     if(ngsh_lucita_tmp(i,j) /= ngsh_lucita(i,j))then
                     write(lupri,*) '*** error in intim: active spaces'//
-     &              ' in integral CI and present CI run do not match.'
+     &              ' in integral run and present CI run do not match.'
+                    write(lupri,*) 'integral run ',ngsh_lucita_tmp(:,:)
+                    write(lupri,*) 'actual CI    ',ngsh_lucita(:,:)
                     call quit('inconsistency in active spaces for the'//
      &              ' integral CI-run and the present CI-run.')
                     end if
@@ -2003,6 +2005,10 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
      &        '*** master   ',luci_myproc,'reports 2-ints:',
      &                        nint2
               call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
+              write(lupri,*) 
+     &        '*** master   ',luci_myproc,'reports ecore  ',
+     &                        ecore, ecore_orig, einact_mc2lu
+#undef LUCI_DEBUG
 #endif
             end if ! luci_master only
 #ifdef VAR_MPI
@@ -2176,7 +2182,11 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
 C
 C     Dec 2010 : get EMY and get FCAC and H2AC matrices in Dalton
 C
+      use lucita_cfg
 #include "implicit.h"
+      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
+#include "maxorb.h"
+#include "infinp.h"
 
       DIMENSION CMO(*), WORK(LWORK)
  
@@ -2189,6 +2199,7 @@ C  orbinp: ntoobs
 #include "priunit.h"
 #include "inforb.h"
 #include "inftap.h"
+
 
       LOGICAL CLOSE_MOTWOINT, DISKH2
 C
@@ -2218,6 +2229,7 @@ C
          CALL GPCLOSE(LUINTM,'KEEP')
       END IF
 
+
 #ifdef LUCI_DEBUG
       WRITE(LUPRI,'(//A)') 'MAKE_LUCITA_INTEGRALS: FCAC matrix'
       CALL OUTPAK(work(kfcac),NASHT,-1,LUPRI)
@@ -2225,6 +2237,13 @@ C
       CALL OUTPUT(work(kh2ac),1,NNASHX,1,NNASHX,NNASHX,
      &            NNASHX,-1,LUPRI)
 #endif
+
+!     Write one- and two-electron integrals to file FCIDUMP
+ 
+      if (lucita_cfg_fci_dump) then
+      call
+     &   write_fcidump_file(work(kfcac),NASHT,work(kh2ac),emy)
+      end if
       LUINT_LUCITA = -1
       CALL GPOPEN(LUINT_LUCITA,'INTEGRALS_LUCITA','NEW',' ',
      &                'UNFORMATTED',IDUMMY,.FALSE.)
@@ -2234,7 +2253,6 @@ C
       CALL WRITT(LUINT_LUCITA, NNASHX*NNASHX, WORK(KH2AC))
       WRITE (LUINT_LUCITA) ('********',I=1,3), 'EODATA  '
       CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
-
 !     release scratch space
       call memrel('lucita-dalton-1/2int-write.done',WORK,
      &            kfrsav,kfrsav,kfree,lfree)
@@ -3292,3 +3310,267 @@ C
       end do
 
       end
+***********************************************************************
+
+      subroutine write_fcidump_file(AMATRIX,nrow,BMATRIX,corenergy)
+!     -----------------------------------------------------------------
+!     Written by Katharina Boguslawski and Pawel Tecmer  
+!     ETH Zurich, March 2013
+!
+!     purpose: write one- and two-electron integrals for a given active
+!              space to disk
+!     
+!     filename: FCIDUMP
+!     -----------------------------------------------------------------
+  
+      use lucita_cfg
+
+#include "implicit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "clunit.inc"
+!#include "orbinp.inc"
+      
+      character(len=30) :: form1
+      character(len=30) :: form2
+      character(len=30) :: form3
+      DIMENSION AMATRIX(*)
+      DIMENSION BMATRIX(*)
+      INTEGER NDUMMY, start
+      INTEGER NTRIANGLE, norbtot, noccend, noccendi, noccendj
+      integer, allocatable :: mult_ptg(:,:)
+      integer nactiveorb(NSYM)
+      integer :: offseti, offsetj, offsetk, offsetl
+      real*8 :: corenergy
+!     -----------------------------------------------------------------
+      integer :: ISYM, KSYM, syml, JSYM, ijsym, klsym, ijklsym
+      integer :: i, j, k, l
+!     -----------------------------------------------------------------
+
+      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
+             
+!     allocate memory for multiplication table to write only
+!     symmetry-allowed integrals
+      allocate(mult_ptg(NSYM,NSYM))
+      mult_ptg = 0
+      call set_ptg_multiplication_table(mult_ptg,NSYM)
+
+      LUFCID = -1
+
+!     define printing format
+      form1="(F17.12, 4X, I6, I6, I6, I6)"
+      form2="(A11,I3,A7,I2,A5,I2,A1)"
+      form3="(F17.8, 4X, I6, I6, I6, I6)"
+
+
+!     FCIDUMP info
+      write(lupri,*) 
+      write(lupri,*)" FCIDUMP file details "
+      write(lupri,*)"======================" 
+      write(lupri,*) 
+         
+
+!     calculate number of active electrons
+      norbtot = 0
+      do KSYM=1,NSYM,1
+         norbtot = norbtot + NOCC(KSYM) - NISH(KSYM)
+         nactiveorb(KSYM) = NASH(KSYM)
+      end do
+
+!     Print header of FCIDUMP file
+!     using MOLPRO format
+      if (LUFCID .le. 0) then
+      CALL GPOPEN(LUFCID,'FCIDUMP','new',' ',
+     &                'FORMATTED',IDUMMY,.false.)
+      end if
+      write(LUFCID,form2) ' &FCI NORB=', norbtot , 
+     & ',NELEC=', lucita_cfg_nr_active_e, ',MS2=',
+     &  lucita_cfg_is_spin_multiplett-1, ','
+      write(LUFCID,"(A)",advance='no') '  ORBSYM=' 
+      do ISYM=1,NSYM,1
+         if (nactiveorb(ISYM).ne.0) then
+            do i=1,nactiveorb(ISYM),1
+            write(LUFCID,"(I1,A1)",advance='no') ISYM,','
+         end do
+         end if
+      end do
+
+
+      write(lupri,form2) ' &FCI NORB=', norbtot , 
+     & ',NELEC=', lucita_cfg_nr_active_e, ',MS2=',
+     &  lucita_cfg_is_spin_multiplett-1, ','
+
+
+      write(LUFCID,*) 
+      write(LUFCID,"(A7,I1)") '  ISYM=',lucita_cfg_ptg_symmetry
+      write(LUFCID,"(A5)") ' &END'
+
+!     NOW:
+!     Print two-electron integrals:
+!     integrals are sorted as KL|IJ
+!     order is different as in MOLPRO, where integrals are sorted as
+!     IJ|KL
+!     Integrals are stored in a set of triangular matrices, define index
+!     which accesses matrix elements
+      IELE = 0
+!     Determine number of elements in one triangular matrix:
+      NTRIANGLE = norbtot*(norbtot+1)/2
+
+! KL IJ
+!     define orbital offset for K
+      offsetk = 0
+!     sum over all irreducible representations
+      do KSYM=1,NSYM,1
+         if (nactiveorb(KSYM).ne.0) then
+            do k=1,nactiveorb(KSYM),1 ! iterate through all elements
+            offsetl = 0 !define orbital offset for L
+!     restrict summation to prevent double counting
+            do syml=1,KSYM,1
+            if (nactiveorb(syml).ne.0) then
+!     set upper summation bound for orbital index (prevent double
+!     counting):
+!     if not the same irrep l goes from 1 to number of orbitals
+               if (KSYM.eq.syml) then
+                  noccend = k
+               else
+                  noccend = nactiveorb(syml)
+               end if
+               do l=1,noccend,1
+!     orbital offset for I
+                  offseti = 0
+!     restrict summation to prevent double counting for both irrep ISYM and
+!     orbital indices i
+                  do ISYM=1,KSYM,1
+                     if (nactiveorb(ISYM).ne.0) then
+                        ijksyml = 0
+                        if (ISYM.eq.KSYM) then
+                           noccendi = k
+                        else
+                           noccendi = nactiveorb(ISYM)
+                        end if
+                        do i=1,noccendi,1
+!     orbital offset J                        
+                        offsetj = 0
+!     double counting problem: irrep of J must be smaller or equal to
+!     irrep of I
+      do JSYM=1,ISYM,1
+!     Collect only integrals which are allowed by symmetry, all others
+!     are neglected.
+!     Two cases have to be distinguished: IJ|KL  and IK|JL
+          if (nactiveorb(JSYM).ne.0) then
+              if(ISYM.eq.JSYM.and.KSYM.eq.syml) then ! first case
+                 ijsym   = mult_ptg(ISYM,JSYM)
+                 ksyml   = mult_ptg(KSYM,syml)
+                 ijksyml = mult_ptg(ijsym,ksyml)
+              else ! second case
+                 ijsym   = mult_ptg(ISYM,KSYM)
+                 ksyml   = mult_ptg(JSYM,syml)
+                 ijksyml = mult_ptg(ijsym,ksyml)
+            
+              end if
+
+              if(ijksyml .eq. 1) then
+
+!     Set matric index: first determine first index of block KL
+              IELE = (offsetk+k)*(offsetk+k-1)/2*NTRIANGLE
+     &              +(offsetl+l-1)*NTRIANGLE+1
+!     Prevent double printing of symmetry redundant indices:
+!     set upper summation index
+!     if IJKL in same irrep, restrict j to at most i
+              if (JSYM.eq.ISYM.and.KSYM.eq.syml) then !.and.ISYM.eq.KSYM) then
+                  noccendj = i
+!redundant    else if (JSYM.eq.ISYM.and.KSYM.eq.syml.and.ISYM.ne.KSYM) then
+!                 noccendj = i
+!     if LJ in irrep1 and IK in irrep2
+              else if (syml.eq.JSYM.and.KSYM.eq.ISYM
+     &                 .and.syml.ne.ISYM) then
+!             second restriction to prevent double printing, J<=L in KL IJ
+                  if (k.eq.i) then
+                      noccendj = l
+                  else ! otherwise all J are needed
+                      noccendj = nactiveorb(JSYM)
+                  end if
+              else
+                  noccendj = nactiveorb(JSYM)
+              end if
+              IELE = IELE+(offseti+i)*(offseti+i-1)/2+offsetj
+              do j=1,noccendj,1
+!                check for redundant integrals
+                 if (JSYM.eq.ISYM.and.KSYM.eq.syml
+     &               .and.ISYM.eq.KSYM) then
+                     if (k.eq.i.and.l.eq.i.and.j.lt.i) then
+
+                     else if (k.eq.i.and.j.lt.l) then
+                      
+                     else
+                         write(LUFCID,form1) BMATRIX(IELE),
+     &                        i+offseti, j+offsetj, k+offsetk, l+offsetl
+                     end if
+                 else
+                     write(LUFCID,form1) BMATRIX(IELE),
+     &                     i+offseti, j+offsetj, k+offsetk, l+offsetl
+                 end if
+                 IELE = IELE + 1
+               end do ! do j
+               offsetj = offsetj + nactiveorb(JSYM)
+
+              else ! if not symmetry-allowed go to next irrep and update
+!             orbital offset J
+                   offsetj = offsetj + nactiveorb(JSYM)
+              end if ! if ijksyml
+          end if ! if nocc(jsym)
+       end do ! do jsym
+
+                        end do ! do i
+                        offseti = offseti + nactiveorb(ISYM) !update orbital
+!                       offset I
+                     end if ! if nocc(isym)
+                  end do ! do isym
+               end do ! do l
+               offsetl = offsetl + nactiveorb(syml)
+               end if ! if nocc(syml)
+            end do ! do syml
+            end do ! do k
+         end if ! if nocc(ksym)
+            offsetk = offsetk + nactiveorb(KSYM)
+      end do ! do ksym
+
+
+!     Print one-electron integrals:
+!     Reset matrix index
+      IELE = 1
+!     number of dummy indices to be ignored in one-electron
+!     integrals because of symmetry ISYM < actual ISYM
+      NDUMMY = 0
+      
+      do ISYM=1,NSYM,1
+         if (nactiveorb(ISYM).ne.0) then
+            IELE = IELE + NDUMMY
+            do i=1,nactiveorb(ISYM),1 ! only loop through same irrep
+               do j=1,i,1
+                  write(LUFCID,form1) AMATRIX(IELE), i+NDUMMY, j+NDUMMY,
+     &                                0, 0
+                  IELE = IELE + 1
+               end do
+!              add orbital offset if irrep changes
+               if (i.lt.nactiveorb(ISYM)) then
+                   IELE = IELE + NDUMMY
+               end if
+            end do
+!           update orbital offset
+            NDUMMY = NDUMMY + nactiveorb(ISYM)
+         end if
+      end do
+
+      write(LUFCID,form3) POTNUC + corenergy, 0,0 ,0,0
+ 
+      call GPCLOSE(LUFCID,'KEEP')
+ 
+      deallocate(mult_ptg)
+
+      return     
+ 
+      end 

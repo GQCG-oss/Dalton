@@ -201,6 +201,8 @@
       integer, allocatable   :: par_dist_block_list(:)
 !------------------------------------------------------------------------------
 
+      if(lucita_ci_run_id == 'fci dump    ') return
+
       CALL QENTER('LUCITA_MASTER')
 
 !#define LUCI_DEBUG
@@ -213,6 +215,7 @@
       '   ------------------------------------------------'
 #undef LUCI_DEBUG
 #endif
+
 
 !     set LUCITA internal control and task-individual common block information
 !     ------------------------------------------------------------------------

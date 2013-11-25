@@ -48,7 +48,7 @@ C     variables for SRCPBERI
       double precision mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
-      PARAMETER  (NXTABLE = 16, NCTABLE = 22) 
+      PARAMETER  (NXTABLE = 20, NCTABLE = 29) 
       CHARACTER*10 XTABLE(NXTABLE),CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
@@ -58,13 +58,51 @@ C
       DATA XTABLE /'NULL      ','SRXLDA    ','SRXGGA    ','SRBCK     ',
      >             'HFEXCH    ','SRGGA2    ','SRXWIB    ','SRXWI2    ',
      >             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ',
-     >             'SRXPBERI  ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    '/
+     >             'SRXPBERI  ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    ',
+     >             'LXLDAS    ','LXLDA     ','LXPBEGWS  ','LXBCK     '/
       DATA CTABLE /'NULL      ','SRCLDA    ','SRCGGA    ','SRCMULO_A ',
      >             'SRLYPT    ','SRCWIB    ','SRCWI2    ','SRCWI3    ',
      >             'SRCWI4    ','SRCPBETCS ','SRCPBETCSJ','SRCPBERI  ',
      >             'SRCPBELO  ','SRCPBEWI  ','SRCPBEGWS ','SRCLDA_S  ',
      >             'SRCMULO_B ','SRCMULO_C ','SRCMULO_D ','SRCMULO_E ',
-     >             'NULL_S    ','SRCMDLDA  '/
+     >             'NULL_S    ','SRCMDLDA  ','LNSCLDAS  ','LNSCLDA   ',
+     >             'LSCLDA    ','LNSCPBEGWS','LSCPBEGWS ','LNCLYP    ',
+     >             'LSCLYP    '/
+
+C K. Sharkas and J. Toulouse beg
+C List of lambda-dependent complement density functionals for linear separation of the electron-electron interaction.
+C K. Sharkas, A. Savin, H. J. Aa. Jensen, J. Toulouse, J. Chem. Phys. 137, 044104 (2012)
+C
+C Complement exchange functionals:
+C LXLDA: lambda-dependent exchange LDA
+C LXLDAS: lambda-dependent exchange LDA with spin density
+C LXPBEGWS: lambda-dependent exchange PBE (from srPBEGWS at mu=0)
+C LXBCK: lambda-dependent exchange B88
+C
+C Complement correlation functionals:
+C LSCLDA: lambda-dependent correlation LDA with density scaling
+C LNSCLDA: lambda-dependent correlation LDA without density scaling
+C LNSCLDAS: lambda-dependent correlation LDA without density scaling with spin density
+C LSCPBEGWS: lambda-dependent correlation PBE (from srPBEGWS at mu=0) with density scaling
+C LNSCPBEGWS: lambda-dependent correlation PBE (from srPBEGWS at mu=0) without density scaling
+C LSCLYP: lambda-dependent correlation LYP with density scaling
+C LNCLYP: lambda-dependent correlation LYP without density scaling
+C
+C Example of input:
+C  **WAVE FUNCTIONS
+C   .MCSRDFT
+C   .SRFUN
+C    LXLDA  LSCLDA   or
+C    LXLDA  LNSCLDA  or
+C    LXPBEGWS LSCPBEGWS or
+C    LXPBEGWS LNSCPBEGWS or
+C    LXBCK LSCLYP or
+C    LXBCK LNCLYP
+C
+C See in herdrv.F for how to activate the scaling of the two-electron integrals by lambda.
+C
+C C K. Sharkas and J. Toulouse end
+
       DATA SETXFUN,SETCFUN /2*.FALSE./
       CALL QENTER('SRFUN_INPUT')
       IXWINT = 0
@@ -110,7 +148,7 @@ C      write (lupri, *) 'SRXFUN,SRCFUN,SRDENS=',SRXFUN,SRCFUN,SRDENS   ! Manu de
       DO 100 II = 1, NXTABLE
         IF (XTABLE(II) .EQ. SRXFUN) THEN
           GO TO (101,102,103,104,105,106,107,108,109,110,111,112,113,
-     &           114,115,116),II
+     &           114,115,116,117,118,119,120),II
         END IF
  100  CONTINUE
       SETXFUN = .FALSE.
@@ -177,11 +215,33 @@ C Spin-density with no exchange functional (unless HFXFAC set non-zero elsewhere
       ISJT    = .TRUE.
       GO TO 15
 
+C Complement spin-dependent exchange LDA functional (KS 08-08-11)
+C  based on DOSRX_LDAS of JT for mu=0
+117   DOLAX_LDAS = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 15
+
+C  based on standard dalton DOSRX_LDA for mu=0 (KS 2011) 
+118   DOLAX_LDA = .TRUE.
+      GO TO 15
+
+C  Complement exchange PBE functional (KS 08-08-11)
+119   DOLAX_PBEGWS = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 15
+
+C Complement Beck exchange functional (KS 08-08-11)
+120   DOLAX_GGABCK = .TRUE.
+C      ISJT    = .TRUE.
+       GO TO 15
+
+
 C
   15  CONTINUE
 
 C      print *,'DOSRX_PBERI = ',DOSRX_PBERI  ! Manu
 C      print *,'DOSRX_PBEHSE = ',DOSRX_PBEHSE  ! Manu
+       write(lupri,*),'SRXFUN = ', SRXFUN  ! Manu
 
       IF (.NOT.SETXFUN) THEN
           WRITE(LUPRI,'(/2A/,A/)')
@@ -196,7 +256,8 @@ C
       DO 200 II = 1, NCTABLE
         IF (CTABLE(II) .EQ. SRCFUN) THEN
           GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
-     &           214,215,216,217,218,219,220,221,222),II
+     &           214,215,216,217,218,219,220,221,222,223,224,225,226,
+     &           227,228,229),II
         END IF
  200  CONTINUE
       SETCFUN = .FALSE.
@@ -309,6 +370,38 @@ C ... or for RSDHf calculations (Manu 06-12-2012)
       ISJT    = .TRUE.
       GO TO 20
 
+C Complement spin-dependent (NON-Scaled) correlation LDA functional (KS 08-08-11)
+223   DOLANSC_LDAS = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+
+
+C Complement (NON-Scaled) correlation LDA functional (KS 08-08-11)
+224   DOLANSC_LDA = .TRUE.
+      GO TO 20
+
+C Complement (Scaled) correlation LDA functional (KS 08-08-11)
+225   DOLASC_LDA = .TRUE.
+      GO TO 20
+
+C Complemnt Non-scaled correlation PBE function (KS 08-08-11)
+226   DOLANSC_PBEGWS = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+
+C Complemnt (scaled) correlation PBE function (KS 08-08-11)
+227   DOLASC_PBEGWS = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+
+C Non-scaled Complement correlation LYP functional (KS 08-08-11)
+228   DOLANC_GGALYP = .TRUE.
+      GO TO 20
+
+C Scaled complement correlation LYP functional (KS 08-08-11)
+229   DOLASC_GGALYP = .TRUE.
+      GO TO 20
+
 C
   20  CONTINUE
 C
@@ -395,7 +488,9 @@ C               be calling Becke and LYP functionals.
      >        DOSRX_WIB.OR.DOSRC_WIB.OR.DOSRX_PBEHSE.OR.DOSRX_PBETCS.OR.
      >        DOSRC_PBETCS.OR.DOSRX_PBERI.OR.DOSRC_PBERI.OR.DOSRX_PBEGWS
      >        .OR.DOSRC_PBEGWS.OR.DOSRC_MULOC_GGA.OR.DOSRC_MULOD_GGA
-     >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO  
+     >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO.OR.DOLAX_PBEGWS.OR.
+     >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
+     >        DOLANC_GGALYP.OR.DOLASC_GGALYP
 C
 
       NDER  = 0
@@ -487,6 +582,8 @@ C     =============================
 #endif
 
 C JT 15-02-05 beg
+      write(lupri,*) 'calling srdft1jt ? ISJT =', ISJT
+
       IF(ISJT) THEN
         CALL SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
@@ -784,7 +881,7 @@ c
 #endif
                   CALL SRDFTEXC(XKSR,ZKSR,RHOSR,RHOSR13,RHOSRGRD,
      &                          RHOSRLAP,RHOSRGHG,CHIVAL,ERFEXP,
-     &                         .TRUE.,VXB,ldebug)
+     &                         .TRUE.,VXB,ldebug,VLAMBDA)
                ELSE
 C                 we can use ETX, ETC, VTX, VTC from last IPNT
                   NSKIP2 = NSKIP2 + 1
@@ -803,7 +900,7 @@ c              IF (RTEST) THEN
                      VXC   = VXC - WGHT*(XKSR(2,2)+ZKSR(2,2))
                      CALL SRDFTEXC(XKSR,ZKSR,RHOTOT,RHOT13,RHOTGRD,
      &                             RHOTLAP,RHOTGHG,CHIVAL,ERFEXP,
-     &                            .FALSE.,VXB,ldebug)
+     &                            .FALSE.,VXB,ldebug,VLAMBDA)
                      EXTOT = EXTOT + WGHT*XKSR(1,2)
                      ECTOT = ECTOT + WGHT*ZKSR(1,2)
                      VXCT  = WGHT*(XKSR(2,2)+ZKSR(2,2))
@@ -864,12 +961,12 @@ C                    matrix 3 & 4 are DXTAO and DXVAO
      &                             WGHT, GSO(KSO0),GSO(KSO1),CHIVAL,
      &                             ERFEXP,.TRUE.,RHOSR,RHOSR13,
      &                             RHOSRGRD,RHOSRLAP, RHOSRGHG,RHGSR,
-     &                             DMAGAOSR)
+     &                             DMAGAOSR,VLAMBDA)
                      JDXAO = 3
                      CALL SRDFTLTR(JWOPSY,DMAT(1,JDXAO),EXCMAT(1,1,2),
      &                             WGHT, GSO(KSO0),GSO(KSO1),CHIVAL,
      &                             ERFEXP,.FALSE.,RHOTOT,RHOT13,RHOTGRD,
-     &                             RHOTLAP, RHOTGHG,RHGT,DMAGAOT)
+     &                             RHOTLAP,RHOTGHG,RHGT,DMAGAOT,VLAMBDA)
                   ELSE
 C                    matrix 1 is DTAO
 C                    matrix 2 is DXTAO
@@ -877,7 +974,8 @@ C                    matrix 2 is DXTAO
                      CALL SRDFTLTR(JWOPSY,DMAT(1,JDXAO),EXCMAT,
      &                             WGHT, GSO(KSO0),GSO(KSO1),CHIVAL,
      &                             ERFEXP,.TRUE.,RHOTOT,RHOT13,
-     &                             RHOTGRD,RHOTLAP,RHOTGHG,RHGT,DMAGAOT)
+     &                             RHOTGRD,RHOTLAP,RHOTGHG,RHGT,DMAGAOT,
+     &                             VLAMBDA)
                   END IF
                END IF
             ENDIF
@@ -985,7 +1083,7 @@ C
 C /* Deck srdftexc */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFTEXC(XKSR,ZKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
-     &                    CHIVAL,ERFEXP,LSRLDA,VXB,ldebug)
+     &                    CHIVAL,ERFEXP,LSRLDA,VXB,ldebug,VLAMBDA)
 C*****************************************************************************
 C
 C     Written by Jesper Kielberg Pedersen, Dec. 2003
@@ -1002,6 +1100,7 @@ C*****************************************************************************
 #include "infinp.h"
 #include "dftinf.h"
 #include "dftcom.h"
+      double precision VLAMBDA
       LOGICAL ERFEXP(0:2),LSRLDA,ldebug
       DIMENSION XKSR(3,2), ZKSR(3,2), ZMU(3)
 c
@@ -1019,10 +1118,25 @@ c
       IF (DOSRX_LDA.OR.(SRHYBR.AND.LSRLDA)) THEN
           CALL VXSRLDA(XKSR,RHO,RHO13,CHIVAL,1,ERFEXP)
       END IF
+
+C Kamal SHARKAS 08-08-11 beg
+      IF (DOLAX_LDA) THEN
+          CALL VXLALDA (XKSR,RHO,RHO13,VLAMBDA)
+      END IF
+C Kamal SHARKAS 08-08-11 end
+
       IF (DOSRX_GGA) THEN
           CALL VXSRGGA(XKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
      &                 CHIVAL,ERFEXP)
+      END IF 
+
+C Kamal SHARKAS 08-08-11 beg
+      IF (DOLAX_GGABCK) THEN
+          CALL VLAXBEK(XKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
+     &                 VLAMBDA)
       END IF
+C Kamal SHARKAS 08-08-11 end 
+
       IF (DOSRGGA2) THEN
           CALL VXSRGGA2(XKSR,RHO,RHO13,RHOGRD,RHOLAP,
      &                  RHOGHG,CHIVAL,ERFEXP)
@@ -1081,10 +1195,35 @@ c
       IF ((DOSRC_LDA.OR.DOSRC_MULOCAL(0)).OR.(SRHYBR.AND.LSRLDA)) THEN
           CALL VCSRLDA(ZKSR,RHO,RHO13,CHIVAL,DOSRC_MULOCAL,1,ERFEXP)
       END IF
+
+C Kamal SHARKAS 08-08-11 beg
+      IF (DOLANSC_LDA) THEN
+          CALL VCLALDA (ZKSR,RHO,RHO13,VLAMBDA)
+      END IF
+      IF (DOLASC_LDA) THEN
+          CALL VCLASLDA (ZKSR,RHO,RHO13,VLAMBDA)
+      END IF
+C Kamal SHARKAS 08-08-11 end
+
       IF (DOSRC_GGA) THEN
           CALL VCSRGGA(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,
      &                 CHIVAL,ERFEXP)
       END IF
+C Kamal SHARKAS 08-08-11 beg
+
+C  NON-SCALED
+      IF (DOLANC_GGALYP) THEN
+          CALL VNCLALYP(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,VLAMBDA)
+      END IF
+
+C SCALED 
+
+      IF (DOLASC_GGALYP) THEN
+          CALL VSCLALYP(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,VLAMBDA)
+      ENDIF
+
+C Kamal SHARKAS 08-08-11 end
+
       IF (DOSRC_WIB) THEN
           CALL ELYP(ZKSR(1,1),RHO,RHO13,RHOGRD)
           CALL VLYP(ZKSR(2,1),RHO,RHO13,RHOGRD,RHOLAP)
@@ -1404,7 +1543,7 @@ C
 C /* Deck srdftltr */
       SUBROUTINE SRDFTLTR(KSYMOP,DTRMAT,EXCMAT,WGHT,GAO,GAO1,CHIVAL,
      &                    ERFEXP,LSRLDA,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
-     &                    RHG,DTGAO)
+     &                    RHG,DTGAO,VLAMBDA)
 C
 C     Jesper K. Pedersen. Nov. 2003
 C     Purpose : Generate the 1-index transformed dft Hessian

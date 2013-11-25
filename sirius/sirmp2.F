@@ -177,8 +177,8 @@ C *** Option 12 >RSDHF< compute the RSDHf energy
   112 DO_RSDHF = .TRUE.
       SRMP2_SRINTS = .TRUE.   ! .RSDHF activates .SRINTS
       IPRMP2 = MAX(IPRMP2,1)
-      LAMSR = 1.0D0           ! original RSDHf model 
-!     READ(LUCMD,*) LAMSR     ! read the fraction lambda of srHFX and
+!     LAMSR = 1.0D0           ! original RSDHf model 
+      READ(LUCMD,*) LAMSR     ! read the fraction lambda of srHFX and
 !                               lr-sr MP2 coupling  
       write(lupri,*)''
       write(lupri,*)'just after reading, lamsr =', LAMSR
@@ -545,6 +545,17 @@ C
                   SR_FUNCS = 'NULL SRCMDLDA' ! no sr exchange,
 !                                              only (complementary "md") 
 !                                              sr correlation functional
+!
+! Manu 27-06-2013 CAUTION !!!!
+! One may want to compute the RSDHf energy with HF-srDFT orbitals 
+! for which "ISJT=.TRUE.", like in HF-srPBEgws. The computation of
+! the srx energy must then be disabled when calculating the "md" src term.
+! 
+                  DOSRX_PBETCS = .FALSE.
+                  DOSRX_PBEGWS = .FALSE.
+                  DOSRX_PBERI = .FALSE.
+                  DOSRX_LDAS = .FALSE.
+!!!!!!!
 
                   CALL SRFUN_INPUT(SR_FUNCS)
 ! Allocate memory for the HF-srDFT density matrix in the MO and AO bases ... 
@@ -571,12 +582,13 @@ C
 
                   ESRDFTCMD = D0
                   IPRMANU = IPRFCK
+!                 IPRMANU = 10 
                   CALL SRDFT(1,WRK(KVSRAO),WRK(KDHFAO),ESRDFTCMD,
      &                       .TRUE.,.FALSE.,.FALSE.,WRK(KFREE),
      &                       LFREE,IPRMANU)
 C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
 !                            DOGRD,DOATR,WORK,LWORK,IPRINT)
-!                  write(lupri,*) 'Esrcmd_dft = ', ESRDFTCMD 
+                   write(lupri,*) 'Esrcmd_dft = ', ESRDFTCMD 
 !
 ! *** Compute the srHFX term ***
                   ESRHFX = D0
@@ -632,6 +644,17 @@ C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
      &                          WRK,KFRSAV,KDHFMO,KFREE,LFREE)  
 !     
 ! *** We can now sum up all the contributions *** 
+
+! Manu debug b
+                  write(lupri,*) ''
+                  write(lupri,*) 'checking energy contributions'
+                  write(lupri,*) 'EMY =', EMY
+                  write(lupri,*) 'ESRDFT =', ESRDFT
+                  write(lupri,*) 'ESRHFX =', ESRHFX 
+                  write(lupri,*) 'ESRDFTCMD =', ESRDFTCMD 
+                  EHF1it = EMY-ESRDFT+ESRHFX
+                  write(lupri,*) 'EHF1it', EHF1it 
+! Manu debug e
 
                    ERSHF = EMY - LAMSR * ESRDFT + LAMSR * ESRHFX ! RSHf energy (with factor lambda)
      &                     + LAMSR * ESRDFTCMD 

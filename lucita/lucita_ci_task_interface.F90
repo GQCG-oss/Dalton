@@ -80,7 +80,8 @@ contains
 
       select case(ci_task_list(ci_task_ticket+1))
 
-        case ('return CIdia', 'perform Davi', 'return sigma', 'return rotVC', 'return densM', 'ijkl resort ')
+        case ('return CIdia', 'perform Davi', 'return sigma', 'return rotVC', 'return densM', 'ijkl resort ', &
+              'fci dump    ')
 
 !         fill integral indices pointers and possibly read in integrals
 !         -------------------------------------------------------------
@@ -218,6 +219,9 @@ contains
 
         case('ijkl resort ') ! resort integrals to lucita format (prior to a large-scale CI)
           ci_task_list(ci_task_ticket) = 'ijkl resort '
+
+        case('fci dump    ') ! resort integrals to lucita format (prior to a large-scale CI)
+          ci_task_list(ci_task_ticket) = 'fci dump    '
 
         case default
          call quit('error in create_CI_task_list: undefined CI run id.')
@@ -426,6 +430,7 @@ contains
 !-------------------------------------------------------------------------------
       real(8)                          :: work
 #include "wrkspc.inc"
+      real(8)                          :: test_energy
       real(8)                          :: exps2
       real(8)                          :: cv_dummy, hcv_dummy
       integer, parameter               :: isigden = 2 ! density matrix switch for sigden_ci
@@ -770,6 +775,8 @@ contains
 
           call memman(kdum ,idum,'FLUSM ',2,'Xpden2')
         end if
+
+        if(i12 > 1) call en_from_dens(test_energy,i12)
 
       end do ! loop over eigen states
 

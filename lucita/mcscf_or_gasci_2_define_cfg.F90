@@ -136,6 +136,7 @@ contains
           lucita_cfg_ras2_set             = gasci_input_ras2_set
           lucita_cfg_ras3_set             = gasci_input_ras3_set
           lucita_cfg_timing_par           = gasci_input_timing_par
+          lucita_cfg_fci_dump             = gasci_input_fci_dump
 
 !         integer block
           lucita_cfg_init_wave_f_type     = gasci_input_init_wave_f_type

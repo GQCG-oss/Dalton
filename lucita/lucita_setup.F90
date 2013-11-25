@@ -939,7 +939,7 @@ contains
       end if
 
       select case(ci_run_id)
-        case('return CIdim', 'ijkl resort ') ! calculate # of determinants per symmetry irrep / resort integrals to lucita format
+        case('return CIdim', 'ijkl resort ', 'fci dump    ') ! calculate # of determinants per symmetry irrep / resort integrals to lucita format
 !         nothing needs to be allocated
         case('xc vector   ') ! exchange CI/MCSCF vector
           len_cref_mc2lu              =  l_combi
@@ -1032,7 +1032,7 @@ contains
       kint1_or_rho1_pointer       = -1
 
       select case(lucita_ci_run_id)
-        case('return CIdim', 'ijkl resort ') ! calculate # of determinants per symmetry irrep / resort integrals to lucita format
+        case('return CIdim', 'ijkl resort ', 'fci dump    ') ! calculate # of determinants per symmetry irrep / resort integrals to lucita format
 !         nothing needs to be allocated
         case('return CIdia') ! calculate the diagonal part of the CI Hamiltonian matrix
           len_cref_internal           =  len_cref

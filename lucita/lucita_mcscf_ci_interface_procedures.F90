@@ -124,7 +124,7 @@ contains
 
 !     c. select pre-process task
       select case(run_type)
-        case('return CIdia', 'ijkl resort ')
+        case('return CIdia', 'ijkl resort ', 'fci dump    ')
 !         do nothing
         case('srdft   ci  ')
           call mcscf_pre_lucita_srdft(print_lvl)
@@ -180,7 +180,7 @@ contains
 
 !     b. choose post-process task
       select case(run_type)
-        case('analyze Cvec', 'ijkl resort ')
+        case('analyze Cvec', 'ijkl resort ', 'fci dump    ')
 !         do nothing
         case('srdft   ci  ')
           call mcscf_post_lucita_srdft(c_or_cr,print_lvl)

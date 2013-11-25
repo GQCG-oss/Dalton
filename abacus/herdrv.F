@@ -1814,7 +1814,7 @@ C  /* Deck hr2inp */
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.0D0,D0 = 0.0D0)
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 16)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -1829,7 +1829,8 @@ C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
-     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.ERFGAU', '.XXXXXX'/
+     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.ERFGAU', '.COMLAM',
+     &            '.XXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR2INP')
@@ -1975,6 +1976,28 @@ C&&&         Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)+N*exp(\chi)/(r_12)
                GO TO 100
   141          CALL QUIT('Error reading CHIVAL for *TWOINT/.ERFGAU')
    15          CONTINUE
+
+C K. Sharkas and J. Toulouse beg
+C COMLAM : COMplement LAMbda: value of lambda for linear separation of the electron-electron interaction: Vee= lambda/r_12 + (1-lambda)/r_12
+C K. Sharkas, A. Savin, H. J. Aa. Jensen, J. Toulouse, J. Chem. Phys. 137, 044104 (2012)
+C For now, range separation must also be activated (with very large mu) when using the linear separation.
+C Example of input:
+C**INTEGRALS
+C*TWOINT
+C.DOSRIN
+C.COMLAM
+C 0.25 (value of lambda)
+C.ERF
+C 10000000000 (large value of mu)
+C
+C See in srdft.F for the associated lambda-dependent density functionals.
+
+               COMLAM = .TRUE.
+               READ (LUCMD,*,ERR=1001) VLAMBDA
+               GO TO 100
+1001           CALL QUIT('Error reading Lambda for *TWOINT/.COMLAM')
+   16          CONTINUE
+C K. Sharkas and J. Toulouse end
 C&&&
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -2024,6 +2047,11 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
                   ENDIF
                   WRITE (LUPRI,'(A,F10.5)')
      &            '              with the coupling parameter : ',CHIVAL
+                  IF (COMLAM) THEN
+                     WRITE (LUPRI,'(2A,E15.5)')
+     &                 ' Two-electron integrals calculated',
+     &                 ' for linear coupling with Lambda = ',VLAMBDA
+                  ENDIF
             ENDIF
             END IF
             IF (DIRCAL) THEN

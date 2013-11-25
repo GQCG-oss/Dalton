@@ -181,8 +181,8 @@ CTRL[8]=3
 ERROR[8]="GAS SPACES NOT CORRECT"
 
 # CI energies
-CRIT1=`$GREP " 9  * 1  * -2573.1078445... * 8....(D|E)-05 * converged " $log | wc -l`
-CRIT2=`$GREP " 9  * 2  * -2572.7700594... * 1....(D|E)-04 * converged " $log | wc -l`
+CRIT1=`$GREP "10  * 1  * -2573.1078445... * 8....(D|E)-05 * converged " $log | wc -l`
+CRIT2=`$GREP "10  * 2  * -2572.7700594... * 9....(D|E)-05 * converged " $log | wc -l`
 TEST[9]=`expr $CRIT1 \+ $CRIT2`
 CTRL[9]=2
 ERROR[9]="CI CONVERGENCE NOT CORRECT"
@@ -195,7 +195,7 @@ CTRL[10]=4
 ERROR[10]="NATORB OCCUPATIONS ROOT 1 NOT CORRECT"
 
 CRIT1=`$GREP "Sum =  * 4.01058" $log | wc -l`
-CRIT2=`$GREP "Sum =  * 1.98783" $log | wc -l`
+CRIT2=`$GREP "Sum =  * 1.98782" $log | wc -l`
 CRIT3=`$GREP "Sum =  * 0*.01375" $log | wc -l`
 TEST[11]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=4
