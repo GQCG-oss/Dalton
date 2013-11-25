@@ -518,7 +518,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                END IF
             END IF
             IF (IPRRSP.GE.3) THEN
-               CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
+               CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,UDV,LUPRI)
                CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
      *                  MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
                IF (IPRRSP.GT.200)
@@ -797,21 +797,21 @@ CTODO        END IF
 
          if ((found).and.(conv)) then
            write(lupri,*)'SONIA: found redundant exci X_f on file'
-           !CALL RSPPRO(WRK(KXf),KZVAR,-LUPRI)
+           !CALL RSPPRO(WRK(KXf),KZVAR,UDV,-LUPRI)
            call dzero(WRK(KS2Xf),KZYVAR)
            CALL RSPSLI(0,1,DUMMY,WRK(KXf),
      *                 UDV,WRK(KS2Xf),XINDX,WRK(KWRK1),LWRK1)
            write(lupri,*)'SONIA: S2X_f of excitation vector'
-           CALL RSPPRO(WRK(KS2Xf),KZVAR,-LUPRI)
+           CALL RSPPRO(WRK(KS2Xf),KZVAR,UDV,-LUPRI)
         write(lupri,*)'XfS2Xf=',ddot(KZYVAR,WRK(KXf),1,WRK(KS2Xf),1)
            tt = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
            write(lupri,*)'SONIA: ddot{Xf,GD}=', tt
            !write(lupri,*)'SONIA: Property gradient before projection'
-           !CALL RSPPRO(WRK(KGP),KZVAR,-LUPRI)
+           !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
            !project out X_f as: GDp= GD-(ddot{Xf,GD})S[2]X_f
            CALL DAXPY(KZYVAR,-TT,WRK(KS2Xf),1,WRK(KGP),1)
            write(lupri,*)'SONIA: property gradient after projection'
-           !CALL RSPPRO(WRK(KGP),KZVAR,-LUPRI)
+           !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
            tt2 = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
            write(lupri,*)'SONIA: hopefully zero, ddot{Xf|GDp}=', tt2
          end if
@@ -1027,7 +1027,7 @@ C    *                      ' FREQUENCY ',TRFREQ(ICFRNU-NEXLB2-NLRLBL),
      *                               MZVAR(MSYMC),LUPRI)
                         CALL RSPPRW(VECC(1+MZCONF(MSYMC)),MJWOP,
      *                                MZWOPT(MSYMC),MSYMC,MZVAR(MSYMC),
-     *                                LUPRI)
+     *                                UDV,LUPRI)
                      END IF
                      DO 700 IBOP = 1,NBQROP(MSYMB)
                         DO 800 IBFR = 1,NBQRFR
@@ -1107,7 +1107,7 @@ C    *                             TRFREQ(IBFRNU-NEXLB2-NLRLBL),
      *                                     MZVAR(MSYMB),LUPRI)
                               CALL RSPPRW(VECB(1+MZCONF(MSYMB)),MJWOP,
      *                                    MZWOPT(MSYMB),MSYMB,
-     *                                    MZVAR(MSYMB),LUPRI)
+     *                                    MZVAR(MSYMB),UDV,LUPRI)
                            END IF
                            CALL FLSHFO(LUPRI)
 C
@@ -1304,7 +1304,7 @@ C                                FREQA  = QRFREQ(IAFRNU-NEXLB2)
      *                                       MZVAR(MSYMA),LUPRI)
                                     CALL RSPPRW(WRK(KAVEC+MZCONF(MSYMA))
      *                                       ,MJWOP,MZWOPT(MSYMA),MSYMA,
-     *                                       MZVAR(MSYMA),LUPRI)
+     *                                       MZVAR(MSYMA),UDV,LUPRI)
                                  END IF
                                  HYPVAL(IAOP) = -DDOT(MZYVAR(MSYMA),
      *                              WRK(KX3BC),1,WRK(KAVEC),1)
@@ -1762,7 +1762,7 @@ C
      *                                  MZVAR(MSYMC),LUPRI)
                      CALL RSPPRW(VECC(1+MZCONF(MSYMC)),MJWOP,
      *                                  MZWOPT(MSYMC),MSYMC,
-     *                                  MZVAR(MSYMC),LUPRI)
+     *                                  MZVAR(MSYMC),UDV,LUPRI)
                   END IF
                   DO 700 IBOP = 1,NBSMOP(MSYMB)
                      DO 800 IBFR = 1,NBSMFR
@@ -1827,7 +1827,7 @@ C    *                      ' FREQUENCY ',TRFREQ(IBFRNU-NEXLB2-NLRLBL),
      *                                  MZVAR(MSYMB),LUPRI)
                            CALL RSPPRW(VECB(1+MZCONF(MSYMB)),MJWOP,
      *                                  MZWOPT(MSYMB),MSYMB,
-     *                                  MZVAR(MSYMB),LUPRI)
+     *                                  MZVAR(MSYMB),UDV,LUPRI)
                         END IF
                         CALL FLSHFO(LUPRI)
 C
@@ -1939,7 +1939,7 @@ C
                                 IWRKOF = MZYVAR(MSYMA)+MZCONF(MSYMA)+1
                                 CALL RSPPRW(WRK(IWRKOF),MJWOP,
      *                                   MZWOPT(MSYMA),MSYMA,
-     *                                   MZVAR(MSYMA),LUPRI)
+     *                                   MZVAR(MSYMA),UDV,LUPRI)
                               END IF
                               SMOM = FACMOM*DDOT(MZYVAR(MSYMA),WRK(1),1,
      *                                 WRK(1+MZYVAR(MSYMA)),1)
@@ -2544,7 +2544,7 @@ C
      *                                  MZVAR(MSYMC),LUPRI)
                      CALL RSPPRW(VECC(1+MZCONF(MSYMC)),MJWOP,
      *                                  MZWOPT(MSYMC),MSYMC,
-     *                                  MZVAR(MSYMC),LUPRI)
+     *                                  MZVAR(MSYMC),UDV,LUPRI)
                   END IF
                   IF (DOESA) THEN
                      IBE = 1
@@ -2607,7 +2607,7 @@ C
      *                                  MZVAR(MSYMB),LUPRI)
                         CALL RSPPRW(VECB(1+MZCONF(MSYMB)),MJWOP,
      *                                  MZWOPT(MSYMB),MSYMB,
-     *                                  MZVAR(MSYMB),LUPRI)
+     *                                  MZVAR(MSYMB),UDV,LUPRI)
                      END IF
                      CALL DSWAP(MZVAR(MSYMB),VECB,1,
      *                          VECB(1+MZVAR(MSYMB)),1)
@@ -2705,7 +2705,7 @@ C
                              IWRKOF = MZYVAR(MSYMA)+MZCONF(MSYMA)+1
                              CALL RSPPRW(WRK(IWRKOF),MJWOP,
      *                                MZWOPT(MSYMA),MSYMA,MZVAR(MSYMA),
-     *                                LUPRI)
+     *                                UDV,LUPRI)
                            END IF
                            XMOM = DDOT(MZYVAR(MSYMA),WRK(1),1,
      *                                 WRK(1+MZYVAR(MSYMA)),1)
@@ -3293,7 +3293,7 @@ C
      *                 ' SYMMETRY',ISYM
                   CALL RSPPRC(VECB,MZCONF(ISYM),MZVAR(ISYM),LUPRI)
                   CALL RSPPRW(VECB(1+MZCONF(ISYM)),MJWOP,
-     *                 MZWOPT(ISYM),ISYM,MZVAR(ISYM),LUPRI)
+     *                 MZWOPT(ISYM),ISYM,MZVAR(ISYM),UDV,LUPRI)
                END IF
 C
                DO IAOP = 1,NAQROP(ISYM)
@@ -3313,7 +3313,7 @@ C
      *                    ' SYMMETRY',ISYM
                      CALL RSPPRC(VECA,MZCONF(ISYM),MZVAR(ISYM),LUPRI)
                      CALL RSPPRW(VECA(1+MZCONF(ISYM)),MJWOP,
-     *                    MZWOPT(ISYM),ISYM,MZVAR(ISYM),LUPRI)
+     *                    MZWOPT(ISYM),ISYM,MZVAR(ISYM),UDV,LUPRI)
                   END IF
 C
 C     Compute linear response value 
