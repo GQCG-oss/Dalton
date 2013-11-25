@@ -704,7 +704,7 @@ REAL(realk) :: factor1,factor2
  !c(:,1)=vtmp1(:)!/zdotc(nrowsc,vtmp2,1,vtmp1,1)
  !c(:,1)=vtmp1(:)
 
- !Orthogonalize
+ !Orthogonalize the eigenvector C_i S C_j= 0
  do i=2,mcolsc
     vtmp1(:)=c(:,i)
     vtmp2(:)=c(:,i)
@@ -729,14 +729,14 @@ REAL(realk) :: factor1,factor2
     c(:,i)=vtmp1(:)
  enddo
 
- !Normalize
+ !Normalize C_i S C_i = 1
 
  Do i=1,mcolsc
     vtmp1(:)=c(:,i)
     vtmp2(:)=c(:,i)
     call zgemm('C','N',1,mcolss,nrowsc,alpha,vtmp2,nrowsc,S,nrowss,beta, &
             & ctmp1,1)
-    factor1=zdotc(nrowsc,ctmp1,1,vtmp2,1)
+    factor1=sqrt(zdotc(nrowsc,ctmp1,1,vtmp2,1))
     c(:,i)=vtmp1(:)/factor1
  enddo
 
