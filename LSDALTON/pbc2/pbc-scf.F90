@@ -198,10 +198,11 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
   COMPLEX(complexk),INTENT(INOUT),pointer :: U(:,:),Uinv(:,:)
   LOGICAL,INTENT(INOUT) :: is_singular
   !Local
-  REAL(realk) :: wtemp
+  REAL(realk) :: wtemp,tol
   REAL(realk),pointer :: rwork(:),reals(:,:),workd(:),W(:),wd(:)
   COMPLEX(complexk),pointer :: Work(:)
-  COMPLEX(complexk) :: Sk(Ndim,Ndim),diag(ndim,ndim),tmp(ndim,ndim)
+  COMPLEX(complexk),pointer :: Sk(:,:),diag(:,:),tmp(:,:)
+  COMPLEX(complexk),pointer :: Sabk2(:,:),Sabk_tmp(:,:)
   COMPLEX(complexk) :: Atmp(Ndim,Ndim), Btmp(ndim,ndim)
   COMPLEX(complexk) :: alpha,beta
   INTEGER :: info,i,j,lwork,nonsingdim
@@ -209,12 +210,18 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
 
  nsingular = 0
  lwork=10*Ndim-1
+ tol =1.D-10
  is_singular = .false.
 ! write(*,*) max(1,lwork),complexk
  ! lwork=2*Ndim+ndim
   call mem_alloc(work,max(1,lwork))
   call mem_alloc(rwork,max(1,3*Ndim-2))
   call mem_alloc(w,ndim)
+  call mem_alloc(diag,ndim,ndim)
+  call mem_alloc(tmp,ndim,ndim)
+  call mem_alloc(Sk,ndim,ndim)
+  call mem_alloc(sabk_tmp,ndim,ndim)
+  call mem_alloc(sabk2,ndim,ndim)
 #ifdef DEBUGPBC!{{{!{{{
   call mem_alloc(workd,max(1,lwork))
   call mem_alloc(wd,ndim)
@@ -287,26 +294,32 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
 
   !tmp(:,:)=cmplx(0.,0.,complexk)
   do i=1,Ndim
-      if(w(i) .lt. 1.D-8) then
+      if(w(i) .lt. tol) then
         nsingular=nsingular+1
+        write(*,*) 'max sk(:,i) ',maxval(real(sk(:,i))),maxval(aimag(sk(:,i))),i
+        wtemp=maxval(real(sk(:,i)))
         w(i)=0.0_realk
         sk(:,i)=cmplx(0._realk,0._realk,complexk)
         diag(i,i)=cmplx(0._realk,0._realk,complexk)
         is_singular=.true.
       else
-        !diag(:,i)=Sk(:,i)/sqrt(W(i))
-        diag(i,i)=1._realk/sqrt(W(i))
+        sabk2(:,i)=Sk(:,i)/sqrt(W(i))
+        diag(i,i)=cmplx(1._realk/sqrt(W(i)),0._realk,complexk)
       endif
   enddo
 
-  write(*,*) 'Number of singulars',nsingular
-  write(lupri,*) 'Number of singulars',nsingular
+  if(nsingular .gt. 0) then
+    write(*,*) 'Number of singulars',nsingular
+    write(lupri,*) 'Number of singulars',nsingular
+  endif
 
   nonsingdim=ndim-nsingular
   call mem_alloc(U,ndim,nonsingdim)
 
-  call zgemm('N','N',ndim,nonsingdim,nonsingdim,alpha,sk,ndim,&
-             diag,nonsingdim,beta,U,ndim)
+  u(:,:)=sabk2(:,1:nonsingdim)
+  
+ ! call zgemm('N','N',ndim,nonsingdim,nonsingdim,alpha,sk,ndim,&
+ !            diag,nonsingdim,beta,U,ndim)
 
 #ifdef DEBUGPBC!{{{
   !call mem_alloc(Uinv,nonsingdim,nonsingdim)
@@ -315,10 +328,33 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
   call write_zmatrix(U,nonsingdim,nonsingdim)
 #endif!}}}
 
-  !U
-  !call zgemm('N','C',ndim,ndim,ndim,alpha,diag,ndim,&
-  !           sk,ndim,beta,U,ndim)
 
+  !U
+  if( is_singular) then
+
+    diag=cmplx(0._realk,0._realk,complexk)
+    do i=1,nonsingdim
+       diag(i,i)=cmplx(w(i),0._realk,complexk)
+    enddo
+
+    call zgemm('N','N',ndim,ndim,ndim,alpha,sk,ndim,&
+               diag,ndim,beta,sabk_tmp,ndim)
+
+    call zgemm('N','C',ndim,ndim,ndim,alpha,sabk_tmp,ndim,&
+               sk,ndim,beta,sabk2,ndim)
+
+
+    write(*,*) wtemp**2*tol,'should be max error in S matrix'
+    do i=1,ndim
+     do j=1,ndim
+     beta=sabk(i,j) - sabk2(i,j)
+     if(abs(beta) .gt. wtemp**2*tol) then
+       write(*,*) 'S-Sprime',sabk(i,j)-sabk2(i,j) 
+       write(*,*) 'S-Sprime,singular,i,j',is_singular,i,j
+     endif
+     enddo
+    enddo
+  endif
 
 #ifdef DEBUGPBC!{{{
   do i=1,Ndim
@@ -358,6 +394,11 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
   call write_zmatrix(U,ndim,ndim)
 #endif!}}}
   call mem_dealloc(w)
+  call mem_dealloc(sk)
+  call mem_dealloc(sabk_tmp)
+  call mem_dealloc(sabk2)
+  call mem_dealloc(tmp)
+  call mem_dealloc(diag)
 
 END SUBROUTINE pbc_spectral_decomp_ovl
 
@@ -458,20 +499,21 @@ SUBROUTINE transform_toMOfock(C_tmp,fock,fockMO,ndim,lupri)
   COMPLEX(COMPLEXK),INTENT(OUT) :: fockMO(ndim,ndim)
   !LOCAL VARIABLES
   !INTEGER :: i,j,mu,nu
-  COMPLEX(COMPLEXK) :: fockMOtmp(ndim,ndim)
+  COMPLEX(COMPLEXK),pointer :: fockMOtmp(:,:)
   !LOCAL VARIABLES
   COMPLEX(COMPLEXK) :: alpha,beta
 
   alpha=CMPLX(1D0,0D0,complexk)
   beta =CMPLX(0D0,0D0,complexk)
   
+  call mem_alloc(fockMotmp,ndim,ndim)
   !FOR DEBUGGING
  ! write(*,*) 'C(1)' 
  ! call write_zmatrix(C_tmp,ndim,ndim)
  ! write(*,*) 'Fock(1)'
  ! call write_zmatrix(fock,ndim,ndim)
- fockMO=0d0
- fockMOtmp=0d0
+ fockMO=cmplx(0d0,0d0,complexk)
+ fockMOtmp=cmplx(0d0,0d0,complexk)
  !write(*,*) 'C_tmp'
  !write(lupri,*) 'C_tmp'
  !call write_zmatrix(C_tmp,ndim,ndim,lupri)
@@ -495,6 +537,7 @@ SUBROUTINE transform_toMOfock(C_tmp,fock,fockMO,ndim,lupri)
   call zgemm('N','N',ndim,ndim,ndim,alpha,fockMOtmp,ndim,C_tmp,ndim,&
         beta,fockMO,ndim)
 
+  call mem_dealloc(fockmotmp)
  !write(*,*) 'fockMO'
  !write(lupri,*) 'fockMO'
  !call write_zmatrix(fockMO,ndim,ndim,lupri)
@@ -638,40 +681,48 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
     c_tmp(:,nonsingdim+1:ndim)=0._realk
 
 
+    !! makes sure that C^* S C = I
+    !call zggram_schmidt(C_tmp(:,1:nonsingdim),Sabk,ndim,nonsingdim,ndim,ndim,lupri)
+    !! Does it three times, just to take away numerical noise
+    !call zggram_schmidt(C_tmp(:,1:nonsingdim),Sabk,ndim,nonsingdim,ndim,ndim,lupri)
+ 
     !call zggram_schmidt(C_tmp(:,1:nonsingdim),Sabk,ndim,nonsingdim,ndim,ndim,lupri)
 
- 
-    !if(is_singular) then
-    !  write(*,*) 'Max element of C', maxval(real(C_tmp))
-    !  write(*,*) 'Is C a solution', kindex
-    !  !call zgemm('N','N',Ndim,Ndim,Ndim,alpha,Sabk,Ndim,&
-    !  !       C_tmp,Ndim,beta,sabk_tmp,Ndim)
+    if( is_singular) then
+      ! makes sure that C^* S C = I
+      !call zggram_schmidt(C_tmp(:,1:nonsingdim),Sabk,ndim,nonsingdim,ndim,ndim,lupri)
+      !! Does it three times, just to take away numerical noise
+      !call zggram_schmidt(C_tmp(:,1:nonsingdim),Sabk,ndim,nonsingdim,ndim,ndim,lupri)
+      !write(*,*) 'Max element of C', maxval(real(C_tmp))
+     ! write(*,*) 'Is C a solution', kindex
+     ! call zgemm('N','N',Ndim,Ndim,Nonsingdim,alpha,Sabk,Ndim,&
+     !        C_tmp,Nonsingdim,beta,sabk_tmp,Ndim)
 
-    !  !call zgemm('C','N',Ndim,Ndim,Ndim,alpha,c_tmp,Ndim,&
-    !  !       sabk_tmp,Ndim,beta,sabk2,Ndim)
+     ! call zgemm('C','N',Nonsingdim,Ndim,Ndim,alpha,c_tmp,Nonsingdim,&
+     !        sabk_tmp,Ndim,beta,sabk2,Nonsingdim)
 
-    !   write(*,*) 'C^d S C',eigv(9),eigv(10)
-    !   write(lupri,*) 'C^d S C',maxval(eigv)
-    !   !call write_zmatrix(sabk2,ndim,ndim)
-    !   !call write_zmatrix(sabk2,ndim,ndim,lupri)
-    !   do i=1,ndim
-    !    do j=1,ndim
-    !     if (i .ne. j) then
-    !       if(abs(sabk2(i,j)) .gt. 1e-12)then
-    !         write(lupri,*) 'not diagonal',i,j,sabk2(i,j)
-    !         write(*,*) 'not diagonal',i,j,sabk2(i,j)
-    !       endif
-    !     else
-    !       if(abs(sabk2(i,j)) .ne. 1._realk) then
-    !         write(*,*) 'sabk2(i,i)',sabk2(i,j)
-    !         write(lupri,*) 'sabk2(i,i)',sabk2(i,j)
-    !         write(lupri,*) 'Diagonal elements not 1'
-    !         write(*,*) 'Diagonal elements not 1'
-    !       endif
-    !     endif
-    !    enddo
-    !   enddo
-    !endif
+       !write(*,*) 'C^d S C',eigv(9),eigv(10)
+       !write(lupri,*) 'C^d S C',maxval(eigv)
+       !call write_zmatrix(sabk2,nonsingdim,nonsingdim)
+       !call write_zmatrix(sabk2,nonsingdim,nonsingdim,lupri)
+       !do i=1,ndim
+       ! do j=1,ndim
+       !  if (i .ne. j) then
+       !    if(abs(sabk2(i,j)) .gt. 1e-12)then
+       !      write(lupri,*) 'not diagonal',i,j,sabk2(i,j)
+       !      write(*,*) 'not diagonal',i,j,sabk2(i,j)
+       !    endif
+       !  else
+       !    if(abs(sabk2(i,j)) .ne. 1._realk) then
+       !      write(*,*) 'sabk2(i,i)',sabk2(i,j)
+       !      write(lupri,*) 'sabk2(i,i)',sabk2(i,j)
+       !      write(lupri,*) 'Diagonal elements not 1'
+       !      write(*,*) 'Diagonal elements not 1'
+       !    endif
+       !  endif
+       ! enddo
+       !enddo
+    endif
 
 
 #ifdef DEBUGPBC!{{{
@@ -1400,10 +1451,10 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
   COMPLEX(COMPLEXK),intent(INOUT) :: ddensity(nbast,nbast)
   COMPLEX(COMPLEXK),intent(in) :: C_tmp(nbast,nbast),smatk(nbast,nbast)
   !real(realk),intent(INOUT) :: ddensity(nbast,nbast)
-  real(realk) :: nelectrons
   !real(realk),intent(in) :: C_tmp(nbast,nbast)
   !TYPE(lvec_data_t) :: C_tmp(nfsize)
   !LOCAL VARIABLES
+  real(realk) :: nelectrons,dummy1,dummy2
   COMPLEX(COMPLEXK), pointer :: density_tmp(:,:)
   COMPLEX(COMPLEXK), pointer :: tmp(:,:)
   INTEGER :: i,j,mu,nu,nosingdim
@@ -1455,9 +1506,10 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
      call zgemm('N','N',nbast,nbast,nbast,alpha,density_tmp,nbast,&
              smatk,nbast,beta,tmp,nbast)
       
-      do i=1,nosingdim
+      do i=1,nbast
          nelectrons=nelectrons+real(tmp(i,i))
       enddo
+        
 
       !write(*,*) 'DMo ='
       !call write_zmatrix(tmp,nbast,nbast)
@@ -1466,6 +1518,17 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
       write(*,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
       write(lupri,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
 
+      dummy2=-huge(dummy2)
+      do i=1,nbast
+       do j=1,nbast
+          dummy1=density_tmp(i,j)
+          dummy2=max(dummy1,dummy2)
+       enddo
+      enddo
+      
+      write(*,*) 'max value of D(k)', dummy2
+      write(lupri,*) 'max value of D(k)', dummy2
+         
       !write(lupri,*) 'dk'
       !call write_zmatrix(ddensity,nbast,nbast,lupri)
       !deallocate(density_tmp)
@@ -1528,6 +1591,8 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
           errortest=dot_product(error(its,:),error(its,:))
         endif
         errortest=sqrt(errortest)
+        write(lupri,*) 'check error', errortest
+        write(*,*) 'check error', errortest
         if(errortest .le. lattice%error) diis_exit=.true.
 
         !Get diis weights  !!!THIS HAS TO BE FIXED, its-1 only when its .gt.
@@ -1589,11 +1654,11 @@ SUBROUTINE pbc_diisweights(errdim,error,weight,it,num_store,lupri)
 
   B_mat(:,:)=0d0
   DO i=1,it
-    write(lupri,*) 'error(',i,')'
-    write(lupri,*) error(i,:)
+    !write(lupri,*) 'error(',i,')'
+    !write(lupri,*) error(i,:)
     !B_mat(i,i)= 0.05D0
    DO j=1,it
-    B_mat(i,j)=B_mat(i,j)+dot_product(error(i,:),error(j,:))! error(i)*error(j)
+    B_mat(i,j)=dot_product(error(i,:),error(j,:))! error(i)*error(j)
    ENDDO
   ENDDO
 !  call mat_init(Bmat_t,it,it)
@@ -1619,6 +1684,7 @@ SUBROUTINE pbc_diisweights(errdim,error,weight,it,num_store,lupri)
 !  IF(info .ne. 0) THEN
 !    write(*,*) 'Calls dgesv instead'
     call dgesv(N,m,B_mat,N,solve,weight_tmp,N,info)
+    info = 1
     IF(info .ne. 0) THEN
 !      write(lupri,*) 'ERROR ERROR, diis matrix below'
 !      write(*,'(X,A21,X,I3.2)') 'INFO NOT ZERO, INFO = ',info
