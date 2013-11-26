@@ -191,12 +191,12 @@ SUBROUTINE pbc_zggeigsolve(kindex,A,B,smatk,N,M,eigv,lupri)
 END SUBROUTINE pbc_zggeigsolve
 
 
-!> \author 
+!> \author JR 
 !> \date 2013
 !> \brief For a matrix pos. semdefinite matrix S : calculates U = V\sigma^{-1/2} 
 !> \brief where V\sigmaV^H = S. Removes singularities that are smaller than 
 !> \brief singular_threshh.
-!> \param Sabk 					ndimxndim complex matrix
+!> \param Sabk 					ndim x ndim complex matrix
 !> \param U 						Changed to V\sigma
 !> \param is_singular 			Set to true if singularities found
 !> \param ndim 					Matrix dim
