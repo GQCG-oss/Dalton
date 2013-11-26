@@ -978,6 +978,9 @@ C defined parallel calculation types
 #include "iprtyp.h"
 C
       real(8), allocatable :: work(:)
+
+C     need to declare GETTIM external because it is intrinsic in IFPORT imodule for ifort (Intel)
+      external GETTIM
 C
       CALL QENTER('DALTON_NODEDRIVER')
       CALL GETTIM(CSTR,WSTR)
