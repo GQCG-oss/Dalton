@@ -674,20 +674,19 @@ IMPLICIT NONE
 INTEGER, INTENT(IN) :: nrowsc, mcolsc,nrowss,mcolss
 COMPLEX(complexk), INTENT(INOUT) :: C(nrowsc,mcolsc)
 COMPLEX(complexk), INTENT(IN) :: S(nrowss,mcolss)
-INTEGER, INTENT(IN),OPTIONAL :: lupri
-!LOCAL VARIABLES
+INTEGER, INTENT(IN), OPTIONAL :: lupri
+!local variables
 INTEGER :: i,j,k
 COMPLEX(complexk) :: alpha,beta
-COMPLEX(complexk),pointer :: ctmp1(:),ctmp2(:),vtmp1(:)
-COMPLEX(complexk),pointer :: vtmp2(:)
-COMPLEX(complexk),external :: zdotc
+COMPLEX(complexk), POINTER :: ctmp1(:),ctmp2(:),vtmp1(:)
+COMPLEX(complexk), POINTER :: vtmp2(:)
+COMPLEX(complexk), EXTERNAL :: zdotc
 REAL(realk) :: factor1,factor2
 
  alpha=CMPLX(1._realk,0._realk,complexk)
  beta=CMPLX(0._realk,0._realk,complexk)
 
  !vtmp1(:)=C(:,1)
-
  call mem_alloc(ctmp1,nrowsc)
  call mem_alloc(ctmp2,nrowsc)
  call mem_alloc(vtmp1,nrowsc)
@@ -695,9 +694,6 @@ REAL(realk) :: factor1,factor2
 
 ! call zgemm('C','N',nrowsc,mcolss,1,alpha,vtmp1,nrowsc,S,nrowss,nrowss,beta, &
 !           & vtmp2,nrowsc)
-
-
-
  !call zgemm('N','N',nrowsc,mcolss,1,alpha,vtmp2,nrowsc,S,nrowss,nrowss,beta &
  !          & vtmp1,nrowsc)
 
@@ -746,6 +742,40 @@ REAL(realk) :: factor1,factor2
  call mem_dealloc(vtmp2)
 
 END SUBROUTINE zggram_schmidt
+
+!> \author 	Karl R. Leikanger
+!> \date 	2013
+!> \brief 	Orthogonalize complex matrix c
+!> \param 	c 		mxn matrix to be orthogonalized
+!> \param 	m 		mtrx dim
+!> \param 	n 		mtrx dim
+!> \param 	lupri logical print unit
+SUBROUTINE pbcmo_orthogonalize(c,m,n,lupri)
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: m,n,lupri
+	COMPLEX(complexk), INTENT(INOUT) :: c(m,n)
+	!local
+	INTEGER :: lda, info, lwork
+	COMPLEX(complexk), POINTER :: work(:), tau(:)
+
+	lda = m
+	lwork = 64*n
+
+	CALL mem_alloc(tau, min(m,n))
+	CALL mem_alloc(work, lwork)
+
+	CALL zgeqrf(m,n,c,lda,tau,work,lwork,info)
+	IF (INFO .LT. 0) THEN
+		WRITE (*,*) 'Error A in pbcmo_orthogonalize, info=', info
+		WRITE (lupri,*) 'Error A in pbcmo_orthogonalize, info=', info
+	END IF
+	CALL zungqr(m,n,n,c,lda,tau,work,lwork,info)
+	IF (INFO .LT. 0) THEN
+		WRITE (*,*) 'Error B in pbcmo_orthogonalize, info=', info
+		WRITE (lupri,*) 'Error B in pbcmo_orthogonalize, info=', info
+	END IF
+
+END SUBROUTINE pbcmo_orthogonalize
 
 !Creates an upper triagonal matrix A consisting of ones.
 !I do not know why I made it.

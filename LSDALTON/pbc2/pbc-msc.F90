@@ -684,6 +684,16 @@ REAL(realk) :: kpt,kvec(3)
 INTEGER :: i,k,iunit,nonsingdim
 CHARACTER(LEN=3) :: nline
 
+
+	write(*,*) ''
+	write(*,*) ''
+	write(*,*) ''
+	write(*,*) ' OBS : nosingdim not initialized !!'
+	write(*,*) ''
+	write(*,*) ''
+	write(*,*) ''
+
+
    iunit=-1
    CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
    nline='no'
