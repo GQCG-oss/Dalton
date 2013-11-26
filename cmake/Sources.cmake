@@ -720,7 +720,6 @@ soppa/so_wrtve.F
 #lucita/lucia_nortci.F
     )
 set(FREE_FORTRAN_SOURCES
-gp/binary_info.F90
 lucita/ttss_block_module.F90
 lucita/vector_exchange_file_type.F90
 lucita/lucita_mcscf_vector_exchange.F90
