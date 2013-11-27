@@ -966,7 +966,7 @@ C
       use polarizable_embedding, only: pe_mpi
 #ifdef VAR_IFORT
 !     subroutine sleep is in IFPORT module
-      use IFPORT
+      use IFPORT, ONLY: SLEEP
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -979,9 +979,6 @@ C defined parallel calculation types
 C
       real(8), allocatable :: work(:)
 
-C     need to declare GETTIM external because it is intrinsic in IFPORT imodule for ifort (Intel)
-      external GETTIM
-C
       CALL QENTER('DALTON_NODEDRIVER')
       CALL GETTIM(CSTR,WSTR)
       N_TASKS = 0
@@ -991,7 +988,7 @@ C
   100 CONTINUE
 !     Nov 2013 hjaaj: sleep 1 second before next check for a task
 !     - this saves a lot of cpu time on other cores in a sequential section
-!     - may make it possible to go into turb mode
+!     - may make it possible to go into turbo mode
 !     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
       CALL SLEEP(1)
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
