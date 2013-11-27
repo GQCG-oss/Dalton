@@ -86,6 +86,8 @@ subroutine HorizontalRR_RHS_Q2C2D0CtoD(nContPQ,nPasses,nlmP,&
   !Local variables
   integer :: iP,ilmP,iTUVC
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
+  write(lupri,*)'HorizontalRR_RHS_Q2C2D0CtoD size(ThetaP)',size(ThetaP)
+  write(lupri,*)'HorizontalRR_RHS_Q2C2D0CtoD size(ThetaP2)',size(ThetaP2)
   DO iP = 1,nPasses*nContPQ
     DO iTUVC=  5, 10
      DO ilmP = 1,nlmP

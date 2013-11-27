@@ -17,6 +17,7 @@ module decmpi_module
   use tensor_basic_module
   use tensor_interface_module
   use DEC_settings_mod
+  use dec_fragment_utils
 
 contains
 
@@ -232,8 +233,8 @@ contains
           call mpicopy_fragment(Fragments(atom),comm,.false.)
 
           ! Check that the correct fragment number was communicated
-          if(Fragments(atom)%atomic_number /= atom) then
-             print '(a,2i8)', 'Counter atom, actual atom ', atom,Fragments(atom)%atomic_number
+          if(Fragments(atom)%EOSatoms(1) /= atom) then
+             print '(a,2i8)', 'Counter atom, actual atom ', atom,Fragments(atom)%EOSatoms(1)
              call lsquit('mpi_send_recv_many_fragments: Inconsistency between &
                   & counter and actual fragment',-1)
           end if
@@ -299,8 +300,8 @@ contains
           call mpicopy_fragment(Fragments(atom),comm,.false.)
 
           ! Check that the correct fragment number was communicated
-          if(Fragments(atom)%atomic_number /= atom) then
-             print '(a,2i8)', 'Counter atom, actual atom ', atom,Fragments(atom)%atomic_number
+          if(Fragments(atom)%EOSatoms(1) /= atom) then
+             print '(a,2i8)', 'Counter atom, actual atom ', atom,Fragments(atom)%EOSatoms(1)
              call lsquit('mpi_bcast_many_fragments: Inconsistency between &
                   & counter and actual fragment',-1)
           end if
@@ -590,17 +591,18 @@ contains
     integer(kind=ls_mpik) :: master
     master = 0
 
+    ! Integer pointers for some dimensions  
+    if(.not. AddToBuffer) then
+       call fragment_init_dimension_pointers(MyFragment)
+    end if
 
     ! Integers that are not pointers
     ! ------------------------------
 
-    CALL ls_mpi_buffer(MyFragment%atomic_number,master)
     CALL ls_mpi_buffer(MyFragment%noccEOS,master)
     CALL ls_mpi_buffer(MyFragment%nunoccEOS,master)
-    CALL ls_mpi_buffer(MyFragment%noccAOS,master)
     CALL ls_mpi_buffer(MyFragment%ncore,master)
     CALL ls_mpi_buffer(MyFragment%nocctot,master)
-    CALL ls_mpi_buffer(MyFragment%nunoccAOS,master)
     CALL ls_mpi_buffer(MyFragment%nEOSatoms,master)
     CALL ls_mpi_buffer(MyFragment%ntasks,master)
     CALL ls_mpi_buffer(MyFragment%t1dims,2,master)
@@ -609,6 +611,8 @@ contains
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
+    CALL ls_mpi_buffer(MyFragment%noccLOC,master)
+    CALL ls_mpi_buffer(MyFragment%nunoccLOC,master)
 
 
     ! Logicals that are not pointers
@@ -642,9 +646,9 @@ contains
        nullify(MyFragment%unoccEOSidx)
        call mem_alloc(MyFragment%unoccEOSidx,MyFragment%nunoccEOS)
        nullify(MyFragment%occAOSidx)
-       call mem_alloc(MyFragment%occAOSidx,MyFragment%noccAOS)
+       call mem_alloc(MyFragment%occAOSidx,MyFragment%noccLOC)
        nullify(MyFragment%unoccAOSidx)
-       call mem_alloc(MyFragment%unoccAOSidx,MyFragment%nunoccAOS)
+       call mem_alloc(MyFragment%unoccAOSidx,MyFragment%nunoccLOC)
        nullify(MyFragment%coreidx)
        if(MyFragment%ncore>0) then
           call mem_alloc(MyFragment%coreidx,MyFragment%ncore)
@@ -671,8 +675,8 @@ contains
     ! Buffer handling
     call ls_mpi_buffer(MyFragment%occEOSidx,MyFragment%noccEOS,master)
     call ls_mpi_buffer(MyFragment%unoccEOSidx,MyFragment%nunoccEOS,master)
-    call ls_mpi_buffer(MyFragment%occAOSidx,MyFragment%noccAOS,master)
-    call ls_mpi_buffer(MyFragment%unoccAOSidx,MyFragment%nunoccAOS,master)
+    call ls_mpi_buffer(MyFragment%occAOSidx,MyFragment%noccLOC,master)
+    call ls_mpi_buffer(MyFragment%unoccAOSidx,MyFragment%nunoccLOC,master)
     if(MyFragment%ncore>0) then
        call ls_mpi_buffer(MyFragment%coreidx,MyFragment%ncore,master)
     end if
@@ -692,22 +696,26 @@ contains
     ! (Note: This and much else MPI stuff must be modified for single precision to work!)
     if(.not. AddToBuffer) then
        nullify(MyFragment%OccContribs)
-       call mem_alloc(MyFragment%OccContribs,MyFragment%noccAOS)
+       call mem_alloc(MyFragment%OccContribs,MyFragment%noccLOC)
        nullify(MyFragment%VirtContribs)
-       call mem_alloc(MyFragment%VirtContribs,MyFragment%nunoccAOS)
+       call mem_alloc(MyFragment%VirtContribs,MyFragment%nunoccLOC)
 
        if(MyFragment%CDset) then
           nullify(MyFragment%OccMat)
-          call mem_alloc(MyFragment%OccMat,MyFragment%noccAOS,MyFragment%noccAOS)
+          call mem_alloc(MyFragment%OccMat,MyFragment%noccLOC,MyFragment%noccLOC)
           nullify(MyFragment%VirtMat)
-          call mem_alloc(MyFragment%VirtMat,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
+          call mem_alloc(MyFragment%VirtMat,MyFragment%nunoccLOC,MyFragment%nunoccLOC)
        end if
 
        if(MyFragment%FAset) then
-          nullify(MyFragment%CoccFA)
-          call mem_alloc(MyFragment%CoccFA,MyFragment%nbasis,MyFragment%noccFA)
-          nullify(MyFragment%CunoccFA)
-          call mem_alloc(MyFragment%CunoccFA,MyFragment%nbasis,MyFragment%nunoccFA)
+          nullify(MyFragment%CoFA)
+          call mem_alloc(MyFragment%CoFA,MyFragment%nbasis,MyFragment%noccFA)
+          nullify(MyFragment%CvFA)
+          call mem_alloc(MyFragment%CvFA,MyFragment%nbasis,MyFragment%nunoccFA)
+          nullify(MyFragment%ppfockFA)
+          call mem_alloc(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA)
+          nullify(MyFragment%qqfockFA)
+          call mem_alloc(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA)
           if(.not. MyFragment%pairfrag) then
              nullify(MyFragment%CDocceival)
              call mem_alloc(MyFragment%CDocceival,MyFragment%noccFA)
@@ -722,15 +730,17 @@ contains
        end if
     end if
 
-    call ls_mpi_buffer(MyFragment%OccContribs,MyFragment%noccAOS,master)
-    call ls_mpi_buffer(MyFragment%VirtContribs,MyFragment%nunoccAOS,master)
+    call ls_mpi_buffer(MyFragment%OccContribs,MyFragment%noccLOC,master)
+    call ls_mpi_buffer(MyFragment%VirtContribs,MyFragment%nunoccLOC,master)
     if(MyFragment%CDset) then
-       call ls_mpi_buffer(MyFragment%OccMat,MyFragment%noccAOS,MyFragment%noccAOS,master)
-       call ls_mpi_buffer(MyFragment%VirtMat,MyFragment%nunoccAOS,MyFragment%nunoccAOS,master)
+       call ls_mpi_buffer(MyFragment%OccMat,MyFragment%noccLOC,MyFragment%noccLOC,master)
+       call ls_mpi_buffer(MyFragment%VirtMat,MyFragment%nunoccLOC,MyFragment%nunoccLOC,master)
     end if
     if(MyFragment%FAset) then
-       call ls_mpi_buffer(MyFragment%CoccFA,MyFragment%nbasis,MyFragment%noccFA,master)
-       call ls_mpi_buffer(MyFragment%CunoccFA,MyFragment%nbasis,MyFragment%nunoccFA,master)
+       call ls_mpi_buffer(MyFragment%CoFA,MyFragment%nbasis,MyFragment%noccFA,master)
+       call ls_mpi_buffer(MyFragment%CvFA,MyFragment%nbasis,MyFragment%nunoccFA,master)
+       call ls_mpi_buffer(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA,master)
+       call ls_mpi_buffer(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA,master)
        if(.not. MyFragment%pairfrag) then
           call ls_mpi_buffer(MyFragment%CDocceival,MyFragment%noccFA,master)
           call ls_mpi_buffer(MyFragment%CDunocceival,MyFragment%nunoccFA,master)
@@ -746,13 +756,13 @@ contains
     ! Allocate decorbitals
     if(.not. AddToBuffer) then
        nullify(MyFragment%occAOSorb)
-       call mem_alloc(MyFragment%occAOSorb,MyFragment%noccAOS)
+       call mem_alloc(MyFragment%occAOSorb,MyFragment%noccLOC)
        nullify(MyFragment%unoccAOSorb)
-       call mem_alloc(MyFragment%unoccAOSorb,MyFragment%nunoccAOS)
+       call mem_alloc(MyFragment%unoccAOSorb,MyFragment%nunoccLOC)
     end if
 
     ! Integers and reals inside decorbital sub-type
-    do i=1,MyFragment%noccAOS ! occ orbitals
+    do i=1,MyFragment%noccLOC ! occ orbitals
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%numberofatoms,master)
@@ -768,7 +778,7 @@ contains
             & MyFragment%occAOSorb(i)%numberofatoms,master)
     end do
 
-    do i=1,MyFragment%nunoccAOS ! unocc orbitals
+    do i=1,MyFragment%nunoccLOC ! unocc orbitals
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%numberofatoms,master)
@@ -793,23 +803,23 @@ contains
        ! Real pointers
        if(.not. AddToBuffer) then
           call mem_alloc(MyFragment%S,MyFragment%nbasis,MyFragment%nbasis)
-          call mem_alloc(MyFragment%Co,MyFragment%nbasis,MyFragment%noccAOS)
-          call mem_alloc(MyFragment%Cv,MyFragment%nbasis,MyFragment%nunoccAOS)
+          call mem_alloc(MyFragment%CoLOC,MyFragment%nbasis,MyFragment%noccLOC)
+          call mem_alloc(MyFragment%CvLOC,MyFragment%nbasis,MyFragment%nunoccLOC)
           call mem_alloc(MyFragment%coreMO,MyFragment%nbasis,MyFragment%ncore)
           call mem_alloc(MyFragment%fock,MyFragment%nbasis,MyFragment%nbasis)
-          call mem_alloc(MyFragment%ppfock,MyFragment%noccAOS,MyFragment%noccAOS)
           call mem_alloc(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore)
-          call mem_alloc(MyFragment%qqfock,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
+          call mem_alloc(MyFragment%ppfockLOC,MyFragment%noccLOC,MyFragment%noccLOC)
+          call mem_alloc(MyFragment%qqfockLOC,MyFragment%nunoccLOC,MyFragment%nunoccLOC)
        end if
        call ls_mpi_buffer(MyFragment%S,MyFragment%nbasis,MyFragment%nbasis,master)
-       call ls_mpi_buffer(MyFragment%Co,MyFragment%nbasis,MyFragment%noccAOS,master)
-       call ls_mpi_buffer(MyFragment%Cv,MyFragment%nbasis,MyFragment%nunoccAOS,master)
+       call ls_mpi_buffer(MyFragment%CoLOC,MyFragment%nbasis,MyFragment%noccLOC,master)
+       call ls_mpi_buffer(MyFragment%CvLOC,MyFragment%nbasis,MyFragment%nunoccLOC,master)
        call ls_mpi_buffer(MyFragment%coreMO,MyFragment%nbasis,MyFragment%ncore,master)
        call ls_mpi_buffer(MyFragment%fock,MyFragment%nbasis,MyFragment%nbasis,master)
-       call ls_mpi_buffer(MyFragment%ppfock,MyFragment%noccAOS,MyFragment%noccAOS,master)
        call ls_mpi_buffer(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore,master)
-       call ls_mpi_buffer(MyFragment%qqfock,MyFragment%nunoccAOS,&
-            &MyFragment%nunoccAOS,master)
+       call ls_mpi_buffer(MyFragment%ppfockLOC,MyFragment%noccLOC,MyFragment%noccLOC,master)
+       call ls_mpi_buffer(MyFragment%qqfockLOC,MyFragment%nunoccLOC,MyFragment%nunoccLOC,master)
+
 
        ! INTEGRAL LSITEM
        ! '''''''''''''''
@@ -825,6 +835,17 @@ contains
 
     end if ExpensiveBox
 
+
+    if(.not. AddToBuffer) then
+       
+       ! Point to FO data
+       if(MyFragment%fragmentadapted) then
+          call fragment_basis_point_to_FOs(MyFragment)
+       else
+          ! Point to local orbital data
+          call fragment_basis_point_to_LOs(MyFragment)
+       end if
+    end if
 
   End subroutine mpicopy_fragment
 
@@ -994,11 +1015,12 @@ contains
   !> \author Patrick Ettenhuber
   !> \date March 2012
   subroutine distribute_mpi_jobs(mpi_task_distribution,nbA,nbG,batchdimAlpha,&
-             & batchdimGamma,myload,ccsdscheme,no,nv,nb,b2oa,b2og)
+             & batchdimGamma,myload,lg_nnod,lg_me,ccsdscheme,no,nv,nb,b2oa,b2og)
     implicit none
 
     integer, intent(inout) :: myload
     integer,intent(in):: nbA,nbG,batchdimAlpha(nbA),batchdimGamma(nbG)
+    integer(kind=ls_mpik),intent(in)::lg_nnod,lg_me
     integer,intent(out)::mpi_task_distribution(nbA*nbG)
     integer,intent(in),optional :: ccsdscheme,no,nv,nb
     type(batchtoorb),intent(in),optional :: b2oa(nbA),b2og(nbG)
@@ -1021,27 +1043,22 @@ contains
     call  mem_alloc(touched,nbA*nbG)
     call  mem_alloc(workloads,nbA*nbG)
     call  mem_alloc(easytrace,nbA*nbG)
-    call  mem_alloc(jobsize_per_node,infpar%lg_nodtot)
-    call  mem_alloc(node_rank_by_job,infpar%lg_nodtot)
+    call  mem_alloc(jobsize_per_node,lg_nnod)
+    call  mem_alloc(node_rank_by_job,lg_nnod)
     call  mem_alloc(trace,nbA*nbG)
     !some needed initializations for the matrices
     touched = .false.
     jobsize_per_node = 0
-    do k=1, infpar%lg_nodtot
+    do k=1, lg_nnod
       node_rank_by_job(k) = k-1
     enddo
-
-    if(DECinfo%PL>0) then
-       print '(a,4i6)', 'LOCAL,GLOBAL,sizeL,sizeG ', &
-            & infpar%lg_mynum, infpar%mynum, infpar%lg_nodtot, infpar%nodtot
-    end if
 
     if (.false.) then
      ! simple modulo distribtution --> tured off for the moment
      ! fill the jobsize_per_node matrix with the values from mpi_task_distribution
       do i=1,nbG
         do j=1,nbA
-          actual_node=MODULO(j-1+(i-1)*MODULO(nbA,infpar%lg_nodtot),infpar%lg_nodtot)
+          actual_node=MODULO(j-1+(i-1)*MODULO(nbA,lg_nnod),lg_nnod)
           mpi_task_distribution((j-1)*nbG+i)=actual_node
           jobsize_per_node(actual_node+1)=jobsize_per_node(actual_node+1) & 
           &+ int(i8*batchdimGamma(i)*batchdimAlpha(j),kind=8)
@@ -1103,9 +1120,9 @@ contains
 
       ! assign new jobs and thereby keep track of the sizes, assign ranks according
       ! to workload after each round
-      do i=1,nbG*nbA-MODULO(nbG*nbA,infpar%lg_nodtot),infpar%lg_nodtot
+      do i=1,nbG*nbA-MODULO(nbG*nbA,lg_nnod),lg_nnod
         !distribute the work according to previous load
-        do k=1, infpar%lg_nodtot
+        do k=1, lg_nnod
           jobsize_per_node(k)=jobsize_per_node(k) + workloads(i+node_rank_by_job(k))
           ialpha = trace(easytrace(i+node_rank_by_job(k))+1)%na
           igamma = trace(easytrace(i+node_rank_by_job(k))+1)%ng
@@ -1116,7 +1133,7 @@ contains
           if(.not. touched((ialpha-1)*nbg+igamma)) then
             touched((ialpha-1)*nbg+igamma) = .true.
           else
-            if (infpar%lg_mynum==0)then
+            if (lg_me==0)then
               call LSQUIT('Element had already been assigned in distribute_mpi_jobs',-1)
             endif
           endif
@@ -1124,16 +1141,16 @@ contains
 
         ! get the new node ranks by counting how many of the nodes have smaller jobs
         ! --> is an initial rank, because it is ordered the other way round as the jobs
-        do k=1, infpar%lg_nodtot
+        do k=1, lg_nnod
           counter = 0
-          do l=1,infpar%lg_nodtot
+          do l=1,lg_nnod
             if (jobsize_per_node(l) < jobsize_per_node(k)) counter=counter+1
           enddo
           node_rank_by_job(k) = counter
         enddo
         ! if some have the same amount of work, just assign jobs uniquely
-        do k=1, infpar%lg_nodtot
-          do l=k+1,infpar%lg_nodtot
+        do k=1, lg_nnod
+          do l=k+1, lg_nnod
             if (node_rank_by_job(k)==node_rank_by_job(l))then
               node_rank_by_job(l) = node_rank_by_job(l) +1
             endif
@@ -1142,10 +1159,10 @@ contains
       enddo
 
       !distribute the rest of the jobs according to load
-      i = nbG*nbA-MODULO(nbG*nbA,infpar%lg_nodtot)
-      do k=1, infpar%lg_nodtot
+      i = nbG*nbA-MODULO(nbG*nbA,lg_nnod)
+      do k=1, lg_nnod
         actual_node= node_rank_by_job(k) + 1
-        if(MODULO(nbG*nbA,infpar%lg_nodtot) >= actual_node)then
+        if(MODULO(nbG*nbA,lg_nnod) >= actual_node)then
           jobsize_per_node(k)=jobsize_per_node(k) + workloads(i+actual_node)
           ialpha = trace(easytrace(i+actual_node)+1)%na
           igamma = trace(easytrace(i+actual_node)+1)%ng
@@ -1153,7 +1170,7 @@ contains
           if(.not. touched((ialpha-1)*nbg+igamma)) then
             touched((ialpha-1)*nbg+igamma) = .true.
           else
-            if (infpar%lg_mynum==0)then
+            if (lg_me==0)then
               call LSQUIT('Element had already been assigned in distribute_mpi_jobs',-1)
             endif
           endif
@@ -1166,7 +1183,7 @@ contains
     all_touched = .true.
     do j=1,nbA
       do i=1,nbG
-        if (mpi_task_distribution((j-1)*nbG+i)==infpar%lg_mynum)then
+        if (mpi_task_distribution((j-1)*nbG+i)==lg_me)then
            la=batchdimAlpha(j)
            lg=batchdimGamma(i)
            if(present(ccsdscheme))then
@@ -1186,8 +1203,8 @@ contains
       enddo
     enddo
 
-    if ((myload64 /= jobsize_per_node(infpar%lg_mynum+1)).or. .not. all_touched)then
-      print *, "something is wrong ... quitting",myload64,jobsize_per_node(infpar%lg_mynum+1),all_touched
+    if ((myload64 /= jobsize_per_node(lg_me+1)).or. .not. all_touched)then
+      print *, "something is wrong ... quitting",myload64,jobsize_per_node(lg_me+1),all_touched
       write(DECinfo%output,*) 'workloads per node:'
       write(DECinfo%output,*) node_rank_by_job
       write(DECinfo%output,*) jobsize_per_node
@@ -1198,7 +1215,7 @@ contains
       print *, jobsize_per_node
       print *, mpi_task_distribution
       print *, touched
-      print *, infpar%lg_mynum,kind(infpar%lg_mynum),kind(jobsize_per_node(infpar%lg_mynum+1)),kind(myload64)
+      print *, lg_me,kind(lg_me),kind(jobsize_per_node(lg_me+1)),kind(myload64)
       call LSQUIT('Problem in distribute_mpi_jobs (64bit 32bit??), (jobsize or unused elements)',-1)
     endif
     myload=myload64
@@ -1225,7 +1242,7 @@ contains
   !> for fragment job list AFTER fragment optimization is done.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine bcast_post_fragopt_joblist(jobs,comm)
+  subroutine bcast_dec_fragment_joblist(jobs,comm)
 
     implicit none
     !> Job list (send from master to slaves via communicator)
@@ -1247,7 +1264,7 @@ contains
     call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,comm)
 
 
-  end subroutine bcast_post_fragopt_joblist
+  end subroutine bcast_dec_fragment_joblist
 
 
 
@@ -1276,6 +1293,8 @@ contains
        call mem_alloc(jobs%atom2,jobs%njobs)
        call mem_alloc(jobs%jobsize,jobs%njobs)
        call mem_alloc(jobs%jobsdone,jobs%njobs)
+       call mem_alloc(jobs%dofragopt,jobs%njobs)
+       call mem_alloc(jobs%esti,jobs%njobs)
        call mem_alloc(jobs%nslaves,jobs%njobs)
        call mem_alloc(jobs%nocc,jobs%njobs)
        call mem_alloc(jobs%nunocc,jobs%njobs)
@@ -1291,6 +1310,8 @@ contains
     call ls_mpi_buffer(jobs%atom2,jobs%njobs,master)
     call ls_mpi_buffer(jobs%jobsize,jobs%njobs,master)
     call ls_mpi_buffer(jobs%jobsdone,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%dofragopt,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%esti,jobs%njobs,master)
     call ls_mpi_buffer(jobs%nslaves,jobs%njobs,master)
     call ls_mpi_buffer(jobs%nocc,jobs%njobs,master)
     call ls_mpi_buffer(jobs%nunocc,jobs%njobs,master)
@@ -1312,7 +1333,9 @@ contains
   !> which never comes...
   !> In other words, synchronization of all nodes in the local groups must be done OUTSIDE this
   !> routine because their communication channel is redefined in here!
-  !> \author Kasper Kristensen
+  !> Here some of the PDM stuff has to be redefined according to the new groups,
+  !> because the PDM memory allocation has to happen in the smaller groups now
+  !> \author Kasper Kristensen, modified by Patrick Ettenhuber
   !> \date May 2012
   subroutine dec_half_local_group
     implicit none
@@ -1334,6 +1357,7 @@ contains
     ! will be overwritten.
     ngroups=2
     call divide_local_mpi_group(ngroups,groupdims)
+    call new_group_reset_persistent_array
 
   end subroutine dec_half_local_group
 
@@ -1500,7 +1524,7 @@ contains
 
     implicit none
     !> Fragment job list
-    type(joblist),intent(in) :: jobs
+    type(joblist),intent(inout) :: jobs
     !> Time measured by global master when fragments were calculated
     real(realk),intent(in) :: mastertime
     !> String to print describing job list
@@ -1532,6 +1556,11 @@ contains
     write(DECinfo%output,*) '           (Sum of effective work times for ALL MPI processes in slot)'
     write(DECinfo%output,*) '         / (slotsiz * [Local master time] )'
     write(DECinfo%output,*)
+    write(DECinfo%output,*) 'Note: Load print is currently only implemented for MP2 calculations'
+    write(DECinfo%output,*) '      and not for atomic fragment optimizations.'
+    write(DECinfo%output,*) '      The Load given below is set to -1 for cases where it is not implemented'
+    write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
+    write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,5X,a)') 'Job', '#occ', &
          & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load'
@@ -1539,6 +1568,7 @@ contains
     totflops=0.0E0_realk
     tottime_actual = 0.0E0_realk
     slavetime= 0.0_realk
+
 
     minflop = huge(1.0)
     maxflop=tiny(1.0)
@@ -1551,7 +1581,11 @@ contains
        N=N+1
 
        ! Giga flops for fragment
+#ifdef VAR_PAPI
        Gflops = jobs%flops(i)*1.0e-9
+#else
+       Gflops=-1.0_realk
+#endif
        ! Update total number of flops
        totflops = totflops + Gflops
        ! Update total time used by ALL nodes (including dead time by local slaves)
@@ -1559,9 +1593,14 @@ contains
        ! Effective slave time (WITHOUT dead time by slaves)
        slavetime = slavetime + jobs%load(i)*jobs%nslaves(i)*jobs%LMtime(i)
 
-       write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
-            & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
-
+       if(DECinfo%ccmodel==MODEL_MP2 .and. (.not. jobs%dofragopt(i))) then
+          write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
+               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
+       else
+          jobs%load(i)=-1.0_realk
+          write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
+               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
+       end if
 
        ! Accumulated Gflops per sec
        tmp = Gflops/jobs%LMtime(i)
@@ -1609,10 +1648,13 @@ contains
        write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MAXIMUM Gflops/s per MPI process = ', &
             & maxflop, ' for job ', maxidx
 #endif
-       write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
-       write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
-       write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
-       write(DECinfo%output,*) '-----------------------------------------------------------------------------'
+    write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
+       if(DECinfo%ccmodel==MODEL_MP2 .and. (.not. any(jobs%dofragopt)) ) then
+          ! Only print local loss when it is actually implemented
+          write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
+          write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
+       end if
+    write(DECinfo%output,*) '-----------------------------------------------------------------------------'
 
     end if
     write(DECinfo%output,*)
@@ -1726,8 +1768,8 @@ contains
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
-    call ls_mpi_buffer(DECitem%fragopt_exp_mp2,Master)
-    call ls_mpi_buffer(DECitem%fragopt_red_mp2,Master)
+    call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)
+    call ls_mpi_buffer(DECitem%fragopt_red_model,Master)
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)

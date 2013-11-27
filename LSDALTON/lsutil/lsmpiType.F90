@@ -172,6 +172,9 @@ module lsmpi_type
   end interface lsmpi_get_acc
   !save
 
+  
+
+
 !!!!!!!!!!!!!!!!!!!!!!!!!
 !Constants for MPIBUFFER!
 !!!!!!!!!!!!!!!!!!!!!!!!!

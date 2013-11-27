@@ -236,7 +236,7 @@ TEST[8]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
               $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ \
               $CRIT16 \+ $CRIT17`
-CTRL[8]=17
+CTRL[8]=18
 ERROR[8]="DIPOLE MOMENT GRADIENT NOT CORRECT"
 
 # Cioslowski charges:

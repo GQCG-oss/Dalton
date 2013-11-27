@@ -160,6 +160,8 @@ module dec_typedef_module
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out
      logical :: CCSDmultipliers
+     !> use pnos in dec
+     logical :: use_pnos
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver
@@ -288,10 +290,10 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
-     !> Use MP2 energies for expansion part of fragment optimization
-     logical :: fragopt_exp_mp2
-     !> Use MP2 energies for reduction part of fragment optimization
-     logical :: fragopt_red_mp2
+     !> Model to use for fragment expansion
+     integer :: fragopt_exp_model
+     !> Model to use for fragment reduction
+     integer :: fragopt_red_model
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Repeat atomic fragment calculations after fragment optimization?
@@ -522,20 +524,18 @@ module dec_typedef_module
   !> IMPORTANT: IF YOU MODIFY THIS STRUCTURE, REMEMBER TO CHANGE mpicopy_fragment ACCORDINGLY!!!
   type decfrag
 
-     !> Number of atom in full molecule
-     integer :: atomic_number=0
      !> Number of occupied EOS orbitals 
      integer :: noccEOS=0
      !> Number of unoccupied EOS orbitals 
      integer :: nunoccEOS=0
      !> Number of occupied AOS orbitals (for frozen core approx this is only the valence orbitals)
-     integer :: noccAOS=0
+     integer,pointer :: noccAOS
      !> Number of core orbitals in AOS
      integer :: ncore=0
      !> Total number of orbitals (core+valence) in AOS (noccAOS + ncore)
      integer :: nocctot=0
      !> Total number of unoccupied orbitals (AOS)
-     integer :: nunoccAOS=0
+     integer,pointer :: nunoccAOS
 
      !> Pair fragment?
      logical :: pairfrag
@@ -597,6 +597,8 @@ module dec_typedef_module
      !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
 
+     ! NOTE!!! occAOSorb and unoccAOSorb are ILL-DEFINED when fragmentadapted=.true. !!!!
+
      !> Total occupied orbital space (orbital type)
      type(decorbital), pointer :: occAOSorb(:) => null()
      !> Total unoccupied orbital space (orbital type)
@@ -629,6 +631,10 @@ module dec_typedef_module
      !> AO overlap matrix for fragment
      real(realk),pointer :: S(:,:) => null()
 
+     ! Note: Co and Cv will point to CoLOC and CvLOC if local orbitals are used
+     !>      (or whatever the input orbitals are)   OR
+     !>      Co and Cv will point to CoFA and CvFA (when FO=.true.)
+
      !> Occupied MO coefficients (only valence space for frozen core approx)
      real(realk), pointer :: Co(:,:) => null()
      !> Virtual MO coefficients
@@ -647,15 +653,35 @@ module dec_typedef_module
      !> Core-core block of Fock matrix in MO basis  (subset of ppfock when frozen core is NOT used)
      real(realk), pointer :: ccfock(:,:) => null()
 
+     ! Information for local orbitals
+     ! ******************************
+     !> Local occupied MO coefficients
+     real(realk), pointer :: CoLOC(:,:) => null()
+     !> Local virtual MO coefficients
+     real(realk), pointer :: CvLOC(:,:) => null()
+     !> Occ-occ block of Fock matrix in local MO basis  (only valence space for frozen core approx)
+     real(realk), pointer :: ppfockLOC(:,:) => null()
+     !> Virt-virt block of Fock matrix in local MO basis
+     real(realk), pointer :: qqfockLOC(:,:) => null()
+
+
      !> Integral program input
      type(lsitem) :: mylsitem
 
      ! End of EXPENSIVE BOX
      ! ==============================================================
 
+     
+     ! Information for local orbitals
+     ! ******************************
+     !> Number of local occupied orbitals in fragment
+     integer,pointer :: noccLOC
+     !> Number of local unoccupied orbitals in fragment
+     integer,pointer :: nunoccLOC
+     
 
      ! Information used for fragment-adapted orbitals
-     ! *******************************************
+     ! **********************************************
      !> Correlation density matrices in local AOS basis
      real(realk), pointer :: OccMat(:,:) => null()  ! occ AOS-EOS
      real(realk), pointer :: VirtMat(:,:) => null()  ! virt AOS-EOS
@@ -668,19 +694,25 @@ module dec_typedef_module
      !> Is this a fragment-adapted fragment?
      logical :: fragmentadapted
      !> Number of occ orbitals for fragment-adapted orbitals 
-     integer :: noccFA
+     integer,pointer :: noccFA
      !> Number of unocc orbitals for fragment-adapted orbitals 
-     integer :: nunoccFA
+     integer,pointer :: nunoccFA
      !> Transformation between AO basis and fragment-adapted basis
      !> Index 1: Local,   Index 2: Fragment-adapted
      !> Has fragment-adapted MO coeff been set (not done by default fragment initialization)?
      logical :: FAset
-     real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: nbasis,noccFA
-     real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: nbasis,nunoccFA
+     !> Occupied FA coeff
+     real(realk),pointer :: CoFA(:,:) => null()     ! dimension: nbasis,noccFA
+     !> Virtual FA coeff
+     real(realk),pointer :: CvFA(:,:) => null()   ! dimension: nbasis,nunoccFA
      !> Eigenvalues for correlation density matrices 
      !> --> only set for atomic fragments (pairfrag=.false.) and when FAset=.true.
      real(realk),pointer :: CDocceival(:) => null()    ! dimension noccFA
      real(realk),pointer :: CDunocceival(:) => null()  ! dimension nunoccFA
+     !> Occ-occ block of Fock matrix in FO basis  (only valence space for frozen core approx)
+     real(realk), pointer :: ppfockFA(:,:) => null()
+     !> Virt-virt block of Fock matrix in FO basis
+     real(realk), pointer :: qqfockFA(:,:) => null()
 
 
      !> Information used only for the CC2 and CCSD models to describe
@@ -928,6 +960,10 @@ module dec_typedef_module
      integer,pointer :: jobsize(:) 
      ! Is a given job done (true) or not (false) (dimension: njobs)
      logical,pointer :: jobsdone(:) 
+     ! Does job require fragment optimization?
+     logical,pointer :: dofragopt(:)
+     ! Does job use estimated fragments?
+     logical,pointer :: esti(:)
 
      ! MPI statistics
 
@@ -966,21 +1002,18 @@ module dec_typedef_module
   type MObatchInfo
 
     !> number of batches:
-    integer :: nPbatch
-    integer :: nRbatch
-    !> dimension of each of the nPbatch:
-    integer, pointer :: Pdims(:) 
-    !> dimension of each of the nRbatch:
-    integer, pointer :: Rdims(:)
+    integer :: nbatch
+    !> dimension of each of the nbatch1:
+    integer, pointer :: dimInd1(:) 
+    !> dimension of each of the nbatch2:
+    integer, pointer :: dimInd2(:)
     !> MO index corresponding to the starting point of each batch:
-    integer, pointer :: PStarts(:) 
-    integer, pointer :: RStarts(:) 
-    !> starting index of each batch in the full array:
-    integer, pointer :: PR_index(:) 
+    integer, pointer :: StartInd1(:) 
+    integer, pointer :: StartInd2(:) 
     !> starting index of each batch in the packed array:
-    integer, pointer :: PR_packInd(:) 
+    integer, pointer :: packInd(:) 
     
-  end type
+  end type MObatchInfo
 
   !> \brief Grid box handling for analyzing orbitals in specific parts of space
   !> for single precision real grid points

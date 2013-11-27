@@ -34,12 +34,11 @@ CONTAINS
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
-SUBROUTINE II_precalc_DECScreenMat(DECscreen,LUPRI,LUERR,SETTING,nbatches,ndimA,ndimG,intspec)
+SUBROUTINE II_precalc_DECScreenMat(DECscreen,LUPRI,LUERR,SETTING,ndimA,ndimG,intspec)
 IMPLICIT NONE
 TYPE(DECscreenITEM),intent(INOUT)    :: DecScreen
 TYPE(LSSETTING)      :: SETTING
 INTEGER,intent(in)   :: LUPRI,LUERR,ndimA,ndimG
-integer,intent(inout):: nbatches
 Character,intent(IN)          :: intSpec(5)
 !
 TYPE(lstensor),pointer :: GAB
@@ -470,11 +469,11 @@ end subroutine II_getBatchOrbitalScreen2K_RHS
 !> \param dim4 the dimension of batch index 
 !> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
 SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,SETTING,&
-     &outputintegral,batchC,batchD,batchsizeC,batchSizeD,nbast1,nbast2,dim3,dim4,fullRHS,nbatches,intSpec)
+     &outputintegral,batchC,batchD,batchsizeC,batchSizeD,nbast1,nbast2,dim3,dim4,fullRHS,intSpec)
 IMPLICIT NONE
 TYPE(LSSETTING),intent(inout) :: SETTING
 INTEGER,intent(in)            :: LUPRI,LUERR,nbast1,nbast2,dim3,dim4,batchC,batchD
-INTEGER,intent(in)            :: batchsizeC,batchSizeD,nbatches
+INTEGER,intent(in)            :: batchsizeC,batchSizeD
 REAL(REALK),target            :: outputintegral(nbast1,nbast2,dim3,dim4,1)
 logical,intent(in)            :: FullRhs
 Character,intent(IN)          :: intSpec(5)
@@ -848,11 +847,11 @@ END SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI2
 !> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
 SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      & outputintegral,batchA,batchC,batchsizeA,batchSizeC,&
-     & dim1,nbast2,dim3,nbast4,nbatches,intSpec,FULLRHS)
+     & dim1,nbast2,dim3,nbast4,intSpec,FULLRHS)
   IMPLICIT NONE
   TYPE(LSSETTING),intent(inout) :: SETTING
   INTEGER,intent(in)            :: LUPRI,LUERR,nbast2,nbast4,dim1,dim3,batchA,batchC
-  INTEGER,intent(in)            :: batchsizeA,batchSizeC,nbatches
+  INTEGER,intent(in)            :: batchsizeA,batchSizeC
   REAL(REALK),target            :: outputintegral(dim1,nbast2,dim3,nbast4,1)
   Character,intent(IN)          :: intSpec(5)
   LOGICAL,intent(IN) :: FULLRHS 
@@ -878,7 +877,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      WRITE(lupri,*)'II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int'
      CALL II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,SETTING,&
           & outputintegral,batchA,batchC,batchsizeA,batchSizeC,&
-          & nbast2,nbast4,dim1,dim3,fullRHS,nbatches,intSpec)
+          & nbast2,nbast4,dim1,dim3,fullRHS,intSpec)
   ELSE
      IF (intSpec(5).NE.'C') THEN
         nGaussian = 6
