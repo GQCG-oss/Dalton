@@ -342,7 +342,7 @@ Real(realk), parameter :: D8 = 8.0E0_realk,D4 = 4.0E0_realk
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
 REAL(REALK) :: VX(3),DFTENE,GRD,GRDA,A
 REAL(REALK),pointer :: VXC(:,:,:)
-REAL(REALK) :: XCFUNINPUT2(4,1),XCFUNOUTPUT2(5,1)
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(5,1)
 EXTERNAL DFTENE
 call mem_dft_alloc(VXC,4,NBLEN,NDMAT)
 !     GGA Exchange-correlation contribution to Kohn-Sham matrix
@@ -385,16 +385,16 @@ DO IDMAT=1,NDMAT
          ENDIF
 #ifdef VAR_XCFUN
       ELSE
-         XCFUNINPUT2(1,1) = RHO(IPNT,IDMAT)
-         XCFUNINPUT2(2,1) = GRAD(1,IPNT,IDMAT)
-         XCFUNINPUT2(3,1) = GRAD(2,IPNT,IDMAT)
-         XCFUNINPUT2(4,1) = GRAD(3,IPNT,IDMAT)
+         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+         XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)
+         XCFUNINPUT(3,1) = GRAD(2,IPNT,IDMAT)
+         XCFUNINPUT(4,1) = GRAD(3,IPNT,IDMAT)
          ! Input:
          !rho   = XCFUNINPUT(1,1)
          !grad_x = XCFUNINPUT(2,1)
          !grad_y = XCFUNINPUT(3,1)
          !grad_z = XCFUNINPUT(4,1)
-         call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,5,XCFUNOUTPUT2,1)
+         call xcfun_gga_components_xc_single_eval(XCFUNINPUT,5,XCFUNOUTPUT,1)
          ! Output
          ! Order 0
          ! out(1,1) Exc
@@ -404,17 +404,17 @@ DO IDMAT=1,NDMAT
          ! out(4,1) d^1 Exc / d grad_y
          ! out(5,1) d^1 Exc / d grad_z
 
-         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT2(1,1)*WGHT(IPNT)
+         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
          IF(DFTDATA%LB94)THEN
             call lsquit('error lb94 not implemented for xcfun',-1)
          ELSEIF(DFTDATA%CS00)THEN
             call lsquit('error cs00 not implemented for xcfun',-1)
          ENDIF
          !the \Omega_{\mu \nu} part
-         VXC(1,IPNT,IDMAT) = D2*XCFUNOUTPUT2(2,1)*WGHT(IPNT)
-         VXC(2,IPNT,IDMAT) = D4*XCFUNOUTPUT2(3,1)*WGHT(IPNT)
-         VXC(3,IPNT,IDMAT) = D4*XCFUNOUTPUT2(4,1)*WGHT(IPNT)
-         VXC(4,IPNT,IDMAT) = D4*XCFUNOUTPUT2(5,1)*WGHT(IPNT)
+         VXC(1,IPNT,IDMAT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+         VXC(2,IPNT,IDMAT) = D4*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+         VXC(3,IPNT,IDMAT) = D4*XCFUNOUTPUT(4,1)*WGHT(IPNT)
+         VXC(4,IPNT,IDMAT) = D4*XCFUNOUTPUT(5,1)*WGHT(IPNT)
       ENDIF
 #endif
    ELSE
@@ -955,7 +955,7 @@ REAL(REALK),pointer :: GAORED(:,:,:),GDRED(:,:,:)
 REAL(REALK),pointer :: DRED(:,:)
 INTEGER     :: INXRED(NACTBAST),IRED,JRED,NRED,orb2atom(nbast)
 INTEGER     :: atom(NACTBAST),iatom,IX,K1,K2,K3,KA,ik,jk
-REAL(REALK) :: FRC,GA,GA2,GFS,XCFUNINPUT2(4,1),XCFUNOUTPUT2(5,1)
+REAL(REALK) :: FRC,GA,GA2,GFS,XCFUNINPUT(4,1),XCFUNOUTPUT(5,1)
 
 orb2atom = DFTDATA%orb2atom
 KVALS(1:3,1) = (/1, 2, 3/)
@@ -990,16 +990,16 @@ DO IPNT = 1, NBLEN
          ENDIF
 #ifdef VAR_XCFUN
       ELSE
-         XCFUNINPUT2(1,1) = RHO(IPNT,1)
-         XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
-         XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
-         XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
+         XCFUNINPUT(1,1) = RHO(IPNT,1)
+         XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+         XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+         XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
          ! Input:
          !rho   = XCFUNINPUT(1,1)
          !grad_x = XCFUNINPUT(2,1)
          !grad_y = XCFUNINPUT(3,1)
          !grad_z = XCFUNINPUT(4,1)
-         call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,5,XCFUNOUTPUT2,1)
+         call xcfun_gga_components_xc_single_eval(XCFUNINPUT,5,XCFUNOUTPUT,1)
          ! Output
          ! Order 0
          ! out(1,1) Exc
@@ -1013,10 +1013,10 @@ DO IPNT = 1, NBLEN
          ELSEIF(DFTDATA%CS00)THEN
             call lsquit('error cs00 not implemented for xcfun',-1)
          ENDIF
-         VXC(1,IPNT) = D2*XCFUNOUTPUT2(2,1)*WGHT(IPNT)
-         VXC(2,IPNT) = D2*XCFUNOUTPUT2(3,1)*WGHT(IPNT)
-         VXC(3,IPNT) = D2*XCFUNOUTPUT2(4,1)*WGHT(IPNT)
-         VXC(4,IPNT) = D2*XCFUNOUTPUT2(5,1)*WGHT(IPNT)
+         VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+         VXC(2,IPNT) = D2*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+         VXC(3,IPNT) = D2*XCFUNOUTPUT(4,1)*WGHT(IPNT)
+         VXC(4,IPNT) = D2*XCFUNOUTPUT(5,1)*WGHT(IPNT)
       ENDIF
 #endif
    ELSE
@@ -1400,8 +1400,7 @@ Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk
 Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
 Real(realk), parameter :: D16 = 16.0E0_realk,D32 = 32.0E0_realk
 REAL(REALK) :: fR,fZ,fRR,fRZ,fZZ,fRG,fZG,fGG,fG,A,B
-REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(6,1)
-REAL(REALK) :: XCFUNINPUT2(4,1),XCFUNOUTPUT2(15,1)
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(15,1)
 NBMAT = DFTDATA%NBMAT
 call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
 call mem_dft_alloc(EXPGRAD,3,NBLEN,NBMAT)
@@ -1467,16 +1466,16 @@ IF(DOCALC)THEN
        ENDDO
 #ifdef VAR_XCFUN
     ELSE
-       XCFUNINPUT2(1,1) = RHO(IPNT,1)
-       XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
-       XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
-       XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
        ! Input:
        !rho   = XCFUNINPUT(1,1)
        !grad_x = XCFUNINPUT(2,1)
        !grad_y = XCFUNINPUT(3,1)
        !grad_z = XCFUNINPUT(4,1)
-       call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,15,XCFUNOUTPUT2,2)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT,15,XCFUNOUTPUT,2)
        ! Output
        ! Order 0
        ! out(1,1) Exc
@@ -1499,30 +1498,30 @@ IF(DOCALC)THEN
        DO IBMAT = 1,NBMAT
           !the \Omega_{\mu \nu} part
           VXC(1,IPNT,IBMAT) = &
-               &   D4*XCFUNOUTPUT2(6,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT) &
-               & + D4*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D4*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D4*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+               &   D4*XCFUNOUTPUT(6,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT) &
+               & + D4*XCFUNOUTPUT(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D4*XCFUNOUTPUT(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D4*XCFUNOUTPUT(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
           !the \frac{\partial \Omega_{\mu \nu}}{\partial x} part
           VXC(2,IPNT,IBMAT) = &
-               &   D8*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+               &   D8*XCFUNOUTPUT(7,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
           !the \frac{\partial \Omega_{\mu \nu}}{\partial y} part             
           VXC(3,IPNT,IBMAT) = &
-               &   D8*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+               &   D8*XCFUNOUTPUT(8,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
           !the \frac{\partial \Omega_{\mu \nu}}{\partial z} part =
           !     (d^2 Exc/d rho d gz)kappa + (d^2 Exc/d gx d gz)dkappa/dx
           !+ (d^2 Exc/d gy d gz)dkappa/dy + (d^2 Exc/d gz d gz)dkappa/dz 
           VXC(4,IPNT,IBMAT) = &
-               &   D8*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+               &   D8*XCFUNOUTPUT(9,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
        ENDDO
 
     ENDIF
@@ -2419,14 +2418,17 @@ REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
 !> Maximum gaussian atomic orbital value (non differentiated)
 REAL(REALK),intent(in) :: GAOMAX
 !
-INTEGER     :: I,J,NBMAT,ibmat,N,NRED,IPNT
+INTEGER     :: I,J,NBMAT,ibmat,N,NRED,IPNT,IJ
 REAL(REALK) :: VX(14),GRD,GRDA,MIXEDGRDA,MIXEDGRDAMAG(3)
 LOGICAL     :: DOCALC,dosympart
 REAL(REALK),pointer :: VXC1(:,:),VXC1MAG(:,:,:)
 REAL(REALK),pointer :: EXPGRAD(:,:,:,:),VXC2(:,:,:),VXC2MAG(:,:,:,:)
+Real(realk), parameter :: D0 = 0.0E0_realk
 Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk
 Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
 REAL(REALK) :: fR,fZ,fRR,fRZ,fZZ,fRG,fZG,fGG,fG,A,B,AMAG(3)
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(15,1)
+REAL(REALK) :: fxc(4,4),vxc(4,4),FAC
 NBMAT = DFTDATA%NBMAT
 dosympart = DFTDATA%dosympart
 call mem_dft_alloc(EXPGRAD,NBLEN,4,4,NBMAT)!mixed geo,magn gradients of EXPVAL
@@ -2501,7 +2503,61 @@ IF(DOCALC)THEN
        ENDDO
 #ifdef VAR_XCFUN
     ELSE
-        call lsquit('xcfun version of II_DFT_MAGDERIV_LINRSPGGA not implemented',-1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
+       ! Input:
+       !rho   = XCFUNINPUT(1,1)
+       !grad_x = XCFUNINPUT(2,1)
+       !grad_y = XCFUNINPUT(3,1)
+       !grad_z = XCFUNINPUT(4,1)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT,15,XCFUNOUTPUT,2)
+       ! Output
+       ! Order 0
+       ! out(1,1) Exc
+       ! Order 1
+       ! out(2,1) d^1 Exc / d n
+       ! out(3,1) d^1 Exc / d nx
+       ! out(4,1) d^1 Exc / d ny
+       ! out(5,1) d^1 Exc / d nz
+       ! Order 2
+       ! out(6,1) d^2 Exc / d n n
+       ! out(7,1) d^2 Exc / d n nx
+       ! out(8,1) d^2 Exc / d n ny
+       ! out(9,1) d^2 Exc / d n nz
+       ! out(10,1) d^2 Exc / d nx nx
+       ! out(11,1) d^2 Exc / d nx ny
+       ! out(12,1) d^2 Exc / d nx nz
+       ! out(13,1) d^2 Exc / d ny ny
+       ! out(14,1) d^2 Exc / d ny nz
+       ! out(15,1) d^2 Exc / d nz nz
+       ij=5
+       DO i=1,4
+         DO j=i,4
+           ij=ij+1
+           fxc(i,j) = XCFUNOUTPUT(ij,1)*WGHT(IPNT)
+           fxc(j,i) = fxc(i,j)
+           vxc(i,j) = D0
+           vxc(j,i) = D0
+         ENDDO
+       ENDDO
+       DO IBMAT = 1,NBMAT
+          VXC1(IPNT,IBMAT) = D0
+          DO i=1,4
+            FAC = D4
+            IF (i.GE.2) FAC = D8
+            DO j=1,4
+              DO N=1,4
+                vxc(i,j) = vxc(i,j) + FAC*fxc(i,N)*EXPGRAD(IPNT,N,j,IBMAT)
+              ENDDO
+            ENDDO
+          ENDDO
+          VXC1(IPNT,IBMAT)        = vxc(1,1)
+          VXC2(IPNT,IBMAT,1:3)    = vxc(2:4,1)
+          VXC1MAG(IPNT,IBMAT,1:3) = vxc(1,2:4)
+          VXC2MAG(IPNT,IBMAT,1:3,1:3) = vxc(2:4,2:4)
+       ENDDO
     ENDIF
 #endif
    ELSE
