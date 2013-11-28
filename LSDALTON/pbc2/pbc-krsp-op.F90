@@ -184,66 +184,6 @@ END SUBROUTINE transformk_2_realmat
 
 !TRANSFORMS TO D^0l
 SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
-<<<<<<< HEAD
-	IMPLICIT NONE
-	INTEGER,INTENT(IN)           :: nbast,k,Nk
-	INTEGER,INTENT(IN)           :: volbz
-	COMPLEX(complexk),intent(in) :: kmat(nbast,nbast)
-	TYPE(lvec_list_t),intent(IN) :: ll
-	TYPE(matrix), INTENT(INOUT)  :: density(size(ll%lvec))
-	REAL(realk),INTENT(IN)       :: kvec(3),weight_k
-	!LOCAL Variables
-	TYPE(matrix)                 :: tmp_density
-	REAL(realk)                  :: work(nbast,nbast)
-	REAL(realk)                  :: phase1,phase2,phase3
-	REAL(realk)                  :: maxdens
-	COMPLEX(complexk)            :: phase
-	INTEGER                      :: layer,i,j
-	INTEGER                      :: l1,l2,l3
-
-	call mat_init(tmp_density,nbast,nbast)
-	do layer = 1,size(ll%lvec)
-		l1=int(ll%lvec(layer)%lat_coord(1))
-		l2=int(ll%lvec(layer)%lat_coord(2))
-		l3=int(ll%lvec(layer)%lat_coord(3))
-		if((abs(l1) .le. ll%ndmat .and. abs(l2) .le. ll%ndmat)&
-			& .and. abs(l3) .le. ll%ndmat) then
-
-			if (density(layer)%init_magic_tag .ne. mat_init_magic_value) then
-				call mat_init(density(layer),nbast,nbast)
-				call mat_zero(density(layer))
-			endif
-
-			call mat_zero(tmp_density)
-
-			phase1=kvec(1)*ll%lvec(layer)%std_coord(1)
-			phase2=kvec(2)*ll%lvec(layer)%std_coord(2)
-			phase3=kvec(3)*ll%lvec(layer)%std_coord(3)
-			phase=CMPLX(0._realk,(phase1+phase2+phase3),COMPLEXK)
-			do i=1,nbast
-				do j=1,nbast
-					work(i,j)=real(kmat(i,j)*exp(phase)*weight_k/volbz,realk)
-				enddo
-			enddo
-			!call write_matrix(work,nbast,nbast)
-			call mat_set_from_full(work,1.0_realk,tmp_density)
-			call mat_daxpy(1.0_realk,tmp_density,density(layer))
-
-			if(k==Nk)then
-				if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
-					call mat_abs_max_elm(density(layer),maxdens)
-					if(maxdens .gt. 1e-12)then
-						write(*,*) 'maybe to hard density cutoff, max element for &
-							& layer', l1,l2,l3,maxdens
-					endif
-				endif
-			endif
-		endif
-
-	enddo
-call mat_free(tmp_density)
-END SUBROUTINE kspc_2_rspc_loop_k
-=======
   IMPLICIT NONE
   INTEGER,intent(in)           :: nbast,k,Nk
   integer                      :: volbz
@@ -312,9 +252,9 @@ END SUBROUTINE kspc_2_rspc_loop_k
   call mat_free(tmp_density)
   call mem_dealloc(work)
   call mem_dealloc(worktmp)
->>>>>>> f23d0749801a515e3ac2175bdcbe7b2b16914c56
 
 
+END SUBROUTINE kspc_2_rspc_loop_k
 !Get the one particle part of the energy matrix for one k value
 SUBROUTINE pbc_get_onep_matrix(Aop,energy1_k,nrows,ncols,nlats,kvec,diis)
 IMPLICIT NONE

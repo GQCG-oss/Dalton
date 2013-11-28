@@ -215,9 +215,10 @@ SUBROUTINE pbc_spectral_decomp_ovl(s_input,umat,is_singular,ndim,nsingular,&
 
 	do i=1,ndim
 		if(eigv(i) .lt. 0._realk) then
-			write(*,*) 'Error: Eigenvalue of overlap matrix is negative.'
-			write(lupri,*) 'Error: Eigenvalue of overlap matrix is negative.'
-			call lsquit('ERROR: pbc-scf: pbc_spectral_decomp_ovl.',lupri)
+			write(*,*) 'Error: Eigenvalue of overlap matrix is negative. &
+				& Eigv(',i,') =', eigv(i)
+			write(lupri,*) 'Error: Eigenvalue of overlap matrix is negative. &
+				& Eigv(',i,') =', eigv(i)
 		endif
 	end do
 
@@ -652,7 +653,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   call mem_alloc(nfdensity,numrealvec)
   call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
   call mat_init(nfdensity(n1),ndim,ndim)
-  call mat_copy(2.0_realk,Dmat0,nfdensity(n1)) !UNRES x2 
+  call mat_copy(1.0_realk,Dmat0,nfdensity(n1)) 
   call mem_alloc(f_1,numrealvec)
   call mem_alloc(Ovl,numrealvec)
   call mem_alloc(g_2,numrealvec)
@@ -663,9 +664,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   call mem_alloc(C_k,ndim,ndim)
   call mem_alloc(C_0,ndim,ndim)
   call mem_alloc(D_k,ndim,ndim)
-
-  write(lupri,*) 'Density first'
-  call mat_print(nfdensity(n1),1,ndim,1,ndim,lupri)
 
   allocate(latt_cell(numrealvec)) !fixme alloc ?? use mem alloc el.
 
@@ -717,11 +715,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 !
       !call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
       !call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
-<<<<<<< HEAD
-=======
-
-      call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
->>>>>>> f23d0749801a515e3ac2175bdcbe7b2b16914c56
       call pbc_get_kpoint(k,kvec)
 
       if(lattice%store_mats)then
@@ -758,8 +751,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
     call LSTIMER('START ',TOT,TWT,LUPRI)
     k=k+1
     i=i+1
-
-  call mat_print(nfdensity(n1),1,ndim,1,ndim,lupri)
 
     !We keep only data of lattice%num_store past iterations
     if(i .ge. lattice%num_store) Then !should have an input parameter to decide how man we store
