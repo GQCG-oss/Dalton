@@ -309,20 +309,6 @@ C
                LWORK2 = LWORKSV
 C
                DTIME     = SECOND()
-<<<<<<< HEAD
-C              CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
-C    &                          IPRINT)
-               CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
-     &                           WORK(KODCL1),WORK(KODCL2),
-     &                           WORK(KODBC1),WORK(KODBC2),
-     &                           WORK(KRDBC1),WORK(KRDBC2),
-     &                           WORK(KODPP1),WORK(KODPP2),
-     &                           WORK(KRDPP1),WORK(KRDPP2),
-     &                           WORK(KCCFB1),WORK(KINDXB),
-     &                           WORK(KEND2),LWORK2,IPRINT)
-               DTIME     = SECOND()  - DTIME
-               SOTIME(9) = SOTIME(9) + DTIME
-=======
                IF (HERDIR) THEN
                  CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
      &                          IPRINT)
@@ -340,7 +326,6 @@ C
                   DTIME     = SECOND()  - DTIME
                   SOTIME(9) = SOTIME(9) + DTIME
                ENDIF
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
 C
             ELSE
                NUMDIS = 1
@@ -376,10 +361,7 @@ C              Work space allocation no. 3.
 C------------------------------------------
 C
                LXINT  = NDISAO(ISYDIS)
-<<<<<<< HEAD
-=======
 C
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
                LRECNR = ( (NBUFX(0) -1) / IRAT ) + 1
 C
                KXINT   = KEND2

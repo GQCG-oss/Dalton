@@ -254,22 +254,6 @@ C=======================================================
 C
          IF (DIRECT) THEN
             NTOSYM = 1
-<<<<<<< HEAD
-            DTIME     = SECOND()
-
-C HERDI1 is commented out because HERDIR is not yet implemented properly
-C in Dalton. Once this is fixed comment this back in and make sure 
-C HERDIR is not stil hardcoded to .FALSE in rp_init.F
-C           CALL HERDI1(WORK(KEND2),LWORK2,IPRINT)
-            CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
-     &                  KODPP1,KODPP2,KRDPP1,KRDPP2,
-     &                  KFREE,LFREE,KEND2,
-     &                  WORK(KEND2),LWORK2,IPRERI)
-            KEND2  = KFREE
-            LWORK2 = LFREE
-            DTIME     = SECOND()  - DTIME
-            SOTIME(8) = SOTIME(8) + DTIME
-=======
             DTIME = SECOND()
             IF (HERDIR) THEN
                CALL HERDI1(WORK(KEND2),LWRK2,IPRINT)
@@ -289,7 +273,6 @@ C           CALL HERDI1(WORK(KEND2),LWORK2,IPRINT)
                DTIME     = SECOND()  - DTIME
                SOTIME(8) = SOTIME(8) + DTIME
             ENDIF
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
          ELSE
             NTOSYM = NSYM
          ENDIF
@@ -318,12 +301,6 @@ C
                   KEND2  = KENDSV
                   LWORK2 = LWORKSV
 C
-<<<<<<< HEAD
-                  DTIME = SECOND()
-C                 CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
-C    &                             IPRINT)
-                  CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
-=======
                   DTIME     = SECOND()
                   IF (HERDIR) THEN
                     CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
@@ -331,25 +308,17 @@ C    &                             IPRINT)
                   ELSE
 C
                      CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
      &                           WORK(KODCL1),WORK(KODCL2),
      &                           WORK(KODBC1),WORK(KODBC2),
      &                           WORK(KRDBC1),WORK(KRDBC2),
      &                           WORK(KODPP1),WORK(KODPP2),
      &                           WORK(KRDPP1),WORK(KRDPP2),
-<<<<<<< HEAD
-     &                           WORK(KCCFB1),WORK(KINDXB),
-     &                           WORK(KEND2),LWORK2,IPRINT)
-                  DTIME     = SECOND()  - DTIME
-                  SOTIME(9) = SOTIME(9) + DTIME
-=======
      &                           WORK(KCCFB1),WORK(KINDXB), 
      &                           WORK(KEND2),LWORK2,IPRINT)
 C
                      DTIME     = SECOND()  - DTIME
                      SOTIME(9) = SOTIME(9) + DTIME
                   ENDIF
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
 C
                   LRECNR = ( (NBUFX(0) -1) / IRAT ) + 1
 C
@@ -477,13 +446,6 @@ C                 Calculate part of the second order density matrix.
 C-------------------------------------------------------------------
 C
                   DTIME      = SECOND()
-<<<<<<< HEAD
-C                  IF ( (NIT .EQ. 1) .AND. (INEWTR .EQ. 1) ) THEN
-C                     CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
-C     &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
-C     &                               ISYMD,ISYDIS,WORK(KEND5),LWORK5)
-C                  END IF
-=======
 CSPAS:27/8-13: the prop_exci_aorpad test works also if this block is not active!!
 C     has to be checked one day
 C                 IF ( (NIT .EQ. 1) .AND. (INEWTR .EQ. 1) ) THEN
@@ -492,7 +454,6 @@ C    &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
 C    &                               ISYMD,ISYDIS,WORK(KEND5),LWORK5)
 C                 END IF
 CKeinSPASmehr
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
                   DTIME      = SECOND()   - DTIME
                   SOTIME(41) = SOTIME(41) + DTIME
 C
@@ -691,15 +652,6 @@ C     Calculate the last part of the second order density matrix.
 C----------------------------------------------------------------
 C
       DTIME      = SECOND()
-<<<<<<< HEAD
-
-C 2013-9-30 SPAS & F.Beyer
-C TODO Make absolutely certain the results in the /test/ folder are correct!C This NIT if-statment can be commented out and the prop_exci_ao and prop_exci_aorpad will still yield the correct results! make sure this is intentional. If the IF check is removed and a straight call to SO_DENSAI2 is made the test will not succeed.
-
-      IF ( NIT .EQ. 1 ) THEN
-         CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
-      END IF
-=======
 CSPAS:30/8-13: the prop_exci_aorpad test works also if this block is not active!!
 C              It should be checked one day, whether it is really true,
 C              that we don't need the occ-vir part of the 
@@ -709,7 +661,6 @@ C     IF ( NIT .EQ. 1 ) THEN
 C        CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
 C     END IF
 CKeinSPASmehr
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
       DTIME      = SECOND()   - DTIME
       SOTIME(41) = SOTIME(41) + DTIME
 C

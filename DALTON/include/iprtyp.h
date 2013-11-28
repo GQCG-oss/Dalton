@@ -46,9 +46,5 @@
 #define GEN1INT_GET_INT 80
 #define GEN1INT_GET_EXPT 81
 #define GEN1INT_GET_CUBE 82
-<<<<<<< HEAD
-#define BEYER 83
-=======
 #define CGTO_DIFF_ERI_INIT 83
 #define XCINT_MPI_WAKEUP_SIGNAL 84
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9

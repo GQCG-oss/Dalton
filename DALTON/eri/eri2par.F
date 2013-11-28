@@ -963,7 +963,6 @@ C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
-<<<<<<< HEAD
 C Slaves are sent to this nodedriver from abacus/dalton.F where they 
 C idle until the keyword IPRTYP is set with an MPI_BCAST (this is 
 C mediated via the subroutine MPIXBCAST from /gp/mpimacro.F)
@@ -1002,24 +1001,13 @@ C are answered in:
 C 
 C "Using MPI, second edition"
 C - Gropp, Lusk and Skjellum
-C ISBN-10:     026257134X
-C ISBN-13: 978-0262571340
-C 
-C 
-C "Using MPI-2"
-C Gropp, Lusk and Thakur
-C ISBN-10:     0262571331
-C ISBN-13: 978-0262571333
-C
 
 
-=======
       use polarizable_embedding, only: pe_mpi
 #ifdef VAR_IFORT
 !     subroutine sleep is in IFPORT module
       use IFPORT, ONLY: SLEEP
 #endif
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
@@ -1036,10 +1024,6 @@ C
       N_TASKS = 0
 C
 C     Get calculation type (IPRTYP)
-<<<<<<< HEAD
-C     (this stalls slaves until broadcast is made by master)
-  100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-=======
 C
   100 CONTINUE
 !     Nov 2013 hjaaj: sleep 1 second before next check for a task
@@ -1047,8 +1031,7 @@ C
 !     - may make it possible to go into turbo mode
 !     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
       CALL SLEEP(1)
-      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER) !stall slaves with blocking broadcast
 C
       IF (IPRTYP.GT.0) THEN
          N_TASKS = N_TASKS + 1
@@ -1178,12 +1161,6 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
-C TODO beyer
-         ELSE IF (IPRTYP.EQ.BEYER) THEN
-            WRITE(*, *) "AAAAW YISS! THE NODEDRIVER WORKS!"
-C TODO ... beyer
-
-
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,

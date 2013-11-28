@@ -267,11 +267,7 @@ C
             NTOSYM = 1
             DTIME = SECOND()
             IF (HERDIR) THEN
-<<<<<<< HEAD
-               CALL HERDI1(WORK(KEND1),LWRK1,IPRERI)
-=======
                CALL HERDI1(WORK(KEND2),LWRK2,IPRINT)
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
             ELSE
                KCCFB1 = KEND2
                KINDXB = KCCFB1 + MXPRIM*MXCONT
@@ -281,11 +277,7 @@ C
                CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
      &                     KODPP1,KODPP2,KRDPP1,KRDPP2,KFREE,LFREE,
      &                     KEND2,WORK(KCCFB1),WORK(KINDXB),WORK(KEND2),
-<<<<<<< HEAD
-     &                     LWORK2,IPRERI)
-=======
      &                     LWORK2,IPRINT)
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
 
                KEND2  = KFREE
                LWORK2 = LFREE
@@ -303,11 +295,7 @@ C
 C
          DO 210 ISYMD1 = 1,NTOSYM
 C
-<<<<<<< HEAD
-            IF (DIRECT) THEN 
-=======
             IF (DIRECT) THEN  ! CC code has a HERDIR test, why is that not here? Compare with ccsd_energy.F
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
                NTOT = MXCALL
             ELSE
                NTOT = NBAS(ISYMD1)
@@ -324,20 +312,12 @@ C
                   KEND2  = KENDSV
                   LWORK2 = LWORKSV
 C
-<<<<<<< HEAD
-                  DTIME = SECOND()
-                  IF (HERDIR) THEN
-C                    CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
-C     &                             IPRERI)
-                  ELSE
-=======
                   DTIME  = SECOND()
                   IF (HERDIR) THEN
                     CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
      &                          IPRINT)
                   ELSE
 C
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
                      CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
      &                           WORK(KODCL1),WORK(KODCL2),
      &                           WORK(KODBC1),WORK(KODBC2),
@@ -346,18 +326,11 @@ C
      &                           WORK(KRDPP1),WORK(KRDPP2),
      &                           WORK(KCCFB1),WORK(KINDXB), 
      &                           WORK(KEND2),LWORK2,IPRINT)
-<<<<<<< HEAD
-                     DTIME     = SECOND()  - DTIME
-                     SOTIME(9) = SOTIME(9) + DTIME
-                  ENDIF
-
-=======
 C
                      DTIME     = SECOND()  - DTIME
                      SOTIME(9) = SOTIME(9) + DTIME
                   ENDIF
 C
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
                   LRECNR = ( (NBUFX(0) -1) / IRAT ) + 1
                   KRECNR  = KEND2
                   KEND2   = KRECNR + LRECNR

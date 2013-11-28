@@ -30,9 +30,6 @@ C951009-kenneth : Changed name from PSISTAR to DALTON
 C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
-<<<<<<< HEAD
-      PROGRAM DALTON2011_DALTON
-=======
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
@@ -41,7 +38,6 @@ C=========================================================================
 C
       use parallel_models_mpi
 C
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
 #include "implicit.h"
 #include "dummy.h"
 #include "mtags.h"
@@ -512,11 +508,7 @@ C
          CALL DALTON_GNRLINP
 
 #if !defined (VAR_MPI)
-<<<<<<< HEAD
-      END IF masterif
-=======
       END IF ! mynum .eq. master
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
 #else /* VAR_MPI */
          CALL RECVNAMES
 
@@ -605,18 +597,12 @@ C
             CALL GPCLOSE(LUPRI,'KEEP')
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
-<<<<<<< HEAD
-!           call main slave/co-worker driver routine.
+
+!           call main co-workers driver routine
 !           Slaves are suspended, looping continuously, waiting for 
 !           IPRTYP to be set. Once set the slaves are redirected to 
 !           the appropriate subroutine.
-            call nodedriver(work,lmwork,wrkdlm)
-
-=======
-
-!           call main co-workers driver routine
             call dalton_nodedriver(lmwork,wrkdlm)
->>>>>>> 04fa15638e2401b06f4845153963adbae7747cd9
          END IF
       END IF masterif
 
