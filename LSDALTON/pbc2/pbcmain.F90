@@ -98,10 +98,10 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   call find_cutoff_onep(lupri,luerr,setting,nbast,lattice,&
               latt_cell, refcell,num_latvectors)
 
-  write(*,*) 'nearest neighbour in pbcmain 2 ', lattice%nneighbour
-  call build_nflvec_list(lattice,nbast) 
-  write(*,*) 'nearest neighbour in pbcmain 3 ', lattice%nneighbour
-  n_neighbour=lattice%nneighbour
+!  write(*,*) 'nearest neighbour in pbcmain 2 ', lattice%nneighbour
+!  call build_nflvec_list(lattice,nbast) 
+!  write(*,*) 'nearest neighbour in pbcmain 3 ', lattice%nneighbour
+!  n_neighbour=lattice%nneighbour
 
  
   SELECT CASE(lattice%wannier_direct)

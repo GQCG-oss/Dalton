@@ -287,6 +287,7 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 	call mem_dealloc(w)
 	call mem_dealloc(Sk)
 	call mem_dealloc(diag)
+	call mem_dealloc(btmp)
 
 END SUBROUTINE pbc_spectral_decomp_ovl
 
@@ -742,7 +743,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       !call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
       !call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
 
-      call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
       call pbc_get_kpoint(k,kvec)
 
       if(lattice%store_mats)then
@@ -868,6 +868,9 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
       call pbc_get_diisweights(lattice,Bz,weight,i,tol,kvec,ndim,C_0,fockMO,fock,numrealvec,errortest,error,&
                                diis_exit,errlm,molecule%nelectrons,lupri)
+
+      write(*,*) 'Error check', errortest
+      write(lupri,*) 'Error check', errortest
 
         CALL LSTIMER('diis weights',TS,TE,LUPRI)
 

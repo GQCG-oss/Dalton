@@ -817,8 +817,8 @@ rhojk=0d0
 DO jk=1,(lmax+1)**2
    DO nk=1,num_latvec
       x2=ll%lvec(nk)%lat_coord(1)
-      y2=ll%nflvec(nk)%lat_coord(2)
-      z2=ll%nflvec(nk)%lat_coord(3)
+      y2=ll%lvec(nk)%lat_coord(2)
+      z2=ll%lvec(nk)%lat_coord(3)
 
       !call find_latt_index(nf,x2,y2,z2,fdim,ll,ll%max_layer)
 
