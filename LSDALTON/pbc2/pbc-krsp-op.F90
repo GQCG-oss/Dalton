@@ -26,10 +26,6 @@ COMPLEX(complexk)             :: phase
  else
    Bkmat%fck%zelms(:)=CMPLX(0.,0.,COMPLEXK)
  endif
-<<<<<<< HEAD
-=======
-
->>>>>>> e0b9480f27f02d30b54eb7ca7495d1fc85303313
 
  DO layer = 1, size(Armat%lvec)
    l1=int(Armat%lvec(layer)%lat_coord(1))
@@ -105,10 +101,6 @@ REAL(realk)                   :: phase1,phase2,phase3
 COMPLEX(complexk)             :: phase
 
  Bkmat%Smat%zelms(:) = CMPLX(0.,0.,COMPLEXK)
-<<<<<<< HEAD
-=======
-
->>>>>>> e0b9480f27f02d30b54eb7ca7495d1fc85303313
  DO layer = 1, numvecs
 
    if(ll%lvec(layer)%ovl_computed )then

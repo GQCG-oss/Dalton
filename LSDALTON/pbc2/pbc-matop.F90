@@ -669,109 +669,83 @@ INTEGER :: i,j,nbast
 END SUBROUTINE read_binary_matrix
 
 !This routine makes sure that C^dagger S C = I
-SUBROUTINE zggram_schmidt(C,S,nrowsc,mcolsc,nrowss,mcolss,lupri)
-IMPLICIT NONE
-INTEGER, INTENT(IN) :: nrowsc, mcolsc,nrowss,mcolss
-COMPLEX(complexk), INTENT(INOUT) :: C(nrowsc,mcolsc)
-COMPLEX(complexk), INTENT(IN) :: S(nrowss,mcolss)
-INTEGER, INTENT(IN), OPTIONAL :: lupri
-!local variables
-INTEGER :: i,j,k
-COMPLEX(complexk) :: alpha,beta
-<<<<<<< HEAD
-COMPLEX(complexk),pointer :: ctmp1(:,:),ctmp2(:,:),vtmp1(:,:)
-COMPLEX(complexk),pointer :: vtmp2(:,:)
-COMPLEX(complexk),external :: zdotc
-REAL(realk) :: radii,angle
-COMPLEX(complexk) :: factor1,factor2,fac
-=======
-COMPLEX(complexk), POINTER :: ctmp1(:),ctmp2(:),vtmp1(:)
-COMPLEX(complexk), POINTER :: vtmp2(:)
-COMPLEX(complexk), EXTERNAL :: zdotc
-REAL(realk) :: factor1,factor2
->>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
-
- alpha=CMPLX(1._realk,0._realk,complexk)
- beta=CMPLX(0._realk,0._realk,complexk)
- factor1=CMPLX(0._realk,0._realk,complexk)
- factor2=CMPLX(0._realk,0._realk,complexk)
-
- !vtmp1(:)=C(:,1)
-<<<<<<< HEAD
-
- call mem_alloc(ctmp1,nrowsc,1)
- call mem_alloc(ctmp2,nrowsc,1)
- call mem_alloc(vtmp1,nrowsc,1)
- call mem_alloc(vtmp2,nrowsc,1)
-
- !Orthogonalize the eigenvector C_i^d S C_j= 0
-=======
- call mem_alloc(ctmp1,nrowsc)
- call mem_alloc(ctmp2,nrowsc)
- call mem_alloc(vtmp1,nrowsc)
- call mem_alloc(vtmp2,nrowsc)
-
-! call zgemm('C','N',nrowsc,mcolss,1,alpha,vtmp1,nrowsc,S,nrowss,nrowss,beta, &
-!           & vtmp2,nrowsc)
- !call zgemm('N','N',nrowsc,mcolss,1,alpha,vtmp2,nrowsc,S,nrowss,nrowss,beta &
- !          & vtmp1,nrowsc)
-
- !c(:,1)=vtmp1(:)!/zdotc(nrowsc,vtmp2,1,vtmp1,1)
- !c(:,1)=vtmp1(:)
-
- !Orthogonalize the eigenvector C_i S C_j= 0
->>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
- do i=2,mcolsc
-    vtmp1(:,1)=c(:,i)
-    vtmp2(:,1)=c(:,i)
-    call zgemm('N','N',nrowss,1,nrowsc,alpha,S,nrowss,vtmp2,nrowsc,beta, &
-            & ctmp1,nrowsc)
-    do j=1,i-1
-
-      factor2=CMPLX(0._realk,0._realk,complexk)
-      !ctmp1(:)=c(:,j)
-      ctmp2(:,1)=c(:,j)
-
-      factor2=zdotc(nrowsc,ctmp2(:,1),1,ctmp1(:,1),1)
-
-      call zgemm('C','N',1,mcolss,nrowsc,alpha,ctmp2,nrowsc,S,nrowss,beta, &
-            & ctmp1,1)
-
-      factor1=zdotc(nrowsc,ctmp1(:,1),1,ctmp2(:,1),1)
-
-      vtmp1=vtmp1-ctmp2*factor2/factor1
-!      write(*,*) 'factor1 and factor2',factor1,factor2
-      factor1=CMPLX(0._realk,0._realk,complexk)
-      factor2=CMPLX(0._realk,0._realk,complexk)
-
-    enddo
-    c(:,i)=vtmp1(:,1)
- enddo
-
- !Normalize C_i S C_i = 1
-
- Do i=1,mcolsc
-    vtmp1(:,1)=c(:,i)
-    vtmp2(:,1)=c(:,i)
-    factor1=CMPLX(0._realk,0._realk,complexk)
-    call zgemm('C','N',1,mcolss,nrowsc,alpha,vtmp2,nrowsc,S,nrowss,beta, &
-            & ctmp1,1)
-    factor1 = zdotc(nrowsc,ctmp1(:,1),1,vtmp2(:,1),1)
-    !radii= real(factor1,realk)**2+aimag(factor1)**2
-    !radii=sqrt(radii)
-    !angle=Datan(real(factor1,realk)/aimag(factor1))/2._realk
-    !factor1=CMPLX(radii*cos(angle),radii*sin(angle))
-    factor1=sqrt(factor1)
-
-    c(:,i)=vtmp1(:,1)/factor1
- enddo
-
- call mem_dealloc(ctmp1)
- call mem_dealloc(ctmp2)
- call mem_dealloc(vtmp1)
- call mem_dealloc(vtmp2)
-
-END SUBROUTINE zggram_schmidt
+!SUBROUTINE zggram_schmidt(C,S,nrowsc,mcolsc,nrowss,mcolss,lupri)
+!IMPLICIT NONE
+!INTEGER, INTENT(IN) :: nrowsc, mcolsc,nrowss,mcolss
+!COMPLEX(complexk), INTENT(INOUT) :: C(nrowsc,mcolsc)
+!COMPLEX(complexk), INTENT(IN) :: S(nrowss,mcolss)
+!INTEGER, INTENT(IN), OPTIONAL :: lupri
+!!local variables
+!INTEGER :: i,j,k
+!COMPLEX(complexk) :: alpha,beta
+!COMPLEX(complexk),pointer :: ctmp1(:,:),ctmp2(:,:),vtmp1(:,:)
+!COMPLEX(complexk),pointer :: vtmp2(:,:)
+!COMPLEX(complexk),external :: zdotc
+!REAL(realk) :: radii,angle
+!COMPLEX(complexk) :: factor1,factor2,fac
+!
+! alpha=CMPLX(1._realk,0._realk,complexk)
+! beta=CMPLX(0._realk,0._realk,complexk)
+! factor1=CMPLX(0._realk,0._realk,complexk)
+! factor2=CMPLX(0._realk,0._realk,complexk)
+!
+! !vtmp1(:)=C(:,1)
+!
+! call mem_alloc(ctmp1,nrowsc,1)
+! call mem_alloc(ctmp2,nrowsc,1)
+! call mem_alloc(vtmp1,nrowsc,1)
+! call mem_alloc(vtmp2,nrowsc,1)
+!
+!! call zgemm('C','N',nrowsc,mcolss,1,alpha,vtmp1,nrowsc,S,nrowss,nrowss,beta, &
+!!           & vtmp2,nrowsc)
+! !call zgemm('N','N',nrowsc,mcolss,1,alpha,vtmp2,nrowsc,S,nrowss,nrowss,beta &
+! !          & vtmp1,nrowsc)
+!
+! !c(:,1)=vtmp1(:)!/zdotc(nrowsc,vtmp2,1,vtmp1,1)
+! !c(:,1)=vtmp1(:)
+!
+! !Orthogonalize the eigenvector C_i S C_j= 0
+! do i=2,mcolsc
+!    vtmp1(:)=c(:,i)
+!    vtmp2(:)=c(:,i)
+!    call zgemm('C','N',1,mcolss,nrowsc,alpha,vtmp2,nrowss,S,nrowss,beta, &
+!            & ctmp1,1)
+!    do j=1,i-1
+!
+!      beta=CMPLX(0._realk,0._realk,complexk)
+!      !ctmp1(:)=c(:,j)
+!      ctmp2(:)=c(:,j)
+!
+!      factor1=zdotc(nrowsc,ctmp1,1,ctmp2,1)
+!
+!      call zgemm('C','N',1,mcolss,nrowsc,alpha,ctmp2,nrowsc,S,nrowss,beta, &
+!            & ctmp1,1)
+!
+!      factor2=zdotc(nrowsc,ctmp1,1,ctmp2,1)
+!
+!      vtmp1=vtmp1-ctmp2*factor2/factor1
+!
+!    enddo
+!    c(:,i)=vtmp1(:)
+! enddo
+!
+! !Normalize C_i S C_i = 1
+!
+! Do i=1,mcolsc
+!    vtmp1(:)=c(:,i)
+!    vtmp2(:)=c(:,i)
+!    call zgemm('C','N',1,mcolss,nrowsc,alpha,vtmp2,nrowsc,S,nrowss,beta, &
+!            & ctmp1,1)
+!    factor1=sqrt(zdotc(nrowsc,ctmp1,1,vtmp2,1))
+!    c(:,i)=vtmp1(:)/factor1
+! enddo
+!
+! call mem_dealloc(ctmp1)
+! call mem_dealloc(ctmp2)
+! call mem_dealloc(vtmp1)
+! call mem_dealloc(vtmp2)
+!
+!END SUBROUTINE zggram_schmidt
 
 !> \author 	Karl R. Leikanger
 !> \date 	2013

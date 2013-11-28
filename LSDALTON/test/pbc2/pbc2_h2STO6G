@@ -18,10 +18,10 @@ fi
 #  TEST DESCRIPTION
 #######################################################################
 cat > pbc2_h2STO6G.info <<'%EOF%'
-   pbc2_h2SCF_iter1
+   pbc2_h2STO6g
    -------------
    Molecule:         H2
-   Wave Function:    HF/4-31G,Ahlrichs-Coulomb-Fit
+   Wave Function:    HF/STO-6G,Ahlrichs-Coulomb-Fit
    Test Purpose:     Check HOMO/LUMO at first SCF iteration
 %EOF%
 
