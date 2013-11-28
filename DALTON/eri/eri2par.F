@@ -952,7 +952,6 @@ C  /* Deck nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE NODEDRIVER(WORK,MWORK,WRKDLM)
 C
-C F.Beyer added documentation on Aug. 27th 2013.
 C Slaves are sent to this nodedriver from abacus/dalton.F where they 
 C idle until the keyword IPRTYP is set with an MPI_BCAST (this is 
 C mediated via the subroutine MPIXBCAST from /gp/mpimacro.F)
@@ -974,7 +973,7 @@ C blocked/idles once again by the MPI_COMM_WORLD broadcast at label 100.
 C 
 C If IPRTYP is set to 0 the nodes exit the loop.
 C 
-C As on Aug 2013, you have to broadcast the IPRTYP from the master node 
+C As of Aug 2013, you have to broadcast the IPRTYP from the master node 
 C using MPIXBCAST or MPI_BCAST, to communicate with the nodedriver. 
 C This mean you can change IPRTYP locally if you need it for whatever 
 C reason. To start a parallel calculation the master HAS to broadcast 
@@ -983,8 +982,8 @@ C
 C IMPORTANT: The communication is always via the communicator 
 C MPI_COMM_WORLD, so if another communicator is made, only those nodes 
 C included in the new communicator will receive the broadcast IPRTYP. 
-C This is because Dalton uses the MPIXBCAST subroutine to communicate 
-C and this is hardcoded to MPI_COMM_WORLD.
+C This is because the nodedriver uses the MPIXBCAST subroutine to 
+C communicate and this is hardcoded to MPI_COMM_WORLD.
 C 
 C Questions regarding MPI, communicators and collective communication 
 C are answered in:
@@ -1016,6 +1015,7 @@ C
       CALL QENTER('NODEDRIVER')
 C
 C     Get calculation type (IPRTYP)
+C     (this stalls slaves until broadcast is made by master)
   100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN
@@ -1113,6 +1113,12 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
+C TODO beyer
+         ELSE IF (IPRTYP.EQ.BEYER) THEN
+            WRITE(*, *) "AAAAW YISS! THE NODEDRIVER WORKS!"
+C TODO ... beyer
+
+
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(NODEDRIVER) ERROR on slave',MYTID,

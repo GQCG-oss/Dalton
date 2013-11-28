@@ -199,10 +199,9 @@ C         "DALTON.OUT.n<slave no>" in GPOPEN
      &            IDUMMY,.FALSE.)
       REWIND(LUNMPF)
       END IF
-C
       CALL MEMINI(LUPRI,LUERR)
-C
-C Beyer Added masterif name to this big if statement. Makes tracking thend of it easier.
+
+C Added masterif note to ease keeping track of this convoluted if-statement
       masterif: IF (MYNUM .EQ. MASTER) THEN
 C         
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
@@ -549,8 +548,6 @@ C
             CALL GPCLOSE(LUPRI,'KEEP')
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
-
-
 !           call main slave/co-worker driver routine.
 !           Slaves are suspended, looping continuously, waiting for 
 !           IPRTYP to be set. Once set the slaves are redirected to 

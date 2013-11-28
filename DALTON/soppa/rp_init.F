@@ -228,7 +228,6 @@ C
       CCSLV  = .FALSE.
       NCCSLV = 0
 
-C TODO  fix herdir! No matter how it's set in the .dal file it'll only affect the coupled cluster calculation right now.
       HERDIR = .FALSE.
 
       ANAAOD   = .FALSE.

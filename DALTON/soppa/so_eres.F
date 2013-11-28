@@ -22,6 +22,7 @@ C              RES1D, RES2E, and RES2D.
 C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -30,6 +31,7 @@ C
 #include "aovec.h"
 #include "iratdef.h"
 #include "eribuf.h"
+
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -40,7 +42,6 @@ C
       CHARACTER MODEL*5
       dimension rint(10,10,10,10)
       logical   sonod
-
 
 
 C
@@ -293,7 +294,7 @@ C
 C
          DO 210 ISYMD1 = 1,NTOSYM
 C
-            IF (DIRECT) THEN  ! CC code has a HERDIR test, why is that not here? Compare with ccsd_energy.F
+            IF (DIRECT) THEN 
                NTOT = MXCALL
             ELSE
                NTOT = NBAS(ISYMD1)
@@ -497,7 +498,7 @@ C
 C
 C-------------------------------------------------------------------
 C                 Calculate the part of the result vectors RES1E and
-C                 RES1D which orriginate from the C matrices. See 
+C                 RES1D which originate from the C matrices. See 
 C                 eqs. (72) and (73).
 C-------------------------------------------------------------------
 C

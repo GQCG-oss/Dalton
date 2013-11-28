@@ -431,11 +431,11 @@ C                 Calculate part of the second order density matrix.
 C-------------------------------------------------------------------
 C
                   DTIME      = SECOND()
-                  IF ( (NIT .EQ. 1) .AND. (INEWTR .EQ. 1) ) THEN
-                     CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
-     &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
-     &                               ISYMD,ISYDIS,WORK(KEND5),LWORK5)
-                  END IF
+C                  IF ( (NIT .EQ. 1) .AND. (INEWTR .EQ. 1) ) THEN
+C                     CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
+C     &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
+C     &                               ISYMD,ISYDIS,WORK(KEND5),LWORK5)
+C                  END IF
                   DTIME      = SECOND()   - DTIME
                   SOTIME(41) = SOTIME(41) + DTIME
 C
@@ -634,6 +634,10 @@ C     Calculate the last part of the second order density matrix.
 C----------------------------------------------------------------
 C
       DTIME      = SECOND()
+
+C 2013-9-30 SPAS & F.Beyer
+C TODO Make absolutely certain the results in the /test/ folder are correct!C This NIT if-statment can be commented out and the prop_exci_ao and prop_exci_aorpad will still yield the correct results! make sure this is intentional. If the IF check is removed and a straight call to SO_DENSAI2 is made the test will not succeed.
+
       IF ( NIT .EQ. 1 ) THEN
          CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
       END IF

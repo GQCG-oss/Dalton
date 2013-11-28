@@ -10,6 +10,17 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Determine new initial trialvectors.
 C
+C     'Atomic integral driven second order polarization propagator 
+C     calculations of the excitation spectra of napthalene and anthracene'
+C     Keld L. Bak, Henrik Koch, Jens Oddershede, Ove Christiansen 
+C     and Stephan P. A Sauer
+C     Journal of Chemical Physics, 112, 9, (2000)
+C
+C     Section C pp. 4176
+C     SO_TR1NEW is called to create a brand new set of trial vectors for 
+C     SOPPA or SOPPA(CCSD) based on approximate diagonal elements of the 
+C     Hessian.
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -22,8 +33,15 @@ C
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION WORK(LWORK)
 
-
-
+C TODO keywords call parallel MPI beyer howto 
+C TODO beyer fucking around with parallel job calling
+C #include "iprtyp.h"
+C
+C      IPRTYP = 83
+C      call mpixbcast(BEYER, 1, 'INTEGE', 0)
+C      call mpixbcast(IPRTYP, 1, 'INTEGE', 0)
+C      call mpixbcast(83, 1, 'INTEGE', 0)
+C TODO ... beyer
 
 C
 C------------------
@@ -124,6 +142,9 @@ C     Create initial new trial vectors and write to files.
 C---------------------------------------------------------
 C
       DO 200 INEWTR = 1, NNEWTR
+C TODO beyer
+         write(lupri, *) "number of new trial vectors", nnewtr
+C todo ...beyer
 C
          CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
