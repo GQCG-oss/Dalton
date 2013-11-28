@@ -44,7 +44,7 @@ SUBROUTINE set_pbc_molecules(INPUT,SETTING,lupri,luerr,nbast,Dmat,lattice)
   real(realk), pointer :: Tlat(:,:)
   REAL(realk)::  latt_vec_std(3),focknorm
   REAL(realk)::  E_cell,E_kin,E_ff,E_XC,E_K,E_J,E_en,E_nuc
-  REAL(realk)::  E_1,E_nnff
+  REAL(realk)::  E_1,E_nnff,maxdens
   real(realk) :: TS,TE
 !  REAL(realk) :: PI=3.14159265358979323846_realk
   INTEGER :: sze,num_latvectors
@@ -358,18 +358,19 @@ else
         mattxt=adjustl(lattice%debugdensfile)
         mattxt=trim(mattxt)
         write(*,*) mattxt
-        CALL lsOPEN(IUNIT,mattxt,'old','UNFORMATTED')
+        CALL lsOPEN(IUNIT,mattxt,'old','FORMATTED')
         !OPEN(UNIT=iunit,FILE=trim(mattxt),STATUS='OLD',IOSTAT=ierror)
-        read(iunit) nbasterik
+        read(iunit,*) nbasterik
         if(nbasterik .ne. nbast) then
           write(*,*) 'Not the right dimensions for the density matrix'
           write(*,*) 'are you sure you have the same basis or molecule?'
+          write(*,*) 'Your dimension is',nbast,'read dimension is',nbasterik
           write(lupri,*) 'Not the right dimensions for the density matrix'
           write(lupri,*) 'are you sure you have the same basis or molecule?'
           call LSquit('Not correct dimension in density matrix',lupri)
         endif
         DO j=1,nbasterik
-         read(iunit) (lattice%lvec(k)%d_mat(i,j),i=1,nbasterik)
+         read(iunit,*) (lattice%lvec(k)%d_mat(i,j),i=1,nbasterik)
         ENDDO
         CALL lsCLOSE(IUNIT,'KEEP')
       endif
@@ -417,12 +418,6 @@ else
   maxmultmom=lattice%lmax
   Tlmax=lattice%Tlmax
 
-    write(*,*) 'before call to multipole'
-  CALL LSTIMER('START ',TS,TE,LUPRI)
-  call pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,&
-    &latt_cell,refcell,num_latvectors,maxmultmom)
-  CALL LSTIMER('pbc_multipole',TS,TE,LUPRI)
-  
  ! call mem_alloc(Tlat,(Tlmax+1)**2,(Tlmax+1)**2)
 
  ! write(*,*) 'density used ',num_latvectors
@@ -484,6 +479,10 @@ else
 	enddo
     deallocate(latt_cell)
     write(*,*) 'before call to scf loops'
+
+   call mat_abs_max_elm(dmat,maxdens)
+   write(lupri,*) 'max element in initial dmat',maxdens
+   write(*,*) 'max element in initial dmat',maxdens
 
   call pbc_startzdiis(input%molecule,setting,nbast,lattice,&
   num_latvectors,maxmultmom,bz,dmat,lupri,luerr)

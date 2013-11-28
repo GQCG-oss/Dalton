@@ -701,6 +701,11 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
  !computing the nuclear moments
   call mem_alloc(nucmom,(1+maxmultmom)**2)
   call pbc_comp_nucmom(refcell,nucmom,maxmultmom,lupri)
+
+  CALL LSTIMER('START ',TS,TE,LUPRI)
+  call pbc_multipole_expan_k(lupri,luerr,setting,ndim,lattice,&
+    &latt_cell,refcell,numrealvec,maxmultmom)
+  CALL LSTIMER('pbc_multipole',TS,TE,LUPRI)
   
   call pbc_controlmm(20,Tlat,lattice%Tlmax,maxmultmom,.false.,lattice%ldef%avec,&
      ndim,lupri,nfdensity,numrealvec,lattice,E_ff,E_nnff,refcell)
@@ -712,6 +717,11 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 !
       !call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
       !call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
+<<<<<<< HEAD
+=======
+
+      call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
+>>>>>>> f23d0749801a515e3ac2175bdcbe7b2b16914c56
       call pbc_get_kpoint(k,kvec)
 
       if(lattice%store_mats)then

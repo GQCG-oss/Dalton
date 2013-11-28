@@ -1568,6 +1568,8 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
       lattice%lvec(indred)%is_redundant=.true.
     endif
 
+    if(lattice%lvec(index1)%Kx_computed) write(lupri,*) 'Kx computed for', il1,il2,il3
+
   endif !is_redundant
  !    
 
