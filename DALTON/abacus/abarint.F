@@ -4596,6 +4596,7 @@ C     This is brutally resolved by removing all symmetry, that is the
 C     molecule has to be minimized withim the C1 point group.
 C
       TMPLN = MLINE(1)
+      CALL UPCASE(TMPLN)
       BASIS = (TMPLN(1:5) .EQ. 'BASIS')
       I = 4
       IF (BASIS) I = 5
@@ -4624,8 +4625,10 @@ C
 C
       IATOM = 1
       I = NCLINE(IATOM)-1
+      TMPLN = MLINE(I)
+      CALL UPCASE(TMPLN)
       DO 50 J = 1, NONTYP
-         IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
+         IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
             CALL LINE5R(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),
      &                  MXAQN,BASIS,ATOMBA,LMULBS,BSNM,
      &                  RADIUS_PCM(J), ALPHA_PCM(J))
