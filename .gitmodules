@@ -4,3 +4,9 @@
 [submodule "external/xcfun"]
 	path = external/xcfun
 	url = git://repo.ctcc.no/xcfun
+[submodule "external/pelib"]
+	path = external/pelib
+	url = git@repo.ctcc.no:pelib.git
+[submodule "external/ls-matrix-defop"]
+	path = external/ls-matrix-defop
+	url = git@repo.ctcc.no:matrix-defop.git

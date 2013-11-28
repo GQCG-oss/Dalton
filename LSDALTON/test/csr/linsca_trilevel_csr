@@ -45,6 +45,8 @@ H      0.55168  -0.77340   0.00000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_trilevel_csr.dal <<'%EOF%'
+**GENERAL
+.CSR
 **INTEGRAL
 .DENSFIT
 **WAVE FUNCTIONS
@@ -59,17 +61,15 @@ BLOCK
 #.DFTELS
 #1
 *DENSOPT
-.CSR
 .ARH
 !.NOINCREM
 .START
  TRILEVEL
 .CONVTHR
  1.0d-4
-$INFO
-INFO_LINEQ
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.INFO_LINEQ
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 

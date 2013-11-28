@@ -6,236 +6,26 @@
 ################################################################################
 #
 # location of default lsdalton script
-LSDALTON_script="$PWD/../lsdalton"
-# radovan: this is to figure out whether TEST is called from test directory
-#          or from outside
-SCRIPT_DIR="${0%/*}"
-# if the script was started from the base directory, then the
-# expansion returns a period
-if test "$SCRIPT_DIR" == "." ; then
-  SCRIPT_DIR="$PWD"
-# if the script was not called with an absolute path, then we need to add the
-# current working directory to the relative path of the script
-elif test "${SCRIPT_DIR:0:1}" != "/" ; then
-  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
-fi
+LSDALTON_script="$PWD/../../build/lsdalton"
 
-#########################################################################
-# define all the different test suites
-#########################################################################
-# LINSCA is a set of tests that MUST be run before commiting to linsca-ng
-# branch
-LINSCA="linsca/linsca_energy  
-  linsca/linsca_dft_energy
-  linsca/linsca_unrest_energy
-  linsca/linsca_unrest_dft_energy
-  linsca/linsca_rhf_stability
-  linsca/linsca_uhf_stability
-  linsca/linsca_direct_dens
-  linsca/linsca_arh
-  linsca/linsca_arh_davidson
-  linsca/linsca_arh_ls_davidson
-  linsca/linsca_lcm_nongc
-  linsca/linsca_trilevel 
-  linsca/linsca_atoms
-  linsca/linsca_trilevel_2nd_local
-  linsca/linsca_trilevel_2nd_all
-  linsca/test_kurtosis
-  linsca/PipekMezeyLowdin
-  linsca/test_soeo"
-ARH="linsca/linsca_atoms
-  linsca/linsca_trilevel
-  linsca/linsca_arh_davidson
-  linsca_arh_ls_davidson
-  linsca/linsca_arh"
-LSDALTON="linsca/lsdalton_dft_ssfgrid
-  LSint/LSDALTON_screen1
-  LSint/LSDALTON_screen2
-  LSint/LSDALTON_b3lyp_water
-  LSint/LSDALTON_userdefined_basis1
-  LSint/LSDALTON_userdefined_basis2
-  LSint/LSDALTON_PropertyTest1
-  LSint/LSDALTON_NOBQBQ2
-  LSint/LSDALTON_pointcharge
-  LSint/LSDALTON_pointcharge2
-  LSint/LSDALTON_phantom
-  LSint/LSDALTON_phantom2
-  LSint/LSDALTON_donotsavegab
-  LSint/LSDALTON_EP
-  LSint/LSDALTON_geoderiv
-  LSint/LSDALTON_magderiv
-  LSint/LSDALTON_magderiv2
-  LSint/LSDALTON_camb3lyp
-  LSint/LSDALTON_camb3lyp2
-  LSint/LSDALTON_cartesian_ecoeff 
-  LSint/LSDALTON_DaLink
-  LSint/LSDALTON_DENSFIT_FMM
-  LSint/LSDALTON_dftfunc_bp86
-  LSint/LSDALTON_dftfunc_bpw91
-  LSint/LSDALTON_dftfunc_kt3 
-  LSint/LSDALTON_dftfunc_lb94
-  LSint/LSDALTON_dftfunc_pbe0
-  LSint/LSDALTON_dftfunc_pw86x
-  LSint/LSDALTON_dftfunc_vwn3 
-  LSint/LSDALTON_ethane_df_dft_molgrad
-  LSint/LSDALTON_ethane_df_lda_jengine
-  LSint/LSDALTON_ethane_df_overlap_lda
-  LSint/LSDALTON_ethane_dft_molgrad
-  LSint/LSDALTON_ethane_lda_jengine
-  LSint/LSDALTON_FMM
-  LSint/LSDALTON_FMM_trilevel
-  LSint/LSDALTON_fmm_gradient
-  LSint/LSDALTON_fmm_df_gradient
-  LSint/LSDALTON_fmm_twoel_gradient
-  LSint/LSDALTON_INCREM
-  LSint/LSDALTON_INCREM2
-  LSint/LSDALTON_J_NSETUV
-  LSint/LSDALTON_Link
-  LSint/LSDALTON_MBIE
-  LSint/LSDALTON_SR_EXCHANGE
-  LSint/LSDALTON_pass
-  LSint/LSDALTON_PrimAng
-  LSint/LSDALTON_ethane_pari_b3lyp
-  LSint/LSDALTON_ethane_pari_b3lyp_unconstrained
-  LSint/LSDALTON_ethane_pari_b3lyp_ChgConst
-  LSint/LSDALTON_ethane_pari_b3lyp_ChgDipConst
-  LSint/LSDALTON_UDFT
-  LSint/LSDALTON_UHF_DEFAULT
-  LSint/LSDALTON_UHF_excit
-  LSint/LSDALTON_UHF_excit2
-  LSint/LSDALTON_UHF_excit_radical
-  LSint/LSDALTON_UHF_hessian
-  LSint/LSDALTON_UHF_JENGINE
-  LSint/LSDALTON_UHF_JENGINE_LINK
-  LSint/LSDALTON_UHF_LINK
-  LSint/LSDALTON_UNCONT
-  LSint/LSDALTON_ethane_dft_disp
-  LSint/LSDALTON_HF_cartesian
-  LSint/LSDALTON_augTZ"
-RSP="LSresponse/LSresponse_HF_alpha
-  LSresponse/LSresponse_HF_alpha_astv
-  LSresponse/LSresponse_HF_beta
-  LSresponse/LSresponse_HF_dipole
-  LSresponse/LSresponse_HF_dtpa
-  LSresponse/LSresponse_HF_esd
-  LSresponse/LSresponse_HF_esg
-  LSresponse/LSresponse_HF_gamma
-  LSresponse/LSresponse_HF_gamma_lcm
-  LSresponse/LSresponse_HF_molgra
-  LSresponse/LSresponse_HF_molHessian
-  LSresponse/LSresponse_HF_opa
-  LSresponse/LSresponse_HF_tpa
-  LSresponse/LSresponse_DFT_alpha
-  LSresponse/LSresponse_DFT_alpha_aptv
-  LSresponse/LSresponse_DFT_beta
-  LSresponse/LSresponse_DFT_dipole
-  LSresponse/LSresponse_DFT_esd
-  LSresponse/LSresponse_DFT_esg
-  LSresponse/LSresponse_DFT_dtpa
-  LSresponse/LSresponse_DFT_molgra
-  LSresponse/LSresponse_DFT_opa
-  LSresponse/LSresponse_DFT_tpa
-  LSresponse/LSresponse_NMR_SHIELD"
-GEO="geomopt/cartes_bfgs_min
-     geomopt/redint_bfgs
-     geomopt/cartes_trilevel_newconv
-     geomopt/cartes_psb_min
-     geomopt/ethane_dec_mp2"
-DDYN="ddynam/HCN_ddyn
-      ddynam/HF_vib
-      ddynam/H2O_fmd"
-DEC="dectests/arraytest
-     dectests/reordertest
-     dectests/fullmp2
-     dectests/fullmp2_f12
-     dectests/fullccsd_f12
-     dectests/fullcc2 
-     dectests/fullccsd_low
-     dectests/fullccsd_1
-     dectests/fullccsd_2
-     dectests/fullccsd_3
-     dectests/fullccsd_high
-     dectests/fullccsdpt
-     dectests/dec_ccsdpt
-     dectests/fulldec 
-     dectests/fragment_adapted
-     dectests/mp2density_special
-     dectests/mp2_gradient_diatomic
-     dectests/mp2_gradient_special
-     dectests/mp2grad_frozencore
-     dectests/fragmentccsd_simple
-     dectests/dec_geoopt
-     geomopt/ethane_dec_mp2"
-ALL="$LSDALTON $LINSCA $RSP $GEO $DDYN $DEC"
-# used to be $LINSCA and $LSINT but not anymore 
-# Test code compiled with 64 bit integers
-# These are the only test cases that MUST work for 64-bit integers
-# Others MIGHT work, though!
-INT64="$ALL linsca/linsca_trilevel_64bit linsca/linsca_atoms_64bit"
-#   needed for PASSES 
-CSR="csr/linsca_atoms_csr
-     csr/linsca_atoms_csr_debug        
-     csr/linsca_direct_dens_csr        
-     csr/linsca_energy_csr             
-     csr/linsca_onestep_csr                 
-     csr/linsca_rhf_stability_csr
-     csr/linsca_trilevel_csr
-     csr/linsca_trilevel_2nd_local_csr
-     csr/linsca_trilevel_2nd_all_csr
-     csr/LSDALTON_INCREM_csr
-     csr/LSDALTON_DENSFIT_FMM_csr
-     csr/LSDALTON_FMM_csr
-     csr/LSDALTON_ethane_dft_molgrad_csr"
+# radovan: this is to figure out the location of this script
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-SCALAPACK="SCALAPACK/linsca_arh_SCALAPACK
-     SCALAPACK/linsca_atoms_SCALAPACK
-     SCALAPACK/linsca_direct_dens_SCALAPACK        
-     SCALAPACK/linsca_energy_SCALAPACK             
-     SCALAPACK/linsca_trilevel_2nd_local_SCALAPACK
-     SCALAPACK/linsca_trilevel_2nd_all_SCALAPACK
-     SCALAPACK/LSDALTON_DENSFIT_FMM_SCALAPACK
-     SCALAPACK/LSDALTON_FMM_SCALAPACK
-     SCALAPACK/LSDALTON_ethane_dft_molgrad_SCALAPACK
-     SCALAPACK/LSresponse_DFT_beta_SCALAPACK"
-PBC="pbc2/pbc2_h2fock
-     pbc2/pbc2_h2SCF_iter1
-	 pbc2/pbc2_h2STO3G"
-
-#The SHORT, MEDIUM, and LONG suites currently don't contain nothing. Do we need
-#them? Currently, the LSDALTON test suite is so small that all tests can be run 
-#without problems.
-ESSENTIAL=""
-#
-SHORTNOCC=""
-
-#
-SHORTCC=""
-#
-SHORT="$SHORTNOCC $SHORTCC"
-#
-MEDIUM=""
-#
-MEDIUMCC=""
-#
-MEDIUM="$MEDIUM $MEDIUMCC"
-#
-LONG=""
-#
-LONGCC=""
-#
-LONG="$LONG $LONGCC"
-#
-DFT=""
-#
-ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
-#
 #########################################################################
 # function usage(): print usage information 
 #########################################################################
 usage() {
  cat <<%EOF%
 Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
-            [-param "option list"] [-lsdalton script] [-log logfile] testcase
+            [-param "option list"] [-lsdalton script] [-log logfile] testcase1 [testcase2] ...
 
        -h | -help | --help  : show this help description
        -keep                : keep *.mol, *.dal, *.check and *.log files
@@ -247,20 +37,6 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
        -lsdalton script     : use script instead of the default
                               lsdalton-script "$LSDALTON_script"
        -log logfile         : write output into logfile instead of the "TESTLOG"
-
-       and where testcase might be one of the following:
-          all                  -- run all LSDALTON test cases
-          arh                  -- run Augmented Roothaan-Hall test cases
-          csr                  -- run Compressed-Sparse Row test cases (requires linking to MKL!)
-          scalapack            -- run SCALAPACK test cases (requires linking to SCALAPACK!)
-          dec                  -- run Divide-Expand-Consolidate coupled cluster tests
-          rsp                  -- run LSresponse tests
-		  pbc                  -- run periodic boundary condition test cases
-          geo                  -- run test cases for geometry optimization
-          int64                -- run test cases for code compiled using 64-bit integers
-          linsca               -- run tests related to density optimization
-          lsdalton             -- run tests for integral code
-          <case1 [case2] ...>  -- run only the specified testcase(s)
 %EOF%
 exit 1
 }
@@ -340,26 +116,10 @@ fi
 #########################################################################
 testcase=$*
 if   [ "$testcase" = "" ]; then
-  echo '    ***********************************'
-  echo '    * ERROR: No testcase(s) specified *'
-  echo '    ***********************************'
-  usage
-else 
-  case "$testcase" in
-      all)         testcase=$ALL;;
-      arh)         testcase=$ARH;;
-      csr)         testcase=$CSR;;
-      scalapack)   testcase=$SCALAPACK;;
-      dec)         testcase=$DEC;;
-      rsp)         testcase=$RSP;;
-      linsca)      testcase=$LINSCA;;
-      lsdalton)    testcase=$LSDALTON;;
-      int64)       testcase=$INT64;;
-      dft)         testcase=$DFT;;
-      geo)         testcase=$GEO;;
-      ddyn)        testcase=$DDYN;;
-      pbc)         testcase=$PBC;;
-  esac
+    echo '    ***********************************'
+    echo '    * ERROR: No testcase(s) specified *'
+    echo '    ***********************************'
+    usage
 fi
 
 

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2860,7 +2860,7 @@ C?        write(6,*) ' before call to add_str_group '
 
 *. Start of string information
       CALL MEMMAN(KSTINF,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
-      IF(iprint.GE.10)
+      IF(NTEST.GE.10)
      &WRITE(lupri,*) ' First word with string information',KSTINF
 *
 *.  Offsets for occupation and reorder array of strings
@@ -2940,9 +2940,9 @@ C?        write(6,*) ' before call to add_str_group '
 *. Last word of string information
 *
       CALL MEMMAN(KSTINE,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
-      IF(iprint.GE.10)
+      IF(NTEST.GE.10)
      &  WRITE(lupri,*) ' Last word with string information',KSTINE-1
-      IF(iprint.NE.0) THEN
+      IF(NTEST.NE.0) THEN
       WRITE(lupri,*) ' R*8 words used for storing string information ',
      &                 KSTINE - KSTINF
       END IF

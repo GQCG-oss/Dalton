@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -123,7 +123,7 @@ Cholesky
 #include "ccdeco.h"
 Cholesky
 C
-      PARAMETER(NMODEL = 18)
+      PARAMETER(NMODEL = 22)
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LHTF, NOAUXBSAVE
@@ -175,6 +175,8 @@ C
       WRITE (LUPRI,'(1x,A,/)')
      *'*********************************************************'//
      *'**********************'
+C
+      CALL FLSHFO(LUPRI)
 C
       IDUM = 0
 C
@@ -303,6 +305,13 @@ C
       LCCSAV(16) = CC3
       LCCSAV(17) = CC1A
       LCCSAV(18) = CC1B
+!     FRAN/SONIA
+      LCCSAV(19) = RCCD
+      LCCSAV(20) = DRCCD
+      LCCSAV(21) = RTCCD
+!     AMT
+      LCCSAV(22) = DCPT2
+
       APROXR12   = '   '
 C
       LTCEXC = .FALSE.
@@ -496,6 +505,12 @@ C
          IF (I.EQ.16) CC3    = LCCSAV(16)
          IF (I.EQ.17) CC1A   = LCCSAV(17)
          IF (I.EQ.18) CC1B   = LCCSAV(18)
+!FRAN/SONIA
+         IF (I.EQ.19) RCCD   = LCCSAV(19)
+         IF (I.EQ.20) DRCCD  = LCCSAV(20)
+         IF (I.EQ.21) RTCCD  = LCCSAV(21)
+!AMT
+         IF (I.EQ.22) DCPT2   = LCCSAV(22)
 C
          IF (CCS  .AND. LCCSAV(3)) GOTO 100
          IF (MP2  .AND. LCCSAV(3)) GOTO 100
@@ -525,7 +540,10 @@ C        -----------------------------------------------------------
 
          IF (I .GT. 9) INTTR = .TRUE.
 C
-         IF ((I.GT.15).AND.(.NOT.CCSD)) THEN
+         !IF ((I.GT.15).AND.(.NOT.CCSD)) THEN
+         !FRAN/SONIA, 19,20 and 21 are not CCSDT methods!
+         IF (((I.GT.15).AND.(I.LT.19)).AND.(.NOT.CCSD)) THEN
+
             CCSDT  =  .TRUE.
          ENDIF
 C
@@ -560,6 +578,7 @@ C
 C
           WRITE(LUPRI,'(//A,I3)') ' CCR12 ANSATZ = ',IANR12
           WRITE(LUPRI,'(/A,I3/)') ' CCR12 APPROX = ',IAPR12
+          CALL FLSHFO(LUPRI)
 
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C        1. Start loop over different solvents.
@@ -1045,7 +1064,7 @@ C        *************************************************
 C---------------------------------------------------------
          IF (CCLRLCZ) THEN
            IF ((.not. CCR12).AND. (.NOT. CCSLV)) THEN
-            write(lupri,*)'CCLRLANCZOS: building the'//
+            write(lupri,*)'CCLRLANCZOS: building the '//
      &                    'Lanczos Chain'
             !if (.false.) then
                !IF (REDMEML) then
@@ -1073,7 +1092,7 @@ C        *****  B,F,C,D... matrix test calls  *****
 C        ******************************************
 C--------------------------------------------------
 C
-         IF ( .TRUE. ) THEN
+         IF ( .FALSE. ) THEN
 C
             IF (CCS .or. CC2 .or. CCSD) THEN
 C              !NOTE: Only CC_FTSTNEW, CC_BTST are compatible with CC-R12!
@@ -1133,6 +1152,12 @@ C
       CC3    = LCCSAV(16)
       CC1A   = LCCSAV(17)
       CC1B   = LCCSAV(18)
+!     FRAN/SONIA
+      RCCD   = LCCSAV(19)
+      DRCCD  = LCCSAV(20)
+      RTCCD  = LCCSAV(21)
+!     AMT
+      DCPT2  = LCCSAV(22)
 C
 C     Close files.
 C
@@ -1424,6 +1449,11 @@ C
 C
       CCT    = .FALSE.
       STCCS  = .FALSE.
+CSonia
+      RCCD  = .false.
+      DRCCD = .false.
+      RTCCD = .false.
+      SOSEX = .false.
 C
       CALL QEXIT('CC_FALSE')
 C

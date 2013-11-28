@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -62,6 +62,7 @@ C     It is assumed that on disc are the global intermediates
 C     For singlet:
 C             CC2: E1, E2, F 
 C             CCSD & CC3: E1, E2, F, Gamma, BF, C, D intermedias.
+C             RCCD, DRCCD: we take a detour/noddy, no global used (FRAN)
 C     For triplet:
 C             CCSD : E1,E2,F,Gamma,BF,C,D,CD intermediates
 C
@@ -98,6 +99,7 @@ C     Version 1.0 2-11-1996 (base on cclr_trr)
 C     Written by Ove Christiansen 2-11-1996.
 C     Changes for triplet transformation by Christof Haettig, 1999.
 C     Changes for CC-R12 by Christof Haettig, Jun 2003.
+C     RCCD and DRCCD handled on their own. MFIozzi (FRAN), Nov 2009
 C
 C-------------------------------------------------------------------
 C
@@ -618,13 +620,28 @@ c                 CALL QUIT('DEBUG V BAR')
                   END IF
    
                ELSE IF (ISIDE .EQ. -1) THEN
-                  CALL CC_LHTR(ECURR,
+                  if ((RCCD).or.(DRCCD)) then
+                    !write(lupri,*)'FRAN: call noddy for LHT in RCCD'
+                    call flshfo(lupri)
+                    call cc_lhtr_rccd(ECURR,
+     &                         FRHO1,LUFR1,FR2SD,LUFSD,
+     &                         FC1AM,LUFC1,FC2AM,LUFC2,
+     &                         WORK(KRHO1),WORK(KRHO2),
+     &                         WORK(KC1AM),WORK(KC2AM),
+     &                         WORK(KEND1),LWRK1,NSIMTR,
+     &                         IVEC,ITR,LRHO1)
+               !      write(lupri,*)'FRAN: out of noddy for LHT in RCCD'
+                    call flshfo(lupri)
+                  else
+
+                    CALL CC_LHTR(ECURR,
      *                         FRHO1,LUFR1,FR2SD,LUFSD,FRHO12,LUFR12,
      *                         FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                         WORK(KRHO1),WORK(KRHO2),
      *                         WORK(KC1AM),WORK(KC2AM),
      *                         WORK(KEND1),LWRK1,NSIMTR,
      *                         IVEC,ITR,LRHO1,APROXR12)
+                  end if
                ELSE
                   CALL QUIT(' ISIDE should be -1 or +1 ')
                ENDIF

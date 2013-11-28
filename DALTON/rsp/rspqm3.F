@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -667,6 +667,7 @@ c      END IF
       RETURN
       END 
 C
+#if defined(VAR_MPI)
 C-----------------------------------------------------------------------
       SUBROUTINE QM3LNO_P(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,
      &               EVECS,WRK,LWRK)
@@ -1151,14 +1152,14 @@ C z-component
       END IF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(JRXYO),WRK(JRXYO),N2ORBX,
+      CALL MPI_REDUCE(WRK(JRXYO),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
       CALL QEXIT('QM3LNO_S')
 
       RETURN
       END
-
+#endif
 C ---------------------------------------------------------------------
 
 C  /* Deck qm3qro */
@@ -1546,6 +1547,7 @@ C
       RETURN
       END
 
+#if defined(VAR_MPI)
 C-----------------------------------------------------------------------
       SUBROUTINE QM3QRO_P(VEC1,VEC2,ETRS,XINDX,ZYM1,ZYM2,
      &                 UDV,WRK,LWRK,KZYVR,KZYV1,KZYV2,
@@ -2123,13 +2125,14 @@ C z-component
 
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(KTRES),WRK(KTRES),N2ORBX,
+      CALL MPI_REDUCE(WRK(KTRES),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
       CALL QEXIT('QM3QRO_S')
 
       RETURN
       END
+#endif
 C-----------------------------------------------------------------------
 C  /* Deck qm3qlm */
       FUNCTION QM3QLM(RLM)

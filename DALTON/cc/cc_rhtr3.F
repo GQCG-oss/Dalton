@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -104,7 +104,7 @@ c*DECK CC_RHTR3
       INTEGER LUE2, ISYMEI, ISYMIM, ISYVEC, LUGAM, ISYGAM, ISYCIM
       INTEGER IVECNR, ISYDIM, KGAMMC, KFCKAO, LEND2
       INTEGER KGAMI, LUBF, KHSCOUNTER, ISYM0
-      INTEGER INDEXA(MXCORB)
+      INTEGER INDEXA(MXCORB_CC)
       INTEGER LUFC1, LUFC2, LUFR1, LUFR2, ISIDE
       INTEGER KRHO3, KC2AMP, KC2AMM, KENDCC3, LWRKCC3
       INTEGER LUSRTT1, LUSRTT2, LUSRTT3, LUCKJDT1, LUCKJDT2, LUCKJDT3

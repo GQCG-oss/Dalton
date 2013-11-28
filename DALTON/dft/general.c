@@ -2,12 +2,12 @@
 
 
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -66,7 +66,6 @@
 const integer ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
 const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
 
-
 /* stub subroutines for the functional code */
 extern real dftgethf_(void);
 extern void dftsethf_(real *w);
@@ -85,7 +84,7 @@ static void
 dal_set_mp2_weight(real w) { dftsetmp2_(&w); }
 
 static void
-dal_set_cam_param(int cnt, const real *w, const real *be) {
+dal_set_cam_param(integer cnt, const real *w, const real *be) {
   dftsetcam_(w, be);
 }
 
@@ -100,10 +99,10 @@ dal_set_cam_param(int cnt, const real *w, const real *be) {
    http://math-atlas.sourceforge.net/errata.html#RH7.0
 */
 static char* DftConfString = NULL;
-int
-FSYM(dftsetfunc)(const char* line, integer * inperr, int len)
+integer
+FSYM(dftsetfunc)(const char* line, integer * inperr, integer len)
 {
-    int i, off;
+    integer i, off;
 
     /* set the functional code printf function and HF weight setting
        functions to the dalton version that appends the output to the
@@ -115,11 +114,11 @@ FSYM(dftsetfunc)(const char* line, integer * inperr, int len)
     fun_get_mp2_weight = dal_get_mp2_weight;
     fun_set_cam_param = dal_set_cam_param;
 
-    for(i=len-1; i>=0 && isspace((int)line[i]); i--)
+    for(i=len-1; i>=0 && isspace((integer)line[i]); i--)
         ;
     if(DftConfString) free(DftConfString);
     i++;
-    for(off=0; line[off] && isspace((int)line[off]); off++)
+    for(off=0; line[off] && isspace((integer)line[off]); off++)
         ;
     DftConfString = malloc(i+1-off);
     strncpy(DftConfString, line+off, i-off); 
@@ -167,6 +166,62 @@ dftptf0_(real *rho, real *grad, real *wght, real *vx)
     selected_func->first(&drvs, *wght, &dp);
     vx[0] = drvs.df1000;
     vx[1] = drvs.df0010 + 0.5*drvs.df00001* (*grad);
+}
+
+/* Calculates v_xc using Hessians of the denstity */
+void
+dftptfh_(real *rho, real *grada, real *hes,real *wght, real *vx)
+{
+     FunSecondFuncDrv drvs;
+     FunDensProp dp;
+
+    real fR,fZ,fRZ,fZZ,fG,fRG,fGG,fZG;
+
+    real vv1,vv2,vv3,vv4;
+
+    real ngrad;
+    real hesgrad[3];
+
+    real lap,ngradhesgrad;
+
+    ngrad=sqrt(grada[0]*grada[0]+grada[1]*grada[1]+grada[2]*grada[2]);
+    if (ngrad<1e-20) ngrad=1e-20;
+    dp.rhoa  = dp.rhob  = *rho *0.5;
+    dp.grada = dp.gradb = ngrad*0.5;
+    dp.gradab = dp.grada*dp.gradb;
+
+    lap = hes[0]+hes[3]+hes[5];
+
+    hesgrad[0]=hes[0]*grada[0]+hes[1]*grada[1]+hes[2]*grada[2];
+    hesgrad[1]=hes[1]*grada[0]+hes[3]*grada[1]+hes[4]*grada[2];
+    hesgrad[2]=hes[2]*grada[0]+hes[4]*grada[1]+hes[5]*grada[2];
+
+    ngradhesgrad=grada[0]*hesgrad[0]+grada[1]*hesgrad[1]+grada[2]*hesgrad[2];
+
+    drv2_clear(&drvs);
+    if(dp.rhoa<1e-20) dp.rhoa = dp.rhob = 1e-20;
+    if(dp.grada<1e-20) dp.grada = dp.gradb = 1e-20;
+
+
+    if((dp.rhoa + dp.rhob)>1e-20)
+      selected_func->second(&drvs, *wght, &dp);
+
+
+    fR  = drvs.df0100;
+    fZ  = drvs.df0010;
+    fG  = 0.5*drvs.df00001;
+    fRZ = 0.5*(drvs.df1010 + drvs.df1001);
+    fRG = 0.5*drvs.df10001;
+    fZZ = 0.5*(drvs.df0020 + drvs.df0011);
+    fZG = 0.5*drvs.df00101;
+    fGG = 0.25*drvs.df00002;
+
+    vv1 = fR;
+    vv2 = -ngrad * (fRZ+fRG*ngrad);
+    vv3 = - fZ*lap/ngrad -fG*lap;
+    vv4 = - (ngradhesgrad/(ngrad*ngrad))*(fZZ+fZG*2*ngrad+fGG*ngrad*ngrad-fZ/ngrad);
+    vx[0] = vv1 + vv2 + vv3 + vv4;
+    vx[1] = 0;
 }
 
 void
@@ -548,7 +603,6 @@ struct {
     DFTPropEvalSlave  slave_func;
 } PropEvaluatorList[] = {
 #if 0
-    { (DFTPropEvalMaster)dft_kohn_sham_,   dft_kohn_sham_slave   },
     { (DFTPropEvalMaster)dft_kohn_shamab_, dft_kohn_shamab_slave },
     { (DFTPropEvalMaster)dft_lin_resp_,    dft_lin_resp_slave    },
     { (DFTPropEvalMaster)dft_lin_respab_,  dft_lin_respab_slave  },
@@ -569,14 +623,16 @@ struct {
    sync given set of data with slaves.
 */
 void
-mpi_sync_data(const SyncData* data, int count)
+mpi_sync_data(const SyncData* data, integer count)
 {
-    int i;
+    integer i;
     for(i=0; i<count; i++) {
         MPI_Bcast(data[i].data, data[i].count, data[i].type,
                   0, MPI_COMM_WORLD);
     }
 }
+
+extern void FSYM(dftintbcast)(void); 
 
 /* defined parallel calculation types */
 #include "iprtyp.h"
@@ -585,7 +641,7 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
 {
     static integer iprtyp = DFT_C_WORK; /* magic DFT/C number */
     static integer iprint = 0;
-    int id, mynum;
+    integer id, mynum;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &mynum);
     if(mynum != 0)
@@ -633,11 +689,11 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
 void
 FSYM2(dft_cslave)(real* work, integer*lwork,integer*iprint)
 {
-    int rank, size;
+    integer rank, size;
     if(MPI_Comm_rank(MPI_COMM_WORLD, &rank) ||
        MPI_Comm_size(MPI_COMM_WORLD, &size)) printf("MPI error\n");
     else {
-        int id;
+        integer id;
         MPI_Bcast(&id,1,MPI_INT, MASTER_NO, MPI_COMM_WORLD);
 /*        
         printf("done id bcast: id = %i mynum = %i; size = %i .\n", id, rank, size);
@@ -655,12 +711,12 @@ FSYM2(dft_cslave)(real* work,integer*lwork,integer*iprint)
 #endif /* VAR_MPI */
 
 
-extern void quit_(const char* str, int len);
+extern void quit_(const char* str, integer len);
 void
 dalton_quit(const char* format, ...)
 {
     char line[128];
-    int len;
+    integer len;
     va_list a;
  
     va_start(a, format);
@@ -671,8 +727,8 @@ dalton_quit(const char* format, ...)
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
-extern void FSYM2(fort_wrt)(const char* str, const integer* len, int ln);
-int
+extern void FSYM2(fort_wrt)(const char* str, const integer* len, integer ln);
+integer
 fort_print(const char* format, ...)
 {
     char line[128];
@@ -699,8 +755,8 @@ fort_print(const char* format, ...)
 void
 FSYM(dftfuncsync)(integer *mynum, integer *nodes)
 {
-    static int done = 0;
-    int len = DftConfString ? strlen(DftConfString) + 1: 0;
+    static integer done = 0;
+    integer len = DftConfString ? strlen(DftConfString) + 1: 0;
     if(done) return;
     MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
     if(len>0) {

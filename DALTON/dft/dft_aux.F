@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -34,6 +34,7 @@ C------------------------------------------------------------------------------
 #include "gnrinf.h"
 #include "dftcom.h"
 #include "dftacb.h"
+#include "dftd.h"
       IPRDFT = IPRUSR
       HFXFAC = D1
       HFXMU  = D0 
@@ -110,6 +111,31 @@ C JT 17-08-09 end
       DOSRC_WIB = .FALSE.
       DOSRMULO = .FALSE.
       DOSRLYPT = .FALSE.
+
+CAMT --- DFT-D correction initialize
+      DODFTD = .FALSE.
+      L_INP_D2PAR=.FALSE.
+      L_INP_D3PAR=.FALSE.
+      DO_DFTD2 = .FALSE.
+      DO_DFTD3 = .FALSE.
+      DO_BJDAMP = .FALSE.
+      DO_3BODY = .FALSE.
+      D2_s6_inp=0.0d0
+      D2_alp_inp=0.0d0
+      D2_rs6_inp=0.0d0
+      D3_s6_inp=0.0d0
+      D3_alp_inp=0.0d0
+      D3_rs6_inp=0.0d0
+      D3_rs18_inp=0.0d0
+      D3_s18_inp=0.0d0
+
+C DFTVXC Init
+      LDFTVXC = .FALSE.
+C DFTAC Init
+      LGRAC = .FALSE.
+      LLIN = .FALSE.
+      LTAN = .FALSE.
+      DOLB94 = .FALSE.
 
       RETURN
       END

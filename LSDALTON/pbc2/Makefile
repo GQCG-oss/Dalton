@@ -5,17 +5,15 @@ include ../Makefile.config
 INCLUDES := $(INCLUDES) -I../lsutil -I../LSint
 
 F90_OBJS = \
-		   pbc-multipole.o\
-		   pbc-harmonics.o\
 		   pbc-msc.o\
 		   pbc-krsp-op.o\
 		   pbc-matop.o\
 		   pbc-data.o\
 		   pbc-ffdata.o\
-	           pbc_kscf.o\
-                   pbc_int.o\
-		   pbc_mmit.o\
-		   pbc_eigsolv.o\
+	           pbc-nfinteractions.o\
+                   pbcmain.o\
+		   pbc-ffinteractions.o\
+		   pbc-scf.o\
 		   pbc_compare.o
 F_CPPS = $(F_OBJS:.o=.i)
 
@@ -30,7 +28,7 @@ libpbc2.a : $(F_OBJS) $(F90_OBJS)
 clean: 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod
 
-Makefile.depend depend:  $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -- $(F90_OBJS:.o=.f90) > Makefile.depend
+Makefile.depend depend:  $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -- $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend

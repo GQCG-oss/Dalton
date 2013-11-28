@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -188,7 +188,7 @@ C
       call nwadd(nwall,ncdets*8)
       allocate (cvec(ncdets))
       rewind (luit1)
-      CALL MOLLB2 ('STARTVEC',RTNLBL,LUIT1,LUERR)
+      CALL MOLLB2 ('STARTVEC',RTNLBL,LUIT1,LUPRI)
       if (.not.doci) then
          ioldstate=istate
          istate=1
@@ -427,7 +427,7 @@ C
 
       if (DOCI) then
         REWIND LUIT1
-        CALL MOLLAB('ENERGIES',LUIT1,LUERR)
+        CALL MOLLAB('ENERGIES',LUIT1,LUPRI)
         READ (LUIT1) (escf,I=1,ISTNEVCI)
       else
         escf=emcscf

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -885,6 +885,7 @@ C
          IF (EXPGRA) THEN
             CALL HEADER('One-electron part of alpha gradient',-1)
             WRITE (LUPRI,'(2X,5F12.8)') (ALPGRD(I),I=1,KMAX)
+            CALL FLSHFO(LUPRI)
          ELSE IF (PROPTY) THEN
             KCSTRA = 1
             KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
@@ -923,6 +924,11 @@ C
             IF (DFTRUN) THEN
                CALL HEADER('DFT contribution to gradient',-1)
                CALL PRIGRD(GRADFT,WORK(KCSTRA),WORK(KSCTRA))
+CAMT If requested also emprical dispersion gradient contrib
+               IF (DODFTD) THEN
+                 CALL HEADER('DFT-D contribution to gradient',-1)
+                 CALL PRIGRD(GRADFTD,WORK(KCSTRA),WORK(KSCTRA))
+               ENDIF
             END IF
             IF (SECDER) THEN
                CALL HEADER('Kinetic energy integral Hessian',-1)

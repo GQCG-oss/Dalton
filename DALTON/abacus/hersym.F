@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -124,13 +124,15 @@ C ***********************************************************
          DIMENSION TMPARR(7,0:LENTMP), WORK(*)
          DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM), JCO(MXAQN)
          LOGICAL   VRML_SYM, ADDSYM, DOCART, DOOWN, AUTOSY, NOSYM
+         LOGICAL   MIDAS_SYM
          PARAMETER (D0 = 0.0D0)
-         CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41, ID3, CRT
+         CHARACTER*1 KASYM(3,3), ID3, CRT
          CHARACTER SYMM*9, TMPLN*80, BSNM*80
-         CHARACTER NAME*4
-         LOGICAL   MIDSYM
-         MIDSYM = .TRUE.
-         I = 1
+         CHARACTER CLASS*15, TEXT*41, NAME*4
+
+C        MIDAS_SYM: write out input coordinates for midas.sym analysis
+         MIDAS_SYM = .TRUE.
+
 C ::: IPRTHR - Print level threshold for verbose output. :::
          IPRTHR = 3
 C
@@ -166,10 +168,9 @@ C               /hjaaj Mar 2004
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
 C
-C        MIDAS Interface, write out input coordinates for midas.sym
-C        analysis
+C        MIDAS Interface, write out input coordinates for midas.sym analysis
 C
-         IF (MIDSYM) THEN
+         IF (MIDAS_SYM) THEN
             LUCOOR = -1
             CALL GPOPEN(LUCOOR,'midasifc.cartorig','NEW',
      &                  ' ','FORMATTED',IDUMMY,.FALSE.)
@@ -257,16 +258,16 @@ C ::: The new symmetry is added. :::
  200     CONTINUE
 C ::: The input file is modified to include symmetry. :::
 C ::: If there's any Angstrom mark, it's removed.    :::
-         TMPLN = MLINE(NMLAU)
          CALL UPCASE(MLINE(NMLAU))
+         TMPLN = MLINE(NMLAU)
          IF (INDEX(TMPLN,'ATO') .EQ. 0) THEN
             WRITE(TMPLN(10:10), '(I1)') NSYMOP
             WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
          ELSE
-            CALL LINE4(TMPLN,NONTYP,NSMOP2,CRT,KCHARG,THRS,ADDSYM,KASYM,
-     &                 ID3,DOCART,DOOWN)
+            CALL LINE4(TMPLN,NONTYP2,NSMOP2,CRT,KCHARG,THRS,
+     &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
             AUTOSY = .FALSE.
-            NOSYM = .FALSE.
+            NOSYM  = .FALSE.
             IWHERE = 1
             DO I2 = 1, 3
                DO J2 = 1, 3
@@ -731,6 +732,14 @@ C
 Cdbg     write (lupri,*) 'CNTRML: initial coord.s etc.'
 Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,NUCLP+1,6,NUCLP+1,1,LUPRI)
 Cdbg     CALL PRNARR('CNTRML: ATMARR start', NUCLP, ATMARR)
+
+      IF (N_ATOMS .EQ. 1) THEN ! atom, just move to (0,0,0)
+         ATMARR(1,1) = 0.0D0
+         ATMARR(2,1) = 0.0D0
+         ATMARR(3,1) = 0.0D0
+         GO TO 100
+      END IF
+
       ITURN = 0
   10  ITURN = ITURN + 1
          SUM(1) = 0.0D0
@@ -742,7 +751,7 @@ C ::: then the molecule is moved so that the center of mass coincides with the o
 C ::: and the molecule is rotated such that the principal moment of inertia axes
 C ::: are along the coordinate axes.
          TOTMAS = 0.0D0
-         DO I=1,N_ATOMS
+         DO I = 1,N_ATOMS
             IZ = NINT(ATMARR(4,I))
          IF (IZ .LE. 0) CYCLE
 C... hjaaj exclude point charges, MM atoms and floating orbitals
@@ -783,16 +792,49 @@ Cdbg     call outpak(cinrtp,3,1,lupri)
 Cdbg     call outpak(cinrtp,3,1,lupri)
          CINRTP(2) = CINRTP(3)
          CINRTP(3) = CINRTP(6)
-C        sort after increasing value - will put oblate molecule
-C        primarily in the x-y plane.
-         CALL ORDER(VPCMOM,CINRTP,3,3)
-         IF (CINRTP(2) .GE. 1.0D0) THEN ! avoid divide by zero for atoms
-         IF (CINRTP(1)/CINRTP(2) .LT. 0.8D0*CINRTP(2)/CINRTP(3)) THEN
+
+C        Check if molecule is mostly oblate or mostly prolate
+
+         TMP(1:3) = CINRTP(1:3)
+         CALL ORDER(DUMMY,TMP,3,0)
+         IF (TMP(1)/TMP(2) .LT. 0.8D0*TMP(2)/TMP(3)) THEN ! prolate type
 C        ... definitely more prolate than oblate, maybe (close to) linear,
-C            we resort after increasing value to get molecular axis along z-axis
-            CALL ORDER2(VPCMOM,CINRTP,3,3)
+C            sort after decreasing value to get molecular axis along z-axis
+            IF (CINRTP(1) .LT. CINRTP(2)) THEN ! switch 1 and 2
+               CALL DSWAP(3,VPCMOM(1,1),1,VPCMOM(1,2),1)
+               CALL DSWAP(1,CINRTP(1),1,CINRTP(2),1)
+               VPCMOM(1:3,1) = -VPCMOM(1:3,1)  ! to not change chirality!!!
+            END IF
+            IF (CINRTP(2) .LT. CINRTP(3)) THEN ! switch 2 and 3
+               CALL DSWAP(3,VPCMOM(1,2),1,VPCMOM(1,3),1)
+               CALL DSWAP(1,CINRTP(2),1,CINRTP(3),1)
+               VPCMOM(1:3,2) = -VPCMOM(1:3,2)  ! to not change chirality!!!
+               IF (CINRTP(1) .LT. CINRTP(2)) THEN ! switch 1 and 2
+                  CALL DSWAP(3,VPCMOM(1,1),1,VPCMOM(1,2),1)
+                  CALL DSWAP(1,CINRTP(1),1,CINRTP(2),1)
+                  VPCMOM(1:3,1) = -VPCMOM(1:3,1)  ! to not change chirality!!!
+               END IF
+            END IF
+         ELSE ! oblate type
+C        ... Sorting after increasing value - will put oblate molecule
+C            primarily in the x-y plane.
+            IF (CINRTP(1) .GT. CINRTP(2)) THEN ! switch 1 and 2
+               CALL DSWAP(3,VPCMOM(1,1),1,VPCMOM(1,2),1)
+               CALL DSWAP(1,CINRTP(1),1,CINRTP(2),1)
+               VPCMOM(1:3,1) = -VPCMOM(1:3,1)  ! to not change chirality!!!
+            END IF
+            IF (CINRTP(2) .GT. CINRTP(3)) THEN ! switch 2 and 3
+               CALL DSWAP(3,VPCMOM(1,2),1,VPCMOM(1,3),1)
+               CALL DSWAP(1,CINRTP(2),1,CINRTP(3),1)
+               VPCMOM(1:3,2) = -VPCMOM(1:3,2)  ! to not change chirality!!!
+               IF (CINRTP(1) .GT. CINRTP(2)) THEN ! switch 1 and 2
+                  CALL DSWAP(3,VPCMOM(1,1),1,VPCMOM(1,2),1)
+                  CALL DSWAP(1,CINRTP(1),1,CINRTP(2),1)
+                  VPCMOM(1:3,1) = -VPCMOM(1:3,1)  ! to not change chirality!!!
+               END IF
+            END IF
          END IF
-         END IF
+
 Cdbg     write (lupri,*) 'PCMOM, VPCMOM turn',ITURN
 Cdbg     call output(CINRTP,1,1,1,3,1,3,1,lupri)
 Cdbg     call output(VPCMOM,1,3,1,3,3,3,1,LUPRI)
@@ -810,10 +852,13 @@ C
             ATMARR(2,I) = XI*VPCMOM(1,2)+YI*VPCMOM(2,2)+ZI*VPCMOM(3,2)
             ATMARR(3,I) = XI*VPCMOM(1,3)+YI*VPCMOM(2,3)+ZI*VPCMOM(3,3)
          END DO
+
 Cdbg     write (lupri,*) 'CENTER_MOLECULE: transformed coord.s'
 Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
+
       IF (ITURN .LE. 1) GO TO 10
-      WRITE(LUPRI,'(/A/A)')
+
+ 100  WRITE(LUPRI,'(/A/A)')
      &   ' - molecule centered at center of mass and rotated so',
      &   '   principal axes of inertia are along coordinate axes.'
 Cdbg     CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)

@@ -164,6 +164,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # QM/MM interaction energy compared:
 CRIT1=`$GREP "\| * (\-|\-0)\.010293501. \| * (\-|\-0)\.001751431. \| * ( |0)\.005110972. \| * (\-|\-0)\.007078420. \|" $log | wc -l`
 CRIT2=`$GREP "\| * \-76\.239433215. \| * \-76\.246511635. \| * ( |0)\.000007926. \|" $log | wc -l`
@@ -172,11 +177,11 @@ CTRL[1]=2
 ERROR[1]="QM/MM ENERGY NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "x * ( |0)\.07705705 * ( |0)\.19585946" $log | wc -l`
-CRIT2=`$GREP "y * ( |0)\.01147275 * ( |0)\.02916082" $log | wc -l`
-CRIT3=`$GREP "z * ( |0)\.79906605 * 2\.03102319" $log | wc -l` 
+CRIT1=`$GREP "x * ( |0)\.0770570. * ( |0)\.1958594." $log | wc -l`
+CRIT2=`$GREP "y * ( |0)\.0114727. * ( |0)\.029160(7|8)" $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.7990660. * 2\.0310231." $log | wc -l` 
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[2]=10
+CTRL[2]=12
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 # Quadrupole moment components compared:
@@ -198,7 +203,7 @@ ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

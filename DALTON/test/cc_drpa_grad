@@ -1,0 +1,135 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc_drpa_grad.info <<'%EOF%'
+   cc_drpa_grad
+   -----------
+   Molecule:         HF in C1
+   Wave Function:    Direct RPA / STO-3G
+   Test Purpose:     Analytic gradient
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > cc_drpa_grad.mol <<'%EOF%'
+BASIS
+STO-3G
+Hydrogen fluoride
+Minimal basis
+    2    0  Y  X      1.00D-15
+        9.0   1    
+F     0.0000000000000000  0.0000000000000000 1.76320000000000000      
+        1.0   1
+H     0.0000000000000000  0.0000000000000000 0.0000000000000000      
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc_drpa_grad.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.DEROVL
+.DERHAM
+**WAVE FUNCTIONS
+.TITLE
+   test case for DRPA gradient calculation
+.CC
+*SCF INPUT 
+.THRESH
+ 1.0d-12
+*CC INPUT 
+.CCS
+.DRCCD
+.THRENR
+ 1.0d-10
+.THRLEQ
+ 1.0d-10
+.PRINT
+ 2
+*DERIVA
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+ 
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >cc_drpa_grad.check
+cat >>cc_drpa_grad.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# SCF, SOSEX and DRCCD energies:
+CRIT1=`$GREP "Final * HF energy: * -98\.57216719" $log | wc -l`
+CRIT2=`$GREP "Total SOSEX Energy: * -98\.58647364" $log | wc -l`
+CRIT3=`$GREP "Total DRCCD Energy: * -98\.60078009" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 ` 
+CTRL[1]=5
+ERROR[1]="ENERGIES ARE NOT CORRECT"
+
+
+# CCS gradient:
+CRIT1=`$GREP " F * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( \-|\-0)\.03282481" $log | wc -l`
+CRIT2=`$GREP " H * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( |0)\.03282481" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 ` 
+CTRL[2]=2
+ERROR[2]="CCS GRADIENT IS NOT CORRECT"
+
+# DRCCD gradient:
+CRIT1=`$GREP " F * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( \-|\-0)\.06425570" $log | wc -l`
+CRIT2=`$GREP " H * ( |0|\-0|\-)\.0000000000 * ( |0|\-0|\-)\.0000000000 * ( |0)\.06425570" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 ` 
+CTRL[3]=2
+ERROR[3]="DRCCD (DRPA) GRADIENT IS NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+%EOF%
+chmod +x cc_drpa_grad.check
+#######################################################################

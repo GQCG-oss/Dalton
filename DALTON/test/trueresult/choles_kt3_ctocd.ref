@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,194 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Mon Oct 21 14:22:39 2013
+     Host name              : c10-6.local                             
 
-     Date and time (Linux)  : Wed Mar 16 17:57:16 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/arnfinn/release_dalton/DALTON/test/2013-10-21T14_22-testjob-pid-45993
+   2) /home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | arnfinn
+ Host                     | stallo-2.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/ifort
+ C compiler               | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icpc
+ C++ compiler version     | icpc (ICC) 13.0.1 20121010
+ BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
+                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
+                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
+                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
+                          | mp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
+                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
+                          | nmp;-Wl,--end-group
+ Static linking           | OFF
+ Last Git revision        | 9e5bb7f558e1ee66d0614a37cb4fb8c71086ba4e
+ Configuration time       | 2013-10-15 12:56:50.249803
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN PROPERTIES                                   
+.CHOLES                                           
+**CHOLES                                          
+.REDUCE                                           
+.SPANDI                                           
+  1.0d-3                                          
+!.RSTDIA                                          
+!.RSTCHO                                          
+.THRCOM                                           
+ 1.0D-8                                           
+**WAVE FUNCTIONS                                  
+.DFT                                              
+ KT3                                              
+**PROPERTIES                                      
+.CTOCD                                            
+.SHIELD                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+Turbomole-TZP                                                                  
+HCP Turbomole-TZP                                                              
+......                                                                         
+    3  0           a  0.10E-14                                                 
+        6.    1                                                                
+C         0.0000000        0.00000000         0.000000                         
+        1.    1                                                                
+H         0.0000000        0.00000000        -1.0686323668                     
+       15.    1                                                                
+P         0.0000000        0.00000000         1.5421482850                     
 
 
        *******************************************************************
@@ -105,7 +216,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
@@ -135,24 +246,24 @@
   Nuclear charge:   6.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   6 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Turbomole-TZP"
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/Turbomole-TZP"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Turbomole-TZP"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/Turbomole-TZP"
 
   Atomic type no.    3
   --------------------
   Nuclear charge:  15.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =  15 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Turbomole-TZP"
+  Basis set file used for this atomic type with Z =  15 :
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/Turbomole-TZP"
 
 
                       SYMADD: Requested addition of symmetry
@@ -160,7 +271,10 @@
 
  Symmetry test threshold:  5.00E-06
 
- Symmetry class found: C(oo,v)
+ - molecule centered at center of mass and rotated so
+   principal axes of inertia are along coordinate axes.
+
+ Symmetry class found: C(oo,v)        
 
  Symmetry Independent Centres             
  ----------------------------
@@ -241,7 +355,7 @@ Represented as:      C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-15
 
 
   Cartesian Coordinates (a.u.)
@@ -287,8 +401,12 @@ Represented as:      C2v
  P     :    1.542148    2.610781    0.000000
 
 
-  Max interatomic separation is    2.6108 Angstrom (    4.9337 Bohr)
+  Max    interatomic separation is    2.6108 Angstrom (    4.9337 Bohr)
   between atoms    3 and    2, "P     " and "H     ".
+
+  Min HX interatomic separation is    1.0686 Angstrom (    2.0194 Bohr)
+
+  Min YX interatomic separation is    1.5421 Angstrom (    2.9142 Bohr)
 
 
   Bond distances (Angstrom):
@@ -326,7 +444,7 @@ Represented as:      C2v
                B =        20015.01 MHz     (    0.667629 cm-1)
 
 
-@  Nuclear repulsion energy :   36.894345025893
+@  Nuclear repulsion energy :   36.894345025893 Hartree
 
 
   Symmetry Orbitals
@@ -424,8 +542,8 @@ Represented as:      C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.05 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.05 seconds
 
 
                         .----------------------------------.
@@ -433,14 +551,17 @@ Represented as:      C2v
                         `----------------------------------'
 
 
-    Starting in Cholesky Section -
+
+                     .---------------------------------------.
+                     | Starting in Cholesky Integral Section |
+                     `---------------------------------------'
 
 
 
 
 ================================================================================
 
-                                      WARNING
+                                      INFO
 
   Full advantage of Cholesky decomposition based-methods is accomplished only 
   if 64-bit integers are used.
@@ -457,18 +578,18 @@ Represented as:      C2v
 
 
 
-                             +-----------------------+
-                             ! Output from CHOLE_INP !
-                             +-----------------------+
+                          +------------------------------+
+                          ! Output from **CHOLESKY input !
+                          +------------------------------+
 
 Cholesky vectors written in reduced set
-Default first screening threshold on diagonal    0.1000D+01
-Default second screening threshold on diagonal    0.1000D+04
+Default first screening threshold on diagonal                  1.0000D+00
+Default second screening threshold on diagonal                 1.0000D+03
 Cholesky vectors are not compressed
-Convergence threshold defined by user    0.1000D-07
+Convergence threshold defined by user                          1.0000D-08
 Default buffer length:  250000
-Span factor:     0.1000D-02
-File size (Gb/words) :   16         17179868598
+Span factor:                                                   1.0000D-03
+File size (Gb; words) :   16         17179868598
 Number of shells:    8
 
 
@@ -481,7 +602,7 @@ Number of shells:    8
         2             341             330
         3             341             330
         4             179             177
-
+ 
     Total            1431            1389
 
 End of Cholesky initializations
@@ -501,10 +622,8 @@ End of Cholesky initializations
   64      357          2     20           95         0.974340777D-04
   43      400          3     23           60         0.179483602D-04
   29      429          3     26           52         0.350056817D-05
-  28      457          1     27           57         0.104236865D-05
+  28      457          1     27           57         0.104236864D-05
   42      499         13     40           94         0.782088778D-06
-
-
 
 
                        +-----------------------------------+
@@ -532,15 +651,15 @@ Number of distributions (total and actual):        36        40
          ---------------
 
 
-      Initialization time :       0.06
-      Diagonal time       :       0.34
-      Integral time       :       0.45
-      Decomposition time  :       0.33
+      Initialization time :       0.09
+      Diagonal time       :       1.15
+      Integral time       :       1.23
+      Decomposition time  :       0.35
 
-      Total time          :       1.17
+      Total time          :       2.83
 
 
-Decomposition completed
+Cholesky decomposition completed
 
 
 
@@ -559,10 +678,10 @@ Check information for symmetry  1
 
 Number of vectors      :     201
 
-Maximum diagonal       :    0.91755659D-08
-Minimum diagonal       :   -0.13877788D-16
+Maximum diagonal       :    0.91755663D-08
+Minimum diagonal       :   -0.69388939D-17
 
-Maximum absolute error :    0.91755659D-08    0.57752299D+00
+Maximum absolute error :    0.91755663D-08    0.57752299D+00
 
 Converged   diagonals :     570
 Zeroed neg  diagonals :       0
@@ -574,7 +693,7 @@ Check information for symmetry  2
 Number of vectors      :     118
 
 Maximum diagonal       :    0.77080289D-08
-Minimum diagonal       :   -0.97144515D-16
+Minimum diagonal       :   -0.10408341D-16
 
 Maximum absolute error :    0.77080289D-08    0.91303406D-02
 
@@ -588,7 +707,7 @@ Check information for symmetry  3
 Number of vectors      :     118
 
 Maximum diagonal       :    0.77080289D-08
-Minimum diagonal       :   -0.97144515D-16
+Minimum diagonal       :   -0.10408341D-16
 
 Maximum absolute error :    0.77080289D-08    0.91303406D-02
 
@@ -602,7 +721,7 @@ Check information for symmetry  4
 Number of vectors      :      62
 
 Maximum diagonal       :    0.89335767D-08
-Minimum diagonal       :   -0.69388939D-17
+Minimum diagonal       :   -0.10408341D-16
 
 Maximum absolute error :    0.89335767D-08    0.83289741D-02
 
@@ -614,7 +733,11 @@ Unconverged diagonals :       0
 
 
 
-- End of Cholesky Section
+
+                        .----------------------------------.
+                        | End of Cholesky Integral Section |
+                        `----------------------------------'
+
 
 
                    .--------------------------------------------.
@@ -651,8 +774,8 @@ Unconverged diagonals :       0
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 17:57:17 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:22:48 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      HCP Turbomole-TZP                                                       
@@ -661,23 +784,22 @@ Unconverged diagonals :       0
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Kohn-Sham DFT calculation.
-               Fock matrices are calculated directly
-               without use of integrals on disk.
+@    Restricted, closed shell Kohn-Sham DFT calculation.
+ Fock matrices are calculated directly without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EWMO  " input option.
+ ".MOSTART EWMO  " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> KS-DFT   <<<
-     Number of closed shell electrons         22
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> KS-DFT <<<
+@    Number of closed shell electrons          22
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
  
      This is a DFT calculation of type: KT3
  Weighted mixed functional:
@@ -697,7 +819,7 @@ Unconverged diagonals :       0
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals              11 |    7    2    2    0
+@    Occupied SCF orbitals              11 |    7    2    2    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -715,75 +837,78 @@ Unconverged diagonals :       0
  >>>>> DIIS optimization of Hartree-Fock <<<<<
      (using Cholesky decomposed integrals)
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  22 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 22848 compressed from 22848 (120 radial)
-         DFT grid generation - Atom:    2*1 points= 21544 compressed from 21544 ( 92 radial)
-         DFT grid generation - Atom:    3*1 points= 22940 compressed from 22940 (130 radial)
-         DFT grid generation - Number of grid points:    67332; grid generation time:      0.0 s
       K-S energy, electrons, error :    -31.920594420105  22.0000003495    3.49D-07
-   1  -383.033271841       4.37D+00  -3.83D+02    7  2  2  0
+@  1  -383.033271841       4.37D+00  -3.83D+02     7   2   2   0
       Virial theorem: -V/T =      2.013611
-      MULPOP  C      -0.65; H      -0.05; P       0.71; 
+@      MULPOP C      -0.65; H      -0.05; P       0.71; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -32.687986369330  22.0000004305    4.31D-07
-   2  -383.089075146       1.46D+00  -5.58D-02    7  2  2  0
+   2  Screening settings (-IFTHRS, DIFDEN)   -7    F
+      K-S energy, electrons, error :    -32.687986369331  22.0000004305    4.31D-07
+@  2  -383.089075146       1.46D+00  -5.58D-02     7   2   2   0
       Virial theorem: -V/T =      1.990929
-      MULPOP  C       0.45; H       0.27; P      -0.72; 
+@      MULPOP C       0.45; H       0.27; P      -0.72; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -32.377841611641  22.0000003547    3.55D-07
-   3  -382.762879225       2.34D+00   3.26D-01    7  2  2  0
+   3  Screening settings (-IFTHRS, DIFDEN)   -7    F
+      K-S energy, electrons, error :    -32.377841611645  22.0000003547    3.55D-07
+@  3  -382.762879225       2.34D+00   3.26D-01     7   2   2   0
       Virial theorem: -V/T =      2.002645
-      MULPOP  C      -1.75; H       0.03; P       1.72; 
+@      MULPOP C      -1.75; H       0.03; P       1.72; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -32.229262025922  22.0000003966    3.97D-07
-   4  -383.130964067       1.13D+00  -3.68D-01    7  2  2  0
+   4  Screening settings (-IFTHRS, DIFDEN)   -7    F
+      K-S energy, electrons, error :    -32.229262025923  22.0000003966    3.97D-07
+@  4  -383.130964067       1.13D+00  -3.68D-01     7   2   2   0
       Virial theorem: -V/T =      2.001275
-      MULPOP  C       0.55; H       0.04; P      -0.58; 
+@      MULPOP C       0.55; H       0.04; P      -0.58; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -32.375969419536  22.0000003926    3.93D-07
-   5  -383.237555119       9.85D-02  -1.07D-01    7  2  2  0
+   5  Screening settings (-IFTHRS, DIFDEN)   -7    F
+      K-S energy, electrons, error :    -32.375969419538  22.0000003926    3.93D-07
+@  5  -383.237555119       9.85D-02  -1.07D-01     7   2   2   0
       Virial theorem: -V/T =      1.999621
-      MULPOP  C      -0.23; H       0.13; P       0.10; 
+@      MULPOP C      -0.23; H       0.13; P       0.10; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -32.376272344401  22.0000003951    3.95D-07
-   6  -383.238301389       2.48D-02  -7.46D-04    7  2  2  0
+   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
+      K-S energy, electrons, error :    -32.376272344402  22.0000003951    3.95D-07
+@  6  -383.238301389       2.48D-02  -7.46D-04     7   2   2   0
       Virial theorem: -V/T =      1.999449
-      MULPOP  C      -0.17; H       0.12; P       0.04; 
+@      MULPOP C      -0.17; H       0.12; P       0.04; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -32.374090488846  22.0000003944    3.94D-07
-   7  -383.238339215       5.39D-03  -3.78D-05    7  2  2  0
+   7  Screening settings (-IFTHRS, DIFDEN)   -9    F
+      K-S energy, electrons, error :    -32.374093430496  22.0000003944    3.94D-07
+@  7  -383.238339222       5.38D-03  -3.78D-05     7   2   2   0
       Virial theorem: -V/T =      1.999540
-      MULPOP  C      -0.17; H       0.12; P       0.05; 
+@      MULPOP C      -0.17; H       0.12; P       0.05; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -32.373774878643  22.0000003943    3.94D-07
-   8  -383.238341604       8.73D-04  -2.39D-06    7  2  2  0
+   8  Screening settings (-IFTHRS, DIFDEN)  -10    F
+      K-S energy, electrons, error :    -32.373647839839  22.0000003943    3.94D-07
+@  8  -383.238341562       1.14D-03  -2.34D-06     7   2   2   0
+      Virial theorem: -V/T =      1.999551
+@      MULPOP C      -0.18; H       0.12; P       0.05; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -10    F
+      K-S energy, electrons, error :    -32.373846837190  22.0000003943    3.94D-07
+@  9  -383.238341661       1.85D-04  -9.88D-08     7   2   2   0
       Virial theorem: -V/T =      1.999548
-      MULPOP  C      -0.18; H       0.12; P       0.05; 
+@      MULPOP C      -0.18; H       0.12; P       0.05; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -32.373845430316  22.0000003943    3.94D-07
-   9  -383.238341660       2.09D-04  -5.66D-08    7  2  2  0
+  10  Screening settings (-IFTHRS, DIFDEN)  -11    F
+      K-S energy, electrons, error :    -32.373849181759  22.0000003943    3.94D-07
+@ 10  -383.238341663       6.50D-05  -2.76D-09     7   2   2   0
       Virial theorem: -V/T =      1.999548
-      MULPOP  C      -0.18; H       0.12; P       0.05; 
+@      MULPOP C      -0.18; H       0.12; P       0.05; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -32.373846036762  22.0000003943    3.94D-07
-  10  -383.238341664       1.91D-05  -3.56D-09    7  2  2  0
-      Virial theorem: -V/T =      1.999548
-      MULPOP  C      -0.18; H       0.12; P       0.05; 
- -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -32.373847426124  22.0000003943    3.94D-07
-  11  -383.238341664       5.48D-06  -2.48D-11    7  2  2  0
+  11  Screening settings (-IFTHRS, DIFDEN)  -11    F
+      K-S energy, electrons, error :    -32.373847548958  22.0000003943    3.94D-07
+@ 11  -383.238341664       2.11D-06  -4.04D-10     7   2   2   0
 
- *** DIIS converged in  11 iterations !
-   - total time used in SIRFCK :              0.04 seconds
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:   -383.238341663813    2.11D-06
+    - total time used in SIRFCK :              0.07 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -795,24 +920,26 @@ Unconverged diagonals :       0
 
  Sym       Kohn-Sham orbital energies
 
-  1    -76.89935346   -10.18780704    -6.43810473    -4.60506238    -0.66840225
-        -0.50346034    -0.32767635     0.03271151     0.10005171     0.17598852
-         0.24116498     0.44594648
+  1    -76.89935485   -10.18780484    -6.43810588    -4.60506352    -0.66840165
+        -0.50345968    -0.32767662     0.03271182     0.10005165     0.17598873
+         0.24116500     0.44594689
 
-  2     -4.60766756    -0.25800555    -0.08152513     0.21118995     0.30872934
-         0.56269952     1.28957669
+  2     -4.60766873    -0.25800526    -0.08152499     0.21119030     0.30872918
+         0.56269926     1.28957765
 
-  3     -4.60766756    -0.25800555    -0.08152513     0.21118995     0.30872934
-         0.56269952     1.28957669
+  3     -4.60766873    -0.25800526    -0.08152499     0.21119030     0.30872918
+         0.56269926     1.28957765
 
-  4      0.51075866     1.62579321
+  4      0.51075809     1.62579439
 
-    E(LUMO) :    -0.08152513 au (symmetry 2)
-  - E(HOMO) :    -0.25800555 au (symmetry 2)
+    E(LUMO) :    -0.08152499 au (symmetry 3)
+  - E(HOMO) :    -0.25800526 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.17648042 au
+    gap     :     0.17648026 au
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       4.259       4.674
 
 
                        .-----------------------------------.
@@ -820,19 +947,19 @@ Unconverged diagonals :       0
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:           -383.238341663815                 
-     Nuclear repulsion:            36.894345025893
-     Electronic energy:          -420.132686689708
+@    Final DFT energy:           -383.238341663813                 
+@    Nuclear repulsion:            36.894345025893
+@    Electronic energy:          -420.132686689706
 
-     Final gradient norm:           0.000005482186
+@    Final gradient norm:           0.000002108163
 
  
-     Date and time (Linux)  : Wed Mar 16 17:57:25 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:22:53 2013
+     Host name              : c10-6.local                             
 
  (Only coefficients >0.0100 are printed.)
 
@@ -840,33 +967,33 @@ Unconverged diagonals :       0
  ------------------------------------------
 
     Orbital         3        4        5        6        7        8        9
-   1 C   :1s     0.0001   0.0003  -0.0575   0.0270  -0.0199  -0.0362   0.0091
-   2 C   :1s    -0.0001   0.0005  -0.1000   0.0471  -0.0353  -0.0615   0.0165
-   3 C   :1s     0.0009   0.0004  -0.1288   0.0614  -0.0448  -0.0936   0.0208
-   4 C   :1s    -0.0031   0.0001   0.1030  -0.0566   0.0307   0.1426  -0.0156
-   5 C   :1s     0.0068  -0.0019   0.4390  -0.2032   0.1902   0.1332  -0.0888
-   6 C   :1s    -0.0106   0.0015   0.1084  -0.1420   0.0843   2.1796  -0.8630
-   7 C   :2pz   -0.0005  -0.0010   0.0666   0.2597   0.2160  -0.0822  -0.2178
-   8 C   :2pz    0.0116   0.0010   0.0297   0.1524   0.1211   0.0299  -0.2188
-   9 C   :2pz   -0.0251  -0.0001  -0.0553   0.0003  -0.0238  -0.5459  -2.7309
-  10 C   :3d0    0.0001  -0.0009   0.0257  -0.0040   0.0026  -0.0311  -0.0019
-  12 H   :1s    -0.0001   0.0001   0.0682  -0.1756  -0.0864  -0.0718   0.0206
-  13 H   :1s     0.0060   0.0011   0.0642  -0.2279  -0.1545  -0.0116   0.2232
-  14 H   :1s    -0.0190  -0.0006  -0.0237  -0.0844  -0.1271  -2.0473  -3.0262
-  15 H   :2pz    0.0016   0.0006   0.0044  -0.0289  -0.0164   0.0502   0.0275
-  16 P   :1s     0.0532  -0.0001   0.0093   0.0089  -0.0076  -0.0030   0.0046
-  17 P   :1s     0.1108  -0.0003   0.0196   0.0188  -0.0159  -0.0062   0.0093
-  18 P   :1s     0.2854  -0.0007   0.0525   0.0504  -0.0427  -0.0169   0.0267
-  19 P   :1s    -0.5421   0.0011  -0.1287  -0.1240   0.1058   0.0440  -0.0755
-  20 P   :1s    -0.5691   0.0023  -0.2114  -0.2104   0.1825   0.0689  -0.0806
-  21 P   :1s    -0.0566  -0.0002   0.3663   0.3723  -0.3136  -0.1057  -0.1163
-  22 P   :1s     0.0407  -0.0007   0.2465   0.3043  -0.3949  -0.4360   3.2469
-  23 P   :2pz   -0.0019  -0.6678  -0.0588  -0.0128  -0.1348   0.0563  -0.0014
-  24 P   :2pz    0.0013   0.3674   0.0372   0.0092   0.0848  -0.0356   0.0029
-  25 P   :2pz   -0.0011   0.0984  -0.0421  -0.0132  -0.1002   0.0500  -0.0052
-  26 P   :2pz    0.0063   0.0005  -0.1220  -0.0220  -0.3870   0.1937   0.0266
-  27 P   :2pz   -0.0112   0.0007  -0.0346  -0.0124  -0.1932   0.7459  -2.0994
-  28 P   :3d0   -0.0027  -0.0008   0.0392   0.0148   0.0579   0.0935  -0.1663
+   1 C   :1s     0.0001  -0.0003  -0.0575  -0.0270  -0.0199   0.0362  -0.0091
+   2 C   :1s    -0.0001  -0.0005  -0.1000  -0.0471  -0.0353   0.0615  -0.0165
+   3 C   :1s     0.0009  -0.0004  -0.1288  -0.0614  -0.0448   0.0936  -0.0208
+   4 C   :1s    -0.0031  -0.0001   0.1030   0.0566   0.0307  -0.1426   0.0156
+   5 C   :1s     0.0068   0.0019   0.4390   0.2032   0.1902  -0.1332   0.0889
+   6 C   :1s    -0.0106  -0.0015   0.1084   0.1420   0.0843  -2.1796   0.8630
+   7 C   :2pz   -0.0005   0.0010   0.0666  -0.2597   0.2160   0.0822   0.2178
+   8 C   :2pz    0.0116  -0.0010   0.0297  -0.1524   0.1211  -0.0299   0.2188
+   9 C   :2pz   -0.0251   0.0001  -0.0553  -0.0003  -0.0238   0.5459   2.7309
+  10 C   :3d0    0.0001   0.0009   0.0257   0.0040   0.0026   0.0311   0.0019
+  12 H   :1s    -0.0001  -0.0001   0.0682   0.1756  -0.0864   0.0718  -0.0206
+  13 H   :1s     0.0060  -0.0011   0.0642   0.2279  -0.1545   0.0116  -0.2232
+  14 H   :1s    -0.0190   0.0006  -0.0237   0.0844  -0.1271   2.0473   3.0262
+  15 H   :2pz    0.0016  -0.0006   0.0044   0.0289  -0.0164  -0.0502  -0.0275
+  16 P   :1s     0.0532   0.0001   0.0093  -0.0089  -0.0076   0.0030  -0.0046
+  17 P   :1s     0.1108   0.0003   0.0196  -0.0188  -0.0159   0.0062  -0.0093
+  18 P   :1s     0.2854   0.0007   0.0525  -0.0504  -0.0427   0.0169  -0.0267
+  19 P   :1s    -0.5421  -0.0011  -0.1287   0.1240   0.1058  -0.0440   0.0755
+  20 P   :1s    -0.5691  -0.0023  -0.2114   0.2104   0.1825  -0.0689   0.0806
+  21 P   :1s    -0.0566   0.0002   0.3663  -0.3723  -0.3136   0.1057   0.1163
+  22 P   :1s     0.0407   0.0007   0.2465  -0.3043  -0.3949   0.4360  -3.2469
+  23 P   :2pz   -0.0019   0.6678  -0.0588   0.0128  -0.1348  -0.0563   0.0014
+  24 P   :2pz    0.0013  -0.3674   0.0372  -0.0092   0.0848   0.0356  -0.0029
+  25 P   :2pz   -0.0011  -0.0984  -0.0421   0.0132  -0.1002  -0.0500   0.0052
+  26 P   :2pz    0.0063  -0.0005  -0.1220   0.0220  -0.3870  -0.1937  -0.0266
+  27 P   :2pz   -0.0112  -0.0007  -0.0346   0.0124  -0.1932  -0.7458   2.0994
+  28 P   :3d0   -0.0027   0.0008   0.0392  -0.0148   0.0579  -0.0935   0.1663
 
  Molecular orbitals for symmetry species  2
  ------------------------------------------
@@ -909,12 +1036,15 @@ Unconverged diagonals :       0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      7.99 seconds
- >>>> Total wall time used in SIRIUS :      8.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      4.29 seconds
+ >>>> Total wall time used in SIRIUS :      4.72 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:57:25 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:22:53 2013
+     Host name              : c10-6.local                             
+
+ NOTE:    1 informational messages have been issued.
+ Check output, result, and error files for "INFO".
 
 
                      .---------------------------------------.
@@ -956,58 +1086,9 @@ Unconverged diagonals :       0
 
 
  
-     Date and time (Linux)  : Wed Mar 16 17:57:25 2011 
-     Host name              : fe6                                     
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.00 seconds
-
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
- Electrons: 22.000000( 3.94e-07): LR-DFT*1 evaluation time:       0.8 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
- Electrons: 22.000000( 3.94e-07): LR-DFT*1 evaluation time:       0.8 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
- Electrons: 22.000000( 3.94e-07): LR-DFT*1 evaluation time:       0.8 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
- Electrons: 22.000000( 3.94e-07): LR-DFT*1 evaluation time:       0.8 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
- Electrons: 22.000000( 3.94e-07): LR-DFT*1 evaluation time:       0.7 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
- Electrons: 22.000000( 3.94e-07): LR-DFT*1 evaluation time:       0.8 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
- Electrons: 22.000000( 3.94e-07): LR-DFT*1 evaluation time:       0.8 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
- Electrons: 22.000000( 3.94e-07): LR-DFT*1 evaluation time:       0.8 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
- Electrons: 22.000000( 3.94e-07): LR-DFT*1 evaluation time:       0.8 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.01 seconds
-
- Electrons: 22.000000( 3.94e-07): LR-DFT*1 evaluation time:       0.8 s
- >>> Time used in CTOABA is   5.08 seconds
+     Date and time (Linux)  : Mon Oct 21 14:22:53 2013
+     Host name              : c10-6.local                             
+ >>>  Time used in CTOABA     is   2.32 seconds
 
 
    ***************************************************************************
@@ -1016,8 +1097,8 @@ Unconverged diagonals :       0
 
 
  
-     Date and time (Linux)  : Wed Mar 16 17:57:35 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:22:57 2013
+     Host name              : c10-6.local                             
 
 
                              Molecular geometry (au)
@@ -1044,11 +1125,11 @@ Unconverged diagonals :       0
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          2.7648967679 au
-     Mass-velocity correction:                  -3.6223110099 au
+     Darwin correction:                          2.7648967667 au
+     Mass-velocity correction:                  -3.6223110020 au
 
-     Total relativistic correction:             -0.8574142420 au (0.2237%)
-     Non-relativistic + relativistic energy:  -384.0957559059 au
+     Total relativistic correction:             -0.8574142353 au (0.2237%)
+     Non-relativistic + relativistic energy:  -384.0957558991 au
 
 
 
@@ -1057,7 +1138,7 @@ Unconverged diagonals :       0
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.171370           0.435580           1.452937
+              0.171357           0.435545           1.452822
 
 
                              Dipole moment components
@@ -1065,7 +1146,7 @@ Unconverged diagonals :       0
 
                  au               Debye          C m (/(10**-30)
 
-      z     -0.17137019        -0.43557956        -1.45293702
+      z     -0.17135666        -0.43554516        -1.45282228
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1092,23 +1173,23 @@ Unconverged diagonals :       0
     Symmetry 2
                        By
 
-        C   y      2.45145544
-        H   y     -0.74039268
-        P   y      4.12373081
+        C   y      2.45145944
+        H   y     -0.74039309
+        P   y      4.12372764
 
     Symmetry 3
                        Bx
 
-        C   x      2.45145544
-        H   x     -0.74039268
-        P   x      4.12373081
+        C   x      2.45145944
+        H   x     -0.74039309
+        P   x      4.12372764
 
     Symmetry 4
                        Bz
 
-        C   z      1.82199882
-        H   z      0.56581309
-        P   z      3.31005843
+        C   z      1.82199943
+        H   z      0.56581331
+        P   z      3.31005798
 
 
 
@@ -1122,11 +1203,11 @@ Unconverged diagonals :       0
   ----------------------------
 
 
-  Shielding constant:   -134.1334 ppm
-  Anisotropy:            346.7360 ppm
+  Shielding constant:   -134.1331 ppm
+  Anisotropy:            346.7355 ppm
   Asymmetry:               0.0000    
 
-  S parameter:           346.7360 ppm
+  S parameter:           346.7355 ppm
   A parameter:             0.0000 ppm
 
 
@@ -1137,9 +1218,9 @@ Unconverged diagonals :       0
  String on input: "C       "
                     Bx             By             Bz
 
-  C      x  -249.71212402     0.00000000     0.00000000
-  C      y     0.00000000  -249.71212403     0.00000000
-  C      z     0.00000000     0.00000000    97.02390347
+  C      x  -249.71155502     0.00000000     0.00000000
+  C      y     0.00000000  -249.71155501     0.00000000
+  C      z     0.00000000     0.00000000    97.02393553
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1147,11 +1228,11 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  C      x   160.6962     0.0000     0.0000     -410.4083     0.0000     0.0000
-  C      y     0.0000   160.6962     0.0000        0.0000  -410.4083     0.0000
+  C      x   160.6962     0.0000     0.0000     -410.4078     0.0000     0.0000
+  C      y     0.0000   160.6962     0.0000        0.0000  -410.4078     0.0000
   C      z     0.0000     0.0000    97.0239        0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    139.472099         Paramagnetic:    -273.605548
+  Diamagnetic contribution:    139.472127         Paramagnetic:    -273.605185
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1159,17 +1240,17 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  C      x     0.0000     0.0000     0.0000     -115.5787     0.0000     0.0000
-  C      y     0.0000     0.0000     0.0000        0.0000  -115.5787     0.0000
-  C      z     0.0000     0.0000     0.0000        0.0000     0.0000   231.1574
+  C      x     0.0000     0.0000     0.0000     -115.5785     0.0000     0.0000
+  C      y     0.0000     0.0000     0.0000        0.0000  -115.5785     0.0000
+  C      z     0.0000     0.0000     0.0000        0.0000     0.0000   231.1570
 
 
   Principal values and axes:
   --------------------------
 
-  C        -249.712124  = -134.13  - 115.58:     0.000000  1.000000  0.000000
-  C        -249.712124  = -134.13  - 115.58:     1.000000  0.000000  0.000000
-  C          97.023903  = -134.13  + 231.16:     0.000000  0.000000  1.000000
+  C        -249.711555  = -134.13  - 115.58:     1.000000  0.000000  0.000000
+  C        -249.711555  = -134.13  - 115.58:     0.000000  1.000000  0.000000
+  C          97.023936  = -134.13  + 231.16:     0.000000  0.000000  1.000000
 
 
   CTOCD-DZ: Chemical shielding for H     :
@@ -1181,7 +1262,7 @@ Unconverged diagonals :       0
   ----------------------------
 
 
-  Shielding constant:     23.8115 ppm
+  Shielding constant:     23.8116 ppm
   Anisotropy:              9.4781 ppm
   Asymmetry:               0.0000    
 
@@ -1196,9 +1277,9 @@ Unconverged diagonals :       0
  String on input: "H       "
                     Bx             By             Bz
 
-  H      x    20.65216391     0.00000000     0.00000000
-  H      y     0.00000000    20.65216391     0.00000000
-  H      z     0.00000000     0.00000000    30.13031292
+  H      x    20.65218263     0.00000000     0.00000000
+  H      y     0.00000000    20.65218263     0.00000000
+  H      z     0.00000000     0.00000000    30.13032468
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1210,7 +1291,7 @@ Unconverged diagonals :       0
   H      y     0.0000    94.6319     0.0000        0.0000   -73.9797     0.0000
   H      z     0.0000     0.0000    30.1303        0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:     73.131361         Paramagnetic:     -49.319814
+  Diamagnetic contribution:     73.131379         Paramagnetic:     -49.319816
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1226,9 +1307,9 @@ Unconverged diagonals :       0
   Principal values and axes:
   --------------------------
 
-  H          20.652164  =   23.81  -   3.16:     0.000000  1.000000  0.000000
-  H          20.652164  =   23.81  -   3.16:     1.000000  0.000000  0.000000
-  H          30.130313  =   23.81  +   6.32:     0.000000  0.000000  1.000000
+  H          20.652183  =   23.81  -   3.16:     1.000000  0.000000  0.000000
+  H          20.652183  =   23.81  -   3.16:     0.000000  1.000000  0.000000
+  H          30.130325  =   23.81  +   6.32:     0.000000  0.000000  1.000000
 
 
   CTOCD-DZ: Chemical shielding for P     :
@@ -1240,11 +1321,11 @@ Unconverged diagonals :       0
   ----------------------------
 
 
-  Shielding constant:   -411.8656 ppm
-  Anisotropy:            882.1960 ppm
+  Shielding constant:   -411.8659 ppm
+  Anisotropy:            882.1964 ppm
   Asymmetry:               0.0000    
 
-  S parameter:           882.1960 ppm
+  S parameter:           882.1964 ppm
   A parameter:             0.0000 ppm
 
 
@@ -1255,9 +1336,9 @@ Unconverged diagonals :       0
  String on input: "P       "
                     Bx             By             Bz
 
-  P      x  -705.93088971     0.00000000     0.00000000
-  P      y     0.00000000  -705.93088974     0.00000000
-  P      z     0.00000000     0.00000000   176.26509173
+  P      x  -705.93137387     0.00000000     0.00000000
+  P      y     0.00000000  -705.93137385     0.00000000
+  P      z     0.00000000     0.00000000   176.26506774
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1265,11 +1346,11 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  P      x   219.6802     0.0000     0.0000     -925.6111     0.0000     0.0000
-  P      y     0.0000   219.6802     0.0000        0.0000  -925.6111     0.0000
+  P      x   219.6802     0.0000     0.0000     -925.6116     0.0000     0.0000
+  P      y     0.0000   219.6802     0.0000        0.0000  -925.6116     0.0000
   P      z     0.0000     0.0000   176.2651        0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    205.208489         Paramagnetic:    -617.074051
+  Diamagnetic contribution:    205.208496         Paramagnetic:    -617.074389
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1277,30 +1358,33 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  P      x     0.0000     0.0000     0.0000     -294.0653     0.0000     0.0000
-  P      y     0.0000     0.0000     0.0000        0.0000  -294.0653     0.0000
-  P      z     0.0000     0.0000     0.0000        0.0000     0.0000   588.1307
+  P      x     0.0000     0.0000     0.0000     -294.0655     0.0000     0.0000
+  P      y     0.0000     0.0000     0.0000        0.0000  -294.0655     0.0000
+  P      z     0.0000     0.0000     0.0000        0.0000     0.0000   588.1310
 
 
   Principal values and axes:
   --------------------------
 
-  P        -705.930890  = -411.87  - 294.07:     0.000000  1.000000  0.000000
-  P        -705.930890  = -411.87  - 294.07:     1.000000  0.000000  0.000000
-  P         176.265092  = -411.87  + 588.13:     0.000000  0.000000  1.000000
+  P        -705.931374  = -411.87  - 294.07:     1.000000  0.000000  0.000000
+  P        -705.931374  = -411.87  - 294.07:     0.000000  1.000000  0.000000
+  P         176.265068  = -411.87  + 588.13:     0.000000  0.000000  1.000000
 
 
                          +--------------------------------+
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from J.Mason, Solid state Nuc.Magn.Res. 2 (1993), 285
+@1  Definitions from J. Mason, Solid state Nuc. Magn. Res. 2 (1993), 285
 
- @1atom   shielding       dia      para     skew      span     (aniso     asym)
- @1----------------------------------------------------------------------------
- @1C      -134.1334  139.4721 -273.6055    1.0000  346.7360  346.7360    0.0000
- @1H        23.8115   73.1314  -49.3198    1.0000    9.4781    9.4781    0.0000
- @1P      -411.8656  205.2085 -617.0741    1.0000  882.1960  882.1960    0.0000
+@1 London orbitals (GIAOs) not used.
+@1 Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+@1 atom   shielding       dia      para     skew      span     (aniso     asym)
+@1 ----------------------------------------------------------------------------
+@1 C      -134.1331  139.4721 -273.6052    1.0000  346.7355  346.7355    0.0000
+@1 H        23.8116   73.1314  -49.3198    1.0000    9.4781    9.4781    0.0000
+@1 P      -411.8659  205.2085 -617.0744    1.0000  882.1964  882.1964    0.0000
 
 
 
@@ -1308,13 +1392,16 @@ Unconverged diagonals :       0
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from Smith, Palke and Grieg, Concepts in Mag.Res. 4 (1992), 107
+@2  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992), 107
 
- @2atom   shielding       dia      para     aniso      asym        S        A
- @2----------------------------------------------------------------------------
- @2C      -134.1334  139.4721 -273.6055  346.7360    0.0000  346.7360    0.0000
- @2H        23.8115   73.1314  -49.3198    9.4781    0.0000    9.4781    0.0000
- @2P      -411.8656  205.2085 -617.0741  882.1960    0.0000  882.1960    0.0000
+@2 London orbitals (GIAOs) not used.
+@2 Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+@2 atom   shielding       dia      para     aniso      asym        S        A
+@2 ----------------------------------------------------------------------------
+@2 C      -134.1331  139.4721 -273.6052  346.7355    0.0000  346.7355    0.0000
+@2 H        23.8116   73.1314  -49.3198    9.4781    0.0000    9.4781    0.0000
+@2 P      -411.8659  205.2085 -617.0744  882.1964    0.0000  882.1964    0.0000
 
 
 
@@ -1336,23 +1423,23 @@ Unconverged diagonals :       0
     Symmetry 2
                        By
 
-        C   y      2.45145544
-        H   y     -0.74039268
-        P   y      4.12373081
+        C   y      2.45145944
+        H   y     -0.74039309
+        P   y      4.12372764
 
     Symmetry 3
                        Bx
 
-        C   x      2.45145544
-        H   x     -0.74039268
-        P   x      4.12373081
+        C   x      2.45145944
+        H   x     -0.74039309
+        P   x      4.12372764
 
     Symmetry 4
                        Bz
 
-        C   z      1.82199882
-        H   z      0.56581309
-        P   z      3.31005843
+        C   z      1.82199943
+        H   z      0.56581331
+        P   z      3.31005798
 
 
 
@@ -1361,11 +1448,11 @@ Unconverged diagonals :       0
   ========================================
 
 
-  Shielding constant:   -134.1334 ppm
-  Anisotropy:            346.7360 ppm
+  Shielding constant:   -134.1331 ppm
+  Anisotropy:            346.7355 ppm
   Asymmetry:               0.0000    
 
-  S parameter:           346.7360 ppm
+  S parameter:           346.7355 ppm
   A parameter:             0.0000 ppm
 
 
@@ -1376,9 +1463,9 @@ Unconverged diagonals :       0
  String on input: "C       "
                     Bx             By             Bz
 
-  C      x  -249.71212402     0.00000000     0.00000000
-  C      y     0.00000000  -249.71212403     0.00000000
-  C      z     0.00000000     0.00000000    97.02390347
+  C      x  -249.71155502     0.00000000     0.00000000
+  C      y     0.00000000  -249.71155501     0.00000000
+  C      z     0.00000000     0.00000000    97.02393553
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1386,11 +1473,11 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  C      x   130.5433     0.0000     0.0000     -380.2554     0.0000     0.0000
-  C      y     0.0000   130.5433     0.0000        0.0000  -380.2554     0.0000
+  C      x   130.5435     0.0000     0.0000     -380.2551     0.0000     0.0000
+  C      y     0.0000   130.5435     0.0000        0.0000  -380.2551     0.0000
   C      z     0.0000     0.0000    97.0239        0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    119.370181         Paramagnetic:    -253.503630
+  Diamagnetic contribution:    119.370334         Paramagnetic:    -253.503392
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1398,24 +1485,24 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  C      x     0.0000     0.0000     0.0000     -115.5787     0.0000     0.0000
-  C      y     0.0000     0.0000     0.0000        0.0000  -115.5787     0.0000
-  C      z     0.0000     0.0000     0.0000        0.0000     0.0000   231.1574
+  C      x     0.0000     0.0000     0.0000     -115.5785     0.0000     0.0000
+  C      y     0.0000     0.0000     0.0000        0.0000  -115.5785     0.0000
+  C      z     0.0000     0.0000     0.0000        0.0000     0.0000   231.1570
 
 
   Principal values and axes:
   --------------------------
 
-  C        -249.712124  = -134.13  - 115.58:     0.000000  1.000000  0.000000
-  C        -249.712124  = -134.13  - 115.58:     1.000000  0.000000  0.000000
-  C          97.023903  = -134.13  + 231.16:     0.000000  0.000000  1.000000
+  C        -249.711555  = -134.13  - 115.58:     1.000000  0.000000  0.000000
+  C        -249.711555  = -134.13  - 115.58:     0.000000  1.000000  0.000000
+  C          97.023936  = -134.13  + 231.16:     0.000000  0.000000  1.000000
 
 
   CTOCD-DZ: Chemical shielding for H     :
   ========================================
 
 
-  Shielding constant:     23.8115 ppm
+  Shielding constant:     23.8116 ppm
   Anisotropy:              9.4781 ppm
   Asymmetry:               0.0000    
 
@@ -1430,9 +1517,9 @@ Unconverged diagonals :       0
  String on input: "H       "
                     Bx             By             Bz
 
-  H      x    20.65216391     0.00000000     0.00000000
-  H      y     0.00000000    20.65216391     0.00000000
-  H      z     0.00000000     0.00000000    30.13031292
+  H      x    20.65218263     0.00000000     0.00000000
+  H      y     0.00000000    20.65218263     0.00000000
+  H      z     0.00000000     0.00000000    30.13032468
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1444,7 +1531,7 @@ Unconverged diagonals :       0
   H      y     0.0000   -39.4269     0.0000        0.0000    60.0791     0.0000
   H      z     0.0000     0.0000    30.1303        0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    -16.241171         Paramagnetic:      40.052717
+  Diamagnetic contribution:    -16.241181         Paramagnetic:      40.052744
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1460,20 +1547,20 @@ Unconverged diagonals :       0
   Principal values and axes:
   --------------------------
 
-  H          20.652164  =   23.81  -   3.16:     0.000000  1.000000  0.000000
-  H          20.652164  =   23.81  -   3.16:     1.000000  0.000000  0.000000
-  H          30.130313  =   23.81  +   6.32:     0.000000  0.000000  1.000000
+  H          20.652183  =   23.81  -   3.16:     1.000000  0.000000  0.000000
+  H          20.652183  =   23.81  -   3.16:     0.000000  1.000000  0.000000
+  H          30.130325  =   23.81  +   6.32:     0.000000  0.000000  1.000000
 
 
   CTOCD-DZ: Chemical shielding for P     :
   ========================================
 
 
-  Shielding constant:   -411.8656 ppm
-  Anisotropy:            882.1960 ppm
+  Shielding constant:   -411.8659 ppm
+  Anisotropy:            882.1964 ppm
   Asymmetry:               0.0000    
 
-  S parameter:           882.1960 ppm
+  S parameter:           882.1964 ppm
   A parameter:             0.0000 ppm
 
 
@@ -1484,9 +1571,9 @@ Unconverged diagonals :       0
  String on input: "P       "
                     Bx             By             Bz
 
-  P      x  -705.93088971     0.00000000     0.00000000
-  P      y     0.00000000  -705.93088974     0.00000000
-  P      z     0.00000000     0.00000000   176.26509173
+  P      x  -705.93137387     0.00000000     0.00000000
+  P      y     0.00000000  -705.93137385     0.00000000
+  P      z     0.00000000     0.00000000   176.26506774
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1494,11 +1581,11 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  P      x   219.5942     0.0000     0.0000     -925.5251     0.0000     0.0000
-  P      y     0.0000   219.5942     0.0000        0.0000  -925.5251     0.0000
+  P      x   219.5941     0.0000     0.0000     -925.5255     0.0000     0.0000
+  P      y     0.0000   219.5941     0.0000        0.0000  -925.5255     0.0000
   P      z     0.0000     0.0000   176.2651        0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    205.151196         Paramagnetic:    -617.016758
+  Diamagnetic contribution:    205.151075         Paramagnetic:    -617.016968
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1506,30 +1593,33 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  P      x     0.0000     0.0000     0.0000     -294.0653     0.0000     0.0000
-  P      y     0.0000     0.0000     0.0000        0.0000  -294.0653     0.0000
-  P      z     0.0000     0.0000     0.0000        0.0000     0.0000   588.1307
+  P      x     0.0000     0.0000     0.0000     -294.0655     0.0000     0.0000
+  P      y     0.0000     0.0000     0.0000        0.0000  -294.0655     0.0000
+  P      z     0.0000     0.0000     0.0000        0.0000     0.0000   588.1310
 
 
   Principal values and axes:
   --------------------------
 
-  P        -705.930890  = -411.87  - 294.07:     0.000000  1.000000  0.000000
-  P        -705.930890  = -411.87  - 294.07:     1.000000  0.000000  0.000000
-  P         176.265092  = -411.87  + 588.13:     0.000000  0.000000  1.000000
+  P        -705.931374  = -411.87  - 294.07:     1.000000  0.000000  0.000000
+  P        -705.931374  = -411.87  - 294.07:     0.000000  1.000000  0.000000
+  P         176.265068  = -411.87  + 588.13:     0.000000  0.000000  1.000000
 
 
                          +--------------------------------+
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from J.Mason, Solid state Nuc.Magn.Res. 2 (1993), 285
+@1  Definitions from J. Mason, Solid state Nuc. Magn. Res. 2 (1993), 285
 
- @1atom   shielding       dia      para     skew      span     (aniso     asym)
- @1----------------------------------------------------------------------------
- @1C      -134.1334  119.3702 -253.5036    1.0000  346.7360  346.7360    0.0000
- @1H        23.8115  -16.2412   40.0527    1.0000    9.4781    9.4781    0.0000
- @1P      -411.8656  205.1512 -617.0168    1.0000  882.1960  882.1960    0.0000
+@1 London orbitals (GIAOs) not used.
+@1 Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+@1 atom   shielding       dia      para     skew      span     (aniso     asym)
+@1 ----------------------------------------------------------------------------
+@1 C      -134.1331  119.3703 -253.5034    1.0000  346.7355  346.7355    0.0000
+@1 H        23.8116  -16.2412   40.0527    1.0000    9.4781    9.4781    0.0000
+@1 P      -411.8659  205.1511 -617.0170    1.0000  882.1964  882.1964    0.0000
 
 
 
@@ -1537,13 +1627,16 @@ Unconverged diagonals :       0
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from Smith, Palke and Grieg, Concepts in Mag.Res. 4 (1992), 107
+@2  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992), 107
 
- @2atom   shielding       dia      para     aniso      asym        S        A
- @2----------------------------------------------------------------------------
- @2C      -134.1334  119.3702 -253.5036  346.7360    0.0000  346.7360    0.0000
- @2H        23.8115  -16.2412   40.0527    9.4781    0.0000    9.4781    0.0000
- @2P      -411.8656  205.1512 -617.0168  882.1960    0.0000  882.1960    0.0000
+@2 London orbitals (GIAOs) not used.
+@2 Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+@2 atom   shielding       dia      para     aniso      asym        S        A
+@2 ----------------------------------------------------------------------------
+@2 C      -134.1331  119.3703 -253.5034  346.7355    0.0000  346.7355    0.0000
+@2 H        23.8116  -16.2412   40.0527    9.4781    0.0000    9.4781    0.0000
+@2 P      -411.8659  205.1511 -617.0170  882.1964    0.0000  882.1964    0.0000
 
 
 
@@ -1560,23 +1653,23 @@ Unconverged diagonals :       0
     Symmetry 2
                        By
 
-        C   y    -56.76014677
-        H   y      4.79377208
-        P   y     79.82503863
+        C   y    -56.75974753
+        H   y      4.79377527
+        P   y     79.82469668
 
     Symmetry 3
                        Bx
 
-        C   x    -56.76014676
-        H   x      4.79377208
-        P   x     79.82503867
+        C   x    -56.75974754
+        H   x      4.79377527
+        P   x     79.82469665
 
     Symmetry 4
                        Bz
 
-        C   z    283.73823367
-        H   z     42.28279295
-        P   z    973.04194264
+        C   z    283.73829711
+        H   z     42.28280519
+        P   z    973.04189457
 
 
 
@@ -1585,11 +1678,11 @@ Unconverged diagonals :       0
   ==============================
 
 
-  Shielding constant:     56.7393 ppm
-  Anisotropy:            340.4984 ppm
+  Shielding constant:     56.7396 ppm
+  Anisotropy:            340.4980 ppm
   Asymmetry:               0.0000    
 
-  S parameter:           340.4984 ppm
+  S parameter:           340.4980 ppm
   A parameter:             0.0000 ppm
 
 
@@ -1600,9 +1693,9 @@ Unconverged diagonals :       0
  String on input: "C       "
                     Bx             By             Bz
 
-  C      x   -56.76014676     0.00000000     0.00000000
-  C      y     0.00000000   -56.76014677     0.00000000
-  C      z     0.00000000     0.00000000   283.73823367
+  C      x   -56.75974754     0.00000000     0.00000000
+  C      y     0.00000000   -56.75974753     0.00000000
+  C      z     0.00000000     0.00000000   283.73829711
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1610,11 +1703,11 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  C      x   323.4953     0.0000     0.0000     -380.2554     0.0000     0.0000
-  C      y     0.0000   323.4953     0.0000        0.0000  -380.2554     0.0000
-  C      z     0.0000     0.0000   283.7382        0.0000     0.0000     0.0000
+  C      x   323.4953     0.0000     0.0000     -380.2551     0.0000     0.0000
+  C      y     0.0000   323.4953     0.0000        0.0000  -380.2551     0.0000
+  C      z     0.0000     0.0000   283.7383        0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    310.242943         Paramagnetic:    -253.503630
+  Diamagnetic contribution:    310.242993         Paramagnetic:    -253.503392
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1622,17 +1715,17 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  C      x     0.0000     0.0000     0.0000     -113.4995     0.0000     0.0000
-  C      y     0.0000     0.0000     0.0000        0.0000  -113.4995     0.0000
-  C      z     0.0000     0.0000     0.0000        0.0000     0.0000   226.9989
+  C      x     0.0000     0.0000     0.0000     -113.4993     0.0000     0.0000
+  C      y     0.0000     0.0000     0.0000        0.0000  -113.4993     0.0000
+  C      z     0.0000     0.0000     0.0000        0.0000     0.0000   226.9987
 
 
   Principal values and axes:
   --------------------------
 
-  C         -56.760147  =   56.74  - 113.50:     0.000000  1.000000  0.000000
-  C         -56.760147  =   56.74  - 113.50:     1.000000  0.000000  0.000000
-  C         283.738234  =   56.74  + 227.00:     0.000000  0.000000  1.000000
+  C         -56.759748  =   56.74  - 113.50:     1.000000  0.000000  0.000000
+  C         -56.759748  =   56.74  - 113.50:     0.000000  1.000000  0.000000
+  C         283.738297  =   56.74  + 227.00:     0.000000  0.000000  1.000000
 
 
   Chemical shielding for H     :
@@ -1654,9 +1747,9 @@ Unconverged diagonals :       0
  String on input: "H       "
                     Bx             By             Bz
 
-  H      x     4.79377208     0.00000000     0.00000000
-  H      y     0.00000000     4.79377208     0.00000000
-  H      z     0.00000000     0.00000000    42.28279295
+  H      x     4.79377527     0.00000000     0.00000000
+  H      y     0.00000000     4.79377527     0.00000000
+  H      z     0.00000000     0.00000000    42.28280519
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1668,7 +1761,7 @@ Unconverged diagonals :       0
   H      y     0.0000   -55.2853     0.0000        0.0000    60.0791     0.0000
   H      z     0.0000     0.0000    42.2828        0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    -22.762605         Paramagnetic:      40.052717
+  Diamagnetic contribution:    -22.762626         Paramagnetic:      40.052744
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1684,20 +1777,20 @@ Unconverged diagonals :       0
   Principal values and axes:
   --------------------------
 
-  H           4.793772  =   17.29  -  12.50:     1.000000  0.000000  0.000000
-  H           4.793772  =   17.29  -  12.50:     0.000000  1.000000  0.000000
-  H          42.282793  =   17.29  +  24.99:     0.000000  0.000000  1.000000
+  H           4.793775  =   17.29  -  12.50:     0.000000  1.000000  0.000000
+  H           4.793775  =   17.29  -  12.50:     1.000000  0.000000  0.000000
+  H          42.282805  =   17.29  +  24.99:     0.000000  0.000000  1.000000
 
 
   Chemical shielding for P     :
   ==============================
 
 
-  Shielding constant:    377.5640 ppm
-  Anisotropy:            893.2169 ppm
+  Shielding constant:    377.5638 ppm
+  Anisotropy:            893.2172 ppm
   Asymmetry:               0.0000    
 
-  S parameter:           893.2169 ppm
+  S parameter:           893.2172 ppm
   A parameter:             0.0000 ppm
 
 
@@ -1708,9 +1801,9 @@ Unconverged diagonals :       0
  String on input: "P       "
                     Bx             By             Bz
 
-  P      x    79.82503867     0.00000000     0.00000000
-  P      y     0.00000000    79.82503863     0.00000000
-  P      z     0.00000000     0.00000000   973.04194264
+  P      x    79.82469665     0.00000000     0.00000000
+  P      y     0.00000000    79.82469668     0.00000000
+  P      z     0.00000000     0.00000000   973.04189457
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1718,11 +1811,11 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  P      x  1005.3502     0.0000     0.0000     -925.5251     0.0000     0.0000
-  P      y     0.0000  1005.3502     0.0000        0.0000  -925.5251     0.0000
+  P      x  1005.3501     0.0000     0.0000     -925.5255     0.0000     0.0000
+  P      y     0.0000  1005.3501     0.0000        0.0000  -925.5255     0.0000
   P      z     0.0000     0.0000   973.0419        0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    994.580765         Paramagnetic:    -617.016758
+  Diamagnetic contribution:    994.580731         Paramagnetic:    -617.016968
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1730,30 +1823,33 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  P      x     0.0000     0.0000     0.0000     -297.7390     0.0000     0.0000
-  P      y     0.0000     0.0000     0.0000        0.0000  -297.7390     0.0000
-  P      z     0.0000     0.0000     0.0000        0.0000     0.0000   595.4779
+  P      x     0.0000     0.0000     0.0000     -297.7391     0.0000     0.0000
+  P      y     0.0000     0.0000     0.0000        0.0000  -297.7391     0.0000
+  P      z     0.0000     0.0000     0.0000        0.0000     0.0000   595.4781
 
 
   Principal values and axes:
   --------------------------
 
-  P          79.825039  =  377.56  - 297.74:     0.000000  1.000000  0.000000
-  P          79.825039  =  377.56  - 297.74:     1.000000  0.000000  0.000000
-  P         973.041943  =  377.56  + 595.48:     0.000000  0.000000  1.000000
+  P          79.824697  =  377.56  - 297.74:     1.000000  0.000000  0.000000
+  P          79.824697  =  377.56  - 297.74:     0.000000  1.000000  0.000000
+  P         973.041895  =  377.56  + 595.48:     0.000000  0.000000  1.000000
 
 
                          +--------------------------------+
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from J.Mason, Solid state Nuc.Magn.Res. 2 (1993), 285
+@1  Definitions from J. Mason, Solid state Nuc. Magn. Res. 2 (1993), 285
 
- @1atom   shielding       dia      para     skew      span     (aniso     asym)
- @1----------------------------------------------------------------------------
- @1C        56.7393  310.2429 -253.5036    1.0000  340.4984  340.4984    0.0000
- @1H        17.2901  -22.7626   40.0527    1.0000   37.4890   37.4890    0.0000
- @1P       377.5640  994.5808 -617.0168    1.0000  893.2169  893.2169    0.0000
+@1 London orbitals (GIAOs) not used.
+@1 Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+@1 atom   shielding       dia      para     skew      span     (aniso     asym)
+@1 ----------------------------------------------------------------------------
+@1 C        56.7396  310.2430 -253.5034    1.0000  340.4980  340.4980    0.0000
+@1 H        17.2901  -22.7626   40.0527    1.0000   37.4890   37.4890    0.0000
+@1 P       377.5638  994.5807 -617.0170    1.0000  893.2172  893.2172    0.0000
 
 
 
@@ -1761,13 +1857,16 @@ Unconverged diagonals :       0
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from Smith, Palke and Grieg, Concepts in Mag.Res. 4 (1992), 107
+@2  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992), 107
 
- @2atom   shielding       dia      para     aniso      asym        S        A
- @2----------------------------------------------------------------------------
- @2C        56.7393  310.2429 -253.5036  340.4984    0.0000  340.4984    0.0000
- @2H        17.2901  -22.7626   40.0527   37.4890    0.0000   37.4890    0.0000
- @2P       377.5640  994.5808 -617.0168  893.2169    0.0000  893.2169    0.0000
+@2 London orbitals (GIAOs) not used.
+@2 Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+@2 atom   shielding       dia      para     aniso      asym        S        A
+@2 ----------------------------------------------------------------------------
+@2 C        56.7396  310.2430 -253.5034  340.4980    0.0000  340.4980    0.0000
+@2 H        17.2901  -22.7626   40.0527   37.4890    0.0000   37.4890    0.0000
+@2 P       377.5638  994.5807 -617.0170  893.2172    0.0000  893.2172    0.0000
 
 
 
@@ -1781,8 +1880,12 @@ Unconverged diagonals :       0
  P     :    1.542148    2.610781    0.000000
 
 
-  Max interatomic separation is    2.6108 Angstrom (    4.9337 Bohr)
+  Max    interatomic separation is    2.6108 Angstrom (    4.9337 Bohr)
   between atoms    3 and    2, "P     " and "H     ".
+
+  Min HX interatomic separation is    1.0686 Angstrom (    2.0194 Bohr)
+
+  Min YX interatomic separation is    1.5421 Angstrom (    2.9142 Bohr)
 
 
   Bond distances (Angstrom):
@@ -1807,23 +1910,23 @@ Unconverged diagonals :       0
  CPU time statistics for ABACUS
  ------------------------------
 
- LINRES     00:00:03      39 %
- CTOCD      00:00:05      60 %
+ LINRES     00:00:01      38 %
+ CTOCD      00:00:02      60 %
 
- TOTAL      00:00:08     100 %
+ TOTAL      00:00:04     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   8.44 seconds
- >>>> Total wall time used in ABACUS:  10.00 seconds
+ >>>> Total CPU  time used in ABACUS:   3.89 seconds
+ >>>> Total wall time used in ABACUS:   4.15 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  17.67 seconds
- >>>> Total wall time used in DALTON:  19.00 seconds
+ >>>> Total CPU  time used in DALTON:  11.09 seconds
+ >>>> Total wall time used in DALTON:  17.88 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:57:35 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:22:57 2013
+     Host name              : c10-6.local                             

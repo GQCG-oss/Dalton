@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -91,7 +91,7 @@ C
             GOTO 100
  2       CONTINUE    ! .SYMMET
             READ (LUCMD,'(A)') GRPTMP
-            FCLASS(1:3) = '   ' ! If FCLASS are initialized to a longer group name. 
+            FCLASS(1:3) = '   ' ! If FCLASS are initialized to a longer group name.
             IJ = 0
             DO II = 1, 15
                IF (GRPTMP(II:II).NE.' ') THEN
@@ -145,7 +145,7 @@ C
             GOTO 100
  16      CONTINUE    ! .MANUAL
             MANUAL = .TRUE.
-            GOTO 100   
+            GOTO 100
  17      CONTINUE    ! .HARMON
             HARMON = .TRUE.
             VIB    = .TRUE.
@@ -247,8 +247,8 @@ C
      &              'differentiation is equal to: ', NMORDR
             END IF
          END IF
-         IF (MIDAS) THEN 
-            WRITE (LUPRI,'(/5X,A)') 
+         IF (MIDAS) THEN
+            WRITE (LUPRI,'(/5X,A)')
      &                  'Operator file for MidasCpp interface '//
      &                  'will be generated.'
             WRITE (LUPRI,'(5x,A,A,E24.10)')
@@ -313,7 +313,7 @@ C
 #include "dftcom.h"
 #include "ecpinf.h"
 #include "ccsdinp.h"
-      LOGICAL MCSCF, DMP2, DOHFSRDFT, DOROHF, DOCISRDFT, DOMCSRDFT, 
+      LOGICAL MCSCF, DMP2, DOHFSRDFT, DOROHF, DOCISRDFT, DOMCSRDFT,
      &        WAVTP, DPCM
 C
 C     *** Workaround to many common variables with the same name ***
@@ -335,20 +335,27 @@ C
       DOMCSRDFT  = .FALSE.
 #endif
 C
-      IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR.
-     &    CCD   .OR. CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
+      IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2
+     &    .OR. CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCT  .OR.
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
      &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN) THEN
          NAORDR = 0
-      ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
+      ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
      &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR.
      &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0)) .OR.
-     &        DPCM .OR. DOROHF) THEN
+!RPA Methods with analytic gradient only
+     &        DRCCD .OR. SOSEX .OR. RCCD .OR.
+     &        DPCM .OR. DOROHF .OR.
+CAMT Only gradients for empirical disp correction so far
+     &        DODFTD) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2
       END IF
+      if (peqm) then
+        naordr = 0
+      end if
 C
       WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
      &          'energy-derivatives available:', NAORDR
@@ -454,7 +461,7 @@ CRF added
       C4FORC = .FALSE.
 C
 C     /FCSYM/
-CRF   We initialize the numdiff symmetry to the computational point group  
+CRF   We initialize the numdiff symmetry to the computational point group
 C     FCLASS(1:3) = GROUP
       FCLASS(1:3) = 'C1 '
       FCLASS(4:15) = '            '
@@ -506,7 +513,7 @@ c#endif
 #include "gnrinf.h"
 #include "huckel.h"
       DIMENSION WORK(LWORK)
-      LOGICAL MOLECU
+      LOGICAL   MOLECU
       CHARACTER WORD*7
 C
       CALL QENTER('NUMDRV')
@@ -541,23 +548,18 @@ C
 C
       MAXADR = 1
       DO 200 J = NMORDR, 1, -2
-      DO 200 I = 1, J
-         MAXADR = MAXADR + 1
+         IF (J .GT. 0) MAXADR = MAXADR + J
  200  CONTINUE
-C     
-C     NDERIV -> number derivatives to save space 
+C
+C     NDERIV -> number derivatives to save space
 C               for in WORK
       DO 300 IORDR = 3, NMORDR+NAORDR
          IKDRV = 1
-         DO 400 IIORDR =1, IORDR
+         DO 400 IIORDR = 1, IORDR
             IKDRV = IKDRV*(NCOOR+IIORDR-1)/IIORDR
  400     CONTINUE
          NDERIV = NDERIV + IKDRV
  300  CONTINUE
-      if (nderiv .le. 0 .AND. .NOT. PRPONL ) then
-         write(lupri,*) 'hjaaj: nderiv .le. 0',nderiv
-         write(lupri,*) 'hjaaj: nmordr,naordr,ncoor',nmordr,naordr,ncoor
-      end if
 C
       DO 500 IORDR = 1, NMORDR
          IKDIME = 1
@@ -635,11 +637,6 @@ chj      KDCOEF = KDPMTX +   IFRSTD*NMORDR*LDPMTX
          KNIDPC = KTEST
       END IF
 C
-C     *** Space for backup of MOLECULE.INP ***
-C
-      KMBKLN = KLAST
-      KLAST  = KMBKLN + 80*NMLINE
-C
 C     *** Space for backup of isotopes if abacus is run. ***
 C
       IF (NAORDR.GT.0) THEN
@@ -668,7 +665,7 @@ C     supposedly not are used, are used anyway.
      &            WORK(KENTST),WORK(KGRIRP),WORK(KCHRCT),WORK(KTRNRC),
      &            WORK(KTRMSS),WORK(KDKIN) ,WORK(KFREQ), WORK(KRNNRM),
      &            WORK(KLAST) ,WORK(KDPMTX),WORK(KNIDPC),WORK(KICRIR),
-     &            WORK(KISOTP),WORK(KMBKLN),LWRK1,NDERIV,NDIME,
+     &            WORK(KISOTP),LWRK1,NDERIV,NDIME,
      &            NINNER,MAXADR,LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
       IF (WORK(KTEST) .NE. -999.9D0) THEN
          CALL QUIT('WORK(KTEST) has been modified!')
@@ -705,9 +702,9 @@ c         END IF
 c      END IF
 c#endif
 C
-C 
 C
-CRF 6/12 12  Rerun NUMDR1 with new basis set, to get properties 
+C
+CRF 6/12 12  Rerun NUMDR1 with new basis set, to get properties
 CRF          with a different basis set
       IF ( PRPBAS .AND. .NOT. PRPONL ) THEN
 C        Resetting variables for property derivatives
@@ -722,21 +719,21 @@ C        Resetting variables for property derivatives
          NMORDR = 2 !Still need to keep this
          NAORDR = 0
          PRPONL = .TRUE.
-         
-C        Setting basis set line in .mol file to property basis
-         MLINE(2) = PRPBTX 
 
-C        Better tell people, what we are doing 
-         WRITE (LUPRI,'(A)') '                                   ' 
-         CALL TITLER('Calculating property derivatives.','*',124)  
-         CALL TITLER( 'Basis set changed to '//PRPBTX,'*',103)  
+C        Setting basis set line in .mol file to property basis
+         MLINE(2) = PRPBTX
+
+C        Better tell people, what we are doing
+         WRITE (LUPRI,'(//80A1/)') ('*' , I = 1,80)
+         CALL TITLER('@ Calculating property derivatives.','*',124)
+         CALL TITLER( '@ Basis set changed to '//PRPBTX,'*',103)
 
 C        Rerun NUMDR1 + Preceeding memory allocations
          GOTO 100
       END IF
-CRFend      
+CRFend
 C
-C     *** No more numerical derivative. ***
+C     *** No more numerical derivatives. ***
       NMWALK = .FALSE.
       IPRUSR = IPRUSR_orig
       IPREAD = IPREAD_orig
@@ -749,7 +746,7 @@ C  /* Deck numdr1 */
       SUBROUTINE NUMDR1(DERIV,FUVAL,COOR,CSTART,SYMCOR,DCOEFF,TSTGDR,
      &                  TSTSDR,ENTST,GRIREP,CHRCTR,TRNCCR,TRAMSS,DKIN,
      &                  FREQ,RNNORM,WORK,KDPMTX,NMIDPC,ICRIRP,ISOTMP,
-     &                  MBKLIN,LWORK,NDERIV,NDIME,NINTIN,MAXADR,
+     &                  LWORK,NDERIV,NDIME,NINTIN,MAXADR,
      &                  LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
 #include "implicit.h"
 #include "priunit.h"
@@ -776,10 +773,9 @@ C  /* Deck numdr1 */
 #include "fcsym.h"
       LOGICAL EXHER, EXSIR, EXABA, GTCOMP, RSTDON, SYMDET, NPRBKP,
      &        NSPNBK
-      CHARACTER*80 MBKLIN, PRTEXT
-      CHARACTER*8 ANDER
+      CHARACTER*(len_MLINE) MBKLIN(NMLINE) ! automatic array for backup of MLINE
+      CHARACTER*8 ANDER, PRTEXT
       CHARACTER*6 TXT
-      DIMENSION MBKLIN(NMLINE)
       DIMENSION DERIV(NDERIV), FUVAL(NINTIN,NDIME), CSTART(3*NCOOR),
      &          COOR(3*NCOOR), SYMCOR(NCOOR,NCOOR),
      &          DCOEFF(LDPMTX,IFRSTD), TSTGDR(NCOOR), ENTST(LTHTST),
@@ -968,9 +964,7 @@ C
          END IF
 
       ELSE
-         WRITE (LUPRI,'(A)') '                                '
-         WRITE (LUPRI,'(A)') 'Reading in precalculated hessian'
-         WRITE (LUPRI,'(A)') '                                '
+         WRITE (LUPRI,'(/A/)') 'Reading in precalculated hessian'
 C
          KHSSIN = 1
          KLAST  = KHSSIN + NCOOR**2
@@ -1248,7 +1242,7 @@ CRF      the derivatives will be from a previous run, and thus shouldn't be prin
      &       CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
      &            CSTART,WORK(KTTMPD),WORK(KFTMPD),RNNORM,WORK(KLAST),
      &            ICRIRP,LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
-            
+
 
 C
 C           *** Isotope analysis. ***
@@ -1348,7 +1342,7 @@ C
 C
       LOGICAL CALCMP, CLNRGY, LASTE, NOSYM, TOTSM, SYMDET, RSTDON,
      &        ALRCAL, PRTNR, CPRPBK
-      CHARACTER*80 MBKLIN
+      CHARACTER*(len_MLINE) MBKLIN
       DIMENSION MBKLIN(NMBKLN)
       DIMENSION FUVAL(NINTIN,NDIME), COOR(NCOOR), CSTART(NCOOR),
      &          DERIV(NDERIV), DCOEFF(LDPMTX,IFRSTD),
@@ -1576,6 +1570,11 @@ C
 C     *** Returning to the original geometry, only for master. ***
 C
       IF (MYNUM .EQ. 0) THEN
+
+! reset molden.inp file after finished all modified geometries for numerical derivatives
+! (this will also use .P-BASIS for molden.inp if .P-BASIS specified).
+         CALL MOLDEN_HEAD
+
          IORDR = 0
          IDIME = 1
          CLNRGY = .TRUE.
@@ -1649,7 +1648,7 @@ C
 C        ********************************************
 C        *** Preliminary constants to derivatives ***
 C        ********************************************
-CRF  To posibly allow NMRDRP .le. NMORDR     
+CRF  To posibly allow NMRDRP .le. NMORDR
          MXCOEF = INT(MAX(NMORDR,NMRDRP)/2) + 1
 C
 C        ****************************************************
@@ -1663,7 +1662,7 @@ C
 C        ***********************************
 C        *** Calculating the derivatives ***
 C        ***********************************
-C        
+C
 CRF 16/11 We skip calculating new geometrical derivatives
 CRF       if only property derivatives are calculated this run
          IF ( .NOT. PRPONL) THEN
@@ -1675,7 +1674,7 @@ CRF       if only property derivatives are calculated this run
            KNCVAL = KICNT  +               NTYPE
            KIDDCP = KNCVAL +               NCOOR
            KLAST  = KIDDCP +               NCOOR
-           LWRK1  = LWORK - KLAST 
+           LWRK1  = LWORK - KLAST
            IF (LWRK1.LT.1) CALL QUIT('Memory exceeded in NMNDER')
            CALL NMNDER(DERIV,WORK(KCOEF),FUVAL,GRIREP,WORK(KLAST),
      &          IADRSS,KDPMTX,ICRIRP,INDSTP,INDTMP,IDCOMP,WORK(KIMAX),
@@ -1830,7 +1829,7 @@ c
 #include "huckel.h"
       LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, EXSIR, EXHER, EXABA, EXESG,
      &        ALRCAL, PRPCAL, FNDKEY
-      CHARACTER*80 MBKLIN
+      CHARACTER*(*) MBKLIN
       DIMENSION MBKLIN(NMBKLN)
       DIMENSION FUVAL(NINTIN,NDIME), COOR (NCOOR), SYMCOR(NCOOR,NCOOR),
      &          CSTART(NCOOR), EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR),
@@ -1865,7 +1864,7 @@ C
       END IF
 CRF   A crude way of avoiding redudant calculations
       IF (PRPONL .AND. .NOT. CNMPRP) THEN
-         CALL QEXIT('GTNPNT') 
+         CALL QEXIT('GTNPNT')
          RETURN
       END IF
 C
@@ -1903,8 +1902,7 @@ C
 C     *** Information needed for .MANUAL keyword. ***
 C
       IF (MANUAL) THEN
-         WRITE (LUPRI,'(A)') '                                    '
-         WRITE (LUPRI,'(5X,A,I5)') 'Manual geometry calculated', IDIME
+         WRITE (LUPRI,'(/5X,A,I5)') 'Manual geometry calculated', IDIME
          IF (PRTNR) THEN
             WRITE (LUPRI,'(5X,A,I5)') 'Partner geometry',
      &           IDIME - IINNER + NPRTNR(NMPRTN)
@@ -1963,13 +1961,13 @@ C
 c               CALL DALCHG(INDSTP,ICRIRP,IRSRDR,IPRINT,NCOOR,NMORDR,
 c     &                     .FALSE.)
 C
-C              *** Update MOLECULE.INP file. ***
+C              *** Update MOLECULE.INP file and molinp.h common block ***
 C
                KNATOM = 1
                KNLINE = KNATOM + NUCIND
                KNATIN = KNLINE + NUCIND
-               CALL UPCOMB(COOR,WORK(KNATOM),WORK(KNLINE),WORK(KNATIN),
-     &                     MBKLIN,NMBKLN,LASTE)
+               CALL UPD_MOLINP(COOR,WORK(KNATOM),WORK(KNLINE),
+     &                         WORK(KNATIN),MBKLIN,NMBKLN,LASTE)
 C
 C              *** Reset necessary variables ***
 C
@@ -2120,8 +2118,11 @@ C
       RETURN
       END
 C
-C  /* Deck upcomb */
-      SUBROUTINE UPCOMB(COOR,NATOM,NLINE,NATIND,MBKLIN,NMBKLN,LASTE)
+C  /* Deck upd_molinp */
+      SUBROUTINE UPD_MOLINP(COOR,NATOM,NLINE,NATIND,MBKLIN,NMBKLN,LASTE)
+C
+C     Update MOLECULE.INP file and molinp.h commonb block.
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2138,14 +2139,14 @@ C
 #include "inftap.h"
       LOGICAL BIG, USED, LASTE, DOCART, DOOWN, AUTOSY, NOSYM, ADDSYM,
      &        NEWINP, NEWATO
-      CHARACTER*6 CHR
-      CHARACTER*4 NAME
-      CHARACTER*80 MBKLIN, BSNM
-      CHARACTER*11 TMPTXT
-      CHARACTER*1 KASYM(3,3), ID3, CRT
-      DIMENSION MBKLIN(NMBKLN), JCO1(MXAQN)
+      CHARACTER*6   CHR
+      CHARACTER*4   NAME
+      CHARACTER*(*) MBKLIN(NMBKLN)
+      CHARACTER*80  BSNM
+      CHARACTER*11  TMPTXT
+      CHARACTER*1   KASYM(3,3), ID3, CRT
       DIMENSION COOR(3,NCOOR/3), NATOM(NUCIND), NLINE(NUCIND),
-     &          NATIND(NUCIND)
+     &          NATIND(NUCIND), JCO1(MXAQN)
 #include "ibtfun.h"
 C
 C     Updates geometry in common block
@@ -3251,7 +3252,7 @@ C    /*Deck pritdr*/
 #include "numder.h"
 #include "fcsym.h"
 #include "cbinum.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       LOGICAL PRWHLE
       DIMENSION TDER(NCOOR,NCOOR,NCOOR), TMPTDR(NTMPDM),
      &          SYMTDR(NCOOR,NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
@@ -3283,7 +3284,7 @@ C
          IF (.NOT.MINOUT) THEN
             CALL PRTDER(SYMTDR,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
          ELSE
-            WRITE (LUPRI,'(A/)') 
+            WRITE (LUPRI,'(A/)')
      *         " Output of third derivative suppressed"
          ENDIF
       ELSE
@@ -3308,7 +3309,7 @@ C
 C
 C     ************************************
 C     *** Transformation to cartesian  ***
-C     ***  coordinstes, and printing.  ***
+C     ***  coordinates, and printing.  ***
 C     ************************************
 C
       IF ((FCLASS(1:3) .NE. 'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN
@@ -3337,7 +3338,7 @@ C     *** coordinates. Tracor is the transformation matrix.   ***
 C     ***********************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION CR1TDR(NCOOR,NCOOR,NCOOR), CR2TDR(NCOOR,NCOOR,NCOOR),
      &          TRCOOR(NCOOR,NCOOR)
 C
@@ -3392,7 +3393,7 @@ C
 #include "numder.h"
 #include "fcsym.h"
 #include "cbinum.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION FDER(NCOOR,NCOOR,NCOOR,NCOOR), TMPFDR(NTMPDM),
      &          SYMFDR(NCOOR,NCOOR,NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
 C
@@ -3445,13 +3446,13 @@ C
       IF (.NOT.MINOUT) THEN
          CALL PRFDER(SYMFDR,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
       ELSE
-         WRITE (LUPRI,'(A/)') 
+         WRITE (LUPRI,'(A/)')
      *      " Output of fourth derivative suppressed"
       ENDIF
 C
 C     ************************************
 C     *** Transformation to cartesian  ***
-C     ***  coordinstes, and printing.  ***
+C     ***  coordinates, and printing.  ***
 C     ************************************
 C
       IF ((FCLASS(1:3).NE.'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN
@@ -3463,7 +3464,7 @@ C
 C
 C        *** Printing in cartesian coordinates. ***
 C
-         IF (.NOT.MINOUT) 
+         IF (.NOT.MINOUT)
      &      CALL PRFDER(FDER,NCOOR,NUMCOR,'cartesian',9,IPRINT)
       ELSE
          CALL DCOPY(NCOOR**4,SYMFDR,1,FDER,1)
@@ -3481,7 +3482,7 @@ C     *** coordinates                                        ***
 C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION CR1FDR(NCOOR,NCOOR,NCOOR,NCOOR),
      &          CR2FDR(NCOOR,NCOOR,NCOOR,NCOOR), TRCOOR(NCOOR,NCOOR)
 C
@@ -3600,7 +3601,7 @@ C     /* Deck mknrmc */
      &                  LWORK,IPRINT)
 ************************************************************
 *** Makes normal coordinates from the molecular hessian, ***
-*** and writes out the  harmonic frequensies according   ***
+*** and writes out the  harmonic frequencies according   ***
 ***             general symmetry species.                ***
 ************************************************************
 #include "implicit.h"
@@ -3882,7 +3883,7 @@ C     would like the normal coordinates to be normalized to one in q-space, q = 
 
       CALL GPCLOSE(LUNOR,'KEEP')
 
-C     
+C
 C     *** Writing to spectro file if requested. ***
 C
       IF (SPECTR) THEN
@@ -4088,7 +4089,7 @@ C     *** Printing of third derivatives in TEXT coordinates. ***
 C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION TDER(NDIM,NDIM,NDIM)
 
 C
@@ -4131,7 +4132,7 @@ C     *** Printing of fourth derivative in TEXT coordinates. ***
 C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION FDER(NDIM,NDIM,NDIM,NDIM)
 C
 C     *** Header print. ***
@@ -4193,7 +4194,7 @@ C
 #include "numder.h"
 #include "pvibav.h"
       LOGICAL CPRPBK, PRWHLE
-      CHARACTER*80 TEXT
+      CHARACTER*(*) TEXT
       DIMENSION TDER(NDIMT), FDER(NDIMF), TSTGDR(NCOOR), CSTART(NCOOR),
      &          TSTSDR(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR),
      &          TTMPDR(NCOOR,NCOOR,NCOOR),
@@ -4211,10 +4212,12 @@ C     *** Print gradient ***
 C
       IF (NPRRDR.GT.0) THEN
 C
-         CALL HEADER('Numerical gradient in ' // TEXT(1:LTXT) //
+         IF (NAORDR.LT.1) THEN
+            CALL HEADER('Numerical gradient in ' // TEXT(1:LTXT) //
      &               ' coordinates',-1)
-C
-         IF (NAORDR.GE.1) THEN
+         ELSE
+            CALL HEADER('Analytical gradient in ' // TEXT(1:LTXT) //
+     &               ' coordinates',-1)
             KCSTRA = 1
             KSCTRA = KCSTRA + NCOOR**2
             KEGRAD = KSCTRA + MXCOOR
@@ -4251,8 +4254,16 @@ C     *** Print hessian ***
 C
       IF (NPRRDR.GT.1) THEN
 C
-         CALL HEADER('Numerical hessian in ' // TEXT(1:LTXT) //
+         IF (PREHES) THEN
+            CALL HEADER('Precalculated hessian in ' // TEXT(1:LTXT) //
      &               ' coordinates',-1)
+         ELSE IF (NAORDR .GE. 2) THEN
+            CALL HEADER('Analytical hessian in ' // TEXT(1:LTXT) //
+     &               ' coordinates',-1)
+         ELSE
+            CALL HEADER('Numerical hessian in ' // TEXT(1:LTXT) //
+     &               ' coordinates',-1)
+         END IF
 C
          IF ((NAORDR.GE.2).AND..NOT.PREHES) THEN
             KCSTRA = 1
@@ -4362,7 +4373,7 @@ C
 #include "taymol.h"
 #include "cbiwlk.h"
 #include "numder.h"
-      CHARACTER TEXT*80
+      CHARACTER TEXT*(*)
       DIMENSION SYMCOR(NCOOR,NCOOR), CGRAD(NCOOR), ICRIRP(NCOOR,2),
      &          WORK(LWORK)
 C
@@ -4443,7 +4454,7 @@ C     /*Deck gsphes*/
 #include "cbinum.h"
       INTEGER BEGIN, LAST
       LOGICAL HESEXS
-      CHARACTER TEXT*80
+      CHARACTER TEXT*(*)
       DIMENSION SYMCOR(NCOOR,NCOOR), SMCINV(NCOOR,NCOOR),
      &          CHESS1(NCOOR,NCOOR), CHESS2(NCOOR,NCOOR),
      &          WORK(LWORK), ICRIRP(NCOOR,    2)
@@ -4451,6 +4462,7 @@ C
 C     *** Print hessian in symmetric coordinates ***
 C
       CALL HEADER('Hessian in ' // TEXT(1:LTXT) // ' coordinates',-1)
+      WRITE(LUPRI,'(/8X,A/)') 'Notation: irrep/coordinate number'
 C
       BEGIN = 1
       LAST  = MIN(NDCOOR,KCOL)
@@ -4459,10 +4471,10 @@ C
       IF (MOD(NDCOOR,KCOL).NE.0) NCOL = NCOL + 1
 C
       DO 100 ICOL = 1, NCOL
-         WRITE (LUPRI,1000) (ICRIRP(I,1),I = BEGIN,LAST)
+         WRITE (LUPRI,1000) (ICRIRP(I,1),I,I = BEGIN,LAST)
 C
          DO 200 ICOOR = BEGIN, NDCOOR
-            WRITE (LUPRI,2000) ICRIRP(ICOOR,1),
+            WRITE (LUPRI,2000) ICRIRP(ICOOR,1),ICOOR,
      &                        (HESMOL(ICOOR,I),I=BEGIN,MIN(LAST,ICOOR))
  200     CONTINUE
          WRITE (LUPRI,'(A)') '                                       '
@@ -4587,8 +4599,8 @@ C
          END IF
       END IF
 C
- 1000 FORMAT (8X,6(3X,I4,5X),(3X,I4,5X))
- 2000 FORMAT (1X,I4,2X,6F12.6)
+ 1000 FORMAT (8X,20(I4,'/',I4,3X))
+ 2000 FORMAT (I2,'/',I4,6F12.6)
       RETURN
       END
 C
@@ -4599,7 +4611,7 @@ C     /* Deck tsths1*/
 ************************************************************
 *** Tests the molecular hessian by makeing the cartesian ***
 *** hessian, diagonalizing the mass-weighted hessian and ***
-*** prints the eigenvalues, and harmonic frequancies     ***
+*** prints the eigenvalues, and harmonic frequencies     ***
 ************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -5376,7 +5388,7 @@ C
 #include "fcsym.h"
 #include "ccorb.h"
       LOGICAL FIRST
-      CHARACTER*80 WORD(KMLINE)
+      CHARACTER*(len_MLINE) WORD(KMLINE)
       DIMENSION ICRIRP(NCOOR,2), INDSTP(NTORDR)
 C
       CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -5512,7 +5524,7 @@ C
       LOGICAL SYMADA, HESEXS
       CHARACTER*5 HSMINF
       DIMENSION WORK(LWORK)
-C     
+C
       IF (C4FORC) THEN ! We should read a CFOUR style Hessian file
          CALL RDC4HS(WORK,LWORK,IPRINT)
          GOTO 300
@@ -5551,7 +5563,7 @@ C
  100  CONTINUE
 C
       CALL GPCLOSE(LUHES,'KEEP')
-C     
+C
  300  CONTINUE
       CALL HEADER ('Molecular Hessian read from file.', 0)
       WRITE (LUPRI,'(A)') '                              '
@@ -6528,7 +6540,7 @@ C
 #include "ccorb.h"
 #include "pgroup.h"
       LOGICAL SAMIRP
-      CHARACTER*80 WORD(KMLINE)
+      CHARACTER*(len_MLINE) WORD(KMLINE)
 C
 C     *** Reducing symmetry of frozen orbitals. ***
 C
@@ -6568,7 +6580,7 @@ C
       LOGICAL SAMIRP
       DIMENSION NCURNT(8), NBCKUP(8)
       CHARACTER*7 SWORD
-      CHARACTER*80 WORD(KMLINE)
+      CHARACTER*(len_MLINE) WORD(KMLINE)
 C
       CALL STCCSM(NSYM)
 C
@@ -7199,7 +7211,7 @@ C         Only for normal coordinates right now.
 C
       IF (TXT(1:6).EQ.'normal') THEN
 C         IF ((NTIME.EQ.2).OR.(NTIME.EQ.1 .AND.
-      
+
          WRITE(LUPRI,'(A)') " WRITE TO MIDAS INTERFACE FILE, "
      &           //"DALTON.MOP "
          LMIDAS = 0
@@ -7209,8 +7221,8 @@ C         IF ((NTIME.EQ.2).OR.(NTIME.EQ.1 .AND.
          RETURN
       ENDIF
 C
-C     *** NTIME = 1 -> write the frequencies 
-C     *** NTIME = 2 -> write the cubic and quartic force field. 
+C     *** NTIME = 1 -> write the frequencies
+C     *** NTIME = 2 -> write the cubic and quartic force field.
 C
 C
       FAC = 0.5D0
@@ -7264,7 +7276,7 @@ C
 C        WRITE(LUPRI,'(A,1P,E23.16)') " FRQLAR " ,FRQLAR
 C        WRITE(LUPRI,'(A,1P,E23.16)') " FAC    " ,FAC
 C        WRITE(LUPRI,'(A,1P,E23.16)') " THRMID " ,THRMID
-C        WRITE(LUPRI,'(A,1P,E23.16)') " THRTRM " ,THRTRM  
+C        WRITE(LUPRI,'(A,1P,E23.16)') " THRTRM " ,THRTRM
 C
 C        *** Writing cubic force field. ***
 C        Note scaling with norms and symmetry factors!
@@ -7470,13 +7482,13 @@ C     ************************************************
 #include "trkoor.h"
       LOGICAL HESEXS
       DIMENSION WORK(LWORK)
-  
+
       INQUIRE (FILE='FCM',EXIST=HESEXS)
-      
+
       IF (.NOT. HESEXS ) CALL QUIT('Unable to open file FCM')
 
       LUC4IF = -1
-      
+
 C     *** Open FCM file ***
       CALL GPOPEN(LUC4IF,'FCM','OLD',' ','FORMATTED',IDUMMY,.FALSE.)
 
@@ -7486,12 +7498,12 @@ C     *** Check that the written dimensions match this calculation ***
      &   'FCM does not match those in the molecule file' )
 
 C     *** We can now read the Hessian ***
-      DO ICOOR1 = 1, NCOOR 
+      DO ICOOR1 = 1, NCOOR
          DO ICOOR2 = 1, NCOOR, 3 ! Three numbers at each line
             READ(LUC4IF,*,ERR=901) HESMOL( ICOOR2:ICOOR2+2,ICOOR1)
          END DO
-      END DO      
-      
+      END DO
+
       CALL GPCLOSE (LUC4IF,'KEEP')
 
       RETURN

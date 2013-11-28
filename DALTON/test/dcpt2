@@ -1,0 +1,112 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > dcpt2.info <<'%EOF%'
+   DCPT2 Energy  
+   ------------
+   Molecule:         F2 
+   Wave Function:    DCPT2 / 6-311G**
+   Test Purpose:     Degeneracy-Corrected PT2 Energy of Assfeld, Almlof
+                     and Truhlar. Via the CC module.
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > dcpt2.mol <<'%EOF%'
+BASIS
+6-311G**
+HF / DCPT2 Test
+----------------
+Atomtypes=1 Angstrom
+Atoms=2 Charge=9.0
+F    0.0 0.0  0.0
+F    0.0 0.0  1.4068
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > dcpt2.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVEFUNCTION
+.DIRECT
+**WAVEFUNCTION
+.CC 
+*CC INPUT
+.DCPT2
+*SCF INPUT
+.THRESH
+1.0d-9 
+*ORBITAL INPUT
+.AO DELETE
+1.0D-14
+.CMOMAX
+2.0D4
+**END OF INPUT
+%EOF%
+#######################################################################
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >dcpt2.check
+cat >>dcpt2.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# Check 1:
+CRIT1=`$GREP "Total DCPT2 energy: *  \-199.1926469" $log | wc -l`
+TEST[1]=`expr $CRIT1`
+CTRL[1]=2
+ERROR[1]="DCPT2 ENERGY NOT CORRECT"
+
+PASSED=1
+for i in 1 
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################
+

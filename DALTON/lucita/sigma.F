@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -4937,7 +4937,7 @@ C?     WRITE(luwrt,*) ' DIATERM2_GAS will be called '
      &          KC2, KCJRES, KSIRES, KSSCR, KCSCR, KCJPA, KSIPA, KSOMEH,
      &          KSOMESCR, KCONSPA, KCONSPB, KSTSTS, KSTSTD, KINSCR, 
      &          KCIOIO, KCBLTP
-      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
+      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR, KLH0SPC
 !               for addressing of WORK
 #ifdef VAR_MPI
 #include "maxorb.h"
@@ -5207,6 +5207,11 @@ C
         IDOH2 = 0
       END IF
 *
+      if(ipertop /= 0)then
+        CALL MEMMAN(KLH0SPC,NOCTPA*NOCTPB,'ADDL  ',2,'h0spc ')
+      else
+        CALL MEMMAN(KLH0SPC,            0,'ADDL  ',2,'h0spc ')
+      end if
 *
       CALL SBLOCKS(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,WORK(KC2),
      &     WORK(KCIOIO),ISMOST(1,ICSM),WORK(KCBLTP),
@@ -5426,7 +5431,7 @@ C
 #endif
       ELSE ! (LUCI_NMPROC .GT. 1) THEN
       IF(NTEST.GE.50) THEN
-        WRITE(LUCIWT,*) ' Initial C vector '
+        WRITE(LUWRT,*) ' Initial C vector '
         CALL WRTVCD(CB,LUC,1,-1)
       END IF
 C
@@ -5740,16 +5745,16 @@ C
      &            GOTO 8764
 C
                 IF(NTEST.GE.60) THEN
-                  WRITE(LUCIWT,*) ' RSSBCB will be called for '
-                  WRITE(LUCIWT,*) ' Sigma block : '
-                  WRITE(LUCIWT,*) ' ISOFF ', ISOFF
-                  WRITE(LUCIWT,*) ' ISBLK IASM IBSM IATP IBTP'
-                  WRITE(LUCIWT,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
-                  WRITE(LUCIWT,*) ' C     block : '
-                  WRITE(LUCIWT,*) ' ICBLK LLASM LLBSM LLATP LLBTP'
-                  WRITE(LUCIWT,'(5I5)')  ICBLK,LLASM,LLBSM,LLATP,LLBTP
-                  WRITE(LUCIWT,*) ' ICOFF ', ICOFF
-                  WRITE(LUCIWT,*) ' Overall scale',SCLFAC(ICBLK)
+                  WRITE(LUWRT,*) ' RSSBCB will be called for '
+                  WRITE(LUWRT,*) ' Sigma block : '
+                  WRITE(LUWRT,*) ' ISOFF ', ISOFF
+                  WRITE(LUWRT,*) ' ISBLK IASM IBSM IATP IBTP'
+                  WRITE(LUWRT,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
+                  WRITE(LUWRT,*) ' C     block : '
+                  WRITE(LUWRT,*) ' ICBLK LLASM LLBSM LLATP LLBTP'
+                  WRITE(LUWRT,'(5I5)')  ICBLK,LLASM,LLBSM,LLATP,LLBTP
+                  WRITE(LUWRT,*) ' ICOFF ', ICOFF
+                  WRITE(LUWRT,*) ' Overall scale',SCLFAC(ICBLK)
                 END IF
 *
                 IF(IRESTRICT.EQ.1.AND.

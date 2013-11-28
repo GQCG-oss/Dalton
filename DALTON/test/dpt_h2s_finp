@@ -83,6 +83,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #             Total CCSD  energy:                  -398.9790221113
 #             Total energy CCSD(T):                -398.9825628679
 
@@ -99,7 +104,7 @@ ERROR[2]="CCSD(T) energy with finite DPT correction not correct"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

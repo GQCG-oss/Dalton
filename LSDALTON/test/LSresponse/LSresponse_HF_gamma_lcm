@@ -46,18 +46,15 @@ F 1.96000000  0.0000000000   0.000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > LSresponse_HF_gamma_lcm.dal <<'%EOF%'
-**INTEGRAL
-.THRESH
-1.D-10
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.ARH
+.ARH DAVID
 .START
- TRILEVEL
+TRILEVEL
 .LCM
-.CONVTHR
-1.0D-6
+.CONVDYN
+TIGHT
 **RESPONS
 *GAMMA
 .BFREQ

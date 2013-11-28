@@ -47,13 +47,13 @@ H         -1.16080       -0.06606       -1.02386
 #  DALTON INPUT
 #######################################################################
 cat > reordertest.dal <<'%EOF%'
-*DENSOPT
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 **DEC
-.SkipHartreeFock
+.RESTART
 .TESTREORDERINGS
+.MEMORY
+2.0
 *END OF INPUT
 %EOF%
 #######################################################################

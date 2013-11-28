@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -553,7 +553,7 @@ C
       INTEGER P, Q, R, S
 #include "priunit.h"
 #include "inforb.h"
-      DIMENSION FMAT(NBAST,NBAST,NDMT,*), DMAT(NBAST,NBAST,NDMT),
+      DIMENSION FMAT(NBAST,NBAST,NDMT), DMAT(NBAST,NBAST,NDMT),
      &          BUF(LBIN), IBUF(LBIN,4), IFCTYP(NDMT)
 C
       DO I = 1, NDMT
@@ -576,8 +576,8 @@ C NECgh980505  FAC = DP5
          END IF
          IF (IFIT_DMAT.EQ.0) THEN
 C...........Ordinary Fock matrix with exact density
-            CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
-     &                  IY,FAC)
+            CALL FCKCON(FMAT(1,1,I),DMAT(1,1,I),I,BUF,IBUF,LBIN,
+     &                  LBIN,LENGTH,IX,IY,FAC)
          ELSE
 C...........Construction of special Fock matrix for density fitting
 C...........The multiplication factor should be one in this case.

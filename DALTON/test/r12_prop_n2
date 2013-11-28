@@ -97,6 +97,12 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # ?
 CRIT1=`$GREP "Alfa\*\*2 Invariant\: * 167\.761121" $log | wc -l`
 CRIT2=`$GREP "Beta\*\*2 Invariant\: * 288\.216300" $log | wc -l`
@@ -143,7 +149,7 @@ ERROR[6]="Property 3 NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -30,8 +30,11 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "inforb.h"
+#include "dftcom.h"
+#include "mxcent.h"
+#include "dftacb.h"
       DIMENSION DMAT(NBAST,NBAST),FKSM(NBAST,NBAST),WORK(LWORK)
-      EXTERNAL DFTKSMGGA,DFTKSMLDA
+      EXTERNAL DFTKSMGGA,DFTKSMLDA, DFTKSMHES
       LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
 #ifdef MOD_XCFUN
@@ -46,6 +49,11 @@ C
       DOGGA = DFT_ISGGA()
       ENERGY_DFTKSM = 0.D0
       IF(DOGGA) THEN
+CAMT If explicit v_xc use DFTKSMHES
+        IF (LDFTVXC) THEN
+         CALL DFTINT(DMAT,1,1,.FALSE.,WORK,LWORK,
+     &               DFTKSMHES,FKSM,ELE)
+        ELSE
 #ifdef MOD_XCFUN
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               xcfun_KSMGGA,FKSM,ELE)
@@ -53,6 +61,7 @@ C
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMGGA,FKSM,ELE)
 #endif
+        ENDIF
       ELSE
          DO I = 1, NBAST
             FKSM(I,I) = FKSM(I,I)*2.0D0
@@ -77,25 +86,33 @@ C
       END DO
       EDFTY = ENERGY_DFTKSM
       ELE_ERROR = ELE - 2.0D0*NRHFT
-      IF (ABS(ELE_ERROR) .gt. 1.0D-8 .or. IPRFCK .ge. 0)
-     &   WRITE(LUPRI,'(T7,A,F20.12,F15.10,1P,D12.2)')
+      IF (ABS(ELE_ERROR) .gt. 1.0D-8 .or. IPRFCK .ge. 0) THEN
+        IF ((.NOT.SLAVE) .OR. (NODTOT.LE.20)) THEN
+          WRITE(LUPRI,'(T7,A,F20.12,F15.10,1P,D12.2)')
      &     'K-S energy, electrons, error :', EDFTY, ELE, ELE_ERROR
+        END IF
+      END IF
       CALL QEXIT('DFTKSMb')
       RETURN
       END
 C
       SUBROUTINE DFTKSMLDA(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
-     &                     RHOA,GRADA,COORD,WGHT,FKSM)
+     &                     RHOA,GRADA,DST,VFA,XCPOT,
+     &                     COORD,WGHT,FKSM)
 C
 C     P. Salek and T. Helgaker oct 2003
 C
 #include "implicit.h"
       PARAMETER (D2 = 2.0D0)
 #include "inforb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "dftacb.h"
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
-     &     FKSM(*)
+     &     FKSM(*), DST(NATOMS), VFA(NBLEN), XCPOT(NBLEN)
       EXTERNAL DFTENE
       COMMON /DKSMPRIV/ ENERGY_DFTKSM
 C
@@ -108,6 +125,32 @@ C     Exchange-correlation contribution to Kohn-Sham matrix
 C
       DO IPNT = 1, NBLEN
          CALL DFTPTF0(RHOA(IPNT),DUMMY,WGHT(IPNT),VX)
+
+         IF (DFTASC) THEN
+           IF (LGRAC) GRDAC = 0.5d0*DSQRT(GRADA(1,IPNT)*GRADA(1,IPNT)
+     &                      + GRADA(2,IPNT)*GRADA(2,IPNT)
+     &                      + GRADA(3,IPNT)*GRADA(3,IPNT))
+           IF (LGRAC.OR.DOLB94) THEN
+                IF (RHOA(IPNT).GT.1.0d-13) THEN
+                  RHO43 = (0.5d0*RHOA(IPNT))**(4.0d0/3.0d0)
+                ELSE
+                  RHO43 = 1.0d-13
+                ENDIF
+           ENDIF
+           IF (DOLB94) THEN
+             IF (RHOA(IPNT).GT.1.0d-13) THEN
+               RHO13 = (0.5d0*RHOA(IPNT))**(1.0d0/3.0d0)
+             ELSE
+               RHO13 = 1.0d-13
+             ENDIF
+           ENDIF
+           IF (WGHT(IPNT).NE.0.0d0) VA = VX(1) / WGHT(IPNT)
+           IF (WGHT(IPNT).EQ.0.0d0) VA = 0.0d0
+           CALL DFTAC(VA,VFA(IPNT),DST,COORD(1,IPNT),COORD(2,IPNT),
+     &                COORD(3,IPNT),GRDAC,RHO43,RHO13)
+           VX(1) = VA * WGHT(IPNT)
+         ENDIF
+
          ENERGY_DFTKSM = ENERGY_DFTKSM
      &        + DFTENE(RHOA(IPNT),DUMMY)*WGHT(IPNT)
          VXC(IPNT) = 2D0*VX(1)
@@ -119,16 +162,19 @@ c     CALL QEXIT('DFTKSMLDA')
       END
 c
       SUBROUTINE DFTKSMGGA(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
-     &                     RHOA,GRADA,COORD,WGHT,FKSM)
+     &                     RHOA,GRADA,DST,VFA,XCPOT,
+     &                     COORD,WGHT,FKSM)
 C
 C     P. Salek and T. Helgaker oct 2003
 C
 #include "implicit.h"
 #include "inforb.h"
+#include "mxcent.h"
+#include "nuclei.h"
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
-     &     FKSM(*)
+     &     FKSM(*), DST(NATOMS), VFA(NBLEN), XCPOT(NBLEN)
       EXTERNAL DFTENE
 C
       DIMENSION VXC(2,NBLEN),VX(5)
@@ -156,6 +202,85 @@ c     CALL QEXIT('DFTKSMGGA')
 C
       RETURN
       END
+
+      SUBROUTINE DFTKSMHES(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
+     &            RHOA,GRADA,HESA,DST,VFA,XCPOT,
+     &            COORD,WGHT,FKSM)
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "dftcom.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dftacb.h"
+C
+      DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
+     &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
+     &     FKSM(*),HESA(6,NBLEN),DST(NATOMS),VFA(NBLEN),XCPOT(NBLEN)
+      EXTERNAL DFTENE
+      COMMON /DKSMPRIV/ ENERGY_DFTKSM
+#include "dftinf.h"
+c
+      DIMENSION VXC(NBLEN),VX(5)
+C
+C     Exchange-correlation contribution to Kohn-Sham matrix
+C
+      KENERG = 1
+      KKOHN  = 2
+      DO IPNT = 1, NBLEN
+
+         GRD = DSQRT(GRADA(1,IPNT)**2+GRADA(2,IPNT)**2+GRADA(3,IPNT)**2)
+         IF (RHOA(IPNT).GT.1.0d-13) THEN
+           call dftptfh(RHOA(IPNT),GRADA(1,IPNT),HESA(1,IPNT),
+     &                  WGHT(IPNT),VX)
+         ELSE
+           VX(1)=0.0d0
+           VX(2)=0.0d0
+         ENDIF
+
+         IF (DFTASC) THEN
+           IF (LGRAC) GRDAC = 0.5d0*DSQRT(GRADA(1,IPNT)*GRADA(1,IPNT)
+     &                      + GRADA(2,IPNT)*GRADA(2,IPNT)
+     &                      + GRADA(3,IPNT)*GRADA(3,IPNT))
+           IF (LGRAC.OR.DOLB94) THEN
+                IF (RHOA(IPNT).GT.1.0d-13) THEN
+                  RHO43 = (0.5d0*RHOA(IPNT))**(4.0d0/3.0d0)
+                ELSE
+                  RHO43 = 1.0d-13
+                ENDIF
+           ENDIF
+
+           IF (DOLB94) THEN
+             IF (RHOA(IPNT).GT.1.0d-13) THEN
+               RHO13 = (0.5d0*RHOA(IPNT))**(1.0d0/3.0d0)
+             ELSE
+               RHO13 = 1.0d-13
+             ENDIF
+           ENDIF
+
+           IF (WGHT(IPNT).NE.0.0d0) VA = VX(1) / WGHT(IPNT)
+           IF (WGHT(IPNT).EQ.0.0d0) VA = 0.0d0
+           CALL DFTAC(VA,VFA(IPNT),DST,COORD(1,IPNT),COORD(2,IPNT),
+     &                COORD(3,IPNT),GRDAC,RHO43,RHO13)
+           VX(1) = VA * WGHT(IPNT)
+         ENDIF
+
+         ENERGY_DFTKSM = ENERGY_DFTKSM
+     &        + DFTENE(RHOA(IPNT),GRD)*WGHT(IPNT)
+C
+         VXC(IPNT) = VX(1)
+         XCPOT(IPNT) = VX(1) / WGHT(IPNT)
+      END DO
+      CALL DISTRHES(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
+     &              VXC,GAO,FKSM)
+      RETURN
+      END
+
+
+
+
+
+
 c     ================================================================
 c     DISTLDAI AND DISTGGAI are matrix element distribution routines
 c     using inline versions of the loops. This make sense for very fast
@@ -344,6 +469,59 @@ c
       END DO
       RETURN
       END
+
+c     
+c     DISTRHES - helper subroutine to distribute given Omega with
+c     given set of rho-dependent coefficients from calculations with
+C     Hessian
+c
+      SUBROUTINE DISTRHES(NBLEN,NBLCNT,NBLOCKS,LDAIB,
+     *                    IBLSTART,IBLEND,
+     &                    COEF,GAOS,EXCMAT)
+#include "implicit.h"
+c
+c     NBLEN - number of grid points in the batch.
+c     NBLCNT - number of "active" blocks in each symmetry.
+c     NBLOCKS(:,) - start and stop indexes for each blocks in each
+c     symmetry.
+c
+#include "inforb.h"
+c
+      DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
+      DIMENSION GAOS(NBLEN,NBAST), COEF(NBLEN)
+      DIMENSION EXCMAT(NBAST,NBAST)
+c     
+      DIMENSION TMP(NBLEN,NBAST)
+
+      INTEGER NK
+
+      NK=IBLEND-IBLSTART+1
+      if (nk .gt. NBLEN) call quit("NBLEN < NK in DISTRHES")
+      DO ISYM = 1, NSYM
+         DO JBL = 1, NBLCNT(ISYM)
+            DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
+               DO K = IBLSTART, IBLEND
+                  TMP(K,J) =
+     &                   coef(K)* GAOS(K,J)
+               END DO
+            END DO
+         END DO
+         DO IBL = 1, NBLCNT(ISYM)
+           ISTART=NBLOCKS(1,IBL,ISYM)
+           ILEN=NBLOCKS(2,IBL,ISYM)-ISTART+1
+           DO JBL = 1, NBLCNT(ISYM)
+            JSTART=NBLOCKS(1,JBL,ISYM)
+            JLEN=NBLOCKS(2,JBL,ISYM)-JSTART+1
+             call dgemm('T','N',ILEN,JLEN,NK,1.0d0,
+     *                   GAOS(IBLSTART,ISTART),NBLEN,
+     *                   TMP(IBLSTART,JSTART),NBLEN,1.0d0,
+     *                   EXCMAT(ISTART,JSTART),NBAST)
+            END DO
+         END DO
+      END DO
+      RETURN
+      END
+
 c     ================================================================
 c     Parallelization-related part of the exchange-correlation
 c     evaluation module.

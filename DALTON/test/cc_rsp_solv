@@ -121,6 +121,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Vacuum and solvation energies
 # Solvent: L_max=10, R_cav=  4.5300, Eps_st =  1.0000, Eps_op =  1.0000:
 #            CCSD     Total energy:                -398.6993147418
@@ -211,7 +216,7 @@ ERROR[4]="CCSD POLARIZABILITIES ARE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

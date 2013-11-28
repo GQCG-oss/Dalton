@@ -30,34 +30,34 @@ CFLAGS = -O3
 unittest: $(objects) 
 	$(FC) -o unittest $(FLAGS) $(objects)	 
 #
-unittest_utilities.o: unittest_utilities.f90
-	$(FC) -c $(FLAGS) unittest_utilities.f90
-unittest_matrix_reference.o: unittest_matrix_reference.f90
-	$(FC) -c $(FLAGS) unittest_matrix_reference.f90
-unittest_matrix_dense.o: unittest_matrix_dense.f90
-	$(FC) -c $(FLAGS) unittest_matrix_dense.f90
-unittest_matrix.o: unittest_matrix.f90
-	$(FC) -c $(FLAGS) unittest_matrix.f90
-unittest_driver.o: unittest_driver.f90
-	$(FC) -c $(FLAGS) unittest_driver.f90
-mat-operations.o: ../lsutil/mat-operations.f90
-	$(FC) -c $(FLAGS) ../lsutil/mat-operations.f90
-matrix_module.o: ../lsutil/matrix_module.f90
-	$(FC) -c $(FLAGS) ../lsutil/matrix_module.f90
-matop_dense.o: ../lsutil/matop_dense.f90
-	$(FC) -c $(FLAGS) ../lsutil/matop_dense.f90
-matop_dense_unrest.o: ../lsutil/matop_dense_unrest.f90
-	$(FC) -c $(FLAGS) ../lsutil/matop_dense_unrest.f90
-matop_csr.o: ../lsutil/matop_csr.f90
-	$(FC) -c $(FLAGS) ../lsutil/matop_csr.f90
+unittest_utilities.o: unittest_utilities.F90
+	$(FC) -c $(FLAGS) unittest_utilities.F90
+unittest_matrix_reference.o: unittest_matrix_reference.F90
+	$(FC) -c $(FLAGS) unittest_matrix_reference.F90
+unittest_matrix_dense.o: unittest_matrix_dense.F90
+	$(FC) -c $(FLAGS) unittest_matrix_dense.F90
+unittest_matrix.o: unittest_matrix.F90
+	$(FC) -c $(FLAGS) unittest_matrix.F90
+unittest_driver.o: unittest_driver.F90
+	$(FC) -c $(FLAGS) unittest_driver.F90
+mat-operations.o: ../lsutil/mat-operations.F90
+	$(FC) -c $(FLAGS) ../lsutil/mat-operations.F90
+matrix_module.o: ../lsutil/matrix_module.F90
+	$(FC) -c $(FLAGS) ../lsutil/matrix_module.F90
+matop_dense.o: ../lsutil/matop_dense.F90
+	$(FC) -c $(FLAGS) ../lsutil/matop_dense.F90
+matop_dense_unrest.o: ../lsutil/matop_dense_unrest.F90
+	$(FC) -c $(FLAGS) ../lsutil/matop_dense_unrest.F90
+matop_csr.o: ../lsutil/matop_csr.F90
+	$(FC) -c $(FLAGS) ../lsutil/matop_csr.F90
 matop_csr_aux.o: ../lsutil/matop_csr_aux.c
 	$(CC) -c $(CFLAGS) ../lsutil/matop_csr_aux.c
-ls_precision.o: ../lsutil/ls_precision.f90
-	$(FC) -c $(FLAGS) ../lsutil/ls_precision.f90
-memory.o: ../lsutil/memory.f90
-	$(FC) -c $(FLAGS) ../lsutil/memory.f90
-common_utilities.o: ../lsutil/common_utilities.f90
-	$(FC) -c $(FLAGS) ../lsutil/common_utilities.f90
+ls_precision.o: ../lsutil/ls_precision.F90
+	$(FC) -c $(FLAGS) ../lsutil/ls_precision.F90
+memory.o: ../lsutil/memory.F90
+	$(FC) -c $(FLAGS) ../lsutil/memory.F90
+common_utilities.o: ../lsutil/common_utilities.F90
+	$(FC) -c $(FLAGS) ../lsutil/common_utilities.F90
 linpack.o: ../pdpack/linpack.F
 	$(FC) -c $(FLAGS) ../pdpack/linpack.F
 eispack.o: ../pdpack/eispack.F
@@ -74,9 +74,9 @@ gp_dblas1.o: ../pdpack/gp_dblas1.F
 	$(FC) -c $(FLAGS) ../pdpack/gp_dblas1.F
 gp_zblas.o: ../pdpack/gp_zblas.F
 	$(FC) -c $(FLAGS) ../pdpack/gp_zblas.F
-lsmpi.o: ../lsutil/lsmpi.f90
-	$(FC) -c $(FLAGS) ../lsutil/lsmpi.f90
-%.o: %.f90
+lsmpi.o: ../lsutil/lsmpi.F90
+	$(FC) -c $(FLAGS) ../lsutil/lsmpi.F90
+%.o: %.F90
 	$(FC) -c $(FLAGS) $<
 clean:
 	rm *.mod *.o 

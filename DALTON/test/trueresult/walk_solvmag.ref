@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,199 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Mon Oct 21 15:30:30 2013
+     Host name              : c10-6.local                             
 
-     Date and time (Linux)  : Wed Mar 16 18:41:18 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/arnfinn/release_dalton/DALTON/test/2013-10-21T15_30-testjob-pid-57025
+   2) /home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | arnfinn
+ Host                     | stallo-2.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/ifort
+ C compiler               | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icpc
+ C++ compiler version     | icpc (ICC) 13.0.1 20121010
+ BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
+                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
+                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
+                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
+                          | mp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
+                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
+                          | nmp;-Wl,--end-group
+ Static linking           | OFF
+ Last Git revision        | 9e5bb7f558e1ee66d0614a37cb4fb8c71086ba4e
+ Configuration time       | 2013-10-15 12:56:50.249803
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.WALK                                             
+**INTEGRALS                                       
+*ONEINT                                           
+.SOLVENT                                          
+ 10                                               
+**WAVE FUNCTIONS                                  
+.HF                                               
+*SCF INP                                          
+.THRESH                                           
+1.0d-6                                            
+*SOLVENT                                          
+.DIELECTRIC                                       
+ 32.63                                            
+.MAX L                                            
+ 10                                               
+.CAVITY                                           
+ 5.08                                             
+**PROPERTIES                                      
+.SHIELD                                           
+.MAGNET                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+ATOMBASIS                                                                      
+Geomatry walk and calculation of shielding and magnetizability for a           
+solvated molecule (equilibrium solvation)                                      
+Nosymmetry Atomtypes=3                                                         
+Charge=6.0 Atoms=1 Basis=6-311++G(2d,2p)                                       
+C     0.0000001475010024 -0.0000000000003520 -1.3932067381011331               
+Charge=9.0 Atoms=1 Basis=6-311++G(2d,2p)                                       
+F    -0.0000001276140516  0.0000000000003430  1.2050427284018797               
+Charge=1.0 Atoms=3 Basis=6-311++G**                                            
+H     1.9358001772894534 -0.0000000000007497 -2.0424861818430919               
+H    -0.9678997639598199 -1.6764519428430403 -2.0424864897014450               
+H    -0.9678997639598013  1.6764519428415161 -2.0424864897035540               
 
 
        *******************************************************************
@@ -105,7 +221,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     Geometry optimization
       Starting at iteration:    0
@@ -142,8 +258,8 @@
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   The basis set is "6-311++G(2d,2p)" from the basis set library.
-  Used basis set file for basis set for elements with Z =   6 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311++G(2d,2p)"
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/6-311++G(2d,2p)"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311++G(2d,2p)                                                                 
@@ -154,8 +270,8 @@
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   The basis set is "6-311++G(2d,2p)" from the basis set library.
-  Used basis set file for basis set for elements with Z =   9 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311++G(2d,2p)"
+  Basis set file used for this atomic type with Z =   9 :
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/6-311++G(2d,2p)"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311++G(2d,2p)                                                                 
@@ -166,8 +282,8 @@
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   The basis set is "6-311++G**" from the basis set library.
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311++G**"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/6-311++G**"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311++G**                                                                      
@@ -210,7 +326,7 @@ Point group: C1
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -236,8 +352,12 @@ Point group: C1
  H     :    1.080466    2.000665    1.774280    1.774280    0.000000
 
 
-  Max interatomic separation is    2.0007 Angstrom (    3.7807 Bohr)
+  Max    interatomic separation is    2.0007 Angstrom (    3.7807 Bohr)
   between atoms    5 and    2, "H     " and "F     ".
+
+  Min HX interatomic separation is    1.0805 Angstrom (    2.0418 Bohr)
+
+  Min YX interatomic separation is    1.3749 Angstrom (    2.5982 Bohr)
 
 
   Bond distances (Angstrom):
@@ -283,7 +403,7 @@ Point group: C1
             5.313331            0.870459            0.870459 cm-1
 
 
-@  Nuclear repulsion energy :   37.635302630194
+@  Nuclear repulsion energy :   37.635302630194 Hartree
 
 
                      .---------------------------------------.
@@ -323,15 +443,14 @@ Point group: C1
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>> Time used in RLMINT is   0.13 seconds
- Threshold for neglecting two-electron integrals:  1.00D-15
 
- Number of two-electron integrals written:     3307185 ( 81.4% )
- Megabytes written:                             37.869
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:     3100835 ( 76.3% )
+ Megabytes written:                             35.512
 
- >>> Time used in TWOINT is   0.63 seconds
- >>>> Total CPU  time used in HERMIT:   0.83 seconds
- >>>> Total wall time used in HERMIT:   2.00 seconds
+ >>>  Time used in TWOINT     is   0.42 seconds
+ >>>> Total CPU  time used in HERMIT:   0.54 seconds
+ >>>> Total wall time used in HERMIT:   0.56 seconds
 
 
                         .----------------------------------.
@@ -365,8 +484,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 18:41:20 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:30:31 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      Geomatry walk and calculation of shielding and magnetizability for a    
@@ -375,98 +494,105 @@ Point group: C1
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EWMO  " input option.
+ ".MOSTART EWMO  " input option
 
-     SOLVATION MODEL: molecule is in a spherical cavity in a dielectric medium,
-                dielectric constant =   32.630000
-                      cavity radius =    5.080000
-                        max l value =          10
+@    QM part is embedded in an environment :
+
+@         SOLVATION MODEL: molecule is in a spherical cavity in a dielectric medium,
+@                dielectric constant =   32.630000
+@               cavity radius (bohr) =    5.080000
+@                        max l value =          10
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         18
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          18
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                1
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 1
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1
                                        --- |  ---
-     Occupied SCF orbitals               9 |    9
+@    Occupied SCF orbitals               9 |    9
      Secondary orbitals                 66 |   66
      Total number of orbitals           75 |   75
      Number of basis functions          75 |   75
 
      Optimization information
      ========================
-     Number of configurations                 1
-     Number of orbital rotations            594
+@    Number of configurations                 1
+@    Number of orbital rotations            594
      ------------------------------------------
-     Total number of variables              595
+@    Total number of variables              595
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
-     Threshold for SCF convergence     1.00D-05
+     Threshold for SCF convergence     1.00D-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
- >>> Time used in FORMSUP is   0.23 seconds
-   1  -138.709969596     -5.634296443185E-03    2.55309D+00   -1.39D+02
+      Threshold for discarding integrals :  1.00D-12 )
+ >>>  Time used in FORMSUP    is   0.44 seconds
+@  1  -138.709969596     -5.634296443185E-03    2.55309D+00   -1.39D+02
       Virial theorem: -V/T =      1.998752
-      MULPOP  C       0.62; F      -0.57; H      -0.02; H      -0.02; H      -0.02; 
+@      MULPOP C       0.62; F      -0.57; H      -0.02; H      -0.02; H      -0.02; 
  -----------------------------------------------------------------------------
-   2  -139.012663980     -2.131457907533E-03    1.33659D+00   -3.03D-01
+@  2  -139.012663980     -2.131457907510E-03    1.33659D+00   -3.03D-01
       Virial theorem: -V/T =      2.003580
-      MULPOP  C      -0.38; F      -0.21; H       0.20; H       0.20; H       0.20; 
+@      MULPOP C      -0.38; F      -0.21; H       0.20; H       0.20; H       0.20; 
  -----------------------------------------------------------------------------
-   3  -139.086992736     -3.255700189749E-03    2.15066D-01   -7.43D-02
+@  3  -139.086992736     -3.255700189725E-03    2.15066D-01   -7.43D-02
       Virial theorem: -V/T =      1.998502
-      MULPOP  C      -0.05; F      -0.37; H       0.14; H       0.14; H       0.14; 
+@      MULPOP C      -0.05; F      -0.37; H       0.14; H       0.14; H       0.14; 
  -----------------------------------------------------------------------------
-   4  -139.089036131     -3.119876323758E-03    7.03004D-02   -2.04D-03
+@  4  -139.089036131     -3.119876323731E-03    7.03004D-02   -2.04D-03
       Virial theorem: -V/T =      2.001288
-      MULPOP  C      -0.04; F      -0.36; H       0.14; H       0.14; H       0.14; 
+@      MULPOP C      -0.04; F      -0.36; H       0.14; H       0.14; H       0.14; 
  -----------------------------------------------------------------------------
-   5  -139.089288130     -3.248715999668E-03    1.17547D-02   -2.52D-04
+@  5  -139.089288130     -3.248715999641E-03    1.17547D-02   -2.52D-04
       Virial theorem: -V/T =      2.000269
-      MULPOP  C      -0.04; F      -0.37; H       0.14; H       0.14; H       0.14; 
+@      MULPOP C      -0.04; F      -0.37; H       0.14; H       0.14; H       0.14; 
  -----------------------------------------------------------------------------
-   6  -139.089305908     -3.288658144212E-03    2.54199D-03   -1.78D-05
+@  6  -139.089305908     -3.288658144184E-03    2.54199D-03   -1.78D-05
       Virial theorem: -V/T =      2.000305
-      MULPOP  C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
  -----------------------------------------------------------------------------
-   7  -139.089306978     -3.305915388542E-03    5.16194D-04   -1.07D-06
+@  7  -139.089306977     -3.305866181598E-03    5.22503D-04   -1.07D-06
       Virial theorem: -V/T =      2.000306
-      MULPOP  C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
  -----------------------------------------------------------------------------
-   8  -139.089307019     -3.309272992255E-03    8.98938D-05   -4.12D-08
+@  8  -139.089307019     -3.309257763182E-03    9.69865D-05   -4.21D-08
       Virial theorem: -V/T =      2.000307
-      MULPOP  C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
  -----------------------------------------------------------------------------
-   9  -139.089307020     -3.309675072341E-03    1.07482D-05   -1.19D-09
+@  9  -139.089307020     -3.309670783474E-03    1.12490D-05   -1.32D-09
       Virial theorem: -V/T =      2.000307
-      MULPOP  C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
  -----------------------------------------------------------------------------
-  10  -139.089307020     -3.309707416479E-03    1.61446D-06   -1.58D-11
+@ 10  -139.089307020     -3.309705981866E-03    2.45580D-06   -1.68D-11
+      Virial theorem: -V/T =      2.000307
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+@ 11  -139.089307020     -3.309708414137E-03    5.30207D-07   -5.97D-13
 
- *** DIIS converged in  10 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:   -139.089307020095    5.30D-07
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -479,16 +605,18 @@ Point group: C1
 
  Sym       Hartree-Fock orbital energies
 
-  1    -26.27883057   -11.29275382    -1.59147197    -0.95137087    -0.69713270
-        -0.69713270    -0.67633046    -0.52595265    -0.52595265     0.06077329
-         0.10019190     0.10019190     0.10607072     0.16998111
+  1    -26.27883053   -11.29275388    -1.59147195    -0.95137089    -0.69713269
+        -0.69713269    -0.67633047    -0.52595265    -0.52595265     0.06077329
+         0.10019192     0.10019192     0.10607072     0.16998114
 
     E(LUMO) :     0.06077329 au (symmetry 1)
   - E(HOMO) :    -0.52595265 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.58672593 au
+    gap     :     0.58672594 au
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       1.115       1.151
 
 
                        .-----------------------------------.
@@ -496,9 +624,9 @@ Point group: C1
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
      SOLVATION MODEL: molecule is in a cavity in a dielectric medium,
           dielectric constant =   32.630000
@@ -506,16 +634,16 @@ Point group: C1
           cavity dimensions   =    5.080000    5.080000    5.080000
           max l value         =          10
 
-     Final HF energy:            -139.089307020096                 
-     Nuclear repulsion:            37.635302630194
-     Electronic energy:          -176.721299942874
-     Solvation  energy:            -0.003309707416
+@    Final HF energy:            -139.089307020095                 
+@    Nuclear repulsion:            37.635302630194
+@    Electronic energy:          -176.721299941875
+@    Solvation  energy:            -0.003309708414
 
-     Final gradient norm:           0.000001614460
+@    Final gradient norm:           0.000000530207
 
  
-     Date and time (Linux)  : Wed Mar 16 18:41:22 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:30:32 2013
+     Host name              : c10-6.local                             
 
  (Only coefficients >0.0100 are printed.)
 
@@ -523,80 +651,80 @@ Point group: C1
  ------------------------------------------
 
     Orbital         5        6        7        8        9       10       11
-   1 C   :1s     0.0000  -0.0000   0.0159  -0.0000   0.0000  -0.0159  -0.0000
-   2 C   :1s     0.0000  -0.0000   0.0253  -0.0000   0.0000  -0.0276  -0.0000
-   3 C   :1s    -0.0000   0.0000  -0.0633  -0.0000  -0.0000   0.0950  -0.0000
-   4 C   :1s    -0.0000   0.0000  -0.1165   0.0000   0.0000   0.0787   0.0000
-   5 C   :1s     0.0000   0.0000  -0.0182   0.0000   0.0000   4.3000   0.0000
-   6 C   :2px   -0.0001  -0.1194  -0.0000   0.0000   0.1644   0.0000   0.0405
-   7 C   :2py   -0.1194   0.0001   0.0000  -0.1644   0.0000  -0.0000   0.0002
-   8 C   :2pz   -0.0000  -0.0000   0.1415   0.0000   0.0000  -0.0254   0.0000
-   9 C   :2px   -0.0001  -0.1897  -0.0000   0.0001   0.2408   0.0000   0.1027
-  10 C   :2py   -0.1897   0.0001   0.0000  -0.2408   0.0001   0.0000   0.0004
-  11 C   :2pz   -0.0000  -0.0000   0.2231   0.0000   0.0000  -0.0458   0.0000
-  12 C   :2px   -0.0001  -0.1034  -0.0000   0.0000   0.1754  -0.0000  -0.0224
-  13 C   :2py   -0.1034   0.0001   0.0000  -0.1754   0.0000   0.0000  -0.0001
-  14 C   :2pz   -0.0000  -0.0000   0.1037   0.0000   0.0000   0.0971  -0.0000
-  15 C   :2px   -0.0000  -0.0183   0.0000  -0.0000  -0.0113   0.0000   0.1818
-  16 C   :2py   -0.0183   0.0000   0.0000   0.0113  -0.0000  -0.0000   0.0008
-  17 C   :2pz   -0.0000  -0.0000  -0.0033  -0.0000  -0.0000  -0.7363   0.0000
-  18 C   :3d2-   0.0083  -0.0000  -0.0000   0.0135  -0.0000  -0.0000  -0.0000
-  19 C   :3d1-  -0.0048   0.0000   0.0000   0.0154  -0.0000  -0.0000  -0.0000
-  20 C   :3d0   -0.0000  -0.0000   0.0276  -0.0000  -0.0000  -0.0001  -0.0000
-  21 C   :3d1+  -0.0000  -0.0048  -0.0000  -0.0000  -0.0154   0.0000  -0.0009
-  22 C   :3d2+  -0.0000  -0.0083   0.0000   0.0000   0.0135  -0.0000   0.0039
-  23 C   :3d2-   0.0096  -0.0000   0.0000   0.0107  -0.0000  -0.0000  -0.0001
-  24 C   :3d1-  -0.0098   0.0000   0.0000   0.0263  -0.0000  -0.0000  -0.0000
-  25 C   :3d0   -0.0000  -0.0000   0.0298  -0.0000  -0.0000   0.0344  -0.0000
-  26 C   :3d1+  -0.0000  -0.0098  -0.0000  -0.0000  -0.0263  -0.0000  -0.0070
-  27 C   :3d2+  -0.0000  -0.0096   0.0000   0.0000   0.0107   0.0000   0.0128
-  28 F   :1s     0.0000  -0.0000   0.0139   0.0000   0.0000  -0.0062   0.0000
-  29 F   :1s     0.0000  -0.0000   0.0237   0.0000   0.0000  -0.0109   0.0000
-  30 F   :1s    -0.0000   0.0000  -0.0791  -0.0000  -0.0000   0.0420  -0.0000
-  31 F   :1s    -0.0000   0.0000  -0.0876  -0.0000  -0.0000  -0.0152   0.0000
-  32 F   :1s    -0.0000   0.0000  -0.0436  -0.0000  -0.0000  -0.0130  -0.0000
-  33 F   :2px   -0.0001  -0.2432   0.0000  -0.0001  -0.1895  -0.0000   0.0075
-  34 F   :2py   -0.2432   0.0001   0.0000   0.1895  -0.0001   0.0000   0.0000
-  35 F   :2pz   -0.0000  -0.0000  -0.2357  -0.0000  -0.0000   0.0113   0.0000
-  36 F   :2px   -0.0002  -0.3699   0.0000  -0.0001  -0.2865  -0.0000   0.0125
-  37 F   :2py   -0.3699   0.0002   0.0000   0.2865  -0.0001   0.0000   0.0001
-  38 F   :2pz   -0.0000  -0.0000  -0.3677  -0.0000  -0.0000   0.0162   0.0000
-  39 F   :2px   -0.0002  -0.3185   0.0000  -0.0001  -0.2699  -0.0000   0.0057
-  40 F   :2py   -0.3185   0.0002   0.0000   0.2699  -0.0001  -0.0000   0.0000
-  41 F   :2pz   -0.0000  -0.0000  -0.3021  -0.0000  -0.0000   0.0413   0.0000
-  42 F   :2px   -0.0000  -0.0172   0.0000  -0.0000  -0.0576  -0.0000   0.0574
-  43 F   :2py   -0.0172   0.0000   0.0000   0.0576  -0.0000   0.0000   0.0002
-  44 F   :2pz   -0.0000  -0.0000  -0.0155  -0.0000  -0.0000   0.0805   0.0000
-  51 F   :3d1-   0.0183  -0.0000  -0.0000  -0.0049   0.0000   0.0000  -0.0000
-  52 F   :3d0    0.0000   0.0000   0.0207   0.0000   0.0000   0.0001  -0.0000
-  53 F   :3d1+   0.0000   0.0183  -0.0000   0.0000   0.0049  -0.0000  -0.0030
-  55 H   :1s    -0.0000  -0.0835  -0.0565   0.0000   0.1478   0.0022   0.0266
-  56 H   :1s    -0.0001  -0.1187  -0.0734   0.0001   0.2417   0.0409  -0.0774
-  57 H   :1s    -0.0000  -0.0135  -0.0055   0.0000   0.0828  -0.1759   0.6698
-  58 H   :1s     0.0000   0.0126  -0.0005   0.0000   0.0288  -1.6744  -2.8671
-  59 H   :2px    0.0000   0.0097   0.0089  -0.0000  -0.0218  -0.0123  -0.0036
-  61 H   :2pz   -0.0000  -0.0037   0.0016   0.0000   0.0112  -0.0006   0.0016
-  62 H   :1s     0.0723   0.0417  -0.0565   0.1279  -0.0739   0.0022  -0.0134
-  63 H   :1s     0.1028   0.0593  -0.0734   0.2093  -0.1209   0.0409   0.0390
-  64 H   :1s     0.0117   0.0067  -0.0055   0.0717  -0.0414  -0.1759  -0.3374
-  65 H   :1s    -0.0109  -0.0063  -0.0005   0.0249  -0.0144  -1.6744   1.4443
-  66 H   :2px    0.0068  -0.0021  -0.0045   0.0130   0.0007   0.0062  -0.0008
-  67 H   :2py    0.0058   0.0068  -0.0077   0.0142  -0.0130   0.0107  -0.0016
-  69 H   :1s    -0.0723   0.0418  -0.0565  -0.1280  -0.0738   0.0022  -0.0132
-  70 H   :1s    -0.1028   0.0594  -0.0734  -0.2093  -0.1208   0.0409   0.0384
-  71 H   :1s    -0.0117   0.0068  -0.0055  -0.0718  -0.0414  -0.1759  -0.3324
-  72 H   :1s     0.0109  -0.0063  -0.0005  -0.0249  -0.0144  -1.6744   1.4228
-  73 H   :2px   -0.0068  -0.0021  -0.0045  -0.0130   0.0008   0.0062  -0.0008
-  74 H   :2py    0.0058  -0.0068   0.0077   0.0143   0.0130  -0.0107   0.0016
+   1 C   :1s    -0.0000  -0.0000   0.0159   0.0000   0.0000  -0.0159  -0.0000
+   2 C   :1s    -0.0000  -0.0000   0.0253   0.0000   0.0000  -0.0276  -0.0000
+   3 C   :1s    -0.0000   0.0000  -0.0633   0.0000  -0.0000   0.0950   0.0000
+   4 C   :1s     0.0000   0.0000  -0.1165  -0.0000   0.0000   0.0787   0.0000
+   5 C   :1s     0.0000   0.0000  -0.0182  -0.0000   0.0000   4.3000   0.0000
+   6 C   :2px   -0.0000  -0.1194  -0.0000  -0.0001   0.1644   0.0000   0.0405
+   7 C   :2py   -0.1194   0.0000  -0.0000  -0.1644  -0.0001   0.0000   0.0003
+   8 C   :2pz   -0.0000  -0.0000   0.1415  -0.0000   0.0000  -0.0254   0.0000
+   9 C   :2px   -0.0000  -0.1897  -0.0000  -0.0001   0.2408   0.0000   0.1027
+  10 C   :2py   -0.1897   0.0000   0.0000  -0.2408  -0.0001  -0.0000   0.0007
+  11 C   :2pz    0.0000  -0.0000   0.2231  -0.0000   0.0000  -0.0458   0.0000
+  12 C   :2px   -0.0000  -0.1034  -0.0000  -0.0001   0.1754  -0.0000  -0.0224
+  13 C   :2py   -0.1034   0.0000  -0.0000  -0.1754  -0.0001   0.0000  -0.0002
+  14 C   :2pz    0.0000  -0.0000   0.1037  -0.0000   0.0000   0.0971  -0.0000
+  15 C   :2px   -0.0000  -0.0183   0.0000   0.0000  -0.0113   0.0000   0.1818
+  16 C   :2py   -0.0183   0.0000  -0.0000   0.0113   0.0000   0.0000   0.0013
+  17 C   :2pz   -0.0000  -0.0000  -0.0033   0.0000  -0.0000  -0.7363   0.0000
+  18 C   :3d2-   0.0083  -0.0000  -0.0000   0.0135   0.0000   0.0000  -0.0000
+  19 C   :3d1-  -0.0048   0.0000  -0.0000   0.0154   0.0000   0.0000  -0.0000
+  20 C   :3d0   -0.0000  -0.0000   0.0276   0.0000  -0.0000  -0.0001  -0.0000
+  21 C   :3d1+  -0.0000  -0.0048  -0.0000   0.0000  -0.0154   0.0000  -0.0009
+  22 C   :3d2+  -0.0000  -0.0083   0.0000  -0.0000   0.0135  -0.0000   0.0039
+  23 C   :3d2-   0.0096  -0.0000  -0.0000   0.0107   0.0000  -0.0000  -0.0001
+  24 C   :3d1-  -0.0098   0.0000   0.0000   0.0263   0.0000   0.0000  -0.0000
+  25 C   :3d0    0.0000  -0.0000   0.0298  -0.0000  -0.0000   0.0344  -0.0000
+  26 C   :3d1+  -0.0000  -0.0098  -0.0000   0.0000  -0.0263  -0.0000  -0.0070
+  27 C   :3d2+  -0.0000  -0.0096   0.0000  -0.0000   0.0107   0.0000   0.0128
+  28 F   :1s    -0.0000  -0.0000   0.0139  -0.0000   0.0000  -0.0062   0.0000
+  29 F   :1s    -0.0000  -0.0000   0.0237  -0.0000   0.0000  -0.0109   0.0000
+  30 F   :1s     0.0000   0.0000  -0.0791  -0.0000  -0.0000   0.0420  -0.0000
+  31 F   :1s    -0.0000   0.0000  -0.0876   0.0000  -0.0000  -0.0152   0.0000
+  32 F   :1s    -0.0000   0.0000  -0.0436   0.0000  -0.0000  -0.0130  -0.0000
+  33 F   :2px   -0.0000  -0.2432   0.0000   0.0001  -0.1895  -0.0000   0.0075
+  34 F   :2py   -0.2432   0.0000  -0.0000   0.1895   0.0001  -0.0000   0.0001
+  35 F   :2pz    0.0000  -0.0000  -0.2357   0.0000  -0.0000   0.0113   0.0000
+  36 F   :2px   -0.0000  -0.3699   0.0000   0.0001  -0.2865  -0.0000   0.0125
+  37 F   :2py   -0.3699   0.0000  -0.0000   0.2865   0.0001   0.0000   0.0001
+  38 F   :2pz    0.0000  -0.0000  -0.3677   0.0000  -0.0000   0.0162   0.0000
+  39 F   :2px   -0.0000  -0.3185   0.0000   0.0001  -0.2699  -0.0000   0.0057
+  40 F   :2py   -0.3185   0.0000  -0.0000   0.2699   0.0001  -0.0000   0.0000
+  41 F   :2pz    0.0000  -0.0000  -0.3021   0.0000  -0.0000   0.0413   0.0000
+  42 F   :2px   -0.0000  -0.0172   0.0000   0.0000  -0.0576  -0.0000   0.0574
+  43 F   :2py   -0.0172   0.0000   0.0000   0.0576   0.0000   0.0000   0.0004
+  44 F   :2pz    0.0000  -0.0000  -0.0155  -0.0000  -0.0000   0.0805   0.0000
+  51 F   :3d1-   0.0183  -0.0000   0.0000  -0.0049  -0.0000   0.0000  -0.0000
+  52 F   :3d0   -0.0000   0.0000   0.0207   0.0000   0.0000   0.0001  -0.0000
+  53 F   :3d1+   0.0000   0.0183  -0.0000  -0.0000   0.0049  -0.0000  -0.0030
+  55 H   :1s    -0.0000  -0.0835  -0.0565  -0.0001   0.1478   0.0022   0.0266
+  56 H   :1s    -0.0000  -0.1187  -0.0734  -0.0001   0.2417   0.0409  -0.0774
+  57 H   :1s    -0.0000  -0.0135  -0.0055  -0.0000   0.0828  -0.1759   0.6698
+  58 H   :1s     0.0000   0.0126  -0.0005  -0.0000   0.0288  -1.6744  -2.8671
+  59 H   :2px    0.0000   0.0097   0.0089   0.0000  -0.0218  -0.0123  -0.0036
+  61 H   :2pz   -0.0000  -0.0037   0.0016  -0.0000   0.0112  -0.0006   0.0016
+  62 H   :1s     0.0723   0.0417  -0.0565   0.1280  -0.0738   0.0022  -0.0135
+  63 H   :1s     0.1028   0.0593  -0.0734   0.2093  -0.1208   0.0409   0.0392
+  64 H   :1s     0.0117   0.0067  -0.0055   0.0718  -0.0414  -0.1759  -0.3389
+  65 H   :1s    -0.0109  -0.0063  -0.0005   0.0249  -0.0144  -1.6744   1.4506
+  66 H   :2px    0.0068  -0.0021  -0.0045   0.0130   0.0008   0.0062  -0.0008
+  67 H   :2py    0.0058   0.0068  -0.0077   0.0143  -0.0130   0.0107  -0.0016
+  69 H   :1s    -0.0723   0.0417  -0.0565  -0.1279  -0.0739   0.0022  -0.0131
+  70 H   :1s    -0.1028   0.0593  -0.0734  -0.2093  -0.1209   0.0409   0.0382
+  71 H   :1s    -0.0117   0.0067  -0.0055  -0.0717  -0.0414  -0.1759  -0.3309
+  72 H   :1s     0.0109  -0.0063  -0.0005  -0.0249  -0.0144  -1.6744   1.4164
+  73 H   :2px   -0.0068  -0.0021  -0.0045  -0.0130   0.0007   0.0062  -0.0008
+  74 H   :2py    0.0058  -0.0068   0.0077   0.0142   0.0130  -0.0107   0.0016
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.69 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.19 seconds
+ >>>> Total wall time used in SIRIUS :      1.24 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:41:22 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:30:32 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -605,6 +733,8 @@ Point group: C1
 
 
  Center of mass dipole origin  :   -0.000000    0.000000    0.000000
+
+ Center of mass gauge origin   :   -0.000000    0.000000    0.000000
 
  Center of mass cavity origin  :   -0.000000    0.000000    0.000000
 
@@ -615,8 +745,10 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:41:22 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:30:32 2013
+     Host name              : c10-6.local                             
+
+ Largest deviation from tra-rot symmetry is in gradient element  5:  4.01E-11
 
 
    ***************************************************************************
@@ -625,8 +757,8 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:41:38 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:30:41 2013
+     Host name              : c10-6.local                             
 
 
                              Molecular geometry (au)
@@ -657,7 +789,7 @@ Point group: C1
                              ------------------------
 
      Darwin correction:                          0.3807121034 au
-     Mass-velocity correction:                  -0.4814662223 au
+     Mass-velocity correction:                  -0.4814662224 au
 
      Total relativistic correction:             -0.1007541189 au (0.0724%)
      Non-relativistic + relativistic energy:  -139.1900611390 au
@@ -668,12 +800,12 @@ Point group: C1
                              Molecular gradient (au)
                              -----------------------
 
- C         -0.0000000000            0.0000000000           -0.0004089662
- F         -0.0000000000           -0.0000000000            0.0005598425
- H          0.0000074567           -0.0000000000           -0.0000057836
- H         -0.0000037283           -0.0000064577           -0.0000057837
- H         -0.0000037283            0.0000064577           -0.0000057837
- cav        0.0000000000            0.0000000000           -0.0001335254
+ C         -0.0000000000            0.0000000000           -0.0004089138
+ F         -0.0000000000           -0.0000000000            0.0005597245
+ H          0.0000074575            0.0000000000           -0.0000057614
+ H         -0.0000037287           -0.0000064584           -0.0000057614
+ H         -0.0000037287            0.0000064584           -0.0000057614
+ cav        0.0000000000            0.0000000000           -0.0001335266
 
 
 
@@ -685,37 +817,37 @@ Point group: C1
            C    x      C    y      C    z      F    x      F    y      F    z
 
  C    x    0.666603
- C    y    0.000000    0.666604
- C    z    0.000000   -0.000000    0.503008
+ C    y    0.000000    0.666603
+ C    z    0.000000    0.000000    0.503008
 
  F    x   -0.073904   -0.000000    0.000000    0.051780
- F    y   -0.000000   -0.073904   -0.000000    0.000000    0.051781
- F    z    0.000000    0.000000   -0.274394   -0.000000    0.000000    0.385778
+ F    y   -0.000000   -0.073904   -0.000000    0.000000    0.051780
+ F    z    0.000000   -0.000000   -0.274393   -0.000000    0.000000    0.385778
 
  H    x   -0.330019   -0.000000    0.079053    0.010660    0.000000    0.002987
  H    y   -0.000000   -0.065834    0.000000    0.000000    0.004061   -0.000000
- H    z    0.067301    0.000000   -0.076230    0.041223   -0.000000   -0.037027
+ H    z    0.067301    0.000000   -0.076229    0.041223   -0.000000   -0.037027
 
- H    x   -0.131880   -0.114395   -0.039526    0.005711    0.002857   -0.001494
+ H    x   -0.131880   -0.114396   -0.039526    0.005711    0.002857   -0.001494
  H    y   -0.114396   -0.263973   -0.068462    0.002857    0.009010   -0.002587
- H    z   -0.033651   -0.058284   -0.076230   -0.020612   -0.035700   -0.037028
+ H    z   -0.033651   -0.058284   -0.076230   -0.020612   -0.035700   -0.037027
 
- H    x   -0.131880    0.114395   -0.039526    0.005711   -0.002857   -0.001494
+ H    x   -0.131880    0.114396   -0.039526    0.005711   -0.002857   -0.001494
  H    y    0.114396   -0.263973    0.068462   -0.002857    0.009010    0.002587
- H    z   -0.033651    0.058284   -0.076230   -0.020612    0.035700   -0.037028
+ H    z   -0.033651    0.058284   -0.076230   -0.020612    0.035700   -0.037027
 
  cav  x    0.001081   -0.000000    0.000000    0.000042    0.000000    0.000000
  cav  y   -0.000000    0.001081    0.000000    0.000000    0.000042   -0.000000
- cav  z    0.000000   -0.000000    0.000074    0.000000    0.000000   -0.000302
+ cav  z    0.000000   -0.000000    0.000074    0.000000   -0.000000   -0.000302
 
 
            H    x      H    y      H    z      H    x      H    y      H    z
 
  H    x    0.344995
- H    y    0.000000    0.054592
+ H    y   -0.000000    0.054592
  H    z   -0.089134   -0.000000    0.098398
 
- H    x   -0.012842   -0.029433   -0.009460    0.127193
+ H    x   -0.012842   -0.029433   -0.009460    0.127192
  H    y    0.000941    0.003608    0.001284    0.125748    0.272394
  H    z    0.003619    0.008835    0.007160    0.044567    0.077193    0.098399
 
@@ -724,19 +856,19 @@ Point group: C1
  H    z    0.003619   -0.008835    0.007160    0.005842   -0.007551    0.007160
 
  cav  x    0.000049    0.000000   -0.000469   -0.000014    0.000036    0.000235
- cav  y    0.000000   -0.000035   -0.000000    0.000036    0.000028    0.000406
+ cav  y   -0.000000   -0.000035    0.000000    0.000036    0.000028    0.000406
  cav  z   -0.000143    0.000000    0.000539    0.000071    0.000124    0.000539
 
 
            H    x      H    y      H    z      cav  x      cav  y      cav  z
 
- H    x    0.127193
+ H    x    0.127192
  H    y   -0.125748    0.272394
  H    z    0.044567   -0.077193    0.098399
 
  cav  x   -0.000014   -0.000036    0.000235   -0.001142
- cav  y   -0.000036    0.000028   -0.000406    0.000000   -0.001142
- cav  z    0.000071   -0.000124    0.000539    0.000000    0.000000   -0.001391
+ cav  y   -0.000036    0.000028   -0.000406   -0.000000   -0.001142
+ cav  z    0.000071   -0.000124    0.000539    0.000000   -0.000000   -0.001391
 
 
 
@@ -756,7 +888,7 @@ Point group: C1
 
       x      0.00000010         0.00000025         0.00000083
       y     -0.00000000        -0.00000000        -0.00000000
-      z     -0.92038241        -2.33937859        -7.80332703
+      z     -0.92038241        -2.33937859        -7.80332702
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -778,8 +910,16 @@ Point group: C1
  cav   :    0.737253    0.637681    1.489149    1.489149    1.489149    0.000000
 
 
-  Max interatomic separation is    2.0007 Angstrom (    3.7807 Bohr)
+  Max    interatomic separation is    2.0007 Angstrom (    3.7807 Bohr)
   between atoms    5 and    2, "H     " and "F     ".
+
+  Min HX interatomic separation is    1.0805 Angstrom (    2.0418 Bohr)
+
+  Min YX interatomic separation is    0.6377 Angstrom (    1.2050 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    0    2
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -808,10 +948,10 @@ Point group: C1
 
 
 WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
-   from        0.0000000000        0.0000000000       -0.0002236081
+   from        0.0000000000        0.0000000000       -0.0002234703
 
- Largest deviation from orthonormality of OMOs:0.249578E-12
- - found for element   11  11
+ Largest deviation from orthonormality of OMOs:0.297318E-12
+ - found for element   40  40
 
 
    ***************************************************************************
@@ -823,7 +963,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
  Iteration number:  0
 
-  Norm of molecular gradient:     0.0006600330
+  Norm of molecular gradient:     0.0006599142
 
 @ Energy at current point:  -139.0893070201
 
@@ -834,7 +974,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           9           9       6.600330D-04    0          8.84D+00
+    1           9           9       6.599142D-04    0          8.84D+00
 
 
 
@@ -845,15 +985,15 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
-@    0     1       1      0.00000000    0.10509815   -0.00000000   -0.00000000 
-@    0     1       2      0.00000000    0.10509833   -0.00000000   -0.00000000 
-@    0     1       3     -0.00000000    0.15617511    0.00000000   -0.00000000 
-@    0     1       4      0.00000000    0.15617576   -0.00000000   -0.00000000 
-@    0     1       5     -0.00003771    0.16399980    0.00022992   -0.00000000 
-@    0     1       6      0.00025555    0.38218653   -0.00066865   -0.00000009 
-@    0     1       7     -0.00060739<   0.76466396    0.00079432<  -0.00000024<
+@    0     1       1      0.00000000    0.10509811   -0.00000000   -0.00000000 
+@    0     1       2      0.00000000    0.10509816   -0.00000000   -0.00000000 
+@    0     1       3     -0.00000000    0.15617495    0.00000000   -0.00000000 
+@    0     1       4      0.00000000    0.15617512   -0.00000000   -0.00000000 
+@    0     1       5     -0.00003765    0.16399971    0.00022960   -0.00000000 
+@    0     1       6      0.00025548    0.38218646   -0.00066848   -0.00000009 
+@    0     1       7     -0.00060729<   0.76466292    0.00079419<  -0.00000024<
 @    0     1       8     -0.00000000    0.92889314    0.00000000   -0.00000000 
-@    0     1       9      0.00000000    0.92889401<  -0.00000000   -0.00000000 
+@    0     1       9      0.00000000    0.92889336<  -0.00000000   -0.00000000 
 
   This is Newton step.
 
@@ -866,56 +1006,56 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
    sym 1            1           2           3           4           5
   ----------------------------------------------------------------------
 
-   C    x       0.030458    0.000000    0.362690    0.000001    0.000000
-   C    y       0.000000   -0.030455   -0.000001    0.362690    0.000000
+   C    x       0.030459    0.000002    0.362691    0.000026    0.000000
+   C    y       0.000002   -0.030458   -0.000026    0.362690    0.000000
    C    z       0.000000   -0.000000    0.000000    0.000000   -0.344286
 
-   F    x       0.328148    0.000000   -0.374481   -0.000001    0.000000
-   F    y       0.000000   -0.328151    0.000001   -0.374478   -0.000000
+   F    x       0.328148    0.000019   -0.374481   -0.000027    0.000000
+   F    y       0.000019   -0.328148    0.000027   -0.374481   -0.000000
    F    z       0.000000    0.000000   -0.000000    0.000000   -0.393882
 
-   H    x       0.181673    0.000000    0.433306    0.000001    0.296409
-   H    y      -0.000000    0.539467    0.000001   -0.373105   -0.000000
-   H    z       0.499084    0.000000   -0.392952   -0.000001    0.349498
+   H    x       0.181673    0.000011    0.433305    0.000031    0.296409
+   H    y      -0.000031    0.539469    0.000027   -0.373102   -0.000000
+   H    z       0.499083    0.000029   -0.392953   -0.000028    0.349498
 
-   H    x      -0.359184   -0.312262   -0.171501    0.349186   -0.148205
-   H    y       0.312264   -0.001386    0.349184    0.231705   -0.256698
-   H    z      -0.249542    0.432221    0.196475    0.340305    0.349498
+   H    x      -0.359166   -0.312285   -0.171525    0.349172   -0.148204
+   H    y       0.312264   -0.001369    0.349167    0.231729   -0.256698
+   H    z      -0.249567    0.432205    0.196452    0.340321    0.349498
 
-   H    x      -0.359184    0.312261   -0.171499   -0.349187   -0.148205
-   H    y      -0.312264   -0.001386   -0.349185    0.231703    0.256698
-   H    z      -0.249542   -0.432222    0.196477   -0.340303    0.349498
+   H    x      -0.359202    0.312243   -0.171474   -0.349197   -0.148204
+   H    y      -0.312264   -0.001405   -0.349201    0.231679    0.256698
+   H    z      -0.249517   -0.432234    0.196501   -0.340292    0.349498
 
-   cav  x       0.178088    0.000000   -0.078515   -0.000000    0.000000
-   cav  y       0.000000   -0.178089    0.000000   -0.078514   -0.000000
+   cav  x       0.178088    0.000010   -0.078515   -0.000006    0.000000
+   cav  y       0.000010   -0.178088    0.000006   -0.078515   -0.000000
    cav  z       0.000000    0.000000   -0.000000    0.000000   -0.310326
 
 
    sym 1            6           7           8           9
   ----------------------------------------------------------
-   C    x       0.000000   -0.000000    0.778848    0.000008
-   C    y      -0.000000    0.000000   -0.000008    0.778848
-   C    z      -0.061994    0.790250    0.000000   -0.000000
+   C    x       0.000000   -0.000000    0.778848    0.000095
+   C    y      -0.000000   -0.000000   -0.000095    0.778848
+   C    z      -0.061995    0.790250    0.000000    0.000000
 
-   F    x      -0.000000    0.000000   -0.161848   -0.000002
-   F    y       0.000000   -0.000000    0.000002   -0.161849
-   F    z       0.435230   -0.521581   -0.000000    0.000000
+   F    x      -0.000000    0.000000   -0.161848   -0.000020
+   F    y       0.000000    0.000000    0.000020   -0.161848
+   F    z       0.435230   -0.521581   -0.000000   -0.000000
 
-   H    x       0.466902    0.165764   -0.461288   -0.000005
-   H    y      -0.000000   -0.000000    0.000001   -0.057563
-   H    z      -0.192436   -0.082924    0.106584    0.000001
+   H    x       0.466902    0.165764   -0.461288   -0.000056
+   H    y       0.000000    0.000000    0.000007   -0.057563
+   H    z      -0.192435   -0.082924    0.106584    0.000013
 
-   H    x      -0.233451   -0.082882   -0.158492   -0.174820
-   H    y      -0.404349   -0.143556   -0.174814   -0.360359
-   H    z      -0.192436   -0.082924   -0.053291   -0.092305
+   H    x      -0.233451   -0.082882   -0.158473   -0.174838
+   H    y      -0.404349   -0.143556   -0.174774   -0.360378
+   H    z      -0.192436   -0.082924   -0.053281   -0.092311
 
-   H    x      -0.233451   -0.082882   -0.158496    0.174816
-   H    y       0.404349    0.143556    0.174822   -0.360355
-   H    z      -0.192436   -0.082924   -0.053293    0.092304
+   H    x      -0.233451   -0.082882   -0.158515    0.174799
+   H    y       0.404349    0.143556    0.174863   -0.360336
+   H    z      -0.192436   -0.082924   -0.053304    0.092298
 
-   cav  x      -0.000000    0.000000    0.161277    0.000002
-   cav  y      -0.000000   -0.000000   -0.000002    0.161277
-   cav  z       0.204072   -0.019897    0.000000    0.000000
+   cav  x      -0.000000    0.000000    0.161277    0.000020
+   cav  y       0.000000   -0.000000   -0.000020    0.161277
+   cav  z       0.204072   -0.019897    0.000000   -0.000000
 
 
 
@@ -924,7 +1064,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  Level shift employed:          0.0000000000
 
 
- Predicted energy change   -0.0000003310
+ Predicted energy change   -0.0000003309
 
 
                                +--------------------+
@@ -936,12 +1076,12 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                            Cartesian displacements (au)
                            ----------------------------
 
- C          0.0000000001           -0.0000000000            0.0005900014
- F         -0.0000000000            0.0000000000           -0.0007958790
- H         -0.0001123727            0.0000000000            0.0001431618
- H          0.0000561863            0.0000973177            0.0001431620
- H          0.0000561863           -0.0000973177            0.0001431620
- cav        0.0000000000            0.0000000000           -0.0002236081
+ C          0.0000000001           -0.0000000001            0.0005900015
+ F         -0.0000000000            0.0000000001           -0.0007956108
+ H         -0.0001124082            0.0000000000            0.0001430264
+ H          0.0000562041            0.0000973484            0.0001430265
+ H          0.0000562041           -0.0000973485            0.0001430267
+ cav        0.0000000000            0.0000000000           -0.0002234703
 
 
 
@@ -957,7 +1097,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  H     :    0.000019   -0.000457    0.000000
  H     :    0.000019   -0.000457   -0.000103    0.000000
  H     :    0.000019   -0.000457   -0.000103   -0.000103    0.000000
- cav   :   -0.000431   -0.000303   -0.000182   -0.000182   -0.000182    0.000000
+ cav   :   -0.000430   -0.000303   -0.000182   -0.000182   -0.000182    0.000000
 
 
   Max differential change in interatomic separation is    0.000733 Angstrom
@@ -975,11 +1115,11 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                             Cartesian coordinates (au)
                             --------------------------
 
- C          0.0000001476           -0.0000000000           -1.3923931287
- F         -0.0000001276            0.0000000000            1.2044704575
- H          1.9356878046           -0.0000000000           -2.0421194119
- H         -0.9678435777           -1.6763546251           -2.0421197197
- H         -0.9678435777            1.6763546251           -2.0421197197
+ C          0.0000001476           -0.0000000001           -1.3923932663
+ F         -0.0000001277            0.0000000001            1.2044705879
+ H          1.9356877691           -0.0000000000           -2.0421196851
+ H         -0.9678435599           -1.6763545944           -2.0421199929
+ H         -0.9678435599            1.6763545943           -2.0421199927
  cav        0.0000000000            0.0000000000            0.0000000000
 
 
@@ -999,8 +1139,16 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  cav   :    0.736823    0.637378    1.488968    1.488968    1.488968    0.000000
 
 
-  Max interatomic separation is    2.0002 Angstrom (    3.7798 Bohr)
+  Max    interatomic separation is    2.0002 Angstrom (    3.7798 Bohr)
   between atoms    4 and    2, "H     " and "F     ".
+
+  Min HX interatomic separation is    1.0805 Angstrom (    2.0418 Bohr)
+
+  Min YX interatomic separation is    0.6374 Angstrom (    1.2045 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    0    2
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -1032,15 +1180,15 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:06      35 %
- RHSIDE     00:00:05      31 %
- RESPON     00:00:05      31 %
+ TWOTEX     00:00:03      32 %
+ RHSIDE     00:00:03      38 %
+ RESPON     00:00:02      26 %
 
- TOTAL      00:00:16     100 %
+ TOTAL      00:00:08     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  16.08 seconds
- >>>> Total wall time used in ABACUS:  16.00 seconds
+ >>>> Total CPU  time used in ABACUS:   8.02 seconds
+ >>>> Total wall time used in ABACUS:   8.40 seconds
 
 
                    .-------------------------------------------.
@@ -1067,22 +1215,21 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                      `---------------------------------------'
 
 
- Cavity center (center of mass):    0.000000   -0.000000   -0.000000
+ Cavity center (center of mass):   -0.000000   -0.000000    0.000000
 
 
      ************************************************************************
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>> Time used in RLMINT is   0.13 seconds
- Threshold for neglecting two-electron integrals:  1.00D-15
 
- Number of two-electron integrals written:     3440787 ( 84.7% )
- Megabytes written:                             39.401
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:     3189566 ( 78.5% )
+ Megabytes written:                             36.522
 
- >>> Time used in TWOINT is   0.62 seconds
- >>>> Total CPU  time used in HERMIT:   0.82 seconds
- >>>> Total wall time used in HERMIT:   2.00 seconds
+ >>>  Time used in TWOINT     is   0.44 seconds
+ >>>> Total CPU  time used in HERMIT:   0.59 seconds
+ >>>> Total wall time used in HERMIT:   0.60 seconds
 
 
                         .----------------------------------.
@@ -1105,41 +1252,50 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
- >>> Time used in FORMSUP is   0.23 seconds
-   1  -139.089153919     -3.316222611989E-03    1.07021D-01    1.53D-04
+      Threshold for discarding integrals :  1.00D-12 )
+ >>>  Time used in FORMSUP    is   0.44 seconds
+@  1  -139.089153973     -3.316223801482E-03    1.07001D-01    1.53D-04
       Virial theorem: -V/T =      2.000310
-      MULPOP  C      -0.06; F      -0.37; H       0.14; H       0.14; H       0.14; 
+@      MULPOP C      -0.06; F      -0.37; H       0.14; H       0.14; H       0.14; 
  -----------------------------------------------------------------------------
-   2  -139.089306210     -3.305538628644E-03    5.10354D-03   -1.52D-04
+@  2  -139.089306211     -3.305540304006E-03    5.10264D-03   -1.52D-04
       Virial theorem: -V/T =      2.000281
-      MULPOP  C      -0.04; F      -0.37; H       0.14; H       0.14; H       0.14; 
+@      MULPOP C      -0.04; F      -0.37; H       0.14; H       0.14; H       0.14; 
  -----------------------------------------------------------------------------
-   3  -139.089307313     -3.298784762922E-03    9.09256D-04   -1.10D-06
+@  3  -139.089307313     -3.298787484347E-03    9.09010D-04   -1.10D-06
       Virial theorem: -V/T =      2.000307
-      MULPOP  C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
  -----------------------------------------------------------------------------
-   4  -139.089307343     -3.298710428389E-03    4.52148D-04   -3.00D-08
+@  4  -139.089307343     -3.298712744058E-03    4.52024D-04   -2.99D-08
       Virial theorem: -V/T =      2.000292
-      MULPOP  C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
  -----------------------------------------------------------------------------
-   5  -139.089307350     -3.297758157192E-03    4.69697D-05   -7.01D-09
+@  5  -139.089307350     -3.297760639607E-03    4.69695D-05   -7.01D-09
       Virial theorem: -V/T =      2.000297
-      MULPOP  C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
  -----------------------------------------------------------------------------
-   6  -139.089307350     -3.297536886218E-03    1.84458D-05   -2.33D-10
+@  6  -139.089307350     -3.297539369422E-03    1.84458D-05   -2.33D-10
       Virial theorem: -V/T =      2.000297
-      MULPOP  C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
  -----------------------------------------------------------------------------
-   7  -139.089307350     -3.297430677437E-03    3.23617D-06   -2.82D-11
+@  7  -139.089307350     -3.297438658594E-03    3.61050D-06   -2.79D-11
+      Virial theorem: -V/T =      2.000297
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+@  8  -139.089307350     -3.297406455941E-03    1.01210D-06   -2.16D-12
+      Virial theorem: -V/T =      2.000297
+@      MULPOP C      -0.03; F      -0.37; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+@  9  -139.089307350     -3.297399869207E-03    2.17096D-07   -3.98D-13
 
- *** DIIS converged in   7 iterations !
-   - total time used in SIRFCK :              3.18 seconds
+@ *** DIIS converged in   9 iterations !
+@     Converged SCF energy, gradient:   -139.089307350299    2.17D-07
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1152,14 +1308,14 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
  Sym       Hartree-Fock orbital energies
 
-  1    -26.27892414   -11.29269443    -1.59181264    -0.95137888    -0.69733933
-        -0.69733933    -0.67659840    -0.52584669    -0.52584669     0.06074882
-         0.10015836     0.10015836     0.10605258     0.16994372
+  1    -26.27892422   -11.29269458    -1.59181270    -0.95137893    -0.69733943
+        -0.69733943    -0.67659837    -0.52584678    -0.52584678     0.06074876
+         0.10015827     0.10015827     0.10605253     0.16994361
 
-    E(LUMO) :     0.06074882 au (symmetry 1)
-  - E(HOMO) :    -0.52584669 au (symmetry 1)
+    E(LUMO) :     0.06074876 au (symmetry 1)
+  - E(HOMO) :    -0.52584678 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.58659551 au
+    gap     :     0.58659554 au
 
  >>> Writing SIRIFC interface file <<<
 
@@ -1172,11 +1328,13 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0000003302  -0.0000003310    0.997595
+ actual, predicted and ratio:  -0.0000003302  -0.0000003309    0.998004
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
 
+
+ >>>> CPU and wall time for SCF :       1.012       7.031
 
 
                        .-----------------------------------.
@@ -1184,9 +1342,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
      SOLVATION MODEL: molecule is in a cavity in a dielectric medium,
           dielectric constant =   32.630000
@@ -1194,25 +1352,25 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
           cavity dimensions   =    5.080000    5.080000    5.080000
           max l value         =          10
 
-     Final HF energy:            -139.089307350299                 
-     Nuclear repulsion:            37.647924979991
-     Electronic energy:          -176.733934899612
-     Solvation  energy:            -0.003297430677
+@    Final HF energy:            -139.089307350299                 
+@    Nuclear repulsion:            37.647922188259
+@    Electronic energy:          -176.733932138689
+@    Solvation  energy:            -0.003297399869
 
-     Final gradient norm:           0.000003236167
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:41:42 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.53 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+@    Final gradient norm:           0.000000217096
 
  
-     Date and time (Linux)  : Wed Mar 16 18:41:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:30:48 2013
+     Host name              : c10-6.local                             
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.06 seconds
+ >>>> Total wall time used in SIRIUS :      7.09 seconds
+
+ 
+     Date and time (Linux)  : Mon Oct 21 15:30:48 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1220,9 +1378,11 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                      `---------------------------------------'
 
 
- Center of mass dipole origin  :    0.000000   -0.000000   -0.000000
+ Center of mass dipole origin  :   -0.000000   -0.000000    0.000000
 
- Center of mass cavity origin  :    0.000000   -0.000000   -0.000000
+ Center of mass gauge origin   :   -0.000000   -0.000000    0.000000
+
+ Center of mass cavity origin  :   -0.000000   -0.000000    0.000000
 
 
                  .------------------------------------------------.
@@ -1231,10 +1391,12 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:41:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:30:48 2013
+     Host name              : c10-6.local                             
 
  Old LUGDR file opened in ORTREL.
+
+ Largest deviation from tra-rot symmetry is in gradient element  8:  2.44E-11
 
 
    ***************************************************************************
@@ -1243,19 +1405,19 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:42:00 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:30:57 2013
+     Host name              : c10-6.local                             
 
 
                              Molecular geometry (au)
                              -----------------------
 
- C          0.0000001476           -0.0000000000           -1.3923931287
- F         -0.0000001276            0.0000000000            1.2044704575
- H          1.9356878046           -0.0000000000           -2.0421194119
- H         -0.9678435777           -1.6763546251           -2.0421197197
- H         -0.9678435777            1.6763546251           -2.0421197197
- cav        0.0000000000           -0.0000000000           -0.0000000000
+ C          0.0000001476           -0.0000000001           -1.3923932663
+ F         -0.0000001277            0.0000000001            1.2044705879
+ H          1.9356877691           -0.0000000000           -2.0421196851
+ H         -0.9678435599           -1.6763545944           -2.0421199929
+ H         -0.9678435599            1.6763545943           -2.0421199927
+ cav       -0.0000000000           -0.0000000000            0.0000000000
 
 
 
@@ -1274,11 +1436,11 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.3807114687 au
-     Mass-velocity correction:                  -0.4814655478 au
+     Darwin correction:                          0.3807114694 au
+     Mass-velocity correction:                  -0.4814655490 au
 
-     Total relativistic correction:             -0.1007540791 au (0.0724%)
-     Non-relativistic + relativistic energy:  -139.1900614294 au
+     Total relativistic correction:             -0.1007540796 au (0.0724%)
+     Non-relativistic + relativistic energy:  -139.1900614299 au
 
 
 
@@ -1286,12 +1448,12 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                              Molecular gradient (au)
                              -----------------------
 
- C         -0.0000000000           -0.0000000000            0.0000479399
- F         -0.0000000000            0.0000000000            0.0000730799
- H          0.0000001476            0.0000000000            0.0000038785
- H         -0.0000000738           -0.0000001278            0.0000038785
- H         -0.0000000738            0.0000001278            0.0000038785
- cav        0.0000000000           -0.0000000000           -0.0001326554
+ C         -0.0000000000           -0.0000000000            0.0000480756
+ F         -0.0000000000            0.0000000000            0.0000727593
+ H         -0.0000000236           -0.0000000000            0.0000039397
+ H          0.0000000118            0.0000000205            0.0000039397
+ H          0.0000000118           -0.0000000204            0.0000039397
+ cav        0.0000000000           -0.0000000000           -0.0001326539
 
 
 
@@ -1303,46 +1465,46 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
            C    x      C    y      C    z      F    x      F    y      F    z
 
  C    x    0.666379
- C    y   -0.000000    0.666379
- C    z    0.000000   -0.000000    0.504666
+ C    y    0.000000    0.666379
+ C    z    0.000000    0.000000    0.504666
 
- F    x   -0.073852    0.000000    0.000000    0.051695
- F    y    0.000000   -0.073852    0.000000   -0.000000    0.051695
- F    z    0.000000    0.000000   -0.275937   -0.000000   -0.000000    0.387442
+ F    x   -0.073852   -0.000000    0.000000    0.051695
+ F    y   -0.000000   -0.073852   -0.000000    0.000000    0.051695
+ F    z    0.000000   -0.000000   -0.275937   -0.000000    0.000000    0.387442
 
- H    x   -0.329904    0.000000    0.079055    0.010669   -0.000000    0.003021
- H    y    0.000000   -0.065834    0.000000   -0.000000    0.004074   -0.000000
+ H    x   -0.329904    0.000000    0.079055    0.010669    0.000000    0.003021
+ H    y   -0.000000   -0.065834   -0.000000    0.000000    0.004074    0.000000
  H    z    0.067282   -0.000000   -0.076267    0.041281    0.000000   -0.037068
 
  H    x   -0.131852   -0.114346   -0.039528    0.005723    0.002856   -0.001511
- H    y   -0.114346   -0.263887   -0.068464    0.002856    0.009021   -0.002616
- H    z   -0.033641   -0.058268   -0.076267   -0.020640   -0.035750   -0.037068
+ H    y   -0.114346   -0.263886   -0.068464    0.002856    0.009021   -0.002616
+ H    z   -0.033641   -0.058268   -0.076268   -0.020640   -0.035750   -0.037068
 
  H    x   -0.131852    0.114346   -0.039528    0.005723   -0.002856   -0.001511
  H    y    0.114346   -0.263886    0.068464   -0.002856    0.009021    0.002616
- H    z   -0.033641    0.058268   -0.076267   -0.020640    0.035750   -0.037068
+ H    z   -0.033641    0.058268   -0.076268   -0.020640    0.035750   -0.037068
 
- cav  x    0.001080   -0.000000    0.000000    0.000041   -0.000000   -0.000000
- cav  y   -0.000000    0.001080   -0.000000    0.000000    0.000041    0.000000
- cav  z    0.000000   -0.000000    0.000073   -0.000000    0.000000   -0.000302
+ cav  x    0.001080   -0.000000    0.000000    0.000041    0.000000   -0.000000
+ cav  y    0.000000    0.001080    0.000000    0.000000    0.000041   -0.000000
+ cav  z    0.000000    0.000000    0.000073   -0.000000   -0.000000   -0.000302
 
 
            H    x      H    y      H    z      H    x      H    y      H    z
 
  H    x    0.344897
  H    y   -0.000000    0.054592
- H    z   -0.089172   -0.000000    0.098484
+ H    z   -0.089172    0.000000    0.098484
 
  H    x   -0.012855   -0.029439   -0.009462    0.127168
  H    y    0.000935    0.003602    0.001284    0.125706    0.272321
- H    z    0.003619    0.008836    0.007156    0.044586    0.077225    0.098484
+ H    z    0.003619    0.008836    0.007156    0.044586    0.077226    0.098484
 
  H    x   -0.012855    0.029439   -0.009462    0.011830   -0.015187    0.005842
  H    y   -0.000935    0.003602   -0.001284    0.015187   -0.021083    0.007552
  H    z    0.003619   -0.008836    0.007156    0.005842   -0.007552    0.007156
 
  cav  x    0.000047    0.000000   -0.000467   -0.000015    0.000036    0.000234
- cav  y    0.000000   -0.000036   -0.000000    0.000036    0.000027    0.000405
+ cav  y   -0.000000   -0.000036   -0.000000    0.000036    0.000027    0.000405
  cav  z   -0.000142    0.000000    0.000538    0.000071    0.000123    0.000538
 
 
@@ -1350,11 +1512,11 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
  H    x    0.127168
  H    y   -0.125706    0.272321
- H    z    0.044586   -0.077225    0.098484
+ H    z    0.044586   -0.077226    0.098484
 
  cav  x   -0.000015   -0.000036    0.000234   -0.001138
  cav  y   -0.000036    0.000027   -0.000405   -0.000000   -0.001138
- cav  z    0.000071   -0.000123    0.000538   -0.000000   -0.000000   -0.001386
+ cav  z    0.000071   -0.000123    0.000538    0.000000    0.000000   -0.001386
 
 
 
@@ -1364,7 +1526,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.918627           2.334916           7.788443
+              0.918623           2.334906           7.788407
 
 
                              Dipole moment components
@@ -1374,7 +1536,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
       x      0.00000010         0.00000025         0.00000083
       y     -0.00000000        -0.00000000        -0.00000000
-      z     -0.91862684        -2.33491637        -7.78844266
+      z     -0.91862261        -2.33490563        -7.78840684
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1396,8 +1558,16 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  cav   :    0.736823    0.637378    1.488968    1.488968    1.488968    0.000000
 
 
-  Max interatomic separation is    2.0002 Angstrom (    3.7798 Bohr)
+  Max    interatomic separation is    2.0002 Angstrom (    3.7798 Bohr)
   between atoms    4 and    2, "H     " and "F     ".
+
+  Min HX interatomic separation is    1.0805 Angstrom (    2.0418 Bohr)
+
+  Min YX interatomic separation is    0.6374 Angstrom (    1.2045 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    0    2
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -1435,7 +1605,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
  Iteration number:  1
 
-  Norm of molecular gradient:     0.0000015409
+  Norm of molecular gradient:     0.0000018268
 
 @ Energy at current point:  -139.0893073503
   Energy at initial point:  -139.0893070201
@@ -1453,7 +1623,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           9           9       1.540867D-06    0          8.83D+00
+    1           9           9       1.826774D-06    0          8.83D+00
 
 
 
@@ -1464,15 +1634,15 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
            @sym        mode          gradient        eigenvalue    
            @-------------------------------------------------------
-            @ 1           1        -0.0000000000     0.1051381652
-            @ 1           2        -0.0000000000     0.1051382524
-            @ 1           3        -0.0000000000     0.1562249756
-            @ 1           4        -0.0000000000     0.1562253162
-            @ 1           5         0.0000000741     0.1640584443
-            @ 1           6        -0.0000002650     0.3826271341
-            @ 1           7         0.0000015161     0.7674139643
-            @ 1           8        -0.0000000000     0.9285839269
-            @ 1           9        -0.0000000000     0.9285844519
+            @ 1           1         0.0000000000     0.1051381251
+            @ 1           2        -0.0000000000     0.1051381322
+            @ 1           3         0.0000000000     0.1562251820
+            @ 1           4        -0.0000000000     0.1562252012
+            @ 1           5         0.0000000648     0.1640581938
+            @ 1           6        -0.0000006873     0.3826272552
+            @ 1           7         0.0000016913     0.7674136648
+            @ 1           8         0.0000000000     0.9285836562
+            @ 1           9        -0.0000000000     0.9285836727
 
 
                               +----------------------+
@@ -1483,55 +1653,55 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
    sym 1            1           2           3           4           5
   ----------------------------------------------------------------------
 
-   C    x      -0.000745    0.030704    0.018777    0.362223   -0.000000
-   C    y      -0.030705   -0.000745    0.362224   -0.018777    0.000000
-   C    z      -0.000000   -0.000000    0.000000   -0.000000   -0.344375
+   C    x       0.030236    0.005382    0.357749    0.059787   -0.000000
+   C    y       0.005382   -0.030236   -0.059787    0.357749    0.000000
+   C    z       0.000000    0.000000   -0.000000    0.000000   -0.344375
 
-   F    x      -0.007952    0.327788   -0.019405   -0.374333    0.000000
-   F    y      -0.327787   -0.007952   -0.374334    0.019405   -0.000000
-   F    z      -0.000000    0.000000    0.000000   -0.000000   -0.393542
+   F    x       0.322811    0.057460   -0.369708   -0.061786    0.000000
+   F    y       0.057460   -0.322811    0.061786   -0.369708   -0.000000
+   F    z       0.000000    0.000000   -0.000000    0.000000   -0.393542
 
-   H    x      -0.004415    0.181991    0.022424    0.432584    0.296732
-   H    y       0.539640    0.013092   -0.372117    0.019290   -0.000001
-   H    z      -0.012095    0.498565   -0.020362   -0.392777    0.349366
+   H    x       0.179227    0.031902    0.427239    0.071401    0.296733
+   H    y      -0.094597    0.531443    0.061421   -0.367523   -0.000000
+   H    z       0.490995    0.087397   -0.387924   -0.064830    0.349365
 
-   H    x      -0.303761   -0.366812    0.339584   -0.189007   -0.148366
-   H    y      -0.009165    0.312437    0.249471    0.336450   -0.256978
-   H    z       0.437816   -0.238807    0.350337    0.178756    0.349366
+   H    x      -0.299000   -0.370701   -0.226346    0.315927   -0.148366
+   H    y       0.308007    0.053216    0.305947    0.286062   -0.256978
+   H    z      -0.321185    0.381516    0.137817    0.368367    0.349365
 
-   H    x       0.321192   -0.351651   -0.357307   -0.152881   -0.148367
-   H    y       0.005997   -0.312514    0.213344   -0.360442    0.256979
-   H    z      -0.425721   -0.259758   -0.329977    0.214022    0.349365
+   H    x      -0.408552    0.244757   -0.111319   -0.372358   -0.148366
+   H    y      -0.307452   -0.056335   -0.382338    0.171035    0.256978
+   H    z      -0.169810   -0.468912    0.250107   -0.303537    0.349365
 
-   cav  x      -0.004318    0.177980   -0.004074   -0.078586    0.000000
-   cav  y      -0.177980   -0.004318   -0.078587    0.004074   -0.000000
-   cav  z      -0.000000    0.000000    0.000000   -0.000000   -0.310179
+   cav  x       0.175278    0.031199   -0.077615   -0.012971    0.000000
+   cav  y       0.031199   -0.175278    0.012971   -0.077615   -0.000000
+   cav  z       0.000000    0.000000   -0.000000    0.000000   -0.310179
 
 
    sym 1            6           7           8           9
   ----------------------------------------------------------
-   C    x       0.000000   -0.000000    0.040533    0.777789
-   C    y       0.000000    0.000000    0.777789   -0.040533
-   C    z      -0.059590    0.790396   -0.000000    0.000000
+   C    x       0.000000   -0.000000    0.769199    0.122194
+   C    y       0.000000   -0.000000   -0.122194    0.769199
+   C    z      -0.059590    0.790396    0.000000    0.000000
 
-   F    x      -0.000000    0.000000   -0.008425   -0.161664
-   F    y      -0.000000   -0.000000   -0.161664    0.008425
-   F    z       0.434084   -0.522791    0.000000   -0.000000
+   F    x      -0.000000    0.000000   -0.159878   -0.025398
+   F    y       0.000000    0.000000    0.025398   -0.159878
+   F    z       0.434084   -0.522791   -0.000000   -0.000000
 
-   H    x       0.467141    0.164505   -0.024005   -0.460641
-   H    y      -0.000000    0.000000   -0.057468    0.002995
-   H    z      -0.192911   -0.082378    0.005552    0.106545
+   H    x       0.467141    0.164505   -0.455554   -0.072369
+   H    y      -0.000000   -0.000000    0.009029   -0.056834
+   H    z      -0.192911   -0.082378    0.105369    0.016739
 
-   H    x      -0.233571   -0.082252   -0.182827   -0.149164
-   H    y      -0.404556   -0.142465   -0.368946   -0.155826
-   H    z      -0.192911   -0.082378   -0.095047   -0.048464
+   H    x      -0.233571   -0.082253   -0.129087   -0.197515
+   H    y      -0.404556   -0.142466   -0.116117   -0.383301
+   H    z      -0.192911   -0.082378   -0.038188   -0.099621
 
-   H    x      -0.233571   -0.082252    0.166332   -0.167359
-   H    y       0.404556    0.142465   -0.350750    0.193332
-   H    z      -0.192911   -0.082378    0.089494   -0.058081
+   H    x      -0.233571   -0.082253   -0.183941    0.147787
+   H    y       0.404556    0.142466    0.229185   -0.328447
+   H    z      -0.192911   -0.082378   -0.067180    0.082882
 
-   cav  x      -0.000000   -0.000000    0.008392    0.161040
-   cav  y      -0.000000    0.000000    0.161040   -0.008392
+   cav  x      -0.000000    0.000000    0.159261    0.025300
+   cav  y       0.000000   -0.000000   -0.025300    0.159261
    cav  z       0.204238   -0.020472    0.000000    0.000000
 
 
@@ -1546,12 +1716,12 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                             Cartesian coordinates (au)
                             --------------------------
 
- C          0.0000001476           -0.0000000000           -1.3923931287
- F         -0.0000001276            0.0000000000            1.2044704575
- H          1.9356878046           -0.0000000000           -2.0421194119
- H         -0.9678435777           -1.6763546251           -2.0421197197
- H         -0.9678435777            1.6763546251           -2.0421197197
- cav        0.0000000000           -0.0000000000           -0.0000000000
+ C          0.0000001476           -0.0000000001           -1.3923932663
+ F         -0.0000001277            0.0000000001            1.2044705879
+ H          1.9356877691           -0.0000000000           -2.0421196851
+ H         -0.9678435599           -1.6763545944           -2.0421199929
+ H         -0.9678435599            1.6763545943           -2.0421199927
+ cav       -0.0000000000           -0.0000000000            0.0000000000
 
 
 
@@ -1570,8 +1740,16 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  cav   :    0.736823    0.637378    1.488968    1.488968    1.488968    0.000000
 
 
-  Max interatomic separation is    2.0002 Angstrom (    3.7798 Bohr)
+  Max    interatomic separation is    2.0002 Angstrom (    3.7798 Bohr)
   between atoms    4 and    2, "H     " and "F     ".
+
+  Min HX interatomic separation is    1.0805 Angstrom (    2.0418 Bohr)
+
+  Min YX interatomic separation is    0.6374 Angstrom (    1.2045 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    0    2
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -1603,15 +1781,15 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:06      35 %
- RHSIDE     00:00:05      31 %
- RESPON     00:00:05      32 %
+ TWOTEX     00:00:03      34 %
+ RHSIDE     00:00:03      36 %
+ RESPON     00:00:02      27 %
 
- TOTAL      00:00:16     100 %
+ TOTAL      00:00:09     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  16.35 seconds
- >>>> Total wall time used in ABACUS:  18.00 seconds
+ >>>> Total CPU  time used in ABACUS:   8.87 seconds
+ >>>> Total wall time used in ABACUS:   8.98 seconds
 
 
                    .-------------------------------------------.
@@ -1645,11 +1823,11 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
       Natural orbital connection is used
       for perturbation dependent basis sets.
 
- Center of mass dipole origin  :    0.000000   -0.000000   -0.000000
+ Center of mass dipole origin  :   -0.000000   -0.000000    0.000000
 
- Center of mass gauge origin   :    0.000000   -0.000000   -0.000000
+ Center of mass gauge origin   :   -0.000000   -0.000000    0.000000
 
- Center of mass cavity origin  :    0.000000   -0.000000   -0.000000
+ Center of mass cavity origin  :   -0.000000   -0.000000    0.000000
 
 
                  .------------------------------------------------.
@@ -1658,8 +1836,10 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:42:00 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:30:57 2013
+     Host name              : c10-6.local                             
+
+ Integral transformation: Total CPU and WALL times (sec)       1.356       1.382
 
 
    ***************************************************************************
@@ -1668,19 +1848,19 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:42:14 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:31:05 2013
+     Host name              : c10-6.local                             
 
 
                              Molecular geometry (au)
                              -----------------------
 
- C          0.0000001476           -0.0000000000           -1.3923931287
- F         -0.0000001276            0.0000000000            1.2044704575
- H          1.9356878046           -0.0000000000           -2.0421194119
- H         -0.9678435777           -1.6763546251           -2.0421197197
- H         -0.9678435777            1.6763546251           -2.0421197197
- cav        0.0000000000           -0.0000000000           -0.0000000000
+ C          0.0000001476           -0.0000000001           -1.3923932663
+ F         -0.0000001277            0.0000000001            1.2044705879
+ H          1.9356877691           -0.0000000000           -2.0421196851
+ H         -0.9678435599           -1.6763545944           -2.0421199929
+ H         -0.9678435599            1.6763545943           -2.0421199927
+ cav       -0.0000000000           -0.0000000000            0.0000000000
 
 
 
@@ -1699,11 +1879,11 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.3807114687 au
-     Mass-velocity correction:                  -0.4814655478 au
+     Darwin correction:                          0.3807114694 au
+     Mass-velocity correction:                  -0.4814655490 au
 
-     Total relativistic correction:             -0.1007540791 au (0.0724%)
-     Non-relativistic + relativistic energy:  -139.1900614294 au
+     Total relativistic correction:             -0.1007540796 au (0.0724%)
+     Non-relativistic + relativistic energy:  -139.1900614299 au
 
 
 
@@ -1712,7 +1892,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.918627           2.334916           7.788443
+              0.918623           2.334906           7.788407
 
 
                              Dipole moment components
@@ -1722,7 +1902,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
       x      0.00000010         0.00000025         0.00000083
       y     -0.00000000        -0.00000000        -0.00000000
-      z     -0.91862684        -2.33491637        -7.78844266
+      z     -0.91862261        -2.33490563        -7.78840684
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1739,18 +1919,18 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
   Units:  JT**(-2)/(10**(-30))   (SI) 
           ppm cm**(3) mol**(-1)  (cgs)
 
-  London orbitals used.
+ London orbitals (GIAOs) used.
 
 
   Magnetizabilities                    au          SI         cgs
   ---------------------------------------------------------------
 
-  Isotropic magnetizability:      -3.9977   -315.4579    -18.9973
-  Diamagnetic contribution:      -12.4489   -982.3502    -59.1585
-  Paramagnetic contribution:       8.4513    666.8923     40.1612
-  Parallel component:             -5.1168   -403.7664    -24.3154
-  Perpendicular component:        -3.4381   -271.3037    -16.3383
-  Anisotropy:                     -1.6786   -132.4627     -7.9771
+  Isotropic magnetizability:      -3.9977   -315.4578    -18.9973
+  Diamagnetic contribution:      -12.4489   -982.3504    -59.1585
+  Paramagnetic contribution:       8.4513    666.8927     40.1612
+  Parallel component:             -5.1168   -403.7662    -24.3154
+  Perpendicular component:        -3.4381   -271.3036    -16.3383
+  Anisotropy:                     -1.6786   -132.4626     -7.9771
 
   Magnetizability is cylindrical.
 
@@ -1758,9 +1938,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
   Principal values (au, SI, and cgs) and axes:
   --------------------------------------------
 
-  khi_aa      -3.4381   -271.3037    -16.3383      0.0035    1.0000    0.0000
-  khi_bb      -3.4381   -271.3037    -16.3383      1.0000   -0.0035    0.0000
-  khi_cc      -5.1168   -403.7664    -24.3154     -0.0000   -0.0000    1.0000
+  khi_aa      -3.4381   -271.3036    -16.3383      0.7262    0.6875    0.0000
+  khi_bb      -3.4381   -271.3036    -16.3383     -0.6875    0.7262   -0.0000
+  khi_cc      -5.1168   -403.7662    -24.3154     -0.0000   -0.0000    1.0000
 
 
                         Total magnetizability tensor (au)
@@ -1768,9 +1948,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
                        Bx                  By                  Bz
 
-  Bx        -3.438124568992      0.000000000000      0.000000177894
-  By         0.000000000000     -3.438124568939      0.000000000000
-  Bz         0.000000177894      0.000000000000     -5.116772069358
+  Bx        -3.438123396543      0.000000000290      0.000000177883
+  By         0.000000000290     -3.438123396574      0.000000000185
+  Bz         0.000000177883      0.000000000185     -5.116770084283
 
 
 
@@ -1779,9 +1959,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
                        Bx                  By                  Bz
 
-  Bx       -15.101341812533      0.000000000000     -0.000000843279
-  By         0.000000000000    -15.101341812531      0.000000000011
-  Bz        -0.000000843279      0.000000000011     -7.144128712677
+  Bx       -15.101345341129      0.000000000010     -0.000000843435
+  By         0.000000000010    -15.101345341134      0.000000000617
+  Bz        -0.000000843435      0.000000000617     -7.144130398837
 
 
 
@@ -1790,9 +1970,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
                        Bx                  By                  Bz
 
-  Bx        11.663217243541     -0.000000000000      0.000001021173
-  By        -0.000000000000     11.663217243593     -0.000000000011
-  Bz         0.000001021173     -0.000000000011      2.027356643319
+  Bx        11.663221944587      0.000000000280      0.000001021319
+  By         0.000000000280     11.663221944560     -0.000000000432
+  Bz         0.000001021319     -0.000000000432      2.027360314554
 
 
 
@@ -1808,19 +1988,19 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  ------------------------------------------------------
 
    IA   11.328617         -0.000000    0.000000    1.000000
-   IB   69.099982          0.269151    0.963098    0.000000
-   IC   69.099982          0.963098   -0.269151    0.000000
+   IB   69.099996          0.775138    0.631791    0.000000
+   IC   69.099996         -0.631791    0.775138   -0.000000
 
 
   Molecular rotational g-factor
   -----------------------------
 
- Isotropic g-tensor       :       0.05555948
+ Isotropic g-tensor       :       0.05555894
  Nuclear contribution     :       0.74928286
- Electronic contribution  :      -0.68998921
- Parallel component:              0.27841147
- Perpendicular component:        -0.05586652
- Anisotropy:                      0.33427799
+ Electronic contribution  :      -0.68998958
+ Parallel component:              0.27841014
+ Perpendicular component:        -0.05586666
+ Anisotropy:                      0.33427680
 
  Molecular rotational g-tensor is cylindrical.
 
@@ -1828,33 +2008,33 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
   Molecular rotational g-tensor in principal axis system (a.u.):
   --------------------------------------------------------------
 
-   A            0.27841147     -0.00000000      0.00000000
-   B           -0.00000000     -0.05586652      0.00000000
-   C            0.00000000      0.00000000     -0.05586652
+   A            0.27841014     -0.00000000     -0.00000000
+   B           -0.00000000     -0.05586666     -0.00000000
+   C           -0.00000000     -0.00000000     -0.05586666
 
 
   Nuclear contribution in principal axis system (a.u.):
   -----------------------------------------------------
 
-   A            0.99945573      0.00000000      0.00000000
-   B            0.00000000      0.62419642      0.00000000
-   C            0.00000000      0.00000000      0.62419642
+   A            0.99945573     -0.00000000     -0.00000000
+   B           -0.00000000      0.62419642     -0.00000000
+   C           -0.00000000     -0.00000000      0.62419642
 
 
   Electronic contribution in principal axis system (a.u.):
   --------------------------------------------------------
 
-   A           -0.75204368     -0.00000000      0.00000000
-   B           -0.00000000     -0.65896198      0.00000000
-   C            0.00000000      0.00000000     -0.65896198
+   A           -0.75204519     -0.00000000     -0.00000000
+   B           -0.00000000     -0.65896177     -0.00000000
+   C           -0.00000000     -0.00000000     -0.65896177
 
 
   Diamagnetic contribution in principal axis system (a.u.):
   ---------------------------------------------------------
 
-   A            0.03099943     -0.00000000     -0.00000000
-   B           -0.00000000     -0.02110096      0.00000000
-   C           -0.00000000      0.00000000     -0.02110096
+   A            0.03099960      0.00000000      0.00000000
+   B            0.00000000     -0.02110131     -0.00000000
+   C            0.00000000     -0.00000000     -0.02110131
 
 
   ******************************************************************************
@@ -1868,29 +2048,29 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
                        Bx             By             Bz
 
-        C    x    95.68495500     0.00000000    -0.00001009
-        C    y     0.00000000    95.68495500     0.00000000
-        C    z    -0.00001011     0.00000000   191.10744202
+        C    x    95.68523472     0.00000000    -0.00001009
+        C    y     0.00000000    95.68523472    -0.00000000
+        C    z    -0.00001011    -0.00000001   191.10730481
 
-        F    x   515.17491080     0.00000000     0.00000788
-        F    y     0.00000000   515.17491081     0.00000000
-        F    z     0.00000805    -0.00000000   439.18638504
+        F    x   515.17458494     0.00000002     0.00000788
+        F    y     0.00000001   515.17458495     0.00000000
+        F    z     0.00000806    -0.00000002   439.18632232
 
-        H    x    28.29586614    -0.00000000    -4.67698892
-        H    y     0.00000000    25.20265922     0.00000000
-        H    z    -1.22235698     0.00000000    31.03653017
+        H    x    28.29589248     0.00000000    -4.67698197
+        H    y     0.00000000    25.20266699    -0.00000000
+        H    z    -1.22237753     0.00000000    31.03653518
 
-        H    x    25.97596048     1.33939750     2.33849378
-        H    y     1.33939719    27.52256394     4.05039111
-        H    z     0.61117781     1.05859209    31.03653111
+        H    x    25.97597290     1.33940554     2.33849030
+        H    y     1.33940523    27.52258564     4.05038509
+        H    z     0.61118808     1.05860989    31.03653612
 
-        H    x    25.97596048    -1.33939750     2.33849378
-        H    y    -1.33939719    27.52256394    -4.05039111
-        H    z     0.61117781    -1.05859209    31.03653111
+        H    x    25.97597290    -1.33940554     2.33849030
+        H    y    -1.33940523    27.52258564    -4.05038509
+        H    z     0.61118809    -1.05860989    31.03653612
 
-        cav  x    48.73493406    -0.00000000    -0.00000366
-        cav  y    -0.00000000    48.73493406     0.00000000
-        cav  z    -0.00000367     0.00000000    83.37521201
+        cav  x    48.73502565    -0.00000000    -0.00000366
+        cav  y    -0.00000000    48.73502565    -0.00000000
+        cav  z    -0.00000367    -0.00000000    83.37517342
 
 
 
@@ -1900,11 +2080,11 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
   ==============================
 
 
-  Shielding constant:    127.4925 ppm
-  Anisotropy:             95.4225 ppm
+  Shielding constant:    127.4926 ppm
+  Anisotropy:             95.4221 ppm
   Asymmetry:               0.0000    
 
-  S parameter:            95.4225 ppm
+  S parameter:            95.4221 ppm
   A parameter:             0.0000 ppm
 
 
@@ -1915,9 +2095,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  String on input: "C       "
                     Bx             By             Bz
 
-  C      x    95.68495500     0.00000000    -0.00001009
-  C      y     0.00000000    95.68495500     0.00000000
-  C      z    -0.00001011     0.00000000   191.10744202
+  C      x    95.68523472     0.00000000    -0.00001009
+  C      y     0.00000000    95.68523472    -0.00000000
+  C      z    -0.00001011    -0.00000001   191.10730481
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1925,11 +2105,11 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
                  Bx         By         Bz            Bx         By         Bz
 
-  C      x   326.0567    -0.0000     0.0000     -230.3718     0.0000    -0.0000
-  C      y    -0.0000   326.0567    -0.0000        0.0000  -230.3718     0.0000
-  C      z     0.0000    -0.0000   306.0499       -0.0000     0.0000  -114.9424
+  C      x   326.0567    -0.0000     0.0000     -230.3715     0.0000    -0.0000
+  C      y    -0.0000   326.0567    -0.0000        0.0000  -230.3715    -0.0000
+  C      z     0.0000    -0.0000   306.0499       -0.0000    -0.0000  -114.9426
 
-  Diamagnetic contribution:    319.387780         Paramagnetic:    -191.895330
+  Diamagnetic contribution:    319.387784         Paramagnetic:    -191.895192
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1937,28 +2117,28 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
                  Bx         By         Bz            Bx         By         Bz
 
-  C      x     0.0000     0.0000     0.0000      -31.8075     0.0000    -0.0000
-  C      y    -0.0000     0.0000     0.0000        0.0000   -31.8075     0.0000
-  C      z    -0.0000    -0.0000     0.0000       -0.0000     0.0000    63.6150
+  C      x     0.0000    -0.0000     0.0000      -31.8074     0.0000    -0.0000
+  C      y     0.0000     0.0000     0.0000        0.0000   -31.8074    -0.0000
+  C      z    -0.0000    -0.0000     0.0000       -0.0000    -0.0000    63.6147
 
 
   Principal values and axes:
   --------------------------
 
-  C          95.684955  =  127.49  -  31.81:    -0.001372  0.999999 -0.000000
-  C          95.684955  =  127.49  -  31.81:     0.999999  0.001372  0.000000
-  C         191.107442  =  127.49  +  63.61:    -0.000000  0.000000  1.000000
+  C          95.685235  =  127.49  -  31.81:    -0.537191  0.843460 -0.000000
+  C          95.685235  =  127.49  -  31.81:     0.843460  0.537191  0.000000
+  C         191.107305  =  127.49  +  63.61:    -0.000000 -0.000000  1.000000
 
 
   Chemical shielding for F     :
   ==============================
 
 
-  Shielding constant:    489.8454 ppm
-  Anisotropy:            -75.9885 ppm
+  Shielding constant:    489.8452 ppm
+  Anisotropy:            -75.9883 ppm
   Asymmetry:               0.0000    
 
-  S parameter:            75.9885 ppm
+  S parameter:            75.9883 ppm
   A parameter:             0.0000 ppm
 
 
@@ -1969,9 +2149,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  String on input: "F       "
                     Bx             By             Bz
 
-  F      x   515.17491080     0.00000000     0.00000788
-  F      y     0.00000000   515.17491081     0.00000000
-  F      z     0.00000805    -0.00000000   439.18638504
+  F      x   515.17458494     0.00000002     0.00000788
+  F      y     0.00000001   515.17458495     0.00000000
+  F      z     0.00000806    -0.00000002   439.18632232
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1979,11 +2159,11 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
                  Bx         By         Bz            Bx         By         Bz
 
-  F      x   522.8066     0.0000     0.0000       -7.6317     0.0000     0.0000
-  F      y     0.0000   522.8066    -0.0000        0.0000    -7.6317     0.0000
-  F      z     0.0000    -0.0000   485.2266        0.0000    -0.0000   -46.0402
+  F      x   522.8066     0.0000     0.0000       -7.6320    -0.0000     0.0000
+  F      y     0.0000   522.8066    -0.0000       -0.0000    -7.6320     0.0000
+  F      z     0.0000     0.0000   485.2265        0.0000    -0.0000   -46.0402
 
-  Diamagnetic contribution:    510.279923         Paramagnetic:     -20.434521
+  Diamagnetic contribution:    510.279908         Paramagnetic:     -20.434744
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1991,17 +2171,17 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
                  Bx         By         Bz            Bx         By         Bz
 
-  F      x     0.0000    -0.0000    -0.0000       25.3295     0.0000     0.0000
-  F      y     0.0000     0.0000     0.0000        0.0000    25.3295     0.0000
-  F      z     0.0000    -0.0000     0.0000        0.0000     0.0000   -50.6590
+  F      x     0.0000     0.0000    -0.0000       25.3294     0.0000     0.0000
+  F      y    -0.0000     0.0000     0.0000        0.0000    25.3294    -0.0000
+  F      z     0.0000    -0.0000     0.0000        0.0000    -0.0000   -50.6588
 
 
   Principal values and axes:
   --------------------------
 
-  F         515.174911  =  489.85  +  25.33:     0.016449  0.999865  0.000000
-  F         515.174911  =  489.85  +  25.33:     0.999865 -0.016449  0.000000
-  F         439.186385  =  489.85  -  50.66:    -0.000000 -0.000000  1.000000
+  F         515.174585  =  489.85  +  25.33:     0.666707  0.745320  0.000000
+  F         515.174585  =  489.85  +  25.33:     0.745320 -0.666707  0.000000
+  F         439.186322  =  489.85  -  50.66:    -0.000000  0.000000  1.000000
 
 
   Chemical shielding for H     :
@@ -2023,9 +2203,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  String on input: "H       "
                     Bx             By             Bz
 
-  H      x    28.29586614    -0.00000000    -4.67698892
-  H      y     0.00000000    25.20265922     0.00000000
-  H      z    -1.22235698     0.00000000    31.03653017
+  H      x    28.29589248     0.00000000    -4.67698197
+  H      y     0.00000000    25.20266699    -0.00000000
+  H      z    -1.22237753     0.00000000    31.03653518
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -2035,9 +2215,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
   H      x    41.4867     0.0000   -10.4546      -13.1908    -0.0000     5.7776
   H      y    -0.0000    14.1146    -0.0000        0.0000    11.0881     0.0000
-  H      z   -51.8232    -0.0000    23.0896       50.6009     0.0000     7.9469
+  H      z   -51.8232    -0.0000    23.0897       50.6009     0.0000     7.9469
 
-  Diamagnetic contribution:     26.230297         Paramagnetic:       1.948055
+  Diamagnetic contribution:     26.230306         Paramagnetic:       1.948058
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -2045,17 +2225,17 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H      x     0.0000    -0.0000    -1.7273        0.1175    -0.0000    -2.9497
-  H      y     0.0000     0.0000    -0.0000       -0.0000    -2.9757     0.0000
+  H      x     0.0000     0.0000    -1.7273        0.1175     0.0000    -2.9497
+  H      y    -0.0000     0.0000    -0.0000        0.0000    -2.9757     0.0000
   H      z     1.7273     0.0000     0.0000       -2.9497     0.0000     2.8582
 
 
   Principal values and axes:
   --------------------------
 
-  H          25.202659  =   28.18  -   2.98:     0.000000  1.000000 -0.000000
-  H          26.413756  =   28.18  -   1.76:     0.843008  0.000000  0.537901
-  H          32.918640  =   28.18  +   4.74:    -0.537901  0.000000  0.843008
+  H          25.202667  =   28.18  -   2.98:    -0.000000  1.000000 -0.000000
+  H          26.413770  =   28.18  -   1.76:     0.843007  0.000000  0.537903
+  H          32.918658  =   28.18  +   4.74:    -0.537903  0.000000  0.843007
 
 
   Chemical shielding for H     :
@@ -2077,9 +2257,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  String on input: "H       "
                     Bx             By             Bz
 
-  H      x    25.97596048     1.33939750     2.33849378
-  H      y     1.33939719    27.52256394     4.05039111
-  H      z     0.61117781     1.05859209    31.03653111
+  H      x    25.97597290     1.33940554     2.33849030
+  H      y     1.33940523    27.52258564     4.05038509
+  H      z     0.61118808     1.05860989    31.03653612
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -2088,10 +2268,10 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                  Bx         By         Bz            Bx         By         Bz
 
   H      x    20.9576    11.8525     5.2273        5.0184   -10.5131    -2.8888
-  H      y    11.8525    34.6436     9.0540      -10.5131    -7.1211    -5.0036
-  H      z    25.9116    44.8802    23.0897      -25.3004   -43.8217     7.9469
+  H      y    11.8525    34.6437     9.0540      -10.5131    -7.1211    -5.0036
+  H      z    25.9116    44.8802    23.0897      -25.3004   -43.8216     7.9469
 
-  Diamagnetic contribution:     26.230297         Paramagnetic:       1.948055
+  Diamagnetic contribution:     26.230306         Paramagnetic:       1.948058
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -2107,9 +2287,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
   Principal values and axes:
   --------------------------
 
-  H          25.202659  =   28.18  -   2.98:     0.866025 -0.500000  0.000000
-  H          26.413756  =   28.18  -   1.76:     0.421504  0.730066 -0.537901
-  H          32.918640  =   28.18  +   4.74:     0.268951  0.465836  0.843008
+  H          25.202667  =   28.18  -   2.98:     0.866025 -0.500000  0.000000
+  H          26.413770  =   28.18  -   1.76:     0.421503  0.730065 -0.537903
+  H          32.918658  =   28.18  +   4.74:     0.268951  0.465838  0.843007
 
 
   Chemical shielding for H     :
@@ -2131,9 +2311,9 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  String on input: "H       "
                     Bx             By             Bz
 
-  H      x    25.97596048    -1.33939750     2.33849378
-  H      y    -1.33939719    27.52256394    -4.05039111
-  H      z     0.61117781    -1.05859209    31.03653111
+  H      x    25.97597290    -1.33940554     2.33849030
+  H      y    -1.33940523    27.52258564    -4.05038509
+  H      z     0.61118809    -1.05860989    31.03653612
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -2142,10 +2322,10 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                  Bx         By         Bz            Bx         By         Bz
 
   H      x    20.9576   -11.8525     5.2273        5.0184    10.5131    -2.8888
-  H      y   -11.8525    34.6436    -9.0540       10.5131    -7.1211     5.0036
-  H      z    25.9116   -44.8802    23.0897      -25.3004    43.8217     7.9469
+  H      y   -11.8525    34.6437    -9.0540       10.5131    -7.1211     5.0036
+  H      z    25.9116   -44.8802    23.0897      -25.3004    43.8216     7.9469
 
-  Diamagnetic contribution:     26.230297         Paramagnetic:       1.948055
+  Diamagnetic contribution:     26.230306         Paramagnetic:       1.948058
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -2161,24 +2341,26 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
   Principal values and axes:
   --------------------------
 
-  H          25.202659  =   28.18  -   2.98:     0.866025  0.500000  0.000000
-  H          26.413756  =   28.18  -   1.76:    -0.421504  0.730066  0.537901
-  H          32.918640  =   28.18  +   4.74:     0.268951 -0.465836  0.843008
+  H          25.202667  =   28.18  -   2.98:     0.866025  0.500000  0.000000
+  H          26.413770  =   28.18  -   1.76:    -0.421503  0.730065  0.537903
+  H          32.918658  =   28.18  +   4.74:     0.268951 -0.465838  0.843007
 
 
                          +--------------------------------+
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from J.Mason, Solid state Nuc.Magn.Res. 2 (1993), 285
+@1  Definitions from J. Mason, Solid state Nuc. Magn. Res. 2 (1993), 285
 
- @1atom   shielding       dia      para     skew      span     (aniso     asym)
- @1----------------------------------------------------------------------------
- @1C       127.4925  319.3878 -191.8953    1.0000   95.4225   95.4225    0.0000
- @1F       489.8454  510.2799  -20.4345   -1.0000   75.9885   37.9943    3.0000
- @1H        28.1784   26.2303    1.9481    0.6861    7.7160    7.1104    0.2555
- @1H        28.1784   26.2303    1.9481    0.6861    7.7160    7.1104    0.2555
- @1H        28.1784   26.2303    1.9481    0.6861    7.7160    7.1104    0.2555
+@1 London orbitals (GIAOs) has been used.
+
+@1 atom   shielding       dia      para     skew      span     (aniso     asym)
+@1 ----------------------------------------------------------------------------
+@1 C       127.4926  319.3878 -191.8952    1.0000   95.4221   95.4221    0.0000
+@1 F       489.8452  510.2799  -20.4347   -1.0000   75.9883   37.9941    3.0000
+@1 H        28.1784   26.2303    1.9481    0.6861    7.7160    7.1104    0.2555
+@1 H        28.1784   26.2303    1.9481    0.6861    7.7160    7.1104    0.2555
+@1 H        28.1784   26.2303    1.9481    0.6861    7.7160    7.1104    0.2555
 
 
 
@@ -2186,15 +2368,17 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from Smith, Palke and Grieg, Concepts in Mag.Res. 4 (1992), 107
+@2  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992), 107
 
- @2atom   shielding       dia      para     aniso      asym        S        A
- @2----------------------------------------------------------------------------
- @2C       127.4925  319.3878 -191.8953   95.4225    0.0000   95.4225    0.0000
- @2F       489.8454  510.2799  -20.4345  -75.9885    0.0000   75.9885    0.0000
- @2H        28.1784   26.2303    1.9481    7.1104    0.2555    7.1874    1.7273
- @2H        28.1784   26.2303    1.9481    7.1104    0.2555    7.1874    1.7273
- @2H        28.1784   26.2303    1.9481    7.1104    0.2555    7.1874    1.7273
+@2 London orbitals (GIAOs) has been used.
+
+@2 atom   shielding       dia      para     aniso      asym        S        A
+@2 ----------------------------------------------------------------------------
+@2 C       127.4926  319.3878 -191.8952   95.4221    0.0000   95.4221    0.0000
+@2 F       489.8452  510.2799  -20.4347  -75.9883    0.0000   75.9883    0.0000
+@2 H        28.1784   26.2303    1.9481    7.1104    0.2555    7.1874    1.7273
+@2 H        28.1784   26.2303    1.9481    7.1104    0.2555    7.1874    1.7273
+@2 H        28.1784   26.2303    1.9481    7.1104    0.2555    7.1874    1.7273
 
 
 
@@ -2211,8 +2395,16 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  cav   :    0.736823    0.637378    1.488968    1.488968    1.488968    0.000000
 
 
-  Max interatomic separation is    2.0002 Angstrom (    3.7798 Bohr)
+  Max    interatomic separation is    2.0002 Angstrom (    3.7798 Bohr)
   between atoms    4 and    2, "H     " and "F     ".
+
+  Min HX interatomic separation is    1.0805 Angstrom (    2.0418 Bohr)
+
+  Min YX interatomic separation is    0.6374 Angstrom (    1.2045 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    0    2
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -2244,24 +2436,24 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
  CPU time statistics for ABACUS
  ------------------------------
 
- MAGINT     00:00:01       8 %
- RHSIDE     00:00:09      65 %
- LINRES     00:00:04      28 %
+ RHSIDE     00:00:05      60 %
+ LINRES     00:00:03      32 %
+ REST       00:00:01      15 %
 
- TOTAL      00:00:13     100 %
+ TOTAL      00:00:08     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  13.22 seconds
- >>>> Total wall time used in ABACUS:  14.00 seconds
+ >>>> Total CPU  time used in ABACUS:   7.97 seconds
+ >>>> Total wall time used in ABACUS:   8.14 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  48.56 seconds
- >>>> Total wall time used in DALTON:  57.00 seconds
+ >>>> Total CPU  time used in DALTON:  28.33 seconds
+ >>>> Total wall time used in DALTON:  35.15 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:42:15 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 15:31:05 2013
+     Host name              : c10-6.local                             

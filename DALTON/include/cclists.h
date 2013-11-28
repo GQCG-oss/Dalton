@@ -1,5 +1,5 @@
 *======================================================================*
-*    
+*
 *     Purpose: centralize info about the leading dimensions of the
 *              transformation lists
 *

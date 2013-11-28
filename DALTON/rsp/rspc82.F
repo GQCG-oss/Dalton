@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -105,7 +105,7 @@ C
 C
 C ALLOCATE WORK SPACE FOR RSPLIN
 C
-
+      CALL QENTER('RSPLIN')
       KELI   = 1
       KSLI   = KELI + (NCSIM+NOSIM) * KZYVAR
       KWRKS  = KSLI + (NCSIM+NOSIM) * KZYVAR
@@ -121,6 +121,7 @@ C    *            XINDX,WRK,LWRK)
       CALL DZERO(WRK(KSLI),NTOT)
       CALL RSPSLI(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
      *            UDV,WRK(KSLI),XINDX,WRK(KWRKS),LWRKS)
+      CALL QEXIT('RSPLIN')
       RETURN
       END
 C  /* Deck rspsli */
@@ -163,6 +164,7 @@ C
       PARAMETER ( D1 = 1.0D0 , DM1 = -1.0D0 )
       PARAMETER ( DUMMY = 1.0D20 )
 C
+      CALL QENTER('RSPSLI')
 C
 C
 C ALLOCATE WORK SPACE
@@ -353,6 +355,7 @@ C      END IF
 C
 C END OF RSPSLI
 C
+      CALL QEXIT('RSPSLI')
       RETURN
       END
 C  /* Deck rspsor */
@@ -437,6 +440,7 @@ C
       PARAMETER (  D2 =2.0D0  )
 C
 C
+      CALL QENTER('RSPSOR')
       KYCONF = KZCONF + KZVAR
 C
 C DISTRIBUTE FOCK MATRICES IN EVECS
@@ -547,6 +551,7 @@ C
 C
 C END OF RSPSOR
 C
+      CALL QEXIT('RSPSOR')
       RETURN
       END
 C  /* Deck rspeli */
@@ -585,6 +590,10 @@ C
 #include "wrkrsp.h"
 #include "infrsp.h"
 #include "gnrinf.h"
+#include "mxcent.h"
+#include "wavpcm.h"
+C
+      CALL QENTER('RSPELI')
 C
 C
 C ALLOCATE WORK SPACE
@@ -657,17 +666,15 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
-C---------------------
-C CBN+JK 03.01.06
-C---------------------
-C     This covers also mm/pcm
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm
+     &             .or. QMNPMM .or. WAVPCM) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF
 C
-C *** END OF RSPLIN
+C *** END OF RSPELI
 C
+      CALL QEXIT('RSPELI')
       RETURN
       END
 C  /* Deck rsporb */
@@ -762,6 +769,7 @@ C -- local constants
 C
       PARAMETER ( D0 = 0.0D0 , D2 =2.0D0 , DM1 = -1.0D0 )
 C
+      CALL QENTER('RSPORB')
 C
       KYCONF = KZCONF + KZVAR
       if (KYCONF + kzwopt .gt. kzyvar) then
@@ -991,6 +999,7 @@ C
 C
 C END OF RSPORB
 C
+      CALL QEXIT('RSPORB')
       RETURN
       END
 C  /* Deck rspnex */
@@ -1047,6 +1056,8 @@ C
       LOGICAL LINEQ,OLSEN1,LMAXIT
       real(8), allocatable :: THCORP(:),EOVAL(:)
       integer, allocatable :: KEX(:)
+C
+      CALL QENTER('RSPNEX')
 C
       IF (KEXSIM .LE. 0) THEN
          WRITE (LUPRI,*) 'ERROR in RSPNEX: KEXSIM .le. 0'
@@ -1695,6 +1706,7 @@ C
          deallocate(EOVAL)
          deallocate(THCORP)
       end if
+      CALL QEXIT('RSPNEX')
       RETURN
       END
 C  /* Deck rspord */
@@ -1721,6 +1733,8 @@ C
       PARAMETER (ZEROT=1.0D-9)
       PARAMETER (COMPLX = 1.0D7 )
       PARAMETER (D0=0.0D0, D1=1.0D0)
+C
+      CALL QENTER('RSPORD')
 C
       IF (IPRRSP .GT. 20) THEN
          WRITE (LUPRI,'(//A/A)')
@@ -1905,6 +1919,7 @@ C
          END IF
       END IF
 C
+      CALL QEXIT('RSPORD')
       RETURN
       END
 C  /* Deck rsport */
@@ -1976,6 +1991,8 @@ C
       IF (NBNEW .LE. 0) RETURN
 
       allocate( JLDP(NBNEW) )
+C
+      CALL QENTER('RSPORT')
 C
 C *** Average new trial vectors for supersymmetry
 C
@@ -2293,6 +2310,7 @@ C
 C
       deallocate( JLDP )
 
+      CALL QEXIT('RSPORT')
       RETURN
 C
 C     ERROR : Illegal IBTYP found:
@@ -2439,6 +2457,7 @@ C
          END IF
 C        WRITE (IUNIT,1000) JWOPSY,PRFAC*100.
       ELSE
+         THPLIM = 0.0D0
 C        WRITE (IUNIT,1010) JWOPSY
       ENDIF
       IF (SOPPA) THEN
@@ -2446,16 +2465,14 @@ C        WRITE (IUNIT,1010) JWOPSY
          CALL SOPIJ(ISYMV,IOFFY,IUNIT,RSPVEC,XNDXCI(KABSAD),
      *              XNDXCI(KABTAD),XNDXCI(KIJSAD),XNDXCI(KIJTAD),
      *              XNDXCI(KIJ1AD),XNDXCI(KIJ2AD),XNDXCI(KIJ3AD),THPSOP)
-      ENDIF
-      INPR = 0
-      IF (SOPPA) THEN
          IF (IPRRSP.GT.20) WRITE(IUNIT,1021)
       ELSE
          WRITE(IUNIT,1020)
       ENDIF
+      INPR = 0
       DO 200 IG = 1,NZCONF
-         IF (IUNITX.LT.0 .OR. ABS(RSPVEC(IG)) .GT. THPLIM
-     *        .OR. ABS(RSPVEC(IOFFY+IG)) .GT. THPLIM) THEN
+         IF (ABS(RSPVEC(IG)) .GT. THPLIM .OR.
+     &       ABS(RSPVEC(IOFFY+IG)) .GT. THPLIM) THEN
             IF (SOPPA) THEN
                IF (IPRRSP .GT. 20) THEN
                   CALL SOPIJAB(IG,ISYMV,II,IISYM,IJ,
@@ -2505,14 +2522,14 @@ C1010 FORMAT(/5X,'Response configuration operator symmetry =',I2)
      *       /' -----------   ---    ---    ---    ---  ----',
      *            '  --------------   --------------')
  1100 FORMAT(I12,20X,2F20.10)
- 1110 FORMAT(I10,2X,I4,'(',I1,')',I4,'(',I1,')',I4,'(',I1,')',I4,'(',
+ 1110 FORMAT(I10,I6,'(',I1,')',I4,'(',I1,')',I4,'(',I1,')',I4,'(',
      *       I1,')',A3,2F17.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
-     *       1P,D9.2,' not printed.',
+ 1200 FORMAT(/I9,' elements with absolute value ≤',
+     *       1P,D9.2,' are not printed.',
      *       //' The numbers in parenthesis',
      *         ' give the configuration symmetry.')
- 1210 FORMAT(/1X,I8,' elements with absolute value less than',
-     *       1P,D9.2,' not printed.',
+ 1210 FORMAT(/I9,' elements with absolute value ≤',
+     *       1P,D9.2,' are not printed.',
      *       //' The numbers in parenthesis give the symmetry of the ',
      *         '2p-2h elements.')
  3000 FORMAT(/5X,'Configuration operator symmetry =',I2,
@@ -2522,7 +2539,7 @@ C -- end of subroutine RSPANC
 C
       END
 C  /* Deck rsppro */
-      SUBROUTINE RSPPRO (WOP,IOFFY,IUNITX)
+      SUBROUTINE RSPPRO (WOP,IOFFY,UDV,IUNITX)
 C
 C Written 31-May-1987 hjaaj
 C
@@ -2537,8 +2554,9 @@ C  if IUNITX .gt. 0, write only elements with absolut value
 C                    .ge. PRFAC * (max. absolut value)
 C
 #include "implicit.h"
-      DIMENSION WOP(*)
       PARAMETER (PRFAC = 1.D-1)
+      DIMENSION WOP(*), UDV(NASHDI,*)
+      REAL*8  :: WOP_SCALED(NWOPT,2)   ! allocatable array
 C
 C Used from common blocks:
 C   INFIND : ISMO(*)
@@ -2546,6 +2564,7 @@ C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
 C
 #include "maxorb.h"
 #include "maxash.h"
+#include "infdim.h"
 #include "infind.h"
 #include "infvar.h"
 C
@@ -2553,50 +2572,83 @@ C
 C
 C Any elements?
 C
-      IF (NWOPT.LE.0) GO TO 300
+      IF (NWOPT.LE.0) THEN
+         WRITE (IUNIT,3000) JWOPSY
+         GO TO 300
+      END IF
+C
+C Scale vector with square root of metric diagonal elements ( S[2] )
+C
+      WOP_SC_AMAX = 0.0D0
+      DO IG = 1, NWOPT
+         K  = JWOP(1,IG)
+         L  = JWOP(2,IG)
+         KA = ICH(K)
+         IF (KA .LT. 0) THEN
+            OCC_K = 2.0D0
+         ELSE IF (KA .GT. 0) THEN
+            OCC_K = UDV(KA,KA)
+         ELSE
+            OCC_K = 0.0D0
+         END IF
+         LA = ICH(L)
+         IF (LA .LT. 0) THEN
+            OCC_L = 2.0D0
+         ELSE IF (LA .GT. 0) THEN
+            OCC_L = UDV(LA,LA)
+         ELSE
+            OCC_L = 0.0D0
+         END IF
+         FACTOR = ABS(OCC_K - OCC_L)
+         FACTOR = SQRT( FACTOR )
+         WOP_SCALED(IG,1) = FACTOR*WOP(IG)
+         WOP_SCALED(IG,2) = FACTOR*WOP(IOFFY+IG)
+         WOP_SC_AMAX = MAX(WOP_SC_AMAX, ABS(WOP_SCALED(IG,1)),
+     &                                  ABS(WOP_SCALED(IG,2)) )
+      END DO
 C
 C 1. find maximum absolute value in WOP
 C
       IF (IUNITX.GT.0) THEN
-         MAXX   = IDAMAX(NWOPT,WOP,1)
-         MAXY   = IDAMAX(NWOPT,WOP(IOFFY+1),1)
-         THPWOP = PRFAC * MAX( ABS(WOP(MAXX)) , ABS(WOP(MAXY)) )
+         THPWOP = PRFAC * WOP_SC_AMAX
          WRITE (IUNIT,1000) JWOPSY,PRFAC*100.D0
       ELSE
+         THPWOP = 0.0D0
          WRITE (IUNIT,1010) JWOPSY
       ENDIF
       WRITE (IUNIT,1020)
       INPR = 0
       DO 200 IG = 1,NWOPT
-         IF (IUNITX.LT.0 .OR. ABS(WOP(IG))       .GT. THPWOP
-     *                   .OR. ABS(WOP(IOFFY+IG)) .GT. THPWOP) THEN
+         IF (ABS(WOP_SCALED(IG,1)) .GT. THPWOP .OR.
+     &       ABS(WOP_SCALED(IG,2)) .GT. THPWOP) THEN
             K  = JWOP(1,IG)
             L  = JWOP(2,IG)
             KS = ISMO(K)
             LS = ISMO(L)
-            WRITE (IUNIT,1100) IG,K,KS,L,LS,WOP(IG),WOP(IOFFY+IG)
+            WRITE (IUNIT,1100) IG,K,KS,L,LS,WOP(IG),WOP(IOFFY+IG),
+     &         WOP_SCALED(IG,1),WOP_SCALED(IG,2)
          ELSE
             INPR = INPR + 1
          ENDIF
   200 CONTINUE
       IF (INPR.GT.0) WRITE (IUNIT,1200) INPR,THPWOP
 C
-      RETURN
-C
   300 CONTINUE
-      WRITE (IUNIT,3000) JWOPSY
       RETURN
 C
- 1000 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
-     *  5X,'(only elements abs greater than',F8.2,
-     *     ' % of max abs value)')
- 1010 FORMAT(/5X,'Response orbital operator symmetry =',I2)
- 1020 FORMAT(/,5X,' Index(r,s)      r      s        (r s) operator',
-     *            '      (s r) operator',
-     *       /,5X,' ----------    -----  -----      --------------',
-     *            '      --------------')
- 1100 FORMAT(I12,I10,'(',I1,')',I4,'(',I1,')',2F20.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
+ 1000 FORMAT(/5X,'Response orbital operator symmetry =',I2,
+     &       /5X,'(only scaled elements abs greater than',F8.2,
+     &           ' % of max abs value)')
+ 1010 FORMAT(/5X,'Response orbital operator symmetry =',I2,
+     &       /5X,'(all non-zero values)')
+ 1020 FORMAT(/5X,' Index(r,s)      r      s  ',
+     &           '      (r s) operator      (s r) operator',
+     &           '      (r s) scaled        (s r) scaled',
+     &       /5X,' ----------    -----  -----',
+     &           '      --------------      --------------',
+     &           '      --------------      --------------')
+ 1100 FORMAT(I12,I10,'(',I1,')',I4,'(',I1,')',4F20.10)
+ 1200 FORMAT(/I9,' elements with absolute value ≤$',
      *       1P,D9.2,' not printed.',
      *       //' The numbers in parenthesis give the orbital symmetry.')
  3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
@@ -2606,7 +2658,7 @@ C -- end of subroutine RSPPRO
 C
       END
 C  /* Deck rspprw */
-      SUBROUTINE RSPPRW (WOP,MJWOP,NZWOPT,NWOPSY,IOFFY,IUNITX)
+      SUBROUTINE RSPPRW (WOP,MJWOP,NZWOPT,NWOPSY,IOFFY,UDV,IUNITX)
 C
 C Written Jan 92, pj and ov, based on RSPPRO
 C Modified Mar 920314 ov, symmetry in parameter list (more RSPPRO-like)
@@ -2624,14 +2676,14 @@ C
 #include "implicit.h"
 #include "maxorb.h"
 #include "maxash.h"
+#include "infdim.h"
 #include "infind.h"
 #include "infvar.h"
-      DIMENSION WOP(*), MJWOP(2,MAXWOP,8)
+      DIMENSION WOP(*), MJWOP(2,MAXWOP,8), UDV(NASHDI,*)
       PARAMETER (PRFAC = 1.D-1)
 C
 C Used from common blocks:
 C   INFIND : ISMO(*)
-C
 C
       IUNIT = IABS(IUNITX)
 C
@@ -3212,6 +3264,8 @@ C
 C
 C WORK SPACE ALLOCATION
 C
+      CALL QENTER('PPST')
+C
       CALL PHPINI(LPHPMX,KZCONF,KZWOPT,MAXPHP)
       KDIAE  = 1
       KDIASO = KDIAE + LPHPMX
@@ -3585,6 +3639,7 @@ C           CALL DCOPY(NTOT,WRK(KDIASO),1,WRK(1),1)
 C
 C     END OF PPST
 C
+      CALL QEXIT('PPST')
       RETURN
       END
 C  /* Deck rsptr1 */
@@ -3611,6 +3666,8 @@ C
 #include "infind.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
+C
+      CALL QENTER('RSPTR1')
 C
       CALL DZERO(DENB,NORBT*NASHT*NSIM)
       CALL DZERO(DENA,NORBT*NASHT*NSIM)
@@ -3659,6 +3716,7 @@ C
      &                  LUPRI)
  3010    CONTINUE
       END IF
+      CALL QEXIT('RSPTR1')
       RETURN
       END
 C  /* Deck rspzym */
@@ -3683,6 +3741,9 @@ C
 #include "wrkrsp.h"
 C
       PARAMETER ( D1 = 1.0D0 )
+C
+      CALL QENTER('RSPZYM')
+C
       CALL DZERO(ZYMAT,NORBT*NORBT*NSIM)
       DO 100 ISIM=1,NSIM
          DO 200 IG=1,KZWOPT
@@ -3710,6 +3771,7 @@ C 300  CONTINUE
  400     CONTINUE
       END IF
 C
+      CALL QEXIT('RSPZYM')
       RETURN
       END
 C  /* Deck rspcve */
@@ -3731,6 +3793,8 @@ C
 #include "wrkrsp.h"
 #include "inftap.h"
 #include "infpri.h"
+C
+      CALL QENTER('RSPCVE')
 C
       CALL DZERO(BVECS,KZCONF)
       CALL REWSPL(LURSP3)
@@ -3771,8 +3835,9 @@ C
          CALL OUTPUT(BVECS(1),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
       END IF
 C
-C     END OF RSPEVE
+C     END OF RSPCVE
 C
+      CALL QEXIT('RSPCVE')
       RETURN
       END
 C  /* Deck phpdsk */
@@ -3791,6 +3856,8 @@ C
 #include "infpri.h"
 #include "inftap.h"
       LOGICAL PHPWRT
+C
+      CALL QENTER('PHPDSK')
 C
       CALL REWSPL(LURSP4)
       JRSP4 = 0
@@ -3839,5 +3906,6 @@ C
 C
 C *** END OF PHPDSK
 C
+      CALL QEXIT('PHPDSK')
       RETURN
       END

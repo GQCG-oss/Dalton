@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -372,13 +372,13 @@ C
      *      ' expected           :',MEMID
          WRITE (LUWMEM,'(/A/A)')
      &      ' Dump of allocations before invalid memget id:',
-     &      ' IALLOC #    IDENT     KBASE         Length'
+     &      ' IALLOC #    IDENT       KBASE         Length'
          KALLOC = KFIRST
          IF (KALLOC .EQ. 1) KALLOC = 1 + LENID
          DO I = 1, IALLOC
             WRITE (IDENT8,'(A8)') WORK(KALLOC-LENID)
             WLREAL = WORK(KALLOC-LENID+1)
-            WRITE (LUWMEM,'(I5,2X,A8,2I15)') I,IDENT8,KALLOC,LREAL
+            WRITE (LUWMEM,'(I7,5X,A8,I13,I15)') I,IDENT8,KALLOC,LREAL
             KALLOC = KALLOC + LENID + LREAL
          END DO
 #ifdef DBG_LENID

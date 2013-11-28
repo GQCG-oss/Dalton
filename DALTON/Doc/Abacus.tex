@@ -76,8 +76,8 @@ intensity}.
 \item[\Key{DIPORG}]\verb| |\newline
 \verb|READ (LUCMD, *) (DIPORG(ICOOR), ICOOR = 1, 3)|
 
-Reads in a user defined dipole origin\index{dipole origin}\index{origin!dipole, second order, quadrupole, third order} in bohrs.
-It is also used for second order (.SECMOM), quadrupole (.QUADRU),
+Reads in a user defined dipole origin\index{dipole origin}\index{origin!dipole, second order, quadrupole, third order}
+in \bohr{}. It is also used for second order (.SECMOM), quadrupole (.QUADRU),
 and third order (.THIRDM) moments.  This may affect properties in
 which changes in the dipole origin\index{dipole origin} is canceled by
 similar changes in the nuclear part.
@@ -626,11 +626,6 @@ functions.
 %(ROA)\index{Raman optical activity}\index{ROA}.
 
 \begin{description}
-\item[\Key{ABSLRS}]\verb| |\newline
-If absorption is included in the calculation of the linear response
-functions, the algorithm with symmetrized trial vectors\cite{kauczor:2011}
-is used to solve damped response equations. \Key{ABSLRS} requires that
-\Key{LIFETIME} is specified.
 
 \item[\Key{FREQUE}]\verb| |\newline
 \verb|READ (LUCMD,*) NFRVAL|\newline
@@ -646,14 +641,22 @@ static case is evaluated.
 The \Key{FREQUE} keyword may be combined with the wave length input
 \Key{WAVELE} (see below).
 
-\item[\Key{LIFETIME}]\verb| |\newline
-\verb|READ (LUCMD,*) LIFETIME|
+\item[\Key{DAMPING}]\verb| |\newline
+\verb|READ (LUCMD,*) ABS_DAMP|
 
 Sets the lifetime of the excited states if absorption is also included
 in the calculation of the linear response functions as described in
 Ref.~\cite{pndmbhjajjojcp115,pnkrthjcp120}. The default is that no
 absorption is included in the calculation. The lifetime is given in
-$cm^{-1}$.
+atomic units. By default the algorithm with symmetrized trial vectors is
+used \cite{kauczor:2011}.
+
+\item[\Key{OLDCPP}]\verb| |\newline
+If absorption is included in the calculation of the linear response
+functions, the complex polarization propagator
+solver \cite{pndmbhjajjojcp123,pndmbhjajjojcp115} 
+is used to solve damped response equations. \Key{OLDCPP} requires that
+\Key{DAMPING} is specified.
 
 \item[\Key{MAX IT}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXITE|
@@ -799,8 +802,8 @@ absorption, using the dipole length form.
 \item[\Key{FNAC}] Calculate first-order non-adiabatic coupling
 matrix\index{non-adiabatic coupling element} elements. This is not yet
 fully implemented in the \aba\
-program package and must be combined with subsequent
-RESPONSE-calculations.
+module and must be combined with subsequent
+\response\ calculations.
 
 \item[\Key{INTPRI}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRINT|
@@ -1251,7 +1254,7 @@ Set print level for the two-electron density matrix sorting. Read one
 more line containing print level. Default value is the value of
 \verb|IPRDEF| from the general input module.
 
-\item[\Key{STOP}] Stop the the entire calculation after finishing
+\item[\Key{STOP}] Stop the entire calculation after finishing
 the construction of the right-hand side. Mainly for debugging purposes.
 
 \item[\Key{TIME}] Provide detailed timing breakdown for the
@@ -1742,7 +1745,7 @@ Calculates all coupling constants in a molecule to a selected number
 of nuclei only. The first number \verb|NUCSPI| is the number of nuclei
 to which couplings shall be calculated, and the next line reads in
 the number of the symmetry-independent nucleus as given in the
-\verb|MOLECULE.INP| file.
+\molinp\ file.
 
 \item[\Key{ISOTOP}]\verb| |\newline
 \verb|READ (LUCMD,*) (ISOTPS(IS), IS=1, NATOMS)|

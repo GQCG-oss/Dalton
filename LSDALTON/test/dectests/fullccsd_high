@@ -43,31 +43,25 @@ H          0.70368        0.11634       -1.09866
 #  DALTON INPUT
 #######################################################################
 cat > fullccsd_high.dal <<'%EOF%'
+**GENERAL
+.FORCEGCBASIS
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.FORCEGCBASIS
 .ARH
 .START
 TRILEVEL
 .CONVTHR
 1.0d-5
-$INFO
-DEBUG_MPI_MEM
-$END INFO
-**DEC
-!.mixedCCSD
+**INFO
+.DEBUG_MPI_MEM
+**CC
 .FrozenCore
-.MPIsplit
-0
-.manual_batchsizes
-19 19
-.CCSDforce_scheme
-4
-.SimulateFull
 .CCSD
 .ccThr
 1e-9
+.MEMORY
+1.0
 *END OF INPUT
 %EOF%
 #######################################################################

@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,191 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_vibave_spinspin
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.NMDDRV                                           
+**NMDDRV                                          
+.SYMMETRY                                         
+  C2v                                             
+.VIBANA                                           
+.DISPLA                                           
+ 0.01                                             
+*PROPAV                                           
+.ANHA-P                                           
+**WAVE FUNCTIONS                                  
+.HF                                               
+*SCF INPUT                                        
+.THRESH                                           
+ 1.0D-12                                          
+**EACH STEP                                       
+.SPIN-SPIN                                        
+*SPIN-S                                           
+.SELECT                                           
+  3                                               
+  1  2  3                                         
+*TRPRSP                                           
+.THRESH                                           
+1.0D-12                                           
+*LINRES                                           
+.THRESH                                           
+1.0D-12                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+STO-3G                                                                         
+H2O                                                                            
+                                                                               
+Atomtypes=2                                                                    
+Atoms=1 Charge=8.0                                                             
+O     0.0000000000        0.0000000000       -0.8009956615 Isotope=18          
+Charge=1.0 Atoms=2                                                             
+H     0.0000000000        1.4325641791        0.4004978308                     
+H     0.0000000000       -1.4325641791        0.4004978308                     
 
 
        *******************************************************************
@@ -105,7 +213,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     Geometry optimization
       Starting at iteration:    0
@@ -142,16 +250,16 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
 
 
                       SYMADD: Requested addition of symmetry
@@ -159,7 +267,10 @@
 
  Symmetry test threshold:  5.00E-06
 
- Symmetry class found: C(2v)  
+ - molecule centered at center of mass and rotated so
+   principal axes of inertia are along coordinate axes.
+
+ Symmetry class found: C(2v)          
 
  Symmetry Independent Centres             
  ----------------------------
@@ -237,7 +348,7 @@ Represented as:      C2v
   total:      3   10.0000    21     7
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -286,8 +397,10 @@ Represented as:      C2v
  H   _2:    0.989410    1.516161    0.000000
 
 
-  Max interatomic separation is    1.5162 Angstrom (    2.8651 Bohr)
+  Max    interatomic separation is    1.5162 Angstrom (    2.8651 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9894 Angstrom (    1.8697 Bohr)
 
 
   Bond distances (Angstrom):
@@ -312,9 +425,9 @@ Represented as:      C2v
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA       0.724542          0.000000    1.000000    0.000000
+   IA       0.732759          0.000000    1.000000    0.000000
    IB       1.158365          0.000000    0.000000    1.000000
-   IC       1.882907          1.000000    0.000000    0.000000
+   IC       1.891124          1.000000    0.000000    0.000000
 
 
  Rotational constants
@@ -324,11 +437,11 @@ Represented as:      C2v
 
                A                   B                   C
 
-         697515.5717         436286.3577         268403.6077 MHz
-           23.266615           14.552946            8.952981 cm-1
+         689693.6051         436286.3577         267237.3584 MHz
+           23.005702           14.552946            8.914079 cm-1
 
 
-@  Nuclear repulsion energy :    8.906487554664
+@  Nuclear repulsion energy :    8.906487554664 Hartree
 
 
   Symmetry Orbitals
@@ -379,8 +492,8 @@ Represented as:      C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:         138 ( 34.0% )
  Megabytes written:                              0.007
 
@@ -419,8 +532,8 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -429,21 +542,21 @@ Represented as:      C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -456,7 +569,7 @@ Represented as:      C2v
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -470,50 +583,51 @@ Represented as:      C2v
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1  -74.8614812061       1.78D+00  -7.49D+01    3  1  1  0
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -74.8614812061       1.78D+00  -7.49D+01     3   1   1   0
       Virial theorem: -V/T =      2.003392
-      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+@      MULPOP O      -0.36; H   _1  0.18; H   _2  0.18; 
  -----------------------------------------------------------------------------
-   2  -74.9602651426       2.38D-01  -9.88D-02    3  1  1  0
+@  2  -74.9602651426       2.38D-01  -9.88D-02     3   1   1   0
       Virial theorem: -V/T =      2.007483
-      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.32; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   3  -74.9656615390       4.86D-02  -5.40D-03    3  1  1  0
+@  3  -74.9656615390       4.86D-02  -5.40D-03     3   1   1   0
       Virial theorem: -V/T =      2.006384
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   4  -74.9658987284       3.52D-03  -2.37D-04    3  1  1  0
+@  4  -74.9658987284       3.52D-03  -2.37D-04     3   1   1   0
       Virial theorem: -V/T =      2.006018
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   5  -74.9659011616       3.96D-04  -2.43D-06    3  1  1  0
+@  5  -74.9659011616       3.96D-04  -2.43D-06     3   1   1   0
       Virial theorem: -V/T =      2.006002
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   6  -74.9659011927       2.87D-05  -3.10D-08    3  1  1  0
+@  6  -74.9659011927       2.87D-05  -3.10D-08     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   7  -74.9659011928       4.27D-08  -8.98D-11    3  1  1  0
+@  7  -74.9659011928       4.27D-08  -8.98D-11     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   8  -74.9659011928       9.69D-11   1.42D-14    3  1  1  0
+@  8  -74.9659011928       9.69D-11   0.00D+00     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   9  -74.9659011928       1.76D-12  -1.42D-14    3  1  1  0
+@  9  -74.9659011928       1.76D-12   0.00D+00     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-  10  -74.9659011928       1.11D-13   0.00D+00    3  1  1  0
+@ 10  -74.9659011928       1.12D-13  -2.84D-14     3   1   1   0
 
- *** DIIS converged in  10 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -74.965901192777    1.12D-13
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -538,25 +652,27 @@ Represented as:      C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.004       0.004
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -74.965901192777                 
-     Nuclear repulsion:             8.906487554664
-     Electronic energy:           -83.872388747440
+@    Final HF energy:             -74.965901192777                 
+@    Nuclear repulsion:             8.906487554664
+@    Electronic energy:           -83.872388747441
 
-     Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -585,11 +701,11 @@ Represented as:      C2v
 
 
  >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      0.01 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -612,9 +728,9 @@ Represented as:      C2v
 
 
      A vibrational analysis is done.
-     Which/how is specified in *VIBANA (and **PROPERTIES).
-     Group used for force constants   C2v          
-     Step size used: 0.0100
+     Which/how is specified in *VIBANA (and **EACH STEP).
+     Group used for force constants: C2v            
+     Step size used:     0.0100
 
 
  Changes of defaults for *PROPAV section:
@@ -628,9 +744,7 @@ Represented as:      C2v
      Vibrational averages of properties calculated.
 
      Vibrational averages of the following properties:
-
-     Harmonic contribution calculated.
-     Anharmonic contribution calculated.
+     Harmonic and anharmonic contributions calculated
      Cannot use group theory for this. 
      Group used in calculations: C2v            
 
@@ -722,8 +836,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:         138 ( 34.0% )
  Megabytes written:                              0.007
 
@@ -764,8 +878,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -774,21 +888,21 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   3
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -801,7 +915,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -815,50 +929,51 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1  -74.8614812061       1.78D+00   1.04D-01    3  1  1  0
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -74.8614812061       1.78D+00   1.04D-01     3   1   1   0
       Virial theorem: -V/T =      2.003392
-      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+@      MULPOP O      -0.36; H   _1  0.18; H   _2  0.18; 
  -----------------------------------------------------------------------------
-   2  -74.9602651426       2.38D-01  -9.88D-02    3  1  1  0
+@  2  -74.9602651426       2.38D-01  -9.88D-02     3   1   1   0
       Virial theorem: -V/T =      2.007483
-      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.32; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   3  -74.9656615390       4.86D-02  -5.40D-03    3  1  1  0
+@  3  -74.9656615390       4.86D-02  -5.40D-03     3   1   1   0
       Virial theorem: -V/T =      2.006384
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   4  -74.9658987284       3.52D-03  -2.37D-04    3  1  1  0
+@  4  -74.9658987284       3.52D-03  -2.37D-04     3   1   1   0
       Virial theorem: -V/T =      2.006018
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   5  -74.9659011616       3.96D-04  -2.43D-06    3  1  1  0
+@  5  -74.9659011616       3.96D-04  -2.43D-06     3   1   1   0
       Virial theorem: -V/T =      2.006002
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   6  -74.9659011927       2.87D-05  -3.10D-08    3  1  1  0
+@  6  -74.9659011927       2.87D-05  -3.10D-08     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   7  -74.9659011928       4.27D-08  -8.98D-11    3  1  1  0
+@  7  -74.9659011928       4.27D-08  -8.98D-11     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   8  -74.9659011928       9.69D-11   2.84D-14    3  1  1  0
+@  8  -74.9659011928       9.69D-11   5.68D-14     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   9  -74.9659011928       1.76D-12  -4.26D-14    3  1  1  0
+@  9  -74.9659011928       1.76D-12  -4.26D-14     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-  10  -74.9659011928       1.17D-13   1.42D-14    3  1  1  0
+@ 10  -74.9659011928       1.14D-13   1.42D-14     3   1   1   0
 
- *** DIIS converged in  10 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -74.965901192777    1.14D-13
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -883,25 +998,27 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.003       0.004
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -74.965901192777                 
-     Nuclear repulsion:             8.906487554664
-     Electronic energy:           -83.872388747440
+@    Final HF energy:             -74.965901192777                 
+@    Nuclear repulsion:             8.906487554664
+@    Electronic energy:           -83.872388747441
 
-     Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
 
@@ -909,14 +1026,17 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
+
+     Order of analytical energy-derivatives available:   2
+     This will be the default.
 
 
         *****************************************************************
@@ -971,6 +1091,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Center of mass dipole origin  :    0.000000    0.000000    0.000000
 
+ Center of mass gauge origin   :    0.000000    0.000000    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -978,8 +1100,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
    ***************************************************************************
@@ -988,8 +1110,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:22 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
  CPU time statistics for ABACUS
@@ -999,7 +1121,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  >>>> Total CPU  time used in ABACUS:   0.02 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total wall time used in ABACUS:   0.02 seconds
 
 
                    .-------------------------------------------.
@@ -1025,8 +1147,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
                         ---------------------------------
 
  O          0.0000000000            0.0000000000           -0.0000005771
- H   _1    -0.0000000000           -0.0000000245            0.0000002885
- H   _2    -0.0000000000            0.0000000245            0.0000002885
+ H   _1     0.0000000000           -0.0000000245            0.0000002885
+ H   _2     0.0000000000            0.0000000245            0.0000002885
 
 
                      Gradient in Dalton symmetry coordinates
@@ -1054,7 +1176,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
     3      0.000000    0.000000    0.000000    0.000000   -0.000000   -0.000000
     4      0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
     4      0.000000    0.000000    0.000000    0.000000    0.000000   -0.000000
-    4      0.000000    0.000000    0.000000    0.000000   -0.000000   -0.000000
+    4      0.000000    0.000000    0.000000    0.000000    0.000000   -0.000000
                                        
               4           4           4
     4      0.803949
@@ -1076,7 +1198,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  H   _1 y    0.000000   -0.401975   -0.216312    0.000000    0.438911
  H   _1 z    0.000000   -0.337136   -0.317450    0.000000    0.276724    0.300103
 
- H   _2 x   -0.000000    0.000000   -0.000000    0.000000   -0.000000   -0.000000
+ H   _2 x   -0.000000    0.000000   -0.000000    0.000000    0.000000   -0.000000
  H   _2 y    0.000000   -0.401975    0.216312    0.000000   -0.036936    0.060412
  H   _2 z    0.000000    0.337136   -0.317450   -0.000000   -0.060412    0.017347
 
@@ -1160,7 +1282,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Symmetry test threshold:  5.00E-06
 
- Symmetry class found: C(2v)  
+ Symmetry class found: C(2v)          
 
  The following elements were found:   X  Y     
 
@@ -1175,8 +1297,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:         138 ( 34.0% )
  Megabytes written:                              0.007
 
@@ -1217,8 +1339,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:22 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -1227,21 +1349,21 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   3
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -1254,7 +1376,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -1268,58 +1390,59 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1  -74.8616240071       1.78D+00   1.04D-01    3  1  1  0
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -74.8616240071       1.78D+00   1.04D-01     3   1   1   0
       Virial theorem: -V/T =      2.003449
-      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+@      MULPOP O      -0.36; H   _1  0.18; H   _2  0.18; 
  -----------------------------------------------------------------------------
-   2  -74.9602323990       2.37D-01  -9.86D-02    3  1  1  0
+@  2  -74.9602323990       2.37D-01  -9.86D-02     3   1   1   0
       Virial theorem: -V/T =      2.007604
-      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.32; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   3  -74.9656271879       4.86D-02  -5.39D-03    3  1  1  0
+@  3  -74.9656271879       4.86D-02  -5.39D-03     3   1   1   0
       Virial theorem: -V/T =      2.006492
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   4  -74.9658652210       3.53D-03  -2.38D-04    3  1  1  0
+@  4  -74.9658652210       3.53D-03  -2.38D-04     3   1   1   0
       Virial theorem: -V/T =      2.006128
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   5  -74.9658676780       4.38D-04  -2.46D-06    3  1  1  0
+@  5  -74.9658676780       4.38D-04  -2.46D-06     3   1   1   0
       Virial theorem: -V/T =      2.006111
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   6  -74.9658677153       3.90D-05  -3.72D-08    3  1  1  0
+@  6  -74.9658677153       3.90D-05  -3.72D-08     3   1   1   0
       Virial theorem: -V/T =      2.006113
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   7  -74.9658677155       3.90D-08  -1.78D-10    3  1  1  0
+@  7  -74.9658677155       3.90D-08  -1.78D-10     3   1   1   0
       Virial theorem: -V/T =      2.006112
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   8  -74.9658677155       4.95D-10   0.00D+00    3  1  1  0
+@  8  -74.9658677155       4.95D-10   0.00D+00     3   1   1   0
       Virial theorem: -V/T =      2.006112
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   9  -74.9658677155       9.03D-11   1.42D-14    3  1  1  0
+@  9  -74.9658677155       9.03D-11   2.84D-14     3   1   1   0
       Virial theorem: -V/T =      2.006112
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-  10  -74.9658677155       1.97D-11  -1.42D-14    3  1  1  0
+@ 10  -74.9658677155       1.97D-11   0.00D+00     3   1   1   0
       Virial theorem: -V/T =      2.006112
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-  11  -74.9658677155       5.56D-12   1.42D-14    3  1  1  0
+@ 11  -74.9658677155       5.56D-12   0.00D+00     3   1   1   0
       Virial theorem: -V/T =      2.006112
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-  12  -74.9658677155       2.41D-13  -2.84D-14    3  1  1  0
+@ 12  -74.9658677155       2.48D-13   0.00D+00     3   1   1   0
 
- *** DIIS converged in  12 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  12 iterations !
+@     Converged SCF energy, gradient:    -74.965867715451    2.48D-13
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1344,25 +1467,27 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.004       0.004
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -74.965867715452                 
-     Nuclear repulsion:             8.871614306203
-     Electronic energy:           -83.837482021654
+@    Final HF energy:             -74.965867715451                 
+@    Nuclear repulsion:             8.871614306203
+@    Electronic energy:           -83.837482021654
 
-     Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:22 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
 
@@ -1370,8 +1495,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:22 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  NOTE:    1 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -1381,6 +1506,9 @@ Symmetry   1       1       1       2       2       3       4       4       4
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
+
+     Order of analytical energy-derivatives available:   2
+     This will be the default.
 
 
         *****************************************************************
@@ -1425,6 +1553,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Center of mass dipole origin  :    0.000000    0.000000    0.000000
 
+ Center of mass gauge origin   :    0.000000    0.000000    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -1432,9 +1562,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:22 2011 
-     Host name              : fe6                                     
- Symmetry -> DSO by analytical integration.
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+Symmetry -> DSO by analytical integration.
 
 
    ***************************************************************************
@@ -1443,8 +1574,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:27 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
  *******************************************************************************
@@ -1481,6 +1612,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    36.43487      -0.000000      -0.000000    
+                y   -0.000000      -5.149956      -24.62192    
+                z   -0.000000      -24.23667      -4.995233    
+
+
               Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
@@ -1499,6 +1640,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
   Isotropic FC contribution :     12.4548 Hz
 
 
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    36.43487      -0.000000      -0.000000    
+                y   -0.000000      -5.149956       24.62192    
+                z   -0.000000       24.23667      -4.995233    
 
 
               Indirect spin-spin coupling between H   _2 and H   _1:
@@ -1521,14 +1672,24 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -62.14003       0.000000       0.000000    
+                y    0.000000     -0.5710868      -10.54340    
+                z    0.000000       10.54340      -18.80441    
+
+
  CPU time statistics for ABACUS
  ------------------------------
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.12 seconds
- >>>> Total wall time used in ABACUS:   5.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.07 seconds
+ >>>> Total wall time used in ABACUS:   0.07 seconds
 
 
                    .-------------------------------------------.
@@ -1554,7 +1715,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Symmetry test threshold:  5.00E-06
 
- Symmetry class found: C(2v)  
+ Symmetry class found: C(2v)          
 
  The following elements were found:   X  Y     
 
@@ -1569,8 +1730,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:         138 ( 34.0% )
  Megabytes written:                              0.007
 
@@ -1611,8 +1772,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:27 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -1621,21 +1782,21 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   3
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -1648,7 +1809,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -1662,54 +1823,55 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1  -74.8612671236       1.79D+00   1.05D-01    3  1  1  0
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -74.8612671236       1.79D+00   1.05D-01     3   1   1   0
       Virial theorem: -V/T =      2.003333
-      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+@      MULPOP O      -0.36; H   _1  0.18; H   _2  0.18; 
  -----------------------------------------------------------------------------
-   2  -74.9602309418       2.38D-01  -9.90D-02    3  1  1  0
+@  2  -74.9602309418       2.38D-01  -9.90D-02     3   1   1   0
       Virial theorem: -V/T =      2.007359
-      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.32; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   3  -74.9656284760       4.86D-02  -5.40D-03    3  1  1  0
+@  3  -74.9656284760       4.86D-02  -5.40D-03     3   1   1   0
       Virial theorem: -V/T =      2.006273
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   4  -74.9658647959       3.50D-03  -2.36D-04    3  1  1  0
+@  4  -74.9658647959       3.50D-03  -2.36D-04     3   1   1   0
       Virial theorem: -V/T =      2.005905
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   5  -74.9658672009       3.82D-04  -2.40D-06    3  1  1  0
+@  5  -74.9658672009       3.82D-04  -2.40D-06     3   1   1   0
       Virial theorem: -V/T =      2.005890
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   6  -74.9658672303       2.03D-05  -2.94D-08    3  1  1  0
+@  6  -74.9658672303       2.03D-05  -2.94D-08     3   1   1   0
       Virial theorem: -V/T =      2.005891
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   7  -74.9658672303       4.79D-08  -4.17D-11    3  1  1  0
+@  7  -74.9658672303       4.79D-08  -4.17D-11     3   1   1   0
       Virial theorem: -V/T =      2.005890
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   8  -74.9658672303       5.60D-10   1.42D-14    3  1  1  0
+@  8  -74.9658672303       5.60D-10  -1.42D-14     3   1   1   0
       Virial theorem: -V/T =      2.005890
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   9  -74.9658672303       1.39D-11   0.00D+00    3  1  1  0
+@  9  -74.9658672303       1.39D-11   0.00D+00     3   1   1   0
       Virial theorem: -V/T =      2.005890
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-  10  -74.9658672303       2.20D-12   1.42D-14    3  1  1  0
+@ 10  -74.9658672303       2.20D-12   0.00D+00     3   1   1   0
       Virial theorem: -V/T =      2.005890
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-  11  -74.9658672303       7.01D-13  -1.42D-14    3  1  1  0
+@ 11  -74.9658672303       7.02D-13   0.00D+00     3   1   1   0
 
- *** DIIS converged in  11 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:    -74.965867230345    7.02D-13
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1734,25 +1896,27 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.003       0.003
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -74.965867230345                 
-     Nuclear repulsion:             8.941636008363
-     Electronic energy:           -83.907503238708
+@    Final HF energy:             -74.965867230345                 
+@    Nuclear repulsion:             8.941636008363
+@    Electronic energy:           -83.907503238708
 
-     Final gradient norm:           0.000000000001
+@    Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:27 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
 
@@ -1760,8 +1924,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:27 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  NOTE:    2 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -1771,6 +1935,438 @@ Symmetry   1       1       1       2       2       3       4       4       4
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
+
+     Order of analytical energy-derivatives available:   2
+     This will be the default.
+
+
+        *****************************************************************
+        ******** Output from **EACH  input processing for ABACUS ********
+        *****************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+ Default print level:       -2
+
+      The molecular gradient
+      The molecular Hessian
+      Nuclear spin-spin coupling constants
+      Natural orbital connection is used
+      for perturbation dependent basis sets.
+
+ >>>>> WARNING - RHF calculations of spin-spin coupling constants are likely to give
+ >>>>> WARNING - qualitatively incorrect results !!!
+
+
+  Only the spin-spin couplings between the following nuclei will be calculated:
+  -----------------------------------------------------------------------------
+
+             1           2           3
+
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+ Print level in spin-spin output routine:    -2
+
+
+ Changes of defaults for TRPRSP:
+ -------------------------------
+
+ Threshold in TRPRSP          : 1.00E-12
+ Maximum iterations in TRPRSP :   60
+
+ Center of mass dipole origin  :    0.000000    0.000000    0.000000
+
+ Center of mass gauge origin   :    0.000000    0.000000    0.000000
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
+
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+Symmetry -> DSO by analytical integration.
+
+
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+ *******************************************************************************
+ **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
+ *******************************************************************************
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                       +------------------------------------+
+                       ! ABACUS - Final spin-spin couplings !
+                       +------------------------------------+
+
+
+
+              Indirect spin-spin coupling between H   _1 and O     :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:   17;   Abundance:   0.040 %;   g factor:  -0.757516
+
+  Isotropic coupling        :      6.6932 Hz
+  Anisotropic coupling      :    -55.1070 Hz
+  Asymmetry                 :      0.4611   
+  S parameter               :    -57.0261 Hz
+  A parameter               :     -0.1813 Hz
+  Isotropic DSO contribution:     -0.5056 Hz
+  Isotropic PSO contribution:     -4.7460 Hz
+  Isotropic SD contribution :      1.4160 Hz
+  Isotropic FC contribution :     10.5288 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    33.53174      -0.000000      -0.000000    
+                y   -0.000000      -6.949065      -23.49896    
+                z   -0.000000      -23.13629      -6.503105    
+
+
+              Indirect spin-spin coupling between H   _2 and O     :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:   17;   Abundance:   0.040 %;   g factor:  -0.757516
+
+  Isotropic coupling        :      6.6932 Hz
+  Anisotropic coupling      :    -55.1070 Hz
+  Asymmetry                 :      0.4611   
+  S parameter               :    -57.0261 Hz
+  A parameter               :     -0.1813 Hz
+  Isotropic DSO contribution:     -0.5056 Hz
+  Isotropic PSO contribution:     -4.7460 Hz
+  Isotropic SD contribution :      1.4160 Hz
+  Isotropic FC contribution :     10.5288 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    33.53174      -0.000000      -0.000000    
+                y   -0.000000      -6.949065       23.49896    
+                z   -0.000000       23.13629      -6.503105    
+
+
+              Indirect spin-spin coupling between H   _2 and H   _1:
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:    1;   Abundance:  99.985 %;   g factor:   5.585694
+
+  Isotropic coupling        :    -25.9755 Hz
+  Anisotropic coupling      :    -52.3071 Hz
+  Asymmetry                 :     -0.5471   
+  S parameter               :     54.8542 Hz
+  A parameter               :     10.8112 Hz
+  Isotropic DSO contribution:     -4.9707 Hz
+  Isotropic PSO contribution:      3.2532 Hz
+  Isotropic SD contribution :      1.2227 Hz
+  Isotropic FC contribution :    -25.4807 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -60.84688       0.000000       0.000000    
+                y    0.000000      0.9987070      -10.81123    
+                z    0.000000       10.81123      -18.07826    
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.07 seconds
+ >>>> Total wall time used in ABACUS:   0.07 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+
+
+ Next numerical derivative component
+ -----------------------------------
+
+    2
+
+
+ **************************************************************************************
+ ****************** Output of molecule and basis set info suppressed ******************
+ **************************************************************************************
+
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+ Symmetry class found: C(2v)          
+
+ The following elements were found:   X  Y     
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:         138 ( 34.0% )
+ Megabytes written:                              0.007
+
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    4    1    2    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.702651      -1.493270      -0.677648      -0.301636
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.616200
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.722938      -0.265557
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ (Wave function specification NOT suppressed here, because symmetry has changed.)
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ Title lines from ".mol" input file:
+     H2O                                                                     
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   3
+
+@    Restricted, closed shell Hartree-Fock calculation.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals            7 |    4    1    2    0
+     Number of basis functions           7 |    4    1    2    0
+
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               5 |    3    1    1    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-12
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    4
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -74.8608836053       1.78D+00   1.05D-01     3   1   1   0
+      Virial theorem: -V/T =      2.003361
+@      MULPOP O      -0.36; H   _1  0.18; H   _2  0.18; 
+ -----------------------------------------------------------------------------
+@  2  -74.9602545864       2.38D-01  -9.94D-02     3   1   1   0
+      Virial theorem: -V/T =      2.007498
+@      MULPOP O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+@  3  -74.9656551617       4.84D-02  -5.40D-03     3   1   1   0
+      Virial theorem: -V/T =      2.006385
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+@  4  -74.9658894449       3.37D-03  -2.34D-04     3   1   1   0
+      Virial theorem: -V/T =      2.006021
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+@  5  -74.9658916596       4.23D-04  -2.21D-06     3   1   1   0
+      Virial theorem: -V/T =      2.006005
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+@  6  -74.9658916946       3.41D-05  -3.51D-08     3   1   1   0
+      Virial theorem: -V/T =      2.006007
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+@  7  -74.9658916948       3.78D-08  -1.33D-10     3   1   1   0
+      Virial theorem: -V/T =      2.006006
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+@  8  -74.9658916948       1.98D-10   4.26D-14     3   1   1   0
+      Virial theorem: -V/T =      2.006006
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+@  9  -74.9658916948       1.90D-11  -1.42D-14     3   1   1   0
+      Virial theorem: -V/T =      2.006006
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+@ 10  -74.9658916948       2.87D-12   0.00D+00     3   1   1   0
+      Virial theorem: -V/T =      2.006006
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+@ 11  -74.9658916948       9.57D-13  -1.42D-14     3   1   1   0
+
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:    -74.965891694755    9.57D-13
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Sym       Hartree-Fock orbital energies
+
+  1    -20.25214893    -1.25790201    -0.46076556     0.58221030
+
+  2     -0.39290483
+
+  3     -0.59290782     0.69115369
+
+    E(LUMO) :     0.58221030 au (symmetry 1)
+  - E(HOMO) :    -0.39290483 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.97511513 au
+
+ >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.004       0.003
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
+
+@    Final HF energy:             -74.965891694755                 
+@    Nuclear repulsion:             8.905106197592
+@    Electronic energy:           -83.870997892347
+
+@    Final gradient norm:           0.000000000001
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ NOTE:    3 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+     Order of analytical energy-derivatives available:   2
+     This will be the default.
 
 
         *****************************************************************
@@ -1815,395 +2411,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Center of mass dipole origin  :    0.000000    0.000000   -0.000000
 
-
-                 .------------------------------------------------.
-                 | Starting in Static Property Section (ABACUS) - |
-                 `------------------------------------------------'
-
-
- 
-     Date and time (Linux)  : Wed Mar 16 19:03:27 2011 
-     Host name              : fe6                                     
- Symmetry -> DSO by analytical integration.
-
-
-   ***************************************************************************
-   ************************ FINAL RESULTS from ABACUS ************************
-   ***************************************************************************
-
-
- 
-     Date and time (Linux)  : Wed Mar 16 19:03:32 2011 
-     Host name              : fe6                                     
-
-
- *******************************************************************************
- **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
- *******************************************************************************
-
- Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
-
-
-
-                       +------------------------------------+
-                       ! ABACUS - Final spin-spin couplings !
-                       +------------------------------------+
-
-
-
-              Indirect spin-spin coupling between H   _1 and O     :
-              ======================================================
-
-
-  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
-  Mass number atom 2:   17;   Abundance:   0.040 %;   g factor:  -0.757516
-
-  Isotropic coupling        :      6.6932 Hz
-  Anisotropic coupling      :    -55.1070 Hz
-  Asymmetry                 :      0.4611   
-  S parameter               :    -57.0261 Hz
-  A parameter               :     -0.1813 Hz
-  Isotropic DSO contribution:     -0.5056 Hz
-  Isotropic PSO contribution:     -4.7460 Hz
-  Isotropic SD contribution :      1.4160 Hz
-  Isotropic FC contribution :     10.5288 Hz
-
-
-
-
-              Indirect spin-spin coupling between H   _2 and O     :
-              ======================================================
-
-
-  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
-  Mass number atom 2:   17;   Abundance:   0.040 %;   g factor:  -0.757516
-
-  Isotropic coupling        :      6.6932 Hz
-  Anisotropic coupling      :    -55.1070 Hz
-  Asymmetry                 :      0.4611   
-  S parameter               :    -57.0261 Hz
-  A parameter               :     -0.1813 Hz
-  Isotropic DSO contribution:     -0.5056 Hz
-  Isotropic PSO contribution:     -4.7460 Hz
-  Isotropic SD contribution :      1.4160 Hz
-  Isotropic FC contribution :     10.5288 Hz
-
-
-
-
-              Indirect spin-spin coupling between H   _2 and H   _1:
-              ======================================================
-
-
-  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
-  Mass number atom 2:    1;   Abundance:  99.985 %;   g factor:   5.585694
-
-  Isotropic coupling        :    -25.9755 Hz
-  Anisotropic coupling      :    -52.3071 Hz
-  Asymmetry                 :     -0.5471   
-  S parameter               :     54.8542 Hz
-  A parameter               :     10.8112 Hz
-  Isotropic DSO contribution:     -4.9707 Hz
-  Isotropic PSO contribution:      3.2532 Hz
-  Isotropic SD contribution :      1.2227 Hz
-  Isotropic FC contribution :    -25.4807 Hz
-
-
-
-
- CPU time statistics for ABACUS
- ------------------------------
-
-
-
-
- >>>> Total CPU  time used in ABACUS:   0.14 seconds
- >>>> Total wall time used in ABACUS:   5.00 seconds
-
-
-                   .-------------------------------------------.
-                   | End of Static Property Section (ABACUS) - |
-                   `-------------------------------------------'
-
-
-
- Next numerical derivative component
- -----------------------------------
-
-    2
-
-
- **************************************************************************************
- ****************** Output of molecule and basis set info suppressed ******************
- **************************************************************************************
-
-
-
-                      SYMADD: Requested addition of symmetry
-                      --------------------------------------
-
- Symmetry test threshold:  5.00E-06
-
- Symmetry class found: C(2v)  
-
- The following elements were found:   X  Y     
-
-
-                     .---------------------------------------.
-                     | Starting in Integral Section (HERMIT) |
-                     `---------------------------------------'
-
-
-
-    *************************************************************************
-    ****************** Output from HERMIT input processing ******************
-    *************************************************************************
-
- Threshold for neglecting two-electron integrals:  1.00D-15
-
- Number of two-electron integrals written:         138 ( 34.0% )
- Megabytes written:                              0.007
-
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
-
-
-                        .----------------------------------.
-                        | End of Integral Section (HERMIT) |
-                        `----------------------------------'
-
-
-
-                   .--------------------------------------------.
-                   | Starting in Wave Function Section (SIRIUS) |
-                   `--------------------------------------------'
-
-
- *** Output from Huckel module :
-
-     Using EWMO model:          F
-     Using EHT  model:          T
-     Number of Huckel orbitals each symmetry:    4    1    2    0
-
- Huckel EHT eigenvalues for symmetry :  1
-          -20.702651      -1.493270      -0.677648      -0.301636
-
- Huckel EHT eigenvalues for symmetry :  2
-           -0.616200
-
- Huckel EHT eigenvalues for symmetry :  3
-           -0.722938      -0.265557
-
- **********************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program       *
- **********************************************************************
-
- (Wave function specification NOT suppressed here, because symmetry has changed.)
-
- 
-     Date and time (Linux)  : Wed Mar 16 19:03:32 2011 
-     Host name              : fe6                                     
-
- Title lines from ".mol" input file:
-     H2O                                                                     
-                                                                             
-
- Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   3
-
-     Restricted, closed shell Hartree-Fock calculation.
-
- Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
-
-     Wave function specification
-     ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
-
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
-
-     Orbital specifications
-     ======================
-     Abelian symmetry species          All |    1    2    3    4
-                                       --- |  ---  ---  ---  ---
-     Total number of orbitals            7 |    4    1    2    0
-     Number of basis functions           7 |    4    1    2    0
-
-      ** Automatic occupation of RHF orbitals **
-
-      -- Initial occupation of symmetries is determined from extended Huckel guess.           
-      -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
-
-     Maximum number of Fock   iterations      0
-     Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     60
-     Threshold for SCF convergence     1.00D-12
-
-
- >>>>> DIIS optimization of Hartree-Fock <<<<<
-
- C1-DIIS algorithm; max error vectors =    4
-
- Automatic occupation of symmetries with  10 electrons.
-
- Iter     Total energy    Error norm  Delta(E)    HF occupation
- -----------------------------------------------------------------------------
-     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1  -74.8608836053       1.78D+00   1.05D-01    3  1  1  0
-      Virial theorem: -V/T =      2.003361
-      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
- -----------------------------------------------------------------------------
-   2  -74.9602545864       2.38D-01  -9.94D-02    3  1  1  0
-      Virial theorem: -V/T =      2.007498
-      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
- -----------------------------------------------------------------------------
-   3  -74.9656551617       4.84D-02  -5.40D-03    3  1  1  0
-      Virial theorem: -V/T =      2.006385
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
- -----------------------------------------------------------------------------
-   4  -74.9658894449       3.37D-03  -2.34D-04    3  1  1  0
-      Virial theorem: -V/T =      2.006021
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
- -----------------------------------------------------------------------------
-   5  -74.9658916596       4.23D-04  -2.21D-06    3  1  1  0
-      Virial theorem: -V/T =      2.006005
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
- -----------------------------------------------------------------------------
-   6  -74.9658916946       3.41D-05  -3.51D-08    3  1  1  0
-      Virial theorem: -V/T =      2.006007
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
- -----------------------------------------------------------------------------
-   7  -74.9658916948       3.78D-08  -1.33D-10    3  1  1  0
-      Virial theorem: -V/T =      2.006006
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
- -----------------------------------------------------------------------------
-   8  -74.9658916948       1.98D-10  -1.42D-14    3  1  1  0
-      Virial theorem: -V/T =      2.006006
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
- -----------------------------------------------------------------------------
-   9  -74.9658916948       1.90D-11   1.42D-14    3  1  1  0
-      Virial theorem: -V/T =      2.006006
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
- -----------------------------------------------------------------------------
-  10  -74.9658916948       2.88D-12  -1.42D-14    3  1  1  0
-      Virial theorem: -V/T =      2.006006
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
- -----------------------------------------------------------------------------
-  11  -74.9658916948       9.53D-13   0.00D+00    3  1  1  0
-
- *** DIIS converged in  11 iterations !
-   - total time used in SIRFCK :              0.00 seconds
-
-
- *** SCF orbital energy analysis ***
-
- Only the five lowest virtual orbital energies printed in each symmetry.
-
- Number of electrons :   10
- Orbital occupations :    3    1    1    0
-
- Sym       Hartree-Fock orbital energies
-
-  1    -20.25214893    -1.25790201    -0.46076556     0.58221030
-
-  2     -0.39290483
-
-  3     -0.59290782     0.69115369
-
-    E(LUMO) :     0.58221030 au (symmetry 1)
-  - E(HOMO) :    -0.39290483 au (symmetry 2)
-  ------------------------------------------
-    gap     :     0.97511513 au
-
- >>> Writing SIRIFC interface file <<<
-
-
-                       .-----------------------------------.
-                       | >>> Final results from SIRIUS <<< |
-                       `-----------------------------------'
-
-
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
-
-     Final HF energy:             -74.965891694755                 
-     Nuclear repulsion:             8.905106197592
-     Electronic energy:           -83.870997892347
-
-     Final gradient norm:           0.000000000001
-
- 
-     Date and time (Linux)  : Wed Mar 16 19:03:32 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
-
- 
-     Date and time (Linux)  : Wed Mar 16 19:03:32 2011 
-     Host name              : fe6                                     
-
- NOTE:    3 warnings have been issued.
- Check output, result, and error files for "WARNING".
-
-
-                     .---------------------------------------.
-                     | End of Wave Function Section (SIRIUS) |
-                     `---------------------------------------'
-
-
-
-        *****************************************************************
-        ******** Output from **EACH  input processing for ABACUS ********
-        *****************************************************************
-
-
-
- The following molecular properties will be calculated in this run:
- ------------------------------------------------------------------
-
- Default print level:       -2
-
-      The molecular gradient
-      The molecular Hessian
-      Nuclear spin-spin coupling constants
-      Natural orbital connection is used
-      for perturbation dependent basis sets.
-
- >>>>> WARNING - RHF calculations of spin-spin coupling constants are likely to give
- >>>>> WARNING - qualitatively incorrect results !!!
-
-
-  Only the spin-spin couplings between the following nuclei will be calculated:
-  -----------------------------------------------------------------------------
-
-             1           2           3
-
-
-
- Changes of defaults for SPIN-S:
- -------------------------------
-
- Print level in spin-spin output routine:    -2
-
-
- Changes of defaults for TRPRSP:
- -------------------------------
-
- Threshold in TRPRSP          : 1.00E-12
- Maximum iterations in TRPRSP :   60
-
- Center of mass dipole origin  :    0.000000    0.000000    0.000000
+ Center of mass gauge origin   :    0.000000    0.000000   -0.000000
 
 
                  .------------------------------------------------.
@@ -2212,9 +2420,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:32 2011 
-     Host name              : fe6                                     
- Symmetry -> DSO by analytical integration.
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+Symmetry -> DSO by analytical integration.
 
 
    ***************************************************************************
@@ -2223,8 +2432,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:37 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
  *******************************************************************************
@@ -2261,6 +2470,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    35.34804      -0.000000      -0.000000    
+                y   -0.000000      -5.948838      -24.18492    
+                z   -0.000000      -23.76494      -5.325427    
+
+
               Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
@@ -2279,6 +2498,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
   Isotropic FC contribution :     11.7887 Hz
 
 
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    35.34804      -0.000000      -0.000000    
+                y   -0.000000      -5.948838       24.18492    
+                z   -0.000000       23.76494      -5.325427    
 
 
               Indirect spin-spin coupling between H   _2 and H   _1:
@@ -2301,14 +2530,24 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -61.74560       0.000000       0.000000    
+                y    0.000000     -0.2718781      -10.62035    
+                z    0.000000       10.62035      -18.51146    
+
+
  CPU time statistics for ABACUS
  ------------------------------
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.14 seconds
- >>>> Total wall time used in ABACUS:   5.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.07 seconds
+ >>>> Total wall time used in ABACUS:   0.07 seconds
 
 
                    .-------------------------------------------.
@@ -2334,7 +2573,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Symmetry test threshold:  5.00E-06
 
- Symmetry class found: C(2v)  
+ Symmetry class found: C(2v)          
 
  The following elements were found:   X  Y     
 
@@ -2349,8 +2588,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:         138 ( 34.0% )
  Megabytes written:                              0.007
 
@@ -2391,8 +2630,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:37 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -2401,21 +2640,21 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   3
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -2428,7 +2667,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -2442,54 +2681,55 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1  -74.8620575122       1.78D+00   1.04D-01    3  1  1  0
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -74.8620575122       1.78D+00   1.04D-01     3   1   1   0
       Virial theorem: -V/T =      2.003423
-      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+@      MULPOP O      -0.36; H   _1  0.18; H   _2  0.18; 
  -----------------------------------------------------------------------------
-   2  -74.9602563329       2.37D-01  -9.82D-02    3  1  1  0
+@  2  -74.9602563329       2.37D-01  -9.82D-02     3   1   1   0
       Virial theorem: -V/T =      2.007468
-      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.32; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   3  -74.9656488048       4.87D-02  -5.39D-03    3  1  1  0
+@  3  -74.9656488048       4.87D-02  -5.39D-03     3   1   1   0
       Virial theorem: -V/T =      2.006382
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   4  -74.9658890474       3.67D-03  -2.40D-04    3  1  1  0
+@  4  -74.9658890474       3.67D-03  -2.40D-04     3   1   1   0
       Virial theorem: -V/T =      2.006014
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   5  -74.9658917069       3.80D-04  -2.66D-06    3  1  1  0
+@  5  -74.9658917069       3.80D-04  -2.66D-06     3   1   1   0
       Virial theorem: -V/T =      2.005998
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   6  -74.9658917359       2.40D-05  -2.91D-08    3  1  1  0
+@  6  -74.9658917359       2.40D-05  -2.91D-08     3   1   1   0
       Virial theorem: -V/T =      2.005999
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   7  -74.9658917360       4.77D-08  -6.02D-11    3  1  1  0
+@  7  -74.9658917360       4.77D-08  -6.02D-11     3   1   1   0
       Virial theorem: -V/T =      2.005999
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   8  -74.9658917360       3.18D-10  -1.42D-14    3  1  1  0
+@  8  -74.9658917360       3.18D-10   0.00D+00     3   1   1   0
       Virial theorem: -V/T =      2.005999
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   9  -74.9658917360       7.51D-12   1.42D-14    3  1  1  0
+@  9  -74.9658917360       7.51D-12  -1.42D-14     3   1   1   0
       Virial theorem: -V/T =      2.005999
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-  10  -74.9658917360       1.25D-12  -2.84D-14    3  1  1  0
+@ 10  -74.9658917360       1.23D-12  -1.42D-14     3   1   1   0
       Virial theorem: -V/T =      2.005999
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-  11  -74.9658917360       3.87D-13   2.84D-14    3  1  1  0
+@ 11  -74.9658917360       3.83D-13   2.84D-14     3   1   1   0
 
- *** DIIS converged in  11 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:    -74.965891735998    3.83D-13
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2514,25 +2754,27 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.004       0.004
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -74.965891735997                 
-     Nuclear repulsion:             8.907738242085
-     Electronic energy:           -83.873629978082
+@    Final HF energy:             -74.965891735998                 
+@    Nuclear repulsion:             8.907738242085
+@    Electronic energy:           -83.873629978082
 
-     Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:37 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
 
@@ -2540,8 +2782,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:37 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  NOTE:    4 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -2551,6 +2793,9 @@ Symmetry   1       1       1       2       2       3       4       4       4
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
+
+     Order of analytical energy-derivatives available:   2
+     This will be the default.
 
 
         *****************************************************************
@@ -2593,7 +2838,9 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Threshold in TRPRSP          : 1.00E-12
  Maximum iterations in TRPRSP :   60
 
- Center of mass dipole origin  :    0.000000    0.000000    0.000000
+ Center of mass dipole origin  :    0.000000    0.000000   -0.000000
+
+ Center of mass gauge origin   :    0.000000    0.000000   -0.000000
 
 
                  .------------------------------------------------.
@@ -2602,9 +2849,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:37 2011 
-     Host name              : fe6                                     
- Symmetry -> DSO by analytical integration.
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+Symmetry -> DSO by analytical integration.
 
 
    ***************************************************************************
@@ -2613,8 +2861,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
  *******************************************************************************
@@ -2651,6 +2899,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    34.59864      -0.000000      -0.000000    
+                y   -0.000000      -6.157488      -23.92921    
+                z   -0.000000      -23.59866      -6.176423    
+
+
               Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
@@ -2669,6 +2927,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
   Isotropic FC contribution :     11.1851 Hz
 
 
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    34.59864      -0.000000      -0.000000    
+                y   -0.000000      -6.157488       23.92921    
+                z   -0.000000       23.59866      -6.176423    
 
 
               Indirect spin-spin coupling between H   _2 and H   _1:
@@ -2691,14 +2959,24 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -61.20625       0.000000       0.000000    
+                y    0.000000      0.7121093      -10.73086    
+                z    0.000000       10.73086      -18.34628    
+
+
  CPU time statistics for ABACUS
  ------------------------------
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.14 seconds
- >>>> Total wall time used in ABACUS:   5.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.07 seconds
+ >>>> Total wall time used in ABACUS:   0.07 seconds
 
 
                    .-------------------------------------------.
@@ -2724,7 +3002,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Symmetry test threshold:  5.00E-06
 
- Symmetry class found: C(s)   
+ Symmetry class found: C(s)           
 
  The following element was found:   X        
 
@@ -2739,8 +3017,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:         231 ( 56.9% )
  Megabytes written:                              0.007
 
@@ -2779,8 +3057,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -2789,21 +3067,21 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   3
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                2
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 2
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -2816,7 +3094,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    4    1
+@    Occupied SCF orbitals               5 |    4    1
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -2830,58 +3108,59 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1  -74.8614441530       1.78D+00   1.04D-01    4  1
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -74.8614441530       1.78D+00   1.04D-01     4   1
       Virial theorem: -V/T =      2.003391
-      MULPOP  O      -0.36; H       0.18; H       0.18; 
+@      MULPOP O      -0.36; H       0.18; H       0.18; 
  -----------------------------------------------------------------------------
-   2  -74.9602266862       2.38D-01  -9.88D-02    4  1
+@  2  -74.9602266862       2.38D-01  -9.88D-02     4   1
       Virial theorem: -V/T =      2.007481
-      MULPOP  O      -0.32; H       0.16; H       0.16; 
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-   3  -74.9656228157       4.86D-02  -5.40D-03    4  1
+@  3  -74.9656228157       4.86D-02  -5.40D-03     4   1
       Virial theorem: -V/T =      2.006382
-      MULPOP  O      -0.33; H       0.16; H       0.17; 
+@      MULPOP O      -0.33; H       0.16; H       0.17; 
  -----------------------------------------------------------------------------
-   4  -74.9658599841       3.52D-03  -2.37D-04    4  1
+@  4  -74.9658599841       3.52D-03  -2.37D-04     4   1
       Virial theorem: -V/T =      2.006016
-      MULPOP  O      -0.33; H       0.16; H       0.17; 
+@      MULPOP O      -0.33; H       0.16; H       0.17; 
  -----------------------------------------------------------------------------
-   5  -74.9658624167       3.96D-04  -2.43D-06    4  1
+@  5  -74.9658624167       3.96D-04  -2.43D-06     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.16; H       0.17; 
+@      MULPOP O      -0.33; H       0.16; H       0.17; 
  -----------------------------------------------------------------------------
-   6  -74.9658624478       2.39D-05  -3.11D-08    4  1
+@  6  -74.9658624478       2.39D-05  -3.11D-08     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.16; H       0.17; 
+@      MULPOP O      -0.33; H       0.16; H       0.17; 
  -----------------------------------------------------------------------------
-   7  -74.9658624479       1.38D-06  -7.11D-11    4  1
+@  7  -74.9658624479       1.38D-06  -7.10D-11     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.16; H       0.17; 
+@      MULPOP O      -0.33; H       0.16; H       0.17; 
  -----------------------------------------------------------------------------
-   8  -74.9658624479       4.31D-08  -2.84D-13    4  1
+@  8  -74.9658624479       4.31D-08  -3.13D-13     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.16; H       0.17; 
+@      MULPOP O      -0.33; H       0.16; H       0.17; 
  -----------------------------------------------------------------------------
-   9  -74.9658624479       6.31D-09  -1.42D-14    4  1
+@  9  -74.9658624479       6.31D-09  -2.84D-14     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.16; H       0.17; 
+@      MULPOP O      -0.33; H       0.16; H       0.17; 
  -----------------------------------------------------------------------------
-  10  -74.9658624479       8.03D-10  -1.42D-14    4  1
+@ 10  -74.9658624479       8.03D-10   0.00D+00     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.16; H       0.17; 
+@      MULPOP O      -0.33; H       0.16; H       0.17; 
  -----------------------------------------------------------------------------
-  11  -74.9658624479       2.76D-12   1.42D-14    4  1
+@ 11  -74.9658624479       2.77D-12   0.00D+00     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.16; H       0.17; 
+@      MULPOP O      -0.33; H       0.16; H       0.17; 
  -----------------------------------------------------------------------------
-  12  -74.9658624479       6.72D-14   0.00D+00    4  1
+@ 12  -74.9658624479       6.19D-14   2.84D-14     4   1
 
- *** DIIS converged in  12 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  12 iterations !
+@     Converged SCF energy, gradient:    -74.965862447903    6.19D-14
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2905,25 +3184,27 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.004       0.004
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -74.965862447903                 
-     Nuclear repulsion:             8.906624129751
-     Electronic energy:           -83.872486577655
+@    Final HF energy:             -74.965862447903                 
+@    Nuclear repulsion:             8.906624129751
+@    Electronic energy:           -83.872486577654
 
-     Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
 
@@ -2931,8 +3212,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  NOTE:    5 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -2942,6 +3223,9 @@ Symmetry   1       1       1       2       2       3       4       4       4
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
+
+     Order of analytical energy-derivatives available:   2
+     This will be the default.
 
 
         *****************************************************************
@@ -2986,6 +3270,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Center of mass dipole origin  :    0.000000    0.000000    0.000000
 
+ Center of mass gauge origin   :    0.000000    0.000000    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -2993,13 +3279,14 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:42 2011 
-     Host name              : fe6                                     
- Symmetry -> DSO by analytical integration.
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+Symmetry -> DSO by analytical integration.
 
  (ORTBVC) new orbital b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 3.57446D-15
+ norm of vector after Gram-Schmidt's orthogonalization 2.95153D-15
 
  (ORTBVC) NBOSIM reduced from  3 to  2
 
@@ -3010,8 +3297,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:49 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
  *******************************************************************************
@@ -3048,6 +3335,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    35.69203      -0.000000      -0.000000    
+                y   -0.000000      -5.808894      -24.65854    
+                z   -0.000000      -24.30831      -5.483885    
+
+
               Indirect spin-spin coupling between H      and O     :
               ======================================================
 
@@ -3066,6 +3363,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
   Isotropic FC contribution :     11.0709 Hz
 
 
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    34.25884      -0.000000      -0.000000    
+                y   -0.000000      -6.303721       23.46049    
+                z   -0.000000       23.06224      -6.022924    
 
 
               Indirect spin-spin coupling between H      and H     :
@@ -3088,15 +3395,24 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -61.48770       0.000000       0.000000    
+                y    0.000000      0.2261398      -11.37243    
+                z    0.000000       9.980395      -18.42462    
+
+
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     809 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.16 seconds
- >>>> Total wall time used in ABACUS:   7.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.09 seconds
+ >>>> Total wall time used in ABACUS:   0.09 seconds
 
 
                    .-------------------------------------------.
@@ -3122,7 +3438,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Symmetry test threshold:  5.00E-06
 
- Symmetry class found: C(s)   
+ Symmetry class found: C(s)           
 
  The following element was found:   X        
 
@@ -3137,8 +3453,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:         231 ( 56.9% )
  Megabytes written:                              0.007
 
@@ -3177,8 +3493,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:49 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -3187,21 +3503,21 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   3
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                2
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 2
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -3214,7 +3530,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    4    1
+@    Occupied SCF orbitals               5 |    4    1
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -3228,58 +3544,59 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1  -74.8614441530       1.78D+00   1.04D-01    4  1
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -74.8614441530       1.78D+00   1.04D-01     4   1
       Virial theorem: -V/T =      2.003391
-      MULPOP  O      -0.36; H       0.18; H       0.18; 
+@      MULPOP O      -0.36; H       0.18; H       0.18; 
  -----------------------------------------------------------------------------
-   2  -74.9602266862       2.38D-01  -9.88D-02    4  1
+@  2  -74.9602266862       2.38D-01  -9.88D-02     4   1
       Virial theorem: -V/T =      2.007481
-      MULPOP  O      -0.32; H       0.16; H       0.16; 
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-   3  -74.9656228157       4.86D-02  -5.40D-03    4  1
+@  3  -74.9656228157       4.86D-02  -5.40D-03     4   1
       Virial theorem: -V/T =      2.006382
-      MULPOP  O      -0.33; H       0.17; H       0.16; 
+@      MULPOP O      -0.33; H       0.17; H       0.16; 
  -----------------------------------------------------------------------------
-   4  -74.9658599841       3.52D-03  -2.37D-04    4  1
+@  4  -74.9658599841       3.52D-03  -2.37D-04     4   1
       Virial theorem: -V/T =      2.006016
-      MULPOP  O      -0.33; H       0.17; H       0.16; 
+@      MULPOP O      -0.33; H       0.17; H       0.16; 
  -----------------------------------------------------------------------------
-   5  -74.9658624167       3.96D-04  -2.43D-06    4  1
+@  5  -74.9658624167       3.96D-04  -2.43D-06     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.17; H       0.16; 
+@      MULPOP O      -0.33; H       0.17; H       0.16; 
  -----------------------------------------------------------------------------
-   6  -74.9658624478       2.39D-05  -3.11D-08    4  1
+@  6  -74.9658624478       2.39D-05  -3.11D-08     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.17; H       0.16; 
+@      MULPOP O      -0.33; H       0.17; H       0.16; 
  -----------------------------------------------------------------------------
-   7  -74.9658624479       1.38D-06  -7.10D-11    4  1
+@  7  -74.9658624479       1.38D-06  -7.11D-11     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.17; H       0.16; 
+@      MULPOP O      -0.33; H       0.17; H       0.16; 
  -----------------------------------------------------------------------------
-   8  -74.9658624479       4.31D-08  -3.55D-13    4  1
+@  8  -74.9658624479       4.31D-08  -3.13D-13     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.17; H       0.16; 
+@      MULPOP O      -0.33; H       0.17; H       0.16; 
  -----------------------------------------------------------------------------
-   9  -74.9658624479       6.31D-09   1.42D-14    4  1
+@  9  -74.9658624479       6.31D-09  -1.42D-14     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.17; H       0.16; 
+@      MULPOP O      -0.33; H       0.17; H       0.16; 
  -----------------------------------------------------------------------------
-  10  -74.9658624479       8.03D-10   0.00D+00    4  1
+@ 10  -74.9658624479       8.03D-10   1.42D-14     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.17; H       0.16; 
+@      MULPOP O      -0.33; H       0.17; H       0.16; 
  -----------------------------------------------------------------------------
-  11  -74.9658624479       2.76D-12   0.00D+00    4  1
+@ 11  -74.9658624479       2.77D-12   0.00D+00     4   1
       Virial theorem: -V/T =      2.006001
-      MULPOP  O      -0.33; H       0.17; H       0.16; 
+@      MULPOP O      -0.33; H       0.17; H       0.16; 
  -----------------------------------------------------------------------------
-  12  -74.9658624479       6.33D-14   1.42D-14    4  1
+@ 12  -74.9658624479       6.15D-14   0.00D+00     4   1
 
- *** DIIS converged in  12 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  12 iterations !
+@     Converged SCF energy, gradient:    -74.965862447903    6.15D-14
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3303,34 +3620,36 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.004       0.004
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -74.965862447903                 
-     Nuclear repulsion:             8.906624129751
-     Electronic energy:           -83.872486577655
+@    Final HF energy:             -74.965862447903                 
+@    Nuclear repulsion:             8.906624129751
+@    Electronic energy:           -83.872486577654
 
-     Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:49 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
 
  >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      0.01 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:49 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  NOTE:    6 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -3340,6 +3659,9 @@ Symmetry   1       1       1       2       2       3       4       4       4
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
+
+     Order of analytical energy-derivatives available:   2
+     This will be the default.
 
 
         *****************************************************************
@@ -3384,6 +3706,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Center of mass dipole origin  :    0.000000   -0.000000    0.000000
 
+ Center of mass gauge origin   :    0.000000   -0.000000    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -3391,13 +3715,14 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:49 2011 
-     Host name              : fe6                                     
- Symmetry -> DSO by analytical integration.
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+Symmetry -> DSO by analytical integration.
 
  (ORTBVC) new orbital b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 4.74708D-15
+ norm of vector after Gram-Schmidt's orthogonalization 6.72424D-15
 
  (ORTBVC) NBOSIM reduced from  3 to  2
 
@@ -3408,8 +3733,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:56 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
  *******************************************************************************
@@ -3446,6 +3771,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    34.25884      -0.000000      -0.000000    
+                y   -0.000000      -6.303721      -23.46049    
+                z   -0.000000      -23.06224      -6.022924    
+
+
               Indirect spin-spin coupling between H      and O     :
               ======================================================
 
@@ -3464,6 +3799,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
   Isotropic FC contribution :     11.8980 Hz
 
 
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    35.69203      -0.000000      -0.000000    
+                y   -0.000000      -5.808894       24.65854    
+                z   -0.000000       24.30831      -5.483885    
 
 
               Indirect spin-spin coupling between H      and H     :
@@ -3486,14 +3831,24 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -61.48770       0.000000       0.000000    
+                y    0.000000      0.2261398      -9.980395    
+                z    0.000000       11.37243      -18.42462    
+
+
  CPU time statistics for ABACUS
  ------------------------------
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.16 seconds
- >>>> Total wall time used in ABACUS:   7.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.09 seconds
+ >>>> Total wall time used in ABACUS:   0.09 seconds
 
 
                    .-------------------------------------------.
@@ -3524,8 +3879,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:         138 ( 34.0% )
  Megabytes written:                              0.007
 
@@ -3566,8 +3921,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:56 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -3576,21 +3931,21 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   3
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -3603,7 +3958,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -3617,50 +3972,51 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1  -74.8614812061       1.78D+00   1.04D-01    3  1  1  0
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -74.8614812061       1.78D+00   1.04D-01     3   1   1   0
       Virial theorem: -V/T =      2.003392
-      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+@      MULPOP O      -0.36; H   _1  0.18; H   _2  0.18; 
  -----------------------------------------------------------------------------
-   2  -74.9602651426       2.38D-01  -9.88D-02    3  1  1  0
+@  2  -74.9602651426       2.38D-01  -9.88D-02     3   1   1   0
       Virial theorem: -V/T =      2.007483
-      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.32; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   3  -74.9656615390       4.86D-02  -5.40D-03    3  1  1  0
+@  3  -74.9656615390       4.86D-02  -5.40D-03     3   1   1   0
       Virial theorem: -V/T =      2.006384
-      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+@      MULPOP O      -0.33; H   _1  0.16; H   _2  0.16; 
  -----------------------------------------------------------------------------
-   4  -74.9658987284       3.52D-03  -2.37D-04    3  1  1  0
+@  4  -74.9658987284       3.52D-03  -2.37D-04     3   1   1   0
       Virial theorem: -V/T =      2.006018
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   5  -74.9659011616       3.96D-04  -2.43D-06    3  1  1  0
+@  5  -74.9659011616       3.96D-04  -2.43D-06     3   1   1   0
       Virial theorem: -V/T =      2.006002
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   6  -74.9659011927       2.87D-05  -3.10D-08    3  1  1  0
+@  6  -74.9659011927       2.87D-05  -3.10D-08     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   7  -74.9659011928       4.27D-08  -8.99D-11    3  1  1  0
+@  7  -74.9659011928       4.27D-08  -8.98D-11     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   8  -74.9659011928       9.69D-11   2.84D-14    3  1  1  0
+@  8  -74.9659011928       9.69D-11   7.11D-14     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-   9  -74.9659011928       1.75D-12   0.00D+00    3  1  1  0
+@  9  -74.9659011928       1.75D-12  -4.26D-14     3   1   1   0
       Virial theorem: -V/T =      2.006003
-      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+@      MULPOP O      -0.33; H   _1  0.17; H   _2  0.17; 
  -----------------------------------------------------------------------------
-  10  -74.9659011928       1.10D-13   1.42D-14    3  1  1  0
+@ 10  -74.9659011928       1.15D-13  -2.84D-14     3   1   1   0
 
- *** DIIS converged in  10 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -74.965901192777    1.15D-13
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3685,25 +4041,27 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.004       0.003
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -74.965901192777                 
-     Nuclear repulsion:             8.906487554664
-     Electronic energy:           -83.872388747440
+@    Final HF energy:             -74.965901192777                 
+@    Nuclear repulsion:             8.906487554664
+@    Electronic energy:           -83.872388747441
 
-     Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:56 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
 
@@ -3711,8 +4069,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:56 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  NOTE:    7 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -3722,6 +4080,9 @@ Symmetry   1       1       1       2       2       3       4       4       4
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
+
+     Order of analytical energy-derivatives available:   2
+     This will be the default.
 
 
         *****************************************************************
@@ -3766,6 +4127,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Center of mass dipole origin  :    0.000000    0.000000    0.000000
 
+ Center of mass gauge origin   :    0.000000    0.000000    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -3773,9 +4136,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:03:56 2011 
-     Host name              : fe6                                     
- Symmetry -> DSO by analytical integration.
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+Symmetry -> DSO by analytical integration.
 
 
    ***************************************************************************
@@ -3784,8 +4148,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:04:01 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
  *******************************************************************************
@@ -3822,6 +4186,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    34.97048      -0.000000      -0.000000    
+                y   -0.000000      -6.054174      -24.05472    
+                z   -0.000000      -23.68016      -5.752179    
+
+
               Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
@@ -3840,6 +4214,16 @@ Symmetry   1       1       1       2       2       3       4       4       4
   Isotropic FC contribution :     11.4848 Hz
 
 
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    34.97048      -0.000000      -0.000000    
+                y   -0.000000      -6.054174       24.05472    
+                z   -0.000000       23.68016      -5.752179    
 
 
               Indirect spin-spin coupling between H   _2 and H   _1:
@@ -3862,14 +4246,24 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -61.47259       0.000000       0.000000    
+                y    0.000000      0.2254342      -10.67617    
+                z    0.000000       10.67617      -18.42635    
+
+
  CPU time statistics for ABACUS
  ------------------------------
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.12 seconds
- >>>> Total wall time used in ABACUS:   5.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.07 seconds
+ >>>> Total wall time used in ABACUS:   0.11 seconds
 
 
                    .-------------------------------------------.
@@ -3989,7 +4383,7 @@ Coordinate number   9
               1           1           4
     1      0.674372
     1     -0.000000    0.189549
-    4     -0.000000    0.000000    0.774869
+    4      0.000000    0.000000    0.774869
                                        
 
 
@@ -4106,6 +4500,16 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    42.26280      -0.000000      -0.000000    
+                y   -0.000000      -2.834679      -27.67917    
+                z   -0.000000      -27.21922      -3.070806    
+
+
               Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
@@ -4126,6 +4530,16 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    42.26280      -0.000000      -0.000000    
+                y   -0.000000      -2.834679       27.67917    
+                z   -0.000000       27.21922      -3.070806    
+
+
               Indirect spin-spin coupling between H   _2 and H   _1:
               ======================================================
 
@@ -4144,6 +4558,16 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
   Isotropic FC contribution :    -31.5254 Hz
 
 
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -69.01050       0.000000       0.000000    
+                y    0.000000      -4.856238      -10.34363    
+                z    0.000000       10.34363      -21.98032    
 
 
  Harmonic contribution to vibrational average of property SPIN-SPIN
@@ -4179,6 +4603,16 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    3.171019      -0.000000      -0.000000    
+                y   -0.000000      0.6390816      -2.026760    
+                z   -0.000000      -1.964802      0.5884302    
+
+
               Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
@@ -4199,6 +4633,16 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    3.171019      -0.000000      -0.000000    
+                y   -0.000000      0.6390816       2.026760    
+                z   -0.000000       1.964802      0.5884302    
+
+
               Indirect spin-spin coupling between H   _2 and H   _1:
               ======================================================
 
@@ -4217,6 +4661,16 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
   Isotropic FC contribution :     -3.7182 Hz
 
 
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -5.723357       0.000000       0.000000    
+                y    0.000000      -2.912897     -4.3410089E-02
+                z    0.000000      4.3410090E-02  -2.520823    
 
 
  Anharmonic contribution to vibrational average of property SPIN-SPIN
@@ -4252,6 +4706,16 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    4.121299      -0.000000      -0.000000    
+                y   -0.000000       2.580414      -1.597697    
+                z   -0.000000      -1.574253       2.092944    
+
+
               Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
@@ -4270,6 +4734,16 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
   Isotropic FC contribution :      2.7231 Hz
 
 
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    4.121299      -0.000000      -0.000000    
+                y   -0.000000       2.580414       1.597697    
+                z   -0.000000       1.574253       2.092944    
 
 
               Indirect spin-spin coupling between H   _2 and H   _1:
@@ -4292,12 +4766,24 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -1.814562       0.000000       0.000000    
+                y    0.000000      -2.168775      0.3759524    
+                z    0.000000     -0.3759524      -1.033142    
+
+
                           .-----------------------------.
                           | Geometry walk has converged |
                           `-----------------------------'
 
 
  Center of mass dipole origin  :    0.000000    0.000000    0.000000
+
+ Center of mass gauge origin   :    0.000000    0.000000    0.000000
 
 
                  .------------------------------------------------.
@@ -4306,8 +4792,8 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:04:01 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
    ***************************************************************************
@@ -4316,8 +4802,8 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
  
-     Date and time (Linux)  : Wed Mar 16 19:04:01 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -4384,8 +4870,10 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
  H   _2:    0.989410    1.516161    0.000000
 
 
-  Max interatomic separation is    1.5162 Angstrom (    2.8651 Bohr)
+  Max    interatomic separation is    1.5162 Angstrom (    2.8651 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9894 Angstrom (    1.8697 Bohr)
 
 
   Bond distances (Angstrom):
@@ -4410,20 +4898,21 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
  CPU time statistics for ABACUS
  ------------------------------
 
+ REST       00:00:01     *** %
 
 
 
  >>>> Total CPU  time used in ABACUS:   0.00 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total wall time used in ABACUS:   0.01 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.21 seconds
- >>>> Total wall time used in DALTON:  40.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.67 seconds
+ >>>> Total wall time used in DALTON:   0.73 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:04:01 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

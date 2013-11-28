@@ -95,15 +95,20 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #
 # SCF energy
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-1\.22513194[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-1\.22513194[0-9][0-9]" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="SCF ENERGY NOT CORRECT"
 #
 # MP2 energy
-CRIT1=`$GREP "\= MP2 second order energy \: * \-1\.24212961[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\= MP2 second order energy *\: * \-1\.24212961[0-9][0-9]" $log | wc -l`
 TEST[2]=`expr	$CRIT1`
 CTRL[2]=1
 ERROR[2]="MP2 ENERGY NOT CORRECT"
@@ -146,7 +151,7 @@ ERROR[5]="TRANSITION MOMENTS OR B TERM COMPONENTS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

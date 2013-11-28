@@ -254,8 +254,8 @@ Specification of which wave function calculation is to be performed.
   \index{Coupled Cluster}\index{CC}
   Coupled-cluster calculation. Automatically activates Hartree--Fock (\quotekw{.HF}).
   After the Hartree--Fock calculation,
-  the \cc\ program is called to do a coupled cluster (response) calculation.
-  For further input options for the \cc\ program see Section~\ref{sec:ccgeneral}. 
+  the \cc\ module is called to do a coupled cluster (response) calculation.
+  For further input options for the \cc\ module see Section~\ref{sec:ccgeneral}. 
 
 \item[\Key{CC ONLY}] Skip the calculation of a Hartree--Fock wave
   function, and start directly in the coupled cluster part. Convenient
@@ -274,7 +274,7 @@ Specification of which wave function calculation is to be performed.
   Usage is not documented.
 
 \item[\Key{INTERFACE}]
-  Write the "SIRIFC" interface file\index{interface file} for post-processing programs.
+  Write the "\verb|SIRIFC|" interface file\index{interface file} for post-processing programs.
 
 %hjaaj oct 2003: obsolete ...
 %\item[\Key{NSYM}]
@@ -317,7 +317,7 @@ Specification of which wave function calculation is to be performed.
   lines will be discarded.
 
 \item[\Key{WESTA}]
-  Write the "SIRIFC" interface file for the WESTA post-processing program.
+  Write the "\verb|SIRIFC|" interface file for the WESTA post-processing program.
 
 %hjaaj Oct 2003: obsolete
 %\item[\Key{BASIS SET}]
@@ -574,9 +574,58 @@ calculation. One of them {\em must} be specified.
 
 {\bf Purpose:}
 
-To specify the parameters of the DFT integration.
+To specify the parameters of the DFT integration and the optional use of empirical corrections.
 
 \begin{description}
+
+\item[\Key{DFTAC}]
+  \kw{READ (LUINP,*) RTYPE} \\
+  \kw{READ (LUINP,*) CTYPE} \\
+  \kw{READ (LUINP,*) DFTIPTA, DFTIPTB, DFTBR1, DFTBR2} \\
+  Switches on the asymptotic correction of the exchange correlation potential. This correction is a pointwise manipulation of the 
+  exchange--correlation potential. This implies activation of the .DFTVXC keyword in the SCF stage. RTYPE defines the
+  potential to be used to replace the asymptotic GGA potential, possible options are MULTPOLE (a simple multipole model)
+  and LB94 (the potential from the LB94 model potential~\cite{dft:lb94}). CTYPE defines how the potential of the parent
+  functional is connected to the asymptotic model, possible options are LINEAR (as used in the Tozer-Handy correction~\cite{dft:th}), 
+  TANH (a modified connection by Tozer~\cite{dft:tanh}, which removes discontinuities associated with linear interpolation) and 
+  GRAC (the gradient-regulated asymptotic correction of Gr\"uning \emph{et. al.}~\cite{dft:grac}). 
+  
+  Four numerical input parameters are then input
+  the first two are the $\alpha$ and $\beta$ ionization potentials (either calculated or experimental). If GRAC is chosen for the 
+  connection type then the last two value specify the parameters $\alpha$ and $\beta$ (see Ref.~\cite{dft:grac} for details). 
+  Recommended values are 0.5 and 40.0. Otherwise the last two parameters specify multiples of the 
+  Bragg Radii and are used to define the core, interpolation and asymptotic regions. For grid points within DFTBR1 Bragg Radii of 
+  each atom the potential is unmodified, for points outside DFTBR2 Bragg Radii the potential is replaced with its asymptotic model.
+  In between the interpolation model is used. Recommended values in this case are 3.5 and 4.7. Care should be taken when 
+  choosing alternative values for the final two parameters in each scheme, inappropriate values can make SCF convergence difficult.
+
+
+\item[\Key{DFTD2}]
+  switches on Grimmes DFT-D2 empirical dispersion correction~\cite{dft:dftd2}. The code will attempt to assign the correct functional dependent 
+  parameters based on the chosen DFT functional. Analytic gradient contributions are available.
+ 
+\item[\Key{D2PAR}]
+  \kw{READ (LUINP,*) D2\_s6\_inp, D2\_alp\_inp, D2\_rs6\_inp} \\
+  using this keyword user input values of the $s_6$, $\alpha$ and $s_{r,6}$ DFT-D2 parameters may be specified. If supplied these values override
+  any values defined within the code.
+
+\item[\Key{DFTD3}]
+  switches on Grimmes DFT-D3 empirical dispersion correction~\cite{dft:dftd3}. The code will attempt to assign the correct functional dependent 
+  parameters based on the chosen DFT functional. Analytic gradient contributions are available.
+  
+\item[\Key{DFD3BJ}]
+  switches on Grimmes DFT-D3 empirical dispersion correction with Becke-Johnson damping~\cite{dft:dftd3bj}. 
+  The code will attempt to assign the correct functional dependent parameters based on the chosen DFT functional. 
+  Analytic gradient contributions are available. This is the presently recommended version.
+  
+\item[\Key{3BODY}]
+  keyword for adding 3-body terms to the DFT-D3 dispersion energy. Note that gradients are not implemented for these corrections 
+
+\item[\Key{D3PAR}]
+  \kw{READ (LUINP,*) D3\_s6\_inp, D3\_alp\_inp, D3\_rs6\_inp, D3\_rs18\_inp, D3\_s18\_inp} \\
+  keyword for specifying the $s_6$, $\alpha$, $s_{r,6}$, $s_{r,8}$ and $s_8$ parameters of the DFT-D3 methods. Note, take care to 
+  match the parameter values to the correct version of the DFT-D3 correction.
+
 \item[\Key{DFTELS}]
   \kw{READ (LUINP,*) DFTELS} \\
   safety threshold -- stop if the charge integration gives too large
@@ -590,6 +639,11 @@ To specify the parameters of the DFT integration.
   be skipped) and the second one -- orbital threshold (orbitals are
   assumed to be exactly 0 if they are below the threshold). The
   default value for DFTHR0 is $1.0D-9$ and for DFTRHI is $1.0D-13$.
+
+\item[\Key{DFTVXC}]
+  keyword to specify explicit construction of the exchange--correlation 
+  potential for GGA forms. This is automatically invoked when .DFTAC is selected 
+  and not recommended for use otherwise.
 
 \item[\Key{RADINT}]
   \kw{READ (LUINP,*) RADINT} \\
@@ -641,9 +695,11 @@ generic ones. There are a large number of combined functionals defined below,
 however the user can also create their own combined functionals with 
 the \verb|Combine| keyword. 
 A number of standalone functionals are also included within \dalton. 
+In addition a number of double-hybrid functionals (energies only) are available,
+which include a post-SCF second-order perturbation theory contribution. 
 
 It should be noted that the input is not case sensitive, although the notation
-employed in this manual makes use of case to exphasise exchange or correlation 
+employed in this manual makes use of case to emphasize exchange or correlation 
 functional properties and reflect the original literature sources.
 
 
@@ -803,11 +859,17 @@ functional properties and reflect the original literature sources.
 \item[B97-2] Modification of B97 functional in 2001 by Wilson, Bradley and Tozer 
   \cite{dft:b97-2}.\index{B97}\index{B97-2}
 
+\item[B97-D] Grimme's re-parameterization of the B97-1 functional for use with 
+empirical dispersion correction~\cite{dft:b97-d}.\index{B97}\index{B97-D}
+
 \item[B97-K] Boese and Martin 2004 re-parameterization of the 
   B97-1 functional for kinetics~\cite{dft:b97-1}.\index{B97}\index{B97-K}
 
 \item[HCTH] is a synonym for the HCTH407 functional (detailed below).
   \cite{dft:hcth407}.\index{HCTH}\index{HCTH407}
+
+\item[1-4] The ``quarter'' functional of Menconi, Wilson and Tozer 
+  \cite{dft:14}.\index{1-4}\index{1-4}
 
 \item[HCTH93] Original 1998 HCTH functional, parameterized on a set of 
   93 training systems~\cite{dft:hcth93}.\index{HCTH}\index{HCTH93}
@@ -958,6 +1020,12 @@ factor $\mu$. This input can be specified as follows:
  CAMB3LYP alpha=0.190 beta=0.460 mu=0.330
 \end{verbatim}
 \index{CAMB3LYP}
+
+
+\item[rCAMB3LYP] Revised version of the CAMB3LYP Functional \cite{dft:rcamb3lyp} 
+designed to give near piecewise linear behaviour of the energy vs. particle number. 
+This functional accepts additional arguments \verb|alpha|, \verb|beta| and \verb|mu| 
+with the same meanings and syntax as for the CAMB3LYP functional.\index{rCAMB3LYP}
 
 \item[DBLYP] is a sum of the Double-Becke exchange functional and
   the LYP correlation functional 
@@ -1141,6 +1209,23 @@ combines the VWN local and P86 non-local correlation functionals.
 Linear combinations of all exchange and correlation functionals listed above
 are possible with the \verb|Combine| keyword.
 
+\subsubsection{Double-hybrid functionals}
+\begin{description}
+\item[B2PLYP] is the double hybrid of Ref.~\cite{dft:b2plyp}
+
+\item[B2TPLYP] is a modification of the B2PLYP functional for thermodynamics~\cite{dft:b2tplyp}
+
+\item[mPW2PLYP] a double hybrid using an alternative GGA exchange contribution and tested on the G3/05 benchmark dataset~\cite{dft:mpw2plyp}
+
+\item[B2GPLYP] is a modification of the B2PLYP functional for general purpose calculations~\cite{dft:b2tplyp}
+
+\item[B2PIPLYP] is a form related to B2PLYP but designed to give better performance for sterically crowed or stacked aromatic ring systems~\cite{dft:b2piplyp}
+
+\item[PBE0DH] a theoretically derived double-hybrid parameterization~\cite{dft:pbe0dh}
+
+\end{description}
+
+Note that at present double-hybrid functionals are implemented for energies only, analytic gradient contributions are not implemented.
 
 \pagebreak[3]
 \subsection{\label{ref-haminp}\Sec{HAMILTONIAN}}
@@ -1155,8 +1240,8 @@ Add extra terms to the Hamiltonian (for finite field\index{finite field} calcula
   \verb"READ (LUINP,  *  ) EFIELD(NFIELD)" \\
   \verb"READ (LUINP,'(A)') LFIELD(NFIELD)" \\
   Enter field strength (in atomic units) and property label on separate lines
-  where label is a MOLE\-CULE-style property label on file AOPROPER
-  produced by the property program module, see Chapter~\ref{ch:hermit}.
+  where label is a \molecule-style property label on file \verb|AOPROPER|
+  produced by the property module, see Chapter~\ref{ch:hermit}.
   The calculation of the necessary property integral(s) must be requested
   in the \quotekw{**INTEGRALS} input module. \\
   NOTE: This keyword may be repeated several times for adding more than
@@ -1695,7 +1780,7 @@ reordering and punching of orbitals.
                             (\verb|SIRIUS.RST| file) with label \quotekw{NEWORB  }
    \item[{\tt OLDORB\ }] Input from {\sir} restart file
                             (\verb|SIRIUS.RST| file) with label \quotekw{OLDORB  }
-   \item[{\tt SIRIFC\ }] Input from {\sir} interface file ("SIRIFC")
+   \item[{\tt SIRIFC\ }] Input from {\sir} interface file ("\verb|SIRIFC|")
 \end{description}
 
 %Oct 2003 hjaaj: now NOSUPSYM always default,
@@ -2028,7 +2113,7 @@ using the \quotekw{.SINGLY OCCUPIED} described here.
   Number of electrons in the molecule\index{electrons in molecule}.
   By default, this number will be determined on the basis of the nuclear
   charges and the total charge of the molecule\index{charge of molecule}
-  as specified in the \verb|MOLECULE.INP| file.
+  as specified in the \molinp\ file.
   The keyword is incompatible with the keywords \quotekw{.DOUBLY OCCUPIED},
   \quotekw{.OPEN SHELL}, and \quotekw{.SINGLY OCCUPIED}.
 
@@ -2123,7 +2208,7 @@ using the \quotekw{.SINGLY OCCUPIED} described here.
   DIIS seems to be stalling.
 
 \item[\Key{THRESH}]
-  Default = 1.0D-06\\
+  Default = 1.0D-05 (1.0D-06 if MP2)\\
   \kw{READ (LUINP,*) THRRHF} \\
   Hartree--Fock convergence threshold for energy gradient.  The convergence
   of the energy will be approximately the square of this number.
@@ -2174,7 +2259,7 @@ For RHF\index{RHF}\index{SCF}\index{Hartree--Fock}
 or MP2\index{MP2}\index{M{\o}ller-Plesset!second-order}
 calculations the orbital occupation will be determined on the
 basis of the nuclear charges and molecular charge of the molecule as
-specified in the \verb|MOLECULE.INP| file.
+specified in the \molinp\ file.
 
 By default, starting orbitals and initial orbital occupation will
 be determined automatically on the basis of a H\"{u}ckel\index{H\"{u}ckel}
@@ -2242,7 +2327,7 @@ will activate this model.
 \item[\Key{CAVITY}]
   Required, no defaults.\\
   \kw{READ (LUINP,*) RSOLAV}\\
-  Enter radius of spherical cavity\index{cavity!radius} in atomic units (bohr).
+  Enter radius of spherical cavity\index{cavity!radius} in atomic units (\bohr{}).
 
 \item[\Key{DIELECTRIC CONSTANT}]
   \kw{READ (LUINP,*) EPSOL}\\

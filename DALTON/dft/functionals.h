@@ -269,12 +269,12 @@ typedef struct Functional_ Functional;
 enum FunError { FUN_OK, FUN_UNKNOWN, FUN_CONF_ERROR };
 enum FunError fun_select_by_name(const char *conf_string);
 extern Functional *selected_func;
-extern int (*fun_printf)(const char *fmt, ...);
+extern integer (*fun_printf)(const char *fmt, ...);
 extern void (*fun_set_hf_weight)(real w);
 extern real (*fun_get_hf_weight)(void);
 extern void (*fun_set_mp2_weight)(real w);
 extern real (*fun_get_mp2_weight)(void);
-extern void (*fun_set_cam_param)(int cnt, const real *w, const real *b);
+extern void (*fun_set_cam_param)(integer cnt, const real *w, const real *b);
 
 /* FunDensProp structure contains properties of the density that are
    needed for functional evaluation and possibly other purposes.
@@ -290,8 +290,8 @@ typedef struct FunDensProp_ {
    and gradients. Note that some functionals(like LYP) depend explicitely
    on separately alpha and beta densities
 */
-typedef int (*IsGGAFunc)(void);
-typedef int (*ReadInputFunc)(const char* conf_string);
+typedef integer (*IsGGAFunc)(void);
+typedef integer (*ReadInputFunc)(const char* conf_string);
 typedef void (*ReportFunc)(void);
 typedef real (*EnergyFunc)(const FunDensProp* dens_prop);
 typedef void (*FirstOrderFun)(FunFirstFuncDrv *ds, real factor,
@@ -308,7 +308,7 @@ typedef void (*FourthOrderFun)(FunFourthFuncDrv *ds, real factor,
 struct Functional_ {
     const char* name; /* descriptive functional name (usually 5 characters) */
     IsGGAFunc       is_gga;
-    int             highest_tested_resp_order;
+    integer             highest_tested_resp_order;
     ReadInputFunc   read;
     ReportFunc      report;
    /* Only unrestricted implementations are needed. A benchmark for
@@ -333,6 +333,7 @@ extern Functional mBeckeFunctional;
 extern Functional B86xFunctional;
 extern Functional B86mxFunctional;
 extern Functional B97Functional;
+extern Functional B97_dFunctional;
 extern Functional B97_1Functional;
 extern Functional B97_2Functional;
 extern Functional B97_3Functional;
@@ -340,6 +341,7 @@ extern Functional B97_KFunctional;
 extern Functional Example2Functional;
 extern Functional ExampleFunctional;
 extern Functional DK87xFunctional;
+extern Functional f14Functional;
 extern Functional G96xFunctional;
 extern Functional KTxFunctional;
 extern Functional LB94Functional;
@@ -368,6 +370,7 @@ extern Functional PZ81Functional;
 extern Functional PBEcFunctional;
 extern Functional PBExFunctional;
 extern Functional mPBExFunctional;
+extern Functional rCAM_B3LYPFunctional;
 extern Functional RPBExFunctional;
 extern Functional revPBExFunctional;
 extern Functional SlaterFunctional;
@@ -382,6 +385,12 @@ extern Functional WL90cFunctional;
 
 /* sorted list of mixed functionals */
 extern Functional B2PLYPFunctional;
+extern Functional B2TPLYPFunctional;
+extern Functional MPW2PLYPFunctional;
+extern Functional MPW2KPLYPFunctional;
+extern Functional B2GPPLYPFunctional;
+extern Functional B2PIPLYPFunctional;
+extern Functional PBE0DHFunctional;
 extern Functional B3LYPFunctional;
 extern Functional B3LYPgFunctional;
 extern Functional B3LYPGaussFunctional;
@@ -456,12 +465,12 @@ extern Functional X3LYPFunctional;
 /* the list of the functionals */
 extern Functional* available_functionals[];
 
-extern int fun_true(void);
-extern int fun_false(void);
+extern integer fun_true(void);
+extern integer fun_false(void);
 /* fortran (and not only) functional stub routines */
 void dftlistfuncs_(void);
-int dft_isgga_(void);
-int dft_isgga__(void);
+integer dft_isgga_(void);
+integer dft_isgga__(void);
 
 #endif /* _FUNCTIONALS_H_ */
 #else /* THE FORTRAN VERSION OF THE HEADERS; out of date as of 20021120 */

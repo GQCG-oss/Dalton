@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -50,8 +50,10 @@ C
 #else
       INCLUDE 'mpif.h'
 C
+#ifndef VAR_CHEMSHELL
       CALL MPI_INIT(IERR)
       IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+#endif
 C
       CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYNUM,IERR)
 #if defined(CRI_MEMTRACE)
@@ -95,8 +97,10 @@ C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 C
+#ifndef VAR_CHEMSHELL
       CALL MPI_FINALIZE(IERR)
       IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+#endif
 #endif
 C
       RETURN
@@ -124,6 +128,7 @@ C
          DATATYPE = MPI_CHARACTER
       ELSE
          WRITE(LUPRI,*) ' TYPE :',TYPE,' does not exist!'
+         WRITE(*,*) ' TYPE :',TYPE,' does not exist!'
          CALL QUIT('ERROR in MPIXBCAST: Nonexisting DATATYPE')
       END IF
       CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,ROOT,MPI_COMM_WORLD,IERR)

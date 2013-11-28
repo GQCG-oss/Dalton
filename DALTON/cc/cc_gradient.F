@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -32,9 +32,11 @@ C    Purpose: calculation of the gradient
 C
 C             implemented wavefunctions models:
 C                 MP2, CCS, CCD, CC2, CCSD, CCSD(T)
+C                 RCCD (RPA, singlet only), DRCCD (DRPA) and SOSEX
 C
 C     Written by Asger Halkier and Christof Haettig summer 1996.
 C     CCSD(T) added, Sonia Coriani spring 2002
+C     RCCD (RPA, singlet only), DRCCD (DRPA) and SOSEX by Sonia, 2011
 C
 C=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -107,11 +109,9 @@ C=====================================================================*
 
 * test for wavefunction model: 
 !
-!SONIA: remember to switch these two for release version 
-!      IF (.NOT. (CCS. OR. MP2. OR. CC2. OR. CCD .OR. CCSD) ) THEN
-!
       IF (.NOT. (CCS. OR. MP2. OR. CC2. OR.
-     &                             CCD .OR. CCSD. OR. CCPT) ) THEN
+     &           CCD .OR. CCSD. OR. CCPT .OR.
+     &           RCCD .OR. DRCCD) ) THEN
          CALL QUIT('CC_GRADIENT called for a model '//
      &             'not (yet) implemented.')
       END IF
@@ -186,6 +186,9 @@ C
          CALL CCPT_GRAD0(GRADKE,GRADFS,GRADEE,WORK,LWORK,LPTALSO)
          CCPT = .TRUE.
          CCSD = .FALSE.
+      ELSE IF ((RCCD).OR.(DRCCD)) THEN
+         write(lupri,*)'Warning: you requested RPA/dRPA geo gradient'
+         CALL RPA_GRAD(GRADKE,GRADFS,GRADEE,WORK,LWORK)
       ELSE
          LPTALSO = .FALSE.
          CALL CC_GRAD0(GRADKE,GRADFS,GRADEE,WORK,LWORK)

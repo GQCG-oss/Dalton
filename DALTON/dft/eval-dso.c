@@ -2,12 +2,12 @@
 
 
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -105,7 +105,7 @@ static void
 numdso_collect_info(real *spndso, real *work, integer lwork)
 {
     integer dsodim, sz;
-    int     sz_mpi;
+    integer     sz_mpi;
 
     MPI_Comm_size(MPI_COMM_WORLD, &sz_mpi);
     if(sz_mpi <=1) return;
@@ -123,12 +123,12 @@ numdso_collect_info(real *spndso, real *work, integer lwork)
 
 static void
 dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
-       int bllen, int blstart, int blend, struct dso_data* dso)
+       integer bllen, int blstart, int blend, struct dso_data* dso)
 {
     extern void FSYM(dsocb)(real*, const integer*, real (*coor)[3],
                             const real*rho,const real* wght,
                             real(*rvec)[3], real*r3i);
-    int off = grid->curr_point;
+    integer off = grid->curr_point;
     integer bllen_copy = bllen; /* conversion needed for VAR_INT64 */
     FSYM(dsocb)(dso->dso, &bllen_copy,
            grid->coor+off, grid->r.rho,
@@ -175,7 +175,7 @@ FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork, integer*
     free(dmat);
     utm = endtm.tms_utime-starttm.tms_utime;
     fort_print("Electrons: %11.7f(%9.3g): DFTDSO time: %9.1f s", 
-               electrons, (double)(electrons-(int)(electrons+0.5)),
+               electrons, (double)(electrons-(integer)(electrons+0.5)),
 	       (double)(utm/(double)sysconf(_SC_CLK_TCK)));
 }
 

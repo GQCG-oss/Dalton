@@ -1,5 +1,5 @@
 !      INTEGER         LUIAJB, LUCKJD, LU3VI2, LUDKBC, LU3VI, LUDELD,
-!     &                LUTOC, LU3SRT, LUBFDN, LURES, 
+!     &                LUTOC, LU3SRT, LUBFDN, LURES,
 !     &                LUCSOL, LUCTLM, LU3VI3, LU3VI4, LU3SRT2, LU3SRT3,
 !     &                LUCKJD2, LUCKJD3, LUDELD2, LUDELD3, LUDELD4,
 !     &                LUDELD5, LUDKBC2, LUDKBC3, LUDKBC4, LUDKBC5
@@ -10,9 +10,9 @@
 !     &                FNDELD2*7, FNDELD3*7, FNDELD4*7, FNDELD5*7,
 !     &                FNDKBC2*5, FNDKBC3*5, FNDKBC4*5, FNDKBC5*5
 !      COMMON /CC_TAP/ LUIAJB, LUCKJD, LU3VI2, LUDKBC, LU3VI, LUDELD,
-!     &                LUTOC, LU3SRT, LUBFDN, LURES, LUCSOL, 
-!     &                LUCTLM, LU3VI3, LU3VI4, LU3SRT2, LU3SRT3, 
-!     &                LUCKJD2, LUCKJD3, LUDELD2, LUDELD3, LUDELD4, 
+!     &                LUTOC, LU3SRT, LUBFDN, LURES, LUCSOL,
+!     &                LUCTLM, LU3VI3, LU3VI4, LU3SRT2, LU3SRT3,
+!     &                LUCKJD2, LUCKJD3, LUDELD2, LUDELD3, LUDELD4,
 !     &                LUDELD5, LUDKBC2, LUDKBC3, LUDKBC4, LUDKBC5,
 !     &                FNTOC, FN3VI,
 !     &                FN3VI2, FN3SRT, FNDELD, FNDKBC, FNCKJD,

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -90,8 +90,7 @@ C
         RETURN
       ENDIF
 
-      IF  ( ((NASHT.EQ.0) .AND. (TRPLET))  ) THEN ! no pol. contr.
-C                                                   can arrise in that case
+      IF  ( ((NASHT.EQ.0) .AND. (TRPLET))  ) THEN
         CALL QEXIT('QMMMLNO')
         RETURN
       ENDIF
@@ -187,10 +186,12 @@ C-------------------------------------------------------
 
          CALL DZERO(WRK(KEFIELD),3*NNZAL)
 
+#if defined(VAR_MPI)
          IF (NODTOT .GE. 1) THEN
             CALL QMMMLNO_M1(UDV,UDVTR,WRK(KEFIELD),WRK(KUCMO),
      *                      WRK(JUBO),WRK(KLAST),LWRK1)
          ELSE
+#endif
            LRI = 1             ! group-index in vector
            DO 201 J=1,MMCENT
 
@@ -203,8 +204,9 @@ C-------------------------------------------------------
              LRI = LRI + 3
              GOTO 201
   201      CONTINUE        
+#if defined(VAR_MPI)
          ENDIF
-
+#endif
          NDIM = 3*NNZAL
          NTOTI = MAX(NDIM,1)
 
@@ -251,10 +253,12 @@ C        before, but we choose to do all of this integral-direct.
             LRXYO = JRXYO
          ENDIF
 
+#if defined(VAR_MPI)
          IF (NODTOT .GE. 1) THEN
             CALL QMMMLNO_M2(WRK(LRXYO),WRK(KUCMO),WRK(KINDMOM),
      *                      WRK(KLAST),LWRK1)
          ELSE
+#endif
             LRI = 1
             DO 202 J=1,MMCENT
                IF (ZEROAL(J) .EQ. -1) GOTO 202
@@ -264,7 +268,9 @@ C        before, but we choose to do all of this integral-direct.
      *                        WRK(KLAST),LWRK1,IPRRSP)
                LRI = LRI + 3
  202        CONTINUE 
+#if defined(VAR_MPI)
          ENDIF
+#endif
          IF (MMTIME) THEN
            DTIME = SECOND() - DTIME
            TMMLNO3 = TMMLNO3 + DTIME
@@ -467,10 +473,12 @@ C     Unpack symmetry blocked CMO
 
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M1(WRK(KEF1),WRK(KEF2),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,WRK(KLAST),LWRK2)
       ELSE
+#endif
         LRI = 1                ! group-index in vector
         DO 100 J = 1,MMCENT 
           IF (ZEROAL(J) .EQ. -1) GOTO 100
@@ -479,8 +487,9 @@ C     Unpack symmetry blocked CMO
      *                     WRK(KLAST),LWRK2,IPRRSP)
           LRI = LRI + 3
   100   CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN 
         DTIME = SECOND() - DTIME
         TMMQRO1 = TMMQRO1 + DTIME
@@ -544,11 +553,13 @@ C     These could have been stored
 C     before, but we choose to do all of this integral-direct.
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M2(WRK(KIND1),WRK(KIND2),WRK(KUCMO),
      *                   WRK(KTRES),ISYMT,ISYMV2,ZYM2,
      *                   WRK(KLAST),LWRK2)
       ELSE
+#endif
         LRI = 1                ! group-index in vector
         DO 101 J = 1,MMCENT 
            IF (ZEROAL(J) .EQ. -1) GOTO 101
@@ -557,8 +568,9 @@ C     before, but we choose to do all of this integral-direct.
      *                   WRK(KLAST),LWRK2,IPRRSP)
            LRI = LRI + 3
  101    CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMQRO3 = TMMQRO3 + DTIME
@@ -769,11 +781,13 @@ C     Unpack symmetry blocked CMO
 
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M1(WRK(KEF1),WRK(KEF2),WRK(KEF3),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
      &                   WRK(KLAST),LWRK2)
       ELSE
+#endif
         LRI = 1                ! group-index in vector
         DO 100 J = 1,MMCENT 
            IF (ZEROAL(J) .EQ. -1) GOTO 100
@@ -783,8 +797,9 @@ C     Unpack symmetry blocked CMO
      *                   WRK(KLAST),LWRK2,IPRRSP)
            LRI = LRI + 3
  100    CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMCRO1 = TMMCRO1 + DTIME
@@ -873,11 +888,13 @@ C     before, but we choose to do all of this integral-direct.
 
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M2(WRK(KIND1),WRK(KIND2),WRK(KIND3),WRK(KUCMO),
      &        WRK(KTRES),ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM2,ZYM3,
      &        WRK(KLAST),LWRK2)
       ELSE
+#endif
          LRI = 1                ! group-index in vector
          DO 101 J = 1,MMCENT 
             IF (ZEROAL(J) .EQ. -1) GOTO 101
@@ -887,8 +904,9 @@ C     before, but we choose to do all of this integral-direct.
      *                       WRK(KLAST),LWRK2,IPRRSP)
             LRI = LRI + 3
  101     CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMCRO3 = TMMCRO3 + DTIME
@@ -1455,7 +1473,7 @@ C     y-component
       IF (ISYMT.EQ.ISYMV1) THEN
          CALL DZERO(WRK(KTLMA),N2ORBX)
          CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QM3MMRO')
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMQRO')
          EF1(2) = F1
       ELSE
          EF1(2) = ZERO
@@ -2201,6 +2219,7 @@ C     Put back the dipole origin
       CALL QEXIT('MMCRO_ITER2')
       RETURN
       END
+#if defined(VAR_MPI)
 C ************************************************
 C Parallel QM/MM response routines (AHS 09-10)
 C ************************************************
@@ -2403,7 +2422,7 @@ C
 
 C     No more integrals to calculate
 
-      CALL MPI_REDUCE(WRK(KEFIELD),WRK(KEFIELD),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEFIELD),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
       CALL QEXIT('QMMMLNO_S1')
@@ -2561,7 +2580,7 @@ C
       ENDIF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(JRXYO),WRK(JRXYO),N2ORBX,
+      CALL MPI_REDUCE(WRK(JRXYO),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
       CALL QEXIT('QMMMLNO_S2')
@@ -2769,9 +2788,9 @@ C     QRO
       ENDIF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(KEF1),WRK(KEF1),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEF1),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
-      CALL MPI_REDUCE(WRK(KEF2),WRK(KEF2),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEF2),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
       CALL QEXIT('QMMMQRO_S1')
@@ -2945,7 +2964,7 @@ C     QRO
       ENDIF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(KTRES),WRK(KTRES),N2ORBX,
+      CALL MPI_REDUCE(WRK(KTRES),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
       CALL QEXIT('QMMMQRO_S2')
@@ -3168,13 +3187,13 @@ C     CRO
       ENDIF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(KEF1),WRK(KEF1),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEF1),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
-      CALL MPI_REDUCE(WRK(KEF2),WRK(KEF2),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEF2),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
-      CALL MPI_REDUCE(WRK(KEF3),WRK(KEF3),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEF3),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
       CALL QEXIT('QMMMCRO_S1')
@@ -3386,13 +3405,13 @@ C     CRO
       ENDIF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(KTRES),WRK(KTRES),N2ORBX,
+      CALL MPI_REDUCE(WRK(KTRES),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
       CALL QEXIT('QMMMCRO_S2')
       RETURN
       END
-
+#endif
 
 
 

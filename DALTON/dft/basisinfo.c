@@ -2,12 +2,12 @@
 
 
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -43,10 +43,10 @@
 #include "pi.h"
 
 
-static int    global_outputLevel       = 1;
+static integer    global_outputLevel       = 1;
 
 static void
-do_output(char* s, int prio)
+do_output(char* s, integer prio)
 {
   if(prio > global_outputLevel)
     return;
@@ -63,7 +63,7 @@ do_output(char* s, int prio)
 
 
 static void 
-do_output_2(int prio, const char* format, ...)
+do_output_2(integer prio, const char* format, ...)
 {
   char s[888];
   va_list a;
@@ -89,14 +89,14 @@ do_output_2(int prio, const char* format, ...)
 
 
 /* FIXME: is it a way to make this routine shorter, cleaner? */
-static int 
+static integer 
 get_simple_primitives(
 		      BasisFuncStruct* currBasisFunc,
 		      DistributionSpecStruct* list,
-		      int nInput,
-		      int nListMax)
+		      integer nInput,
+		      integer nListMax)
 {
-  int spd, contr, kk, n, j, nTerms, ii;
+  integer spd, contr, kk, n, j, nTerms, ii;
   real scaleFactor;
 
   /* make sure there is enough space left in list */
@@ -409,14 +409,14 @@ get_simple_primitives(
   
 } /* END get_simple_primitives */
 
-void getshellscnt_(int *);
-void getshellno_(const int *no, int *contr, int *L, real *x, real *y, real *z,
-                 const int *mxcontr, real *coefs, real *exps);
+void getshellscnt_(integer *);
+void getshellno_(const integer *no, integer *contr, integer *L, real *x, real *y, real *z,
+                 const integer *mxcontr, real *coefs, real *exps);
 
-int 
+integer
 get_shells(BasisInfoStruct* basisInfo)
 {
-  int i, nShells = 0;
+  integer i, nShells = 0;
   ShellSpecStruct* shellList;
 
   getshellscnt_(&nShells);
@@ -431,9 +431,9 @@ get_shells(BasisInfoStruct* basisInfo)
   shellList = basisInfo->shellList;
   for(i = 0; i < nShells; i++)
     {
-      const int MaxContr = MAX_NO_OF_CONTR_GAUSSIANS;
-      int fShell = i+1; /* fortran shell number */
-      int contr, spd, kk;
+      const integer MaxContr = MAX_NO_OF_CONTR_GAUSSIANS;
+      integer fShell = i+1; /* fortran shell number */
+      integer contr, spd, kk;
       real x, y, z;
       real coeffList[MAX_NO_OF_CONTR_GAUSSIANS];
       real exponentList[MAX_NO_OF_CONTR_GAUSSIANS];
@@ -447,7 +447,7 @@ get_shells(BasisInfoStruct* basisInfo)
       if(contr > MAX_NO_OF_CONTR_GAUSSIANS)
 	{
 	  do_output_2(0, "error: too many contracted gaussians, %i > %i", 
-		      contr, (int)MAX_NO_OF_CONTR_GAUSSIANS);
+		      contr, (integer)MAX_NO_OF_CONTR_GAUSSIANS);
 	  do_output_2(0, "change constant MAX_NO_OF_CONTR_GAUSSIANS"
 		      " in file grid-gen2.c");
 	  return -1;
@@ -469,14 +469,14 @@ get_shells(BasisInfoStruct* basisInfo)
   return 0;
 }
 
-int 
+integer
 get_basis_funcs(BasisInfoStruct* basisInfo)
 {
   /* create list of 'basis functions',  */
   /* and set startIndexInMatrix for each shell */
-  int nShells = basisInfo->noOfShells;
-  int count = 0;
-  int i, j, kk, nFunctions;
+  integer nShells = basisInfo->noOfShells;
+  integer count = 0;
+  integer i, j, kk, nFunctions;
   ShellSpecStruct* currShell;
   BasisFuncStruct* basisFuncList;
 
@@ -525,23 +525,23 @@ get_basis_funcs(BasisInfoStruct* basisInfo)
 }
 
 
-int
+integer
 get_simple_primitives_all(BasisInfoStruct* basisInfo)
 {
-  int nbast = basisInfo->noOfBasisFuncs;
-  int maxNoOfSimplePrimsTot = nbast * MAX_NO_OF_PRIMITIVES_PER_BASIS_FUNC;
+  integer nbast = basisInfo->noOfBasisFuncs;
+  integer maxNoOfSimplePrimsTot = nbast * MAX_NO_OF_PRIMITIVES_PER_BASIS_FUNC;
   DistributionSpecStruct* list = 
     malloc(maxNoOfSimplePrimsTot * sizeof(DistributionSpecStruct));
   
   BasisFuncStruct* basisFuncList = basisInfo->basisFuncList;
 
   /* create list of 'simple primitives' */
-  int n = 0;
-  int i, nBytes;
+  integer n = 0;
+  integer i, nBytes;
   for(i = 0; i < nbast; i++)
     {
       BasisFuncStruct* currBasisFunc = &basisFuncList[i];
-      int noOfPrimitives = get_simple_primitives(currBasisFunc,
+      integer noOfPrimitives = get_simple_primitives(currBasisFunc,
 						 list,
 						 n,
 						 maxNoOfSimplePrimsTot);
@@ -570,13 +570,13 @@ typedef struct{
   real a1;
 } polydeg1struct;
 
-static int 
+static integer 
 multiply_polynomials(real result[], 
 		     polydeg1struct* polydeg1, 
-		     int dim, 
+		     integer dim, 
 		     real a[])
 {
-  int i;
+  integer i;
   real p1[K_MAX_DIM + 1];
   real p2[K_MAX_DIM + 1];
   if(dim >= (K_MAX_DIM-1))
@@ -594,28 +594,28 @@ multiply_polynomials(real result[],
 
 
 
-int
+integer
 get_product_simple_prims(DistributionSpecStruct* primA,
 			 DistributionSpecStruct* primB,
 			 DistributionSpecStruct resultList[],
-			 int maxCount)
+			 integer maxCount)
 {
   /* use the Gaussian product rule */
   real sum = 0;
   real newCenter[3];
   real CxCyCz, AiAj, alphaNew;
-  int k, l, m, nn;
+  integer k, l, m, nn;
   real poly0[K_MAX_DIM];
   real poly1[K_MAX_DIM];
   real poly2[K_MAX_DIM];
   real tempPoly[K_MAX_DIM];
   real tempPoly2[K_MAX_DIM];
   real tempPoly3[K_MAX_DIM];
-  int tempPolyDegree, tempPoly2Degree;
-  int poly0degree, poly1degree, poly2degree;
+  integer tempPolyDegree, tempPoly2Degree;
+  integer poly0degree, poly1degree, poly2degree;
   polydeg1struct polyDeg1;
   real* poly;
-  int* degreePtr;
+  integer* degreePtr;
 
   for(k = 0; k < 3; k++)
     {
@@ -639,7 +639,7 @@ get_product_simple_prims(DistributionSpecStruct* primA,
   for(k = 0; k < 3; k++)
     {
       switch(k)
-	{
+        {
 	case 0: poly = poly0; degreePtr = &poly0degree; break;
 	case 1: poly = poly1; degreePtr = &poly1degree; break;
 	case 2: poly = poly2; degreePtr = &poly2degree; break;
@@ -705,10 +705,10 @@ get_product_simple_prims(DistributionSpecStruct* primA,
   nn = 0;
   for(k = 0; k <= poly0degree; k++)
     {
-      int l;
+      integer l;
       for(l = 0; l <= poly1degree; l++)
 	{
-	  int m;
+	  integer m;
 	  for(m = 0; m <= poly2degree; m++)
 	    {
 	      real newCoeff = AiAj * CxCyCz * poly0[k] * poly1[l] * poly2[m];
@@ -745,34 +745,34 @@ get_product_simple_prims(DistributionSpecStruct* primA,
 }
 
 
-int
-get_product_simple_primitives(BasisInfoStruct* basisInfoA, int iA,
-			      BasisInfoStruct* basisInfoB, int iB,
+integer
+get_product_simple_primitives(BasisInfoStruct* basisInfoA, integer iA,
+			      BasisInfoStruct* basisInfoB, integer iB,
 			      DistributionSpecStruct resultList[],
-			      int maxCount)
+			      integer maxCount)
 {
     /* printf("entering get_product_simple_primitives\n"); */
 
   BasisFuncStruct* basisFuncA = &basisInfoA->basisFuncList[iA];
-  int nPrimsA = basisFuncA->noOfSimplePrimitives;
-  int Astart = basisFuncA->simplePrimitiveIndex;
+  integer nPrimsA = basisFuncA->noOfSimplePrimitives;
+  integer Astart = basisFuncA->simplePrimitiveIndex;
   BasisFuncStruct* basisFuncB = &basisInfoB->basisFuncList[iB];
-  int nPrimsB = basisFuncB->noOfSimplePrimitives;
-  int Bstart = basisFuncB->simplePrimitiveIndex;
-  int n = 0;
-  int i;
+  integer nPrimsB = basisFuncB->noOfSimplePrimitives;
+  integer Bstart = basisFuncB->simplePrimitiveIndex;
+  integer n = 0;
+  integer i;
   /* printf("nPrimsA = %i, nPrimsB = %i\n", nPrimsA, nPrimsB); */
   /* printf("Astart = %i, Bstart = %i\n", Astart, Bstart);     */
   for(i = 0; i < nPrimsA; i++)
     {
       DistributionSpecStruct* primA = 
 	&basisInfoA->simplePrimitiveList[Astart + i];
-      int j;
+      integer j;
       for(j = 0; j < nPrimsB; j++)
 	{
 	  DistributionSpecStruct* primB = 
 	    &basisInfoB->simplePrimitiveList[Bstart + j];
-	  int nNewPrims = get_product_simple_prims(primA, 
+	  integer nNewPrims = get_product_simple_prims(primA, 
 						   primB, 
 						   &resultList[n],
 						   maxCount - n);

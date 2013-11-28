@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -95,9 +95,12 @@ C
 #include "abslrs.h"
 #include "qm3.h"
 C
-      LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX
+      LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX, USEDRC_SAVE
 C
       CALL QENTER('ABARSP')
+
+      USEDRC_SAVE = USEDRC
+
       IF (MMPCM) CALL MMPCMINIT()
       TIMRSP = SECOND()
       IPRRSP = IPRCLC - 2
@@ -383,6 +386,7 @@ C
       END IF
 C
       IF (ABSLRS) THEN
+        ABS_DIRFCK=DIRFCK
         CALL GPINQ('ABSVECS','EXIST',EX)
         IF (.NOT.EX) THEN
           OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
@@ -489,6 +493,7 @@ C
 C
 C     *******************************************
 C
+      USEDRC = USEDRC_SAVE
       CALL QEXIT('ABARSP')
       RETURN
       END
@@ -614,7 +619,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                WRITE (LUPRI,'(/A,I3)')
      &             ' EIGENVECTOR FOR STATE NO.',(ISIM-1+INUM)
                CALL RSPPRO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),KZVAR,
-     *             LUPRI)
+     *             UDV,LUPRI)
 C            CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *             MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
@@ -677,7 +682,7 @@ C
 C
       KFREE = 1
       LFREE = LWRK
-      IF (ABSLRS) THEN
+      IF (ABSLRS .AND. ABS_DIRFCK .AND. NCONF.LE.1) THEN
         CALL MEMGET('REAL',KRES,2*3*3*NFREQ_INTERVAL,WRK,KFREE,
      &              LFREE)
         CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
@@ -688,11 +693,22 @@ C
         CALL ABS2INTER(WRK(KMJWOP),KZVAR)
         CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &              WRK(KFREE),LFREE)
-          CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
+        CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
+        GDNRM=DNRM2(2*KZVAR,WRK(KGD),1)
+        IF (GDNRM .LE. 1.0d-8) THEN
+          WRK(KXSOL:4*KZVAR-1)=0.0d0
+          RES0=0.0d0
+          DO K=1,NFREQ_ALPHA
+              CALL WRITE_XVEC(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
+     &                       ABS_FREQ_ALPHA(K),RES0)
+          ENDDO
+          WRITE(LUPRI,*) 'Vectors equal to zero'
+        ELSE
           CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                 ABS_FREQ_ALPHA,
-     &                 WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
-     &                 WRK(KRES),WRK(KFREE),LFREE)
+     &               ABS_FREQ_ALPHA,
+     &               WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
+     &               WRK(KRES),WRK(KFREE),LFREE)
+        ENDIF   
       ELSE
       CALL MEMGET('REAL',KREDE,MAXRM*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDS,MAXRM*MAXRM,WRK,KFREE,LFREE)
@@ -705,7 +721,7 @@ C
       CALL MEMGET('REAL',KREDZGD,2*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
 C
-      IF (ABSORP) THEN
+      IF (ABSORP .OR. ABSLRS) THEN
 C
 C     Nonzero damping parameter corresponds to complex response including 
 C     absorption in the system
@@ -820,7 +836,7 @@ C
                   IF (IPRLR .GE. 2) THEN
                      WRITE (LUPRI,'(/A,I5)') ' EIGENVECTOR NUMBER ',
      &                    IFREQ-1+IVEC
-                     CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
+                     CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,UDV,LUPRI)
                      CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
      *                    MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
                   END IF

@@ -67,7 +67,7 @@ cat > ccr3_exci.dal <<'%EOF%'
 **WAVE FUNCTION
 .CC 
 *SCF INPUT 
-.SCF OCCUPATION
+.DOUBLY OCCUPATION
  3 1 1 0 2 0 0 0
 .THRESH
 1.0D-11
@@ -123,6 +123,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "CCSDR" $log | $GREP "13.83534[4,5,6]" | wc -l`
 TEST[1]=`expr $CRIT1 ` 
@@ -133,7 +138,7 @@ echo $CRIT1
 PASSED=1
 for i in 1 
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

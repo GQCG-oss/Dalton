@@ -42,9 +42,16 @@
      "LSDalton, a molecular electronic structure program, Release 2011,
       written by <INSERT AUTHOR LIST>"
 
+                    
+  Revision info     
+--------------------
+                    
+ Last commit rev          | 930f05c3a2d1b467be5cb473b02cd7a132278874
+ Last commit author       | Merge: 47a6705 a60d540
+ Last commit time         | Author: Kasper Kristensen <kasperk@chem.au.dk>
 
 Start simulation
-     Date and time (Linux)  : Tue Apr 23 14:32:56 2013 
+     Date and time (Linux)  : Tue Apr 30 11:08:49 2013
      Host name              : kasper-kristensens-macbook-pro.local    
                       
  -----------------------------------------
@@ -73,10 +80,9 @@ Start simulation
   .ARH                                                                                                
   .START                                                                                              
   TRILEVEL                                                                                            
-  .CONVTHR                                                                                            
-  1.0d-5                                                                                              
-  **DEC                                                                                               
-  .FULL                                                                                               
+  .CONVDYN                                                                                            
+  TIGHT                                                                                               
+  **CC                                                                                                
   .MP2                                                                                                
   *END OF INPUT                                                                                       
   
@@ -111,8 +117,8 @@ Start simulation
    
 
  Default basis set library used:
-        /Users/kk/dalton/basis                                                                                                                                                                                  
- OPENING FILE/Users/kk/dalton/basis/cc-pVDZ
+        /Users/kk/dalton3/LSDALTON/../basis                                                                                                                                                                     
+ OPENING FILE/Users/kk/dalton3/LSDALTON/../basis/cc-pVDZ
    
 BASISSETLIBRARY
  Number of Basisset           1
@@ -183,16 +189,20 @@ Density subspace min. method    : None
 Density optimization : Augmented RH optimization          
 
  Maximum size of Fock/density queue in averaging:          10
+ 
+ Due to the tightend SCF convergence threshold we also tighten the integral Threshold
+ with a factor:  9.99999999999999917E-002
 
-Convergence threshold for gradient:   0.10E-04
+Dynamic convergence threshold for gradient:   0.37E-05
  We have detected a Dunnings Basis set so we deactivate the
  use of the Grand Canonical basis, which is normally default.
 We perform the calculation in the standard input basis
  
-    The Overall Screening threshold is set to              :1.0000E-08
-    The Screening threshold used for Coulomb               :1.0000E-10
-    The Screening threshold used for Exchange              :1.0000E-08
-    The Screening threshold used for One-electron operators:1.0000E-15
+    The Overall Screening threshold is set to              :1.0000E-09
+    The Screening threshold used for Coulomb               :1.0000E-11
+    The Screening threshold used for Exchange              :1.0000E-09
+    The Screening threshold used for One-electron operators:1.0000E-16
+ The SCF Convergence Criteria is applied to the gradnorm in OAO basis
 
  End of configuration!
 
@@ -219,23 +229,22 @@ total         14                               12
  QQQ New  h:   3748.2458460565017     
  QQQ New  K:   600.10783769149418     
  The Coulomb energy contribution    59.243588067895971     
- The Exchange energy contribution    10.984199434667943     
- The Fock energy contribution   -48.259388633228021     
-  Iteration 0 energy:  -77.192481538290593     
+ The Exchange energy contribution    10.984199434666641     
+ The Fock energy contribution   -48.259388633229335     
+  Iteration 0 energy:  -77.192481538289272     
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=       108 sparsity:     75.000 %
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
   Relative convergence threshold for solver:  1.00000000000000002E-002
-  SCF Convergence criteria for gradient norm:  1.00000000000000005E-004
+  SCF Convergence criteria for gradient norm:  3.74165738677394093E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    59.097710714045945     
- The Exchange energy contribution    10.689690349341404     
- The Fock energy contribution   -48.408020364704534     
- Gradient norm is computed in AO basis 
-*************************************************************************************************###
- it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     OAO gradient     ###
-******************************************************************  *******************************###
-  1    -76.6141194093    0.00000000000    0.00      0.00000    0.00    0.00E+00    2.50E-01  ###
+ The Coulomb energy contribution    59.097710713911631     
+ The Exchange energy contribution    10.689690349353206     
+ The Fock energy contribution   -48.408020364558453     
+**************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+  1    -76.6141194093    0.00000000000    0.00      0.00000    0.00    1.17E-01  ###
 *******************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 *******************************************************************************************%%%
@@ -243,19 +252,19 @@ Matrix AO D  has nnz=       144 sparsity:    100.000 %
                   Memory statistics, iteration   1
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
   Max allocated memory, TOTAL                          5.333 MB
-  Max allocated memory, type(matrix)                  66.088 kB
+  Max allocated memory, type(matrix)                  66.360 kB
   Max allocated memory, real                           5.249 MB
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        4.484 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   67.540 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        5.192 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  116.160 kB
   Max allocated memory, linkshell                      0.936 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
@@ -264,25 +273,27 @@ Matrix AO D  has nnz=       144 sparsity:    100.000 %
   Max allocated memory, ODitem                         3.776 kB
   Max allocated memory, lstensor                      23.689 kB
 
-  Allocated memory,     TOTAL                 155.464 kB
+  Allocated memory,     TOTAL                 229.304 kB
   Allocated memory,     type(matrix)           61.184 kB
   Allocated memory,     real                    1.760 kB
   Allocated memory,     integer                 2.400 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                3.256 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
+ general fifoqueue%offset           0
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
 Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
+ after general fifoqueue%offset           0
 ** Get new density 
- OAO gradnorm  0.11740773951876482     
+ OAO gradnorm  0.11740773951074879     
  Number of densities in queue:           0
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -297,16 +308,17 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
   Error of red space iteration  3:      0.0012392431 (mu =       0.00, xmax = 0.255238E-01, xnorm = 0.804452E-01, THR = 0.117408E-02)
   Error of red space iteration  4:      0.0001660857 (mu =       0.00, xmax = 0.254417E-01, xnorm = 0.801877E-01, THR = 0.117408E-02)
 Newton equations converged in  4 iterations!
+ after DOPT_get_density fifoqueue%offset           0
 No. of matmuls in get_density:    50
 ** Get Fock matrix number   2
- The Coulomb energy contribution    59.081990454038866     
- The Exchange energy contribution    10.688313728657356     
- The Fock energy contribution   -48.393676725381454     
+ The Coulomb energy contribution    59.081990453865778     
+ The Exchange energy contribution    10.688313728658105     
+ The Fock energy contribution   -48.393676725207690     
  0.60000 (xnorm)    0.02544    0.08019   -0.00    1.2659    0.0000         0          1    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  2    -76.6255792466   -0.01145983733    0.00      0.00000   -0.00    0.00E+00    1.17E-01  ###
+  2    -76.6255792467   -0.01145983733    0.00      0.00000   -0.00    3.04E-02  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   2
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -316,14 +328,14 @@ No. of matmuls in get_density:    50
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        4.484 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   67.540 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        5.192 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  116.160 kB
   Max allocated memory, linkshell                      0.936 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
@@ -332,25 +344,27 @@ No. of matmuls in get_density:    50
   Max allocated memory, ODitem                         3.776 kB
   Max allocated memory, lstensor                      23.689 kB
 
-  Allocated memory,     TOTAL                 157.768 kB
+  Allocated memory,     TOTAL                 231.608 kB
   Allocated memory,     type(matrix)           63.488 kB
   Allocated memory,     real                    1.760 kB
   Allocated memory,     integer                 2.400 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                3.256 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
+ general fifoqueue%offset           0
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
 Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
+ after general fifoqueue%offset           1
 ** Get new density 
- OAO gradnorm  3.03558097579191312E-002
+ OAO gradnorm  3.03558097633815187E-002
  Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -364,16 +378,17 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
   Error of red space iteration  2:      0.0007687683 (mu =       0.00, xmax = 0.896885E-02, xnorm = 0.286861E-01, THR = 0.303558E-03)
   Error of red space iteration  3:      0.0001715815 (mu =       0.00, xmax = 0.896818E-02, xnorm = 0.287476E-01, THR = 0.303558E-03)
 Newton equations converged in  3 iterations!
+ after DOPT_get_density fifoqueue%offset           1
 No. of matmuls in get_density:    53
 ** Get Fock matrix number   3
- The Coulomb energy contribution    59.081938319455581     
- The Exchange energy contribution    10.687908746857980     
- The Fock energy contribution   -48.394029572597610     
+ The Coulomb energy contribution    59.081938319345774     
+ The Exchange energy contribution    10.687908746860298     
+ The Fock energy contribution   -48.394029572485422     
  0.60000 (xnorm)    0.00897    0.02875   -0.00    0.9963    0.9958         1          2    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  3    -76.6264253432   -0.00084609660    0.00      0.00000   -0.00    0.00E+00    3.04E-02  ###
+  3    -76.6264253433   -0.00084609660    0.00      0.00000   -0.00    6.13E-04  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   3
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -383,14 +398,14 @@ No. of matmuls in get_density:    53
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        4.484 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   67.540 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        5.192 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  116.160 kB
   Max allocated memory, linkshell                      0.936 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
@@ -399,25 +414,27 @@ No. of matmuls in get_density:    53
   Max allocated memory, ODitem                         3.776 kB
   Max allocated memory, lstensor                      23.689 kB
 
-  Allocated memory,     TOTAL                 160.072 kB
+  Allocated memory,     TOTAL                 233.912 kB
   Allocated memory,     type(matrix)           65.792 kB
   Allocated memory,     real                    1.760 kB
   Allocated memory,     integer                 2.400 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                3.256 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
+ general fifoqueue%offset           1
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
 Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
+ after general fifoqueue%offset           2
 ** Get new density 
- OAO gradnorm  6.12566096531882900E-004
+ OAO gradnorm  6.12566096250753613E-004
  Number of densities in queue:           2
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -434,16 +451,17 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 Error went down by   94.67%
   Error of red space iteration  5:      0.0000001794 (mu =       0.00, xmax = 0.102330E-03, xnorm = 0.327539E-03, THR = 0.612566E-06)
 Newton equations converged in  5 iterations!
+ after DOPT_get_density fifoqueue%offset           2
 No. of matmuls in get_density:    71
 ** Get Fock matrix number   4
- The Coulomb energy contribution    59.081793333449241     
- The Exchange energy contribution    10.687884083316689     
- The Fock energy contribution   -48.393909250132488     
+ The Coulomb energy contribution    59.081793333347861     
+ The Exchange energy contribution    10.687884083319554     
+ The Fock energy contribution   -48.393909250028308     
  0.60000 (xnorm)    0.00010    0.00033   -0.00    1.0953    0.6919         2          3    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  4    -76.6264255586   -0.00000021534    0.00      0.00000   -0.00    0.00E+00    6.13E-04  ###
+  4    -76.6264255586   -0.00000021534    0.00      0.00000   -0.00    6.46E-05  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   4
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -453,14 +471,14 @@ No. of matmuls in get_density:    71
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        4.484 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   67.540 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        5.192 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  116.160 kB
   Max allocated memory, linkshell                      0.936 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
@@ -469,25 +487,27 @@ No. of matmuls in get_density:    71
   Max allocated memory, ODitem                         3.776 kB
   Max allocated memory, lstensor                      23.689 kB
 
-  Allocated memory,     TOTAL                 162.376 kB
+  Allocated memory,     TOTAL                 236.216 kB
   Allocated memory,     type(matrix)           68.096 kB
   Allocated memory,     real                    1.760 kB
   Allocated memory,     integer                 2.400 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                3.256 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
+ general fifoqueue%offset           2
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
 Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
+ after general fifoqueue%offset           3
 ** Get new density 
- OAO gradnorm  6.46216028730715907E-005
+ OAO gradnorm  6.46216029554178570E-005
  Number of densities in queue:           3
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -504,16 +524,17 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 Error went down by   96.69%
   Error of red space iteration  5:      0.0000000276 (mu =       0.00, xmax = 0.110752E-04, xnorm = 0.404709E-04, THR = 0.646216E-07)
 Newton equations converged in  5 iterations!
+ after DOPT_get_density fifoqueue%offset           3
 No. of matmuls in get_density:    70
 ** Get Fock matrix number   5
- The Coulomb energy contribution    59.081744150244496     
- The Exchange energy contribution    10.687879531265887     
- The Fock energy contribution   -48.393864618978633     
+ The Coulomb energy contribution    59.081744150143550     
+ The Exchange energy contribution    10.687879531268768     
+ The Fock energy contribution   -48.393864618874751     
  0.60000 (xnorm)    0.00001    0.00004   -0.00    1.0395    0.9014         3          4    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  5    -76.6264255612   -0.00000000258    0.00      0.00000   -0.00    0.00E+00    6.46E-05  ###
+  5    -76.6264255612   -0.00000000258    0.00      0.00000   -0.00    7.64E-06  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   5
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -523,14 +544,14 @@ No. of matmuls in get_density:    70
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        4.484 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   67.540 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        5.192 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  116.160 kB
   Max allocated memory, linkshell                      0.936 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
@@ -539,20 +560,20 @@ No. of matmuls in get_density:    70
   Max allocated memory, ODitem                         3.776 kB
   Max allocated memory, lstensor                      23.689 kB
 
-  Allocated memory,     TOTAL                 164.680 kB
+  Allocated memory,     TOTAL                 238.520 kB
   Allocated memory,     type(matrix)           70.400 kB
   Allocated memory,     real                    1.760 kB
   Allocated memory,     integer                 2.400 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                3.256 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
 
-Total no. of matmuls in SCF optimization:        280
+Total no. of matmuls in SCF optimization:        325
 
  Number of occupied orbitals:           7
  Number of virtual orbitals:           5
@@ -585,21 +606,22 @@ Calculation of virtual orbital energies converged in     4 iterations!
 
 ======================================================================
                    LINSCF ITERATIONS:
-  It.nr.               Energy                    Gradient norm
+  It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1           -76.61411940932185871134      0.249970406364496D+00
-    2           -76.62557924664926645164      0.117407739518765D+00
-    3           -76.62642534324683651903      0.303558097579191D-01
-    4           -76.62642555858633386379      0.612566096531883D-03
-    5           -76.62642556117071990229      0.646216028730716D-04
+  Atoms          -2.00000000000000133227      0.000000000000000D+00
+    1           -76.61411940933136577314      0.117407739510749D+00
+    2           -76.62557924665881614601      0.303558097633815D-01
+    3           -76.62642534325654253280      0.612566096250754D-03
+    4           -76.62642555859608251012      0.646216029554179D-04
+    5           -76.62642556118061065717      0.763591027726974D-05
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
 
 
-      Final HF energy:                   -76.626425561171
+      Final HF energy:                   -76.626425561181
       Nuclear repulsion:                  24.952942688150
-      Electronic energy:                -101.579368249320
+      Electronic energy:                -101.579368249330
 
  Level 2 minimization done! Starting Level 3 minimization...
 
@@ -609,72 +631,125 @@ Calculation of virtual orbital energies converged in     4 iterations!
  Number of virt. orb. in molecule =           31
 
 
- OCCUPIED: (Orbital index, MOS) =            5   2.2549818173316498     
+ OCCUPIED: (Orbital index, MOS) =            5   2.2549818173337508     
  VIRTUAL : (Orbital index, MOS) =           15   2.8705308331974968     
 
 
+
+Max no. of matrices allocated in Level 2 / get_initial_dens:         40
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=      1068 sparsity:     73.961 %
 Matrix AO D  has nnz=       144 sparsity:      9.972 %
   Relative convergence threshold for solver:  1.00000000000000002E-002
-  SCF Convergence criteria for gradient norm:  1.00000000000000008E-005
-** Get Fock matrix number   1
- The Coulomb energy contribution    59.081744150244496     
- The Exchange energy contribution    10.687879531265887     
- The Fock energy contribution   -48.393864618978640     
- Gradient norm is computed in AO basis 
-*************************************************************************************************###
- it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     OAO gradient     ###
-******************************************************************  *******************************###
-  1    -76.6264255612    0.00000000000    0.00      0.00000    0.00    0.00E+00    3.26E+00  ###
+  SCF Convergence criteria for gradient norm:  3.74165738677394110E-006
+ The Coulomb energy contribution    59.243588067895971     
+ The Exchange energy contribution    10.984199434666641     
+ The Fock energy contribution   -48.259388633229335     
+  Iteration 0 energy:  -77.192481538289272     
+ The Coulomb energy contribution    61.550636112423433     
+ The Coulomb energy contribution    59.081744150143550     
+ The Exchange energy contribution    10.995964643002280     
+ The Exchange energy contribution    10.687879531268766     
+ The Fock energy contribution   -50.554671469421237     
+ The Fock energy contribution   -48.393864618874765     
+**************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+Atoms    -76.8012590824    0.00000000000    0.00      0.00000    0.00    1.84E-01  ###
+*******************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+*******************************************************************************************%%%
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   0
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                         29.831 MB
+  Max allocated memory, type(matrix)                 255.280 kB
+  Max allocated memory, real                          29.748 MB
+  Max allocated memory, integer                       83.865 kB
+  Max allocated memory, logical                        0.736 kB
+  Max allocated memory, character                      2.480 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        9.680 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  162.624 kB
+  Max allocated memory, linkshell                      2.520 kB
+  Max allocated memory, integrand                    653.184 kB
+  Max allocated memory, integralitem                   1.638 MB
+  Max allocated memory, IntWork                      132.552 kB
+  Max allocated memory, overlap                       27.958 MB
+  Max allocated memory, ODitem                         7.040 kB
+  Max allocated memory, lstensor                     123.345 kB
+
+  Allocated memory,     TOTAL                 366.168 kB
+  Allocated memory,     type(matrix)          196.384 kB
+  Allocated memory,     real                    1.712 kB
+  Allocated memory,     integer                 3.056 kB
+  Allocated memory,     logical                 0.640 kB
+  Allocated memory,     character               1.600 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
+  Allocated memory,     lstensor                4.312 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+**************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+  1    -76.6264255612    0.00000000000    0.00      0.00000    0.00    5.65E-01  ###
 *******************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 *******************************************************************************************%%%
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   1
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         16.146 MB
-  Max allocated memory, type(matrix)                 185.128 kB
-  Max allocated memory, real                          16.062 MB
+  Max allocated memory, TOTAL                         29.831 MB
+  Max allocated memory, type(matrix)                 255.280 kB
+  Max allocated memory, real                          29.748 MB
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        8.360 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   89.644 kB
-  Max allocated memory, linkshell                      2.040 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        9.680 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  162.624 kB
+  Max allocated memory, linkshell                      2.520 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
-  Max allocated memory, IntWork                      125.568 kB
-  Max allocated memory, overlap                       14.272 MB
+  Max allocated memory, IntWork                      132.552 kB
+  Max allocated memory, overlap                       27.958 MB
   Max allocated memory, ODitem                         7.040 kB
   Max allocated memory, lstensor                     123.345 kB
 
-  Allocated memory,     TOTAL                 234.568 kB
-  Allocated memory,     type(matrix)          138.624 kB
+  Allocated memory,     TOTAL                 366.168 kB
+  Allocated memory,     type(matrix)          196.384 kB
   Allocated memory,     real                    1.712 kB
   Allocated memory,     integer                 3.056 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                4.312 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
-** Make average of the last F and D matrices
+Matrix AO D  has nnz=      1444 sparsity:    100.000 %
+Matrix AO F  has nnz=      1444 sparsity:    100.000 %
+Matrix OAO D has nnz=      1444 sparsity:    100.000 %
+Matrix OAO F has nnz=      1444 sparsity:    100.000 %
 Matrix AO D  has nnz=       144 sparsity:      9.972 %
 Matrix AO F  has nnz=      1444 sparsity:    100.000 %
 Matrix OAO D has nnz=      1444 sparsity:    100.000 %
 Matrix OAO F has nnz=      1444 sparsity:    100.000 %
-** Get new density 
- OAO gradnorm  0.56508685769731648     
- Number of densities in queue:           0
+ OAO gradnorm  0.56508685772113043     
+ Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
     E(LUMO):                      0.118846 au
@@ -683,567 +758,519 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.622529 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.2968722075 (mu =       0.00, xmax = 0.970996E-01, xnorm = 0.398097E+00, THR = 0.565087E-02)
-  Error of red space iteration  2:      0.0859651923 (mu =       0.00, xmax = 0.877821E-01, xnorm = 0.382421E+00, THR = 0.565087E-02)
-  Error of red space iteration  3:      0.0258995400 (mu =       0.00, xmax = 0.870336E-01, xnorm = 0.371240E+00, THR = 0.565087E-02)
-  Error of red space iteration  4:      0.0087157541 (mu =       0.00, xmax = 0.864200E-01, xnorm = 0.366115E+00, THR = 0.565087E-02)
-Error went down by   89.86%
-  Error of red space iteration  5:      0.0031113842 (mu =       0.00, xmax = 0.862708E-01, xnorm = 0.364800E+00, THR = 0.565087E-02)
+  Error of red space iteration  1:      0.2822407581 (mu =       0.00, xmax = 0.944020E-01, xnorm = 0.389274E+00, THR = 0.565087E-02)
+  Error of red space iteration  2:      0.0884267295 (mu =       0.00, xmax = 0.840716E-01, xnorm = 0.371145E+00, THR = 0.565087E-02)
+  Error of red space iteration  3:      0.0245878811 (mu =       0.00, xmax = 0.829937E-01, xnorm = 0.358805E+00, THR = 0.565087E-02)
+  Error of red space iteration  4:      0.0081408996 (mu =       0.00, xmax = 0.821694E-01, xnorm = 0.353510E+00, THR = 0.565087E-02)
+Error went down by   90.79%
+  Error of red space iteration  5:      0.0029973398 (mu =       0.00, xmax = 0.820410E-01, xnorm = 0.351794E+00, THR = 0.565087E-02)
 Newton equations converged in  5 iterations!
-No. of matmuls in get_density:    59
+No. of matmuls in get_density:    77
 ** Get Fock matrix number   2
- The Coulomb energy contribution    61.818904280964254     
- The Exchange energy contribution    11.036312127222848     
- The Fock energy contribution   -50.782592153741710     
- 0.60000 (xnorm)    0.08627    0.36480   -0.00    0.9715    0.0000         0          1    %%%
+ The Coulomb energy contribution    61.065856266272213     
+ The Exchange energy contribution    10.976773976077251     
+ The Fock energy contribution   -50.089082290195037     
+ 0.60000 (xnorm)    0.08204    0.35179   -0.00    1.0425    0.9362         1          1    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  2    -76.8160475001   -0.18962193896    0.00      0.00000   -0.00    0.00E+00    5.65E-01  ###
+  2    -76.8243474648   -0.19792190364    0.00      0.00000   -0.00    4.48E-02  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   2
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         16.146 MB
-  Max allocated memory, type(matrix)                 335.008 kB
-  Max allocated memory, real                          16.062 MB
-  Max allocated memory, integer                       83.865 kB
-  Max allocated memory, logical                        0.736 kB
-  Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        8.360 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   95.784 kB
-  Max allocated memory, linkshell                      2.520 kB
-  Max allocated memory, integrand                    653.184 kB
-  Max allocated memory, integralitem                   1.638 MB
-  Max allocated memory, IntWork                      125.568 kB
-  Max allocated memory, overlap                       14.272 MB
-  Max allocated memory, ODitem                         7.040 kB
-  Max allocated memory, lstensor                     123.345 kB
-
-  Allocated memory,     TOTAL                 257.672 kB
-  Allocated memory,     type(matrix)          161.728 kB
-  Allocated memory,     real                    1.712 kB
-  Allocated memory,     integer                 3.056 kB
-  Allocated memory,     logical                 0.640 kB
-  Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
-  Allocated memory,     lstensor                4.312 kB
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
-** Make average of the last F and D matrices
-Matrix AO D  has nnz=      1444 sparsity:    100.000 %
-Matrix AO F  has nnz=      1444 sparsity:    100.000 %
-Matrix OAO D has nnz=      1444 sparsity:    100.000 %
-Matrix OAO F has nnz=      1444 sparsity:    100.000 %
-** Get new density 
- OAO gradnorm  0.12448279660406789     
- Number of densities in queue:           1
-CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
-
-    E(LUMO):                      0.192907 au
-   -E(HOMO):                     -0.381570 au
-   -------------------------------------
-    HOMO-LUMO Gap (by diag.):     0.574477 au
-
- First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0624729377 (mu =       0.00, xmax = 0.168854E-01, xnorm = 0.965219E-01, THR = 0.124483E-02)
-  Error of red space iteration  2:      0.0198767800 (mu =       0.00, xmax = 0.172473E-01, xnorm = 0.938035E-01, THR = 0.124483E-02)
-  Error of red space iteration  3:      0.0056075230 (mu =       0.00, xmax = 0.164996E-01, xnorm = 0.922034E-01, THR = 0.124483E-02)
-  Error of red space iteration  4:      0.0022318840 (mu =       0.00, xmax = 0.164500E-01, xnorm = 0.910138E-01, THR = 0.124483E-02)
-Error went down by   88.77%
-  Error of red space iteration  5:      0.0009679881 (mu =       0.00, xmax = 0.164561E-01, xnorm = 0.905192E-01, THR = 0.124483E-02)
-Newton equations converged in  5 iterations!
-No. of matmuls in get_density:    74
-** Get Fock matrix number   3
- The Coulomb energy contribution    61.071629012152542     
- The Exchange energy contribution    10.978570411821412     
- The Fock energy contribution   -50.093058600331219     
- 0.60000 (xnorm)    0.01646    0.09052   -0.00    0.8864    0.2137         1          2    %%%
- Trust radius based on max norm!
- % Expand trust-radius by a factor   1.2000000000000000      h(old), h(new):  0.59999999999999998       0.71999999999999997     
- Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  3    -76.8253502865   -0.00930278636    0.00      0.00000   -0.00    0.00E+00    1.24E-01  ###
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics, iteration   3
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         16.146 MB
+  Max allocated memory, TOTAL                         29.831 MB
   Max allocated memory, type(matrix)                 358.112 kB
-  Max allocated memory, real                          16.062 MB
+  Max allocated memory, real                          29.748 MB
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        8.360 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   95.784 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        9.680 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  166.848 kB
   Max allocated memory, linkshell                      2.520 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
-  Max allocated memory, IntWork                      125.568 kB
-  Max allocated memory, overlap                       14.272 MB
+  Max allocated memory, IntWork                      132.552 kB
+  Max allocated memory, overlap                       27.958 MB
   Max allocated memory, ODitem                         7.040 kB
   Max allocated memory, lstensor                     123.345 kB
 
-  Allocated memory,     TOTAL                 280.776 kB
+  Allocated memory,     TOTAL                 354.616 kB
   Allocated memory,     type(matrix)          184.832 kB
   Allocated memory,     real                    1.712 kB
   Allocated memory,     integer                 3.056 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                4.312 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
+ general fifoqueue%offset           1
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=      1444 sparsity:    100.000 %
 Matrix AO F  has nnz=      1444 sparsity:    100.000 %
 Matrix OAO D has nnz=      1444 sparsity:    100.000 %
 Matrix OAO F has nnz=      1444 sparsity:    100.000 %
+ after general fifoqueue%offset           2
 ** Get new density 
- OAO gradnorm  3.27037222370516883E-002
+ OAO gradnorm  4.47585020355523028E-002
  Number of densities in queue:           2
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
-    E(LUMO):                      0.191583 au
-   -E(HOMO):                     -0.417735 au
+    E(LUMO):                      0.190275 au
+   -E(HOMO):                     -0.418008 au
    -------------------------------------
-    HOMO-LUMO Gap (by diag.):     0.609317 au
+    HOMO-LUMO Gap (by diag.):     0.608283 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0153693979 (mu =       0.00, xmax = 0.475544E-02, xnorm = 0.244853E-01, THR = 0.327037E-03)
-  Error of red space iteration  2:      0.0048019528 (mu =       0.00, xmax = 0.431554E-02, xnorm = 0.225673E-01, THR = 0.327037E-03)
-  Error of red space iteration  3:      0.0019950671 (mu =       0.00, xmax = 0.448509E-02, xnorm = 0.218986E-01, THR = 0.327037E-03)
-  Error of red space iteration  4:      0.0005083931 (mu =       0.00, xmax = 0.439501E-02, xnorm = 0.214490E-01, THR = 0.327037E-03)
-Error went down by   89.41%
-  Error of red space iteration  5:      0.0001894971 (mu =       0.00, xmax = 0.438523E-02, xnorm = 0.213475E-01, THR = 0.327037E-03)
+  Error of red space iteration  1:      0.0228095241 (mu =       0.00, xmax = 0.739365E-02, xnorm = 0.383094E-01, THR = 0.447585E-03)
+  Error of red space iteration  2:      0.0057008166 (mu =       0.00, xmax = 0.758518E-02, xnorm = 0.377919E-01, THR = 0.447585E-03)
+  Error of red space iteration  3:      0.0019044128 (mu =       0.00, xmax = 0.760993E-02, xnorm = 0.370702E-01, THR = 0.447585E-03)
+  Error of red space iteration  4:      0.0008227523 (mu =       0.00, xmax = 0.771014E-02, xnorm = 0.367558E-01, THR = 0.447585E-03)
+Error went down by   85.57%
+  Error of red space iteration  5:      0.0002827509 (mu =       0.00, xmax = 0.768895E-02, xnorm = 0.366349E-01, THR = 0.447585E-03)
 Newton equations converged in  5 iterations!
-No. of matmuls in get_density:    72
-** Get Fock matrix number   4
- The Coulomb energy contribution    61.238895819766007     
- The Exchange energy contribution    10.998391521345603     
- The Fock energy contribution   -50.240504298420625     
- 0.60000 (xnorm)    0.00439    0.02135   -0.00    1.0331    0.8931         2          3    %%%
+ after DOPT_get_density fifoqueue%offset           2
+No. of matmuls in get_density:    73
+** Get Fock matrix number   3
+ The Coulomb energy contribution    61.270680691270442     
+ The Exchange energy contribution    11.001773837042988     
+ The Fock energy contribution   -50.268906854227652     
+ 0.60000 (xnorm)    0.00769    0.03663   -0.00    1.0364    0.6701         2          2    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  4    -76.8260259261   -0.00067563964    0.00      0.00000   -0.00    0.00E+00    3.27E-02  ###
+  3    -76.8259632047   -0.00161573990    0.00      0.00000   -0.00    9.71E-03  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics, iteration   4
+                  Memory statistics, iteration   3
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         16.146 MB
+  Max allocated memory, TOTAL                         29.831 MB
   Max allocated memory, type(matrix)                 381.216 kB
-  Max allocated memory, real                          16.062 MB
+  Max allocated memory, real                          29.748 MB
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        8.360 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   95.784 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        9.680 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  166.848 kB
   Max allocated memory, linkshell                      2.520 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
-  Max allocated memory, IntWork                      125.568 kB
-  Max allocated memory, overlap                       14.272 MB
+  Max allocated memory, IntWork                      132.552 kB
+  Max allocated memory, overlap                       27.958 MB
   Max allocated memory, ODitem                         7.040 kB
   Max allocated memory, lstensor                     123.345 kB
 
-  Allocated memory,     TOTAL                 303.880 kB
+  Allocated memory,     TOTAL                 377.720 kB
   Allocated memory,     type(matrix)          207.936 kB
   Allocated memory,     real                    1.712 kB
   Allocated memory,     integer                 3.056 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                4.312 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
+ general fifoqueue%offset           2
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=      1444 sparsity:    100.000 %
 Matrix AO F  has nnz=      1444 sparsity:    100.000 %
 Matrix OAO D has nnz=      1444 sparsity:    100.000 %
 Matrix OAO F has nnz=      1444 sparsity:    100.000 %
+ after general fifoqueue%offset           3
 ** Get new density 
- OAO gradnorm  2.59056953548565195E-003
+ OAO gradnorm  9.71362843606998240E-003
  Number of densities in queue:           3
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
-    E(LUMO):                      0.192572 au
-   -E(HOMO):                     -0.409404 au
+    E(LUMO):                      0.192502 au
+   -E(HOMO):                     -0.407903 au
    -------------------------------------
-    HOMO-LUMO Gap (by diag.):     0.601975 au
+    HOMO-LUMO Gap (by diag.):     0.600405 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0016731158 (mu =       0.00, xmax = 0.610937E-03, xnorm = 0.253808E-02, THR = 0.259057E-04)
-  Error of red space iteration  2:      0.0003862480 (mu =       0.00, xmax = 0.542289E-03, xnorm = 0.255496E-02, THR = 0.259057E-04)
-  Error of red space iteration  3:      0.0001270710 (mu =       0.00, xmax = 0.576700E-03, xnorm = 0.259305E-02, THR = 0.259057E-04)
-  Error of red space iteration  4:      0.0000612491 (mu =       0.00, xmax = 0.586906E-03, xnorm = 0.262635E-02, THR = 0.259057E-04)
-Error went down by   84.14%
-  Error of red space iteration  5:      0.0000223392 (mu =       0.00, xmax = 0.595740E-03, xnorm = 0.265697E-02, THR = 0.259057E-04)
-Newton equations converged in  5 iterations!
-No. of matmuls in get_density:    71
-** Get Fock matrix number   5
- The Coulomb energy contribution    61.238695550026883     
- The Exchange energy contribution    10.998654821274789     
- The Fock energy contribution   -50.240040728752042     
- 0.60000 (xnorm)    0.00060    0.00266   -0.00    1.1022    0.8644         3          4    %%%
+  Error of red space iteration  1:      0.0063196232 (mu =       0.00, xmax = 0.155019E-02, xnorm = 0.790766E-02, THR = 0.971363E-04)
+  Error of red space iteration  2:      0.0017375793 (mu =       0.00, xmax = 0.166670E-02, xnorm = 0.768777E-02, THR = 0.971363E-04)
+  Error of red space iteration  3:      0.0006115106 (mu =       0.00, xmax = 0.161261E-02, xnorm = 0.765157E-02, THR = 0.971363E-04)
+  Error of red space iteration  4:      0.0002414909 (mu =       0.00, xmax = 0.162322E-02, xnorm = 0.768325E-02, THR = 0.971363E-04)
+Error went down by   86.10%
+  Error of red space iteration  5:      0.0001070527 (mu =       0.00, xmax = 0.162717E-02, xnorm = 0.772160E-02, THR = 0.971363E-04)
+  Error of red space iteration  6:      0.0000443340 (mu =       0.00, xmax = 0.163532E-02, xnorm = 0.775724E-02, THR = 0.971363E-04)
+Newton equations converged in  6 iterations!
+ after DOPT_get_density fifoqueue%offset           3
+No. of matmuls in get_density:    82
+** Get Fock matrix number   4
+ The Coulomb energy contribution    61.237930987427184     
+ The Exchange energy contribution    10.998616969005855     
+ The Fock energy contribution   -50.239314018421233     
+ 0.60000 (xnorm)    0.00164    0.00776   -0.00    1.0149    0.9376         3          3    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  5    -76.8260329786   -0.00000705242    0.00      0.00000   -0.00    0.00E+00    2.59E-03  ###
+  4    -76.8260322682   -0.00006906349    0.00      0.00000   -0.00    8.55E-04  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics, iteration   5
+                  Memory statistics, iteration   4
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         16.146 MB
+  Max allocated memory, TOTAL                         29.831 MB
   Max allocated memory, type(matrix)                 404.320 kB
-  Max allocated memory, real                          16.062 MB
+  Max allocated memory, real                          29.748 MB
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        8.360 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   95.784 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        9.680 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  166.848 kB
   Max allocated memory, linkshell                      2.520 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
-  Max allocated memory, IntWork                      125.568 kB
-  Max allocated memory, overlap                       14.272 MB
+  Max allocated memory, IntWork                      132.552 kB
+  Max allocated memory, overlap                       27.958 MB
   Max allocated memory, ODitem                         7.040 kB
   Max allocated memory, lstensor                     123.345 kB
 
-  Allocated memory,     TOTAL                 326.984 kB
+  Allocated memory,     TOTAL                 400.824 kB
   Allocated memory,     type(matrix)          231.040 kB
   Allocated memory,     real                    1.712 kB
   Allocated memory,     integer                 3.056 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                4.312 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
+ general fifoqueue%offset           3
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=      1444 sparsity:    100.000 %
 Matrix AO F  has nnz=      1444 sparsity:    100.000 %
 Matrix OAO D has nnz=      1444 sparsity:    100.000 %
 Matrix OAO F has nnz=      1444 sparsity:    100.000 %
+ after general fifoqueue%offset           4
 ** Get new density 
- OAO gradnorm  4.78826742783565028E-004
+ OAO gradnorm  8.54653220549413508E-004
  Number of densities in queue:           4
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
-    E(LUMO):                      0.192515 au
-   -E(HOMO):                     -0.409270 au
+    E(LUMO):                      0.192528 au
+   -E(HOMO):                     -0.409340 au
    -------------------------------------
-    HOMO-LUMO Gap (by diag.):     0.601785 au
+    HOMO-LUMO Gap (by diag.):     0.601869 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0004223245 (mu =       0.00, xmax = 0.100542E-03, xnorm = 0.439300E-03, THR = 0.478827E-06)
-  Error of red space iteration  2:      0.0000677578 (mu =       0.00, xmax = 0.101089E-03, xnorm = 0.459704E-03, THR = 0.478827E-06)
-  Error of red space iteration  3:      0.0000365025 (mu =       0.00, xmax = 0.105745E-03, xnorm = 0.475511E-03, THR = 0.478827E-06)
-  Error of red space iteration  4:      0.0000192710 (mu =       0.00, xmax = 0.109249E-03, xnorm = 0.492316E-03, THR = 0.478827E-06)
-Error went down by   71.56%
-  Error of red space iteration  5:      0.0000070302 (mu =       0.00, xmax = 0.112121E-03, xnorm = 0.505184E-03, THR = 0.478827E-06)
-  Error of red space iteration  6:      0.0000031902 (mu =       0.00, xmax = 0.113374E-03, xnorm = 0.509693E-03, THR = 0.478827E-06)
-  Error of red space iteration  7:      0.0000011954 (mu =       0.00, xmax = 0.113662E-03, xnorm = 0.511138E-03, THR = 0.478827E-06)
-Error went down by   83.00%
-  Error of red space iteration  8:      0.0000003871 (mu =       0.00, xmax = 0.113769E-03, xnorm = 0.511591E-03, THR = 0.478827E-06)
+  Error of red space iteration  1:      0.0003168269 (mu =       0.00, xmax = 0.153967E-03, xnorm = 0.905073E-03, THR = 0.854653E-06)
+  Error of red space iteration  2:      0.0001118916 (mu =       0.00, xmax = 0.169931E-03, xnorm = 0.945085E-03, THR = 0.854653E-06)
+  Error of red space iteration  3:      0.0000590274 (mu =       0.00, xmax = 0.181403E-03, xnorm = 0.979335E-03, THR = 0.854653E-06)
+  Error of red space iteration  4:      0.0000242535 (mu =       0.00, xmax = 0.193193E-03, xnorm = 0.101909E-02, THR = 0.854653E-06)
+Error went down by   78.32%
+  Error of red space iteration  5:      0.0000095515 (mu =       0.00, xmax = 0.197658E-03, xnorm = 0.103529E-02, THR = 0.854653E-06)
+  Error of red space iteration  6:      0.0000043549 (mu =       0.00, xmax = 0.197872E-03, xnorm = 0.103835E-02, THR = 0.854653E-06)
+  Error of red space iteration  7:      0.0000012800 (mu =       0.00, xmax = 0.197871E-03, xnorm = 0.103975E-02, THR = 0.854653E-06)
+Error went down by   86.60%
+  Error of red space iteration  8:      0.0000004267 (mu =       0.00, xmax = 0.197850E-03, xnorm = 0.104003E-02, THR = 0.854653E-06)
 Newton equations converged in  8 iterations!
+ after DOPT_get_density fifoqueue%offset           4
 No. of matmuls in get_density:   101
-** Get Fock matrix number   6
- The Coulomb energy contribution    61.238501957939448     
- The Exchange energy contribution    10.998601817011433     
- The Fock energy contribution   -50.239900140928029     
- 0.60000 (xnorm)    0.00011    0.00051   -0.00    1.0639    0.9177         4          5    %%%
+** Get Fock matrix number   5
+ The Coulomb energy contribution    61.238040328413042     
+ The Exchange energy contribution    10.998558454971148     
+ The Fock energy contribution   -50.239481873441932     
+ 0.60000 (xnorm)    0.00020    0.00104   -0.00    1.0820    0.9253         4          4    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  6    -76.8260332077   -0.00000022914    0.00      0.00000   -0.00    0.00E+00    4.79E-04  ###
+  5    -76.8260331902   -0.00000092194    0.00      0.00000   -0.00    1.74E-04  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics, iteration   6
+                  Memory statistics, iteration   5
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         16.146 MB
+  Max allocated memory, TOTAL                         29.831 MB
   Max allocated memory, type(matrix)                 427.424 kB
-  Max allocated memory, real                          16.062 MB
+  Max allocated memory, real                          29.748 MB
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        8.360 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   95.784 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        9.680 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  166.848 kB
   Max allocated memory, linkshell                      2.520 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
-  Max allocated memory, IntWork                      125.568 kB
-  Max allocated memory, overlap                       14.272 MB
+  Max allocated memory, IntWork                      132.552 kB
+  Max allocated memory, overlap                       27.958 MB
   Max allocated memory, ODitem                         7.040 kB
   Max allocated memory, lstensor                     123.345 kB
 
-  Allocated memory,     TOTAL                 350.088 kB
+  Allocated memory,     TOTAL                 423.928 kB
   Allocated memory,     type(matrix)          254.144 kB
   Allocated memory,     real                    1.712 kB
   Allocated memory,     integer                 3.056 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                4.312 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
+ general fifoqueue%offset           4
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=      1444 sparsity:    100.000 %
 Matrix AO F  has nnz=      1444 sparsity:    100.000 %
-Matrix OAO D has nnz=      1444 sparsity:    100.000 %
+Matrix OAO D has nnz=      1442 sparsity:     99.861 %
 Matrix OAO F has nnz=      1444 sparsity:    100.000 %
+ after general fifoqueue%offset           5
 ** Get new density 
- OAO gradnorm  8.68529452355671738E-005
+ OAO gradnorm  1.74127256965692155E-004
  Number of densities in queue:           5
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
-    E(LUMO):                      0.192493 au
-   -E(HOMO):                     -0.409246 au
+    E(LUMO):                      0.192495 au
+   -E(HOMO):                     -0.409274 au
    -------------------------------------
-    HOMO-LUMO Gap (by diag.):     0.601739 au
+    HOMO-LUMO Gap (by diag.):     0.601769 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0000483397 (mu =       0.00, xmax = 0.189925E-04, xnorm = 0.767307E-04, THR = 0.868529E-07)
-  Error of red space iteration  2:      0.0000168658 (mu =       0.00, xmax = 0.198217E-04, xnorm = 0.772220E-04, THR = 0.868529E-07)
-  Error of red space iteration  3:      0.0000066023 (mu =       0.00, xmax = 0.205781E-04, xnorm = 0.782064E-04, THR = 0.868529E-07)
-  Error of red space iteration  4:      0.0000026513 (mu =       0.00, xmax = 0.211938E-04, xnorm = 0.796014E-04, THR = 0.868529E-07)
-Error went down by   84.28%
-  Error of red space iteration  5:      0.0000011032 (mu =       0.00, xmax = 0.215328E-04, xnorm = 0.805406E-04, THR = 0.868529E-07)
-  Error of red space iteration  6:      0.0000003767 (mu =       0.00, xmax = 0.216551E-04, xnorm = 0.809643E-04, THR = 0.868529E-07)
-  Error of red space iteration  7:      0.0000001760 (mu =       0.00, xmax = 0.216737E-04, xnorm = 0.810986E-04, THR = 0.868529E-07)
-Error went down by   84.05%
-  Error of red space iteration  8:      0.0000000825 (mu =       0.00, xmax = 0.216779E-04, xnorm = 0.811625E-04, THR = 0.868529E-07)
+  Error of red space iteration  1:      0.0001231536 (mu =       0.00, xmax = 0.353191E-04, xnorm = 0.151089E-03, THR = 0.174127E-06)
+  Error of red space iteration  2:      0.0000259361 (mu =       0.00, xmax = 0.330082E-04, xnorm = 0.152562E-03, THR = 0.174127E-06)
+  Error of red space iteration  3:      0.0000119200 (mu =       0.00, xmax = 0.343529E-04, xnorm = 0.154939E-03, THR = 0.174127E-06)
+  Error of red space iteration  4:      0.0000053638 (mu =       0.00, xmax = 0.344249E-04, xnorm = 0.157874E-03, THR = 0.174127E-06)
+Error went down by   79.32%
+  Error of red space iteration  5:      0.0000024918 (mu =       0.00, xmax = 0.349057E-04, xnorm = 0.159941E-03, THR = 0.174127E-06)
+  Error of red space iteration  6:      0.0000009791 (mu =       0.00, xmax = 0.351583E-04, xnorm = 0.161307E-03, THR = 0.174127E-06)
+  Error of red space iteration  7:      0.0000003687 (mu =       0.00, xmax = 0.352643E-04, xnorm = 0.161839E-03, THR = 0.174127E-06)
+Error went down by   85.20%
+  Error of red space iteration  8:      0.0000001712 (mu =       0.00, xmax = 0.353021E-04, xnorm = 0.162034E-03, THR = 0.174127E-06)
 Newton equations converged in  8 iterations!
+ after DOPT_get_density fifoqueue%offset           5
 No. of matmuls in get_density:   100
-** Get Fock matrix number   7
- The Coulomb energy contribution    61.238547166368669     
- The Exchange energy contribution    10.998602086941204     
- The Fock energy contribution   -50.239945079427436     
- 0.60000 (xnorm)    0.00002    0.00008   -0.00    0.6337    0.4865         5          6    %%%
+** Get Fock matrix number   6
+ The Coulomb energy contribution    61.238628482254271     
+ The Exchange energy contribution    10.998609728876968     
+ The Fock energy contribution   -50.240018753377441     
+ 0.60000 (xnorm)    0.00004    0.00016   -0.00    0.8006    0.7020         5          5    %%%
  Trust radius based on max norm!
- % trust-radius ok, h =   0.59999999999999998     
-  7    -76.8260332116   -0.00000000392    0.00      0.00000   -0.00    0.00E+00    8.69E-05  ###
+ % Expand trust-radius by a factor   1.2000000000000000      h(old), h(new):  0.59999999999999998       0.71999999999999997     
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+  6    -76.8260332095   -0.00000001934    0.00      0.00000   -0.00    8.19E-05  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics, iteration   7
+                  Memory statistics, iteration   6
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         16.146 MB
+  Max allocated memory, TOTAL                         29.831 MB
   Max allocated memory, type(matrix)                 450.528 kB
-  Max allocated memory, real                          16.062 MB
+  Max allocated memory, real                          29.748 MB
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        8.360 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   95.784 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        9.680 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  166.848 kB
   Max allocated memory, linkshell                      2.520 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
-  Max allocated memory, IntWork                      125.568 kB
-  Max allocated memory, overlap                       14.272 MB
+  Max allocated memory, IntWork                      132.552 kB
+  Max allocated memory, overlap                       27.958 MB
   Max allocated memory, ODitem                         7.040 kB
   Max allocated memory, lstensor                     123.345 kB
 
-  Allocated memory,     TOTAL                 373.192 kB
+  Allocated memory,     TOTAL                 447.032 kB
   Allocated memory,     type(matrix)          277.248 kB
   Allocated memory,     real                    1.712 kB
   Allocated memory,     integer                 3.056 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                4.312 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
+ general fifoqueue%offset           5
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=      1444 sparsity:    100.000 %
 Matrix AO F  has nnz=      1444 sparsity:    100.000 %
 Matrix OAO D has nnz=      1444 sparsity:    100.000 %
 Matrix OAO F has nnz=      1444 sparsity:    100.000 %
+ after general fifoqueue%offset           6
 ** Get new density 
- OAO gradnorm  5.05905518790560738E-005
+ OAO gradnorm  8.18878198063872827E-005
  Number of densities in queue:           6
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
     E(LUMO):                      0.192492 au
-   -E(HOMO):                     -0.409241 au
+   -E(HOMO):                     -0.409238 au
    -------------------------------------
-    HOMO-LUMO Gap (by diag.):     0.601733 au
+    HOMO-LUMO Gap (by diag.):     0.601731 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0000322201 (mu =       0.00, xmax = 0.749672E-05, xnorm = 0.293978E-04, THR = 0.505906E-07)
-  Error of red space iteration  2:      0.0000118710 (mu =       0.00, xmax = 0.926320E-05, xnorm = 0.306446E-04, THR = 0.505906E-07)
-  Error of red space iteration  3:      0.0000043378 (mu =       0.00, xmax = 0.936214E-05, xnorm = 0.301337E-04, THR = 0.505906E-07)
-  Error of red space iteration  4:      0.0000015389 (mu =       0.00, xmax = 0.941197E-05, xnorm = 0.299320E-04, THR = 0.505906E-07)
-Error went down by   87.04%
-  Error of red space iteration  5:      0.0000005607 (mu =       0.00, xmax = 0.954125E-05, xnorm = 0.300564E-04, THR = 0.505906E-07)
-  Error of red space iteration  6:      0.0000001800 (mu =       0.00, xmax = 0.955796E-05, xnorm = 0.300835E-04, THR = 0.505906E-07)
-  Error of red space iteration  7:      0.0000000674 (mu =       0.00, xmax = 0.955952E-05, xnorm = 0.300950E-04, THR = 0.505906E-07)
-Error went down by   87.99%
-  Error of red space iteration  8:      0.0000000290 (mu =       0.00, xmax = 0.956249E-05, xnorm = 0.301055E-04, THR = 0.505906E-07)
-Newton equations converged in  8 iterations!
-No. of matmuls in get_density:   100
-** Get Fock matrix number   8
- The Coulomb energy contribution    61.238558504396636     
- The Exchange energy contribution    10.998602227126341     
- The Fock energy contribution   -50.239956277270394     
- 0.60000 (xnorm)    0.00001    0.00003   -0.00    0.9843    0.9378         6          7    %%%
+  Error of red space iteration  1:      0.0000474455 (mu =       0.00, xmax = 0.135317E-04, xnorm = 0.498504E-04, THR = 0.818878E-07)
+  Error of red space iteration  2:      0.0000183984 (mu =       0.00, xmax = 0.159667E-04, xnorm = 0.513667E-04, THR = 0.818878E-07)
+  Error of red space iteration  3:      0.0000069609 (mu =       0.00, xmax = 0.161516E-04, xnorm = 0.506990E-04, THR = 0.818878E-07)
+  Error of red space iteration  4:      0.0000025132 (mu =       0.00, xmax = 0.162877E-04, xnorm = 0.505932E-04, THR = 0.818878E-07)
+Error went down by   86.34%
+  Error of red space iteration  5:      0.0000009719 (mu =       0.00, xmax = 0.165108E-04, xnorm = 0.509068E-04, THR = 0.818878E-07)
+  Error of red space iteration  6:      0.0000003772 (mu =       0.00, xmax = 0.165441E-04, xnorm = 0.510037E-04, THR = 0.818878E-07)
+  Error of red space iteration  7:      0.0000001823 (mu =       0.00, xmax = 0.165461E-04, xnorm = 0.510469E-04, THR = 0.818878E-07)
+Error went down by   81.24%
+  Error of red space iteration  8:      0.0000000913 (mu =       0.00, xmax = 0.165513E-04, xnorm = 0.510803E-04, THR = 0.818878E-07)
+  Error of red space iteration  9:      0.0000000362 (mu =       0.00, xmax = 0.165503E-04, xnorm = 0.510960E-04, THR = 0.818878E-07)
+Newton equations converged in  9 iterations!
+ after DOPT_get_density fifoqueue%offset           6
+No. of matmuls in get_density:   110
+** Get Fock matrix number   7
+ The Coulomb energy contribution    61.238609759392730     
+ The Exchange energy contribution    10.998607004724859     
+ The Fock energy contribution   -50.240002754668112     
+ 0.60000 (xnorm)    0.00002    0.00005   -0.00    0.9284    0.8660         6          6    %%%
  Trust radius based on max norm!
- Large ratio, double trust-radius
+ % Expand trust-radius by a factor   1.2000000000000000      h(old), h(new):  0.59999999999999998       0.71999999999999997     
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  8    -76.8260332129   -0.00000000130    0.00      0.00000   -0.00    0.00E+00    5.06E-05  ###
+  7    -76.8260332129   -0.00000000337    0.00      0.00000   -0.00    1.21E-05  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics, iteration   8
+                  Memory statistics, iteration   7
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         16.146 MB
+  Max allocated memory, TOTAL                         29.831 MB
   Max allocated memory, type(matrix)                 473.632 kB
-  Max allocated memory, real                          16.062 MB
+  Max allocated memory, real                          29.748 MB
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        8.360 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   95.784 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        9.680 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  166.848 kB
   Max allocated memory, linkshell                      2.520 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
-  Max allocated memory, IntWork                      125.568 kB
-  Max allocated memory, overlap                       14.272 MB
+  Max allocated memory, IntWork                      132.552 kB
+  Max allocated memory, overlap                       27.958 MB
   Max allocated memory, ODitem                         7.040 kB
   Max allocated memory, lstensor                     123.345 kB
 
-  Allocated memory,     TOTAL                 396.296 kB
+  Allocated memory,     TOTAL                 470.136 kB
   Allocated memory,     type(matrix)          300.352 kB
   Allocated memory,     real                    1.712 kB
   Allocated memory,     integer                 3.056 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                4.312 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
+ general fifoqueue%offset           6
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=      1444 sparsity:    100.000 %
 Matrix AO F  has nnz=      1444 sparsity:    100.000 %
 Matrix OAO D has nnz=      1444 sparsity:    100.000 %
 Matrix OAO F has nnz=      1444 sparsity:    100.000 %
+ after general fifoqueue%offset           7
 ** Get new density 
- OAO gradnorm  4.45842194198126165E-006
+ OAO gradnorm  1.21110371615220130E-005
  Number of densities in queue:           7
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
-    E(LUMO):                      0.192491 au
-   -E(HOMO):                     -0.409240 au
+    E(LUMO):                      0.192492 au
+   -E(HOMO):                     -0.409238 au
    -------------------------------------
-    HOMO-LUMO Gap (by diag.):     0.601732 au
+    HOMO-LUMO Gap (by diag.):     0.601730 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0000032167 (mu =       0.00, xmax = 0.686076E-06, xnorm = 0.387271E-05, THR = 0.445842E-08)
-  Error of red space iteration  2:      0.0000006221 (mu =       0.00, xmax = 0.664997E-06, xnorm = 0.383604E-05, THR = 0.445842E-08)
-  Error of red space iteration  3:      0.0000002631 (mu =       0.00, xmax = 0.658577E-06, xnorm = 0.382892E-05, THR = 0.445842E-08)
-  Error of red space iteration  4:      0.0000001165 (mu =       0.00, xmax = 0.652877E-06, xnorm = 0.383080E-05, THR = 0.445842E-08)
-Error went down by   81.27%
-  Error of red space iteration  5:      0.0000000469 (mu =       0.00, xmax = 0.652462E-06, xnorm = 0.384112E-05, THR = 0.445842E-08)
-  Error of red space iteration  6:      0.0000000242 (mu =       0.00, xmax = 0.653352E-06, xnorm = 0.385082E-05, THR = 0.445842E-08)
-  Error of red space iteration  7:      0.0000000115 (mu =       0.00, xmax = 0.655092E-06, xnorm = 0.385720E-05, THR = 0.445842E-08)
-Error went down by   75.50%
-  Error of red space iteration  8:      0.0000000044 (mu =       0.00, xmax = 0.656344E-06, xnorm = 0.386163E-05, THR = 0.445842E-08)
-Newton equations converged in  8 iterations!
-No. of matmuls in get_density:   100
-** Get Fock matrix number   9
- The Coulomb energy contribution    61.238559652523193     
- The Exchange energy contribution    10.998601890654289     
- The Fock energy contribution   -50.239957761868787     
- 0.60000 (xnorm)    0.00000    0.00000   -0.00    1.0208    0.9609         7          8    %%%
+  Error of red space iteration  1:      0.0000080931 (mu =       0.00, xmax = 0.150111E-05, xnorm = 0.867349E-05, THR = 0.121110E-07)
+  Error of red space iteration  2:      0.0000023425 (mu =       0.00, xmax = 0.149546E-05, xnorm = 0.861781E-05, THR = 0.121110E-07)
+  Error of red space iteration  3:      0.0000008417 (mu =       0.00, xmax = 0.149762E-05, xnorm = 0.852194E-05, THR = 0.121110E-07)
+  Error of red space iteration  4:      0.0000003460 (mu =       0.00, xmax = 0.151136E-05, xnorm = 0.849186E-05, THR = 0.121110E-07)
+Error went down by   85.23%
+  Error of red space iteration  5:      0.0000001455 (mu =       0.00, xmax = 0.153334E-05, xnorm = 0.850645E-05, THR = 0.121110E-07)
+  Error of red space iteration  6:      0.0000000626 (mu =       0.00, xmax = 0.153837E-05, xnorm = 0.851712E-05, THR = 0.121110E-07)
+  Error of red space iteration  7:      0.0000000300 (mu =       0.00, xmax = 0.153895E-05, xnorm = 0.852254E-05, THR = 0.121110E-07)
+Error went down by   79.37%
+  Error of red space iteration  8:      0.0000000148 (mu =       0.00, xmax = 0.153931E-05, xnorm = 0.852552E-05, THR = 0.121110E-07)
+  Error of red space iteration  9:      0.0000000058 (mu =       0.00, xmax = 0.153900E-05, xnorm = 0.852679E-05, THR = 0.121110E-07)
+Newton equations converged in  9 iterations!
+ after DOPT_get_density fifoqueue%offset           7
+No. of matmuls in get_density:   110
+** Get Fock matrix number   8
+ The Coulomb energy contribution    61.238556252702637     
+ The Exchange energy contribution    10.998601474565600     
+ The Fock energy contribution   -50.239954778136962     
+ 0.60000 (xnorm)    0.00000    0.00001   -0.00    0.9917    0.9383         7          7    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  9    -76.8260332129   -0.00000000002    0.00      0.00000   -0.00    0.00E+00    4.46E-06  ###
+  8    -76.8260332130   -0.00000000009    0.00      0.00000   -0.00    9.16E-07  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics, iteration   9
+                  Memory statistics, iteration   8
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         16.146 MB
+  Max allocated memory, TOTAL                         29.831 MB
   Max allocated memory, type(matrix)                 496.736 kB
-  Max allocated memory, real                          16.062 MB
+  Max allocated memory, real                          29.748 MB
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.736 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                        7.992 kB
-  Max allocated memory, ODBATCH                        8.360 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    5.408 kB
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.264 kB
-  Max allocated memory, overlapType                   95.784 kB
+  Max allocated memory, AOBATCH                        8.928 kB
+  Max allocated memory, ODBATCH                        9.680 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                    9.568 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       1.552 kB
+  Max allocated memory, overlapType                  166.848 kB
   Max allocated memory, linkshell                      2.520 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
-  Max allocated memory, IntWork                      125.568 kB
-  Max allocated memory, overlap                       14.272 MB
+  Max allocated memory, IntWork                      132.552 kB
+  Max allocated memory, overlap                       27.958 MB
   Max allocated memory, ODitem                         7.040 kB
   Max allocated memory, lstensor                     123.345 kB
 
-  Allocated memory,     TOTAL                 419.400 kB
+  Allocated memory,     TOTAL                 493.240 kB
   Allocated memory,     type(matrix)          323.456 kB
   Allocated memory,     real                    1.712 kB
   Allocated memory,     integer                 3.056 kB
   Allocated memory,     logical                 0.640 kB
   Allocated memory,     character               1.600 kB
-  Allocated memory,     SLSAOTENSOR             2.080 kB
-  Allocated memory,     ATOMTYPEITEM           80.880 kB
-  Allocated memory,     ATOM                    1.664 kB
+  Allocated memory,     SLSAOTENSOR             3.680 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOM                    1.728 kB
   Allocated memory,     lstensor                4.312 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
 
-Total no. of matmuls in SCF optimization:       1038
+Total no. of matmuls in SCF optimization:       1141
 
  Number of occupied orbitals:           7
  Number of virtual orbitals:          31
@@ -1269,36 +1296,35 @@ Calculation of virtual orbital energies converged in    12 iterations!
  it       dE(HF)       DSMexit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.18962193896    0.0000   -0.0000    0.0000000
-  3   -0.00930278636    0.0000   -0.0000    0.0000000
-  4   -0.00067563964    0.0000   -0.0000    0.0000000
-  5   -0.00000705242    0.0000   -0.0000    0.0000000
-  6   -0.00000022914    0.0000   -0.0000    0.0000000
-  7   -0.00000000392    0.0000   -0.0000    0.0000000
-  8   -0.00000000130    0.0000   -0.0000    0.0000000
-  9   -0.00000000002    0.0000   -0.0000    0.0000000
+  2   -0.19792190364    0.0000   -0.0000    0.0000000
+  3   -0.00161573990    0.0000   -0.0000    0.0000000
+  4   -0.00006906349    0.0000   -0.0000    0.0000000
+  5   -0.00000092194    0.0000   -0.0000    0.0000000
+  6   -0.00000001934    0.0000   -0.0000    0.0000000
+  7   -0.00000000337    0.0000   -0.0000    0.0000000
+  8   -0.00000000009    0.0000   -0.0000    0.0000000
 
 ======================================================================
                    LINSCF ITERATIONS:
-  It.nr.               Energy                    Gradient norm
+  It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1           -76.62642556117073411315      0.326420125926219D+01
-    2           -76.81604750012644444723      0.565086857697316D+00
-    3           -76.82535028648784702909      0.124482796604068D+00
-    4           -76.82602592613221759166      0.327037222370517D-01
-    5           -76.82603297855567348051      0.259056953548565D-02
-    6           -76.82603320769774768451      0.478826742783565D-03
-    7           -76.82603321161573717291      0.868529452355672D-04
-    8           -76.82603321291669828952      0.505905518790561D-04
-    9           -76.82603321293262865765      0.445842194198126D-05
+  Atoms         -76.80125908242990817598      0.184499294535465D+00
+    1           -76.62642556118055381376      0.565086857721130D+00
+    2           -76.82434746482225307318      0.447585020355523D-01
+    3           -76.82596320471898820870      0.971362843606998D-02
+    4           -76.82603226821231601207      0.854653220549414D-03
+    5           -76.82603319015130693970      0.174127256965692D-03
+    6           -76.82603320949418446162      0.818878198063873D-04
+    7           -76.82603321286372022314      0.121110371615220D-04
+    8           -76.82603321295664500212      0.915835705169876D-06
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
 
 
-      Final HF energy:                   -76.826033212933
+      Final HF energy:                   -76.826033212957
       Nuclear repulsion:                  24.952942688150
-      Electronic energy:                -101.778975901082
+      Electronic energy:                -101.778975901106
 
  inside leastchange_lcm
 
@@ -1307,8 +1333,8 @@ Calculation of virtual orbital energies converged in    12 iterations!
  Number of virt. orb. in molecule =           31
 
 
- OCCUPIED: (Orbital index, MOS) =            5   2.1766191439555262     
- VIRTUAL : (Orbital index, MOS) =           22   3.7640149645291245     
+ OCCUPIED: (Orbital index, MOS) =            5   2.1766190160000871     
+ VIRTUAL : (Orbital index, MOS) =           22   3.7640149577732886     
 
 
 
@@ -1332,44 +1358,44 @@ FULL: Number of virt. orbitals   :     31
  Warning: This may cause meaningless results when the DEC scheme is used!
 
  Orbital energies:
-           1  -11.244405386337146     
-           2  -11.240402797320508     
-           3  -1.0312337974209700     
-           4 -0.76040002136029416     
-           5 -0.67458659383787001     
-           6 -0.40924023685495836     
-           7 -0.40924023647515095     
-           8  0.19249139451555838     
-           9  0.20392388779050738     
-          10  0.20392389806949043     
-          11  0.22310537343631495     
-          12  0.50200530215279360     
-          13  0.53243880138515620     
-          14  0.65810547910309736     
-          15  0.65810548383644452     
-          16  0.82138101888635373     
-          17  0.82138105552964569     
-          18  0.85378476052236463     
-          19  0.95975507669395221     
-          20   1.1093550231004663     
-          21   1.2341774120381648     
-          22   1.2341774212011769     
-          23   1.2519950364285559     
-          24   1.2519950364285566     
-          25   1.3980991364314301     
-          26   1.4393853613440122     
-          27   1.6453758653780339     
-          28   1.6453759326338613     
-          29   1.6878361715527470     
-          30   1.6878361715528021     
-          31   2.0846333541213555     
-          32   2.0846333863713804     
-          33   2.1731195114234798     
-          34   2.5662644082944395     
-          35   2.7003360846058158     
-          36   2.7003360955325331     
-          37   3.2459912521141483     
-          38   3.7523155003996602     
+           1  -11.244405778577663     
+           2  -11.240403191067516     
+           3  -1.0312339778466031     
+           4 -0.76040009743971715     
+           5 -0.67458670407472210     
+           6 -0.40924040675981038     
+           7 -0.40924040571889070     
+           8  0.19249138234542329     
+           9  0.20392378049599119     
+          10  0.20392379028277402     
+          11  0.22310536194954969     
+          12  0.50200522641680945     
+          13  0.53243871544091026     
+          14  0.65810536393140928     
+          15  0.65810536934461272     
+          16  0.82138087887633926     
+          17  0.82138091611120934     
+          18  0.85378472240322900     
+          19  0.95975501108775474     
+          20   1.1093549825860720     
+          21   1.2341773082580112     
+          22   1.2341773173373127     
+          23   1.2519948975768826     
+          24   1.2519948975769140     
+          25   1.3980989642549158     
+          26   1.4393853248214374     
+          27   1.6453758082897618     
+          28   1.6453758754698729     
+          29   1.6878360508525143     
+          30   1.6878360508525667     
+          31   2.0846332636606868     
+          32   2.0846332959567841     
+          33   2.1731194076195863     
+          34   2.5662642570969263     
+          35   2.7003359746171403     
+          36   2.7003359854894842     
+          37   3.2459911052409742     
+          38   3.7523153463935071     
 
 
 =============================================================================
@@ -1383,8 +1409,8 @@ FULL: Number of virt. orbitals   :     31
 
 
  get_available_memory: System identified to be MAC!
- Available Memory (GB) =       2.1340    
- Memory found by system call to be:    2.134     GB
+ Available Memory (GB) =       1.9510    
+ Memory found by system call to be:    1.951     GB
 
 Full molecular calculation is carried out...
 
@@ -1403,9 +1429,9 @@ Full molecular calculation is carried out...
              *                   DEC ENERGY SUMMARY                   *
              **********************************************************
 
-               E: Hartree-Fock energy :      -76.8260332129
-               E: Correlation energy  :       -0.2582459315
-               E: Total MP2 energy    :      -77.0842791444
+               E: Hartree-Fock energy :      -76.8260332130
+               E: Correlation energy  :       -0.2582459430
+               E: Total MP2 energy    :      -77.0842791560
 
 
 
@@ -1434,13 +1460,13 @@ Full molecular calculation is carried out...
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC           :         3.01256     s
-Total Wall time used in DEC           :         3.10700     s
+Total CPU  time used in DEC           :         2.53253     s
+Total Wall time used in DEC           :         2.66200     s
 ------------------------------------------------------
 
 
 Hostname       : kasper-kristensens-macbook-pro.local              
-Job finished   : Date: 23/04/2013   Time: 14:33:11
+Job finished   : Date: 30/04/2013   Time: 11:09:02
 
 
 
@@ -1456,24 +1482,25 @@ Job finished   : Date: 23/04/2013   Time: 14:33:11
                        Permanent dipole moment
                        -----------------------
                au              Debye           10**-30 C m
-           0.105723E-03      0.268722E-03      0.896360E-03
+           0.105583E-03      0.268366E-03      0.895172E-03
 
 
                        Dipole moment components
                        ------------------------
                au              Debye           10**-30 C m
- x        -0.739384E-05     -0.187933E-04     -0.626876E-04
- y         0.121537E-04      0.308918E-04      0.103044E-03
- z         0.104762E-03      0.266278E-03      0.888208E-03
+ x        -0.790215E-05     -0.200853E-04     -0.669972E-04
+ y         0.119658E-04      0.304142E-04      0.101451E-03
+ z         0.104605E-03      0.265880E-03      0.886878E-03
 
 
 
  *****************************************************
- **     CPU-TIME USED IN LSDALTON RESPONSE:   3.72550000000000381E-002    **
+ **     CPU-TIME USED IN LSDALTON RESPONSE:   2.62120000000010123E-002    **
  *****************************************************
 
-Total no. of matmuls used:                      1061
+Total no. of matmuls used:                      1164
 Total no. of Fock/KS matrix evaluations:          15
+Max no. of matrices allocated in Level 3:         43
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -1517,18 +1544,18 @@ Total no. of Fock/KS matrix evaluations:          15
   Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         16.146 MB
+  Max allocated memory, TOTAL                         29.831 MB
   Max allocated memory, type(matrix)                 496.736 kB
-  Max allocated memory, real(realk)                   16.062 MB
+  Max allocated memory, real(realk)                   29.748 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                       83.865 kB
   Max allocated memory, logical                        0.768 kB
   Max allocated memory, character                      2.480 kB
-  Max allocated memory, AOBATCH                       17.760 kB
+  Max allocated memory, AOBATCH                       19.840 kB
   Max allocated memory, CCORBITAL                      0.000 Byte
   Max allocated memory, CCATOM                         0.000 Byte
-  Max allocated memory, BATCHTOORB                     0.252 kB
+  Max allocated memory, BATCHTOORB                     0.504 kB
   Max allocated memory, MYPOINTER                      0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
@@ -1536,19 +1563,19 @@ Total no. of Fock/KS matrix evaluations:          15
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        8.360 kB
-  Max allocated memory, LSAOTENSOR                     5.760 kB
-  Max allocated memory, SLSAOTENSOR                    8.736 kB
+  Max allocated memory, ODBATCH                        9.680 kB
+  Max allocated memory, LSAOTENSOR                     9.728 kB
+  Max allocated memory, SLSAOTENSOR                   15.456 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           1.664 kB
-  Max allocated memory, LSMATRIX                       1.904 kB
-  Max allocated memory, OverlapT                      95.784 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           1.728 kB
+  Max allocated memory, LSMATRIX                       2.672 kB
+  Max allocated memory, OverlapT                     166.848 kB
   Max allocated memory, linkshell                      2.520 kB
   Max allocated memory, integrand                    653.184 kB
   Max allocated memory, integralitem                   1.638 MB
-  Max allocated memory, IntWork                      125.568 kB
-  Max allocated memory, Overlap                       14.272 MB
+  Max allocated memory, IntWork                      132.552 kB
+  Max allocated memory, Overlap                       27.958 MB
   Max allocated memory, EtuvOverlap                    0.000 Byte
   Max allocated memory, FtuvOverlap                    0.000 Byte
   Max allocated memory, ODitem                         7.040 kB
@@ -1558,5 +1585,5 @@ Total no. of Fock/KS matrix evaluations:          15
 
 
 End simulation
-     Date and time (Linux)  : Tue Apr 23 14:33:11 2013 
+     Date and time (Linux)  : Tue Apr 30 11:09:02 2013
      Host name              : kasper-kristensens-macbook-pro.local    

@@ -2,12 +2,12 @@
 
 
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -66,6 +66,7 @@ V=-2 alpha(alpha/pi)^1.5
 #include <time.h>
 #include <sys/times.h>
 #include <unistd.h>
+#include "general.h"
 
 #define __CVERSION__
 #include "integrator.h"
@@ -77,7 +78,7 @@ V=-2 alpha(alpha/pi)^1.5
 #define RESTRICT restrict
 #endif
 
-static const int DFTSO_DEBUG = 1;
+static const integer DFTSO_DEBUG = 1;
 
 /* the computed expressions are:
    iX[i+joff] += (aY[i]*aZ[j] - aZ[i]*aY[j])*drvs.fR;
@@ -92,7 +93,7 @@ static void
 so_ints_lda_cb(DftGrid* grid, real* excmat)
 {
     FirstDrv drvs;
-    int i, j, nbast = inforb_.nbast;
+    integer i, j, nbast = inforb_.nbast;
     real *RESTRICT aX = &grid->atv[inforb_.nbast];
     real *RESTRICT aY = &grid->atv[inforb_.nbast*2];
     real *RESTRICT aZ = &grid->atv[inforb_.nbast*3];
@@ -119,7 +120,7 @@ void FSYM2(write_soi)(const real* soints, real* wrk, integer* lwrk);
 void
 FSYM(dftsoi)(real* cmo, real* work, integer *lwork, integer* iprfck)
 {
-    int nbast2, m, i, j;
+    integer nbast2, m, i, j;
     DftCallbackData cbdata[1];
     DftDensity dens = { dft_dens_restricted, NULL, NULL };
     struct tms starttm, endtm; clock_t utm;

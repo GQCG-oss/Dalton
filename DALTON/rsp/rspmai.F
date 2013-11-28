@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -115,6 +115,7 @@ C
 #include "mxcent.h"
 #include "esrhfc.h"
 #include "abslrs.h"
+#include "infvar.h"
 C
       LOGICAL SAVLR, DORESP, FLAGSV, EX, NEED_PVX
 C
@@ -332,10 +333,13 @@ C
          CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE IF (CCPPA) THEN
          CALL TITLER('SOPPA(CCSD) response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('SOPPA(CCSD) RESPONSE')
       ELSE IF (SOPPA) THEN
          CALL TITLER('SOPPA response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
 C
@@ -472,7 +476,10 @@ C
 C     Calculate response properties with absorption
 C     =============================================
 C
-      IF (ABSORP) THEN
+      IF (ABSORP .OR. (ABSLRS .AND. (NCONF.GT.1)).OR.
+     *   (ABSLRS .AND. (.NOT.DIRFCK))) THEN
+C     Use the old linear response solver
+C     for MCSCF (or SCF if OLDCPP is requested by user)         
          CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
      *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
      *                WRK(KINDX),WRK(KWRK1),LWRK1)
@@ -642,7 +649,7 @@ C <<< GENERAL INPUT FOR RESPONSE >>>
 C
 #include "implicit.h"
 #include "dummy.h"
-      PARAMETER ( NTABLE = 12 )
+      PARAMETER ( NTABLE = 11 )
 C
 #include "priunit.h"
 #include "infpri.h"
@@ -669,7 +676,7 @@ C
 C
       DATA TABLE /'*END OF', '**RESPO', '*LINEAR', '*QUADRA',
      *            '*CUBIC ', '*C6    ', '*ESR   ', '*ABSORP',
-     *            '*SPIN-O', '*ESG   ', '*HFC   ', '*ABSLRS'/
+     *            '*SPIN-O', '*ESG   ', '*HFC   '/
 
       logical, external :: fun_is_ready_for_qr
       logical, external :: fun_is_ready_for_cr
@@ -716,7 +723,7 @@ C     end of this input module
       IF (PROMPT .EQ. '*') THEN
          DO I=1, NTABLE
             IF (WORD .EQ. TABLE(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
          END DO
 C
@@ -779,8 +786,6 @@ C
  10   CALL ESGINP(WORD)
       GO TO 200
  11   CALL HFCINP(WORD)
-      GO TO 200
- 12   CALL ABSLRS_INPUT(WORD)
       GO TO 200
 C
  1    CONTINUE
@@ -847,6 +852,7 @@ C
          IF (DOHFSRDFT .OR. DOMCSRDFT) DIRFCK = .TRUE.
          IF (NASHT .LE. 1 .OR. HSROHF) NOITRA = DIRFCK
          IF (DOMCSRDFT .OR. DOMC) NOITRA = .FALSE.
+         IF (DOMC) DIRFCK = .FALSE.
          MAXPHP = 100
          N1AVTOT = 0
          N2AVTOT = 0
@@ -865,7 +871,8 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
-     *                    11,12,13,14,15,16,17,18,19,20,21,22,23,24), I
+     *                      11,12,13,14,15,16,17,18,19,20,21,22,23,
+     *                      24), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -883,6 +890,20 @@ C
                GO TO 100
     3          CONTINUE
                   SOPPA = .TRUE.
+                  IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
+                  IF (SOPPA .AND. EMBEDDING) THEN
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' This is a solvent-SOPPA calculation w/ dynamic'
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' solvent response at RPA level only,'
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' cf. JCC, 2012-2022, 33, (2012) for reference.'
+cjje: change this if full solvent soppa is ever implemented
+                    SOPRPA = .TRUE.
+                  END IF
                GO TO 100
     4          CONTINUE
                GO TO 100
@@ -964,8 +985,22 @@ C              .PROP2Average
                   CISRPA = .TRUE.
                GO TO 100
  24            CONTINUE
-                  SOPRPA = .TRUE.
-                  SOPPA = .TRUE.
+                 SOPRPA = .TRUE.
+                 SOPPA = .TRUE.
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' This is a solvent-SOPPA calculation w/ dynamic'
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' solvent response at RPA level only,'
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'
+                 IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
+                  WRITE (LUPRI,'(/A)')
+     &             'Vacuum calc. - use .SOPPA instead'
+                  CALL QUIT('RSPINP: Vacuum calc. - use .SOPPA instead')
+                 END IF
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1211,6 +1246,7 @@ C  Initializing ABSORP
       DATA THCLR_ABSORP/1.0D-3/,THCPP_ABSORP/1.0D-3/
       DATA FREQ_ALPHA(1)/0.0D0/
       DATA FREQ_BETA_B(1)/0.0D0/,FREQ_BETA_C(1)/0.0D0/
+      DATA ABS_OLDCPP/.FALSE./
 C  Initializing CHANNEL
       DATA CHANNEL_CALC/.FALSE./,CHANNEL_VCALC/.FALSE./
       DATA CHANNEL_VIRT/-1,-1,-1,-1,-1,-1,-1,-1/
@@ -1223,15 +1259,18 @@ C  Initializing ESRHFC
       DATA HFCFC/.FALSE./,HFCSD/.FALSE./,HFCSO/.FALSE./
       DATA UNGAUSS/.TRUE./
       DATA HSOBRT/.FALSE./,HSOEFF/.FALSE./
-      DATA IPRHFC/5/
+      DATA IPRHFC/0/
 C  Initializing ABSLRS
        DATA ABSLRS/.FALSE./,ABSLRS_INTERVAL/.FALSE./
        DATA ABSLRS_ALPHA/.FALSE./,ABS_BATCH/.FALSE./
        DATA ABSLRS_ANALYZE/.FALSE./,ABS_IMFREQ/.FALSE./
+       DATA ABS_XREL/.FALSE./
        DATA ABS_MAXITER/150/,IPRABSLRS/0/,ABS_NFREQ_ALPHA/1/
-       DATA ABS_MAXRM/200/
+       DATA ABS_NFREQ_BETA_B/1/,ABS_NFREQ_BETA_C/1/
+       DATA ABS_MAXRM/1000/
        DATA ABS_FREQ_INTERVAL/0.0D0,0.0D0,1.0D0/,ABS_THD_LD/1.0D-8/
        DATA ABS_THCLR/1.0D-3/,ABS_FREQ_ALPHA(1)/0.0D0/
+       DATA ABS_FREQ_BETA_B(1)/0.0D0/,ABS_FREQ_BETA_C(1)/0.0D0/
        DATA LUSB/80/,LUAB/81/,LUSS/82/,LUAS/83/,LUABSVECS/84/
        DATA LUE1RED/85/,LUE2RED/86/,LUSRED/87/
       END
@@ -1595,8 +1634,8 @@ C .CHANNEL - restrict to excitations from particular orbitals
                DO I=1,NSYM
                   CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
                END DO
-               IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
-     &               'Too many orbitals for CHANNEL calculation: ' //
+               IF (CHANNEL_NORB .GT. CHANNEL_MAX) CALL QUIT(
+     &               'Too many orbitals for .CHANNEL calculation: ' //
      &               'increase CHANNEL_MAX and recompile')
                IOFF=0
                DO ISYM=1,NSYM
@@ -1668,21 +1707,14 @@ C
      *      ,EPSOL
          END IF
 
-         IF (QM3 .OR. QMMM) THEN
+         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-            IF (.NOT. SOPRPA .AND. SOPPA) THEN
-               WRITE (LUPRI,*)
-     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
-               WRITE (LUPRI,*)
-     *     'Full solvent model SOPPA not implemented.'
-               WRITE (LUPRI,*)
-     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
-               WRITE (LUPRI,*)
-     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-               CALL QUIT(
-     *     'Full solvent-SOPPA is not implemented, see output')
-            END IF
          ENDIF
+
+         if (peqm) then
+           write(lupri,'(a)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
+         end if
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
@@ -1703,6 +1735,7 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
          END IF
+C
          IF (DOESA) THEN
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Excited state absorption calculattion requested: DOESA  ='
@@ -2235,6 +2268,15 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+         
+         IF (QMNPMM) THEN
+             WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
+         END IF    
+
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
+         end if
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -4063,6 +4105,8 @@ C CBN+JK 03.01.06
 C--------------------
 #include "gnrinf.h"
 #include "qm3.h"
+#include "mxcent.h"
+#include "wavpcm.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -4293,13 +4337,20 @@ C
         DO 20 I = 1,NNORBT
            FC(I) = FC(I) - WRK(I)
  20     CONTINUE
-      ELSEIF(PCM) THEN
+Cjje
+      ELSE IF(PCM .and. (.not. SOPRPA)) then
+!      ELSEIF(PCM) THEN
         CALL MOLLAB('PCMJXMAT',LUSIFC,LUPRI)
         CALL READT (LUSIFC,NNORBT,WRK)
         DO I = 1,NNORBT
            FC(I) = FC(I) + WRK(I)
         ENDDO
+      ELSE IF (WAVPCM) THEN
+         DO I = 1,NNORBT
+            FC(I) = FC(I) + WAVFCK(I)
+         ENDDO
       END IF
+Cjje
 C
       IF (SOPPA) THEN
 C
@@ -4816,6 +4867,11 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
+         end if
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='

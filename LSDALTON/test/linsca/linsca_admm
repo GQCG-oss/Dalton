@@ -22,7 +22,7 @@ cat > linsca_admm.info <<'%EOF%'
    -------------
    Molecule:         HCN
    Wave Function:    HF
-   Test Purpose:     Check ADMM exchange energy (JCTC 5,3010. 2009) 
+   Test Purpose:     Check ADMM exchange energy (JCTC 6(8):2348–2364, 2010) 
                      and gradient contributions.
 %EOF%
 
@@ -47,12 +47,13 @@ C   0.0   0.0     0.0
 #  DALTON INPUT
 #######################################################################
 cat > linsca_admm.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .ADMM-DF
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.NOGCBASIS
 .START
 TRILEVEL
 .NOATOMSTART

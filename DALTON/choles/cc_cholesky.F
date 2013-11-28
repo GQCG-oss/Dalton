@@ -24,7 +24,13 @@ C
       DIMENSION INDRED(*)
       DIMENSION DIAMIN(8)
       DIMENSION WORK(LWORK)
-      DIMENSION INDEXA(MXCORB), INDEXB(MXCORB)
+casm
+c     DIMENSION INDEXA(MXCORB), INDEXB(MXCORB)
+c
+      integer, dimension(:), allocatable :: indexa
+      integer, dimension(:), allocatable :: indexb
+c
+casm
       DIMENSION IDNTC1(MAXQUA)
       DIMENSION IQUVAB(MAXQUA,8), IQUVEA(MAXQUA,8), IQUVEB(MAXQUA,8)
       DIMENSION NQUAL(8), ITMP(8)
@@ -238,6 +244,20 @@ C
 C     Setup index information.
 C     ------------------------
 C
+
+      allocate(indexa(nbast),stat=indexa_ok)
+      if (indexa_ok .ne. 0) then
+         write(lupri,*) 'Error allocating INDEXA in CC_CHOLESKY'
+         stop 'INDEXA not allocated'
+      end if
+!
+      allocate(indexb(nbast),stat=indexb_ok)
+      if (indexb_ok .ne. 0) then
+         write(lupri,*) 'Error allocating INDEXB in CC_CHOLESKY'
+         stop 'INDEXB not allocated'
+      end if
+
+
       ISHLB  = 1
       JPRINT = 0
       SETUP  = .TRUE.
@@ -297,9 +317,10 @@ C
       NCHORD = MIN((LWRKX-MINEED)/MINCHO,MXCHRD)
 C
 Casm  Don't read more than 2 Gb (268435456 dw)
+Casm  Fixed with modified crayio2.F
 C
-      MCHRD2 = 268435456 / MINCHO
-      NCHORD = MIN(NCHORD,MCHRD2)
+c     MCHRD2 = 268435456 / MINCHO
+c     NCHORD = MIN(NCHORD,MCHRD2)
 C
       IF (NCHORD .LT. 1) THEN 
          WRITE(LUPRI,*) 'Memory problem. NCHORD :',NCHORD
@@ -313,9 +334,10 @@ C
       MAXSEL = MIN((LWORK-LNEED)/MXNNBS,MAXQUA)
 C
 Casm  Don't read more than 2 Gb (268435456 dw)
+Casm  Fixed with modified crayio2.F
 C
-      MXSEL2 = 268435456 / MXNNBS
-      MAXSEL = MIN(MAXSEL,MXSEL2)
+c     MXSEL2 = 268435456 / MXNNBS
+c     MAXSEL = MIN(MAXSEL,MXSEL2)
 C
       IF (MAXSEL .LT. 1) THEN 
          WRITE(LUPRI,*) 'Memory problem. MAXSEL :',MAXSEL
@@ -364,6 +386,10 @@ c        CALL AROUND('Cholesky elements to discard')
 c        WRITE(LUPRI,*) 'Number of Elements:',
 c    *                  XDISC,XNDISC,(XDISC/XNDISC)*100.0D0
          CALL CHO_END(DIAG,NTOINT,XSEL0,YSEL0)
+
+         deallocate(indexa)
+         deallocate(indexb)
+
          RETURN
       END IF
 C
@@ -551,6 +577,7 @@ C
          IF (IPRINT. GT. 2)
      &       WRITE(LUPRI,'(/,A,15X,A,15X,2(4X,A),6X,A)')
      &                 'ISAB    Iter','Treated','Conv','Neg','Max'
+         call flshfo(lupri)
       END IF
 C
 C     Loop over symmetries in file to decompose.
@@ -590,7 +617,7 @@ C
          END IF
          NVEFIL = MAXLEN / LEMAB
          NCHORD = MIN(NCHORD,NVEFIL)
-         NCHORD = MIN(NCHORD,MCHRD2)
+c        NCHORD = MIN(NCHORD,MCHRD2)
          NCHORD = MIN(NCHORD,MXCHRD)
 C
          LCHO2 = LENAB * NCHORD + NNBST(ISYMAB)
@@ -1217,8 +1244,16 @@ C
 #include "iratdef.h"
       LOGICAL   SETUP
       DIMENSION DIAG(*), WORK(LWORK)
-      DIMENSION INDEXA(MXCORB), INDEXB(MXCORB)
-      DIMENSION JNDEXA(MXCORB), JNDEXB(MXCORB)
+casm
+c     DIMENSION INDEXA(MXCORB), INDEXB(MXCORB)
+c     DIMENSION JNDEXA(MXCORB), JNDEXB(MXCORB)
+c
+      integer, dimension(:), allocatable :: indexa
+      integer, dimension(:), allocatable :: indexb
+      integer, dimension(:), allocatable :: jndexa
+      integer, dimension(:), allocatable :: jndexb
+c
+casm
 #include "ccorb.h"
 #include "ccisao.h"
 #include "blocks.h"
@@ -1237,6 +1272,32 @@ C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
+
+      allocate(indexa(nbast),stat=indexa_ok)
+      if (indexa_ok .ne. 0) then
+         write(lupri,*) 'Error allocating INDEXA in CC_GAB'
+         stop 'INDEXA not allocated'
+      end if
+!
+      allocate(indexb(nbast),stat=indexb_ok)
+      if (indexb_ok .ne. 0) then
+         write(lupri,*) 'Error allocating INDEXB in CC_GAB'
+         stop 'INDEXB not allocated'
+      end if
+!!
+      allocate(jndexa(nbast),stat=jndexa_ok)
+      if (jndexa_ok .ne. 0) then
+         write(lupri,*) 'Error allocating INDEXA in CC_GAB'
+         stop 'JNDEXA not allocated'
+      end if
+!
+      allocate(jndexb(nbast),stat=jndexb_ok)
+      if (jndexb_ok .ne. 0) then
+         write(lupri,*) 'Error allocating INDEXB in CC_GAB'
+         stop 'JNDEXB not allocated'
+      end if
+
+
       DIACAL = .TRUE.
 C
 c     WRITE(LUPRI,'(A,I5)') 'Number of shells: ', MAXSHL
@@ -1300,6 +1361,13 @@ C
       ENDDO
 C
       DIACAL = .FALSE.
+C
+
+      deallocate(indexa)
+      deallocate(indexb)
+      deallocate(jndexa)
+      deallocate(jndexb)
+
 C
       RETURN
       END
@@ -1878,6 +1946,9 @@ C     Alfredo Sanchez.       21-Jul-2000
 C
 C     Construct part of commons required for Cholesky stuff.
 C
+
+      use dyn_iadrpk
+
 #include "implicit.h"
 C
       EXTERNAL INIDAT
@@ -2034,33 +2105,7 @@ C
          END DO
       END DO
 C
-      DO ISYMAB = 1,NSYM
-         DO ISYMB = 1,NSYM
-C
-            ISYMA = MULD2H(ISYMB,ISYMAB)
-C
-            DO B = 1,NBAS(ISYMB)
-               DO A = 1,NBAS(ISYMA)
-C
-                  NABSQ = I2BST(ISYMAB) + IAODIS(ISYMA,ISYMB)
-     *                  + NBAS(ISYMA)*(B - 1) + A
-C
-                  IF (ISYMA .EQ. ISYMB) THEN
-                     NAB = INDEX(A,B)
-                  ELSE IF (ISYMB .GT.ISYMA) THEN
-                     NAB = NBAS(ISYMA)*(B - 1) + A
-                  ELSE
-                     NAB = NBAS(ISYMB)*(A - 1) + B
-                  END IF
-C
-                  NABPK = IAODPK(ISYMA,ISYMB) + NAB
-C
-                  IADRPK(NABSQ) = NABPK
-C
-               END DO
-            END DO
-         END DO
-      END DO
+      call get_iadrpk(lupri,nsym,muld2h,nbas,nbast,i2bst,iaodis,iaodpk)
 C
 C
       IF (IPRCHO .GT. 5) THEN
@@ -2086,7 +2131,7 @@ C
 C
          WRITE(LUPRI,*)
          DO I = 1,NSYM
-            WRITE(LUPRI,1) 'IAODPK :',(IAODIS(I,J), J=1,NSYM)
+            WRITE(LUPRI,1) 'IAODPK :',(IAODPK(I,J), J=1,NSYM)
          END DO
 C
          WRITE(LUPRI,*)
@@ -2335,11 +2380,14 @@ C
             LENAB = NDIM
          END IF
 C
-Casm     Apparently, it is not possible to read more than 2 Gb (268435456 dw)
-C
          NRDMX  = LWRKX / LENAB
-         NRDMX1 = 268435456 / LENAB
-         NRDMX  = MIN(NRDMX,NRDMX1)
+C
+Casm     Apparently, it is not possible to read more than 2 Gb (268435456 dw)
+Casm     Fixed with modified crayio2.F
+C
+c        NRDMX1 = 268435456 / LENAB
+c        NRDMX  = MIN(NRDMX,NRDMX1)
+C
          IF (NRDMX .LT. 1)
      &      CALL QUIT('Allocation failure in CHO_RESTART')
 C
@@ -4411,7 +4459,13 @@ C
 #include "iratdef.h"
       LOGICAL   SETUP
       DIMENSION DIAG(*), WORK(LWORK)
-      DIMENSION INDEXA(MXCORB), INDEXB(MXCORB)
+casm
+c     DIMENSION INDEXA(MXCORB), INDEXB(MXCORB)
+c
+      integer, dimension(:), allocatable :: indexa
+      integer, dimension(:), allocatable :: indexb
+c
+casm
 #include "ccorb.h"
 #include "ccisao.h"
 #include "blocks.h"
@@ -4430,6 +4484,20 @@ C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
+
+      allocate(indexa(nbast),stat=indexa_ok)
+      if (indexa_ok .ne. 0) then
+         write(lupri,*) 'Error allocating INDEXA in CC_GABOLD'
+         stop 'INDEXA not allocated'
+      end if
+!
+      allocate(indexb(nbast),stat=indexb_ok)
+      if (indexb_ok .ne. 0) then
+         write(lupri,*) 'Error allocating INDEXB in CC_GABOLD'
+         stop 'INDEXB not allocated'
+      end if
+
+
       WRITE(LUPRI,'(A,I5)') 'Number of shells: ', MAXSHL
       write(lupri,*) 'Using old diagonal subroutine'
       DO ISHLA = 1,MAXSHL
@@ -4484,6 +4552,10 @@ C
          ENDDO
       ENDDO
 C
+
+      deallocate(indexa)
+      deallocate(indexb)
+
       RETURN
       END
 #endif    /* OLD_CODE */

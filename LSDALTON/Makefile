@@ -1,6 +1,10 @@
 include ./Makefile.config
-
 # DALTON_LIBS, MODULES and SUBDIRS must be modified at the same time!
+
+# VAR_RSP
+#-L../external/openrsp/src -lopenrsp 
+#-L../external/matrix-defop/src -lmatrix-defop 
+
 DALTON_LIBS =             \
 -Llsdaltonsrc -llsdaltonsrc\
 -Llinears -llinears       \
@@ -13,16 +17,19 @@ DALTON_LIBS =             \
 -Ldft -ldft		  \
 -Lpbc2 -lpbc2            \
 -LLSint -lLSint           \
+-LIchorIntegrals -lIchorIntegrals \
 -L$(FMMDIR) -lmm          \
 -Linterest/lib -linterest \
 -Lpdpack -lpdpack         \
 -Lxcfun_host -lxcfun_host  \
 -Llsutil -llsutil      
 
+# VAR_RSP needs MDO_OBJ ORS_OBJ 
+MODULES = LSU_OBJ XFH_OBJ PD_OBJ INT_OBJ FMM_OBJ ICH_OBJ LSI_OBJ PBC_OBJ2 \
+	DFT_OBJ SOU_OBJ RSO_OBJ RSP_OBJ DEC_OBJ GEO_OBJ DYN_OBJ LIN_OBJ LSD_OBJ
 
-MODULES = LSU_OBJ XFH_OBJ PD_OBJ BSM_OBJ INT_OBJ FMM_OBJ LSI_OBJ PBC_OBJ2 DFT_OBJ \
-	SOU_OBJ RSO_OBJ RSP_OBJ DEC_OBJ GEO_OBJ DYN_OBJ LIN_OBJ LSD_OBJ 	
-SUBDIRS = lsutil xcfun_host pdpack interest/lib $(FMMDIR) LSint pbc2 dft SolverUtilities \
+# VAR_RSP needs ../external/matrix-defop/src ../external/openrsp/src
+SUBDIRS = lsutil xcfun_host pdpack interest/lib $(FMMDIR) IchorIntegrals LSint pbc2 dft SolverUtilities \
 	responsesolver rsp_properties deccc geomopt ddynam linears lsdaltonsrc
 
 PDLIB = pdpack/pdlib.a
@@ -146,13 +153,16 @@ GEO_OBJ : LSU_OBJ LSI_OBJ
 DYN_OBJ : LSU_OBJ LSI_OBJ GEO_OBJ
 	cd ddynam && $(MAKE) all
 
-LSI_OBJ : LSU_OBJ INT_OBJ XFH_OBJ
+LSI_OBJ : LSU_OBJ INT_OBJ XFH_OBJ DFT_OBJ ICH_OBJ
 	cd LSint && $(MAKE) all
+
+ICH_OBJ : 
+	cd IchorIntegrals && $(MAKE) all
 
 DEC_OBJ : LSU_OBJ LSI_OBJ
 	cd deccc && $(MAKE) all
 
-RSP_OBJ : LSU_OBJ LSI_OBJ
+RSP_OBJ : LSU_OBJ LSI_OBJ LIN_OBJ
 	cd rsp_properties && $(MAKE) all
 
 RSO_OBJ : LSU_OBJ LSI_OBJ SOU_OBJ
@@ -164,14 +174,19 @@ INT_OBJ :
 SOU_OBJ : LSU_OBJ LSI_OBJ
 	cd SolverUtilities && $(MAKE) all
 
-LIN_OBJ : LSU_OBJ LSI_OBJ SOU_OBJ RSO_OBJ
+# VAR_RSP needs 
+#MDO_OBJ : LSU_OBJ
+#	cd ../external/matrix-defop/src && $(MAKE) all
+#
+#ORS_OBJ : LSU_OBJ MDO_OBJ LSI_OBJ SOU_OBJ RSO_OBJ
+#	cd ../external/openrsp/src && $(MAKE) all
+#
+# FOR VAR_RSP LIN_OBJ depends on ORS_OBJ MDO_OBJ
+LIN_OBJ : LSU_OBJ LSI_OBJ SOU_OBJ RSO_OBJ 
 	cd linears && $(MAKE) all
 
 FMM_OBJ : LSU_OBJ
 	cd $(FMMDIR) && $(MAKE) all
-
-BSM_OBJ	:
-	if grep -q HAVE_BSM Makefile.config; then cd lsutil/bsm && $(MAKE) AR="$(AR)" install prefix=../..; fi
 
 PBC_OBJ2: LSU_OBJ LSI_OBJ
 	cd pbc2 && $(MAKE) all

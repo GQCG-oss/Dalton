@@ -1,12 +1,12 @@
 /*-*-mode: 
 
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -47,7 +47,8 @@ Pawel Salek, 2004.06, Himmelbjerg.
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
@@ -95,8 +96,8 @@ typedef struct {
 #define THR 1e-15
  
 /* INTERFACE PART */
-static int camb3lyp_isgga(void) { return 1; }
-static int camb3lyp_read(const char *conf_line);
+static integer camb3lyp_isgga(void) { return 1; }
+static integer camb3lyp_read(const char *conf_line);
 static void camb3lyp_report(void);
 static real camb3lyp_energy(const FunDensProp* dp);
 static void camb3lyp_first(FunFirstFuncDrv *ds,   real factor,
@@ -122,17 +123,17 @@ Functional Camb3lypFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 parse_table(const char *func, const char *str,
-            int cnt, const char *keywords[], real *weights)
+            integer cnt, const char *keywords[], real *weights)
 {
-  int res=1;
+  integer res=1;
   while(*str) {
-    int i;
-    while(*str && isspace((int)*str)) str++; /* skip whitespace */
+    integer i;
+    while(*str && isspace((integer)*str)) str++; /* skip whitespace */
     if(*str =='\0') break; /* line ended by whitespace */
     for(i=0; i<cnt; i++) {
-      int len = strlen(keywords[i]);
+      integer len = strlen(keywords[i]);
       if(strncasecmp(keywords[i], str, len)==0 &&
          str[len] == '=') {
           real f;
@@ -149,7 +150,7 @@ parse_table(const char *func, const char *str,
       fun_printf("%s: unknown string: '%s'", func, str);
       res = 0;
     }
-    while(*str && !isspace((int)*str)) str++; /* skip nonws */
+    while(*str && !isspace((integer)*str)) str++; /* skip nonws */
   }
   return res;
 }
@@ -157,7 +158,7 @@ parse_table(const char *func, const char *str,
 static const char *cam_keywords[] = { "alpha", "beta", "mu",
                                       "vwnweight", "lypweight"
 };
-static int
+static integer
 camb3lyp_read(const char *conf_line)
 {
     real weights[ELEMENTS(cam_keywords)];
@@ -402,7 +403,7 @@ static real
 camb3lyp_b_energy_large(real a)
 {
     real res, ac, a2;
-    int i;
+    integer i;
     
     a = 2*a; /* the expension derived for different a; correct for this. */
     a2 = a*a;
@@ -419,7 +420,7 @@ camb3lyp_b_first_large(real a)
 {
     real tmp;
     real ac, a2;
-    int i;
+    integer i;
 
     a = 2*a; /* the expension derived for different a; correct for this. */
     a2  = a*a;
@@ -463,10 +464,10 @@ camb3lyp_b_first_medium(real a)
 }
 
 static real
-evaluate_series(int n, const real*coefs, real lambda)
+evaluate_series(integer n, const real*coefs, real lambda)
 {
     real res = 0, ac =1.0;
-    int i;
+    integer i;
     for(i=0; i<n; i++) {
         res += 1.0/(coefs[i]*ac);
         ac *= lambda;
@@ -1067,7 +1068,7 @@ camb3lyp_fourth(FunFourthFuncDrv *ds, real factor,
 #ifdef TEST
 #include <stdio.h>
 #include <stdlib.h>
-int main(int argc, char *argv[])
+integer main(integer argc, char *argv[])
 {
     FunDensProp dp;
     RGFirstDrv fa;

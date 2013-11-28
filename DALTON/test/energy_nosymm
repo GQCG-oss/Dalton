@@ -127,14 +127,14 @@ CTRL[4]=7
 ERROR[4]="INCORRECT WAVE FUNCTION"
 
 # SCF energy:
-CRIT1=`$GREP "Hartree-Fock total energy : * \-76\.025681483[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree-Fock total energy *: * \-76\.025681483[0-9]" $log | wc -l`
 TEST[5]=`expr $CRIT1`
 CTRL[5]=1
 ERROR[5]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy:
 # hjaaj Jan 05: decreased number of digits as MP2 energy is only of lin.acc.
-CRIT1=`$GREP "MP2 second order energy : * \-76\.2306668" $log | wc -l`
+CRIT1=`$GREP "MP2 second order energy *: * \-76\.2306668" $log | wc -l`
 TEST[6]=`expr $CRIT1`
 CTRL[6]=1
 ERROR[6]="MP2 ENERGY NOT CORRECT"
@@ -155,7 +155,7 @@ ERROR[8]="NATORB OCCUPANCY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

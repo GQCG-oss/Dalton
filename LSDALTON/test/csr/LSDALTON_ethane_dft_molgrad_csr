@@ -51,6 +51,8 @@ H6     -2.1888617992     -1.9457507963     0.0000000000
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_ethane_dft_molgrad_csr.dal <<'%EOF%'
+**GENERAL
+.CSR
 **WAVE FUNCTIONS
 .DFT
 B3LYP
@@ -63,7 +65,6 @@ BECKEORIG LMG
 31
 *DENSOPT
 .ARH
-.CSR
 **RESPONS
 *MOLGRA
 *END OF INPUT

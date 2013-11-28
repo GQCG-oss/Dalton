@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -25,6 +25,7 @@ C
 C FILE    : gptrygve.F
 C
 C General Purpose utility routines (originally) introduced in Dalton by Trygve Helgaker
+C or one of his students
 C
 ! Dirac uses INT_STAR8 and Dalton used VAR_INT64;
 #ifdef INT_STAR8
@@ -47,6 +48,7 @@ C
       WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
       WRITE (LUPRI, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
       WRITE (LUPRI, '()')
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C  /* Deck timer */
@@ -165,6 +167,7 @@ Cx    WRITE (LUPRI,'(//150A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
 Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '| ', HEAD(1:LHEAD), ' |'
 Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
       WRITE (LUPRI,'()')
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C  /* Deck stopit */
@@ -258,6 +261,54 @@ C
 #else
       STOP 100
 #endif
+      END
+C  /* Deck parquit */
+      SUBROUTINE PARQUIT(TEXT)
+C Purpose:
+C   Error message if code is not implemented for parallel calculations.
+
+      IMPLICIT NONE
+
+#include "priunit.h"
+      CHARACTER TEXT*(*)
+      INTEGER LUPRIN
+C
+C
+      IF (LUPRI .GE. 0) THEN
+         LUPRIN = LUPRI
+      ELSE IF (LUERR .GE. 0) THEN
+         LUPRIN = LUERR
+      ELSE
+         LUPRIN = 6
+      END IF
+      WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,
+     & ' not implemented for parallel calculations!'
+      CALL QUIT(TEXT)
+      RETURN
+      END
+C  /* Deck parqarn */
+      SUBROUTINE PARWARN(TEXT)
+C Purpose:
+C   Warning message if code is not optimized (parallelized) for parallel calculations.
+
+      IMPLICIT NONE
+
+#include "priunit.h"
+      CHARACTER TEXT*(*)
+      INTEGER LUPRIN
+C
+C
+      IF (LUPRI .GE. 0) THEN
+         LUPRIN = LUPRI
+      ELSE IF (LUERR .GE. 0) THEN
+         LUPRIN = LUERR
+      ELSE
+         LUPRIN = 6
+      END IF
+      WRITE (LUPRIN,'(//3A/A/)') 'WARNING: ',TEXT,
+     & 'module is not optimized for parallel calculations!',
+     & 'WARNING: you will get better efficiency with a sequential run'
+      RETURN
       END
 C  /* Deck opendx */
       SUBROUTINE OPENDX (LUDX,NAME,NELEM,STATUS,OLDDX)
@@ -708,6 +759,8 @@ C
 #include "chrnos.h"
       CHARACTER*80 STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
+      PARAMETER (LEN_NODEID = 6)
+      CHARACTER*(LEN_NODEID) F_NODEID
       integer max_filename_length
       parameter (max_filename_length = 500)
       CHARACTER OUTFIL*(max_filename_length)
@@ -729,6 +782,17 @@ C
       IF (FIRST) THEN
          CALL IZERO(IUNTAB,99)
          FIRST = .FALSE.
+      END IF
+
+      IF (MYNUM .GT. 0) THEN
+         IF (MYNUM .GT. 9999) THEN
+            CALL QUIT('Reprogram GPOPEN to allow more than 9999 nodes')
+         END IF
+         F_NODEID = '.n' //
+     &             CHRNOS(    MYNUM/1000    ) //
+     &             CHRNOS(MOD(MYNUM/ 100,10)) //
+     &             CHRNOS(MOD(MYNUM/  10,10)) //
+     &             CHRNOS(MOD(MYNUM     ,10))
       END IF
 C
 C
@@ -843,7 +907,7 @@ c43         CONTINUE
             if (LENWRK .EQ. max_filename_length) then
                write (lupri,*) 'max_filename_length is too short'
                write (lupri,*) WRKDIR
-               call quit('work directory name too long')
+               call quit('GPOPEN: work directory name too long')
             end if
 c           LENWRK = 0
 c           DO I = 1, max_filename_length
@@ -856,7 +920,7 @@ c44         CONTINUE
                write (lupri,*) 'max_filename_length is too short'
                write (lupri,*) WRKDIR(1:LENWRK)//'/'//
      &                         OUTFIL(1:LENOUT)
-               call quit('file name too long')
+               call quit('GPOPEN: file name too long')
             end if
             FILENM(1:FILELN) = WRKDIR(1:LENWRK)//'/'//
      &                         OUTFIL(1:LENOUT)
@@ -873,20 +937,16 @@ C
                FILENM(1:9) = 'UNIT'//CHRNOS(LUNIT/10)//
      &                        CHRNOS(MOD(LUNIT,10))//'.DA'
             ELSE
-               FILELN = 14
+               FILELN = 9 + LEN_NODEID
                FILENM(1:14) = 'UNIT'//CHRNOS(LUNIT/10)//
      &                        CHRNOS(MOD(LUNIT,10))//'.DA'//
-     &                        '.n'//CHRNOS(MYNUM/100)//
-     &                        CHRNOS(MOD(MYNUM,100)/10)//
-     &                        CHRNOS(MOD(MOD(MYNUM,100),10))
+     &                        F_NODEID
             END IF
          ELSE
             IF (MYNUM .GT. 0) THEN
-             IF (FILENM(FILELN-4:FILELN-3) .NE. '.n') THEN
-               FILENM(FILELN+1:FILELN+5) = '.n'//CHRNOS(MYNUM/100)//
-     &                        CHRNOS(MOD(MYNUM,100)/10)//
-     &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-               FILELN = FILELN + 5
+             IF (INDEX(FILENM(1:FILELN),'.n') .EQ. 0) THEN
+               FILENM(FILELN+1:FILELN+LEN_NODEID) = F_NODEID
+               FILELN = FILELN + LEN_NODEID
              END IF
             END IF
          END IF
@@ -902,16 +962,14 @@ C
             IF (FILELN .LE. 0) GOTO 9005
 C
             IF (MYNUM .GT. 0 .AND. .NOT. OLDDX) THEN
-             IF (INDEX(FILENM,'.n') .NE. FILELN-4 .AND.
-     &           INDEX(FILENM,'NUMCAL') .EQ. 0) THEN
+             IF (INDEX(FILENM(1:FILELN),'.n')     .EQ. 0 .AND.
+     &           INDEX(FILENM(1:FILELN),'NUMCAL') .EQ. 0) THEN
 C
 C     The last test will not be necessary anymore when we get
 C     locking RMA operations in MPI2
 C
-               FILENM(FILELN+1:FILELN+5) = '.n'//CHRNOS(MYNUM/100)//
-     &                        CHRNOS(MOD(MYNUM,100)/10)//
-     &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-               FILELN = FILELN + 5
+               FILENM(FILELN+1:FILELN+LEN_NODEID) = F_NODEID
+               FILELN = FILELN + LEN_NODEID
              END IF
             END IF
 C
@@ -928,23 +986,19 @@ C
             IF (FILELN .LE. 0) THEN
                IF (MYNUM .EQ. 0) THEN
                   FILELN = 6
-                  FILENM = 'UNIT'//CHRNOS(LUNIT/10)//
-     &                     CHRNOS(MOD(LUNIT,10))
+                  FILENM = 'UNIT'//CHRNOS(    LUNIT/10    )//
+     &                             CHRNOS(MOD(LUNIT   ,10))
                ELSE
-                  FILELN = 11
-                  FILENM = 'UNIT'//CHRNOS(LUNIT/10)//
-     &                      CHRNOS(MOD(LUNIT,10))//
-     &                      '.n'//CHRNOS(MYNUM/100)//
-     &                      CHRNOS(MOD(MYNUM,100)/10)//
-     &                      CHRNOS(MOD(MOD(MYNUM,100),10))
+                  FILELN = 6 + LEN_NODEID
+                  FILENM = 'UNIT'//CHRNOS(    LUNIT/10    )//
+     &                             CHRNOS(MOD(LUNIT   ,10))//
+     &                             F_NODEID
                END IF
             ELSE
                IF (MYNUM .GT. 0) THEN
-                IF (INDEX(FILENM,'.n') .NE. FILELN-4) THEN
-                  FILENM(FILELN+1:FILELN+5) = '.n'//CHRNOS(MYNUM/100)//
-     &                                     CHRNOS(MOD(MYNUM,100)/10)//
-     &                                 CHRNOS(MOD(MOD(MYNUM,100),10))
-                  FILELN = FILELN + 5
+                IF (INDEX(FILENM(1:FILELN),'.n') .EQ. 0) THEN
+                  FILENM(FILELN+1:FILELN+LEN_NODEID) = F_NODEID
+                  FILELN = FILELN + LEN_NODEID
                 END IF
                END IF
             END IF
@@ -993,7 +1047,7 @@ C
          LUGPPRI = 6
       END IF
       WRITE (LUGPPRI,'(//A/A/A//A)')
-     &   '--> ERROR (GPOPEN) NO MORE AVAILABLE FILENUMBERS!',
+     &   '--> ERROR (GPOPEN) NO MORE AVAILABLE FILE NUMBERS!',
      &   '--> THIS CALCULATION EITHER NEEDS TOO MANY SIMULTANEOUS '//
      &   'FILES OR', 
      &   '--> SOMEBODY HAS FORGOTTEN TO CLOSE FILES IN THE SOURCE CODE',
@@ -1025,7 +1079,7 @@ C
       END IF
       WRITE (LUGPPRI,'(//A/A//A,I5/2A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY IN USE',
-     &   '--> SOMEBODY IS TRYING TO USE A FILENUMBER THAT IS '//
+     &   '--> SOMEBODY IS TRYING TO USE A FILE NUMBER THAT IS '//
      &   'ALREADY IN USE',
      &   '--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ', FILENM(1:FILELN),
@@ -1156,7 +1210,10 @@ C
          LUNIT = -30000-LUNIT
          GOTO 30
       ELSE
-#if defined (VAR_SPLITFILES)
+#if !defined (VAR_SPLITFILES)
+         IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE keep',LUNIT
+         CLOSE (LUNIT,STATUS='DELETE',ERR=20)
+#else
          INQUIRE(UNIT=LUNIT,DIRECT=IODIR)
          INQUIRE(UNIT=LUNIT,NAME=FNNAME)
          IF (IODIR .EQ. 'YES') THEN
@@ -1199,8 +1256,6 @@ C
             IUNIT = IUNIT + 1
             GOTO 16
          END IF
-#else
-         CLOSE (LUNIT,STATUS='DELETE',ERR=20)
 #endif
          IUNTAB(LUNIT) = 0
          LUNIT = -20000-LUNIT
@@ -1242,7 +1297,7 @@ C
       END IF
       WRITE (LUGPPRI,'(//A/A,I15//A)')
      &   '--> ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT IN USE',
-     &   '--> SOMEBODY IS TRYING TO USE A FILENUMBER THAT HAS '//
+     &   '--> SOMEBODY IS TRYING TO USE A FILE NUMBER THAT HAS '//
      &   'NOT BEEN USED :',LUNIT,
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(LUGPPRI)

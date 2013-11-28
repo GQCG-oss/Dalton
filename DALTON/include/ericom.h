@@ -1,7 +1,7 @@
       LOGICAL DOPTH1, DOPTH2, GDER,   BDER,  UNDIFF,
      &        FIRST,  LAST,   LSTCLS, DIACLS,
      &        SPHRA,  SPHRB,  SPHRC,  SPHRD, SPHRAB, SPHRCD,
-     &        GCONA,  GCONB,  GCONC,  GCOND, GCONAB, GCONCD, 
+     &        GCONA,  GCONB,  GCONC,  GCOND, GCONAB, GCONCD,
      &        DIAGAB, DIAGCD, DIAGPQ, TKMPAB, TKMPCD,TCMPAB, TCMPCD
 C
       COMMON /ERICOM/ SCRMAB, SCRMCD,
@@ -22,9 +22,9 @@ C
      &                NHKMAX, KCKMAX, KC2MAX, KCREC1, NRDER,
      &                NPRFA,  NPRFB,  NPRFC,  NPRFD,
      &                NPRFAB, NPRFCD, NPRFPQ,
-     &                NCTFA,  NCTFB,  NCTFC,  NCTFD, 
+     &                NCTFA,  NCTFB,  NCTFC,  NCTFD,
      &                NCTFAB, NCTFCD, NCTFPQ, NCNTAB, NCNTCD,
-     &                ICMATA, ICMATB, ICMATC, ICMATD, 
+     &                ICMATA, ICMATB, ICMATC, ICMATD,
      &                NCSQ1,  NCSQ2,
      &                NODSAB, NODSCD, NODSPQ,
      &                NODTAB, NODTCD, KODSAB, KODSCD, MEMBCH, MAXBCH,
@@ -38,6 +38,6 @@ C
      &                DOPTH1, DOPTH2, GDER,   BDER,  UNDIFF,
      &                FIRST,  LAST,   LSTCLS, DIACLS,
      &                SPHRA,  SPHRB,  SPHRC,  SPHRD, SPHRAB, SPHRCD,
-     &                GCONA,  GCONB,  GCONC,  GCOND, GCONAB, GCONCD, 
-     &                DIAGAB, DIAGCD, DIAGPQ, 
+     &                GCONA,  GCONB,  GCONC,  GCOND, GCONAB, GCONCD,
+     &                DIAGAB, DIAGCD, DIAGPQ,
      &                TKMPAB, TKMPCD,TCMPAB, TCMPCD

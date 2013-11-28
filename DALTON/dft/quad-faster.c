@@ -23,7 +23,7 @@
 
 #include "inforb.h"
 
-const static int DFTQR_DEBUG = 0;
+const static integer DFTQR_DEBUG = 0;
 
 void FSYM(deq27)(const real* cmo, const real* ubo, const real* dv, 
                  real* dxcao, real* dxvao, real* wrk, integer* lfrsav);
@@ -52,10 +52,10 @@ static void
 commute_d_x(real * RESTRICT kappaY, integer symY,
             real * RESTRICT commuted_mat)
 {
-    int isym, i, j;
+    integer isym, i, j;
     integer norbt = inforb_.norbt;
 #if 0
-    int nocc = inforb_.nocct;
+    integer nocc = inforb_.nocct;
     /* occupied columns */
     for(i=0; i<nocc; i++) {
         for(j=0; j<nocc; j++)     commuted_mat[j+i*norbt] = 0;
@@ -70,13 +70,13 @@ commute_d_x(real * RESTRICT kappaY, integer symY,
     memset(commuted_mat, 0, norbt*norbt*sizeof(real));
     for(isym=0; isym<inforb_.nsym; isym++) {
         /* the block in question corresponds to (isym,jsym) block */
-        int istart= inforb_.iorb[isym];
-        int iocc  = inforb_.nocc[isym];
-        int iorb  = inforb_.norb[isym];
-        int jsym  = inforb_.muld2h[symY-1][isym]-1;
-        int jstart= inforb_.iorb[jsym];
-        int jocc  = inforb_.nocc[jsym];
-        int jorb  = inforb_.norb[jsym];
+        integer istart= inforb_.iorb[isym];
+        integer iocc  = inforb_.nocc[isym];
+        integer iorb  = inforb_.norb[isym];
+        integer jsym  = inforb_.muld2h[symY-1][isym]-1;
+        integer jstart= inforb_.iorb[jsym];
+        integer jocc  = inforb_.nocc[jsym];
+        integer jorb  = inforb_.norb[jsym];
         real * RESTRICT res = commuted_mat + istart + jstart*norbt;
         real * RESTRICT ky  = kappaY       + istart + jstart*norbt;
         /* occupied columns */
@@ -95,7 +95,7 @@ commute_d_x(real * RESTRICT kappaY, integer symY,
 
 static __inline__ void
 commute_matrices(integer sz, const real* a, const real* b,
-                 real* c, int addp)
+                 real* c, integer addp)
 {
     static const real MONER = -1.0;
     const real* firstpref = addp ? &ONER : &ZEROR;
@@ -106,14 +106,15 @@ commute_matrices(integer sz, const real* a, const real* b,
            b, &sz, a, &sz, &ONER, c, &sz);
 }
 
-int FSYM(isetksymop)(const integer *new_ksymop);
+integer FSYM(isetksymop)(const integer *new_ksymop);
 static void
-qrbl_data_init(QuadBlData *d, real *cmo, integer is_gga, int max_block_len,
+qrbl_data_init(QuadBlData *d, real *cmo, integer is_gga, integer max_block_len,
 	      real *kappaY, integer symY, integer spinY, 
 	      real *kappaZ, integer symZ, integer spinZ,
 	      real *dmat,
 	      real *work, integer *lwork)
 {
+    static const real DP5R  =  0.5;
     real dummy;
     integer isym;
     integer nbast = inforb_.nbast;
@@ -121,8 +122,8 @@ qrbl_data_init(QuadBlData *d, real *cmo, integer is_gga, int max_block_len,
     real *commuted_mat = work;
     real *work1 = commuted_mat + inforb_.n2orbx;
     real *work2 = work1        + inforb_.n2basx;
-    int allocated = inforb_.n2orbx + 2*inforb_.n2basx;
-    int comps = is_gga ?  4 : 1; /* number of components */
+    integer allocated = inforb_.n2orbx + 2*inforb_.n2basx;
+    integer comps = is_gga ?  4 : 1; /* number of components */
 
     d->res_omega = calloc(inforb_.n2basx,sizeof(real));
     d->res_omY   = calloc(inforb_.n2basx,sizeof(real));
@@ -144,8 +145,10 @@ qrbl_data_init(QuadBlData *d, real *cmo, integer is_gga, int max_block_len,
         dalton_quit("no enough mem in %s", __FUNCTION__);
     isym = isetksymop_(&symY);
     FSYM(deq27)(cmo, kappaY, &dummy, d->my,    &dummy, work, lwork);
+    dscal_(&inforb_.n2basx,&DP5R,d->my,&ONEI);    
     isetksymop_(&symZ);
     FSYM(deq27)(cmo, kappaZ, &dummy, d->mz,    &dummy, work, lwork);
+    dscal_(&inforb_.n2basx,&DP5R,d->mz,&ONEI);    
     isetksymop_(&isym);
 #if 0
     fort_print("cmo");
@@ -183,17 +186,17 @@ qrbl_data_init(QuadBlData *d, real *cmo, integer is_gga, int max_block_len,
     /* transform work1 to AO basis, (isym,jsym) blocks... */
     memset(d->myzzy, 0, nbast*nbast*sizeof(real));
     for(isym=0; isym<inforb_.nsym; isym++) {
-        int ibasi = inforb_.ibas[isym];
+        integer ibasi = inforb_.ibas[isym];
         integer nbasi = inforb_.nbas[isym];
-        int iorbi = inforb_.iorb[isym];
+        integer iorbi = inforb_.iorb[isym];
         integer norbi = inforb_.norb[isym];
-        int icmoi = inforb_.icmo[isym];
-        int jsym  = inforb_.muld2h[d->symYZ-1][isym]-1;
-        int ibasj = inforb_.ibas[jsym];
+        integer icmoi = inforb_.icmo[isym];
+        integer jsym  = inforb_.muld2h[d->symYZ-1][isym]-1;
+        integer ibasj = inforb_.ibas[jsym];
         integer nbasj = inforb_.nbas[jsym];
-        int iorbj = inforb_.iorb[jsym];
+        integer iorbj = inforb_.iorb[jsym];
         integer norbj = inforb_.norb[jsym];
-        int icmoj = inforb_.icmo[jsym];
+        integer icmoj = inforb_.icmo[jsym];
         if(norbi == 0 || norbj == 0) continue;
         dgemm_("N","N", &nbasi, &norbj, &norbi,
                &HALFR, cmo + icmoi, &nbasi, work1 + iorbi + iorbj*norbt, &norbt,
@@ -220,7 +223,7 @@ qrbl_data_free(QuadBlData *d)
 
 static void
 qrbl_eval_rho_vars(DftIntegratorBl* grid, QuadBlData *data,
-		  real *tmp, integer bllen, int blstart, int blend)
+		  real *tmp, integer bllen, integer blstart, integer blend)
 {
     /* compute vector of transformed densities vt */
     FSYM2(getexp_blocked_lda)(&data->symY, data->my, grid->atv,
@@ -247,17 +250,17 @@ min(real a, real b)
 { return a>b ? b : a; }
 static void
 qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
-                          real *tmp, int bllen, int blstart, int blend)
+                          real *tmp, integer bllen, integer blstart, integer blend)
 {
     static const real sgn[2]={1.0,-1.0};
-    int i, j, k, isym, ibl, jbl;
+    integer i, j, k, isym, ibl, jbl;
 #if defined(VAR_PGF77) || defined(SYS_DEC)
     real pref2b[DFT_BLLEN], pref2c[DFT_BLLEN], pref3[DFT_BLLEN];
 #else
     real pref2b[bllen], pref2c[bllen], pref3[bllen];
 #endif
     real * RESTRICT aos = grid->atv;
-    int sY = d->spinY, sZ = d->spinZ;
+    integer sY = d->spinY, sZ = d->spinZ;
     real *om = d->res_omega, *omY = d->res_omY, *omZ = d->res_omZ;
     FunDensProp dp = {0};
 
@@ -279,11 +282,11 @@ qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
 
     for(isym=0; isym<grid->nsym; isym++) {
         integer (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
-        int ibl_cnt = grid->bas_bl_cnt[isym];
+        integer ibl_cnt = grid->bas_bl_cnt[isym];
         
         for(ibl=0; ibl<ibl_cnt; ibl++)
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
-                int ioff = i*bllen;
+                integer ioff = i*bllen;
                 for(k=blstart; k<blend; k++) {
                     d->vz[k+ioff] = -pref2b[k]*aos[k+ioff];
                     d->vy[k+ioff] = -pref2c[k]*aos[k+ioff];
@@ -298,7 +301,7 @@ qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
          * simple. */
         for(ibl=0; ibl<ibl_cnt; ibl++) {
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
-                int jsym, jbl_cnt, ioff = i*inforb_.nbast;
+                integer jsym, jbl_cnt, ioff = i*inforb_.nbast;
                 real * RESTRICT tmpi = tmp + i*bllen;
                 real * RESTRICT vyi = d->vy + i*bllen;
                 real * RESTRICT vzi = d->vz + i*bllen;
@@ -308,7 +311,7 @@ qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
                 jblocks = BASBLOCK(grid,jsym);
                 jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
-                    int jtop = min(jblocks[jbl][1],i+1);
+                    integer jtop = min(jblocks[jbl][1],i+1);
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) { 
                         real * RESTRICT aosj = aos + j*bllen;
                         real s = 0;
@@ -320,7 +323,7 @@ qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
                 jblocks = BASBLOCK(grid,jsym);
                 jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
-                    int jtop = min(jblocks[jbl][1],i+1);
+                    integer jtop = min(jblocks[jbl][1],i+1);
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) { 
                         real * RESTRICT aosj = aos + j*bllen;
                         real s = 0;
@@ -332,7 +335,7 @@ qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
                 jblocks = BASBLOCK(grid,jsym);
                 jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
-                    int jtop = min(jblocks[jbl][1],i+1);
+                    integer jtop = min(jblocks[jbl][1],i+1);
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) { 
                         real * RESTRICT aosj = aos + j*bllen;
                         real s = 0;
@@ -347,7 +350,7 @@ qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
 }
 static void
 qrbl_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
-	    int bllen, int blstart, int blend,
+	    integer bllen, integer blstart, integer blend,
 	    QuadBlData* data)
 {
     qrbl_eval_rho_vars       (grid, data, tmp, bllen, blstart, blend);
@@ -359,7 +362,7 @@ qrbl_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
  * =================================================================== */
 static void
 qrbl_eval_gga_vars(DftIntegratorBl* grid, QuadBlData *data,
-                    real *tmp, integer bllen, int blstart, int blend)
+                    real *tmp, integer bllen, integer blstart, integer blend)
 {
     /* compute vector of transformed densities and density gradients vt */
     FSYM2(getexp_blocked_gga)(&data->symY, data->my, grid->atv,
@@ -375,10 +378,10 @@ qrbl_eval_gga_vars(DftIntegratorBl* grid, QuadBlData *data,
 
 static void
 qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
-                          real *tmp, int bllen, int blstart, int blend)
+                          real *tmp, integer bllen, integer blstart, integer blend)
 {
     static const real sgn[2]={1.0,-1.0};
-    int i, j, k, isym, ibl, jbl;
+    integer i, j, k, isym, ibl, jbl;
     /* pref3 is the prefactor of the double-commuted term, pref2a is
      * the prefactor of commuted with Z, and pref2b - with commuted
      * with Y. */
@@ -391,14 +394,14 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
     real * RESTRICT aox = grid->atv+bllen*inforb_.nbast;
     real * RESTRICT aoy = grid->atv+bllen*inforb_.nbast*2;
     real * RESTRICT aoz = grid->atv+bllen*inforb_.nbast*3;
-    int sY = d->spinY, sZ = d->spinZ;
+    integer sY = d->spinY, sZ = d->spinZ;
     real *om = d->res_omega, *omY = d->res_omY, *omZ = d->res_omZ;
     FunDensProp dp = {0};
     real (*trY)[4]  = (real (*)[4])d->yy;
     real (*trZ)[4]  = (real (*)[4])d->zz;
     real (*yzzy)[4] = (real (*)[4])d->yzzy;
     real (*grad)[3] = grid->g.grad;
-    int can_collapse_loops = 
+    integer can_collapse_loops = 
         (d->symY == d ->symZ) && (d->symY == d ->symYZ);
 
     for(k=blstart; k<blend; k++) {
@@ -485,7 +488,7 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
 
     for(isym=0; isym<grid->nsym; isym++) {
         integer (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
-        int ibl_cnt = grid->bas_bl_cnt[isym];
+        integer ibl_cnt = grid->bas_bl_cnt[isym];
         for(ibl=0; ibl<ibl_cnt; ibl++)
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
                 real * RESTRICT a0 = aos + i*bllen;
@@ -513,14 +516,14 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
         if(can_collapse_loops) {
             for(ibl=0; ibl<ibl_cnt; ibl++) {
                 for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
-                    int ioff = i*inforb_.nbast;
+                    integer ioff = i*inforb_.nbast;
                     real sum;
                     real * RESTRICT tmpi = tmp  + i*bllen;
                     real * RESTRICT vyi = d->vy + i*bllen;
                     real * RESTRICT vzi = d->vz + i*bllen;
-                    int jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
+                    integer jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
                     integer (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
-                    int jbl_cnt = grid->bas_bl_cnt[jsym];
+                    integer jbl_cnt = grid->bas_bl_cnt[jsym];
                     for(jbl=0; jbl<jbl_cnt; jbl++) {
                         for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
                             real * RESTRICT aosj = aos + j*bllen;
@@ -543,14 +546,14 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
         /* 2:general case */
         for(ibl=0; ibl<ibl_cnt; ibl++) {
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
-                int ioff = i*inforb_.nbast;
+                integer ioff = i*inforb_.nbast;
                 real sum;
                 real * RESTRICT tmpi = tmp  + i*bllen;
                 real * RESTRICT vyi = d->vy + i*bllen;
                 real * RESTRICT vzi = d->vz + i*bllen;
-                int jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
+                integer jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
                 integer (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
-                int jbl_cnt = grid->bas_bl_cnt[jsym];
+                integer jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
                         real * RESTRICT aosj = aos + j*bllen;
@@ -588,7 +591,7 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
 
 static void
 qrbl_gga_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
-	    int bllen, int blstart, int blend,
+	    integer bllen, integer blstart, integer blend,
 	    QuadBlData* data)
 {
     qrbl_eval_gga_vars       (grid, data, tmp, bllen, blstart, blend);
@@ -665,13 +668,13 @@ qrbl_sync_slaves(real* cmo, real* kappaY, real* kappaZ, integer* addfock,
 static __inline__ void
 qrbl_collect_info(real* fi, real*work, integer lwork)
 {
-    int sz = 0;
+    integer sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
 
     CHECK_WRKMEM(inforb_.n2orbx,lwork);
     dcopy_(&inforb_.n2orbx, fi, &ONEI, work, &ONEI);
-    int n2orbx_int = inforb_.n2orbx;
+    integer n2orbx_int = inforb_.n2orbx;
     MPI_Reduce(work, fi, n2orbx_int, MPI_DOUBLE, MPI_SUM, 
 	       MASTER_NO, MPI_COMM_WORLD);
 }
@@ -689,11 +692,11 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
                       real *kappaZ, integer *symZ, integer *spinZ,
                       integer *addfock, real *work, integer *lwork, integer *iprint)
 {
-    static int msg_printed = 0;
+    static integer msg_printed = 0;
     struct tms starttm, endtm; clock_t utm;
     real electrons;
     QuadBlData qr_data; /* quadratic response data */
-    int i, j;
+    integer i, j;
     real *dmat;
     real *tmp1, *tmp2;
     DftBlockCallback cb;
@@ -740,8 +743,8 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
     /* LDA callback computes only half and GGA needs to be symmetrized */
     for(i=0; i<inforb_.nbast; i++) {
         for(j=0; j<i; j++) {
-            int ji = j + i*inforb_.nbast;
-            int ij = i + j*inforb_.nbast;
+            integer ji = j + i*inforb_.nbast;
+            integer ij = i + j*inforb_.nbast;
             real avg = 0.5*(qr_data.res_omega[ij]+qr_data.res_omega[ji]);
             qr_data.res_omega[ij] = qr_data.res_omega[ji] = avg;
             avg = 0.5*(qr_data.res_omY[ij] + qr_data.res_omY[ji]);
@@ -772,9 +775,11 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
     }
     free(tmp1); free(tmp2);
     qrbl_data_free(&qr_data);
-    times(&endtm);
-    utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("      Electrons: %f(%9.3g): QR-DFT/b evaluation time: %9.1f s", 
-               electrons, (double)(electrons-(int)(electrons+0.5)),
-               utm/(double)sysconf(_SC_CLK_TCK));
+    if (*iprint>0) {
+      times(&endtm);
+      utm = endtm.tms_utime-starttm.tms_utime;
+      fort_print("      Electrons: %f(%9.3g): QR-DFT/b evaluation time: %9.1f s", 
+                 electrons, (double)(electrons-(integer)(electrons+0.5)),
+                 utm/(double)sysconf(_SC_CLK_TCK));
+    }
 }

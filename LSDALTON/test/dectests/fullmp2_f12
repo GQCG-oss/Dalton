@@ -44,20 +44,22 @@ H    0.0000     -0.7572 -0.4692
 #  DALTON INPUT
 #######################################################################
 cat > fullmp2_f12.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .ARH
-.NOGCBASIS
 .START
 TRILEVEL
 .CONVTHR
 1.0d-5
-**DEC
-.FULL
+**CC
 .MP2
 .F12
-.canonical
+.MEMORY
+2.0
+.CANONICAL
 *END OF INPUT
 %EOF%
 #######################################################################

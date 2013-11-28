@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,6 +21,8 @@
 !...      http://daltonprogram.org
 !
 !
+C     FILE: DALTON/sirius/sircan.F
+C
 #include "single.h"
 C
 C  /* Deck sircan */
@@ -87,8 +89,8 @@ C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
 C .. 1.1 .. (SIRCNO)
-      CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAOCC,NASHT,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CINDX',KCINDX,LCINDX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','AOCC' ,KAOCC ,NASHT, WRK,KFREE,LFREE)
 C
 C Step 1: Get CI index information (CINDX)
 C         Read molecular orbitals (CMO) from disk
@@ -115,6 +117,7 @@ C
      *   WRITE (LUW4,'(//A/A)')
      *   ' Occupancies of natural active orbitals',
      *   ' --------------------------------------'
+
       CALL DZERO(OCC,NORBT)
       IF (NASHT .EQ. 1) WRK(KAOCC) = NACTEL
       IAOCC = KAOCC-1
@@ -168,9 +171,9 @@ C     CALL SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,WRK,LFREE)
          CALL MOLLAB('NEWORB  ',LUIT1,lupri)
          READ (LUIT1)
          CALL GETDAT(LAB123(2),LAB123(3))
-         WRITE (LUIT1) LAB123(1),LAB123(2),'(SIRCAN)','NATOCCAC'
-         NAT4 = MAX(NASHT,4)
-         CALL WRITT(LUIT1,NAT4,WRK(KAOCC))
+         WRITE (LUIT1) LAB123(1),LAB123(2),'(SIRCAN)','NATOCC  '
+         NORBT4 = MAX(NORBT,4)
+         CALL WRITT(LUIT1,NORBT4,OCC)
          WRITE (LUIT1) LAB123,'EODATA  '
          REWIND LUIT1
       END IF
@@ -784,19 +787,39 @@ C
       RETURN
       END
 C  /* Deck getno */
-      SUBROUTINE GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
-     *                 MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
+      SUBROUTINE GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER_in,NATORB,NOAVER,
+     &                 MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
 C
-C 29-Apr-1989 Hans Joergen Aa. Jensen
+C 29-Apr-1989/.../2-Aug-2013 Hans Joergen Aa. Jensen
 C
 C Purpose:
 C  Calculate natural orbital occupation numbers and, if NATORB is true,
 C  transform orbitals to natural orbitals.
 C
+C Input:
+C   CVEC(:)      - CI vector, used to generate DV
+C   ICSYM        - symmetry of CVEC
+C   CMO(:)       - input MO coefficients
+C   ORDER_in     - if .true. order active orbitals after decreasing occupation
+C   NATORB       - if .true. transform CMO to natural orbitals
+C   NOAVER       - if .true. do not average for super symmetry
+C   INDXCI(:)    - info vector for CVEC
+C   LUPRI        - print unit
+C   IPRINT       - print level
+C
+C Output:
+C   OCCNO(NORBT) - occupation numbers of all orbitals
+C   CMO(:)       - if (NATORB): natural orbital MO coefficients (NOs)
+C   MOISNO       - if .true. output MOs are Nos
+C
+C Scratch:
+C   UNO(NASHT,NASHT)
+C   WRK(KFRSAV:KFRSAV+LFRSAV-1)
+C
 #include "implicit.h"
       DIMENSION CVEC(*), OCCNO(*), UNO(NASHT,*), CMO(*), INDXCI(*),
      *          WRK(*)
-      LOGICAL   ORDER, NATORB, MOISNO, NOAVER
+      LOGICAL   ORDER_in, ORDER, NATORB, MOISNO, NOAVER
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0)
 #include "thrzer.h"
 C
@@ -821,6 +844,12 @@ C
      *      ' <<< output from getno >>>',
      *      ' Symmetry of state vector :',ICSYM
       END IF
+      IF (SUPSYM .AND. ORDER_in .AND. NOAVER) THEN
+!        sorting will give error if degenerate active orbitals and no averaging of these in DV
+         ORDER = .FALSE.
+      ELSE
+         ORDER = ORDER_in
+      END IF
 C
 C     Calculate natural orbital transformation and
 C     natural orbital occupation numbers
@@ -830,7 +859,7 @@ C
       CALL MEMGET('INTE',KJBIG,NASHT ,WRK,KFREE,LFREE)
       CALL MEMGET('WORK',KWRK1,LWRK1 ,WRK,KFREE,LFREE)
       IF (NASHT .EQ. 1) THEN
-         WRK(KDV) = NACTEL
+         WRK(KDV) = NACTEL ! takes care of debug cases with NACTEL = 0 or NACTEL = 2
       ELSE IF (HSROHF) THEN
          CALL DZERO(WRK(KDV),NNASHX)
          DO I = 1, NASHT
@@ -882,6 +911,7 @@ C
 C
       IF (.NOT. MOISNO) THEN
          CALL JACO(WRK(KDV),UNO,NASHT,NASHT,NASHT,WRK(KBIG),WRK(KJBIG))
+C        select positive phase of MO-NO transformation vectors:
          DO 240 I = 1,NASHT
             JUNOMX = IDAMAX(NASHT,UNO(1,I),1)
             IF (UNO(JUNOMX,I) .LT. D0) CALL DSCAL(NASHT,DM1,UNO(1,I),1)
@@ -889,21 +919,22 @@ C
       END IF
 C
 C     extract natural occupation numbers
-C     select positive phase of transformation vectors
 C
-      JOCC = 0
+      CALL DZERO(OCCNO, NORBT)
+      JORB = 0
       JACT = 0
-      DO 360 ISYM = 1,NSYM
-         DO 320 I = 1,NISH(ISYM)
-            JOCC = JOCC + 1
-            OCCNO(JOCC) = D2
-  320    CONTINUE
-         DO 340 I = 1,NASH(ISYM)
-            JOCC = JOCC + 1
+      DO, ISYM = 1,NSYM
+         DO, I = 1,NISH(ISYM)
+            JORB = JORB + 1
+            OCCNO(JORB) = D2
+         END DO
+         DO, I = 1,NASH(ISYM)
+            JORB = JORB + 1
             JACT = JACT + 1
-            OCCNO(JOCC) = WRK(KDV-1 + (JACT*JACT+JACT)/2)
-  340    CONTINUE
-  360 CONTINUE
+            OCCNO(JORB) = WRK(KDV-1 + (JACT*JACT+JACT)/2)
+         END DO
+         JORB = JORB + NSSH(ISYM)
+      END DO
       IF (ORDER) THEN
 C     ... reasons why reordering of active orbitals may not be desired:
 C         1) reduce may have been specified and TRACI will be called.
@@ -914,16 +945,16 @@ C            for non-zero diagonal elements.
             NASHI = NASH(ISYM)
          IF (NASHI .EQ. 0) GO TO 420
             JACT = IASH(ISYM) + 1
-            JORB = IORB(ISYM) + 1
-            JOCCA= IOCC(ISYM) + NISH(ISYM) + 1
+            JOCCA= IORB(ISYM) + NISH(ISYM) + 1
             CALL ORD2SS(UNO(1,JACT),OCCNO(JOCCA),
-     &                  ISSMO(JORB),NASHI,NASHT)
+     &                  ISSMO(JOCCA),NASHI,NASHT)
   420    CONTINUE
          IF (SUPSYM) CALL AVEORD()
 C        ... regenerate ISSORD() as ISSMO() may have been changed in ORD2SS
          IF (MOISNO) THEN
-            DO 430 I = 1,NASHT
-  430          IF (UNO(I,I) .NE. D1) MOISNO = .FALSE.
+            DO, I = 1,NASHT
+               IF (UNO(I,I) .NE. D1) MOISNO = .FALSE.
+            END DO
             IF (IPRINT .GE. 2 .AND. .NOT. MOISNO) THEN
                WRITE(LUPRI,'(/A)')
      *           ' GETNO: The natural orbitals are reordered.'
@@ -941,15 +972,14 @@ C        ... regenerate ISSORD() as ISSMO() may have been changed in ORD2SS
             IF (NOCCI .EQ. 0) THEN
                WRITE (LUPRI,3030) ISYM
             ELSE
-               OCCSUM = DSUM(NOCCI,OCCNO(IOCC(ISYM)+1),1)
-               IOCCI = IOCC(ISYM)
+               OCCSUM = DSUM(NOCCI,OCCNO(IORB(ISYM)+1),1)
                IORBI = IORB(ISYM)
                IF (SUPSYM) THEN
                   WRITE (LUPRI,3045) ISYM,OCCSUM,
-     &               (OCCNO(IOCCI+I),ISSMO(IORBI+I),I=1,NOCCI)
+     &               (OCCNO(IORBI+I),ISSMO(IORBI+I),I=1,NOCCI)
                ELSE
                   WRITE (LUPRI,3040) ISYM,OCCSUM,
-     &               (OCCNO(IOCCI+I),I=1,NOCCI)
+     &               (OCCNO(IORBI+I),I=1,NOCCI)
                END IF
             END IF
   520    CONTINUE
@@ -1003,6 +1033,9 @@ C
          MOISNO = .TRUE.
       END IF
       END IF
+      IF (.NOT.MOISNO) THEN
+         CALL DZERO(OCCNO,NORBT) ! as CMO is not natural orbitals
+      END IF
 C
 C
       CALL MEMREL('GETNO',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -1014,3 +1047,4 @@ C        ... redo JWOP in case ISSMO should have changed in ORDRSS /hjaaj aug 04
       CALL QEXIT('GETNO ')
       RETURN
       END
+C     --- end of DALTON/sirius/sircan.F ---

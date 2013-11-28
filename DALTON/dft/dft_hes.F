@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -89,6 +89,13 @@ C
       CALL DFT_HESSTAT_COLLECT(WORK(KDFTHS),WORK(KLAST),LWRK)
       CALL DFTHSSYM(WORK(KDFTHS),MXCOOR)
       CALL ADDHES(WORK(KDFTHS))
+
+CAMT  Add Grimme empirical dispersion correction  
+      IF (DODFTD) THEN
+         NDERIV=2 !Note hessians NYI, this will just cause a quit
+         CALL DFT_D_DAL_IFC(EDISP,NDERIV,WORK(KLAST),LWRK)
+      ENDIF
+
 C
       IF (IPRINT.GT.1) THEN
         KCSTRA = KLAST
@@ -204,7 +211,7 @@ C
 C
 C /* Deck dftstathes */
       SUBROUTINE DFTSTATHES(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
-     &                      COORD,WGHT,HESDAT)
+     &                      DST,VFA,XCPOT,COORD,WGHT,HESDAT)
 C
 C     Exchange-correlation contribution to molecular hessian - static
 C     This subroutine splits up "cbdata" needed for the calculation
@@ -225,7 +232,8 @@ C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN), WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8), NBLOCKS(2,LDAIB,8),
-     &          HESDAT(MXCOOR*MXCOOR + 3*N2BASX*NUCDEP + N2BASX)
+     &          HESDAT(MXCOOR*MXCOOR + 3*N2BASX*NUCDEP + N2BASX),
+     &          DST(NATOMS), VFA(NBLEN), XCPOT(NBLEN)
       KDMAT  = 1
       KV1MAT = KDMAT  + N2BASX
       KDFTSH = KV1MAT + N2BASX*NUCDEP*3
@@ -603,7 +611,7 @@ C
 C    
 C /* Deck dftksd */
       SUBROUTINE DFTKSD(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
-     &                  COORD,WGHT,DATMAT)
+     &                  DST,VFA,XCPOT,COORD,WGHT,DATMAT)
 C
 C     This subroutine calculates the part of the geometrical derivatives
 C     of the Kohn-Sham matrix, needed for molecular hessians. 
@@ -623,12 +631,15 @@ C                        gradients (needed for response calculation).
 C    
 #include "implicit.h"
 #include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
 #include "maxorb.h"
 #include "inforb.h"
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &         RHOA(NBLEN), GRADA(3,NBLEN), NBLCNT(8),
-     &         NBLOCKS(2,LDAIB,8), DATMAT(10*N2BASX)
+     &         NBLOCKS(2,LDAIB,8), DATMAT(10*N2BASX),
+     &         DST(NATOMS), VFA(NBLEN), XCPOT(NBLEN)
 C
       KDMAT  = 1
       KV1MAT = KDMAT   +   N2BASX

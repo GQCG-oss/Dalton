@@ -4,9 +4,9 @@
 !     NFSYM - number of fermion irreps
 !     NBSYM - number of boson irreps
 !     JSPINR(IM,IC,IFRP) - boson irrep for a given spinor position
-!     JBTOF(IBRP,IC) - points to fermion irrep for given boson 
+!     JBTOF(IBRP,IC) - points to fermion irrep for given boson
 !                      irrep/component
-!     JFSYM(NZ,IFRP) - points to boson symmetries associated with 
+!     JFSYM(NZ,IFRP) - points to boson symmetries associated with
 !                      given fermion
 !                      ircop
 !     IQDEF(4)
@@ -44,7 +44,7 @@
 !     M = I_4,iA_z,iA_y,iA_x
 !
 !     JM4REP(0:7) - bosonirrep of matrix operator
-!     JM4POS(0:7) - quaternionic position of matrix operator 
+!     JM4POS(0:7) - quaternionic position of matrix operator
 !                   (1,2(i),3(j),4(k))
 !     JM4FAS(0:7) - sign of matrix operator (+/- 1)
 !

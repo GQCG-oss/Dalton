@@ -149,8 +149,8 @@ ERROR[6]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy:
 # hjaaj Jan 05: decreased number of digits as MP2 energy is only of lin.acc.
-CRIT1=` $GREP "MP2 second order energy : * \-76\.2249784" $log | wc -l` # SOS-MP2 energy
-#CRIT1=`$GREP "MP2 second order energy : * \-76\.2306668" $log | wc -l` # normal MP2 energy
+CRIT1=` $GREP "MP2 second order energy *: * \-76\.2249784" $log | wc -l` # SOS-MP2 energy
+#CRIT1=`$GREP "MP2 second order energy *: * \-76\.2306668" $log | wc -l` # normal MP2 energy
 
 TEST[7]=`expr $CRIT1`
 CTRL[7]=1
@@ -181,7 +181,7 @@ ERROR[9]="NATORB OCCUPANCY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

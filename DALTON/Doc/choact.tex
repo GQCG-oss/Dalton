@@ -1,0 +1,113 @@
+~%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Definition of atomic subsystems by Cholesky decomposition of 
+the density matrix: \Sec{CHOACT}}
+\label{sec:choact}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\index{Subsystem}
+\index{Cholesky decomposition-based methods}
+
+In this Section, we describe the keywords controlling the algorithm to 
+define atomic subspaces by Cholesky decomposing one-electron density 
+matrices. In the present implementation, the correlated calculation
+is restricted to the active calculation, while the inactive
+space is kept frozen in such correlated calculation. We note that 
+decomposition of two-electron integrals is not required.
+
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item {A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s}, H.~Koch, I.~G.~Cuesta, and L.~Boman
+ \newblock {\em J.~Chem.~Phys.}, {\bf 132},\hspace{0.25em}204105, (2010).
+\end{list}
+}}
+\end{center}
+
+\begin{description}
+\item[\Key{ACTFRE}]\verb| |\newline
+\verb|READ (LUCMD,*) NACTFR|\newline
+        In addition to the inactive atomic subspace, freeze also
+        the NACTFR acitve orbitals with lowest orbital energies.
+        (Default: 0).
+%
+\item[\Key{ATOMIC}] \verb| |\newline
+\verb|READ (LUCMD,*) NACINP|\newline
+\verb|READ (LUCMD,*) (LACINP(I), I=1,NACINP)|\newline
+       Read in the number of active symmetry-independent centers. Next
+       line lists the active atoms, which are numbered in the order
+       of the standardized input \verb|DALTON.BAS|. A
+       negative value of \verb|NACINP| allows for specifying a (long)
+       list of active atoms in several lines. In this case, the
+       line following the negative \verb|NACINP| gives the number of
+       atomic centers listed below. This two lines group is repeated
+       as many times as needed to reach the total number of elements
+       \verb|-NACINP|. See \verb|choact_mp2_energy| testcase for an example.
+%
+\item[\Key{DIFADD}]  \verb| |\newline
+\verb|DO ISYM = 1,NSYM |\newline
+\verb|   READ(LUCMD,*) NEXTBS(ISYM) |\newline
+\verb|   READ(LUCMD,*) (IEXTBS(I,ISYM), I=1,NEXTBS(ISYM)) |\newline
+\verb|END DO |\newline
+        Add to the atomic active space selected (diffuse) basis. 
+        (Default: No extra basis is added to the active space).
+%
+\item[\Key{DOSPRE}]
+        Calculate orbital spreads as described in 
+        Ref.~\cite{ziolkowski2009}. This option is only
+        implemented with no symmetry.
+        (Default: \verb|.FALSE.|)
+%
+\item[\Key{FULDEC}] 
+        Full decomposition of occupied and virtual densities as in 
+        Ref.~\cite{aquilante2006}. Not suitable to define atomic
+        subspaces. (Default: \verb|.FALSE.|)
+%
+\item[\Key{LIMLOC}]  \verb| |\newline
+\verb|READ (LUCMD,*) (MXOCC(I), I=1,NSYM)|\newline
+\verb|READ (LUCMD,*) (MXVIR(I), I=1,NSYM)|\newline
+       Read maximum number of occupied and virtual Cholesky active
+       orbitals. As default, these numbers are determined by the 
+       thresholds of the Cholesly decomposition of the correspondent
+       density matrices.
+%
+\item[\Key{MINSPR}] 
+       Determine Cholesky orbitals to minimize orbital spread as 
+       described in Ref.~\cite{ziolkowski2009}. This option is only
+        implemented with no symmetry.
+        (Default: \verb|.FALSE.|)
+%
+\item[\Key{NOSLDR}] 
+        Decompose the whole density matrices in an atom-by-atom
+        basis scheme and select afterwards according to the values
+        given under keyword \verb|.ATOMIC| (See Reference literature
+        for details). This option works only without symmetry.
+        (Default: \verb|.FALSE.|)
+%
+\item[\Key{SELDIA}] \verb| |\newline
+\verb|READ (LUCMD,*) NABSOC|\newline
+\verb|READ (LUCMD,*) (LACBAS(I), I=1,NABSOC)|\newline
+\verb|READ (LUCMD,*) NABSVI|\newline
+\verb|READ (LUCMD,*) (LACBSV(I), I=1,NABSVI)|\newline
+        Read list of specific diagonals (basis) to decompose in 
+        occupied and virtual density matrices. It is assumed that
+        the list of occupied active diagonals can fit in a single 
+        line, but –provided that \verb|NABSVI| is less than zero–
+        several lines can be used for virtual diagonals by
+        using the same procedure than in option \verb|.ATOMIC|.
+%
+\item[\Key{THACOC}] \verb| |\newline
+\verb|READ (LUCMD,*) THACOC|\newline
+       Threshold for the decomposition of the occupied density matrix.
+       (Default: 0.2)
+%
+\item[\Key{THACVI}] \verb| |\newline
+\verb|READ (LUCMD,*) THACVI|\newline
+       Threshold for the decomposition of the virtual
+       pseudo-density matrix.  (Default: 0.2)
+%
+%
+\end{description}

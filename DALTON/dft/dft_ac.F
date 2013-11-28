@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -24,11 +24,12 @@
 #include "single.h"
 C
 C /* Deck dftac */ 
-      SUBROUTINE DFTAC(VA,DST,CRX,CRY,CRZ)
+      SUBROUTINE DFTAC(VA,VFA,DST,CRX,CRY,CRZ,GRD,RHO43,RHO13)
 C
 C     T. Helgaker
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
       PARAMETER (D0 = 0.0D0) 
@@ -38,13 +39,40 @@ C
 #include "dftcom.h"
 #include "dftacb.h"
 #include "codata.h"
+#include "gnrinf.h"
 C
-      DIMENSION RADIUS(0:18)
-      DATA RADIUS /0.0D0,0.35D0,0.35D0,
-     &      1.45D0,1.05D0,0.85D0,0.70D0,0.65D0,0.60D0,0.50D0,0.45D0,
-     &      1.80D0,1.50D0,1.25D0,1.10D0,1.00D0,1.00D0,1.00D0,1.00D0/
-C
-      SHIFT = DFTIPT + DFTHMO
+      DIMENSION RADIUS(0:54)
+
+      DATA RADIUS/0.00D0,0.35D0,0.35D0,
+     &1.45D0,1.05D0,0.85D0,0.70D0,0.65D0,0.60D0,0.50D0,0.45D0,
+     &1.80D0,1.50D0,1.25D0,1.10D0,1.00D0,1.00D0,1.00D0,1.00D0,
+     &2.20D0,1.80D0,
+     &1.60D0,1.40D0,1.35D0,1.40D0,1.40D0,
+     &1.40D0,1.35D0,1.35D0,1.35D0,1.35D0,
+     &1.30D0,1.25D0,1.15D0,1.15D0,1.15D0,1.15D0,
+     &18*1.3D0/
+
+      SHIFT = DFTIPTA + EHOMO - SHF 
+
+      IF (DOLB94) THEN
+        BETA_LB = 0.05d0
+        XGRD = GRD / RHO43
+        XASINH = dlog(XGRD+DSQRT(1.0d0+XGRD*XGRD))
+        VLDA = 2.0d0*((2.0d0**(1.0d0/3.0d0))
+     &         *((3.0d0/PI)**(1.0d0/3.0d0))
+     &         *RHO13) 
+        VFA = (BETA_LB*RHO13*(XGRD*XGRD)
+     &         /(1.0d0+(3.0d0*BETA_LB*XGRD*XASINH)))+VLDA
+      ENDIF
+
+      IF (LGRAC) THEN
+         XGRD = GRD / RHO43
+         BETA = DFTBR2 
+         ALPHA = DFTBR1 
+         ASYMP = (HFXFAC-1.0d0)*VFA + SHIFT
+         FRAC = 1.0d0 / (1.0d0 + exp(-ALPHA*(XGRD-BETA))) 
+         VA = (1.0d0-FRAC)*VA + FRAC*ASYMP
+      ELSE
 C
       INSIDE = .FALSE.
       DO 100 I = 1, NATOMS
@@ -55,34 +83,53 @@ C
          IF (DST(I).LT.BRAG) INSIDE = .TRUE.
   100 CONTINUE
 C
+!If the point is defined as part of the core potential -- shift down
       IF (.NOT.INSIDE) THEN
-         RHOT = D0
-         RINV = D0 
-         DO 200 I = 1, NATOMS
-            RHOT = RHOT + DFTCHR(I)
-            RINV = RINV + DFTCHR(I)/DST(I)
-  200    CONTINUE
-         ASYMP = -WDFTX*RINV/RHOT + SHIFT
-C
+
+        IF (DOMPOLE) THEN
+          RINV=0.0d0
+          XNELEC=0.0d0
+          DO I = 1, NATOMS
+            RINV = RINV + (CHARGE(I)+(KCHARG/NATOMS))/DST(I) 
+            XNELEC = XNELEC + (CHARGE(I)+(KCHARG/NATOMS))
+          ENDDO
+          VFA = RINV/XNELEC
+        ENDIF
+
+         ASYMP = (HFXFAC-1.0d0)*VFA + SHIFT
+
          NFRC = 0
          FRAC = D0 
+         IF (LTAN) FRAC = 1.0d0
          DO 300 I = 1, NATOMS
             BRAG  = RADIUS(NINT(CHARGE(I)))/XTANG
             BRAG1 = DFTBR1*BRAG
             BRAG2 = DFTBR2*BRAG
             IF (DST(I) .LT. BRAG2) THEN
-               NFRC = NFRC + 1
-               FRAC = FRAC + (DST(I) - BRAG1)/(BRAG2 - BRAG1)
+               IF(DST(I).LT.DISTMIN) DISTMIN = DST(I)
+               IF(DST(I).GT.DISTMAX) DISTMAX = DST(I)
+               IF (LLIN) THEN
+                NFRC = NFRC + 1
+                FRAC = FRAC + (DST(I) - BRAG1)/(BRAG2 - BRAG1)
+               ELSE IF (LTAN) THEN
+                NFRC = NFRC + 1
+                WA = (1.0d0 / ((DFTBR2-DFTBR1)*BRAG))
+     &               *LOG((1.0d0+0.998d0)/(1.0d0-0.998d0))
+                CA = ((DFTBR1+DFTBR2)*BRAG)/2.0d0
+                TANHA = 0.5d0*(tanh(WA*(DST(I)-CA))+1.0d0)  
+                FRAC = FRAC * TANHA
+               ENDIF
             END IF
   300    CONTINUE
-C
          IF (NFRC.EQ.0) THEN
             VA = ASYMP
-         ELSE
-            VA = VA + FRAC*(ASYMP - VA)/NFRC
+         ELSE IF (LLIN) THEN
+             VA = VA + FRAC*(ASYMP - VA)/NFRC
+         ELSE IF (LTAN) THEN
+             VA = VA + FRAC*(ASYMP - VA)
          END IF
       END IF
-C
-      VA = VA - SHIFT
+      END IF !LGRAC ENDIF
       RETURN
       END
+

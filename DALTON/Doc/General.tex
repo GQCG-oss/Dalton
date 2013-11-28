@@ -8,9 +8,9 @@ input file for the \dalton\ program.
 \section{General input to DALTON : \Sec{*DALTON}}\label{sec:general}
 
 This input module describes the overall type of calculation that is to
-be done. It also contains seven submodules describing
+be done. It also contains eight submodules describing
 the control of the two different geometry optimization routines,
-the control of the two different environment models, PCM and QM3,
+the control of the three different environment models, PCM, QM3 and PE,
 the control of the reading of the molecule and basis set input
   in the ".mol" file,
 tuning of the performance of parallel calculations,
@@ -18,17 +18,17 @@ as well as control of the general routines for calculating
 numerical geometrical derivatives of molecular energies or selected
 first- and second-order properties.
 
-We note that \verb|**DALTON| identifies that what follows is Dalton general input.
-This input section is compulsory to do a calculation, by default Dalton does nothing
+We note that \verb|**DALTON| identifies that what follows is general input.
+This input section is compulsory to do a calculation, by default \dalton\ does nothing
 (will stop with the error message:
 {\tt End of file on DALTON.INP, no **DALTON input found}.
 Lines before the first line with \verb|**DALTON| are ignored by \dalton .
-The general input module stops at the next line stating with two starts: \verb|**anything|.
+The general input module stops at the next line starting with two stars: \verb|**anything|.
 
 If more than one node, \dalton\ will automatically perform those modules in parallel
 which are implemented in parallel, and Fock matrix calculations will be done AO-direct,
 also if you don't specify \verb|.DIRECT|.
-In contrast to previous releases of Dalton, it will not quit in the non-parallelized modules
+In contrast to previous releases of the \dalton\ program, it will not quit in the non-parallelized modules
 but run them on the master node while the other nodes are idling.
 The keyword \verb|.PARALLEL| of previous releases is still recognized for backward compatibility,
 but it is not needed any more.
@@ -81,10 +81,10 @@ Douglas-Kroll-Hess second-order (DKH2) transformed one-electron potential and ki
 module. The program will abort after the completion of the input test,
 and no calculations will be executed.
 
-\item[\Key{INTEGRALS}] Invoke the {\her} and/or the {\eri} program module for generating molecular one-
+\item[\Key{INTEGRALS}] Invoke the {\her} and/or the {\eri} module for generating molecular one-
 and two-electron integrals.
 See Chapter~\ref{ch:hermit} for the \her\ and
-Section~\ref{ch:eri}\index{one-electron integral}\index{two-electron integral} for the \eri\ program module, respectively.
+Section~\ref{ch:eri}\index{one-electron integral}\index{two-electron integral} for the \eri\ module, respectively.
 
 \item[\Key{ITERATION}]\verb| |\newline
 \verb|READ (LUCMD, '(I5)') ITERNR|
@@ -115,18 +115,6 @@ option.
 %\item[\Key{MINIMIZE}] Alternative keyword to \verb|.OPTIMIZE|. Obsolete,
 %do not use.
 
-\item[\Key{OPTIMIZE}] Perform a geometry optimization\index{geometry optimization!.OPTIMIZE module}.
-The default is a geometry minimization\index{geometry minimization!.OPTIMIZE module}:
-an optimization of the molecular geometry to a stationary point with no
-negative Hessian eigenvalues
-(a local minimum) will be done using the default first-order
-methods. However, this may be changed using appropriate
-keywords in the submodule \Sec{OPTIMIZE}, and we refer to examples in
-the chapter on potential energy surfaces
-(Chapter~\ref{ch:geometrywalks}), and subsection~\ref{subsec:minimize}
-describing the input cards for the \Sec{OPTIMIZE} submodule for a more
-detailed description of possible options.
-
 \item[\Key{NEWTRA}]\index{integral transformation!"new"} Requests that the
 two-electron integral transformation routines of Bj\o rn
 Roos should be used during execution of the program, also if less than
@@ -139,6 +127,18 @@ molecular point group in order to minimize the number of point to be
 calculated. What order of derivatives and whether any analytical
 derivatives are to be used is determined in the \verb|*NMDDRV| input
 module.
+
+\item[\Key{OPTIMIZE}] Perform a geometry optimization\index{geometry optimization!.OPTIMIZE module}.
+The default is a geometry minimization\index{geometry minimization!.OPTIMIZE module}:
+an optimization of the molecular geometry to a stationary point with no
+negative Hessian eigenvalues
+(a local minimum) will be done using the default first-order
+methods. However, this may be changed using appropriate
+keywords in the submodule \Sec{OPTIMIZE}, and we refer to examples in
+the chapter on potential energy surfaces
+(Chapter~\ref{ch:geometrywalks}), and subsection~\ref{subsec:minimize}
+describing the input cards for the \Sec{OPTIMIZE} submodule for a more
+detailed description of possible options.
 
 %% hjaaj Apr 2011: .PARALLEL is not needed any more, Dalton automatically perform the modules
 %% in parallel if more than one MPI node is associated.
@@ -180,6 +180,14 @@ module.
 %Roos should be used during execution of the program.
 %The keyword is needed if one attempts an MCSCF, CI or MP2 (run through the \sir\ module and not using the Coupled-Cluster module) with more than 255 basis functions.
 
+\item[\Key{PEQM}] Include environment effects by using the polarizable embedding (PE)
+model~(See Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa}
+for PE-MP2/SOPPA and Ref.~\cite{pecc} for PE-CC)\index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}.
+This will embed the core molecular system, as defined in the \molinp\ file, in a
+polarizable embedding potential given in the \potinp\ file. See further input options
+in the \Sec{PEQM} input section (see subsection~\ref{subsec:peqm}). See
+Chapter~\ref{ch:embedding} for an introduction to polarizable embedding calculations.
+
 \item[\Key{PRIERR}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRERR|
 \index{error print level} \index{print level!error}
@@ -192,32 +200,32 @@ file. Default print level is \verb|IPRUSR+1|.
 Reads in the print level that is to be used the rest of the subsequent
 calculations. Default is a print level of 0.
 
-\item[\Key{PROPERTIES}] Invoke the \aba\ program module for the evaluation of static
+\item[\Key{PROPERTIES}] Invoke the \aba\ module for the evaluation of static
 and dynamic properties, using a previously converged and saved wave function. See Chapter~\ref{ch:abacus}.
 
 \item[\Key{RESPONSE}]
 
-Invoke the \resp\ program module for the evaluation of static and dynamic
+Invoke the \resp\ module for the evaluation of static and dynamic
 properties, using a previously converged and saved wave function. See Chapter~\ref{ch:response}.
 
 \item[\Key{RUN ALL}]
 
-Invoke all the program modules {\her}, {\sir}, {\resp}, and {\aba} for a single point
+Invoke all the modules {\her}, {\sir}, {\resp}, and {\aba} for a single point
      calculation.
 
 \item[\Key{RUN PROPERTIES}]
 
-Invoke the program modules {\her}, {\sir}, and {\aba} for a single point
+Invoke the modules {\her}, {\sir}, and {\aba} for a single point
 calculation.
 
 \item[\Key{RUN RESPONSE}]
 
-Invoke all the program modules {\her}, {\sir}, and {\resp} for a single point
+Invoke all the modules {\her}, {\sir}, and {\resp} for a single point
 calculation.
 
 \item[\Key{RUN WAVE FUNCTIONS}]
 
-Invoke the program modules {\her} and {\sir} for a single point energy calculation.
+Invoke the modules {\her} and {\sir} for a single point energy calculation.
 
 %\item[\Key{RUNABA}] Alternative keyword to \verb|.RUN PROPERTIES|. Obsolete, do not use.
 
@@ -258,7 +266,7 @@ detailed description of possible options.
 \item[\Key{WAVE FUNCTIONS}]
 \index{SCF}\index{HF}\index{Hartree--Fock}\index{MP2}\index{MCSCF}\index{CC}
 \index{NEVPT2}\index{GASCI}\index{DFT}
-Invoke the {\sir} program module for the evaluation of SCF, MP2, Coupled
+Invoke the {\sir} module for the evaluation of SCF, MP2, Coupled
 Cluster, MCSCF, NEVPT2, GASCI wave functions as well as DFT calculations.
 Necessary one-electron integrals are already evaluated and saved on files.
 See Chapter~\ref{chap:sirius-inpref}.
@@ -284,7 +292,7 @@ for locating minima and transition states (geometry optimization).
 \index{first-order geometry optimization}\index{geometry optimization!first-order}
 \index{second-order geometry optimization}\index{geometry optimization!second-order}
 Most of the Hessian updating\index{Hessian update} schemes were taken from
-ref.\cite{thkrprt95} and \cite{Fletcher}.
+ref.~\cite{thkrprt95} and \cite{Fletcher}.
 The implementation of redundant internal coordinates
 \index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
 follows the work of Peng {\it et al.\/}~\cite{cppyahbsmjfjcc17}.
@@ -966,16 +974,237 @@ timing for all nodes will be
 given if the print level is 4 or higher.
 \end{description}
 
-\subsection{PCM environment model: \Sec{PCM}}
-\label{sec:pcm}
+\subsection{Polarizable embedding model: \Sec{PEQM}}
+\label{subsec:peqm} \index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}\index{multiscale model}\index{multiscale}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
 
-Not documented yet. Examples can be found by grepping for "PCM" in the "dalton/test" directory in the distribution.
+This input section controls calculations using polarizable
+embedding (PE) model which can include effects from a structured
+environment on a core molecular system described using quantum mechanics.
+The core system is defined by the \molinp\ file.
+The environment can be described by multipole moment expansions
+and anisotropic dipole-dipole polarizabilities provided in the \potinp\
+file. See Chapter~\ref{ch:embedding} for an introduction to
+calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA and Ref.~\cite{pecc} for PE-CC.
 
-\subsection{QM/MM environment model: \Sec{QM3}}
+
+\begin{description}
+
+\item[\Key{POTENTIAL}]\verb| |\newline
+\verb|READ (LUCMD, *) POTFILE|\verb| |\newline
+This option can be used to specify a non-default name of the \potinp\ input file that contains the embedding potential parameters. The default name is \verb|POTENTIAL.INP|.
+
+\item[\Key{DIRECT}]\verb| |\newline
+Use the direct solver to determine the induced dipole moments. It will explicitly build a classical response matrix of size $3S(3S+1)/2$, where $S$ is the number of polarizable sites and is therefore only recommendable for smaller molecular systems. Note that this solver is not parallelized. The default is to use the iterative solver.
+
+\item[\Key{ITERATIVE}]\verb| |\newline
+\verb|READ (LUCMD, *) THRITER| (optional)\verb| |\newline
+Use the iterative solver to determine the induced dipole moments. This is the default. The convergence threshold defaults to $1.0\cdot10^{-8} > \sum_{s=1}^{S}|\mu_s^{(k)} - \mu_s^{(k-1)}|$, where $k$ is the current iteration, but can also be provided with this option.
+
+\item[\Key{BORDER}]\verb| |\newline
+1) \verb|READ (LUCMD, *) BORDER_TYPE, RMIN, AUORAA|\verb| |\newline
+2) \verb|READ (LUCMD, *) BORDER_TYPE, REDIST_ORDER, RMIN, AUORAA, NREDIST|\verb| |\newline
+Controls the handling of the border between the core molecular system
+and its environment described by the embedding potential. There are
+two mutually exclusive schemes: 1) \verb|BORDER_TYPE = REMOVE| and 2)
+\verb|BORDER_TYPE = REDIST|. The first option will remove all
+multipoles and polarizabilities that are within the given distance
+\verb|RMIN| from any atom in the core molecular system. The
+\verb|AUORAA| variable specifies whether the distance threshold is
+given in \angstrom{} (AA) or \bohr{} (AU). The second option will
+redistribute parameters that are within the given threshold
+\verb|RMIN| from any atom in the core system to nearest sites in the
+environment. The order of multipoles up to which will be redistributed
+is determined by the \verb|REDIST_ORDER| variable,
+e.g. \verb|REDIST_ORDER = 1| means that only charges will be
+redistributed and all other parameters removed,
+\verb|REDIST_ORDER = 2| means charges and dipoles are redistributed
+and so on. The sign of \verb|REDIST_ORDER| specifies if the
+polarizabilities are redistributed. Positive means that the
+polarizabilities are removed and negative means redistributed. The
+number of sites that parameters on a given site are redistributed to
+is determined by the \verb|NREDIST| variable which can be between 1
+and 3. The default is to redistribute charges within 2.2 \bohr{} to its
+nearest site and removing all other parameters.
+
+\item[\Key{DAMP}]\verb| |\newline
+\verb|READ (LUCMD, *) damp| (optional)\verb| |\newline
+Damp the interactions between inducible dipole moments using Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. The default damping coefficient is the standard 2.1304.
+
+\item[\Key{GSPOL}]\verb| |\newline
+Activate the ground-state polarization approximation, i.e.\ freeze the embedding potential according to the ground-state density. This means that the polarizable environment is self-consistently relaxed during the optimization of the ground-state density/wave function of the core molecular system and then kept frozen in any following response calculations.
+
+\item[\Key{NOMB}]\verb| |\newline
+Remove many-body effects in the environment. This is done by deactivating interactions between inducible dipole moments. 
+
+\item[\Key{RESTART}]\verb| |\newline
+Use any existing files to restart calculation.
+
+\item[\Key{CUBE}]\verb| |\newline
+\verb|DO|\verb| |\newline
+\verb|    READ (LUCMD, *) OPTION|\verb| |\newline
+\verb|    IF (OPTION == 'GRID') THEN|\verb| |\newline
+\verb|       READ (LUCMD, *) XSIZE, XGRID, YSIZE, YGRID, ZSIZE, ZGRID|\verb| |\newline
+\verb|    END IF| \verb| |\newline
+\verb|    IF (OPTION == '.' .OR. OPTION == '*') EXIT| \newline
+\verb|END DO|\verb| |\newline
+Create cube file for the core molecular system containing the
+electrostatic potential due to the final converged polarizable
+embedding potential. The grid density can be either \verb|COARSE| (3
+points/\bohr{}), \verb|MEDIUM| (6 points/\bohr{}) or \verb|FINE| (12
+points/\bohr{}). The default grid density is \verb|MEDIUM| and default
+cube size is the extent of the molecule plus 8.0 \bohr{} in plus and
+minus each Cartesian coordinate. If the \verb|FIELD| option is given
+then also cube files containing the electric field from the embedding
+potential will be created. The \verb|GRID| option gives full control
+of the cube size and density, and requires an additional input line
+specifying the size (in \bohr{}) and density (in points/\bohr{}) in each
+Cartesian direction. Here the size again specifies the amount to add
+to the extent of the core molecular system.
+
+\item[\Key{VERBOSE}]\verb| |\newline
+Verbose output. Currently this will print the final converged induced dipole moments.
+
+\item[\Key{DEBUG}]\verb| |\newline
+Debug output. Prints the total electric field and the induced dipole moments in each iteration. WARNING: for large systems this will produce very large output files.
+
+\end{description}
+
+\subsection{QM/MM model: \Sec{QM3}}
 \label{sec:qm3}
 
-Not documented yet. Examples can be found by grepping for "QM3" in the "dalton/test" directory in the distribution.
+Not documented. Examples can be found by grepping for "QM3" in the "DALTON/test" directory in the distribution. See also \Key{PEQM} and \Sec{PEQM} 
+(introduction in Chapter~\ref{ch:embedding}) for a newer more general and efficient implementation with many of the same capabilities.
 
+\subsection{Polarizable continuum model: \Sec{PCM}}
+\label{subsec:pcm}
+
+This input section, together with the \Sec{PCMCAV} input section,
+controls the polarizable continuum model (PCM) to describe the
+environment effects. See Section~\ref{sec:pcm} for an introduction to
+calculations using PCM in {\dalton}\index{PCM}.
+
+\begin{description}
+
+\item[\Key{SOLVNT}]\verb| |\newline
+\verb|READ (LUCMD, *) RZSOL|\verb| |\newline
+Solvent. The following solvents are supported in
+{\dalton}
+
+\begin{tabular}[h]{l|l}
+Formula  & Keyword \\
+\hline
+H2O      & WATER \\
+CH3OH    & METHANOL \\
+C2H5OH   & ETHANOL \\
+CHCL3    & CLFORM \\
+CH2CL2   & METHYLCL \\
+C2H4CL2  & 12DICLET \\
+CCL4     & TETRACLC \\
+C6H6     & BENZENE \\
+C6H5CH3  & TOLUENE \\
+C6H5CL   & CLBENZ \\
+CH3NO2   & NITROMET \\
+C7H16    & N-EPTANE \\
+C6H12    & CYCLOHEX \\
+C6H5NH2  & ANILINE \\
+CH3COCH3 & ACETONE \\
+THF      & TETHYDFU \\
+DMSO     & DIMETSOX \\
+CH3CN    & ACETONIT \\
+\hline
+\end{tabular}\newline
+
+It is also possible to define a solvent by the keywords \Key{EPS},
+\Key{EPSINF} and \Key{RSOLV}.
+
+\item[\Key{NEQRSP}]\verb| |\newline
+Non-equilibrium contributions of the solvent to the response
+calculation.
+
+
+\item[\Key{ICESPH}]\verb| |\newline
+\verb|READ (LUCMD, *) ICESPH|\verb| |\newline
+Define how to put the spheres when generating the PCM cavity. ICESPH
+can either be 0, 1 or 2.
+\begin{itemize}
+\item[0] automatic assignment of spheres on all atoms following the
+  tabulated radii values. This is the default.
+\item[1] reading the sphere centers coordinates in the \molinp\ file,
+  as (X,Y,Z,R), with R the radius of the sphere. Be aware that this
+  option is not working if molecular symmetry is detected.
+\item[2] specifying the nuclei associated with the sphere. This is
+  used together with the \Key{NESFP} keyword and, from the
+  \Sec{PCMCAV} section (see below), the \Key{INA} and \Key{RIN}
+  keywords
+\end{itemize}
+
+\item[\Key{NESFP}]\verb| |\newline
+\verb|READ (LUCMD, *) NESFP|\verb| |\newline
+Number of spheres (only if ICESPH is defined as 2).
+
+\item[\Key{EPS}]\verb| |\newline
+\verb|READ (LUCMD, *) EPS|\verb| |\newline
+Defines the static dielectric constant.
+
+\item[\Key{EPSINF}]\verb| |\newline
+\verb|READ (LUCMD, *) EPSINF|\verb| |\newline
+Defines the optical dielectric constant.
+
+\item[\Key{RSOLV}]\verb| |\newline
+\verb|READ (LUCMD, *) RSOLVI|\verb| |\newline
+Defines the solvent radius.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD, *) IPRPCM|\verb| |\newline
+Print level for the PCM calculation (default 0).
+
+\end{description}
+
+\subsection{The PCM cavity: \Sec{PCMCAV}}
+\label{subsec:pcmcav}
+
+This input section is only used right after the *PCM section
+(Section~\ref{subsec:pcmcav}), and is used to specify the cavity.
+
+\begin{description}
+    
+\item[\Key{AREATS}]\verb| |\newline
+\verb|READ (LUCMD, *) AREATS|\verb| |\newline
+Defines the maximum area of a tessera in the initial tesselation of a
+sphere. (default 0.4)
+
+\item[\Key{INA}]\verb| |\newline
+\verb|DO I = 1, NESFP|\newline
+\verb|  READ (LUCMD, *) INA(I)|\verb| |\newline
+\verb|END DO|\newline
+List of atoms to put a sphere on
+
+\item[\Key{RIN}]\verb| |\newline
+\verb|DO I = 1, NESFP|\newline
+\verb|  READ (LUCMD, *) RIN(I)|\verb| |\newline
+\verb|END DO|\newline
+The radii of each sphere, given in \angstrom{}.
+
+\item[\Key{ALPHA}]\verb| |\newline
+\verb|DO I = 1, NESFP|\newline
+\verb|  READ (LUCMD, *) ALPHA(I)|\verb| |\newline
+\verb|END DO|\newline
+Scaling factor for the sphere radii (default 1.2). If parameter
+ALPHA(I) is greater than 0 the I-th radius RIN(I) is multiplied by
+ALPHA(I). This allows to use radii=R(van der Waals)*ALPHA in the
+calculation of electrostatic (and eventually SCF disp-rep)
+contribution, and radii = R(van der Waals) for the cavitation.
+
+\item[\Key{CENTER}]\verb| |\newline
+\verb|DO I = 1, NESFP|\newline
+\verb|  READ (LUCMD, *) XE(I),YE(I),ZE(I)|\verb| |\newline
+\verb|END DO|\newline
+xyz coordinates of the center of cavity spheres, given in \angstrom{}.
+
+\end{description}
+
+
+%Not documented yet. Examples can be found by grepping for "PCM" in the "DALTON/test" directory in the distribution.
 
 \subsection{Geometry optimization module 2: \Sec{WALK}}
 \label{sec:abawalk}
@@ -1026,7 +1255,7 @@ Ref.~\cite{theuhjajcpl173} as well as in Section~\ref{sec:dynamic}.
 During a vibrational averaging, ensure that the properties are
 transformed to the appropriate Eckart axis system.  The coordinate
 system given should be that of the equilibrium geometry of the
-molecule. The coordinates should be given in bohr, and should be given
+molecule. The coordinates should be given in \bohr{}, and should be given
 for all symmetry generated atoms in the order given in the input.
 
 \item[\Key{EIGEN}] Take a step to the boundary of the trust
@@ -1306,7 +1535,7 @@ state.
 \subsection{Molecule geometry and basis sets, \Sec{MOLBAS}}\label{sec:herrdn}
 
 The directives in this section extend or modify the reading of the molecule geometry and basis set
-specifications in the ".mol" input file (internally \verb|MOLECULE.INP|).
+specifications in the "\verb|.mol|" input file (internally \molinp).
 
 \begin{description}
 \item[\Key{CM FUN}]\verb| |\newline
@@ -1320,9 +1549,28 @@ for all quantum up to and including \verb|LCMMAX| will be generated
 (s=0, p=1 etc.) \verb|CMSTR| and \verb|CMEND| are the half-integer
 start- and ending quantum number for the Rydberg basis functions. The
 basis functions will be placed at the position of a dummy center
-indicated as \verb|X| in the \verb|MOLECULE.INP| file. The charge of
+indicated as \verb|X| in the \molinp\ file. The charge of
 the ion-core is determined by the keyword \Key{ZCMVAL} (default: +1).
-If no center named \verb|X| is present in the \verb|MOLECULE.INP| file,
+If no center named \verb|X| is present in the \molinp\ file,
+this input will be ignored.
+
+\item[\Key{CONTINUUM}]\verb| |\newline
+\verb|READ (LUCMD,*) LCNTMAX, CNTSTR, CNTEND|
+
+%
+% Introduced by Sonia Coriani, 2012
+%
+Use continuum-like basis functions\index{Continuum basis function}\index{basis function!Continuum}
+(Gaussian continuum-like\index{Gaussian continuum basis}) as suggested by
+Kaufman {\it et al.\/}~\cite{kkwbmjjpbamop22} (cf. eq. 20). \verb|LCNTMAX| denoted
+the maximum quantum number of the continuum functions, basis functions
+for all quantum up to and including \verb|LCNTMAX| will be generated
+(s=0, p=1 etc.) \verb|CNTSTR| and \verb|CNTEND| are the integer
+start- and ending quantum number for the continuum basis functions. The
+basis functions will be placed at the position of a dummy center
+indicated as \verb|X| in the \molinp\ file. 
+No charge of the ion-core is required for these functions.
+If no center named \verb|X| is present in the \molinp\ file,
 this input will be ignored.
 
 \item[\Key{MAXPRI}]\verb| |\newline
@@ -1337,10 +1585,10 @@ is~25, except for the Cray-T3D/E, where the default is 14.
 %Default is that the molecular input is to be
 %read from unit~9.
 
-\item[\Key{OLDNORM}] Use the normalization scheme for spherical AO's used in {\dalton} 1.0.
-From {\dalton} 1.1, all components of spherical AO's are normalized to 1.
-This was not the case in {\dalton} 1.0, and this option is needed to read
-MO's correctly from an old file generated by {\dalton} 1.0 if spherical AO's were used.
+\item[\Key{OLDNORM}] Use the normalization scheme for spherical AO's used in Dalton~1.0.
+From Dalton~1.1, all components of spherical AO's are normalized to 1.
+This was not the case in Dalton~1.0, and this option is needed to read
+MO's correctly from an old file generated by Dalton~1.0 if spherical AO's were used.
 (Cartesian AO's are still not all normalized to 1 for $d$-orbitals and higher $l$'s.)
 
 \item[\Key{PRINT}]\verb| |\newline
@@ -1352,7 +1600,7 @@ module.
 
 \item[\Key{R12AUX}] An auxiliary basis is used.
 Basis sets must be identified as either orbital basis or
-auxiliary basis in the \verb|MOLECULE.INP| file (line 5).
+auxiliary basis in the \molinp\ file (line 5).
 See Sec.~\ref{sec:r12aux} on page~\pageref{sec:r12aux}.
 
 \item[\Key{SYMTHR}]\verb| |\newline
@@ -1365,8 +1613,8 @@ in the automatic symmetry detection routines. Default is $5.0\cdot
 \item[\Key{UNCONT}] Force the program to use all input basis sets as primitive (completely decontracted) sets.
 
 \item[\Key{WRTLIN}] Write out the lines read in during the input
-  processing of the \verb|MOLECULE.INP| file. Primarily for debugging
-  purposes or for analyzing input errors in the \verb|MOLECULE.INP|
+  processing of the \molinp\ file. Primarily for debugging
+  purposes or for analyzing input errors in the \molinp\
   file.
 
 \item[\Key{ZCMVAL}]\verb| |\newline
