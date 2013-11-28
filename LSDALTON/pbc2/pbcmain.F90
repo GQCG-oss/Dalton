@@ -46,7 +46,7 @@ SUBROUTINE set_pbc_molecules(INPUT,SETTING,lupri,luerr,nbast,Dmat,lattice)
   REAL(realk)::  E_cell,E_kin,E_ff,E_XC,E_K,E_J,E_en,E_nuc
   REAL(realk)::  E_1,E_nnff
   real(realk) :: TS,TE
-!  REAL(realk) :: PI=3.14159265358979323846D0
+!  REAL(realk) :: PI=3.14159265358979323846_realk
   INTEGER :: sze,num_latvectors
   INTEGER :: maxmultmom,n1,n2,n3,nfsze,fdim(3),Tlmax
   INTEGER :: i,j,k,scfit,iunit,l1,l2,l3,nbasterik,ierror
@@ -73,8 +73,8 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   call set_refcell(refcell,input%molecule)
   
  ! write(lupri,*) lattice%ldef%avec
-  origin=1.0d0
- !origin of cell should be 0d0, that means that I have to change the origin for
+  origin(:)=1.0_realk
+ !
  !the next cell to what it should be and the atomic position in
  !each cell should be according to the origin of the new cell, a copy of
  !the reference cell.
@@ -144,7 +144,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   !  write(*,*) 'kpoint realvalue',kvec(1,:)
   !  STOP
 
-  kvec=0.0d0
+  kvec(:,:)=0.0_realk
 
   write(lupri,*) 'kvec(3,3)', kvec(3,3)
 
@@ -201,7 +201,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   !enddo
 
   !call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-  Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,dmat)
+  Call mat_set_from_full(lattice%lvec(n1)%d_mat,1._realk,dmat)
   write(*,*) 'density'
   write(lupri,*) 'density'
   call mat_print(dmat,1,nbast,1,nbast,lupri)
@@ -233,7 +233,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         ENDDO
         CALL lsCLOSE(IUNIT,'KEEP')
   
-        Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,dmat)
+        Call mat_set_from_full(lattice%lvec(n1)%d_mat,1._realk,dmat)
 
     elseif(lattice%testcase) THEN !THIS IS FOR DEBUGGING
       iunit = 345
@@ -442,8 +442,8 @@ else
     
   if(lattice%compare_elmnts) then
 
-    allocate(k_fock(nbast,nbast))
-    allocate(k_Sab(nbast,nbast))
+    allocate(k_fock(nbast,nbast)) !todo use mem_alloc()
+    allocate(k_Sab(nbast,nbast)) !todo use mem_alloc()
 
     do n1=-3,3
     write(numtostring1,*) n1
@@ -528,8 +528,8 @@ else
   
     write(lupri,*) 'We are now in the ',lattice%wannier_direct, ' method'
 
-    allocate(fck(sze*sze))
-    fck=0.0000E-100
+    allocate(fck(sze*sze)) !fixme mem_alloc
+    fck(:)=0.E-100_realk
   
     call pbc_overlap_int(lupri,luerr,setting,input%molecule,&
     nbast,lattice,latt_cell,refcell,num_latvectors)

@@ -10,8 +10,6 @@ use lattice_vectors
 use pbc_matrix_operations
 IMPLICIT NONE
 
-
-
   type latticegeom
      logical :: latvec_ok           ! indicates whether there are meaningful data in the lattice vector variables
      logical :: dim_is_active(3)    ! indicates whether a lattice dimension is active (i.e. the system is to replicated along this dimension)
@@ -108,11 +106,9 @@ IMPLICIT NONE
      type(BZgrid_t), pointer :: fullBZ
   end type splitBZgrid_t
 
-
   type pbc_scfiterations_t
     type(pbc_elstr_t), pointer :: kdep_it(:)
   end type
-
 
 CONTAINS
 
@@ -295,114 +291,101 @@ end subroutine pbc_get_kpoint
 
 !initialize the type(pbc_elstr_t)
 SUBROUTINE init_pbc_elstr(kdep,ndim1,ndim2)
-IMPLICIT NONE
-INTEGER, INTENT(IN) :: ndim1,ndim2
-TYPE(pbc_elstr_t),intent(INOUT) :: kdep
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: ndim1,ndim2
+	TYPE(pbc_elstr_t),intent(INOUT) :: kdep
 
-allocate(kdep%kfockvec(ndim1*ndim2))
-allocate(kdep%kfockmat(ndim1,ndim2))
-allocate(kdep%koverlapvec(ndim1*ndim2))
-allocate(kdep%koverlapmat(ndim1,ndim2))
-allocate(kdep%kcdensityvec(ndim1*ndim2))
-allocate(kdep%kcdensitymat(ndim1,ndim2))
-allocate(kdep%kddensityvec(ndim1*ndim2))
-allocate(kdep%kddensitymat(ndim1,ndim2))
-allocate(kdep%zelms(ndim1*ndim2))
-allocate(kdep%keigv(ndim1))
-kdep%kfockvec=0.0_realk
-kdep%kfockmat=0.0_realk
-kdep%keigv=0.0_realk
-kdep%zelms=0.0_realk
-kdep%koverlapvec=0.0_realk
-kdep%koverlapmat=0.0_realk
-kdep%kddensityvec =0.0_realk
-kdep%kddensitymat =0.0_realk
-kdep%kcdensityvec =0.0_realk
-kdep%kcdensitymat =0.0_realk
+	allocate(kdep%kfockvec(ndim1*ndim2))
+	allocate(kdep%kfockmat(ndim1,ndim2))
+	allocate(kdep%koverlapvec(ndim1*ndim2))
+	allocate(kdep%koverlapmat(ndim1,ndim2))
+	allocate(kdep%kcdensityvec(ndim1*ndim2))
+	allocate(kdep%kcdensitymat(ndim1,ndim2))
+	allocate(kdep%kddensityvec(ndim1*ndim2))
+	allocate(kdep%kddensitymat(ndim1,ndim2))
+	allocate(kdep%zelms(ndim1*ndim2))
+	allocate(kdep%keigv(ndim1))
+
+	call zero_pbc_elstr(kdep)
 
 END SUBROUTINE init_pbc_elstr
 
 !initialize the type(pbc_elstr_t)
 SUBROUTINE zero_pbc_elstr(kdep)
-IMPLICIT NONE
-TYPE(pbc_elstr_t),intent(INOUT) :: kdep
+	IMPLICIT NONE
+	TYPE(pbc_elstr_t),intent(INOUT) :: kdep
 
-kdep%kfockvec=0.0_realk
-kdep%kfockmat=0.0_realk
-kdep%zelms=0.0_realk
-kdep%koverlapvec=0.0_realk
-kdep%keigv=0.0_realk
-kdep%koverlapvec=0.0_realk
-kdep%koverlapmat=0.0_realk
-kdep%kddensityvec =0.0_realk
-kdep%kddensitymat =0.0_realk
-kdep%kcdensityvec =0.0_realk
-kdep%kcdensitymat =0.0_realk
+	kdep%kfockvec(:)=CMPLX(0.0_realk,0.0_realk,complexk)
+	kdep%kfockmat(:,:)=CMPLX(0.0_realk,0.0_realk,complexk)
+	kdep%zelms(:)=CMPLX(0.0_realk,0.0_realk,complexk)
+	kdep%koverlapvec(:)=CMPLX(0.0_realk,0.0_realk,complexk)
+	kdep%keigv(:)=CMPLX(0.0_realk,0.0_realk,complexk)        
+	kdep%koverlapmat(:,:)=CMPLX(0.0_realk,0.0_realk,complexk)         
+	kdep%kddensityvec(:)=CMPLX(0.0_realk,0.0_realk,complexk)
+	kdep%kddensitymat(:,:)=CMPLX(0.0_realk,0.0_realk,complexk)
+	kdep%kcdensityvec(:)=CMPLX(0.0_realk,0.0_realk,complexk)
+	kdep%kcdensitymat(:,:)=CMPLX(0.0_realk,0.0_realk,complexk)
 
 END SUBROUTINE zero_pbc_elstr
 
 !free the type(pbc_elstr_t)
 SUBROUTINE free_pbc_elstr(kdep)
-IMPLICIT NONE
-TYPE(pbc_elstr_t),intent(INOUT) :: kdep
+	IMPLICIT NONE
+	TYPE(pbc_elstr_t),intent(INOUT) :: kdep
 
-deallocate(kdep%kfockvec)
-deallocate(kdep%kfockmat)
-deallocate(kdep%koverlapvec)
-deallocate(kdep%koverlapmat)
-deallocate(kdep%kcdensityvec)
-deallocate(kdep%kcdensitymat)
-deallocate(kdep%kddensityvec)
-deallocate(kdep%kddensitymat)
-deallocate(kdep%zelms)
-deallocate(kdep%keigv)
+	deallocate(kdep%kfockvec)
+	deallocate(kdep%kfockmat)
+	deallocate(kdep%koverlapvec)
+	deallocate(kdep%koverlapmat)
+	deallocate(kdep%kcdensityvec)
+	deallocate(kdep%kcdensitymat)
+	deallocate(kdep%kddensityvec)
+	deallocate(kdep%kddensitymat)
+	deallocate(kdep%zelms)
+	deallocate(kdep%keigv)
 END SUBROUTINE free_pbc_elstr
 
-
-
 SUBROUTINE pbc_ddevectorize_mat(MAT,n,m,VEC)
-IMPLICIT NONE
-INTEGER, INTENT(IN) :: n,m
-REAL(realk),INTENT(INOUT) :: MAT(n,m)
-REAL(realk),INTENT(IN) :: vec(n*m)
-!LOCAL VARIABLES
-INTEGER :: i,j,k
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: n,m
+	REAL(realk),INTENT(INOUT) :: MAT(n,m)
+	REAL(realk),INTENT(IN) :: vec(n*m)
+	!LOCAL VARIABLES
+	INTEGER :: i,j,k
 
- j=1
- i=1
- DO k=1,n*m
-     if(j .gt. m) THEN
-       j=1
-       i=i+1
-     ENDIF
-     MAT(i,j)=0d0
-     MAT(i,j)=VEC(k)
-      j=j+1
-     ENDDO
-
+	j=1
+	i=1
+	DO k=1,n*m
+		if(j .gt. m) THEN
+			j=1
+			i=i+1
+		ENDIF
+		MAT(i,j)=0d0
+		MAT(i,j)=VEC(k)
+		j=j+1
+	ENDDO
 
 END SUBROUTINE pbc_ddevectorize_mat
 
 SUBROUTINE pbc_zdevectorize_mat(MAT,n,m,VEC)
-IMPLICIT NONE
-INTEGER, INTENT(IN) :: n,m
-COMPLEX(complexk),INTENT(INOUT) :: MAT(n,m)
-COMPLEX(complexk),INTENT(IN) :: vec(n*m)
-!LOCAL VARIABLES
-INTEGER :: i,j,k
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: n,m
+	COMPLEX(complexk),INTENT(INOUT) :: MAT(n,m)
+	COMPLEX(complexk),INTENT(IN) :: vec(n*m)
+	!LOCAL VARIABLES
+	INTEGER :: i,j,k
 
- i=1
- j=1
- DO k=1,n*m
-     if(j .gt. m) THEN
-       j=1
-       i=i+1
-     ENDIF
-     MAT(i,j)=CMPLX(0d0,0d0,complexk)
-     MAT(i,j)=VEC(k)
-      j=j+1
-     ENDDO
-
+	i=1
+	j=1
+	DO k=1,n*m
+		if(j .gt. m) THEN
+			j=1
+			i=i+1
+		ENDIF
+		MAT(i,j)=CMPLX(0d0,0d0,complexk)
+		MAT(i,j)=VEC(k)
+		j=j+1
+	ENDDO
 
 END SUBROUTINE pbc_zdevectorize_mat
 
@@ -687,8 +670,8 @@ CHARACTER(LEN=3) :: nline
 
 	write(*,*) ''
 	write(*,*) ''
-	write(*,*) ''
-	write(*,*) ' OBS : nosingdim not initialized !!'
+	write(*,*) ' in pbc-msc.F90 : convert_2_kmat '
+	write(*,*) ' OBS :: nosingdim not initialized !! FIXME'
 	write(*,*) ''
 	write(*,*) ''
 	write(*,*) ''

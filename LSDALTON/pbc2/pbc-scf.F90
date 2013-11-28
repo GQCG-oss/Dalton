@@ -1,405 +1,305 @@
 #ifdef MOD_UNRELEASED
 MODULE pbc_scfdiis
-  USE TYPEDEF
-  USE precision
-  USE matrix_module
-  USE lattice_vectors
-  USE lattice_type
-!  USE multipole_pbc
-!  USE harmonics_pbc
-  USE pbc_matrix_operations
-  USE pbc_interactions
-  USE pbcffdata
-  USE PBC_MSC
-  USE PBC_kspce_rspc_operations
-  USE pbc_ff_contrib
+	USE TYPEDEF
+	USE precision
+	USE matrix_module
+	USE lattice_vectors
+	USE lattice_type
+	!  USE multipole_pbc
+	!  USE harmonics_pbc
+	USE pbc_matrix_operations
+	USE pbc_interactions
+	USE pbcffdata
+	USE PBC_MSC
+	USE PBC_kspce_rspc_operations
+	USE pbc_ff_contrib
 
-  CONTAINS
-   
-  SUBROUTINE pbc_zeigsolve(A,B,N,M,eigv,is_gamma,lupri)
-  IMPLICIT NONE
-  INTEGER,INTENT(IN) :: N,M,lupri
-  LOGICAL,INTENT(IN) :: is_gamma
-  COMPLEX(COMPLEXK), INTENT(INOUT) :: A(N,M),B(N,M)
-  REAL(realk),INTENT(INOUT) :: eigv(N)
-  !LOCAL VARIABLES
-  COMPLEX(COMPLEXK), pointer :: work(:)
-  !real(realk) :: rwork(8*n)
-  REAL(realk), pointer :: dwork(:)
-  REAL(realk) :: A_tmp(N,M)
-  real(realk),pointer :: rwork(:)
-  INTEGER :: info,lwork,ldwork,i,j,lrwork
-  INTEGER :: iwork,liwork
-  INTEGER,save :: ncalls=0
-  ncalls=ncalls+1
-  lwork=2*n-1
-  lwork=2*n+n*n
-  lrwork=1+5*n+2*n*n
-  liwork=3+5*n
-  
+	PRIVATE
+	PUBLIC :: pbc_startzdiis
 
-    call mem_alloc(work,lwork)
-    !call mem_alloc(rwork,3*N-2)
-    call mem_alloc(rwork,lrwork)
-!    call zhegv(1,'V','U',n,A,n,B,n,eigv,work,lwork,rwork,info)
-    call zhegvd(1,'V','U',n,A,n,B,n,eigv,work,lwork,rwork,lrwork,iwork,liwork,info)
+CONTAINS
 
-  if(info .ne. 0) THEN
-    write(lupri,*) 'ERROR: zhegv problems, info=', info
-    call write_zmatrix(B,n,n)
-    write(*,*) 'ERROR: zhegv problems, info=', info
-    call LSQUIT('pbc_zeigsolve: INFO not zero, while solving eigenvalue',lupri)
-  endif
+! Todo not in use. (delete??) 
+SUBROUTINE pbc_zeigsolve(A,B,N,M,eigv,lupri)
+	IMPLICIT NONE
+	INTEGER,INTENT(IN) :: N,M,lupri
+	COMPLEX(complexk), INTENT(INOUT) :: A(N,M),B(N,M)
+	REAL(realk),INTENT(INOUT) :: eigv(N)
+	! local
+	COMPLEX(complexk), POINTER :: work(:)
+	REAL(realk),POINTER :: rwork(:)
+	INTEGER :: info,lwork,lrwork,iwork,liwork
+	
+	lwork=2*n-1
+	lwork=2*n+n*n
+	lrwork=1+5*n+2*n*n
+	liwork=3+5*n
 
-  !deallocate(work)
-!  if(is_gamma) then
-!  call mem_dealloc(dwork)
-!  else
-  call mem_dealloc(work)
-  call mem_dealloc(rwork)
-!  endif
+	call mem_alloc(work,lwork)
+	call mem_alloc(rwork,lrwork)
+	call zhegvd(1,'V','U',n,A,n,B,n,eigv,work,lwork,rwork,lrwork,iwork,liwork,info)
+
+	if(info .ne. 0) THEN
+		write(lupri,*) 'ERROR: zhegv problems, info=', info
+		call write_zmatrix(B,n,n)
+		write(*,*) 'ERROR: zhegv problems, info=', info
+		call LSQUIT('pbc_zeigsolve: INFO not zero, while solving eigenvalue',lupri)
+	endif
+
+	call mem_dealloc(work)
+	call mem_dealloc(rwork)
 
 END SUBROUTINE pbc_zeigsolve
 
 
-SUBROUTINE pbc_qz_solver(smatk,c_tmp,ndim,lupri)
-  IMPLICIT NONE
-  INTEGER,INTENT(IN) :: ndim,lupri
-  COMPLEX(COMPLEXK), INTENT(INOUT) :: smatk(ndim,ndim),c_tmp(ndim,ndim)
-  !REAL(realk),INTENT(INOUT) :: eigv(Ndim)
+!Todo not in use. (delete?)
+!> \author 
+!> \date
+!> \brief
+!> \param
+!> \param
+SUBROUTINE pbc_zggeigsolve(kindex,a,b,smatk,n,m,eigv,lupri)
+	IMPLICIT NONE
+	INTEGER,INTENT(IN) :: kindex,n,m,lupri
+	COMPLEX(complexk), INTENT(INOUT) :: a(n,m),b(n,m),smatk(n,m)
+	REAL(realk),INTENT(INOUT) :: eigv(N)
+	! local
+	COMPLEX(complexk), POINTER :: work(:)
+	REAL(realk),POINTER :: rwork(:)
+	COMPLEX(complexk) :: alphavec(n),betavec(n)
+	COMPLEX(complexk) :: vl(n,m),ccoeff(n,m)
+	COMPLEX(complexk) :: ztemp
+	INTEGER :: info,iband,i,j,lwork
+	INTEGER,SAVE :: ncalls=0
 
+	ncalls=ncalls+1
+	lwork=2*n*n
 
+	call mem_alloc(work,lwork)
+	call mem_alloc(rwork,8*N)
 
+	!write(*,*) 'debug after read tlatt',kindex
+	call zggev('N','V',n,A,n,B,n,alphavec,betavec,vl,1,ccoeff,n,work,2*n,rwork,info)
+	!write(*,*) 'debug after read tlatt',kindex
 
-END SUBROUTINE pbc_qz_solver
+	if(info .ne. 0) THEN
+		write(lupri,*) 'ERROR: zggev problems, info=', info
+		write(*,*) 'ERROR: zggev problems, info=', info
+		write(*,*) 'ERROR: zggev problems, for kindex = ', kindex
+		write(lupri,*) 'ERROR: zggev problems, for kindex = ', kindex
+		call LSQUIT('pbc_zggeigsolve: INFO not zero, while solving eigenvalue',lupri)
+	endif
 
+	!write(lupri,*) 'ccoeff before energy'
+	!call write_zmatrix(ccoeff,n,n,lupri)
 
-SUBROUTINE pbc_zggeigsolve(kindex,A,B,smatk,N,M,eigv,lupri)
-  IMPLICIT NONE
-  INTEGER,INTENT(IN) :: kindex,N,M,lupri
-  COMPLEX(COMPLEXK), INTENT(INOUT) :: A(N,M),B(N,M),smatk(N,M)
-  REAL(realk),INTENT(INOUT) :: eigv(N)
-  !LOCAL VARIABLES
-  COMPLEX(COMPLEXK), pointer :: work(:)
-  real(realk),pointer :: rwork(:)
-  COMPLEX(COMPLEXK) :: alphavec(n),betavec(n)
-  COMPLEX(COMPLEXK) :: vl(n,m),ccoeff(n,m)
-  COMPLEX(COMPLEXK) :: ztemp
-  INTEGER :: info,iband,i,j,lwork
-  INTEGER,save :: ncalls=0
-  ncalls=ncalls+1
-  lwork=2*n*n
-  
+	!fix normalization which zggev does in a strange form
+	call pbc_fixzggevnorm(N,ccoeff,smatk,alphavec,betavec,lupri)
 
-!(c_tmp,Sabk_tmp,ndim,ndim,eigv,lupri)
-!  allocate(work(lwork))
-  call mem_alloc(work,lwork)
-  call mem_alloc(rwork,8*N)
-  
-  !write(lupri,*) 'Smat before energy'
-  !call write_zmatrix(B,n,n,lupri)
-  !write(lupri,*) 'Fockmat before energy'
-  !call write_zmatrix(A,n,n,lupri)
+	!write(lupri,*) 'ccoeff after gevnorm'
+	!call write_zmatrix(ccoeff,n,n,lupri)
+	!  do i=1,n
+	!   do j=1,m
+	!    A(i,j) = ccoeff(i,j)
+	!   enddo
+	!  enddo
 
-    !write(*,*) 'debug after read tlatt',kindex
-  call zggev('N','V',n,A,n,B,n,alphavec,betavec,vl,1,ccoeff,n,work,2*n,rwork,info)
-    !write(*,*) 'debug after read tlatt',kindex
+	! we now have the crystal orbital coefficients in WORK(icocoeff_k)
+	! and the orbital energies as eps(j) = alpha(j)/beta(j)
+	loop_bands: do iband = 1,n
+	if (abs(alphavec(iband)) + abs(betavec(iband)) .lt. 1.0D-8) then
+		! because the virtual orbitals are used in the calculation of
+		! the DIIS error vector we need to actually zero the discarded
+		! orbital
+		ccoeff(:,iband) = 0.0_realk
+		ztemp = 9.0D2
+		write(LUPRI,*) 'Warning: Orbital at (b=',iband,', k=',kindex, &
+			& ') projected out.'
+	else if (abs(betavec(iband)) .le. 1.0D-3 * abs(alphavec(iband))) then
+		ztemp = 1.0D3
+		write(LUPRI,*) 'pbc_focksolver: Orbital energies given by ', &
+			& 'alpha(j)/beta(j). Error: beta(j) very close to zero.'
+		write(LUPRI,*) 'alpha = ',alphavec(iband)
+		write(LUPRI,*) 'beta  = ',betavec(iband)
+		!call LSquit('pbc_focksolver: Zero eigenvalue denominator.')
+	else
+		ztemp = alphavec(iband) / betavec(iband)
+	end if
 
-  if(info .ne. 0) THEN
-    write(lupri,*) 'ERROR: zggev problems, info=', info
-    write(*,*) 'ERROR: zggev problems, info=', info
-    write(*,*) 'ERROR: zggev problems, for kindex = ', kindex
-    write(lupri,*) 'ERROR: zggev problems, for kindex = ', kindex
-    call LSQUIT('pbc_zggeigsolve: INFO not zero, while solving eigenvalue',lupri)
-  endif
-
-  !write(lupri,*) 'ccoeff before energy'
-  !call write_zmatrix(ccoeff,n,n,lupri)
-
-  !fix normalization which zggev does in a strange form
-  call pbc_fixzggevnorm(N,ccoeff,smatk,alphavec,betavec,lupri)
-
-  !write(lupri,*) 'ccoeff after gevnorm'
-  !call write_zmatrix(ccoeff,n,n,lupri)
-!  do i=1,n
-!   do j=1,m
-!    A(i,j) = ccoeff(i,j)
-!   enddo
-!  enddo
-
-  ! we now have the crystal orbital coefficients in WORK(icocoeff_k)
-  ! and the orbital energies as eps(j) = alpha(j)/beta(j)
-  loop_bands: do iband = 1,n
-     if (abs(alphavec(iband)) + abs(betavec(iband)) .lt. 1.0D-8) then
-        ! because the virtual orbitals are used in the calculation of
-        ! the DIIS error vector we need to actually zero the discarded
-        ! orbital
-        ccoeff(:,iband) = 0.0D0
-        ztemp = 9.0D2
-        write(LUPRI,*) 'Warning: Orbital at (b=',iband,', k=',kindex, &
-             & ') projected out.'
-     else if (abs(betavec(iband)) .le. 1.0D-3 * abs(alphavec(iband))) then
-        ztemp = 1.0D3
-        write(LUPRI,*) 'pbc_focksolver: Orbital energies given by ', &
-             & 'alpha(j)/beta(j). Error: beta(j) very close to zero.'
-        write(LUPRI,*) 'alpha = ',alphavec(iband)
-        write(LUPRI,*) 'beta  = ',betavec(iband)
-        !call LSquit('pbc_focksolver: Zero eigenvalue denominator.')
-     else
-        ztemp = alphavec(iband) / betavec(iband)
-     end if
-
-     eigv(iband) = real(ztemp)
+	eigv(iband) = real(ztemp)
 #if 1
-     if (.false.) then
+	if (.false.) then
 #else
-     if (eigv(iband) .lt. -1.0D3) then
-        write(LUPRI,*) 'Warning: Flipping sign of eps(b=',iband,',k=', &
-             & kindex,') = ',eigv(iband)
-        eigv(iband) = abs(eigv(iband))
-     else if (eigv(iband) .gt. 1.0D3) then
-        write(LUPRI,*) 'Warning: eps(b=',iband,',k=',kindex,') = ', &
-             & eigv(iband)
+		if (eigv(iband) .lt. -1.0D3) then
+			write(LUPRI,*) 'Warning: Flipping sign of eps(b=',iband,',k=', &
+				& kindex,') = ',eigv(iband)
+			eigv(iband) = abs(eigv(iband))
+		else if (eigv(iband) .gt. 1.0D3) then
+			write(LUPRI,*) 'Warning: eps(b=',iband,',k=',kindex,') = ', &
+				& eigv(iband)
 #endif
-     else if (abs(aimag(ztemp)) .gt. 1.0D-5) then
-        write(LUPRI,*) 'pbc_focksolver: Error, complex orbital energy.'
-!        write(LUPRI,'(A,I5,A,3(F10.6,A))') '  k-point no. ',kindex, &
-!             & ': kvec = (',kvec(1),',',kvec(2),',',kvec(3),')'
-        write(LUPRI,*) '  Band index: ',iband
-        write(LUPRI,*) '  Energy(band,kvec) = ',ztemp
-        write(LUPRI,*) '  alpha(band,kvec) = ',alphavec(iband)
-        write(LUPRI,*) '  beta(band,kvec)  = ',betavec(iband)
-        write(LUPRI,*) '  call             = ', ncalls
+		else if (abs(aimag(ztemp)) .gt. 1.0D-5) then
+			write(LUPRI,*) 'pbc_focksolver: Error, complex orbital energy.'
+			!        write(LUPRI,'(A,I5,A,3(F10.6,A))') '  k-point no. ',kindex, &
+			!             & ': kvec = (',kvec(1),',',kvec(2),',',kvec(3),')'
+			write(LUPRI,*) '  Band index: ',iband
+			write(LUPRI,*) '  Energy(band,kvec) = ',ztemp
+			write(LUPRI,*) '  alpha(band,kvec) = ',alphavec(iband)
+			write(LUPRI,*) '  beta(band,kvec)  = ',betavec(iband)
+			write(LUPRI,*) '  call             = ', ncalls
 
-        call LSquit('pbc_focksolver: Complex orbital energy.',lupri)
-     end if
-  end do loop_bands
+			call LSquit('pbc_focksolver: Complex orbital energy.',lupri)
+		end if
+	end do loop_bands
 
-  !deallocate(work)
-  call mem_dealloc(work)
-  call mem_dealloc(rwork)
+	!deallocate(work)
+	call mem_dealloc(work)
+	call mem_dealloc(rwork)
 
 
-  do i=1,n
-   do j=1,m
-    A(i,j) = ccoeff(i,j)
-   enddo
-  enddo
-
- 
+	do i=1,n
+		do j=1,m
+			A(i,j) = ccoeff(i,j)
+		enddo
+	enddo
 
 END SUBROUTINE pbc_zggeigsolve
-
-<<<<<<< HEAD
-=======
-SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,is_singular,Ndim)
-  IMPLICIT NONE
-  INTEGER,intent(in) :: Ndim
-  COMPLEX(complexk),INTENT(IN) :: sabk(Ndim,Ndim)
-  COMPLEX(complexk),INTENT(INOUT) :: U(Ndim,Ndim),Uinv(ndim,ndim)
-  LOGICAL,INTENT(INOUT) :: is_singular
-  !Local
-  REAL(realk) :: W(ndim),wtemp,diagd(ndim,ndim),Wd(ndim)
-  REAL(realk),pointer :: rwork(:),workd(:)
-  COMPLEX(complexk),pointer :: Work(:)
-  COMPLEX(complexk) :: Sk(Ndim,Ndim),diag(ndim,ndim),tmp(ndim,ndim)
-  COMPLEX(complexk) :: Atmp(Ndim,Ndim), Btmp(ndim,ndim)
-  COMPLEX(complexk) :: alpha,beta
-  INTEGER :: info,i,j,lwork,lworkd
-
-
- lwork=5*Ndim-1
- lworkd=5*Ndim-1
- is_singular = .false.
- ! lwork=2*Ndim+ndim
-  call mem_alloc(work,lwork)
-  call mem_alloc(workd,max(1,lworkd))
-  call mem_alloc(rwork,max(1,3*Ndim-2))
-  do i=1,Ndim
-   do j=1,Ndim
-      SK(i,j)=sabk(i,j)
-      diagd(i,j)=real(sabk(i,j))
-      diag(i,j)=CMPLX(0.,0.,complexk)
-   enddo
-  enddo
-
-  alpha=CMPLX(1.,0.,complexk)
-  beta=CMPLX(0.,0.,complexk)
-
-  write(*,*) 'sk in U'
-  call write_zmatrix(sk,Ndim,Ndim)
-
-  call dsyev('V','U',Ndim,diagd,Ndim,Wd,workd,Lworkd,info)
-  write(*,*) 'Eigenvalues of smatd'
-  write(*,*)  wd
-  call zheev('V','U',Ndim,Sk,Ndim,W,work,Lwork,Rwork,info)
-  !call zgesvd('A','A',Ndim,Ndim,Sk,Ndim,W,Atmp,Ndim,tmp,Ndim,work,lwork,&
-  !               rwork,info)
-  
-  write(*,*) 'Eigenvalues of smat'
-  write(*,*)  w
- 
-  call mem_dealloc(work)
-  call mem_dealloc(workd)
-  call mem_dealloc(rwork)
-  
-  do i=1,ndim
-     j=ndim-i+1
-     write(*,*) 'Eigenvalues of smat', w(i)
-     if (i .lt. j) then
-       !swap eigenvectors
-       Btmp(:,1)=Sk(:,i)
-       Sk(:,i)=Sk(:,j)
-       Sk(:,j)=Btmp(:,1)
-       !swap eigenvalues
-       wtemp=w(i)
-       w(i)=w(j)
-       w(j)=wtemp
-     endif
-  enddo
-
-
-     
-  Btmp(:,:)=cmplx(0.,0.,complexk)
-
-  !tmp(:,:)=cmplx(0.,0.,complexk)
-  do i=1,Ndim
-      !diag(i,i)=CMPLX(1./sqrt(W(i)),0.,complexk)
-      !Atmp(:,i)=Atmp(:,i)/sqrt(W(i))
-      if(w(i) .lt. 1.e-8) then
-        w(i)=0.0_realk
-        sk(:,i)=cmplx(0.,0.,complexk)
-        diag(:,i)=cmplx(0.,0.,complexk)
-        is_singular=.true.
-      else
-        diag(:,i)=Sk(:,i)/sqrt(W(i))
-      endif
->>>>>>> e0b9480f27f02d30b54eb7ca7495d1fc85303313
 
 !> \author JR 
 !> \date 2013
 !> \brief For a matrix pos. semdefinite matrix S : calculates U = V\sigma^{-1/2} 
 !> \brief where V\sigmaV^H = S. Removes singularities that are smaller than 
 !> \brief singular_threshh.
-!> \param Sabk 					ndim x ndim complex matrix
-!> \param U 						Changed to V\sigma
+!> \param s_input 				ndim x ndim complex matrix
+!> \param umat 					Changed to V\sigma
 !> \param is_singular 			Set to true if singularities found
 !> \param ndim 					Matrix dim
 !> \param nsingular 				ndim - rank(Sabk)
 !> \param singular_threshh 	Singularity threshhold. 
 !> \param lupri 					Logical print unit
-SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,& 
+SUBROUTINE pbc_spectral_decomp_ovl(s_input,umat,is_singular,ndim,nsingular,& 
 		& singular_threshh,lupri)
 	IMPLICIT NONE
-
-	INTEGER,INTENT(IN) :: Ndim,lupri
+	! input
+	INTEGER,INTENT(IN) :: ndim,lupri
 	INTEGER,INTENT(INOUT) :: nsingular
-	COMPLEX(complexk),INTENT(IN) :: sabk(Ndim,Ndim)
-	COMPLEX(complexk),INTENT(INOUT),pointer :: U(:,:)
+	COMPLEX(complexk),INTENT(IN) :: s_input(Ndim,Ndim)
+	COMPLEX(complexk),INTENT(INOUT),pointer :: umat(:,:)
 	REAL(realk), INTENT(IN) :: singular_threshh
 	LOGICAL,INTENT(INOUT) :: is_singular
-	!Local
-	REAL(realk),POINTER :: rwork(:),w(:)
-	REAL(realk) :: wtemp
-	COMPLEX(complexk) ,POINTER :: Work(:)
-	COMPLEX(complexk), POINTER :: Sk(:,:),diag(:),btmp(:)
-	COMPLEX(complexk) :: alpha,beta
+	! local
+	REAL(realk),POINTER :: rwork(:), eigv(:)
+	REAL(realk) :: rtemp
+	COMPLEX(complexk) ,POINTER :: work(:), vmat(:,:),eigv_inv(:),ctmp(:)
+	COMPLEX(complexk) :: alpha, beta
 	INTEGER :: info,i,j,lwork,nonsingdim
 
 	nsingular = 0
-	lwork=10*Ndim-1
+	lwork = 10*ndim-1
 	is_singular = .false.
 
 	call mem_alloc(work,max(1,lwork))
-	call mem_alloc(rwork,max(1,3*Ndim-2))
-	call mem_alloc(w,ndim)
-	call mem_alloc(Sk,ndim,ndim)
-	call mem_alloc(diag,ndim)
-	call mem_alloc(btmp,ndim)
+	call mem_alloc(rwork,max(1,3*ndim-2))
+	call mem_alloc(eigv,ndim)
+	call mem_alloc(vmat,ndim,ndim)
+	call mem_alloc(eigv_inv,ndim)
+	call mem_alloc(ctmp,ndim)
 
-	alpha=CMPLX(1.D0,0.D0,complexk)
-	beta=CMPLX(0.D0,0.D0,complexk)
+	alpha=cmplx(1._realk,0._realk,complexk)
+	beta=cmplx(0._realk,0._realk,complexk)
 
-	Sk(:,:)=sabk(:,:)
-	diag(:)=CMPLX(0.D0,0.D0,complexk)
-	! calculate spectral decomposition S = V^H\sigma V  
-	call zheev('V','U',Ndim,Sk,Ndim,w,work,Lwork,Rwork,info)
+	vmat(:,:)=s_input(:,:)
+	eigv_inv(:)=cmplx(0._realk,0._realk,complexk)
+	! calculate spectral decomposition s = v^h\sigma v  
+	call zheev('v','u',ndim,vmat,ndim,eigv,work,lwork,rwork,info)
 
 	do i=1,ndim
-		if(w(i) .lt. 0._realk) then
-			write(*,*) 'Eigenvalue for s matrix is negative'
-			write(lupri,*) 'Eigenvalue for s matrix is negative'
-			call lsquit('something is wrong',lupri)
+		if(eigv(i) .lt. 0._realk) then
+			write(*,*) 'Error: Eigenvalue of overlap matrix is negative.'
+			write(lupri,*) 'Error: Eigenvalue of overlap matrix is negative.'
+			call lsquit('ERROR: pbc-scf: pbc_spectral_decomp_ovl.',lupri)
 		endif
 	end do
 
 	! reorder elements s.t. largest eigenv comes first
 	do i=1,(ndim+1)/2 
 		j=ndim-i+1
-		!swap eigenvectors
-		Btmp(:)=Sk(:,i)
-		Sk(:,i)=Sk(:,j)
-		Sk(:,j)=Btmp(:)
-		!swap eigenvalues
-		wtemp=w(i)
-		w(i)=w(j)
-		w(j)=wtemp
+		! swap eigenvectors
+		ctmp(:)=vmat(:,i)
+		vmat(:,i)=vmat(:,j)
+		vmat(:,j)=ctmp(:)
+		! swap eigenvalues
+		rtemp=eigv(i)
+		eigv(i)=eigv(j)
+		eigv(j)=rtemp
 	end do
 
-	! remove linear dependencies in v (sk)
+	! remove linear dependencies in v (vmat)
 	do i=1,ndim
-		if(w(i) .lt. singular_threshh) then
+		if(eigv(i) .lt. singular_threshh) then
 			nsingular=nsingular+1
-			sk(:,i)=cmplx(0.d0,0.d0,complexk) 
-			diag(i)=cmplx(0.d0,0.d0,complexk)
+			vmat(:,i)=cmplx(0._realk,0._realk,complexk) 
+			eigv_inv(i)=cmplx(0._realk,0._realk,complexk)
 			is_singular=.true.
 		else
-			diag(i)=cmplx(1.d0/sqrt(w(i)),0.d0,complexk)
+			eigv_inv(i)=cmplx(1._realk/sqrt(eigv(i)),0._realk,complexk)
 		endif
 	enddo
 
+#if debugpbc
 	write(*,*) 'number of singulars',nsingular
 	write(lupri,*) 'number of singulars',nsingular
-
+#endif
 	! calculate u = v\sigma
 	nonsingdim=ndim-nsingular
-	call mem_alloc(u,ndim,nonsingdim)
+	call mem_alloc(umat,ndim,nonsingdim)
 	do i = 1, nonsingdim
-		u(:,i) = sk(:,i)*diag(i)
+		umat(:,i) = vmat(:,i)*eigv_inv(i)
 	end do
 
 	call mem_dealloc(work)
 	call mem_dealloc(rwork)
-	call mem_dealloc(w)
-	call mem_dealloc(Sk)
-	call mem_dealloc(diag)
+	call mem_dealloc(eigv)
+	call mem_dealloc(vmat)
+	call mem_dealloc(eigv_inv)
 
 END SUBROUTINE pbc_spectral_decomp_ovl
 
+!> \author JR
+!> \date 2013
+!> \brief Do the unitary transformation Ft = Uk^H F U 
+!> \param ndim 		matrix dim
+!> \param nosingdim 	matrix dim
+!> \param kfock 		to be transformed (ndim x ndim)
+!> \param Uk 			unitary mat (ndim x nonsingdim)
+!> \param tfock 		output transformed mat (nonsingdim x nonsingdim)
 SUBROUTINE pbc_unitary_transform(Ndim,nonsingdim,kfock,Uk,tfock)
   IMPLICIT NONE
-  INTEGER,intent(in) :: Ndim,nonsingdim
-  COMPLEX(complexk),INTENT(IN) :: kfock(Ndim,Ndim),Uk(Ndim,nonsingdim)
+  INTEGER,INTENT(IN) :: ndim,nonsingdim
+  COMPLEX(complexk),INTENT(IN) :: kfock(ndim,ndim),Uk(ndim,nonsingdim)
   COMPLEX(complexk),INTENT(INOUT) :: tfock(Nonsingdim,Nonsingdim)
-  !LOCAL
+  ! local
   COMPLEX(complexk),pointer :: tmp(:,:)
   COMPLEX(complexk) :: alpha,beta
-  INTEGER :: i,j
 
   alpha=CMPLX(1._realk,0._realk,complexk)
   beta=CMPLX(0._realk,0._realk,complexk)
   call mem_alloc(tmp,ndim,nonsingdim)
-
-  call zgemm('N','N',Ndim,Nonsingdim,Ndim,alpha,kfock,Ndim,&
-             Uk,Ndim,beta,tmp,Ndim)
-
-  call zgemm('C','N',Nonsingdim,Nonsingdim,Ndim,alpha,Uk,Ndim,&
-             tmp,Ndim,beta,tfock,Nonsingdim)
-
+  call zgemm('N','N',Ndim,Nonsingdim,Ndim,alpha,kfock,Ndim, &
+             & Uk,Ndim,beta,tmp,Ndim)
+  call zgemm('C','N',Nonsingdim,Nonsingdim,Ndim,alpha,Uk,Ndim, &
+             & tmp,Ndim,beta,tfock,Nonsingdim)
   call mem_dealloc(tmp)
 
 END SUBROUTINE pbc_unitary_transform
 
+
+!todo not in use (delete?)
+!> \author JR
+!> \date
+!> \brief
+!> \param
+!> \param
 SUBROUTINE pbc_deigsolve(A,N,M,eig,lupri)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: N,M,lupri
@@ -417,6 +317,12 @@ SUBROUTINE pbc_deigsolve(A,N,M,eig,lupri)
 END SUBROUTINE pbc_deigsolve
 
 
+!todo not in use (delete?)
+!> \author 
+!> \date
+!> \brief
+!> \param
+!> \param
 SUBROUTINE pbc_zdiagonalize(sigma,A,ndim,V,U)  
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: ndim
@@ -431,196 +337,186 @@ SUBROUTINE pbc_zdiagonalize(sigma,A,ndim,V,U)
   DO i=1,ndim
    DO j=1,ndim
     U(i,j) = V(i,j)/sqrt(sigma(j))
-    D(i,j) =cmplx(0d0,0d0,complexk)
+    D(i,j) =cmplx(0._realk,0._realk,complexk)
    ENDDO
   ENDDO
 
-  alpha=cmplx(1D0,0d0,complexk)
-  beta=cmplx(0D0,0d0,complexk)
+  alpha=cmplx(1._realk,0._realk,complexk)
+  beta=cmplx(0._realk,0._realk,complexk)
   call zgemm('C','N',ndim,ndim,ndim,alpha,U,ndim,A,ndim,&
         beta,D,ndim)
-
   call zgemm('N','N',ndim,ndim,ndim,alpha,D,ndim,U,ndim,&
         beta,A,ndim)
 
 END SUBROUTINE pbc_zdiagonalize
 
 
+!todo not in use (delete?)
+!> \author 
+!> \date
+!> \brief
+!> \param
+!> \param
 SUBROUTINE ztransformbackC(C,ndim,U)
-  IMPLICIT NONE
-  INTEGER,INTENT(IN) :: ndim
-  COMPLEX(COMPLEXK),INTENT(INOUT) :: C(ndim,ndim)
-  COMPLEX(COMPLEXK),INTENT(IN) :: U(ndim,ndim)
-  COMPLEX(COMPLEXK) :: ctmp(ndim,ndim)
-  COMPLEX(COMPLEXK) :: alpha,beta
+	IMPLICIT NONE
+	INTEGER,INTENT(IN) :: ndim
+	COMPLEX(COMPLEXK),INTENT(INOUT) :: C(ndim,ndim)
+	COMPLEX(COMPLEXK),INTENT(IN) :: U(ndim,ndim)
+	COMPLEX(COMPLEXK) :: ctmp(ndim,ndim)
+	COMPLEX(COMPLEXK) :: alpha,beta
 
-  alpha=cmplx(1.D0,0.D0,complexk)
-  beta =cmplx(0.D0,0.D0,complexk)
-  ctmp(:,:)=C(:,:)
-  call zgemm('N','N',ndim,ndim,ndim,alpha,U,ndim,ctmp,ndim,&
-        beta,C,ndim)
+	alpha=cmplx(1._realk,0._realk,complexk)
+	beta =cmplx(0._realk,0._realk,complexk)
+	ctmp(:,:)=C(:,:)
+	call zgemm('N','N',ndim,ndim,ndim,alpha,U,ndim,ctmp,ndim, &
+		& beta,C,ndim)
 
 END SUBROUTINE ztransformbackC
 
+!> \author JR
+!> \date 2013
+!> \brief
+!> \param
+!> \param
 SUBROUTINE transform_toMOfock(C_tmp,fock,fockMO,ndim,lupri)
-  IMPLICIT NONE
-  INTEGER,INTENT(IN) :: ndim,lupri
-  COMPLEX(COMPLEXK),INTENT(IN) :: C_tmp(ndim,ndim),fock(ndim,ndim)  
-  COMPLEX(COMPLEXK),INTENT(OUT) :: fockMO(ndim,ndim)
-  !LOCAL VARIABLES
-  !INTEGER :: i,j,mu,nu
-  COMPLEX(COMPLEXK) :: fockMOtmp(ndim,ndim)
-  !LOCAL VARIABLES
-  COMPLEX(COMPLEXK) :: alpha,beta
+	IMPLICIT NONE
+	INTEGER,INTENT(IN) :: ndim,lupri
+	COMPLEX(complexk),INTENT(IN) :: C_tmp(ndim,ndim),fock(ndim,ndim)  
+	COMPLEX(complexk),INTENT(OUT) :: fockMO(ndim,ndim)
+	! local
+	COMPLEX(complexk), POINTER :: fockMOtmp(:,:)
+	COMPLEX(complexk) :: alpha,beta
 
-  alpha=CMPLX(1D0,0D0,complexk)
-  beta =CMPLX(0D0,0D0,complexk)
-  
-  !FOR DEBUGGING
- ! write(*,*) 'C(1)' 
- ! call write_zmatrix(C_tmp,ndim,ndim)
- ! write(*,*) 'Fock(1)'
- ! call write_zmatrix(fock,ndim,ndim)
- fockMO=0d0
- fockMOtmp=0d0
- !write(*,*) 'C_tmp'
- !write(lupri,*) 'C_tmp'
- !call write_zmatrix(C_tmp,ndim,ndim,lupri)
+	call mem_alloc(fockMOtmp,ndim,ndim)
 
-! do i=1,ndim
-!  do j=1,ndim
-!   do mu=1,ndim
-!    do nu=1,ndim
-!    fockMO=fockMO(i,j)+c_tmp(i,mu)&
-!                   *fock(mu,nu)*c_tmp(nu,j)
-!    enddo
-!   enddo
-!  enddo
-! enddo
-  
+	alpha=CMPLX(1._realk,0._realk,complexk)
+	beta =CMPLX(0._realk,0._realk,complexk)
 
-  call zgemm('C','N',ndim,ndim,ndim,alpha,C_tmp,ndim,fock,ndim,&
-        beta,fockMOtmp,ndim)
+	!fockMO(:,:)=CMPLX(0._realk,0._realk,complexk) !not necc
+	!fockMOtmp(:,:)=CMPLX(0._realk,0._realk,complexk) !not necc
 
+	call zgemm('C','N',ndim,ndim,ndim,alpha,C_tmp,ndim,fock,ndim, &
+		& beta,fockMOtmp,ndim)
+	call zgemm('N','N',ndim,ndim,ndim,alpha,fockMOtmp,ndim,C_tmp,ndim, &
+		& beta,fockMO,ndim)
 
-  call zgemm('N','N',ndim,ndim,ndim,alpha,fockMOtmp,ndim,C_tmp,ndim,&
-        beta,fockMO,ndim)
+	call mem_dealloc(fockMOtmp)
 
- !write(*,*) 'fockMO'
- !write(lupri,*) 'fockMO'
- !call write_zmatrix(fockMO,ndim,ndim,lupri)
 END SUBROUTINE transform_toMOfock
 
+!> \author 
+!> \date
+!> \brief
+!> \param
+!> \param
 SUBROUTINE  pbc_geterrorvec(error,fockMO,ndim,errlm,nelectrons)
-  IMPLICIT NONE
-  INTEGER,INTENT(IN) :: ndim,errlm,nelectrons
-  REAL(realk),INTENT(INOUT) :: error(errlm)
-  COMPLEX(COMPLEXK),INTENT(IN) :: fockMO(ndim,ndim)
-  !LOCAL variables
-  INTEGER :: i,j,k
+	IMPLICIT NONE
+	INTEGER,INTENT(IN) :: ndim,errlm,nelectrons
+	REAL(realk),INTENT(INOUT) :: error(errlm)
+	COMPLEX(complexk),INTENT(IN) :: fockMO(ndim,ndim)
+	! local
+	INTEGER :: i,j,k
 
-  k=0
+	k=0
 
-!  write(*,*) 'DEBUG inside geterror'
-!  call write_zmatrix(fockMO,ndim,ndim)
-!  write(*,*) 'error vector'
-  DO i=1,nelectrons/2
-   DO j=nelectrons/2+1,ndim
-    k=k+1
-    error(k)=abs(real(fockMO(i,j),realk))
-    error(k)=error(k)+abs(real(fockMO(j,i),realk))
-    error(k)=error(k)*0.5
-    !write(*,*) error(k)
-   ENDDO
- ENDDO
-! write(*,*) 'fockMO'
-! call write_zmatrix(fockMO,ndim,ndim)
- !stop
-      
+	DO i=1,nelectrons/2
+		DO j=nelectrons/2+1,ndim
+			k=k+1
+			error(k)=abs(real(fockMO(i,j),realk))
+			error(k)=error(k)+abs(real(fockMO(j,i),realk))
+			error(k)=error(k)*0.5
+		ENDDO
+	ENDDO
 
 END SUBROUTINE  pbc_geterrorvec
 
+! todo not in use (delete?) 
+!> \author 
+!> \date
+!> \brief
+!> \param
+!> \param
 SUBROUTINE pbc_kcomputeenergy()
   IMPLICIT NONE
 END SUBROUTINE pbc_kcomputeenergy
 
+! todo not in use (delete?) 
+!> \author 
+!> \date
+!> \brief
+!> \param
+!> \param
 SUBROUTINE pbc_dcomputeenergy()
   IMPLICIT NONE
 END SUBROUTINE pbc_dcomputeenergy
 
-
-SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv, &
-		& kindex,is_singular,nsingular,lupri)
+!> \author JR 
+!> \date 2013
+!> \brief Solve the generalized eigenvalueproblem for FC=SCF
+!> S is not input but Uk where S^-1=Uk Uk^H. The generalised e.v. problem is 
+!> solved by calculating f = Uk^H F Uk and then solving fc = ce. C is now found by
+!> calculating Uk c. See fex. Golub and Loan matrix comput on the symmetric
+!> generalized eigenvalueproblem for a better explanation.
+!> \param ndim 		matrix dim.
+!> \param fock_old 	fock matrix (F).
+!> \param c_tmp 		Output C.
+!> \param Uk 			The unitary transformation.
+!> \param eigv 		Output eigenvalues.
+!> \param nsingular 	dim - rank of Uk.
+!> \param lupri 		Logical print unit.
+SUBROUTINE solve_kfcsc_mat(ndim,fock_old,C_tmp,Uk,eigv,nsingular,lupri)
 	IMPLICIT NONE
-	INTEGER,INTENT(IN) :: ndim,lupri,kindex,nsingular
-	LOGICAL,INTENT(IN) :: is_gamma,is_singular
-	COMPLEX(COMPLEXK),INTENT(IN) :: fock_old(ndim,ndim)
-	COMPLEX(COMPLEXK),INTENT(IN) :: &
-		& Uinv(ndim-nsingular,ndim-nsingular),Uk(ndim-nsingular,ndim-nsingular)
-	COMPLEX(COMPLEXK), INTENT(IN) :: Sabk(ndim,ndim)
-	COMPLEX(COMPLEXK),intent(INOUT) :: C_tmp(ndim,ndim)
+	INTEGER,INTENT(IN) :: ndim,lupri,nsingular
+	COMPLEX(complexk),INTENT(IN) :: fock_old(ndim,ndim)
+	COMPLEX(complexk), INTENT(IN) :: Uk(ndim-nsingular,ndim-nsingular)
+	COMPLEX(complexk),intent(INOUT) :: C_tmp(ndim,ndim)
 	REAL(realk),intent(INOUT) :: eigv(ndim-nsingular)
-	!LOCAL VARIABLES
-	INTEGER :: i,j,lwork,info,lrwork,liwork, nonsingdim
-	COMPLEX(COMPLEXK),pointer :: tfock(:,:),tmp(:,:)
-#ifdef DEBUGPBC
-	COMPLEX(COMPLEXK),pointer :: Atmp(:,:), Btmp(:,:)
-#endif
-	COMPLEX(COMPLEXK),pointer :: work(:)
-	Real(realk),pointer :: rwork(:)
-	INTEGER,pointer :: Iwork(:)
+	! local
+	INTEGER :: lwork,info,lrwork,nonsingdim
+	COMPLEX(complexk),POINTER :: tfock(:,:),work(:)
+	REAL(realk),POINTER :: rwork(:)
 	COMPLEX(COMPLEXK) :: alpha,beta
-	real(realk),external :: zlange
-	REAL(realk),pointer :: tmpeigv(:)
-
-	lwork=2*Ndim-1
-	lrwork=3*Ndim-2
-	liwork= 3+5*Ndim
 
 	nonsingdim=ndim-nsingular
 
 	alpha=CMPLX(1._realk,0._realk,complexk)
 	beta=CMPLX(0._realk,0._realk,complexk)
 
+	lwork=2*Ndim-1
+	lrwork=3*Ndim-2
+
 	call mem_alloc(rwork,lrwork)
 	call mem_alloc(work,max(1,lwork))
-	call mem_alloc(iwork,max(1,liwork))
 	call mem_alloc(tfock,nonsingdim,nonsingdim)
 
 	! Transform f = U^T F U
 	call pbc_unitary_transform(Ndim,nonsingdim,fock_old,Uk,tfock)
-
-	!call zheevd('V','U',Ndim,tfock,Ndim,eigv,work,Lwork,Rwork,lrwork,&
-	! Iwork,liwork,info)
-
 	! solve fc = ce 
-	call zheev('V','U',nonsingdim,tfock,nonsingdim,eigv,work,Lwork,Rwork,info)
-
-	if(info .ne. 0) THEN
+	call zheev('V','U',nonsingdim,tfock,nonsingdim,eigv,work,lwork,rwork,info)
+	if(info .ne. 0) then
 		write(lupri,*) 'ERROR: zheev problems, info=', info
 		call write_zmatrix(tfock,nonsingdim,nonsingdim)
 		write(*,*) 'ERROR: zheev problems, info=', info
 		call LSQUIT('pbc_solve_kfcsc_mat: INFO not zero,', &
 			& ' while solving eigenvalue',lupri)
 	endif
-
 	!Transform back to C=Uc
 	call zgemm('N','N',ndim,nonsingdim,nonsingdim,alpha,Uk,ndim,&
 		tfock,nonsingdim,beta,C_tmp(:,1:nonsingdim),ndim)
-
-	! orthogonalize(C_tmp) ??
-
-	c_tmp(:,nonsingdim+1:ndim)=cmplx(0.D0,0.D0,complexk)
+	c_tmp(:,nonsingdim+1:ndim)=cmplx(0._realk,0._realk,complexk)
 
 	call mem_dealloc(work)
 	call mem_dealloc(rwork)
-	call mem_dealloc(iwork)
 	call mem_dealloc(tfock)
 
 END SUBROUTINE solve_kfcsc_mat
 
-! Mady by Johannes 
-!SUBROUTINE FOR COMPUTING energy for a k vector
+!Todo not in use. Only called from pbc_k_energy which is not in use. delete?
+!> \author JR 
+!> \date 2013
+!> \brief Compute the energy for a k vector
+!> \param
+!> \param
 SUBROUTINE pbc_k_energy(Aop,nrows,ncols,Bz,energy_1k,energy_2k,kvec,lupri)
 IMPLICIT NONE
 TYPE(lvec_list_t) :: Aop
@@ -642,15 +538,16 @@ INTEGER            :: k,nlats
      call pbc_rspc_to_kspc_mat(Aop,Bz,nrows,kvec,2)
      call lsquit('fixme diis no value assigned to this variable ',-1)
 !     call pbc_get_onep_matrix(Aop,energy_1k,nrows,ncols,nlats,kvec,diis)
-
 !     call pbc_get_twop_matrix(Aop,energy_2k,nrows,ncols,nlats,kvec,diis)
-
-
 
 END SUBROUTINE pbc_k_energy
 
-! Mady by Johannes 
-!SUBROUTINE FOR COMPUTING energy for one cell
+!Todo not in use. (delete?)
+!> \author JR 
+!> \date 2013
+!> \brief Compute the energy for one cell
+!> \param
+!> \param
 SUBROUTINE pbc_cell_energy(Aop,Bz,nrows,ncols,Dk,kvec,energy_cell,kpt,nocc,lupri)
 IMPLICIT NONE
 INTEGER,INTENT(IN) :: lupri,nrows,ncols,kpt,nocc
@@ -663,8 +560,6 @@ COMPLEX(COMPLEXK):: Dk(nrows,ncols),dijkl
 !LOCAL VARIABLES
 INTEGER :: i,j,k,l
 REAL(realk) :: onepenergy,twopenergy,energy_k
-
-
 
 call pbc_k_energy(Aop,nrows,ncols,Bz,energy1_k,energy2_k,kvec,lupri)
 
@@ -690,15 +585,14 @@ call pbc_k_energy(Aop,nrows,ncols,Bz,energy1_k,energy2_k,kvec,lupri)
  energy_k=onepenergy-twopenergy
  write(lupri,*) 'energy_k',onepenergy,twopenergy
  energy_cell=energy_cell+real(energy_k*bz%kpnt(kpt)%weight/BZ%NK_nosym,realk)
- 
-
 
 END SUBROUTINE pbc_cell_energy
 
-!Made by Johannes
-!SUBROUTINE for the HF iterations, 
-!Does the SCF iterations and
-!solves the equation F(k)C(k)=eps(k)C(k) for each k
+!> \author JR 
+!> \date 2013
+!> \brief Does the SCF iterations and solces the F(k)C(k)=eps(k)C(k) for each k
+!> \param
+!> \param
 SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
            maxmultmom,bz,dmat0,lupri,luerr)
   IMPLICIT NONE
@@ -711,14 +605,14 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 !  REAL(realk),INTENT(IN) :: E_nuc
 !  TYPE(matrix),target,intent(inout) :: f_1(numrealvec),ovl(numrealvec)
 !  TYPE(matrix),target,intent(inout) :: g_2(numrealvec)
-  !LOCAL VARIABLES
+  ! local
   COMPLEX(COMPLEXK),pointer :: fockMO(:,:),fock(:,:),smatk(:,:)
   COMPLEX(COMPLEXK),pointer :: C_k(:,:),D_k(:,:),C_0(:,:)
   REAL(realk),pointer :: cellenergies(:)
   REAL(realk),pointer :: error(:,:),nucmom(:)
-  INTEGER :: i,j,errlm,tol!tol should be a real but now I just have it for test
+  INTEGER :: i,errlm,tol!tol should be a real but now I just have it for test
   INTEGER :: k,kpt,n1,fdim(3),layer
-  INTEGER :: realcut(3),nonsingdim
+  INTEGER :: realcut(3)
   real(realk) :: kvec(3),Ecell,E_nn,E_1,errortest
   REAL(realk),pointer :: tlat(:,:),weight(:)
   TYPE(matrix), pointer :: nfdensity(:)
@@ -726,7 +620,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   TYPE(moleculeinfo) :: refcell
   CHARACTER(LEN=10) :: stiter
   CHARACTER(LEN=12) :: diis,diismats
-  character(len=20) :: mattxt
   LOGICAL :: diis_exit
   REAL(realk) :: E_J,E_K,E_XC,E_ff,E_cell
   REAL(realk) :: E_en,E_nuc,E_kin,E_nnff
@@ -735,8 +628,10 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   TYPE(matrix),pointer :: g_2(:)
 
 
-  ! threshhold for removing singularities in overlap matrix s
-  REAL(realk) :: singular_threshh = 1e-8_realk 
+  ! threshhold for removing singularities in overlap matrix s. If any of the
+  ! eigenvalues of the overlapmtrx S are smaller than this number the
+  ! corresponding eigenvectors are removed.
+  REAL(realk) :: singular_threshh = 1e-6_realk 
 
   write(lupri,*) 'Entering routine startzdiis'
 
@@ -749,11 +644,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   !read the tlatticetensor to build up the multipole moments
 !  write(lupri,*) 'Debug again'
 !  call read_pbc_tlattice(tlat,maxmultmom,'Tlatticetensor.dat',lupri)
- 
   !config%molecule%nelectrons
-  
-
-
 
 !  call mem_alloc(nfdensity,numrealvec)
   !allocate(nfdensity(numrealvec))
@@ -761,7 +652,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   call mem_alloc(nfdensity,numrealvec)
   call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
   call mat_init(nfdensity(n1),ndim,ndim)
-  call mat_copy(1.0_realk,Dmat0,nfdensity(n1)) 
+  call mat_copy(2.0_realk,Dmat0,nfdensity(n1)) !UNRES x2 
   call mem_alloc(f_1,numrealvec)
   call mem_alloc(Ovl,numrealvec)
   call mem_alloc(g_2,numrealvec)
@@ -773,11 +664,10 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   call mem_alloc(C_0,ndim,ndim)
   call mem_alloc(D_k,ndim,ndim)
 
-
   write(lupri,*) 'Density first'
   call mat_print(nfdensity(n1),1,ndim,1,ndim,lupri)
 
-  allocate(latt_cell(numrealvec))
+  allocate(latt_cell(numrealvec)) !fixme alloc ?? use mem alloc el.
 
   call set_refcell(refcell,molecule)
   call set_lattice_cells(latt_cell,numrealvec,molecule,lattice,lupri)
@@ -785,28 +675,28 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   call mem_alloc(error,lattice%num_store,errlm)
 
 
-  CALL LSTIMER('START ',TS,TE,LUPRI)
+  call LSTIMER('START ',TS,TE,LUPRI)
   call pbc_overlap_k(lupri,luerr,setting,molecule,ndim,&
       lattice,latt_cell,refcell,numrealvec,ovl)
-  CALL LSTIMER('pbc_overlap_k',TS,TE,LUPRI)
+  call LSTIMER('pbc_overlap_k',TS,TE,LUPRI)
  
   !CALCULATES kinetic energy of electrons
-  CALL LSTIMER('START ',TS,TE,LUPRI)
+  call LSTIMER('START ',TS,TE,LUPRI)
   call pbc_kinetic_k(lupri,luerr,setting,molecule,ndim,&
    lattice,latt_cell,refcell,numrealvec,nfdensity,f_1,E_kin)
-  CALL LSTIMER('pbc_kinetic_k',TS,TE,LUPRI)
+  call LSTIMER('pbc_kinetic_k',TS,TE,LUPRI)
 
   !CALCULATES electron nuclei attraction
-  CALL LSTIMER('START ',TS,TE,LUPRI)
+  call LSTIMER('START ',TS,TE,LUPRI)
   call pbc_nucattrc_k(lupri,luerr,setting,molecule,ndim,&
      lattice,latt_cell,refcell,numrealvec,nfdensity,f_1,E_en)
-  CALL LSTIMER('pbc_nucattrc_k',TS,TE,LUPRI)
+  call LSTIMER('pbc_nucattrc_k',TS,TE,LUPRI)
 
   !CALCULATES nuclear repulsion
-  CALL LSTIMER('START ',TS,TE,LUPRI)
-  CALL pbc_nucpot(lupri,luerr,setting,molecule,lattice,&
+  call LSTIMER('START ',TS,TE,LUPRI)
+  call pbc_nucpot(lupri,luerr,setting,molecule,lattice,&
                   latt_cell,refcell,numrealvec,E_nuc)
-  CALL LSTIMER('pbc_nucpot',TS,TE,LUPRI)
+  call LSTIMER('pbc_nucpot',TS,TE,LUPRI)
 
  !computing the nuclear moments
   call mem_alloc(nucmom,(1+maxmultmom)**2)
@@ -820,13 +710,8 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
    DO k=1,BZ%nk
 !
-<<<<<<< HEAD
       !call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
       !call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
-=======
-      call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
-      call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
->>>>>>> e0b9480f27f02d30b54eb7ca7495d1fc85303313
       call pbc_get_kpoint(k,kvec)
 
       if(lattice%store_mats)then
@@ -860,9 +745,11 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   diis_exit = .false. !when diis_exit the iterations are finished
   ! self consistent iterations
   DO WHILE(tol .le. lattice%num_its)! 20)!should have an input parameter
-    CALL LSTIMER('START ',TOT,TWT,LUPRI)
+    call LSTIMER('START ',TOT,TWT,LUPRI)
     k=k+1
     i=i+1
+
+  call mat_print(nfdensity(n1),1,ndim,1,ndim,lupri)
 
     !We keep only data of lattice%num_store past iterations
     if(i .ge. lattice%num_store) Then !should have an input parameter to decide how man we store
@@ -885,18 +772,18 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
     call pbc_get_onehamenergy(numrealvec,f_1,nfdensity,E_1)
 
-    CALL LSTIMER('START ',TST,TET,LUPRI)
-    CALL LSTIMER('START ',TS,TE,LUPRI)
+    call LSTIMER('START ',TST,TET,LUPRI)
+    call LSTIMER('START ',TS,TE,LUPRI)
     call pbc_electron_rep_k(lupri,luerr,setting,molecule,ndim,&
       lattice,latt_cell,refcell,numrealvec,nfdensity,g_2,E_J)
-    CALL LSTIMER('pbc Coul',TS,TE,LUPRI)
+    call LSTIMER('pbc Coul',TS,TE,LUPRI)
 
     !if hybrid or HF, include parameter if hybrid
-    CALL LSTIMER('START ',TS,TE,LUPRI)
+    call LSTIMER('START ',TS,TE,LUPRI)
     call pbc_exact_xc_k(lupri,luerr,setting,molecule,ndim,&
      lattice,latt_cell,refcell,numrealvec,nfdensity,g_2,E_K)
-    CALL LSTIMER('pbc xchange',TS,TE,LUPRI)
-    CALL LSTIMER('rep xchange',TST,TET,LUPRI)
+    call LSTIMER('pbc xchange',TS,TE,LUPRI)
+    call LSTIMER('rep xchange',TST,TET,LUPRI)
 
 
     !KOHN sham
@@ -910,10 +797,10 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
     !lattice%compare_elmnts=.false.
 
     !Far-field contribution to fock
-    CALL LSTIMER('START ',TS,TE,LUPRI)
+    call LSTIMER('START ',TS,TE,LUPRI)
     call pbc_ff_fck(maxmultmom,tlat,lattice%tlmax,ndim,lattice,nfdensity,nucmom,&
                    g_2,E_ff,E_nn,lupri)
-    CALL LSTIMER('pbc farfield',TS,TE,LUPRI)
+    call LSTIMER('pbc farfield',TS,TE,LUPRI)
 
   !sums the parts for the fock matrices from  f^0l
   call pbc_get_fock_mat(lattice,g_2,f_1,ndim,realcut,numrealvec,diismats,lupri)
@@ -932,124 +819,98 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
   !No we have the fock matrices in real space
   !We transform to kspace and solve
-
-  CALL LSTIMER('START',TST,TET,LUPRI)
+  call LSTIMER('START',TST,TET,LUPRI)
   do kpt=1,bz%nk
 
-      call pbc_get_kpoint(kpt,kvec)
+	  call pbc_get_kpoint(kpt,kvec)
+	  call zero_pbc_elstr(Bz%fck)
+	  call zero_pbc_elstr(Bz%Smat)
 
-      call zero_pbc_elstr(Bz%fck)
-      call zero_pbc_elstr(Bz%Smat)
+	  ! We compute only diis weights for the gamma point
+	  if(bz%kpnt(kpt)%is_gamma)then
+		  call LSTIMER('START',TS,TE,LUPRI)
+		  call mem_alloc(weight,i)
+		  weight(:)=0._realk
+		  call pbc_get_diisweights(lattice,Bz,weight,i,tol,kvec,ndim,C_0, &
+			  & fockMO,fock,numrealvec,errortest,error,diis_exit,errlm, &
+			  & molecule%nelectrons,lupri)
+		  call LSTIMER('diis weights',TS,TE,LUPRI)
+	  endif ! is_gamma
 
-      ! We compute only weights for the gamma point
+	  if(tol.gt.0)then
+		  if(.not.diis_exit)then
+			  !call LSTIMER('START',TS,TE,LUPRI)
+			  call pbc_get_weighted_fock(i,tol,lattice%num_store,ndim,weight, &
+				  & lattice,lupri)
+			  !call LSTIMER('Weighted fock',TS,TE,LUPRI)
+		  endif
+	  endif
 
-      if(bz%kpnt(kpt)%is_gamma )then
-       
-      CALL LSTIMER('START',TS,TE,LUPRI)
+	  if(lattice%store_mats)then
+		  !get the overlap matrices S^0l
+		  call pbc_read_matrix(lattice,ndim,ndim,1,1,'            ')
+		  !We need k-space overlap
+		  call pbc_rspc_to_kspc_mat(lattice,Bz,ndim,kvec,1)
+	  else
+		  !We need k-space overlap
+		  call pbc_trans_mat_to_kspc(ovl,numrealvec,lattice,Bz,ndim,kvec,realcut)
+	  endif
 
-      call mem_alloc(weight,i)
-      weight=0.D0
+	  !Put overlap in a matrix form
+	  !write(lupri,*) 'Testing for C coefficients in gamma point'
+	  call pbc_zdevectorize_mat(smatk,ndim,ndim,bz%smat%zelms)
+	  !We need to get k point fock matrix
+	  call pbc_rspc_to_kspc_mat(lattice,Bz,ndim,kvec,2)
+	  !Put it in a matrix form
+	  call pbc_zdevectorize_mat(fock,ndim,ndim,bz%fck%zelms)
+	  !solves F(k)C(k)=S(k)C(k)e(k)
+	  call solve_kfcsc_mat(ndim,fock,C_k,bz%kpnt(kpt)%Uk,bz%kpnt(kpt)%eigv, &
+		  & bz%kpnt(kpt)%nsingular,lupri)
+	  !C_0 is used for finding the weights
+	  if(bz%kpnt(kpt)%is_gamma ) C_0(:,:)=C_k(:,:)
+	  !call pbc_zdevectorize_mat(smatk,ndim,ndim,bz%smat%zelms)
 
-      call pbc_get_diisweights(lattice,Bz,weight,i,tol,kvec,ndim,C_0,fockMO,fock,numrealvec,errortest,error,&
-                               diis_exit,errlm,molecule%nelectrons,lupri)
+	  !gets D(k) from C(k) (only working for unrestricted)
+	  call pbc_get_kdensity(D_k,C_k,ndim,molecule%nelectrons/2 &
+		  ,bz%kpnt(kpt)%nsingular,smatk,lupri)
+	  !Converts D(k) to D^0l
+	  call kspc_2_rspc_loop_k(nfdensity,Bz%Nk,D_k,lattice,kvec,bz%kpnt(kpt)%weight,BZ%NK_nosym,ndim,kpt)
+  enddo !kpt
 
-        CALL LSTIMER('diis weights',TS,TE,LUPRI)
+  call LSTIMER('k point energy',TST,TET,LUPRI)
 
-      endif ! is_gamma
+  if(associated(weight)) call mem_dealloc(weight)
 
-      if(tol .gt. 0) then
-        if(.not. diis_exit) then
-          !CALL LSTIMER('START',TS,TE,LUPRI)
-          call pbc_get_weighted_fock(i,tol,lattice%num_store,ndim,weight,lattice,lupri)
-          !CALL LSTIMER('Weighted fock',TS,TE,LUPRI)
-        endif
-      endif
+  write(*,*)
+  call pbc_densitymat_write(nfdensity,lattice,ndim,ndim,8,'            ')
+  call pbc_free_read_matrices(lattice)
+  call print_bands(bz,ndim,'band-energy') !prints band energy to file band-energy
+  ! Get HOMO LUMO energy, change name 
+  call pbc_trans_k_energy(lattice,cellenergies,ndim,molecule%nelectrons,bz)
 
+  E_cell=E_1+E_j+E_K+E_ff+E_nuc
+  write(lupri,*) 'E(HOMO) =', cellenergies(1), tol
+  write(lupri,*) 'E(LUMO) =', cellenergies(2), tol
+  write(lupri,*) 'Cell Energy electrons=', E_cell
+  write(lupri,*) 'K energy', E_k
+  write(lupri,*) 'J energy', E_J
+  write(lupri,*) 'h_1=',E_1
+  write(lupri,*) 'Nuclear=',E_nuc
+  write(lupri,*) 'Far field=', E_ff, E_nn
+  write(*,*) 'H_1=',E_1
+  write(*,*) 'E(HOMO) =', cellenergies(1)
+  write(*,*) 'E(LUMO) =', cellenergies(2)
+  write(*,*) 'Cell Energy =', E_cell
+  write(*,*) 'K energy', E_k
+  write(*,*) 'J energy', E_J
+  write(*,*) 'h_1=',E_1
+  write(*,*) 'Nuclear=',E_nuc
+  write(*,*) 'Far field=', E_ff
 
-       if(lattice%store_mats)then
-        !get the overlap matrices S^0l
-        call pbc_read_matrix(lattice,ndim,ndim,1,1,'            ')
-        !We need k-space overlap
-        call pbc_rspc_to_kspc_mat(lattice,Bz,ndim,kvec,1)
-      else
-        !We need k-space overlap
-        call pbc_trans_mat_to_kspc(ovl,numrealvec,lattice,Bz,ndim,kvec,realcut)
-      endif
+  if(diis_exit) exit
 
-      !Put overlap in a matrix form
-      !write(lupri,*) 'Testing for C coefficients in gamma point'
-      call pbc_zdevectorize_mat(smatk,ndim,ndim,bz%smat%zelms)
-
-      !We need to get k point fock matrix
-      call pbc_rspc_to_kspc_mat(lattice,Bz,ndim,kvec,2)
-      !Put it in a matrix form
-      call pbc_zdevectorize_mat(fock,ndim,ndim,bz%fck%zelms)
-
-
-
-
-
-
-      !solves F(k)C(k)=S(k)C(k)e(k)
-      call solve_kfcsc_mat(bz%kpnt(kpt)%is_gamma,ndim,fock,smatk,C_k, &
-			& bz%kpnt(kpt)%Uk,bz%kpnt(kpt)%Uinv,bz%kpnt(kpt)%eigv,kpt, &
-			& bz%kpnt(kpt)%is_singular,bz%kpnt(kpt)%nsingular,lupri)
-
-      !C_0 is used for finding the weights
-      if(bz%kpnt(kpt)%is_gamma ) C_0(:,:)=C_k(:,:)
-      !call pbc_zdevectorize_mat(smatk,ndim,ndim,bz%smat%zelms)
-      
-      !gets D(k) from C(k)
-      call pbc_get_kdensity(D_k,C_k,ndim,molecule%nelectrons/2 &
-          ,bz%kpnt(kpt)%nsingular,smatk,lupri)
-      
-      !Converts D(k) to D^0l
-      call kspc_2_rspc_loop_k(nfdensity,Bz%Nk,D_k,lattice,kvec,bz%kpnt(kpt)%weight,BZ%NK_nosym,ndim,kpt)
-
-
-
-
-
-
-
-
-
-    enddo !kpt
-    CALL LSTIMER('k point energy',TST,TET,LUPRI)
-
-    if(associated(weight)) call mem_dealloc(weight)
-    
-    write(*,*)
-    call pbc_densitymat_write(nfdensity,lattice,ndim,ndim,8,'            ')
-    call pbc_free_read_matrices(lattice)
-    call print_bands(bz,ndim,'band-energy') !prints band energy to file band-energy
-    ! Get HOMO LUMO energy, change name 
-    call pbc_trans_k_energy(lattice,cellenergies,ndim,molecule%nelectrons,&
-    bz)
-
-    E_cell=E_1+E_j+E_K+E_ff+E_nuc!+E_nn
-    write(lupri,*) 'E(HOMO) =', cellenergies(1), tol
-    write(lupri,*) 'E(LUMO) =', cellenergies(2), tol
-    write(lupri,*) 'Cell Energy electrons=', E_cell
-    write(lupri,*) 'K energy', E_k
-    write(lupri,*) 'J energy', E_J
-    write(lupri,*) 'h_1=',E_1
-    write(lupri,*) 'Nuclear=',E_nuc
-    write(lupri,*) 'Far field=', E_ff, E_nn
-    write(*,*) 'H_1=',E_1
-    write(*,*) 'E(HOMO) =', cellenergies(1)
-    write(*,*) 'E(LUMO) =', cellenergies(2)
-    write(*,*) 'Cell Energy =', E_cell
-    write(*,*) 'K energy', E_k
-    write(*,*) 'J energy', E_J
-    write(*,*) 'h_1=',E_1
-    write(*,*) 'Nuclear=',E_nuc
-    write(*,*) 'Far field=', E_ff
-
-    if(diis_exit) exit
-
-    tol=tol+1
-    CALL LSTIMER('Diis Iteration',TOT,TWT,LUPRI)
+  tol=tol+1
+  call LSTIMER('Diis Iteration',TOT,TWT,LUPRI)
 
   ENDDO
 
@@ -1128,6 +989,13 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 END SUBROUTINE pbc_startzdiis
 
+
+
+!> \author JR 
+!> \date 2013
+!> \brief 
+!> \param
+!> \param
 SUBROUTINE pbc_get_fock_mat(lattice,g_2,f_1,ndim,realcut,numrealvec,diismats,lupri)
   IMPLICIT NONE
   TYPE(lvec_list_t),INTENT(INOUT) :: lattice
@@ -1144,25 +1012,26 @@ SUBROUTINE pbc_get_fock_mat(lattice,g_2,f_1,ndim,realcut,numrealvec,diismats,lup
 
   !get the fock matrices f^0l
   if(lattice%store_mats) then
-    CALL LSTIMER('START',TS,TE,LUPRI)
+    call LSTIMER('START',TS,TE,LUPRI)
     !call pbc_read_fock_matrix(lattice,ndim,ndim,diismats)
     call pbc_read_fock_matrix(lattice,ndim,ndim,'            ')
-    CALL LSTIMER('Reading fock',TS,TE,LUPRI)
+    call LSTIMER('Reading fock',TS,TE,LUPRI)
     call pbc_fockmat_write(lattice,ndim,ndim,7,2,diismats,lupri)
     !get the overlap matrices S^0l
     call pbc_read_matrix(lattice,ndim,ndim,1,1,'            ')
   else
-    call pbc_add_fock_matrix(f_1,g_2,lattice,ndim,ndim,numrealvec)
-    !call pbc_fockmat_write(lattice,ndim,ndim,7,2,diismats,lupri)
+    call pbc_add_fock_matrix(f_1,g_2,lattice,ndim,ndim,numrealvec) 
+    !call pbc_fockmat_write(lattice,ndim,ndim,7,2,diismats,lupri) !fixme
   endif
-
-
-
-
 
 END SUBROUTINE pbc_get_fock_mat
 
-
+!Todo not in use. (delete?)
+!> \author JR 
+!> \date 2013
+!> \brief 
+!> \param
+!> \param
 SUBROUTINE pbc_get_initial_density(kdep,bz,nrow,ncol,DMAT,nk,lupri)
 IMPLICIT NONE
 INTEGER,INTENT(IN) :: nrow,ncol,lupri,nk
@@ -1181,7 +1050,7 @@ COMPLEX(COMPLEXK) :: alpha,beta
 integer :: i,j
 
 !V(:,:) =Smat(:,:)
-w=0D0
+w=0._realk
 if(nrow .ne. ncol) then
   call LSQUIT('pbc_get_initial_density: dmat not n X n',lupri)
 endif
@@ -1207,13 +1076,13 @@ if(info .ne. 0) then
   call LSQUIT('pbc_get_initial_density: info not 0 for eigenvalues',lupri)
 endif
 
-!winv(:,:)=0d0
+!winv(:,:)=0._realk
 do j=1,nrow
-winv(j,j,i)=CMPLX(1./sqrt(w(j,i)),0D0,complexk)
+winv(j,j,i)=CMPLX(1./sqrt(w(j,i)),0._realk,complexk)
 enddo
 !write(*,*) w(:,i)
-alpha=CMPLX(1D0,0d0,complexk)
-beta=CMPLX(0D0,0D0,complexk)
+alpha=CMPLX(1._realk,0._realk,complexk)
+beta=CMPLX(0._realk,0._realk,complexk)
 call zgemm('N','N',nrow,ncol,ncol,alpha,winv,nrow,kdep_tmp(i)%koverlapmat,&
                                                      nrow,beta,sk_tmp,nrow)
 
@@ -1239,8 +1108,8 @@ call transformk_2_realmat(kdep_tmp,bz,&
 !call write_matrix(V,nrow,ncol)
 !write(*,*)'sqrt(inv(S))'
 !!call write_matrix(CMAT,nrow,ncol)
-!alpha=1D0
-!beta=0D0
+!alpha=1._realk
+!beta=0._realk
 !call dgemm('N','N',nrow,ncol,ncol,alpha,winv,nrow,V,nrow,beta,V_tmp,nrow)
 !call dgemm('T','N',nrow,ncol,ncol,alpha,V,nrow,V_tmp,nrow,beta,V_tmp,nrow)
 !call dgemm('T','N',nrow,ncol,ncol,alpha,V_tmp,nrow,V_tmp,nrow,beta,DMAT,nrow)
@@ -1248,7 +1117,11 @@ call transformk_2_realmat(kdep_tmp,bz,&
 
 END SUBROUTINE pbc_get_initial_density
 
-!SUBROUTINE to the the electronic one-body energy
+!> \author JR 
+!> \date 2013
+!> \brief Calc the electronic one body energy 
+!> \param
+!> \param
 SUBROUTINE  pbc_get_onehamenergy(numvecs,f_1,nfdensity,E_1)
 INTEGER,INTENT(IN) :: numvecs
 TYPE(matrix),target,intent(IN) :: f_1(numvecs),nfdensity(numvecs)
@@ -1263,95 +1136,64 @@ INTEGER :: celli
       E_1=E_1+mat_dotproduct(f_1(celli),nfdensity(celli))
     endif
  enddo
- 
 
 END SUBROUTINE  pbc_get_onehamenergy
 
-
-SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
-  IMPLICIT NONE
-  INTEGER,INTENT(IN) :: nbast,nkmobas,lupri,nsingular
-  !TYPE(matrix),INTENT(INOUT) :: nfdensity(nfsize)
-  COMPLEX(COMPLEXK),intent(INOUT) :: ddensity(nbast,nbast)
-  COMPLEX(COMPLEXK),intent(in) :: C_tmp(nbast,nbast),smatk(nbast,nbast)
-  !real(realk),intent(INOUT) :: ddensity(nbast,nbast)
+!> \author JR 
+!> \date 2013
+!> \brief 
+!> \param
+!> \param
+subroutine pbc_get_kdensity(ddensity,c_tmp,nbast,nkmobas,nsingular,smatk,lupri)
+  implicit none
+  integer,intent(in) :: nbast,nkmobas,lupri,nsingular
+  complex(complexk),intent(inout) :: ddensity(nbast,nbast)
+  complex(complexk),intent(in) :: c_tmp(nbast,nbast),smatk(nbast,nbast)
   real(realk) :: nelectrons
-  !real(realk),intent(in) :: C_tmp(nbast,nbast)
-  !TYPE(lvec_data_t) :: C_tmp(nfsize)
-  !LOCAL VARIABLES
-  COMPLEX(COMPLEXK), pointer :: density_tmp(:,:)
-  COMPLEX(COMPLEXK), pointer :: tmp(:,:)
-  INTEGER :: i,j,mu,nu,nosingdim
-  COMPLEX(COMPLEXK) :: alpha,beta
+  ! local
+  complex(complexk), pointer :: tmp(:,:)
+  integer :: i,nosingdim
+  complex(complexk) :: alpha,beta
 
-  alpha=CMPLX(2D0,0d0,complexk)
-  beta =CMPLX(0d0,0d0,complexk)
-  
-      !write(lupri,*) 'C coefficients in density comp'
-      !call write_zmatrix(C_tmp,nbast,nbast,lupri)
+  alpha=cmplx(2._realk,0._realk,complexk)
+  beta =cmplx(0._realk,0._realk,complexk)
 
-      nosingdim=nbast-nsingular
-!     allocate(density_tmp(nbast,nbast))
-     call mem_alloc(density_tmp,nbast,nbast)
-     call mem_alloc(tmp,nbast,nbast)
-     density_tmp(:,:)=CMPLX(0D0,0D0,complexk)
-     ddensity(:,:)=CMPLX(0D0,0D0,complexk)
-     !call zgemm('n','c',nbast,nbast,nbast,alpha,c_tmp,nbast,c_tmp,&
-     !           nbast,beta,density_tmp,nbast)
-     !write(lupri,*) 'c*c'
+  nosingdim=nbast-nsingular
+  ddensity(:,:)=cmplx(0._realk,0._realk,complexk)
 
-     call zgemm('N','C',nbast,nbast,nkmobas,alpha,c_tmp,nbast,&
-             c_tmp,nbast,beta,density_tmp,nbast)
+  ! D = C C^H
+  call zgemm('n','c',nbast,nbast,nkmobas,alpha,c_tmp,nbast,&
+	  c_tmp,nbast,beta,ddensity,nbast)
 
-   !  DO i=1,nkmobas
-   !   DO mu=1,nbast!-nsingular
-   !    DO nu=1,nbast!-nsingular
-   !      density_tmp(mu,nu)=density_tmp(mu,nu)+2D0*c_tmp(mu,i)*conjg(c_tmp(nu,i))
-   !     ! write(lupri,*)c_tmp(mu,i)*conjg(c_tmp(nu,i))
-   !    ENDDO
-   !   ENDDO
-   !  ENDDO
+  !==================================
+  !==================================
+  ! DEBUG (smathk,tmp, only used here)
+  ! test number of electrons
+  ! DELETE THE REST
+  !==================================
+  !==================================
 
+  call mem_alloc(tmp,nbast,nbast)
+  alpha=cmplx(1._realk,0._realk,complexk)
 
-      DO i=1,nbast
-        DO j=1,nbast
-           ddensity(i,j)=density_tmp(i,j)
-        ENDDO    
-      ENDDO  
+  call zgemm('n','n',nbast,nbast,nbast,alpha,ddensity,nbast,&
+	  smatk,nbast,beta,tmp,nbast)
+  nelectrons=0._realk
+  do i=1,nbast
+	  nelectrons=nelectrons+real(tmp(i,i))
+  end do
+  write(*,*) 'nelectrons =', nelectrons,nkmobas,nsingular
+  write(lupri,*) 'nelectrons =', nelectrons,nkmobas,nsingular
 
-     alpha=CMPLX(1D0,0D0,complexk)
+  call mem_dealloc(tmp)
 
-!     call zgemm('C','N',nosingdim,nbast,nbast,alpha,c_tmp,nbast,&
-!             ddensity,nbast,beta,density_tmp,nosingdim)
+end subroutine pbc_get_kdensity
 
-     call zgemm('N','N',nbast,nbast,nbast,alpha,density_tmp,nbast,&
-             smatk,nbast,beta,tmp,nbast)
-      
-  		nelectrons=0._realk
-      do i=1,nbast
-         nelectrons=nelectrons+real(tmp(i,i))
-      enddo
-
-
-
-      !write(*,*) 'DMo ='
-      !call write_zmatrix(tmp,nbast,nbast)
-      !write(lupri,*) 'DMo ='
-      !call write_zmatrix(tmp(1:nosingdim,1:nosingdim),nosingdim,nosingdim,lupri)
-      write(*,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
-      write(lupri,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
-
-      !write(lupri,*) 'dk'
-      !call write_zmatrix(ddensity,nbast,nbast,lupri)
-      write(*,*) 'dk'
-      call write_zmatrix(ddensity,nbast,nbast)
-      !deallocate(density_tmp)
-      call mem_dealloc(density_tmp)
-      call mem_dealloc(tmp)
-
-
-END SUBROUTINE pbc_get_kdensity
-
+!> \author JR 
+!> \date 2013
+!> \brief 
+!> \param
+!> \param
 SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fock,&
                 numrealvec,errortest,error,diis_exit,errdim,nelectrons,lupri)
   IMPLICIT NONE
@@ -1385,13 +1227,13 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
           call transform_toMOfock(C_0,fock,fockMO(:,:),ndim,lupri)
 
         !call mem_alloc(weight,i)
-        weight=0.D0
+        weight=0._realk
         !! k is still the gamma point
         if(tol .gt. lattice%num_store) then
           do j=1,lattice%num_store-1
            error(j,:)=error(j+1,:)
           enddo
-          error(lattice%num_store,:)=0d0
+          error(lattice%num_store,:)=0._realk
         endif
 
         !get the error vectors
@@ -1414,12 +1256,12 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
         endif
         endif
 
-        if(tol .le. 1) weight(1)=1.0d0
+        if(tol .eq. 0 .or. tol .eq. 1) weight(1)=1.0_realk
 
         write(*,*) 
         write(*,*) 'Iteration nr. ', tol
-        write(*,*) 'Weights'
-        write(*,*) weight
+!        write(*,*) 'Weights'
+!        write(*,*) weight
         write(lupri,*) 
         write(lupri,*) 'Iteration nr. ', tol
         write(lupri,*) 'Weights'
@@ -1441,11 +1283,13 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
         call zero_pbc_elstr(Bz%fck)
         call zero_pbc_elstr(Bz%Smat)
 
-
-
-
 END SUBROUTINE pbc_get_diisweights
 
+!> \author JR 
+!> \date 2013
+!> \brief 
+!> \param
+!> \param
 SUBROUTINE pbc_diisweights(errdim,error,weight,it,num_store,lupri)
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: errdim,lupri,it,num_store
@@ -1462,23 +1306,23 @@ SUBROUTINE pbc_diisweights(errdim,error,weight,it,num_store,lupri)
   REAL(realk),pointer :: work(:)
   info=0
 
-  B_mat(:,:)=0d0
+  B_mat(:,:)=0._realk
   DO i=1,it
     write(lupri,*) 'error(',i,')'
     write(lupri,*) error(i,:)
-    !B_mat(i,i)= 0.05D0
+    !B_mat(i,i)= 0.05_realk
    DO j=1,it
     B_mat(i,j)=B_mat(i,j)+dot_product(error(i,:),error(j,:))! error(i)*error(j)
    ENDDO
   ENDDO
 !  call mat_init(Bmat_t,it,it)
 !  call mat_zero(Bmat_t)
-!  call mat_set_from_full(B_mat,1D0,Bmat_t)
+!  call mat_set_from_full(B_mat,1._realk,Bmat_t)
 
-!  B_mat(it+1,it+1)=0D0
+!  B_mat(it+1,it+1)=0._realk
   solve=0
-  !weight_tmp(it+1,1)=-1D0
-  weight_tmp(:,1)=1!D0
+  !weight_tmp(it+1,1)=-1._realk
+  weight_tmp(:,1)=1._realk
 
   !N=it+1
   N=it
@@ -1512,13 +1356,13 @@ SUBROUTINE pbc_diisweights(errdim,error,weight,it,num_store,lupri)
        ENDDO
       ENDDO
       DO j=1,it
-      ! B_mat(it+1,j)=-1.D0
-      ! B_mat(j,it+1)=-1D0
-       !weight_tmp(j,1)=0d0
-       weight_tmp(j,1)=1d0
+      ! B_mat(it+1,j)=-1._realk
+      ! B_mat(j,it+1)=-1._realk
+       !weight_tmp(j,1)=0._realk
+       weight_tmp(j,1)=1._realk
       ENDDO
-      !B_mat(it+1,it+1)=0D0
-      !weight_tmp(it+1,1)=-1D0
+      !B_mat(it+1,it+1)=0._realk
+      !weight_tmp(it+1,1)=-1._realk
       lwork=3*n+2*n+1000
       rcond= 1.0D-10
       call mem_alloc(work,lwork)
@@ -1548,8 +1392,11 @@ SUBROUTINE pbc_diisweights(errdim,error,weight,it,num_store,lupri)
 
 END SUBROUTINE pbc_diisweights
 
-!Sums over former fock matrices
-!with the corresponing weights.
+!> \author JR 
+!> \date 2013
+!> \brief Sums over former Fock matrices with the cerresponding weights. 
+!> \param
+!> \param
 SUBROUTINE pbc_get_weighted_fock(i,ndiis,stdiis,nbast,weight,Aop,lupri)
   IMPLICIT NONE
   !DUMMY variables
@@ -1670,6 +1517,11 @@ SUBROUTINE pbc_get_weighted_fock(i,ndiis,stdiis,nbast,weight,Aop,lupri)
 END SUBROUTINE pbc_get_weighted_fock
 
 
+!> \author JR 
+!> \date 2013
+!> \brief 
+!> \param
+!> \param
 SUBROUTINE pbc_trans_k_energy(lattice,cenergies,nbast,nelectrons,bz)
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: nbast,nelectrons
@@ -1683,7 +1535,7 @@ SUBROUTINE pbc_trans_k_energy(lattice,cenergies,nbast,nelectrons,bz)
   REAL(Realk) :: ehomo,elumo,etmph1,etmph2,etmpl1,etmpl2
 
   lattindex(1)=0
-  cenergies =0.d0
+  cenergies =0.0_realk
   ehomo=-huge(ehomo)
   elumo= huge(elumo)
   !write(*,*) lattice%ldef%is_active(1)
@@ -1714,7 +1566,7 @@ SUBROUTINE pbc_trans_k_energy(lattice,cenergies,nbast,nelectrons,bz)
 
 !     DO kpt=1,bz%nk
 !      do i=1,nelectrons/2
-!       cenergies(3)=cenergies(3)+2d0*kdep_tmp(kpt)%keigv(i)*&
+!       cenergies(3)=cenergies(3)+2._realk*kdep_tmp(kpt)%keigv(i)*&
 !       &bz%kpnt(kpt)%weight/BZ%NK_nosym
 !    enddo
 !   enddo
@@ -1724,6 +1576,13 @@ SUBROUTINE pbc_trans_k_energy(lattice,cenergies,nbast,nelectrons,bz)
 
 END SUBROUTINE  pbc_trans_k_energy
 
+
+!Todo not in use (delete?)
+!> \author JR 
+!> \date 2013
+!> \brief 
+!> \param
+!> \param
 SUBROUTINE pbc_trans_to_realspc(lattice,nfdensity,nvecsrs,nbast,bz,kdep_tmp,lupri)
   IMPLICIT NONE
   INTEGER, INTENT(IN) :: nvecsrs,nbast,lupri
@@ -1752,7 +1611,7 @@ SUBROUTINE pbc_trans_to_realspc(lattice,nfdensity,nvecsrs,nbast,bz,kdep_tmp,lupr
      call transformk_2_realmat(kdep_tmp,bz,&
           dkmat,nbast,lattice%lvec(irealspc)%std_coord,lupri)
      
-     call mat_set_from_full(dkmat,1D0,nfdensity(irealspc))
+     call mat_set_from_full(dkmat,1.0_realk,nfdensity(irealspc))
      
        !write(lupri,*) 'Density matrix after first solution, for l1=',l1
        !call mat_print(rsdensity(irealspc),nbast,nbast,nbast,nbast,lupri)
@@ -1773,24 +1632,15 @@ SUBROUTINE pbc_trans_to_realspc(lattice,nfdensity,nvecsrs,nbast,bz,kdep_tmp,lupr
 
   ENDDO
 
-
 END SUBROUTINE  pbc_trans_to_realspc
 
 
-SUBROUTINE pbc_startddiis()
-  IMPLICIT NONE
-END SUBROUTINE pbc_startddiis
-
-SUBROUTINE pbc_finish_zdiis()
-  IMPLICIT NONE
-END SUBROUTINE pbc_finish_zdiis
-
-SUBROUTINE pbc_finsih_ddiis()
-  IMPLICIT NONE
-END SUBROUTINE pbc_finsih_ddiis
-
-! The LAPACK routine ZGGEV gives back gen. eig. vectors normalized in an
-! odd way. This subroutine simply fixes the normalization.
+!> \author JR 
+!> \date 2013
+!> \brief The LAPACK routine ZGGEV gives back gen. eig. vectors normalized in an
+!> \brief odd way. This subroutine simply fixes the normalization.
+!> \param
+!> \param
 subroutine pbc_fixzggevnorm(siz,cocoeff,metric,alphavec,betavec,lupri)
   implicit none
   ! input and output arguments
@@ -1804,9 +1654,9 @@ subroutine pbc_fixzggevnorm(siz,cocoeff,metric,alphavec,betavec,lupri)
   complex(COMPLEXK) :: dmat_elem, n_occ
 
   do ivec = 1,siz
-     normfac = 0.0D0
-     coeff_sum = 0.0D0
-     coeff_max = 0.0D0
+     normfac = 0.0_realk
+     coeff_sum = 0.0_realk
+     coeff_max = 0.0_realk
      do i = 1,siz
 !        call lsquit('FIXME: coeff_max real while cocoeff(i,ivec) is complex',-1)
 !        maybe but abs(cocoeff(i,ivec)) into a real(realk) before calling max
@@ -1826,7 +1676,7 @@ subroutine pbc_fixzggevnorm(siz,cocoeff,metric,alphavec,betavec,lupri)
         write(LUPRI,*) 'Warning: Zero norm orbital (',ivec,normfac,').'
         !write(LUPRI,*) 'Action: Avoid occupation by setting orb. energy high.'
         !alphavec(ivec) = 1.0D4
-        !betavec(ivec) = 1.0D0
+        !betavec(ivec) = 1.0_realk
         normfac = 1.0D50
         !call lsquit('Zero norm vector - eeeeeh',-1)
      end if
@@ -1836,10 +1686,10 @@ subroutine pbc_fixzggevnorm(siz,cocoeff,metric,alphavec,betavec,lupri)
   end do
 
 !Careful
-  n_occ = ( 0.0D0, 0.0D0 )
+  n_occ = ( 0.0_realk, 0.0_realk )
   loop_ao1: do mu = 1,siz
      loop_ao2: do nu = 1,siz
-        dmat_elem = ( 0.0D0, 0.0D0 )
+        dmat_elem = ( 0.0_realk, 0.0_realk )
         loop_band: do b = 1,siz
            dmat_elem = dmat_elem + cocoeff(mu,b) * conjg(cocoeff(nu,b))
         end do loop_band
@@ -1849,7 +1699,6 @@ subroutine pbc_fixzggevnorm(siz,cocoeff,metric,alphavec,betavec,lupri)
   write(LUPRI,*) ' k-space occupation, n_occ(k) = ',n_occ
 !Careful
 end subroutine pbc_fixzggevnorm
-
 
 
 END MODULE pbc_scfdiis

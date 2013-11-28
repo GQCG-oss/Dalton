@@ -193,7 +193,7 @@ SUBROUTINE &
   ! iterate Kudin & Scuseria's equation
 
   Tlat_aux(:,:) = T_supNF(:,:)
-  layers_in_T = 3.0D0 * nfsiz + 1.0D0
+  layers_in_T = 3.0_realk * nfsiz + 1.0_realk
   do i = 1, num_its
      write(LUPRI,*) 'pbc_form_Tlattice(): iteration ',i
      if (mod(i,2) .eq. 1) then

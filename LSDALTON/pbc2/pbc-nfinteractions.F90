@@ -45,8 +45,8 @@ SUBROUTINE find_cutoff_onep(lupri,luerr,setting,nbast,lattice, &
   call mat_zero(S)
   !call mat_init(Gab1,nbast,nbast)
   !call mat_zero(Gab1)
-  origin(1:3)=1.0
-  latt_vec_std=0.0
+  origin(1:3)=1.0_realk
+  latt_vec_std(:)=0.0_realk
   ntimes = .true.
 !  write(*,*) 'debug 1'
 !  write(*,*) setting%Output%resultTensor%nbast
@@ -1047,9 +1047,8 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
   call mat_init(F_tmp(1),nbast,nbast)
   call mat_zero(F_tmp(1))
 
-  origin(1:3)=1D0
-  latt_vec_std=0.0
- 
+  origin(1:3)=1.0_realk
+  latt_vec_std(:)=0.0_realk
 
   call latt_2_std_coord(origin,latt_vec_std,lattice%ldef%avec)
 
@@ -1428,8 +1427,8 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
   call mat_init(K_tmp(1),nbast,nbast)
   call mat_zero(K_tmp(1))
 
-  origin(1:3)=1D0
-  latt_vec_std=0.0
+  origin(1:3)=1.0_realk
+  latt_vec_std=0.0_realk
  
 
   call latt_2_std_coord(origin,latt_vec_std,lattice%ldef%avec)
@@ -1444,7 +1443,7 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
 
   compute_int=.false.
  
-  E_hfx=0._realk
+  E_hfx=0.0_realk
   DO index1=1,num_latvectors
 
   !call find_latt_vectors(index1,il1,il2,il3,fdim,lattice)
@@ -1552,8 +1551,8 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
         call II_get_exchange_mat(lupri,luerr,setting,nfdensity(index3:index3),&
              &                   1,.false.,K_tmp)
 
-        call mat_daxpy(1.D0,K_tmp(1),Kx)
-        call mat_daxpy(0.5D0,K_tmp(1),lattice%lvec(index1)%oper(1))
+        call mat_daxpy(1.0_realk,K_tmp(1),Kx)
+        call mat_daxpy(0.5_realk,K_tmp(1),lattice%lvec(index1)%oper(1))
 
         if(lattice%lvec(indred)%oper(1)%init_magic_tag.NE.mat_init_magic_value) then
           call mat_init(lattice%lvec(indred)%oper(1),nbast,nbast)
@@ -1646,7 +1645,7 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
           call mat_init(g_2(index1),nbast,nbast)
           call mat_zero(g_2(index1))
         endif
-        call mat_daxpy(1.D0,lattice%lvec(index1)%oper(1),g_2(index1))
+        call mat_daxpy(1.0_realk,lattice%lvec(index1)%oper(1),g_2(index1))
       endif
       if((abs(il1) .le. lattice%ndmat .and. abs(il2) .le. lattice%ndmat)&
         .and. abs(il3) .le. lattice%ndmat)then
@@ -1797,7 +1796,7 @@ SUBROUTINE pbc_overlap_int(lupri,luerr,setting,molecule,nbast,lattice,latt_cell,
 
 END SUBROUTINE pbc_overlap_int
 
-!
+! todo not in use
 SUBROUTINE pbc_kinetic_int(lupri,luerr,setting,molecule,nbast,fock_mtx,sizef,lattice,latt_cell,refcell,numvecs)
   IMPLICIT NONE
 
@@ -1817,7 +1816,7 @@ SUBROUTINE pbc_kinetic_int(lupri,luerr,setting,molecule,nbast,fock_mtx,sizef,lat
   INTEGER :: num_latvectors, natoms
   INTEGER, DIMENSION(3) :: fdim
   REAL(realk) :: latt_vec_std(3),origin(3)
-  REAL(realk) :: fock_tmp(nbast*nbast)
+  REAL(realk) :: fock_tmp(nbast*nbast) 			!fixme IN THE END OF THIS S.R. fock_mtx is set to fock_tmp (real = complex !) Do they also have different dimensions ??
   TYPE(lvec_list_t),intent(INOUT) ::lattice
 
   write(lupri,*) 'Starting pbc_kinetic_int'
@@ -1911,7 +1910,7 @@ SUBROUTINE pbc_kinetic_int(lupri,luerr,setting,molecule,nbast,fock_mtx,sizef,lat
 !!
 END SUBROUTINE pbc_kinetic_int
 !
-!
+!fixme not in use
 SUBROUTINE pbc_nucattrc_int(lupri,luerr,setting,molecule,nbast,fock_mtx,sizef,lattice,latt_cell,refcell,numvecs)
   IMPLICIT NONE
 
@@ -2029,7 +2028,7 @@ SUBROUTINE pbc_nucattrc_int(lupri,luerr,setting,molecule,nbast,fock_mtx,sizef,la
 !     ENDDO
 !     ENDDO
 
-     fock_mtx=fock_mtx+fock_tmp!*coeff(k,m)
+     fock_mtx=fock_mtx+fock_tmp!*coeff(k,m) !fixme not allowed. complex = real!!
      call mat_print(H1,1,H1%nrow,1,H1%ncol,6)
 !    write(lupri,*) 'H%elms', H%elms
 !  if(lattice%compare_elmnts) then
@@ -2329,6 +2328,7 @@ SUBROUTINE pbc_electron_rep(lupri,luerr,setting,molecule,&
 END SUBROUTINE pbc_electron_rep
 
 
+!todo not in use.
 SUBROUTINE pbc_complete_Fock_mtx(lupri,nbast,fock_mtx,sizef,cut,lattice)
   IMPLICIT NONE
 

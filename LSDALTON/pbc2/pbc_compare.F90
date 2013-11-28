@@ -14,6 +14,7 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
   USE pbc_interactions
   USE pbc_ff_contrib
   IMPLICIT NONE
+  !todo many variables not in use
   INTEGER,INTENT(IN) :: ndim,lupri,luerr,numrealvec,nfsze,lmax
   COMPLEX(complexk), INTENT(INOUT) :: fock(ndim,ndim),Sabk(ndim,ndim)
   TYPE(lvec_list_t),INTENT(INOUT) :: ll
@@ -26,7 +27,7 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
   !COMPLEX(complexk) :: fock_old(7,ndim,ndim),fock_vec(7,ndim*ndim)
   !COMPLEX(complexk) :: fockMO(7,ndim,ndim)
   REAL(realk) :: eigv(ndim),phase1,phase2,phase3
-  COMPLEX(complexk) :: phase
+  COMPLEX(complexk) :: phase 
   REAL(realk),allocatable :: error(:,:)
   !COMPLEX(COMPLEXK) :: U(ndim,ndim),C_tmp(7,ndim,ndim)!,fockMO(ndim,ndim)
   INTEGER :: i,j,errlm,tol!tol should be a real but now I just have it for test
