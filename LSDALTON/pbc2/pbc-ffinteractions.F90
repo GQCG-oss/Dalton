@@ -824,7 +824,6 @@ DO jk=1,(lmax+1)**2
 
       if(sphermom(nk)%is_defined) then
         if(nfdensity(nk)%init_magic_tag.EQ.mat_init_magic_value) THEN
-          !write(*,*) 'test på nk' ,z2
           rhojk(jk)=rhojk(jk)-&
                  mat_dotproduct(nfdensity(nk),sphermom(nk)%getmultipole(jk))
         endif

@@ -190,32 +190,44 @@ SUBROUTINE pbc_zggeigsolve(kindex,A,B,smatk,N,M,eigv,lupri)
 
 END SUBROUTINE pbc_zggeigsolve
 
-SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
+<<<<<<< HEAD
+=======
+SUBROUTINE pbc_diagonalize_ovl(Sabk,U,Uinv,is_singular,Ndim)
   IMPLICIT NONE
-  INTEGER,intent(in) :: Ndim,lupri
-  INTEGER,Intent(INOUT) :: nsingular
+  INTEGER,intent(in) :: Ndim
   COMPLEX(complexk),INTENT(IN) :: sabk(Ndim,Ndim)
-  COMPLEX(complexk),INTENT(INOUT),pointer :: U(:,:),Uinv(:,:)
+  COMPLEX(complexk),INTENT(INOUT) :: U(Ndim,Ndim),Uinv(ndim,ndim)
   LOGICAL,INTENT(INOUT) :: is_singular
   !Local
+<<<<<<< HEAD
   REAL(realk) :: wtemp,tol
   REAL(realk),pointer :: rwork(:),reals(:,:),workd(:),W(:),wd(:)
+=======
+  REAL(realk) :: W(ndim),wtemp,diagd(ndim,ndim),Wd(ndim)
+  REAL(realk),pointer :: rwork(:),workd(:)
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
   COMPLEX(complexk),pointer :: Work(:)
   COMPLEX(complexk),pointer :: Sk(:,:),diag(:,:),tmp(:,:)
   COMPLEX(complexk),pointer :: Sabk2(:,:),Sabk_tmp(:,:)
   COMPLEX(complexk) :: Atmp(Ndim,Ndim), Btmp(ndim,ndim)
   COMPLEX(complexk) :: alpha,beta
-  INTEGER :: info,i,j,lwork,nonsingdim
+  INTEGER :: info,i,j,lwork,lworkd
 
 
+<<<<<<< HEAD
  nsingular = 0
  lwork=10*Ndim-1
  tol =1.D-6
+=======
+ lwork=5*Ndim-1
+ lworkd=5*Ndim-1
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
  is_singular = .false.
-! write(*,*) max(1,lwork),complexk
  ! lwork=2*Ndim+ndim
-  call mem_alloc(work,max(1,lwork))
+  call mem_alloc(work,lwork)
+  call mem_alloc(workd,max(1,lworkd))
   call mem_alloc(rwork,max(1,3*Ndim-2))
+<<<<<<< HEAD
   call mem_alloc(w,ndim)
   call mem_alloc(diag,ndim,ndim)
   call mem_alloc(tmp,ndim,ndim)
@@ -227,47 +239,39 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
   call mem_alloc(wd,ndim)
   call mem_alloc(reals,ndim,ndim)
 #endif!}}}!}}}
+=======
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
   do i=1,Ndim
    do j=1,Ndim
       SK(i,j)=sabk(i,j)
+      diagd(i,j)=real(sabk(i,j))
       diag(i,j)=CMPLX(0.,0.,complexk)
-#ifdef DEBUGPBC!{{{
-      reals(i,j)=real(sabk(i,j))
-#endif!}}}
    enddo
   enddo
 
   alpha=CMPLX(1.,0.,complexk)
   beta=CMPLX(0.,0.,complexk)
 
-#ifdef DEBUGPBC!{{{
-  write(*,*) 'sk in U before zheev'
+  write(*,*) 'sk in U'
   call write_zmatrix(sk,Ndim,Ndim)
-  call dsyev('V','U',Ndim,reals,Ndim,Wd,workd,Lwork,info)
-  write(*,*) 'eigenvalues for real sk'
-  write(*,*) wd
-#endif!}}}
 
+  call dsyev('V','U',Ndim,diagd,Ndim,Wd,workd,Lworkd,info)
+  write(*,*) 'Eigenvalues of smatd'
+  write(*,*)  wd
   call zheev('V','U',Ndim,Sk,Ndim,W,work,Lwork,Rwork,info)
-
-#ifdef DEBUGPBC!{{{
-  write(*,*) 'eigenvalues in sk'
-  write(*,*) w
-#endif!}}}
-
   !call zgesvd('A','A',Ndim,Ndim,Sk,Ndim,W,Atmp,Ndim,tmp,Ndim,work,lwork,&
   !               rwork,info)
   
+  write(*,*) 'Eigenvalues of smat'
+  write(*,*)  w
+ 
   call mem_dealloc(work)
-  call mem_dealloc(rwork)
-#ifdef DEBUGPBC!{{{
   call mem_dealloc(workd)
-  call mem_dealloc(reals)
-  call mem_dealloc(wd)
-#endif!}}}
+  call mem_dealloc(rwork)
   
   do i=1,ndim
      j=ndim-i+1
+<<<<<<< HEAD
      if(w(i) .lt. 0._realk) then
        write(*,*) 'Eigenvalue for s matrix is negative', w(i)
        write(lupri,*) 'Eigenvalue for s matrix is negative',w(i)
@@ -276,6 +280,9 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
 #ifdef DEBUGPBC!{{{
      write(*,*) 'Eigenvalue sk',W(i)
 #endif!}}}
+=======
+     write(*,*) 'Eigenvalues of smat', w(i)
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
      if (i .lt. j) then
        !swap eigenvectors
        Btmp(:,1)=Sk(:,i)
@@ -294,15 +301,22 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
 
   !tmp(:,:)=cmplx(0.,0.,complexk)
   do i=1,Ndim
+<<<<<<< HEAD
       if(w(i) .lt. tol) then
         nsingular=nsingular+1
         write(*,*) 'max sk(:,i) ',maxval(real(sk(:,i))),maxval(aimag(sk(:,i))),i
         wtemp=maxval(real(sk(:,i)))
+=======
+      !diag(i,i)=CMPLX(1./sqrt(W(i)),0.,complexk)
+      !Atmp(:,i)=Atmp(:,i)/sqrt(W(i))
+      if(w(i) .lt. 1.e-8) then
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
         w(i)=0.0_realk
-        sk(:,i)=cmplx(0._realk,0._realk,complexk)
-        diag(i,i)=cmplx(0._realk,0._realk,complexk)
+        sk(:,i)=cmplx(0.,0.,complexk)
+        diag(:,i)=cmplx(0.,0.,complexk)
         is_singular=.true.
       else
+<<<<<<< HEAD
         sabk2(:,i)=Sk(:,i)/sqrt(W(i))
         diag(i,i)=cmplx(1._realk/sqrt(W(i)),0._realk,complexk)
       endif
@@ -357,13 +371,105 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
      enddo
     enddo
   endif
+=======
+        diag(:,i)=Sk(:,i)/sqrt(W(i))
+      endif
+>>>>>>> e0b9480f27f02d30b54eb7ca7495d1fc85303313
 
-#ifdef DEBUGPBC!{{{
-  do i=1,Ndim
-      !diag(i,i)=CMPLX(sqrt(W(i)),0.,complexk)
-      diag(:,i)=Sk(:,i)*sqrt(W(i))
-  enddo
+!> \author JR 
+!> \date 2013
+!> \brief For a matrix pos. semdefinite matrix S : calculates U = V\sigma^{-1/2} 
+!> \brief where V\sigmaV^H = S. Removes singularities that are smaller than 
+!> \brief singular_threshh.
+!> \param Sabk 					ndim x ndim complex matrix
+!> \param U 						Changed to V\sigma
+!> \param is_singular 			Set to true if singularities found
+!> \param ndim 					Matrix dim
+!> \param nsingular 				ndim - rank(Sabk)
+!> \param singular_threshh 	Singularity threshhold. 
+!> \param lupri 					Logical print unit
+SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,& 
+		& singular_threshh,lupri)
+	IMPLICIT NONE
 
+	INTEGER,INTENT(IN) :: Ndim,lupri
+	INTEGER,INTENT(INOUT) :: nsingular
+	COMPLEX(complexk),INTENT(IN) :: sabk(Ndim,Ndim)
+	COMPLEX(complexk),INTENT(INOUT),pointer :: U(:,:)
+	REAL(realk), INTENT(IN) :: singular_threshh
+	LOGICAL,INTENT(INOUT) :: is_singular
+	!Local
+	REAL(realk),POINTER :: rwork(:),w(:)
+	REAL(realk) :: wtemp
+	COMPLEX(complexk) ,POINTER :: Work(:)
+	COMPLEX(complexk), POINTER :: Sk(:,:),diag(:),btmp(:)
+	COMPLEX(complexk) :: alpha,beta
+	INTEGER :: info,i,j,lwork,nonsingdim
+
+	nsingular = 0
+	lwork=10*Ndim-1
+	is_singular = .false.
+
+	call mem_alloc(work,max(1,lwork))
+	call mem_alloc(rwork,max(1,3*Ndim-2))
+	call mem_alloc(w,ndim)
+	call mem_alloc(Sk,ndim,ndim)
+	call mem_alloc(diag,ndim)
+	call mem_alloc(btmp,ndim)
+
+	alpha=CMPLX(1.D0,0.D0,complexk)
+	beta=CMPLX(0.D0,0.D0,complexk)
+
+	Sk(:,:)=sabk(:,:)
+	diag(:)=CMPLX(0.D0,0.D0,complexk)
+	! calculate spectral decomposition S = V^H\sigma V  
+	call zheev('V','U',Ndim,Sk,Ndim,w,work,Lwork,Rwork,info)
+
+	do i=1,ndim
+		if(w(i) .lt. 0._realk) then
+			write(*,*) 'Eigenvalue for s matrix is negative'
+			write(lupri,*) 'Eigenvalue for s matrix is negative'
+			call lsquit('something is wrong',lupri)
+		endif
+	end do
+
+	! reorder elements s.t. largest eigenv comes first
+	do i=1,(ndim+1)/2 
+		j=ndim-i+1
+		!swap eigenvectors
+		Btmp(:)=Sk(:,i)
+		Sk(:,i)=Sk(:,j)
+		Sk(:,j)=Btmp(:)
+		!swap eigenvalues
+		wtemp=w(i)
+		w(i)=w(j)
+		w(j)=wtemp
+	end do
+
+	! remove linear dependencies in v (sk)
+	do i=1,ndim
+		if(w(i) .lt. singular_threshh) then
+			nsingular=nsingular+1
+			sk(:,i)=cmplx(0.d0,0.d0,complexk) 
+			diag(i)=cmplx(0.d0,0.d0,complexk)
+			is_singular=.true.
+		else
+			diag(i)=cmplx(1.d0/sqrt(w(i)),0.d0,complexk)
+		endif
+	enddo
+
+	write(*,*) 'number of singulars',nsingular
+	write(lupri,*) 'number of singulars',nsingular
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
+
+	! calculate u = v\sigma
+	nonsingdim=ndim-nsingular
+	call mem_alloc(u,ndim,nonsingdim)
+	do i = 1, nonsingdim
+		u(:,i) = sk(:,i)*diag(i)
+	end do
+
+<<<<<<< HEAD
   call zgemm('N','C',Ndim,Ndim,Ndim,alpha,diag,Ndim,&
              sk,Ndim,beta,Uinv,Ndim)
 !  call zgemm('N','N',Ndim,Ndim,Ndim,alpha,sk,Ndim,&
@@ -401,6 +507,13 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
   call mem_dealloc(sabk2)
   call mem_dealloc(tmp)
   call mem_dealloc(diag)
+=======
+	call mem_dealloc(work)
+	call mem_dealloc(rwork)
+	call mem_dealloc(w)
+	call mem_dealloc(Sk)
+	call mem_dealloc(diag)
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
 
 END SUBROUTINE pbc_spectral_decomp_ovl
 
@@ -414,13 +527,12 @@ SUBROUTINE pbc_unitary_transform(Ndim,nonsingdim,kfock,Uk,tfock)
   COMPLEX(complexk) :: alpha,beta
   INTEGER :: i,j
 
-  alpha=CMPLX(1.,0.,complexk)
-  beta=CMPLX(0.,0.,complexk)
+  alpha=CMPLX(1._realk,0._realk,complexk)
+  beta=CMPLX(0._realk,0._realk,complexk)
   call mem_alloc(tmp,ndim,nonsingdim)
 
   call zgemm('N','N',Ndim,Nonsingdim,Ndim,alpha,kfock,Ndim,&
              Uk,Ndim,beta,tmp,Ndim)
-
 
   call zgemm('C','N',Nonsingdim,Nonsingdim,Ndim,alpha,Uk,Ndim,&
              tmp,Ndim,beta,tfock,Nonsingdim)
@@ -469,9 +581,6 @@ SUBROUTINE pbc_zdiagonalize(sigma,A,ndim,V,U)
   call zgemm('C','N',ndim,ndim,ndim,alpha,U,ndim,A,ndim,&
         beta,D,ndim)
 
-!  Write(*,*) 'U dagger fock'
-!  call write_zmatrix(D,ndim,ndim)
-
   call zgemm('N','N',ndim,ndim,ndim,alpha,D,ndim,U,ndim,&
         beta,A,ndim)
 
@@ -482,12 +591,12 @@ SUBROUTINE ztransformbackC(C,ndim,U)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: ndim
   COMPLEX(COMPLEXK),INTENT(INOUT) :: C(ndim,ndim)
-  COMPLEX(COMPLEXK),INTENT(INOUT) :: U(ndim,ndim)
+  COMPLEX(COMPLEXK),INTENT(IN) :: U(ndim,ndim)
   COMPLEX(COMPLEXK) :: ctmp(ndim,ndim)
   COMPLEX(COMPLEXK) :: alpha,beta
 
-  alpha=cmplx(1.,0.,complexk)
-  beta =cmplx(0.,0.,complexk)
+  alpha=cmplx(1.D0,0.D0,complexk)
+  beta =cmplx(0.D0,0.D0,complexk)
   ctmp(:,:)=C(:,:)
   call zgemm('N','N',ndim,ndim,ndim,alpha,U,ndim,ctmp,ndim,&
         beta,C,ndim)
@@ -583,106 +692,62 @@ SUBROUTINE pbc_dcomputeenergy()
 END SUBROUTINE pbc_dcomputeenergy
 
 
-SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex,is_singular,nsingular,lupri)
-  IMPLICIT NONE
-  INTEGER,INTENT(IN) :: ndim,lupri,kindex,nsingular
-  LOGICAL,INTENT(IN) :: is_gamma,is_singular
-  COMPLEX(COMPLEXK),INTENT(IN) :: fock_old(ndim,ndim)
-  COMPLEX(COMPLEXK),INTENT(IN) :: Uinv(ndim-nsingular,ndim-nsingular),Uk(ndim-nsingular,ndim-nsingular)
-  COMPLEX(COMPLEXK), INTENT(IN) :: Sabk(ndim,ndim)
-  COMPLEX(COMPLEXK),intent(INOUT) :: C_tmp(ndim,ndim)
-  REAL(realk),intent(INOUT) :: eigv(ndim-nsingular)
-  !LOCAL VARIABLES
-  INTEGER :: i,j,lwork,info,lrwork,liwork, nonsingdim
-  COMPLEX(COMPLEXK),pointer :: Sabk_tmp(:,:),tfock(:,:),tmp(:,:),sabk2(:,:)
+SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv, &
+		& kindex,is_singular,nsingular,lupri)
+	IMPLICIT NONE
+	INTEGER,INTENT(IN) :: ndim,lupri,kindex,nsingular
+	LOGICAL,INTENT(IN) :: is_gamma,is_singular
+	COMPLEX(COMPLEXK),INTENT(IN) :: fock_old(ndim,ndim)
+	COMPLEX(COMPLEXK),INTENT(IN) :: &
+		& Uinv(ndim-nsingular,ndim-nsingular),Uk(ndim-nsingular,ndim-nsingular)
+	COMPLEX(COMPLEXK), INTENT(IN) :: Sabk(ndim,ndim)
+	COMPLEX(COMPLEXK),intent(INOUT) :: C_tmp(ndim,ndim)
+	REAL(realk),intent(INOUT) :: eigv(ndim-nsingular)
+	!LOCAL VARIABLES
+	INTEGER :: i,j,lwork,info,lrwork,liwork, nonsingdim
+	COMPLEX(COMPLEXK),pointer :: tfock(:,:),tmp(:,:)
 #ifdef DEBUGPBC
-  COMPLEX(COMPLEXK),pointer :: Atmp(:,:), Btmp(:,:)
+	COMPLEX(COMPLEXK),pointer :: Atmp(:,:), Btmp(:,:)
 #endif
-  COMPLEX(COMPLEXK),pointer :: work(:)
-  Real(realk),pointer :: rwork(:)
-  INTEGER,pointer :: Iwork(:)
-  COMPLEX(COMPLEXK) :: alpha,beta
-  real(realk),external :: zlange
-  REAL(realk),pointer :: tmpeigv(:)
+	COMPLEX(COMPLEXK),pointer :: work(:)
+	Real(realk),pointer :: rwork(:)
+	INTEGER,pointer :: Iwork(:)
+	COMPLEX(COMPLEXK) :: alpha,beta
+	real(realk),external :: zlange
+	REAL(realk),pointer :: tmpeigv(:)
 
-  lwork=2*Ndim-1
-  lrwork=3*Ndim-2
-  !lwork=2*Ndim+ndim*ndim
-  !lrwork=1 + 5**ndim+2*Ndim**2
-  liwork= 3+5*Ndim
+	lwork=2*Ndim-1
+	lrwork=3*Ndim-2
+	liwork= 3+5*Ndim
 
-  nonsingdim=ndim-nsingular
-  !call mem_alloc(tmp,ndim-nsingular,ndim-nsingular)
-  !call mem_alloc(tmpeigv,ndim)
+	nonsingdim=ndim-nsingular
 
-  call mem_alloc(sabk_tmp,ndim,ndim)
-  call mem_alloc(sabk2,ndim,ndim)
-#ifdef DEBUGPBC!{{{
-  call mem_alloc(Atmp,ndim,ndim)
-  call mem_alloc(Btmp,ndim,ndim)
-#endif!}}}
+	alpha=CMPLX(1._realk,0._realk,complexk)
+	beta=CMPLX(0._realk,0._realk,complexk)
 
+	call mem_alloc(rwork,lrwork)
+	call mem_alloc(work,max(1,lwork))
+	call mem_alloc(iwork,max(1,liwork))
+	call mem_alloc(tfock,nonsingdim,nonsingdim)
 
-  DO i=1,ndim
-   !eigv(i)=0.0d0
-   DO j=1,ndim
-   C_tmp(i,j)=cmplx(0.D0,0.D0,complexk)
-!  if(.not. is_singular) then
-!   C_tmp(i,j)=fock_old(i,j)
-!  endif
-!   Sabk_tmp(i,j)=Sabk(i,j)
-!   Sabk2(i,j)=Sabk(i,j)
-#ifdef DEBUGPBC!{{{
-#endif!}}}
-  ! fock_old(1,i,j)=fock(i,j)
-   ENDDO
-  ENDDO
-  
-  alpha=CMPLX(1._realk,0.,complexk)
-  beta=CMPLX(0._realk,0._realk,complexk)
+	! Transform f = U^T F U
+	call pbc_unitary_transform(Ndim,nonsingdim,fock_old,Uk,tfock)
 
-!  if(.not. is_singular) then
-    !call mem_alloc(rwork,max(1,3*Ndim-2))
-    write(lupri,*) 'For kpoint',kindex,'we have a singularity FV=VE, C=UV'!{{{
-    call mem_alloc(rwork,lrwork)
-    call mem_alloc(work,max(1,lwork))
-    call mem_alloc(iwork,max(1,liwork))
-    call mem_alloc(tfock,ndim-nsingular,ndim-nsingular)!}}}
+	!call zheevd('V','U',Ndim,tfock,Ndim,eigv,work,Lwork,Rwork,lrwork,&
+	! Iwork,liwork,info)
 
-    call pbc_unitary_transform(Ndim,nonsingdim,fock_old,Uk,tfock)
+	! solve fc = ce 
+	call zheev('V','U',nonsingdim,tfock,nonsingdim,eigv,work,Lwork,Rwork,info)
 
-#ifdef DEBUGPBC!{{{
-    write(*,*) 'transformed fock matrix', kindex
-    call write_zmatrix(tfock,nonsingdim,nonsingdim)
-    DO i=1,nonsingdim
-     DO j=1,nonsingdim
-      C_tmp(i,j)=tfock(i,j)
-     ENDDO
-    ENDDO
-#endif!}}}
+	if(info .ne. 0) THEN
+		write(lupri,*) 'ERROR: zheev problems, info=', info
+		call write_zmatrix(tfock,nonsingdim,nonsingdim)
+		write(*,*) 'ERROR: zheev problems, info=', info
+		call LSQUIT('pbc_solve_kfcsc_mat: INFO not zero,', &
+			& ' while solving eigenvalue',lupri)
+	endif
 
-    !call zheevd('V','U',Ndim,tfock,Ndim,eigv,work,Lwork,Rwork,lrwork,&
-    ! Iwork,liwork,info)
-    call zheev('V','U',nonsingdim,tfock,nonsingdim,eigv,work,Lwork,Rwork,info)
-           
-    if(info .ne. 0) THEN!{{{
-      write(lupri,*) 'ERROR: zheev problems, info=', info
-      call write_zmatrix(tfock,nonsingdim,nonsingdim)
-      write(*,*) 'ERROR: zheev problems, info=', info
-      call LSQUIT('pbc_solve_kfcsc_mat: INFO not zero, while solving eigenvalue',lupri)
-    endif!}}}
-
-    call mem_dealloc(work)!{{{
-    call mem_dealloc(rwork)
-    call mem_dealloc(iwork)!}}}
-
-    !Transform back to C(k)=U c(k) !tfock=c(k) uk=U, C_mp=C
-    call zgemm('N','N',ndim,nonsingdim,nonsingdim,alpha,Uk,ndim,&
-               tfock,nonsingdim,beta,C_tmp(:,1:nonsingdim),ndim)
-
-    c_tmp(:,nonsingdim+1:ndim)=0._realk
-
-
+<<<<<<< HEAD
     !! makes sure that C^* S C = I
     !call zggram_schmidt(C_tmp(:,1:nonsingdim),Sabk,ndim,nonsingdim,ndim,ndim,lupri)
     !! Does it three times, just to take away numerical noise
@@ -803,19 +868,20 @@ SUBROUTINE solve_kfcsc_mat(is_gamma,ndim,fock_old,Sabk,C_tmp,Uk,Uinv,eigv,kindex
 !
     write(*,*) 'C*SC'
     call write_zmatrix(Sabk2,Ndim,Ndim)
+=======
+	!Transform back to C=Uc
+	call zgemm('N','N',ndim,nonsingdim,nonsingdim,alpha,Uk,ndim,&
+		tfock,nonsingdim,beta,C_tmp(:,1:nonsingdim),ndim)
 
-#endif!}}}
+	! orthogonalize(C_tmp) ??
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
 
-     call mem_dealloc(tfock)
-     call mem_dealloc(sabk_tmp)
-     call mem_dealloc(sabk2)
-!  else
-!    !call pbc_qz_solver(smatk,c_tmp,ndim,lupri)
-!    !call pbc_zeigsolve(c_tmp,Sabk_tmp,ndim,ndim,eigv,is_gamma,lupri)
-!    call pbc_zggeigsolve(kindex,c_tmp,sabk_tmp,sabk2,ndim,ndim,eigv,lupri)
-!  endif
-!     call mem_dealloc(sabk_tmp)
-!     call mem_dealloc(sabk2)
+	c_tmp(:,nonsingdim+1:ndim)=cmplx(0.D0,0.D0,complexk)
+
+	call mem_dealloc(work)
+	call mem_dealloc(rwork)
+	call mem_dealloc(iwork)
+	call mem_dealloc(tfock)
 
 END SUBROUTINE solve_kfcsc_mat
 
@@ -934,6 +1000,10 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   TYPE(matrix),pointer :: f_1(:),ovl(:)
   TYPE(matrix),pointer :: g_2(:)
 
+
+  ! threshhold for removing singularities in overlap matrix s
+  REAL(realk) :: singular_threshh = 1e-8_realk 
+
   write(lupri,*) 'Entering routine startzdiis'
 
     write(stiter,'(I5)') 1
@@ -1022,8 +1092,13 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
    DO k=1,BZ%nk
 !
+<<<<<<< HEAD
       !call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
       !call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
+=======
+      call mem_alloc(bz%kpnt(k)%Uk,ndim,ndim)
+      call mem_alloc(bz%kpnt(k)%Uinv,ndim,ndim)
+>>>>>>> e0b9480f27f02d30b54eb7ca7495d1fc85303313
       call pbc_get_kpoint(k,kvec)
 
       if(lattice%store_mats)then
@@ -1041,8 +1116,8 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       call pbc_zdevectorize_mat(smatk,ndim,ndim,bz%smat%zelms)
 !
       !diagonalizes Sk, Uk transform operators
-      call pbc_spectral_decomp_ovl(smatk,bz%kpnt(k)%Uk,bz%kpnt(k)%Uinv,& 
-           & bz%kpnt(k)%is_singular,Ndim,bz%kpnt(k)%nsingular,lupri)
+      call pbc_spectral_decomp_ovl(smatk,bz%kpnt(k)%Uk, & 
+           & bz%kpnt(k)%is_singular,Ndim,bz%kpnt(k)%nsingular,singular_threshh,lupri)
 
       call mem_alloc(bz%kpnt(k)%eigv,ndim-bz%kpnt(k)%nsingular)
 
@@ -1182,10 +1257,15 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       !Put it in a matrix form
       call pbc_zdevectorize_mat(fock,ndim,ndim,bz%fck%zelms)
 
+
+
+
+
+
       !solves F(k)C(k)=S(k)C(k)e(k)
-      call solve_kfcsc_mat(bz%kpnt(kpt)%is_gamma,ndim,fock,smatk,&
-      &C_k,bz%kpnt(kpt)%Uk,bz%kpnt(kpt)%Uinv,bz%kpnt(kpt)%eigv,kpt,bz%kpnt(kpt)%is_singular,&
-      &bz%kpnt(kpt)%nsingular,lupri)
+      call solve_kfcsc_mat(bz%kpnt(kpt)%is_gamma,ndim,fock,smatk,C_k, &
+			& bz%kpnt(kpt)%Uk,bz%kpnt(kpt)%Uinv,bz%kpnt(kpt)%eigv,kpt, &
+			& bz%kpnt(kpt)%is_singular,bz%kpnt(kpt)%nsingular,lupri)
 
       !C_0 is used for finding the weights
       if(bz%kpnt(kpt)%is_gamma ) C_0(:,:)=C_k(:,:)
@@ -1198,12 +1278,20 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       !Converts D(k) to D^0l
       call kspc_2_rspc_loop_k(nfdensity,Bz%Nk,D_k,lattice,kvec,bz%kpnt(kpt)%weight,BZ%NK_nosym,ndim,kpt)
 
+
+
+
+
+
+
+
+
     enddo !kpt
     CALL LSTIMER('k point energy',TST,TET,LUPRI)
 
     if(associated(weight)) call mem_dealloc(weight)
     
-    write(*,*)!{{{
+    write(*,*)
     call pbc_densitymat_write(nfdensity,lattice,ndim,ndim,8,'            ')
     call pbc_free_read_matrices(lattice)
     call print_bands(bz,ndim,'band-energy') !prints band energy to file band-energy
@@ -1233,11 +1321,11 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
     if(diis_exit) exit
 
     tol=tol+1
-    CALL LSTIMER('Diis Iteration',TOT,TWT,LUPRI)!}}}
+    CALL LSTIMER('Diis Iteration',TOT,TWT,LUPRI)
 
   ENDDO
 
-  do k=1,bz%Nk!{{{
+  do k=1,bz%Nk
      call mem_dealloc(bz%kpnt(k)%Uk)
 #ifdef DEBUGPBC
      call mem_dealloc(bz%kpnt(k)%Uinv)
@@ -1308,7 +1396,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   write(*,*) 'h_1=',E_1
   write(*,*) 'Nuclear=',E_nuc
   write(*,*) 'Far field=', E_ff,E_nn
-  call mem_dealloc(cellenergies)!}}}
+  call mem_dealloc(cellenergies)
 
 END SUBROUTINE pbc_startzdiis
 
@@ -1470,10 +1558,7 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
 
   alpha=CMPLX(2D0,0d0,complexk)
   beta =CMPLX(0d0,0d0,complexk)
-  nelectrons=0._realk
   
-  i=1
-  j=1
       !write(lupri,*) 'C coefficients in density comp'
       !call write_zmatrix(C_tmp,nbast,nbast,lupri)
 
@@ -1481,8 +1566,8 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
 !     allocate(density_tmp(nbast,nbast))
      call mem_alloc(density_tmp,nbast,nbast)
      call mem_alloc(tmp,nbast,nbast)
-     density_tmp=0d0
-     ddensity   =0d0
+     density_tmp(:,:)=CMPLX(0D0,0D0,complexk)
+     ddensity(:,:)=CMPLX(0D0,0D0,complexk)
      !call zgemm('n','c',nbast,nbast,nbast,alpha,c_tmp,nbast,c_tmp,&
      !           nbast,beta,density_tmp,nbast)
      !write(lupri,*) 'c*c'
@@ -1506,7 +1591,7 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
         ENDDO    
       ENDDO  
 
-     alpha=CMPLX(1D0,0d0,complexk)
+     alpha=CMPLX(1D0,0D0,complexk)
 
 !     call zgemm('C','N',nosingdim,nbast,nbast,alpha,c_tmp,nbast,&
 !             ddensity,nbast,beta,density_tmp,nosingdim)
@@ -1514,10 +1599,16 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
      call zgemm('N','N',nbast,nbast,nbast,alpha,density_tmp,nbast,&
              smatk,nbast,beta,tmp,nbast)
       
+<<<<<<< HEAD
+=======
+  		nelectrons=0._realk
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
       do i=1,nbast
          nelectrons=nelectrons+real(tmp(i,i))
       enddo
         
+
+
 
       !write(*,*) 'DMo ='
       !call write_zmatrix(tmp,nbast,nbast)
@@ -1539,11 +1630,11 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
          
       !write(lupri,*) 'dk'
       !call write_zmatrix(ddensity,nbast,nbast,lupri)
+      write(*,*) 'dk'
+      call write_zmatrix(ddensity,nbast,nbast)
       !deallocate(density_tmp)
       call mem_dealloc(density_tmp)
       call mem_dealloc(tmp)
-
-
 
 
 END SUBROUTINE pbc_get_kdensity
@@ -1612,12 +1703,12 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
         endif
         endif
 
-        if(tol .eq. 0 .or. tol .eq. 1) weight(1)=1.0d0
+        if(tol .le. 1) weight(1)=1.0d0
 
         write(*,*) 
         write(*,*) 'Iteration nr. ', tol
-!        write(*,*) 'Weights'
-!        write(*,*) weight
+        write(*,*) 'Weights'
+        write(*,*) weight
         write(lupri,*) 
         write(lupri,*) 'Iteration nr. ', tol
         write(lupri,*) 'Weights'

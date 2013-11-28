@@ -337,6 +337,8 @@ C
      &         WRK(KFREE),LFREE
      &         )
             DODFT=DFTSAV
+         ELSE
+            CALL QUIT('ERROR in E3INIT for HF or DFT')
          END IF
 C
          TRPLETSAVE=TRPLET

@@ -22,13 +22,6 @@ C
 C
       CHARACTER*56 LINE1,LINE2
       REAL*8       SOMEMMB
-c      write (lupri,*) 'in memmax :',subnm,' : ',memofree
-C
-C------------------
-C     Add to trace.
-C------------------
-C
-      CALL QENTER('SO_MEMMAX')
 C
       LINE1 = '|=====================================================|'
       LINE2 = '|-----------------------------------------------------|'
@@ -104,11 +97,7 @@ C
 C
       END IF
 C
-C-----------------------
-C     Remove from trace.
-C-----------------------
-C
-      CALL QEXIT('SO_MEMMAX')
+      CALL FLSHFO(LUPRI)
 C
 C
       RETURN

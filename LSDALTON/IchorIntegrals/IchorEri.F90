@@ -655,7 +655,8 @@ DO ItypeAnon=1,nTypesA !non ordered loop
 !       call IchorTimer('START',TSTART,TEND,LUPRI)
        call IchorCoulombIntegral_OBS_general_size(TMParray1maxsize,&
          &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimQ*nPrimP,nContQ*nContP)
+         &nPrimP,nPrimQ,nContP,nContQ,nPrimQ*nPrimP,nContQ*nContP,&
+         &Psegmented,Qsegmented)
        !possibly change MaxPasses according to Sizes!
        TMParray1maxsize = TMParray1maxsize*MaxPasses
        TMParray2maxsize = TMParray2maxsize*MaxPasses
@@ -690,7 +691,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
                    d2 = d2 + Y*Y
                    d2 = d2 + Z*Z
                    PpreExpFac(i12) = exp(-e1*e2/(e1+e2)*d2)
-                   IF (Psegmented.AND.Qsegmented) THEN
+                   IF (Psegmented) THEN
                       PpreExpFac(i12) = PpreExpFac(i12)*ContractCoeffA(i1,1)*ContractCoeffB(i2,1)
                    ENDIF
                 ENDDO
@@ -746,7 +747,7 @@ DO ItypeAnon=1,nTypesA !non ordered loop
                          d2 = d2 + Y*Y
                          d2 = d2 + Z*Z
                          QpreExpFac(i12,iPass) = exp(-e1*e2/(e1+e2)*d2)
-                         IF (Qsegmented.AND.Psegmented) THEN
+                         IF (Qsegmented) THEN
                             QpreExpFac(i12,iPass) = QpreExpFac(i12,iPass)*ContractCoeffC(i1,1)*ContractCoeffD(i2,1)
                          ENDIF
                          !integralPrefactor(nPrimPQ) could be modified instead of QpreExpFac to avoid nPass cost

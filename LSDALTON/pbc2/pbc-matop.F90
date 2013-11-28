@@ -674,15 +674,22 @@ IMPLICIT NONE
 INTEGER, INTENT(IN) :: nrowsc, mcolsc,nrowss,mcolss
 COMPLEX(complexk), INTENT(INOUT) :: C(nrowsc,mcolsc)
 COMPLEX(complexk), INTENT(IN) :: S(nrowss,mcolss)
-INTEGER, INTENT(IN),OPTIONAL :: lupri
-!LOCAL VARIABLES
+INTEGER, INTENT(IN), OPTIONAL :: lupri
+!local variables
 INTEGER :: i,j,k
 COMPLEX(complexk) :: alpha,beta
+<<<<<<< HEAD
 COMPLEX(complexk),pointer :: ctmp1(:,:),ctmp2(:,:),vtmp1(:,:)
 COMPLEX(complexk),pointer :: vtmp2(:,:)
 COMPLEX(complexk),external :: zdotc
 REAL(realk) :: radii,angle
 COMPLEX(complexk) :: factor1,factor2,fac
+=======
+COMPLEX(complexk), POINTER :: ctmp1(:),ctmp2(:),vtmp1(:)
+COMPLEX(complexk), POINTER :: vtmp2(:)
+COMPLEX(complexk), EXTERNAL :: zdotc
+REAL(realk) :: factor1,factor2
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
 
  alpha=CMPLX(1._realk,0._realk,complexk)
  beta=CMPLX(0._realk,0._realk,complexk)
@@ -690,6 +697,7 @@ COMPLEX(complexk) :: factor1,factor2,fac
  factor2=CMPLX(0._realk,0._realk,complexk)
 
  !vtmp1(:)=C(:,1)
+<<<<<<< HEAD
 
  call mem_alloc(ctmp1,nrowsc,1)
  call mem_alloc(ctmp2,nrowsc,1)
@@ -697,6 +705,22 @@ COMPLEX(complexk) :: factor1,factor2,fac
  call mem_alloc(vtmp2,nrowsc,1)
 
  !Orthogonalize the eigenvector C_i^d S C_j= 0
+=======
+ call mem_alloc(ctmp1,nrowsc)
+ call mem_alloc(ctmp2,nrowsc)
+ call mem_alloc(vtmp1,nrowsc)
+ call mem_alloc(vtmp2,nrowsc)
+
+! call zgemm('C','N',nrowsc,mcolss,1,alpha,vtmp1,nrowsc,S,nrowss,nrowss,beta, &
+!           & vtmp2,nrowsc)
+ !call zgemm('N','N',nrowsc,mcolss,1,alpha,vtmp2,nrowsc,S,nrowss,nrowss,beta &
+ !          & vtmp1,nrowsc)
+
+ !c(:,1)=vtmp1(:)!/zdotc(nrowsc,vtmp2,1,vtmp1,1)
+ !c(:,1)=vtmp1(:)
+
+ !Orthogonalize the eigenvector C_i S C_j= 0
+>>>>>>> 18e45c11a4d426c2b8d22851eaccc1ec6a00a25b
  do i=2,mcolsc
     vtmp1(:,1)=c(:,i)
     vtmp2(:,1)=c(:,i)
@@ -748,6 +772,40 @@ COMPLEX(complexk) :: factor1,factor2,fac
  call mem_dealloc(vtmp2)
 
 END SUBROUTINE zggram_schmidt
+
+!> \author 	Karl R. Leikanger
+!> \date 	2013
+!> \brief 	Orthogonalize complex matrix c
+!> \param 	c 		mxn matrix to be orthogonalized
+!> \param 	m 		mtrx dim
+!> \param 	n 		mtrx dim
+!> \param 	lupri logical print unit
+SUBROUTINE pbcmo_orthogonalize(c,m,n,lupri)
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: m,n,lupri
+	COMPLEX(complexk), INTENT(INOUT) :: c(m,n)
+	!local
+	INTEGER :: lda, info, lwork
+	COMPLEX(complexk), POINTER :: work(:), tau(:)
+
+	lda = m
+	lwork = 64*n
+
+	CALL mem_alloc(tau, min(m,n))
+	CALL mem_alloc(work, lwork)
+
+	CALL zgeqrf(m,n,c,lda,tau,work,lwork,info)
+	IF (INFO .LT. 0) THEN
+		WRITE (*,*) 'Error A in pbcmo_orthogonalize, info=', info
+		WRITE (lupri,*) 'Error A in pbcmo_orthogonalize, info=', info
+	END IF
+	CALL zungqr(m,n,n,c,lda,tau,work,lwork,info)
+	IF (INFO .LT. 0) THEN
+		WRITE (*,*) 'Error B in pbcmo_orthogonalize, info=', info
+		WRITE (lupri,*) 'Error B in pbcmo_orthogonalize, info=', info
+	END IF
+
+END SUBROUTINE pbcmo_orthogonalize
 
 !Creates an upper triagonal matrix A consisting of ones.
 !I do not know why I made it.
