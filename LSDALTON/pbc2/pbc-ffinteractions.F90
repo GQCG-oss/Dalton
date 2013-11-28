@@ -665,7 +665,7 @@ subroutine pbc_get_nfsize(n1,n2,n3,layer,lupri)
   call pbcstruct_get_active_dims(fdim)
 !
   if (layer .ge. 1 .and. &
-      layer .le. 16) then
+      layer .le. 25) then
      n1 = layer * fdim(1)
      n2 = layer * fdim(2)
      n3 = layer * fdim(3)
@@ -792,32 +792,6 @@ tlatlmnu=0d0
 E_ff=0._realk
 E_nn=0._realk
 
-!For debug only
-!call mat_init(debug_tm,nbast,nbast)
-
-
-!do jk=1,nrlm
-!   call mat_init(rhojk(jk),nbast,nbast)
-!   call mat_zero(rhojk(jk))
-!enddo
-
-
-!  debugsumT=0d0
-!  do i=1,256
-!   do l=1,256
-!      debugsumT=debugsumT+abs(Tlat(i,l))
-!   enddo
-!  enddo
-!
-!  if(debugsumT .gt. 0d0) then
-!    write(*,*) 'debugsumT in form fck  not equal to 0do'!,siz,lmax
-!    write(*,*)  debugsumT
-!    !call write_matrix(T_supNF,siz,siz)
-!    !stop
-!  endif
-!write(*,*) nfsze,num_latvec
-!stop
-!allocate(sphermom(num_latvec))
 call mem_alloc(sphermom,num_latvec)
 
 
@@ -843,13 +817,14 @@ rhojk=0d0
 DO jk=1,(lmax+1)**2
    DO nk=1,num_latvec
       x2=ll%lvec(nk)%lat_coord(1)
-      !y2=ll%nflvec(nk)%lat_coord(2)
-      !z2=ll%nflvec(nk)%lat_coord(3)
+      y2=ll%nflvec(nk)%lat_coord(2)
+      z2=ll%nflvec(nk)%lat_coord(3)
 
       !call find_latt_index(nf,x2,y2,z2,fdim,ll,ll%max_layer)
 
       if(sphermom(nk)%is_defined) then
         if(nfdensity(nk)%init_magic_tag.EQ.mat_init_magic_value) THEN
+          !write(*,*) 'test på nk' ,z2
           rhojk(jk)=rhojk(jk)-&
                  mat_dotproduct(nfdensity(nk),sphermom(nk)%getmultipole(jk))
         endif
@@ -859,15 +834,19 @@ ENDDO
 
 !call pbc_redefine_q(rhojk,lmax)
 !call pbc_multipl_moment_order(rhojk,lmax)
-#ifdef DEBUGPBC
+!#ifdef DEBUGPBC
 debugsumT=0d0
 !write(lupri,*) 'electronic moments'
 do jk=1,(lmax+1)**2
-   debugsumt=debugsumt+rhojk(jk)**2
+   debugsumt=debugsumt+(rhojk(jk)+nucmom(jk))**2
 enddo
-write(lupri,*) 'debugsum rhojk^2', debugsumt
-write(*,*) 'debugsumt rhojk^2', debugsumt
-#endif
+write(lupri,*) 'debugsum cell_mom', debugsumt
+write(*,*) 'debugsumt cell_mom', debugsumt
+write(lupri,*) 'Charge rhojk(1)', rhojk(1)
+write(*,*) 'Charge rhojk(1)', rhojk(1)
+write(lupri,*) 'Charge nucmom(1)', nucmom(1)
+write(*,*) 'Charge nucmom(1)', nucmom(1)
+!#endif
 
 DO lm=1,(lmax+1)**2
   tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
@@ -883,6 +862,8 @@ enddo
 write(lupri,*) 'debugsum tlatlm^2', debugsumt
 write(*,*) 'debugsumt tlatlm^2', debugsumt
 #endif
+write(lupri,*) 'Charge tlatlm(1)', tlatlm(1)
+write(*,*) 'Charge tlatlm(1)', tlatlm(1)
 
 !
 !write(lupri,*) 'total moments'
@@ -920,46 +901,19 @@ DO nk=1,num_latvec
      call mat_zero(ll%lvec(nk)%oper(1))
 #endif
      call mat_zero(farfieldtmp)
-     !write(*,*) 'debug 1'
 
-     !FOR Debug only
-     !call mat_zero(debug_tm)
 
-     !DO delta=1,nbast*nbast
      DO lm=1,(lmax+1)**2
 
-           !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),rhojk)+&
-                     ! dot_product(tlat(lm,1:nrlm),nucmom)
-           !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),rhojk)!+&
 
-           !tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
-           !tlatlmnu(lm)=dot_product(tlat(lm,1:nrlm),nucmom)
-     
-           !write(*,*) 'debug 3',ll%lvec(nk)%oper(2)%elms(delta)+3.2
-     
-          !  call mat_daxpy(-tlatlm(lm),sphermom(nf)%getmultipole(lm),ll%lvec(nk)%oper(2))
-          ! if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
-          !    farfieldtmp%elms(delta)=farfieldtmp%elms(delta)&
-          !        - sphermom(nk)%getmultipole(lm)%elms(delta)*tlatlm(lm)
-          ! endif
-
-           !if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
          call mat_daxpy(-tlatlm(lm),sphermom(nk)%getmultipole(lm),farfieldtmp)
-          !endif
      
               
-           !ll%lvec(nk)%oper(2)%elms(delta) = ll%lvec(nk)%oper(2)%elms(delta)&
-                       !- sphermom(nf)%getmultipole(lm)%elms(delta)*tlatlm(lm)
-     
-     
-           !Denne skal helst ikke være her, husk å kontraktere med tlatlm,først
-           !E_ff=E_ff-mat_dotproduct(sphermom(nf)%getmultipole(lm),nfdensity(nk))
-     
      
      ENDDO !lm
      !ENDDO !delta
      
-#ifdef DEBUGPBC
+#ifdef DEBUGPBC!{{{
      call mat_copy(1.0_realk,farfieldtmp,ll%lvec(nk)%oper(1))
      write(lupri,*) ''
      write(lupri,*) 'Total Far-field contribution to fock for layer ' ,x2
@@ -968,14 +922,8 @@ DO nk=1,num_latvec
      write(lupri,*) 'max of tlatlmnu = ', maxval(tlatlmnu,(lmax+1)**2)
      write(lupri,*) 'max of nucmom = ', maxval(nucmom,(lmax+1)**2)
      call mat_print(farfieldtmp,1,nbast,1,nbast,lupri)
-#endif
+#endif!}}}
 
-     !call mat_daxpy(1.0_realk,ll%lvec(nk)%oper(2),ll%lvec(nk)%oper(3))
-     !if(iter .eq. 1) then
-
-     !if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
-     !   E_ff=E_ff-mat_dotproduct(farfieldtmp,nfdensity(nk))
-     !endif
 
      if(.not. ll%store_mats) then
 
@@ -984,12 +932,12 @@ DO nk=1,num_latvec
           call mat_daxpy(1._realk,farfieldtmp,g_2(nk))
         endif
 
-#ifdef DEBUGPBC
+#ifdef DEBUGPBC!{{{
           write(lupri,*) 'Near field coul',nk
           call mat_print(ll%lvec(nk)%oper(2),1,nbast,1,nbast,lupri)
           write(lupri,*) 'Total coul',nk
           call mat_print(g_2(nk),1,nbast,1,nbast,lupri)
-#endif
+#endif!}}}
         !endif
      else
         if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
@@ -1009,7 +957,7 @@ DO nk=1,num_latvec
 !    !call pbc_get_file_and_write(ll,nbast,nbast,nk,7,3,diis)!7 and 3 fock matrix
 !   endif
 
-#ifdef DEBUGPBC
+#ifdef DEBUGPBC!{{{
    write(lupri,'(A35)') 'DEBUGPBC farfield and total Coulomb'
    il1=int(ll%lvec(nk)%lat_coord(1))
    il2=int(ll%lvec(nk)%lat_coord(2))
@@ -1036,24 +984,21 @@ DO nk=1,num_latvec
     write(lupri,'(A22)') 'DEBUGPBC total coulomb'
     write(lupri,'(A4,X,E16.8)') 'Jt^2:',coulomb2
     write(lupri,'(A10,X,E16.8)') 'sum ijJt^2:',coulombst
-#endif
+#endif!}}}
 
  if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
    call mat_free(ll%lvec(nk)%oper(2))
  endif
-#ifdef DEBUGPBC
+#ifdef DEBUGPBC!{{{
  if(ll%lvec(nk)%oper(1)%init_magic_tag.EQ.mat_init_magic_value) then
    call mat_free(ll%lvec(nk)%oper(1))
  endif
-#endif
+#endif!}}}
  endif!is_redundant
    !call mat_free(ll%lvec(nk)%oper(3))
 ENDDO
-#ifdef DEBUGPBC
 
-#else
-
-IF(ll%compare_elmnts ) THEN
+IF(ll%compare_elmnts ) THEN!{{{
   !compare integrals with the old pbc code
 
 !  write(lupri,*) 'comparing multipole moments with old pbc code'
@@ -1090,8 +1035,7 @@ IF(ll%compare_elmnts ) THEN
     call lsclose(iunit,'KEEP')
   
   ENDDO
-ENDIF !compare 
-#endif
+ENDIF !compare !}}}
 
 #ifdef DEBUGPBC
 !  normsq = 0

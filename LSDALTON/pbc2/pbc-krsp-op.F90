@@ -194,7 +194,8 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
   REAL(realk),intent(in)       :: kvec(3),weight_k
                     !LOCAL Variables
   TYPE(matrix)                 :: tmp_density
-  REAL(realk)                  :: work(nbast,nbast)
+  REAL(realk),pointer                  :: worktmp(:,:)
+  complex(complexk),pointer            :: work(:,:)
   REAL(realk)                  :: phase1,phase2,phase3
   REAL(realk)                  :: maxdens
   COMPLEX(complexk)            :: phase
@@ -202,6 +203,8 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
   INTEGER                      :: l1,l2,l3
 
 
+  call mem_alloc(work,nbast,nbast)
+  call mem_alloc(worktmp,nbast,nbast)
   call mat_init(tmp_density,nbast,nbast)
   DO layer = 1,size(ll%lvec)
      l1=int(ll%lvec(layer)%lat_coord(1))
@@ -224,12 +227,13 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
        Do i=1,nbast
         Do j=1,nbast
          
-         work(i,j)=real(kmat(i,j)*exp(phase)*weight_k/volbz,realk)
+         work(i,j)= kmat(i,j)*exp(phase)*weight_k/volbz
 
         ENDDO
        ENDDO
        !call write_matrix(work,nbast,nbast)
-       call mat_set_from_full(work,1.0_realk,tmp_density)
+       worktmp(:,:)=real(work(:,:),realk)
+       call mat_set_from_full(worktmp,1.0_realk,tmp_density)
        call mat_daxpy(1.D0,tmp_density,density(layer))
 
      if(k==Nk)then
@@ -237,7 +241,7 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
          call mat_abs_max_elm(density(layer),maxdens)
          if(maxdens .gt. 1e-12)then
            write(*,*) 'maybe to hard density cutoff, max element for&
-            &layer', l1,l2,l3,maxdens
+            &layer', l1,l2,l3,maxdens,volbz
          endif
        endif
      endif
@@ -245,6 +249,8 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
 
   enddo
   call mat_free(tmp_density)
+  call mem_dealloc(work)
+  call mem_dealloc(worktmp)
 
 
 END SUBROUTINE kspc_2_rspc_loop_k

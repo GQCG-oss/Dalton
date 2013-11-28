@@ -102,13 +102,13 @@ CTRL[2]=1
 ERROR[2]="Basis not correct"
 
 # Test individual iterations
-CRIT1=`$GREP "final E\(HOMO\) \= * \-0\.77728104406" $log | wc -l`
+CRIT1=`$GREP "final E\(HOMO\) \= * \-0\.77691360" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="HOMO energy not correct -"
 
 # Test individual iterations
-CRIT1=`$GREP "final E\(LUMO\) \= * 1\.1240336008" $log | wc -l`
+CRIT1=`$GREP "final E\(LUMO\) \= * 1\.1.1238465" $log | wc -l`
 TEST[4]=`expr  $CRIT1`
 CTRL[4]=1
 ERROR[4]="LUMO energy at first iteration not correct -"

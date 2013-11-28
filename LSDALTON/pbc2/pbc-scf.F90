@@ -210,7 +210,7 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
 
  nsingular = 0
  lwork=10*Ndim-1
- tol =1.D-10
+ tol =1.D-6
  is_singular = .false.
 ! write(*,*) max(1,lwork),complexk
  ! lwork=2*Ndim+ndim
@@ -269,9 +269,9 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
   do i=1,ndim
      j=ndim-i+1
      if(w(i) .lt. 0._realk) then
-       write(*,*) 'Eigenvalue for s matrix is negative'
-       write(lupri,*) 'Eigenvalue for s matrix is negative'
-       call lsquit('something is wrong',lupri)
+       write(*,*) 'Eigenvalue for s matrix is negative', w(i)
+       write(lupri,*) 'Eigenvalue for s matrix is negative',w(i)
+       !call lsquit('something is wrong',lupri)
      endif
 #ifdef DEBUGPBC!{{{
      write(*,*) 'Eigenvalue sk',W(i)
@@ -309,8 +309,10 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,Uinv,is_singular,Ndim,nsingular,lupri)
   enddo
 
   if(nsingular .gt. 0) then
-    write(*,*) 'Number of singulars',nsingular
-    write(lupri,*) 'Number of singulars',nsingular
+    write(*,*) 'Number of singulars',nsingular,&
+      &'lowest eigenvalue of S(k)',w(ndim-nsingular)
+    write(lupri,*) 'Number of singulars of S(k)',nsingular,&
+      &'lowest eigenvalue',w(ndim-nsingular)
   endif
 
   nonsingdim=ndim-nsingular
@@ -996,6 +998,12 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
      lattice,latt_cell,refcell,numrealvec,nfdensity,f_1,E_en)
   CALL LSTIMER('pbc_nucattrc_k',TS,TE,LUPRI)
 
+  write(*,*) 'before call to multipole'
+  CALL LSTIMER('START ',TS,TE,LUPRI)
+  call pbc_multipole_expan_k(lupri,luerr,setting,ndim,lattice,&
+    &latt_cell,refcell,numrealvec,maxmultmom)
+  CALL LSTIMER('pbc_multipole',TS,TE,LUPRI)
+
   !CALCULATES nuclear repulsion
   CALL LSTIMER('START ',TS,TE,LUPRI)
   CALL pbc_nucpot(lupri,luerr,setting,molecule,lattice,&
@@ -1155,7 +1163,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
       endif
 
 
-       if(lattice%store_mats)then
+      if(lattice%store_mats)then
         !get the overlap matrices S^0l
         call pbc_read_matrix(lattice,ndim,ndim,1,1,'            ')
         !We need k-space overlap
@@ -1515,8 +1523,8 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
       !call write_zmatrix(tmp,nbast,nbast)
       !write(lupri,*) 'DMo ='
       !call write_zmatrix(tmp(1:nosingdim,1:nosingdim),nosingdim,nosingdim,lupri)
-      write(*,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
-      write(lupri,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
+      write(*,*) 'Nelectrons =', nelectrons!,nkmobas,nsingular
+      write(lupri,*) 'Nelectrons =', nelectrons!,nkmobas,nsingular
 
       dummy2=-huge(dummy2)
       do i=1,nbast
@@ -1526,8 +1534,8 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
        enddo
       enddo
       
-      write(*,*) 'max value of D(k)', dummy2
-      write(lupri,*) 'max value of D(k)', dummy2
+      write(*,*) 'max value of D(k)',dummy2,'singularities', nsingular
+      write(lupri,*) 'max value of D(k)',dummy2,'singularities', nsingular
          
       !write(lupri,*) 'dk'
       !call write_zmatrix(ddensity,nbast,nbast,lupri)
