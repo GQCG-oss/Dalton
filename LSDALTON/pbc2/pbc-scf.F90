@@ -318,13 +318,21 @@ END SUBROUTINE solve_kfcsc_mat
 
 !> \author JR 
 !> \date 2013
-!> \brief Does the SCF iterations and solces the F(k)C(k)=eps(k)C(k) for each k
-!> \param
-!> \param
+!> \brief Does the SCF iterations and solves the F(k)C(k)=eps(k)C(k) for each k.
+!> \param molecule 		Stores info about the reference cell.
+!> \param setting 		Stores info about the integral routines. 
+!> \param lattice 		Stores info about the pbc lattice.
+!> \param numrealvec 	Number of unit vectors.
+!> \param maxmultmom
+!> \param bz 				Stores info about the reciprocal grid.
+!> \param dmat0 			The initial density matrix.
+!> \param lupri 			Logical print unit.
+!> \param luerr 			
 SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		maxmultmom,bz,dmat0,lupri,luerr)
 	IMPLICIT NONE
 	INTEGER,INTENT(IN) :: ndim,lupri,luerr,numrealvec,maxmultmom
+	! input
 	TYPE(lvec_list_t),INTENT(INOUT) :: lattice
 	TYPE(moleculeinfo),INTENT(INOUT) :: molecule
 	TYPE(LSSETTING) :: setting
@@ -532,8 +540,8 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 				CALL LSTIMER('START',TS,TE,LUPRI)
 				call mem_alloc(weight,i)
 				weight=0.0_realk
-				call pbc_get_diisweights(lattice,Bz,weight,i,tol,kvec,ndim,C_0,fockMO,fock,numrealvec,errortest,error,&
-					diis_exit,errlm,molecule%nelectrons,lupri)
+				call pbc_get_diisweights(lattice,Bz,weight,i,tol,kvec,ndim,C_0,fockMO,fock,errortest,error,&
+					& diis_exit,errlm,molecule%nelectrons,lupri)
 				CALL LSTIMER('diis weights',TS,TE,LUPRI)
 			endif ! is_gamma
 
@@ -694,8 +702,14 @@ END SUBROUTINE pbc_startzdiis
 !> \author JR 
 !> \date 2013
 !> \brief 
-!> \param
-!> \param
+!> \param lattice
+!> \param g_2
+!> \param f_1
+!> \param ndim
+!> \param realcut
+!> \param numrealvec
+!> \param diismats
+!> \param lupri
 SUBROUTINE pbc_get_fock_mat(lattice,g_2,f_1,ndim,realcut,numrealvec,diismats,lupri)
 	IMPLICIT NONE
 	TYPE(lvec_list_t),INTENT(INOUT) :: lattice
@@ -705,16 +719,16 @@ SUBROUTINE pbc_get_fock_mat(lattice,g_2,f_1,ndim,realcut,numrealvec,diismats,lup
 	CHARACTER(LEN=12) :: diismats
 	INTEGER,intent(OUT) :: realcut(3)
 	! local
-	INTEGER             :: i,j
-	real(realk)         :: focknorm !For finding time usage
-	real(realk)         :: TS,TE !For finding time usage
+	INTEGER :: i,j
+	REAL(realk) :: focknorm !for finding time usage
+	REAL(realk) :: ts,te !for finding time usage
 
 	!get the fock matrices f^0l
 	if(lattice%store_mats) then
-		CALL LSTIMER('START',TS,TE,LUPRI)
+		call lstimer('START',ts,te,lupri)
 		!call pbc_read_fock_matrix(lattice,ndim,ndim,diismats)
 		call pbc_read_fock_matrix(lattice,ndim,ndim,'            ')
-		CALL LSTIMER('Reading fock',TS,TE,LUPRI)
+		call lstimer('Reading fock',ts,te,lupri)
 		call pbc_fockmat_write(lattice,ndim,ndim,7,2,diismats,lupri)
 		!get the overlap matrices S^0l
 		call pbc_read_matrix(lattice,ndim,ndim,1,1,'            ')
@@ -819,51 +833,41 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
 
 END SUBROUTINE pbc_get_kdensity
 
-
-
-
-
-
-
-!===============================================================
-!===============================================================
-!===============================================================
-!
-!
-! BELOW routines not fixed. Remove unnecc variables and comment.
-!
-!
-!===============================================================
-!===============================================================
-!===============================================================
-
-
-
-
-
-
 !> \author JR 
 !> \date 2013
-!> \brief 
-!> \param
-!> \param
+!> \brief ??? 
+!> \param lattice 		Information about the pbc lattice.
+!> \param Bz 				Information about the reciprocal lattice.
+!> \param weight 			Diis weights.
+!> \param its 				???
+!> \param tol 				???
+!> \param kvec 			???
+!> \param ndim 			Fock matrix dim
+!> \param C_0 				Fock exp. coeff. (??) basis.
+!> \param fockMO 			Fock mat in MO basos
+!> \param fock 			Fock mat in AO basis
+!> \param errortest 		???
+!> \param error 			???
+!> \param diis_Exit 		???
+!> \param errdim 			???
+!> \param nelectrons 	Number of electrons total.
+!> \param lupri 			Logical print unit.
 SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fock,&
-                numrealvec,errortest,error,diis_exit,errdim,nelectrons,lupri)
+                & errortest,error,diis_exit,errdim,nelectrons,lupri)
   IMPLICIT NONE
-  INTEGER,INTENT(IN) :: ndim,lupri,numrealvec,its,tol,errdim
+  INTEGER,INTENT(IN) :: ndim,lupri,its,tol,errdim
   INTEGER,INTENT(IN) :: nelectrons
   TYPE(lvec_list_t),INTENT(INOUT) :: lattice
-  Real(realk),intent(OUT) :: weight(its)
-  REAL(realk),intent(inout) :: error(lattice%num_store,errdim)
-  LOGICAL,intent(out) :: diis_exit
-  REAL(realk),intent(out) :: errortest
-  real(realk),intent(in) :: kvec(3)
-  TYPE(BZgrid_t),intent(inout) :: bz
-  COMPLEX(COMPLEXK) :: C_0(ndim,ndim)
-  COMPLEX(COMPLEXK),intent(out) :: fockMO(ndim,ndim)
-  COMPLEX(COMPLEXK),intent(inout) :: fock(ndim,ndim)
+  REAL(realk),INTENT(OUT) :: weight(its)
+  REAL(realk),INTENT(INOUT) :: error(lattice%num_store,errdim)
+  LOGICAL,INTENT(OUT) :: diis_exit
+  REAL(realk),INTENT(OUT) :: errortest
+  REAL(realk),INTENT(IN) :: kvec(3)
+  TYPE(BZgrid_t),INTENT(INOUT) :: bz
+  COMPLEX(complexk) :: C_0(ndim,ndim)
+  COMPLEX(complexk),INTENT(OUT) :: fockMO(ndim,ndim)
+  COMPLEX(complexk),INTENT(INOUT) :: fock(ndim,ndim)
   !LOCAL
-  !Real(realk) :: tol
   INTEGER :: j
 
       !We need k-space fock matrix in gamma point now
@@ -873,8 +877,7 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
         if(tol .ge. 1) then
           call transform_toMOfock(C_0,fock,fockMO(:,:),ndim,lupri)
 
-          !call mem_alloc(weight,i)
-          weight=0.0_realk
+          weight(:)=0.0_realk
           ! k is still the gamma point
           if(tol .gt. lattice%num_store) then
             do j=1,lattice%num_store-1
@@ -896,8 +899,7 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
           write(*,*) 'check error', errortest
           if(errortest .le. lattice%error) diis_exit=.true.
 
-          !Get diis weights  !!!THIS HAS TO BE FIXED, its-1 only when its .gt.
-          !tol
+          !Get diis weights TODO !!!THIS HAS TO BE FIXED, its-1 only when its .gt. tol
           if(its .gt. tol) then ! this since I do not know the C0 matrix for it 0
             call pbc_diisweights(errdim,error,weight,its-1,lattice%num_store,lupri)
           else
@@ -921,24 +923,23 @@ END SUBROUTINE pbc_get_diisweights
 
 !> \author JR 
 !> \date 2013
-!> \brief 
-!> \param
-!> \param
+!> \brief 				???
+!> \param errdim 		???
+!> \param weight 		???
+!> \param it 			???
+!> \param num_store	???
+!> \param lupri 		Logical print unit.
 SUBROUTINE pbc_diisweights(errdim,error,weight,it,num_store,lupri)
 	IMPLICIT NONE
 	INTEGER, INTENT(IN) :: errdim,lupri,it,num_store
 	REAL(realk),INTENT(INOUT) :: error(num_store,errdim)
 	REAL(realk),INTENT(INOUT) :: weight(it)
-	!LOCAL VARIABLES
-	!REAL(realk) :: B_mat(it+1,it+1),weight_tmp(it+1,1)
+	! local
 	REAL(realk) :: B_mat(it,it),weight_tmp(it,1)
 	REAL(realk) :: Sdgelss(it+1),rcond,normfac
-	INTEGER :: i,j,info, N,m,rank,lwork
-	!  TYPE(matrix) :: Bmat_t
-	!INTEGER :: solve(it+1)
+	INTEGER :: i,j,info,N,m,rank,lwork
 	INTEGER :: solve(it)
 	REAL(realk),pointer :: work(:)
-	info=0
 
 	B_mat(:,:)=0.0_realk
 	DO i=1,it
@@ -987,252 +988,164 @@ END SUBROUTINE pbc_diisweights
 
 !> \author JR 
 !> \date 2013
-!> \brief Sums over former Fock matrices with the cerresponding weights. 
-!> \param
-!> \param
-SUBROUTINE pbc_get_weighted_fock(i,ndiis,stdiis,nbast,weight,Aop,lupri)
-  IMPLICIT NONE
-  !DUMMY variables
-  INTEGER,INTENT(IN)              :: i,ndiis,stdiis,nbast,lupri
-  REAL(realk),INTENT(IN)          :: weight(i)
-  TYPE(lvec_list_t),INTENT(INOUT) :: Aop
-               !LOCAL VARIABLES
-  INTEGER                         :: j,layer,k
-  INTEGER                         :: l1,l2,l3
-  CHARACTER(len=12)               :: diis,tmpdiis
-  CHARACTER(len=7)                :: stiter
-  TYPE(lvec_list_t)               :: tmp_mat
+!> \brief Sums over former Fock matrices with the corresponding weights. 
+!> \param i 			???
+!> \param ndiis 		???
+!> \param stdiis 		???
+!> \param nbast 		Number of basis functions.
+!> \param weight 		???
+!> \param aop 			???
+!> \param lupri 		LOgical print unit
+SUBROUTINE pbc_get_weighted_fock(i,ndiis,stdiis,nbast,weight,aop,lupri)
+	IMPLICIT NONE
+	! input
+	INTEGER,INTENT(IN) :: i,ndiis,stdiis,nbast,lupri
+	REAL(realk),INTENT(IN) :: weight(i)
+	TYPE(lvec_list_t),INTENT(INOUT) :: aop
+	! local
+	INTEGER :: j,layer,k
+	INTEGER :: l1,l2,l3
+	CHARACTER(LEN=12) :: diis,tmpdiis
+	CHARACTER(LEN=7) :: stiter
+	TYPE(lvec_list_t) :: tmp_mat
 
+	tmp_mat%max_layer=aop%max_layer
+	tmp_mat%nneighbour=aop%nneighbour
+	tmp_mat%ldef%is_active(:)=aop%ldef%is_active(:)
+	call build_lvec_list(tmp_mat,nbast) 
+	tmp_mat%fc1=aop%fc1
+	tmp_mat%fc2=aop%fc2
+	tmp_mat%fc3=aop%fc3
+	tmp_mat%oneop1 = aop%oneop1
+	tmp_mat%oneop2 = aop%oneop2
+	tmp_mat%oneop3 = aop%oneop3
+	tmp_mat%col1 =  aop%col1
+	tmp_mat%col2 =  aop%col2
+	tmp_mat%col3 =  aop%col3
+	tmp_mat%kx1 =  aop%kx1
+	tmp_mat%kx2 =  aop%kx2
+	tmp_mat%kx3 =  aop%kx3
 
-  tmp_mat%max_layer=Aop%max_layer
-  tmp_mat%nneighbour=Aop%nneighbour
-  tmp_mat%ldef%is_active(:)=Aop%ldef%is_active(:)
-  call build_lvec_list(tmp_mat,nbast) 
-  tmp_mat%fc1=Aop%fc1
-  tmp_mat%fc2=Aop%fc2
-  tmp_mat%fc3=Aop%fc3
-  tmp_mat%oneop1 = Aop%oneop1
-  tmp_mat%oneop2 = Aop%oneop2
-  tmp_mat%oneop3 = Aop%oneop3
-  tmp_mat%col1 =  Aop%col1
-  tmp_mat%col2 =  Aop%col2
-  tmp_mat%col3 =  Aop%col3
-  tmp_mat%Kx1 =  Aop%Kx1
-  tmp_mat%Kx2 =  Aop%Kx2
-  tmp_mat%Kx3 =  Aop%Kx3
-  !call mat_init(tmp_mat,nbast,nbast)
-  !call mat_zero(tmp_mat)
+	do layer=1,size(aop%lvec)
+		call mat_init(tmp_mat%lvec(layer)%oper(2),nbast,nbast)
+		call mat_zero(tmp_mat%lvec(layer)%oper(2))
+		tmp_mat%lvec(layer)%g2_computed=aop%lvec(layer)%g2_computed
+		tmp_mat%lvec(layer)%f1_computed=aop%lvec(layer)%f1_computed
+		tmp_mat%lvec(layer)%ovl_computed=aop%lvec(layer)%ovl_computed
+	enddo
 
-  DO layer=1,size(Aop%lvec)
-     call mat_init(tmp_mat%lvec(layer)%oper(2),nbast,nbast)
-     call mat_zero(tmp_mat%lvec(layer)%oper(2))
-     tmp_mat%lvec(layer)%g2_computed=Aop%lvec(layer)%g2_computed
-     tmp_mat%lvec(layer)%f1_computed=Aop%lvec(layer)%f1_computed
-     tmp_mat%lvec(layer)%ovl_computed=Aop%lvec(layer)%ovl_computed
-  ENDDO
+	if(ndiis .ge. 1) then
+		write(stiter,'(i5)') ndiis
+		stiter=adjustl(stiter)
+		diis='diis_'//trim(stiter)//'_'
+	endif
 
-  if(ndiis .ge. 1) then
-    write(stiter,'(I5)') ndiis
-    stiter=adjustl(stiter)
-    !write(*,*) 'stiter  ',stiter
-    diis='diis_'//trim(stiter)//'_'
-  endif
+	do layer=1,size(aop%lvec)
+		l1=int(aop%lvec(layer)%lat_coord(1))
+		l2=int(aop%lvec(layer)%lat_coord(2))
+		l3=int(aop%lvec(layer)%lat_coord(3))
+		if(aop%lvec(layer)%f1_computed .or. aop%lvec(layer)%g2_computed)then
+			call mat_zero(aop%lvec(layer)%oper(2))
+		endif
+	enddo
 
-  Do layer=1,size(Aop%lvec)
-     l1=int(Aop%lvec(layer)%lat_coord(1))
-     l2=int(Aop%lvec(layer)%lat_coord(2))
-     l3=int(Aop%lvec(layer)%lat_coord(3))
-     if(Aop%lvec(layer)%f1_computed .or. Aop%lvec(layer)%g2_computed)then
-       call mat_zero(Aop%lvec(layer)%oper(2))
-     endif
-  ENDDO
+	if(ndiis .le. stdiis) then
+		do j=1,ndiis
+			write(stiter,'(i5)') j
+			stiter=adjustl(stiter)
+			tmpdiis='diis_'//trim(stiter)//'_'
+			!    write(*,*) tmpdiis
 
-  if(ndiis .le. stdiis) then
-    do j=1,ndiis
-    write(stiter,'(I5)') j
-    stiter=adjustl(stiter)
-    tmpdiis='diis_'//trim(stiter)//'_'
-!    write(*,*) tmpdiis
+			call pbc_read_matrix(tmp_mat,nbast,nbast,7,2,tmpdiis)
 
-    call pbc_read_matrix(tmp_mat,nbast,nbast,7,2,tmpdiis)
+			do layer=1,size(aop%lvec)
+				l1=int(aop%lvec(layer)%lat_coord(1))
+				l2=int(aop%lvec(layer)%lat_coord(2))
+				l3=int(aop%lvec(layer)%lat_coord(3))
+				if(aop%lvec(layer)%f1_computed .or. aop%lvec(layer)%g2_computed)then
+					call mat_daxpy(weight(j),tmp_mat%lvec(layer)%oper(2),&
+						aop%lvec(layer)%oper(2))
+				endif
+			enddo
+		enddo
+	else
+		k=0
+		do j= ndiis-stdiis+1,ndiis
+			k=k+1
+			write(stiter,'(i5)') j
+			stiter=adjustl(stiter)
+			tmpdiis='diis_'//trim(stiter)//'_'
 
-    Do layer=1,size(Aop%lvec)
-     l1=int(Aop%lvec(layer)%lat_coord(1))
-     l2=int(Aop%lvec(layer)%lat_coord(2))
-     l3=int(Aop%lvec(layer)%lat_coord(3))
-     if(Aop%lvec(layer)%f1_computed .or. Aop%lvec(layer)%g2_computed)then
-       call mat_daxpy(weight(j),tmp_mat%lvec(layer)%oper(2),&
-       Aop%lvec(layer)%oper(2))
-     endif
-    enddo!layer
-    enddo!j
-  else
-    k=0
-    do j= ndiis-stdiis+1,ndiis
-    k=k+1
-    write(stiter,'(I5)') j
-    stiter=adjustl(stiter)
-    tmpdiis='diis_'//trim(stiter)//'_'
-    !write(*,*) 'Debug 3 inside get_weights'
-!    write(lupri,*) 'Filename for fock matrix, ', tmpdiis
+			call pbc_read_matrix(tmp_mat,nbast,nbast,7,2,tmpdiis)
 
-    call pbc_read_matrix(tmp_mat,nbast,nbast,7,2,tmpdiis)
-    !write(*,*) 'Debug 4 inside get_weights'
+			do layer=1,size(aop%lvec)
+				l1=int(aop%lvec(layer)%lat_coord(1))
+				l2=int(aop%lvec(layer)%lat_coord(2))
+				l3=int(aop%lvec(layer)%lat_coord(3))
+				if(aop%lvec(layer)%f1_computed .or. aop%lvec(layer)%g2_computed)then
+					call mat_daxpy(weight(k),tmp_mat%lvec(layer)%oper(2),&
+						aop%lvec(layer)%oper(2))
+				endif
+			enddo
+		enddo
+	endif
 
-    Do layer=1,size(Aop%lvec)
-     l1=int(Aop%lvec(layer)%lat_coord(1))
-     l2=int(Aop%lvec(layer)%lat_coord(2))
-     l3=int(Aop%lvec(layer)%lat_coord(3))
-     if(Aop%lvec(layer)%f1_computed .or. Aop%lvec(layer)%g2_computed)then
-       call mat_daxpy(weight(k),tmp_mat%lvec(layer)%oper(2),&
-       Aop%lvec(layer)%oper(2))
-     endif
-    enddo!layer
-    enddo!j
-  endif
+	do layer=1,size(aop%lvec)
+		l1=int(aop%lvec(layer)%lat_coord(1))
+		l2=int(aop%lvec(layer)%lat_coord(2))
+		l3=int(aop%lvec(layer)%lat_coord(3))
+		if(aop%lvec(layer)%f1_computed .or. aop%lvec(layer)%g2_computed)then
+			call pbc_get_file_and_write(aop,nbast,nbast,layer,7,2,'            ')
+		endif
+		call mat_free(tmp_mat%lvec(layer)%oper(2))
+	enddo
 
-  Do layer=1,size(Aop%lvec)
-   l1=int(Aop%lvec(layer)%lat_coord(1))
-   l2=int(Aop%lvec(layer)%lat_coord(2))
-   l3=int(Aop%lvec(layer)%lat_coord(3))
-   if(Aop%lvec(layer)%f1_computed .or. Aop%lvec(layer)%g2_computed)then
-!!   ! write(*,*) 'Debug 5 inside get_weights',l1
-     call pbc_get_file_and_write(Aop,nbast,nbast,layer,7,2,'            ')
-!     call pbc_get_file_and_write(Aop,nbast,nbast,layer,7,2,diis)
-   endif
-   call mat_free(tmp_mat%lvec(layer)%oper(2))
-  Enddo
-   !  call pbc_fockmat_write(Aop,nbast,nbast,7,2)
-   ! write(*,*) 'Debug 6 inside get_weights'
+	call mem_dealloc(tmp_mat%lvec)
 
-  !deallocate(tmp_mat%lvec)
-  call mem_dealloc(tmp_mat%lvec)
 END SUBROUTINE pbc_get_weighted_fock
 
 !> \author JR 
 !> \date 2013
-!> \brief 
-!> \param
-!> \param
+!> \brief ???
+!> \param lattice 		Information about the pbc lattice.
+!> \param cenergies 		???
+!> \param nbast 			Number of basis functions.
+!> \param nelectrons 	Number of electrons.
+!> \param bz 				Information about the reciprocal grid.
 SUBROUTINE pbc_trans_k_energy(lattice,cenergies,nbast,nelectrons,bz)
-  IMPLICIT NONE
-  INTEGER, INTENT(IN) :: nbast,nelectrons
-  TYPE(lvec_list_t),intent(IN) :: lattice
-  TYPE(BZgrid_t),intent(in) :: bz
-!  TYPE(pbc_elstr_t),INTENT(IN) :: kdep_tmp(bz%nk)
-  REAL(realk),intent(INOUT) :: cenergies(nbast)
-  !LOCAL VARIABLElS
-  INTEGER :: lattindex(3)!,irealspc
-  INTEGER :: i,kpt
-  REAL(Realk) :: ehomo,elumo,etmph1,etmph2,etmpl1,etmpl2
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: nbast,nelectrons
+	TYPE(lvec_list_t), INTENT(IN) :: lattice
+	TYPE(BZgrid_t), INTENT(IN) :: bz
+	REAL(realk), INTENT(INOUT) :: cenergies(nbast)
+	! local
+	INTEGER :: lattindex(3), kpt
+	real(realk) :: ehomo,elumo,etmph1,etmph2,etmpl1,etmpl2
 
-  lattindex(1)=0
-  cenergies =0.0_realk
-  ehomo=-huge(ehomo)
-  elumo= huge(elumo)
-  !write(*,*) lattice%ldef%is_active(1)
-  !write(*,*) lattice%ldef%is_active(2)
-  !write(*,*) lattice%ldef%is_active(3)
+	lattindex(1)=0
+	cenergies =0.0_realk
+	ehomo=-huge(ehomo)
+	elumo= huge(elumo)
 
-     lattindex(1)=0
-     lattindex(2)=0
-     lattindex(3)=0
-     
-     cenergies(1)=bz%kpnt(1)%eigv(nelectrons/2)
-     cenergies(2)=bz%kpnt(1)%eigv(nelectrons/2+1)
-   
-    DO kpt=2,bz%nk
-       etmph1=bz%kpnt(kpt)%eigv(nelectrons/2)
-       etmph2=bz%kpnt(kpt-1)%eigv(nelectrons/2)
-       etmpl1=bz%kpnt(kpt)%eigv(nelectrons/2+1)
-       etmpl2=bz%kpnt(kpt-1)%eigv(nelectrons/2+1)
-       !etmph1=kdep_tmp(kpt-1)%keigv(nelectrons/2)
-       !etmph2=kdep_tmp(kpt)%keigv(nelectrons/2)
-       !etmpl1=kdep_tmp(kpt-1)%keigv(nelectrons/2+1)
-       !etmpl2=kdep_tmp(kpt)%keigv(nelectrons/2+1)
-       ehomo=max(etmph1,etmph2)
-       elumo=min(etmpl1,etmpl2)
-    ENDDO
-       cenergies(1)=max(ehomo,cenergies(1))
-       cenergies(2)=min(elumo,cenergies(2))
+	lattindex(1)=0
+	lattindex(2)=0
+	lattindex(3)=0
 
-!     DO kpt=1,bz%nk
-!      do i=1,nelectrons/2
-!       cenergies(3)=cenergies(3)+2._realk*kdep_tmp(kpt)%keigv(i)*&
-!       &bz%kpnt(kpt)%weight/BZ%NK_nosym
-!    enddo
-!   enddo
-!!       cenergies(3)=behomo
-!       cenergies(4)=belumo
+	cenergies(1)=bz%kpnt(1)%eigv(nelectrons/2)
+	cenergies(2)=bz%kpnt(1)%eigv(nelectrons/2+1)
 
-END SUBROUTINE  pbc_trans_k_energy
+	do kpt=2,bz%nk
+		etmph1=bz%kpnt(kpt)%eigv(nelectrons/2)
+		etmph2=bz%kpnt(kpt-1)%eigv(nelectrons/2)
+		etmpl1=bz%kpnt(kpt)%eigv(nelectrons/2+1)
+		etmpl2=bz%kpnt(kpt-1)%eigv(nelectrons/2+1)
+		ehomo=max(etmph1,etmph2)
+		elumo=min(etmpl1,etmpl2)
+	enddo
+	cenergies(1)=max(ehomo,cenergies(1))
+	cenergies(2)=min(elumo,cenergies(2))
 
-!> \author JR 
-!> \date 2013
-!> \brief The LAPACK routine ZGGEV gives back gen. eig. vectors normalized in an
-!> \brief odd way. This subroutine simply fixes the normalization.
-!> \param
-!> \param
-subroutine pbc_fixzggevnorm(siz,cocoeff,metric,alphavec,betavec,lupri)
-  implicit none
-  ! input and output arguments
-  integer, intent(in) :: siz,lupri
-  complex(COMPLEXK), intent(inout) :: cocoeff(siz,siz)
-  complex(COMPLEXK), intent(in) :: metric(siz,siz)
-  complex(COMPLEXK), intent(inout) :: alphavec(siz), betavec(siz)
-  ! local variables
-  integer :: ivec, i, j, mu, nu, b
-  real(realk) :: normfac, coeff_sum, coeff_max
-  complex(COMPLEXK) :: dmat_elem, n_occ
-
-  do ivec = 1,siz
-     normfac = 0.0_realk
-     coeff_sum = 0.0_realk
-     coeff_max = 0.0_realk
-     do i = 1,siz
-!        call lsquit('FIXME: coeff_max real while cocoeff(i,ivec) is complex',-1)
-!        maybe but abs(cocoeff(i,ivec)) into a real(realk) before calling max
-!        coeff_max = max(coeff_max, abs(cocoeff(i,ivec)))
-        do j = 1,siz
-           normfac = normfac + real(conjg(cocoeff(i,ivec)) &
-                &  * metric(i,j) * cocoeff(j,ivec))
-           coeff_sum = coeff_sum + real(conjg(cocoeff(i,ivec)) &
-                &    * cocoeff(j,ivec))
-        end do
-     end do
-     !write(lupri,*) 'normfac, coff_sum',normfac,coeff_sum
-
-#if 1
-     ! crude fix for linear dependence...
-     if (normfac .lt. 1.0D-6) then
-        write(LUPRI,*) 'Warning: Zero norm orbital (',ivec,normfac,').'
-        !write(LUPRI,*) 'Action: Avoid occupation by setting orb. energy high.'
-        !alphavec(ivec) = 1.0D4
-        !betavec(ivec) = 1.0_realk
-        normfac = 1.0D50
-        !call lsquit('Zero norm vector - eeeeeh',-1)
-     end if
-#endif
-
-     cocoeff(:,ivec) = cocoeff(:,ivec) / sqrt(normfac)
-  end do
-
-!Careful
-  n_occ = ( 0.0_realk, 0.0_realk )
-  loop_ao1: do mu = 1,siz
-     loop_ao2: do nu = 1,siz
-        dmat_elem = ( 0.0_realk, 0.0_realk )
-        loop_band: do b = 1,siz
-           dmat_elem = dmat_elem + cocoeff(mu,b) * conjg(cocoeff(nu,b))
-        end do loop_band
-        n_occ = n_occ + dmat_elem * conjg(metric(mu,nu))
-     end do loop_ao2
-  end do loop_ao1
-  write(LUPRI,*) ' k-space occupation, n_occ(k) = ',n_occ
-!Careful
-end subroutine pbc_fixzggevnorm
-
-
+END SUBROUTINE pbc_trans_k_energy
 
 END MODULE pbc_scfdiis
 #endif

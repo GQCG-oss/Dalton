@@ -574,27 +574,27 @@ enddo
 END SUBROUTINE pbc_add_fock_matrix
 
 SUBROUTINE pbc_free_read_matrices(Aop)
-IMPLICIT NONE 
-TYPE(lvec_list_t),INTENT(INOUT) :: Aop
-!LOCAL Variables
-INTEGER :: layer,l1,l2,l3
+	IMPLICIT NONE 
+	TYPE(lvec_list_t),INTENT(INOUT) :: Aop
+	!LOCAL Variables
+	INTEGER :: layer,l1,l2,l3
 
 
-Do layer=1,size(Aop%lvec)
-   l1=int(Aop%lvec(layer)%lat_coord(1))
-   l2=int(Aop%lvec(layer)%lat_coord(2))
-   l3=int(Aop%lvec(layer)%lat_coord(3))
+	do layer=1,size(Aop%lvec)
+		l1=int(Aop%lvec(layer)%lat_coord(1))
+		l2=int(Aop%lvec(layer)%lat_coord(2))
+		l3=int(Aop%lvec(layer)%lat_coord(3))
 
-   if((abs(l1) .le. Aop%fc1 .and. abs(l2) .le. Aop%fc2) .and. abs(l3) .le. Aop%fc3)then
-     if(Aop%lvec(layer)%oper(1)%init_magic_tag.EQ.mat_init_magic_value)then
-       call mat_free(Aop%lvec(layer)%oper(1))
-     endif
-     if(Aop%lvec(layer)%oper(2)%init_magic_tag.EQ.mat_init_magic_value)then
-       call mat_free(Aop%lvec(layer)%oper(2))
-     endif
-   endif
+		if((abs(l1) .le. Aop%fc1 .and. abs(l2) .le. Aop%fc2) .and. abs(l3) .le. Aop%fc3)then
+			if(Aop%lvec(layer)%oper(1)%init_magic_tag.EQ.mat_init_magic_value)then
+				call mat_free(Aop%lvec(layer)%oper(1))
+			endif
+			if(Aop%lvec(layer)%oper(2)%init_magic_tag.EQ.mat_init_magic_value)then
+				call mat_free(Aop%lvec(layer)%oper(2))
+			endif
+		endif
 
-enddo
+	enddo
 
 END SUBROUTINE pbc_free_read_matrices
 
