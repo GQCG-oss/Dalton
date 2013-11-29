@@ -15,7 +15,7 @@ MODULE pbc_scfdiis
   USE pbc_ff_contrib
 	
   PRIVATE  					
-  PUBLIC :: pbc_startddiis 	
+  PUBLIC :: pbc_startzdiis	
 
   CONTAINS
 
