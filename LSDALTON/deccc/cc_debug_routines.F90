@@ -192,7 +192,8 @@ module cc_debug_routines_module
 
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
-
+   
+     u_pnos = .false.
      if(present(use_pnos)) u_pnos = use_pnos
 
      ! Sanity check 1: Number of orbitals
