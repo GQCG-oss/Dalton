@@ -183,7 +183,17 @@ SUBROUTINE transformk_2_realmat(kdep_tmp,bz,rspcdensity,&
 END SUBROUTINE transformk_2_realmat
 
 
-!TRANSFORMS TO D^0l
+!!> \author JR 
+!> \date 2011
+!> \brief  transforms D(k) to D0l
+!> \param density 		matrix type,nbast X !nbast
+!> \param Nk                    Number of K points
+!> \param kmat                  D(k)  			
+!> \param ll                    lvec_list_t
+!> \param kvec 		        reciprocal vectors
+!> \param weight_k 	        weight for k
+!>  \param volbz                The volum to divide in the integral
+!> \param k		        integer,which k point we use
 SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
   IMPLICIT NONE
   INTEGER,intent(in)           :: nbast,k,Nk
@@ -202,7 +212,7 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
   INTEGER                      :: layer,i,j
   INTEGER                      :: l1,l2,l3
   INTEGER                      :: maxl1,maxl2,maxl3
-  INTEGER                      :: diffl1,diffl2,diffl3
+  INTEGER                      :: diffl1,diffl2,diffl3,diffm1,diffm2,diffm3
 
 
   call mem_alloc(work,nbast,nbast)
@@ -251,9 +261,11 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
 
      else
 
-       !write(*,*) 'max oneop1',ll%oneop1
-       !write(*,*) 'max col',ll%col1
-       !write(*,*) 'max kx',ll%kx1
+       ! For the computations it can be conevenient to have 
+       ! density matrices D0m where m goes beyond l in J0l
+       ! thus I truncate m between l and n in Kx0n where
+       ! n is max layer in exact exchange
+       if(ll%lvec(layer)%dm_computed) CYCLE
        maxl1=max(ll%oneop1,ll%col1)
        maxl2=max(ll%oneop2,ll%col2)
        maxl3=max(ll%oneop3,ll%col3)
@@ -263,9 +275,15 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
        if(abs(l1) .gt. maxl1) CYCLE
        if(abs(l2) .gt. maxl2) CYCLE
        if(abs(l3) .gt. maxl3) CYCLE
-       diffl1=maxl1-abs(l1)
-       diffl2=maxl2-abs(l2)
-       diffl3=maxl3-abs(l3)
+       diffl1=maxl1-max(ll%oneop1,ll%col1)
+       diffl2=maxl2-max(ll%oneop2,ll%col2)
+       diffl3=maxl3-max(ll%oneop3,ll%col3)
+       diffm1=abs(maxl1-abs(l1))
+       diffm2=abs(maxl2-abs(l2))
+       diffm3=abs(maxl3-abs(l3))
+       diffl1=diffm1-diffl1
+       diffl2=diffm2-diffl2
+       diffl3=diffm3-diffl3
        if(diffl1 .gt. 2) CYCLE
        if(diffl2 .gt. 2) CYCLE
        if(diffl3 .gt. 2) CYCLE
