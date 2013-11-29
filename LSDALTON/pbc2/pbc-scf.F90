@@ -631,7 +631,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		call mem_dealloc(bz%kpnt(k)%Uk)
 	enddo
 
-
 	do i=1,numrealvec
 		call free_Moleculeinfo(latt_cell(i))
 		if(nfdensity(i)%init_magic_tag.NE.mat_init_magic_value) CYCLE
@@ -649,7 +648,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 	call mem_dealloc(C_0)
 	call mem_dealloc(D_k)
 	deallocate(latt_cell)
-
 
 	do i=1,numrealvec
 		if(f_1(i)%init_magic_tag.EQ.mat_init_magic_value) then
@@ -1019,12 +1017,12 @@ SUBROUTINE pbc_get_weighted_fock(i,ndiis,stdiis,nbast,weight,aop,lupri)
 	tmp_mat%oneop1 = aop%oneop1
 	tmp_mat%oneop2 = aop%oneop2
 	tmp_mat%oneop3 = aop%oneop3
-	tmp_mat%col1 =  aop%col1
-	tmp_mat%col2 =  aop%col2
-	tmp_mat%col3 =  aop%col3
-	tmp_mat%kx1 =  aop%kx1
-	tmp_mat%kx2 =  aop%kx2
-	tmp_mat%kx3 =  aop%kx3
+	tmp_mat%col1 = aop%col1
+	tmp_mat%col2 = aop%col2
+	tmp_mat%col3 = aop%col3
+	tmp_mat%kx1 = aop%kx1
+	tmp_mat%kx2 = aop%kx2
+	tmp_mat%kx3 = aop%kx3
 
 	do layer=1,size(aop%lvec)
 		call mat_init(tmp_mat%lvec(layer)%oper(2),nbast,nbast)
