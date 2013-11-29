@@ -60,12 +60,12 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 	call mem_alloc(Sk,ndim,ndim)
 	call mem_alloc(diag,ndim)
 
-	alpha=CMPLX(1.D0,0.D0,complexk)
-	beta=CMPLX(0.D0,0.D0,complexk)
+	alpha=CMPLX(1.0_realk,0.0_realk,complexk)
+	beta=CMPLX(0.0_realk,0.0_realk,complexk)
 
 	Sk(:,:)=sabk(:,:)
 
-	diag(:)=CMPLX(0.D0,0.D0,complexk)
+	diag(:)=CMPLX(0.0_realk,0.0_realk,complexk)
 	! calculate spectral decomposition S = V^H\sigma V  
 	call zheev('V','U',Ndim,Sk,Ndim,w,work,Lwork,Rwork,info)
 
@@ -98,11 +98,11 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 	do i=1,ndim
 		if(w(i) .lt. singular_threshh) then
 			nsingular=nsingular+1
-			sk(:,i)=cmplx(0.d0,0.d0,complexk) 
-			diag(i)=cmplx(0.d0,0.d0,complexk)
+			sk(:,i)=cmplx(0.0_realk,0.0_realk,complexk) 
+			diag(i)=cmplx(0.0_realk,0.0_realk,complexk)
 			is_singular=.true.
 		else
-			diag(i)=cmplx(1.d0/sqrt(w(i)),0.d0,complexk)
+			diag(i)=cmplx(1.0_realk/sqrt(w(i)),0.0_realk,complexk)
 		endif
 	enddo
 
@@ -209,11 +209,11 @@ SUBROUTINE transform_toMOfock(C_tmp,fock,fockMO,ndim,lupri)
 	COMPLEX(complexk),pointer :: fockMOtmp(:,:)
 	COMPLEX(complexk) :: alpha,beta
 
-	alpha=CMPLX(1D0,0D0,complexk)
-	beta =CMPLX(0D0,0D0,complexk)
+	alpha=CMPLX(1.0_realk,0.0_realk,complexk)
+	beta =CMPLX(0.0_realk,0.0_realk,complexk)
 	call mem_alloc(fockMotmp,ndim,ndim)
-	fockMO=cmplx(0d0,0d0,complexk)
-	fockMOtmp=cmplx(0d0,0d0,complexk)
+	fockMO=cmplx(0.0_realk,0.0_realk,complexk)
+	fockMOtmp=cmplx(0.0_realk,0.0_realk,complexk)
 	call zgemm('C','N',ndim,ndim,ndim,alpha,C_tmp,ndim,fock,ndim,&
 		beta,fockMOtmp,ndim)
 	call zgemm('N','N',ndim,ndim,ndim,alpha,fockMOtmp,ndim,C_tmp,ndim,&
@@ -531,7 +531,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 			if(bz%kpnt(kpt)%is_gamma )then
 				CALL LSTIMER('START',TS,TE,LUPRI)
 				call mem_alloc(weight,i)
-				weight=0.D0
+				weight=0.0_realk
 				call pbc_get_diisweights(lattice,Bz,weight,i,tol,kvec,ndim,C_0,fockMO,fock,numrealvec,errortest,error,&
 					diis_exit,errlm,molecule%nelectrons,lupri)
 				CALL LSTIMER('diis weights',TS,TE,LUPRI)
@@ -728,7 +728,7 @@ END SUBROUTINE pbc_get_fock_mat
 
 !> \author JR 
 !> \date 2013
-!> \brief Calc the electronic one body energy 
+!> \brief Calc the electronic one body energy. 
 !> \param numvecs
 !> \param f_1
 !> \param nfdensity
@@ -776,11 +776,11 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
 	INTEGER :: i,j,nosingdim
 	COMPLEX(complexk) :: alpha,beta
 
-	alpha=CMPLX(2D0,0d0,complexk)
-	beta =CMPLX(0d0,0d0,complexk)
+	alpha=CMPLX(2.0_realk,0.0_realk,complexk)
+	beta =CMPLX(0.0_realk,0.0_realk,complexk)
 
 	nosingdim=nbast-nsingular
-	ddensity(:,:)=CMPLX(0D0,0D0,complexk)
+	ddensity(:,:)=CMPLX(0.0_realk,0.0_realk,complexk)
 
 	call zgemm('N','C',nbast,nbast,nkmobas,alpha,c_tmp,nbast,&
 		c_tmp,nbast,beta,ddensity,nbast)
@@ -792,7 +792,7 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
 	
 	call mem_alloc(tmp,nbast,nbast)
   
-	alpha=CMPLX(1D0,0D0,complexk)
+	alpha=CMPLX(1.0_realk,0.0_realk,complexk)
 	call zgemm('N','N',nbast,nbast,nbast,alpha,ddensity,nbast,&
 		smatk,nbast,beta,tmp,nbast)
 
@@ -818,6 +818,28 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
 	call mem_dealloc(tmp)
 
 END SUBROUTINE pbc_get_kdensity
+
+
+
+
+
+
+
+!===============================================================
+!===============================================================
+!===============================================================
+!
+!
+! BELOW routines not fixed. Remove unnecc variables and comment.
+!
+!
+!===============================================================
+!===============================================================
+!===============================================================
+
+
+
+
 
 
 !> \author JR 
@@ -846,25 +868,19 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
 
       !We need k-space fock matrix in gamma point now
       call pbc_rspc_to_kspc_mat(lattice,Bz,ndim,kvec,2)
-
       call pbc_zdevectorize_mat(fock,ndim,ndim,bz%fck%zelms)
-        !write(*,*) pbc_it(i)%kdep_it(1)%kfockvec
-        !write(*,*) 'fock(0)'
-        !call write_zmatrix(fock,ndim,ndim)
-        !write(lupri,*) 'fock(0)'
-        !call write_zmatrix(fock,ndim,ndim,lupri)
-!
+
         if(tol .ge. 1) then
           call transform_toMOfock(C_0,fock,fockMO(:,:),ndim,lupri)
 
           !call mem_alloc(weight,i)
-          weight=0.D0
-          !! k is still the gamma point
+          weight=0.0_realk
+          ! k is still the gamma point
           if(tol .gt. lattice%num_store) then
             do j=1,lattice%num_store-1
             error(j,:)=error(j+1,:)
             enddo
-            error(lattice%num_store,:)=0d0
+            error(lattice%num_store,:)=0.0_realk
           endif
 
           !get the error vectors
@@ -889,30 +905,15 @@ SUBROUTINE pbc_get_diisweights(lattice,Bz,weight,its,tol,kvec,ndim,C_0,fockMO,fo
           endif
         endif
 
-        if(tol .le. 1) weight(1)=1.0d0
+        if(tol .le. 1) weight(1)=1.0_realk
 
         write(*,*) 
         write(*,*) 'Iteration nr. ', tol
-!        write(*,*) 'Weights'
-!        write(*,*) weight
         write(lupri,*) 
         write(lupri,*) 'Iteration nr. ', tol
         write(lupri,*) 'Weights'
         write(lupri,*) weight
-        
 
-        !call subroutine that reads matrices writes them to disk
-        !and sum with corresponding weights
-        !write(*,*) 'Debug before get_weights'
-        !call pbc_get_weighted_fock(i,tol,7,ndim,weight,lattice)
-        !write(*,*) 'Debug after get_weights'
-
-        !We need to get gamma point fock matrix again
-        !call pbc_rspc_to_kspc_mat(lattice,Bz,ndim,kvec,2)
-
-        !call pbc_zdevectorize_mat(fock,ndim,ndim,bz%fck%zelms)
-
-        ! We have to reset the gamma point again since we use it again.
         call zero_pbc_elstr(Bz%fck)
         call zero_pbc_elstr(Bz%Smat)
 
@@ -924,104 +925,63 @@ END SUBROUTINE pbc_get_diisweights
 !> \param
 !> \param
 SUBROUTINE pbc_diisweights(errdim,error,weight,it,num_store,lupri)
-  IMPLICIT NONE
-  INTEGER, INTENT(IN) :: errdim,lupri,it,num_store
-  REAL(realk),INTENT(INOUT) :: error(num_store,errdim)
-  REAL(realk),INTENT(INOUT) :: weight(it)
-  !LOCAL VARIABLES
-  !REAL(realk) :: B_mat(it+1,it+1),weight_tmp(it+1,1)
-  REAL(realk) :: B_mat(it,it),weight_tmp(it,1)
-  REAL(realk) :: Sdgelss(it+1),rcond,normfac
-  INTEGER :: i,j,info, N,m,rank,lwork
-!  TYPE(matrix) :: Bmat_t
-  !INTEGER :: solve(it+1)
-  INTEGER :: solve(it)
-  REAL(realk),pointer :: work(:)
-  info=0
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: errdim,lupri,it,num_store
+	REAL(realk),INTENT(INOUT) :: error(num_store,errdim)
+	REAL(realk),INTENT(INOUT) :: weight(it)
+	!LOCAL VARIABLES
+	!REAL(realk) :: B_mat(it+1,it+1),weight_tmp(it+1,1)
+	REAL(realk) :: B_mat(it,it),weight_tmp(it,1)
+	REAL(realk) :: Sdgelss(it+1),rcond,normfac
+	INTEGER :: i,j,info, N,m,rank,lwork
+	!  TYPE(matrix) :: Bmat_t
+	!INTEGER :: solve(it+1)
+	INTEGER :: solve(it)
+	REAL(realk),pointer :: work(:)
+	info=0
 
-  B_mat(:,:)=0d0
-  DO i=1,it
-    !write(lupri,*) 'error(',i,')'
-    !write(lupri,*) error(i,:)
-    !B_mat(i,i)= 0.05D0
-   DO j=1,it
-    B_mat(i,j)=dot_product(error(i,:),error(j,:))! error(i)*error(j)
-   ENDDO
-  ENDDO
-!  call mat_init(Bmat_t,it,it)
-!  call mat_zero(Bmat_t)
-!  call mat_set_from_full(B_mat,1D0,Bmat_t)
+	B_mat(:,:)=0.0_realk
+	DO i=1,it
+		DO j=1,it
+			B_mat(i,j)=dot_product(error(i,:),error(j,:))! error(i)*error(j)
+		ENDDO
+	ENDDO
 
-!  B_mat(it+1,it+1)=0D0
-  solve=0
-  !weight_tmp(it+1,1)=-1D0
-  weight_tmp(:,1)=1!D0
+	solve=0
+	weight_tmp(:,1)=1.0_realk
 
-  !N=it+1
-  N=it
-  m=1
-!  write(*,*) 'Debug b_mat'
-!  call write_matrix(B_mat,it+1,it+1)
-  !write(lupri,*) 'Diis B matrix'
-  !call write_matrix(B_mat,it+1,it+1,lupri)
-  !call write_matrix(B_mat,it,it,lupri)
-!  write(*,*) 'DEBUG 2: get weights '
-!  call dposv('U',N,m,B_mat,N,weight_tmp,N,info)
-!  info=1
-!  IF(info .ne. 0) THEN
-!    write(*,*) 'Calls dgesv instead'
-    call dgesv(N,m,B_mat,N,solve,weight_tmp,N,info)
-    IF(info .ne. 0) THEN
-!      write(lupri,*) 'ERROR ERROR, diis matrix below'
-!      write(*,'(X,A21,X,I3.2)') 'INFO NOT ZERO, INFO = ',info
-!      write(*,*) 'if INFO = -i, the i-th argument had an illegal value'
-!      write(*,*) 'if INFO = i, U(i,i) is exactly zero. The factorization has been'
-!      write(*,*) 'completed, but the factor U is exactly singular,'
-!      write(*,*) 'so the solution  could not  be computed'
-!      write(*,*) 
-!      write(*,*) 'Iteration number ', it
-      write(*,*) 'Calls dgelss instead'
-      write(lupri,*) 'Calls dgelss instead'
-      DO i=1,it
-       DO j=1,it
-        B_mat(i,j)=dot_product(error(i,:),error(j,:))! error(i)*error(j)
-        B_mat(j,i)=B_mat(i,j)
-       ENDDO
-      ENDDO
-      DO j=1,it
-      ! B_mat(it+1,j)=-1.D0
-      ! B_mat(j,it+1)=-1D0
-       !weight_tmp(j,1)=0d0
-       weight_tmp(j,1)=1d0
-      ENDDO
-      !B_mat(it+1,it+1)=0D0
-      !weight_tmp(it+1,1)=-1D0
-      lwork=3*n+2*n+1000
-      rcond= 1.0D-10
-      call mem_alloc(work,lwork)
-      call dgelss(n,n,m,B_mat,n,weight_tmp,n,Sdgelss,rcond,rank,work,lwork,info)
-      !call dgels('N',n,n,1,B_mat,n,weight_tmp,n,work,lwork,info)
-      !write(*,*) 'lwork',lwork,sdgelss(1),sdgelss(1)*rcond
-      if(info .ne. 0) then
-          call LSQUIT('pbc_diisweights: INFO not zero, while solving eigenvalue',&
-                      lupri)
-      endif
-      call mem_dealloc(work)
-    endif
-!  ENDIF
+	N=it
+	m=1
+	call dgesv(N,m,B_mat,N,solve,weight_tmp,N,info)
+	IF(info .ne. 0) THEN
+		write(*,*) 'Calls dgelss instead'
+		write(lupri,*) 'Calls dgelss instead'
+		DO i=1,it
+			DO j=1,it
+				B_mat(i,j)=dot_product(error(i,:),error(j,:))! error(i)*error(j)
+				B_mat(j,i)=B_mat(i,j)
+			ENDDO
+		ENDDO
+		DO j=1,it
+			weight_tmp(j,1)=1.0_realk
+		ENDDO
+		lwork=3*n+2*n+1000
+		rcond= 1.0e-10_realk
+		call mem_alloc(work,lwork)
+		call dgelss(n,n,m,B_mat,n,weight_tmp,n,Sdgelss,rcond,rank,work,lwork,info)
+		if(info .ne. 0) then
+			call LSQUIT('pbc_diisweights: INFO not zero, while solving eigenvalue',&
+				lupri)
+		endif
+		call mem_dealloc(work)
+	endif
 
-!  write(*,*) 'DEBUG 3: get weights '
-  DO i=1,it
-   weight(i)=weight_tmp(i,1)
-!   write(*,*) weight(i)
-  ENDDO
-  
-  !Normalizing the weights
-  normfac=sum(weight(1:it))
-  !write(lupri,*) 'norm',normfac,weight
-  weight(1:it)=weight(1:it)/normfac
+	DO i=1,it
+		weight(i)=weight_tmp(i,1)
+	ENDDO
 
-!  call mat_free(Bmat_t)
+	normfac=sum(weight(1:it))
+	weight(1:it)=weight(1:it)/normfac
 
 END SUBROUTINE pbc_diisweights
 
@@ -1167,7 +1127,7 @@ SUBROUTINE pbc_trans_k_energy(lattice,cenergies,nbast,nelectrons,bz)
   REAL(Realk) :: ehomo,elumo,etmph1,etmph2,etmpl1,etmpl2
 
   lattindex(1)=0
-  cenergies =0.d0
+  cenergies =0.0_realk
   ehomo=-huge(ehomo)
   elumo= huge(elumo)
   !write(*,*) lattice%ldef%is_active(1)
@@ -1198,7 +1158,7 @@ SUBROUTINE pbc_trans_k_energy(lattice,cenergies,nbast,nelectrons,bz)
 
 !     DO kpt=1,bz%nk
 !      do i=1,nelectrons/2
-!       cenergies(3)=cenergies(3)+2d0*kdep_tmp(kpt)%keigv(i)*&
+!       cenergies(3)=cenergies(3)+2._realk*kdep_tmp(kpt)%keigv(i)*&
 !       &bz%kpnt(kpt)%weight/BZ%NK_nosym
 !    enddo
 !   enddo
@@ -1226,9 +1186,9 @@ subroutine pbc_fixzggevnorm(siz,cocoeff,metric,alphavec,betavec,lupri)
   complex(COMPLEXK) :: dmat_elem, n_occ
 
   do ivec = 1,siz
-     normfac = 0.0D0
-     coeff_sum = 0.0D0
-     coeff_max = 0.0D0
+     normfac = 0.0_realk
+     coeff_sum = 0.0_realk
+     coeff_max = 0.0_realk
      do i = 1,siz
 !        call lsquit('FIXME: coeff_max real while cocoeff(i,ivec) is complex',-1)
 !        maybe but abs(cocoeff(i,ivec)) into a real(realk) before calling max
@@ -1248,7 +1208,7 @@ subroutine pbc_fixzggevnorm(siz,cocoeff,metric,alphavec,betavec,lupri)
         write(LUPRI,*) 'Warning: Zero norm orbital (',ivec,normfac,').'
         !write(LUPRI,*) 'Action: Avoid occupation by setting orb. energy high.'
         !alphavec(ivec) = 1.0D4
-        !betavec(ivec) = 1.0D0
+        !betavec(ivec) = 1.0_realk
         normfac = 1.0D50
         !call lsquit('Zero norm vector - eeeeeh',-1)
      end if
@@ -1258,10 +1218,10 @@ subroutine pbc_fixzggevnorm(siz,cocoeff,metric,alphavec,betavec,lupri)
   end do
 
 !Careful
-  n_occ = ( 0.0D0, 0.0D0 )
+  n_occ = ( 0.0_realk, 0.0_realk )
   loop_ao1: do mu = 1,siz
      loop_ao2: do nu = 1,siz
-        dmat_elem = ( 0.0D0, 0.0D0 )
+        dmat_elem = ( 0.0_realk, 0.0_realk )
         loop_band: do b = 1,siz
            dmat_elem = dmat_elem + cocoeff(mu,b) * conjg(cocoeff(nu,b))
         end do loop_band
