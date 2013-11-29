@@ -263,7 +263,9 @@ module cc_debug_routines_module
      !TRANSFORM TO A CANONICAL BASIS
      !******************************
 
-     if(DECinfo%CCSDpreventcanonical)then
+     ! prevent if explicitly requested or if PNOs are requested
+
+     if(DECinfo%CCSDpreventcanonical.or.u_pnos)then
        !nocc diagonalization
        Co_d    = Co_f
        Cv_d    = Cv_f
@@ -6464,7 +6466,7 @@ module cc_debug_routines_module
       endif
 
       call solve_eigenvalue_problem_unitoverlap(nv,f%VirtMat,virteival,U)
-      call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1))
+      call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1),ext_thr=DECinfo%EOSPNOthr)
       call mem_alloc(cv(1)%iaos,f%noccEOS)
       cv(1)%n    = f%noccEOS
       cv(1)%iaos = f%idxo
@@ -6567,20 +6569,22 @@ module cc_debug_routines_module
   end subroutine calculate_pair_density_matrix
 
   !\brief 
-  subroutine truncate_trafo_mat_from_EV(U,EV,n,NU)
+  subroutine truncate_trafo_mat_from_EV(U,EV,n,NU,ext_thr)
     implicit none
     !ARGUMENTS
-    integer :: n
-    real(realk) :: U(n,n),EV(n)
-    type(SpaceInfo) :: NU
+    integer,intent(in) :: n
+    real(realk), intent(in) :: U(n,n),EV(n)
+    type(SpaceInfo),intent(inout) :: NU
+    real(realk), intent(in),optional :: ext_thr
     !INTERNAL
     integer :: i,nn
     real(realk) :: thr
 
-    if(DECinfo%noPNOtrafo)then
+    if(DECinfo%noPNOtrunc)then
       thr = -1.0*huge(thr)
     else
       thr = DECinfo%simplePNOthr
+      if(present(ext_thr)) thr = ext_thr
     endif
 
     !on finishing the loop i contains the position of the first element that should be in the

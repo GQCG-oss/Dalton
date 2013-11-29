@@ -164,10 +164,12 @@ module dec_typedef_module
      logical :: use_pnos
      !> override the transformation to the PNOs by putting unit matrices as
      !transformation matrices
-     logical :: noPNOtrafo
+     logical :: noPNOtrafo, noPNOtrunc
      !> defines a simple cutoff threshold for constructing the PNOs from the
      !correlation density
      real(realk) :: simplePNOthr
+     !> this defines the PNO threshold used for the EOS adapted space
+     real(realk) :: EOSPNOthr
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver
