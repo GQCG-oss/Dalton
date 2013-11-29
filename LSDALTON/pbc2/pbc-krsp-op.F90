@@ -244,8 +244,6 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
             &layer', l1,l2,l3,maxdens,volbz
          endif
        endif
-       write(*,*) 'density real',l1,l2,l3
-       call mat_print(density(layer),1,nbast,1,nbast,6)
      endif
      endif
 
