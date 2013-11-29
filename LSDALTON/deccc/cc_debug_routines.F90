@@ -182,7 +182,7 @@ module cc_debug_routines_module
      character(ARR_MSG_LEN) :: msg
      integer :: ii,aa
      integer :: MaxSubSpace
-     logical :: restart
+     logical :: restart, u_pnos
 
      ! small_frag 
      real(realk), pointer :: pack_gmo(:), govov(:) => null()
@@ -193,7 +193,7 @@ module cc_debug_routines_module
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-
+     if(present(use_pnos)) u_pnos = use_pnos
 
      ! Sanity check 1: Number of orbitals
      if( (nvirt < 1) .or. (nocc < 1) ) then
@@ -210,7 +210,7 @@ module cc_debug_routines_module
         end if
      end if
 
-     if(.not.use_pnos)then
+     if(.not.u_pnos)then
 
        ! Sanity check 3: if CCSD multipliers are requested, make sure that both are there
        if((present(m2).and..not.present(m1)).or.(present(m1).and..not.present(m2)))then
@@ -227,11 +227,14 @@ module cc_debug_routines_module
        if(.not.present(m2))then
          call lsquit("ERROR(ccsolver_debug):PNO ccsd requires mp2 amplitudes passed as m2",-1)
        endif
+
        if( .not.present(fraginfo).and. fragment_job )then
          call lsquit("ERROR(ccsolver_debug):PNO ccsd requires the fragment information if it is a fragment job",-1)
        endif
 
      endif
+
+
      MaxSubSpace = DECinfo%ccMaxDIIS
 
      ! title
@@ -568,7 +571,7 @@ module cc_debug_routines_module
   
 
            if(get_mult)then
-              if(small_frag.or.use_pnos)then
+              if(small_frag.or.u_pnos)then
                 call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
                 &and use_pnos should be true at the same time",-1)
               endif
@@ -580,7 +583,7 @@ module cc_debug_routines_module
            !> call CCSD code for small fragment:
            else if (small_frag) then
 
-              if(get_mult.or.use_pnos)then
+              if(get_mult.or.u_pnos)then
                 call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
                 &and use_pnos should be true at the same time",-1)
               endif
@@ -601,7 +604,7 @@ module cc_debug_routines_module
                         & residual is not fully calculated',DECinfo%output)
            ! end pablo
 
-           else if(use_pnos.and..not.DECinfo%hack2)then
+           else if(u_pnos.and..not.DECinfo%hack2)then
               if(small_frag.or.get_mult)then
                 call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
                 &and use_pnos should be true at the same time",-1)
