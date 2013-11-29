@@ -995,7 +995,7 @@ contains
     dynamic_load             = DECinfo%dyn_load
     startt                   = 0.0E0_realk
     stopp                    = 0.0E0_realk
-    print_debug              = (DECinfo%PL>2)
+    print_debug              = (DECinfo%PL>3)
     debug                    = .false.
     double_2G_nel            = 100000000
 
@@ -2117,9 +2117,9 @@ contains
 
       !OUTPUT TIMINGS
 #ifdef VAR_MPI
-      if(DECinfo%PL>1)write(*,'(I3,"C and D   :",f15.4)') infpar%lg_mynum,stopp-startt
+      if(DECinfo%PL>2)write(*,'(I3,"C and D   :",f15.4)') infpar%lg_mynum,stopp-startt
 #else
-      if(DECinfo%PL>1)write(*,'("C and D   :",f15.4)')stopp-startt
+      if(DECinfo%PL>2)write(*,'("C and D   :",f15.4)')stopp-startt
 #endif
 
 
@@ -2278,7 +2278,7 @@ contains
 #elif VAR_MPI
     stopp=MPI_wtime()
 #endif
-    if(DECinfo%PL>1)write(*,'("Fock trafo:",f15.4)')stopp-startt
+    if(DECinfo%PL>2)write(*,'("Fock trafo:",f15.4)')stopp-startt
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_MPI
@@ -2330,7 +2330,7 @@ contains
 #elif VAR_MPI
     stopp=MPI_wtime()
 #endif
-    if(DECinfo%PL>1)write(*,'("S and E   :",f15.4)')stopp-startt
+    if(DECinfo%PL>2)write(*,'("S and E   :",f15.4)')stopp-startt
 
 
 #ifdef VAR_MPI
@@ -2452,7 +2452,7 @@ contains
       call mo_work_dist(nv*nv*no,fai1,tl1)
       call mo_work_dist(nv*no*no,fai2,tl2)
 
-      if(DECinfo%PL>2.and.me==0)then
+      if(DECinfo%PL>3.and.me==0)then
         write(DECinfo%output,'("Trafolength in striped E1:",I5," ",I5)')tl1,tl2
       endif
 
@@ -2726,7 +2726,7 @@ contains
 
      tlov  = int((i8*tl)*no*nv,kind=8)
 
-     if(DECinfo%PL>2.and.me==0)then
+     if(DECinfo%PL>3.and.me==0)then
        write(DECinfo%output,'("Trafolength in striped CD:",I5)')tl
      endif
      
@@ -2745,7 +2745,7 @@ contains
        call lsquit("ERROR(get_cnd_terms_mo):no valid scheme",-1)
      endif
 
-     if(me==0.and.DECinfo%PL>2)then
+     if(me==0.and.DECinfo%PL>3)then
        print *,"w2size(2)",w2size
        print *,"w3size(2)",w3size
      endif
@@ -3083,7 +3083,7 @@ contains
     !**********************************************
     call mo_work_dist(nv*nv,fai,tl)
 
-    if(DECinfo%PL>2.and.me==0)then
+    if(DECinfo%PL>3.and.me==0)then
       write(DECinfo%output,'("Trafolength in striped B2:",I5)')tl
     endif
     

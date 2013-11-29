@@ -70,6 +70,8 @@ contains
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%use_pnos             = .false.
+    DECinfo%noPNOtrafo           = .false.
+    DECinfo%simplePNOthr         = 1.0E-7
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
 
@@ -416,6 +418,8 @@ contains
        case('.SPAWN_COMM_PROC'); DECinfo%spawn_comm_proc=.true.
        case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
        case('.USE_PNOS'); DECinfo%use_pnos=.true.
+       case('.NOPNOTRAFO'); DECinfo%noPNOtrafo=.true.
+       case('.PNOTHR'); read(input,*) DECinfo%simplePNOthr
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.

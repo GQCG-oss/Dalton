@@ -162,6 +162,12 @@ module dec_typedef_module
      logical :: CCSDmultipliers
      !> use pnos in dec
      logical :: use_pnos
+     !> override the transformation to the PNOs by putting unit matrices as
+     !transformation matrices
+     logical :: noPNOtrafo
+     !> defines a simple cutoff threshold for constructing the PNOs from the
+     !correlation density
+     real(realk) :: simplePNOthr
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver
