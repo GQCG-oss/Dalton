@@ -14,8 +14,8 @@ MODULE pbc_scfdiis
   USE PBC_kspce_rspc_operations
   USE pbc_ff_contrib
 	
-  !PRIVATE  						todo 
-  !PUBLIC :: pbc_startddiis 	todo
+  PRIVATE  					
+  PUBLIC :: pbc_startddiis 	
 
   CONTAINS
 
