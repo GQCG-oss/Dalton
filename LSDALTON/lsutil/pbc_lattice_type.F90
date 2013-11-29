@@ -28,7 +28,7 @@ type,public ::lvec_data_t
   real(realk) :: std_coord(1:3)      ! standard coordinates
   REAL(realk),pointer :: d_vec(:),d_mat(:,:), elms(:)
   LOGICAL      :: is_redundant,g2_computed,f1_computed,J_computed,Kx_computed
-  LOGICAL      :: ovl_computed,Vz_computed
+  LOGICAL      :: ovl_computed,Vz_computed,dm_computed
   TYPE(matrix) :: oper(MaxPBCOpTypes)         !Not sure 
   TYPE(Moleculeinfo) :: molecule              !Not sure 
   !type(rspcopdata_t) :: opdat(MaxPBCOpTypes+1)

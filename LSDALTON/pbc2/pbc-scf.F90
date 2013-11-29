@@ -728,6 +728,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   call mem_alloc(nfdensity,numrealvec)
   call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
   call mat_init(nfdensity(n1),ndim,ndim)
+  lattice%lvec(n1)%dm_computed=.true.
   call mat_copy(1.0_realk,Dmat0,nfdensity(n1)) 
   call mem_alloc(f_1,numrealvec)
   call mem_alloc(Ovl,numrealvec)
@@ -744,7 +745,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
   write(lupri,*) 'Density first'
   call mat_print(nfdensity(n1),1,ndim,1,ndim,lupri)
 
-  allocate(latt_cell(numrealvec))
+  allocate(latt_cell(numrealvec)) !fixme alloc ?? use mem alloc el.
 
   call set_refcell(refcell,molecule)
   call set_lattice_cells(latt_cell,numrealvec,molecule,lattice,lupri)
@@ -1061,7 +1062,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
       write(lupri,*) 'final E(HOMO) =', cellenergies(1)
       write(lupri,*) 'final E(LUMO) =', cellenergies(2)
-      write(lupri,*) 'Cell Energy =', E_cell
+      write(lupri,*) 'final Cell Energy =', E_cell
       write(lupri,*) 'h_1=',E_1
       write(lupri,*) 'Nuclear=',E_nuc
       write(lupri,*) 'Far field=', E_ff,E_nn

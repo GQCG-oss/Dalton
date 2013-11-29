@@ -259,6 +259,7 @@ SUBROUTINE build_lvec_list(ll,nbast)
      !ll%lvec(idx)%Sl_mat=0 
      ll%lvec(idx)%is_redundant=.false.
      ll%lvec(idx)%Vz_computed=.false.
+     ll%lvec(idx)%dm_computed=.false.
      idx = idx + 1
   end do
   end do

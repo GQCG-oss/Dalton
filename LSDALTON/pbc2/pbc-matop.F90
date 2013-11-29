@@ -230,7 +230,7 @@ do layer =1,size(Aop%lvec)
    stl2=adjustl(stl2)
    stl3=adjustl(stl3)
 
-   if((abs(l1) .le. Aop%ndmat .and. abs(l2) .le. Aop%ndmat) .and. abs(l3) .le. Aop%ndmat)then
+   if(Aop%lvec(layer)%dm_computed)then
    !    Now we are doing DIIS scf iterations and we need to store 
    !    the matrix for some of the iterations
    filename = trim(diis)//trim(adjustl(Aop%opdat(oper1)%basename))//'_'//trim(stl1)//'_'//trim(stl2)//'_'//trim(stl3)

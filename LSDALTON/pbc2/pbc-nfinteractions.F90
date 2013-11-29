@@ -222,6 +222,7 @@ SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
     call find_latt_vectors(index3,il31,il32,il33,fdim,lattice)
 
 
+    if(.not. lattice%lvec(index3)%dm_computed) CYCLE! then
 !   ToDo Remove: base on CS screening at some point
     l11=il21+il31
     if( abs(l11) .gt.lattice%max_layer) CYCLE
@@ -229,17 +230,17 @@ SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
     !l1 blir større enn max slik at newcell blir negativ
     !sjekk dette, er ikke sikker på om l1 skal være slik.
     !Likedan man l2 og l3
-    if(abs(il31) .gt. lattice%ndmat) CYCLE! then
+    !if(abs(il31) .gt. lattice%ndmat) CYCLE! then
     
     l12=il22+il32
     if( abs(l12) .gt.lattice%max_layer) CYCLE
     checknf2=l12-il22
-    if(abs(il32) .gt. lattice%ndmat) CYCLE !then 
+    !if(abs(il32) .gt. lattice%ndmat) CYCLE !then 
     
     l13=il23+il33
     if( abs(l13) .gt.lattice%max_layer) CYCLE
     checknf3=l13-il23
-    if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
+    !if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
 
     
 
@@ -1101,10 +1102,10 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,molecule,nbast,&
 
        if(gab2  .lt. -18) CYCLE
 
-      if(abs(il21) .gt. lattice%ndmat) CYCLE !then 
-      if( abs(il22) .gt.lattice%ndmat) CYCLE
-      if(abs(il23) .gt. lattice%ndmat) CYCLE !then 
-      if(nfdensity(index2)%init_magic_tag.NE.mat_init_magic_value) CYCLE
+      !if(abs(il21) .gt. lattice%ndmat) CYCLE !then 
+      !if( abs(il22) .gt.lattice%ndmat) CYCLE
+      !if(abs(il23) .gt. lattice%ndmat) CYCLE !then 
+      if(.not. lattice%lvec(index2)%dm_computed) CYCLE! then
 
       !if(abs(il21) .le. lattice%nf .and. abs(il22) .le. lattice%nf) THEN
       !  if(abs(il23) .le. lattice%nf) THEN
@@ -1493,10 +1494,10 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
       il32=int(lattice%lvec(index3)%lat_coord(2))
       il33=int(lattice%lvec(index3)%lat_coord(3))
 
-      if(abs(il31) .gt. lattice%ndmat) CYCLE! then
-      if(abs(il32) .gt. lattice%ndmat) CYCLE !then 
-      if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
-      if(nfdensity(index3)%init_magic_tag.NE.mat_init_magic_value) CYCLE
+      !if(abs(il31) .gt. lattice%ndmat) CYCLE! then
+      !if(abs(il32) .gt. lattice%ndmat) CYCLE !then 
+      !if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
+      if(.not. lattice%lvec(index3)%dm_computed) CYCLE! then
 
 !     ToDo Remove: base on CS screening at some point
       l1=il21+il31
@@ -1545,6 +1546,9 @@ lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
         maxl1=max(abs(il1),maxl1)
         maxl2=max(abs(il2),maxl2)
         maxl3=max(abs(il3),maxl3)
+        lattice%kx1=maxl1
+        lattice%kx2=maxl2
+        lattice%kx3=maxl3
 
         call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),3,latt_cell(index2),2,latt_cell(newcell),4)
 

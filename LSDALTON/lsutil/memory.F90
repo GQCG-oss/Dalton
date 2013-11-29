@@ -436,7 +436,7 @@ TYPE(LSMATRIX) :: LSMATRIXitem
 TYPE(MATRIX) :: MATRIXitem
 #ifdef MOD_UNRELEASED
 TYPE(lvec_data_t) :: lvec_dataitem
-TYPE(lvec_data_t) :: lattice_cellitem
+TYPE(lattice_cell_info_t) :: lattice_cellitem
 #endif
 ! Size of buffer handling for long integer buffer
 longintbuffersize = 74
