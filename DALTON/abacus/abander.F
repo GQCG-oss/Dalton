@@ -1342,8 +1342,7 @@ C
 C
       LOGICAL CALCMP, CLNRGY, LASTE, NOSYM, TOTSM, SYMDET, RSTDON,
      &        ALRCAL, PRTNR, CPRPBK
-      CHARACTER*(len_MLINE) MBKLIN
-      DIMENSION MBKLIN(NMBKLN)
+      CHARACTER*(len_MLINE) MBKLIN(NMBKLN), MLINE_in_upcase
       DIMENSION FUVAL(NINTIN,NDIME), COOR(NCOOR), CSTART(NCOOR),
      &          DERIV(NDERIV), DCOEFF(LDPMTX,IFRSTD),
      &          SYMCOR(NCOOR,NCOOR), GRIREP(NGORDR,NGVERT),
@@ -1393,12 +1392,13 @@ C
       NTYPE  = 3
       LASTE  = .FALSE.
       NOSYM  = .FALSE.
-      CALL UPCASE(MLINE(NMLAU))
-      IPOS = INDEX(MLINE(NMLAU),'ATO')
+      MLINE_in_upcase = MLINE(NMLAU)
+      CALL UPCASE(MLINE_in_upcase)
+      IPOS = INDEX(MLINE_in_upcase,'ATO')
       IF (IPOS .EQ. 0) THEN
-         IF (MLINE(NMLAU)(10:10).EQ.'0') NOSYM = .TRUE.
+         IF (MLINE_in_upcase(10:10).EQ.'0') NOSYM = .TRUE.
       ELSE
-         IPOS = INDEX(MLINE(NMLAU),'NOS')
+         IPOS = INDEX(MLINE_in_upcase,'NOS')
          IF (IPOS .NE. 0) NOSYM = .TRUE.
       END IF
 C
@@ -2141,7 +2141,7 @@ C
      &        NEWINP, NEWATO
       CHARACTER*6   CHR
       CHARACTER*4   NAME
-      CHARACTER*(*) MBKLIN(NMBKLN)
+      CHARACTER*(len_MLINE) MBKLIN(NMBKLN), MLINE_in_upcase
       CHARACTER*80  BSNM
       CHARACTER*11  TMPTXT
       CHARACTER*1   KASYM(3,3), ID3, CRT
@@ -2160,8 +2160,9 @@ C
          NADD   = 0
          IATOM  = 0
          NCLAST = 0
-         CALL UPCASE(MLINE(NMLAU))
-         IPOS = INDEX(MLINE(NMLAU),'ATO')
+         MLINE_in_upcase = MLINE(NMLAU)
+         CALL UPCASE(MLINE_in_upcase)
+         IPOS = INDEX(MLINE_in_upcase,'ATO')
          IF (IPOS .EQ. 0) THEN
             IF (MLINE(NMLAU)(10:10).EQ.'0') THEN
                MLINE(NMLAU)(20:20) = ' '
@@ -2223,16 +2224,18 @@ C
 C
 C        Do a count of each type of atom....
 C
-         CALL UPCASE(MLINE(NCLINE(1)-1))
-         NEWINP = (INDEX(MLINE(NCLINE(1) - 1),'CHA') .NE. 0)
+         MLINE_in_upcase = MLINE(NCLINE(1)-1)
+         CALL UPCASE(MLINE_in_upcase)
+         NEWINP = (INDEX(MLINE_in_upcase,'CHA') .NE. 0)
          KCENT2 = 0
          ICENT1 = 1
  500     CONTINUE
          ICENT1 = ICENT1 + KCENT2
          DO 700 ICENT2 = ICENT1+1, NUCIND
             IF (NEWINP) THEN
-               CALL UPCASE(MLINE(NCLINE(ICENT2)-1))
-               NEWATO = (INDEX(MLINE(NCLINE(ICENT2) - 1),'CHA') .NE. 0)
+               MLINE_in_upcase = MLINE(NCLINE(ICENT2)-1)
+               CALL UPCASE(MLINE_in_upcase)
+               NEWATO = (INDEX(MLINE_in_upcase,'CHA') .NE. 0)
             ELSE
                READ (MLINE(NCLINE(ICENT2)-1),'(A)') CHR
                NEWATO = (CHR .EQ. '      ')
@@ -2243,9 +2246,10 @@ C
                   NAT = NAT + NUCDEG(IC)
  800           CONTINUE
                IF (NEWINP) THEN
-                  IF (MLINE(1)(1:5) .EQ. 'BASIS') BASIS  = .TRUE.
-                  IF (MLINE(1)(1:5) .EQ. 'ATOMB') ATOMBA = .TRUE.
-                  CALL UPCASE(MLINE(NCLINE(ICENT1)-1))
+                  MLINE_in_upcase = MLINE(1)
+                  CALL UPCASE(MLINE_in_upcase)
+                  IF (MLINE_in_upcase(1:5) .EQ. 'BASIS') BASIS  = .TRUE.
+                  IF (MLINE_in_upcase(1:5) .EQ. 'ATOMB') ATOMBA = .TRUE.
                   CALL LINE5R(MLINE(NCLINE(ICENT1) - 1),Q1,NONT1,MBSI1,
      &                 IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,
      &                 RADIUS_PCM, ALPHA_PCM)
@@ -2271,7 +2275,6 @@ C
             NAT = NAT + NUCDEG(IC)
  1100    CONTINUE
          IF (NEWINP) THEN
-            CALL UPCASE(MLINE(NCLINE(KCENT1)-1))
             CALL LINE5R(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,
      &           IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,
      &           RADIUS_PCM, ALPHA_PCM)

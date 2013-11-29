@@ -2139,6 +2139,7 @@ C
 #include "cbisol.h"
 #include "ibtfun.h"
 C
+      CHARACTER*(len_MLINE) TMP_MLINE
 C
 C Write new coordinates into MOLECULE input
 C
@@ -2189,12 +2190,13 @@ C
 C
 C     Coordinates written are always in atomic units
 C
-      CALL UPCASE(MLINE(NMLAU))
-      IPOS = INDEX(MLINE(NMLAU),'ATO')
+      TMP_MLINE = MLINE(NMLAU)
+      CALL UPCASE(TMP_MLINE)
+      IPOS = INDEX(TMP_MLINE,'ATO')
       IF (IPOS .EQ. 0) THEN
          MLINE(NMLAU)(20:20) = ' '
       ELSE
-         IPOS = INDEX(MLINE(NMLAU),'ANG')
+         IPOS = INDEX(TMP_MLINE,'ANG')
          IF (IPOS .NE. 0) THEN
             IPOS2 = INDEX(MLINE(NMLAU)(IPOS:),' ')
             DO ICHARP = IPOS, IPOS + IPOS2 - 1
@@ -2209,7 +2211,8 @@ C
          NC = NCLINE(N)
          IF (NC .NE. 0) THEN
             READ  (MLINE(NC),9100) NAME
-            IPOS = INDEX(MLINE(NC),'Isotope=')
+            TMP_MLINE = MLINE(NC)
+            IPOS = INDEX(TMP_MLINE,'ISOTOPE=')
             IF (IPOS .NE. 0) THEN
                READ (MLINE(NC)(IPOS:),'(A11)') TMPTXT
             ELSE
