@@ -40,7 +40,7 @@ module rma_windows
 
 ! rma-windows definition
 ! ----------------------------------------------------------------------------
-  type rma_win
+  type, public :: rma_win
 
     integer ::                   &
       dmat_win,                  &             ! density matrix window (2e-integral codes)
