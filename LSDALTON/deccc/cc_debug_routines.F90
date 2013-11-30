@@ -193,7 +193,7 @@ module cc_debug_routines_module
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
    
-     u_pnos = .false.
+     u_pnos   = .false.
      if(present(use_pnos)) u_pnos = use_pnos
 
      ! Sanity check 1: Number of orbitals
@@ -222,6 +222,8 @@ module cc_debug_routines_module
        get_mult    = (present(m2).and.present(m1))
 
      else
+
+       get_mult = .false.
 
        ! Sanity check 4: if PNO use is requested, currently only ccsd is implemented, no
        !multipliers, though 
