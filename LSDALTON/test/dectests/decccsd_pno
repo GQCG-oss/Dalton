@@ -17,7 +17,7 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decccsd.info <<'%EOF%'
+cat > decccsd_pno.info <<'%EOF%'
    DEC-CCSD energy using fragment calculations without long-range t1
    -----------------------------------------------------------------
    Molecule:         3 LiH molecules with stretched bonds
@@ -28,7 +28,7 @@ cat > decccsd.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decccsd.mol <<'%EOF%'
+cat > decccsd_pno.mol <<'%EOF%'
 BASIS
 STO-3G
 
@@ -46,7 +46,7 @@ Li    0.000000         -0.7        0.000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decccsd.dal <<'%EOF%'
+cat > decccsd_pno.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -79,8 +79,8 @@ TIGHT
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >decccsd.check
-cat >>decccsd.check <<'%EOF%'
+echo $CHECK_SHELL >decccsd_pno.check
+cat >>decccsd_pno.check <<'%EOF%'
 
 log=$1
 
@@ -91,9 +91,9 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-23\.3798040" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-23\.580027" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
-CTRL[1]=2
+CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # CCSD ENERGY
