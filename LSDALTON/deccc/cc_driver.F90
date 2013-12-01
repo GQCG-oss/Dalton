@@ -2043,9 +2043,11 @@ contains
 
     !transform back to original basis   
     if(DECinfo%use_singles)then
-      call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt,t1_final%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &gvovo=VOVO%val,t2=t2_final%val,t1=t1_final%val)
     else
-      call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &gvovo=VOVO%val,t2=t2_final%val)
     endif
 
     call mem_dealloc(Uocc)

@@ -268,7 +268,7 @@ module cc_debug_routines_module
 
      ! prevent if explicitly requested or if PNOs are requested
 
-     if(DECinfo%CCSDpreventcanonical.or.u_pnos)then
+     if(DECinfo%CCSDpreventcanonical)then
        !nocc diagonalization
        Co_d    = Co_f
        Cv_d    = Cv_f
@@ -302,9 +302,9 @@ module cc_debug_routines_module
        if(get_mult)then
 
          if(DECinfo%use_singles)then
-           call ccsolver_local_can_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt,t1_final%val)
+           call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,t2=t2_final%val,t1=t1_final%val)
          else
-           call ccsolver_local_can_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt)
+           call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,t2=t2_final%val)
          endif
 
        endif
@@ -502,8 +502,7 @@ module cc_debug_routines_module
 
            ! get the T1 transformation matrices
            if(.not.get_mult)then
-              call getT1transformation(t1(iter),xocc,xvirt,yocc,yvirt, &
-                Co,Cv,Co2,Cv2)
+              call getT1transformation(t1(iter),xocc,xvirt,yocc,yvirt,Co,Cv,Co2,Cv2)
            endif
 
            ! get inactive fock
@@ -615,6 +614,19 @@ module cc_debug_routines_module
                 &and use_pnos should be true at the same time",-1)
               endif
 
+              !transform back to original basis   
+              if(DECinfo%use_singles)then
+                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                &Co=yocc%val,Cv=yvirt%val)
+              else
+                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                &t2=omega2(iter)%val,Co=yocc%val,Cv=yvirt%val)
+              endif
+
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
                 &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
@@ -623,6 +635,19 @@ module cc_debug_routines_module
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
                 &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
                 &gao,fragment_job,m2%val,ppfock%val,qqfock%val,delta_fock%val,f=fraginfo)
+              endif
+
+              !transform to pseudo diagonal basis for the solver
+              if(DECinfo%use_singles)then
+                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                &t2=omega2(iter)%val,t1=omega1(iter)%val,Co=yocc%val,Cv=yocc%val)
+              else
+                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                &t2=omega2(iter)%val,Co=yocc%val,Cv=yocc%val)
               endif
 
            else
@@ -1008,9 +1033,11 @@ module cc_debug_routines_module
 
      !transform back to original basis   
      if(DECinfo%use_singles)then
-       call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt,t1_final%val)
+       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       &gvovo=VOVO%val,t2=t2_final%val,t1=t1_final%val)
      else
-       call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt)
+       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       &gvovo=VOVO%val,t2=t2_final%val)
      endif
 
      call mem_dealloc(Uocc)
@@ -6457,10 +6484,11 @@ module cc_debug_routines_module
     type(decfrag),intent(in),optional :: f
     !INTERNAL
     real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
-    integer :: i,j,oi,oj,counter
+    integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
     logical :: doit
     
-    
+    calc_parameters = 0
+    det_parameters  = 0
 
     if(fj)then
 
@@ -6474,6 +6502,9 @@ module cc_debug_routines_module
       cv(1)%n    = f%noccEOS
       cv(1)%iaos = f%idxo
       counter = 1
+
+      calc_parameters = calc_parameters + cv(1)%ns1*cv(1)%ns2*cv(1)%n**2
+      det_parameters = det_parameters + cv(1)%ns1*cv(1)%ns2*cv(1)%n**2
 
       if(.not.cv(1)%allocd)then
         call lsquit("ERROR(get_pno_trafo_matrices):EOS does not contribute&
@@ -6508,11 +6539,14 @@ module cc_debug_routines_module
               cv(counter)%n = 1
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i]
+              det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
             else
               cv(counter)%n = 2
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i,j]
+              det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*2
             endif
+            calc_parameters = calc_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
           endif
         enddo doj
       enddo doi
@@ -6528,15 +6562,20 @@ module cc_debug_routines_module
             cv(counter)%n = 1
             call mem_alloc(cv(counter)%iaos,cv(counter)%n)
             cv(counter)%iaos = [i]
+            det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
           else
             cv(counter)%n = 2
             call mem_alloc(cv(counter)%iaos,cv(counter)%n)
             cv(counter)%iaos = [i,j]
+            det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*2
           endif
+          calc_parameters = calc_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
         enddo dojful
       enddo doiful
     endif
-    
+
+    print *,"I have to determine",det_parameters," of ",no**2*nv**2," using ",calc_parameters
+
     if( counter /= n )then
       call lsquit("ERROR(get_pno_trafo_matrices):counting is not consistent",-1)
     endif
@@ -6587,8 +6626,8 @@ module cc_debug_routines_module
       thr = -1.0*huge(thr)
     else
       thr = DECinfo%simplePNOthr
-      if(present(ext_thr)) thr = ext_thr
     endif
+    if(present(ext_thr)) thr = ext_thr
 
     !on finishing the loop i contains the position of the first element that should be in the
     !transformation
@@ -6600,8 +6639,10 @@ module cc_debug_routines_module
     ! n elements in the transformation
     nn = n - i + 1
 
+    if(DECinfo%PL>2.and.present(ext_thr))write(DECinfo%output,'("The FO trafo  matrix has dims",2I4)')n,nn
+
    
-    if(DECinfo%noPNOtrafo)then
+    if(DECinfo%noPNOtrafo.and..not.present(ext_thr))then
       NU%ns1 = n
       NU%ns2 = n
     else

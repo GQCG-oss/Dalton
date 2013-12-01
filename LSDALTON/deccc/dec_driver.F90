@@ -209,7 +209,7 @@ contains
        ! (only if there actually are any pair fragments)
        esti = .true.
     else
-       esti=.false.
+       esti = .false.
     end if
 
     ! Special treatment of singles amplitudes
