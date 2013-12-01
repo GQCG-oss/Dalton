@@ -15,20 +15,19 @@ use lstiming
 contains
 
 SUBROUTINE pbc_controlmm(num_its,Tlat,Tlmax,lmax,square_intermed,latvec,&
-nbast,lupri,nfdensity,numvecs,nfsze,ll,g_2,E_ff,E_nn,refcell)
+nbast,lupri,nfdensity,numvecs,ll,E_ff,E_nn,refcell)
 !kvec,nbast,lupri,fock_mtx,nfdensity,nfsze)
 IMPLICIT NONE
 
   TYPE(moleculeinfo) :: refcell
   integer,intent(in) :: lupri
   integer, intent(in) :: num_its,Tlmax
-  integer, intent(in) :: lmax,nfsze
+  integer, intent(in) :: lmax!,nfsze
   integer,intent(in) :: nbast,numvecs
   TYPE(lvec_list_t), INTENT(INOUT) :: ll
   real(realk),INTENT(INOUT) :: E_ff,E_nn
   real(realk), intent(inout) :: Tlat((1+lmax)**2,(1+lmax)**2)
   TYPE(matrix) :: nfdensity(numvecs)
-  TYPE(matrix),intent(inout) :: g_2(numvecs)
   real(realk),intent(in) ::latvec(3,3)
   logical, intent(in) :: square_intermed
 !  logical :: reset_flag
@@ -54,15 +53,15 @@ call pbc_form_Tlattice(num_its,Tlat,tlmax,square_intermed,latvec,ll%nf,lupri)
 !call pbc_get_nfsize(n1,n2,n3,ll%nneighbour,lupri)
 !nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)
 !write(*,*) 'nfsze',nfsze
-num_latvec = size(ll%lvec)
-call mem_alloc(nucmom,(lmax+1)**2)
-call pbc_comp_nucmom(refcell,nucmom,lmax,nfsze,lupri)
+!num_latvec = size(ll%lvec)
+!call mem_alloc(nucmom,(lmax+1)**2)
+!call pbc_comp_nucmom(refcell,nucmom,lmax,nfsze,lupri)
 
-fock_tmp=0_realk
-call pbc_fform_fck(Tlmax,tlat,lmax,nbast,nfsze,ll,nfdensity,nucmom,g_2,E_ff,&
-                   E_nn,lupri)
+!fock_tmp=0_realk
+!call pbc_fform_fck(Tlmax,tlat,lmax,nbast,nfsze,ll,nfdensity,nucmom,g_2,E_ff,&
+!                   E_nn,lupri)
 
-call mem_dealloc(nucmom)
+!call mem_dealloc(nucmom)
 
 !WRITE TLAT OUT TO DISK AND THEN READ IT FROM FILE IN THE scf iterations
 !  write(*,*) nbast,ndim
@@ -734,10 +733,10 @@ end subroutine pbc_Tmatrix_print
 
 
 
-SUBROUTINE pbc_fform_fck(Tlmax,tlat,lmax,nbast,nfsze,ll,nfdensity,nucmom,&
+SUBROUTINE pbc_fform_fck(Tlmax,tlat,lmax,nbast,ll,nfdensity,nucmom,&
                          g_2,E_ff,E_nn,lupri)
 IMPLICIT NONE
-INTEGER,INTENT(IN) :: Tlmax,lmax,nfsze,nbast,lupri
+INTEGER,INTENT(IN) :: Tlmax,lmax,nbast,lupri
 real(realk), intent(in) :: Tlat((1+lmax)**2,(1+lmax)**2),nucmom((1+lmax)**2)
 real(realk),INTENT(INOUT) :: E_ff,E_nn
 TYPE(lvec_list_t), INTENT(INOUT) :: ll
@@ -746,7 +745,8 @@ TYPE(matrix),intent(inout) :: g_2(size(ll%lvec))
 !LOCAL
 CHARACTER(len=40) :: filename
 CHARACTER(len=10) :: numstr0,numstr1,numstr2,numstr3
-TYPE(lattice_cell_info_t), allocatable :: sphermom(:)
+!TYPE(lattice_cell_info_t), allocatable :: sphermom(:)
+TYPE(lattice_cell_info_t), pointer :: sphermom(:)
 INTEGER :: num_latvec,nf,nk,nrlm,j,s,t,st
 INTEGER :: y,x2,y2,z2,jk,lm,delta,m,ii,iunit
 integer :: fdim(3),cd,il1,il2,il3
@@ -754,11 +754,13 @@ INTEGER(short) :: gab1
 !TYPE(matrix) :: rhojk((lmax+1)**2)
 TYPE(matrix) :: farfieldtmp
 REAL(realk) :: phase1,phase2,phase3,rhojk((lmax+1)**2)
-REAL(realk) :: mmfck(nfsze,nbast*nbast),kvec(3)!,debug_mat(nbast,nbast)
+!REAL(realk) :: mmfck(nfsze,nbast*nbast),kvec(3)!,debug_mat(nbast,nbast)
 REAL(realk) :: multfull(nbast,nbast), Dfull(nbast,nbast)
 REAL(realk) :: Coulombf2,Coulombfst,Coulomb2,Coulombst
 !REAL(realk) :: PI=3.14159265358979323846D0
-real(realk) :: tlatlm((lmax+1)**2),tlatlmnu((lmax+1)**2)
+!real(realk) :: tlatlm((lmax+1)**2),tlatlmnu((lmax+1)**2)
+!real(realk) :: tlatlm(:),tlatlmnu(:)
+real(realk),pointer :: tlatlm(:),tlatlmnu(:)
 real(realk) :: debugsumt
 complex(complexk) :: phase
 character(len=12) :: diis,stiter
@@ -781,6 +783,8 @@ call mat_init(farfieldtmp,nbast,nbast)
 num_latvec=size(ll%lvec)
 !call pbc_get_nfsize(n1,n2,n3,ll%nneighbour,lupri)
 nrlm=(lmax+1)**2
+call mem_alloc(tlatlm,nrlm)
+call mem_alloc(tlatlmnu,nrlm)
 tlatlm=0d0
 tlatlmnu=0d0
 
@@ -812,9 +816,9 @@ E_nn=0._realk
 !  endif
 !write(*,*) nfsze,num_latvec
 !stop
-allocate(sphermom(num_latvec))
+!allocate(sphermom(num_latvec))
+call mem_alloc(sphermom,num_latvec)
 
-!write(*,*) 'DEBUG 2 segmentation fault'
 
 ii=0
 DO nk=1,num_latvec
@@ -831,7 +835,6 @@ DO nk=1,num_latvec
      call pbc_mat_redefine_q(sphermom(nk)%getmultipole,lmax,nbast)
    endif
 enddo
-!write(*,*) 'DEBUG 3 segmentation fault'
 
 
 rhojk=0d0
@@ -855,6 +858,7 @@ ENDDO
 
 !call pbc_redefine_q(rhojk,lmax)
 !call pbc_multipl_moment_order(rhojk,lmax)
+#ifdef DEBUGPBC
 debugsumT=0d0
 !write(lupri,*) 'electronic moments'
 do jk=1,(lmax+1)**2
@@ -862,12 +866,14 @@ do jk=1,(lmax+1)**2
 enddo
 write(lupri,*) 'debugsum rhojk^2', debugsumt
 write(*,*) 'debugsumt rhojk^2', debugsumt
+#endif
 
 DO lm=1,(lmax+1)**2
   tlatlm(lm)=dot_product(tlat(lm,1:nrlm),nucmom+rhojk)
   tlatlmnu(lm)=dot_product(tlat(lm,1:nrlm),nucmom)
 ENDDO
 
+#ifdef DEBUGPBC
 debugsumT=0d0
 do jk=1,(lmax+1)**2
    debugsumt=debugsumt+tlatlm(jk)**2
@@ -875,10 +881,12 @@ do jk=1,(lmax+1)**2
 enddo
 write(lupri,*) 'debugsum tlatlm^2', debugsumt
 write(*,*) 'debugsumt tlatlm^2', debugsumt
+#endif
 
 !
 !write(lupri,*) 'total moments'
 
+#ifdef DEBUGPBC
 debugsumT=0d0
 do jk=1,(lmax+1)**2
    debugsumt=debugsumt+(rhojk(jk)+nucmom(jk))**2
@@ -886,13 +894,16 @@ do jk=1,(lmax+1)**2
 enddo
 write(lupri,*) 'debugsum rhojk^2', debugsumt
 write(*,*) 'debugsumt rhojk^2', debugsumt
+#endif
 !
 !if(debugsumT .gt. 0d0) then
 !  write(*,*) 'debugsumT', debugsumT
 !  write(*,*) sphermom(4)%getmultipole(255)%elms
 !  stop
 !endif
+#ifdef DEBUGPBC
 write(*,*) 'DEBUG 1'
+#endif
 
 !DO lm=1,(lmax+1)**2
 !<<<<<<< HEAD
@@ -909,7 +920,7 @@ write(*,*) 'DEBUG 1'
 !write(lupri,*) 'debugsum tlatlm^2', debugsumt
 !write(*,*) 'debugsumt tlatlm^2', debugsumt
 
-mmfck=0d0
+!mmfck=0d0
 !#ifdef DEBUGPBC
 !     write(*,*) 'IAO 1, IAO 2'
 !     call mat_print(sphermom(11)%getmultipole(1),1,nbast,1,nbast,6)
@@ -934,8 +945,8 @@ DO nk=1,num_latvec
    !if(abs(z2) .gt. ll%col3) CYCLE
    !call find_latt_index(nk,x2,y2,z2,fdim,ll,ll%max_layer)
    if(.not.sphermom(nk)%is_defined) CYCLE
-     write(*,*) 'x2',x2,nk
 #ifdef DEBUGPBC
+     write(*,*) 'x2',x2,nk
      call mat_init(ll%lvec(nk)%oper(1),nbast,nbast)
      call mat_zero(ll%lvec(nk)%oper(1))
 #endif
@@ -1078,7 +1089,7 @@ IF(ll%compare_elmnts ) THEN
 !  write(lupri,*) 'comparing multipole moments with old pbc code'
   
   iunit=-1
-  DO nf=1,nfsze
+  DO nf=1,num_latvec
     x2=ll%nflvec(nf)%lat_coord(1)
     y2=ll%nflvec(nf)%lat_coord(2)
     z2=ll%nflvec(nf)%lat_coord(3)
@@ -1093,18 +1104,19 @@ IF(ll%compare_elmnts ) THEN
     numstr3=adjustl(numstr3)
     filename='minmom'//trim(numstr0)//trim(numstr1)//trim(numstr2)//trim(numstr3)//'.dat'
     CALL lsOPEN(IUNIT,filename,'unknown','FORMATTED')
-    DO j=1,nbast
-       write(iunit,*) (mmfck(nf,delta+(j-1)*nbast),delta=1,nbast)
-    ENDDO
+!    DO j=1,nbast
+!       write(iunit,*) (mmfck(nf,delta+(j-1)*nbast),delta=1,nbast)
+!    ENDDO
     call lsclose(iunit,'KEEP')
     if(abs(x2) .gt. ll%nneighbour) CYCLE
     if(abs(y2) .gt. ll%nneighbour) CYCLE
     if(abs(z2) .gt. ll%nneighbour) CYCLE
-    filename='minfck'//trim(numstr0)//trim(numstr1)//trim(numstr2)//trim(numstr3)//'.dat'
+    filename='Jtot'//trim(numstr0)//trim(numstr1)//trim(numstr2)//trim(numstr3)//'.dat'
     CALL lsOPEN(IUNIT,filename,'unknown','FORMATTED')
-    DO j=1,nbast
-       write(iunit,*) (ll%lvec(nk)%fck_vec(delta+(j-1)*nbast),delta=1,nbast)
-    ENDDO
+    !DO j=1,nbast
+    !   write(iunit,*) (ll%lvec(nk)%fck_vec(delta+(j-1)*nbast),delta=1,nbast)
+    !ENDDO
+    call mat_print(g_2(nk),1,g_2(nk)%nrow,1,g_2(nk)%ncol,iunit)
     call lsclose(iunit,'KEEP')
   
   ENDDO
@@ -1135,6 +1147,8 @@ write(*,*) 'Farfield energy', E_ff
 
 !write(*,*) 'E_ff from mmit',E_ff,E_nn
 
+call mem_dealloc(tlatlm)
+call mem_dealloc(tlatlmnu)
 DO ii=1,num_latvec
   if(sphermom(ii)%is_defined) then
     DO y=1,(lmax+1)**2
@@ -1143,20 +1157,21 @@ DO ii=1,num_latvec
     call mem_dealloc(sphermom(ii)%getmultipole)
   endif
 ENDDO
+call mem_dealloc(sphermom)
 call mat_free(farfieldtmp)
 
 END SUBROUTINE pbc_fform_fck
 
-SUBROUTINE pbc_comp_nucmom(refcell,nucmom,lmax,nfsze,lupri)
+SUBROUTINE pbc_comp_nucmom(refcell,nucmom,lmax,lupri)
 
 IMPLICIT NONE
 
   TYPE(moleculeinfo) :: refcell
   integer,intent(in) :: lupri
-  integer, intent(in) :: lmax,nfsze
+  integer, intent(in) :: lmax
   real(realk),intent(INOUT) :: nucmom((1+lmax)**2)
   !Local variables
-  TYPE(lattice_cell_info_t), allocatable :: sphermom(:)
+  TYPE(lattice_cell_info_t), pointer :: sphermom(:)
   TYPE(matrix),pointer :: carnucmom(:)
   TYPE(matrix),pointer :: sphnucmom(:)
   logical :: reset_flag
@@ -1169,7 +1184,7 @@ ncarmom = (lmax+1)*(lmax+2)*(lmax+3)/6
 !ncarmom = (lmax+1)**2
 nsphmom = (lmax+1)**2
 !write(*,*) 'debug 1'
-allocate(sphermom(nfsze))
+!call mem_alloc(sphermom,nfsze)
 !write(*,*) 'debug 2'
 call mem_alloc(carnucmom,ncarmom)
 !write(*,*) 'debug 3'
@@ -1247,6 +1262,7 @@ call pbc_redefine_q(nucmom,lmax)
 write(lupri,*) 'charge nuclei',nucmom(1)
 write(*,*) 'charge nuclei',nucmom(1)
 
+!call mem_dealloc(sphermom)
 !write(lupri,*) 'nucmom after transformation'
 !DO i=1,(lmax+1)**2
 !  write(lupri,*) nucmom(i)

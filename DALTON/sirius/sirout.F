@@ -56,9 +56,6 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #if defined (PCM_MODULE)
       use pcmmod_cfg
 #endif
@@ -365,10 +362,8 @@ csonia 04/10/95
       ELSE IF (QMNPMM) THEN
          call quit('not implemented in this version')
 !        CALL SCF_QMNPMM_OUT()
-#if defined (BUILD_PELIB)
       else if (peqm) then
          continue
-#endif
       ELSE
         ESOLT = D0
       END IF
@@ -418,9 +413,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,0)
          END IF
          IF (FLAG(16)) WRITE (LUPRI,5025) ESOLT
-#if defined (BUILD_PELIB)
          if (peqm) write(lupri,5026) esolt
-#endif
          WRITE (LUPRI,5030) GRDNRM
       END IF
 

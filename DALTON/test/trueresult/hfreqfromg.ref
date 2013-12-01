@@ -42,9 +42,9 @@
        A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
        A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
        L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
@@ -128,35 +128,47 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:28 2013
+     Host name              : c10-6.local                             
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_hfreqfromg
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /home/arnfinn/release_dalton/DALTON/test/2013-10-21T14_59-testjob-pid-50652
+   2) /home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | arnfinn
+ Host                     | stallo-2.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Fortran compiler         | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/ifort
+ C compiler               | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icpc
+ C++ compiler version     | icpc (ICC) 13.0.1 20121010
+ BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
+                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
+                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
+                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
+                          | mp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
+                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
+                          | nmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 9e5bb7f558e1ee66d0614a37cb4fb8c71086ba4e
+ Configuration time       | 2013-10-15 12:56:50.249803
 
 
    Content of the .dal input file
@@ -240,7 +252,7 @@ H          0.8886985114           -1.5392766339            0.0487594750
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   7 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -248,7 +260,7 @@ H          0.8886985114           -1.5392766339            0.0487594750
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -381,7 +393,7 @@ Point group: C1
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -414,8 +426,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -464,7 +476,7 @@ Point group: C1
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -490,14 +502,14 @@ Point group: C1
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554197792        5.86551D-06   -9.13D-09    6
+@  6    -55.4554197792        5.86551D-06   -9.13D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554197793        6.53862D-10   -7.18D-12    7
+@  7    -55.4554197793        6.30538D-10   -7.23D-12    5
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -55.455419779253    6.54D-10
+@     Converged SCF energy, gradient:    -55.455419779253    6.31D-10
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -520,7 +532,7 @@ Point group: C1
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.013       0.024
 
 
                        .-----------------------------------.
@@ -536,11 +548,11 @@ Point group: C1
 @    Nuclear repulsion:            11.737180794400
 @    Electronic energy:           -67.192600573652
 
-@    Final gradient norm:           0.000000000654
+@    Final gradient norm:           0.000000000631
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  (Only coefficients >0.0100 are printed.)
 
@@ -559,12 +571,12 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -624,7 +636,7 @@ Point group: C1
  3. irep:
   1.00 -0.50 -0.50  1.00 -0.50 -0.50
   0.00  0.87 -0.87  0.00  0.87 -0.87
- -0.00 -0.87  0.87  0.00  0.87 -0.87
+  0.00 -0.87  0.87  0.00  0.87 -0.87
   1.00 -0.50 -0.50 -1.00  0.50  0.50
                                       
 
@@ -648,8 +660,8 @@ Symmetry   1       1       1       2       3       3       3       3       3    
         0.0000  0.0000  0.0000  0.0000  1.0000  0.0000  0.0000  0.0000  0.0000  0.0000
         0.0000  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000  1.0000  0.0000
         1.0000  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000
-        0.0000  0.5774  0.0000  0.0000  0.0000  0.8165  0.0000 -0.0000  0.0000 -0.0000
-        0.0000  0.0000  0.0000  0.5774  0.0000  0.0000  0.0000  0.0000  0.0000 -0.0000
+        0.0000  0.5774  0.0000  0.0000  0.0000  0.8165  0.0000  0.0000  0.0000 -0.0000
+        0.0000  0.0000  0.0000  0.5774  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000
         0.0000  0.0000  0.5774  0.0000  0.0000  0.0000  0.8165  0.0000  0.0000  0.0000
         0.0000 -0.2887  0.0000  0.5000  0.0000  0.2041  0.0000  0.6124  0.0000  0.3536
         0.0000 -0.5000  0.0000 -0.2887  0.0000  0.3536  0.0000 -0.3536  0.0000  0.6124
@@ -705,7 +717,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -740,8 +752,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -790,7 +802,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -816,14 +828,14 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006976
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554028614        5.72723D-06   -1.17D-08    6
+@  6    -55.4554028614        5.72723D-06   -1.17D-08    5
       Virial theorem: -V/T =      2.006978
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554028614        6.68294D-10   -6.81D-12    7
+@  7    -55.4554028614        6.47294D-10   -6.84D-12    5
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -55.455402861394    6.68D-10
+@     Converged SCF energy, gradient:    -55.455402861394    6.47D-10
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -846,7 +858,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.002       0.003
+ >>>> CPU and wall time for SCF :       0.011       0.023
 
 
                        .-----------------------------------.
@@ -862,20 +874,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.714356025730
 @    Electronic energy:           -67.169758887125
 
-@    Final gradient norm:           0.000000000668
+@    Final gradient norm:           0.000000000647
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.03 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -897,8 +909,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Largest deviation from tra-rot symmetry is in gradient element  4:  2.42E-10
 
@@ -909,8 +921,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -957,7 +969,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -992,8 +1004,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -1042,7 +1054,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -1068,14 +1080,14 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006830
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554030786        6.04679D-06   -6.97D-09    6
+@  6    -55.4554030786        6.04679D-06   -6.97D-09    5
       Virial theorem: -V/T =      2.006832
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554030786        6.39823D-10   -7.67D-12    7
+@  7    -55.4554030786        6.14362D-10   -7.69D-12    5
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -55.455403078576    6.40D-10
+@     Converged SCF energy, gradient:    -55.455403078576    6.14D-10
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1098,7 +1110,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.002       0.003
+ >>>> CPU and wall time for SCF :       0.010       0.021
 
 
                        .-----------------------------------.
@@ -1114,20 +1126,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.759867206563
 @    Electronic energy:           -67.215270285139
 
-@    Final gradient norm:           0.000000000640
+@    Final gradient norm:           0.000000000614
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1149,8 +1161,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Largest deviation from tra-rot symmetry is in gradient element  4:  2.65E-10
 
@@ -1161,8 +1173,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -1209,7 +1221,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -1244,8 +1256,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -1294,7 +1306,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -1320,14 +1332,14 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006763
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4553946516        5.59673D-06   -1.02D-08    6
+@  6    -55.4553946516        5.59673D-06   -1.02D-08    5
       Virial theorem: -V/T =      2.006765
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4553946516        6.51285D-10   -6.48D-12    7
+@  7    -55.4553946516        6.27633D-10   -6.48D-12    5
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -55.455394651562    6.51D-10
+@     Converged SCF energy, gradient:    -55.455394651562    6.28D-10
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1350,7 +1362,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.002       0.002
+ >>>> CPU and wall time for SCF :       0.011       0.022
 
 
                        .-----------------------------------.
@@ -1366,20 +1378,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.769436945795
 @    Electronic energy:           -67.224831597356
 
-@    Final gradient norm:           0.000000000651
+@    Final gradient norm:           0.000000000628
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1401,8 +1413,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Largest deviation from tra-rot symmetry is in gradient element  4:  2.54E-10
 
@@ -1413,8 +1425,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:45 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -1461,7 +1473,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -1496,8 +1508,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -1546,7 +1558,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -1572,14 +1584,14 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.007041
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4553948901        6.16646D-06   -8.09D-09    6
+@  6    -55.4553948901        6.16646D-06   -8.09D-09    5
       Virial theorem: -V/T =      2.007043
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4553948901        6.56587D-10   -8.06D-12    7
+@  7    -55.4553948901        6.33579D-10   -8.03D-12    5
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -55.455394890085    6.57D-10
+@     Converged SCF energy, gradient:    -55.455394890085    6.34D-10
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1602,7 +1614,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.002       0.003
+ >>>> CPU and wall time for SCF :       0.011       0.034
 
 
                        .-----------------------------------.
@@ -1618,20 +1630,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.705085559168
 @    Electronic energy:           -67.160480449253
 
-@    Final gradient norm:           0.000000000657
+@    Final gradient norm:           0.000000000634
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1653,8 +1665,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Largest deviation from tra-rot symmetry is in gradient element  4:  2.52E-10
 
@@ -1665,8 +1677,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -1713,7 +1725,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -1748,8 +1760,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -1798,7 +1810,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -1824,14 +1836,14 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006861
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554141928        5.96444D-06   -7.83D-09    6
+@  6    -55.4554141928        5.96444D-06   -7.83D-09    5
       Virial theorem: -V/T =      2.006863
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554141928        6.45738D-10   -7.45D-12    7
+@  7    -55.4554141928        6.21124D-10   -7.43D-12    5
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -55.455414192826    6.46D-10
+@     Converged SCF energy, gradient:    -55.455414192826    6.21D-10
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1854,7 +1866,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.002
+ >>>> CPU and wall time for SCF :       0.011       0.022
 
 
                        .-----------------------------------.
@@ -1870,20 +1882,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.750295928661
 @    Electronic energy:           -67.205710121487
 
-@    Final gradient norm:           0.000000000646
+@    Final gradient norm:           0.000000000621
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.03 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1905,8 +1917,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Largest deviation from tra-rot symmetry is in gradient element  4:  2.60E-10
 
@@ -1917,8 +1929,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -1965,7 +1977,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -2000,8 +2012,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -2050,7 +2062,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -2076,14 +2088,14 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006945
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554141591        5.78088D-06   -1.06D-08    6
+@  6    -55.4554141591        5.78088D-06   -1.06D-08    5
       Virial theorem: -V/T =      2.006947
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554141592        6.62236D-10   -6.96D-12    7
+@  7    -55.4554141592        6.40151D-10   -6.95D-12    5
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -55.455414159151    6.62D-10
+@     Converged SCF energy, gradient:    -55.455414159151    6.40D-10
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -2106,7 +2118,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.011       0.020
 
 
                        .-----------------------------------.
@@ -2122,20 +2134,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.724019541753
 @    Electronic energy:           -67.179433700904
 
-@    Final gradient norm:           0.000000000662
+@    Final gradient norm:           0.000000000640
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.03 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -2157,8 +2169,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Largest deviation from tra-rot symmetry is in gradient element  4:  2.46E-10
 
@@ -2169,8 +2181,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -2217,7 +2229,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -2252,8 +2264,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -2302,7 +2314,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -2328,14 +2340,14 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554197792        5.86597D-06   -9.12D-09    6
+@  6    -55.4554197792        5.86597D-06   -9.12D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554197792        6.53786D-10   -7.18D-12    7
+@  7    -55.4554197792        6.30543D-10   -7.20D-12    5
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -55.455419779194    6.54D-10
+@     Converged SCF energy, gradient:    -55.455419779194    6.31D-10
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -2358,7 +2370,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.002
+ >>>> CPU and wall time for SCF :       0.012       0.037
 
 
                        .-----------------------------------.
@@ -2374,20 +2386,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737128537150
 @    Electronic energy:           -67.192548316344
 
-@    Final gradient norm:           0.000000000654
+@    Final gradient norm:           0.000000000631
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -2409,8 +2421,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Largest deviation from tra-rot symmetry is in gradient element  4:  2.53E-10
 
@@ -2421,8 +2433,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -2469,7 +2481,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -2504,8 +2516,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -2554,7 +2566,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -2580,14 +2592,14 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554197792        5.86597D-06   -9.12D-09    6
+@  6    -55.4554197792        5.86597D-06   -9.12D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554197792        6.53895D-10   -7.13D-12    7
+@  7    -55.4554197792        6.30549D-10   -7.18D-12    5
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -55.455419779194    6.54D-10
+@     Converged SCF energy, gradient:    -55.455419779194    6.31D-10
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -2610,7 +2622,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.002       0.003
+ >>>> CPU and wall time for SCF :       0.011       0.022
 
 
                        .-----------------------------------.
@@ -2626,20 +2638,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737128537149
 @    Electronic energy:           -67.192548316343
 
-@    Final gradient norm:           0.000000000654
+@    Final gradient norm:           0.000000000631
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.03 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -2661,8 +2673,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Largest deviation from tra-rot symmetry is in gradient element  4:  2.53E-10
 
@@ -2673,8 +2685,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -2721,7 +2733,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -2756,8 +2768,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -2806,7 +2818,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -2832,22 +2844,26 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006902
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4553779551        6.34717D-06   -1.00D-08    6
+@  6    -55.4553779551        6.34717D-06   -1.00D-08    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4553779551        7.69500D-07   -7.97D-12    7
+@  7    -55.4553779551        7.81565D-07   -7.97D-12    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4553779551        4.38330D-08   -9.95D-14    8
+@  8    -55.4553779551        4.38505D-08   -9.95D-14    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4553779551        5.64456D-09    2.84D-14    9
+@  9    -55.4553779551        1.36477D-08   -2.84D-14    5
+      Virial theorem: -V/T =      2.006903
+@      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+@ 10    -55.4553779551        2.26525D-09    4.26D-14    5
 
-@ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455377955080    5.64D-09
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -55.455377955080    2.27D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -2870,7 +2886,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.014       0.029
 
 
                        .-----------------------------------.
@@ -2886,20 +2902,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737214628828
 @    Electronic energy:           -67.192592583909
 
-@    Final gradient norm:           0.000000005645
+@    Final gradient norm:           0.000000002265
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -2921,10 +2937,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  1:  3.49E-09
+ Largest deviation from tra-rot symmetry is in gradient element  1:  1.19E-09
 
 
    ***************************************************************************
@@ -2933,8 +2949,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -2981,7 +2997,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -3016,8 +3032,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -3066,7 +3082,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -3092,22 +3108,22 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006902
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4553775212        6.33530D-06   -9.97D-09    6
+@  6    -55.4553775212        6.33530D-06   -9.97D-09    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4553775212        7.60410D-07   -7.99D-12    7
+@  7    -55.4553775212        7.72209D-07   -7.99D-12    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4553775212        3.70869D-08   -8.53D-14    8
+@  8    -55.4553775212        3.71065D-08   -8.53D-14    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4553775212        3.17634D-09    1.42D-14    9
+@  9    -55.4553775212        9.80635D-09    0.00D+00    5
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455377521164    3.18D-09
+@     Converged SCF energy, gradient:    -55.455377521164    9.81D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -3130,7 +3146,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.014       0.026
 
 
                        .-----------------------------------.
@@ -3146,20 +3162,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737216135372
 @    Electronic energy:           -67.192593656536
 
-@    Final gradient norm:           0.000000003176
+@    Final gradient norm:           0.000000009806
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -3181,10 +3197,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  1:  2.30E-09
+ Largest deviation from tra-rot symmetry is in gradient element  1:  6.42E-09
 
 
    ***************************************************************************
@@ -3193,8 +3209,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -3241,7 +3257,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -3276,8 +3292,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -3326,7 +3342,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -3352,22 +3368,26 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006902
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4553947122        5.98364D-06   -9.18D-09    6
+@  6    -55.4553947122        5.98364D-06   -9.18D-09    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4553947122        3.11903D-07   -7.39D-12    7
+@  7    -55.4553947122        3.12916D-07   -7.39D-12    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4553947122        3.42229D-08    0.00D+00    8
+@  8    -55.4553947122        3.42585D-08   -1.42D-14    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4553947122        3.82326D-09   -1.42D-14    9
+@  9    -55.4553947122        1.07235D-08    1.42D-14    5
+      Virial theorem: -V/T =      2.006904
+@      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+@ 10    -55.4553947122        1.30682D-09   -1.42D-14    5
 
-@ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455394712163    3.82D-09
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -55.455394712163    1.31D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -3390,7 +3410,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.015       0.031
 
 
                        .-----------------------------------.
@@ -3406,20 +3426,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737252349438
 @    Electronic energy:           -67.192647061601
 
-@    Final gradient norm:           0.000000003823
+@    Final gradient norm:           0.000000001307
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -3441,10 +3461,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  4:  3.49E-09
+ Largest deviation from tra-rot symmetry is in gradient element  4:  1.05E-09
 
 
    ***************************************************************************
@@ -3453,8 +3473,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:29 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -3501,7 +3521,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.04 seconds
 
 
                         .----------------------------------.
@@ -3536,8 +3556,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -3586,7 +3606,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -3612,22 +3632,26 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006902
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4553948636        5.98373D-06   -9.18D-09    6
+@  6    -55.4553948636        5.98373D-06   -9.18D-09    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4553948637        3.14241D-07   -7.40D-12    7
+@  7    -55.4553948637        3.15245D-07   -7.40D-12    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4553948637        3.58949D-08    0.00D+00    8
+@  8    -55.4553948637        3.59087D-08    1.42D-14    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4553948637        3.60259D-09   -2.84D-14    9
+@  9    -55.4553948637        1.13060D-08   -1.42D-14    5
+      Virial theorem: -V/T =      2.006904
+@      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+@ 10    -55.4553948637        1.33747D-09   -1.42D-14    5
 
-@ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455394863652    3.60D-09
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -55.455394863652    1.34D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -3650,7 +3674,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.004
+ >>>> CPU and wall time for SCF :       0.016       0.030
 
 
                        .-----------------------------------.
@@ -3666,20 +3690,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737252161757
 @    Electronic energy:           -67.192647025408
 
-@    Final gradient norm:           0.000000003603
+@    Final gradient norm:           0.000000001337
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -3701,10 +3725,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  1:  3.17E-09
+ Largest deviation from tra-rot symmetry is in gradient element  1:  1.06E-09
 
 
    ***************************************************************************
@@ -3713,8 +3737,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -3761,7 +3785,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -3796,8 +3820,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -3846,7 +3870,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -3872,22 +3896,22 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554140416        5.93229D-06   -9.24D-09    6
+@  6    -55.4554140416        5.93229D-06   -9.24D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554140416        2.85869D-07   -7.26D-12    7
+@  7    -55.4554140416        2.86478D-07   -7.33D-12    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4554140416        1.47274D-08   -2.84D-14    8
+@  8    -55.4554140416        1.47474D-08    2.84D-14    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4554140416        1.97187D-09    1.42D-14    9
+@  9    -55.4554140416        4.41147D-09   -2.84D-14    5
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455414041578    1.97D-09
+@     Converged SCF energy, gradient:    -55.455414041578    4.41D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -3910,7 +3934,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.014       0.028
 
 
                        .-----------------------------------.
@@ -3926,20 +3950,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737152509405
 @    Electronic energy:           -67.192566550983
 
-@    Final gradient norm:           0.000000001972
+@    Final gradient norm:           0.000000004411
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -3961,10 +3985,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  1:  1.66E-09
+ Largest deviation from tra-rot symmetry is in gradient element  4:  3.34E-09
 
 
    ***************************************************************************
@@ -3973,8 +3997,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -4021,7 +4045,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -4056,8 +4080,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -4106,7 +4130,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -4132,22 +4156,22 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554140199        5.93240D-06   -9.24D-09    6
+@  6    -55.4554140199        5.93240D-06   -9.24D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554140199        2.86178D-07   -7.30D-12    7
+@  7    -55.4554140199        2.86785D-07   -7.25D-12    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4554140199        1.58526D-08    0.00D+00    8
+@  8    -55.4554140199        1.58560D-08   -2.84D-14    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4554140199        2.35676D-09    0.00D+00    9
+@  9    -55.4554140199        5.04803D-09    0.00D+00    5
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455414019910    2.36D-09
+@     Converged SCF energy, gradient:    -55.455414019910    5.05D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -4170,7 +4194,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.013       0.028
 
 
                        .-----------------------------------.
@@ -4186,20 +4210,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737152678885
 @    Electronic energy:           -67.192566698795
 
-@    Final gradient norm:           0.000000002357
+@    Final gradient norm:           0.000000005048
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -4221,10 +4245,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  1:  1.86E-09
+ Largest deviation from tra-rot symmetry is in gradient element  1:  3.88E-09
 
 
    ***************************************************************************
@@ -4233,8 +4257,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -4281,7 +4305,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -4316,8 +4340,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -4366,7 +4390,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -4392,22 +4416,22 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554131393        6.43348D-06   -9.44D-09    6
+@  6    -55.4554131393        6.43348D-06   -9.44D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554131393        7.93232D-07   -8.30D-12    7
+@  7    -55.4554131393        8.05307D-07   -8.30D-12    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4554131393        3.50968D-08   -1.14D-13    8
+@  8    -55.4554131393        3.51385D-08   -7.11D-14    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4554131393        1.61673D-09    4.26D-14    9
+@  9    -55.4554131393        7.25278D-09    0.00D+00    5
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455413139307    1.62D-09
+@     Converged SCF energy, gradient:    -55.455413139307    7.25D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -4421,7 +4445,7 @@ Symmetry   3       3
  Sym       Hartree-Fock orbital energies
 
   1    -15.31278058    -1.08668719    -0.56225790    -0.56079017    -0.35850238
-         0.62498558     0.69926385     0.70116202
+         0.62498558     0.69926386     0.70116202
 
     E(LUMO) :     0.62498558 au (symmetry 1)
   - E(HOMO) :    -0.35850238 au (symmetry 1)
@@ -4430,7 +4454,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.013       0.027
 
 
                        .-----------------------------------.
@@ -4446,20 +4470,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737135029086
 @    Electronic energy:           -67.192548168393
 
-@    Final gradient norm:           0.000000001617
+@    Final gradient norm:           0.000000007253
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -4481,10 +4505,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  4:  1.01E-09
+ Largest deviation from tra-rot symmetry is in gradient element  4:  9.48E-10
 
 
    ***************************************************************************
@@ -4493,8 +4517,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -4576,8 +4600,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -4626,7 +4650,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -4652,22 +4676,22 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554131372        6.43061D-06   -9.44D-09    6
+@  6    -55.4554131372        6.43061D-06   -9.44D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554131372        7.90981D-07   -8.27D-12    7
+@  7    -55.4554131372        8.02986D-07   -8.26D-12    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4554131372        3.43852D-08   -9.95D-14    8
+@  8    -55.4554131372        3.44231D-08   -9.95D-14    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4554131372        1.17219D-09    2.84D-14    9
+@  9    -55.4554131372        6.97358D-09    1.42D-14    5
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455413137204    1.17D-09
+@     Converged SCF energy, gradient:    -55.455413137204    6.97D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -4690,7 +4714,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.013       0.026
 
 
                        .-----------------------------------.
@@ -4706,20 +4730,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737134898077
 @    Electronic energy:           -67.192548035281
 
-@    Final gradient norm:           0.000000001172
+@    Final gradient norm:           0.000000006974
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -4741,10 +4765,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  4:  5.53E-10
+ Largest deviation from tra-rot symmetry is in gradient element  4:  2.00E-10
 
 
    ***************************************************************************
@@ -4753,8 +4777,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -4801,7 +4825,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -4836,8 +4860,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -4886,7 +4910,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -4912,22 +4936,26 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006902
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4553777379        6.34135D-06   -9.98D-09    6
+@  6    -55.4553777379        6.34135D-06   -9.98D-09    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4553777379        7.65112D-07   -7.99D-12    7
+@  7    -55.4553777379        7.77046D-07   -8.01D-12    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4553777379        4.07132D-08   -7.11D-14    8
+@  8    -55.4553777379        4.07296D-08   -8.53D-14    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4553777379        4.83626D-09    0.00D+00    9
+@  9    -55.4553777379        1.19610D-08    1.42D-14    5
+      Virial theorem: -V/T =      2.006903
+@      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+@ 10    -55.4553777379        1.99903D-09    0.00D+00    5
 
-@ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455377737879    4.84D-09
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -55.455377737879    2.00D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -4950,7 +4978,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.003
+ >>>> CPU and wall time for SCF :       0.015       0.032
 
 
                        .-----------------------------------.
@@ -4966,20 +4994,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737215382758
 @    Electronic energy:           -67.192593120636
 
-@    Final gradient norm:           0.000000004836
+@    Final gradient norm:           0.000000001999
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -5001,10 +5029,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  7:  3.63E-09
+ Largest deviation from tra-rot symmetry is in gradient element  7:  1.24E-09
 
 
    ***************************************************************************
@@ -5013,8 +5041,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -5096,8 +5124,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -5146,7 +5174,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -5172,22 +5200,26 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006902
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4553777380        6.34134D-06   -9.98D-09    6
+@  6    -55.4553777380        6.34134D-06   -9.98D-09    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4553777380        7.65107D-07   -7.97D-12    7
+@  7    -55.4553777380        7.77040D-07   -7.94D-12    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4553777380        4.07106D-08   -7.11D-14    8
+@  8    -55.4553777380        4.07295D-08   -1.14D-13    5
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4553777380        5.05696D-09    1.42D-14    9
+@  9    -55.4553777380        1.19610D-08    0.00D+00    5
+      Virial theorem: -V/T =      2.006903
+@      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+@ 10    -55.4553777380        1.99902D-09    1.42D-14    5
 
-@ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455377737984    5.06D-09
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -55.455377737984    2.00D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -5210,7 +5242,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.014       0.034
 
 
                        .-----------------------------------.
@@ -5226,20 +5258,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737215383598
 @    Electronic energy:           -67.192593121582
 
-@    Final gradient norm:           0.000000005057
+@    Final gradient norm:           0.000000001999
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -5261,10 +5293,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  4:  5.41E-09
+ Largest deviation from tra-rot symmetry is in gradient element  4:  1.72E-09
 
 
    ***************************************************************************
@@ -5273,8 +5305,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -5321,7 +5353,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -5356,8 +5388,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -5406,7 +5438,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -5432,22 +5464,26 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006902
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4553947879        5.98368D-06   -9.18D-09    6
+@  6    -55.4553947879        5.98368D-06   -9.18D-09    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4553947879        3.13059D-07   -7.40D-12    7
+@  7    -55.4553947879        3.14068D-07   -7.36D-12    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4553947879        3.50821D-08    0.00D+00    8
+@  8    -55.4553947879        3.50957D-08   -1.42D-14    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4553947879        3.97089D-09    0.00D+00    9
+@  9    -55.4553947879        1.10238D-08   -1.42D-14    5
+      Virial theorem: -V/T =      2.006904
+@      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+@ 10    -55.4553947879        1.32381D-09    1.42D-14    5
 
-@ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455394787870    3.97D-09
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -55.455394787870    1.32D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -5470,7 +5506,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.004
+ >>>> CPU and wall time for SCF :       0.014       0.031
 
 
                        .-----------------------------------.
@@ -5486,20 +5522,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737252255640
 @    Electronic energy:           -67.192647043510
 
-@    Final gradient norm:           0.000000003971
+@    Final gradient norm:           0.000000001324
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -5521,10 +5557,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  4:  4.34E-09
+ Largest deviation from tra-rot symmetry is in gradient element  4:  1.25E-09
 
 
    ***************************************************************************
@@ -5533,8 +5569,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -5581,7 +5617,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -5616,8 +5652,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -5666,7 +5702,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -5692,22 +5728,26 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006902
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4553947879        5.98367D-06   -9.18D-09    6
+@  6    -55.4553947879        5.98367D-06   -9.18D-09    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4553947879        3.13055D-07   -7.36D-12    7
+@  7    -55.4553947879        3.14063D-07   -7.38D-12    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4553947879        3.50611D-08   -4.26D-14    8
+@  8    -55.4553947879        3.50955D-08    1.42D-14    5
       Virial theorem: -V/T =      2.006904
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4553947879        3.78697D-09    0.00D+00    9
+@  9    -55.4553947879        1.10237D-08   -1.42D-14    5
+      Virial theorem: -V/T =      2.006904
+@      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+@ 10    -55.4553947879        1.32379D-09    0.00D+00    5
 
-@ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455394787891    3.79D-09
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -55.455394787891    1.32D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -5730,7 +5770,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.013       0.029
 
 
                        .-----------------------------------.
@@ -5746,20 +5786,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737252255667
 @    Electronic energy:           -67.192647043558
 
-@    Final gradient norm:           0.000000003787
+@    Final gradient norm:           0.000000001324
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -5781,10 +5821,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  7:  4.00E-09
+ Largest deviation from tra-rot symmetry is in gradient element  7:  1.22E-09
 
 
    ***************************************************************************
@@ -5793,8 +5833,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -5803,7 +5843,7 @@ Symmetry   3       3
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.01 seconds
+ >>>> Total CPU  time used in ABACUS:   0.00 seconds
  >>>> Total wall time used in ABACUS:   0.01 seconds
 
 
@@ -5841,7 +5881,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -5876,8 +5916,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -5926,7 +5966,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -5952,22 +5992,22 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554140307        5.93235D-06   -9.24D-09    6
+@  6    -55.4554140307        5.93235D-06   -9.24D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554140308        2.86028D-07   -7.29D-12    7
+@  7    -55.4554140308        2.86635D-07   -7.29D-12    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4554140308        1.53187D-08   -1.42D-14    8
+@  8    -55.4554140308        1.53136D-08   -1.42D-14    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4554140308        1.89016D-09    0.00D+00    9
+@  9    -55.4554140308        4.74234D-09   -1.42D-14    5
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455414030750    1.89D-09
+@     Converged SCF energy, gradient:    -55.455414030751    4.74D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -5990,7 +6030,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.004       0.003
+ >>>> CPU and wall time for SCF :       0.014       0.027
 
 
                        .-----------------------------------.
@@ -6002,24 +6042,24 @@ Symmetry   3       3
 @    Spatial symmetry:            1
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -55.455414030750                 
+@    Final HF energy:             -55.455414030751                 
 @    Nuclear repulsion:            11.737152594167
 @    Electronic energy:           -67.192566624918
 
-@    Final gradient norm:           0.000000001890
+@    Final gradient norm:           0.000000004742
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -6041,10 +6081,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  4:  1.76E-09
+ Largest deviation from tra-rot symmetry is in gradient element  4:  4.57E-09
 
 
    ***************************************************************************
@@ -6053,8 +6093,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -6101,7 +6141,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.05 seconds
 
 
                         .----------------------------------.
@@ -6136,8 +6176,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -6186,7 +6226,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -6212,22 +6252,22 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554140307        5.93235D-06   -9.24D-09    6
+@  6    -55.4554140307        5.93235D-06   -9.24D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554140307        2.86034D-07   -7.29D-12    7
+@  7    -55.4554140307        2.86641D-07   -7.29D-12    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4554140307        1.52998D-08    1.42D-14    8
+@  8    -55.4554140307        1.53137D-08    0.00D+00    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4554140307        1.79550D-09    2.84D-14    9
+@  9    -55.4554140307        4.74235D-09   -2.84D-14    5
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455414030712    1.80D-09
+@     Converged SCF energy, gradient:    -55.455414030712    4.74D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -6250,7 +6290,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.013       0.027
 
 
                        .-----------------------------------.
@@ -6266,20 +6306,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737152594128
 @    Electronic energy:           -67.192566624839
 
-@    Final gradient norm:           0.000000001795
+@    Final gradient norm:           0.000000004742
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -6301,10 +6341,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  7:  1.25E-09
+ Largest deviation from tra-rot symmetry is in gradient element  7:  4.17E-09
 
 
    ***************************************************************************
@@ -6313,8 +6353,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:30 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -6361,7 +6401,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -6396,8 +6436,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -6446,7 +6486,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -6472,22 +6512,22 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554131383        6.43205D-06   -9.44D-09    6
+@  6    -55.4554131383        6.43205D-06   -9.44D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554131383        7.92111D-07   -8.24D-12    7
+@  7    -55.4554131383        8.04152D-07   -8.28D-12    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4554131383        3.47369D-08   -9.95D-14    8
+@  8    -55.4554131383        3.47845D-08   -9.95D-14    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4554131383        1.40796D-09   -1.42D-14    9
+@  9    -55.4554131383        7.11582D-09   -2.84D-14    5
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455413138279    1.41D-09
+@     Converged SCF energy, gradient:    -55.455413138279    7.12D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -6510,7 +6550,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.004
+ >>>> CPU and wall time for SCF :       0.013       0.028
 
 
                        .-----------------------------------.
@@ -6526,20 +6566,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737134963974
 @    Electronic energy:           -67.192548102253
 
-@    Final gradient norm:           0.000000001408
+@    Final gradient norm:           0.000000007116
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -6561,10 +6601,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  7:  9.12E-10
+ Largest deviation from tra-rot symmetry is in gradient element  7:  6.65E-10
 
 
    ***************************************************************************
@@ -6573,8 +6613,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -6621,7 +6661,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -6656,8 +6696,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -6706,7 +6746,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -6732,22 +6772,22 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554131382        6.43206D-06   -9.44D-09    6
+@  6    -55.4554131382        6.43206D-06   -9.44D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554131382        7.92118D-07   -8.30D-12    7
+@  7    -55.4554131382        8.04158D-07   -8.33D-12    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  8    -55.4554131382        3.47573D-08   -8.53D-14    8
+@  8    -55.4554131382        3.47848D-08   -8.53D-14    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  9    -55.4554131382        1.43422D-09   -1.42D-14    9
+@  9    -55.4554131382        7.11587D-09    0.00D+00    5
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -55.455413138173    1.43D-09
+@     Converged SCF energy, gradient:    -55.455413138173    7.12D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -6770,7 +6810,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.003       0.003
+ >>>> CPU and wall time for SCF :       0.013       0.028
 
 
                        .-----------------------------------.
@@ -6786,20 +6826,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737134963260
 @    Electronic energy:           -67.192548101433
 
-@    Final gradient norm:           0.000000001434
+@    Final gradient norm:           0.000000007116
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -6821,10 +6861,10 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
- Largest deviation from tra-rot symmetry is in gradient element  4:  1.11E-09
+ Largest deviation from tra-rot symmetry is in gradient element  4:  1.03E-09
 
 
    ***************************************************************************
@@ -6833,8 +6873,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -6881,7 +6921,7 @@ Symmetry   3       3
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -6916,8 +6956,8 @@ Symmetry   3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      NH3                                                                     
@@ -6966,7 +7006,7 @@ Symmetry   3       3
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
@@ -6992,14 +7032,14 @@ Symmetry   3       3
       Virial theorem: -V/T =      2.006903
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  6    -55.4554197792        5.86551D-06   -9.13D-09    6
+@  6    -55.4554197792        5.86551D-06   -9.13D-09    5
       Virial theorem: -V/T =      2.006905
 @      MULPOP N      -0.44; H       0.15; H       0.15; H       0.15; 
  -----------------------------------------------------------------------------
-@  7    -55.4554197793        6.53862D-10   -7.18D-12    7
+@  7    -55.4554197793        6.30538D-10   -7.23D-12    5
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -55.455419779253    6.54D-10
+@     Converged SCF energy, gradient:    -55.455419779253    6.31D-10
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -7022,7 +7062,7 @@ Symmetry   3       3
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.002       0.002
+ >>>> CPU and wall time for SCF :       0.012       0.023
 
 
                        .-----------------------------------.
@@ -7038,20 +7078,20 @@ Symmetry   3       3
 @    Nuclear repulsion:            11.737180794400
 @    Electronic energy:           -67.192600573652
 
-@    Final gradient norm:           0.000000000654
+@    Final gradient norm:           0.000000000631
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.04 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -7073,8 +7113,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
  Largest deviation from tra-rot symmetry is in gradient element  4:  2.53E-10
 
@@ -7085,8 +7125,8 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
@@ -7105,8 +7145,8 @@ Symmetry   3       3
 
 
 
-                    Numerical gradient in symmetry coordinates
-                    ------------------------------------------
+                   Analytical gradient in symmetry coordinates
+                   -------------------------------------------
 
 
 
@@ -7135,27 +7175,30 @@ Symmetry   3       3
                          Hessian in symmetry coordinates
                          -------------------------------
 
-              1           1           1           2           3           3
-    1      0.336170
-    1     -0.251111    0.500175
-    1     -0.194088    0.144999    0.112064
-    2     -0.000000    0.000000    0.000000    0.000002
-    3      0.000000   -0.000000   -0.000000   -0.000000    0.840826
-    3      0.000000    0.000000   -0.000000    0.000000   -0.568022    0.499836
-    3     -0.000000   -0.000000    0.000000    0.000000   -0.310946    0.210055
-    3     -0.000000    0.000000    0.000000   -0.000000   -0.118510   -0.036046
-    3      0.000000   -0.000000   -0.000000    0.000001    0.000000   -0.000000
-    3      0.000000    0.000000   -0.000000   -0.000001   -0.000000    0.000000
-    3     -0.000000   -0.000000    0.000000   -0.000000   -0.000000   -0.000000
-    3     -0.000000    0.000000    0.000000    0.000000   -0.000000    0.000000
+
+        Notation: irrep/coordinate number
+
+           1/   1      1/   2      1/   3      2/   4      3/   5      3/   6
+ 1/   1    0.336170
+ 1/   2   -0.251111    0.500175
+ 1/   3   -0.194088    0.144999    0.112064
+ 2/   4   -0.000000    0.000000    0.000000    0.000002
+ 3/   5    0.000000   -0.000000   -0.000000   -0.000000    0.840826
+ 3/   6    0.000000    0.000000   -0.000000    0.000000   -0.568022    0.499836
+ 3/   7   -0.000000   -0.000000    0.000000    0.000000   -0.310946    0.210055
+ 3/   8   -0.000000    0.000000    0.000000   -0.000000   -0.118510   -0.036046
+ 3/   9    0.000000   -0.000000   -0.000000    0.000001    0.000000   -0.000000
+ 3/  10    0.000000    0.000000   -0.000000   -0.000001   -0.000000    0.000000
+ 3/  11   -0.000000   -0.000000    0.000000   -0.000000   -0.000000   -0.000000
+ 3/  12   -0.000000    0.000000    0.000000    0.000000   -0.000000    0.000000
                                        
-              3           3           3           3           3           3
-    3      0.114968
-    3      0.043827    0.132821
-    3     -0.000000   -0.000000    0.840830
-    3     -0.000000    0.000000   -0.568023    0.499836
-    3      0.000000    0.000000   -0.310946    0.210055    0.114968
-    3      0.000000    0.000000   -0.118511   -0.036045    0.043828    0.132821
+           3/   7      3/   8      3/   9      3/  10      3/  11      3/  12
+ 3/   7    0.114968
+ 3/   8    0.043827    0.132821
+ 3/   9   -0.000000   -0.000000    0.840830
+ 3/  10   -0.000000    0.000000   -0.568023    0.499836
+ 3/  11    0.000000    0.000000   -0.310946    0.210055    0.114968
+ 3/  12    0.000000    0.000000   -0.118511   -0.036045    0.043828    0.132821
                                        
 
 
@@ -7225,18 +7268,18 @@ Symmetry   3       3
  -------------------
 
           1            1            3            3            3            3
-   -0.0000000    0.0000002   -0.0792411   -0.0627471   -0.0002445   -0.0001934
-   -0.0000000    0.0000000    0.0002445    0.0001934   -0.0792412   -0.0627470
+   -0.0000000    0.0000002   -0.0792411   -0.0627471   -0.0002431   -0.0001933
+   -0.0000000    0.0000000    0.0002431    0.0001933   -0.0792412   -0.0627470
    -0.0402840   -0.1143584   -0.0000000   -0.0000002   -0.0000000   -0.0000000
-    0.5458701   -0.2201325    0.7428910   -0.1707862    0.0022922   -0.0005264
-    0.0000000   -0.0000000    0.0000274   -0.0023180   -0.0088872    0.7520520
-    0.1865945    0.5296381    0.3324288    0.2632227    0.0010257    0.0008113
-   -0.2729350    0.1100649    0.1780521    0.5225746    0.3260807   -0.3979940
-   -0.4727383    0.1906411    0.3238169   -0.3997844    0.5559512    0.0586915
-    0.1865951    0.5296370   -0.1653260   -0.1309077   -0.2884046   -0.2283617
-   -0.2729350    0.1100649    0.1800609    0.5201113   -0.3249758    0.4012077
-    0.4727383   -0.1906411   -0.3272415    0.3994150    0.5539423    0.0611548
-    0.1865951    0.5296370   -0.1671026   -0.1323129    0.2873789    0.2275504
+    0.5458701   -0.2201325    0.7428910   -0.1707861    0.0022793   -0.0005262
+    0.0000000   -0.0000000    0.0000273   -0.0023171   -0.0088872    0.7520520
+    0.1865945    0.5296381    0.3324289    0.2632226    0.0010199    0.0008110
+   -0.2729350    0.1100649    0.1780577    0.5225742    0.3260776   -0.3979946
+   -0.4727383    0.1906411    0.3238266   -0.3997843    0.5559455    0.0586921
+    0.1865951    0.5296370   -0.1653311   -0.1309079   -0.2884017   -0.2283614
+   -0.2729350    0.1100649    0.1800552    0.5201118   -0.3249789    0.4012071
+    0.4727383   -0.1906411   -0.3272319    0.3994150    0.5539480    0.0611544
+    0.1865951    0.5296370   -0.1670976   -0.1323126    0.2873818    0.2275504
                                         
 
 
@@ -7284,13 +7327,13 @@ Symmetry   3       3
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:31 2013
+     Host name              : c10-6.local                             
 
 No symmetry -> DSO by numerical integration.
- Electrons:   9.9999990(-1.03e-06): DFTDSO time:       0.1 s
+ Electrons:   9.9999990(-1.03e-06): DFTDSO time:       0.0 s
 
- Integral transformation: Total CPU and WALL times (sec)       0.001       0.000
+ Integral transformation: Total CPU and WALL times (sec)       0.004       0.009
 
 
    ***************************************************************************
@@ -7299,8 +7342,8 @@ No symmetry -> DSO by numerical integration.
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:32 2013
+     Host name              : c10-6.local                             
 
 
                              Molecular geometry (au)
@@ -7400,8 +7443,8 @@ No symmetry -> DSO by numerical integration.
                              x              y              z
 
                 x    29.31120     -2.1483739E-07   5.715937    
-                y  -2.2650554E-07   22.01792     -9.6169143E-08
-                z    5.801536     -8.9506908E-08   23.56095    
+                y  -2.2650554E-07   22.01792     -9.6169131E-08
+                z    5.801536     -8.9506899E-08   23.56095    
 
 
               Indirect spin-spin coupling between H      and N     :
@@ -7599,17 +7642,17 @@ No symmetry -> DSO by numerical integration.
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.19 seconds
- >>>> Total wall time used in ABACUS:   0.19 seconds
+ >>>> Total CPU  time used in ABACUS:   0.38 seconds
+ >>>> Total wall time used in ABACUS:   0.89 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.81 seconds
- >>>> Total wall time used in DALTON:   0.82 seconds
+ >>>> Total CPU  time used in DALTON:   1.53 seconds
+ >>>> Total wall time used in DALTON:   3.23 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:56:46 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Mon Oct 21 14:59:32 2013
+     Host name              : c10-6.local                             

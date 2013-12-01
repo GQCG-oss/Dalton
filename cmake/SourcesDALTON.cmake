@@ -370,6 +370,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/ccsd_diis.F
     DALTON/cc/ccsd_energy.F
     DALTON/cc/ccsd_input.F
+    DALTON/cc/ccsd_init0.F
     DALTON/cc/ccsd_rhs.F
     DALTON/cc/ccsd_rhs3.F
     DALTON/cc/ccsd_rou3.F

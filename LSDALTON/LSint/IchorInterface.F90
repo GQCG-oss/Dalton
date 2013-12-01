@@ -11,7 +11,9 @@ MODULE IchorErimoduleHost
   use precision
   use TYPEDEFTYPE,only: lssetting,BASISSETINFO,MOLECULEINFO
   use memory_handling, only: mem_alloc,mem_dealloc
+#ifdef VAR_ICHOR
   use IchorErimodule !IchorEri plus the parameters
+#endif
 public:: MAIN_ICHORERI_DRIVER
 private
 CONTAINS
@@ -126,6 +128,7 @@ call build_TypeInfo2(setting%MOLECULE(4)%p,setting%BASIS(4)%p%REGULAR,nTypesD,&
      & spherical,MaxnAtomsD,MaxnPrimD,MaxnContD,startOrbitalOfTypeD,&
      & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
 
+#ifdef VAR_ICHOR 
 SphericalSpec=SphericalParam
 IchorJobSpec=IcorJobEri
 IchorInputSpec=1
@@ -151,7 +154,6 @@ OutputDim5=1
 !=====================================================================
 !  Main Call
 !=====================================================================
- 
 call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
      & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
@@ -171,9 +173,12 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & integrals,lupri)
+call mem_dealloc(InputStorage)
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
 !=====================================================================
 
-call mem_dealloc(InputStorage)
 
 !=====================================================================
 

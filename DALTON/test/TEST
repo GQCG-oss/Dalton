@@ -80,7 +80,11 @@ errprint(){
 #########################################################################
 TESTparams="$0 $*"
 help=""
-keep="false"
+if [ -n "$KEEP_TEST_OUTPUTS" ]; then
+    keep="true"
+else
+    keep="false"
+fi
 paramlist=""
 par_paramlist="-N 4"
 reftest=""
@@ -439,6 +443,8 @@ if [ "$result_directory" != "" ]; then
       # test passed, we remove the custom result directory
       if [ "$keep" = "false" ]; then
          rm -r $result_directory
+      else
+         mv $result_directory ${result_directory}_passed_"`date +'%Y-%m-%dT%H_%M'`-$$"
       fi
   else
       mv $result_directory ${result_directory}_failed_"`date +'%Y-%m-%dT%H_%M'`-$$"

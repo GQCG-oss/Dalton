@@ -113,9 +113,6 @@ C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #if defined (PCM_MODULE)
       use pcmmod_cfg
       use pcm_linear_response

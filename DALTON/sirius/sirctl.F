@@ -53,9 +53,6 @@ C
 C
 
       use lucita_orbital_spaces
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #if defined (PCM_MODULE)
       use pcmmod_cfg
 #endif
@@ -353,10 +350,8 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-#if defined (BUILD_PELIB)
             if (peqm) call quit('ERROR: DIIS failed to converge'//
      &                 'and QC-SCF is not implemented with PE library')
-#endif
 #if defined (PCM_MODULE)
             if (pcmmod_is_pcm_calculation) call quit('ERROR: DIIS '//
      &      'failed to converge and QC-SCF is not implemented with '//

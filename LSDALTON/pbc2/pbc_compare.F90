@@ -212,11 +212,11 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
      ll,latt_cell,refcell,numrealvec,nfdensity,g_2,E_J)
 
    !This is needed to form fck
-  call pbc_comp_nucmom(refcell,nucmom,lmax,nfsze,lupri)
+  call pbc_comp_nucmom(refcell,nucmom,lmax,lupri)
 
   !fixme nucmom 
 !   call lsquit('fixme nucmom no value assigned to this variable',-1)
-   call pbc_fform_fck(ll%tlmax,tlat,ll%lmax,ndim,nfsze,ll,nfdensity,nucmom,&
+   call pbc_fform_fck(ll%tlmax,tlat,ll%lmax,ndim,ll,nfdensity,nucmom,&
                    g_2,E_ff,E_nn,lupri)
 
   CALL pbc_nucpot(lupri,luerr,setting,molecule,ll,&
@@ -245,13 +245,13 @@ do n1=-3,3
     numtostring1=adjustl(numtostring1)
     mattxt='minEFmat3'//trim(numtostring1)//'00.dat'
       !call pbc_readopmat2(0,0,0,matris,2,'OVERLAP',.true.,.false.)
-    CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
-    call find_latt_index(k,n1,0,0,fdim,ll,ll%max_layer)
-    !write(iunit,*) ndim
-    DO j=1,ndim
-       write(iunit,*) (ll%lvec(k)%fck_vec(i+(j-1)*ndim),i=1,ndim)
-    ENDDO
-    call lsclose(iunit,'KEEP')
+    !CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
+    !call find_latt_index(k,n1,0,0,fdim,ll,ll%max_layer)
+    !!write(iunit,*) ndim
+    !DO j=1,ndim
+    !   write(iunit,*) (ll%lvec(k)%fck_vec(i+(j-1)*ndim),i=1,ndim)
+    !ENDDO
+    !call lsclose(iunit,'KEEP')
  enddo
     write(*,*) 'Fock matrix written to disk'
     write(lupri,*) 'Fock matrix written to disk'
@@ -472,14 +472,14 @@ SUBROUTINE COMPARE_MATRICES(lupri,ndim,numrealvec,nfsze,lmax,ll)
   mattxt=trim(mattxt)
   !write(*,*) mattxt
 
-  CALL lsOPEN(IUNIT,mattxt,'old','UNFORMATTED')
-  read(iunit) nbast
-  allocate(erikll(k)%fck_vec(nbast*nbast))
-  allocate(erikll(k)%d_mat(nbast,nbast))
-  DO j=1,nbast
-    read(iunit) (erikll(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
-  ENDDO
-  CALL lsCLOSE(IUNIT,'KEEP')
+  !CALL lsOPEN(IUNIT,mattxt,'old','UNFORMATTED')
+  !read(iunit) nbast
+  !allocate(erikll(k)%fck_vec(nbast*nbast))
+  !allocate(erikll(k)%d_mat(nbast,nbast))
+  !DO j=1,nbast
+  !  read(iunit) (erikll(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
+  !ENDDO
+  !CALL lsCLOSE(IUNIT,'KEEP')
   enddo
   enddo
   enddo
@@ -528,12 +528,12 @@ SUBROUTINE COMPARE_MATRICES(lupri,ndim,numrealvec,nfsze,lmax,ll)
   iter=adjustl(iter)
  !numstring
   mattxt='minFMAT'//trim(iter)//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)//'.dat'
-  CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
-  write(iunit,*) nbast
-  DO j=1,nbast
-    write(iunit,*) (ll%lvec(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
-  ENDDO
-  CALL lsCLOSE(IUNIT,'KEEP')
+  !CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
+  !write(iunit,*) nbast
+  !DO j=1,nbast
+  !  write(iunit,*) (ll%lvec(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
+  !ENDDO
+  !CALL lsCLOSE(IUNIT,'KEEP')
   enddo
   enddo
   enddo

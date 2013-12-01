@@ -1761,7 +1761,7 @@ retval=0
     write(DECinfo%output,*)
     if(MyFragment%nEOSatoms==2) then
        pair=.false.
-       write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%atomic_number
+       write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%EOSatoms(1)
     else
        pair=.true.
        write(DECinfo%output,'(1X,a,2i6)') 'PAIR FRAGMENT, atomic numbers:', &
@@ -1890,13 +1890,13 @@ retval=0
        if(MyFragment%FAset) then
           write(DECinfo%output,*) 'Occupied FO coefficients (column, elements in column)'
           do i=1,MyFragment%noccFA
-             write(DECinfo%output,*) i, MyFragment%CoccFA(:,i)
+             write(DECinfo%output,*) i, MyFragment%CoFA(:,i)
           end do
           write(DECinfo%output,*)
 
           write(DECinfo%output,*) 'Virtual FO coefficients (column, elements in column)'
           do i=1,MyFragment%nunoccFA
-             write(DECinfo%output,*) i, MyFragment%CunoccFA(:,i)
+             write(DECinfo%output,*) i, MyFragment%CvFA(:,i)
           end do
           write(DECinfo%output,*)
 
@@ -1955,6 +1955,17 @@ retval=0
     !> Atomic fragment to be freed
     type(decfrag),intent(inout) :: fragment
     integer :: i
+
+    deallocate(fragment%noccLOC)
+    deallocate(fragment%nunoccLOC)
+    deallocate(fragment%noccFA)
+    deallocate(fragment%nunoccFA)
+    nullify(fragment%noccLOC)
+    nullify(fragment%nunoccLOC)
+    nullify(fragment%noccFA)
+    nullify(fragment%nunoccFA)
+    nullify(fragment%noccAOS)
+    nullify(fragment%nunoccAOS)
 
     if(associated(fragment%occEOSidx)) then
        call mem_dealloc(fragment%occEOSidx)
@@ -2016,8 +2027,10 @@ retval=0
     end if
 
     if(fragment%FAset) then
-       call mem_dealloc(fragment%CoccFA)
-       call mem_dealloc(fragment%CunoccFA)
+       call mem_dealloc(fragment%CoFA)
+       call mem_dealloc(fragment%CvFA)
+       call mem_dealloc(fragment%ppfockFA)
+       call mem_dealloc(fragment%qqfockFA)
        if(.not. fragment%pairfrag) then
           call mem_dealloc(fragment%CDocceival)
           call mem_dealloc(fragment%CDunocceival)
@@ -2066,12 +2079,13 @@ retval=0
     end if
 
     ! Transformation matrices
-    if(associated(fragment%Co)) then
-       call mem_dealloc(fragment%Co)
+    nullify(fragment%Co,fragment%Cv)
+    if(associated(fragment%CoLOC)) then
+       call mem_dealloc(fragment%CoLOC)
     end if
 
-    if(associated(fragment%Cv)) then
-       call mem_dealloc(fragment%Cv)
+    if(associated(fragment%CvLOC)) then
+       call mem_dealloc(fragment%CvLOC)
     end if
     
     ! Free CABS MOs !
@@ -2087,12 +2101,14 @@ retval=0
        call mem_dealloc(fragment%fock)
     end if
 
-    if(associated(fragment%qqfock)) then
-       call mem_dealloc(fragment%qqfock)
+    ! Fock matrices
+    nullify(fragment%ppfock,fragment%qqfock)
+    if(associated(fragment%qqfockLOC)) then
+       call mem_dealloc(fragment%qqfockLOC)
     end if
 
-    if(associated(fragment%ppfock)) then
-       call mem_dealloc(fragment%ppfock)
+    if(associated(fragment%ppfockLOC)) then
+       call mem_dealloc(fragment%ppfockLOC)
     end if
 
     if(associated(fragment%ccfock)) then
@@ -2404,8 +2420,8 @@ retval=0
     ! hardcoded values are changed consistently.
 
     ! Sanity check
-    if(npoints==1) then  ! Skip plot if only 1 point
-       write(DECinfo%output,*) 'Ascii-plot will be skipped because there is only one point!'
+    if(npoints<2) then  ! Skip plot if only 1 point
+       write(DECinfo%output,*) 'Ascii-plot will be skipped because there is less than 2 points!'
        return
     end if
 
@@ -3256,6 +3272,8 @@ retval=0
     write(funit) jobs%atom2
     write(funit) jobs%jobsize
     write(funit) jobs%jobsdone
+    write(funit) jobs%dofragopt
+    write(funit) jobs%esti
 
     ! MPI fragment statistics
     write(funit) jobs%nslaves
@@ -3270,8 +3288,9 @@ retval=0
   end subroutine write_fragment_joblist_to_file
 
 
-  !> Read fragment job list from file (includes initialization of job list).
-  !> Also read pair cutoff distance in case that was changed during the original calculation.
+  !> Read fragment job list from file assuming that joblist has already been initialized 
+  !> with the proper dimensions.
+  !> Also read pair cutoff distance.
   !> \author Kasper Kristensen
   !> \date November 2012
   subroutine read_fragment_joblist_from_file(jobs,funit)
@@ -3288,11 +3307,17 @@ retval=0
 
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(funit,njobs)
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file1: Error in number of jobs!',-1)
+       end if
        call read_64bit_to_32bit(funit,njobs,jobs%atom1)
        call read_64bit_to_32bit(funit,njobs,jobs%atom2)
        call read_64bit_to_32bit(funit,njobs,jobs%jobsize)
        call read_64bit_to_32bit(funit,njobs,jobs%jobsdone)
+       call read_64bit_to_32bit(funit,njobs,jobs%dofragopt)
+       call read_64bit_to_32bit(funit,njobs,jobs%esti)
        call read_64bit_to_32bit(funit,njobs,jobs%nslaves)
        call read_64bit_to_32bit(funit,njobs,jobs%nocc)
        call read_64bit_to_32bit(funit,njobs,jobs%nunocc)
@@ -3300,11 +3325,17 @@ retval=0
        call read_64bit_to_32bit(funit,njobs,jobs%ntasks)
     elseif(DECinfo%convert32to64) then
        call read_32bit_to_64bit(funit,njobs)
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file2: Error in number of jobs!',-1)
+       end if
        call read_32bit_to_64bit(funit,njobs,jobs%atom1)
        call read_32bit_to_64bit(funit,njobs,jobs%atom2)
        call read_32bit_to_64bit(funit,njobs,jobs%jobsize)
        call read_32bit_to_64bit(funit,njobs,jobs%jobsdone)
+       call read_32bit_to_64bit(funit,njobs,jobs%dofragopt)
+       call read_32bit_to_64bit(funit,njobs,jobs%esti)
        call read_32bit_to_64bit(funit,njobs,jobs%nslaves)
        call read_32bit_to_64bit(funit,njobs,jobs%nocc)
        call read_32bit_to_64bit(funit,njobs,jobs%nunocc)
@@ -3312,11 +3343,17 @@ retval=0
        call read_32bit_to_64bit(funit,njobs,jobs%ntasks)
     else
        read(funit) njobs
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file3: Error in number of jobs!',-1)
+       end if
        read(funit) jobs%atom1
        read(funit) jobs%atom2
        read(funit) jobs%jobsize
        read(funit) jobs%jobsdone
+       read(funit) jobs%dofragopt
+       read(funit) jobs%esti
 
        read(funit) jobs%nslaves
        read(funit) jobs%nocc
@@ -3328,6 +3365,14 @@ retval=0
     read(funit) jobs%flops
     read(funit) jobs%LMtime
     read(funit) jobs%load
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) 'JOB LIST RESTART'
+    write(DECinfo%output,'(1X,a,i10)') '-- total number of jobs : ', jobs%njobs
+    write(DECinfo%output,'(1X,a,i10)') '-- number of jobs done  : ', count(jobs%jobsdone)
+    write(DECinfo%output,'(1X,a,i10)') '-- number of jobs to do : ', jobs%njobs-count(jobs%jobsdone)
+    write(DECinfo%output,*)
+
 
   end subroutine read_fragment_joblist_from_file
 
@@ -3347,15 +3392,18 @@ retval=0
     jobs%njobs = njobs
 
     ! Set all pointers to be of size njobs and equal to 0
-    nullify(jobs%atom1,jobs%atom2,jobs%jobsize)
     call mem_alloc(jobs%atom1,njobs)
     call mem_alloc(jobs%atom2,njobs)
     call mem_alloc(jobs%jobsize,njobs)
     call mem_alloc(jobs%jobsdone,njobs)
+    call mem_alloc(jobs%dofragopt,njobs)
+    call mem_alloc(jobs%esti,njobs)
     jobs%atom1=0
     jobs%atom2=0
     jobs%jobsize=0
     jobs%jobsdone=.false. ! no jobs are done
+    jobs%dofragopt=.false. 
+    jobs%esti=.false.
 
     ! MPI fragment statistics
     call mem_alloc(jobs%nslaves,njobs)
@@ -3406,6 +3454,16 @@ retval=0
     if(associated(jobs%jobsdone)) then
        call mem_dealloc(jobs%jobsdone)
        nullify(jobs%jobsdone)
+    end if
+
+    if(associated(jobs%dofragopt)) then
+       call mem_dealloc(jobs%dofragopt)
+       nullify(jobs%dofragopt)
+    end if
+
+    if(associated(jobs%esti)) then
+       call mem_dealloc(jobs%esti)
+       nullify(jobs%esti)
     end if
 
     if(associated(jobs%nslaves)) then
@@ -3481,6 +3539,8 @@ retval=0
     jobs%atom2(position) = singlejob%atom2(1)
     jobs%jobsize(position) = singlejob%jobsize(1)
     jobs%jobsdone(position) = singlejob%jobsdone(1)
+    jobs%dofragopt(position) = singlejob%dofragopt(1)
+    jobs%esti(position) = singlejob%esti(1)
     jobs%nslaves(position) = singlejob%nslaves(1)
     jobs%nocc(position) = singlejob%nocc(1)
     jobs%nunocc(position) = singlejob%nunocc(1)
@@ -4290,16 +4350,13 @@ retval=0
     case default
        ! MODIFY FOR NEW MODEL
        ! If you implement new model, please print the fragment energies here,
-       ! see decfrag type def. to determine the number for your model (see FRAGMODEL_* definitions
-       ! in dec_typedef.F90).
+       ! see FRAGMODEL_* definitions in dec_typedef.F90.
        write(DECinfo%output,*) 'WARNING: print_all_fragment_energies needs implementation &
             & for model: ', DECinfo%ccmodel
     end select
 
     ! MODIFY FOR NEW CORRECTION
-    ! E.g. for F12:
     if(DECInfo%F12) then
-
        print *, "(DEC_driver) Total energy for MP2-F12: ", energies(FRAGMODEL_F12)
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a,g20.10)') 'MP2F12-V_gr_term occupied correlation energy : ', energies(FRAGMODEL_F12)
@@ -4557,5 +4614,151 @@ retval=0
 
   end function get_fragenergy_restart_filename_backup
 
+
+  !> \brief Get number of pair fragments with interatomic distances in the range [r1,r2].
+  !> This is done by counting the number of entries in MyMolecule%ccmodel(i,j), where j>i 
+  !> AND ccmodel(i,j) is not an empty model (MODEL_NONE) AND atoms "i" and "j"
+  !> both have orbitals assigned AND the distance between "i" and "j" is in the range [r1,r2].
+  function get_num_of_pair_fragments(MyMolecule,dofrag,r1,r2) result(npairfrags)
+    implicit none
+    !> Full molecule structure
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> List of which atoms have orbitals assigned
+    logical,dimension(MyMolecule%natoms),intent(in) :: dofrag
+    !> Minimum distance to consider
+    real(realk),intent(in) :: r1
+    !> Maximum distance to consider
+    real(realk),intent(in) :: r2
+    integer :: npairfrags
+    integer :: i,j
+
+    npairfrags=0
+    iloop: do i=1,MyMolecule%natoms
+       if(.not. dofrag(i)) cycle iloop
+       jloop: do j=i+1,MyMolecule%natoms
+          if(.not. dofrag(j)) cycle jloop
+          if(MyMolecule%ccmodel(i,j) /= MODEL_NONE) then
+             if( MyMolecule%DistanceTable(i,j) .ge. r1 &
+                  & .and. MyMolecule%DistanceTable(i,j) .le. r2 ) then
+                ! Pair fragment (i,j) needs to be calculated
+                npairfrags = npairfrags+1
+             end if
+          end if
+       end do jloop
+    end do iloop
+
+  end function get_num_of_pair_fragments
+
+
+  !> \brief Make pointers for MO coefficients and MO Fock matrices in decfrag type
+  !> point to the fragment-adapted orbitals
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine fragment_basis_point_to_FOs(MyFragment,skipfock)
+    implicit none
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: MyFragment
+    !> Do not change pointers for Fock matrix
+    logical,intent(in),optional :: skipfock
+    logical :: skipf
+
+    skipf=.false.
+    if(present(skipfock)) then
+       if(skipfock) skipf=.true.
+    end if
+   
+    ! Sanity check: Fragment-adapted MO coefficients have been set
+    if(.not. MyFragment%FAset) then
+       call lsquit('fragment_basis_point_to_FOs: Fragment-adapted MO coefficients &
+            & have not been set!',-1)
+    end if
+ 
+    ! Dimensions for fragment-adapted orbitals
+    MyFragment%noccAOS => MyFragment%noccFA
+    MyFragment%nunoccAOS => MyFragment%nunoccFA
+
+    ! Total number of occupied orbitals
+    if(DECinfo%frozencore) then
+       ! core + valence (AOS)
+       Myfragment%nocctot = Myfragment%ncore + Myfragment%noccAOS
+    else
+       ! AOS already contains core orbitals
+       Myfragment%nocctot = Myfragment%noccAOS
+    end if
+
+    ! MO coefficients
+    MyFragment%Co => MyFragment%CoFA
+    MyFragment%Cv => MyFragment%CvFA
+
+    ! MO Fock
+    if(.not. skipf) then
+       MyFragment%ppfock => MyFragment%ppfockFA
+       MyFragment%qqfock => MyFragment%qqfockFA    
+    end if
+
+    ! Pointers point to FO data
+    MyFragment%fragmentadapted=.true.
+
+  end subroutine fragment_basis_point_to_FOs
+
+
+
+  !> \brief Make pointers for MO coefficients and MO Fock matrices in decfrag type
+  !> point to the local orbitals
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine fragment_basis_point_to_LOs(MyFragment)
+    implicit none
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: MyFragment
+ 
+    ! Dimensions for fragment-adapted orbitals
+    MyFragment%noccAOS => MyFragment%noccLOC
+    MyFragment%nunoccAOS => MyFragment%nunoccLOC
+
+    ! Total number of occupied orbitals
+    if(DECinfo%frozencore) then
+       ! core + valence (AOS)
+       Myfragment%nocctot = Myfragment%ncore + Myfragment%noccAOS
+    else
+       ! AOS already contains core orbitals
+       Myfragment%nocctot = Myfragment%noccAOS
+    end if
+
+    ! MO coefficients
+    MyFragment%Co => MyFragment%CoLOC
+    MyFragment%Cv => MyFragment%CvLOC
+
+    ! MO Fock
+    MyFragment%ppfock => MyFragment%ppfockLOC
+    MyFragment%qqfock => MyFragment%qqfockLOC   
+
+    ! Pointers do not point to FO data
+    MyFragment%fragmentadapted=.false.
+
+  end subroutine fragment_basis_point_to_LOs
+
+  
+  !> \brief Initialize pointers in fragment structure handling some dimensions.
+  !> These pointers are the only pointers that are not arrays.
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine fragment_init_dimension_pointers(fragment)
+    implicit none
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: fragment
+
+    nullify(fragment%noccAOS)
+    nullify(fragment%nunoccAOS)
+    nullify(fragment%noccLOC)
+    nullify(fragment%nunoccLOC)
+    nullify(fragment%noccFA)
+    nullify(fragment%nunoccFA)
+    allocate(fragment%noccLOC)
+    allocate(fragment%nunoccLOC)
+    allocate(fragment%noccFA)
+    allocate(fragment%nunoccFA)
+
+  end subroutine fragment_init_dimension_pointers
 
 end module dec_fragment_utils

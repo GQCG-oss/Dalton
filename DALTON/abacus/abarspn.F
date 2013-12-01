@@ -619,7 +619,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                WRITE (LUPRI,'(/A,I3)')
      &             ' EIGENVECTOR FOR STATE NO.',(ISIM-1+INUM)
                CALL RSPPRO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),KZVAR,
-     *             LUPRI)
+     *             UDV,LUPRI)
 C            CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *             MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
@@ -836,7 +836,7 @@ C
                   IF (IPRLR .GE. 2) THEN
                      WRITE (LUPRI,'(/A,I5)') ' EIGENVECTOR NUMBER ',
      &                    IFREQ-1+IVEC
-                     CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
+                     CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,UDV,LUPRI)
                      CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
      *                    MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
                   END IF

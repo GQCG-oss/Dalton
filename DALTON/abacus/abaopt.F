@@ -1369,7 +1369,7 @@ C
          IPRUSR = -10
          IPREAD = -1000
 C        Third parameter .FALSE. in call indicates that LUONEL will NOT be written.
-         write (lupri,'(A)') ' Reading .mol file'//
+         write (lupri,'(/A)') ' Reading .mol file'//
      &      ' to determine number of atoms for parallel runs.'
          CALL READIN(WORK(2),LWORK-2,.FALSE.)
          INPTST = TSTIN
@@ -2466,7 +2466,7 @@ C        *** orbitals. tar 01-2001                       ***
 C
          IF (NMWALK.AND.DOCCSD) THEN
             KWORD = 2
-            KLAST = KWORD + 80*KMLINE
+            KLAST = KWORD + LEN_MLINE*KMLINE
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded ' //
      &                                       'in fndexs.')
             CALL FNDEXS(WORK(KWORD),IPRINT)
@@ -6613,7 +6613,8 @@ C
 #include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS, AUTOSY, NOSYM, DOCART, DOOWN,
      &        ADDSYM
-      CHARACTER FILENM*10, TMPLN*80, TMPTXT*11, BSNM*80
+      CHARACTER FILENM*10, TMPTXT*11, BSNM*80
+      CHARACTER*(len_MLINE) TMPLN
       CHARACTER*1 CRT, ID3, KASYM(3,3)
       DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT), JCO(MXAQN,MXCENT)
       DIMENSION EVEC(MX2CRD,MX2CRD), CSTEP(MXCOOR), IQM(MXCENT)
@@ -6652,12 +6653,9 @@ C
          END IF
          GOTO 10
       END IF
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*)'***** NOTE! *****'
-      WRITE(LUPRI,*)
-     &     'Due to non-zero index of total Hessian, symmetry #',ISYMBR
-      WRITE(LUPRI,*)'has to be broken to minimize energy!'
-      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(//A/A,I3/A//)') '@ ***** NOTE! *****',
+     &  '@ Due to non-zero index of total Hessian, symmetry #',ISYMBR,
+     &  '@ has to be broken to minimize energy!'
 C
 C     The eigenvectors of the symmetry to be broken, are copied
 C     to TMPMAT.
@@ -6726,8 +6724,8 @@ C
          TMP = TMP + CSTEP(I)*CSTEP(I)
  31   CONTINUE
       IF (TMP .LE. ZERGRD) THEN
-         WRITE(LUPRI,*)
-     &          'Zero step vector found, breaking another symmetry'
+         WRITE(LUPRI,'(//A)')
+     &       '@ Zero step vector found, breaking another symmetry'
          ISYMBR = ISYMBR - 1
          GOTO 10
       END IF
@@ -6735,6 +6733,7 @@ C
 C     The new geometry is calculated.
 C
  77   CONTINUE
+      CALL FLSHFO(LUPRI)
       IJ = 1
       DO 45 J = 1, NUCIND
          DO 47 I = 1, 3
@@ -6757,36 +6756,37 @@ C     This is brutally resolved by removing all symmetry, that is the
 C     molecule has to be minimized withim the C1 point group.
 C
       TMPLN = MLINE(1)
+      CALL UPCASE(TMPLN)
       BASIS = (TMPLN(1:5) .EQ. 'BASIS')
-      TMPLN = MLINE(NMLAU)
       II = 0
       DO 49 J = 0, ITRNMR-1
          IF ((GEINFO(J,3) .LT. -0.5D0) .AND.
      &        (ABS(ENERGY-GEINFO(J,1)) .LT. THRERG*10)) II=II+1
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
+      TMPLN = MLINE(NMLAU)
       CALL UPCASE(TMPLN)
       IF (INDEX(TMPLN,'ATO') .NE. 0) THEN
-         CALL LINE4(TMPLN,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
-     &              ID3,DOCART,DOOWN)
+         CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,
+     &              ADDSYM,KASYM,ID3,DOCART,DOOWN)
          AUTOSY = .TRUE.
          NOSYM = .FALSE.
          IF (BRKALS) NOSYM = .TRUE.
          ID3 = ' '
-         CALL LINE4W(TMPLN,NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
-     &               KASYM,ID3,DOCART,DOOWN)
+         CALL LINE4W(MLINE(NMLAU),NONTYP,NSYMOP,KCHARG,THRS,
+     &               AUTOSY,NOSYM,KASYM,ID3,DOCART,DOOWN)
       ELSE
-         READ(TMPLN(1:5),'(I5)') NONTYP
-         WRITE(TMPLN(10:20), '(A11)') '           '
-         IF (BRKALS) WRITE(TMPLN(10:20), '(A11)') '0          '
+         READ(MLINE(NMLAU)(1:5),'(I5)') NONTYP
+         WRITE(MLINE(NMLAU)(10:20), '(A11)') '           '
+         IF (BRKALS) WRITE(MLINE(NMLAU)(10:20), '(A11)') '0          '
       END IF
-      MLINE(NMLAU) = TMPLN
 C
       IATOM = 1
-      I = NCLINE(IATOM)-1
       DO 50 J = 1, NONTYP
-         CALL UPCASE(MLINE(I))
-         IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
+         I = NCLINE(IATOM)-1
+         TMPLN = MLINE(I)
+         CALL UPCASE(TMPLN)
+         IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
             CALL LINE5R(MLINE(I),Q(J),NONT(J),MBSI,IQM,JCO(1,J),MXAQN,
      &                 BASIS,ATOMBA,LMULBS,BSNM,
      &                 RADIUS_PCM(J), ALPHA_PCM(J))
@@ -6794,7 +6794,6 @@ C
             READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
          END IF
          IATOM = IATOM + NONT(J)
-         I = NCLINE(IATOM)-1
  50   CONTINUE
 C
 C     We run over all atom types and all symmetry independent centres and
@@ -6841,15 +6840,16 @@ C
  80         CONTINUE
             IATOM = IATOM + 1
  70      CONTINUE
-         TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
+         I = NCLINE(IATOM - NONT(ITYP)) - 1
+         TMPLN = MLINE(I)
+         CALL UPCASE(TMPLN)
          IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
-            CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
+            CALL LINE5W(MLINE(I),Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
      &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,
      &           RADIUS_PCM(ITYP), ALPHA_PCM(ITYP))
          ELSE
-            WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
+            WRITE(MLINE(I)(11:15),'(I5)') NONT(ITYP) + IXTRA
          END IF
-         MLINE(NCLINE(IATOM - NONT(ITYP)) - 1) = TMPLN
  60   CONTINUE
 C
 C     Write updated geometry to files.
@@ -6884,6 +6884,7 @@ C
       CALL IZERO(IPTCNT, MXCENT*48)
       CALL IZERO(NAXREP, 16)
       CALL IZERO(INDHES, 8)
+      call flshfo(lupri)
       RETURN
       END
 
@@ -7121,7 +7122,7 @@ C
       CNVGRD = .FALSE.
       CNVSTP = .FALSE.
       ICOOR = NCART
-      IF (REDINT .OR. DELINT) ICOOR = IINTCR
+      IF (REDINT .OR. DELINT) ICOOR = ICRTCR
       IF (CONOPT) GNRM = SQRT(DDOT(IINTCR,GRDINT,1,GRDINT,1))
 C
 C     First, the convergence criteria of Baker.
@@ -7807,10 +7808,16 @@ C
       IF (ISCL .GE. 2) ELMMX = ELMMX/SCLVEC(1)
       DO 10 I = 2, IDIM
          ELM = ABS(VEC(I))
+
+         ! this is a workaround for a problem that zero elm
+         ! is divided by zero SCLVEC(I)
+         if (elm < tiny(0.0d0)) cycle
+
          IF (ISCL .GE. 1) ELM = ELM/SCLVEC(I)
          IF (ISCL .GE. 2) ELM = ELM/SCLVEC(I)
          IF (ELM .GT. ELMMX) ELMMX = ELM
  10   CONTINUE
+
       RETURN
       END
 

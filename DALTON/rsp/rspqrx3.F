@@ -242,9 +242,6 @@ C  /* Deck e3init */
      *                  ISYMA,ISYMB,ISYMC,ISPINA,ISPINB,ISPINC,CMO,FC,
      *                  FV,MJWOP)
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 C
 C
 #include "implicit.h"
@@ -340,6 +337,8 @@ C
      &         WRK(KFREE),LFREE
      &         )
             DODFT=DFTSAV
+         ELSE
+            CALL QUIT('ERROR in E3INIT for HF or DFT')
          END IF
 C
          TRPLETSAVE=TRPLET

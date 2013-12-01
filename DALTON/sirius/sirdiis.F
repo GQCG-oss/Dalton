@@ -279,13 +279,6 @@ C  /* Deck DIIS_CTL */
      *                    C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,CVEC,
      *                    TNLM,RCPMAT,WRK,KFRSAV,LFRSAV,
      *                    IPR_DIIS,ICONV)
-
-!#define USE_XCINT
-#ifdef USE_XCINT
-      use xcint_integrator
-      use interface_ao_specific
-#endif
-
 C
 C L.r. 5-May-1994 hjaaj / 1-Apr-1997
 C
@@ -293,7 +286,6 @@ C DFT modifications T.  Helgaker
 C
 C
 #if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
       use polarizable_embedding, only: pe_master
 #endif
 #if defined (PCM_MODULE)
@@ -310,12 +302,6 @@ C
 
       ! rcpmat is used on branch qmcmm, please do not remove
       DIMENSION RCPMAT(*)
-
-#ifdef USE_XCINT
-      real(8), allocatable :: dmat_ao(:)
-      real(8), allocatable :: fmat_ao(:)
-      real(8), allocatable :: fmat_ao_tri(:)
-#endif
 
 C
 C Used from common blocks:
@@ -516,14 +502,8 @@ C------------------
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT.QMMM
      &     .AND. .NOT.AOSAVE   .AND. .NOT.CHOINT
-     &     .AND. .NOT.QMNPMM   
+     &     .AND. .NOT.QMNPMM   .AND. .NOT.peqm
 C
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        dodifden = .false.
-      end if
-#endif
-
 #if defined (PCM_MODULE)
       if (pcmmod_is_pcm_calculation) then
               dodifden = .false.
@@ -626,7 +606,6 @@ C
             END IF
          END IF
          CALL FLSHFO(LUPRI)
-         HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
 C
 C  ***** Construct folded inactive and active parts of the one-electron
 C        density matrix in AO-basis (DCAO and DVAO). DV is the active
@@ -709,10 +688,6 @@ C
 C  ***** Calculate 2-electron part of Fock matrix with
 C        differential density
 C
-Cef begin
-C         write(lupri,*) 'DCAO: '
-C         call output(DCAO,1,nbast,1,nbast,nbast,nbast,1,lupri)
-Cef end
          CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
          IF (HSFOCK) THEN
 C
@@ -781,42 +756,10 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
      &                 FAOSAV(1,INDEVC,1),1)
             END IF
          END IF
-         IF (DODFT) then
-#ifdef USE_XCINT
-             allocate(dmat_ao(nbast*nbast))
-             allocate(fmat_ao(nbast*nbast))
-             allocate(fmat_ao_tri(nnbast))
-             dmat_ao     = 0.0d0
-             fmat_ao     = 0.0d0
-             fmat_ao_tri = 0.0d0
-             xc_energy   = 0.0d0
-             call daxpy(nbast*nbast, 0.5d0, dcao, 1,
-     &                  dmat_ao, 1)
-             call interface_ao_write()
-             call xc_integrate(
-     &                         xc_mat_dim=nbast,
-     &                         xc_nr_dmat=1,
-     &                         xc_dmat=dmat_ao,
-     &                         xc_nr_geo_pert=0,
-     &                         xc_nr_fld_pert=0,
-     &                         xc_energy=xc_energy,
-     &                         xc_fmat=fmat_ao
-     &                        )
-             emy = emy + xc_energy
-
-             call dgetsp(nbast, fmat_ao, fmat_ao_tri)
-             call daxpy(nnbast, 1.0d0, fmat_ao_tri, 1,
-     &                  faosav(1, indevc, 1), 1)
-
-             deallocate(dmat_ao)
-             deallocate(fmat_ao)
-             deallocate(fmat_ao_tri)
-#else
-                        CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+         IF (DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
-#endif
-         end if
+
 CAMT If calculated add the empirical dispersion energy correction
          IF (DODFTD) THEN
            EMY = EMY + EDISP
@@ -888,13 +831,11 @@ C            First the MM part ...
      &                   WRK(KFCSOL),ESOLT,ENSQM3,EPOQM3,EELEL,
      &                   WRK(KFREE),LFREE,IPR_DIIS)
              CALL DCOPY(NNBAST,WRK(KFCSOL),1,WRK(KMMPCM),1)
-Clf             CALL MEMREL('DISCTL.QM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
 
              TEMP = ESOLT
 
 C            Now the PCM part ...        
               
-Clf             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
              CALL DZERO(WRK(KFCSOL),NNBAST)
              CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
      &                   DUMMY,.FALSE.,ESOLT,WRK(KFREE),
@@ -1031,11 +972,9 @@ C           this also includes the case of MMPCM
      &                 '@',ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,
      &                 IOPRHF,(NISH(I),I=1,NSYM)
                END IF
-#if defined (BUILD_PELIB)
             else if (peqm) then
                write (luw4,'(a,i3,1p,2g20.12,d15.5,d12.2)')
      &                '@',itdiis,emcscf,esolt,grdnrm,emcdif
-#endif
             ELSE
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(A,I3,1P,G22.12,D15.5,D12.2,I5)')
@@ -1215,7 +1154,6 @@ C        ITDIIS/GRDNRM check: give initial oscillations a chance to settle down
 C          before checking ... experience shows this will often be advantageous
 C          (see below) /hjaaj
             IEND = NEVC - 1
-            J = 0
             DO I = 1,IEND
 C           IF (I .NE. INDEVC) THEN
                IF (EGSAV(1,I) .GT. EMCSCF + EMCDIFERR .AND.
@@ -1300,11 +1238,6 @@ C        Do not try that with open-shell - it does not work./pawsa
      &       THEN
 C              .. test EMCDIF*grddif against -1.0D-10 instead of 0.0D0
 C                 to avoid round-off problems here /hjaaj Sep 2005
-C#endif
-c        IF (ITDIIS.GT.1 .AND. 
-c    &       ( ABS(CVEC(INDEVC)) .LT. 0.2D0 .OR.
-c    &         ABS(CVEC(INDEVC)) .GT. 2.0D0 ) .AND.
-c    &       EMCDIF .LT. D0 .AND. GRDNRM .GT. GNRMSV) THEN
              WRITE(LUPRI,'(1P/A,2(/A,G11.3),/A,I3,A)')
      &       '!!! Info: DIIS restarted because it was stalled ...',
      &       ' - energy changed by  ',EMCDIF,
@@ -1584,20 +1517,16 @@ C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
-#if defined (BUILD_PELIB)
          if (peqm) write(luw4,'(a)')
      &    '   (incl. contribution from polarizable embedding potential)'
-#endif
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-#if defined (BUILD_PELIB)
             if (peqm) write(lupri,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
-#endif
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
 C-------------------
@@ -1948,10 +1877,6 @@ C
       END IF
       CALL MEMGET2('REAL','BTMP',KBTMP,LBAUG,WRK,KFREE,LFREE)
       CALL DCOPY(LBMAT,BMAT,1,WRK(KBTMP),1)
-      IF ( IPR_DIIS.GE.5 ) THEN
-         WRITE (LUPRI,'(//A)') ' (DIIS_RED) B matrix:'
-         CALL OUTPAK(WRK(KBTMP),NEVC,1,LUPRI)
-      END IF
       IF (.NOT. C2DIIS) GO TO 2000
 C
 C *******************************************************

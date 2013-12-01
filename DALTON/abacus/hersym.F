@@ -258,13 +258,13 @@ C ::: The new symmetry is added. :::
  200     CONTINUE
 C ::: The input file is modified to include symmetry. :::
 C ::: If there's any Angstrom mark, it's removed.    :::
-         CALL UPCASE(MLINE(NMLAU))
          TMPLN = MLINE(NMLAU)
+         CALL UPCASE(TMPLN)
          IF (INDEX(TMPLN,'ATO') .EQ. 0) THEN
-            WRITE(TMPLN(10:10), '(I1)') NSYMOP
-            WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
+            WRITE(MLINE(NMLAU)(10:10), '(I1)') NSYMOP
+            WRITE(MLINE(NMLAU)(11:20), '(A9,A1)') SYMM, ' '
          ELSE
-            CALL LINE4(TMPLN,NONTYP2,NSMOP2,CRT,KCHARG,THRS,
+            CALL LINE4(MLINE(NMLAU),NONTYP2,NSMOP2,CRT,KCHARG,THRS,
      &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
             AUTOSY = .FALSE.
             NOSYM  = .FALSE.
@@ -276,10 +276,9 @@ C ::: If there's any Angstrom mark, it's removed.    :::
                END DO
             END DO
             ID3 = ' '
-            CALL LINE4W(TMPLN,NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
-     &                  KASYM,ID3,DOCART,DOOWN)
+            CALL LINE4W(MLINE(NMLAU),NONTYP,NSYMOP,KCHARG,THRS,
+     &                  AUTOSY,NOSYM,KASYM,ID3,DOCART,DOOWN)
          END IF
-         MLINE(NMLAU) = TMPLN
          IF (NSYMOP .EQ. 0) THEN
             WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
          ELSE IF (NSYMOP .EQ. 1) THEN
@@ -362,16 +361,15 @@ C ::: Finally the number of atoms are updated. :::
             TMPLN = MLINE(NCI)
             CALL UPCASE(TMPLN)
             IF (INDEX(TMPLN,'CHA') .EQ. 0) THEN
-               WRITE(TMPLN(12:15),'(I4)') NONT(K)
+               WRITE(MLINE(NCI)(12:15),'(I4)') NONT(K)
             ELSE
-               CALL LINE5R(TMPLN,Q,NONT2,MBSI,IQM,JCO,MXAQN,
+               CALL LINE5R(MLINE(NCI),Q,NONT2,MBSI,IQM,JCO,MXAQN,
      &                    BASIS,ATOMBA,LMULBS,BSNM,
      &                    RADIUS_PCM, ALPHA_PCM)
-               CALL LINE5W(TMPLN,Q,NONT(K),MBSI,BASIS,ATOMBA,LMULBS,
-     &                    BSNM,IQM,JCO,MXAQN,
+               CALL LINE5W(MLINE(NCI),Q,NONT(K),MBSI,BASIS,ATOMBA,
+     &                    LMULBS,BSNM,IQM,JCO,MXAQN,
      &                    RADIUS_PCM, ALPHA_PCM)
             END IF
-            MLINE(NCI) = TMPLN
  510        CONTINUE
             IF (J .EQ. NINT(ATMARR(4,I))) THEN
                I = I + 1

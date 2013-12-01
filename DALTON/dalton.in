@@ -427,7 +427,7 @@ if [ $optn -gt 1 ] ; then
              cat $PBS_NODEFILE | sort | uniq
              for node in `cat $PBS_NODEFILE | sort | uniq`
              do
-                if [ ${node} == $HOSTNAME ]
+                if [ ${node} == ${HOSTNAME%\.local} ]
                 then
                     continue
                 else
@@ -518,7 +518,7 @@ fi
 
 filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off FCIDUMP pe_*.bin UNIT1 UNIT2 cavity.off PEDRA.OUT PCM_mep_asc"
 
-if [ -s DALTON.OUT.n001 -a -r DALTON.OUT.n001 ]; then
+if [ -s DALTON.OUT.n0001 -a -r DALTON.OUT.n0001 ]; then
    tarfilelist="DALTON.OUT.n*"
 else
    tarfilelist=
