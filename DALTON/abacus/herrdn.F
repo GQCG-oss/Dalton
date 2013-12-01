@@ -2398,7 +2398,6 @@ C*****************************************************************************
 #include "aosotr.h"
 #include "r12int.h"
 #include "qm3.h"
-#include "gnrinf.h"
 C
       IF (DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
