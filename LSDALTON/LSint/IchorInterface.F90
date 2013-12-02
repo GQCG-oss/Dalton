@@ -606,13 +606,13 @@ Integer(kind=long) :: MaxMem,MaxMemAllocated,MemAllocated
 logical   :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
 
+#ifdef VAR_ICHOR 
 call FreeIchorSaveGabModule
 call InitIchorSaveGabModule()
 
 spherical = .TRUE.
 IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
 
-#ifdef VAR_ICHOR 
 IF(SETTING%SCHEME%CS_SCREEN)THEN
    !A
    IF (intSpec(1).EQ.'R') THEN
@@ -862,17 +862,21 @@ ELSE
    IchorGabID1=0 !screening Matrix Identifier, not used if IchorScreenNone
    IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
 ENDIF
+CALL SET_IchorGabID(IchorGabID1,IchorGabID2)
 #else
 call lsquit('IchorEri requires -DVAR_ICHOR',-1)
 #endif
-CALL SET_IchorGabID(IchorGabID1,IchorGabID2)
 
 END SUBROUTINE SCREEN_ICHORERI_DRIVER
 
 SUBROUTINE FREE_SCREEN_ICHORERI()
 implicit none
+#ifdef VAR_ICHOR
 CALL SET_IchorGabID(0,0)
 call FreeIchorSaveGabModule
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
 END SUBROUTINE FREE_SCREEN_ICHORERI
 
 SUBROUTINE GenerateIdentifier(INTSPEC,GabIdentifier)
