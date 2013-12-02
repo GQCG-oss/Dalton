@@ -232,14 +232,17 @@ do Ipass = 1,2
                            & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                       call lsquit('ERROR',-1)
                    ELSE
-                      write(lupri,'(A,I2,A,I2,A,I2,A,I2,A,ES16.8,A,ES16.8)')&
-                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
-                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+!                      write(lupri,'(A,I2,A,I2,A,I2,A,I2,A,ES16.8,A,ES16.8)')&
+!                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
+!                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                    ENDIF
                 ENDDO
              ENDDO
           ENDDO
        ENDDO
+       IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4))THEN
+          WRITE(lupri,'(A)')'CALC FAILED'
+       ENDIF
        call mem_dealloc(integralsII)
        call mem_dealloc(integralsIchor)
        call free_basissetinfo(UNITTESTBASIS(1)%REGULAR)
