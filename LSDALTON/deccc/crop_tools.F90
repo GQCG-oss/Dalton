@@ -506,13 +506,13 @@ module crop_tools_module
     endif
 
     if(present(Co))then
-      tmp = Co
+      tmp(1:nb*no) = Co
       ! tmp(alpha,I) U(i,I)^T   -> Co(alpha,i)
       call dgemm('n','t',nb,no,no,1.0E0_realk,tmp,nb,Uocc,no,0.0E0_realk,Co,nb)
     endif
 
     if(present(Cv))then
-      tmp = Cv
+      tmp(1:nb*nv) = Cv
       ! tmp(alpha,A) U(a,A)^T   -> Cv(alpha,a)
       call dgemm('n','t',nb,nv,nv,1.0E0_realk,tmp,nb,Uvirt,nv,0.0E0_realk,Cv,nb)
     endif
@@ -557,13 +557,13 @@ module crop_tools_module
       call dgemm('n','n',nv,no,no,1.0E0_realk,tmp,nv,Uocc,no,0.0E0_realk,t1,nv)
     endif
     if(present(Co))then
-      tmp = Co
+      tmp(1:nb*no) = Co
       ! tmp(alpha,i) U(i,I)   -> Co(alpha,I)
       call dgemm('n','n',nb,no,no,1.0E0_realk,tmp,nb,Uocc,no,0.0E0_realk,Co,nb)
     endif
 
     if(present(Cv))then
-      tmp = Cv
+      tmp(1:nb*nv) = Cv
       ! tmp(alpha,a) U(a,A)   -> Cv(alpha,A)
       call dgemm('n','t',nb,nv,nv,1.0E0_realk,tmp,nb,Uvirt,nv,0.0E0_realk,Cv,nb)
     endif

@@ -30,7 +30,7 @@ module cc_debug_routines_module
    use orbital_operations
    use rpa_module
    type SpaceInfo
-     integer              :: n,ns1,ns2
+     integer              :: n,ns1,ns2,pno
      integer, pointer     :: iaos(:)
      real(realk), pointer :: d(:,:)
      logical              :: allocd
@@ -5234,7 +5234,7 @@ module cc_debug_routines_module
       t   => pno_t2(ns)%elm1
       idx => pno_cv(ns)%iaos
       pnv =  pno_cv(ns)%ns2
-      pno =  pno_cv(ns)%n
+      pno =  pno_cv(ns)%pno
 
       pno_o2(ns) = array_init([pnv,pno,pnv,pno],4)
       call array_zero( pno_o2(ns) )
@@ -5250,15 +5250,16 @@ module cc_debug_routines_module
       !Get the integral contribution, sort it first like the integrals then transform it
       call ass_D1to4( w1,    p1, [nv,pno,nv,pno] )
       call ass_D1to4( gvovo, p2, [nv,no, nv, no] )
-      do j=1,pno
-      do b=1,nv
-        do i=1,pno
-        do a=1,nv
-          p1(a,i,b,j) = p2(a,idx(i),b,idx(j))
+      if(pno_cv(ns)%n==2)then
+        p1(:,1,:,2) = p2(:,idx(1),:,idx(2))
+        p1(:,2,:,1) = p2(:,idx(2),:,idx(1))
+      else
+        do j=1,pno
+          do i=1,pno
+            p1(:,i,:,j) = p2(:,idx(i),:,idx(j))
+          enddo
         enddo
-        enddo
-      enddo
-      enddo
+      endif
  
       p1 => null()
       p2 => null()
@@ -5315,7 +5316,7 @@ module cc_debug_routines_module
         t21  => pno_t2(ns2)%elm1
         idx1 => pno_cv(ns2)%iaos
         pnv1 =  pno_cv(ns2)%ns2
-        pno1 =  pno_cv(ns2)%n
+        pno1 =  pno_cv(ns2)%pno
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -5325,15 +5326,16 @@ module cc_debug_routines_module
         !Get the integral contribution, sort it first like the integrals then transform it, govov
         call ass_D1to4( w1,    p1, [pno1,nv,pno1,nv] )
         call ass_D1to4( govov, p2, [no,   nv,no, nv] )
-        do j=1,pno1
-        do b=1,nv
-          do i=1,pno1
-          do a=1,nv
-            p1(i,a,j,b) = p2(idx1(i),a,idx1(j),b)
+        if(pno_cv(ns2)%n==2)then
+          p1(1,:,2,:) = p2(idx1(1),:,idx1(2),:)
+          p1(2,:,1,:) = p2(idx1(2),:,idx1(1),:)
+        else
+          do j=1,pno1
+            do i=1,pno1
+              p1(i,:,j,:) = p2(idx1(i),:,idx1(j),:)
+            enddo
           enddo
-          enddo
-        enddo
-        enddo
+        endif
         p1 => null()
         p2 => null()
         
@@ -5344,7 +5346,7 @@ module cc_debug_routines_module
 
         ! Quadratic part of the E2 term use u^{bd}_{kl} (bkdl) as b,dkl
         call array_reorder_4d( p20, t21, pnv1, pno1, pnv1, pno1, [1,3,2,4], nul, w3)
-        call array_reorder_4d( m10, t21, pnv1, pno1, pnv1, pno1, [1,3,4,2], p10, w3)
+        call array_reorder_4d( m10, t21, pnv1, pno1, pnv1, pno1, [3,1,2,4], p10, w3)
         h1 => w3
         if(.not. skiptrafo)then
           call dgemm(tr12,'n', pnv, pno1*pnv1*pno1,pnv1, p10, S1, ldS1,w3,pnv1,nul,w2,pnv)
@@ -5363,16 +5365,17 @@ module cc_debug_routines_module
         
         !Get the integral contribution, sort it first like the integrals then transform it, govov
         call ass_D1to4( w1,    p1, [pno1,nv,pno1,nv] )
-        call ass_D1to4( govov, p2, [no,   nv,no,   nv] )
-        do j=1,pno1
-        do b=1,nv
-          do i=1,pno1
-          do a=1,nv
-            p1(i,a,j,b) = p2(idx1(i),a,idx1(j),b)
+        call ass_D1to4( govov, p2, [no,  nv,no,  nv] )
+        if(pno_cv(ns2)%n==2)then
+          p1(1,:,2,:) = p2(idx1(1),:,idx1(2),:)
+          p1(2,:,1,:) = p2(idx1(2),:,idx1(1),:)
+        else
+          do j=1,pno1
+            do i=1,pno1
+              p1(i,:,j,:) = p2(idx1(i),:,idx1(j),:)
+            enddo
           enddo
-          enddo
-        enddo
-        enddo
+        endif
         p1 => null()
         p2 => null()
         !transform integral contribution, use symmetry  govov(kcld) => govov(\bar{c} \bar{d} k l) to the space of (ij) -> w2
@@ -5382,7 +5385,7 @@ module cc_debug_routines_module
 
         !prepare 4 occupied integral goooo for B2 term
         call ass_D1to4( w3,    p1, [pno,pno,pno1,pno1] )
-        call ass_D1to4( goooo, p2, [ no, no,   no,   no] )
+        call ass_D1to4( goooo, p2, [ no, no,  no,  no] )
         do j=1,pno1
         do b=1,pno
           do i=1,pno1
@@ -5455,7 +5458,7 @@ module cc_debug_routines_module
         t21  => pno_t2(ns2)%elm1
         idx1 => pno_cv(ns2)%iaos
         pnv1 =  pno_cv(ns2)%ns2
-        pno1 =  pno_cv(ns2)%n
+        pno1 =  pno_cv(ns2)%pno
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -5505,7 +5508,7 @@ module cc_debug_routines_module
           t22  => pno_t2(ns3)%elm1
           idx2 => pno_cv(ns3)%iaos
           pnv2 =  pno_cv(ns3)%ns2
-          pno2 =  pno_cv(ns3)%n
+          pno2 =  pno_cv(ns3)%pno
 
           !Get the integrals kdlc -> ckld and transform c and d to their
           !corresponding spaces, (iajb -> bija) 
@@ -5552,14 +5555,10 @@ module cc_debug_routines_module
 
           call ass_D1to4( w3, p3, [pnv1,pno1,nidx2,pnv] )
           call ass_D1to4( w4, p4, [pnv1,pno1,pno,pnv] )
-          do a=1,pnv
           do j=1,nidx2
             do i=1,pno1
-            do b=1,pnv1
-              p4(b,i,oidx2(j,1),a) = p4(b,i,oidx2(j,1),a) + p3(b,i,j,a)
+              p4(:,i,oidx2(j,1),:) = p4(:,i,oidx2(j,1),:) + p3(:,i,j,:)
             enddo
-            enddo
-          enddo
           enddo
           p3 => null()
           p4 => null()
@@ -5578,13 +5577,9 @@ module cc_debug_routines_module
         call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,pno1] )
         call ass_D1to4( t21, p2, [pnv1,pno1,pnv1,pno1] )
         do j=1,pno1
-        do b=1,pnv1
           do i=1,nidx1
-          do a=1,pnv1
-            p1(a,i,b,j) = p2(a,j,b,oidx1(i,2))
+            p1(:,i,:,j) = p2(:,j,:,oidx1(i,2))
           enddo
-          enddo
-        enddo
         enddo
         p1 => null()
         p2 => null()
@@ -5627,14 +5622,10 @@ module cc_debug_routines_module
         !could also be produced on-the-fly to reduce the memory requirements
         call ass_D1to4( w1,    p1, [nv,pno,pno1,nv] )
         call ass_D1to4( Lvoov, p2, [nv, no, no, nv] )
-        do b=1,nv
         do j=1,pno1
           do i=1,pno
-          do a=1,nv
-            p1(a,i,j,b) = p2(a,idx(i), idx1(j),b)
+            p1(:,i,j,:) = p2(:,idx(i), idx1(j),:)
           enddo
-          enddo
-        enddo
         enddo
         p1 => null()
         p2 => null()
@@ -5665,7 +5656,7 @@ module cc_debug_routines_module
           t22  => pno_t2(ns3)%elm1
           idx2 => pno_cv(ns3)%iaos
           pnv2 =  pno_cv(ns3)%ns2
-          pno2 =  pno_cv(ns3)%n
+          pno2 =  pno_cv(ns3)%pno
 
           !Get the L integrals lfkc -> cklf and transform c and d to their
           !corresponding spaces, (iajb -> bjia) 
@@ -5694,7 +5685,7 @@ module cc_debug_routines_module
           do b=1,pnv2
             do i=1,nidx2
             do a=1,pnv2
-              p3(a,i,b,j) = p20 * p2(a,oidx2(i,2),b,j) - p2(a,j,b,oidx2(i,2))
+              p3(a,i,b,j) = p20 * p2(a,oidx2(i,2),b,j) - p2(b,oidx2(i,2),a,j)
             enddo
             enddo
           enddo
@@ -5747,7 +5738,7 @@ module cc_debug_routines_module
         do b=1,pnv1
           do i=1,nidx1
           do a=1,pnv1
-            p1(a,i,b,j) = p20 * p2(a,oidx1(i,2),b,j) - p2(a,j,b,oidx1(i,2))
+            p1(a,i,b,j) = p20 * p2(a,oidx1(i,2),b,j) - p2(b,oidx1(i,2),a,j)
           enddo
           enddo
         enddo
@@ -5818,7 +5809,7 @@ module cc_debug_routines_module
           t22  => pno_t2(ns3)%elm1
           idx2 => pno_cv(ns3)%iaos
           pnv2 =  pno_cv(ns3)%ns2
-          pno2 =  pno_cv(ns3)%n
+          pno2 =  pno_cv(ns3)%pno
 
           !Get the integrals g(kdlc) as (dklc) and transform c and d to (lj)
           !such that the order klcd is obtained
@@ -5846,7 +5837,7 @@ module cc_debug_routines_module
           do b=1,pnv2
             do a=1,pnv2
             do i=1,pno2
-              p3(i,a,b,j) = p20 * p2(a,i,b,oidx2(j,2)) - p2(a,oidx2(j,2),b,i)
+              p3(i,a,b,j) = p20 * p2(a,i,b,oidx2(j,2)) - p2(b,i,a,oidx2(j,2))
             enddo
             enddo
           enddo
@@ -5958,7 +5949,7 @@ module cc_debug_routines_module
  
       !get u from current amplitudes contract and transform back to local basis, as u(\bar{a}\bar{c}kl) from akcl
       call array_reorder_4d( p20, t, pnv,pno,pnv,pno, [1,3,2,4], nul,w2)
-      call array_reorder_4d( m10, t, pnv,pno,pnv,pno, [1,3,4,2], p10,w2)
+      call array_reorder_4d( m10, t, pnv,pno,pnv,pno, [3,1,2,4], p10,w2)
 
 
       ! carry out w2(\bar{a}\bar{c} kl) w1(\bar{c} kl i) = omega1{\bar{a}i}
@@ -6001,7 +5992,7 @@ module cc_debug_routines_module
         t   => pno_t2(ns)%elm1
         idx => pno_cv(ns)%iaos
         pnv =  pno_cv(ns)%ns2
-        pno =  pno_cv(ns)%n
+        pno =  pno_cv(ns)%pno
  
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  A1 Term !!!!!!!!!!!!
@@ -6032,7 +6023,7 @@ module cc_debug_routines_module
         do b=1,pnv
           do j=1,pno
           do a=1,pnv
-            p3(j,a,b,1) = p20 * p2(a,j,b,i_idx) - p2(a,i_idx,b,j)
+            p3(j,a,b,1) = p20 * p2(a,j,b,i_idx) - p2(b,j,a,i_idx)
           enddo
         enddo
         enddo
@@ -6053,7 +6044,7 @@ module cc_debug_routines_module
         do b=1,pnv
           do j=1,pno
           do a=1,pnv
-            p3(a,1,b,j) = p20 * p2(a,i_idx,b,j) - p2(a,j,b,i_idx)
+            p3(a,1,b,j) = p20 * p2(a,i_idx,b,j) - p2(b,i_idx,a,j)
           enddo
         enddo
         enddo
@@ -6313,7 +6304,7 @@ module cc_debug_routines_module
 
       if(pno_cv(ns)%allocd)then
 
-        pno =  pno_cv(ns)%n
+        pno =  pno_cv(ns)%pno
         pnv =  pno_cv(ns)%ns2
         d   => pno_cv(ns)%d
         po2 => pno_o2(ns)%elm4
@@ -6346,7 +6337,7 @@ module cc_debug_routines_module
               do i = j + 1, pno
                 do a = 1, nv
                   o2(a,idx(i),b,idx(j)) = o2(a,idx(i),b,idx(j)) + w1(a,i,b,j)
-                  o2(a,idx(j),b,idx(i)) = o2(a,idx(j),b,idx(i)) + w1(a,j,b,i)
+                  o2(a,idx(j),b,idx(i)) = o2(a,idx(j),b,idx(i)) + w1(b,i,a,j)
                 enddo
               enddo
             enddo
@@ -6433,22 +6424,29 @@ module cc_debug_routines_module
     do nn=1,n
 
       pnv = cv(nn)%ns2
-      pno = cv(nn)%n
+      pno = cv(nn)%pno
 
       if(cv(nn)%allocd)then
 
         pno_t2(nn) = array_init([pnv,pno,pnv,pno],4)
 
         call ass_D1to4(tmp1,w1,[nv,pno,nv,pno])
-        do j=1,pno
-        do b=1,nv
-          do i=1,pno
-          do a=1,nv
-            w1(a,i,b,j) = t2(a,cv(nn)%iaos(i),b,cv(nn)%iaos(j))
+
+        !if(pno==2)then
+
+        !  i = cv(nn)%iaos(1)
+        !  j = cv(nn)%iaos(2)
+        !  w1(:,1,:,1) = t2(:,i,:,j)
+
+        !else
+
+          do j=1,pno
+            do i=1,pno
+              w1(:,i,:,j) = t2(:,cv(nn)%iaos(i),:,cv(nn)%iaos(j))
+            enddo
           enddo
-          enddo
-        enddo
-        enddo
+
+        !endif
 
         call dgemm('t','n',pnv,pno**2*nv,nv,1.0E0_realk,cv(nn)%d,nv,w1,nv,0.0E0_realk,tmp2,pnv)
         call array_reorder_4d(1.0E0_realk,tmp2,pnv,pno,nv,pno,[3,4,1,2],0.0E0_realk,tmp1)
@@ -6500,6 +6498,7 @@ module cc_debug_routines_module
       call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1),ext_thr=DECinfo%EOSPNOthr)
       call mem_alloc(cv(1)%iaos,f%noccEOS)
       cv(1)%n    = f%noccEOS
+      cv(1)%pno  = f%noccEOS
       cv(1)%iaos = f%idxo
       counter = 1
 
@@ -6536,12 +6535,14 @@ module cc_debug_routines_module
             call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
             call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
             if(i==j)then
-              cv(counter)%n = 1
+              cv(counter)%n   = 1
+              cv(counter)%pno = 1
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i]
               det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
             else
-              cv(counter)%n = 2
+              cv(counter)%n   = 2
+              cv(counter)%pno = 2
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i,j]
               det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*2
@@ -6559,12 +6560,14 @@ module cc_debug_routines_module
           call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
           call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
           if(i==j)then
-            cv(counter)%n = 1
+            cv(counter)%n   = 1
+            cv(counter)%pno = 1
             call mem_alloc(cv(counter)%iaos,cv(counter)%n)
             cv(counter)%iaos = [i]
             det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
           else
-            cv(counter)%n = 2
+            cv(counter)%n   = 2
+            cv(counter)%pno = 2
             call mem_alloc(cv(counter)%iaos,cv(counter)%n)
             cv(counter)%iaos = [i,j]
             det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*2
