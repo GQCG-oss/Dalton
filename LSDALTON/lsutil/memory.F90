@@ -101,6 +101,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_allocated_DECORBITAL, max_mem_used_DECORBITAL       !Count 'DECORBITAL' memory, deccc code
    integer(KIND=long),save :: mem_allocated_DECFRAG, max_mem_used_DECFRAG       !Count 'DECFRAG' memory, deccc code
    integer(KIND=long),save :: mem_allocated_BATCHTOORB, max_mem_used_BATCHTOORB       !Count 'BATCHTOORB' memory, deccc code
+   integer(KIND=long),save :: mem_allocated_DecAObatchinfo, max_mem_used_DecAObatchinfo !Count 'DecAObatchinfo' memory, deccc code
    integer(KIND=long),save :: mem_allocated_MYPOINTER, max_mem_used_MYPOINTER       !Count 'MYPOINTER' memory, deccc code
    integer(KIND=long),save :: mem_allocated_ARRAY2, max_mem_used_ARRAY2       !Count 'ARRAY2' memory, deccc code
    integer(KIND=long),save :: mem_allocated_ARRAY4, max_mem_used_ARRAY4       !Count 'ARRAY4' memory, deccc code
@@ -151,6 +152,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_tp_allocated_DECORBITAL, max_mem_tp_used_DECORBITAL       !Count 'DECORBITAL' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_DECFRAG, max_mem_tp_used_DECFRAG       !Count 'DECFRAG' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_BATCHTOORB, max_mem_tp_used_BATCHTOORB       !Count 'BATCHTOORB' memory, deccc code
+   integer(KIND=long),save :: mem_tp_allocated_DecAObatchinfo, max_mem_tp_used_DecAObatchinfo !Count 'DecAObatchinfo' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_MYPOINTER, max_mem_tp_used_MYPOINTER       !Count 'MYPOINTER' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_ARRAY2, max_mem_tp_used_ARRAY2       !Count 'ARRAY2' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_ARRAY4, max_mem_tp_used_ARRAY4       !Count 'ARRAY4' memory, deccc code
@@ -176,6 +178,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_check_allocated_DECORBITAL
    integer(KIND=long),save :: mem_check_allocated_DECFRAG
    integer(KIND=long),save :: mem_check_allocated_BATCHTOORB
+   integer(KIND=long),save :: mem_check_allocated_DecAObatchinfo
    integer(KIND=long),save :: mem_check_allocated_MYPOINTER
    integer(KIND=long),save :: mem_check_allocated_ARRAY2
    integer(KIND=long),save :: mem_check_allocated_ARRAY4
@@ -208,6 +211,7 @@ MODULE memory_handling
    integer(KIND=long),save :: max_mem_used_DECORBITAL_tmp
    integer(KIND=long),save :: max_mem_used_DECFRAG_tmp
    integer(KIND=long),save :: max_mem_used_BATCHTOORB_tmp
+   integer(KIND=long),save :: max_mem_used_DecAObatchinfo_tmp
    integer(KIND=long),save :: max_mem_used_MYPOINTER_tmp
    integer(KIND=long),save :: max_mem_used_ARRAY2_tmp
    integer(KIND=long),save :: max_mem_used_ARRAY4_tmp
@@ -238,6 +242,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_DECORBITALsize
    integer(KIND=long),save :: mem_DECFRAGsize
    integer(KIND=long),save :: mem_BATCHTOORBsize
+   integer(KIND=long),save :: mem_DecAObatchinfosize
    integer(KIND=long),save :: mem_MYPOINTERsize
    integer(KIND=long),save :: mem_ARRAY2size
    integer(KIND=long),save :: mem_ARRAY4size
@@ -283,6 +288,7 @@ MODULE memory_handling
 !$OMP mem_tp_allocated_DECORBITAL, max_mem_tp_used_DECORBITAL,&
 !$OMP mem_tp_allocated_DECFRAG, max_mem_tp_used_DECFRAG,&
 !$OMP mem_tp_allocated_BATCHTOORB, max_mem_tp_used_BATCHTOORB,&
+!$OMP mem_tp_allocated_DecAObatchinfo, max_mem_tp_used_DecAObatchinfo,&
 !$OMP mem_tp_allocated_MYPOINTER, max_mem_tp_used_MYPOINTER,&
 !$OMP mem_tp_allocated_ARRAY2, max_mem_tp_used_ARRAY2,&
 !$OMP mem_tp_allocated_ARRAY4, max_mem_tp_used_ARRAY4,&
@@ -315,6 +321,7 @@ MODULE memory_handling
 !$OMP mem_check_allocated_AOBATCH,mem_check_allocated_ODBATCH,&
 !$OMP mem_check_allocated_DECORBITAL,mem_check_allocated_DECFRAG,&
 !$OMP mem_check_allocated_BATCHTOORB,&
+!$OMP mem_check_allocated_DECAOBATCHINFO,&
 !$OMP mem_check_allocated_MYPOINTER,&
 !$OMP mem_check_allocated_ARRAY,&
 !$OMP mem_check_allocated_ARRAY2,&
@@ -366,7 +373,7 @@ INTERFACE mem_alloc
      &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
      &             lsmpi_allocate_dV4,lsmpi_allocate_dV8, lsmpi_local_allocate_dV8, &
      &             lsmpi_local_allocate_I8V8,lsmpi_local_allocate_I4V4,&
-     &             lsmpi_allocate_d,&
+     &             lsmpi_allocate_d,DECAOBATCHINFO_allocate_1dim,&
 #ifdef MOD_UNRELEASED
      &             lvec_data_allocate_1dim, lattice_cell_allocate_1dim, &
 #endif
@@ -397,7 +404,7 @@ INTERFACE mem_dealloc
      &             TRACEBACK_deallocate_1dim,MP2GRAD_deallocate_1dim, &
      &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,&
      &             lsmpi_local_deallocate_I4V,lsmpi_local_deallocate_I8V,&
-     &             lsmpi_deallocate_d,&
+     &             lsmpi_deallocate_d,DECAOBATCHINFO_deallocate_1dim,&
 #ifdef MOD_UNRELEASED
      &             lvec_data_deallocate_1dim,lattice_cell_deallocate_1dim, &
 #endif
@@ -419,6 +426,7 @@ TYPE(AOBATCH) :: AOBATCHitem
 TYPE(DECORBITAL) :: DECORBITALitem
 TYPE(DECFRAG) :: DECFRAGitem
 TYPE(BATCHTOORB) :: BATCHTOORBitem
+TYPE(DECAOBATCHINFO) :: DECAOBATCHINFOitem
 TYPE(MYPOINTER) :: MYPOINTERitem
 TYPE(ARRAY2) :: ARRAY2item
 TYPE(ARRAY4) :: ARRAY4item
@@ -439,7 +447,7 @@ TYPE(lvec_data_t) :: lvec_dataitem
 TYPE(lvec_data_t) :: lattice_cellitem
 #endif
 ! Size of buffer handling for long integer buffer
-longintbuffersize = 74
+longintbuffersize = 76
 
 #if defined (VAR_XLF) || defined (VAR_G95) || defined (VAR_CRAY)
 print*,'Warning set sizes of Types Manual!'
@@ -448,6 +456,7 @@ mem_AOBATCHsize=496
 mem_DECORBITALsize=88
 mem_DECFRAGsize=4004
 mem_BATCHTOORBsize=28
+mem_DECAOBATCHINFOsize=20
 mem_MYPOINTERsize=48
 mem_ARRAY2size=44
 mem_ARRAY4size=256
@@ -475,6 +484,7 @@ mem_AOBATCHsize=sizeof(AOBATCHitem)
 mem_DECORBITALsize=sizeof(DECORBITALitem)
 mem_DECFRAGsize=sizeof(DECFRAGitem)
 mem_BATCHTOORBsize=sizeof(BATCHTOORBitem)
+mem_DECAOBATCHINFOsize=sizeof(DECAOBATCHINFOitem)
 mem_MYPOINTERsize=sizeof(MYPOINTERitem)
 mem_ARRAY2size=sizeof(ARRAY2item)
 mem_ARRAY4size=sizeof(ARRAY4item)
@@ -515,6 +525,7 @@ max_mem_used_AOBATCH = MAX(max_mem_used_AOBATCH,max_mem_used_AOBATCH_tmp)
 max_mem_used_DECORBITAL = MAX(max_mem_used_DECORBITAL,max_mem_used_DECORBITAL_tmp)
 max_mem_used_DECFRAG = MAX(max_mem_used_DECFRAG,max_mem_used_DECFRAG_tmp)
 max_mem_used_BATCHTOORB = MAX(max_mem_used_BATCHTOORB,max_mem_used_BATCHTOORB_tmp)
+max_mem_used_DECAOBATCHINFO = MAX(max_mem_used_DECAOBATCHINFO,max_mem_used_DECAOBATCHINFO_tmp)
 max_mem_used_MYPOINTER = MAX(max_mem_used_MYPOINTER,max_mem_used_MYPOINTER_tmp)
 max_mem_used_ARRAY2 = MAX(max_mem_used_ARRAY2,max_mem_used_ARRAY2_tmp)
 max_mem_used_ARRAY4 = MAX(max_mem_used_ARRAY4,max_mem_used_ARRAY4_tmp)
@@ -562,6 +573,7 @@ max_mem_used_AOBATCH_tmp = 0
 max_mem_used_DECORBITAL_tmp = 0
 max_mem_used_DECFRAG_tmp = 0
 max_mem_used_BATCHTOORB_tmp = 0
+max_mem_used_DECAOBATCHINFO_tmp = 0
 max_mem_used_MYPOINTER_tmp = 0
 max_mem_used_ARRAY2_tmp = 0
 max_mem_used_ARRAY4_tmp = 0
@@ -621,6 +633,7 @@ mem_allocated_DECORBITAL = 0
 max_mem_used_DECORBITAL = 0
 mem_allocated_DECFRAG = 0
 mem_allocated_BATCHTOORB = 0
+mem_allocated_DECAOBATCHINFO = 0
 mem_allocated_MYPOINTER = 0
 mem_allocated_ARRAY2 = 0
 mem_allocated_ARRAY4 = 0
@@ -630,6 +643,7 @@ mem_allocated_TRACEBACK = 0
 mem_allocated_MP2GRAD = 0
 max_mem_used_DECFRAG = 0
 max_mem_used_BATCHTOORB = 0
+max_mem_used_DECAOBATCHINFO = 0
 max_mem_used_MYPOINTER = 0
 max_mem_used_ARRAY2 = 0
 max_mem_used_ARRAY4 = 0
@@ -706,6 +720,7 @@ mem_tp_allocated_DECORBITAL = 0
 max_mem_tp_used_DECORBITAL = 0
 mem_tp_allocated_DECFRAG = 0
 mem_tp_allocated_BATCHTOORB = 0
+mem_tp_allocated_DECAOBATCHINFO = 0
 mem_tp_allocated_MYPOINTER = 0
 mem_tp_allocated_ARRAY2 = 0
 mem_tp_allocated_ARRAY4 = 0
@@ -715,6 +730,7 @@ mem_tp_allocated_TRACEBACK = 0
 mem_tp_allocated_MP2GRAD = 0
 max_mem_tp_used_DECFRAG = 0
 max_mem_tp_used_BATCHTOORB = 0
+max_mem_tp_used_DECAOBATCHINFO = 0
 max_mem_tp_used_MYPOINTER = 0
 max_mem_tp_used_ARRAY2 = 0
 max_mem_tp_used_ARRAY4 = 0
@@ -790,6 +806,7 @@ subroutine collect_thread_memory()
     max_mem_used_DECORBITAL_tmp = max_mem_used_DECORBITAL_tmp+max_mem_tp_used_DECORBITAL
     mem_allocated_DECFRAG = mem_allocated_DECFRAG+mem_tp_allocated_DECFRAG
     mem_allocated_BATCHTOORB = mem_allocated_BATCHTOORB+mem_tp_allocated_BATCHTOORB
+    mem_allocated_DECAOBATCHINFO = mem_allocated_DECAOBATCHINFO+mem_tp_allocated_DECAOBATCHINFO
     mem_allocated_MYPOINTER = mem_allocated_MYPOINTER+mem_tp_allocated_MYPOINTER
     mem_allocated_ARRAY2 = mem_allocated_ARRAY2+mem_tp_allocated_ARRAY2
     mem_allocated_ARRAY4 = mem_allocated_ARRAY4+mem_tp_allocated_ARRAY4
@@ -799,6 +816,7 @@ subroutine collect_thread_memory()
     mem_allocated_MP2GRAD = mem_allocated_MP2GRAD+mem_tp_allocated_MP2GRAD
     max_mem_used_DECFRAG_tmp = max_mem_used_DECFRAG_tmp+max_mem_tp_used_DECFRAG
     max_mem_used_BATCHTOORB_tmp = max_mem_used_BATCHTOORB_tmp+max_mem_tp_used_BATCHTOORB
+    max_mem_used_DECAOBATCHINFO_tmp = max_mem_used_DECAOBATCHINFO_tmp+max_mem_tp_used_DECAOBATCHINFO
     max_mem_used_MYPOINTER_tmp = max_mem_used_MYPOINTER_tmp+max_mem_tp_used_MYPOINTER
     max_mem_used_ARRAY2_tmp = max_mem_used_ARRAY2_tmp+max_mem_tp_used_ARRAY2
     max_mem_used_ARRAY4_tmp = max_mem_used_ARRAY4_tmp+max_mem_tp_used_ARRAY4
@@ -899,6 +917,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlapT
     WRITE(LUPRI,'("  Allocated memory (BATCHTOORB):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_BATCHTOORB
+    WRITE(LUPRI,'("  Allocated memory (DECAOBATCHINFO):        ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_DECAOBATCHINFO
     WRITE(LUPRI,'("  Allocated memory (MYPOINTER):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MYPOINTER
     WRITE(LUPRI,'("  Allocated memory (ARRAY2):            ",i9," byte  &
@@ -956,6 +976,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
     CALL print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
     CALL print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
+    CALL print_maxmem(lupri,max_mem_used_DECAOBATCHINFO,'DECAOBATCHINFO')
     CALL print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
     CALL print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
     CALL print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
@@ -1041,6 +1062,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlapT
     WRITE(LUPRI,'("  Allocated MPI memory (BATCHTOORB):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_BATCHTOORB
+    WRITE(LUPRI,'("  Allocated MPI memory (DECAOBATCHINFO):      ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_DECAOBATCHINFO
     WRITE(LUPRI,'("  Allocated MPI memory (MYPOINTER):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MYPOINTER
     WRITE(LUPRI,'("  Allocated MPI memory (ARRAY2):          ",i9," byte  &
@@ -1098,6 +1121,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
     CALL print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
     CALL print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
+    CALL print_maxmem(lupri,max_mem_used_DECAOBATCHINFO,'DECAOBATCHINFO')
     CALL print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
     CALL print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
     CALL print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
@@ -1183,6 +1207,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_overlapT
     WRITE(LUPRI,'("  Allocated memory (BATCHTOORB):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_BATCHTOORB
+    WRITE(LUPRI,'("  Allocated memory (DECAOBATCHINFO):      ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECAOBATCHINFO
     WRITE(LUPRI,'("  Allocated memory (MYPOINTER):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MYPOINTER
     WRITE(LUPRI,'("  Allocated memory (ARRAY2):          ",i9," byte  &
@@ -1240,6 +1266,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_tp_used_DECORBITAL,'DECORBITAL')
     CALL print_maxmem(lupri,max_mem_tp_used_DECFRAG,'DECFRAG')
     CALL print_maxmem(lupri,max_mem_tp_used_BATCHTOORB,'BATCHTOORB')
+    CALL print_maxmem(lupri,max_mem_tp_used_DECAOBATCHINFO,'DECAOBATCHINFO')
     CALL print_maxmem(lupri,max_mem_tp_used_MYPOINTER,'MYPOINTER')
     CALL print_maxmem(lupri,max_mem_tp_used_ARRAY2,'ARRAY2')
     CALL print_maxmem(lupri,max_mem_tp_used_ARRAY4,'ARRAY4')
@@ -1302,6 +1329,7 @@ end subroutine collect_thread_memory
        if (max_mem_used_DECORBITAL > 0_long) call print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
        if (max_mem_used_DECFRAG > 0_long) call print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
        if (max_mem_used_BATCHTOORB > 0_long) call print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
+       if (max_mem_used_DECAOBATCHINFO > 0_long) call print_maxmem(lupri,max_mem_used_DECAOBATCHINFO,'DECAOBATCHINFO')
        if (max_mem_used_MYPOINTER > 0_long) call print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
        if (max_mem_used_ARRAY2 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
        if (max_mem_used_ARRAY4 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
@@ -1344,6 +1372,7 @@ end subroutine collect_thread_memory
        if (mem_allocated_DECORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_DECORBITAL,'DECORBITAL')
        if (mem_allocated_DECFRAG > 0_long) call print_mem_alloc(lupri,mem_allocated_DECFRAG,'DECFRAG')
        if (mem_allocated_BATCHTOORB > 0_long) call print_mem_alloc(lupri,mem_allocated_BATCHTOORB,'BATCHTOORB')
+       if (mem_allocated_DECAOBATCHINFO > 0_long) call print_mem_alloc(lupri,mem_allocated_DECAOBATCHINFO,'DECAOBATCHINFO')
        if (mem_allocated_MYPOINTER > 0_long) call print_mem_alloc(lupri,mem_allocated_MYPOINTER,'MYPOINTER')
        if (mem_allocated_ARRAY2 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY2,'ARRAY2')
        if (mem_allocated_ARRAY4 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY4,'ARRAY4')
@@ -1401,6 +1430,7 @@ end subroutine collect_thread_memory
     if (max_mem_used_DECORBITAL > 0_long) call print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
     if (max_mem_used_DECFRAG > 0_long) call print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
     if (max_mem_used_BATCHTOORB > 0_long) call print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
+    if (max_mem_used_DECAOBATCHINFO > 0_long) call print_maxmem(lupri,max_mem_used_DECAOBATCHINFO,'DECAOBATCHINFO')
     if (max_mem_used_MYPOINTER > 0_long) call print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
     if (max_mem_used_ARRAY2 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
     if (max_mem_used_ARRAY4 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
@@ -1442,6 +1472,7 @@ end subroutine collect_thread_memory
     if (mem_allocated_DECORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_DECORBITAL,'DECORBITAL')
     if (mem_allocated_DECFRAG > 0_long) call print_mem_alloc(lupri,mem_allocated_DECFRAG,'DECFRAG')
     if (mem_allocated_BATCHTOORB > 0_long) call print_mem_alloc(lupri,mem_allocated_BATCHTOORB,'BATCHTOORB')
+    if (mem_allocated_DECAOBATCHINFO > 0_long) call print_mem_alloc(lupri,mem_allocated_DECAOBATCHINFO,'DECAOBATCHINFO')
     if (mem_allocated_MYPOINTER > 0_long) call print_mem_alloc(lupri,mem_allocated_MYPOINTER,'MYPOINTER')
     if (mem_allocated_ARRAY2 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY2,'ARRAY2')
     if (mem_allocated_ARRAY4 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY4,'ARRAY4')
@@ -3862,6 +3893,43 @@ integer (kind=long) :: nsize
    NULLIFY(BATCHTOORBITEM)
 END SUBROUTINE BATCHTOORB_deallocate_1dim
 
+!----- ALLOCATE DECAOBATCHINFO POINTERS -----!
+
+SUBROUTINE DECAOBATCHINFO_allocate_1dim(DECAOBATCHINFOITEM,n)
+implicit none
+integer,intent(in) :: n
+TYPE(DECAOBATCHINFO),pointer    :: DECAOBATCHINFOITEM(:)
+integer :: IERR
+integer (kind=long) :: nsize
+nullify(DECAOBATCHINFOITEM)
+ALLOCATE(DECAOBATCHINFOITEM(n),STAT = IERR)
+IF (IERR.NE. 0) THEN
+   write(*,*) 'Error in DECAOBATCHINFO_allocate_1dim',IERR,n
+   CALL MEMORY_ERROR_QUIT('Error in DECAOBATCHINFO_allocate_1dim')
+ENDIF
+nsize = size(DECAOBATCHINFOITEM,KIND=long)*mem_DECAOBATCHINFOsize
+call mem_allocated_mem_DECAOBATCHINFO(nsize)
+END SUBROUTINE DECAOBATCHINFO_allocate_1dim
+
+SUBROUTINE DECAOBATCHINFO_deallocate_1dim(DECAOBATCHINFOITEM)
+implicit none
+TYPE(DECAOBATCHINFO),pointer :: DECAOBATCHINFOITEM(:)
+integer :: IERR
+integer (kind=long) :: nsize
+   nsize = size(DECAOBATCHINFOITEM,KIND=long)*mem_DECAOBATCHINFOsize
+   call mem_deallocated_mem_DECAOBATCHINFO(nsize)
+   if (.not.ASSOCIATED(DECAOBATCHINFOITEM)) then
+      print *,'Memory previously released!!'
+      call memory_error_quit('Error in DECAOBATCHINFO_deallocate_1dim - memory previously released')
+   endif
+   DEALLOCATE(DECAOBATCHINFOITEM,STAT = IERR)
+   IF (IERR.NE. 0) THEN
+      write(*,*) 'Error in DECAOBATCHINFO_deallocate_1dim',IERR
+      CALL MEMORY_ERROR_QUIT('Error in DECAOBATCHINFO_deallocate_1dim')
+   ENDIF
+   NULLIFY(DECAOBATCHINFOITEM)
+END SUBROUTINE DECAOBATCHINFO_deallocate_1dim
+
 !----- ALLOCATE MYPOINTER POINTERS -----!
 
 SUBROUTINE MYPOINTER_allocate_1dim(MYPOINTERITEM,n)
@@ -5175,6 +5243,50 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         endif
      ENDIF
    end subroutine mem_deallocated_mem_BATCHTOORB
+
+  subroutine mem_allocated_mem_DECAOBATCHINFO(nsize)
+     implicit none
+     integer (kind=long), intent(in) :: nsize
+     IF(mem_InsideOMPsection)THEN!we add to thread private variables
+        mem_tp_allocated_DECAOBATCHINFO = mem_tp_allocated_DECAOBATCHINFO + nsize
+        max_mem_tp_used_DECAOBATCHINFO = MAX(max_mem_tp_used_DECAOBATCHINFO,mem_tp_allocated_DECAOBATCHINFO)
+        !Count also the total memory:
+        mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+        max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+     ELSE
+        mem_allocated_DECAOBATCHINFO = mem_allocated_DECAOBATCHINFO + nsize
+        max_mem_used_DECAOBATCHINFO = MAX(max_mem_used_DECAOBATCHINFO,mem_allocated_DECAOBATCHINFO)
+        !Count also the total memory:
+        mem_allocated_global = mem_allocated_global  + nsize
+        max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+     ENDIF
+   end subroutine mem_allocated_mem_DECAOBATCHINFO
+
+   subroutine mem_deallocated_mem_DECAOBATCHINFO(nsize)
+     implicit none
+     integer (kind=long), intent(in) :: nsize
+     IF(mem_InsideOMPsection)THEN!we add to thread private variables
+        mem_tp_allocated_DECAOBATCHINFO = mem_tp_allocated_DECAOBATCHINFO - nsize
+        if (mem_tp_allocated_DECAOBATCHINFO < 0) then
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECAOBATCHINFO - probably integer overflow!')
+        endif
+        !Count also the total memory:
+        mem_tp_allocated_global = mem_tp_allocated_global - nsize
+        if (mem_tp_allocated_global < 0) then
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECAOBATCHINFO - probably integer overflow!')
+        endif
+     ELSE
+        mem_allocated_DECAOBATCHINFO = mem_allocated_DECAOBATCHINFO - nsize
+        if (mem_allocated_DECAOBATCHINFO < 0) then
+           call memory_error_quit('Error in mem_deallocated_mem_DECAOBATCHINFO - probably integer overflow!')
+        endif
+        !Count also the total memory:
+        mem_allocated_global = mem_allocated_global - nsize
+        if (mem_allocated_global < 0) then
+           call memory_error_quit('Error in mem_deallocated_mem_DECAOBATCHINFO - probably integer overflow!')
+        endif
+     ENDIF
+   end subroutine mem_deallocated_mem_DECAOBATCHINFO
 
 
   subroutine mem_allocated_mem_MYPOINTER(nsize)
@@ -6650,9 +6762,11 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      longintbufferInt(70) = max_mem_used_ARRAY
      longintbufferInt(71) = mem_allocated_mpi
      longintbufferInt(72) = max_mem_used_mpi
+     longintbufferInt(73) = mem_allocated_DECAOBATCHINFO
+     longintbufferInt(74) = max_mem_used_DECAOBATCHINFO
 #ifdef MOD_UNRELEASED
-     longintbufferInt(73) = mem_allocated_lvec_data
-     longintbufferInt(74) = mem_allocated_lattice_cell
+     longintbufferInt(75) = mem_allocated_lvec_data
+     longintbufferInt(76) = mem_allocated_lattice_cell
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!
@@ -6731,9 +6845,11 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      max_mem_used_ARRAY = longintbufferInt(70)
      mem_allocated_mpi = longintbufferInt(71)
      max_mem_used_mpi = longintbufferInt(72)
+     mem_allocated_DECAOBATCHINFO = longintbufferInt(73)
+     max_mem_used_DECAOBATCHINFO = longintbufferInt(74)
 #ifdef MOD_UNRELEASED
-     mem_allocated_lvec_data = longintbufferInt(73)
-     mem_allocated_lattice_cell = longintbufferInt(74)
+     mem_allocated_lvec_data = longintbufferInt(75)
+     mem_allocated_lattice_cell = longintbufferInt(76)
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!
