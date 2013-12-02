@@ -623,7 +623,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
-
+#ifdef VAR_ICHOR
+  use IchorSaveGabModule
+#endif
   implicit none
   logical, intent(inout)     :: OnMaster
   integer, intent(inout)     :: lupri, luerr
@@ -638,6 +640,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call init_rsp_util      !initialize response util module
   call lstmem_init
   call MatrixmemBuf_init()
+#ifdef VAR_ICHOR
+  call InitIchorSaveGabModule()
+#endif
   call init_AO2GCAO_GCAO2AO()
   call init_persistent_array
   call init_timers !initialize timers
@@ -664,6 +669,9 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
+#ifdef VAR_ICHOR
+  use IchorSaveGabModule
+#endif
 implicit none
   logical,intent(in)         :: OnMaster
   integer,intent(inout)      :: lupri,luerr
@@ -678,6 +686,9 @@ implicit none
   call lstmem_free
 
   call MatrixmemBuf_free()
+#ifdef VAR_ICHOR
+  call FreeIchorSaveGabModule()
+#endif
   call free_AO2GCAO_GCAO2AO()
   call free_persistent_array
 

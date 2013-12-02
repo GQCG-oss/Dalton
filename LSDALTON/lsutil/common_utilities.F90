@@ -557,6 +557,9 @@ end subroutine ls_dcopy
   use infpar_module
   use lsmpi_type
 #endif
+#ifdef VAR_IFORT
+  use IFCORE
+#endif
   implicit none
       !> Text string to be printed
       CHARACTER(len=*), intent(in) :: TEXT
@@ -564,6 +567,7 @@ end subroutine ls_dcopy
       integer, intent(in) :: lupri
       integer             :: luprin
       real(realk) :: CTOT,WTOT
+      integer :: user_exit_code,status
 !
 !     Stamp date and time and hostname to output
 !
@@ -585,6 +589,17 @@ end subroutine ls_dcopy
 !     Write to stderr
       WRITE (0,'(/A/1X,A)') '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
+      print*,'TRACEBACKQQ:'
+      status = -1
+      user_exit_code = -1
+      CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE,STATUS)
+      print*,'still alive:'
+      
+#ifdef VAR_IFORT
+      status = -1
+      user_exit_code = -1
+      CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE,STATUS)
+#endif
 
       CALL ls_GETTIM(CTOT,WTOT)
       CALL ls_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
@@ -595,9 +610,6 @@ end subroutine ls_dcopy
       IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
 #endif
       !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
-#ifdef VAR_IFORT
-      CALL TRACEBACKQQ()
-#endif
 #if defined (SYS_LINUX)
       CALL EXIT(100)
 #else
@@ -1125,6 +1137,141 @@ WRITE(lupri,'(A)')'=============================================================
         ENDIF
         
       end subroutine shortint_output
+
+      subroutine loutput(MAT2,dim1,dim2,lupri)
+        implicit none
+        integer             :: dim1,dim2,lupri,dimT2,dimT
+        logical             :: MAT2(dim1,dim2)
+        integer             :: I,J,K
+        dimT=20*(dim2/20)
+        DO J=1,dimT,20
+           WRITE(lupri,'(A,20I4)')'Column:',&
+                &J,J+1,J+2,J+3,J+4,J+5,J+6,J+7,J+8,J+9,&
+                &J+10,J+11,J+12,J+13,J+14,J+15,J+16,J+17,J+18,J+19
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,20L4)')I,'   ',(MAT2(I,J+K),K=0,19)
+           ENDDO
+        ENDDO
+        dimT2=dim2-dimT
+        J=dimT
+        IF(dimT2.EQ.1)THEN        
+           WRITE(lupri,'(A,I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.2)THEN
+           WRITE(lupri,'(A,2I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,2L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.3)THEN
+           WRITE(lupri,'(A,3I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,3L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.4)THEN
+           WRITE(lupri,'(A,4I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,4L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.5)THEN
+           WRITE(lupri,'(A,5I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,5L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.6)THEN
+           WRITE(lupri,'(A,6I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,6L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.7)THEN
+           WRITE(lupri,'(A,7I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,7L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.8)THEN
+           WRITE(lupri,'(A,8I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,8L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.9)THEN
+           WRITE(lupri,'(A,9I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,9L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.10)THEN
+           WRITE(lupri,'(A,10I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,10L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.11)THEN
+           WRITE(lupri,'(A,11I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,11L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.12)THEN
+           WRITE(lupri,'(A,12I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,12L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.13)THEN
+           WRITE(lupri,'(A,13I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,13L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.14)THEN
+           WRITE(lupri,'(A,14I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,14L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.15)THEN
+           WRITE(lupri,'(A,15I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,15L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.16)THEN
+           WRITE(lupri,'(A,16I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,16L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.17)THEN
+           WRITE(lupri,'(A,17I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,17L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.18)THEN
+           WRITE(lupri,'(A,18I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,18L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.19)THEN
+           WRITE(lupri,'(A,19I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,19L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ENDIF
+        
+      end subroutine loutput
 
       subroutine ls_transpose(array_in,array_out,ndim)
 use precision

@@ -964,21 +964,21 @@ C  /* Deck dalton_nodedriver */
       SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
       use polarizable_embedding, only: pe_mpi
-#ifdef VAR_IFORT
-!     subroutine sleep is in IFPORT module
-      use IFPORT
-#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
 C infpar.h: MASTER,MYNUM
 #include "maxorb.h"
 #include "infpar.h"
-C defined parallel calculation types
+C iprtyp.h: define parallel calculation types
 #include "iprtyp.h"
-C
-      real(8), allocatable :: work(:)
-C
+
+      real(8), allocatable  :: work(:)
+      integer(4), parameter :: TEN_4 = 10
+
+! ======================================================
+
       CALL QENTER('DALTON_NODEDRIVER')
       CALL GETTIM(CSTR,WSTR)
       N_TASKS = 0
@@ -986,11 +986,16 @@ C
 C     Get calculation type (IPRTYP)
 C
   100 CONTINUE
-!     Nov 2013 hjaaj: sleep 1 second before next check for a task
+#ifdef VAR_IFORT
+!     Nov 2013 hjaaj: sleep 10 millisecond before next check for a task
 !     - this saves a lot of cpu time on other cores in a sequential section
-!     - may make it possible to go into turb mode
+!     - may make it possible to go into turbo mode
 !     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
-      CALL SLEEP(1)
+!     - only intel ifort has a sleepqq counting in milliseconds (that I know of),
+!       the more common sleep(n) sleeps in at least one second, which is too long.
+!       (One could use an interface to the C routine usleep.)
+      CALL SLEEPQQ(TEN_4)
+#endif
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN

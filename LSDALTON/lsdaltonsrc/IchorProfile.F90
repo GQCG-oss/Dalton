@@ -22,7 +22,7 @@ MODULE ProfileIchorMod
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym
   use memory_handling, only: mem_alloc, mem_dealloc, debug_mem_stats
   use IntegralInterfaceMOD, only: II_get_4center_eri
-  use IchorErimoduleHost,only: MAIN_ICHORERI_DRIVER
+  use IchorErimoduleHost!,only: MAIN_ICHORERI_DRIVER
   use lsmatrix_operations_dense
   use LSmatrix_type
   use configurationType
@@ -39,15 +39,21 @@ type(configItem)    :: config
 !
 real(realk),pointer   :: integralsII(:,:,:,:),integralsIchor(:,:,:,:)
 integer :: dim1,dim2,dim3,dim4,A,B,C,D,iprint,nbast(4),ibasiselm(4)
-integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass,itest
+integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass,itest,perm
 logical :: dirac,doprint,debug
-real(realk)         :: TIMSTR,TIMEND,norm
+real(realk)         :: TIMSTR,TIMEND,normII,normIchorNoscreen,normIchorScreen
 TYPE(BASISSETLIBRARYITEM) :: LIBRARY
 CHARACTER(len=9)     :: BASISLABEL
 TYPE(BASISINFO),pointer :: unittestBASIS(:)
 TYPE(BASISINFO),pointer :: originalBASIS
 CHARACTER(len=80)    :: BASISSETNAME
-logical      :: spherical,savedospherical
+logical      :: spherical,savedospherical,SameMOL
+Character    :: intSpec(5)
+intSpec(1) = 'R'
+intSpec(2) = 'R'
+intSpec(3) = 'R'
+intSpec(4) = 'R'
+intSpec(5) = 'C'
 WRITE(lupri,*)'IchorProfile Routine'
 !call debug_mem_stats(LUPRI)
 do A=1,80
@@ -85,36 +91,74 @@ IF(config%prof%IchorProfDoThermite)THEN
    call mem_alloc(integralsII,dim1,dim2,dim3,dim4)
    savedospherical = setting%scheme%dospherical
    setting%scheme%dospherical = spherical
-   Setting%sameMol = .FALSE.
-   Setting%sameFrag = .FALSE.
-   setting%scheme%OD_SCREEN = .FALSE.
-   setting%scheme%CS_SCREEN = .FALSE.
-   setting%scheme%PS_SCREEN = .FALSE.
+!   Setting%sameMol = .FALSE.
+!   Setting%sameFrag = .FALSE.
+!   setting%scheme%OD_SCREEN = .FALSE.
+!   setting%scheme%CS_SCREEN = .FALSE.
+!   setting%scheme%PS_SCREEN = .FALSE.
    CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
    call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
    CALL LSTIMER('Thermite4Center',TIMSTR,TIMEND,lupri)
-   call determine_norm(IntegralsII,norm,dim1,dim2,dim3,dim4)
-   WRITE(lupri,*)'Norm of Thermite:',norm
+   call determine_norm(IntegralsII,normII,dim1,dim2,dim3,dim4)
+   WRITE(lupri,*)'Norm of Thermite:',normII
    setting%scheme%dospherical = savedospherical
-   setting%scheme%OD_SCREEN = .TRUE.
-   setting%scheme%CS_SCREEN = .TRUE.
-   setting%scheme%PS_SCREEN = .TRUE.
-   Setting%sameMol = .TRUE.
-   Setting%sameFrag = .TRUE.
+!   setting%scheme%OD_SCREEN = .TRUE.
+!   setting%scheme%CS_SCREEN = .TRUE.
+!   setting%scheme%PS_SCREEN = .TRUE.
+!   Setting%sameMol = .TRUE.
+!   Setting%sameFrag = .TRUE.
    call mem_dealloc(integralsII)
 ENDIF
 
+iprint=0
 IF(config%prof%IchorProfDoIchor)THEN
    WRITE(lupri,*)'Performing Ichor Profiling'
    call mem_alloc(integralsIchor,dim1,dim2,dim3,dim4)
    integralsIchor = 0.0E0_realk
    CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
-   call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integralsIchor,spherical)
+   SameMOL = .TRUE.
+!   setting%scheme%OD_SCREEN = .FALSE.
+!   setting%scheme%CS_SCREEN = .FALSE.
+!   setting%scheme%PS_SCREEN = .FALSE.
+   call SCREEN_ICHORERI_DRIVER(LUPRI,iprint,setting,INTSPEC,SameMOL)
+   CALL LSTIMER('IchorScreen',TIMSTR,TIMEND,lupri)
+   CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
+   call MAIN_ICHORERI_DRIVER(LUPRI,iprint,setting,dim1,dim2,dim3,dim4,&
+        & integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1)
+   call FREE_SCREEN_ICHORERI
+!   setting%scheme%OD_SCREEN = .TRUE.
+!   setting%scheme%CS_SCREEN = .TRUE.
+!   setting%scheme%PS_SCREEN = .TRUE.
    CALL LSTIMER('Ichor4Center',TIMSTR,TIMEND,lupri)
-   call determine_norm(integralsIchor,norm,dim1,dim2,dim3,dim4)
-   WRITE(lupri,*)'Norm of Ichor4Center:',norm
+   call determine_norm(integralsIchor,normIchorScreen,dim1,dim2,dim3,dim4)
+   WRITE(lupri,*)'Norm of Ichor4Center:',normIchorScreen
+   IF(config%prof%IchorProfDoThermite.AND.(ABS(normIchorScreen-normII).LT.1.0E-12_realk))THEN
+      WRITE(lupri,*)'Norm the same screen'
+      print*,'Norm the same screen'
+   ELSE
+      print*,'normIchorScreen',normIchorScreen
+      print*,'normII   ',normII
+      print*,'ABS(normIchor-normII)',ABS(normIchorScreen-normII)
+   ENDIF
    call mem_dealloc(integralsIchor)
 ENDIF
+
+!DO D=1,dim4
+!   DO C=1,dim3
+!      DO B=1,dim2
+!         DO A=1,dim1
+!            WRITE(lupri,'(A,I4,A,I4,A,I4,A,I4,A,2F16.8)')'INT(',A,',',B,',',C,',',D,')',integralsIchor(a,b,c,d),integralsII(a,b,c,d)
+!         ENDDO
+!      ENDDO
+!   ENDDO
+!ENDDO
+!write(lupri,*)'integralsIchor:'
+!call output(integralsIchor,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
+!write(lupri,*)'integralsThermie:'
+!call output(integralsII,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
+
+!call mem_dealloc(integralsIchor)
+!call mem_dealloc(integralsII)
 
 IF(config%prof%IchorProfInputBasis)THEN
    call free_basissetinfo(UNITTESTBASIS(1)%REGULAR)
