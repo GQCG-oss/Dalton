@@ -22,7 +22,7 @@ MODULE IntegralInterfaceIchorMod
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym
   use memory_handling, only: mem_alloc, mem_dealloc, debug_mem_stats
   use IntegralInterfaceMOD, only: II_get_4center_eri
-  use IchorErimoduleHost,only: MAIN_ICHORERI_DRIVER
+  use IchorErimoduleHost!,only: MAIN_ICHORERI_DRIVER
   use lsmatrix_operations_dense
   use LSmatrix_type
   
@@ -56,8 +56,13 @@ CHARACTER(len=20)    :: BASISTYPE(10)
 real(realk)          :: Rxyz(3)
 type(lsmatrix)       :: FINALVALUE(2)
 logical      :: spherical,savedospherical
-logical      :: FAIL(10,10,10,10),ALLPASS
-
+logical      :: FAIL(10,10,10,10),ALLPASS,SameMOL
+Character    :: intSpec(5)
+intSpec(1) = 'R'
+intSpec(2) = 'R'
+intSpec(3) = 'R'
+intSpec(4) = 'R'
+intSpec(5) = 'C'
 !WRITE(lupri,*)'Before IchorUnitTest'
 !call debug_mem_stats(LUPRI)
 
@@ -111,16 +116,18 @@ do Ipass = 1,2
    !   call build_unittest_atomicmolecule(atomicmolecule(3),ICHARGE,Rxyz,nPass,lupri)
    !   ICHARGE=17; Rxyz(1)=0.574178167982901E0_realk; Rxyz(2)=6.886728949849219E-2_realk;Rxyz(3)=9.213548738546455E-2_realk; 
    !   call build_unittest_atomicmolecule(atomicmolecule(4),ICHARGE,Rxyz,1,lupri)
-   
-   ICHARGE=6; Rxyz(1)=0.813381591740787E0_realk; Rxyz(2)=1.059191498062862E0_realk;Rxyz(3)=0.889158554601339E0_realk; 
-   call build_unittest_atomicmolecule(atomicmolecule(1),ICHARGE,Rxyz,1,lupri)
-   ICHARGE=8; Rxyz(1)=0.762266389544351E0_realk; Rxyz(2)=0.983877565461657E0_realk;Rxyz(3)=0.624979148086261E0_realk; 
-   call build_unittest_atomicmolecule(atomicmolecule(2),ICHARGE,Rxyz,1,lupri)
-   ICHARGE=9; Rxyz(1)=0.736938390171405E0_realk; Rxyz(2)=1.108186821166992E0_realk;Rxyz(3)=0.713699152299640E0_realk; 
    nPass = ipass
+   ICHARGE=6; Rxyz(1)=0.813381591740787E0_realk; Rxyz(2)=1.059191498062862E0_realk;Rxyz(3)=0.889158554601339E0_realk; 
+   call build_unittest_atomicmolecule(atomicmolecule(1),ICHARGE,Rxyz,nPass,lupri)
+   IF(iPass.EQ.2)nPass = 3
+   ICHARGE=8; Rxyz(1)=0.762266389544351E0_realk; Rxyz(2)=0.983877565461657E0_realk;Rxyz(3)=0.624979148086261E0_realk; 
+   call build_unittest_atomicmolecule(atomicmolecule(2),ICHARGE,Rxyz,nPass,lupri)
+   IF(iPass.EQ.2)nPass = 4
+   ICHARGE=9; Rxyz(1)=0.736938390171405E0_realk; Rxyz(2)=1.108186821166992E0_realk;Rxyz(3)=0.713699152299640E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(3),ICHARGE,Rxyz,nPass,lupri)
+   IF(iPass.EQ.2)nPass = 5
    ICHARGE=17; Rxyz(1)=0.574178167982901E0_realk; Rxyz(2)=1.086728949849219E0_realk;Rxyz(3)=0.913548738546455E0_realk; 
-   call build_unittest_atomicmolecule(atomicmolecule(4),ICHARGE,Rxyz,1,lupri)
+   call build_unittest_atomicmolecule(atomicmolecule(4),ICHARGE,Rxyz,nPass,lupri)
    
    SETTING%MOLECULE(1)%p => atomicmolecule(1)
    SETTING%MOLECULE(2)%p => atomicmolecule(2)
@@ -191,17 +198,23 @@ do Ipass = 1,2
        setting%scheme%CS_SCREEN = .TRUE.
        setting%scheme%PS_SCREEN = .TRUE.
 !       setting%scheme%intprint = 0
-       Setting%sameMol = .TRUE.
-       Setting%sameFrag = .TRUE.
-       
+       Setting%sameFrag = .FALSE.
+       Setting%sameMol = .FALSE.
+
 !       print*,'dim1,dim2,dim3,dim4',dim1,dim2,dim3,dim4
        call mem_alloc(integralsIchor,dim1,dim2,dim3,dim4)
-       integralsIchor = 0.0E0_realk
+!       integralsIchor = 0.0E0_realk
 !          setting%scheme%intprint = 1000
 !       WRITE(lupri,*)'IchorDriver'
        CALL FLUSH(LUPRI)
-       call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integralsIchor,spherical)
-!          setting%scheme%intprint = 0
+       print*,'call ICHOR WITH BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
+            & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
+       SameMOL = .FALSE.       
+       call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
+       call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1)!,spherical)
+       call FREE_SCREEN_ICHORERI
+       print*,'DONE call ICHOR WITH BASIS'
+       !setting%scheme%intprint = 0
        write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
             & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
        DO D=1,dim4
@@ -233,6 +246,8 @@ do Ipass = 1,2
        call free_basissetinfo(UNITTESTBASIS(2)%REGULAR)
        call free_basissetinfo(UNITTESTBASIS(3)%REGULAR)
        call free_basissetinfo(UNITTESTBASIS(4)%REGULAR)
+       Setting%sameMol = .TRUE.
+       Setting%sameFrag = .TRUE.
     ENDDO
    ENDDO
   ENDDO
@@ -291,8 +306,10 @@ SETTING%BASIS(4)%p => originalBasis
 
 IF(ALLPASS)THEN
    WRITE(lupri,'(A)')'Ichor Integrals tested against Thermite: SUCCESSFUL'
+   print*,'Ichor Integrals tested against Thermite: SUCCESSFUL'
 ELSE
    WRITE(lupri,'(A)')'Ichor Integrals tested against Thermite: FAILED'
+   print*,'Ichor Integrals tested against Thermite: FAILED'
 ENDIF
 WRITE(lupri,*)'done II_test_Ichor'
 !call lsquit('II_test_Ichor done',-1)
@@ -337,9 +354,9 @@ do I=1,nAtoms
    atomicmolecule%ATOM(I)%Mass = 0.0E0_realk    
    atomicmolecule%ATOM(I)%CovRad = 0.0E0_realk      
    atomicmolecule%ATOM(I)%Frag = 0.0E0_realk
-   atomicmolecule%ATOM(I)%CENTER(1) = Rxyz(1)!*I
-   atomicmolecule%ATOM(I)%CENTER(2) = Rxyz(2)!*I
-   atomicmolecule%ATOM(I)%CENTER(3) = Rxyz(3)!*I
+   atomicmolecule%ATOM(I)%CENTER(1) = Rxyz(1)*I
+   atomicmolecule%ATOM(I)%CENTER(2) = Rxyz(2)*I
+   atomicmolecule%ATOM(I)%CENTER(3) = Rxyz(3)*I
    atomicmolecule%ATOM(I)%Atomic_number = 0 
    atomicmolecule%ATOM(I)%Charge = Icharge       
    atomicmolecule%ATOM(I)%nbasis=0 

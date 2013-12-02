@@ -986,6 +986,15 @@ module dec_typedef_module
     
   end type
 
+  !> AO Integral batch info:
+  type DecAObatchinfo
+     integer :: Dim       ! Dimension of DEC batch of AO batches 
+     integer :: OrbStart  ! First orbital index in DEC batch
+     integer :: OrbEnd    ! Last orbital index in DEC batch
+     integer :: AOStart   ! First AO batch index in DEC batch
+     integer :: AOEnd     ! Last AO batch index in DEC batch
+  end type DecAObatchinfo
+
   !> \brief Grid box handling for analyzing orbitals in specific parts of space
   !> for single precision real grid points
   !> \author Kasper Kristensen
