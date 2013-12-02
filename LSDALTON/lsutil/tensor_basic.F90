@@ -257,9 +257,9 @@ module tensor_basic_module
 
     end subroutine memory_allocate_array_dense
 
-  !> \brief Deallocate memory for 4d arrays with memory statistics
-  !> \author Marcin Ziolkowski
-  !> \param mat Four dimensional pointer to be deallocated
+  !> \brief deallocate dense part
+  !> \author Patrick Ettenhuber
+  !> \param array for which elm1 should be deallocated
     subroutine memory_deallocate_array_dense(arr)
       implicit none
       type(array) :: arr
@@ -453,7 +453,7 @@ module tensor_basic_module
 
 
 
-    subroutine arr_free_aux(arr)
+  subroutine arr_free_aux(arr)
       implicit none
       type(array),intent(inout) :: arr
       real(realk) :: vector_size
@@ -508,7 +508,7 @@ module tensor_basic_module
       if(array_aux_deallocd_mem > array_aux_allocd_mem) &
       &print *,"WARNING(arr_free_aux)more memory deallocated than allocated"
       call array_pdm_free_special_aux(arr)
-    end subroutine arr_free_aux
+  end subroutine arr_free_aux
   
   !> \author Patrick Ettenhuber adpted from Marcin Ziolkowski
   !> \date September 2012

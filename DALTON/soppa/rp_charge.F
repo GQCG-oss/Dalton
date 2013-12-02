@@ -21,10 +21,7 @@ C
 #include "ccorb.h"
 #include "soppinf.h"
 #include "maxorb.h"
-CSPAS:15/03-2006: merge with Dalton-2.0  
-C#include <cbilrs.h>
 #include "cbiexc.h"
-CKeinSPASmehr
 #include "secmom.h"
 C
       DIMENSION SECMAT(3,MXNEXI,NSYM)
@@ -212,6 +209,8 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('RP_CHARGE')
 C

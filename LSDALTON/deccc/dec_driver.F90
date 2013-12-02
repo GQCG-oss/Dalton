@@ -209,7 +209,7 @@ contains
        ! (only if there actually are any pair fragments)
        esti = .true.
     else
-       esti=.false.
+       esti = .false.
     end if
 
     ! Special treatment of singles amplitudes
@@ -426,7 +426,7 @@ contains
     ! *************************************************************
     call get_occfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
     call plot_pair_energies(natoms,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
-         & MyMolecule%DistanceTable,dofrag)
+         & MyMolecule,dofrag)
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
     mastertime = twall2-twall1
@@ -460,6 +460,9 @@ contains
     case(MODEL_MP2)
        ! MP2, use occ energy
        Ecorr = energies(FRAGMODEL_OCCMP2)
+    case(MODEL_RPA)
+       ! RPA, use occ energy
+       Ecorr = energies(FRAGMODEL_OCCRPA)
     case(MODEL_CC2)
        ! CC2, use occ energy
        Ecorr = energies(FRAGMODEL_OCCCC2)
@@ -1130,8 +1133,6 @@ contains
        call mem_alloc(FragEnergiesOcc,natoms,natoms)
        ! Always MP2 model for estimated fragments
        call get_occfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesOcc)
-       call plot_pair_energies(natoms,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
-            & MyMolecule%DistanceTable,dofrag)
 
        ! We do not want to consider atomic fragment energies now so zero them
        ! (they might be zero already but in this way we avoid wrong print out below).

@@ -3047,7 +3047,7 @@ CONTAINS
       INTSPEC(3) = 'R'
       INTSPEC(4) = 'R'
       INTSPEC(5) = 'C' !operator
-      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatches,nbatchesXY,nbatchesXY,INTSPEC)
+      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesXY,nbatchesXY,INTSPEC)
       
       IF(doscreen)then
          call II_getBatchOrbitalScreenK(DecScreen,ls%setting,&
@@ -3083,7 +3083,7 @@ CONTAINS
 
             call II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,ls%SETTING,&
                  & integrals,batchindex(X),batchindex(Y),batchsize(X),batchsize(Y),&
-                 & dimX,nbast,dimY,nbast,nbatches,INTSPEC,fullRHS)
+                 & dimX,nbast,dimY,nbast,INTSPEC,fullRHS)
 
             do batch_iY = 1,dimY
                iY = batch2orb(Y)%orbindex(batch_iY)

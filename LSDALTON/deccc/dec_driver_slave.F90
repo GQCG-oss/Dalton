@@ -101,6 +101,9 @@ contains
 
     ! Atomic fragments
     call mem_alloc(AtomicFragments,natoms)
+    do i=1,natoms
+       call atomic_fragment_nullify(AtomicFragments(i))
+    end do
 
 
     ! *************************************************************
@@ -120,6 +123,9 @@ contains
        if(step==1 .and. esti) then
           ! Get optimized atomic fragments from master node
           call mem_alloc(EstAtomicFragments,natoms)
+          do i=1,natoms
+             call atomic_fragment_nullify(EstAtomicFragments(i))
+          end do
           call mpi_bcast_many_fragments(natoms,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)          
 
           ! Receive CC models to use for each pair based on estimates
@@ -335,6 +341,7 @@ contains
 
 
     AskForJob: do while(morejobs)
+      
 
 
        ! Send finished job to master
@@ -402,6 +409,7 @@ contains
                      & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
 
                 call get_number_of_integral_tasks_for_mpi(AtomicFragments(atomA),ntasks)
+  
              else
                 ! Set ntasks to be zero to initialize it to something, although it is not used for
                 ! fragment optimizations.
@@ -546,6 +554,7 @@ contains
           print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
                & job, singlejob%LMtime(1)
        end if DoJob
+   
 
 
     end do AskForJob
@@ -587,13 +596,8 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
 
   ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
   ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
-  if(DECinfo%fragadapt .and. (.not. MyFragment%fragmentadapted) ) then
-     nocc=MyFragment%noccFA
-     nunocc=MyFragment%nunoccFA
-  else
-     nocc=MyFragment%noccAOS
-     nunocc=MyFragment%nunoccAOS
-  end if
+  nocc=MyFragment%noccAOS
+  nunocc=MyFragment%nunoccAOS
 
   ! Determine optimal batchsizes with available memory
   if(MyFragment%ccmodel==MODEL_MP2) then ! MP2
