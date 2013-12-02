@@ -222,6 +222,7 @@ set(INTERESTLIB_SOURCES
     )
 set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorPresicion.F90
+    LSDALTON/IchorIntegrals/IchorParameters.F90
     LSDALTON/IchorIntegrals/IchorCommon.F90
     LSDALTON/IchorIntegrals/IchorMem.F90
     LSDALTON/IchorIntegrals/IchorGammaTabulation.F90
