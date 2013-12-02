@@ -513,7 +513,6 @@ contains
     if(DECinfo%CCDEBUG)then
       if(DECinfo%use_pnos)then
 
-        print *,"USING FRAGMENT PNOs"
         !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
         call get_VOVO_integrals( myfragment%mylsitem, myfragment%nbasis, &
           &myfragment%noccAOS, myfragment%nunoccAOS, myfragment%Cv, myfragment%Co, VOVO )
@@ -535,11 +534,14 @@ contains
           &MyFragment%t1_stored,m2=mp2_amp,use_pnos=DECinfo%use_pnos, fraginfo=myfragment)
 
         call array4_free(mp2_amp)
+
       else
+
         call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored)
+
       endif
     else
       call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&

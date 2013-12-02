@@ -578,11 +578,6 @@ contains
        DECinfo%ccConvergenceThreshold=0.01E0_realk*DECinfo%FOT
     end if
 
-    ! Only full molecular for RPA at this stage
-    if(DECinfo%ccmodel==MODEL_RPA .and. .not. DECinfo%full_molecular_cc) then
-       call lsquit('RPA only implemented for full molecule! Use **CC rather than **DEC.',-1)
-    end if
-
     ! Never use gradient and density at the same time (density is a subset of gradient)
     if(DECinfo%MP2density .and. DECinfo%gradient) then
        call lsquit('Density and gradient cannot both be turned on at the same time! &
@@ -825,12 +820,12 @@ contains
 
     SELECT CASE(MYWORD)
 
-    case('.MP2'); modelnumber=MODEL_MP2
-    case('.CC2'); modelnumber=MODEL_CC2
-    case('.CCSD'); modelnumber=MODEL_CCSD
-    case('.CCD'); modelnumber=MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
-    case('.CCSD(T)'); modelnumber=MODEL_CCSDpT
-    case('.RPA'); modelnumber=MODEL_RPA
+    case('.MP2');     modelnumber = MODEL_MP2
+    case('.CC2');     modelnumber = MODEL_CC2
+    case('.CCSD');    modelnumber = MODEL_CCSD
+    case('.CCD');     modelnumber = MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
+    case('.CCSD(T)'); modelnumber = MODEL_CCSDpT
+    case('.RPA');     modelnumber = MODEL_RPA
 
     case default
        print *, 'Model not found: ', myword

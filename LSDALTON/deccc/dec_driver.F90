@@ -460,6 +460,9 @@ contains
     case(MODEL_MP2)
        ! MP2, use occ energy
        Ecorr = energies(FRAGMODEL_OCCMP2)
+    case(MODEL_RPA)
+       ! RPA, use occ energy
+       Ecorr = energies(FRAGMODEL_OCCRPA)
     case(MODEL_CC2)
        ! CC2, use occ energy
        Ecorr = energies(FRAGMODEL_OCCCC2)

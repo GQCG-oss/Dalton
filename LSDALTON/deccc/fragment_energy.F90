@@ -273,9 +273,10 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Which model? MP2,CC2, CCSD etc.
-    WhichCCmodel: if(MyFragment%ccmodel==MODEL_NONE) then ! SKip calculation
+    WhichCCmodel: select case(MyFragment%ccmodel)
+    case(MODEL_NONE) ! SKip calculation
        return
-    elseif(MyFragment%ccmodel==MODEL_MP2) then ! MP2 calculation
+    case(MODEL_MP2) ! MP2 calculation
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
@@ -283,7 +284,7 @@ contains
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
-    else ! higher order CC (currently CC2 or CCSD)
+    case(MODEL_CC2,MODEL_RPA,MODEL_CCSD,MODEL_CCSDpT) ! higher order CC (currently CC2 or CCSD)
 
 
        ! Solve CC equation to calculate amplitudes and integrals 
@@ -347,7 +348,9 @@ contains
        call array2_free(t1)
        call array4_free(t2)
 
-    end if WhichCCmodel
+    case default
+      call lsquit("ERROR(atomic_fragment_energy_and_prop):MODEL not implemented",-1)
+    end select WhichCCmodel
 
 
     ! Calcuate atomic fragment energy
@@ -3087,6 +3090,13 @@ end subroutine optimize_atomic_fragment
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCC2)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
+    case(MODEL_RPA)
+       ! RPA
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRPA)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRPA)
+       ! simply use average of occ and virt energies since Lagrangian is not yet implemented
+       print *,"JOHANNES: CURRENTLY LAGRANGIAN ENERGY IS NOT CONSIDERED; PLEASE IMPLEMENT"
+       fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
     case(MODEL_CCSD)
        ! CCSD
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCCSD)
@@ -3136,6 +3146,10 @@ end subroutine optimize_atomic_fragment
        ! CC2
        fragment%energies(FRAGMODEL_OCCCC2) = fragment%EoccFOP
        fragment%energies(FRAGMODEL_VIRTCC2) = fragment%EvirtFOP
+    case(MODEL_RPA)
+       ! RPA
+       fragment%energies(FRAGMODEL_OCCRPA) = fragment%EoccFOP
+       fragment%energies(FRAGMODEL_VIRTRPA) = fragment%EvirtFOP
     case(MODEL_CCSD)
        ! CCSD
        fragment%energies(FRAGMODEL_OCCCCSD) = fragment%EoccFOP 
@@ -3210,6 +3224,10 @@ end subroutine optimize_atomic_fragment
        ! CC2
        energies(FRAGMODEL_OCCCC2) = Eocc   ! occupied
        energies(FRAGMODEL_VIRTCC2) = Evirt   ! virtual
+    case(MODEL_RPA)
+       ! RPA
+       energies(FRAGMODEL_OCCRPA) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTRPA) = Evirt   ! virtual
     case(MODEL_CCSD)
        ! CCSD
        energies(FRAGMODEL_OCCCCSD) = Eocc   ! occupied

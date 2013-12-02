@@ -978,6 +978,9 @@ module cc_debug_routines_module
         call array4_free(t2(i))
 
      end do
+     if(.not.DECinfo%use_singles)then
+       t1_final = array2_init([nvirt,nocc])
+     endif
 
      ! Write finalization message
      !---------------------------

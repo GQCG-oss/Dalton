@@ -4212,6 +4212,8 @@ retval=0
                & energies(FRAGMODEL_VIRTCC2)
        end if
        write(DECinfo%output,*)
+    case(MODEL_RPA)
+       print *,"JOHANNES: YOUR ENERGY PRINT SHOULD GO HERE"
 
     case(MODEL_CCSD)
        if(.not.DECinfo%CCDhack)then
@@ -4523,6 +4525,10 @@ retval=0
     case(MODEL_CC2)
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCC2)
 
+    case(MODEL_RPA)
+
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCRPA)
+       
     case(MODEL_CCSD)
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCCSD)
 
@@ -4563,6 +4569,10 @@ retval=0
     case(MODEL_CC2)
        ! Energy error = difference between occ and virt energies
        Eerr = abs(energies(FRAGMODEL_OCCCC2) - energies(FRAGMODEL_VIRTCC2))
+
+    case(MODEL_RPA)
+       ! Energy error = difference between occ and virt energies
+       Eerr = abs(energies(FRAGMODEL_OCCRPA) - energies(FRAGMODEL_VIRTRPA))
 
     case(MODEL_CCSD)
        Eerr = abs(energies(FRAGMODEL_OCCCCSD) - energies(FRAGMODEL_VIRTCCSD))
