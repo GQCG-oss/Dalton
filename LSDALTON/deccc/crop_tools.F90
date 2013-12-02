@@ -419,11 +419,17 @@ module crop_tools_module
     type(array2),intent(inout) :: t1
     type(array4),intent(inout) :: t2
     real(realk) :: snorm,dnorm,tnorm
-     call print_norm(t1,snorm,.true.)
+     tnorm = 0.0E0_realk
+     dnorm = 0.0E0_realk
+     snorm = 0.0E0_realk
+
+     if(DECinfo%use_singles)call print_norm(t1,snorm,.true.)
      call print_norm(t2,dnorm,.true.)
      tnorm = sqrt(snorm+dnorm)
-     snorm = sqrt(snorm)
+     if(DECinfo%use_singles)snorm = sqrt(snorm)
      dnorm = sqrt(dnorm)
+
+
      if( .not. fj .or. DECinfo%PL>1)then
        write(DECinfo%output,*)
        write(DECinfo%output,'(/,a)') '-------------------------------'
