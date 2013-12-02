@@ -261,7 +261,6 @@ contains
        DEC_INPUT_INFO: SELECT CASE(WORD)
 
 
-
           ! ****************************************************************************
           ! *               Keywords available for the general user                    *
           ! ****************************************************************************
@@ -274,6 +273,7 @@ contains
        case('.MP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.false.  
+          print *, "Test use singles" 
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -438,7 +438,9 @@ contains
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.F12'); DECinfo%F12=.true.
-       case('.F12DEBUG'); DECinfo%F12DEBUG=.true.
+       case('.F12DEBUG')     
+          DECinfo%F12=.true.
+          DECinfo%F12DEBUG=.true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
