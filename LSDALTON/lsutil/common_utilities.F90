@@ -589,12 +589,6 @@ end subroutine ls_dcopy
 !     Write to stderr
       WRITE (0,'(/A/1X,A)') '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
-      print*,'TRACEBACKQQ:'
-      status = -1
-      user_exit_code = -1
-      CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE,STATUS)
-      print*,'still alive:'
-      
 #ifdef VAR_IFORT
       status = -1
       user_exit_code = -1
