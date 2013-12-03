@@ -70,6 +70,10 @@ contains
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%use_pnos             = .false.
+    DECinfo%noPNOtrafo           = .false.
+    DECinfo%noPNOtrunc           = .false.
+    DECinfo%simplePNOthr         = 1.0E-7
+    DECinfo%EOSPNOthr            = 1.0E-9
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
 
@@ -416,6 +420,10 @@ contains
        case('.SPAWN_COMM_PROC'); DECinfo%spawn_comm_proc=.true.
        case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
        case('.USE_PNOS'); DECinfo%use_pnos=.true.
+       case('.NOPNOTRAFO'); DECinfo%noPNOtrafo=.true.; DECinfo%noPNOtrunc=.true.
+       case('.NOPNOTRUNCATION'); DECinfo%noPNOtrunc=.true.
+       case('.PNOTHR'); read(input,*) DECinfo%simplePNOthr
+       case('.EOSPNOTHR'); read(input,*) DECinfo%EOSPNOthr
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
@@ -568,11 +576,6 @@ contains
     ! - unless it was specified explicitly in the input.
     if(.not. DECinfo%CCthrSpecified) then
        DECinfo%ccConvergenceThreshold=0.01E0_realk*DECinfo%FOT
-    end if
-
-    ! Only full molecular for RPA at this stage
-    if(DECinfo%ccmodel==MODEL_RPA .and. .not. DECinfo%full_molecular_cc) then
-       call lsquit('RPA only implemented for full molecule! Use **CC rather than **DEC.',-1)
     end if
 
     ! Never use gradient and density at the same time (density is a subset of gradient)
@@ -817,12 +820,12 @@ contains
 
     SELECT CASE(MYWORD)
 
-    case('.MP2'); modelnumber=MODEL_MP2
-    case('.CC2'); modelnumber=MODEL_CC2
-    case('.CCSD'); modelnumber=MODEL_CCSD
-    case('.CCD'); modelnumber=MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
-    case('.CCSD(T)'); modelnumber=MODEL_CCSDpT
-    case('.RPA'); modelnumber=MODEL_RPA
+    case('.MP2');     modelnumber = MODEL_MP2
+    case('.CC2');     modelnumber = MODEL_CC2
+    case('.CCSD');    modelnumber = MODEL_CCSD
+    case('.CCD');     modelnumber = MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
+    case('.CCSD(T)'); modelnumber = MODEL_CCSDpT
+    case('.RPA');     modelnumber = MODEL_RPA
 
     case default
        print *, 'Model not found: ', myword

@@ -31,6 +31,7 @@ module ccdriver
   use array4_simple_operations
   use ri_simple_operations!,only: get_ao_ri_intermediate, ri_reset,ri_init, ri_free
   use mp2_module!,only: get_VOVO_integrals
+  use atomic_fragment_operations
   use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
 !       & get_gmo_simple,get_h1
   use cc_debug_routines_module
@@ -91,25 +92,50 @@ contains
     integer, intent(in) :: ccPrintLevel
     !> Coupled cluster energy for fragment/full molecule
     real(realk) :: ccenergy!,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
-    type(array4) :: t2_final,VOVO!,ccsdpt_t2
+    type(array4) :: t2_final,VOVO, mp2_amp!,ccsdpt_t2
     type(array2) :: t1_final!,ccsdpt_t1
     logical :: local
 
     local=.true.
 #ifdef VAR_MPI
-    if(infpar%lg_nodtot>1)local=.false.
+    if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
 #endif
 
 
     if(DECinfo%CCDEBUG)then
-      call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-       & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-       & t1_final,t2_final,VOVO,.false.)
+
+      if(DECinfo%use_pnos)then
+
+        !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
+        call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, Cv_f, Co_f, VOVO )
+        call mp2_solver( nocc, nvirt, ppfock_f, qqfock_f, VOVO, mp2_amp )
+        call array4_free( VOVO )
+
+        !CALL THE SOLVER WITH PNO ARGUMENT
+        call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
+         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+         & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
+
+        !FREE MP2 AMPLITUDES
+        call array4_free( mp2_amp )
+
+      else
+
+        !CALL DEBUG SOLVER WITHOUT PNOS
+        call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
+         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+         & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
+
+      endif
     else
+
+      ! CALL PRODUCTION SOLVER
       call ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
          & t1_final,t2_final,VOVO,.false.,local)
+
     endif
+
 
     ! Print fragment energies (currently only for occupied partitioning scheme)
     if(DECinfo%full_molecular_cc .and. DECinfo%full_print_frag_energies) then
@@ -276,7 +302,7 @@ contains
        if (DECinfo%CCDEBUG) then
           call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
              & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-             & t1_final,t2_final,VOVO,.false.)
+             & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
        else
           call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
@@ -289,7 +315,7 @@ contains
        if (DECinfo%CCDEBUG) then
           call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
              & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-             & t1_final,t2_final,VOVO,.false.)
+             & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
        else
           call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
@@ -456,6 +482,9 @@ contains
     type(array4),intent(inout) :: t2
     !> Two electron integrals (a i | b j) stored as (a,i,b,j)
     type(array4),intent(inout) :: VOVO
+
+    !INTERNAL PARAMETERS
+    type(array4) :: mp2_amp
     integer :: dims(2)
     real(realk) :: ccenergy
     logical :: local
@@ -482,10 +511,38 @@ contains
     end if
 
     if(DECinfo%CCDEBUG)then
-      call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
+      if(DECinfo%use_pnos)then
+
+        !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
+        call get_VOVO_integrals( myfragment%mylsitem, myfragment%nbasis, &
+          &myfragment%noccAOS, myfragment%nunoccAOS, myfragment%Cv, myfragment%Co, VOVO )
+        call mp2_solver( myfragment%noccAOS, myfragment%nunoccAOS, myfragment%ppfock,&
+          & myfragment%qqfock, VOVO, mp2_amp )
+        call array4_free( VOVO )
+
+        !GET THE CORRELATION DENSITY FOR THE CENTRAL ATOM
+        call mem_alloc(MyFragment%occmat,MyFragment%noccAOS,MyFragment%noccAOS)
+        call mem_alloc(MyFragment%virtmat,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
+        call calculate_corrdens_EOS(mp2_amp,MyFragment) 
+        MyFragment%CDset=.true.
+ 
+        !CALL THE SOLVER WITH PNO ARGUMENT
+        call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
+          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
+          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
+          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,&
+          &MyFragment%t1_stored,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos, fraginfo=myfragment)
+
+        call array4_free(mp2_amp)
+
+      else
+
+        call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored)
+         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,SOLVE_AMPLITUDES)
+
+      endif
     else
       call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
@@ -1695,7 +1752,6 @@ contains
           do j=iter,i,-1
              if(DECinfo%use_singles) then
                 if(DECinfo%use_preconditioner_in_b) then
-
                    omega1_prec = precondition_singles( omega1(j), ppfock_prec, qqfock_prec        )
                    omega2_prec = precondition_doubles( omega2(j), ppfock_prec, qqfock_prec, local )
                    B(i,j) =          array_ddot( omega1(i), omega1_prec ) 
@@ -1989,9 +2045,11 @@ contains
 
     !transform back to original basis   
     if(DECinfo%use_singles)then
-      call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt,t1_final%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &gvovo=VOVO%val,t2=t2_final%val,t1=t1_final%val)
     else
-      call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &gvovo=VOVO%val,t2=t2_final%val)
     endif
 
     call mem_dealloc(Uocc)

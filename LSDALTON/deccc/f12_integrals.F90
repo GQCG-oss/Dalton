@@ -647,7 +647,7 @@ contains
     integer(kind=long) :: dim1,dim2
     integer :: m,k,n,idx
     logical :: FullRHS,doscreen
-    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches,MaxActualDimGamma,nbatchesGamma,iorb
+    integer :: MaxActualDimAlpha,nbatchesAlpha,MaxActualDimGamma,nbatchesGamma,iorb
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
@@ -739,7 +739,7 @@ contains
     ! Integral screening stuff
     doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -782,7 +782,7 @@ contains
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, nbasis, dimAlpha, dimGamma,FullRHS,&
-               & nbatches,INTSPEC)
+               & INTSPEC)
 
           !print *, 'norm2(tmp1)', norm2(tmp1)
 
@@ -937,7 +937,7 @@ contains
     integer(kind=long) :: dim1,dim2
     integer :: m,k,n,idx
     logical :: FullRHS,doscreen
-    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches,MaxActualDimGamma,nbatchesGamma,iorb
+    integer :: MaxActualDimAlpha,nbatchesAlpha,MaxActualDimGamma,nbatchesGamma,iorb
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
@@ -1033,7 +1033,7 @@ contains
     doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
     !doscreen = .FALSE.
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -1076,7 +1076,7 @@ contains
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, nbasis, dimAlpha, dimGamma,FullRHS,&
-               & nbatches,INTSPEC)
+               & INTSPEC)
 
           !print *,"norm2(tmp1):", norm2(tmp1)
 
@@ -1234,7 +1234,7 @@ contains
     integer(kind=long) :: dim1,dim2
     integer :: m,k,n,idx
     logical :: FullRHS,doscreen
-    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches,MaxActualDimGamma,nbatchesGamma,iorb
+    integer :: MaxActualDimAlpha,nbatchesAlpha,MaxActualDimGamma,nbatchesGamma,iorb
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
@@ -1331,7 +1331,7 @@ contains
     doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
     !doscreen = .FALSE.
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -1376,7 +1376,7 @@ contains
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, ncabsAO, dimAlpha, dimGamma,FullRHS,&
-               & nbatches,INTSPEC)
+               & INTSPEC)
 
           print *,"FullRHS:", FullRHS
           !print *,"norm2(tmp1):", norm2(tmp1)

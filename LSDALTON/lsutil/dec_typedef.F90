@@ -40,22 +40,24 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 14
+  integer, parameter :: ndecenergies = 16
   !> Numbers for storing of fragment energies in the decfrag%energies array
-  integer,parameter :: FRAGMODEL_LAGMP2 = 1  ! MP2 Lagrangian partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCMP2 = 2  ! MP2 occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTMP2 = 3 ! MP2 virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCCC2 = 4  ! CC2 occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTCC2 = 5 ! CC2 virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCCCSD = 6 ! CCSD occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTCCSD= 7 ! CCSD virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCpT = 8   ! (T) contribution, occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTpT = 9  ! (T) contribution, virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCpT4 = 10 ! Fourth order (T) contribution, occ partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTpT4 =11 ! Fourth order (T) contribution, virt partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCpT5 = 12 ! Fifth order (T) contribution, occ partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTpT5 =13 ! Fifth order (T) contribution, virt partitioning scheme
-  integer,parameter :: FRAGMODEL_F12 = 14    ! MP2-F12 energy correction
+  integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTMP2  = 3   ! MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCRPA   = 4   ! RPA occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTRPA  = 5   ! RPA virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCCC2   = 6   ! CC2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCC2  = 7   ! CC2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCCCSD  = 8   ! CCSD occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCCSD = 9   ! CCSD virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT    = 10  ! (T) contribution, occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT   = 11  ! (T) contribution, virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT4   = 12  ! Fourth order (T) contribution, occ partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT4  = 13  ! Fourth order (T) contribution, virt partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT5   = 14  ! Fifth order (T) contribution, occ partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT5  = 15  ! Fifth order (T) contribution, virt partitioning scheme
+  integer,parameter :: FRAGMODEL_F12      = 16  ! MP2-F12 energy correction
 
 
   !> \author Kasper Kristensen
@@ -162,6 +164,14 @@ module dec_typedef_module
      logical :: CCSDmultipliers
      !> use pnos in dec
      logical :: use_pnos
+     !> override the transformation to the PNOs by putting unit matrices as
+     !transformation matrices
+     logical :: noPNOtrafo, noPNOtrunc
+     !> defines a simple cutoff threshold for constructing the PNOs from the
+     !correlation density
+     real(realk) :: simplePNOthr
+     !> this defines the PNO threshold used for the EOS adapted space
+     real(realk) :: EOSPNOthr
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver
@@ -529,13 +539,13 @@ module dec_typedef_module
      !> Number of unoccupied EOS orbitals 
      integer :: nunoccEOS=0
      !> Number of occupied AOS orbitals (for frozen core approx this is only the valence orbitals)
-     integer :: noccAOS=0
+     integer,pointer :: noccAOS
      !> Number of core orbitals in AOS
      integer :: ncore=0
      !> Total number of orbitals (core+valence) in AOS (noccAOS + ncore)
      integer :: nocctot=0
      !> Total number of unoccupied orbitals (AOS)
-     integer :: nunoccAOS=0
+     integer,pointer :: nunoccAOS
 
      !> Pair fragment?
      logical :: pairfrag
@@ -597,6 +607,8 @@ module dec_typedef_module
      !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
 
+     ! NOTE!!! occAOSorb and unoccAOSorb are ILL-DEFINED when fragmentadapted=.true. !!!!
+
      !> Total occupied orbital space (orbital type)
      type(decorbital), pointer :: occAOSorb(:) => null()
      !> Total unoccupied orbital space (orbital type)
@@ -629,6 +641,10 @@ module dec_typedef_module
      !> AO overlap matrix for fragment
      real(realk),pointer :: S(:,:) => null()
 
+     ! Note: Co and Cv will point to CoLOC and CvLOC if local orbitals are used
+     !>      (or whatever the input orbitals are)   OR
+     !>      Co and Cv will point to CoFA and CvFA (when FO=.true.)
+
      !> Occupied MO coefficients (only valence space for frozen core approx)
      real(realk), pointer :: Co(:,:) => null()
      !> Virtual MO coefficients
@@ -647,15 +663,35 @@ module dec_typedef_module
      !> Core-core block of Fock matrix in MO basis  (subset of ppfock when frozen core is NOT used)
      real(realk), pointer :: ccfock(:,:) => null()
 
+     ! Information for local orbitals
+     ! ******************************
+     !> Local occupied MO coefficients
+     real(realk), pointer :: CoLOC(:,:) => null()
+     !> Local virtual MO coefficients
+     real(realk), pointer :: CvLOC(:,:) => null()
+     !> Occ-occ block of Fock matrix in local MO basis  (only valence space for frozen core approx)
+     real(realk), pointer :: ppfockLOC(:,:) => null()
+     !> Virt-virt block of Fock matrix in local MO basis
+     real(realk), pointer :: qqfockLOC(:,:) => null()
+
+
      !> Integral program input
      type(lsitem) :: mylsitem
 
      ! End of EXPENSIVE BOX
      ! ==============================================================
 
+     
+     ! Information for local orbitals
+     ! ******************************
+     !> Number of local occupied orbitals in fragment
+     integer,pointer :: noccLOC
+     !> Number of local unoccupied orbitals in fragment
+     integer,pointer :: nunoccLOC
+     
 
      ! Information used for fragment-adapted orbitals
-     ! *******************************************
+     ! **********************************************
      !> Correlation density matrices in local AOS basis
      real(realk), pointer :: OccMat(:,:) => null()  ! occ AOS-EOS
      real(realk), pointer :: VirtMat(:,:) => null()  ! virt AOS-EOS
@@ -668,19 +704,25 @@ module dec_typedef_module
      !> Is this a fragment-adapted fragment?
      logical :: fragmentadapted
      !> Number of occ orbitals for fragment-adapted orbitals 
-     integer :: noccFA
+     integer,pointer :: noccFA
      !> Number of unocc orbitals for fragment-adapted orbitals 
-     integer :: nunoccFA
+     integer,pointer :: nunoccFA
      !> Transformation between AO basis and fragment-adapted basis
      !> Index 1: Local,   Index 2: Fragment-adapted
      !> Has fragment-adapted MO coeff been set (not done by default fragment initialization)?
      logical :: FAset
-     real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: nbasis,noccFA
-     real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: nbasis,nunoccFA
+     !> Occupied FA coeff
+     real(realk),pointer :: CoFA(:,:) => null()     ! dimension: nbasis,noccFA
+     !> Virtual FA coeff
+     real(realk),pointer :: CvFA(:,:) => null()   ! dimension: nbasis,nunoccFA
      !> Eigenvalues for correlation density matrices 
      !> --> only set for atomic fragments (pairfrag=.false.) and when FAset=.true.
      real(realk),pointer :: CDocceival(:) => null()    ! dimension noccFA
      real(realk),pointer :: CDunocceival(:) => null()  ! dimension nunoccFA
+     !> Occ-occ block of Fock matrix in FO basis  (only valence space for frozen core approx)
+     real(realk), pointer :: ppfockFA(:,:) => null()
+     !> Virt-virt block of Fock matrix in FO basis
+     real(realk), pointer :: qqfockFA(:,:) => null()
 
 
      !> Information used only for the CC2 and CCSD models to describe
@@ -982,6 +1024,15 @@ module dec_typedef_module
     integer, pointer :: packInd(:) 
     
   end type MObatchInfo
+
+  !> AO Integral batch info:
+  type DecAObatchinfo
+     integer :: Dim       ! Dimension of DEC batch of AO batches 
+     integer :: OrbStart  ! First orbital index in DEC batch
+     integer :: OrbEnd    ! Last orbital index in DEC batch
+     integer :: AOStart   ! First AO batch index in DEC batch
+     integer :: AOEnd     ! Last AO batch index in DEC batch
+  end type DecAObatchinfo
 
   !> \brief Grid box handling for analyzing orbitals in specific parts of space
   !> for single precision real grid points
