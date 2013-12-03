@@ -1474,6 +1474,8 @@ C  /* Deck runopt */
       SUBROUTINE RUNOPT(WRKDLM,MXRCRD,EGRAD,CSTEP,SCLVEC,GRDOLD,
      &     GRDMAT,STPMAT,HESOLD,GRDARR,STPARR,GEINFO,WILBMT,
      &     BMTRAN,HESINT,VECMOD,WORK,LWORK)
+        use pe_variables, only: peqm, pe_infld
+        use polarizable_embedding, only: pe_master
 #include "implicit.h"
 #include "dummy.h"
 #include "codata.h"
@@ -1522,11 +1524,14 @@ C
       DIMENSION HESINT(MXRCRD,MXRCRD), VECMOD(MXCOOR)
       DIMENSION WORK(LWORK)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      logical infld_save
 C
       CALL QENTER('RUNOPT')
 C
 C     Initialization of variables.
 C
+      infld_save = pe_infld
+      pe_infld = .false.
       THRLDP = 1.0D-4
       THRIND = 5.0D-4
       TOLST  = 1.0D-5
@@ -2174,6 +2179,15 @@ C
      &          '@ single point energy was calculated: ',ENERGY,' a.u.'
          END IF
          WRITE(LUPRI,*)
+         if (peqm) then
+            if (infld_save) then
+                pe_infld = .true.
+            else
+                pe_infld = .false.
+            end if
+            call pe_master('infld')
+            pe_infld = infld_save
+         end if
 C
          WORK(1) = WRKDLM
          WRINDX = .TRUE.

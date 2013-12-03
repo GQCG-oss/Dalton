@@ -1564,6 +1564,7 @@ C
      &                    denmats=(daosav(:,1) + daosav(:,2)),
      &                    nmats=1, dalwrk=wrk(kfree:lfree))
         end if
+        call pe_master('infld')
         if (pe_sol .and. pe_noneq) then
            call memget('REAL', kfpeao, nnbasx, wrk, kfree, lfree)
            kfpeao_end = kfpeao + nnbasx - 1
