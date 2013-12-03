@@ -52,8 +52,8 @@ H              2.675323   -2.516779   -0.000673
 cat > pehf_fixsol_direct.dal <<'%EOF%'
 **DALTON                                          
 .RUN WAVEFUNCTION                                 
+.PEQM
 *PEQM                                             
-.PEQM                                             
 .FIXPVA                                           
 .MAXTES                                           
  500                                              
@@ -88,7 +88,7 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Convergence test 
 #
-CRIT1=`$GREP "*** DIIS converged in  13 iterations" $log | wc -l`
+CRIT1=`$GREP "*** DIIS converged in  14 iterations" $log | wc -l`
 TEST[2]=`expr $CRIT1 `
 CTRL[2]=1
 ERROR[2]="CONVERGENCE PROBLEM"
