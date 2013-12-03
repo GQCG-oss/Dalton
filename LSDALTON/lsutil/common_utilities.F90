@@ -567,7 +567,7 @@ end subroutine ls_dcopy
       integer, intent(in) :: lupri
       integer             :: luprin
       real(realk) :: CTOT,WTOT
-      integer :: user_exit_code,status
+      integer :: user_exit_code,qqstatus
 !
 !     Stamp date and time and hostname to output
 !
@@ -589,16 +589,10 @@ end subroutine ls_dcopy
 !     Write to stderr
       WRITE (0,'(/A/1X,A)') '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
-      print*,'TRACEBACKQQ:'
-      status = -1
-      user_exit_code = -1
-      CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE,STATUS)
-      print*,'still alive:'
-      
 #ifdef VAR_IFORT
-      status = -1
+      qqstatus = -1
       user_exit_code = -1
-      CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE,STATUS)
+      CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE,qqSTATUS)
 #endif
 
       CALL ls_GETTIM(CTOT,WTOT)
