@@ -1875,6 +1875,9 @@ contains
           ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
 
+       case(MODEL_RPA)
+          call lsquit("ERROR(ccsolver_par): RPA energy not yet implemented",-1)
+
        case default
           call lsquit("ERROR(ccsolver_par):energy expression for your model&
             & not yet implemented",-1)
@@ -1937,6 +1940,7 @@ contains
        call flush(DECinfo%output)
 #endif
 
+        write(*,*) 'JOHANNES RPA print in cc_driver:',ccenergy
         call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,.false.,fragment_job)
 
        last_iter = iter

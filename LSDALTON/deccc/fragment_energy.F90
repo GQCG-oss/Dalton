@@ -12,6 +12,7 @@ module fragment_energy_module
   use memory_handling!, only: mem_alloc,mem_dealloc,collect_thread_memory,&
   !       & mem_TurnOffThread_Memory,mem_TurnONThread_Memory,init_threadmemvar
   use dec_typedef_module
+  use rpa_module
 
 
   ! DEC DEPENDENCIES (within deccc directory)                                                         
@@ -268,7 +269,7 @@ contains
     type(mp2grad),intent(inout),optional :: grad
     type(array2) :: t1, ccsdpt_t1
     type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2
-    real(realk) :: tcpu, twall
+    real(realk) :: tcpu, twall,debugenergy
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -291,6 +292,8 @@ contains
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
        call fragment_ccsolver(MyFragment,t1,t2,VOVO)
+       debugenergy=rpa_energy(t2,VOVO)
+       debugenergy=debugenergy +sosex_contribution(t2,VOVO)
 
 
        ! Extract EOS indices for integrals
@@ -427,6 +430,7 @@ contains
     logical ::  something_wrong
     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     real(realk),pointer :: occ_tmp(:),virt_tmp(:)
+    real(realk) :: prefac_coul,prefac_k
 
     ! Lagrangian energy can be split into four contributions:
     ! The first two (e1 and e2) use occupied EOS orbitals and virtual AOS orbitals.
@@ -472,6 +476,13 @@ contains
     ! Just in case, zero individual orbital contributions for fragment
     MyFragment%OccContribs=0E0_realk
     MyFragment%VirtContribs=0E0_realk
+    if(MyFragment%ccmodel==MODEL_RPA) then
+      prefac_coul=1._realk
+      prefac_k=0.5_realk
+    else
+      prefac_coul=2._realk
+      prefac_k=1._realk
+    endif
 
 
     ! Sanity checks
@@ -535,7 +546,7 @@ contains
                 ! --------------
 
                 ! Energy contribution for orbitals (j,b,i,a)
-                tmp = t2occ%val(a,i,b,j)*(2.0_realk*gocc%val(a,i,b,j) - gocc%val(b,i,a,j))
+                tmp = t2occ%val(a,i,b,j)*(prefac_coul*gocc%val(a,i,b,j) -prefac_k*gocc%val(b,i,a,j))
 
                 ! Update total atomic fragment energy contribution 1
                 e1 = e1 + tmp
@@ -552,7 +563,7 @@ contains
                 ! Skip contribution 2 for anything but MP2
                 if(MyFragment%ccmodel==MODEL_MP2) then
                    ! Multiplier (multiplied by one half)
-                   multaibj = 2.0_realk*t2occ%val(a,i,b,j) - t2occ%val(b,i,a,j)
+                   multaibj = prefac_coul*t2occ%val(a,i,b,j) - prefac_k*t2occ%val(b,i,a,j)
 
                    do c=1,nvirtAOS
 
@@ -628,7 +639,7 @@ contains
                 ! --------------
 
                 ! Multiplier (multiplied by one half)
-                multaibj = 2.0_realk*t2virt%val(a,i,b,j) - t2virt%val(b,i,a,j)
+                multaibj = prefac_coul*t2virt%val(a,i,b,j) -prefac_k*t2virt%val(b,i,a,j)
 
 
                 ! Energy contribution for orbitals (j,b,i,a)
@@ -1040,6 +1051,7 @@ contains
     logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     logical :: something_wrong
+    real(realk) :: prefac_coul,prefac_k
 
 
     ! Pair interaction Lagrangian energy can be split into four contributions:
@@ -1082,6 +1094,13 @@ contains
     ! Distance between fragments in Angstrom
     pairdist = get_distance_between_fragments(Fragment1,Fragment2,natoms,DistanceTable)
     pairdist = bohr_to_angstrom*pairdist
+    if(PairFragment%ccmodel==MODEL_RPA) then
+      prefac_coul = 1._realk
+      prefac_k=0.5_realk
+    else
+      prefac_coul =2._realk
+      prefac_k = 1._realk
+    endif
 
     ! Which "interaction pairs" to include for occ and unocc space (avoid double counting)
     call mem_alloc(dopair_occ,noccEOS,noccEOS)
@@ -1146,14 +1165,14 @@ contains
                 do a=1,nvirtAOS
 
                    ! Update pair interaction energy contribution 1
-                   e1 = e1 + t2occ%val(a,i,b,j)*(2.0_realk*gocc%val(a,i,b,j) - gocc%val(b,i,a,j))
+                   e1 = e1 + t2occ%val(a,i,b,j)*(prefac_coul*gocc%val(a,i,b,j) -prefac_k*gocc%val(b,i,a,j))
 
 
                    ! Skip contribution 2 for anything but MP2
                    if(pairfragment%ccmodel==MODEL_MP2) then
 
                       ! Multiplier (multiplied by one half)
-                      multaibj = 2.0_realk*t2occ%val(a,i,b,j) - t2occ%val(b,i,a,j)
+                      multaibj = prefac_coul*t2occ%val(a,i,b,j) - prefac_k*t2occ%val(b,i,a,j)
 
                       tmp = 0E0_realk
                       do c=1,nvirtAOS
@@ -1207,7 +1226,7 @@ contains
                 if( dopair_virt(a,b) ) then !Dopair3and4
 
                    ! Multiplier (multiplied by one half)
-                   multaibj = 2.0_realk*t2virt%val(a,i,b,j) - t2virt%val(b,i,a,j)
+                   multaibj = prefac_coul*t2virt%val(a,i,b,j) - prefac_k*t2virt%val(b,i,a,j)
 
                    ! Update total atomic fragment energy contribution 3
                    e3 = e3 + multaibj*gvirt%val(a,i,b,j)
@@ -3094,9 +3113,10 @@ end subroutine optimize_atomic_fragment
        ! RPA
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRPA)
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRPA)
-       ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        print *,"JOHANNES: CURRENTLY LAGRANGIAN ENERGY IS NOT CONSIDERED; PLEASE IMPLEMENT"
+       ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
+       !fragment%LagFOP = fragment%energies(FRAGMODEL_LAGRPA)
     case(MODEL_CCSD)
        ! CCSD
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCCSD)
