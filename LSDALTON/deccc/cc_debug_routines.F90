@@ -35,6 +35,8 @@ module cc_debug_routines_module
      real(realk), pointer :: d(:,:)
      logical              :: allocd
    end type SpaceInfo
+   integer,parameter :: SOLVE_AMPLITUDES  = 1
+   integer,parameter :: SOLVE_MULTIPLIERS = 2
    
 
    contains
@@ -83,13 +85,13 @@ module cc_debug_routines_module
 
      call ccsolver_debug(ccmodel,Co_f, Cv_f, fock_f, nbasis, nocc, nvirt, &
         & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
-        & t1_final, t2_final, VOVO, .false.)
+        & t1_final, t2_final, VOVO, .false.,SOLVE_AMPLITUDES)
 
      call array4_free(VOVO)
 
      call ccsolver_debug(ccmodel,Co_f, Cv_f, fock_f, nbasis, nocc, nvirt, &
         & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
-        & t1_final, t2_final, VOVO, .false., m2 = mult2, m1 = mult1)
+        & t1_final, t2_final, VOVO, .false., SOLVE_MULTIPLIERS, m2 = mult2, m1 = mult1)
 
      !call print_norm(mult2%val,int(i8*nvirt*nvirt*nocc*nocc,kind=8))
      !call print_norm(mult1%val,int(i8*nvirt*nocc,kind=8))
@@ -107,7 +109,7 @@ module cc_debug_routines_module
    !  Ettenhuber)
    subroutine ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-        & t1_final,t2_final,VOVO,longrange_singles,m2,m1,use_pnos,fraginfo)
+        & t1_final,t2_final,VOVO,longrange_singles,JOB,m2,m1,use_pnos,fraginfo)
 
      implicit none
 
@@ -144,6 +146,7 @@ module cc_debug_routines_module
      type(array4),intent(inout) :: t2_final
      !> Two electron integrals (a i | b j) stored as (a,i,b,j)
      type(array4),intent(inout) :: VOVO
+     integer,intent(in) :: JOB
     
      type(array4),optional,intent(inout) :: m2
      type(array2),optional,intent(inout) :: m1
@@ -195,6 +198,7 @@ module cc_debug_routines_module
    
      u_pnos   = .false.
      if(present(use_pnos)) u_pnos = use_pnos
+     get_mult = (JOB==SOLVE_MULTIPLIERS)
 
      ! Sanity check 1: Number of orbitals
      if( (nvirt < 1) .or. (nocc < 1) ) then
@@ -211,20 +215,15 @@ module cc_debug_routines_module
         end if
      end if
 
-     if(.not.u_pnos)then
+     if(get_mult)then
 
        ! Sanity check 3: if CCSD multipliers are requested, make sure that both are there
        if((present(m2).and..not.present(m1)).or.(present(m1).and..not.present(m2)))then
          call lsquit("ERROR(ccsolver_debug):requested unkown multipliers",-1)
        endif
+     endif
 
-       ! right now the multipliers can only be calculated for CCSD and without PNO
-       get_mult    = (present(m2).and.present(m1))
-
-     else
-
-       get_mult = .false.
-
+     if(u_pnos)then
        ! Sanity check 4: if PNO use is requested, currently only ccsd is implemented, no
        !multipliers, though 
        if(.not.present(m2))then
@@ -234,8 +233,8 @@ module cc_debug_routines_module
        if( .not.present(fraginfo).and. fragment_job )then
          call lsquit("ERROR(ccsolver_debug):PNO ccsd requires the fragment information if it is a fragment job",-1)
        endif
-
      endif
+
 
 
      MaxSubSpace = DECinfo%ccMaxDIIS
@@ -4902,10 +4901,11 @@ module cc_debug_routines_module
     integer, pointer :: s_idx(:,:,:), s_nidx(:)
     integer :: pno,pno1,pno2,pnv,pnv1,pnv2,Sidx1,Sidx2, ldS1,ldS2, k, l, nidx1, nidx2, spacemax
     character :: tr11,tr12,tr21,tr22
-    logical :: skiptrafo,skiptrafo2
+    logical :: skiptrafo,skiptrafo2,wrong
     type(matrix) :: iFock, Dens
     integer(kind=8) :: maxsize
     real(realk) :: ref(nv**2*no**2),ref1(nv*no)
+    logical, pointer:: touched(:)
 
     p20 = 2.0E0_realk
     p10 = 1.0E0_realk
@@ -4945,6 +4945,8 @@ module cc_debug_routines_module
     call mem_alloc( s_idx,  2       , nspaces , no )
     call mem_alloc( ovf,    no*nv    )
     call mem_alloc( vof,    nv*no    )
+    call mem_alloc( touched, no**2*nspaces)
+    touched = .false.
 
     !===============================================================
     !begin setting up all density matrices and finding the PNO basis
@@ -5055,7 +5057,7 @@ module cc_debug_routines_module
     maxsize=max(max(i8*no,i8*nv)**4,i8*nb*max(nv,nb))
     call mem_alloc( w1, maxsize )
     call mem_alloc( w2, maxsize )
-    call mem_alloc( w3, maxsize )
+    call mem_alloc( w3, 2*maxsize )
     call mem_alloc( w4, maxsize )
 
     !!!!!!!!!!!!!!!!!!!
@@ -5098,27 +5100,27 @@ module cc_debug_routines_module
     call array_reorder_4d( p10, gvvvv, nv, nv, nv, nv, [1,3,2,4], nul, w1  )
     call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,3,2,4], nul, w2  )
     call dgemm( 'n', 'n', nv**2, no**2, nv**2, p10, w1, nv**2, w2, nv**2, nul, w3, nv**2 )
-    !call array_reorder_4d( p10, w3,    nv, nv, no, no, [1,3,2,4], p10, ref )
+    call array_reorder_4d( p10, w3,    nv, nv, no, no, [1,3,2,4], p10, ref )
 
     call print_norm(w3,o2v2,nnorm,.true.)
     call print_norm(ref,o2v2,norm,.true.)
     write(*,*)' DEBUG A2/TOT:',sqrt(nnorm),sqrt(norm)
-    !
-    !!DEBUG: B2 term
-    !!**************
-    !call array_reorder_4d( p10, govov, no, nv, no, nv, [2,4,1,3], nul, w1  ) ! kcld -> cdkl
-    !call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,4,1,3], nul, w2  ) ! cidj -> ijcd
-    !call array_reorder_4d( p10, goooo, no, no, no, no, [2,4,1,3], nul, w3  ) ! kilj -> ijkl
-    !! g(ijkl) + t(ijcd) g(cdkl) = B(klij)
+    
+    !DEBUG: B2 term
+    !**************
+    call array_reorder_4d( p10, govov, no, nv, no, nv, [2,4,1,3], nul, w1  ) ! kcld -> cdkl
+    call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,4,1,3], nul, w2  ) ! cidj -> ijcd
+    call array_reorder_4d( p10, goooo, no, no, no, no, [2,4,1,3], nul, w3  ) ! kilj -> ijkl
+    ! g(ijkl) + t(ijcd) g(cdkl) = B(klij)
     !call dgemm( 'n', 'n', no**2, no**2, nv**2, p10, w2, no**2, w1, nv**2, p10, w3, no**2)
-    !! B(ijkl) t(klab) = B2(ijab) 
-    !call dgemm( 'n', 'n', no**2, nv**2, no**2, p10, w3, no**2, w2, no**2, nul, w1, no**2)
-    !call array_reorder_4d( p10, w1, no, no, nv, nv, [3,1,4,2], p10, ref )
+    ! B(ijkl) t(klab) = B2(ijab) 
+    call dgemm( 'n', 'n', no**2, nv**2, no**2, p10, w3, no**2, w2, no**2, nul, w1, no**2)
+    call array_reorder_4d( p10, w1, no, no, nv, nv, [3,1,4,2], nul, ref )
 
-    !call print_norm(w1,o2v2,nnorm,.true.)
-    !call print_norm(ref,o2v2,norm,.true.)
-    !!write (*,*)' DEBUG B2/TOT:',sqrt(nnorm),sqrt(norm)
-    !
+    call print_norm(w1,o2v2,nnorm,.true.)
+    call print_norm(ref,o2v2,norm,.true.)
+    write (*,*)' DEBUG B2/TOT:',sqrt(nnorm),sqrt(norm)
+    
 
     !!DEBUG: C2 term
     !!**************
@@ -5271,7 +5273,6 @@ module cc_debug_routines_module
       call ass_D1to4( gvovo, p2, [nv,no, nv, no] )
       if(pno_cv(ns)%n==2)then
         p1(:,1,:,1) = p2(:,idx(1),:,idx(2))
-        !p1(:,2,:,1) = p2(:,idx(2),:,idx(1))
       else
         do j=1,pno
           do i=1,pno
@@ -5286,7 +5287,7 @@ module cc_debug_routines_module
       !transform integral contribution, use symmetry  gvovo(aibj) => gvovo(\bar{b} j \bar{a} i)
       call dgemm( 't', 'n', pnv, pno**2*nv, nv, p10, d, nv, w1, nv, nul, w2, pnv )
       call array_reorder_4d( p10, w2, pnv, pno, nv, pno, [3,4,1,2], nul, w1 )
-      call dgemm( 't', 'n', pnv, pno**2*pnv, nv, p10, d, nv, w1, nv, nul, o, pnv )
+      !call dgemm( 't', 'n', pnv, pno**2*pnv, nv, p10, d, nv, w1, nv, nul, o, pnv )
      
       !A2.2
       !transform to basis of space gvvvv(acbd) => gvvvv(\bar{a}\bar{c}\bar{b}\bar{d})
@@ -5295,16 +5296,18 @@ module cc_debug_routines_module
       call dgemm( 't', 'n', nv*pnv**2, pnv, nv, p10, w2   , nv, d, nv, nul, w1, nv*pnv**2 )
       call dgemm( 't', 'n', pnv**3,    pnv, nv, p10, w1   , nv, d, nv, nul, w2, pnv**3    )
       !end transformation, integrals are now in the order gvvvv(\bar{a}\bar{c}\bar{b}\bar{d})
-
       !reorder corresponding integrals (w1) to gvvvv(\bar{a}\bar{b}\bar{c}\bar{d})and 
-      !amplitudes to t((\bar{c}\bar{d} i j)
       call array_reorder_4d( p10, w2, pnv, pnv, pnv, pnv, [1,3,2,4], nul, w1 )
-      call array_reorder_4d( p10, t,  pnv, pno, pnv, pno, [1,3,2,4], nul, w2 )
-     
-      !contract the amplitudes and integrals to get the A2.2 contribution
-      call dgemm( 'n', 'n', pnv**2, pno**2, pnv**2, p10, w1, pnv**2, w2, pnv**2, nul, w3, pnv**2 )
-      !call array_reorder_4d( p10, w3, pnv, pnv, pno, pno, [1,3,2,4], p10, o )
 
+      if(pno_cv(ns)%n==2)then
+        !call dgemv('n',pnv**2,pnv**2,p10,w1,pnv**2,t,1,p10,o,1)
+      else
+        !amplitudes to t((\bar{c}\bar{d} i j)
+        call array_reorder_4d( p10, t,  pnv, pno, pnv, pno, [1,3,2,4], nul, w2 )
+        !contract the amplitudes and integrals to get the A2.2 contribution
+        call dgemm( 'n', 'n', pnv**2, pno**2, pnv**2, p10, w1, pnv**2, w2, pnv**2, nul, w3, pnv**2 )
+        !call array_reorder_4d( p10, w3, pnv, pnv, pno, pno, [1,3,2,4], p10, o )
+      endif
       
       !!!!!!!!!!!!!!!!!!!!!!!!!
       !!!  E2 Term part 1!!!!!! -- continued in the following loop and after the loop
@@ -5318,136 +5321,238 @@ module cc_debug_routines_module
       call dgemm('n','n',pnv,pnv,nv,p10, w1,pnv,d,nv,nul,w4,pnv)
       
       
-      !FullSpaceLoop1: do ns2 = 1, nspaces
+      FullSpaceLoop1: do ns2 = 1, nspaces
 
 
-      !  if(.not.pno_cv(ns2)%allocd)then
+        if(.not.pno_cv(ns2)%allocd)then
 
-      !    cycle FullSpaceLoop1
+          cycle FullSpaceLoop1
 
-      !  endif
-      !  
+        endif
+        
 
-      !  !Get the overlap identificaton and transformation props
-      !  call get_overlap_ptr(ns,ns2,pno_S,tr11,tr12,skiptrafo,S1,ldS1)
+        !Get the overlap identificaton and transformation props
+        call get_overlap_ptr(ns,ns2,pno_S,tr11,tr12,skiptrafo,S1,ldS1)
 
-      !  d1   => pno_cv(ns2)%d
-      !  t21  => pno_t2(ns2)%elm1
-      !  idx1 => pno_cv(ns2)%iaos
-      !  pnv1 =  pno_cv(ns2)%ns2
-      !  pno1 =  pno_cv(ns2)%pno
-
-
-      !  !!!!!!!!!!!!!!!!!!!!!!!!!
-      !  !!!  E2 Term part1!!!!!!! - quadratic contribution
-      !  !!!!!!!!!!!!!!!!!!!!!!!!!
-
-      !  !Get the integral contribution, sort it first like the integrals then transform it, govov
-      !  call ass_D1to4( w1,    p1, [pno1,nv,pno1,nv] )
-      !  call ass_D1to4( govov, p2, [no,   nv,no, nv] )
-      !  if(pno_cv(ns2)%n==2)then
-      !    p1(1,:,2,:) = p2(idx1(1),:,idx1(2),:)
-      !    p1(2,:,1,:) = p2(idx1(2),:,idx1(1),:)
-      !  else
-      !    do j=1,pno1
-      !      do i=1,pno1
-      !        p1(i,:,j,:) = p2(idx1(i),:,idx1(j),:)
-      !      enddo
-      !    enddo
-      !  endif
-      !  p1 => null()
-      !  p2 => null()
-      !  
-      !  !transform integral contribution, use symmetry  govov(ldkc) => govov(\bar{d} k l  \bar{c}) to the space of (ij) -> w2
-      !  call dgemm( 'n', 'n', nv*pno1**2, pnv, nv, p10, w1, nv*pno1**2, d, nv, nul, w2, nv*pno1**2 )
-      !  call array_reorder_4d( p10, w2, pno1, nv, pno1, pnv, [2,3,1,4], nul, w3 )
-      !  call dgemm( 't', 'n', pnv1, pno1**2*pnv, nv, p10, d1, nv, w3, nv, nul, w1, pnv1 )
-
-      !  ! Quadratic part of the E2 term use u^{bd}_{kl} (bkdl) as b,dkl
-      !  call array_reorder_4d( p20, t21, pnv1, pno1, pnv1, pno1, [1,3,2,4], nul, w3)
-      !  call array_reorder_4d( m10, t21, pnv1, pno1, pnv1, pno1, [3,1,2,4], p10, w3)
-      !  h1 => w3
-      !  if(.not. skiptrafo)then
-      !    call dgemm(tr12,'n', pnv, pno1*pnv1*pno1,pnv1, p10, S1, ldS1,w3,pnv1,nul,w2,pnv)
-      !    h1 => w2
-      !  endif
-
-      !  !contract amplitudes in h1 with integrals in w1 and add to w4 : -1 * h1(bdkl) w1(dlkc) += w4(bc)
-      !  call dgemm('n','n',pnv,pnv,pnv1*pno1*pno1,m10, h1,pnv,w1,pnv1*pno1*pno1,p10,w4,pnv)
-
-      !  h1 => null()
+        d1   => pno_cv(ns2)%d
+        t21  => pno_t2(ns2)%elm1
+        idx1 => pno_cv(ns2)%iaos
+        pnv1 =  pno_cv(ns2)%ns2
+        pno1 =  pno_cv(ns2)%pno
 
 
-      !  !!!!!!!!!!!!!!!!!!!!!!!!!
-      !  !!!  B2 Term !!!!!!!!!!!!
-      !  !!!!!!!!!!!!!!!!!!!!!!!!!
-      !  
-      !  !Get the integral contribution, sort it first like the integrals then transform it, govov
-      !  call ass_D1to4( w1,    p1, [pno1,nv,pno1,nv] )
-      !  call ass_D1to4( govov, p2, [no,  nv,no,  nv] )
-      !  if(pno_cv(ns2)%n==2)then
-      !    p1(1,:,2,:) = p2(idx1(1),:,idx1(2),:)
-      !    p1(2,:,1,:) = p2(idx1(2),:,idx1(1),:)
-      !  else
-      !    do j=1,pno1
-      !      do i=1,pno1
-      !        p1(i,:,j,:) = p2(idx1(i),:,idx1(j),:)
-      !      enddo
-      !    enddo
-      !  endif
-      !  p1 => null()
-      !  p2 => null()
-      !  !transform integral contribution, use symmetry  govov(kcld) => govov(\bar{c} \bar{d} k l) to the space of (ij) -> w2
-      !  call dgemm( 'n', 'n', nv*pno1**2, pnv, nv, p10, w1, nv*pno1**2, d, nv, nul, w2, nv*pno1**2 )
-      !  call array_reorder_4d( p10, w2, pno1, nv, pno1, pnv, [2,4,1,3], nul, w1 )
-      !  call dgemm( 't', 'n', pnv, pno1**2*pnv, nv, p10, d, nv, w1, nv, nul, w2, pnv )
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!  E2 Term part1!!!!!!! - quadratic contribution
+        !!!!!!!!!!!!!!!!!!!!!!!!!
 
-      !  !prepare 4 occupied integral goooo for B2 term
-      !  call ass_D1to4( w3,    p1, [pno,pno,pno1,pno1] )
-      !  call ass_D1to4( goooo, p2, [ no, no,  no,  no] )
-      !  do j=1,pno1
-      !  do b=1,pno
-      !    do i=1,pno1
-      !    do a=1,pno
-      !      p1(a,b,i,j) = p2(idx1(i),idx(a),idx1(j),idx(b))
-      !    enddo
-      !    enddo
-      !  enddo
-      !  enddo
+        !Get the integral contribution, sort it first like the integrals then transform it, govov
+        call ass_D1to4( w1,    p1, [pno1,nv,pno1,nv] )
+        call ass_D1to4( govov, p2, [no,   nv,no, nv] )
+        if(pno_cv(ns2)%n==2)then
+          p1(1,:,1,:) = p2(idx1(1),:,idx1(2),:)
+        else
+          do j=1,pno1
+            do i=1,pno1
+              p1(i,:,j,:) = p2(idx1(i),:,idx1(j),:)
+            enddo
+          enddo
+        endif
+        p1 => null()
+        p2 => null()
+        
+        !transform integral contribution, use symmetry  govov(ldkc) => govov(\bar{d} k l  \bar{c}) to the space of (ij) -> w2
+        call dgemm( 'n', 'n', nv*pno1**2, pnv, nv, p10, w1, nv*pno1**2, d, nv, nul, w2, nv*pno1**2 )
+        call array_reorder_4d( p10, w2, pno1, nv, pno1, pnv, [2,3,1,4], nul, w3 )
+        call dgemm( 't', 'n', pnv1, pno1**2*pnv, nv, p10, d1, nv, w3, nv, nul, w1, pnv1 )
 
-      !  !sort the amplitudes and contract cidj -> ijcd, ijcd cdkl + ijkl = ijkl
-      !  call array_reorder_4d( p10, t, pnv, pno, pnv, pno, [2,4,1,3], nul, w1 )
-      !  call dgemm( 'n', 'n', pno**2, pno1**2, pnv**2, p10, w1, pno**2, w2, pnv**2, p10, w3, pno**2 )
+        ! Quadratic part of the E2 term use u^{bd}_{kl} (bkdl) as b,dkl
+        call array_reorder_4d( p20, t21, pnv1, pno1, pnv1, pno1, [1,3,2,4], nul, w3)
+        call array_reorder_4d( m10, t21, pnv1, pno1, pnv1, pno1, [3,1,2,4], p10, w3)
+        h1 => w3
+        if(.not. skiptrafo)then
+          call dgemm(tr12,'n', pnv, pno1*pnv1*pno1,pnv1, p10, S1, ldS1,w3,pnv1,nul,w2,pnv)
+          h1 => w2
+        endif
 
-      !  !contract the B intermediate in w3 with the amplitudes (kl) from the
-      !  !inner loop and use the overlap to transform to the omega space, ijkl klab
-      !  call array_reorder_4d( p10, t21, pnv1, pno1, pnv1, pno1, [2,4,1,3], nul, w1 )
+        !contract amplitudes in h1 with integrals in w1 and add to w4 : -1 * h1(bdkl) w1(dlkc) += w4(bc)
+        call dgemm('n','n',pnv,pnv,pnv1*pno1*pno1,m10, h1,pnv,w1,pnv1*pno1*pno1,p10,w4,pnv)
 
-      !  call dgemm( 'n', 'n', pno**2, pnv1**2, pno1**2, p10, w3, pno**2, w1, pno1**2, nul, w2, pno**2 )
+        h1 => null()
 
-      !  ! transform back, or in the case of ns==ns2 just order correctly
-      !  if(skiptrafo)then
-      !    call array_reorder_4d( p10, w2, pno, pno, pnv, pnv, [3,1,4,2], nul, w1 )
-      !  else
-      !    call dgemm( 'n', tr11, pno**2*pnv1, pnv, pnv1, p10, w2, pno**2*pnv1, S1, ldS1, nul, w1, pno**2*pnv1)
-      !    call array_reorder_4d( p10, w1, pno, pno, pnv1, pnv, [3,1,4,2], nul, w3 )
-      !    call dgemm( tr12, 'n', pnv, pnv*pno**2, pnv1, p10, S1, ldS1, w3, pnv1, nul, w1, pnv)
-      !  endif
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!  B2 Term !!!!!!!!!!!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        
+        !Get the integral contribution, sort it first like the integrals then transform it, govov
+        call ass_D1to4( w1,    p1, [pno1,nv,pno1,nv] )
+        call ass_D1to4( govov, p2, [no,  nv,no,  nv] )
+        if(pno_cv(ns2)%n==2)then
+          p1(1,:,1,:) = p2(idx1(1),:,idx1(2),:)
+        else
+          do j=1,pno1
+            do i=1,pno1
+              p1(i,:,j,:) = p2(idx1(i),:,idx1(j),:)
+            enddo
+          enddo
+        endif
+        p1 => null()
+        p2 => null()
+        !transform integral contribution, use symmetry  govov(kcld) => govov(\bar{c} \bar{d} k l) to the space of (ij) -> w2
+        call dgemm( 'n', 'n', nv*pno1**2, pnv, nv, p10, w1, nv*pno1**2, d, nv, nul, w2, nv*pno1**2 )
+        call array_reorder_4d( p10, w2, pno1, nv, pno1, pnv, [2,4,1,3], nul, w1 )
+        call dgemm( 't', 'n', pnv, pno1**2*pnv, nv, p10, d, nv, w1, nv, nul, w2, pnv )
+
+        !prepare 4 occupied integral goooo for B2 term
+        call ass_D1to4( w3(1:pno**2*pno1**2), p1, [pno,pno,pno1,pno1] )
+        call ass_D1to4( goooo, p2, [ no, no,  no,  no] )
+        call ass_D1to4( w3(pno**2*pno1**2+1:2*(pno**2*pno1**2)), p3, [pno,pno,pno1,pno1] )
+
+        if(pno_cv(ns2)%n>2.or.pno_cv(ns)%n>2)then
+          print *,ns,pno_cv(ns)%n,ns2,pno_cv(ns2)%n,"doing",idx(1:pno_cv(ns)%n),idx1(1:pno_cv(ns2)%n)
+        endif
+        if(pno_cv(ns2)%n==2.or.pno_cv(ns)%n==2)then
+
+          if(pno_cv(ns2)%n==2.and.pno_cv(ns)%n==2)then
+
+            if(touched(idx1(2)+(idx1(1)-1)*no+(ns-1)*no**2) .or.&
+            & touched(idx1(1)+(idx1(2)-1)*no+(ns-1)*no**2))then
+              print *,"already one"
+            endif
+            p1(1,1,1,1) = p2(idx1(1),idx(1),idx1(2),idx(2))
+            p3(1,1,1,1) = p2(idx1(2),idx(1),idx1(1),idx(2))
+            touched(idx1(2)+(idx1(1)-1)*no+(ns-1)*no**2) = .true.
+            touched(idx1(1)+(idx1(2)-1)*no+(ns-1)*no**2) = .true.
+
+          elseif(pno_cv(ns2)%n/=2.and.pno_cv(ns)%n==2)then
+
+            do j=1,pno1
+              do i=1,pno1
+                if(touched(idx1(i)+(idx1(j)-1)*no+(ns-1)*no**2))then
+                  print *,"already two"
+                endif
+                p1(1,1,i,j) = p2(idx1(i),idx(1),idx1(j),idx(2))
+                touched(idx1(i)+(idx1(j)-1)*no+(ns-1)*no**2) = .true.
+              enddo
+            enddo
+
+          elseif(pno_cv(ns2)%n==2.and.pno_cv(ns)%n/=2)then
+
+            if(touched(idx1(1)+(idx1(2)-1)*no+(ns-1)*no**2).or.&
+               touched(idx1(2)+(idx1(1)-1)*no+(ns-1)*no**2))then
+              print *,"already three"
+            endif
+            do b=1,pno
+              do a=1,pno
+                p1(a,b,1,1) = p2(idx1(1),idx(a),idx1(2),idx(b))
+                p3(a,b,1,1) = p2(idx1(2),idx(a),idx1(1),idx(b))
+              enddo
+            enddo
+            touched(idx1(1)+(idx1(2)-1)*no+(ns-1)*no**2) = .true.
+            touched(idx1(2)+(idx1(1)-1)*no+(ns-1)*no**2) = .true.
+
+          else
+            call lsquit("ERROR(pno_style)wrong selection",-1)
+          endif
+
+        else
+
+          do j=1,pno1
+          do i=1,pno1
+            if(touched(idx1(i)+(idx1(j)-1)*no+(ns-1)*no**2))then
+                print *,"already four"
+            endif
+            do b=1,pno
+            do a=1,pno
+              p1(a,b,i,j) = p2(idx1(i),idx(a),idx1(j),idx(b))
+            enddo
+            enddo
+            touched(idx1(i)+(idx1(j)-1)*no+(ns-1)*no**2) = .true.
+          enddo
+          enddo
+
+        endif
+
+        p1 => null()
+        p2 => null()
+        p3 => null()
+
+        !sort the amplitudes and contract cidj -> ijcd, ijcd cdkl + ijkl = ijkl
+        call array_reorder_4d( p10, t, pnv, pno, pnv, pno, [2,4,1,3], nul, w1 )
+        !call dgemm( 'n', 'n', pno**2, pno1**2, pnv**2, p10, w1, pno**2, w2, pnv**2, p10, w3, pno**2 )
+
+        
+
+        !contract the B intermediate in w3 with the amplitudes (kl) from the
+        !inner loop and use the overlap to transform to the omega space, ijkl klab
+        call array_reorder_4d( p10, t21, pnv1, pno1, pnv1, pno1, [2,4,1,3], nul, w1 )
+
+        call dgemm( 'n', 'n', pno**2, pnv1**2, pno1**2, p10, w3, pno**2, w1, pno1**2, nul, w2, pno**2 )
+
+        !if the summation in the kl are restricted to k<l then add the ba
+        !contribution as well
+        if(pno_cv(ns2)%n==2.and.pno_cv(ns)%n==2)then
+          print *,"EXTRATRAFO",pno_cv(ns2)%n==2,pno_cv(ns)%n==2,ns2,ns
+          call array_reorder_4d( p10, t21, pnv1, pno1, pnv1, pno1, [4,2,3,1], nul, w1 )
+          call dgemm( 'n', 'n', pno**2, pnv1**2, pno1**2, p10, w3(pno**2*pno1**2+1), pno**2, w1, pno1**2, p10, w2, pno**2 )
+        endif
+
+
+        ! transform back, or in the case of ns==ns2 just order correctly
+        if(skiptrafo)then
+          call array_reorder_4d( p10, w2, pno, pno, pnv, pnv, [3,1,4,2], nul, w1 )
+        else
+          call dgemm( 'n', tr11, pno**2*pnv1, pnv, pnv1, p10, w2, pno**2*pnv1, S1, ldS1, nul, w1, pno**2*pnv1)
+          call array_reorder_4d( p10, w1, pno, pno, pnv1, pnv, [3,1,4,2], nul, w3 )
+          call dgemm( tr12, 'n', pnv, pnv*pno**2, pnv1, p10, S1, ldS1, w3, pnv1, nul, w1, pnv)
+        endif
    
-      !  ! add up the correcly ordered contributions
-      !  !o = o + w1(1:pno**2*pnv**2)
-  
+        ! add up the correcly ordered contributions
+        o = o + w1(1:pno**2*pnv**2)
 
-      !  d1   => null()
-      !  t21  => null()
-      !  idx1 => null()
-      !  S1   => null()
-      !  pnv1 =  0
-      !  pno1 =  0
+        d1   => null()
+        t21  => null()
+        idx1 => null()
+        S1   => null()
+        pnv1 =  0
+        pno1 =  0
 
-      !enddo FullSpaceLoop1
+      enddo FullSpaceLoop1
 
+      call ass_D1to4(ref,p1,[nv,no,nv,no])
+      wrong = .false.
+      if(pno_cv(ns)%n==2)then
+        i=idx(1)
+        j=idx(2)
+        do a=1,pnv
+          do b=1,pnv
+            if(abs((pno_o2(ns)%elm4(b,1,a,1)-p1(a,i,b,j)))>1.0E-12)then
+              print *,"Wrong el in pair 1",a,i,b,j,pno_o2(ns)%elm4(b,1,a,1),p1(a,i,b,j)
+              wrong = .true.
+            endif
+            if(abs((pno_o2(ns)%elm4(a,1,b,1)-p1(a,j,b,i)))>1.0E-12)then
+              print *,"Wrong el in pair 2",a,i,b,j,pno_o2(ns)%elm4(a,1,b,1),p1(a,j,b,i)
+              wrong =.true.
+            endif
+          enddo
+        enddo
+      else
+        do j=1,pno
+          do i=1,pno
+            do b=1,pnv
+              do a=1,pnv
+                if(abs(pno_o2(ns)%elm4(a,i,b,j)-p1(a,idx(i),b,idx(j)))>1.0E-12)then
+                  print *,"Wrong el in space",a,i,b,j,pno_o2(ns)%elm4(a,i,b,j),p1(a,idx(i),b,idx(j))
+                  wrong =.true.
+                endif
+              enddo
+            enddo
+          enddo
+        enddo
+      endif
+      p1=>null()
 
+      if(wrong)stop 0
       !Add the E21 contribution
       call array_reorder_4d( p10, t, pnv, pno, pnv, pno, [3,4,1,2], nul, w1)
       call dgemm('n','n',pnv,pno*pnv*pno,pnv,p10,w4,pnv,w1,pnv,nul,w2,pnv)
@@ -5985,6 +6090,15 @@ module cc_debug_routines_module
     enddo LoopContribs
     
 
+    do i=1,nspaces
+      do a=1,no
+        do b=1,no
+          if(.not.touched(b+(a-1)*no+(i-1)*no**2))then
+            print *,"not touched",b,a,i
+          endif
+        enddo
+      enddo
+    enddo
    
     call ass_D2to1(o1,o,[nv,no])
 
@@ -6105,6 +6219,20 @@ module cc_debug_routines_module
     !this subroutine assumes that symmetrization has already occured and only a
     !backtransformation to the original space is carried out
     call backtransform_omegas(pno_o2,pno_cv,o2,nspaces,no,nv)
+
+    call ass_D1to4(ref,p1,[nv,no,nv,no])
+    do a=1,nv
+      do i=1,no
+        do b=1,nv
+          do j=1,no
+            if(abs(o2(a,i,b,j)-p1(a,i,b,j))>1.0E-12)then
+              print *,"Wrong el in residual",a,i,b,j
+            endif
+          enddo
+        enddo
+      enddo
+    enddo
+    p1=>null()
 
     call print_norm(o2,o2v2)
     stop 0
@@ -6343,7 +6471,7 @@ module cc_debug_routines_module
         !symmetrized contribution in pno_o2 we can add up without taking care
         call ass_D1to4(tmp1,w1,[nv,pno,nv,pno])
 
-        if(pno/=2)then
+        if(pno_cv(ns)%n/=2)then
           do j = 1, pno
             do b = 1, nv
               do i = 1, pno
@@ -6450,7 +6578,7 @@ module cc_debug_routines_module
 
         call ass_D1to4(tmp1,w1,[nv,pno,nv,pno])
 
-        if(pno==2)then
+        if(cv(nn)%n==2)then
 
           i = cv(nn)%iaos(1)
           j = cv(nn)%iaos(2)
