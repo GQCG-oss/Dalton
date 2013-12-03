@@ -59,7 +59,7 @@ module ccsd_module
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
-         & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ
+         & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ,get_cnd_terms_mo
     private
 
   interface Get_AOt1Fock
