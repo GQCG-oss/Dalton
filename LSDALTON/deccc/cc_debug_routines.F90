@@ -503,9 +503,43 @@ module cc_debug_routines_module
            omega2(iter) = array4_init(ampl4_dims)
         endif
 
-        ! get singles
-        
-        T1Related : if(DECinfo%use_singles) then
+        ! GET SINGLES:
+        !
+        ! For CCSD small_frag: 
+        !   - Get T1 transformation matrices
+        !   - Get delta Fock matrix for long range correction
+        !   - Initialize MO Fock matrices
+        !   - Get iajb for energy (to be deleted later)
+        if (small_frag.and.(CCmodel==MODEL_CCSD)) then 
+          call getT1transformation(t1(iter),xocc,xvirt,yocc,yvirt,Co,Cv,Co2,Cv2)
+          ! Note: If not fock_with_ri or ccsd_old, then the relevant
+          ! ifock is calculated below in get_ccsd_residual_integral_direct.
+          ! Long range fock matrix correction using old scheme
+          ! (See comments above regarding Fock correction)
+          if(iter == 1) then
+             ! get inactive fock
+             if(DECinfo%fock_with_ri) then
+                ! Debug mode
+                ifock = getInactiveFockFromRI(l_ao,xocc,yocc,h1)
+             else
+                ifock = getInactiveFock_simple(h1,gao,xocc,yocc,nocc,nbasis)
+             end if
+             ! calculate fock correction in first iteration
+             write(DECinfo%output,'(a)') 'long range fock correction requested'
+             if(fragment_job) then
+                delta_fock = getFockCorrection(fock,ifock)
+             else ! full molecule: correction is zero by definition
+                delta_fock= array2_init(ao2_dims)
+             end if
+          end if
+          ppfock = array2_init(occ_dims)
+          pqfock = array2_init([nocc, nvirt])
+          qpfock = array2_init([nvirt, nocc])
+          qqfock = array2_init(virt_dims)
+          iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
+        end if
+       
+        T1Related : if(DECinfo%use_singles.and.(.not.small_frag)) then
 
            ! get the T1 transformation matrices
            if(.not.get_mult)then
@@ -594,10 +628,10 @@ module cc_debug_routines_module
            !> call CCSD code for small fragment:
            else if (small_frag) then
 
-              if(get_mult.or.u_pnos)then
-                call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
-                &and use_pnos should be true at the same time",-1)
-              endif
+             if(get_mult.or.u_pnos)then
+               call lsquit("ERROR(cc_driver_debug):only one of get_mult,small_frag &
+               &and use_pnos should be true at the same time",-1)
+             endif
 
              ! reorder array like in Patrick's code
              call array4_reorder(t2(iter),[1,3,2,4]) ! -> t2[ab,ij]
@@ -605,8 +639,10 @@ module cc_debug_routines_module
             
              call get_ccsd_residual_small_frag(pack_gmo,t1(iter)%val,omega1(iter)%val, &
                   & t2(iter)%val,omega2(iter)%val,govov,nbasis,nocc,nvirt,iter,MOinfo, & 
-                  & mylsitem,xocc%val,xvirt%val,yocc%val,yvirt%val,delta_fock%val)
+                  & mylsitem,xocc%val,xvirt%val,yocc%val,yvirt%val,delta_fock%val, &
+                  & ppfock%val,pqfock%val,qpfock%val,qqfock%val)
             
+
              ! restor previous order:
              call array4_reorder(omega2(iter),[1,3,2,4]) ! -> om2[ai,bj]
              call array4_reorder(t2(iter),[1,3,2,4]) ! -> t2[ai,bj]
@@ -666,9 +702,9 @@ module cc_debug_routines_module
              call getDoublesResidualCCSD_simple(omega2(iter),t2(iter),u,gao,aibj,iajb,nocc,nvirt, &
                   ppfock,qqfock,xocc,xvirt,yocc,yvirt)
 
+             call array4_free(aibj)
+             call array4_free(u)
            endif
-           call array4_free(aibj)
-           call array4_free(u)
 
 
         elseif(CCmodel==MODEL_RPA) then
@@ -2590,8 +2626,7 @@ module cc_debug_routines_module
   !
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine get_packed_gmo(MyLsItem,Co,Cv,pack_gmo, &
-             & nbas,nocc,nvir,MOinfo)
+  subroutine get_packed_gmo(MyLsItem,Co,Cv,pack_gmo,nbas,nocc,nvir,MOinfo)
 
     implicit none
 
@@ -2606,6 +2641,7 @@ module cc_debug_routines_module
     integer :: pack_scheme
 
     !> variables used for MO batch and integral transformation
+    integer :: ntot ! total number of MO
     real(realk), pointer :: Cov(:,:)
     real(realk), pointer :: gmo(:)
     integer(kind=long) :: gmosize, min_mem
@@ -2710,9 +2746,10 @@ module cc_debug_routines_module
     nullify(MOinfo%packInd)
    
     ! Get full MO coeficients:
-    call mem_alloc(Cov,nbas,nbas)
+    ntot = nocc + nvir
+    call mem_alloc(Cov,nbas,ntot)
     Cov(:,:nocc)       = Co
-    Cov(:,nocc+1:nbas) = Cv
+    Cov(:,nocc+1:ntot) = Cv
 
 
     !==================================================
@@ -2806,11 +2843,11 @@ module cc_debug_routines_module
 
     select case (pack_scheme) 
       case (0)
-        pack_gmosize = int(i8*nbas*nbas*nbas*nbas, kind=long) 
+        pack_gmosize = int(i8*ntot*ntot*ntot*ntot, kind=long) 
       case (1)
-        pack_gmosize = int(i8*nbas*nbas*(nbas*nbas+1)/2, kind=long)
+        pack_gmosize = int(i8*ntot*ntot*(ntot*ntot+1)/2, kind=long)
       case (2)
-        pack_gmosize = int(i8*nbas*(nbas+1)*nbas*(nbas+1)/4, kind=long)
+        pack_gmosize = int(i8*ntot*(ntot+1)*ntot*(ntot+1)/4, kind=long)
       case default
         call lsquit('This pack scheme is not yet implemented',DECinfo%output)
     end select
@@ -2825,27 +2862,27 @@ module cc_debug_routines_module
 
     ! get free memory and minimum required memory:
     call get_currently_available_memory(MemFree)
-    call get_min_required_mem(nbas,nocc,nvir,MaxActualDimAlpha,MaxActualDimGamma,MemNeed)
+    call get_min_required_mem(ntot,nocc,nvir,MaxActualDimAlpha,MaxActualDimGamma,MemNeed)
     print *, 'MEM AVAILABLE', MemFree-MemNeed
  
     ! get MO batches size:
     ! DEBUG HACK !!!!
     if (DECinfo%cc_driver_debug) then
       dimP = 4
-      Nbatch = (nbas-1)/dimP + 1
+      Nbatch = (ntot-1)/dimP + 1
     else 
       min_mem = int(MemNeed*1.024E3_realk**3/8.0E0_realk, kind=long)
-      call get_MO_batches_size(min_mem, nbas, Nbatch, dimP, (4*nbas*nbas + nocc*nbas), &
-                      & (MaxActualDimAlpha*nbas*nbas + 3*nocc*nvir*nbas + nocc*nocc*nbas))
+      call get_MO_batches_size(min_mem, ntot, Nbatch, dimP, (4*ntot*ntot + nocc*ntot), &
+                      & (MaxActualDimAlpha*ntot*ntot + 3*nocc*nvir*ntot + nocc*nocc*ntot))
     end if
     print *, 'test: dimP, Nbatch', dimP, Nbatch
  
-    gmosize = int(i8*dimP*dimP*nbas*nbas,kind=long)
+    gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
     call mem_alloc(gmo,gmosize)
 
 
     MOinfo%nbatch = Nbatch
-    call get_MO_batches_info(MOinfo, dimP, nbas)
+    call get_MO_batches_info(MOinfo, dimP, ntot)
 
 
     ! *******************************************************
@@ -2923,12 +2960,12 @@ module cc_debug_routines_module
          Q_sta  = MOinfo%StartInd2(PQ_batch)
          dimQ   = MOinfo%DimInd2(PQ_batch)
 
-         call gao_to_gmo(gmo, gao, Cov, nbas, AlphaStart, dimAlpha, &
+         call gao_to_gmo(gmo, gao, Cov, nbas, ntot, AlphaStart, dimAlpha, &
                         & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
 
          ipack = MOinfo%packInd(PQ_batch)
 
-         call pack_and_add_gmo(gmo,pack_gmo(ipack:),nbas,dimP,dimQ, &
+         call pack_and_add_gmo(gmo,pack_gmo(ipack:),ntot,dimP,dimQ, &
                                & P_sta, Q_sta, dimPack, pack_scheme)
         
          MOinfo%packInd(PQ_batch+1) = ipack + dimPack 
@@ -3033,15 +3070,15 @@ module cc_debug_routines_module
   !           
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine gao_to_gmo(gmo, gao, Cov, nbas, AlphaStart, dimAlpha, &
+  subroutine gao_to_gmo(gmo, gao, Cov, nbas, ntot, AlphaStart, dimAlpha, &
              & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
 
     implicit none
 
     integer, intent(in) :: nbas, AlphaStart, dimAlpha, GammaStart, dimGamma
-    integer, intent(in) :: P_sta, dimP, Q_sta, dimQ
-    real(realk), intent(inout) :: gmo(dimP*dimQ*nbas*nbas)
-    real(realk), intent(in) :: gao(dimAlpha*nbas*dimGamma*nbas), Cov(nbas,nbas)
+    integer, intent(in) :: ntot, P_sta, dimP, Q_sta, dimQ
+    real(realk), intent(inout) :: gmo(dimP*dimQ*ntot*ntot)
+    real(realk), intent(in) :: gao(dimAlpha*nbas*dimGamma*nbas), Cov(nbas,ntot)
 
     integer :: AlphaEnd, GammaEnd, P_end, Q_end
     integer(kind=long) :: tmp1_size, tmp2_size
@@ -3070,27 +3107,27 @@ module cc_debug_routines_module
     CQ = Cov(GammaStart:GammaEnd,Q_sta:Q_end)
 
     ! transfo 1st index => [R, delta, alphaB, gammaB]
-    call dgemm('t','n',nbas,nbas*dimAlpha*dimGamma,nbas,1.0E0_realk, &
-         & Cov,nbas,gao,nbas,0.0E0_realk,tmp1,nbas)
+    call dgemm('t','n',ntot,nbas*dimAlpha*dimGamma,nbas,1.0E0_realk, &
+         & Cov,nbas,gao,nbas,0.0E0_realk,tmp1,ntot)
     call lsmpi_poke() 
 
     ! transfo last index => [R, delta, alphaB, Q_batch]
-    call dgemm('n','n',nbas*nbas*dimAlpha,dimQ,dimGamma,1.0E0_realk, &
-         & tmp1,nbas*nbas*dimAlpha,CQ,dimGamma,0.0E0_realk,tmp2,nbas*nbas*dimAlpha)
+    call dgemm('n','n',ntot*nbas*dimAlpha,dimQ,dimGamma,1.0E0_realk, &
+         & tmp1,ntot*nbas*dimAlpha,CQ,dimGamma,0.0E0_realk,tmp2,ntot*nbas*dimAlpha)
     call lsmpi_poke()
 
     ! transpose array => [alphaB Q_batch; R delta]
-    call mat_transpose(nbas*nbas,dimAlpha*dimQ,1.0E0_realk,tmp2,0.0E0_realk,tmp1)
+    call mat_transpose(ntot*nbas,dimAlpha*dimQ,1.0E0_realk,tmp2,0.0E0_realk,tmp1)
     call lsmpi_poke() 
  
     ! transfo 1st index => [P_batch, Q_batch, R, delta]
-    call dgemm('t','n',dimP,dimQ*nbas*nbas,dimAlpha,1.0E0_realk, &
+    call dgemm('t','n',dimP,dimQ*ntot*nbas,dimAlpha,1.0E0_realk, &
          & CP,dimAlpha,tmp1,dimAlpha,0.0E0_realk,tmp2,dimP) 
     call lsmpi_poke() 
      
     ! transfo last index => [P_batch, Q_batch, R, S]
-    call dgemm('n','n',dimP*dimQ*nbas,nbas,nbas,1.0E0_realk,tmp2,dimP*dimQ*nbas, &
-         & Cov,nbas,0.0E0_realk,gmo,dimP*dimQ*nbas)
+    call dgemm('n','n',dimP*dimQ*ntot,ntot,nbas,1.0E0_realk,tmp2,dimP*dimQ*ntot, &
+         & Cov,nbas,0.0E0_realk,gmo,dimP*dimQ*ntot)
     call lsmpi_poke() 
 
     ! free array
@@ -3106,7 +3143,7 @@ module cc_debug_routines_module
   !           equivalent nested loops.
   !
   !  (IN):    min_mem: minimum memory requirement (dimBatch = 1)
-  !  (IN):    tot_size: total size of the loops (e.g. nbas, nvir or nocc)
+  !  (IN):    tot_size: total size of the loops (e.g. ntot, nvir or nocc)
   !
   !  (OUT):   dimBatch is calculated as solution of:
   !
@@ -3215,7 +3252,7 @@ module cc_debug_routines_module
   !
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine pack_and_add_gmo(gmo,pack_gmo,nbas,dimP,dimQ,P_sta,Q_sta,ncopy,pack_scheme)
+  subroutine pack_and_add_gmo(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta,ncopy,pack_scheme)
 
     implicit none
    
@@ -3226,19 +3263,19 @@ module cc_debug_routines_module
     real(realk), intent(inout) :: pack_gmo(:)
     integer, intent(in) :: pack_scheme
     !> dimensions of array:
-    integer, intent(in) :: nbas, dimP, dimQ, P_sta, Q_sta
+    integer, intent(in) :: ntot, dimP, dimQ, P_sta, Q_sta
     integer, intent(out) :: ncopy
 
     select case (pack_scheme)
       case(0)  ! s = 0: no packing 
-        call daxpy(dimP*dimQ*nbas*nbas,1.0E0_realk,gmo,1,pack_gmo,1)
-        ncopy = dimP*dimQ*nbas*nbas
+        call daxpy(dimP*dimQ*ntot*ntot,1.0E0_realk,gmo,1,pack_gmo,1)
+        ncopy = dimP*dimQ*ntot*ntot
 
       case(1)  ! s = 1: use symmetry pq<=rs
         call lsquit('packing of MO int. not yet implemented', DECinfo%output)
 
       case(2)  ! s = 2: use symmetry p<=q and r<=s
-        call pack_p_le_q_and_r_le_s(gmo,pack_gmo,nbas,dimP,dimQ,P_sta,Q_sta,ncopy)
+        call pack_p_le_q_and_r_le_s(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta,ncopy)
 
       case(3)  ! s = 3: use symmetry pq<=rs; p<=q and r<=s
         call lsquit('packing of MO int. not yet implemented', DECinfo%output)
@@ -3250,7 +3287,7 @@ module cc_debug_routines_module
   end subroutine pack_and_add_gmo
 
 
-  subroutine pack_p_le_q_and_r_le_s(gmo,pack_gmo,nbas,dimP,dimQ,P_sta,Q_sta,ncopy)
+  subroutine pack_p_le_q_and_r_le_s(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta,ncopy)
 
     implicit none
  
@@ -3260,7 +3297,7 @@ module cc_debug_routines_module
     !  to this MO int. batch, already packed using pq<=rs:
     real(realk), intent(inout) :: pack_gmo(:)
     !> dimensions and indices of array:
-    integer, intent(in) :: nbas, dimP, dimQ, P_sta, Q_sta
+    integer, intent(in) :: ntot, dimP, dimQ, P_sta, Q_sta
     integer, intent(out) :: ncopy
 
     integer :: q, r, s, rs,  ibatch, ipack
@@ -3271,9 +3308,9 @@ module cc_debug_routines_module
     !           keep only the upper triangular part of the batch.
     if (P_sta==Q_sta.and.dimP==dimQ) then
   
-      do s=1,nbas
+      do s=1,ntot
         do r=1,s
-          rs = r + (s-1)*nbas
+          rs = r + (s-1)*ntot
           do q=1,dimQ
             ibatch = 1 + (q-1)*dimP + (rs-1)*dimP*dimQ
             call daxpy(q,1.0E0_realk,gmo(ibatch),1,pack_gmo(ipack),1)
@@ -3286,9 +3323,9 @@ module cc_debug_routines_module
     !           we keep all the pq part and reduced r<=s.
     else if (P_sta<Q_sta) then
   
-      do s=1,nbas
+      do s=1,ntot
         do r=1,s
-          rs = r + (s-1)*nbas
+          rs = r + (s-1)*ntot
           ibatch = 1 + (rs-1)*dimP*dimQ
           ncopy = dimP*dimQ
           call daxpy(ncopy,1.0E0_realk,gmo(ibatch),1,pack_gmo(ipack),1)
@@ -3316,7 +3353,7 @@ module cc_debug_routines_module
   !
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine unpack_gmo(gmo,pack_gmo,nbas,dimP,dimQ,P_sta,Q_sta,pack_scheme)
+  subroutine unpack_gmo(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta,pack_scheme)
 
     implicit none
    
@@ -3328,21 +3365,21 @@ module cc_debug_routines_module
     !> Batch info:
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
     !> dimensions of array:
-    integer, intent(in) :: nbas
+    integer, intent(in) :: ntot
     integer :: ncopy
 
     
     select case (pack_scheme)
       case(0)  ! s = 0: no packing 
-        ncopy = dimP*dimQ*nbas*nbas
+        ncopy = dimP*dimQ*ntot*ntot
         call dcopy(ncopy,pack_gmo,1,gmo,1)
 
       case(1)  ! s = 1: use symmetry pq<=rs
         call lsquit('packing of MO int. not yet implemented', DECinfo%output)
-        !call unpack_pq_le_rs(gmo,pack_gmo,nbas,dimP,dimR,P_sta,R_sta,ncopy)
+        !call unpack_pq_le_rs(gmo,pack_gmo,ntot,dimP,dimR,P_sta,R_sta,ncopy)
 
       case(2)  ! s = 2: use symmetry p<=q and r<=s
-        call unpack_p_le_q_and_r_le_s(gmo,pack_gmo,nbas,dimP,dimQ,P_sta,Q_sta)
+        call unpack_p_le_q_and_r_le_s(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta)
 
       case(3)  ! s = 3: use symmetry pq<=rs; p<=q and r<=s
         !call pack_total()
@@ -3355,7 +3392,7 @@ module cc_debug_routines_module
   end subroutine unpack_gmo
 
 
-  subroutine unpack_p_le_q_and_r_le_s(gmo,pack_gmo,nbas,dimP,dimQ,P_sta,Q_sta)
+  subroutine unpack_p_le_q_and_r_le_s(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta)
 
     implicit none
  
@@ -3365,7 +3402,7 @@ module cc_debug_routines_module
     !  to this MO int. batch, already packed using pq<=rs:
     real(realk), intent(in) :: pack_gmo(:)
     !> dimensions and indices of array:
-    integer, intent(in) :: nbas, dimP, dimQ, P_sta, Q_sta
+    integer, intent(in) :: ntot, dimP, dimQ, P_sta, Q_sta
     integer :: ncopy
 
     integer :: q, r, s, rs, sr, ibat1, ibat2, ipack
@@ -3375,9 +3412,9 @@ module cc_debug_routines_module
     ! 1st case: current batch corresponds to diagonal block.
     if (P_sta==Q_sta.and.dimP==dimQ) then
   
-      do s=1,nbas
+      do s=1,ntot
         do r=1,s
-          rs = r + (s-1)*nbas
+          rs = r + (s-1)*ntot
           do q=1,dimQ
             ibat1 = 1 + (q-1)*dimP + (rs-1)*dimP*dimQ
             call dcopy(q,pack_gmo(ipack),1,gmo(ibat1),1)
@@ -3386,7 +3423,7 @@ module cc_debug_routines_module
             ipack  = ipack + q
           end do
           if (r/=s) then
-            sr = s + (r-1)*nbas
+            sr = s + (r-1)*ntot
             sr = 1 + (sr-1)*dimP*dimQ
             rs = 1 + (rs-1)*dimP*dimQ
             call dcopy(dimP*dimQ,gmo(rs),1,gmo(sr),1)
@@ -3398,22 +3435,22 @@ module cc_debug_routines_module
     else if (P_sta<Q_sta) then
   
       ! get first batch pqrs:
-      do s=1,nbas
+      do s=1,ntot
         do r=1,s
-          rs = r + (s-1)*nbas
+          rs = r + (s-1)*ntot
           ibat1 = 1 + (rs-1)*dimP*dimQ
           ncopy = dimP*dimQ
           call dcopy(ncopy,pack_gmo(ipack),1,gmo(ibat1),1)
           ipack  = ipack + ncopy
 
           if (r/=s) then
-            sr = s + (r-1)*nbas
+            sr = s + (r-1)*ntot
             sr = 1 + (sr-1)*dimP*dimQ
             call dcopy(dimP*dimQ,gmo(ibat1),1,gmo(sr),1)
           end if
         end do
       end do
-      ncopy = dimP*dimQ*nbas*nbas
+      ncopy = dimP*dimQ*ntot*ntot
 
     ! 3rd case: current batch corresponds to a lower diagonal block,
     !           and should be empty.
@@ -3437,7 +3474,7 @@ module cc_debug_routines_module
   !> Date:    November 2013
   subroutine get_ccsd_residual_small_frag(pack_gmo,t1,omega1,t2,omega2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-             & lamho,lamhv,deltafock)
+             & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock)
 
     implicit none
 
@@ -3450,12 +3487,23 @@ module cc_debug_routines_module
     real(realk), intent(inout) :: omega2(nvir,nvir,nocc,nocc)
     real(realk), pointer, intent(inout) :: govov(:)
 
+    !> Long-range correction to Fock matrix
+    real(realk), intent(in) :: deltafock(nbas,nbas)
+    !> occupied-occupied block of the t1-fock matrix
+    real(realk), intent(inout) :: ppfock(nocc*nocc)
+    !> virtual-virtual block of the t1-fock matrix
+    real(realk), intent(inout) :: qqfock(nvir*nvir)
+    !> occupied-virtual block of the t1-fock matrix
+    real(realk), intent(inout) :: pqfock(nocc*nvir)
+    !> virtual-occupied block of the t1-fock matrix
+    real(realk), intent(inout) :: qpfock(nvir*nocc)
+
     !> LS item with information needed for integrals
     type(lsitem), intent(inout) :: MyLsItem
 
     !> Batches info:
     type(MObatchInfo), intent(in) :: MOinfo
-    integer :: P_sta, P_end, Q_sta, Q_end
+    integer :: P_sta, P_end, Q_sta, Q_end, ntot
     integer :: dimMO, dimP, dimQ, Nbat, PQ_batch
 
     !> transformation matrices from MO to t1-MO:
@@ -3473,25 +3521,13 @@ module cc_debug_routines_module
     real(realk), pointer :: G_Pi(:),  H_aQ(:)
     !> T1-transforled MO integrals:
     real(realk), pointer :: gvoov(:), gvvoo(:)
-
-    !> Density and inactive Fock matrices:
-    type(matrix) :: Dens, iFock
-    !> Long-range correction to Fock matrix
-    real(realk), intent(in) :: deltafock(nbas,nbas)
-    !> occupied-occupied block of the t1-fock matrix
-    real(realk) :: ppfock(nocc*nocc)
-    !> virtual-virtual block of the t1-fock matrix
-    real(realk) :: qqfock(nvir*nvir)
-    !> occupied-virtual block of the t1-fock matrix
-    real(realk) :: pqfock(nocc*nvir)
-    !> virtual-occupied block of the t1-fock matrix
-    real(realk) :: qpfock(nvir*nocc)
+    real(realk), pointer :: goooo(:), govoo(:), gvooo(:)
 
     !> Working arrays:
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
     integer(kind=long) :: tmp_size
 
-    integer :: i, a, ipack1, ipack2
+    integer :: i, a, ipack1, ipack2, O, V, N, X
 
     !> debug:
     real(realk), external :: ddot
@@ -3507,34 +3543,51 @@ module cc_debug_routines_module
     nullify(u2)
     nullify(G_Pi)
     nullify(H_aQ)
+
     nullify(tmp0)
     nullify(tmp1)
     nullify(tmp2)
+
     nullify(gvoov)
     nullify(gvvoo)
+    nullify(goooo)
+    nullify(govoo)
+    nullify(gvooo)
+  
+    ! shortcuts:
+    ntot = nocc + nvir
+    O = nocc
+    V = nvir
+    N = ntot
+    X = MOinfo%DimInd1(1)
 
     ! Allocate working memory:
     dimMO = MOinfo%DimInd1(1)
-    tmp_size = max(nocc*nocc*nvir*nvir, dimMO*nocc*nvir*nbas, dimMO*dimMO*nbas*nbas)
+    tmp_size = max(O**4, V*O**3, V*V*O*O, X*X*N*N, X*O*O*V, X*O*V*V)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp0, tmp_size)
 
-    tmp_size = max(tmp_size, dimMO*nocc*nocc*nbas)
-    tmp_size = int(i8*tmp_size, kind=long)
-    call mem_alloc(tmp2, tmp_size)
-
-    tmp_size = max(nocc*nocc*nbas*nbas, dimMO*nocc*nvir*nbas, dimMO*dimMO*nocc*nbas)
+    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp1, tmp_size)
 
-    call mem_alloc(xvir, int(i8*nvir*nbas, kind=long))
-    call mem_alloc(yocc, int(i8*nocc*nbas, kind=long))
-    call mem_alloc(gmo, int(i8*dimMO*dimMO*nbas*nbas, kind=long)) 
+    tmp_size = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
+    tmp_size = int(i8*tmp_size, kind=long)
+    call mem_alloc(tmp2, tmp_size)
+
+    call mem_alloc(xvir, int(i8*nvir*ntot, kind=long))
+    call mem_alloc(yocc, int(i8*nocc*ntot, kind=long))
+    call mem_alloc(gmo, int(i8*dimMO*dimMO*ntot*ntot, kind=long)) 
     call mem_alloc(B2prep, int(i8*nocc*nocc*nocc*nocc, kind=long))
     call mem_alloc(u2, nvir,nvir,nocc,nocc)
-    call mem_alloc(G_Pi, nbas*nocc)
-    call mem_alloc(H_aQ, nvir*nbas)
+    call mem_alloc(G_Pi, ntot*nocc)
+    call mem_alloc(H_aQ, nvir*ntot)
 
+    tmp_size = int(i8*nocc*nocc*nocc*nocc, kind=long)
+    call mem_alloc(goooo, tmp_size)
+    tmp_size = int(i8*nvir*nocc*nocc*nocc, kind=long)
+    call mem_alloc(govoo, tmp_size)
+    call mem_alloc(gvooo, tmp_size)
     tmp_size = int(i8*nocc*nvir*nocc*nvir, kind=long)
     call mem_alloc(gvoov, tmp_size)
     call mem_alloc(gvvoo, tmp_size)
@@ -3574,6 +3627,9 @@ module cc_debug_routines_module
     H_aQ   = 0.0E0_realk
     gvoov  = 0.0E0_realk
     gvvoo  = 0.0E0_realk
+    goooo  = 0.0E0_realk
+    govoo  = 0.0E0_realk
+    gvooo  = 0.0E0_realk
     Nbat = MOinfo%nbatch
 
     call LSTIMER('small_frag CCSD init.',tcpu1,twall1,DECinfo%output)
@@ -3589,10 +3645,11 @@ module cc_debug_routines_module
       ipack1 = MOinfo%packInd(PQ_batch)
       ipack2 = MOinfo%packInd(PQ_batch+1) - 1
 
-      call unpack_gmo(gmo,pack_gmo(ipack1:ipack2),nbas,dimP,dimQ,P_sta,Q_sta,2)
+      call unpack_gmo(gmo,pack_gmo(ipack1:ipack2),ntot,dimP,dimQ,P_sta,Q_sta,2)
 
-      call wrapper_get_intermediates(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-           & xvir,yocc,t2,u2,B2prep,omega2,G_Pi,H_aQ,govov,gvoov,gvvoo,tmp0,tmp1,tmp2)
+      call wrapper_get_intermediates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
+                                   & xvir,yocc,t2,u2,goooo,B2prep,omega2,G_Pi,H_aQ, &
+                                   & govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
     end do BatchPQ
 
@@ -3611,83 +3668,49 @@ module cc_debug_routines_module
 
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
+    nullify(tmp1)
+    nullify(tmp2)
 
     ! Get C2 and D2 terms
     call wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo, &
                               & nocc,nvir,omega2,4,.false.,0_long)
+    nullify(tmp1)
+    nullify(tmp2)
 
     ! Calculate norm of A2 + B2 + C2 + D2 residual:
     print 10, 'debug: residual D2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
 
     call LSTIMER('small_frag CCSD A2, B2, C2, D2',tcpu1,twall1,DECinfo%output)
 
-    !===========================================================================
-    ! Get Fock matrix
-    !allocate the density matrix
-    call mat_init(iFock,nbas,nbas)
-    call mat_init(Dens,nbas,nbas)
 
-    !calculate inactive fock matrix in ao basis
-    call dgemm('n','t',nbas,nbas,nocc,1.0E0_realk,lamho,nbas,lampo,nbas, &
-               & 0.0E0_realk,Dens%elms,nbas)
-    call mat_zero(iFock)
-    call dec_fock_transformation(iFock,Dens,MyLsItem,.false.)
-    
-    call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-         & Dens%elms,nbas,nbas,AORdefault,AORdefault)
+    ! Get MO fock Matrices:
+    call get_MO_fock_matrices(nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
+                            & goooo,govoo,gvooo,gvoov,gvvoo,ppfock,pqfock, & 
+                            & qpfock,qqfock,deltafock,MyLsItem)
 
-    ! Add one- and two-electron contributions to Fock matrix
-    call daxpy(nbas*nbas,1.0E0_realk,Dens%elms,1,iFock%elms,1)
-    !Free the density matrix
-    call mat_free(Dens)
-
-    ! KK: Add long-range Fock correction
-    call daxpy(nbas*nbas,1.0E0_realk,deltafock,1,iFock%elms,1)
-
-    !Transform inactive Fock matrix into the different mo subspaces
-    ! -> Fop
-    call dgemm('t','n',nocc,nbas,nbas,1.0E0_realk,lampo,nbas,iFock%elms,nbas, &
-              & 0.0E0_realk,tmp0,nocc)
-    ! -> Foo
-    call dgemm('n','n',nocc,nocc,nbas,1.0E0_realk,tmp0,nocc,lamho,nbas, &
-              & 0.0E0_realk,ppfock,nocc)
-    ! -> Fov
-    call dgemm('n','n',nocc,nvir,nbas,1.0E0_realk,tmp0,nocc,lamhv,nbas, &
-              & 0.0E0_realk,pqfock,nocc)
-    ! -> Fvp
-    call dgemm('t','n',nvir,nbas,nbas,1.0E0_realk,lampv,nbas,iFock%elms,nbas, &
-              & 0.0E0_realk,tmp0,nvir)
-    ! -> Fvo
-    call dgemm('n','n',nvir,nocc,nbas,1.0E0_realk,tmp0,nvir,lamho,nbas, &
-              & 0.0E0_realk,qpfock,nvir)
-    ! -> Fvv
-    call dgemm('n','n',nvir,nvir,nbas,1.0E0_realk,tmp0,nvir,lamhv,nbas, &
-              & 0.0E0_realk,qqfock,nvir)
-    
-    !Free the AO fock matrix
-    call mat_free(iFock)
-
-    if (DECinfo%cc_driver_debug) then
+    !if (DECinfo%cc_driver_debug) then
       print *, "MO-CCSD (ppfock):", ddot(nocc*nocc,ppfock,1,ppfock,1)
       print *, "MO-CCSD (pqfock):", ddot(nocc*nvir,pqfock,1,pqfock,1)
       print *, "MO-CCSD (qpfock):", ddot(nvir*nocc,qpfock,1,qpfock,1)
       print *, "MO-CCSD (qqfock):", ddot(nvir*nvir,qqfock,1,qqfock,1)
-      call LSTIMER('small_frag CCSD Fock mat',tcpu1,twall1,DECinfo%output)
-    end if
+    !end if
+
+    call LSTIMER('small_frag CCSD Fock mat',tcpu1,twall1,DECinfo%output)
+
  
     !===========================================================================
     ! GET FINAL SINGLES CCSD RESIDUAL:
     !
     ! Get A1 term:
     ! Omega_ai = xvir_aP * G_Pi 
-    call dgemm('n','n',nvir,nocc,nbas,1.0E0_realk,xvir,nvir,G_Pi,nbas, &
+    call dgemm('n','n',nvir,nocc,ntot,1.0E0_realk,xvir,nvir,G_Pi,ntot, &
               & 0.0E0_realk,omega1,nvir)
     ! Calculate norm of A1:
     print 10, 'debug: residual A1 norm:', ddot(nocc*nvir,omega1,1,omega1,1)
 
     ! Calculate B1 term:
     ! Omega_ai += - H_aQ * yocc_iQ 
-    call dgemm('n','t',nvir,nocc,nbas,-1.0E0_realk,H_aQ,nvir,yocc,nocc, &
+    call dgemm('n','t',nvir,nocc,ntot,-1.0E0_realk,H_aQ,nvir,yocc,nocc, &
               & 1.0E0_realk,omega1,nvir)
     ! Calculate norm of A1 + B1:
     print 10, 'debug: residual B1 norm:', ddot(nocc*nvir,omega1,1,omega1,1)
@@ -3716,7 +3739,8 @@ module cc_debug_routines_module
     ! GET FINAL DOUBLES RESIDUAL:
     !
     ! Get E2 term and introduce permutational symmetry
-    call get_E2_and_permute(nbas,nocc,nvir,ppfock,qqfock,tmp0,t2,G_Pi,H_aQ,omega2)
+    call get_E2_and_permute(ntot,nocc,nvir,ppfock,qqfock,tmp0,t2,G_Pi,H_aQ,omega2)
+
     ! Calculate norm of full double residual:
     print 10, 'debug: residual E2 norm:', ddot(nocc*nocc*nvir*nvir,omega2,1,omega2,1)
     call LSTIMER('small_frag CCSD E2',tcpu1,twall1,DECinfo%output)
@@ -3734,8 +3758,12 @@ module cc_debug_routines_module
     call mem_dealloc(G_Pi)
     call mem_dealloc(H_aQ)
     call mem_dealloc(tmp0)
+
     call mem_dealloc(gvoov)
     call mem_dealloc(gvvoo)
+    call mem_dealloc(goooo)
+    call mem_dealloc(govoo)
+    call mem_dealloc(gvooo)
 
   end subroutine get_ccsd_residual_small_frag
 
@@ -3745,20 +3773,21 @@ module cc_debug_routines_module
   !
   !> Author:  Pablo Baudin
   !> Date:    November 2013
-  subroutine wrapper_get_intermediates(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-           & xvir,yocc,t2,u2,B2prep,omega2,G_Pi,H_aQ,govov,gvoov,gvvoo,tmp0,tmp1,tmp2)
+  subroutine wrapper_get_intermediates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
+                                     & xvir,yocc,t2,u2,goooo,B2prep,omega2,G_Pi,H_aQ, &
+                                     & govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
     implicit none
 
     !> dimensions for arrays:
-    integer, intent(in) :: nbas, nocc, nvir
+    integer, intent(in) :: ntot, nocc, nvir
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
     !> CC iterations counter:
     integer, intent(in) :: iter
     !> MO integral (pc|rd):
-    real(realk), intent(in) :: gmo(dimP*dimQ*nbas*nbas)
+    real(realk), intent(in) :: gmo(dimP*dimQ*ntot*ntot)
     !> transformation matrices:
-    real(realk), intent(in) :: xvir(nvir*nbas), yocc(nocc*nbas)
+    real(realk), intent(in) :: xvir(nvir*ntot), yocc(nocc*ntot)
     !> doubles amplitudes:
     real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc)
     !> 2*Coulomb - Exchange form of amplitudes:
@@ -3769,9 +3798,10 @@ module cc_debug_routines_module
     !> doubles residual array:
     real(realk), intent(inout) :: omega2(nvir,nvir,nocc,nocc)
     !> Intermediates used to calculate the E2, A1 and B1 terms:
-    real(realk), intent(inout) :: G_Pi(nbas*nocc),  H_aQ(nvir*nbas)
+    real(realk), intent(inout) :: G_Pi(ntot*nocc),  H_aQ(nvir*ntot)
     !> T1-transformed MO integrals:
     real(realk), intent(inout) :: govov(:), gvoov(:), gvvoo(:)
+    real(realk), intent(inout) :: goooo(:), govoo(:), gvooo(:)
     !> working arrays:
     real(realk), intent(inout) :: tmp0(:), tmp1(:), tmp2(:)
 
@@ -3780,38 +3810,38 @@ module cc_debug_routines_module
     ! suqared and it is treated only once:
     if ((P_sta==Q_sta).and.(dimP==dimQ)) then
 
-      call get_A2_and_B2prep_terms(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
-                          & xvir,yocc,t2,B2prep,omega2,tmp0,tmp1,tmp2)
-      call get_G_and_H_intermeditates(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta, &
+      call get_A2_and_B2prep_terms(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
+                          & xvir,yocc,t2,goooo,B2prep,omega2,tmp0,tmp1,tmp2)
+      call get_G_and_H_intermeditates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta, &
                           & gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
-      call get_MO_integrals(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-                          & xvir,yocc,govov,gvoov,gvvoo,tmp0,tmp1)
+      call get_MO_integrals(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
+                          & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
 
     ! If the PQ batch is an upper diagonal block, it is treated twice:
     else if (P_sta<Q_sta) then
 
       ! 1) treat PQ batch:
-      call get_A2_and_B2prep_terms(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
-                          & xvir,yocc,t2,B2prep,omega2,tmp0,tmp1,tmp2)
-      call get_G_and_H_intermeditates(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta, &
+      call get_A2_and_B2prep_terms(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
+                          & xvir,yocc,t2,goooo,B2prep,omega2,tmp0,tmp1,tmp2)
+      call get_G_and_H_intermeditates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta, &
                           & gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
-      call get_MO_integrals(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-                          & xvir,yocc,govov,gvoov,gvvoo,tmp0,tmp1)
+      call get_MO_integrals(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
+                          & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
 
       ! 2) treat QP batch:
       ! transpose gmo to get batch QP:
-      call array_reorder_3d(1.0E0_realk,gmo,dimP,dimQ,nbas*nbas, &
+      call array_reorder_3d(1.0E0_realk,gmo,dimP,dimQ,ntot*ntot, &
                           & [2,1,3],0.0E0_realk,tmp1)
-      call dcopy(dimQ*dimP*nbas*nbas,tmp1,1,gmo,1)
+      call dcopy(dimQ*dimP*ntot*ntot,tmp1,1,gmo,1)
       call lsmpi_poke() 
 
       ! treat it:
-      call get_A2_and_B2prep_terms(nbas,nocc,nvir,dimQ,dimP,Q_sta,P_sta,gmo, &
-                          & xvir,yocc,t2,B2prep,omega2,tmp0,tmp1,tmp2)
-      call get_G_and_H_intermeditates(nbas,nocc,nvir,dimQ,dimP,Q_sta,P_sta, &
+      call get_A2_and_B2prep_terms(ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta,gmo, &
+                          & xvir,yocc,t2,goooo,B2prep,omega2,tmp0,tmp1,tmp2)
+      call get_G_and_H_intermeditates(ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta, &
                           & gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
-      call get_MO_integrals(nbas,nocc,nvir,dimQ,dimP,Q_sta,P_sta,iter,gmo, &
-                          & xvir,yocc,govov,gvoov,gvvoo,tmp0,tmp1)
+      call get_MO_integrals(ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta,iter,gmo, &
+                          & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
 
     ! The lower diagonal batches are empty batches:
     else if (P_sta>Q_sta) then
@@ -3830,20 +3860,22 @@ module cc_debug_routines_module
   !
   !> Author:  Pablo Baudin
   !> Date:    November 2013
-  subroutine get_A2_and_B2prep_terms(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
-                          & xvir,yocc,t2,B2prep,omega2,tmp0,tmp1,tmp2)
+  subroutine get_A2_and_B2prep_terms(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
+                          & xvir,yocc,t2,goooo,B2prep,omega2,tmp0,tmp1,tmp2)
 
     implicit none
 
     !> dimensions for arrays:
-    integer, intent(in) :: nbas, nocc, nvir
+    integer, intent(in) :: ntot, nocc, nvir
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
     !> MO integral (pc|rd):
-    real(realk), intent(in) :: gmo(dimP*dimQ*nbas*nbas)
+    real(realk), intent(in) :: gmo(dimP*dimQ*ntot*ntot)
     !> transformation matrices:
-    real(realk), intent(in) :: xvir(nvir*nbas), yocc(nocc*nbas)
+    real(realk), intent(in) :: xvir(nvir*ntot), yocc(nocc*ntot)
     !> doubles amplitudes:
     real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc)
+    !> full occ. T1 transformed integral:
+    real(realk), intent(inout) :: goooo(nocc*nocc*nocc*nocc)
     !> Intermediates used to calculate the B2 term.
     !  B2prep = g_kilj + sigma_kilj
     real(realk), intent(inout) :: B2prep(nocc*nocc*nocc*nocc)
@@ -3886,24 +3918,24 @@ module cc_debug_routines_module
     ! Get g[aibj] A2.1 term and add to residual:
 
     ! transform s => j: g[PQrj]
-    call dgemm('n','T',dimP*dimQ*nbas,nocc,nbas,1.0E0_realk,gmo,dimP*dimQ*nbas, &
-              & yocc,nocc,0.0E0_realk,tmp1,dimP*dimQ*nbas)
+    call dgemm('n','T',dimP*dimQ*ntot,nocc,ntot,1.0E0_realk,gmo,dimP*dimQ*ntot, &
+              & yocc,nocc,0.0E0_realk,tmp1,dimP*dimQ*ntot)
     call lsmpi_poke()
   
     ! transform P => a: g[Qrja]
     pos1 = 1 + (P_sta-1)*nvir
-    call dgemm('T','T',dimQ*nbas*nocc,nvir,dimP,1.0E0_realk,tmp1,dimP, &
-              & xvir(pos1),nvir,0.0E0_realk,tmp2,dimQ*nbas*nocc)
+    call dgemm('T','T',dimQ*ntot*nocc,nvir,dimP,1.0E0_realk,tmp1,dimP, &
+              & xvir(pos1),nvir,0.0E0_realk,tmp2,dimQ*ntot*nocc)
     call lsmpi_poke()
 
     ! transform Q => i: g[rjai]
     pos1 = 1 + (Q_sta-1)*nocc
-    call dgemm('T','T',nbas*nocc*nvir,nocc,dimQ,1.0E0_realk,tmp2,dimQ, &
-              & yocc(pos1),nocc,0.0E0_realk,tmp1,nbas*nocc*nvir)
+    call dgemm('T','T',ntot*nocc*nvir,nocc,dimQ,1.0E0_realk,tmp2,dimQ, &
+              & yocc(pos1),nocc,0.0E0_realk,tmp1,ntot*nocc*nvir)
     call lsmpi_poke()
 
     ! transform r => b:  g[jaib]
-    call dgemm('T','T',nocc*nvir*nocc,nvir,nbas,1.0E0_realk,tmp1,nbas, &
+    call dgemm('T','T',nocc*nvir*nocc,nvir,ntot,1.0E0_realk,tmp1,ntot, &
               & xvir,nvir,0.0E0_realk,tmp2,nocc*nvir*nocc)
     call lsmpi_poke()
 
@@ -3918,28 +3950,28 @@ module cc_debug_routines_module
     ! add O4 int. to B2 term
     if (dimK>0) then
       ! reorder g[PQrs] to g[QsPr]:
-      call array_reorder_4d(1.0E0_realk,gmo,dimP,dimQ,nbas,nbas,[2,4,1,3],0.0E0_realk,tmp0)
+      call array_reorder_4d(1.0E0_realk,gmo,dimP,dimQ,ntot,ntot,[2,4,1,3],0.0E0_realk,tmp0)
  
       ! Get g[QsKl from g[QsPr]:
-      ncopy = dimQ*nbas*dimK
+      ncopy = dimQ*ntot*dimK
       pos2 = 1
       do i =1,nocc
-        pos1 = 1 + (i-1)*dimQ*nbas*dimP
+        pos1 = 1 + (i-1)*dimQ*ntot*dimP
         call dcopy(ncopy,tmp0(pos1),1,tmp2(pos2),1)
         pos2 = pos2 + ncopy
       end do
   
       ! transpose g[Q,sKl] to g[sKl, Q]
-      call mat_transpose(dimQ, nbas*dimK*nocc, 1.0E0_realk, tmp2, 0.0E0_realk, tmp1)
+      call mat_transpose(dimQ, ntot*dimK*nocc, 1.0E0_realk, tmp2, 0.0E0_realk, tmp1)
       call lsmpi_poke() 
 
       ! transform Q => i and get: g[sK li]
       pos1 = 1 + (Q_sta-1)*nocc
-      call dgemm('n','t',nbas*dimK*nocc,nocc,dimQ,1.0E0_realk,tmp1,nbas*dimK*nocc, &
-                & yocc(pos1),nocc,0.0E0_realk,tmp2,nbas*dimK*nocc)
+      call dgemm('n','t',ntot*dimK*nocc,nocc,dimQ,1.0E0_realk,tmp1,ntot*dimK*nocc, &
+                & yocc(pos1),nocc,0.0E0_realk,tmp2,ntot*dimK*nocc)
 
       ! transform s => j and get: g[Kl ij]
-      call dgemm('t','t',dimK*nocc*nocc,nocc,nbas,1.0E0_realk,tmp2,nbas, &
+      call dgemm('t','t',dimK*nocc*nocc,nocc,ntot,1.0E0_realk,tmp2,ntot, &
                 & yocc,nocc,0.0E0_realk,tmp1,dimK*nocc*nocc)
      
       ! add to previous loops:
@@ -3947,6 +3979,14 @@ module cc_debug_routines_module
         pos1 = 1 + (i-1)*dimK
         pos2 = P_sta + (i-1)*nocc
         call daxpy(dimK,1.0E0_realk,tmp1(pos1),1,B2prep(pos2),1)
+      end do
+      call array_reorder_4d(1.0E0_realk,tmp1,dimK,nocc,nocc,nocc, &
+                            & [1,3,2,4],0.0E0_realk,tmp2)
+      call lsmpi_poke()
+      do i=1,nocc*nocc*nocc
+        pos1 = 1 + (i-1)*dimK
+        pos2 = P_sta + (i-1)*nocc
+        call daxpy(dimK,1.0E0_realk,tmp2(pos1),1,goooo(pos2),1)
       end do
     end if
     !===========================================================================
@@ -3973,27 +4013,27 @@ module cc_debug_routines_module
 
     ! get g[PrQs]:
     if (dimK>0) then
-      call mat_transpose(dimQ*nbas, dimP*nbas, 1.0E0_realk, tmp0, 0.0E0_realk, tmp2)
+      call mat_transpose(dimQ*ntot, dimP*ntot, 1.0E0_realk, tmp0, 0.0E0_realk, tmp2)
       call lsmpi_poke() 
     else
-      call array_reorder_4d(1.0E0_realk,gmo,dimP,dimQ,nbas,nbas, &
+      call array_reorder_4d(1.0E0_realk,gmo,dimP,dimQ,ntot,ntot, &
                             & [1,3,2,4],0.0E0_realk,tmp2)
       call lsmpi_poke() 
     end if
      
     ! get g[PrCd] from g[PrQs] 
-    ncopy = dimP*nbas*dimC
+    ncopy = dimP*ntot*dimC
     pos2 = 1
     do i =1,nvir
-      pos1 = 1 + dimI*dimP*nbas + (nocc+i-1)*dimP*nbas*dimQ
+      pos1 = 1 + dimI*dimP*ntot + (nocc+i-1)*dimP*ntot*dimQ
       call dcopy(ncopy,tmp2(pos1),1,tmp0(pos2),1)
       pos2 = pos2 + ncopy
     end do
      
     ! Get: sigma[pr, ij] = sum_cd g[pr, cd] * t2red[cd, ij]
     !n_ij= nocc*nocc
-    call dgemm('n','n',dimP*nbas,n_ij,dimC*nvir,1.0E0_realk,tmp0,dimP*nbas, &
-              & tmp1,dimC*nvir,0.0E0_realk,tmp2,dimP*nbas)
+    call dgemm('n','n',dimP*ntot,n_ij,dimC*nvir,1.0E0_realk,tmp0,dimP*ntot, &
+              & tmp1,dimC*nvir,0.0E0_realk,tmp2,dimP*ntot)
     call lsmpi_poke() 
     !===========================================================================
 
@@ -4007,7 +4047,7 @@ module cc_debug_routines_module
       tmp1 = 0.0E0_realk
       do i=1,n_ij
         do r=1,nocc
-          pos1 = 1 + (r-1)*dimP + (i-1)*dimP*nbas
+          pos1 = 1 + (r-1)*dimP + (i-1)*dimP*ntot
           pos2 = P_sta + (r-1)*nocc + (i-1)*nocc*nocc
           call dcopy(dimK,tmp2(pos1),1,tmp1(pos2),1) 
         end do
@@ -4034,32 +4074,18 @@ module cc_debug_routines_module
       enddo
       call daxpy(nocc*nocc*nocc*nocc,1.0E0_realk,tmp1,1,B2prep,1)
        
-      ! DEBUG:
-      !do j=1,nocc 
-      !  do i=1,nocc
-      !    do r=1,nocc
-      !      if (i<=j) then
-      !        pos1 = 1 + (r-1)*dimP + (i-1+j*(j-1)/2)*dimP*nbas
-      !      else 
-      !        pos1 = 1 + (r-1)*dimP + (j-1+i*(i-1)/2)*dimP*nbas
-      !      end if
-      !      pos2 = P_sta + (r-1)*nocc + (i-1+(j-1)*nocc)*nocc*nocc
-      !      !call daxpy(dimK,1.0E0_realk,tmp2(pos1),1,B2prep(pos2),1) 
-      !    end do
-      !  end do
-      !end do
     end if
     !===========================================================================
 
 
     ! Transpose sigma matrix from sigma[p; r i<=j ] to sigma[r i<=j; p]
-    call mat_transpose(dimP, nbas*n_ij, 1.0E0_realk, tmp2, 0.0E0_realk, tmp1)
+    call mat_transpose(dimP, ntot*n_ij, 1.0E0_realk, tmp2, 0.0E0_realk, tmp1)
     call lsmpi_poke() 
 
     ! Get A2.2 term:
     ! Transform r -> b
-    call dgemm('n','n',nvir,n_ij*dimP,nbas,1.0E0_realk,xvir,nvir, &
-              & tmp1, nbas, 0.0E0_realk, tmp2, nvir)
+    call dgemm('n','n',nvir,n_ij*dimP,ntot,1.0E0_realk,xvir,nvir, &
+              & tmp1, ntot, 0.0E0_realk, tmp2, nvir)
     call lsmpi_poke()
 
     ! Transform p -> a; order is now: sigma[a b i j]
@@ -4104,20 +4130,20 @@ module cc_debug_routines_module
   !
   !> Author:  Pablo Baudin
   !> Date:    November 2013
-  subroutine get_G_and_H_intermeditates(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta, &
+  subroutine get_G_and_H_intermeditates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta, &
                             & gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
 
     implicit none
 
     !> dimensions for arrays:
-    integer, intent(in) :: nbas, nocc, nvir
+    integer, intent(in) :: ntot, nocc, nvir
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
     !> MO integral (pc|rd):
-    real(realk), intent(in) :: gmo(dimP*dimQ*nbas*nbas)
+    real(realk), intent(in) :: gmo(dimP*dimQ*ntot*ntot)
     !> 2*Coulomb - Exchange form of amplitudes:
     real(realk), intent(in) :: u2(nvir,nvir,nocc,nocc)
     !> Intermediates used to calculate the E2, A1 and B1 terms:
-    real(realk), intent(inout) :: G_Pi(nbas*nocc),  H_aQ(nvir*nbas)
+    real(realk), intent(inout) :: G_Pi(ntot*nocc),  H_aQ(nvir*ntot)
     !> working arrays:
     real(realk), intent(inout) :: tmp0(:), tmp1(:), tmp2(:)
 
@@ -4161,7 +4187,7 @@ module cc_debug_routines_module
       pos2 = 1
       do c=1,nvir
         do k=1,nocc
-          pos1 = 1 + dimP*dimI + dimP*dimQ*nbas*(nocc+c-1) + (k-1)*dimP*dimQ
+          pos1 = 1 + dimP*dimI + dimP*dimQ*ntot*(nocc+c-1) + (k-1)*dimP*dimQ
           call dcopy(ncopy,gmo(pos1),1,tmp2(pos2),1)
           pos2 = pos2 + ncopy
         end do
@@ -4173,7 +4199,7 @@ module cc_debug_routines_module
 
       ! Get G_Pi:
       call dgemm('n','n',dimP,nocc,nvir*dimD*nocc,1.0E0_realk,tmp1,dimP, &
-                & tmp0,nvir*dimD*nocc,1.0E0_realk,G_Pi(P_sta),nbas)
+                & tmp0,nvir*dimD*nocc,1.0E0_realk,G_Pi(P_sta),ntot)
     end if
 
     !========================================================
@@ -4189,7 +4215,7 @@ module cc_debug_routines_module
       do c=1,nvir
         do l=1,nocc
           do q=1,dimQ
-            pos1 = 1 + (q-1)*dimP + (l-1)*dimP*dimQ + (nocc+c-1)*dimP*dimQ*nbas
+            pos1 = 1 + (q-1)*dimP + (l-1)*dimP*dimQ + (nocc+c-1)*dimP*dimQ*ntot
             pos2 = c + (l-1)*nvir*dimK + (q-1)*nvir*dimK*nocc
             call dcopy(dimK,gmo(pos1),1,tmp1(pos2),nvir)
           end do 
@@ -4209,21 +4235,22 @@ module cc_debug_routines_module
   !
   !> Author: Pablo Baudin
   !> Date:   November 2013
-  subroutine get_MO_integrals(nbas,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-                             & xvir,yocc,govov,gvoov,gvvoo,tmp0,tmp1)
+  subroutine get_MO_integrals(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
+                             & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
     implicit none
 
     !> dimensions for arrays:
-    integer, intent(in) :: nbas, nocc, nvir
+    integer, intent(in) :: ntot, nocc, nvir
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
     !> CC iterations counter:
     integer, intent(in) :: iter
     !> MO integral (pc|rd):
-    real(realk), intent(in) :: gmo(dimP*dimQ*nbas*nbas)
+    real(realk), intent(in) :: gmo(dimP*dimQ*ntot*ntot)
     !> transformation matrices:
-    real(realk), intent(in) :: xvir(nvir*nbas), yocc(nocc*nbas)
+    real(realk), intent(in) :: xvir(nvir*ntot), yocc(nocc*ntot)
     !> T1-transformed MO integrals:
     real(realk), intent(inout) :: govov(:), gvoov(:), gvvoo(:)
+    real(realk), intent(inout) :: govoo(:), gvooo(:)
     !> working arrays:
     real(realk), intent(inout) :: tmp0(:), tmp1(:)
 
@@ -4261,7 +4288,7 @@ module cc_debug_routines_module
         do j=1,nocc
           do a=1,dimA
             pos1 = 1 + dimP*dimK + (a-1)*dimP + (j-1)*dimP*dimQ &
-                 & + (nocc+b-1)*dimP*dimQ*nbas
+                 & + (nocc+b-1)*dimP*dimQ*ntot
 
             pos2 = P_sta + (A_sta+a-2)*nocc + (j-1)*nocc*nvir + (b-1)*nocc*nvir*nocc
 
@@ -4272,19 +4299,49 @@ module cc_debug_routines_module
     end if
  
     !====================================================================
+    ! Get gvooo integrals: g[aijk]
+    ! 1) get g[PQjs]
+    ncopy = dimP*dimQ*nocc
+    pos2 = 1 
+    do b=1,ntot
+      pos1 = 1 + (b-1)*dimP*dimQ*ntot
+      call dcopy(ncopy,gmo(pos1),1,tmp0(pos2),1)
+      pos2 = pos2 + ncopy
+    end do
+    
+    ! 2) transform s to k g[PQjs]
+    call dgemm('n','t',dimP*dimQ*nocc,nocc,ntot,1.0E0_realk,tmp0,dimP*dimQ*nocc, &
+              & yocc,nocc,0.0E0_realk,tmp1,dimP*dimQ*nocc)
+    call lsmpi_poke() 
+
+    ! 3) transpose and get g[Qjk,P]
+    call mat_transpose(dimP,dimQ*nocc*nocc,1.0E0_realk,tmp1,0.0E0_realk,tmp0)
+    call lsmpi_poke() 
+
+    ! 4) transform Q to i:
+    pos1 = 1 + (Q_sta-1)*nocc
+    call dgemm('n','n',nocc,nocc*nocc*dimP,dimQ,1.0E0_realk,yocc(pos1),nocc, &
+              & tmp0,dimQ,0.0E0_realk,tmp1,nocc)
+
+    ! 4) transform P to a:
+    pos1 = 1 + (P_sta-1)*nvir
+    call dgemm('n','t',nvir,nocc*nocc*nocc,dimP,1.0E0_realk,xvir(pos1),nvir, &
+              & tmp1,nocc*nocc*nocc,1.0E0_realk,gvooo,nvir)
+
+
+    !====================================================================
     ! Get gvoov integrals: g[aijb]
     ! 1) get g[PQjb]
     ncopy = dimP*dimQ*nocc
     pos2 = 1 
     do b=1,nvir
-      pos1 = 1 + (nocc+b-1)*dimP*dimQ*nbas
+      pos1 = 1 + (nocc+b-1)*dimP*dimQ*ntot
       call dcopy(ncopy,gmo(pos1),1,tmp0(pos2),1)
       pos2 = pos2 + ncopy
     end do
     
-    ! 2) reorder g[QjbP]:
-    call array_reorder_4d(1.0E0_realk,tmp0,dimP,dimQ,nocc,nvir, &
-                        & [2,3,4,1],0.0E0_realk,tmp1)
+    ! 2) transpose and get g[QjbP]:
+    call mat_transpose(dimP,dimQ*nocc*nvir,1.0E0_realk,tmp0,0.0E0_realk,tmp1)
     call lsmpi_poke() 
   
     ! 3) transform Q to i:
@@ -4300,56 +4357,53 @@ module cc_debug_routines_module
 
     !====================================================================
     dimB = dimA
-    dimI = dimK
+    !dimI = dimK
     B_sta = A_sta
     ! Get gvvoo integrals: g[abij]
     if (dimB>0) then
       ! 1) get g[PBis]
       ncopy = dimP*dimB
       pos2 = 1 
-      do s=1,nbas
+      do s=1,ntot
         do i=1,nocc
-          pos1 = 1 + dimP*dimI + (i-1)*dimP*dimQ + (s-1)*dimP*dimQ*nbas
+          pos1 = 1 + dimP*dimK + (i-1)*dimP*dimQ + (s-1)*dimP*dimQ*ntot
           call dcopy(ncopy,gmo(pos1),1,tmp0(pos2),1)
           pos2 = pos2 + ncopy
         end do
       end do
-      
-      ! 2) transform P to a:
+     
+      ! 2) transform s to j:
+      call dgemm('n','t',dimP*dimB*nocc,nocc,ntot,1.0E0_realk,tmp0,dimP*dimB*nocc, &
+                & yocc,nocc,0.0E0_realk,tmp1,dimP*dimB*nocc)
+
+      ! 3) get g[KBij] from g[PBij]
+      if (dimI>0) then
+        do i=1,nocc*nocc
+          do s=1,dimB
+            pos1 = 1 + (s-1)*dimP + (i-1)*dimP*dimB
+            pos2 = P_sta + (B_sta+s-2)*nocc + (i-1)*nocc*nvir
+            call daxpy(dimI,1.0E0_realk,tmp1(pos1),1,govoo(pos2),1)
+          end do
+        end do
+      end if
+
+      ! 4) transform P to a:
       pos1 = 1 + (P_sta-1)*nvir
-      call dgemm('n','n',nvir,dimB*nocc*nbas,dimP,1.0E0_realk,xvir(pos1),nvir, &
-                & tmp0,dimP,0.0E0_realk,tmp1,nvir)
-       
-      ! 3) transform s to j:
-      call dgemm('n','t',nvir*dimB*nocc,nocc,nbas,1.0E0_realk,tmp1,nvir*dimB*nocc, &
-                & yocc,nocc,0.0E0_realk,tmp0,nvir*dimB*nocc)
-       
-      ! 4) copy to gvvoo array:
+      call dgemm('n','n',nvir,dimB*nocc*nocc,dimP,1.0E0_realk,xvir(pos1),nvir, &
+                & tmp1,dimP,0.0E0_realk,tmp0,nvir)
+
+      ! 5) copy tmp0 to gvvoo array:
       ncopy = nvir*dimB
       do i=1,nocc*nocc
         pos1 = 1 + (i-1)*ncopy
         pos2 = 1 + (B_sta-1)*nvir + (i-1)*nvir*nvir
         call daxpy(ncopy,1.0E0_realk,tmp0(pos1),1,gvvoo(pos2),1)
       end do
+
     end if
 
   end subroutine get_MO_integrals
   
-
-    SUBROUTINE PRINT_MAT(MAT, NR, NC, UNIT)
-
-      IMPLICIT NONE
-      INTEGER, INTENT(IN) :: Nr, Nc, Unit
-      INTEGER :: I, J
-      REAL*8, DIMENSION(Nr,Nc), INTENT(IN) :: Mat
-
-      DO I=1,Nr
-        WRITE(UNIT,'(500(F8.3))')(Mat(i,j),j=1,Nc)
-      END DO
-
-      RETURN
-    END SUBROUTINE PRINT_MAT
-
 
   subroutine wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo, &
                               & no,nv,omega2,s,lock,els2add)
@@ -4389,8 +4443,8 @@ module cc_debug_routines_module
     omega2a = array_init([nv,nv,no,no],4)
     call dcopy(nv*nv*no*no,omega2,1,omega2a%elm1,1)
 
-    call get_C2_and_D2_terms_MO(tmp0,tmp1,tmp2,t2a,u2a,govova,gvoova,gvvooa,&
-             &no,nv,omega2a,s,lock,els2add)
+    call get_cnd_terms_mo(tmp0,tmp1,tmp2,t2a,u2a,govova,gvoova,gvvooa, &
+                         & no,nv,omega2a,s,lock,els2add)
 
     call dcopy(nv*nv*no*no,omega2a%elm1,1,omega2,1)
 
@@ -4403,420 +4457,119 @@ module cc_debug_routines_module
 
   end subroutine wrapper_get_C2_and_D2
 
-  !> THIS IS A COPY OF PATRICK'S ROUTINE IN CCSD.F90:
-  !> \brief Routine to get the c and the d terms from t1 tranformed integrals
-  !using a simple mpi-parallelization
-  !> \author Patrick Ettenhuber
-  !> \Date January 2013 
-  subroutine get_C2_and_D2_terms_MO(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,&
-             &no,nv,omega2,s,lock_outside,els2add)
-    implicit none
-    !> input some empty workspace of zise v^2*o^2 
-    real(realk), intent(inout) :: w1(:)
-    real(realk),pointer :: w2(:),w3(:)
-    !> the t1-transformed integrals
-    type(array), intent(inout) :: govov,gvvoo,gvoov
-    !> number of occupied orbitals 
-    integer, intent(in) :: no
-    !> nuber of virtual orbitals
-    integer, intent(in) :: nv
-    !> ampitudes on input ordered as abij
-    !real(realk), intent(in) :: t2(:)
-    type(array), intent(inout) :: t2
-    !> u on input u{aibj}=2t{aibj}-t{ajbi} ordered as abij
-    type(array), intent(inout) :: u2
-    !> the residual to add the contribution
-    type(array), intent(inout) :: omega2
-    !> integer specifying the scheme
-    integer, intent(in) :: s
-    !> specifiaction if lock stuff
-    logical, intent(in) :: lock_outside
-    !> specify how many elements can be added to w3 buffer
-    integer(kind=8),intent(in) :: els2add
-    integer :: tl,fai,lai,i,faif,lead
-    integer :: l,ml
-    integer(kind=ls_mpik) :: nod,me,nnod,mode
-    real(realk) :: nrm1,nrm2,nrm3,nrm4
-    integer :: a,b,j,fri,tri
-    integer(kind=8) :: o2v2,tlov,w1size,w2size,w3size
-    character(ARR_MSG_LEN) :: msg
-    real(realk) :: MemFree
-     
-    real(realk), external :: ddot
-
-      me     = int(0,kind=ls_mpik)
-      nnod   = int(1,kind=ls_mpik)
-#ifdef VAR_MPI
-      nnod   = infpar%lg_nodtot
-      me     = infpar%lg_mynum
-      mode   = MPI_MODE_NOCHECK
-#endif
-      o2v2   = int((i8*no)*no*nv*nv,kind=8)
-      w1size = o2v2
-      
-     !Setting transformation variables for each rank
-     !**********************************************
-     call mo_work_dist(nv*no,fai,tl)
-
-     tlov  = int((i8*tl)*no*nv,kind=8)
-
-     if(DECinfo%PL>2.and.me==0)then
-       write(DECinfo%output,'("Trafolength in striped CD:",I5)')tl
-     endif
-     
-     if(s==4)then
-       faif = fai
-       lead = no * nv
-       w2size = o2v2
-       w3size = o2v2
-     elseif(s==3.or.s==2)then
-       faif = 1
-       lead = tl
-       !use w3 as buffer which is allocated largest possible
-       w2size  = tlov
-       w3size  = min(o2v2,tlov + els2add)
-     else
-       call lsquit("ERROR(get_cnd_terms_mo):no valid scheme",-1)
-     endif
-
-     if(me==0.and.DECinfo%PL>2)then
-       print *,"w2size(2)",w2size
-       print *,"w3size(2)",w3size
-     endif
-
-     call mem_alloc(w2,w2size)
-     call mem_alloc(w3,w3size)
-
-
-     !calculate doubles C term
-     !*************************
-
-     
-     !Reorder gvvoo [a c k i] -> goovv [a i c k]
-     if(s==4)then
-       call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w2)
-     elseif(s==3)then
-       call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w1)
-       do i=1,tl
-         call dcopy(no*nv,w1(fai+i-1),no*nv,w2(i),tl)
-       enddo
-     elseif(s==2)then
-#ifdef VAR_MPI
-       if(lock_outside)then
-         call arr_lock_wins(gvvoo,'s',mode)
-         call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,lock_outside,debug=.true.)
-         call arr_unlock_wins(gvvoo,.true.)
-         write (msg,*) infpar%lg_mynum,"w2"
-         call print_norm(w2,int((i8*tl)*no*nv,kind=8),msg)
-       else
-         call array_gather_tilesinfort(gvvoo,w1,int((i8*no)*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
-         do nod=1,nnod-1
-           call mo_work_dist(no*nv,fri,tri,nod)
-           if(me==0)then
-             do i=1,tri
-               call dcopy(no*nv,w1(fri+i-1),no*nv,w2(i),tri)
-             enddo
-           endif
-           if(me==0.or.me==nod)then
-             call ls_mpisendrecv(w2(1:no*nv*tri),int((i8*no)*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-           endif
-         enddo
-         if(me==0)then
-           do i=1,tl
-             call dcopy(no*nv,w1(fai+i-1),no*nv,w2(i),tl)
-           enddo
-         endif
-       endif
-#endif
-     endif
-
-     !SCHEME 2
-     !Reorder govov [k d l c] -> govov [d l c k]
-     if(s==2.and.lock_outside)then
-#ifdef VAR_MPI
-       call arr_unlock_wins(omega2,.true.)
-       call arr_lock_wins(govov,'s',mode)
-       call array_gather(1.0E0_realk,govov,0.0E0_realk,w1,o2v2,oo=[2,3,4,1],wrk=w3,iwrk=w3size)
-       call arr_unlock_wins(govov,.true.)
-       !write (msg,*),infpar%lg_mynum,"w1"
-       !call print_norm(w1,o2v2,msg)
-#endif
-     endif
-
-     !Reorder t [a d l i] -> t [a i d l]
-     if(s==4)then
-       call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w3)
-     elseif(s==3)then
-       call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
-       do i=1,tl
-         call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
-       enddo
-     elseif(s==2)then
-#ifdef VAR_MPI
-       if(lock_outside)then
-         call arr_lock_wins(t2,'s',mode)
-         call array_two_dim_1batch(t2,[1,4,2,3],'g',w3,2,fai,tl,lock_outside,debug=.true.)
-         call arr_unlock_wins(t2,.true.)
-         !write (msg,*),infpar%lg_mynum,"w3 ERSCHDE"
-         !call print_norm(w3,int(tl*no*nv,kind=8),msg)
-       else
-         call array_gather_tilesinfort(t2,w1,o2v2,infpar%master,[1,4,2,3])
-         do nod=1,nnod-1
-           call mo_work_dist(no*nv,fri,tri,nod)
-           if(me==0)then
-             do i=1,tri
-               call dcopy(no*nv,w1(fri+i-1),no*nv,w3(i),tri)
-             enddo
-           endif
-           if(me==0.or.me==nod)then
-             call ls_mpisendrecv(w3(1:no*nv*tri),int((i8*no)*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-           endif
-         enddo
-         if(me==0)then
-           do i=1,tl
-             call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
-           enddo
-         endif
-       endif
-#endif
-     endif
-
-   
-     !stop 0
-     !SCHEME 4 AND 3 because of w1 being buffer before
-     !Reorder govov [k d l c] -> govov [d l c k]
-     if(s==3.or.s==4)then
-       call array_reorder_4d(1.0E0_realk,govov%elm1,no,nv,no,nv,[2,3,4,1],0.0E0_realk,w1)
-       !write (msg,*),infpar%lg_mynum,"w3 ERSCHDE"
-       !call print_norm(w3,int(tl*no*nv,kind=8),msg)
-     elseif(s==2.and..not.lock_outside)then
-#ifdef VAR_MPI
-       call array_gather_tilesinfort(govov,w1,o2v2,infpar%master,[2,3,4,1])
-       call ls_mpibcast(w1,o2v2,infpar%master,infpar%lg_comm)
-#endif
-     endif
-     
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 1         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !(-0.5) * t [a i d l] * govov [d l c k] + goovv [a i c k] = C [a i c k]
-     call dgemm('n','n',tl,no*nv,no*nv,-0.5E0_realk,w3(faif),lead,w1,no*nv,1.0E0_realk,w2(faif),lead)
-
-
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 2         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !(-1) * C [a i c k] * t [c k b j] = preOmC [a i b j]
-     if(s==4)then
-       w1=0.0E0_realk
-       call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w3,no*nv,0.0E0_realk,w1(fai),no*nv)
-     elseif(s==3)then
-       call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
-       call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w1,no*nv,0.0E0_realk,w3,lead)
-       w1=0.0E0_realk
-       do i=1,tl
-         call dcopy(no*nv,w3(i),tl,w1(fai+i-1),no*nv)
-       enddo
-     elseif(s==2)then
-#ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(t2,'s',mode)
-       call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2,oo=[1,4,2,3],wrk=w3,iwrk=w3size)
-       if(lock_outside)call arr_unlock_wins(t2,.true.)
-       call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w1,no*nv,0.0E0_realk,w3,lead)
-#endif
-     endif
-
-
-     
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       Omega update           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     if(s==3.or.s==4)then
-       !contribution 1: 0.5*preOmC [a i b j] -> =+ Omega [a b i j]
-       call array_reorder_4d(0.5E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
-       !contribution 3: preOmC [a j b i] -> =+ Omega [a b i j]
-       call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,4,2],1.0E0_realk,omega2%elm1)
-     elseif(s==2)then
-#ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(omega2,'s',mode)
-       call array_two_dim_1batch(omega2,[1,3,4,2],'a',w3,2,fai,tl,lock_outside,debug=.true.)
-       if(lock_outside)call arr_unlock_wins(omega2,.true.)
-       if(lock_outside)call arr_lock_wins(omega2,'s',mode)
-       call dcopy(tlov,w3,1,w2,1)
-       call dscal(tlov,0.5E0_realk,w2,1)
-       call array_two_dim_1batch(omega2,[1,3,2,4],'a',w2,2,fai,tl,lock_outside,debug=.true.)
-       if(lock_outside)call arr_unlock_wins(omega2,.true.)
-#endif
-     endif
-
-
-
-
-
-    print 10, 'debug: residual C2 norm:', ddot(no*nv*no*nv,omega2%elm1,1,omega2%elm1,1)
-    10 format(a,f20.15)
-
-
-     !calculate doubles D term
-     !************************
-     !(-1) * gvvoo [a c k i] -> + 2*gvoov[a i k c] = L [a i k c]
-
-     if(s==4)then
-       call array_reorder_4d(2.0E0_realk,gvoov%elm1,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
-       call array_reorder_4d(-1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,2,4],1.0E0_realk,w2)
-     elseif(s==3)then
-       call array_reorder_4d(2.0E0_realk,gvoov%elm1,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w1)
-       call array_reorder_4d(-1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,2,4],1.0E0_realk,w1)
-       do i=1,tl
-         call dcopy(no*nv,w1(fai+i-1),no*nv,w2(i),tl)
-       enddo
-     elseif(s==2)then
-#ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(gvoov,'s',mode)
-       if(lock_outside)call arr_lock_wins(gvvoo,'s',mode)
-       call array_two_dim_1batch(gvoov,[1,4,2,3],'g',w2,2,fai,tl,lock_outside,debug=.true.)
-       call array_two_dim_1batch(gvvoo,[1,3,2,4],'g',w3,2,fai,tl,lock_outside,debug=.true.)
-       if(lock_outside)call arr_unlock_wins(gvoov,.true.)
-       !write (msg,*),infpar%lg_mynum,"w2 D"
-       !call print_norm(w2,int(tl*no*nv,kind=8),msg)
-       call dscal(tl*no*nv,2.0E0_realk,w2,1)
-       if(lock_outside)call arr_unlock_wins(gvvoo,.true.)
-       !write (msg,*),infpar%lg_mynum,"w3 D"
-       !call print_norm(w3,int(tl*no*nv,kind=8),msg)
-       call daxpy(tl*no*nv,-1.0E0_realk,w3,1,w2,1)
-#endif
-     endif
-
-     !SCHEME 2
-     !(-1) * govov [l c k d] + 2*govov[l d k c] = L [l d k c]
-     if(s==2)then
-#ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(govov,'s',mode)
-       call array_gather(2.0E0_realk,govov,0.0E0_realk,w1,o2v2,wrk=w3,iwrk=w3size)
-       if(lock_outside)call arr_unlock_wins(govov,.true.)
-       if(lock_outside)call arr_lock_wins(govov,'s',mode)
-       call array_gather(-1.0E0_realk,govov,1.0E0_realk,w1,o2v2,oo=[1,4,3,2],wrk=w3,iwrk=w3size)
-       if(lock_outside)call arr_unlock_wins(govov,.true.)
-#endif
-     endif
-
-     !Transpose u [d a i l] -> u [a i l d]
-     if(s==4)then
-       call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w3)
-     elseif(s==3)then
-       call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
-       do i=1,tl
-         call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
-       enddo
-     elseif(s==2)then
-#ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(u2,'s',mode)
-       call array_two_dim_1batch(u2,[2,3,4,1],'g',w3,2,fai,tl,lock_outside,debug=.true.)
-       if(lock_outside)call arr_unlock_wins(u2,.true.)
-       !write (msg,*),infpar%lg_mynum,"w3 D2"
-       !call print_norm(w3,int(tl*no*nv,kind=8),msg)
-#endif
-     endif
-
-     !SCHEME 3 AND 4, because of the reordering using w1
-     !(-1) * govov [l c k d] + 2*govov[l d k c] = L [l d k c]
-     if(s==3.or.s==4)then
-       call array_reorder_4d(2.0E0_realk,govov%elm1,no,nv,no,nv,[1,2,3,4],0.0E0_realk,w1)
-       call array_reorder_4d(-1.0E0_realk,govov%elm1,no,nv,no,nv,[1,4,3,2],1.0E0_realk,w1)
-     endif
-
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 1         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     ! (0.5) * u [a i l d] * L [l d k c] + L [a i k c] = D [a i k c]
-     call dgemm('n','n',tl,nv*no,nv*no,0.5E0_realk,w3(faif),lead,w1,nv*no,1.0E0_realk,w2(faif),lead)
-
-
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 2         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     ! (0.5)*D[a i k c] * u [b j k c]^T  = preOmD [a i b j]
-     if(s==4)then
-       w1=0.0E0_realk
-       call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w3,nv*no,0.0E0_realk,w1(fai),nv*no)
-     elseif(s==3)then
-       call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
-       call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w1,nv*no,0.0E0_realk,w3,lead)
-       w1=0.0E0_realk
-       do i=1,tl
-         call dcopy(no*nv,w3(i),tl,w1(fai+i-1),no*nv)
-       enddo
-     elseif(s==2)then
-#ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(u2,'s',mode)
-       call array_gather(1.0E0_realk,u2,0.0E0_realk,w1,o2v2,oo=[2,3,4,1],wrk=w3,iwrk=w3size)
-       if(lock_outside)call arr_unlock_wins(u2,.true.)
-       call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w1,nv*no,0.0E0_realk,w3,lead)
-#endif
-     endif
-     
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       Omega update           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     ! preOmD [a i b j] -> =+ Omega [a b i j]
-     if(s==4.or.s==3)then
-       call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
-     elseif(s==2)then
-#ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(omega2,'s',mode)
-       call array_two_dim_1batch(omega2,[1,3,2,4],'a',w3,2,fai,tl,lock_outside,debug=.true.)
-       if(lock_outside)call arr_unlock_wins(omega2,.true.)
-#endif
-     endif
-
-     call mem_dealloc(w2)
-     call mem_dealloc(w3)
-
-  end subroutine get_C2_and_D2_terms_MO
+  !> Purpose: Calculate fock matrices in MO basis using T1-transformed MO
+  !           integrals and T1 transformation matrices.
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    Movember 2013
+  subroutine get_MO_fock_matrices(nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
+             & goooo,govoo,gvooo,gvoov,gvvoo,Foo,Fov,Fvo,Fvv,deltafock,MyLsItem)
  
-
-  subroutine mo_work_dist(m,fai,tl,nod)
-    implicit none
-    integer,intent(in) :: m
-    integer,intent(inout)::fai
-    integer,intent(inout)::tl
-    integer(kind=ls_mpik),optional,intent(inout)::nod
-    integer :: l,ml,me,nnod
-    
-    me   = 0
-    nnod = 1
-#ifdef VAR_MPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
-#endif
-      
-    if(present(nod))me=nod
-
-    !Setting transformation variables for each rank
-    !**********************************************
-    l   = (m) / nnod
-    ml  = mod(m,nnod)
-    fai = me * l + 1
-    tl  = l
-
-    if(ml>0)then
-      if(me<ml)then
-        fai = fai + me
-        tl  = l + 1
-      else
-        fai = fai + ml
-        tl  = l
-      endif
-    endif
-
-  end subroutine mo_work_dist
-
-
-  subroutine get_E2_and_permute(nbas,nocc,nvir,ppfock,qqfock,tmp0,t2,G_Pi,H_aQ,omega2)
-
     implicit none
 
     integer, intent(in) :: nbas, nocc, nvir
+    !> Transformation matrices:
+    real(realk), intent(in) :: lampo(nbas,nocc), lampv(nbas,nvir)
+    real(realk), intent(in) :: lamho(nbas,nocc), lamhv(nbas,nvir)
+    !> Working array:
+    real(realk) :: tmp0(:)
+    !> T1-transformed MO integrals:
+    real(realk), intent(in) :: goooo(:), govoo(:), gvooo(:)
+    real(realk), intent(in) :: gvoov(:), gvvoo(:)
+    !> T1-transformed MO inactive Fock matrices:
+    real(realk), intent(in) :: Foo(nocc*nocc), Fov(nocc*nvir)
+    real(realk), intent(in) :: Fvo(nvir*nocc), Fvv(nvir*nvir)
+    !> Long-range correction to Fock matrix
+    real(realk) :: deltafock(nbas,nbas)
+    !> LS item with information needed for integrals
+    type(lsitem), intent(inout) :: MyLsItem
+  
+    !> Inactive AO Fock matrix:
+    type(matrix) :: iFock
+    integer :: pos1, i
+    real(realk), external :: ddot
+
+    ! allocate and get 1-electron AO fock matrix:
+    call mat_init(iFock,nbas,nbas)
+    call mat_zero(iFock)
+    call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
+         & iFock%elms,nbas,nbas,AORdefault,AORdefault)
+
+    ! KK: Add long-range Fock correction
+    call daxpy(nbas*nbas,1.0E0_realk,deltafock,1,iFock%elms,1)
+
+
+    !Transform 1-electron inactive Fock matrix into the different MO subspaces
+    ! -> Fop
+    call dgemm('t','n',nocc,nbas,nbas,1.0E0_realk,lampo,nbas,iFock%elms,nbas, &
+              & 0.0E0_realk,tmp0,nocc)
+    ! -> Foo
+    call dgemm('n','n',nocc,nocc,nbas,1.0E0_realk,tmp0,nocc,lamho,nbas, &
+              & 0.0E0_realk,Foo,nocc)
+    ! -> Fov
+    call dgemm('n','n',nocc,nvir,nbas,1.0E0_realk,tmp0,nocc,lamhv,nbas, &
+              & 0.0E0_realk,Fov,nocc)
+    ! -> Fvp
+    call dgemm('t','n',nvir,nbas,nbas,1.0E0_realk,lampv,nbas,iFock%elms,nbas, &
+              & 0.0E0_realk,tmp0,nvir)
+    ! -> Fvo
+    call dgemm('n','n',nvir,nocc,nbas,1.0E0_realk,tmp0,nvir,lamho,nbas, &
+              & 0.0E0_realk,Fvo,nvir)
+    ! -> Fvv
+    call dgemm('n','n',nvir,nvir,nbas,1.0E0_realk,tmp0,nvir,lamhv,nbas, &
+              & 0.0E0_realk,Fvv,nvir)
+
+    ! Free the 1-electron AO fock matrix
+    call mat_free(iFock)
+
+    !===================================================================
+    ! Get two-electron contribution to MO Fock matrix:
+
+    ! Foo:
+    call array_reorder_3d(1.0E0_realk,goooo,nocc,nocc*nocc,nocc,[1,3,2], &
+              & 0.0E0_realk,tmp0)
+    do i=1, nocc
+      pos1 = 1 + (i-1)*nocc*nocc*(nocc+1)
+      call daxpy(nocc*nocc,2.0E0_realk,goooo(pos1),1,Foo,1)
+      call daxpy(nocc*nocc,-1.0E0_realk,tmp0(pos1),1,Foo,1)
+    end do
+
+    ! Fov:
+    call array_reorder_4d(1.0E0_realk,govoo,nocc,nvir,nocc,nocc,[3,2,4,1], &
+              & 0.0E0_realk,tmp0)
+    do i=1, nocc
+      pos1 = 1 + (i-1)*nocc*nvir*(nocc+1)
+      call daxpy(nocc*nvir,2.0E0_realk,govoo(pos1),1,Fov,1)
+      call daxpy(nocc*nvir,-1.0E0_realk,tmp0(pos1),1,Fov,1)
+    end do
+
+    ! Fvo:
+    call array_reorder_3d(1.0E0_realk,gvooo,nvir,nocc*nocc,nocc,[1,3,2], &
+              & 0.0E0_realk,tmp0)
+    do i=1, nocc
+      pos1 = 1 + (i-1)*nvir*nocc*(nocc+1)
+      call daxpy(nvir*nocc,2.0E0_realk,gvooo(pos1),1,Fvo,1)
+      call daxpy(nvir*nocc,-1.0E0_realk,tmp0(pos1),1,Fvo,1)
+    end do
+
+    ! Get Fvv:
+    call array_reorder_3d(1.0E0_realk,gvoov,nvir,nocc*nocc,nvir,[1,3,2], &
+              & 0.0E0_realk,tmp0)
+    do i=1, nocc
+      pos1 = 1 + (i-1)*nvir*nvir*(nocc+1)
+      call daxpy(nvir*nvir,2.0E0_realk,gvvoo(pos1),1,Fvv,1)
+      call daxpy(nvir*nvir,-1.0E0_realk,tmp0(pos1),1,Fvv,1)
+    end do
+
+
+  end subroutine get_MO_Fock_matrices
+
+
+  subroutine get_E2_and_permute(ntot,nocc,nvir,ppfock,qqfock,tmp0,t2,G_Pi,H_aQ,omega2)
+
+    implicit none
+
+    integer, intent(in) :: ntot, nocc, nvir
     real(realk), intent(in) :: ppfock(:), qqfock(:)
     real(realk), intent(inout) :: tmp0(:)
     real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc)
@@ -4824,7 +4577,7 @@ module cc_debug_routines_module
     real(realk), intent(inout) :: omega2(nvir,nvir,nocc,nocc)
 
     integer :: i
-    real(realk), pointer :: tmp1(:) => null()
+    real(realk), pointer :: tmp1(:)
     real(realk), external :: ddot
 
     call mem_alloc(tmp1, int(i8*nocc*nocc*nvir*nvir, kind=long))
@@ -4849,7 +4602,7 @@ module cc_debug_routines_module
     ! Calculate contribution from E2.1 to residual:
     ! Get G_kj from G_pi:
     do i=1,nocc
-      call dcopy(nocc,G_Pi(1+(i-1)*nbas),1,tmp0(1+(i-1)*nocc),1)
+      call dcopy(nocc,G_Pi(1+(i-1)*ntot),1,tmp0(1+(i-1)*nocc),1)
     end do
 
     ! Sum F_kj and G_kj:
@@ -4909,11 +4662,9 @@ module cc_debug_routines_module
     integer, pointer :: s_idx(:,:,:), s_nidx(:)
     integer :: pno,pno1,pno2,pnv,pnv1,pnv2,Sidx1,Sidx2, ldS1,ldS2, k, l, nidx1, nidx2, spacemax
     character :: tr11,tr12,tr21,tr22
-    logical :: skiptrafo,skiptrafo2,wrong
+    logical :: skiptrafo,skiptrafo2
     type(matrix) :: iFock, Dens
     integer(kind=8) :: maxsize
-    real(realk) :: ref(nv**2*no**2),ref1(nv*no)
-    logical, pointer:: touched(:)
 
     p20 = 2.0E0_realk
     p10 = 1.0E0_realk
@@ -4953,14 +4704,12 @@ module cc_debug_routines_module
     call mem_alloc( s_idx,  2       , nspaces , no )
     call mem_alloc( ovf,    no*nv    )
     call mem_alloc( vof,    nv*no    )
-    call mem_alloc( touched, no**2*nspaces)
-    touched = .false.
 
     !===============================================================
     !begin setting up all density matrices and finding the PNO basis
     !===============================================================
     !DEBUG
-    if(iter==1)t2 = t_mp2
+    !t2 = t_mp2
     !write(msg,*)'DEBUG t2:'
     !call print_norm(t2,(i8*nv**2)*no**2,msg)
 
@@ -5065,7 +4814,7 @@ module cc_debug_routines_module
     maxsize=max(max(i8*no,i8*nv)**4,i8*nb*max(nv,nb))
     call mem_alloc( w1, maxsize )
     call mem_alloc( w2, maxsize )
-    call mem_alloc( w3, 2*maxsize )
+    call mem_alloc( w3, maxsize )
     call mem_alloc( w4, maxsize )
 
     !!!!!!!!!!!!!!!!!!!
@@ -5102,33 +4851,33 @@ module cc_debug_routines_module
     
     !DEBUG: A2 term
     !**************
-    ref = gvovo
+    !ref = gvovo
 
-    !A2.2 contribution
-    call array_reorder_4d( p10, gvvvv, nv, nv, nv, nv, [1,3,2,4], nul, w1  )
-    call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,3,2,4], nul, w2  )
-    call dgemm( 'n', 'n', nv**2, no**2, nv**2, p10, w1, nv**2, w2, nv**2, nul, w3, nv**2 )
-    call array_reorder_4d( p10, w3,    nv, nv, no, no, [1,3,2,4], p10, ref )
+    !!A2.2 contribution
+    !call array_reorder_4d( p10, gvvvv, nv, nv, nv, nv, [1,3,2,4], nul, w1  )
+    !call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,3,2,4], nul, w2  )
+    !call dgemm( 'n', 'n', nv**2, no**2, nv**2, p10, w1, nv**2, w2, nv**2, nul, w3, nv**2 )
+    !call array_reorder_4d( p10, w3,    nv, nv, no, no, [1,3,2,4], p10, ref )
 
-    call print_norm(w3,o2v2,nnorm,.true.)
-    call print_norm(ref,o2v2,norm,.true.)
-    write(*,*)' DEBUG A2/TOT:',sqrt(nnorm),sqrt(norm)
-    
-    !DEBUG: B2 term
-    !**************
-    call array_reorder_4d( p10, govov, no, nv, no, nv, [2,4,1,3], nul, w1  ) ! kcld -> cdkl
-    call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,4,1,3], nul, w2  ) ! cidj -> ijcd
-    call array_reorder_4d( p10, goooo, no, no, no, no, [2,4,1,3], nul, w3  ) ! kilj -> ijkl
-    ! g(ijkl) + t(ijcd) g(cdkl) = B(klij)
+    !call print_norm(w3,o2v2,nnorm,.true.)
+    !call print_norm(ref,o2v2,norm,.true.)
+    !!write(*,*)' DEBUG A2/TOT:',sqrt(nnorm),sqrt(norm)
+    !
+    !!DEBUG: B2 term
+    !!**************
+    !call array_reorder_4d( p10, govov, no, nv, no, nv, [2,4,1,3], nul, w1  ) ! kcld -> cdkl
+    !call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,4,1,3], nul, w2  ) ! cidj -> ijcd
+    !call array_reorder_4d( p10, goooo, no, no, no, no, [2,4,1,3], nul, w3  ) ! kilj -> ijkl
+    !! g(ijkl) + t(ijcd) g(cdkl) = B(klij)
     !call dgemm( 'n', 'n', no**2, no**2, nv**2, p10, w2, no**2, w1, nv**2, p10, w3, no**2)
-    ! B(ijkl) t(klab) = B2(ijab) 
-    call dgemm( 'n', 'n', no**2, nv**2, no**2, p10, w3, no**2, w2, no**2, nul, w1, no**2)
-    call array_reorder_4d( p10, w1, no, no, nv, nv, [3,1,4,2], nul, ref )
+    !! B(ijkl) t(klab) = B2(ijab) 
+    !call dgemm( 'n', 'n', no**2, nv**2, no**2, p10, w3, no**2, w2, no**2, nul, w1, no**2)
+    !call array_reorder_4d( p10, w1, no, no, nv, nv, [3,1,4,2], p10, ref )
 
-    call print_norm(w1,o2v2,nnorm,.true.)
-    call print_norm(ref,o2v2,norm,.true.)
-    write (*,*)' DEBUG B2/TOT:',sqrt(nnorm),sqrt(norm)
-    
+    !call print_norm(w1,o2v2,nnorm,.true.)
+    !call print_norm(ref,o2v2,norm,.true.)
+    !!write (*,*)' DEBUG B2/TOT:',sqrt(nnorm),sqrt(norm)
+    !
 
     !!DEBUG: C2 term
     !!**************
@@ -5263,7 +5012,7 @@ module cc_debug_routines_module
       t   => pno_t2(ns)%elm1
       idx => pno_cv(ns)%iaos
       pnv =  pno_cv(ns)%ns2
-      pno =  pno_cv(ns)%pno
+      pno =  pno_cv(ns)%n
 
       pno_o2(ns) = array_init([pnv,pno,pnv,pno],4)
       call array_zero( pno_o2(ns) )
@@ -5279,15 +5028,15 @@ module cc_debug_routines_module
       !Get the integral contribution, sort it first like the integrals then transform it
       call ass_D1to4( w1,    p1, [nv,pno,nv,pno] )
       call ass_D1to4( gvovo, p2, [nv,no, nv, no] )
-      if(pno_cv(ns)%n==2)then
-        p1(:,1,:,1) = p2(:,idx(1),:,idx(2))
-      else
-        do j=1,pno
-          do i=1,pno
-            p1(:,i,:,j) = p2(:,idx(i),:,idx(j))
-          enddo
+      do j=1,pno
+      do b=1,nv
+        do i=1,pno
+        do a=1,nv
+          p1(a,i,b,j) = p2(a,idx(i),b,idx(j))
         enddo
-      endif
+        enddo
+      enddo
+      enddo
  
       p1 => null()
       p2 => null()
@@ -5295,7 +5044,7 @@ module cc_debug_routines_module
       !transform integral contribution, use symmetry  gvovo(aibj) => gvovo(\bar{b} j \bar{a} i)
       call dgemm( 't', 'n', pnv, pno**2*nv, nv, p10, d, nv, w1, nv, nul, w2, pnv )
       call array_reorder_4d( p10, w2, pnv, pno, nv, pno, [3,4,1,2], nul, w1 )
-      !call dgemm( 't', 'n', pnv, pno**2*pnv, nv, p10, d, nv, w1, nv, nul, o, pnv )
+      call dgemm( 't', 'n', pnv, pno**2*pnv, nv, p10, d, nv, w1, nv, nul, o, pnv )
      
       !A2.2
       !transform to basis of space gvvvv(acbd) => gvvvv(\bar{a}\bar{c}\bar{b}\bar{d})
@@ -5304,18 +5053,16 @@ module cc_debug_routines_module
       call dgemm( 't', 'n', nv*pnv**2, pnv, nv, p10, w2   , nv, d, nv, nul, w1, nv*pnv**2 )
       call dgemm( 't', 'n', pnv**3,    pnv, nv, p10, w1   , nv, d, nv, nul, w2, pnv**3    )
       !end transformation, integrals are now in the order gvvvv(\bar{a}\bar{c}\bar{b}\bar{d})
-      !reorder corresponding integrals (w1) to gvvvv(\bar{a}\bar{b}\bar{c}\bar{d})and 
-      call array_reorder_4d( p10, w2, pnv, pnv, pnv, pnv, [1,3,2,4], nul, w1 )
 
-      if(pno_cv(ns)%n==2)then
-        !call dgemv('n',pnv**2,pnv**2,p10,w1,pnv**2,t,1,p10,o,1)
-      else
-        !amplitudes to t((\bar{c}\bar{d} i j)
-        call array_reorder_4d( p10, t,  pnv, pno, pnv, pno, [1,3,2,4], nul, w2 )
-        !contract the amplitudes and integrals to get the A2.2 contribution
-        call dgemm( 'n', 'n', pnv**2, pno**2, pnv**2, p10, w1, pnv**2, w2, pnv**2, nul, w3, pnv**2 )
-        !call array_reorder_4d( p10, w3, pnv, pnv, pno, pno, [1,3,2,4], p10, o )
-      endif
+      !reorder corresponding integrals (w1) to gvvvv(\bar{a}\bar{b}\bar{c}\bar{d})and 
+      !amplitudes to t((\bar{c}\bar{d} i j)
+      call array_reorder_4d( p10, w2, pnv, pnv, pnv, pnv, [1,3,2,4], nul, w1 )
+      call array_reorder_4d( p10, t,  pnv, pno, pnv, pno, [1,3,2,4], nul, w2 )
+     
+      !contract the amplitudes and integrals to get the A2.2 contribution
+      call dgemm( 'n', 'n', pnv**2, pno**2, pnv**2, p10, w1, pnv**2, w2, pnv**2, nul, w3, pnv**2 )
+      call array_reorder_4d( p10, w3, pnv, pnv, pno, pno, [1,3,2,4], p10, o )
+
       
       !!!!!!!!!!!!!!!!!!!!!!!!!
       !!!  E2 Term part 1!!!!!! -- continued in the following loop and after the loop
@@ -5346,7 +5093,7 @@ module cc_debug_routines_module
         t21  => pno_t2(ns2)%elm1
         idx1 => pno_cv(ns2)%iaos
         pnv1 =  pno_cv(ns2)%ns2
-        pno1 =  pno_cv(ns2)%pno
+        pno1 =  pno_cv(ns2)%n
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -5356,15 +5103,15 @@ module cc_debug_routines_module
         !Get the integral contribution, sort it first like the integrals then transform it, govov
         call ass_D1to4( w1,    p1, [pno1,nv,pno1,nv] )
         call ass_D1to4( govov, p2, [no,   nv,no, nv] )
-        if(pno_cv(ns2)%n==2)then
-          p1(1,:,1,:) = p2(idx1(1),:,idx1(2),:)
-        else
-          do j=1,pno1
-            do i=1,pno1
-              p1(i,:,j,:) = p2(idx1(i),:,idx1(j),:)
-            enddo
+        do j=1,pno1
+        do b=1,nv
+          do i=1,pno1
+          do a=1,nv
+            p1(i,a,j,b) = p2(idx1(i),a,idx1(j),b)
           enddo
-        endif
+          enddo
+        enddo
+        enddo
         p1 => null()
         p2 => null()
         
@@ -5375,7 +5122,7 @@ module cc_debug_routines_module
 
         ! Quadratic part of the E2 term use u^{bd}_{kl} (bkdl) as b,dkl
         call array_reorder_4d( p20, t21, pnv1, pno1, pnv1, pno1, [1,3,2,4], nul, w3)
-        call array_reorder_4d( m10, t21, pnv1, pno1, pnv1, pno1, [3,1,2,4], p10, w3)
+        call array_reorder_4d( m10, t21, pnv1, pno1, pnv1, pno1, [1,3,4,2], p10, w3)
         h1 => w3
         if(.not. skiptrafo)then
           call dgemm(tr12,'n', pnv, pno1*pnv1*pno1,pnv1, p10, S1, ldS1,w3,pnv1,nul,w2,pnv)
@@ -5394,16 +5141,16 @@ module cc_debug_routines_module
         
         !Get the integral contribution, sort it first like the integrals then transform it, govov
         call ass_D1to4( w1,    p1, [pno1,nv,pno1,nv] )
-        call ass_D1to4( govov, p2, [no,  nv,no,  nv] )
-        if(pno_cv(ns2)%n==2)then
-          p1(1,:,1,:) = p2(idx1(1),:,idx1(2),:)
-        else
-          do j=1,pno1
-            do i=1,pno1
-              p1(i,:,j,:) = p2(idx1(i),:,idx1(j),:)
-            enddo
+        call ass_D1to4( govov, p2, [no,   nv,no,   nv] )
+        do j=1,pno1
+        do b=1,nv
+          do i=1,pno1
+          do a=1,nv
+            p1(i,a,j,b) = p2(idx1(i),a,idx1(j),b)
           enddo
-        endif
+          enddo
+        enddo
+        enddo
         p1 => null()
         p2 => null()
         !transform integral contribution, use symmetry  govov(kcld) => govov(\bar{c} \bar{d} k l) to the space of (ij) -> w2
@@ -5412,99 +5159,27 @@ module cc_debug_routines_module
         call dgemm( 't', 'n', pnv, pno1**2*pnv, nv, p10, d, nv, w1, nv, nul, w2, pnv )
 
         !prepare 4 occupied integral goooo for B2 term
-        call ass_D1to4( w3(1:pno**2*pno1**2), p1, [pno,pno,pno1,pno1] )
-        call ass_D1to4( goooo, p2, [ no, no,  no,  no] )
-        call ass_D1to4( w3(pno**2*pno1**2+1:2*(pno**2*pno1**2)), p3, [pno,pno,pno1,pno1] )
-
-        if(pno_cv(ns2)%n>2.or.pno_cv(ns)%n>2)then
-          print *,ns,pno_cv(ns)%n,ns2,pno_cv(ns2)%n,"doing",idx(1:pno_cv(ns)%n),idx1(1:pno_cv(ns2)%n)
-        endif
-        if(pno_cv(ns2)%n==2.or.pno_cv(ns)%n==2)then
-
-          if(pno_cv(ns2)%n==2.and.pno_cv(ns)%n==2)then
-
-            if(touched(idx1(2)+(idx1(1)-1)*no+(ns-1)*no**2) .or.&
-            & touched(idx1(1)+(idx1(2)-1)*no+(ns-1)*no**2))then
-              print *,"already one"
-            endif
-            p1(1,1,1,1) = p2(idx1(1),idx(1),idx1(2),idx(2))
-            p3(1,1,1,1) = p2(idx1(2),idx(1),idx1(1),idx(2))
-            touched(idx1(2)+(idx1(1)-1)*no+(ns-1)*no**2) = .true.
-            touched(idx1(1)+(idx1(2)-1)*no+(ns-1)*no**2) = .true.
-
-          elseif(pno_cv(ns2)%n/=2.and.pno_cv(ns)%n==2)then
-
-            do j=1,pno1
-              do i=1,pno1
-                if(touched(idx1(i)+(idx1(j)-1)*no+(ns-1)*no**2))then
-                  print *,"already two"
-                endif
-                p1(1,1,i,j) = p2(idx1(i),idx(1),idx1(j),idx(2))
-                touched(idx1(i)+(idx1(j)-1)*no+(ns-1)*no**2) = .true.
-              enddo
-            enddo
-
-          elseif(pno_cv(ns2)%n==2.and.pno_cv(ns)%n/=2)then
-
-            if(touched(idx1(1)+(idx1(2)-1)*no+(ns-1)*no**2).or.&
-               touched(idx1(2)+(idx1(1)-1)*no+(ns-1)*no**2))then
-              print *,"already three"
-            endif
-            do b=1,pno
-              do a=1,pno
-                p1(a,b,1,1) = p2(idx1(1),idx(a),idx1(2),idx(b))
-                p3(a,b,1,1) = p2(idx1(2),idx(a),idx1(1),idx(b))
-              enddo
-            enddo
-            touched(idx1(1)+(idx1(2)-1)*no+(ns-1)*no**2) = .true.
-            touched(idx1(2)+(idx1(1)-1)*no+(ns-1)*no**2) = .true.
-
-          else
-            call lsquit("ERROR(pno_style)wrong selection",-1)
-          endif
-
-        else
-
-          do j=1,pno1
+        call ass_D1to4( w3,    p1, [pno,pno,pno1,pno1] )
+        call ass_D1to4( goooo, p2, [ no, no,   no,   no] )
+        do j=1,pno1
+        do b=1,pno
           do i=1,pno1
-            if(touched(idx1(i)+(idx1(j)-1)*no+(ns-1)*no**2))then
-                print *,"already four"
-            endif
-            do b=1,pno
-            do a=1,pno
-              p1(a,b,i,j) = p2(idx1(i),idx(a),idx1(j),idx(b))
-            enddo
-            enddo
-            touched(idx1(i)+(idx1(j)-1)*no+(ns-1)*no**2) = .true.
+          do a=1,pno
+            p1(a,b,i,j) = p2(idx1(i),idx(a),idx1(j),idx(b))
           enddo
           enddo
-
-        endif
-
-        p1 => null()
-        p2 => null()
-        p3 => null()
+        enddo
+        enddo
 
         !sort the amplitudes and contract cidj -> ijcd, ijcd cdkl + ijkl = ijkl
         call array_reorder_4d( p10, t, pnv, pno, pnv, pno, [2,4,1,3], nul, w1 )
-        !call dgemm( 'n', 'n', pno**2, pno1**2, pnv**2, p10, w1, pno**2, w2, pnv**2, p10, w3, pno**2 )
-
-        
+        call dgemm( 'n', 'n', pno**2, pno1**2, pnv**2, p10, w1, pno**2, w2, pnv**2, p10, w3, pno**2 )
 
         !contract the B intermediate in w3 with the amplitudes (kl) from the
         !inner loop and use the overlap to transform to the omega space, ijkl klab
         call array_reorder_4d( p10, t21, pnv1, pno1, pnv1, pno1, [2,4,1,3], nul, w1 )
 
         call dgemm( 'n', 'n', pno**2, pnv1**2, pno1**2, p10, w3, pno**2, w1, pno1**2, nul, w2, pno**2 )
-
-        !if the summation in the kl are restricted to k<l then add the ba
-        !contribution as well
-        if(pno_cv(ns2)%n==2.and.pno_cv(ns)%n==2)then
-          print *,"EXTRATRAFO",pno_cv(ns2)%n==2,pno_cv(ns)%n==2,ns2,ns
-          call array_reorder_4d( p10, t21, pnv1, pno1, pnv1, pno1, [4,2,3,1], nul, w1 )
-          call dgemm( 'n', 'n', pno**2, pnv1**2, pno1**2, p10, w3(pno**2*pno1**2+1), pno**2, w1, pno1**2, p10, w2, pno**2 )
-        endif
-
 
         ! transform back, or in the case of ns==ns2 just order correctly
         if(skiptrafo)then
@@ -5517,6 +5192,7 @@ module cc_debug_routines_module
    
         ! add up the correcly ordered contributions
         o = o + w1(1:pno**2*pnv**2)
+  
 
         d1   => null()
         t21  => null()
@@ -5527,534 +5203,513 @@ module cc_debug_routines_module
 
       enddo FullSpaceLoop1
 
-      call ass_D1to4(ref,p1,[nv,no,nv,no])
-      wrong = .false.
-      if(pno_cv(ns)%n==2)then
-        i=idx(1)
-        j=idx(2)
-        do a=1,pnv
-          do b=1,pnv
-            if(abs((pno_o2(ns)%elm4(b,1,a,1)-p1(a,i,b,j)))>1.0E-12)then
-              print *,"Wrong el in pair 1",a,i,b,j,pno_o2(ns)%elm4(b,1,a,1),p1(a,i,b,j)
-              wrong = .true.
-            endif
-            if(abs((pno_o2(ns)%elm4(a,1,b,1)-p1(a,j,b,i)))>1.0E-12)then
-              print *,"Wrong el in pair 2",a,i,b,j,pno_o2(ns)%elm4(a,1,b,1),p1(a,j,b,i)
-              wrong =.true.
-            endif
-          enddo
-        enddo
-      else
-        do j=1,pno
-          do i=1,pno
-            do b=1,pnv
-              do a=1,pnv
-                if(abs(pno_o2(ns)%elm4(a,i,b,j)-p1(a,idx(i),b,idx(j)))>1.0E-12)then
-                  print *,"Wrong el in space",a,i,b,j,pno_o2(ns)%elm4(a,i,b,j),p1(a,idx(i),b,idx(j))
-                  wrong =.true.
-                endif
-              enddo
-            enddo
-          enddo
-        enddo
-      endif
-      p1=>null()
 
-      if(wrong)stop 0
       !Add the E21 contribution
       call array_reorder_4d( p10, t, pnv, pno, pnv, pno, [3,4,1,2], nul, w1)
       call dgemm('n','n',pnv,pno*pnv*pno,pnv,p10,w4,pnv,w1,pnv,nul,w2,pnv)
-      !o = o + w2(1:pnv*pno*pnv*pno)
-      !call array_reorder_4d( p10, w2, pnv, pno, pnv, pno, [3,4,1,2], p10, o )
+      o = o + w2(1:pnv*pno*pnv*pno)
+      call array_reorder_4d( p10, w2, pnv, pno, pnv, pno, [3,4,1,2], p10, o )
 
       
       !Loop only over the indices which have a common index with the current
       !pair index, this could in principle also be solved with if statements
       !in the previous full loop and only doing the following work in a subset
-      !OneIdxSpaceLoop1: do nc = 1, p_nidx(ns)
-      !  ! extract indices:
-      !  ns2 = p_idx(nc,ns)
-
-
-      !  if(.not.pno_cv(ns2)%allocd)then
-
-      !    cycle OneIdxSpaceLoop1
-
-      !  endif
-
-      !  call get_overlap_ptr(ns,ns2,pno_S,tr11,tr12,skiptrafo,S1,ldS1)
-      !  call get_overlap_idx(ns,ns2,pno_cv,oidx1,nidx1)
-
-
-      !  d1   => pno_cv(ns2)%d
-      !  t21  => pno_t2(ns2)%elm1
-      !  idx1 => pno_cv(ns2)%iaos
-      !  pnv1 =  pno_cv(ns2)%ns2
-      !  pno1 =  pno_cv(ns2)%pno
-
-
-      !  !!!!!!!!!!!!!!!!!!!!!!!!!
-      !  !!!  C2 Term !!!!!!!!!!!!
-      !  !!!!!!!!!!!!!!!!!!!!!!!!!
-
-      !  !Transform the integral contribution to the space of the current amps
-      !  !get the order kjac -> ckja, please note, that this loop is only
-      !  !inside OneIdxSpaceLoop2 because I only use 3 working matrices, p10
-      !  !might easily move the following part outside the loop and add stuff
-      !  !up during the loops
-      !  call ass_D1to4( w1,    p1, [nv,pno1,pno,nv] )
-      !  call ass_D1to4( goovv, p2, [no, no,nv,  nv] )
-      !  do a=1,nv
-      !  do j=1,pno
-      !    do i=1,pno1
-      !    do b=1,nv
-      !      p1(b,i,j,a) = p2(idx1(i),idx(j),a,b)
-      !    enddo
-      !    enddo
-      !  enddo
-      !  enddo
-      !  p1 => null()
-      !  p2 => null()
-
-      !  ! transform c to \bar(c} of (ki)  and a to \bar{a} of (ij)
-      !  call dgemm('t','n', pnv1, pno1*pno*nv, nv,  p10, d1, nv, w1, nv, nul, w2, pnv1)
-      !  call dgemm('n','n', pnv1*pno1*pno, pnv, nv, p10, w2, pnv1*pno1*pno, d, nv, nul, w4, pnv1*pno1*pno)
-
-      !  !THE INNER CONTRACTION LOOP - BUILDING THE C INTERMEDIATE
-      !  OneIdxSpaceLoop2: do nc2=1, p_nidx(ns)
-      !    ! extract indices:
-      !    ns3 = p_idx(nc2,ns)
-
-
-      !    if(.not.pno_cv(ns3)%allocd)then
-
-      !      cycle OneIdxSpaceLoop2
-
-      !    endif
-
-
-      !    call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2)
-      !    call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
-
-      !    d2   => pno_cv(ns3)%d
-      !    t22  => pno_t2(ns3)%elm1
-      !    idx2 => pno_cv(ns3)%iaos
-      !    pnv2 =  pno_cv(ns3)%ns2
-      !    pno2 =  pno_cv(ns3)%pno
-
-      !    !Get the integrals kdlc -> ckld and transform c and d to their
-      !    !corresponding spaces, (iajb -> bija) 
-      !    call ass_D1to4( w1,    p1, [nv,pno1,pno2,nv] )
-      !    call ass_D1to4( govov, p2, [no, nv,no,   nv] )
-      !    do a=1,nv
-      !    do j=1,pno2
-      !      do i=1,pno1
-      !      do b=1,nv
-      !        p1(b,i,j,a) = p2(idx1(i),a,idx2(j),b)
-      !      enddo
-      !      enddo
-      !    enddo
-      !    enddo
-      !    p1 => null()
-      !    p2 => null()
-      !    ! transform c to \bar(c} in (ki) and d to \bar{d} in (lj)
-      !    call dgemm('t','n',pnv1,pno1*pno2*nv,nv,  p10, d1, nv, w1, nv, nul, w3, pnv1)
-      !    call dgemm('n','n',pnv1*pno1*pno2,pnv2,nv,p10, w3, pnv1*pno1*pno2, d2, nv, nul, w1, pnv1*pno1*pno2)
-
-      !    !get the amplitudes in the correct order eldj -> ldje transform to a and contract to
-      !    ! -0.5 w1(ckld) w2(ldja) += w4(ckja)
-      !    call ass_D1to4( w3,  p3, [pno2,pnv2,nidx2,pnv2] )
-      !    call ass_D1to4( t22, p2, [pnv2,pno2,pnv2,pno2] )
-      !    do b=1,pnv2
-      !    do j=1,nidx2
-      !      do a=1,pnv2
-      !      do i=1,pno2
-      !        p3(i,b,j,a) = p2(a,i,b,oidx2(j,2))
-      !      enddo
-      !      enddo
-      !    enddo
-      !    enddo
-      !    p2 => null()
-      !    p3 => null()
-
-      !    if(skiptrafo2)then
-      !      !one could use pointer associations instead of copying the whole shebang
-      !      w2(1:pno2*pnv2*nidx2*pnv2) = w3(1:pno2*pnv2*nidx2*pnv2)
-      !    else
-      !      call dgemm('n',tr21, pno2*pnv2*nidx2, pnv, pnv2, p10, w3,pno2*pnv2*nidx2, S2, ldS2, nul, w2, pno2*pnv2*nidx2)
-      !    endif
-      !    call dgemm('n','n', pnv1*pno1, nidx2*pnv, pno2*pnv2, m05, w1, pnv1*pno1, w2, pno2*pnv2, nul, w3, pnv1*pno1)
-
-      !    call ass_D1to4( w3, p3, [pnv1,pno1,nidx2,pnv] )
-      !    call ass_D1to4( w4, p4, [pnv1,pno1,pno,pnv] )
-      !    do j=1,nidx2
-      !      do i=1,pno1
-      !        p4(:,i,oidx2(j,1),:) = p4(:,i,oidx2(j,1),:) + p3(:,i,j,:)
-      !      enddo
-      !    enddo
-      !    p3 => null()
-      !    p4 => null()
-
-      !    d2   => null()
-      !    t22  => null()
-      !    idx2 => null()
-      !    S2   => null()
-      !    pnv2 =  0
-      !    pno2 =  0
-      !  enddo OneIdxSpaceLoop2
-
-      !  !get the amplitudes, extract the necessary indices, 
-      !  !reorder dkci -> dick :D transform to current space (bick) and do the contraction,
-      !  !bick ckja = bija, do the permutation and addition of the contribution
-      !  call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,pno1] )
-      !  call ass_D1to4( t21, p2, [pnv1,pno1,pnv1,pno1] )
-      !  do j=1,pno1
-      !    do i=1,nidx1
-      !      p1(:,i,:,j) = p2(:,j,:,oidx1(i,2))
-      !    enddo
-      !  enddo
-      !  p1 => null()
-      !  p2 => null()
-
-      !  h1 => w1
-      !  h2 => w2
-      !  if(.not.skiptrafo)then
-      !    call dgemm(tr12,'n', pnv,nidx1*pnv1*pno1, pnv1, p10, S1,ldS1, w1, pnv1, nul, w2, pnv)
-      !    h1 => w2 
-      !    h2 => w1 
-      !  endif
-
-      !  call dgemm('n','n', pnv*nidx1,pno*pnv, pno1*pnv1, m10, h1,pnv*nidx1, w4, pnv1*pno1, nul, h2, pnv*nidx1)
-      !  call ass_D1to4( h2, p2, [pnv,nidx1,pno,pnv] )
-      !  call ass_D1to4( o,  p1, [pnv,pno, pnv, pno ] )
-      !  do a=1,pnv
-      !  do j=1,pno
-      !    do i=1,nidx1
-      !    do b=1,pnv
-      !      !p1(a,oidx1(i,1),b,j) = p1(a,oidx1(i,1),b,j) + p2(b,i,j,a)
-      !      !p1(a,j,b,oidx1(i,1)) = p1(a,j,b,oidx1(i,1)) + p05 * p2(b,i,j,a)
-      !      !p1(b,j,a,oidx1(i,1)) = p1(b,j,a,oidx1(i,1)) + p2(b,i,j,a)
-      !      !p1(b,oidx1(i,1),a,j) = p1(b,oidx1(i,1),a,j) + p05 * p2(b,i,j,a)
-      !    enddo
-      !    enddo
-      !  enddo
-      !  enddo
-      !  p1 => null()
-      !  p2 => null()
-
-      !  h1 => null()
-      !  h2 => null()
-
-
-      !  !!!!!!!!!!!!!!!!!!!!!!!!!
-      !  !!!  D2 Term !!!!!!!!!!!!
-      !  !!!!!!!!!!!!!!!!!!!!!!!!!
-
-      !  !Similar procedure as for the C2 term, just with the L integrals (which
-      !  !could also be produced on-the-fly to reduce the memory requirements
-      !  call ass_D1to4( w1,    p1, [nv,pno,pno1,nv] )
-      !  call ass_D1to4( Lvoov, p2, [nv, no, no, nv] )
-      !  do j=1,pno1
-      !    do i=1,pno
-      !      p1(:,i,j,:) = p2(:,idx(i), idx1(j),:)
-      !    enddo
-      !  enddo
-      !  p1 => null()
-      !  p2 => null()
-
-
-      !  ! transform c to \bar(c} of (jk)  and a to \bar{a} of (ij) and reorder
-      !  ! to the in which it will be used later we got w4:\bar{c}k\bar{a}i
-      !  call dgemm('t','n', pnv, pno*pno1*nv, nv,  p10, d, nv, w1, nv, nul, w2, pnv)
-      !  call dgemm('n','n', pnv*pno*pno1, pnv1, nv, p10, w2, pnv*pno1*pno, d1, nv, nul, w1, pnv*pno*pno1)
-      !  call array_reorder_4d( p10, w1, pnv, pno, pno1, pnv1, [4,3,1,2], nul, w4 )
-
-      !  !THE INNER CONTRACTION LOOP - BUILDING THE D INTERMEDIATE
-      !  OneIdxSpaceLoop3: do nc2=1, p_nidx(ns)
-      !    ! extract indices:
-      !    ns3 = p_idx(nc2,ns)
-
-
-      !    if(.not.pno_cv(ns3)%allocd)then
-
-      !      cycle OneIdxSpaceLoop3
-
-      !    endif
-
-      !    call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2)
-      !    call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
-
-      !    d2   => pno_cv(ns3)%d
-      !    t22  => pno_t2(ns3)%elm1
-      !    idx2 => pno_cv(ns3)%iaos
-      !    pnv2 =  pno_cv(ns3)%ns2
-      !    pno2 =  pno_cv(ns3)%pno
-
-      !    !Get the L integrals lfkc -> cklf and transform c and d to their
-      !    !corresponding spaces, (iajb -> bjia) 
-      !    call ass_D1to4( w1,    p1, [nv,pno1,pno2,nv] )
-      !    call ass_D1to4( govov, p2, [no, nv, no,  nv] )
-      !    do a=1,nv
-      !    do i=1,pno2
-      !      do j=1,pno1
-      !      do b=1,nv
-      !        p1(b,j,i,a) = p20 * p2(idx2(i),a,idx1(j),b) - p2(idx1(j),a,idx2(i),b)
-      !      enddo
-      !      enddo
-      !    enddo
-      !    enddo
-      !    p1 => null()
-      !    p2 => null()
-      !    ! transform c to \bar(c} in (ki) and f to \bar{d} in (lj)
-      !    call dgemm('t','n',pnv1,pno1*pno2*nv,nv,  p10, d1, nv, w1, nv, nul, w3, pnv1)
-      !    call dgemm('n','n',pnv1*pno1*pno2,pnv2,nv,p10, w3, pnv1*pno1*pno2, d2, nv, nul, w1, pnv1*pno1*pno2)
-
-      !    !get the u amplitudes in the order eifl -> eifl  transform e to a, reorder to lfai and contract to
-      !    ! -0.5 w1(cklf) h1(lfai) += w4(ckai)
-      !    call ass_D1to4( w3,  p3, [pnv2,nidx2,pnv2,pno2] )
-      !    call ass_D1to4( t22, p2, [pnv2,pno2, pnv2,pno2] )
-      !    do j=1,pno2
-      !    do b=1,pnv2
-      !      do i=1,nidx2
-      !      do a=1,pnv2
-      !        p3(a,i,b,j) = p20 * p2(a,oidx2(i,2),b,j) - p2(b,oidx2(i,2),a,j)
-      !      enddo
-      !      enddo
-      !    enddo
-      !    enddo
-      !    p2 => null()
-      !    p3 => null()
-
-      !    if(skiptrafo2)then
-      !      call array_reorder_4d( p10, w3, pnv, nidx2, pnv2, pno2, [4,3,1,2], nul, w2 )
-      !      h1 => w2
-      !      h2 => w3
-      !    else
-      !      call dgemm(tr22,'n', pnv, nidx2*pno2*pnv2, pnv2, p10,S2, ldS2, w3,pnv2,  nul, w2, pnv)
-      !      call array_reorder_4d( p10, w2, pnv, nidx2, pnv2, pno2, [4,3,1,2], nul, w3 )
-      !      h1 => w3
-      !      h2 => w2
-      !    endif
-      !    call dgemm('n','n', pnv1*pno1, pnv*nidx2, pno2*pnv2, p05, w1, pnv1*pno1, h1, pno2*pnv2, nul, h2, pnv1*pno1)
-
-      !    h1 => null()
-
-      !    call ass_D1to4( h2, p2, [pnv1,pno1,pnv,nidx2] )
-      !    call ass_D1to4( w4, p4, [pnv1,pno1,pnv,pno] )
-      !    do j=1,nidx2
-      !    do b=1,pnv
-      !      do i=1,pno1
-      !      do a=1,pnv1
-      !        p4(a,i,b,oidx2(j,1)) = p4(a,i,b,oidx2(j,1)) + p2(a,i,b,j)
-      !      enddo
-      !      enddo
-      !    enddo
-      !    enddo
-      !    p2 => null()
-      !    p4 => null()
-
-      !    h2 => null()
-
-      !    d2   => null()
-      !    t22  => null()
-      !    idx2 => null()
-      !    S2   => null()
-      !    pnv2 =  0
-      !    pno2 =  0
-      !  enddo OneIdxSpaceLoop3
-
-      !  !exctract amplitudes as u bjck and contract with w4 ckai
-      !  call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,pno1] )
-      !  call ass_D1to4( t21, p2, [pnv1,pno1,pnv1,pno1] )
-      !  do j=1,pno1
-      !  do b=1,pnv1
-      !    do i=1,nidx1
-      !    do a=1,pnv1
-      !      p1(a,i,b,j) = p20 * p2(a,oidx1(i,2),b,j) - p2(b,oidx1(i,2),a,j)
-      !    enddo
-      !    enddo
-      !  enddo
-      !  enddo
-      !  p1 => null()
-      !  p2 => null()
-
-      !  h1 => w1
-      !  h2 => w2
-      !  if(.not.skiptrafo)then
-      !    call dgemm(tr12,'n', pnv,nidx1*pnv1*pno1, pnv1, p10, S1,ldS1, w1, pnv1, nul, w2, pnv)
-      !    h1 => w2 
-      !    h2 => w1 
-      !  endif
-
-      !  call dgemm('n','n',pnv*nidx1,pnv*pno,pnv1*pno1,p05,h1,pnv*nidx1,w4,pnv1*pno1,nul,h2,pnv*nidx1)
-
-      !  !add D2 contribution to o
-      !  call ass_D1to4( h2, p2, [pnv,nidx1,pnv,pno] )
-      !  call ass_D1to4( o,  p1, [pnv,pno, pnv, pno ] )
-      !  do a=1,pnv
-      !  do i=1,pno
-      !    do j=1,nidx1
-      !    do b=1,pnv
-      !      !p1(a,i,b,oidx1(j,1)) = p1(a,i,b,oidx1(j,1)) + p2(b,j,a,i)
-      !      !p1(b,oidx1(j,1),a,i) = p1(b,oidx1(j,1),a,i) + p2(b,j,a,i)
-      !    enddo
-      !    enddo
-      !  enddo
-      !  enddo
-      !  p1 => null()
-      !  p2 => null()
-      !  
-      !  h1 => null()
-      !  h2 => null()
-
-      !  !!!!!!!!!!!!!!!!!!!!!!!!!
-      !  !!!  E2 Term part 2!!!!!!
-      !  !!!!!!!!!!!!!!!!!!!!!!!!!
-      !  !Similar procedure as for the C2 term, just nothing has to be
-      !  !transformed for the occ-occ fock matrix --> might be constructed
-      !  !outside the loops and saved along with the overlaps, the Foo( k, j )
-      !  call ass_D1to2( w4,  r1, [ pno1,pno ] )
-      !  do j=1,pno
-      !    do i=1,pno1
-      !      r1(i,j) = oof(idx1(i), idx(j))
-      !    enddo
-      !  enddo
-      !  r1 => null()
-
-      !  !THE INNER CONTRACTION LOOP - BUILDING THE E22 INTERMEDIATE
-      !  OneIdxSpaceLoop4: do nc2=1, p_nidx(ns)
-      !    ! extract indices:
-      !    ns3 = p_idx(nc2,ns)
-
-
-      !    if(.not.pno_cv(ns3)%allocd)then
-
-      !      cycle OneIdxSpaceLoop4
-
-      !    endif
-
-
-      !    call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2)
-      !    call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
-
-      !    d2   => pno_cv(ns3)%d
-      !    t22  => pno_t2(ns3)%elm1
-      !    idx2 => pno_cv(ns3)%iaos
-      !    pnv2 =  pno_cv(ns3)%ns2
-      !    pno2 =  pno_cv(ns3)%pno
-
-      !    !Get the integrals g(kdlc) as (dklc) and transform c and d to (lj)
-      !    !such that the order klcd is obtained
-      !    call ass_D1to4( w1,    p1, [nv,pno1,pno2,nv] )
-      !    call ass_D1to4( govov, p2, [no, nv, no,  nv] )
-      !    do b=1,nv
-      !    do j=1,pno2
-      !      do i=1,pno1
-      !      do a=1,nv
-      !        p1(a,i,j,b) = p2(idx1(i),a,idx2(j),b)
-      !      enddo
-      !      enddo
-      !    enddo
-      !    enddo
-      !    p1 => null()
-      !    p2 => null()
-      !    ! transform c to \bar(c} in (lj) and d to \bar{d} in (lj)
-      !    call dgemm('n','n',nv*pno1*pno2,pnv2,nv,  p10, w1, nv*pno1*pno2,d2,nv,nul, w3, nv*pno1*pno2)
-      !    call dgemm('t','n',pno1*pno2*pnv2,pnv2,nv,p10, w3, nv, d2, nv, nul, w1, pno1*pno2*pnv2)
-
-      !    !get the u amplitudes in the order cldj -> (lcdj) = 2 t(lcdj) - t(jcdl)
-      !    call ass_D1to4( w3,  p3, [pno2,pnv2,pnv2,nidx2] )
-      !    call ass_D1to4( t22, p2, [pnv2,pno2, pnv2,pno2] )
-      !    do j=1,nidx2
-      !    do b=1,pnv2
-      !      do a=1,pnv2
-      !      do i=1,pno2
-      !        p3(i,a,b,j) = p20 * p2(a,i,b,oidx2(j,2)) - p2(b,i,a,oidx2(j,2))
-      !      enddo
-      !      enddo
-      !    enddo
-      !    enddo
-      !    p2 => null()
-      !    p3 => null()
-
-      !    call dgemm('n','n', pno1, nidx2, pno2*pnv2**2, p10, w1, pno1, w3, pno2*pnv2**2, nul, w2, pno1 )
-
-      !    call ass_D1to2( w2, r2, [pno1,nidx2] )
-      !    call ass_D1to2( w4, r1, [pno1,pno] )
-      !    do j=1,nidx2
-      !      do i=1,pno1
-      !        r1(i,oidx2(j,1)) = r1(i,oidx2(j,1)) + r2(i,j)
-      !      enddo
-      !    enddo
-      !    r1 => null()
-      !    r2 => null()
-
-      !    d2   => null()
-      !    t22  => null()
-      !    idx2 => null()
-      !    S2   => null()
-      !    pnv2 =  0
-      !    pno2 =  0
-      !  enddo OneIdxSpaceLoop4
-
-      !  !extract amplitudes like in C2 as aibk
-      !  call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,pno1] )
-      !  call ass_D1to4( t21, p2, [pnv1,pno1,pnv1,pno1] )
-      !  do j=1,pno1
-      !  do b=1,pnv1
-      !    do i=1,nidx1
-      !    do a=1,pnv1
-      !      p1(a,i,b,j) = p2(a,oidx1(i,2),b,j)
-      !    enddo
-      !    enddo
-      !  enddo
-      !  enddo
-      !  p1 => null()
-      !  p2 => null()
-
-      !  h1 => w1
-      !  h2 => w2
-      !  if(.not.skiptrafo)then
-      !    call dgemm(tr12,'n', pnv,nidx1*pnv1*pno1, pnv1, p10, S1,ldS1, w1, pnv1, nul, w2, pnv)
-      !    h1 => w2 
-      !    h2 => w1 
-      !  endif
+      OneIdxSpaceLoop1: do nc = 1, p_nidx(ns)
+        ! extract indices:
+        ns2 = p_idx(nc,ns)
+
+
+        if(.not.pno_cv(ns2)%allocd)then
+
+          cycle OneIdxSpaceLoop1
+
+        endif
+
+        call get_overlap_ptr(ns,ns2,pno_S,tr11,tr12,skiptrafo,S1,ldS1)
+        call get_overlap_idx(ns,ns2,pno_cv,oidx1,nidx1)
+
+
+        d1   => pno_cv(ns2)%d
+        t21  => pno_t2(ns2)%elm1
+        idx1 => pno_cv(ns2)%iaos
+        pnv1 =  pno_cv(ns2)%ns2
+        pno1 =  pno_cv(ns2)%n
+
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!  C2 Term !!!!!!!!!!!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+
+        !Transform the integral contribution to the space of the current amps
+        !get the order kjac -> ckja, please note, that this loop is only
+        !inside OneIdxSpaceLoop2 because I only use 3 working matrices, p10
+        !might easily move the following part outside the loop and add stuff
+        !up during the loops
+        call ass_D1to4( w1,    p1, [nv,pno1,pno,nv] )
+        call ass_D1to4( goovv, p2, [no, no,nv,  nv] )
+        do a=1,nv
+        do j=1,pno
+          do i=1,pno1
+          do b=1,nv
+            p1(b,i,j,a) = p2(idx1(i),idx(j),a,b)
+          enddo
+          enddo
+        enddo
+        enddo
+        p1 => null()
+        p2 => null()
+
+        ! transform c to \bar(c} of (ki)  and a to \bar{a} of (ij)
+        call dgemm('t','n', pnv1, pno1*pno*nv, nv,  p10, d1, nv, w1, nv, nul, w2, pnv1)
+        call dgemm('n','n', pnv1*pno1*pno, pnv, nv, p10, w2, pnv1*pno1*pno, d, nv, nul, w4, pnv1*pno1*pno)
+
+        !THE INNER CONTRACTION LOOP - BUILDING THE C INTERMEDIATE
+        OneIdxSpaceLoop2: do nc2=1, p_nidx(ns)
+          ! extract indices:
+          ns3 = p_idx(nc2,ns)
+
+
+          if(.not.pno_cv(ns3)%allocd)then
+
+            cycle OneIdxSpaceLoop2
+
+          endif
+
+
+          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2)
+          call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
+
+          d2   => pno_cv(ns3)%d
+          t22  => pno_t2(ns3)%elm1
+          idx2 => pno_cv(ns3)%iaos
+          pnv2 =  pno_cv(ns3)%ns2
+          pno2 =  pno_cv(ns3)%n
+
+          !Get the integrals kdlc -> ckld and transform c and d to their
+          !corresponding spaces, (iajb -> bija) 
+          call ass_D1to4( w1,    p1, [nv,pno1,pno2,nv] )
+          call ass_D1to4( govov, p2, [no, nv,no,   nv] )
+          do a=1,nv
+          do j=1,pno2
+            do i=1,pno1
+            do b=1,nv
+              p1(b,i,j,a) = p2(idx1(i),a,idx2(j),b)
+            enddo
+            enddo
+          enddo
+          enddo
+          p1 => null()
+          p2 => null()
+          ! transform c to \bar(c} in (ki) and d to \bar{d} in (lj)
+          call dgemm('t','n',pnv1,pno1*pno2*nv,nv,  p10, d1, nv, w1, nv, nul, w3, pnv1)
+          call dgemm('n','n',pnv1*pno1*pno2,pnv2,nv,p10, w3, pnv1*pno1*pno2, d2, nv, nul, w1, pnv1*pno1*pno2)
+
+          !get the amplitudes in the correct order eldj -> ldje transform to a and contract to
+          ! -0.5 w1(ckld) w2(ldja) += w4(ckja)
+          call ass_D1to4( w3,  p3, [pno2,pnv2,nidx2,pnv2] )
+          call ass_D1to4( t22, p2, [pnv2,pno2,pnv2,pno2] )
+          do b=1,pnv2
+          do j=1,nidx2
+            do a=1,pnv2
+            do i=1,pno2
+              p3(i,b,j,a) = p2(a,i,b,oidx2(j,2))
+            enddo
+            enddo
+          enddo
+          enddo
+          p2 => null()
+          p3 => null()
+
+          if(skiptrafo2)then
+            !one could use pointer associations instead of copying the whole shebang
+            w2(1:pno2*pnv2*nidx2*pnv2) = w3(1:pno2*pnv2*nidx2*pnv2)
+          else
+            call dgemm('n',tr21, pno2*pnv2*nidx2, pnv, pnv2, p10, w3,pno2*pnv2*nidx2, S2, ldS2, nul, w2, pno2*pnv2*nidx2)
+          endif
+          call dgemm('n','n', pnv1*pno1, nidx2*pnv, pno2*pnv2, m05, w1, pnv1*pno1, w2, pno2*pnv2, nul, w3, pnv1*pno1)
+
+          call ass_D1to4( w3, p3, [pnv1,pno1,nidx2,pnv] )
+          call ass_D1to4( w4, p4, [pnv1,pno1,pno,pnv] )
+          do a=1,pnv
+          do j=1,nidx2
+            do i=1,pno1
+            do b=1,pnv1
+              p4(b,i,oidx2(j,1),a) = p4(b,i,oidx2(j,1),a) + p3(b,i,j,a)
+            enddo
+            enddo
+          enddo
+          enddo
+          p3 => null()
+          p4 => null()
+
+          d2   => null()
+          t22  => null()
+          idx2 => null()
+          S2   => null()
+          pnv2 =  0
+          pno2 =  0
+        enddo OneIdxSpaceLoop2
+
+        !get the amplitudes, extract the necessary indices, 
+        !reorder dkci -> dick :D transform to current space (bick) and do the contraction,
+        !bick ckja = bija, do the permutation and addition of the contribution
+        call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,pno1] )
+        call ass_D1to4( t21, p2, [pnv1,pno1,pnv1,pno1] )
+        do j=1,pno1
+        do b=1,pnv1
+          do i=1,nidx1
+          do a=1,pnv1
+            p1(a,i,b,j) = p2(a,j,b,oidx1(i,2))
+          enddo
+          enddo
+        enddo
+        enddo
+        p1 => null()
+        p2 => null()
+
+        h1 => w1
+        h2 => w2
+        if(.not.skiptrafo)then
+          call dgemm(tr12,'n', pnv,nidx1*pnv1*pno1, pnv1, p10, S1,ldS1, w1, pnv1, nul, w2, pnv)
+          h1 => w2 
+          h2 => w1 
+        endif
+
+        call dgemm('n','n', pnv*nidx1,pno*pnv, pno1*pnv1, m10, h1,pnv*nidx1, w4, pnv1*pno1, nul, h2, pnv*nidx1)
+        call ass_D1to4( h2, p2, [pnv,nidx1,pno,pnv] )
+        call ass_D1to4( o,  p1, [pnv,pno, pnv, pno ] )
+        do a=1,pnv
+        do j=1,pno
+          do i=1,nidx1
+          do b=1,pnv
+            p1(a,oidx1(i,1),b,j) = p1(a,oidx1(i,1),b,j) + p2(b,i,j,a)
+            p1(a,j,b,oidx1(i,1)) = p1(a,j,b,oidx1(i,1)) + p05 * p2(b,i,j,a)
+            p1(b,j,a,oidx1(i,1)) = p1(b,j,a,oidx1(i,1)) + p2(b,i,j,a)
+            p1(b,oidx1(i,1),a,j) = p1(b,oidx1(i,1),a,j) + p05 * p2(b,i,j,a)
+          enddo
+          enddo
+        enddo
+        enddo
+        p1 => null()
+        p2 => null()
+
+        h1 => null()
+        h2 => null()
+
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!  D2 Term !!!!!!!!!!!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+
+        !Similar procedure as for the C2 term, just with the L integrals (which
+        !could also be produced on-the-fly to reduce the memory requirements
+        call ass_D1to4( w1,    p1, [nv,pno,pno1,nv] )
+        call ass_D1to4( Lvoov, p2, [nv, no, no, nv] )
+        do b=1,nv
+        do j=1,pno1
+          do i=1,pno
+          do a=1,nv
+            p1(a,i,j,b) = p2(a,idx(i), idx1(j),b)
+          enddo
+          enddo
+        enddo
+        enddo
+        p1 => null()
+        p2 => null()
+
+
+        ! transform c to \bar(c} of (jk)  and a to \bar{a} of (ij) and reorder
+        ! to the in which it will be used later we got w4:\bar{c}k\bar{a}i
+        call dgemm('t','n', pnv, pno*pno1*nv, nv,  p10, d, nv, w1, nv, nul, w2, pnv)
+        call dgemm('n','n', pnv*pno*pno1, pnv1, nv, p10, w2, pnv*pno1*pno, d1, nv, nul, w1, pnv*pno*pno1)
+        call array_reorder_4d( p10, w1, pnv, pno, pno1, pnv1, [4,3,1,2], nul, w4 )
+
+        !THE INNER CONTRACTION LOOP - BUILDING THE D INTERMEDIATE
+        OneIdxSpaceLoop3: do nc2=1, p_nidx(ns)
+          ! extract indices:
+          ns3 = p_idx(nc2,ns)
+
+
+          if(.not.pno_cv(ns3)%allocd)then
+
+            cycle OneIdxSpaceLoop3
+
+          endif
+
+          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2)
+          call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
+
+          d2   => pno_cv(ns3)%d
+          t22  => pno_t2(ns3)%elm1
+          idx2 => pno_cv(ns3)%iaos
+          pnv2 =  pno_cv(ns3)%ns2
+          pno2 =  pno_cv(ns3)%n
+
+          !Get the L integrals lfkc -> cklf and transform c and d to their
+          !corresponding spaces, (iajb -> bjia) 
+          call ass_D1to4( w1,    p1, [nv,pno1,pno2,nv] )
+          call ass_D1to4( govov, p2, [no, nv, no,  nv] )
+          do a=1,nv
+          do i=1,pno2
+            do j=1,pno1
+            do b=1,nv
+              p1(b,j,i,a) = p20 * p2(idx2(i),a,idx1(j),b) - p2(idx1(j),a,idx2(i),b)
+            enddo
+            enddo
+          enddo
+          enddo
+          p1 => null()
+          p2 => null()
+          ! transform c to \bar(c} in (ki) and f to \bar{d} in (lj)
+          call dgemm('t','n',pnv1,pno1*pno2*nv,nv,  p10, d1, nv, w1, nv, nul, w3, pnv1)
+          call dgemm('n','n',pnv1*pno1*pno2,pnv2,nv,p10, w3, pnv1*pno1*pno2, d2, nv, nul, w1, pnv1*pno1*pno2)
+
+          !get the u amplitudes in the order eifl -> eifl  transform e to a, reorder to lfai and contract to
+          ! -0.5 w1(cklf) h1(lfai) += w4(ckai)
+          call ass_D1to4( w3,  p3, [pnv2,nidx2,pnv2,pno2] )
+          call ass_D1to4( t22, p2, [pnv2,pno2, pnv2,pno2] )
+          do j=1,pno2
+          do b=1,pnv2
+            do i=1,nidx2
+            do a=1,pnv2
+              p3(a,i,b,j) = p20 * p2(a,oidx2(i,2),b,j) - p2(a,j,b,oidx2(i,2))
+            enddo
+            enddo
+          enddo
+          enddo
+          p2 => null()
+          p3 => null()
+
+          if(skiptrafo2)then
+            call array_reorder_4d( p10, w3, pnv, nidx2, pnv2, pno2, [4,3,1,2], nul, w2 )
+            h1 => w2
+            h2 => w3
+          else
+            call dgemm(tr22,'n', pnv, nidx2*pno2*pnv2, pnv2, p10,S2, ldS2, w3,pnv2,  nul, w2, pnv)
+            call array_reorder_4d( p10, w2, pnv, nidx2, pnv2, pno2, [4,3,1,2], nul, w3 )
+            h1 => w3
+            h2 => w2
+          endif
+          call dgemm('n','n', pnv1*pno1, pnv*nidx2, pno2*pnv2, p05, w1, pnv1*pno1, h1, pno2*pnv2, nul, h2, pnv1*pno1)
+
+          h1 => null()
+
+          call ass_D1to4( h2, p2, [pnv1,pno1,pnv,nidx2] )
+          call ass_D1to4( w4, p4, [pnv1,pno1,pnv,pno] )
+          do j=1,nidx2
+          do b=1,pnv
+            do i=1,pno1
+            do a=1,pnv1
+              p4(a,i,b,oidx2(j,1)) = p4(a,i,b,oidx2(j,1)) + p2(a,i,b,j)
+            enddo
+            enddo
+          enddo
+          enddo
+          p2 => null()
+          p4 => null()
+
+          h2 => null()
+
+          d2   => null()
+          t22  => null()
+          idx2 => null()
+          S2   => null()
+          pnv2 =  0
+          pno2 =  0
+        enddo OneIdxSpaceLoop3
+
+        !exctract amplitudes as u bjck and contract with w4 ckai
+        call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,pno1] )
+        call ass_D1to4( t21, p2, [pnv1,pno1,pnv1,pno1] )
+        do j=1,pno1
+        do b=1,pnv1
+          do i=1,nidx1
+          do a=1,pnv1
+            p1(a,i,b,j) = p20 * p2(a,oidx1(i,2),b,j) - p2(a,j,b,oidx1(i,2))
+          enddo
+          enddo
+        enddo
+        enddo
+        p1 => null()
+        p2 => null()
+
+        h1 => w1
+        h2 => w2
+        if(.not.skiptrafo)then
+          call dgemm(tr12,'n', pnv,nidx1*pnv1*pno1, pnv1, p10, S1,ldS1, w1, pnv1, nul, w2, pnv)
+          h1 => w2 
+          h2 => w1 
+        endif
+
+        call dgemm('n','n',pnv*nidx1,pnv*pno,pnv1*pno1,p05,h1,pnv*nidx1,w4,pnv1*pno1,nul,h2,pnv*nidx1)
+
+        !add D2 contribution to o
+        call ass_D1to4( h2, p2, [pnv,nidx1,pnv,pno] )
+        call ass_D1to4( o,  p1, [pnv,pno, pnv, pno ] )
+        do a=1,pnv
+        do i=1,pno
+          do j=1,nidx1
+          do b=1,pnv
+            p1(a,i,b,oidx1(j,1)) = p1(a,i,b,oidx1(j,1)) + p2(b,j,a,i)
+            p1(b,oidx1(j,1),a,i) = p1(b,oidx1(j,1),a,i) + p2(b,j,a,i)
+          enddo
+          enddo
+        enddo
+        enddo
+        p1 => null()
+        p2 => null()
+        
+        h1 => null()
+        h2 => null()
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!  E2 Term part 2!!!!!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        !Similar procedure as for the C2 term, just nothing has to be
+        !transformed for the occ-occ fock matrix --> might be constructed
+        !outside the loops and saved along with the overlaps, the Foo( k, j )
+        call ass_D1to2( w4,  r1, [ pno1,pno ] )
+        do j=1,pno
+          do i=1,pno1
+            r1(i,j) = oof(idx1(i), idx(j))
+          enddo
+        enddo
+        r1 => null()
+
+        !THE INNER CONTRACTION LOOP - BUILDING THE E22 INTERMEDIATE
+        OneIdxSpaceLoop4: do nc2=1, p_nidx(ns)
+          ! extract indices:
+          ns3 = p_idx(nc2,ns)
+
+
+          if(.not.pno_cv(ns3)%allocd)then
+
+            cycle OneIdxSpaceLoop4
+
+          endif
+
+
+          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2)
+          call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
+
+          d2   => pno_cv(ns3)%d
+          t22  => pno_t2(ns3)%elm1
+          idx2 => pno_cv(ns3)%iaos
+          pnv2 =  pno_cv(ns3)%ns2
+          pno2 =  pno_cv(ns3)%n
+
+          !Get the integrals g(kdlc) as (dklc) and transform c and d to (lj)
+          !such that the order klcd is obtained
+          call ass_D1to4( w1,    p1, [nv,pno1,pno2,nv] )
+          call ass_D1to4( govov, p2, [no, nv, no,  nv] )
+          do b=1,nv
+          do j=1,pno2
+            do i=1,pno1
+            do a=1,nv
+              p1(a,i,j,b) = p2(idx1(i),a,idx2(j),b)
+            enddo
+            enddo
+          enddo
+          enddo
+          p1 => null()
+          p2 => null()
+          ! transform c to \bar(c} in (lj) and d to \bar{d} in (lj)
+          call dgemm('n','n',nv*pno1*pno2,pnv2,nv,  p10, w1, nv*pno1*pno2,d2,nv,nul, w3, nv*pno1*pno2)
+          call dgemm('t','n',pno1*pno2*pnv2,pnv2,nv,p10, w3, nv, d2, nv, nul, w1, pno1*pno2*pnv2)
+
+          !get the u amplitudes in the order cldj -> (lcdj) = 2 t(lcdj) - t(jcdl)
+          call ass_D1to4( w3,  p3, [pno2,pnv2,pnv2,nidx2] )
+          call ass_D1to4( t22, p2, [pnv2,pno2, pnv2,pno2] )
+          do j=1,nidx2
+          do b=1,pnv2
+            do a=1,pnv2
+            do i=1,pno2
+              p3(i,a,b,j) = p20 * p2(a,i,b,oidx2(j,2)) - p2(a,oidx2(j,2),b,i)
+            enddo
+            enddo
+          enddo
+          enddo
+          p2 => null()
+          p3 => null()
+
+          call dgemm('n','n', pno1, nidx2, pno2*pnv2**2, p10, w1, pno1, w3, pno2*pnv2**2, nul, w2, pno1 )
+
+          call ass_D1to2( w2, r2, [pno1,nidx2] )
+          call ass_D1to2( w4, r1, [pno1,pno] )
+          do j=1,nidx2
+            do i=1,pno1
+              r1(i,oidx2(j,1)) = r1(i,oidx2(j,1)) + r2(i,j)
+            enddo
+          enddo
+          r1 => null()
+          r2 => null()
+
+          d2   => null()
+          t22  => null()
+          idx2 => null()
+          S2   => null()
+          pnv2 =  0
+          pno2 =  0
+        enddo OneIdxSpaceLoop4
+
+        !extract amplitudes like in C2 as aibk
+        call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,pno1] )
+        call ass_D1to4( t21, p2, [pnv1,pno1,pnv1,pno1] )
+        do j=1,pno1
+        do b=1,pnv1
+          do i=1,nidx1
+          do a=1,pnv1
+            p1(a,i,b,j) = p2(a,oidx1(i,2),b,j)
+          enddo
+          enddo
+        enddo
+        enddo
+        p1 => null()
+        p2 => null()
+
+        h1 => w1
+        h2 => w2
+        if(.not.skiptrafo)then
+          call dgemm(tr12,'n', pnv,nidx1*pnv1*pno1, pnv1, p10, S1,ldS1, w1, pnv1, nul, w2, pnv)
+          h1 => w2 
+          h2 => w1 
+        endif
      
-      !  call dgemm('n','n',pnv*nidx1*pnv1,pno,pno1,m10,h1,pnv*nidx1*pnv1,w4,pno1,nul,h2,pnv*nidx1*pnv1)
-      !  call array_reorder_4d(p10,h2,pnv,nidx1,pnv1,pno,[3,4,1,2], nul, h1)
+        call dgemm('n','n',pnv*nidx1*pnv1,pno,pno1,m10,h1,pnv*nidx1*pnv1,w4,pno1,nul,h2,pnv*nidx1*pnv1)
+        call array_reorder_4d(p10,h2,pnv,nidx1,pnv1,pno,[3,4,1,2], nul, h1)
 
-      !  !transform b index to the correct space
-      !  if(.not.skiptrafo)then
-      !    call dgemm(tr12,'n', pnv,pno*pnv*nidx1, pnv1, p10, S1,ldS1, h1, pnv1, nul, h2, pnv)
-      !    h1 => h2
-      !  endif
+        !transform b index to the correct space
+        if(.not.skiptrafo)then
+          call dgemm(tr12,'n', pnv,pno*pnv*nidx1, pnv1, p10, S1,ldS1, h1, pnv1, nul, h2, pnv)
+          h1 => h2
+        endif
 
-      !  call ass_D1to4( h1, p2, [pnv,pno,pnv,nidx1] )
-      !  call ass_D1to4( o,  p1, [pnv,pno, pnv, pno] )
-      !  do i=1,nidx1
-      !  do a=1,pnv
-      !    do j=1,pno
-      !    do b=1,pnv
-      !      !p1(a,oidx1(i,1),b,j) = p1(a,oidx1(i,1),b,j) + p2(b,j,a,i)
-      !      !p1(b,j,a,oidx1(i,1)) = p1(b,j,a,oidx1(i,1)) + p2(b,j,a,i)
-      !    enddo
-      !    enddo
-      !  enddo
-      !  enddo
-      !  p1 => null()
-      !  p2 => null()
+        call ass_D1to4( h1, p2, [pnv,pno,pnv,nidx1] )
+        call ass_D1to4( o,  p1, [pnv,pno, pnv, pno] )
+        do i=1,nidx1
+        do a=1,pnv
+          do j=1,pno
+          do b=1,pnv
+            p1(a,oidx1(i,1),b,j) = p1(a,oidx1(i,1),b,j) + p2(b,j,a,i)
+            p1(b,j,a,oidx1(i,1)) = p1(b,j,a,oidx1(i,1)) + p2(b,j,a,i)
+          enddo
+          enddo
+        enddo
+        enddo
+        p1 => null()
+        p2 => null()
 
-      !  h1 => null()
-      !  h2 => null()
+        h1 => null()
+        h2 => null()
 
 
-      !  d1   => null()
-      !  t21  => null()
-      !  idx1 => null()
-      !  S1   => null()
-      !  pnv1 =  0
-      !  pno1 =  0
-      !enddo OneIdxSpaceLoop1
+        d1   => null()
+        t21  => null()
+        idx1 => null()
+        S1   => null()
+        pnv1 =  0
+        pno1 =  0
+      enddo OneIdxSpaceLoop1
         
 
 
@@ -6062,32 +5717,32 @@ module cc_debug_routines_module
       !!!  B1 Term !!!!!!!!!!!!
       !!!!!!!!!!!!!!!!!!!!!!!!!
 
-      !!get gooov(kilc) as klic and transform c to pno basis
-      !call ass_D1to4( w3,    p3, [pno,pno,no, nv] )
-      !call ass_D1to4( gooov, p2, [no, no, no, nv] )
-      !do b=1,nv
-      !do i=1,no
-      !  do j=1,pno
-      !  do a=1,pno
-      !    p3(a,j,i,b) = p2(idx(a), i, idx(j),b)
-      !  enddo
-      !  enddo
-      !enddo
-      !enddo
-      !p2 => null()
-      !p3 => null()
-      !! transform c such that d(c\bar{c})^T w(kli,c)^T = w1(\bar{c}kli)
-      !call dgemm('t','t',pnv,pno**2*no,nv,p10,d,nv,w3,pno**2*no,nul,w1,pnv)
+      !get gooov(kilc) as klic and transform c to pno basis
+      call ass_D1to4( w3,    p3, [pno,pno,no, nv] )
+      call ass_D1to4( gooov, p2, [no, no, no, nv] )
+      do b=1,nv
+      do i=1,no
+        do j=1,pno
+        do a=1,pno
+          p3(a,j,i,b) = p2(idx(a), i, idx(j),b)
+        enddo
+        enddo
+      enddo
+      enddo
+      p2 => null()
+      p3 => null()
+      ! transform c such that d(c\bar{c})^T w(kli,c)^T = w1(\bar{c}kli)
+      call dgemm('t','t',pnv,pno**2*no,nv,p10,d,nv,w3,pno**2*no,nul,w1,pnv)
  
-      !!get u from current amplitudes contract and transform back to local basis, as u(\bar{a}\bar{c}kl) from akcl
-      !call array_reorder_4d( p20, t, pnv,pno,pnv,pno, [1,3,2,4], nul,w2)
-      !call array_reorder_4d( m10, t, pnv,pno,pnv,pno, [3,1,2,4], p10,w2)
+      !get u from current amplitudes contract and transform back to local basis, as u(\bar{a}\bar{c}kl) from akcl
+      call array_reorder_4d( p20, t, pnv,pno,pnv,pno, [1,3,2,4], nul,w2)
+      call array_reorder_4d( m10, t, pnv,pno,pnv,pno, [1,3,4,2], p10,w2)
 
 
-      !! carry out w2(\bar{a}\bar{c} kl) w1(\bar{c} kl i) = omega1{\bar{a}i}
-      !call dgemm('n','n',pnv,no,pnv*pno**2,m10,w2,pnv,w1,pnv*pno**2, nul, w3,pnv)
-      !!transform d(a\bar{a}) omega1{\bar{a} i} -> o1(a,i)
-      !call dgemm('n','n',nv, no,pnv, p10,d, nv, w3, pnv, p10,o1,nv)
+      ! carry out w2(\bar{a}\bar{c} kl) w1(\bar{c} kl i) = omega1{\bar{a}i}
+      call dgemm('n','n',pnv,no,pnv*pno**2,m10,w2,pnv,w1,pnv*pno**2, nul, w3,pnv)
+      !transform d(a\bar{a}) omega1{\bar{a} i} -> o1(a,i)
+      call dgemm('n','n',nv, no,pnv, p10,d, nv, w3, pnv, p10,o1,nv)
 
       d   => null()
       t   => null()
@@ -6098,152 +5753,126 @@ module cc_debug_routines_module
     enddo LoopContribs
     
 
-    do i=1,nspaces
-      do a=1,no
-        do b=1,no
-          if(.not.touched(b+(a-1)*no+(i-1)*no**2))then
-            print *,"not touched",b,a,i
-          endif
-        enddo
-      enddo
-    enddo
    
     call ass_D2to1(o1,o,[nv,no])
 
     ! Add the missing singles contributions
-    !LoopSingles: do nc=1,no
+    LoopSingles: do nc=1,no
 
 
-    !  !loop over all spaces in which the corresponding occupied index occurs
-    !  OverlapLoop: do nc2=1,s_nidx(nc)
+      !loop over all spaces in which the corresponding occupied index occurs
+      OverlapLoop: do nc2=1,s_nidx(nc)
 
 
-    !    ns    = s_idx(1,nc2,nc)
-    !    i_idx = s_idx(2,nc2,nc)
+        ns    = s_idx(1,nc2,nc)
+        i_idx = s_idx(2,nc2,nc)
 
 
-    !    if(.not.pno_cv(ns)%allocd)then
+        if(.not.pno_cv(ns)%allocd)then
 
-    !      cycle OverlapLoop
+          cycle OverlapLoop
 
-    !    endif
+        endif
 
 
-    !    d   => pno_cv(ns)%d
-    !    t   => pno_t2(ns)%elm1
-    !    idx => pno_cv(ns)%iaos
-    !    pnv =  pno_cv(ns)%ns2
-    !    pno =  pno_cv(ns)%pno
+        d   => pno_cv(ns)%d
+        t   => pno_t2(ns)%elm1
+        idx => pno_cv(ns)%iaos
+        pnv =  pno_cv(ns)%ns2
+        pno =  pno_cv(ns)%n
  
-    !    !!!!!!!!!!!!!!!!!!!!!!!!!
-    !    !!!  A1 Term !!!!!!!!!!!!
-    !    !!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!  A1 Term !!!!!!!!!!!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!
 
-    !    !extract gvvov(adkc) as dakc and transform d and c, keep a since singles
-    !    !are constructed fully -> akcd
-    !    call ass_D1to4( w1,    p1, [nv, nv,pno,nv] )
-    !    call ass_D1to4( gvvov, p2, [nv, nv, no, nv] )
-    !    do b=1,nv
-    !    do j=1,pno
-    !      do i=1,nv
-    !      do a=1,nv
-    !        p1(i,a,j,b) = p2(a,i, idx(j),b)
-    !      enddo
-    !      enddo
-    !    enddo
-    !    enddo
-    !    p1 => null()
-    !    p2 => null()
-    !    
-    !    call dgemm('n','n',nv*nv*pno,pnv,nv,p10,w1,nv*nv*pno,d,nv,nul,w2,nv*nv*pno)
-    !    call dgemm('t','n',nv*pno*pnv,pnv,nv,p10,w2,nv,d,nv,nul,w1,nv*pno*pnv)
+        !extract gvvov(adkc) as dakc and transform d and c, keep a since singles
+        !are constructed fully -> akcd
+        call ass_D1to4( w1,    p1, [nv, nv,pno,nv] )
+        call ass_D1to4( gvvov, p2, [nv, nv, no, nv] )
+        do b=1,nv
+        do j=1,pno
+          do i=1,nv
+          do a=1,nv
+            p1(i,a,j,b) = p2(a,i, idx(j),b)
+          enddo
+          enddo
+        enddo
+        enddo
+        p1 => null()
+        p2 => null()
+        
+        call dgemm('n','n',nv*nv*pno,pnv,nv,p10,w1,nv*nv*pno,d,nv,nul,w2,nv*nv*pno)
+        call dgemm('t','n',nv*pno*pnv,pnv,nv,p10,w2,nv,d,nv,nul,w1,nv*pno*pnv)
 
-    !    !extract amplitudes as u kcdi with i = nc2
-    !    call ass_D1to4( w3, p3, [pno,pnv,pnv,1] )
-    !    call ass_D1to4( t,  p2, [pnv,pno,pnv,pno] )
-    !    do b=1,pnv
-    !      do j=1,pno
-    !      do a=1,pnv
-    !        p3(j,a,b,1) = p20 * p2(a,j,b,i_idx) - p2(b,j,a,i_idx)
-    !      enddo
-    !    enddo
-    !    enddo
-    !    p2 => null()
-    !    p3 => null()
+        !extract amplitudes as u kcdi with i = nc2
+        call ass_D1to4( w3, p3, [pno,pnv,pnv,1] )
+        call ass_D1to4( t,  p2, [pnv,pno,pnv,pno] )
+        do b=1,pnv
+          do j=1,pno
+          do a=1,pnv
+            p3(j,a,b,1) = p20 * p2(a,j,b,i_idx) - p2(a,i_idx,b,j)
+          enddo
+        enddo
+        enddo
+        p2 => null()
+        p3 => null()
 
-    !    call dgemv('n',nv,pno*pnv*pnv,p10,w1,nv,w3, 1, nul,w2,1)
+        call dgemv('n',nv,pno*pnv*pnv,p10,w1,nv,w3, 1, nul,w2,1)
 
-    !    o1(:,nc) = o1(:,nc) + w2(1:nv)
+        o1(:,nc) = o1(:,nc) + w2(1:nv)
 
-    !    !!!!!!!!!!!!!!!!!!!!!!!!!
-    !    !!!  C1 Term !!!!!!!!!!!!
-    !    !!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!  C1 Term !!!!!!!!!!!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!
 
-    !    !extract amplitudes as u aick with i = nc2
-    !    call ass_D1to4( w3, p3, [pnv,1,pnv,pno] )
-    !    call ass_D1to4( t,  p2, [pnv,pno,pnv,pno] )
-    !    do b=1,pnv
-    !      do j=1,pno
-    !      do a=1,pnv
-    !        p3(a,1,b,j) = p20 * p2(a,i_idx,b,j) - p2(b,i_idx,a,j)
-    !      enddo
-    !    enddo
-    !    enddo
-    !    p2 => null()
-    !    p3 => null()
-    !   
-    !    !get fock matrix in the current space and transform virtual idx
-    !    call ass_D1to2( w1, r1, [pno,nv] )
-    !    call ass_D1to2( ovf, r2,[ no,nv] )
-    !    do b=1,nv
-    !      do j=1,pno
-    !        r1(j,b) = r2(idx(j),b)
-    !      enddo
-    !    enddo
-    !    r1 => null()
-    !    r2 => null()
-    !    call dgemm('t','t',pnv,pno,nv,p10,d,nv,w1,pno,nul,w2,pnv)
+        !extract amplitudes as u aick with i = nc2
+        call ass_D1to4( w3, p3, [pnv,1,pnv,pno] )
+        call ass_D1to4( t,  p2, [pnv,pno,pnv,pno] )
+        do b=1,pnv
+          do j=1,pno
+          do a=1,pnv
+            p3(a,1,b,j) = p20 * p2(a,i_idx,b,j) - p2(a,j,b,i_idx)
+          enddo
+        enddo
+        enddo
+        p2 => null()
+        p3 => null()
+       
+        !get fock matrix in the current space and transform virtual idx
+        call ass_D1to2( w1, r1, [pno,nv] )
+        call ass_D1to2( ovf, r2,[ no,nv] )
+        do b=1,nv
+          do j=1,pno
+            r1(j,b) = r2(idx(j),b)
+          enddo
+        enddo
+        r1 => null()
+        r2 => null()
+        call dgemm('t','t',pnv,pno,nv,p10,d,nv,w1,pno,nul,w2,pnv)
 
-    !    !contract amplitudes with fock matrix and transform back
-    !    call dgemv('n',pnv,pno*pnv,p10,w3,pnv,w2,1,nul,w1,1)
+        !contract amplitudes with fock matrix and transform back
+        call dgemv('n',pnv,pno*pnv,p10,w3,pnv,w2,1,nul,w1,1)
 
-    !    !transform back
-    !    call dgemv('n',nv,pnv,p10,d,nv,w1,1,p10,o1(1,nc),1)
-    !    
+        !transform back
+        call dgemv('n',nv,pnv,p10,d,nv,w1,1,p10,o1(1,nc),1)
+        
 
-    !    d     => null()
-    !    t     => null()
-    !    idx   => null()
-    !    o     => null()
-    !    pnv   =  0
-    !    pno   =  0 
-    !    ns    =  0
-    !    i_idx =  0
-    !  enddo OverlapLoop
-    !enddo LoopSingles
+        d     => null()
+        t     => null()
+        idx   => null()
+        o     => null()
+        pnv   =  0
+        pno   =  0 
+        ns    =  0
+        i_idx =  0
+      enddo OverlapLoop
+    enddo LoopSingles
     o => null()
 
      
     !this subroutine assumes that symmetrization has already occured and only a
     !backtransformation to the original space is carried out
     call backtransform_omegas(pno_o2,pno_cv,o2,nspaces,no,nv)
-
-    call ass_D1to4(ref,p1,[nv,no,nv,no])
-    do a=1,nv
-      do i=1,no
-        do b=1,nv
-          do j=1,no
-            if(abs(o2(a,i,b,j)-p1(a,i,b,j))>1.0E-12)then
-              print *,"Wrong el in residual",a,i,b,j
-            endif
-          enddo
-        enddo
-      enddo
-    enddo
-    p1=>null()
-
-    call print_norm(o2,o2v2)
-    stop 0
 
     !Free everything
     call  mem_dealloc( oidx1 )
@@ -6462,7 +6091,7 @@ module cc_debug_routines_module
 
       if(pno_cv(ns)%allocd)then
 
-        pno =  pno_cv(ns)%pno
+        pno =  pno_cv(ns)%n
         pnv =  pno_cv(ns)%ns2
         d   => pno_cv(ns)%d
         po2 => pno_o2(ns)%elm4
@@ -6479,7 +6108,7 @@ module cc_debug_routines_module
         !symmetrized contribution in pno_o2 we can add up without taking care
         call ass_D1to4(tmp1,w1,[nv,pno,nv,pno])
 
-        if(pno_cv(ns)%n/=2)then
+        if(pno/=2)then
           do j = 1, pno
             do b = 1, nv
               do i = 1, pno
@@ -6490,10 +6119,14 @@ module cc_debug_routines_module
             enddo
           enddo
         else
-          do b = 1, nv
-            do a = 1, nv
-              o2(a,idx(1),b,idx(2)) = o2(a,idx(1),b,idx(2)) + w1(a,1,b,1)
-              o2(a,idx(2),b,idx(1)) = o2(a,idx(2),b,idx(1)) + w1(b,1,a,1)
+          do j = 1, pno
+            do b = 1, nv
+              do i = j + 1, pno
+                do a = 1, nv
+                  o2(a,idx(i),b,idx(j)) = o2(a,idx(i),b,idx(j)) + w1(a,i,b,j)
+                  o2(a,idx(j),b,idx(i)) = o2(a,idx(j),b,idx(i)) + w1(a,j,b,i)
+                enddo
+              enddo
             enddo
           enddo
         endif
@@ -6578,29 +6211,22 @@ module cc_debug_routines_module
     do nn=1,n
 
       pnv = cv(nn)%ns2
-      pno = cv(nn)%pno
+      pno = cv(nn)%n
 
       if(cv(nn)%allocd)then
 
         pno_t2(nn) = array_init([pnv,pno,pnv,pno],4)
 
         call ass_D1to4(tmp1,w1,[nv,pno,nv,pno])
-
-        if(cv(nn)%n==2)then
-
-          i = cv(nn)%iaos(1)
-          j = cv(nn)%iaos(2)
-          w1(:,1,:,1) = t2(:,i,:,j)
-
-        else
-
-          do j=1,pno
-            do i=1,pno
-              w1(:,i,:,j) = t2(:,cv(nn)%iaos(i),:,cv(nn)%iaos(j))
-            enddo
+        do j=1,pno
+        do b=1,nv
+          do i=1,pno
+          do a=1,nv
+            w1(a,i,b,j) = t2(a,cv(nn)%iaos(i),b,cv(nn)%iaos(j))
           enddo
-
-        endif
+          enddo
+        enddo
+        enddo
 
         call dgemm('t','n',pnv,pno**2*nv,nv,1.0E0_realk,cv(nn)%d,nv,w1,nv,0.0E0_realk,tmp2,pnv)
         call array_reorder_4d(1.0E0_realk,tmp2,pnv,pno,nv,pno,[3,4,1,2],0.0E0_realk,tmp1)
@@ -6613,11 +6239,11 @@ module cc_debug_routines_module
         !To avoid double counting -> this can be removed and savings introduced in
         !the algorithm if restrictions are put on the pair indices, but a bit more
         !complicated than this
-        !if(pno==2)then
-        !  do i = 1, pno
-        !    pno_t2(nn)%elm4(:,i,:,i) = 0.0E0_realk
-        !  enddo
-        !endif
+        if(pno==2)then
+          do i = 1, pno
+            pno_t2(nn)%elm4(:,i,:,i) = 0.0E0_realk
+          enddo
+        endif
       endif
 
     enddo
@@ -6652,7 +6278,6 @@ module cc_debug_routines_module
       call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1),ext_thr=DECinfo%EOSPNOthr)
       call mem_alloc(cv(1)%iaos,f%noccEOS)
       cv(1)%n    = f%noccEOS
-      cv(1)%pno  = f%noccEOS
       cv(1)%iaos = f%idxo
       counter = 1
 
@@ -6689,14 +6314,12 @@ module cc_debug_routines_module
             call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
             call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
             if(i==j)then
-              cv(counter)%n   = 1
-              cv(counter)%pno = 1
+              cv(counter)%n = 1
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i]
               det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
             else
-              cv(counter)%n   = 2
-              cv(counter)%pno = 1
+              cv(counter)%n = 2
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i,j]
               det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*2
@@ -6714,14 +6337,12 @@ module cc_debug_routines_module
           call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
           call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
           if(i==j)then
-            cv(counter)%n   = 1
-            cv(counter)%pno = 1
+            cv(counter)%n = 1
             call mem_alloc(cv(counter)%iaos,cv(counter)%n)
             cv(counter)%iaos = [i]
             det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
           else
-            cv(counter)%n   = 2
-            cv(counter)%pno = 1
+            cv(counter)%n = 2
             call mem_alloc(cv(counter)%iaos,cv(counter)%n)
             cv(counter)%iaos = [i,j]
             det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*2
