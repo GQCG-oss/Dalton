@@ -19,7 +19,7 @@ CONTAINS
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,nCDAB,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
     implicit none
@@ -40,7 +40,8 @@ CONTAINS
     !    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
     real(realk) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(inout) :: CDAB(:)
+    integer,intent(in) :: nCDAB
+    real(realk),intent(inout) :: CDAB(nCDAB)
     real(realk),intent(in) :: integralPrefactor(nPrimQP)
     logical,intent(in) :: PQorder
     !integralPrefactor(nPrimP,nPrimQ)
@@ -54,8 +55,6 @@ CONTAINS
     integer,intent(in) :: TMParray1maxsize,TMParray2maxsize
 !   TMP variables - allocated outside
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
-  
-    IF(nAtomsC*nAtomsD.NE.nPasses)Call ichorquit('nPass error',-1)
   
     IF(PQorder)THEN
        call IchorQuit('PQorder OBS general expect to get QP ordering',-1)
@@ -71,7 +70,7 @@ CONTAINS
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,nCDAB,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
    ELSEIF(Psegmented.AND.Qsegmented)THEN
@@ -81,7 +80,7 @@ CONTAINS
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,nCDAB,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
    ELSEIF(Psegmented)THEN
@@ -91,7 +90,7 @@ CONTAINS
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,nCDAB,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
    ELSEIF(Qsegmented)THEN
@@ -101,7 +100,7 @@ CONTAINS
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,nCDAB,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
    ELSE
@@ -111,7 +110,7 @@ CONTAINS
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,nCDAB,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
    ENDIF

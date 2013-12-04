@@ -419,11 +419,17 @@ module crop_tools_module
     type(array2),intent(inout) :: t1
     type(array4),intent(inout) :: t2
     real(realk) :: snorm,dnorm,tnorm
-     call print_norm(t1,snorm,.true.)
+     tnorm = 0.0E0_realk
+     dnorm = 0.0E0_realk
+     snorm = 0.0E0_realk
+
+     if(DECinfo%use_singles)call print_norm(t1,snorm,.true.)
      call print_norm(t2,dnorm,.true.)
      tnorm = sqrt(snorm+dnorm)
-     snorm = sqrt(snorm)
+     if(DECinfo%use_singles)snorm = sqrt(snorm)
      dnorm = sqrt(dnorm)
+
+
      if( .not. fj .or. DECinfo%PL>1)then
        write(DECinfo%output,*)
        write(DECinfo%output,'(/,a)') '-------------------------------'
@@ -472,13 +478,14 @@ module crop_tools_module
   !> \date: April 2013
   !> \param: t2, gvovo, t1, no and nv are nocc and nvirt, respectively, 
   !<         and U_occ and U_virt are unitary matrices from canonical --> local basis
-  subroutine ccsolver_can_local_trans(gvovo,t2,no,nv,Uocc,Uvirt,t1)
+  subroutine ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,gvovo,t2,t1,Co,Cv)
 
     implicit none
     !> integers
-    integer, intent(in) :: no, nv
+    integer, intent(in) :: no, nv, nb
     !> ccsd_doubles and ccsdpt_doubles
-    real(realk), intent(inout) :: t2(nv*nv*no*no), gvovo(nv*nv*no*no)
+    real(realk), intent(inout),optional :: t2(nv*nv*no*no), gvovo(nv*nv*no*no)
+    real(realk), intent(inout),optional :: Co(nb*no), Cv(nb*nv)
     !> unitary transformation matrices - indices: (local,semi-canonical)
     real(realk), intent(inout) :: Uocc(no*no), Uvirt(nv*nv)
     !> ccsdpt_singles
@@ -486,15 +493,15 @@ module crop_tools_module
     !> temp array2 and array4 structures
     real(realk),pointer :: tmp(:)
 
-    call mem_alloc(tmp,nv*nv*no*no)
+    call mem_alloc(tmp,max(nv*nv*no*no,nb*max(no,nv)))
 
     ! (a,i,b,j) are local basis indices and (A,I,B,J) refer to the canonical basis.
     ! on input t2 and gvovo are ordered AIBJ and t1 AI
 
-    call successive_xyxy_trafo(nv,no,t2,Uvirt,Uocc,tmp)
+    if(present(t2)) call successive_xyxy_trafo(nv,no,t2,Uvirt,Uocc,tmp)
 
     !successive transformation of gvovo:
-    call successive_xyxy_trafo(nv,no,gvovo,Uvirt,Uocc,tmp)
+    if(present(gvovo)) call successive_xyxy_trafo(nv,no,gvovo,Uvirt,Uocc,tmp)
 
     !if t1 trafo has to be done as well
     if(present(t1))then
@@ -504,16 +511,29 @@ module crop_tools_module
       call dgemm('n','t',nv,no,no,1.0E0_realk,tmp,nv,Uocc,no,0.0E0_realk,t1,nv)
     endif
 
+    if(present(Co))then
+      tmp(1:nb*no) = Co
+      ! tmp(alpha,I) U(i,I)^T   -> Co(alpha,i)
+      call dgemm('n','t',nb,no,no,1.0E0_realk,tmp,nb,Uocc,no,0.0E0_realk,Co,nb)
+    endif
+
+    if(present(Cv))then
+      tmp(1:nb*nv) = Cv
+      ! tmp(alpha,A) U(a,A)^T   -> Cv(alpha,a)
+      call dgemm('n','t',nb,nv,nv,1.0E0_realk,tmp,nb,Uvirt,nv,0.0E0_realk,Cv,nb)
+    endif
+
     call mem_dealloc(tmp)
   end subroutine ccsolver_can_local_trans
 
-  subroutine ccsolver_local_can_trans(gvovo,t2,no,nv,Uocc,Uvirt,t1)
+  subroutine ccsolver_local_can_trans(no,nv,nb,Uocc,Uvirt,gvovo,t2,t1,Co,Cv)
 
     implicit none
     !> integers
-    integer, intent(in) :: no, nv
+    integer, intent(in) :: no, nv, nb
     !> ccsd_doubles and ccsdpt_doubles
-    real(realk), intent(inout) :: t2(nv*nv*no*no), gvovo(nv*nv*no*no)
+    real(realk), intent(inout),optional :: t2(nv*nv*no*no), gvovo(nv*nv*no*no)
+    real(realk), intent(inout),optional :: Co(nb*no), Cv(nb*nv)
     !> unitary transformation matrices
     !> unitary transformation matrices - indices: (local,semi-canonical)
     real(realk), intent(inout) :: Uocc(no*no), Uvirt(nv*nv)
@@ -525,15 +545,15 @@ module crop_tools_module
 
     call mat_transpose(no,no,1.0E0_realk,Uocc,0.0E0_realk,UoccT)
     call mat_transpose(nv,nv,1.0E0_realk,Uvirt,0.0E0_realk,UvirtT)
-    call mem_alloc(tmp,nv*nv*no*no)
+    call mem_alloc(tmp,max(nv*nv*no*no,nb*max(no,nv)))
 
     ! (a,i,b,j) are local basis indices and (A,I,B,J) refer to the canonical basis.
     ! on input t2 and gvovo are ordered AIBJ and t1 AI
 
-    call successive_xyxy_trafo(nv,no,t2,UvirtT,UoccT,tmp)
+    if(present(t2))call successive_xyxy_trafo(nv,no,t2,UvirtT,UoccT,tmp)
 
     !successive transformation of gvovo:
-    !call successive_xyxy_trafo(nv,no,gvovo,UvirtT,UoccT,tmp)
+    if(present(gvovo))call successive_xyxy_trafo(nv,no,gvovo,UvirtT,UoccT,tmp)
 
     !if t1 trafo has to be done as well
     if(present(t1))then
@@ -541,6 +561,17 @@ module crop_tools_module
       call dgemm('n','n',nv,no,nv,1.0E0_realk,UvirtT,nv,t1,nv,0.0E0_realk,tmp,nv)
       ! tmp(aI) U(i,I)^T   -> t(ai)
       call dgemm('n','n',nv,no,no,1.0E0_realk,tmp,nv,Uocc,no,0.0E0_realk,t1,nv)
+    endif
+    if(present(Co))then
+      tmp(1:nb*no) = Co
+      ! tmp(alpha,i) U(i,I)   -> Co(alpha,I)
+      call dgemm('n','n',nb,no,no,1.0E0_realk,tmp,nb,Uocc,no,0.0E0_realk,Co,nb)
+    endif
+
+    if(present(Cv))then
+      tmp(1:nb*nv) = Cv
+      ! tmp(alpha,a) U(a,A)   -> Cv(alpha,A)
+      call dgemm('n','t',nb,nv,nv,1.0E0_realk,tmp,nb,Uvirt,nv,0.0E0_realk,Cv,nb)
     endif
 
     call mem_dealloc(tmp)
