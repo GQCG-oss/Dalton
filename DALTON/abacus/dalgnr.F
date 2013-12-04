@@ -1148,9 +1148,6 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
-#if defined (BUILD_PELIB)
-      use polarizable_embedding, only: pe_dalton_input
-#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1264,6 +1261,7 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
       DKHINT = .FALSE.
+      PEQM   = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       IF (NODTOT.GE.1) THEN
@@ -1510,14 +1508,14 @@ C        '.DOUGLA'
             DKTRAN = .TRUE.
          GOTO 100
 !        .PEQM
- 133     continue
+ 133     CONTINUE
 #if defined (BUILD_PELIB)
-            peqm = .true.
+            PEQM = .TRUE.
 #else
-            write(lupri,*) 'ERROR for .PEQM: PE library not enabled.'
-            call quit('ERROR for .PEQM: PE library not enabled.')
+            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
+            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
 #endif
-         goto 100
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1631,7 +1629,7 @@ C     ... default print level for statistics /hjaaj apr 2000
      &          ' (ABACUS module)'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
-        if (peqm) write(lupri,'(4x,a)')
+      IF (PEQM) WRITE(LUPRI,'(4X,A)')
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
 C
@@ -1733,14 +1731,13 @@ C     "*QMMM  " input
       GO TO 200
 
 !     "*PEQM  " input
-   10 continue
+   10 CONTINUE
 #if defined (BUILD_PELIB)
-        call pe_dalton_input(word, lucmd, lupri)
+        CALL PE_IFC_DALINP_READER(WORD)
 #else
-        call quit('ERROR for *PBE: PE library not enabled.')
+        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
 #endif
-      goto 200
-
+      GOTO 200
 C
 C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
    11 CONTINUE

@@ -2354,9 +2354,6 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
-#if defined (BUILD_PELIB)
-      use polarizable_embedding, only: pe_init
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -2595,11 +2592,9 @@ C     ******************************************
 C
       IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
 
-#if defined (BUILD_PELIB)
-      if (.NOT.SLAVE .and. peqm) then
-        call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
-      end if
-#endif
+      if (.NOT.SLAVE .AND. PEQM) THEN
+        CALL PE_IFC_INIT()
+      END IF
 C
  1010 FORMAT(I14,' large AO-blocks of ',A1,' type')
  1020 FORMAT(I14,' small AO-blocks of ',A1,' type')
@@ -4581,11 +4576,6 @@ C
 #include "chrnos.h"
 #include "ibtfun.h"
 C
-      LOGICAL :: POLEMB = .FALSE.
-#if defined (BUILD_PELIB)
-      POLEMB = .TRUE.
-#endif
-C
       NCOOR = 3*NUCDEP
 C
 C     *********************************
@@ -4595,7 +4585,7 @@ C
       IPTEST = MIN(NUCDEP/13,2)
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
-      IF (QMMM .OR. POLEMB) IPTEST = 0
+      IF (QMMM .OR. PEQM) IPTEST = 0
       IF ( IPREAD .GT. IPTEST )  THEN
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
@@ -6676,7 +6666,7 @@ C
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
-! gnrinf.h : peqm
+! gnrinf.h : PEQM
 #include "gnrinf.h"
 ! molinp.h : len_MLINE
 #include "mxcent.h"
@@ -6860,19 +6850,17 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
          DOOWN  = CRT .EQ. 'X'
       END IF
       IF (ADDSYM) NSYMOP = 0
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        if (addsym) then
-            addsym = .false.
-        else if (nsymop > 0) then
-            write(lupri,'(/a)') 'ERROR: point group symmetry is'//
+      IF (PEQM) THEN
+        IF (ADDSYM) THEN
+            ADDSYM = .FALSE.
+        ELSE IF (NSYMOP > 0) THEN
+            WRITE(LUPRI,'(/A)') 'ERROR: point group symmetry is'//
      &                          ' incompatible with polarizable'//
      &                          ' embedding'
-            call quit('point group symmetry is incompatible with'//
+            CALL QUIT('point group symmetry is incompatible with'//
      &                ' polarizable embedding')
-        end if
-      end if
-#endif
+        END IF
+      END IF
       RETURN
  199  CONTINUE
       WRITE (LUPRI,'(/A)') ' Error in the determination of the number'
