@@ -219,7 +219,7 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
    call pbc_ff_fck(ll%tlmax,tlat,ll%lmax,ndim,ll,nfdensity,nucmom,&
                    g_2,E_ff,E_nn,lupri)
 
-  CALL pbc_nucpot(lupri,luerr,setting,molecule,ll,&
+  CALL pbc_nucpot(lupri,luerr,setting,molecule%natoms,ll,&
                   latt_cell,refcell,numrealvec,E_nuc)
 #ifdef DEBUGPBC
    do n1=1,numrealvec

@@ -416,7 +416,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 	!CALCULATES nuclear repulsion
 	CALL LSTIMER('START ',TS,TE,LUPRI)
-	CALL pbc_nucpot(lupri,luerr,setting,molecule,lattice,&
+	CALL pbc_nucpot(lupri,luerr,setting,molecule%natoms,lattice,&
 		latt_cell,refcell,numrealvec,E_nuc)
 	CALL LSTIMER('pbc_nucpot',TS,TE,LUPRI)
 

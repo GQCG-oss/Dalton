@@ -532,10 +532,10 @@ else
     call pbc_overlap_int(lupri,luerr,setting,nbast,lattice,latt_cell, &
 		 & refcell,num_latvectors)
   
-    call pbc_kinetic_int(lupri,luerr,setting,input%molecule,nbast,fck,&
+    call pbc_kinetic_int(lupri,luerr,setting,input%molecule%natoms,nbast,fck,&
      sze,lattice,latt_cell,refcell,num_latvectors)
   
-    call pbc_nucattrc_int(lupri,luerr,setting,input%molecule,nbast,fck,&
+    call pbc_nucattrc_int(lupri,luerr,setting,input%molecule%natoms,nbast,fck,&
      sze,lattice,latt_cell,refcell,num_latvectors)
      
     call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
@@ -602,7 +602,7 @@ else
     enddo
   endif
  
-    call pbc_electron_rep(lupri,luerr,setting,input%molecule,nbast,&
+    call pbc_electron_rep(lupri,luerr,setting,input%molecule%natoms,nbast,&
      lattice,latt_cell,refcell,num_latvectors,nfdensity,nfsze)
   
 !  call pbc_complete_Fock_mtx(lupri,nbast,S_ab,sze,cutoff,ll)

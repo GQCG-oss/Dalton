@@ -967,321 +967,201 @@ SUBROUTINE pbc_overlap_int(lupri,luerr,setting,nbast,lattice,latt_cell,refcell,n
 
 END SUBROUTINE pbc_overlap_int
 
-!
-SUBROUTINE pbc_kinetic_int(lupri,luerr,setting,molecule,nbast,fock_mtx,sizef,lattice,latt_cell,refcell,numvecs)
-  IMPLICIT NONE
+!> \author Johannes Rekkedal
+!> \date 2013
+!> \brief For computing Kin. E. integrals (i|T|j) 
+!> \param lupri 			Logical print unit output file.
+!> \param luerr 			Logical print unit error file.
+!> \param setting 		Integral settings.
+!> \param natoms 			Number of atoms.
+!> \param nbast 			Number of basis func.
+!> \param fock_mtx 		Fock matrix.
+!> \param sizef 			Num col/row in fock matrix.
+!> \param lattice 		Information about the lattice.
+!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
+!> \param refcell 		Molecule info. Threat reference cell as molecule.
+!> \param numvecs 		Number of unitcells in the BvK lattice
+SUBROUTINE pbc_kinetic_int(lupri,luerr,setting,natoms,nbast,fock_mtx,sizef, &
+		& lattice,latt_cell,refcell,numvecs)
+	IMPLICIT NONE
+	! input and output variables
+	INTEGER, INTENT(IN) :: lupri,luerr,nbast,sizef,numvecs,natoms
+	COMPLEX(complexk), INTENT(INOUT) :: fock_mtx(sizef*sizef)
+	TYPE(lssetting),INTENT(INOUT) :: setting 
+	TYPE(moleculeinfo),INTENT(IN) :: refcell
+	TYPE(moleculeinfo),DIMENSION(numvecs),INTENT(IN) :: latt_cell
+	TYPE(lvec_list_t),intent(INOUT) ::lattice
+	! local variables
+	TYPE(MATRIX) :: kin
+	INTEGER :: il1,il2,il3
+	INTEGER :: indx,refindex
+!	REAL(realk) :: fock_tmp(nbast*nbast)
 
-  INTEGER, INTENT(IN) :: lupri, luerr,nbast,sizef,numvecs
-  COMPLEX(complexk), INTENT(INOUT) :: fock_mtx(sizef*sizef)
-  TYPE(moleculeinfo),INTENT(IN) :: molecule
-  TYPE(LSSETTING),intent(inout)   :: SETTING 
+	write(lupri,*) 'Starting pbc_kinetic_int'
 
-  ! local variables
-  REAL(realk), DIMENSION(12) :: Tvec
-  TYPE(moleculeinfo)  :: refcell
-  TYPE(moleculeinfo), DIMENSION(numvecs),INTENT(IN) :: latt_cell
-  TYPE(MATRIX)  :: kin
-  REAL(realk) :: std_vec_length
-  INTEGER :: i,j,il1,il2,il3
-  INTEGER ::  index, refindex
-  INTEGER :: num_latvectors, natoms
-  REAL(realk) :: latt_vec_std(3),origin(3)
-  REAL(realk) :: fock_tmp(nbast*nbast)
-  TYPE(lvec_list_t),intent(INOUT) ::lattice
+	call find_latt_index(refindex,0,0,0,lattice,lattice%max_layer)
+	write(lupri,*) 'reference cell index=', refindex,lattice%max_layer
 
-  write(lupri,*) 'Starting pbc_kinetic_int'
-  natoms=molecule%natoms
+	call mat_init(kin,nbast,nbast)
+	call mat_zero(kin)
+!	write(lupri,*) 'nbast',nbast,kin%ncol,kin%nrow
 
+	do indx=1,numvecs
+		call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(indx),3)
+		call find_latt_vectors(indx,il1,il2,il3,lattice)
+		if(abs(il1) .gt. lattice%nneighbour) CYCLE
+		if(abs(il2) .gt. lattice%nneighbour) CYCLE
+		if(abs(il3) .gt. lattice%nneighbour) CYCLE
 
-  origin(1:3)=1.0_realk
-  latt_vec_std(1:3)=0.0_realk
+		setting%samemol(1,3)=.false.
+		setting%samemol(3,1)=.false.
+		call II_get_kinetic(lupri,luerr,setting,kin)
 
-  call latt_2_std_coord(origin,latt_vec_std,lattice%ldef%avec)
+!		fock_tmp=kin%elms
+!		write(lupri,*) fock_tmp
+!		fock_mtx=fock_tmp
 
-  std_vec_length= sqrt(latt_vec_std(1)**2+latt_vec_std(2)**2+latt_vec_std(3)**2)
+	end do
 
-  num_latvectors=size(lattice%lvec)
+	call mat_free(kin)
+	write(lupri,*) 'Finished pbc_kinetic_int'
 
-  call find_latt_index(refindex,0,0,0,lattice,lattice%max_layer)
-  write(lupri,*) 'reference cell index=', refindex,lattice%max_layer
-  fock_tmp(:)= 0.0_realk
-  tvec(1:12)=0.0_realk
-  i=1
-
-  call mat_init(kin,nbast,nbast)
-  call mat_zero(kin)
-  write(lupri,*) 'nbast',nbast,kin%ncol,kin%nrow
-
-  DO index=1,num_latvectors
-     
-
-
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),3)
-
-     !call calc_distance(distance,lattice%lvec(index)%std_coord,latt_vec_std)
-     call find_latt_vectors(index,il1,il2,il3,lattice)
-     if(abs(il1) .gt. lattice%nneighbour) CYCLE
-     if(abs(il2) .gt. lattice%nneighbour) CYCLE
-     if(abs(il3) .gt. lattice%nneighbour) CYCLE
-     !phase=cmplx(0,k1*il1+k2*il2+k3*il3)
-    
-
-     setting%samemol(1,3)=.false.
-     setting%samemol(3,1)=.false.
-     call II_get_kinetic(lupri,luerr,setting,kin)
-
-!     if(lattice%compare_elmnts) then
-!       !compare integrals with the old pbc code
-!       write(lupri,*) 'comparing kinetic elements with old pbc code'
-!       matris(:,:) =0.0
-!       write(lupri,*) il1,il2,il3
-!       call pbc_readopmat2(il1,il2,il3,matris,nbast,'KINETIC',.true.,.false.)
-!       call write_matrix(matris,nbast,nbast)
-!!       call pbc_readopmat2(0,0,0,matris,2,'OVERLAP',.true.,.false.)
-!       write(lupri,*) ''
-!       write(lupri,*) 'To compare with the matrix below'
-!       CALL mat_print(kin1,1,kin1%nrow,1,kin1%ncol,6)
-!     endif
-
-     i=1
-     j=0
-!     call mat_print(kin1,1,kin1%nrow,1,kin1%ncol,6)
-!     write(lupri,*) kin1%elms
-!     STOP
-  !   DO k=1,nbast*nbast
-  !      j=j+1
-  !      if(j .gt. nbast) Then
-  !        j=1
-  !        i=i+1
-  !      ENDIF
-  !      fock_tmp(j,i)=kin1%elms(k)
-    ! ENDDO
-    fock_tmp=kin%elms!*exp(phase)
-     write(lupri,*) fock_tmp
-     i=0
-   !  DO k=refindex*nbast-nbast+1,refindex*nbast 
-   !    i=i+1
-   !    j=
-   !  DO m=index*nbast-nbast+1,index*nbast 
-   !    j=j+1
-   !    fock_mtx(k,m)=fock_tmp(i,j)!*coeff(k,m)
-   !    fock_mtx(m,k)=fock_mtx(k,m)!dagger if complex
-   !  ENDDO
-   !  ENDDO
-        fock_mtx=fock_tmp
-
-  END DO
-
-  call mat_free(kin)
-  write(lupri,*) 'Finished pbc_kinetic_int'
-
-!!
 END SUBROUTINE pbc_kinetic_int
-!
-!
-SUBROUTINE pbc_nucattrc_int(lupri,luerr,setting,molecule,nbast,fock_mtx,sizef,lattice,latt_cell,refcell,numvecs)
-  IMPLICIT NONE
 
-  INTEGER, INTENT(IN) :: lupri, luerr,nbast,sizef,numvecs
-  TYPE(moleculeinfo),INTENT(IN) :: molecule,refcell
-  COMPLEX(complexk), INTENT(INOUT) :: fock_mtx(sizef*sizef)
-  TYPE(LSSETTING),intent(inout)   :: SETTING 
-!  TYPE(DALTONINPUT) :: INPUT
-  TYPE(MATRIX)  :: H,H1
+!> \author Johannes Rekkedal
+!> \date 2013
+!> \brief For computing Nuc. E. integrals 
+!> \param lupri 			Logical print unit output file.
+!> \param luerr 			Logical print unit error file.
+!> \param setting 		Integral settings.
+!> \param natoms 			Number of atoms.
+!> \param nbast 			Number of basis func.
+!> \param fock_mtx 		Fock matrix.
+!> \param sizef 			Num col/row in fock matrix.
+!> \param lattice 		Information about the lattice.
+!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
+!> \param refcell 		Molecule info. Threat reference cell as molecule.
+!> \param numvecs 		Number of unitcells in the BvK lattice
+SUBROUTINE pbc_nucattrc_int(lupri,luerr,setting,natoms,nbast,fock_mtx, &
+		& sizef,lattice,latt_cell,refcell,numvecs)
+	IMPLICIT NONE
+	! input and output
+	INTEGER, INTENT(IN) :: lupri,luerr,nbast,sizef,numvecs,natoms
+	COMPLEX(complexk), INTENT(INOUT) :: fock_mtx(sizef*sizef)
+	TYPE(lssetting),INTENT(INOUT)   :: setting 
+	TYPE(moleculeinfo),DIMENSION(numvecs),INTENT(IN) :: latt_cell
+	TYPE(moleculeinfo),INTENT(IN) :: refcell
+	TYPE(lvec_list_t),intent(INOUT) ::lattice
+	! local variables
+	TYPE(matrix)  :: H,H1
+	INTEGER :: il11,il12,il13,il21,il22,il23
+	INTEGER ::  index1,index2,refindex
+!	REAL(realk) :: fock_tmp(nbast*nbast)
 
-  ! local variables
-  REAL(realk), DIMENSION(12) :: Tvec
-!  TYPE(moleculeinfo), pointer :: lattice_cell(:)
-  TYPE(moleculeinfo), DIMENSION(numvecs),INTENT(IN) :: latt_cell
-  REAL(realk) :: std_vec_length
-  INTEGER :: il11,il12,il13,il21,il22,il23
-  INTEGER ::  index1,index2, refindex
-  INTEGER ::  num_latvectors, natoms
-  REAL(realk)::  latt_vec_std(3),origin(3)
-  REAL(realk) :: fock_tmp(nbast*nbast)
-  TYPE(lvec_list_t),intent(INOUT) ::lattice
+	call mat_init(H,nbast,nbast)
+	call mat_zero(H)
+	call mat_init(H1,nbast,nbast)
+	call mat_zero(H1)
 
-  natoms=molecule%natoms
+	call find_latt_index(refindex,0,0,0,lattice,lattice%max_layer)
+	write(lupri,*) 'reference cell index=', refindex
 
+	do index1=1,numvecs
 
-  call mat_init(H,nbast,nbast)
-  call mat_zero(H)
-  call mat_init(H1,nbast,nbast)
-  call mat_zero(H1)
+		call find_latt_vectors(index1,il11,il12,il13,lattice)
+		if(abs(il11) .gt. lattice%nneighbour) CYCLE
+		if(abs(il12) .gt. lattice%nneighbour) CYCLE
+		if(abs(il13) .gt. lattice%nneighbour) CYCLE
 
-  origin(1:3)=1.0
-  latt_vec_std(:)=0.0_realk
+		do index2=1,numvecs
+			call find_latt_vectors(index2,il21,il22,il23,lattice)
+			if(abs(il21) .gt. lattice%nneighbour) CYCLE !uncomment this
+			if(abs(il22) .gt. lattice%nneighbour) CYCLE
+			if(abs(il23) .gt. lattice%nneighbour) CYCLE
 
+			call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),2,latt_cell(index2),3)
 
-  call latt_2_std_coord(origin,latt_vec_std,lattice%ldef%avec)
+			setting%samemol(1,3)=.false.
+			setting%samemol(3,1)=.false.
+			setting%samemol(1,2)=.false.
+			setting%samemol(2,1)=.false.
+			setting%samemol(3,2)=.false.
+			setting%samemol(2,3)=.false.
 
-  std_vec_length= sqrt(latt_vec_std(1)**2+latt_vec_std(2)**2+latt_vec_std(3)**2)
+			call II_get_nucel_mat(lupri,luerr,setting,H1)
+			call mat_add(1E0_realk,H,1E0_realk,H1,H)
+		enddo
 
-  num_latvectors=size(lattice%lvec)
-  
-  call find_latt_index(refindex,0,0,0,lattice,lattice%max_layer)
-  write(lupri,*) 'reference cell index=', refindex
+!    	fock_tmp=H1%elms
+		fock_mtx=fock_mtx+H1%elms
+		call mat_print(H1,1,H1%nrow,1,H1%ncol,6)
+		call mat_zero(H1)
 
-  tvec(1:12)=0.0_realk
- 
+	enddo
 
-  DO index1=1,num_latvectors
-
-
-
-!  call calc_distance(distance,lattice%lvec(index1)%std_coord,latt_vec_std)
-  call find_latt_vectors(index1,il11,il12,il13,lattice)
-  if(abs(il11) .gt. lattice%nneighbour) CYCLE
-  if(abs(il12) .gt. lattice%nneighbour) CYCLE
-  if(abs(il13) .gt. lattice%nneighbour) CYCLE
-  !phase=(0,k1*il1+k2*il2+k3*il3)
-
-
-  DO index2=1,num_latvectors
-
-
-     call find_latt_vectors(index2,il21,il22,il23,lattice)
-     if(abs(il21) .gt. lattice%nneighbour) CYCLE !uncomment this
-     if(abs(il22) .gt. lattice%nneighbour) CYCLE
-     if(abs(il23) .gt. lattice%nneighbour) CYCLE
-
-    ! call calc_distance(distance,lattice%lvec(index2)%std_coord,latt_vec_std)
-
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),2,latt_cell(index2),3)
-
-         setting%samemol(1,3)=.false.
-         setting%samemol(3,1)=.false.
-         setting%samemol(1,2)=.false.
-         setting%samemol(2,1)=.false.
-         setting%samemol(3,2)=.false.
-         setting%samemol(2,3)=.false.
-
-         call II_get_nucel_mat(lupri,luerr,setting,H1)
-         call mat_add(1E0_realk,H,1E0_realk,H1,H)
-         
-!         write(lupri,*) 'H%elms', H%elms
-
-
-  ENDDO
-
-!     i=1
-!     j=0
-!     DO k=1,nbast*nbast
-!        j=j+1
-!        if(j .gt. nbast) Then
-!          j=1
-!          i=i+1
-!        ENDIF
-!        fock_tmp(j,i)=H%elms(k)
-!     ENDDO
-     !call mat_print(H,1,H%nrow,1,H%ncol,6)
-     !call write_matrix(fock_tmp,2,2)
-     !STOP
-     fock_tmp=H1%elms
-!     i=0
-!     DO k=refindex*nbast-nbast+1,refindex*nbast 
-!       i=i+1
-!       j=0
-!     DO m=index1*nbast-nbast+1,index1*nbast 
-!       j=j+1
-!       fock_mtx(k,m)=fock_mtx(k,m)+fock_tmp(i,j)!*coeff(k,m)
-!       fock_mtx(m,k)=fock_mtx(k,m)!dagger if complex
-!     ENDDO
-!     ENDDO
-
-     fock_mtx=fock_mtx+fock_tmp!*coeff(k,m)
-     call mat_print(H1,1,H1%nrow,1,H1%ncol,6)
-!    write(lupri,*) 'H%elms', H%elms
-!  if(lattice%compare_elmnts) then
-!    !comparing integrals with the old pbc code
-!    write(lupri,*) 'comparing nucleus-electron elements with old pbc code'
-!    matris(:,:) =0.0
-!
-!    write(lupri,*) il11,il12,il13
-!
-!    call pbc_readopmat2(il11,il12,il13,matris,nbast,'NUCVNF2',.true.,.false.)
-!    call write_matrix(matris,nbast,nbast)
-!    write(lupri,*) ''
-!    write(lupri,*) 'To compare with the matrix below'
-!    CALL mat_print(H,1,H%nrow,1,H%ncol,6)
-!  endif
-
-    call mat_zero(H1)
-
-  ENDDO
-
-  call mat_free(H)
-  call mat_free(H1)
-  write(lupri,*) 'finished with pbc_nucattrc_int'
+	call mat_free(H)
+	call mat_free(H1)
+	write(lupri,*) 'finished with pbc_nucattrc_int'
 
 END SUBROUTINE pbc_nucattrc_int
-!
-!
-!SUBROUTINE for computing the nuclear repulsions
-SUBROUTINE pbc_nucpot(lupri,luerr,setting,molecule,lattice,&
- latt_cell,refcell,numvecs,E_nn)
 
-  implicit none
+!> \author Johannes Rekkedal
+!> \date 2013
+!> \brief For computing Nuc. repulsions.
+!> \param lupri 			Logical print unit output file.
+!> \param luerr 			Logical print unit error file.
+!> \param setting 		Integral settings.
+!> \param natoms 			Number of atoms.
+!> \param lattice 		Information about the lattice.
+!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
+!> \param refcell 		Molecule info. Threat reference cell as molecule.
+!> \param numvecs 		Number of unitcells in the BvK lattice.
+!> \param E_nn 			Nuclear repulsion potential energy.
+SUBROUTINE pbc_nucpot(lupri,luerr,setting,natoms,lattice, &
+		& latt_cell,refcell,numvecs,e_nn)
+  IMPLICIT NONE
   ! input and output arguments
-  INTEGER, INTENT(IN) :: lupri, luerr, numvecs
-  TYPE(moleculeinfo),INTENT(INOUT) :: molecule
-  TYPE(moleculeinfo),intent(inout) :: refcell
-  TYPE(lvec_list_t),intent(INOUT) ::lattice
-  Real(realk),INTENT(INOUT) :: E_nn
-
+  INTEGER, INTENT(IN) :: lupri,luerr,numvecs,natoms
+  TYPE(moleculeinfo),INTENT(INOUT) :: refcell
+  TYPE(lvec_list_t),INTENT(INOUT) ::lattice
+  TYPE(lssetting),INTENT(INOUT) :: setting 
+  TYPE(moleculeinfo),INTENT(IN) :: latt_cell(numvecs)
+  REAL(realk),INTENT(INOUT) :: E_nn
   ! local variables
   REAL(realk) :: kvec(3)
-  TYPE(LSSETTING),intent(inout)   :: SETTING 
-  TYPE(moleculeinfo),intent(in) :: latt_cell(numvecs)
-  INTEGER :: i,j,m,il1,il2,il3
-  INTEGER :: index,refindex
-  INTEGER :: natoms,iunit,maxl1,maxl2,maxl3
-  REAL(realk) :: latt_vec_std(3)
+  INTEGER :: il1,il2,il3
+  INTEGER :: indx,refindex
   REAL(realk) :: nucpot
-
-
-
-  natoms=molecule%natoms!number of atoms
+	
+  E_nn=0.0_realk
 
   call set_lstime_print(.false.)
-
-  latt_vec_std(:)=0.0_realk
-
   write(lupri,*) 'Number of lattice vectors ', numvecs
-
   !finds the lattice index for the reference cell.
-  !i.e for l1=l2=l3=0
   call find_latt_index(refindex,0,0,0,lattice,lattice%max_layer)
 
-  E_nn=0._realk
   !loop over lattice cells
+  do indx=1,numvecs
 
-  DO index=1,numvecs
-     
-
-  !Doing translations
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index),3)
+	  !Doing translations
+     call typedef_setmolecules(setting,refcell,1,latt_cell(indx),3)
      setting%samemol(1,3)=.false.
      setting%samemol(3,1)=.false.
 
-     call find_latt_vectors(index,il1,il2,il3,lattice)
+     call find_latt_vectors(indx,il1,il2,il3,lattice)
      !So that we do not consider negligible integrals
      if(abs(il1) .gt. lattice%nf) CYCLE
      if(abs(il2) .gt. lattice%nf) CYCLE
      if(abs(il3) .gt. lattice%nf) CYCLE
 
-     if(index .eq. refindex) then
-
+     if(indx .eq. refindex) then
        call II_get_nucpot(lupri,luerr,setting,nucpot)
      else
        call pbc_get_nucpot(lupri,luerr,setting,nucpot)
      endif
      E_nn=E_nn+nucpot
 
-  END DO
-  !E_nn=E_nn/2.
-
- ! write(*,*) 'Debug 2', E_nn
+  end do
 
 END SUBROUTINE pbc_nucpot
 
@@ -1293,325 +1173,214 @@ END SUBROUTINE pbc_nucpot
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
 !> \param nucpot the nuclear repulsion energy contribution
-SUBROUTINE pbc_get_nucpot(LUPRI,LUERR,SETTING,NUCPOT)
-IMPLICIT NONE
-TYPE(LSSETTING)       :: SETTING
-integer             :: usemat
-INTEGER               :: LUPRI,LUERR
-REAL(realk)           :: nucpot
-Integer               :: I,J
-real(realk)           :: pq(3),distance
-logical               :: NOBQBQ
-call time_II_operations1()
-NOBQBQ = SETTING%SCHEME%NOBQBQ
-NUCPOT=0.0E0_realk
-DO I=1,SETTING%MOLECULE(1)%p%Natoms
- IF(SETTING%MOLECULE(1)%p%ATOM(I)%phantom)CYCLE
- DO J=1,SETTING%MOLECULE(1)%p%Natoms
-  IF(SETTING%MOLECULE(1)%p%ATOM(J)%phantom)CYCLE
-  
-  if(setting%molecule(1)%p%ATOM(I)%Pointcharge .and. &
-    &setting%molecule(1)%p%ATOM(J)%Pointcharge .and. NOBQBQ) cycle
+SUBROUTINE pbc_get_nucpot(lupri,luerr,setting,nucpot)
+	IMPLICIT NONE
+	TYPE(lssetting) :: setting
+	INTEGER :: usemat
+	INTEGER :: lupri,luerr
+	REAL(realk) :: nucpot
+	INTEGER :: i,j
+	REAL(realk) :: pq(3),distance
+	LOGICAL :: nobqbq
 
-  pq(1) = SETTING%MOLECULE(1)%p%ATOM(I)%CENTER(1)-SETTING%MOLECULE(3)%p%ATOM(J)%CENTER(1)
-  pq(2) = SETTING%MOLECULE(1)%p%ATOM(I)%CENTER(2)-SETTING%MOLECULE(3)%p%ATOM(J)%CENTER(2)
-  pq(3) = SETTING%MOLECULE(1)%p%ATOM(I)%CENTER(3)-SETTING%MOLECULE(3)%p%ATOM(J)%CENTER(3)
-  Distance = sqrt(pq(1)*pq(1)+pq(2)*pq(2)+pq(3)*pq(3))
-  NUCPOT=NUCPOT+SETTING%MOLECULE(1)%p%ATOM(I)%Charge*SETTING%MOLECULE(3)%p%ATOM(J)%Charge/Distance
- ENDDO
-ENDDO
-NUCPOT=NUCPOT/2.
-call time_II_operations2(JOB_II_get_nucpot)
+	call time_II_operations1()
+	nobqbq=setting%scheme%nobqbq
+	nucpot=0.0e0_realk
+
+	do i=1,setting%molecule(1)%p%natoms
+		if(setting%molecule(1)%p%atom(i)%phantom) CYCLE
+
+		do j=1,setting%molecule(1)%p%natoms
+
+			if(setting%molecule(1)%p%atom(j)%phantom) CYCLE
+			if(setting%molecule(1)%p%atom(i)%pointcharge &
+			  	& .and. setting%molecule(1)%p%atom(j)%pointcharge &
+				& .and. nobqbq) CYCLE
+
+			pq(1)=setting%molecule(1)%p%atom(i)%center(1) &
+				& - setting%molecule(3)%p%atom(j)%center(1)
+			pq(2)=setting%molecule(1)%p%atom(i)%center(2) & 
+				& - setting%molecule(3)%p%atom(j)%center(2)
+			pq(3)=setting%molecule(1)%p%atom(i)%center(3) - &
+				& setting%molecule(3)%p%atom(j)%center(3)
+
+			distance=sqrt(pq(1)*pq(1)+pq(2)*pq(2)+pq(3)*pq(3))
+			nucpot=nucpot+setting%molecule(1)%p%atom(i)%charge &
+				& * setting%molecule(3)%p%atom(j)%charge/distance
+		enddo
+	enddo
+	nucpot=nucpot/2.
+	call time_ii_operations2(job_ii_get_nucpot)
+
 END SUBROUTINE pbc_get_nucpot
 
-SUBROUTINE pbc_electron_rep(lupri,luerr,setting,molecule,&
- nbast,lattice,latt_cell,refcell,numvecs,nfdensity,nfsze)
-  IMPLICIT NONE
+!> \brief Calculates the nuclear repulsion energy contribution
+!> \author S. Reine and T. Kjaergaard
+!> \modified by J. Rekkedal
+!> \date 2012
+!> \param lupri 			Logical print unit output file.
+!> \param luerr 			Logical print unit error file.
+!> \param setting 		Integral settings.
+!> \param natoms 			Number of atoms.
+!> \param nbast 			Number of basis functions.
+!> \param lattice 		Information about the lattice.
+!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
+!> \param refcell 		Molecule info. Threat reference cell as molecule.
+!> \param numvecs 		Number of unitcells in the BvK lattice.
+!> \param nfdensity 		The density matrix.
+!> \param nfsze 			Num densmat nearfield.
+SUBROUTINE pbc_electron_rep(lupri,luerr,setting,natoms, &
+		& nbast,lattice,latt_cell,refcell,numvecs,nfdensity,nfsze)
+	IMPLICIT NONE
+	! inout and output
+	INTEGER, INTENT(IN) :: lupri,luerr,nbast,numvecs,nfsze,natoms
+	TYPE(moleculeinfo),INTENT(IN) :: refcell
+	TYPE(lssetting),INTENT(INOUT) :: setting 
+	TYPE(matrix),INTENT(INOUT),DIMENSION(nfsze) :: nfdensity
+	TYPE(moleculeinfo), INTENT(IN), DIMENSION(numvecs) :: latt_cell
+	TYPE(lvec_list_t),INTENT(INOUT) ::lattice
+	! local variables
+	TYPE(MATRIX)  :: F(1),F_tmp(1)
+	INTEGER :: il21,il22,il23,l1,l2,l3
+	INTEGER :: il31,il32,il33,newcell
+	INTEGER ::  index1,index2,index3
+	INTEGER :: checknf,checknf1,checknf2,checknf3
 
-  INTEGER, INTENT(IN) :: lupri, luerr ,nbast,numvecs,nfsze
-  TYPE(moleculeinfo),INTENT(IN) :: molecule,refcell
-  TYPE(LSSETTING),intent(inout)   :: SETTING 
-  TYPE(matrix),intent(inout),DIMENSION(nfsze) :: nfdensity
-  TYPE(MATRIX)  :: F(1),F_tmp(1)
+	call mat_init(F(1),nbast,nbast)
+	call mat_zero(F(1))
+	call mat_init(F_tmp(1),nbast,nbast)
+	call mat_zero(F_tmp(1))
 
-  ! local variables
-  REAL(realk), DIMENSION(12) :: Tvec
-  !TYPE(moleculeinfo), pointer :: lattice_cell(:)
-  TYPE(moleculeinfo), INTENT(IN), DIMENSION(numvecs) :: latt_cell
-  !TYPE(lattice_cell_info_t),pointer :: lat_cells(:)
-  REAL(realk) :: std_vec_length
-  INTEGER :: il21,il22,il23
-  INTEGER :: il31,il32,il33, newcell,il1,il2,il3
-  INTEGER ::  index1,index2,index3
-  INTEGER :: l1,l2,l3, num_latvectors, natoms
-  INTEGER :: checknf,checknf1,checknf2,checknf3
-  REAL(realk):: latt_vec_std(3),origin(3)
-  TYPE(lvec_list_t),intent(inout) ::lattice
+	do index1=1,numvecs
+!		call find_latt_vectors(index1,il1,il2,il3,lattice)
+		do index2=1,numvecs
 
-  natoms=molecule%natoms
+			call find_latt_vectors(index2,il21,il22,il23,lattice)
+			if(abs(il21) .gt. lattice%nneighbour) CYCLE
+			if(abs(il22) .gt. lattice%nneighbour) CYCLE
+			if(abs(il23) .gt. lattice%nneighbour) CYCLE
 
-!  call mat_init(D(1),nbast,nbast)
-!  call mat_zero(D(1))
-  call mat_init(F(1),nbast,nbast)
-  call mat_zero(F(1))
-  call mat_init(F_tmp(1),nbast,nbast)
-  call mat_zero(F_tmp(1))
+			do index3=1,numvecs
+				call find_latt_vectors(index3,il31,il32,il33,lattice)
 
-  origin(1:3)=1.0_realk
-  latt_vec_std(:)=0.0_realk
- 
+				l1=il21+il31
+				if(abs(l1) .gt. lattice%max_layer) CYCLE
+				l2=il22+il32
+				if(abs(l2) .gt. lattice%max_layer) CYCLE 
+				l3=il23+il33
+				if(abs(l3) .gt. lattice%max_layer) CYCLE 
+				checknf1=l1-il21
+				if(abs(checknf1) .gt. n_neighbour) CYCLE
+				checknf2=l2-il22
+				if(abs(checknf2) .gt. n_neighbour) CYCLE 
+				checknf3=l3-il23
+				if(abs(checknf3) .gt. n_neighbour) CYCLE 
 
-  call latt_2_std_coord(origin,latt_vec_std,lattice%ldef%avec)
+				call find_latt_index(newcell,l1,l2,l3,lattice,lattice%max_layer)
+				call find_latt_index(checknf,checknf1,checknf2,checknf3,lattice,&
+					lattice%nneighbour)
+				!Changes setting to point at different lattice cells
+				call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),2,&
+					latt_cell(index2),3,latt_cell(newcell),4)
 
-  std_vec_length= sqrt(latt_vec_std(1)**2+latt_vec_std(2)**2+latt_vec_std(3)**2)
+				setting%samemol(1,2)=.false.
+				setting%samemol(2,1)=.false.
+				setting%samemol(1,3)=.false.
+				setting%samemol(3,1)=.false.
+				setting%samemol(1,4)=.false.
+				setting%samemol(4,1)=.false.
+				setting%samemol(2,3)=.false.
+				setting%samemol(2,3)=.false.
+				setting%samemol(3,4)=.false.
+				setting%samemol(4,2)=.false.
+				setting%samemol(3,4)=.false.
+				setting%samemol(4,3)=.false.
+				!   setting%samefrag=.false.
 
-  num_latvectors=size(lattice%lvec)
+				call II_get_coulomb_mat(lupri,luerr,setting,nfdensity(checknf:checknf),F_tmp,1)
+				call mat_add(1E0_realk,F(1),1E0_realk,F_tmp(1),F(1))
 
+			enddo
+		enddo
 
-  tvec(1:12)=0.0_realk
- 
+		CALL mat_print(F(1),1,F_tmp(1)%nrow,1,F_tmp(1)%ncol,6)
+		call mat_zero(F(1))
 
-  DO index1=1,num_latvectors
+		write(lupri,*) 'index1',index1, numvecs
+	ENDDO
+	call mat_free(F(1))
+	call mat_free(F_tmp(1))
 
-  !call calc_distance(distance,lattice%lvec(index1)%std_coord,latt_vec_std)
-  call find_latt_vectors(index1,il1,il2,il3,lattice)
-!  if(abs(il1) .gt. lattice%nneighbour) CYCLE
-!  if(abs(il2) .gt. lattice%nneighbour) CYCLE
-!  if(abs(il3) .gt. lattice%nneighbour) CYCLE
-
-  DO index2=1,num_latvectors
-
-     call find_latt_vectors(index2,il21,il22,il23,lattice)
-  if(abs(il21) .gt. lattice%nneighbour) CYCLE
-  if(abs(il22) .gt. lattice%nneighbour) CYCLE
-  if(abs(il23) .gt. lattice%nneighbour) CYCLE
-
-     !Skal kun ha avstand til origo ikke latt_std_vec her
-!     call calc_distance(distance,lattice%lvec(index2)%std_coord,latt_vec_std)
-
-
-   DO index3=1,num_latvectors
-
-    !write(lupri,*) 'electron rep get'
-    !CALL mat_print(F(1),1,F(1)%nrow,1,F(1)%ncol,6)
-    !CALL mat_print(D1(1),1,F(1)%nrow,1,F(1)%ncol,6)
-
-    call find_latt_vectors(index3,il31,il32,il33,lattice)
-!  if(abs(il31) .gt. lattice%nneighbour) CYCLE
-!  if(abs(il32) .gt. lattice%nneighbour) CYCLE
-!  if(abs(il33) .gt. lattice%nneighbour) CYCLE
-
-    l1=il21+il31
-    if(abs(l1) .gt. lattice%max_layer) CYCLE! then
-    
-    l2=il22+il32
-    if(abs(l2) .gt. lattice%max_layer) CYCLE !then 
-    
-    l3=il23+il33
-    if(abs(l3) .gt. lattice%max_layer) CYCLE !then 
-    
-    checknf1=l1-il21
-    if(abs(checknf1) .gt. n_neighbour) CYCLE! then
-    
-    checknf2=l2-il22
-    if(abs(checknf2) .gt. n_neighbour) CYCLE !then 
-    
-    checknf3=l3-il23
-    if(abs(checknf3) .gt. n_neighbour) CYCLE !then 
-
-    
-    call find_latt_index(newcell,l1,l2,l3,lattice,lattice%max_layer)
-
-    call find_latt_index(checknf,checknf1,checknf2,checknf3,lattice,&
-     lattice%nneighbour)
-
-    !Changes setting to point at different lattice cells
-    call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),2,&
-     latt_cell(index2),3,latt_cell(newcell),4)
-
-    setting%samemol(1,2)=.false.
-    setting%samemol(2,1)=.false.
-    setting%samemol(1,3)=.false.
-    setting%samemol(3,1)=.false.
-    setting%samemol(1,4)=.false.
-    setting%samemol(4,1)=.false.
-    setting%samemol(2,3)=.false.
-    setting%samemol(2,3)=.false.
-    setting%samemol(3,4)=.false.
-    setting%samemol(4,2)=.false.
-    setting%samemol(3,4)=.false.
-    setting%samemol(4,3)=.false.
-
- !   setting%samefrag=.false.
-    
-    call II_get_coulomb_mat(lupri,luerr,setting,nfdensity(checknf:checknf),F_tmp,1)
-    !call II_get_exchange_mat(lupri,luerr,setting,D,F_tmp,1)
-    
-    call mat_add(1E0_realk,F(1),1E0_realk,F_tmp(1),F(1))
-    
-    !call exchange()
-!    write(lupri,*) 'electron rep fin rep',nbast,F(1)%nrow,F(1)%ncol
-!    CALL mat_print(F(1),1,F_tmp(1)%nrow,1,F_tmp(1)%ncol,6)
-!     STOP
-   ENDDO
-  ENDDO
-  !store the matrix here
-
-!    if(lattice%compare_elmnts) then
-!      
-!      !compare integrals with the old pbc code
-!      write(lupri,*) 'comparing electron-electron elements with old pbc code'
-!      matris(:,:) =0.0
-!
-!      write(lupri,*) il1,il2,il3
-!
-!      call pbc_readopmat2(il1,il2,il3,matris,nbast,'COULOMB',.true.,.false.)
-!      call write_matrix(matris,nbast,nbast)
-!
-!      write(lupri,*) ''
-!      write(lupri,*) 'To compare with the matrix below'
-!      CALL mat_print(F(1),1,F(1)%nrow,1,F(1)%ncol,6)
-!
-!    endif
-
-    CALL mat_print(F(1),1,F_tmp(1)%nrow,1,F_tmp(1)%ncol,6)
-    call mat_zero(F(1))
-
-    write(lupri,*) 'index1',index1, num_latvectors
-  ENDDO
-  call mat_free(F(1))
-  call mat_free(F_tmp(1))
-
-  write(lupri,*) 'finished with pbc_elrep_int'
-  call LSQuit('finished with pbc_elrep_int',lupri)
+	write(lupri,*) 'finished with pbc_elrep_int'
+	call LSQuit('finished with pbc_elrep_int',lupri)
 
 END SUBROUTINE pbc_electron_rep
 
-
+!> \brief ???
+!> \author J. Rekkedal
+!> \date 2012
+!> \param lupri 			Logical print unit output file.
+!> \param nbast 			Number of basis functions.
+!> \param fock_mtx 		The fock matrix.
+!> \param sizef 			Fock matrix num col/row.
+!> \param cut 				
+!> \param lattice 		Information about the lattice.
 SUBROUTINE pbc_complete_Fock_mtx(lupri,nbast,fock_mtx,sizef,cut,lattice)
-  IMPLICIT NONE
+	IMPLICIT NONE
+	! input and output variables
+	INTEGER, INTENT(IN) :: lupri,nbast,sizef
+	REAL(realk),INTENT(INOUT) :: fock_mtx(sizef,sizef)
+	REAL(realk),INTENT(IN) :: cut
+	TYPE(lvec_list_t),INTENT(IN) ::lattice
+	! Local variables
+	REAL(realk) :: distance
+	INTEGER :: num_latvectors
+	INTEGER :: cellij,i,j
+	INTEGER :: diff1,diff2,diff3
+	INTEGER :: il1,il2,il3,jl1,jl2,jl3
+	REAL(realk) ::  latt_vec_std(3),tmp_vec(3)
+	INTEGER :: refcell
 
-  INTEGER, INTENT(IN) :: lupri,nbast,sizef
-  REAL(realk), INTENT(INOUT) :: fock_mtx(sizef,sizef)
-  REAL(realk), INTENT(IN) :: cut
-  ! Local variables
-  REAL(realk) :: distance
-  TYPE(lvec_list_t), intent(in) ::lattice
-  INTEGER :: num_latvectors
-  INTEGER :: cellij,i,j
-  INTEGER :: diff1,diff2,diff3
-  INTEGER :: il1,il2,il3,jl1,jl2,jl3
-  REAL(realk) ::  latt_vec_std(3), origin(3)
-  INTEGER :: refcell
+	tmp_vec(:)=1.0_realk 
+	latt_vec_std(:)=0.0_realk
+	call latt_2_std_coord(tmp_vec,latt_vec_std,lattice%ldef%avec)
+	
+	call find_latt_index(refcell,0,0,0,lattice,lattice%max_layer)
+	write(lupri,*) 'refcelle', refcell
 
-!  call build_lvec_list(lattice)
-  !call latt_2_std_coord(origin,latt_vec_std,lattice%ldef%avec)
-  
-!  write(lupri,*) 'debug: ',lattice%lvec(2)%std_coord!, latstdvec 
+	do i=1,num_latvectors
+		if(i .eq. refcell) CYCLE
+		fock_mtx(nbast*i+1-nbast:i*nbast,nbast*i+1-nbast:i*nbast)=&
+			fock_mtx(refcell*nbast-nbast+1:refcell*nbast,refcell*nbast-nbast+1:refcell*nbast)
+		call find_latt_vectors(i,il1,il2,il3,lattice)
+		do j=1,i
+			if(j .eq. refcell) CYCLE
+			if(j .eq. i) CYCLE
+			call find_latt_vectors(j,jl1,jl2,jl3,lattice)
+			diff1=il1-jl1
+			if(abs(diff1) .gt. lattice%max_layer) CYCLE !fixme should be max_layer
+			if(abs(diff1) .gt. lattice%nneighbour) CYCLE !fixme should be threshold
+			diff2=il2-jl2
+			if(abs(diff2) .gt.lattice%max_layer) CYCLE !fixme should be max_layer
+			if(abs(diff2) .gt.lattice%nneighbour) CYCLE !fixme should be threshold
+			diff3=il3-jl3
+			if(abs(diff3) .gt. lattice%max_layer) CYCLE !fixme should be max_layer
+			if(abs(diff3) .gt. lattice%nneighbour) CYCLE !fixme should be threshold
 
-  num_latvectors=size(lattice%lvec)
+			call find_latt_index(cellij,diff1,diff2,diff3,lattice,lattice%max_layer)
+			call calc_distance(distance,lattice%lvec(cellij)%std_coord,latt_vec_std)
 
-  origin(1:3)=1.0_realk
-  latt_vec_std(:)=0.0_realk
-
-
-  call latt_2_std_coord(origin,latt_vec_std,lattice%ldef%avec)
-  !std_vec_length= sqrt(latt_vec_std(1)**2+latt_vec_std(2)**2+latt_vec_std(3)**2)
-
-  call find_latt_index(refcell,0,0,0,lattice,lattice%max_layer)
-  write(lupri,*) 'refcelle', refcell
-
-  DO i=1,num_latvectors
-   IF(i .eq. refcell) CYCLE
-   fock_mtx(nbast*i+1-nbast:i*nbast,nbast*i+1-nbast:i*nbast)=&
-   fock_mtx(refcell*nbast-nbast+1:refcell*nbast,refcell*nbast-nbast+1:refcell*nbast)
-   call find_latt_vectors(i,il1,il2,il3,lattice)
-   DO j=1,i
-      IF(j .eq. refcell) CYCLE
-      IF(j .eq. i) CYCLE
-      call find_latt_vectors(j,jl1,jl2,jl3,lattice)
-      !write(lupri,*) 'SEGMENTATION FAULT',j
-!      write(lupri,*) 'refcelle', refcell,j
-      diff1=il1-jl1
-      if(abs(diff1) .gt. lattice%max_layer) CYCLE !should be max_layer
-      if(abs(diff1) .gt. lattice%nneighbour) CYCLE !should be threshold
-      diff2=il2-jl2
-      if(abs(diff2) .gt.lattice%max_layer) CYCLE !should be max_layer
-      if(abs(diff2) .gt.lattice%nneighbour) CYCLE !should be threshold
-      diff3=il3-jl3
-      if(abs(diff3) .gt. lattice%max_layer) CYCLE !should be max_layer
-      if(abs(diff3) .gt. lattice%nneighbour) CYCLE !should be threshold
-
-      call find_latt_index(cellij,diff1,diff2,diff3,lattice,lattice%max_layer)
-
-      call calc_distance(distance,lattice%lvec(cellij)%std_coord,latt_vec_std)
-
-      IF(distance .ge. cut) CYCLE
-      fock_mtx(nbast*i+1-nbast:i*nbast,nbast*j+1-nbast:j*nbast)=&
-      fock_mtx(refcell*nbast-nbast+1:refcell*nbast,cellij*nbast-nbast+1:cellij*nbast)
-      fock_mtx(nbast*j+1-nbast:j*nbast,nbast*i+1-nbast:i*nbast)=&
-      fock_mtx(nbast*i+1-nbast:i*nbast,nbast*j+1-nbast:j*nbast)
- !     IF(i /= j) THEN
- !       diff= i-j
- !       fock_mtx(nbast*i+1-nbast:i*nbast,nbast*j+1-nbast:j*nbast)=&
- !       fock_mtx(refcell*nbast-nbast+1:refcell*nbast,diff*nbast-nbast+1:diff*nbast)
- !       fock_mtx(nbast*j+1-nbast:j*nbast,nbast*i+1-nbast:i*nbast)=&
- !       fock_mtx(nbast*i+1-nbast:i*nbast,nbast*j+1-nbast:j*nbast)
- !     ENDIF
- !   ! DO k=refindex*nbast-nbast+1,refindex*nbast 
- !   !   i=i+1
- !   !   j=0
- !   !  DO m=index1*nbast-nbast+1,index1*nbast 
- !   !    fock_mtx(k,m)=fock_mtx(k,m)+fock_tmp(i,j)!*coeff(k,m)
- !   !    fock_mtx(m,k)=fock_mtx(k,m)
- !   !  ENDDO
- !   ! ENDDO
-   ENDDO
-  ENDDO
-  write(lupri,*) 'FOCK MATRIX'
-  call write_matrix(fock_mtx,sizef,sizef)
-
+			if(distance .ge. cut) CYCLE
+			fock_mtx(nbast*i+1-nbast:i*nbast,nbast*j+1-nbast:j*nbast)=&
+				fock_mtx(refcell*nbast-nbast+1:refcell*nbast,cellij*nbast-nbast+1:cellij*nbast)
+			fock_mtx(nbast*j+1-nbast:j*nbast,nbast*i+1-nbast:i*nbast)=&
+				fock_mtx(nbast*i+1-nbast:i*nbast,nbast*j+1-nbast:j*nbast)
+		enddo
+	enddo
+	write(lupri,*) 'FOCK MATRIX'
+	call write_matrix(fock_mtx,sizef,sizef)
 END SUBROUTINE pbc_complete_Fock_mtx
 
 END MODULE pbc_interactions
-
 #endif
 
-!!todo not in use
-!SUBROUTINE screening_ovl(basinfo)
-!IMPLICIT NONE
-!TYPE(basissetinfo) :: basinfo
-!INTEGER :: natomtypes
-!INTEGER :: i,j,k
-!!REAL(realk) :: PI=3.14159265
-!REAL(realk), pointer :: minexp(:)
-!REAL(realk) :: distance
-!
-!  natomtypes=basinfo%natomtypes
-!  
-!  k=0
-!  DO i=1,natomtypes
-!  DO j=1,basinfo%atomtype(i)%nangmom
-!  k=k+1
-!  ENDDO
-!  ENDDO
-!  call mem_alloc(minexp,k)
-!  k=0
-!  DO i=1,natomtypes
-!  DO j=1,basinfo%atomtype(i)%nangmom
-!  k=k+1
-!  minexp(k)=minval(basinfo%atomtype(i)%shell(j)%segment(2)%exponents)
-!  ENDDO
-!  ENDDO
-!  
-!  !write(lupri,*) 'expon ', minval(minexp)
-!  distance=sqrt(1./minval(minexp)*log((pi/(2.*minval(minexp)))**3E0_realk*10E0_realk**20))
-!  !write(lupri,*) 'distance ',distance
-!
-!!  distance=sqrt(1./0.2979640)*sqrt(log((pi/(2.*0.2979640))**(3)*10**20))
-!!  write(lupri,*) 'distance ',distance
-!   call mem_dealloc(minexp)
-!
-!
-!END SUBROUTINE screening_ovl
-!
