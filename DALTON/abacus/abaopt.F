@@ -684,7 +684,7 @@ C
          END IF
          FSTORD = .TRUE.
       ELSE IF (ITYP .GT. 1) THEN
-         WRITE(LUPRI,'(/A)') ' WARNING! More than one ' //
+         WRITE(LUPRI,'(/A)') ' ERROR! More than one ' //
      &        'optimization method has been selected under '//WORD1
          CALL QUIT
      &        ('More than one optimization method chosen for '//WORD1)
@@ -1696,7 +1696,8 @@ C emg -----------------------------------------------------------------
 
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUNMPF,'KEEP')
-         STOP 'Manually stop after punching the Hessian and Gradient'
+         CALL QUIT 
+     &   ('Manually stop after punching the Hessian and Gradient')
 
       ENDIF
 C
@@ -1982,6 +1983,7 @@ C
      &           WORK(KTEMP4),WORK(KTEMP5),CSTEP,GRDARR,STPARR,
      &           ACTIVE,EMOD,VECMOD)
          END IF
+         GEINFO(ITRNMR,3) = INDTOT*1.0D0
          GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
          IF (ABS(GEINFO(ITRNMR,6)) .GT. 1.0D-3) GECONV = .FALSE.
          CALL PRIALL(CSTEP,WORK(KTEMP1))
@@ -2323,11 +2325,11 @@ C
          CALL TITLER('Optimization Control Center','<',120)
          CALL PRIINF(GEINFO,WORK(2),LWORK)
          DOSPE = TMPLOG
-         WRITE(LUPRI,'(/A/A,I3,A/A/)')
+         WRITE(LUPRI,'(/A/A,I3,A/A/A/)')
      &      '@ WARNING: Geometry has NOT converged!',
      &      '@ Maximum number of iterations (', ITRMAX,
      &         ') has been reached and',
-     &      '@ optimization halted. Increase number or ',
+     &       '@ optimization halted. Increase number or '//
      &         'restart from last geometry.'
          IF (DOSPE) WRITE(LUPRI,'(A/)')
      &      '@ Therefore, no single point energy has been calculated.'
@@ -2412,7 +2414,7 @@ c      if (itrnmr.eq.1) stop ' '
      &           ' Hessian index (',I,')              :', INDHES(I)
  50      CONTINUE
       END IF
-      WRITE(LUPRI,'(A,I8//)')' Total Hessian index            :',INDTOT
+      WRITE(LUPRI,'(A,I8//)')' Total effective Hessian index  :',INDTOT
       IF (BRKSYM .AND. GECONV) THEN
          WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
       ELSE IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) THEN
@@ -2427,10 +2429,11 @@ c      if (itrnmr.eq.1) stop ' '
       END IF
       IF (IPRINT .GE. 3) THEN
          CALL HEADER('Eigenvalues',-1)
-         WRITE(LUPRI,*)
-     &        '  #      Current value  Previous value      Change   '
-         WRITE(LUPRI,*)
-     &        '-----------------------------------------------------'
+         WRITE(LUPRI,'(A/A)')
+     &        '   #      Current value  Previous value      Change   '//
+     &        '      Gradient',
+     &        ' -----------------------------------------------------'//
+     &        '-----------------'
          DO 100 I = START, NCRD
             EVL   = EVAL(I)
             EVLOL = EVALOL(I)
@@ -2440,7 +2443,7 @@ c      if (itrnmr.eq.1) stop ' '
             END IF
             NR = I
             IF (RATFUN) NR = NR - 1
-            WRITE(LUPRI,'(I4,3F16.6)') NR,EVL,EVLOL,EVL-EVLOL
+            WRITE(LUPRI,'(I4,4F16.6)') NR,EVL,EVLOL,EVL-EVLOL,GRDDIA(I)
  100     CONTINUE
       END IF
       RETURN
@@ -2985,14 +2988,23 @@ C
  14            CONTINUE
  12         CONTINUE
          END IF
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Initial Hessian has been read from file.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A)') 'Initial Hessian has been read from file'
+         IF (REDINT) THEN
+            WRITE(LUPRI,'(A)') ' in redundant internal coordinates.'
+         ELSE IF (DELINT) THEN
+            WRITE(LUPRI,'(A)')
+     &         ' in delocalized redundant internal coordinates.'
+         ELSE
+            WRITE(LUPRI,'(A)') ' in cartesian coordinates.'
+         END IF
+
          HSFILE = .FALSE.
 C
 C     Check if Hessian has been calculated
 C
       ELSE IF (INITHS) THEN
+         IF (IPRINT .GE. IPRMIN) WRITE (LUPRI,'(A)')
+     &      'Initial Hessian is analytical Hessian'
          IF (REDINT .OR. DELINT) THEN
             IF (MAXREP .GT. 0) THEN
                CALL DZERO(TMPMAT,MX2CRD*MX2CRD)
@@ -3050,9 +3062,15 @@ C
                GRDOLD(J) = GRDMOL(J)
  18         CONTINUE
          END IF
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Initial Hessian has been calculated.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A)') 'Initial Hessian has been calculated'
+         IF (REDINT) THEN
+            WRITE(LUPRI,'(A)') ' in redundant internal coordinates.'
+         ELSE IF (DELINT) THEN
+            WRITE(LUPRI,'(A)')
+     &         ' in delocalized redundant internal coordinates.'
+         ELSE
+            WRITE(LUPRI,'(A)') ' in cartesian coordinates.'
+         END IF
 C
 C     Next line makes reinitialization possible:
 C
@@ -3136,8 +3154,13 @@ C
          END IF
 !        if (initial Hessian in internal coordinates and
 !            not optimization in internal coordinates) then
+             
+         WRITE(LUPRI,'(/A)') 'Initial model Hessian '//
+     &      'in internal coordinates has been calculated'
          IF ( (INRDHS .OR. INMDHS) .AND. 
      &        .NOT.( REDINT .OR. DELINT) ) THEN
+            WRITE(LUPRI,'(A)')
+     &         ' and transformed to cartesian coordinates'
 !           Then transform Hessian HESINT in internal coordinates
 !           to Hessian HESMOL in Cartesian coordinates
             CALL DZERO(HESMOL,MXCOOR*MXCOOR)
@@ -4910,6 +4933,7 @@ C
       RETURN
       END
 
+#ifdef INCLUDE_NOT_USED_CODE
 C  /* Deck upmodo */
       SUBROUTINE UPMODO(MXRCRD,DELTA,STPMAT,GAMMA,GRDMAT,HESOLD,HESNEW,
      &     ICRD,IRCRD,MCRD,TMPVEC,TMPVC2,RMAT,GMAT,TMPMAT,TMPMT2,TMPMT3,
@@ -5195,6 +5219,7 @@ C
       END IF
       RETURN
       END
+#endif   /* ifdef INCLUDE_NOT_USED_CODE */
 
 C  /* Deck mincgh */
 C
@@ -6300,19 +6325,32 @@ C
 C
 C     Newton step is calculated.
 C
-         INDTOT_eff = INDTOT
-         DO 30 I = 1, NVEC
-            IF (EVAL(I) .LE. 0.0D0 .AND.
-     &          ABS(GRDDIA(I)) .LT. GRDTHR/NVEC) THEN
-            ! this direction is converged, cf. GRDDIA value, but
-            ! Hessian element .le. zero. This can be the case for
-            ! a rotational coordinate when .FREEZE
-               IF (EVAL(I) .LT. 0.0D0) INDTOT_eff = INDTOT_eff - 1
-               STPDIA(I) = 0.0D0
+         INDTOT_eff = 0
+         IF (IFREEZ(0) .GT. 0 .AND. .NOT.NEWTON) THEN
+            THR_ZERO_EVAL = 3.D-3
+         ELSE
+            THR_ZERO_EVAL = THRLDP
+         END IF
+         DO, I = 1, NVEC
+            IF (EVAL(I) .LT. -THR_ZERO_EVAL) INDTOT_eff = INDTOT_eff + 1
+            IF (ABS(EVAL(I)) .LT. THRLDP) THEN ! do not divide by zero, or very small unreliable values
+               EVAL_EFF = SIGN(THRLDP, EVAL(I))
             ELSE
                STPDIA(I) = -GRDDIA(I)/EVAL(I)
+               EVAL_EFF = EVAL(I)
             END IF
  30      CONTINUE
+            STPDIA(I) = -GRDDIA(I)/EVAL_EFF
+         END DO
+         IF (INDTOT_eff .NE. INDTOT) THEN
+            WRITE(LUPRI,'(/A,I3,A,I3/A/A)')
+     &      ' Calculated Hessian index',INDTOT,
+     &        ' is reset to effective Hessian index',INDTOT_eff,
+     &      ' because the difference corresponds to small negative'//
+     &        ' eigenvalue(s) with a converged gradient component',
+     &      ' (probably a rotational coordinate .FREEZE)'
+            INDTOT = INDTOT_eff
+         END IF
          STPNRM = SQRT(DDOT(NVEC,STPDIA,1,STPDIA,1))
 C
 C     If Newton step is larger that trust radius, we take a step
