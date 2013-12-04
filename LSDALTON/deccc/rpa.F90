@@ -46,7 +46,7 @@ module rpa_module
     use ccsd_module
 
 
-    public :: RPA_residual,RPA_energy,SOSEX_contribution
+    public :: RPA_residual,RPA_energy,SOSEX_contribution,RPA_multiplier
 
     private
 
@@ -184,10 +184,147 @@ contains
 
   end subroutine RPA_residual_add
 
+  !\brief Calculate RPA multipliers
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date December 2013
+  subroutine RPA_multiplier(omega2,t2_final,t2,gmo,pfock,qfock,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2,gmo
+    type(array4), intent(in) :: t2_final
+    type(array2), intent(inout) :: pfock,qfock
+    integer, intent(in) :: nocc,nvirt
+    real(realk) :: starttime,stoptime
+
+
+    call cpu_time(starttime)
+
+    !get the MP2 part of the residual
+    !call getDoublesResidualMP2_simple(Omega2,t2,gmo,pfock,qfock, &
+    !           & nocc,nvirt)
+
+    call RPA_fock_multi_part(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+    call RPA_multi_add(omega2,t2,t2_final,gmo,pfock,qfock,nocc,nvirt)
+
+    !for debugging
+    !call array4_add_to(omega2,2.0E0_realk,gmo)
+
+    !adds the part not containing multipliers
+    !remember to understand how to know whether we should sum
+    !over OCC/VIRT particles in P or [P]
+    call array4_add_to(omega2,1.0E0_realk,gmo)
+    call array4_reorder(gmo,[1,4,3,2])
+    call array4_add_to(omega2,-0.5E0_realk,gmo)
+    call array4_reorder(gmo,[1,4,3,2])
+
+    call cpu_time(stoptime)
+
+    !call lsquit('RPA_residual: Needs implementation',-1)
+
+  end subroutine RPA_multiplier
+
+  !\brief Calculate fock matrix part of the RPA residual 
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date December 2013
+  subroutine RPA_fock_multi_part(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2
+    type(array4), intent(in) :: gmo
+    type(array2), intent(inout) :: pfock,qfock
+    integer, intent(in) :: nocc,nvirt
+    type(array4) :: tmp
+    integer, dimension(4) :: tmp_dims
+    integer :: a,b,c,i,j,k
+
+
+    ! In 1 and 2 i ,j should be in P and a b in [P]
+    ! In 3 and 4 i ,j should be in [P] while a and b in P
+    ! 1
+    call array2_transpose(qfock)
+    call array4_reorder(t2,[3,4,1,2])
+    tmp = array4_init([nvirt,nocc,nvirt,nocc])
+    call array4_contract1(t2,qfock,tmp,.true.)
+    call array4_reorder(tmp,[3,4,1,2])
+    call array4_add_to(omega2,1.0E0_realk,tmp)
+    call array4_free(tmp)
+    call array4_reorder(t2,[3,4,1,2])
+
+    ! 2
+    call array4_contract1(t2,qfock,omega2,.false.)
+    call array2_transpose(qfock)
+
+    ! 3
+    call array4_reorder(t2,[4,3,2,1])
+    tmp = array4_init([nocc,nvirt,nocc,nvirt])
+    call array4_contract1(t2,pfock,tmp,.true.)
+    call array4_reorder(t2,[4,3,2,1])
+    call array4_reorder(tmp,[4,3,2,1])
+    call array4_add_to(omega2,-1.0E0_realk,tmp)
+    call array4_free(tmp)
+
+    ! 4
+    call array4_reorder(t2,[2,1,3,4])
+    tmp = array4_init([nocc,nvirt,nvirt,nocc])
+    call array4_contract1(t2,pfock,tmp,.true.)
+    call array4_reorder(t2,[2,1,3,4])
+    call array4_reorder(tmp,[2,1,3,4])
+    call array4_add_to(omega2,-1.0E0_realk,tmp)
+    call array4_free(tmp)
+
+
+    !For debugging
+    !call array4_add_to(omega2,2.0E0_realk,gmo)
+
+    return
+  end subroutine RPA_fock_multi_part
+
+
+  !\brief Calculate additional linear and quadratic terms of the RPA residual 
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date March 2013
+  subroutine RPA_multi_add(omega2,t2,t2_final,gmo,pfock,qfock,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2
+    type(array4), intent(in) :: gmo,t2_final
+    type(array2), intent(inout) :: pfock,qfock
+    integer, intent(in) :: nocc,nvirt
+    type(array4) :: Sckdl
+    integer, dimension(4) :: tmp_dims
+    integer :: a,b,c,i,j,k,dim1
+    real(realk) :: starttime,stoptime
+
+    Sckdl = array4_init([nvirt,nocc,nvirt,nocc])
 
 
 
+    dim1=nocc*nvirt
+    call dgemm('n','n',dim1,dim1,dim1, &
+         1.0E0_realk,gmo%val,dim1,t2%val,dim1,0.0E0_realk,omega2%val,dim1)
 
+    call dgemm('n','n',dim1,dim1,dim1, &
+         1.0E0_realk,t2%val,dim1,gmo%val,dim1,1.0E0_realk,omega2%val,dim1)
+    
+       !gmo*t2*m2
+    call dgemm('n','n',dim1,dim1,dim1, &
+         1.0E0_realk,gmo%val,dim1,t2_final%val,dim1,0.0E0_realk,Sckdl%val,dim1)
+
+    call dgemm('n','n',dim1,dim1,dim1, &
+         1.0E0_realk,Sckdl%val,dim1,t2%val,dim1,1.0E0_realk,omega2%val,dim1)
+
+       !m2*t2*gmo
+    call dgemm('n','n',dim1,dim1,dim1, &
+         1.0E0_realk,t2%val,dim1,t2_final%val,dim1,0.0E0_realk,Sckdl%val,dim1)
+
+    call dgemm('n','n',dim1,dim1,dim1, &
+         1.0E0_realk,Sckdl%val,dim1,gmo%val,dim1,1.0E0_realk,omega2%val,dim1)
+
+    call array4_free(Sckdl)
+
+    return
+
+  end subroutine RPA_multi_add
 
 
 

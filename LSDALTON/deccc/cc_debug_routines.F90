@@ -563,7 +563,7 @@ module cc_debug_routines_module
         ! If you implement a new model, please insert call to your own residual routine here!
         SelectCoupledClusterModel : if(CCmodel==MODEL_MP2) then
 
-           call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
+          call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
                 & nocc,nvirt)
 
         elseif(CCmodel==MODEL_CC2) then
@@ -673,7 +673,13 @@ module cc_debug_routines_module
 
         elseif(CCmodel==MODEL_RPA) then
 
-           call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
+           !if(get_mult)then
+           !  !rpa_multipliers not yet implemented
+           !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
+           !else
+             call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
+           !endif
+
 
         else
            print *, 'MODEL = ', DECinfo%cc_models(DECinfo%ccmodel)
@@ -824,6 +830,8 @@ module cc_debug_routines_module
               ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
               ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,nocc,nvirt)
            elseif(CCmodel==MODEL_RPA) then
+             !Here the energy is computed not in P U [bar P]
+             !but in the AOS
               ccenergy = RPA_energy(t2(iter),gmo)
               sosex = SOSEX_contribution(t2(iter),gmo)
               ccenergy=ccenergy+sosex

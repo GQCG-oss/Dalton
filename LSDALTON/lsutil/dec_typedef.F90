@@ -45,7 +45,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTMP2  = 3   ! MP2 virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_LAGMP2   = 4   ! MP2 Lagrangian partitioning scheme
+  integer,parameter :: FRAGMODEL_LAGRPA   = 4   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCRPA   = 5   ! RPA occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTRPA  = 6   ! RPA virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCCC2   = 7   ! CC2 occupied partitioning scheme
