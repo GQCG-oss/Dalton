@@ -212,7 +212,13 @@ SUBROUTINE build_lvec_list(ll,nbast)
   implicit none
   INTEGER, intent(in) ::nbast
   type(lvec_list_t), intent(inout) :: ll
-  INTEGER:: l1, l2,l3, fdim(3),alstat,idx
+  INTEGER:: l1, l2,l3,alstat,idx
+  
+  ! make sure fdim is set
+  ll%fdim = 0
+  if (ll%ldef%is_active(1)) ll%fdim(1) = 1
+  if (ll%ldef%is_active(2)) ll%fdim(2) = 1
+  if (ll%ldef%is_active(3)) ll%fdim(3) = 1
 
   ! invent some basic lattice data
 !  ll%ldef%avec(1:3,1) = (/ 9.2822, 0.0, 0.0 /)
@@ -224,14 +230,8 @@ SUBROUTINE build_lvec_list(ll,nbast)
   ! block of cells
 !  write(*,*) 'avec'
 !  call write_matrix(ll%ldef%avec,3,3)
-  fdim(1:3) = 0
-  if (ll%ldef%is_active(1)) fdim(1) = 1
-  if (ll%ldef%is_active(2)) fdim(2) = 1
-  if (ll%ldef%is_active(3)) fdim(3) = 1
-
-
 !  max_layer = 1
-  ll%num_entries = (2*ll%max_layer*fdim(1)+1)*(2*ll%max_layer*fdim(2)+1)*(2*ll%max_layer*fdim(3)+1) 
+  ll%num_entries = (2*ll%max_layer*ll%fdim(1)+1)*(2*ll%max_layer*ll%fdim(2)+1)*(2*ll%max_layer*ll%fdim(3)+1) 
   !allocate(ll%lvec(ll%num_entries), STAT=alstat)
   call mem_alloc(ll%lvec,ll%num_entries)!, STAT=alstat)
 !  allocate(ll%lvec(-ll%max_layer:ll%max_layer), STAT=alstat)
@@ -242,9 +242,9 @@ SUBROUTINE build_lvec_list(ll,nbast)
   idx = 1
 !  index = -ll%max_layer
 
-  do l3 = -ll%max_layer*fdim(3), ll%max_layer*fdim(3)
-  do l2 = -ll%max_layer*fdim(2), ll%max_layer*fdim(2)
-  do l1 = -ll%max_layer*fdim(1), ll%max_layer*fdim(1)
+  do l3 = -ll%max_layer*ll%fdim(3), ll%max_layer*ll%fdim(3)
+  do l2 = -ll%max_layer*ll%fdim(2), ll%max_layer*ll%fdim(2)
+  do l1 = -ll%max_layer*ll%fdim(1), ll%max_layer*ll%fdim(1)
      ll%lvec(idx)%lat_coord(1:3) = (/ real(l1), real(l2), real(l3) /)
      call latt_2_std_coord(ll%lvec(idx)%lat_coord,ll%lvec(idx)%std_coord,ll%ldef%avec)  
      !allocate(ll%lvec(idx)%fck_vec(nbast*nbast))
@@ -283,22 +283,23 @@ SUBROUTINE build_nflvec_list(ll,nbast)
   implicit none
   INTEGER, intent(in) ::nbast
   type(lvec_list_t), intent(inout) :: ll
-  INTEGER:: l1, l2,l3, fdim(3),alstat,idx
+  INTEGER:: l1, l2,l3, alstat,idx
 
-  fdim(1:3) = 0
-  if (ll%ldef%is_active(1)) fdim(1) = 1
-  if (ll%ldef%is_active(2)) fdim(2) = 1
-  if (ll%ldef%is_active(3)) fdim(3) = 1
+  ! make sure fdim is set
+  ll%fdim = 0
+  if (ll%ldef%is_active(1)) ll%fdim(1) = 1
+  if (ll%ldef%is_active(2)) ll%fdim(2) = 1
+  if (ll%ldef%is_active(3)) ll%fdim(3) = 1
+  
 
 
-!  max_layer = 1
-  ll%nf_entries = (2*ll%nneighbour*fdim(1)+1)*(2*ll%nneighbour*fdim(2)+1)*(2*ll%nneighbour*fdim(3)+1) 
+  ll%nf_entries = (2*ll%nneighbour*ll%fdim(1)+1)*(2*ll%nneighbour*ll%fdim(2)+1)*(2*ll%nneighbour*ll%fdim(3)+1) 
   allocate(ll%nflvec(ll%nf_entries), STAT=alstat)
 
   idx=1
-  do l3 = -ll%nneighbour*fdim(3), ll%nneighbour*fdim(3)
-  do l2 = -ll%nneighbour*fdim(2), ll%nneighbour*fdim(2)
-  do l1 = -ll%nneighbour*fdim(1), ll%nneighbour*fdim(1)
+  do l3 = -ll%nneighbour*ll%fdim(3), ll%nneighbour*ll%fdim(3)
+  do l2 = -ll%nneighbour*ll%fdim(2), ll%nneighbour*ll%fdim(2)
+  do l1 = -ll%nneighbour*ll%fdim(1), ll%nneighbour*ll%fdim(1)
      ll%nflvec(idx)%lat_coord(1:3) = (/ real(l1), real(l2), real(l3) /)
      call latt_2_std_coord(ll%nflvec(idx)%lat_coord,ll%nflvec(idx)%std_coord,ll%ldef%avec)  
      !allocate(ll%nflvec(idx)%fck_vec(nbast*nbast))
@@ -389,47 +390,31 @@ SUBROUTINE latt_2_std_coord(latcoord,stdcoord,latvec)
 END SUBROUTINE latt_2_std_coord
 
 
-!Find the lattice vectors from the dummy lattice index ll.
-SUBROUTINE find_latt_vectors(ll,l1,l2,l3,fdim,latt)
-IMPLICIT NONE
-INTEGER, INTENT(INOUT) :: fdim(3)
-INTEGER, INTENT(IN) :: ll
-INTEGER, INTENT(INOUT) :: l1,l2,l3
-TYPE(lvec_list_t), INTENT(IN) :: latt
-!!!!!
-!INTEGER :: vec1,vec2,vec3, idex
+!> \author Johannes Rekkedal
+!> \date 2013
+!> \brief Find the lattice vectors from the dummy lattice index ll.
+!> \param ll 		Cell index
+!> \param l1 		Lattice index, along lat vec 1.
+!> \param l2 		Lattice index, along lat vec 2.
+!> \param l3 		Lattice index, along lat vec 3.
+!> \param latt 	Lattice info.
+SUBROUTINE find_latt_vectors(ll,l1,l2,l3,latt)
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: ll
+	INTEGER, INTENT(INOUT) :: l1,l2,l3
+	TYPE(lvec_list_t), INTENT(IN) :: latt
 
-!fdim(1:3) = 0
-!if (latt%ldef%is_active(1)) fdim(1) = 1
-!if (latt%ldef%is_active(2)) fdim(2) = 1
-!if (latt%ldef%is_active(3)) fdim(3) = 1
-l1=int(latt%lvec(ll)%lat_coord(1))
-l2=int(latt%lvec(ll)%lat_coord(2))
-l3=int(latt%lvec(ll)%lat_coord(3))
-
-
-!idex=0
-!DO vec3=-fdim(3)*latt%max_layer,fdim(3)*latt%max_layer
-! DO vec2=-fdim(2)*latt%max_layer,fdim(2)*latt%max_layer
-!  DO vec1=-fdim(1)*latt%max_layer,fdim(1)*latt%max_layer
-!    idex=idex+1
-!    IF(idex .eq. ll ) THEN
-!      l1=vec1
-!      l2=vec2
-!      l3=vec3
-!      EXIT
-!    ENDIF
-!  ENDDO
-! ENDDO
-!ENDDO
+	l1=int(latt%lvec(ll)%lat_coord(1))
+	l2=int(latt%lvec(ll)%lat_coord(2))
+	l3=int(latt%lvec(ll)%lat_coord(3))
 
 END SUBROUTINE find_latt_vectors
 
 SUBROUTINE pbcstruct_get_active_dims(fdim)
 implicit none
 integer, intent(inout) :: fdim(3)
-
-fdim(:) = 0
+  
+  fdim(:) = 0
   if (pbc_control%ldef%is_active(1)) fdim(1) = 1
   if (pbc_control%ldef%is_active(2)) fdim(2) = 1
   if (pbc_control%ldef%is_active(3)) fdim(3) = 1
@@ -437,9 +422,8 @@ fdim(:) = 0
 END SUBROUTINE pbcstruct_get_active_dims
 
 !Transforms from the lattice vectors l1, l2 and l3 to the lattice index ll
-SUBROUTINE find_latt_index(ll,l1,l2,l3,fdim,latt,maxlayer)
+SUBROUTINE find_latt_index(ll,l1,l2,l3,latt,maxlayer)
 IMPLICIT NONE
-INTEGER, INTENT(INOUT) :: fdim(3)
 INTEGER, INTENT(IN) :: l1,l2,l3
 INTEGER, INTENT(IN) :: maxlayer
 INTEGER, INTENT(OUT) :: ll
@@ -447,22 +431,17 @@ TYPE(lvec_list_t),INTENT(IN) :: latt
 !!!!!
 INTEGER :: nx,ny,nz
 
-fdim(1:3) = 0
-  if (latt%ldef%is_active(1)) fdim(1) = 1
-  if (latt%ldef%is_active(2)) fdim(2) = 1
-  if (latt%ldef%is_active(3)) fdim(3) = 1
-
-  nx=maxlayer*fdim(1)
-  ny=maxlayer*fdim(2)
-  nz=maxlayer*fdim(3)
+  nx=maxlayer*latt%fdim(1)
+  ny=maxlayer*latt%fdim(2)
+  nz=maxlayer*latt%fdim(3)
 
   ll=l1+nx+1+2*(ny+l2)*nx+ny+l2+2*(nz+l3)*(nx+ny)+4*(nz+l3)*nx*ny+nz+l3
 
 
 !idex=0
-!DO vec1=-fdim(1)*latt%max_layer,fdim(1)*latt%max_layer
-! DO vec2=-fdim(2)*latt%max_layer,fdim(2)*latt%max_layer
-!  DO vec3=-fdim(3)*latt%max_layer,fdim(3)*latt%max_layer
+!DO vec1=-latt%fdim(1)*latt%max_layer,latt%fdim(1)*latt%max_layer
+! DO vec2=-latt%fdim(2)*latt%max_layer,latt%fdim(2)*latt%max_layer
+!  DO vec3=-latt%fdim(3)*latt%max_layer,latt%fdim(3)*latt%max_layer
 !    idex=idex+1
 !    IF(vec1 /= l1) CYCLE
 !    IF(vec2 /= l2) CYCLE
@@ -471,10 +450,6 @@ fdim(1:3) = 0
 !  ENDDO
 ! ENDDO
 !ENDDO
-
-
-
-
 
 END SUBROUTINE find_latt_index
 

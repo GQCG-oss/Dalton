@@ -48,7 +48,7 @@ SUBROUTINE set_pbc_molecules(INPUT,SETTING,lupri,luerr,nbast,Dmat,lattice)
   real(realk) :: TS,TE
 !  REAL(realk) :: PI=3.14159265358979323846D0
   INTEGER :: sze,num_latvectors
-  INTEGER :: maxmultmom,n1,n2,n3,nfsze,fdim(3),Tlmax
+  INTEGER :: maxmultmom,n1,n2,n3,nfsze,Tlmax
   INTEGER :: i,j,k,scfit,iunit,l1,l2,l3,nbasterik,ierror
   character*(20) :: mattxt,string1,numtostring1,numtostring2,numtostring3
   character(len=3) ::nline
@@ -95,8 +95,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
 
 
   write(lupri,*) 'cutoff' 
-  call find_cutoff_onep(lupri,luerr,setting,nbast,lattice,&
-              latt_cell, refcell,num_latvectors)
+  call find_cutoff_onep(lupri,luerr,setting,nbast,latt_cell,refcell,lattice)
 
 !  write(*,*) 'nearest neighbour in pbcmain 2 ', lattice%nneighbour
 !  call build_nflvec_list(lattice,nbast) 
@@ -164,7 +163,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   mattxt=adjustl('PBCDMAT000')
   mattxt=trim(mattxt)
   write(*,*) mattxt
-  call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+  call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
   CALL lsOPEN(IUNIT,mattxt,'old','FORMATTED')
   !OPEN(UNIT=iunit,FILE=trim(mattxt),STATUS='OLD',IOSTAT=ierror)
   read(iunit,*) nbasterik
@@ -200,7 +199,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   !write(*,*) 'debugpbc 4'
   !enddo
 
-  !call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+  !call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
   Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,dmat)
   write(*,*) 'density'
   write(lupri,*) 'density'
@@ -210,7 +209,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
 
   elseif(lattice%read_file) then
 
-        call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+        call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
         mattxt=adjustl(lattice%debugdensfile)
         mattxt=trim(mattxt)
         write(*,*) mattxt
@@ -252,7 +251,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
     !  write(mattxt,'(A20)') 'PBCDMAT'//trim(string1)//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)
 
 
-      call find_latt_index(k,0,0,0,fdim,lattice,lattice%max_layer)
+      call find_latt_index(k,0,0,0,lattice,lattice%max_layer)
       !do i=1,num_latvectors
       !  call init_lvec_data(lattice%lvec(i),nbast)
       !enddo
@@ -296,7 +295,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         ENDDO
         CALL lsCLOSE(IUNIT,'KEEP')
 
-      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+      call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
       Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,dmat)
       !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
       call mem_dealloc(lattice%lvec(k)%d_mat)
@@ -306,7 +305,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
 else
 
 
-      !call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+      !call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
       !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
     endif
 
@@ -332,7 +331,7 @@ else
     !  write(mattxt,'(A20)') 'PBCDMAT'//trim(string1)//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)
 
 
-      call find_latt_index(k,0,0,0,fdim,lattice,lattice%max_layer)
+      call find_latt_index(k,0,0,0,lattice,lattice%max_layer)
       !do i=1,num_latvectors
       !  call init_lvec_data(lattice%lvec(i),nbast)
       !enddo
@@ -379,7 +378,7 @@ else
       !   call mat_zero(nfdensity(n1))
       !enddo
 
-      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+      call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
       Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,Dmat)
 
       write(lupri,*) 'density used'
@@ -397,7 +396,7 @@ else
       !   call mat_init(nfdensity(n1),nbast,nbast)
       !   call mat_zero(nfdensity(n1))
       !enddo
-      !call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+      !call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
       !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
 
 
@@ -447,7 +446,7 @@ else
 
     !call pbc_readopmat2(0,0,0,matris,2,'OVERLAP',.true.,.false.)
     !CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
-    !call find_latt_index(k,n1,0,0,fdim,lattice,lattice%max_layer)
+    !call find_latt_index(k,n1,0,0,lattice,lattice%max_layer)
     !write(iunit,*) k
     !DO j=1,nbast
     !   write(iunit,*) (lattice%lvec(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
@@ -528,10 +527,10 @@ else
     write(lupri,*) 'We are now in the ',lattice%wannier_direct, ' method'
 
     allocate(fck(sze*sze))
-    fck=0.0000E-100
+    fck=0.0000E-100_realk
   
-    call pbc_overlap_int(lupri,luerr,setting,input%molecule,&
-    nbast,lattice,latt_cell,refcell,num_latvectors)
+    call pbc_overlap_int(lupri,luerr,setting,nbast,lattice,latt_cell, &
+		 & refcell,num_latvectors)
   
     call pbc_kinetic_int(lupri,luerr,setting,input%molecule,nbast,fck,&
      sze,lattice,latt_cell,refcell,num_latvectors)
@@ -577,7 +576,7 @@ else
          call mat_init(nfdensity(n1),nbast,nbast)
          call mat_zero(nfdensity(n1))
       enddo
-      call find_latt_index(n1,0,0,0,fdim,lattice,3)
+      call find_latt_index(n1,0,0,0,lattice,3)
       Call mat_set_from_full(lattice%lvec(k)%d_mat,1.D0,nfdensity(n1))
       CALL lsCLOSE(IUNIT,'KEEP')
     else

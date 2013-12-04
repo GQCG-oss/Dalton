@@ -383,7 +383,6 @@ SUBROUTINE pbc_read_fock_matrix(Aop,nrows,ncols,diis)
 	CHARACTER(LEN=12) :: diis
 	! local
 	INTEGER :: layer,l1,l2,l3,indred
-	INTEGER :: fdim(3)
 
 	Do layer=1,size(Aop%lvec)
 
@@ -435,7 +434,7 @@ SUBROUTINE pbc_read_fock_matrix(Aop,nrows,ncols,diis)
 			l1=int(Aop%lvec(layer)%lat_coord(1))
 			l2=int(Aop%lvec(layer)%lat_coord(2))
 			l3=int(Aop%lvec(layer)%lat_coord(3))
-			call find_latt_index(indred,-l1,-l2,-l3,fdim,Aop,Aop%max_layer)
+			call find_latt_index(indred,-l1,-l2,-l3,Aop,Aop%max_layer)
 			if(Aop%lvec(indred)%oper(2)%init_magic_tag.EQ.mat_init_magic_value)then
 				call mat_init(Aop%lvec(layer)%oper(2),nrows,ncols)
 				call mat_zero(Aop%lvec(layer)%oper(2))
@@ -459,7 +458,7 @@ SUBROUTINE pbc_add_fock_matrix(f_1,g_2,ll,nrows,ncols,numvecs)
 	! local
 	INTEGER :: layer,l1,l2,l3
 	INTEGER :: g1,g2,g3
-	INTEGER :: fdim(3),indred
+	INTEGER :: indred
 
 	g1=max(ll%col1,ll%Kx1)
 	g2=max(ll%col2,ll%Kx2)
@@ -474,7 +473,7 @@ SUBROUTINE pbc_add_fock_matrix(f_1,g_2,ll,nrows,ncols,numvecs)
 				call mat_init(ll%lvec(layer)%oper(2),nrows,ncols)
 				call mat_zero(ll%lvec(layer)%oper(2))
 			endif
-			if(ll%lvec(layer)%f1_computed )then !ONE PARTICLE PART
+			if(ll%lvec(layer)%f1_computed ) then !ONE PARTICLE PART
 				call mat_daxpy(1.0_realk,f_1(layer),ll%lvec(layer)%oper(2))
 			endif
 			if(ll%lvec(layer)%g2_computed) then !two particle part
@@ -486,7 +485,7 @@ SUBROUTINE pbc_add_fock_matrix(f_1,g_2,ll,nrows,ncols,numvecs)
 			l1=int(ll%lvec(layer)%lat_coord(1))
 			l2=int(ll%lvec(layer)%lat_coord(2))
 			l3=int(ll%lvec(layer)%lat_coord(3))
-			call find_latt_index(indred,-l1,-l2,-l3,fdim,ll,ll%max_layer)
+			call find_latt_index(indred,-l1,-l2,-l3,ll,ll%max_layer)
 			if(ll%lvec(indred)%g2_computed .or.ll%lvec(indred)%f1_computed )then
 				call mat_init(ll%lvec(layer)%oper(2),nrows,ncols)
 				call mat_zero(ll%lvec(layer)%oper(2))
@@ -516,15 +515,16 @@ SUBROUTINE pbc_free_read_matrices(Aop)
 		l2=int(Aop%lvec(layer)%lat_coord(2))
 		l3=int(Aop%lvec(layer)%lat_coord(3))
 
-		if((abs(l1) .le. Aop%fc1 .and. abs(l2) .le. Aop%fc2) .and. abs(l3) .le. Aop%fc3)then
-			if(Aop%lvec(layer)%oper(1)%init_magic_tag.EQ.mat_init_magic_value)then
+		if ( abs(l1).le.Aop%fc1 & 
+			& .and.abs(l2).le.Aop%fc2 & 
+			& .and.abs(l3).le.Aop%fc3) then
+			if(Aop%lvec(layer)%oper(1)%init_magic_tag.eq.mat_init_magic_value)then
 				call mat_free(Aop%lvec(layer)%oper(1))
 			endif
-			if(Aop%lvec(layer)%oper(2)%init_magic_tag.EQ.mat_init_magic_value)then
+			if(Aop%lvec(layer)%oper(2)%init_magic_tag.eq.mat_init_magic_value)then
 				call mat_free(Aop%lvec(layer)%oper(2))
 			endif
 		endif
-
 	enddo
 
 END SUBROUTINE pbc_free_read_matrices
@@ -568,7 +568,7 @@ SUBROUTINE pbc_get_file_and_read(Aop,nrows,ncols,cell,oper1,oper2,diis)
 
 	filename=adjustl(filename)
 	filename=trim(filename)
-	FILELEN=len(filename)
+	filelen=len(filename)
 	INQUIRE(FILE=filename(1:FILELEN),EXIST=fileexists,IOSTAT=IOS)
 	if (fileexists) then
 		call LSOPEN(iunit,filename,'OLD','UNFORMATTED')

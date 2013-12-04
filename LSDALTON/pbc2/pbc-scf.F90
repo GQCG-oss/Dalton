@@ -356,7 +356,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 	CHARACTER(LEN=20) :: mattxt
 	LOGICAL :: diis_exit
 	REAL(realk) :: E_J,E_K,E_XC,E_ff,E_cell
-	REAL(realk) :: E_en,E_nuc,E_kin,E_nnff
+	REAL(realk) :: E_nuc,E_nnff
 	REAL(realk)         :: TS,TE,TST,TET,TOT,TWT !For finding time usage
 	TYPE(matrix),POINTER :: f_1(:),ovl(:)
 	TYPE(matrix),POINTER :: g_2(:)
@@ -372,7 +372,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 	call mem_alloc(tlat,(maxmultmom+1)**2,(maxmultmom+1)**2)
 	call mem_alloc(nfdensity,numrealvec)
-	call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+	call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
 	call mat_init(nfdensity(n1),ndim,ndim)
 	lattice%lvec(n1)%dm_computed=.true.
 	call mat_copy(1.0_realk,Dmat0,nfdensity(n1)) 
@@ -398,20 +398,20 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 	call mem_alloc(error,lattice%num_store,errlm)
 
 	CALL LSTIMER('START ',TS,TE,LUPRI)
-	call pbc_overlap_k(lupri,luerr,setting,molecule,ndim,&
+	call pbc_overlap_k(lupri,luerr,setting,molecule%natoms,ndim,&
 		lattice,latt_cell,refcell,numrealvec,ovl)
 	CALL LSTIMER('pbc_overlap_k',TS,TE,LUPRI)
 
 	!CALCULATES kinetic energy of electrons
 	CALL LSTIMER('START ',TS,TE,LUPRI)
-	call pbc_kinetic_k(lupri,luerr,setting,molecule,ndim,&
-		lattice,latt_cell,refcell,numrealvec,nfdensity,f_1,E_kin)
+	call pbc_kinetic_k(lupri,luerr,setting,molecule%natoms,ndim,&
+		lattice,latt_cell,refcell,numrealvec,nfdensity,f_1)
 	CALL LSTIMER('pbc_kinetic_k',TS,TE,LUPRI)
 
 	!CALCULATES electron nuclei attraction
 	CALL LSTIMER('START ',TS,TE,LUPRI)
-	call pbc_nucattrc_k(lupri,luerr,setting,molecule,ndim,&
-		lattice,latt_cell,refcell,numrealvec,nfdensity,f_1,E_en)
+	call pbc_nucattrc_k(lupri,luerr,setting,molecule%natoms,ndim,&
+		lattice,latt_cell,refcell,numrealvec,nfdensity,f_1)
 	CALL LSTIMER('pbc_nucattrc_k',TS,TE,LUPRI)
 
 	!CALCULATES nuclear repulsion
@@ -486,13 +486,13 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 		CALL LSTIMER('START ',TST,TET,LUPRI)
 		CALL LSTIMER('START ',TS,TE,LUPRI)
-		call pbc_electron_rep_k(lupri,luerr,setting,molecule,ndim,&
+		call pbc_electron_rep_k(lupri,luerr,setting,molecule%natoms,ndim,&
 			lattice,latt_cell,refcell,numrealvec,nfdensity,g_2,E_J)
 		CALL LSTIMER('pbc Coul',TS,TE,LUPRI)
 
 		!if hybrid or HF, include parameter if hybrid
 		CALL LSTIMER('START ',TS,TE,LUPRI)
-		call pbc_exact_xc_k(lupri,luerr,setting,molecule,ndim,&
+		call pbc_exact_xc_k(lupri,luerr,setting,molecule%natoms,ndim,&
 			lattice,latt_cell,refcell,numrealvec,nfdensity,g_2,E_K)
 		CALL LSTIMER('pbc xchange',TS,TE,LUPRI)
 		CALL LSTIMER('rep xchange',TST,TET,LUPRI)
