@@ -597,8 +597,6 @@ contains
     !$OMP CRITICAL
     Eocc = Eocc + e1
     lag_occ = lag_occ + e2
-    write(*,*) 'JOHANNES noccEOS,&
-      nvirtAOS, Eocc',noccEOS,nvirtAOS,'e1',myfragment%pairfrag, Eocc
 
     ! Update total virtual contributions to fragment energy
     do a=1,nvirtAOS
@@ -692,7 +690,6 @@ contains
     !$OMP CRITICAL
     Evirt = Evirt + e3
     lag_virt = lag_virt + e4
-    !write(*,*) 'JOHANNES noccAOS, nvirtEOS, Evirt',noccAOS,nvirtEOS,'e2',Evirt
 
     ! Update total occupied contributions to fragment energy
     do i=1,noccAOS
@@ -1203,8 +1200,6 @@ contains
     Eocc = Eocc + e1
     lag_occ = lag_occ + e2
     !$OMP END CRITICAL
-    !write(*,*) 'JOHANNES noccEOS,&
-    !  nvirtAOS EOCC',noccEOS,nvirtAOS,'e1',pairfragment%pairfrag,EOCC
 
     call collect_thread_memory()
     !$OMP END PARALLEL
@@ -1265,7 +1260,6 @@ contains
     lag_virt = lag_virt + e4
     !$OMP END CRITICAL
 
-    !write(*,*) 'JOHANNES noccAOS, nvirtEOS, Evirt',noccAOS,nvirtEOS,'e2',Evirt
     call collect_thread_memory()
     !$OMP END PARALLEL
     call mem_TurnOffThread_Memory()

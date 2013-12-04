@@ -410,7 +410,7 @@ module cc_debug_routines_module
      call mem_alloc(omega2,DECinfo%ccMaxIter)
 
      ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-     if(CCmodel /= MODEL_MP2) then
+     if(decinfo%ccmodel /= MODEL_MP2 .and.decinfo%ccmodel /= MODEL_RPA ) then
         xocc = array2_init(occ_dims)
         yocc = array2_init(occ_dims)
         xvirt = array2_init(virt_dims)

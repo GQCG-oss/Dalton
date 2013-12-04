@@ -1940,7 +1940,6 @@ contains
        call flush(DECinfo%output)
 #endif
 
-        write(*,*) 'JOHANNES RPA print in cc_driver:',ccenergy
         call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,.false.,fragment_job)
 
        last_iter = iter

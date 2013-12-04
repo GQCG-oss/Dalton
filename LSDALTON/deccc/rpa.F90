@@ -158,7 +158,7 @@ contains
     integer :: a,b,c,i,j,k,dim1
     real(realk) :: starttime,stoptime
 
-    Sckdl = array4_init([nvirt,nocc,nvirt,nocc])
+    !Sckdl = array4_init([nvirt,nocc,nvirt,nocc])
     Sckdl = array4_duplicate(t2)
     Dckbj = array4_init([nvirt,nocc,nvirt,nocc])
 
@@ -180,7 +180,6 @@ contains
     call array4_free(Dckbj)
     call array4_free(Sckdl)
 
-    return
 
   end subroutine RPA_residual_add
 
@@ -338,12 +337,11 @@ contains
     real(realk) :: energy
 
     !Test for understanding the structure, 
-    !gmo would be g_aibj
     J = array4_duplicate(gmo)
     !call array4_scale(J,2.E0_realk)
     energy=t2*J
 
-    !call lsquit('rpa_energy: Needs implementation',-1)
+    call array4_free(J)
 
   end function RPA_energy
 
@@ -363,6 +361,7 @@ contains
     call array4_scale(J,-0.5E0_realk)
     energy=t2*J
     call array4_reorder(gmo,[1,4,3,2])
+    call array4_free(J)
 
     !call lsquit('rpa_energy: Needs implementation',-1)
 
