@@ -42,10 +42,10 @@
      &                       work, nwrk)
         use polarizable_embedding, only: pe_master
 #include "inforb.h"
-        integer :: nmats
+        integer, intent(in) :: nmats, nwrk
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
-        real*8, dimension(1), intent(out) :: energies
+        real*8, dimension(nmats), intent(out) :: energies
         real*8, dimension(nwrk), intent(inout) :: work
         call pe_master(runtype='fock', denmats=denmats, fckmats=fckmats,
      &                 nmats=nmats, energies=energies, dalwrk=work)
@@ -54,7 +54,7 @@
       subroutine pe_ifc_energy(denmats, nmats, work, nwrk)
         use polarizable_embedding, only: pe_master
 #include "inforb.h"
-        integer, intent(in) :: nmats
+        integer, intent(in) :: nmats, nwrk
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         real*8, dimension(nwrk), intent(inout) :: work
         call pe_master(runtype='energy', denmats=denmats, nmats=nmats,
@@ -64,7 +64,7 @@
 #if defined(VAR_MPI)
       subroutine pe_ifc_mpi(work, nwrk, runtype)
         use polarizable_embedding, only: pe_mpi
-        integer :: nwrk, runtype
+        integer, intent(in) :: nwrk, runtype
         real*8, dimension(nwrk), intent(inout) :: work
         call pe_mpi(work, runtype)
       end subroutine pe_ifc_mpi
