@@ -61,15 +61,15 @@
      &                 dalwrk=work)
       end subroutine pe_ifc_energy
 
-      function pe_ifc_noneq_solvation
+      function pe_ifc_noneq_sol()
         use pe_variables, only: pe_sol, pe_noneq
-        logical :: pe_ifc_noneq_solvation
+        integer :: pe_ifc_noneq_sol
         if (pe_sol .and. pe_noneq) then
-            pe_ifc_noneq_solvation = .true.
+            pe_ifc_noneq_sol = 1
         else
-            pe_ifc_noneq_solvation = .false.
+            pe_ifc_noneq_sol = 0
         end if
-      end function pe_ifc_noneq_solvation
+      end function pe_ifc_noneq_sol
 
       subroutine pe_ifc_noneq(denmats, fckmats, nmats, work, nwrk)
         use polarizable_embedding, only: pe_master
@@ -82,13 +82,13 @@
      &                 fckmats=fckmats, nmats=nmats, dalwrk=work)
       end subroutine pe_ifc_noneq
 
-      function pe_ifc_mep
+      function pe_ifc_mep()
         use pe_variables, only: pe_mep
-        logical :: pe_ifc_mep
+        integer :: pe_ifc_mep
         if (pe_mep) then
-            pe_ifc_mep = .true.
+            pe_ifc_mep = 1
         else
-            pe_ifc_mep = .false.
+            pe_ifc_mep = 0
         end if
       end function pe_ifc_mep
 
@@ -105,13 +105,12 @@
 #if defined(VAR_MPI)
       subroutine pe_ifc_mpi(work, nwrk, runtype)
         use polarizable_embedding, only: pe_mpi
-        integer :: nwrk, runtype
+        integer, intent(in) :: nwrk, runtype
         real*8, dimension(nwrk), intent(inout) :: work
         call pe_mpi(work, runtype)
       end subroutine pe_ifc_mpi
 #endif
 
-#if defined (BUILD_PELIB)
       subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
 !
 !     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen

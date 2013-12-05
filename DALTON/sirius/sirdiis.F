@@ -846,20 +846,20 @@ C            Now the PCM part ...
          ENDIF
 C
          IF (PEQM) THEN
-            CALL MEMGET('REAL', KFPE, NNBASX, WRK, KFREE, LFREE)
-            CALL MEMGET('REAL', KEPE, 1, WRK, KFREE, LFREE)
-            IF (NASHT == 0 .OR. HSFOCK) THEN
-              CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE),
-     &                         WRK(KFREE), LFREE-KFREE+1)
-            ELSE
-              CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
-     &                         WRK(KEPE), WRK(KFREE), LFREE-KFREE+1)
-            END IF
-            ESOLT = WRK(KEPE)
-            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
-     &                           + WRK(KFPE:KFPE+NNBASX-1)
-            CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, KFRSAV, KFPE,
-     &                  KFREE, LFREE)
+           CALL MEMGET('REAL', KFPE, NNBASX, WRK, KFREE, LFREE)
+           CALL MEMGET('REAL', KEPE, 1, WRK, KFREE, LFREE)
+           IF (NASHT == 0 .OR. HSFOCK) THEN
+             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE),
+     &                        WRK(KFREE), LFREE-KFREE+1)
+           ELSE
+             CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
+     &                        WRK(KEPE), WRK(KFREE), LFREE-KFREE+1)
+           END IF
+           ESOLT = WRK(KEPE)
+           FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
+     &                          + WRK(KFPE:KFPE+NNBASX-1)
+           CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, KFRSAV, KFPE,
+     &                 KFREE, LFREE)
          END IF
 C
          EMCDIF = EMCSCF
@@ -1480,19 +1480,15 @@ C
          END IF
 C
       END IF
-      if (pe_mep) then
-        call pe_master(runtype='mep', denmats=daosav(:,1), nmats=1,
-     &                 dalwrk=wrk(kfree:lfree))
-      end if
       IF (PEQM) THEN
         IF (NASHT == 0 .OR. HSFOCK) THEN
-            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1, WRK(KFREE),
-     &                         LFREE-KFREE+1)
+            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1,
+     &                         WRK(KFREE), LFREE-KFREE+1)
         ELSE
             CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1,
      &                         WRK(KFREE), LFREE-KFREE+1)
         END IF
-        IF (PE_NONEQ_SOLVATION) THEN
+        IF (PE_IFC_NONEQ_SOL == 1) THEN
             CALL MEMGET('REAL', KFPEAO, NNBASX, WRK, KFREE, LFREE)
             IF (NASHT == 0 .OR. HSROHF) THEN
                 CALL PE_IFC_NONEQ(DAOSAV(:,1), WRK(KFPEAO), 1,
@@ -1511,7 +1507,7 @@ C
             CALL MEMREL('DIIS_CTL.PE_IFC_NONEQ', WRK, KFRSAV, KFPEAO,
      &                  KFREE, LFREE)
         END IF
-        IF (PE_IFC_MEP) THEN
+        IF (PE_IFC_MEP == 1) THEN
             IF (NASHT == 0 .OR. HSROHF) THEN
                 CALL PE_IFC_MEPCALC(DAOSAV(:,1), 1,
      &                          WRK(KFREE), LFREE-KFREE+1)
