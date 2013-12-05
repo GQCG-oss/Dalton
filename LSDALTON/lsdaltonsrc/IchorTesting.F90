@@ -206,14 +206,14 @@ do Ipass = 1,2
 !       integralsIchor = 0.0E0_realk
 !          setting%scheme%intprint = 1000
 !       WRITE(lupri,*)'IchorDriver'
-       CALL FLUSH(LUPRI)
-       print*,'call ICHOR WITH BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
-            & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
+!       CALL FLUSH(LUPRI)
+!       print*,'call ICHOR WITH BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
+!            & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
        SameMOL = .FALSE.       
        call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
        call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1)!,spherical)
        call FREE_SCREEN_ICHORERI
-       print*,'DONE call ICHOR WITH BASIS'
+!       print*,'DONE call ICHOR WITH BASIS'
        !setting%scheme%intprint = 0
        write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
             & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'

@@ -412,18 +412,17 @@ subroutine build_reducedExponents_integralPrefactorQP(nPrimP,nPrimQ,expQ,expP,&
   ENDDO
 end subroutine build_reducedExponents_integralPrefactorQP
 
-subroutine PrintTypeExpInfo(nPrimP,nPrimQ,PQorder,reducedExponents,integralPrefactor,lupri)
+subroutine PrintTypeExpInfo(nPrimP,nPrimQ,reducedExponents,integralPrefactor,lupri)
   implicit none
   integer,intent(in) :: nPrimP,nPrimQ,lupri
-  logical,intent(in) :: PQorder
   real(realk) :: reducedExponents(nPrimP*nPrimQ),integralPrefactor(nPrimP*nPrimQ)
   !locigal variables
   integer :: iPrimP
-  WRITE(lupri,*)'ReducedExponents PQorder',PQorder
+  WRITE(lupri,*)'ReducedExponents  QP order'
   do iPrimP=1,nPrimP*nPrimQ
      WRITE(lupri,'(3X,ES18.9)')reducedExponents(iPrimP)
   enddo
-  WRITE(lupri,*)'IntegralPrefactor PQorder',PQorder
+  WRITE(lupri,*)'IntegralPrefactor QP order'
   do iPrimP=1,nPrimP*nPrimQ
      WRITE(lupri,'(3X,ES18.9)')integralPrefactor(iPrimP)
   enddo
@@ -495,12 +494,11 @@ subroutine build_noScreen1(ItypeA,ItypeB,ntypesA,ntypesB,nAtomsA,nAtomsB,nBatchA
   !local variables
   integer :: iBatchA,IatomA,iBatchB,iAtomB
   real(realk) :: MAXGAB
-  iBatchB = BatchIndexOfTypeB(ItypeB)
-!$OMP PARALLEL DO PRIVATE(IatomB,IatomA,iBatchA) FIRSTPRIVATE(nAtomsA,&
-!$OMP nAtomsB,iBatchB,MaxGabForTypeCD,THRESHOLD_CS) SHARED(BatchIndexOfTypeA,&
-!$OMP noScreenABout,noScreenABin) SCHEDULE(DYNAMIC,1)
+!$OMP PARALLEL DO PRIVATE(IatomB,IatomA,iBatchA,iBatchB) FIRSTPRIVATE(nAtomsA,&
+!$OMP nAtomsB,MaxGabForTypeCD,THRESHOLD_CS) SHARED(BatchIndexOfTypeA,&
+!$OMP BatchIndexOfTypeB,noScreenABout,noScreenABin) SCHEDULE(DYNAMIC,1)
   DO IatomB = 1,nAtomsB
-     iBatchB = iBatchB + 1
+     iBatchB = BatchIndexOfTypeB(ItypeB) + IatomB
      iBatchA = BatchIndexOfTypeA(ItypeA)
      DO IatomA = 1,nAtomsA
         noScreenABout(IatomA,IatomB) = noScreenABin(IatomA,IatomB).AND.(BATCHGAB(iBatchA+IatomA,iBatchB)*MaxGabForTypeCD.GT.THRESHOLD_CS)
@@ -614,46 +612,6 @@ SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
      ENDDO
   ENDIF
   nPasses = iPass
-
-
-!!$  IF(CSScreen)THEN
-!!$   iPass=0
-!!$   iBatchB = iBatchIndexOfTypeB
-!!$   DO IatomB = 1,nAtomsB
-!!$    iBatchB = iBatchB + 1
-!!$    iBatchA = iBatchIndexOfTypeA
-!!$    DO IatomA = 1,nAtomsA
-!!$     IF(noScreenABin(IatomA,IatomB))THEN
-!!$      IF(TriangularAtomLoop.AND.IatomB.GT.IatomA)THEN
-!!$      ELSE
-!!$        IF(GABELM*BATCHGAB(iBatchA+IatomA,iBatchB).GT.THRESHOLD_CS)THEN
-!!$           iPass = iPass + 1
-!!$           IatomAPass(iPass) = IatomA
-!!$           IatomBPass(iPass) = IatomB
-!!$        ENDIF
-!!$       ENDIF
-!!$      ENDIF
-!!$     ENDIF
-!!$    ENDDO
-!!$   ENDDO
-!!$   nPasses = iPass
-!!$  ELSE
-!!$     iPass=0
-!!$     DO IatomB = 1,nAtomsB
-!!$        DO IatomA = 1,nAtomsA
-!!$           IF(noScreenABin(IatomA,IatomB))THEN
-!!$              IF(TriangularAtomLoop.AND.IatomB.GT.IatomA)THEN
-!!$                 !nothing
-!!$              ELSE
-!!$                 iPass = iPass + 1
-!!$                 IatomAPass(iPass) = IatomA
-!!$                 IatomBPass(iPass) = IatomB
-!!$              ENDIF
-!!$           ENDIF
-!!$        ENDDO
-!!$     ENDDO
-!!$     nPasses = iPass
-!!$  ENDIF
 END SUBROUTINE BUILD_NOSCREEN2
 
 subroutine Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
@@ -708,7 +666,41 @@ subroutine Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
         ENDDO
      ENDDO
   END IF
-subroutine Build_qcent_Qdistance12_QpreExpFac
+end subroutine Build_qcent_Qdistance12_QpreExpFac
+
+subroutine Build_Seg_qcent_QpreExpFac(nPrimC,nPrimD,&
+     & expC,expD,Ccenter,Dcenter,ContractCoeffC,ContractCoeffD,&
+     & qcent,QpreExpFac,INTPRINT)
+  implicit none
+  integer,intent(in) :: nPrimC,nPrimD,INTPRINT
+  real(realk),intent(in) :: expC(nPrimC),expD(nPrimD)
+  real(realk),intent(in) :: Ccenter(3),Dcenter(3)
+  real(realk),intent(in) :: ContractCoeffC(nPrimC)
+  real(realk),intent(in) :: ContractCoeffD(nPrimD)
+  real(realk),intent(inout) :: qcent(3,nPrimC,nPrimD)
+  real(realk),intent(inout) :: QpreExpFac(nPrimC,nPrimD)
+  !local variables
+  integer :: i12,i2,i1,offset
+  real(realk) :: e2,e1,X,Y,Z,d2,eDX,eDY,eDZ,TMPCCD
+  X = Ccenter(1) - Dcenter(1)
+  Y = Ccenter(2) - Dcenter(2)
+  Z = Ccenter(3) - Dcenter(3)
+  d2 = X*X + Y*Y + Z*Z
+  DO i2=1,nPrimD
+     e2  = expD(i2)       
+     eDX = e2*Dcenter(1)
+     eDY = e2*Dcenter(2)
+     eDZ = e2*Dcenter(3)
+     TMPCCD = ContractCoeffD(i2)
+     DO i1=1,nPrimC
+        e1  = expC(i1)
+        qcent(1,i1,i2) = (e1*Ccenter(1) + eDX)/(e1+e2)
+        Qcent(2,i1,i2) = (e1*Ccenter(2) + eDY)/(e1+e2)
+        Qcent(3,i1,i2) = (e1*Ccenter(3) + eDZ)/(e1+e2)
+        QpreExpFac(i1,i2) = exp(-e1*e2/(e1+e2)*d2)*ContractCoeffC(i1)*TMPCCD
+     ENDDO
+  ENDDO
+end subroutine Build_Seg_qcent_QpreExpFac
 
 SUBROUTINE Build_pcent_Pdistance12_PpreExpFac(nPrimA,nPrimB,natomsA,natomsB,nContA,nContB,&
      & inversexpP,expA,expB,Acenter,Bcenter,ContractCoeffA,ContractCoeffB,Segmented,&
@@ -726,8 +718,47 @@ SUBROUTINE Build_pcent_Pdistance12_PpreExpFac(nPrimA,nPrimB,natomsA,natomsB,nCon
   !local variables
   integer :: i12,i2,i1,offset,IatomA,IatomB
   real(realk) :: e2,e1,X,Y,Z,d2,AX,AY,AZ,BX,BY,BZ,TMPCCB,tmpe2d2,eBX,eBY,eBZ
+  IF (Segmented) THEN
 !$OMP PARALLEL DO DEFAULT(none) PRIVATE(IatomB,BX,BY,BZ,IatomA,AX,AY,AZ,X,Y,Z,d2,&
-!$OMP e2,e1,eBX,eBY,eBZ,tmpe2d2,TMPCCB,i1,i2) SHARED(expA,expB,inversexpP,Pdistance12Pass,&
+!$OMP e2,e1,eBX,eBY,eBZ,tmpe2d2,TMPCCB,i1,i2) FIRSTPRIVATE(nAtomsB,nAtomsA,nPrimA,&
+!$OMP nPrimB) SHARED(expA,expB,inversexpP,Pdistance12Pass,&
+!$OMP Acenter,Bcenter,pcentPass,ContractCoeffA,ContractCoeffB,PpreExpFacPass) SCHEDULE(DYNAMIC,1)
+  DO IatomB = 1,nAtomsB
+   BX = Bcenter(1,IatomB)
+   BY = Bcenter(2,IatomB)
+   BZ = Bcenter(3,IatomB)
+   DO IatomA = 1,nAtomsA
+     AX = Acenter(1,IatomA)
+     AY = Acenter(2,IatomA)
+     AZ = Acenter(3,IatomA)
+     X = AX - BX
+     Y = AY - BY
+     Z = AZ - BZ
+     Pdistance12Pass(1,iAtomA,IatomB) = X
+     Pdistance12Pass(2,iAtomA,IatomB) = Y
+     Pdistance12Pass(3,iAtomA,IatomB) = Z
+     d2 = X*X + Y*Y + Z*Z
+     DO i2=1,nPrimB
+      e2  = expB(i2)       
+      eBX = e2*BX
+      eBY = e2*BY
+      eBZ = e2*BZ
+      tmpe2d2 = e2*d2
+      TMPCCB = ContractCoeffB(i2,1)
+      DO i1=1,nPrimA
+        pcentPass(1,i1,i2,iAtomA,IatomB) = (AX*expA(i1) + eBX)*inversexpP(i1,i2)
+        pcentPass(2,i1,i2,iAtomA,IatomB) = (AY*expA(i1) + eBY)*inversexpP(i1,i2)
+        pcentPass(3,i1,i2,iAtomA,IatomB) = (AZ*expA(i1) + eBZ)*inversexpP(i1,i2)
+        PpreExpFacPass(i1,i2,iAtomA,IatomB) = exp(-expA(i1)*tmpe2d2*inversexpP(i1,i2))*ContractCoeffA(i1,1)*TMPCCB
+      ENDDO
+     ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO 
+ELSE
+!$OMP PARALLEL DO DEFAULT(none) PRIVATE(IatomB,BX,BY,BZ,IatomA,AX,AY,AZ,X,Y,Z,d2,&
+!$OMP e2,e1,eBX,eBY,eBZ,tmpe2d2,TMPCCB,i1,i2) FIRSTPRIVATE(nAtomsB,nAtomsA,nPrimA,&
+!$OMP nPrimB) SHARED(expA,expB,inversexpP,Pdistance12Pass,&
 !$OMP Acenter,Bcenter,pcentPass,ContractCoeffA,PpreExpFacPass) SCHEDULE(DYNAMIC,1)
   DO IatomB = 1,nAtomsB
    BX = Bcenter(1,IatomB)
@@ -750,26 +781,17 @@ SUBROUTINE Build_pcent_Pdistance12_PpreExpFac(nPrimA,nPrimB,natomsA,natomsB,nCon
       eBY = e2*BY
       eBZ = e2*BZ
       tmpe2d2 = e2*d2
-      IF (Segmented) THEN
-       TMPCCB = ContractCoeffB(i2,1)
-       DO i1=1,nPrimA
-        pcentPass(1,i1,i2,iAtomA,IatomB) = (AX*expA(i1) + eBX)*inversexpP(i1,i2)
-        pcentPass(2,i1,i2,iAtomA,IatomB) = (AY*expA(i1) + eBY)*inversexpP(i1,i2)
-        pcentPass(3,i1,i2,iAtomA,IatomB) = (AZ*expA(i1) + eBZ)*inversexpP(i1,i2)
-        PpreExpFacPass(i1,i2,iAtomA,IatomB) = exp(-expA(i1)*tmpe2d2*inversexpP(i1,i2))*ContractCoeffA(i1,1)*TMPCCB
-       ENDDO
-      ELSE
-       DO i1=1,nPrimA
-          pcentPass(1,i1,i2,iAtomA,IatomB) = (AX*expA(i1) + eBX)*inversexpP(i1,i2)
-          pcentPass(2,i1,i2,iAtomA,IatomB) = (AY*expA(i1) + eBY)*inversexpP(i1,i2)
-          pcentPass(3,i1,i2,iAtomA,IatomB) = (AZ*expA(i1) + eBZ)*inversexpP(i1,i2)
-          PpreExpFacPass(i1,i2,iAtomA,IatomB) = exp(-tmpe2d2*expA(i1)*inversexpP(i1,i2))
-       ENDDO
-      ENDIF
+      DO i1=1,nPrimA
+       pcentPass(1,i1,i2,iAtomA,IatomB) = (AX*expA(i1) + eBX)*inversexpP(i1,i2)
+       pcentPass(2,i1,i2,iAtomA,IatomB) = (AY*expA(i1) + eBY)*inversexpP(i1,i2)
+       pcentPass(3,i1,i2,iAtomA,IatomB) = (AZ*expA(i1) + eBZ)*inversexpP(i1,i2)
+       PpreExpFacPass(i1,i2,iAtomA,IatomB) = exp(-tmpe2d2*expA(i1)*inversexpP(i1,i2))
+      ENDDO
      ENDDO
    ENDDO
   ENDDO
 !$OMP END PARALLEL DO 
+ENDIF
 end SUBROUTINE Build_pcent_Pdistance12_PpreExpFac
 
 SUBROUTINE Build_pcent_Pdistance12_PpreExpFac2(nPrimP,nPasses,&
@@ -907,9 +929,11 @@ subroutine ichorzero(dx, length)
   real(realk), intent(inout) :: dx(length)
   !local
   integer                  :: i
+!$OMP PARALLEL DO PRIVATE(I) FIRSTPRIVATE(length) SHARED(dx) SCHEDULE(DYNAMIC,13)
   do i = 1, length
      dx(i) = 0.0E0_realk
   enddo
+!$OMP END PARALLEL DO
 end subroutine ichorzero
 
 subroutine ichorzero5(OutputStorage, Dim1,Dim2,Dim3,Dim4,Dim5)
@@ -920,17 +944,22 @@ subroutine ichorzero5(OutputStorage, Dim1,Dim2,Dim3,Dim4,Dim5)
   real(realk), intent(inout) :: OutputStorage(Dim1,Dim2,Dim3,Dim4,Dim5)
   !local
   integer                  :: i,j,k,l,m
+!$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J,k,l,m) FIRSTPRIVATE(dim1,&
+!$OMP dim2,dim3,dim4,dim5) SHARED(OutputStorage)
   do m = 1, dim5
    do l = 1, dim4
     do k = 1, dim3
+!$OMP DO SCHEDULE(DYNAMIC,3)
      do j = 1, dim2
       do i = 1, dim1
        OutputStorage(i,j,k,l,m) = 0.0E0_realk
       enddo
      enddo
+!$OMP END DO NOWAIT
     enddo
    enddo
   enddo
+!$OMP END PARALLEL DO
 end subroutine ichorzero5
 
 subroutine ichorzero2(OutputStorage, Dim1,Dim2)
@@ -943,7 +972,7 @@ subroutine ichorzero2(OutputStorage, Dim1,Dim2)
   integer :: i,j
   logical :: moda,modb
 !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(OutputStorage) FIRSTPRIVATE(dim1,&
-!$OMP dim2) SCHEDULE(DYNAMIC,3)
+!$OMP dim2) SCHEDULE(DYNAMIC,13)
   do j=1,dim2
      do i=1,dim1
         OutputStorage(i,j)=0.0E0_realk
