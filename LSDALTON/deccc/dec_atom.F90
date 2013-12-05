@@ -440,7 +440,10 @@ contains
     fragment%Cv => null()
 
     !Free CABS MO F12
-    fragment%cabsMOs => null()
+    fragment%Ccabs => null()
+    
+    !Free RI MO F12
+    fragment%Cri => null()
 
     fragment%fock => null()
     fragment%ppfock => null()
@@ -2057,12 +2060,23 @@ contains
     call mem_alloc(fragment%CoreMO, fragment%nbasis, fragment%ncore)
     fragment%CoreMO=0.0E0_realk
 
+    !print *, "dec-atom: F12-calculation CABS MO and CABS AO"
+
     !F12-calculation CABS MO and CABS AO
     if(DECinfo%F12) then
-       ncabsAO = size(Mymolecule%cabsMOs,1)
-       ncabsMO = size(Mymolecule%cabsMOs,2)
-       call mem_alloc(fragment%cabsMOs,ncabsAO,ncabsMO)
-       call dcopy(ncabsAO*ncabsMO,Mymolecule%cabsMOs,1,fragment%cabsMOs,1)
+       ncabsAO = size(Mymolecule%Ccabs,1)
+       ncabsMO = size(Mymolecule%Ccabs,2)
+       call mem_alloc(fragment%Ccabs,ncabsAO,ncabsMO)
+       call dcopy(ncabsAO*ncabsMO,Mymolecule%Ccabs,1,fragment%Ccabs,1)
+    endif
+
+    !print *, "dec-atom: F12-calculation RI MO and RI AO"
+  
+   !F12-calculation RI MO and RI AO
+    if(DECinfo%F12) then
+       ncabsAO = size(Mymolecule%Ccabs,1) 
+       call mem_alloc(fragment%Cri,ncabsAO,ncabsAO)
+       call dcopy(ncabsAO*ncabsAO,Mymolecule%Cri,1,fragment%Cri,1)
     endif
 
     ! truncate basis to this set of atoms

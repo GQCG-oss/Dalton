@@ -9,6 +9,7 @@
 !> c,d,e : Virtual AOS
 !> i,j   : Occupied EOS
 !> k,l,m : Occupied AOS
+
 module f12_integrals_module 
 
 #ifdef VAR_MPI   
@@ -32,11 +33,16 @@ module f12_integrals_module
   !       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
 
   use ccintegrals!, only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
-  use f12_routines_module!, only: MO_transform_AOMatrix
+ 
+  ! Yangs F12 routines
+  use f12_routines_module!, only: MO_transform_AOMatrix, matrix_print
 
   ! Patricks mat_transpose routine 
   use reorder_frontend_module!, only: mat_transpose(rows,column,pref1,A,pref2,AT)
        
+  ! Thomas free_cabs() for aa free MO_CABS_save_created, CMO_RI_save_created
+  use CABS_operations
+
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
 #ifdef VAR_MPI
@@ -57,169 +63,312 @@ module f12_integrals_module
 
   use wangy_playground_module
 
-  public :: f12_single_fragment_energy, f12_pair_fragment_energy!, energy
+  public :: f12_single_fragment_energy, f12_pair_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21
 
   private
 
+  !> Coefficient Type
+  TYPE ctype
+     real(realk), pointer :: cmat(:,:)
+     integer :: n1
+     integer :: n2
+  END TYPE ctype
+  
 contains
   !> Brief: Gives the single fragment energy for MP2F12
   !> Author: Yang M. Wang
   !> Date: April 2013
-  subroutine f12_single_fragment_energy(MyFragment)
+  subroutine f12_single_fragment_energy(MyFragment, Dmat)
     implicit none
 
+    !> Density matrix
+    type(matrix),intent(in) :: Dmat
+
+    ! ***********************************************************
+    ! Allocating for Coefficient matrix
+    ! ***********************************************************
     !> Atomic fragment to be determined  (NOT pair fragment)
     type(decfrag), intent(inout) :: MyFragment
+    !> Need comments
+    !type(lsitem), intent(inout) :: Mylsitem
     !> MO coefficient matrix for the occupied EOS
     real(realk), pointer :: CoccEOS(:,:)
     !> MO coefficient matrix for the occupied + virtual EOS
     real(realk), pointer :: CocvAOS(:,:)
-    !> MO coefficient matrix for the CABS
+    !> MO coefficient matrix for the CABS MOs
     real(realk), pointer :: Ccabs(:,:)
+    !> MO coefficient matrix for the RI MOs
+    real(realk), pointer :: Cri(:,:)
+    !> MO coefficient matrix for the virtual EOS
+    real(realk), pointer :: CvirtAOS(:,:)
 
-    !> F12 integrals for the V1_term <ij|gr|kl>
+    ! ***********************************************************
+    ! Allocating for V matrix
+    ! ***********************************************************
+    !> F12 integrals for the V1_ijkl <ij|f12*r^-1|kl>
     real(realk), pointer :: V1ijkl(:,:,:,:) 
-    !> F12 integrals for the V2_term sum_pq <ij|g|pq> * <pq|r|kl>
+    !> F12 integrals for the V2_ijkl sum_pq <ij|r^-1|pq> * <pq|f12|kl>
     real(realk), pointer :: V2ijkl(:,:,:,:)   
-    !> F12 integrals for the V2_term <ij|g|pq>
-    real(realk), pointer :: Gijpq(:,:,:,:)
-    real(realk), pointer :: Gpqij(:,:,:,:)
-    real(realk), pointer :: Gpjqi(:,:,:,:)
-    !> F12 integrals for the V2_term <ij|r|pq>
-    real(realk), pointer :: Rpqij(:,:,:,:)     
-    real(realk), pointer :: Rpjqi(:,:,:,:)
-    !> F12 integrals for the V3_term <ij|g|ma'>
-    real(realk), pointer :: Gmjci(:,:,:,:)
-    !> F12 integrals for the V3_term <ij|r|ma'>
-    real(realk), pointer :: Rmjci(:,:,:,:)
-
+    real(realk), pointer :: Gijpq(:,:,:,:) ! <ij|r^-1|pq>
+    real(realk), pointer :: Rijpq(:,:,:,:) ! <ij|f12|pq>
+    !> F12 integrals for the V3_term sum_mc <ij|r^-1|mc> * <mc|f12|kl>
+    real(realk), pointer :: V3ijkl(:,:,:,:)   
+    real(realk), pointer :: Gijmc(:,:,:,:) ! <ij|r^-1|ma'>
+    real(realk), pointer :: Rijmc(:,:,:,:) ! <ij|f12|ma'>
+    !> F12 integrals for the V4_term sum_mc <ji|r^-1|cm> * <cm|f12|lk>
+    real(realk), pointer :: V4ijkl(:,:,:,:) ! Not necessary 
+    
+    ! ***********************************************************
+    ! Allocating for C matrix
+    ! ***********************************************************
     !> F12 Fock Fij 
     real(realk), pointer :: Fij(:,:)
+
+    ! ***********************************************************
+    ! Allocating for X matrix
+    ! ***********************************************************
     !> F12 integral X1ijkl
     real(realk), pointer :: X1ijkl(:,:,:,:)
-    !> F12 integrals for the X2_term sum_pq <ij|g|pq> <pq|g|kl>
+    !> F12 integrals for the X2_term sum_pq <ij|g|pq> * <pq|g|kl>
     real(realk), pointer :: X2ijkl(:,:,:,:) 
+    !> F12 integrals for the X3_term sum_pq <ij|g|mc> * <mc|g|kl>
+    real(realk), pointer :: X3ijkl(:,:,:,:) 
+    !> F12 integrals for the X4_term sum_pq <ij|g|cm> * <cm|g|kl>
+    real(realk), pointer :: X4ijkl(:,:,:,:)    
+    
+    ! ***********************************************************
+    ! Allocating for B matrix
+    ! ***********************************************************
+    real(realk), pointer :: hJir(:,:) !(h+J) hJ(nocc,ncabsAO)
+    real(realk), pointer :: Krr(:,:)  !Exchange matrix  K(ncabsAO,ncabsAO)
+    real(realk), pointer :: Frr(:,:)  !Fock matrix in RI MO basis Frr(ncabsAO,ncabsAO)
+    real(realk), pointer :: Fac(:,:)  !Fock matrix (nvirt,ncabs) 
+    real(realk), pointer :: Fpp(:,:)  !Fock matrix in full MO basis Fpp(nbasis,nbasis)
+    real(realk), pointer :: Fii(:,:)  !Fock matrix in full MO occ basis Fmm(noccfull,noccfull)
+    real(realk), pointer :: Fmm(:,:)  !Fock matrix in full MO occ basis Fmm(noccfull,noccfull)
+    real(realk), pointer :: Frm(:,:)  !Frm(ncabsAO,noccfull)
+    real(realk), pointer :: Fcp(:,:)  !Fcp(ncabs,nbasis)
+    
+    !> F12 integrals for the B1_term <ij|[[T,f12],f12]|kl> 
+    real(realk), pointer :: B1ijkl(:,:,:,:)   
+    !> F12 integrals for the B2_term <ij|f12^2|rk>  r = RI MO   
+    real(realk), pointer :: B2ijkl(:,:,:,:)     
+    real(realk), pointer :: R2rlij(:,:,:,:)
+    real(realk), pointer :: R2ijrl(:,:,:,:)
+    !> F12 integrals for the B3_term <ij|f12^2|kr>  r = RI MO         
+    real(realk), pointer :: B3ijkl(:,:,:,:)
+    real(realk), pointer :: R2ijkr(:,:,:,:)
+    !> F12 integrals for the B4_term
+    real(realk), pointer :: B4ijkl(:,:,:,:)
+    real(realk), pointer :: Rijrs(:,:,:,:)
+    !> F12 integrals for the B5_term
+    real(realk), pointer :: B5ijkl(:,:,:,:)
+    real(realk), pointer :: Rijmr(:,:,:,:)
+    !> F12 integrals for the B6_term
+    real(realk), pointer :: B6ijkl(:,:,:,:)
+    real(realk), pointer :: Rijap(:,:,:,:)
+    !> F12 integrals for the B7_term
+    real(realk), pointer :: B7ijkl(:,:,:,:)
+    real(realk), pointer :: Rijcm(:,:,:,:)
+    !> F12 integrals for the B8_term
+    real(realk), pointer :: B8ijkl(:,:,:,:)
+    !  real(realk), pointer :: Rijcm(:,:,:,:)
+    real(realk), pointer :: Rijcr(:,:,:,:) 
+    !> F12 integrals for the B9_term   
+    real(realk), pointer :: B9ijkl(:,:,:,:)                                                                     
+!    real(realk), pointer :: Rijap(:,:,:,:)
+    real(realk), pointer :: Rijac(:,:,:,:)
 
+    ! ***********************************************************
+    ! Allocating integer space sizes
+    ! ***********************************************************
     !> number of AO orbitals
     integer :: nbasis
     !> number of occupied MO orbitals in EOS 
     integer :: noccEOS, nunoccEOS, noccfull
     !> number of occupied + virtual MO orbitals in EOS 
     integer :: nocvAOS  
-  
+    !> number of virtual MO orbitals in EOS 
+    integer :: nvirtAOS
+
     !> number of CABS AO orbitals
     integer :: ncabsAO
     !> number of CABS MO orbitals
     integer :: ncabsMO
 
-    integer :: ix, i, j, m, n, k, l, p, q
+    integer :: ix, i, j, m, n, k, l, p, q, c
+        
     real(realk) :: V1energy, V2energy, V3energy, V4energy
     real(realk) :: X1energy, X2energy, X3energy, X4energy
-    real(realk) :: tmp
-
+    real(realk) :: B1energy, B2energy, B3energy, B4energy
+    real(realk) :: B5energy, B6energy, B7energy, B8energy, B9energy  
+    real(realk) :: E_21, E_22, E_23, E_F12
+    real(realk) :: tmp, energy, tmp2
+    
     nbasis   = MyFragment%nbasis
     noccEOS  = MyFragment%noccEOS
     nunoccEOS = MyFragment%nunoccEOS
     noccfull = noccEOS
-
-    nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
     
-    ncabsAO = size(MyFragment%cabsMOs,1)    
-    ncabsMO = size(MyFragment%cabsMOs,2)
-   
+    nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nunoccAOS
+    ncabsAO = size(MyFragment%Ccabs,1)    
+    ncabsMO = size(MyFragment%Ccabs,2)
+    
     ! ***********************************************************
     ! Allocating memory for V matrix
     ! ***********************************************************
     call mem_alloc(V1ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-    V1ijkl = 0.0E0_realk
-    call mem_alloc(V2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)  
-    V2ijkl = 0.0E0_realk
     
-    call mem_alloc(Gijpq, noccEOS, noccEOS, nocvAOS, nocvAOS)
-    call mem_alloc(Gpqij, nocvAOS, nocvAOS, noccEOS, noccEOS)
-    call mem_alloc(Gpjqi, nocvAOS, noccEOS, nocvAOS, noccEOS)
-    Gijpq = 0.0E0_realk
+    call mem_alloc(V2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)  
+    call mem_alloc(Gijpq,  nocvAOS, nocvAOS, noccEOS, noccEOS)    
+    call mem_alloc(Rijpq,  noccEOS, noccEOS, nocvAOS, nocvAOS)
+    
+    call mem_alloc(V3ijkl, noccEOS, noccEOS, noccEOS, noccEOS)  
+    call mem_alloc(Gijmc,  noccEOS, noccEOS, noccEOS, ncabsMO)
+    call mem_alloc(Rijmc,  noccEOS, noccEOS, noccEOS, ncabsMO)
+    
+    call mem_alloc(V4ijkl, noccEOS, noccEOS, noccEOS, noccEOS) 
 
-    call mem_alloc(Rpqij, nocvAOS, nocvAOS, noccEOS, noccEOS) 
-    call mem_alloc(Rpjqi, nocvAOS, noccEOS, nocvAOS, noccEOS) 
-    Rpqij = 0.0E0_realk
-
-    call mem_alloc(Gmjci, noccEOS, noccEOS, ncabsMO, noccEOS)
-    call mem_alloc(Rmjci, noccEOS, noccEOS, ncabsMO, noccEOS)
-    Gmjci = 0.0E0_realk
-    Rmjci = 0.0E0_realk
-
- 
     ! ***********************************************************
     ! Allocating memory for X matrix
     ! ***********************************************************
     call mem_alloc(X1ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     call mem_alloc(X2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    call mem_alloc(X3ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    call mem_alloc(X4ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    
+    ! ***********************************************************
+    ! Allocating memory for B matrix
+    ! ***********************************************************
+    call mem_alloc(B1ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    
+    call mem_alloc(B2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    call mem_alloc(R2rlij, ncabsAO, noccEOS, noccEOS, noccEOS)     
+    call mem_alloc(R2ijrl, noccEOS, noccEOS, ncabsAO, noccEOS)  
+    
+    call mem_alloc(B3ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    call mem_alloc(R2ijkr,  noccEOS, noccEOS, noccEOS, ncabsAO)     
+    
+    call mem_alloc(B4ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    call mem_alloc(Rijrs,  noccEOS, noccEOS, ncabsAO, ncabsAO)
 
-    ! ***********************************************************
+    call mem_alloc(B5ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    call mem_alloc(Rijmr,  noccEOS, noccEOS, noccEOS, ncabsAO)
+    
+    call mem_alloc(B6ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    call mem_alloc(Rijap, noccEOS, noccEOS, nvirtAOS, nocvAOS)
+  
+    call mem_alloc(B7ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    call mem_alloc(Rijcm, noccEOS, noccEOS,  ncabsMO, noccEOS)
+  
+    call mem_alloc(B8ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+  !  call mem_alloc(Rijcm,  noccEOS, noccEOS, ncabsMO, noccEOS)
+    call mem_alloc(Rijcr,  noccEOS, noccEOS, ncabsMO, ncabsAO) 
+
+    call mem_alloc(B9ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+  !  call mem_alloc(Rijap,  noccEOS, noccEOS,nvirtAOS, nocvAOS)
+    call mem_alloc(Rijac, noccEOS, noccEOS, nvirtAOS, ncabsMO)
+       
+    call mem_alloc(hJir, noccEOS, ncabsAO)
+    call mem_alloc(Krr, ncabsAO, ncabsAO)
+    call mem_alloc(Frr, ncabsAO, ncabsAO)
+    call mem_alloc(Fac, nunoccEOS, ncabsMO)
+    call mem_alloc(Fpp, nocvAOS, nocvAOS)
+    call mem_alloc(Fii, noccEOS, noccEOS)
+    call mem_alloc(Fmm, noccEOS, noccEOS)
+    call mem_alloc(Frm, ncabsAO, noccEOS)
+    call mem_alloc(Fcp, ncabsMO, nocvAOS)
+    
     ! Allocating memory for F matrix
-    ! ***********************************************************
     call mem_alloc(Fij, noccEOS, noccEOS)
-!!$    
-    ! ***********************************************************
+    
     ! Creating a CoccEOS matrix 
-    ! ***********************************************************
     call mem_alloc(CoccEOS, MyFragment%nbasis, noccEOS)
     do i=1, MyFragment%noccEOS
        ix = MyFragment%idxo(i)
        CoccEOS(:,i) = MyFragment%Co(:,ix)
     end do
-
-    ! ***********************************************************
+    
     ! Creating a CocvAOS matrix 
-    ! ***********************************************************
     call mem_alloc(CocvAOS, MyFragment%nbasis, nocvAOS)
-     do i=1, MyFragment%noccAOS
+    do i=1, MyFragment%noccAOS
        CocvAOS(:,i) = MyFragment%Co(:,i)
-    end do
-
+    end do   
     do i=1, MyFragment%nunoccAOS
        CocvAOS(:,i+MyFragment%noccAOS) = MyFragment%Cv(:,i)
     end do
-
-    ! ***********************************************************
+    
     ! Creating a Ccabs matrix 
-    ! ***********************************************************
     call mem_alloc(Ccabs, ncabsAO, ncabsMO)
-     do i=1, ncabsMO
-       Ccabs(:,i) = MyFragment%cabsMOs(:,i)
+    do i=1, ncabsMO
+       Ccabs(:,i) = MyFragment%Ccabs(:,i)
+    end do
+   
+    ! Creating a Cri matrix 
+    call mem_alloc(Cri, ncabsAO, ncabsAO)
+    do i=1, ncabsAO
+       Cri(:,i) = MyFragment%Cri(:,i)
+    end do
+
+    ! Creating a CvirtAOS matrix 
+    call mem_alloc(CvirtAOS, MyFragment%nbasis, nvirtAOS)
+    do i=1, MyFragment%nunoccAOS
+       CvirtAOS(:,i) = MyFragment%Cv(:,i)
     end do
     
-    print *, '(Norm of CABS):'
-    print *, '----------------------------------------'
-    !print *, 'norm2(Ccabs):', norm2(Ccabs)
-
     ! ***********************************************************
     ! Creating the V matrix 
     ! ***********************************************************
-    ! Get integrals <ij|gr|kl> stored as (i,j,k,l) 
-    call get_mp2f12_MOmatrix_ijkl(MyFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,V1ijkl,'RRRRF')  
-    ! Get integrals <ij|g|pq> stored as (p,j,q,i)
-    call get_mp2f12_MOmatrix_ijpq(MyFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,Gpjqi,'RRRRG')
-    ! Get integrals <ij|r|pq> stored as (p,j,q,i)
-    call get_mp2f12_MOmatrix_ijpq(MyFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,Rpjqi,'RRRRC')
-    ! Get integrals <ij|g|mc> stored as (m,j,c,i) where c = cabs (a')
-    call get_mp2f12_MOmatrix_ijmc(MyFragment%MyLsitem%Setting,nbasis, &
-         & noccEOS,ncabsAO,ncabsMO,CoccEOS,Ccabs,Gmjci,'RCRRG')
-
-    !call get_mp2f12_MOmatrix_ijmc(MyFragment%MyLsitem%Setting,nbasis, &
-    !     & noccEOS,nocvAOS,ncabsAO,ncabsMO,CoccEOS,CocvAOS,Ccabs,Rmjci,'RCRRC')
+    !> Get integrals <ij|f12*r^-1|kl> stored as (i,j,k,l)  (Note INTSPEC is always stored as (2,4,1,3) )
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRRF',V1ijkl)
+    !> Get integrals <ij|f12|pq> stored as (i,j,p,q)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRC',Gijpq)
+    !> Get integrals <ij|r^-1|pq> stored as (i,j,p,q)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRG',Rijpq)
+    !> Get integrals <ij|r^-1|mc> stored as (i,j,m,c) where c = cabs
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRC',Gijmc)    
+    !> Get integrals <ij|f12|mc> stored as (i,j,m,c) where c = cabs 
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
     
-    ! Reorder the matrix Gpjqi to Gijpq with (nocvAOS,noccEOS,nocvAOS,noccEOS) as the dimensions of Gpjqi  
-    call array_reorder_4d(1.0E0_realk,Gpjqi,nocvAOS,noccEOS,nocvAOS,noccEOS,[4,2,1,3],0.0E0_realk,Gijpq)
-    ! Reorder the matrix Rpjqi to Rpqij with (nocvAOS,noccEOS,nocvAOS,noccEOS) as the dimensions of Rpjqi  
-    call array_reorder_4d(1.0E0_realk,Rpjqi,nocvAOS,noccEOS,nocvAOS,noccEOS,[1,3,4,2],0.0E0_realk,Rpqij)
-    ! Matrix multiplication of sum_pq <ij|g|pq><pq|r|kl>
-    m = noccEOS*noccEOS
-    k = nocvAOS*nocvAOS
+    m = noccEOS*noccEOS  ! <ij G pq> <pq R kl> = <m V2 n> 
+    k = nocvAOS*nocvAOS  
     n = noccEOS*noccEOS
-    call dec_simple_dgemm(m,k,n,Gijpq,Rpqij,V2ijkl, 'n', 'n')
+    
+    !>    dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+    call dgemm('N','T',m,n,k,1.0E0_realk,Rijpq,m,Gijpq,n,0.0E0_realk,V2ijkl,m)
+    
+    m = noccEOS*noccEOS  ! <ij G mc> <mc R kl> = <m V3  n> 
+    k = ncabsMO*noccEOS  
+    n = noccEOS*noccEOS
 
+    !>    dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+    call dgemm('N','T',m,n,k,1.0E0_realk,Gijmc,m,Rijmc,n,0.0E0_realk,V3ijkl,m)
+       
+    !> Creating the V4ijkl = V3jilk !
+    call array_reorder_4d(1.0E0_realk,V3ijkl,noccEOS,noccEOS,noccEOS,noccEOS,[2,1,4,3],0.0E0_realk,V4ijkl)
+    
+    print *, '----------------------------------------'
+    print *, '            V matrix - Terms            '
+    print *, '----------------------------------------'
+    print *, 'norm2(V1ijkl):', norm2(V1ijkl)
+    print *, '----------------------------------------'   
+    print *, '(V2 Term):'
+    print *, '----------------------------------------'   
+    print *, 'norm2(V2ijkl):', norm2(V2ijkl)
+    print *, 'norm2(Gijpq):', norm2(Gijpq)
+    print *, 'norm2(Rijpq):', norm2(Rijpq)
+    print *, '----------------------------------------'   
+    print *, '(V3 Term):'
+    print *, '----------------------------------------'   
+    print *, 'norm2(V3ijkl):', norm2(V3ijkl)  
+    print *, 'norm2(Gijmc):', norm2(Gijmc)
+    print *, 'norm2(Rijmc):', norm2(Rijmc)
+    print *, '----------------------------------------'   
+    print *, '(V4 Term):'
+    print *, '----------------------------------------'
+    print *, 'norm2(V4ijkl):', norm2(V4ijkl)  
+    
     ! ***********************************************************
     ! Creating the F matrix 
     ! ***********************************************************
@@ -229,99 +378,316 @@ contains
     ! ***********************************************************
     ! Creating the X matrix 
     ! ***********************************************************
-    call get_mp2f12_MOmatrix_ijkl(MyFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,X1ijkl,'RRRR2')  
+    ! (Note INTSPEC is always stored as (2,4,1,3) )
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS, Ccabs,Cri,CvirtAOS,'iiii','RRRR2',X1ijkl)
 
-    m = noccEOS*noccEOS
-    k = nocvAOS*nocvAOS
+    m = noccEOS*noccEOS   ! <ij G pq> <pq R kl> = <m V3  n>
+    k = nocvAOS*nocvAOS  
     n = noccEOS*noccEOS
+    
+    !> Creating the X2ijkl
+    !>    dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+    call dgemm('N','T',m,n,k,1.0E0_realk,Rijpq,m,Rijpq,n,0.0E0_realk,X2ijkl,m)
+    
+    m = noccEOS*noccEOS   ! <ij G mc> <mc R kl> = <m V3  n>
+    k = noccEOS*ncabsMO
+    n = noccEOS*noccEOS
+    
+    !> Creating the X3ijkl
+    !>    dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+    call dgemm('N','T',m,n,k,1.0E0_realk,Rijmc,m,Rijmc,n,0.0E0_realk,X3ijkl,m)
 
-    call mat_transpose(m,k,1.0E0_realk,Gijpq,0.0E0_realk,Gpqij)
-    call dec_simple_dgemm(m,k,n,Gijpq,Gpqij,X2ijkl, 'n', 'n')
+    !> Creating the X4ijkl = X4jilk 
+    call array_reorder_4d(1.0E0_realk,X3ijkl,noccEOS,noccEOS,noccEOS,noccEOS,[2,1,4,3],0.0E0_realk,X4ijkl)
+    
+    print *, '----------------------------------------'
+    print *, '          X matrix - Terms              '   
+    print *, '----------------------------------------'
+
+!!$    print *, 'norm2(Fij):'   , norm2(Fij)
+!!$    print *, 'norm2(X1ijkl):' , norm2(X1ijkl)
+!!$    print *, 'norm2(X2ijkl):' , norm2(X2ijkl)
+!!$    print *, 'norm2(X3ijkl):' , norm2(X3ijkl)
+!!$    print *, 'norm2(X4ijkl):' , norm2(X4ijkl)
+    
+    ! ***********************************************************
+    ! Creating the HJir,Krr,Frr,Fpp,Fii,Fmm,Frm,Fcp matricces 
+    ! ***********************************************************
+    call get_f12_mixed_MO_Matrices_real(MyFragment%MyLsitem,MyFragment,Dmat,nbasis,ncabsAO,&
+         & noccEOS,noccfull,nunoccEOS,ncabsMO,hJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
 
     ! ***********************************************************
-    ! Printout statements 
+    ! Creating the B matrix 
     ! ***********************************************************
+    !> Get integral <ij|[[T,f12],f12]|kl> stored as (i,j,r,k) (Note INTSPEC is always stored as (2,4,1,3) )
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRRD',B1ijkl)
+    !> Get integral <ij|f12^2|kr> stored as (i,j,k,r)    r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'riii','RRCR2',R2rlij)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiir','RCRR2',R2ijkr)   
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiri','RRRC2',R2ijrl) 
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiir','RCRR2',R2ijlr) 
+    !> Get integral <ij|f12|rs> stored as (i,j,r,s)      r,s = RI MO
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iirr','RCRCG',Rijrs)   
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iirm','RRRCG',Rijrm)   
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipa','RRRRG',Rijpa)  
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'ijcr','RCRCG',Rijcr)  
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'ijcm','RRRCG',Rijcm)  
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'ijca','RRRCG',Rijca)  
+  
+    ! ***********************************************************
+    ! B3 matrix 
+    ! ***********************************************************
+    
+    m = noccEOS   ! <k h+J r> <rl R ij>  = <kl B2 ij> 
+    k = ncabsAO    
+    n = noccEOS*noccEOS*noccEOS
+    
+    !m = noccEOS*noccEOS*noccEOS   ! <ijk R r> <r h+J l> = <ij B3 kl> 
+    !k = ncabsAO    
+    !n = noccEOS
+    
+    !> Creating the B3ijkl
+    !>   dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+    !call dgemm('N','N',m,n,k,1.0E0_realk,hJir,m,R2rlij,k,0.0E0_realk,B2ijkl,m)
+    
+    print *, "Norm (HJir)", norm2(hJir)
+    print *, "Norm (R2ijrl)", norm2(R2ijrl)
+    
+    !> Term 2
+    DO i=1,noccEOS
+       DO j=1,noccEOS
+          DO k=1,noccEOS
+             DO l=1,noccEOS
+                tmp  = 0.0E0_realk
+                DO p=1,ncabsAO
+                   tmp =   tmp + R2ijrl(i,j,p,l)*hJir(k,p)
+                ENDDO
+                B2ijkl(i,j,k,l) = tmp;
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+
+!!$    print *, '----------------------------------------'
+!!$    print *, '          B ijij                        '   
+!!$    print *, '----------------------------------------'
+!!$    
+!!$    DO i=1,noccEOS
+!!$       DO j=1,noccEOS
+!!$          print *, i," ", j," ", B2ijkl(i,j,i,j)
+!!$       ENDDO
+!!$    ENDDO
+!!$    
+!!$    print *, '----------------------------------------'
+!!$    print *, '          B ijji                        '   
+!!$    print *, '----------------------------------------'
+!!$    
+!!$    DO i=1,noccEOS
+!!$       DO j=1,noccEOS
+!!$          print *, i," ", j," ", B2ijkl(i,j,j,i)
+!!$       ENDDO
+!!$    ENDDO
+
+    DO i=1,noccEOS
+       DO j=1,noccEOS
+          DO k=1,noccEOS
+             DO l=1,noccEOS
+                tmp  = 0.0E0_realk
+                DO p=1,ncabsAO
+                   tmp =   tmp + R2ijkr(i,j,k,p)*hJir(l,p)
+                ENDDO
+                B3ijkl(i,j,k,l) = tmp;
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+    !> Creating the B2ijkl = B3ijlk 
+    !call array_reorder_4d(1.0E0_realk,B2ijkl,noccEOS,noccEOS,noccEOS,noccEOS,[3,4,1,2],0.0E0_realk,B3ijkl)
+    
+
     print *, '----------------------------------------'
-    print *, '(E21 Terms):'
+    print *, '          B matrix - Terms              '   
     print *, '----------------------------------------'
-    !print *, 'norm2(V1ijkl):', norm2(V1ijkl)
+    print *, 'norm2(B1ijkl):', norm2(B1ijkl)
     print *, '----------------------------------------'   
-    !print *, 'norm2(Rpqij):', norm2(Rpqij)
-    !print *, 'norm2(Gijpq):', norm2(Gijpq)
+    print *, '(B2 Term):'
     print *, '----------------------------------------'
-    !print *, 'norm2(Gmjci):', norm2(Gmjci)
-    !print *, 'norm2(Rmjci):', norm2(Rmjci)
+    print *, 'B2ijkl = B3ijlk'
+    print *, 'norm2(hJir):', norm2(hJir)
+    print *, 'norm2(R2rlij):', norm2(R2rlij)
+    print *, 'norm2(R2ijkr):', norm2(R2ijkr)
+    print *, 'norm2(R2ijrl):', norm2(R2ijrl)
+    print *, 'norm2(B2ijkl):', norm2(B2ijkl)
+    print *, '----------------------------------------'   
+    print *, '(B3 Term):'
     print *, '----------------------------------------'
-    !print *, 'norm2(V1ijkl):', norm2(V1ijkl)
-    !print *, 'norm2(V2ijkl):', norm2(V2ijkl)
-    print *, '----------------------------------------'
+    print *, 'norm2(B3ijkl):', norm2(B3ijkl)
 
-    V1energy = 0.0E0_realk
-    V2energy = 0.0E0_realk
-    X1energy = 0.0E0_realk
-    X2energy = 0.0E0_realk
-
-    print *, '(Single Fragment Energies):'
+!!$    print *, '----------------------------------------'   
+!!$    print *, '(B4 Term):'
+!!$    print *, '----------------------------------------'
+!!$    print *, 'norm2(B4ijkl):', norm2(B4ijkl)
+!!$    print *, 'norm2(Rijrs):', norm2(Rijrs)
+!!$    print *, '----------------------------------------'   
+!!$    print *, '(B5 Term):'
+!!$    print *, '----------------------------------------'
+!!$    print *, 'norm2(B5ijkl):', norm2(B5ijkl)
+!!$    print *, 'norm2(Rijrm):', norm2(Rijrm)
+!!$    print *, '----------------------------------------'   
+!!$    print *, '(B6 Term):'
+!!$    print *, '----------------------------------------'
+!!$    print *, 'norm2(B6ijkl):', norm2(B6ijkl)
+!!$    print *, 'norm2(Rijpa):', norm2(Rijpa)
+!!$    print *, '----------------------------------------'   
+!!$    print *, '(B7 Term):'
+!!$    print *, '----------------------------------------'
+!!$    print *, 'norm2(B7ijkl):', norm2(B7ijkl)
+!!$    print *, 'norm2(Rijcm):', norm2(Rijcm)
+!!$    print *, '----------------------------------------'   
+!!$    print *, '(B8 Term):'
+!!$    print *, '----------------------------------------'
+!!$    print *, 'norm2(B8ijkl):', norm2(B8ijkl)
+!!$    print *, 'norm2(Rijcm):', norm2(Rijcm)
+!!$    print *, 'norm2(Rijcr):', norm2(Rijcr)
+!!$    print *, '----------------------------------------'   
+!!$    print *, '(B9 Term):'
+!!$    print *, '----------------------------------------'
+!!$    print *, 'norm2(B9ijkl):', norm2(B9ijkl)
+!!$    print *, 'norm2(Rpaij):', norm2(Rpaij)
+!!$    print *, 'norm2(Rcaij):', norm2(Rcaij)
+   
     print *, '----------------------------------------'
-    call get_mp2f12_sf_E21(V1ijkl, noccEOS, V1energy, 1.0E0_realk)
+    print *, '(Single Fragment Energies for V-matrix):'
+    print *, '----------------------------------------'
+    call get_mp2f12_sf_E21(V1ijkl, noccEOS, V1energy,  1.0E0_realk)
     call get_mp2f12_sf_E21(V2ijkl, noccEOS, V2energy, -1.0E0_realk)
+    call get_mp2f12_sf_E21(V3ijkl, noccEOS, V3energy, -1.0E0_realk)
+    call get_mp2f12_sf_E21(V4ijkl, noccEOS, V4energy, -1.0E0_realk)
+
     print *, "E_21_V_term1:", V1energy
     print *, "E_21_V_term2:", V2energy
-    print *, '----------------------------------------'
-    print *, "E_21_Vsum:", V1energy + V2energy
-    print *, '----------------------------------------' 
+    print *, "E_21_V_term3:", V3energy
+    print *, "E_21_V_term4:", V4energy
 
-    print *, '(E22 Terms):'
+    E_21 = V1energy + V2energy + V3energy + V4energy
     print *, '----------------------------------------'
-    !print *, 'norm2(Fij):'  , norm2(Fij)
-    !print *, 'norm2(Xijkl):', norm2(X1ijkl)
-    !print *, 'norm2(X2ijkl):', norm2(X2ijkl)
-    !print *, 'norm2(Gijpq):', norm2(Gijpq)
-    !print *, 'norm2(Gpqij):', norm2(Gpqij)
+    print *, "E_21_Vsum:", E_21
     print *, '----------------------------------------'
-    print *, '(Single Fragment Energies):'
+    print *, '               E_22 X term (SF)         '
     print *, '----------------------------------------'
-    call get_mp2f12_sf_E22(Fij, X1ijkl, noccEOS, X1energy, 1.0E0_realk)
+    call get_mp2f12_sf_E22(Fij, X1ijkl, noccEOS, X1energy,  1.0E0_realk)
     call get_mp2f12_sf_E22(Fij, X2ijkl, noccEOS, X2energy, -1.0E0_realk)
+    call get_mp2f12_sf_E22(Fij, X3ijkl, noccEOS, X3energy, -1.0E0_realk)
+    call get_mp2f12_sf_E22(Fij, X4ijkl, noccEOS, X4energy, -1.0E0_realk)
+
     print *, "E_22_X_term1:", X1energy
     print *, "E_22_X_term2:", X2energy
+    print *, "E_22_X_term3:", X3energy
+    print *, "E_22_X_term4:", X4energy
+ 
+    E_22 = X1energy + X2energy + X3energy + X4energy 
     print *, '----------------------------------------'
-    print *, "E_22_Xsum:", X1energy + X2energy 
+    print *, "E_22_Xsum:", E_22
     print *, '----------------------------------------'
-   
-    myfragment%energies(FRAGMODEL_F12) = V1energy + V2energy + X1energy + X2energy 
+    print *, '               E_22 B term (SF)         '
+    print *, '----------------------------------------'
+    call get_mp2f12_sf_E23(B1ijkl, noccEOS, B1energy,  1.0E0_realk)
+    call get_mp2f12_sf_E23(B2ijkl, noccEOS, B2energy,  1.0E0_realk)
+    call get_mp2f12_sf_E23(B3ijkl, noccEOS, B3energy,  1.0E0_realk)
+    print *, "E_23_B_term1:", B1energy
+    print *, "E_23_B_term2:", B2energy   
+    print *, "E_23_B_term3:", B3energy   
+     
+    E_23 = B1energy + B2energy + B3energy + B4energy + B5energy + B6energy + B7energy &
+         & + B8energy + B9energy 
+    E_F12 = E_21 + E_22 + E_23
+    print *, "E_F12:", E_F12
+    print *, '----------------------------------------' 
+
+    Myfragment%energies(17) = E_F12
     
-    ! Free memory
+    ! ***********************************************************
+    ! Free Memory
+    ! ***********************************************************
+    
+    !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
+    call free_cabs()
+
     call mem_dealloc(CoccEOS)
     call mem_dealloc(CocvAOS)
     call mem_dealloc(Ccabs)
+    call mem_dealloc(Cri)
+    call mem_dealloc(CvirtAOS)
 
     call mem_dealloc(V1ijkl)
 
-    call mem_dealloc(Gijpq)
-    call mem_dealloc(Gpqij)
-    call mem_dealloc(Gpjqi)
-
-    call mem_dealloc(Rpqij)
-    call mem_dealloc(Rpjqi)
-
-    call mem_dealloc(Gmjci)
-    call mem_dealloc(Rmjci)
-    
     call mem_dealloc(V2ijkl)
+    call mem_dealloc(Gijpq) 
+    call mem_dealloc(Rijpq)
 
+    call mem_dealloc(V3ijkl)
+    call mem_dealloc(Gijmc)
+    call mem_dealloc(Rijmc)
+  
+    call mem_dealloc(V4ijkl)
+   
     call mem_dealloc(Fij)
     call mem_dealloc(X1ijkl)
     call mem_dealloc(X2ijkl)
+    call mem_dealloc(X3ijkl)
+    call mem_dealloc(X4ijkl)
+  
+    !> B-terms
+    call mem_dealloc(B1ijkl)
+    
+    call mem_dealloc(B2ijkl)
+    call mem_dealloc(R2rlij)    
+    call mem_dealloc(R2ijrl)      
+    
+    call mem_dealloc(B3ijkl)
+    call mem_dealloc(R2ijkr)     
+    
+    call mem_dealloc(B4ijkl)
+    call mem_dealloc(Rijrs)
+
+    call mem_dealloc(B5ijkl)
+    call mem_dealloc(Rijmr)
+    
+    call mem_dealloc(B6ijkl)
+    call mem_dealloc(Rijap)
+  
+    call mem_dealloc(B7ijkl)
+    call mem_dealloc(Rijcm)
+  
+    call mem_dealloc(B8ijkl)
+    !call mem_dealloc(Rijcm)
+    call mem_dealloc(Rijcr) 
+
+    call mem_dealloc(B9ijkl)
+    !call mem_dealloc(Rijap)
+    call mem_dealloc(Rijac)
+
+    call mem_dealloc(hJir)
+    call mem_dealloc(Krr)
+    call mem_dealloc(Frr)
+    call mem_dealloc(Fac)
+    call mem_dealloc(Fpp)
+    call mem_dealloc(Fii)
+    call mem_dealloc(Fmm)
+    call mem_dealloc(Frm)
+    call mem_dealloc(Fcp)
 
   end subroutine f12_single_fragment_energy
 
   !> Brief: Gives the pair fragment energy for MP2F12
   !> Author: Yang M. Wang
   !> Date: April 2013
-  subroutine f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
-
+  subroutine f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms, Dmat)
     implicit none
+
+    !> Density matrix
+    type(matrix),intent(in) :: Dmat
+
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Fragment 1 in the pair fragment
@@ -339,13 +705,12 @@ contains
 
     !> F12 integrals for the V1_term <ij|gr|kl>
     real(realk), pointer :: Fijkl(:,:,:,:) 
-    !> F12 integrals for the V2_term <ij|g|pq>
+    !> F12 integrals for the V2_term <ij|r^-1|pq>
+    real(realk), pointer :: Rijpq(:,:,:,:)
+    !> F12 integrals for the V2_term <ij|f12|pq>
     real(realk), pointer :: Gijpq(:,:,:,:)
-    real(realk), pointer :: Gpjqi(:,:,:,:)
-    !> F12 integrals for the V2_term <ij|r|pq>
-    real(realk), pointer :: Rpqij(:,:,:,:)     
-    real(realk), pointer :: Rpjqi(:,:,:,:)
-    
+    real(realk), pointer :: Gpqij(:,:,:,:)
+   
     !> F12 integrals for the V2_term sum_pq <ij|g|pq> <pq|r|kl>
     real(realk), pointer :: V2ijkl(:,:,:,:) 
 
@@ -394,61 +759,52 @@ contains
     ! ***********************************************************
     ! Creating a Ccabs matrix 
     ! ***********************************************************
-    ncabsMO = size(PairFragment%cabsMOs,2)
-    ncabsAO = size(PairFragment%cabsMOs,1)
+    ncabsMO = size(PairFragment%Ccabs,2)
+    ncabsAO = size(PairFragment%Ccabs,1)
     call mem_alloc(Ccabs, ncabsAO, ncabsMO)
     do i=1, ncabsMO
-       Ccabs(:,i) = PairFragment%cabsMOs(:,i)
+       Ccabs(:,i) = PairFragment%Ccabs(:,i)
     end do
     
     call mem_alloc(dopair_occ,noccEOS,noccEOS)
-    call mem_alloc(Fijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-    Fijkl = 0.0E0_realk    
-    call mem_alloc(V2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)  
-   
+    call mem_alloc(Fijkl, noccEOS, noccEOS, noccEOS, noccEOS) 
+    
+    call mem_alloc(V2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
+    call mem_alloc(Rijpq, noccEOS, noccEOS, nocvAOS, nocvAOS)
     call mem_alloc(Gijpq, noccEOS, noccEOS, nocvAOS, nocvAOS)
-    call mem_alloc(Gpjqi, nocvAOS, noccEOS, nocvAOS, noccEOS)
-    Gijpq = 0.0E0_realk
-
-    call mem_alloc(Rpqij, nocvAOS, nocvAOS, noccEOS, noccEOS) 
-    call mem_alloc(Rpjqi, nocvAOS, noccEOS, nocvAOS, noccEOS) 
-    Rpqij = 0.0E0_realk
-
-    ! Get integrals <ij|gr|kl> stored as  (i,j,k,l)
-    call get_mp2f12_MOmatrix_ijkl(PairFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,Fijkl,'RRRRF')  
-    ! Get integrals <ij|g|pq> stored as  (p,j,p,i)  
-    call get_mp2f12_MOmatrix_ijpq(PairFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,Gpjqi,'RRRRG')          
-    ! Get integrals <ij|r|pq> stored as  (p,j,p,i)  
-    call get_mp2f12_MOmatrix_ijpq(PairFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,Rpjqi,'RRRRC')   
-    ! Reorder the matrix Gpjqi to Gijpq with (nocvAOS,noccEOS,nocvAOS,noccEOS) as the dimensions of Gpjqi  
-    call array_reorder_4d(1.0E0_realk,Gpjqi,nocvAOS,noccEOS,nocvAOS,noccEOS,[4,2,1,3],0.0E0_realk,Gijpq)
-    ! Reorder the matrix Rpjqi to Rpqij with (nocvAOS,noccEOS,nocvAOS,noccEOS) as the dimensions of Rpjqi  
-    call array_reorder_4d(1.0E0_realk,Rpjqi,nocvAOS,noccEOS,nocvAOS,noccEOS,[1,3,4,2],0.0E0_realk,Rpqij)
-    ! Matrix multiplication of sum_pq <ij|g|pq><pq|r|kl>
+    call mem_alloc(Gpqij, nocvAOS, nocvAOS, noccEOS, noccEOS) 
+    
+    ! Get integrals <ij|f12*r^-1|kl> stored as (i,j,k,l)
+    !call get_mp2f12_MO_ijkl(PairFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,Fijkl,'RRRRF')  
+    ! Get integrals <ij|r^-1|pq> stored as (p,j,p,i)
+    !call get_mp2f12_MO_ijpq(PairFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,Rijpq,'RRRRC') 
+    ! Get integrals <ij|f12|pq> stored as (p,j,p,i)
+    !call get_mp2f12_MO_ijpq(PairFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,Gijpq,'RRRRG')               
     m = noccEOS*noccEOS
     k = nocvAOS*nocvAOS
     n = noccEOS*noccEOS
-    call dec_simple_dgemm(m,k,n,Gijpq,Rpqij,V2ijkl, 'n', 'n')
+    call mat_transpose(m,k, 1.0E0_realk, Gijpq, 0.0E0_realk, Gpqij)
+    call dec_simple_dgemm(m,k,n,Rijpq,Gpqij,V2ijkl, 'n', 'n')
 
     V1energy = 0.0E0_realk
     V2energy = 0.0E0_realk
     
     print *, '(Inside Pair Fragment):'
     print *, '----------------------------------------'
-    !print *, "norm2(Fijkl):", norm2(Fijkl) 
+    print *, "norm2(Fijkl):", norm2(Fijkl) 
     print *, '----------------------------------------'
     
     print *, '(Pair Fragment Energies):'
-    call get_mp2f12_pf_E21(Fijkl,  Fragment1, Fragment2, PairFragment, noccEOS, V1energy, 1.0E0_realk )
+    !call get_mp2f12_pf_E21(Fijkl,  Fragment1, Fragment2, PairFragment, noccEOS, V1energy, 1.0E0_realk )
     print *, "E_21_V_term1:", V1energy
-    call get_mp2f12_pf_E21(V2ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V2energy, -1.0E0_realk )
+    !call get_mp2f12_pf_E21(V2ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V2energy, -1.0E0_realk )
     print *, "E_21_V_term2:", V2energy
     print *, '----------------------------------------'
     print *, "E_21_Vsum:", V1energy + V2energy
     print *, '----------------------------------------'
     
     ! Input for Dec Driver
-    pairfragment%energies(FRAGMODEL_F12) = V1energy + V2energy
+    pairfragment%energies(14) = V1energy + V2energy
 
     ! Free memory
     call mem_dealloc(dopair_occ)
@@ -460,12 +816,10 @@ contains
 
     call mem_dealloc(Fijkl)
 
+    call mem_dealloc(Rijpq)
     call mem_dealloc(Gijpq)
-    call mem_dealloc(Gpjqi)
-
-    call mem_dealloc(Rpqij)
-    call mem_dealloc(Rpjqi)
-
+    call mem_dealloc(Gpqij)
+    
     call mem_dealloc(V2ijkl)
 
   end subroutine f12_pair_fragment_energy
@@ -483,23 +837,23 @@ contains
     !
     integer     :: i,j
     real(realk) :: tmp,tmp2
-
-    tmp = 0E0_realk
+    
+    tmp = 0.0E0_realk
     do i=1, nocc
        tmp = tmp + ijkl(i,i,i,i)
     enddo
 
-    energy = -1E0_realk*tmp ! The valeev factor
+    energy = -1.0E0_realk*tmp ! The valeev factor
     tmp = 0E0_realk         ! NB Important reset
 
-    do i=1, nocc
-       do j=i+1, nocc 
-          tmp = tmp  + 5E0_realk*ijkl(i,j,i,j) - 1E0_realk*ijkl(i,j,j,i)
+    do j=1, nocc
+       do i=j+1, nocc 
+          tmp = tmp  + 5.0E0_realk*ijkl(i,j,i,j) - ijkl(i,j,j,i)
        enddo
     enddo
+
     energy = energy - 0.5E0_realk*tmp ! The valeev factor
     energy = energy*scalar
-
   end subroutine get_mp2f12_sf_E21
 
 !> Brief: MP2-F12 correction for the single fragment of term for the energies related to E22
@@ -537,17 +891,45 @@ contains
     energy = 0.25E0_realk*tmp
     tmp = 0E0_realk         ! NB Important reset
 
-    do i=1, nocc
-       do j=i+1, nocc 
+    do j=1, nocc
+       do i=j+1, nocc 
           tmp = tmp +  7.0E0_realk * Bijkl(i,j,i,j) + Bijkl(i,j,j,i)
        enddo
     enddo
     energy = energy + 0.0625E0_realk*tmp
     energy = energy*scalar
-
+    
     call mem_dealloc(Bijkl)
-
+    
   end subroutine get_mp2f12_sf_E22
+
+ subroutine get_mp2f12_sf_E23(ijkl, nocc, energy, scalar)
+    implicit none
+    real(realk),intent(in)  :: scalar
+    real(realk),intent(out) :: energy
+    real(realk),intent(in)  :: ijkl(nocc,nocc,nocc,nocc)
+    integer,intent(in)      :: nocc
+    !
+    integer     :: i,j
+    real(realk) :: tmp
+    tmp = 0E0_realk
+    
+    do i=1, nocc
+       tmp = tmp + ijkl(i,i,i,i)
+    enddo
+
+    energy = 0.25E0_realk*tmp
+    tmp = 0E0_realk         ! NB Important reset
+
+    do j=1, nocc
+       do i=j+1, nocc 
+          tmp = tmp + 7.0E0_realk * ijkl(i,j,i,j) + ijkl(i,j,j,i)
+       enddo
+    enddo
+    energy = energy + 0.0625E0_realk*tmp
+    energy = energy*scalar
+        
+  end subroutine get_mp2f12_sf_E23
 
   !> Brief: MP2-F12 correction for the pair fragment of term V1: E_PQ(V1) 
   !> Author: Yang M. Wang
@@ -577,8 +959,8 @@ contains
     call mem_alloc(dopair_occ,nocc,nocc)
     call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
 
-    do i=1,nocc
-       do j=1,nocc
+    do j=1, nocc
+       do i=1, nocc
           if(dopair_occ(i,j)) then !Do Pair 1 and 2   
              tmp = tmp + 5E0_realk * ijkl(i,j,i,j) - ijkl(i,j,j,i)
           endif
@@ -592,62 +974,138 @@ contains
 
   end subroutine get_mp2f12_pf_E21
 
-  !> Brief: Integral print
+
+  !> Brief: Get <1,2|INTSPEC|3,4> MO integrals wrapper.
   !> Author: Yang M. Wang
-  !> Data: August 2013
-!!$  subroutine matrix_print_4d(A, p, q, r, s)
-!!$    implicit none
-!!$
-!!$    real(realk),intent(in)  :: A(p,q,r,s)
-!!$    integer,intent(in)      :: p,q,r,s
-!!$    !
-!!$    integer :: i,j,k,l
-!!$ 
-!!$    do i=1, p
-!!$       do j=1, q
-!!$          do k=1, r
-!!$             do l=1, s 
-!!$                if(abs(A(i,j,k,l)) > 1E-10_realk) then
-!!$                   print *, i,j,k,l, A(i,j,k,l)
-!!$                else
-!!$                   print *, i,j,k,l, 0E0_realk
-!!$                endif
-!!$             enddo
-!!$          enddo
-!!$       enddo
-!!$    enddo
-!!$    
-!!$  end subroutine matrix_print_4d
-  
-  
-  !> Brief: Get <ij|OPERATOR|kl> integrals stored in the order (k,l,m,n).
+  !> Data: Nov 2013
+  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,T)
+    implicit none
+
+    !> Atomic fragment to be determined  (NOT pair fragment)
+    type(decfrag), intent(inout) :: MyFragment
+    !> Integrals settings   
+    type(lssetting), intent(inout) :: Mysetting
+    !> Number of basis functions AO
+    integer :: nbasis
+    !> Number of occupied orbitals MO in EOS space
+    integer :: noccEOS
+    !> Number of unoccupied (virtual) orbitals MO in AOS space
+    integer :: nunoccEOS
+    !> Number of occupied and virtual MO in AOS space 
+    integer :: nocvAOS
+    !> Number of CABS AO orbitals
+    integer :: ncabsAO
+    !> Number of CABS MO orbitals
+    integer :: ncabsMO
+    !> Number of nvirt MO orbitals
+    integer :: nvirtAOS
+    !> Integral Orbital Type 
+    Character, intent(in) :: intType(4) ! NB! Intent in because its read as a string!
+    !> Integral Operator Type 
+    Character, intent(in) :: intSpec(5) ! NB! Intent in because its read as a string!
+    ! <n1,n2|INTSPEC|n3,n4> integrals stored in the order (n1,n2,n3,n4)
+    real(realk), intent(inout) :: T(:,:,:,:)
+
+    !> MO trans coefficient for orbitals in <1,2|INTSPEC|3,4>
+    type(ctype), dimension(4) :: C
+
+    !> Dummy integer variables 
+    integer :: i
+
+    !> MO trans coefficient dimensions
+    integer :: n11,n12,n21,n22,n31,n32,n41,n42
+
+    !> MO coefficient matrix for the occupied EOS
+    real(realk), target, intent(in) :: CoccEOS(:,:) !CoccEOS(nbasis,noccEOS)
+    !> MO coefficient matrix for the occupied + virtual EOS
+    real(realk), target, intent(in) :: CocvAOS(:,:) !CocvAOS(nbasis, nocvAOS)
+    !> MO coefficient matrix for the CABS 
+    real(realk), target, intent(in) :: Ccabs(:,:) !Ccabs(ncabsAO, ncabsMO)
+    !> MO coefficient matrix for the RI 
+    real(realk), target, intent(in) :: Cri(:,:) !Cri(ncabsAO,ncabsAO)
+    !> MO coefficient matrix for the Virtual AOS
+    real(realk), target, intent(in) :: CvirtAOS(:,:) !CvritAOS(nbasis,nvirtAOS)
+
+    nbasis   =  MyFragment%nbasis
+    noccEOS  =  MyFragment%noccEOS
+    nunoccEOS = MyFragment%nunoccEOS
+    nvirtAOS = MyFragment%nunoccAOS
+    nocvAOS =   MyFragment%noccAOS + MyFragment%nunoccAOS
+    ncabsAO = size(MyFragment%Ccabs,1)    
+    ncabsMO = size(MyFragment%Ccabs,2)
+
+    do i=1,4
+       if(intType(i).EQ.'i') then !occupied active
+          C(i)%cmat => CoccEOS
+          C(i)%n1 = nbasis
+          C(i)%n2 = noccEOS           
+       elseif(intType(i).EQ.'m') then !all occupied
+          C(i)%cmat => CoccEOS
+          C(i)%n1 = nbasis
+          C(i)%n2 = noccEOS 
+       elseif(intType(i).EQ.'p') then !all occupied + virtual
+          C(i)%cmat => CocvAOS
+          C(i)%n1 = nbasis
+          C(i)%n2 = nocvAOS 
+       elseif(intType(i).EQ.'c') then !cabs
+          C(i)%cmat => Ccabs
+          C(i)%n1 = ncabsAO
+          C(i)%n2 = ncabsMO
+       elseif(intType(i).EQ.'r') then !ri - MOs
+          C(i)%cmat => Cri
+          C(i)%n1 = ncabsAO
+          C(i)%n2 = ncabsAO 
+       elseif(intType(i).EQ.'a') then !Virt - MOs
+          C(i)%cmat => CvirtAOS
+          C(i)%n1 = nbasis
+          C(i)%n2 = nvirtAOS
+       endif
+    enddo
+
+    call get_mp2f12_AO_transform_MO(MySetting,T, C(1)%n1,C(1)%n2,C(2)%n1,C(2)%n2,C(3)%n1, &
+         & C(3)%n2,C(4)%n1,C(4)%n2, C(1)%cmat,C(2)%cmat,C(3)%cmat,C(4)%cmat,intType,intSpec) 
+
+  end subroutine get_mp2f12_MO
+
+
+  !> Brief: Get <1,2|INTSPEC|3,4> MO integrals stored in the order (1,2,3,4).
   !> Author: Yang M. Wang
-  !> Data: June 2013
-  subroutine get_mp2f12_MOmatrix_ijkl(MySetting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,ijkl,INTSPEC) 
+  !> Data: Nov 2013
+  subroutine get_mp2f12_AO_transform_MO(MySetting,T,n11,n12,n21,n22,n31,n32,n41,n42, &
+       & C1,C2,C3,C4,INTTYPE,INTSPEC) 
     implicit none
     
     !> Integrals settings
-    type(lssetting), intent(inout) :: mysetting
-    !> Number of basis functions AO
-    integer,intent(in) :: nbasis
-    !> Number of occupied orbitals MO in EOS space
-    integer,intent(in) :: noccEOS
-    !> Number of occupied and virtual MO in AOS space 
-    integer,intent(in) :: nocvAOS
-    !> Occupied MO coefficients
-    real(realk),intent(in),dimension(nbasis,noccEOS) :: CoccEOS
-    !> Occupied and virtual MO coefficients in AOS
-    real(realk),intent(in),dimension(nbasis,nocvAOS) :: CocvAOS
-    !>  <ij |gr| ij> integrals stored in the order (i,j,j,i)
-    real(realk), intent(inout) :: ijkl(noccEOS,noccEOS,noccEOS,noccEOS)   
-    real(realk), pointer :: kjli(:,:,:,:)
-
+    type(lssetting), intent(inout) :: Mysetting
+    !> Integral Operator Type
+    Character, intent(in) :: INTSPEC(5)
+    !> Integral Orbital Type 
+    Character, intent(in) :: INTTYPE(4)
+    !> Orbital Type for Batching
+    Character :: BatchType(4)
+    !> MO trans coefficient dimensions
+    integer,intent(in) :: n11,n12,n21,n22,n31,n32,n41,n42
+    !> MO coefficients
+    real(realk),intent(in),dimension(n11,n12) :: C1
+    real(realk),intent(in),dimension(n21,n22) :: C2
+    real(realk),intent(in),dimension(n31,n32) :: C3
+    real(realk),intent(in),dimension(n41,n42) :: C4
+    ! <n1,n2|INTSPEC|n3,n4> integrals stored in the order (n1,n2,n3,n4)
+    real(realk), intent(inout) :: T(n11,n21,n31,n41)  
+    !> Dummy integral stored in the order (n3,n2,n4,n1)
+    real(realk), pointer :: kjli(:,:,:,:)  
+    !> Dummy MO coefficients
+     real(realk), pointer :: C4T(:,:)  
+     real(realk), pointer :: C3T(:,:)  
+     real(realk), pointer :: C1T(:,:) 
+     
+    !> Variables for BATCH
     integer :: alphaB,gammaB,dimAlpha,dimGamma,GammaStart, GammaEnd, AlphaStart, AlphaEnd
     real(realk),pointer :: tmp1(:),tmp2(:),CoccEOST(:,:),CocvAOST(:,:)
     integer(kind=long) :: dim1,dim2
-    integer :: m,k,n,idx
+    integer :: i,m,k,n,idx
     logical :: FullRHS,doscreen
-    integer :: MaxActualDimAlpha,nbatchesAlpha,MaxActualDimGamma,nbatchesGamma,iorb
+    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches,MaxActualDimGamma,nbatchesGamma,iorb
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
@@ -655,20 +1113,23 @@ contains
     integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
 #endif
     TYPE(DECscreenITEM)   :: DecScreen
-    Character            :: intSpec(5)
+
     integer :: MinAObatchSize, MaxAObatchSize, GammaBatchSize, AlphaBatchSize
 
-    ! ***********************************************************
-    ! For efficiency when calling dgemm, save transposed matrices
-    ! ***********************************************************
-    call mem_alloc(CoccEOST,noccEOS,nbasis)
-    call mat_transpose(nbasis,noccEOS, 1.0E0_realk, CoccEOS, 0.0E0_realk, CoccEOST)
+    ! ****************************************************************
+    ! Allocate mem space for a temporary array that will be reordered
+    ! ****************************************************************
+    call mem_alloc(kjli,n32,n22,n42,n12)
 
-    ! ************************************************************
-    ! Allocate mem space for a temporary V1 that will be reordered
-    ! ************************************************************
-    call mem_alloc(kjli,noccEOS,noccEOS,noccEOS,noccEOS)
-
+    ! ****************************************************************
+    ! Allocate mem space for a temporary array that will be reordered
+    ! ****************************************************************
+    call mem_alloc(C4T,n42,n41)
+    call mem_alloc(C3T,n32,n31)
+    call mem_alloc(C1T,n12,n11)
+    call mat_transpose(n41,n42, 1.0E0_realk,C4, 0.0E0_realk,C4T)
+    call mat_transpose(n31,n32, 1.0E0_realk,C3, 0.0E0_realk,C3T)
+    call mat_transpose(n11,n12, 1.0E0_realk,C1, 0.0E0_realk,C1T)
     ! ************************
     ! Determine AO batch sizes
     ! ************************
@@ -677,26 +1138,45 @@ contains
     ! For simplicity we simply choose the gamma batch to contain all basis functions,
     ! while we make the alpha batch as small as possible
 
-    ! Minimum AO batch size
+    !> Minimum AO batch size
     call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize,'R')
 
-    ! Maximum AO batch size (all basis functions)
-    MaxAObatchSize = nbasis
-    ! Setting MinAO to AO batch size for debug purposes
-    MinAObatchSize = nbasis
+    !> Maximum AO batch size (all basis functions)
+    MaxAObatchSize = n31
+    !> Setting MinAO to AO batch size for debug purposes
+    MinAObatchSize = n11
 
-    ! Set alpha and gamma batch size as written above
-    GammaBatchSize = MaxAObatchSize
-    AlphaBatchSize = MinAObatchSize
+    !> Set alpha and gamma batch size as written above
+    GammaBatchSize = n31 ! Needs to be changed, For DEBUG purposes MaxAObatchSize
+    AlphaBatchSize = n11 ! Needs to be changes, For DEBUG purposes MinAObatchSize
+
+    ! ***********************************
+    ! Determine batch Types ('R' or 'C')
+    ! ***********************************
+    do i=1,4
+       if(intType(i).EQ.'i') then !occupied active
+          BatchType(i) = 'R'          
+       elseif(intType(i).EQ.'m') then !all occupied
+          BatchType(i) = 'R'
+       elseif(intType(i).EQ.'p') then !all occupied + virtual
+          BatchType(i) = 'R'
+       elseif(intType(i).EQ.'c') then !cabs
+          BatchType(i) = 'C'            ! NB! Hack! to make it work should be 'C'
+       elseif(intType(i).EQ.'r') then !ri - MOs
+          BatchType(i) = 'C'
+       endif
+    enddo
+    
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
     ! ************************************************
     ! Orbital to batch information
     ! ----------------------------
+    call mem_alloc(orb2batchGamma,n31)
 
-    call mem_alloc(orb2batchGamma,nbasis)
-    call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,nbasis,MaxActualDimGamma,&
-         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
+    call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,n31,MaxActualDimGamma,&
+         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,BatchType(3))
+    
     ! Batch to orbital information
     ! ----------------------------
     call mem_alloc(batch2orbGamma,nbatchesGamma)
@@ -705,7 +1185,7 @@ contains
        batch2orbGamma(idx)%orbindex = 0
        batch2orbGamma(idx)%norbindex = 0
     end do
-    do iorb=1,nbasis
+    do iorb=1, n31
        idx = orb2batchGamma(iorb)
        batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
        K = batch2orbGamma(idx)%norbindex
@@ -717,9 +1197,9 @@ contains
     ! ************************************************
     ! Orbital to batch information
     ! ----------------------------
-    call mem_alloc(orb2batchAlpha,nbasis)
-    call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,nbasis,&
-         & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
+    call mem_alloc(orb2batchAlpha,n11)
+    call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,n11,&
+         & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,BatchType(1))
 
     ! Batch to orbital information
     ! ----------------------------
@@ -729,12 +1209,16 @@ contains
        batch2orbAlpha(idx)%orbindex = 0
        batch2orbAlpha(idx)%norbindex = 0
     end do
-    do iorb=1,nbasis
+    do iorb=1, n11
        idx = orb2batchAlpha(iorb)
        batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
        K = batch2orbAlpha(idx)%norbindex
        batch2orbAlpha(idx)%orbindex(K) = iorb
     end do
+
+    ! Setting to FALSE for DEBUG purposes
+    Mysetting%scheme%cs_screen = .FALSE.
+    Mysetting%scheme%ps_screen = .FALSE.
 
     ! Integral screening stuff
     doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
@@ -742,7 +1226,7 @@ contains
          & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
-            & nbasis,nbatchesAlpha,nbatchesGamma,&
+            & n31,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
             & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
     endif
@@ -770,100 +1254,90 @@ contains
           dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
           AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
-
-          ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
+          
+          ! Get tmp1(beta(n21),delta(n41)|INTSPEC|alphaB(n11),gammaB(n31)) 
           ! ************************************************************************************
-          dim1 = i8*nbasis*nbasis*dimAlpha*dimGamma   ! dimension for integral array
-
+          dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
           call mem_alloc(tmp1,dim1)
-          ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
-          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%masterGabRHS
-          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+        
+          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
+          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+          
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
-               & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, nbasis, dimAlpha, dimGamma,FullRHS,&
+               & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
                & INTSPEC)
+          ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
 
-          !print *, 'norm2(tmp1)', norm2(tmp1)
-
-          ! Transform beta to occupied index "j".
-          ! *************************************
+          ! Transform beta(n21) to index "j" with C2(n21,j)
+          ! ***********************************************
           ! Note: ";" indicates the place where the array is transposed:
-          ! tmp2(delta,alphaB,gammaB,j) = sum_{beta} tmp1^T(beta;delta,alphaB,gammaB) Cocc_{beta j}
-          m = nbasis*dimGamma*dimAlpha   ! # elements in "delta alphaB gammaB" dimension of tmp1^T
-          k = nbasis                     ! # elements in "beta" dimension of tmp1^T
-          n = noccEOS                    ! # elements in second dimension of Cocc
-          dim2 = i8*noccEOS*nbasis*dimAlpha*dimGamma  ! dimension of tmp2 array
+          ! tmp2(delta(n41),alphaB(n11),gammaB(n31),j) = 
+          ! sum_{beta(n21)} tmp1^T(beta(n21);delta(n41),alphaB(n11),gammaB(n31)) * C2{beta(n21) j}
+          m = n41*dimGamma*dimAlpha            ! first  dim of tmp1^T
+          k = n21                              ! second dim of tmp1^T and first dim of C2
+          n = n22                              ! second dim of C2
+          dim2 = i8*n41*dimAlpha*dimGamma*n22  ! dim of tmp2 
 
           call mem_alloc(tmp2,dim2)
-          call dec_simple_dgemm(m,k,n,tmp1,CoccEOS,tmp2, 't', 'n')
+          call dec_simple_dgemm(m,k,n,tmp1,C2,tmp2, 't', 'n')
           call mem_dealloc(tmp1)
 
-          !print *, 'norm2(tmp2)', norm2(tmp2)
-          
-          ! Transform beta to unoccupied index "b".
-          ! ***************************************
-          ! tmp3(b,alphaB,gammaB,j) = sum_{delta} CunoccT(b,delta) tmp2(delta,alphaB,gammaB,j)
-          ! Note: We have stored the transposed Cunocc matrix, so no need to transpose in
+          ! Transform delta(n41) to index "l" with C4(n41,l)
+          ! ************************************************
+          ! tmp1(b,alphaB(n11),gammaB(n31),j) = 
+          ! sum_{delta(n41)} C4^T(l,delta(n41)) tmp2(delta(n41),alphaB(n11),gammaB(n31),j)
+          ! Note: We have stored the transposed C4^T matrix, so no need to transpose in
           ! the call to dgemm.
           
-          m = noccEOS
-          k = nbasis
-          n = dimAlpha*dimGamma*noccEOS
-          dim1 = i8*noccEOS*noccEOS*dimAlpha*dimGamma  ! dimension of tmp2 array
+          m = n42                              ! first  dim of C4^T
+          k = n41                              ! second dim of C4^T and first dim of tmp2
+          n = dimAlpha*dimGamma*n22            ! second dim of tmp2 array
+          dim1 = i8*n42*dimAlpha*dimGamma*n22  ! dim of tmp1 
           call mem_alloc(tmp1,dim1)
-          call dec_simple_dgemm(m,k,n,CoccEOST,tmp2,tmp1, 'n', 'n')
+          call dec_simple_dgemm(m,k,n,C4T,tmp2,tmp1, 'n', 'n')
           call mem_dealloc(tmp2) 
-
-          !print *, 'norm2(CoccEOST)', norm2(CoccEOST)
-          !print *, 'norm2(tmp3)', norm2(tmp1)
-
-          ! Transpose to make alphaB and gammaB indices available
-          ! *****************************************************
-          dim2=dim1
+         
+          ! Transpose to make alphaB(n11) and gammaB(n31) indices available
+          ! ***************************************************************
+          dim2 = dim1
           call mem_alloc(tmp2,dim2)
-          ! tmp2(gammaB, j, b, alphaB) = tmp1^T(b, alphaB; gammaB, j)
-          m = noccEOS*dimAlpha      ! dimension of "row" in tmp1 array (to be "column" in tmp2
-          n = noccEOS*dimGamma      ! dimension of "column" in tmp1 array (to be "row" in tmp2)
+          ! tmp2(gammaB(n31), j, l, alphaB(n11) = tmp1^T(l, alphaB(n11); gammaB(n31), j)
+          m = n42*dimAlpha       ! first  dim of tmp1 array
+          n = n22*dimGamma       ! second dim of tmp1 array
 
           call mat_transpose(m, n, 1.0E0_realk, tmp1, 0.0E0_realk,tmp2)
           call mem_dealloc(tmp1)
 
-          !print *, 'norm2(tmp4) (transposed)', norm2(tmp2)
-
-          ! Transform gamma batch index to occupied index
-          ! *********************************************
-          ! tmp4(i,j,b,alphaB) = sum_{gamma in gammaBatch} CoccT(i,gamma) tmp2(gamma,j,b,alphaB)
-          m = noccEOS
-          k = dimGamma
-          n = noccEOS*noccEOS*dimAlpha
-          dim1 = i8*noccEOS*noccEOS*noccEOS*dimAlpha
+          ! Transform gammaB(n31) to index "k" with C3(n31,k)
+          ! *************************************************
+          ! tmp1(k,j,l,alphaB) = sum_{gammaBatch(n31) in gamma} C3T(k,gammaB) * tmp2(gammaB,j,l,alphaB)
+          m = n32                          ! first  dim of C3T 
+          k = dimGamma                     ! second dim of C3T and first dim of tmp2 
+          n = n22*n42*dimAlpha             ! second dim of tmp2 
+          dim1 = i8*n32*n22*n42*dimAlpha   ! dim of tmp1
           call mem_alloc(tmp1,dim1)
-          call dec_simple_dgemm(m,k,n,CoccEOST(:,GammaStart:GammaEnd),tmp2,tmp1, 'n', 'n')
+          call dec_simple_dgemm(m,k,n,C3T(:,GammaStart:GammaEnd),tmp2,tmp1, 'n', 'n')
           call mem_dealloc(tmp2)
         
-          !print *, 'norm2(tmp5)', norm2(tmp1)
-
-          ! Transform alpha batch index to unoccupied index and update output integral
-          ! **************************************************************************
-          ! ijba(i,j,b,a) =+ sum_{alpha in alphaBatch} tmp1(i,j,b,alpha)  CoccEOS(alpha,a)
-          m = noccEOS*noccEOS*noccEOS
-          k = dimAlpha
-          n = noccEOS
-          dim2 = i8*m*n
-          call dec_simple_dgemm_update(m,k,n,tmp1,CoccEOST(:,AlphaStart:AlphaEnd),kjli, 'n', 't')
+          ! Transform alphaB(n11) to index "i" with C1(n11,i)
+          ! ************************************************
+          ! kjli(k,j,l,i) =+ sum_{alphaB(n11) in alpha} tmp1(k,j,l,alphaB(n11))  C1T^T(alphaB(n11),i)
+          m = n32*n22*n42              ! first dim of  tmp1 
+          k = dimAlpha                 ! second dim of tmp1 and first of C1T^T
+          n = n12                      ! second dim of C1T^T
+          dim2 = i8*n32*n22*n42*n12    ! dim of kjli
+          call dec_simple_dgemm_update(m,k,n,tmp1,C1T(:,AlphaStart:AlphaEnd),kjli, 'n', 't')
           call mem_dealloc(tmp1)
 
-          !print *, 'norm2(kjli)', norm2(kjli)
-
-          ! Note: To have things consecutive in memory it is better to pass CunoccT to the dgemm
-          ! routine and then transpose (insted of passing CoccEOS and not transpose).
+          ! Note: To have things consecutive in memory it is better to pass C1T to the dgemm
+          ! routine and then transpose (insted of passing C1 and not transpose).
 
        end do BatchAlpha
     end do BatchGamma
 
     !> Reorder tmp(k,j,l,i) -> tmp(i,j,k,l)
-    call array_reorder_4d(1.0E0_realk,kjli,noccEOS,noccEOS,noccEOS,noccEOS,[4,2,1,3],0.0E0_realk,ijkl)
+    call array_reorder_4d(1.0E0_realk,kjli,n32,n22,n42,n12,[4,2,1,3],0.0E0_realk,T)
 
     ! Free and nullify stuff
     ! **********************
@@ -871,659 +1345,48 @@ contains
     nullify(mysetting%LST_GAB_RHS)
     call free_decscreen(DECSCREEN)
 
-    ! Free gamma batch stuff
-    call mem_dealloc(orb2batchGamma)
-    call mem_dealloc(batchdimGamma)
-    call mem_dealloc(batchsizeGamma)
-    call mem_dealloc(batchindexGamma)
-    orb2batchGamma => null()
-    batchdimGamma => null()
-    batchsizeGamma => null()
-    batchindexGamma => null()
-    do idx=1,nbatchesGamma
-       call mem_dealloc(batch2orbGamma(idx)%orbindex)
-       batch2orbGamma(idx)%orbindex => null()
-    end do
-    call mem_dealloc(batch2orbGamma)
-    batch2orbGamma => null()
-
-    ! Free alpha batch stuff
-    call mem_dealloc(orb2batchAlpha)
-    call mem_dealloc(batchdimAlpha)
-    call mem_dealloc(batchsizeAlpha)
-    call mem_dealloc(batchindexAlpha)
-    orb2batchAlpha => null()
-    batchdimAlpha => null()
-    batchsizeAlpha => null()
-    batchindexAlpha => null()
-    do idx=1,nbatchesAlpha
-       call mem_dealloc(batch2orbAlpha(idx)%orbindex)
-       batch2orbAlpha(idx)%orbindex => null()
-    end do
-    call mem_dealloc(batch2orbAlpha)
-    batch2orbAlpha => null()
+    call free_batch(orb2batchGamma, batchdimGamma, batchsizeGamma, batchindexGamma, batch2orbGamma, &
+       & orb2batchAlpha, batchdimAlpha, batchsizeAlpha, batchindexAlpha, batch2orbAlpha, nbatchesGamma, nbatchesAlpha)
 
     ! Free F12 related pointers
-    call mem_dealloc(CoccEOST)
-    !call mem_dealloc(CocvAOST)
+    call mem_dealloc(C4T)
+    call mem_dealloc(C3T)
+    call mem_dealloc(C1T)
     call mem_dealloc(kjli)
     
-  end subroutine get_mp2f12_MOmatrix_ijkl
+  end subroutine get_mp2f12_AO_transform_MO
 
-
-  !> Brief: Get <ij|OPERATOR|pq> integrals stored in the order (i,j,p,q).
-  !> Author: Yang M. Wang
-  !> Data: June 2013
-  subroutine get_mp2f12_MOmatrix_ijpq(MySetting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,pjqi,INTSPEC) 
+  subroutine free_batch(orb2batchGamma, batchdimGamma, batchsizeGamma, batchindexGamma, batch2orbGamma, &
+       & orb2batchAlpha, batchdimAlpha, batchsizeAlpha, batchindexAlpha, batch2orbAlpha, nbatchesGamma, nbatchesAlpha)
     implicit none
 
-    !> Integrals settings
-    type(lssetting), intent(inout) :: mysetting
-    !> Number of basis functions AO
-    integer,intent(in) :: nbasis
-    !> Number of occupied orbitals MO in EOS
-    integer,intent(in) :: noccEOS
-    !> Number of occupied and virtual orbitals MO in AOS
-    integer,intent(in) :: nocvAOS
-    !> Occupied MO coefficients
-    real(realk),intent(in),dimension(nbasis,noccEOS) :: CoccEOS
-    !> Occupied and virtual MO coefficients in AOS
-    real(realk),intent(in),dimension(nbasis,nocvAOS) :: CocvAOS
-    !>  <ij |OPERATOR| pq> integrals stored in the order (i,j,p,q)
-    real(realk), intent(inout) :: pjqi(nocvAOS,noccEOS,nocvAOS,noccEOS)   
-
-    integer :: alphaB,gammaB,dimAlpha,dimGamma,GammaStart, GammaEnd, AlphaStart, AlphaEnd
-    real(realk),pointer :: tmp1(:),tmp2(:),CoccEOST(:,:),CocvAOST(:,:)
-    integer(kind=long) :: dim1,dim2
-    integer :: m,k,n,idx
-    logical :: FullRHS,doscreen
-    integer :: MaxActualDimAlpha,nbatchesAlpha,MaxActualDimGamma,nbatchesGamma,iorb
+    integer :: idx
+    integer, intent(in) :: nbatchesAlpha,nbatchesGamma
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
-#ifdef VAR_OMP
-    integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
-#endif
-    TYPE(DECscreenITEM)   :: DecScreen
-    Character            :: intSpec(5)
-    integer :: MinAObatchSize, MaxAObatchSize, GammaBatchSize, AlphaBatchSize
-
-    ! ***********************************************************
-    ! For efficiency when calling dgemm, save transposed matrices
-    ! ***********************************************************
-    call mem_alloc(CoccEOST,noccEOS,nbasis)
-    call mem_alloc(CocvAOST,nocvAOS,nbasis)
-
-    call mat_transpose(nbasis,noccEOS,1E0_realk,CoccEOS,0E0_realk,CoccEOST)
-    call mat_transpose(nbasis,nocvAOS,1E0_realk,CocvAOS,0E0_realk,CocvAOST)
-
-    ! ************************************************************
-    ! Allocate mem space for a temporary V1 that will be reordered
-    ! ************************************************************
-    ! call mem_alloc(pjqi,nocvAOS,noccEOS,nocvAOS,noccEOS)
-
-    ! ************************
-    ! Determine AO batch sizes
-    ! ************************
-    ! NOTE: Ideally the batch sizes should be optimized according to the available memory
-    ! (as is done e.g. in get_optimal_batch_sizes_for_mp2_integrals).
-    ! For simplicity we simply choose the gamma batch to contain all basis functions,
-    ! while we make the alpha batch as small as possible
-
-    ! Minimum AO batch size
-    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize,'R')
-
-    ! Maximum AO batch size (all basis functions)
-    MaxAObatchSize = nbasis
-    ! Setting AO batch size (all basis functions) For testing!
-    ! MinAObatchSize = nbasis
-
-    ! Set alpha and gamma batch size as written above
-    GammaBatchSize = MaxAObatchSize
-    AlphaBatchSize = MinAObatchSize
-    ! ************************************************
-    ! * Determine batch information for Gamma batch  *
-    ! ************************************************
-    ! Orbital to batch information
-    ! ----------------------------
-
-    call mem_alloc(orb2batchGamma,nbasis)
-    call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,nbasis,MaxActualDimGamma,&
-         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
-    ! Batch to orbital information
-    ! ----------------------------
-    call mem_alloc(batch2orbGamma,nbatchesGamma)
-    do idx=1,nbatchesGamma
-       call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
-       batch2orbGamma(idx)%orbindex = 0
-       batch2orbGamma(idx)%norbindex = 0
-    end do
-    do iorb=1,nbasis
-       idx = orb2batchGamma(iorb)
-       batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-       K = batch2orbGamma(idx)%norbindex
-       batch2orbGamma(idx)%orbindex(K) = iorb
-    end do
-
-    ! ************************************************
-    ! * Determine batch information for Alpha batch  *
-    ! ************************************************
-    ! Orbital to batch information
-    ! ----------------------------
-    call mem_alloc(orb2batchAlpha,nbasis)
-    call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,nbasis,&
-         & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
-
-    ! Batch to orbital information
-    ! ----------------------------
-    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-    do idx=1,nbatchesAlpha
-       call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-       batch2orbAlpha(idx)%orbindex = 0
-       batch2orbAlpha(idx)%norbindex = 0
-    end do
-    do iorb=1,nbasis
-       idx = orb2batchAlpha(iorb)
-       batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-       K = batch2orbAlpha(idx)%norbindex
-       batch2orbAlpha(idx)%orbindex(K) = iorb
-    end do
-
-    ! Integral screening stuff
-    doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
-    !doscreen = .FALSE.
-    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatchesAlpha,nbatchesGamma,INTSPEC)
-    IF(doscreen)then
-       call II_getBatchOrbitalScreen(DecScreen,mysetting,&
-            & nbasis,nbatchesAlpha,nbatchesGamma,&
-            & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-    endif
-    FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
-
-#ifdef VAR_OMP
-    if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - OMP. Number of threads: ', &
-         & OMP_GET_MAX_THREADS()
-#else
-    if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
-#endif
-
-    ! ******************************************************************
-    ! Start looping over gamma and alpha batches and calculate integrals
-    ! ******************************************************************
-    ! Zero output integrals to be on the safe side
-    pjqi = 0.0_realk
-
-    BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-       dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
-       GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-       GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
- 
-       BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
-          dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
-          AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-          AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
-
-          ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
-          ! ************************************************************************************
-          dim1 = i8*nbasis*nbasis*dimAlpha*dimGamma   ! dimension for integral array
-
-          call mem_alloc(tmp1,dim1)
-          ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
-          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%masterGabRHS
-          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
-               & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
-               & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, nbasis, dimAlpha, dimGamma,FullRHS,&
-               & INTSPEC)
-
-          !print *,"norm2(tmp1):", norm2(tmp1)
-
-          ! Transform beta to occupied index "j".
-          ! *************************************
-          ! Note: ";" indicates the place where the array is transposed:
-          ! tmp2(delta,alphaB,gammaB,j) = sum_{beta} tmp1^T(beta;delta,alphaB,gammaB) Cocc_{beta j}
-          m = nbasis*dimGamma*dimAlpha   ! # elements in "delta alphaB gammaB" dimension of tmp1^T
-          k = nbasis                     ! # elements in "beta" dimension of tmp1^T
-          n = noccEOS                    ! # elements in second dimension of Cocc
-          dim2 = i8*m*n ! dimension of tmp2 array
-
-          call mem_alloc(tmp2,dim2)
-          call dec_simple_dgemm(m,k,n,tmp1,CoccEOS,tmp2, 't', 'n')
-          call mem_dealloc(tmp1)
-
-          !print *,"norm2(tmp2):", norm2(tmp2)
-
-          ! Transform beta to unoccupied index "b".
-          ! ***************************************
-          ! tmp3(b,alphaB,gammaB,j) = sum_{delta} CunoccT(b,delta) tmp2(delta,alphaB,gammaB,j)
-          ! Note: We have stored the transposed Cunocc matrix, so no need to transpose in
-          ! the call to dgemm.
-          
-          m = nocvAOS
-          k = nbasis
-          n = dimAlpha*dimGamma*noccEOS
-          dim1 = i8*m*n  ! dimension of tmp2 array
-          call mem_alloc(tmp1,dim1)
-          call dec_simple_dgemm(m,k,n,CocvAOST,tmp2,tmp1, 'n', 'n')
-          call mem_dealloc(tmp2) 
-
-          !print *,"norm2(tmp3):", norm2(tmp1)
-
-          ! Transpose to make alphaB and gammaB indices available
-          ! *****************************************************
-          dim2=dim1
-          call mem_alloc(tmp2,dim2)
-          ! tmp2(gammaB, j, b, alphaB) = tmp1^T(b, alphaB; gammaB, j)
-          m = nocvAOS*dimAlpha      ! dimension of "row" in tmp1 array (to be "column" in tmp2
-          n = noccEOS*dimGamma      ! dimension of "column" in tmp1 array (to be "row" in tmp2)
-
-          call mat_transpose( m, n, 1.0E0_realk, tmp1, 0.0E0_realk, tmp2)
-          call mem_dealloc(tmp1)
-
-          !print *,"norm2(tmp4):", norm2(tmp2)
-
-          ! Transform gamma batch index to occupied index
-          ! *********************************************
-          ! tmp4(i,j,b,alphaB) = sum_{gamma in gammaBatch} CoccT(i,gamma) tmp2(gamma,j,b,alphaB)
-          m = nocvAOS
-          k = dimGamma
-          n = nocvAOS*noccEOS*dimAlpha
-          dim1 = i8*m*n
-          call mem_alloc(tmp1,dim1)
-          call dec_simple_dgemm(m,k,n,CocvAOST(:,GammaStart:GammaEnd),tmp2,tmp1, 'n', 'n')
-          call mem_dealloc(tmp2)
-
-          !print *,"norm2(tmp5):", norm2(tmp1)
-        
-          ! Transform alpha batch index to unoccupied index and update output integral
-          ! **************************************************************************
-          ! ijba(i,j,b,a) =+ sum_{alpha in alphaBatch} tmp1(i,j,b,alpha)  CoccEOS(alpha,a)
-          m = nocvAOS*noccEOS*nocvAOS
-          k = dimAlpha
-          n = noccEOS
-          call dec_simple_dgemm_update(m,k,n,tmp1,CoccEOST(:,AlphaStart:AlphaEnd),pjqi, 'n', 't')
-          call mem_dealloc(tmp1)
-
-          ! Note: To have things consecutive in memory it is better to pass CunoccT to the dgemm
-          ! routine and then transpose (insted of passing CoccEOS and not transpose).
-
-       end do BatchAlpha
-    end do BatchGamma
-
-    !> Reorder tmp(p,j,q,i) -> tmp(i,j,p,q)
-    !call array_reorder_4d(1.0E0_realk,pjqi,noccEOS,noccEOS,nocvAOS,nocvAOS,[4,2,1,3],0.0E0_realk,ijpq)
     
-    !print *,"norm2(pjqi)", norm2(pjqi)
-    !print *,"norm2(ijpq)", norm2(ijpq)
-
-    !print *, ijpq
-
-    ! Free and nullify stuff
-    ! **********************
-    nullify(mysetting%LST_GAB_LHS)
-    nullify(mysetting%LST_GAB_RHS)
-    call free_decscreen(DECSCREEN)
-
     ! Free gamma batch stuff
     call mem_dealloc(orb2batchGamma)
     call mem_dealloc(batchdimGamma)
     call mem_dealloc(batchsizeGamma)
     call mem_dealloc(batchindexGamma)
-    orb2batchGamma => null()
-    batchdimGamma => null()
-    batchsizeGamma => null()
-    batchindexGamma => null()
     do idx=1,nbatchesGamma
        call mem_dealloc(batch2orbGamma(idx)%orbindex)
-       batch2orbGamma(idx)%orbindex => null()
     end do
     call mem_dealloc(batch2orbGamma)
-    batch2orbGamma => null()
-
+    
     ! Free alpha batch stuff
     call mem_dealloc(orb2batchAlpha)
     call mem_dealloc(batchdimAlpha)
     call mem_dealloc(batchsizeAlpha)
     call mem_dealloc(batchindexAlpha)
-    orb2batchAlpha => null()
-    batchdimAlpha => null()
-    batchsizeAlpha => null()
-    batchindexAlpha => null()
     do idx=1,nbatchesAlpha
        call mem_dealloc(batch2orbAlpha(idx)%orbindex)
-       batch2orbAlpha(idx)%orbindex => null()
     end do
     call mem_dealloc(batch2orbAlpha)
-    batch2orbAlpha => null()
-
-    ! Free F12 related pointers
-    call mem_dealloc(CoccEOST)
-    call mem_dealloc(CocvAOST)
     
-  end subroutine get_mp2f12_MOmatrix_ijpq
-
-  !> Brief: Get <ij|OPERATOR|pq> integrals stored in the order (i,j,p,q).
-  !> Author: Yang M. Wang
-  !> Data: June 2013
-  subroutine get_mp2f12_MOmatrix_ijmc(MySetting,nbasis,noccEOS,ncabsAO,ncabsMO,CoccEOS,Ccabs,mjci,INTSPEC) 
-    implicit none
-
-    !> Integrals settings
-    type(lssetting), intent(inout) :: mysetting
-    !> Number of basis functions AO
-    integer,intent(in) :: nbasis
-    !> Number of occupied orbitals MO in EOS
-    integer,intent(in) :: noccEOS
-    !> Number of Cabs AO
-    integer,intent(in) :: ncabsAO
-    !> Number of Cabs MO
-    integer,intent(in) :: ncabsMO
-
-    !> Occupied MO coefficients
-    real(realk),intent(in),dimension(nbasis,noccEOS) :: CoccEOS
-    !> Cabs MO Coefficients
-    real(realk),intent(in),dimension(ncabsAO,ncabsMO) :: Ccabs
-        
-    !>  <ij |OPERATOR| mc> integrals stored in the order (m,j,c,i)
-    real(realk), intent(inout) :: mjci(noccEOS,noccEOS,ncabsMO,noccEOS)   
-
-    integer :: alphaB,gammaB,dimAlpha,dimGamma,GammaStart, GammaEnd, AlphaStart, AlphaEnd
-    real(realk),pointer :: tmp1(:),tmp2(:),CoccEOST(:,:),CcabsT(:,:)
-    integer(kind=long) :: dim1,dim2
-    integer :: m,k,n,idx
-    logical :: FullRHS,doscreen
-    integer :: MaxActualDimAlpha,nbatchesAlpha,MaxActualDimGamma,nbatchesGamma,iorb
-    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-    integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
-    type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
-#ifdef VAR_OMP
-    integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
-#endif
-    TYPE(DECscreenITEM)   :: DecScreen
-    Character            :: intSpec(5)
-    integer :: MinAObatchSize, MaxAObatchSize, GammaBatchSize, AlphaBatchSize
-
-    ! ***********************************************************
-    ! For efficiency when calling dgemm, save transposed matrices
-    ! ***********************************************************
-    call mem_alloc(CoccEOST,noccEOS,nbasis)
-    call mat_transpose(nbasis,noccEOS,1.0E0_realk,CoccEOS,0.0E0_realk,CoccEOST)
-
-    call mem_alloc(CcabsT,ncabsMO,ncabsAO)
-    call mat_transpose(ncabsAO,ncabsMO,1.0E0_realk,Ccabs,0.0E0_realk,CcabsT)
-  
-    ! ************************************************************
-    ! Allocate mem space for a temporary V1 that will be reordered
-    ! ************************************************************
-    ! call mem_alloc(pjqi,nocvAOS,noccEOS,nocvAOS,noccEOS)
-
-    ! ************************
-    ! Determine AO batch sizes
-    ! ************************
-    ! NOTE: Ideally the batch sizes should be optimized according to the available memory
-    ! (as is done e.g. in get_optimal_batch_sizes_for_mp2_integrals).
-    ! For simplicity we simply choose the gamma batch to contain all basis functions,
-    ! while we make the alpha batch as small as possible
-
-    ! Minimum AO batch size
-    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize,'R')
-
-    ! Maximum AO batch size (all basis functions)
-    MaxAObatchSize = nbasis
-    ! Setting AO batch size (all basis functions) For testing!
-    MinAObatchSize = nbasis
-
-    ! Set alpha and gamma batch size as written above
-    ! GammaBatchSize = MaxAObatchSize
-    GammaBatchSize = MaxAObatchSize
-    AlphaBatchSize = MinAObatchSize
-    ! ************************************************
-    ! * Determine batch information for Gamma batch  *
-    ! ************************************************
-    ! Orbital to batch information
-    ! ----------------------------
-
-    call mem_alloc(orb2batchGamma,nbasis)
-    call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,nbasis,MaxActualDimGamma,&
-         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
-    ! Batch to orbital information
-    ! ----------------------------
-    call mem_alloc(batch2orbGamma,nbatchesGamma)
-    do idx=1,nbatchesGamma
-       call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
-       batch2orbGamma(idx)%orbindex = 0
-       batch2orbGamma(idx)%norbindex = 0
-    end do
-    do iorb=1,nbasis
-       idx = orb2batchGamma(iorb)
-       batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-       K = batch2orbGamma(idx)%norbindex
-       batch2orbGamma(idx)%orbindex(K) = iorb
-    end do
-
-    ! ************************************************
-    ! * Determine batch information for Alpha batch  *
-    ! ************************************************
-    ! Orbital to batch information
-    ! ----------------------------
-    call mem_alloc(orb2batchAlpha,nbasis)
-    call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,nbasis,&
-         & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
-
-    ! Batch to orbital information
-    ! ----------------------------
-    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-    do idx=1,nbatchesAlpha
-       call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-       batch2orbAlpha(idx)%orbindex = 0
-       batch2orbAlpha(idx)%norbindex = 0
-    end do
-    do iorb=1,nbasis
-       idx = orb2batchAlpha(iorb)
-       batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-       K = batch2orbAlpha(idx)%norbindex
-       batch2orbAlpha(idx)%orbindex(K) = iorb
-    end do
-
-    ! Integral screening stuff
-    doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
-    !doscreen = .FALSE.
-    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatchesAlpha,nbatchesGamma,INTSPEC)
-    IF(doscreen)then
-       call II_getBatchOrbitalScreen(DecScreen,mysetting,&
-            & nbasis,nbatchesAlpha,nbatchesGamma,&
-            & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-    endif
-    FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
-
-#ifdef VAR_OMP
-    if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - OMP. Number of threads: ', &
-         & OMP_GET_MAX_THREADS()
-#else
-    if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
-#endif
-
-    ! ******************************************************************
-    ! Start looping over gamma and alpha batches and calculate integrals
-    ! ******************************************************************
-    ! Zero output integrals to be on the safe side
-    mjci = 0.0_realk
-
-    BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-       dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
-       GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-       GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
- 
-       BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
-          dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
-          AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-          AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
-
-          ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
-          ! ************************************************************************************
-          dim1 = i8*nbasis*ncabsAO*dimAlpha*dimGamma   ! dimension for integral array
-
-          call mem_alloc(tmp1,dim1)
-          tmp1 = 0.0_realk
-
-          ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
-          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
-               & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
-               & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, ncabsAO, dimAlpha, dimGamma,FullRHS,&
-               & INTSPEC)
-
-          print *,"FullRHS:", FullRHS
-          !print *,"norm2(tmp1):", norm2(tmp1)
-          call mem_dealloc(tmp1)
-          call lsquit('wangy hack',-1)
-!          STOP "wangy hack"
-          
-!!$          ! Transform beta to occupied index "j".
-!!$          ! *************************************
-!!$          ! Note: ";" indicates the place where the array is transposed:
-!!$          ! tmp2(delta,alphaB,gammaB,j) = sum_{beta} tmp1^T(beta;delta,alphaB,gammaB) Cocc_{beta j}
-!!$          m = ncabsAO*dimGamma*dimAlpha   ! # elements in "delta alphaB gammaB" dimension of tmp1^T
-!!$          k = nbasis                      ! # elements in "beta" dimension of tmp1^T
-!!$          n = noccEOS                     ! # elements in second dimension of Cocc
-!!$          dim2 = i8*m*n ! dimension of tmp2 array
-!!$
-!!$          call mem_alloc(tmp2,dim2)
-!!$          tmp2 = 0.0_realk
-!!$
-!!$          call dec_simple_dgemm(m,k,n,tmp1,CoccEOS,tmp2, 't', 'n')
-!!$          call mem_dealloc(tmp1)
-!!$
-!!$          print *,"norm2(tmp2):", norm2(tmp2)
-!!$          !call mem_dealloc(tmp2)
-!!$
-!!$          ! Transform beta to unoccupied index "b".
-!!$          ! ***************************************
-!!$          ! tmp3(b,alphaB,gammaB,j) = sum_{delta} CunoccT(b,delta) tmp2(delta,alphaB,gammaB,j)
-!!$          ! Note: We have stored the transposed Cunocc matrix, so no need to transpose in
-!!$          ! the call to dgemm.
-!!$          m = ncabsMO
-!!$          k = ncabsAO
-!!$          n = dimAlpha*dimGamma*noccEOS
-!!$          dim1 = i8*m*n  ! dimension of tmp2 array
-!!$          call mem_alloc(tmp1,dim1)
-!!$          tmp1 = 0.0_realk
-!!$
-!!$          print *,"m, k, n:", m, k, n 
-!!$          print *, "shape(tmp1)", shape(tmp1)
-!!$          print *, "shape(Ccabs)", shape(Ccabs)
-!!$          print *, "shape(tmp2)", shape(tmp2)
-!!$
-!!$          print *,"norm2(Ccabs) before dgemm:", norm2(Ccabs)
-!!$          print *,"norm2(tmp2) before dgemm:", norm2(tmp2)
-!!$
-!!$          call dec_simple_dgemm(m,k,n,Ccabs,tmp2,tmp1,'t','n')
-!!$
-!!$          print *,"norm2(tmp2) after dgemm:", norm2(tmp2)
-!!$          print *,"norm2(Ccabs) after dgemm:", norm2(Ccabs)
-!!$          print *,"-----------------------------------"
-!!$          print *,"norm2(tmp3):", norm2(tmp1)
-!!$ 
-!!$
-!!$          print *,"ncabsMO, ncabsAO:", ncabsMO, ncabsAO
-!!$          print *,"noccEOS nbasis", noccEOS, nbasis
-!!$         
-!!$          !print *,"-----------------------------------"
-!!$          !print *,"norm2(Ccabs):", norm2(Ccabs)
-!!$          
-!!$          call mem_dealloc(tmp2) 
-!!$          call mem_dealloc(tmp1)
-
-
-!!$          ! Transpose to make alphaB and gammaB indices available
-!!$          ! *****************************************************
-!!$          dim2=dim1
-!!$          call mem_alloc(tmp2,dim2)
-!!$          ! tmp2(gammaB, j, b, alphaB) = tmp1^T(b, alphaB; gammaB, j)
-!!$          m = ncabsMO*dimAlpha      ! dimension of "row" in tmp1 array (to be "column" in tmp2
-!!$          n = noccEOS*dimGamma      ! dimension of "column" in tmp1 array (to be "row" in tmp2)
-!!$
-!!$          call mat_transpose(tmp1, m, n, tmp2)
-!!$          call mem_dealloc(tmp1)
-!!$
-!!$          print *,"norm2(tmp4):", norm2(tmp2)
-!!$
-!!$          ! Transform gamma batch index to occupied index
-!!$          ! *********************************************
-!!$          ! tmp4(i,j,b,alphaB) = sum_{gamma in gammaBatch} CoccT(i,gamma) tmp2(gamma,j,b,alphaB)
-!!$          m = noccEOS
-!!$          k = dimGamma
-!!$          n = noccEOS*ncabsMO*dimAlpha
-!!$          dim1 = i8*m*n
-!!$          call mem_alloc(tmp1,dim1)
-!!$          call dec_simple_dgemm(m,k,n,CoccEOST(:,GammaStart:GammaEnd),tmp2,tmp1, 'n', 'n')
-!!$          call mem_dealloc(tmp2)
-!!$
-!!$          print *,"norm2(tmp5):", norm2(tmp1)
-!!$        
-!!$          ! Transform alpha batch index to unoccupied index and update output integral
-!!$          ! **************************************************************************
-!!$          ! ijba(i,j,b,a) =+ sum_{alpha in alphaBatch} tmp1(i,j,b,alpha)  CoccEOS(alpha,a)
-!!$          m = noccEOS*noccEOS*ncabsMO
-!!$          k = dimAlpha
-!!$          n = noccEOS
-!!$          call dec_simple_dgemm_update(m,k,n,tmp1,CoccEOST(:,AlphaStart:AlphaEnd),mjci,'n','t')
-          
-          ! call mem_dealloc(tmp1)
-          ! Note: To have things consecutive in memory it is better to pass CunoccT to the dgemm
-          ! routine and then transpose (insted of passing CoccEOS and not transpose).
-
-       end do BatchAlpha
-    end do BatchGamma
-
-    ! Free and nullify stuff
-    ! **********************
-    nullify(mysetting%LST_GAB_LHS)
-    nullify(mysetting%LST_GAB_RHS)
-    call free_decscreen(DECSCREEN)
-
-    ! Free gamma batch stuff
-    call mem_dealloc(orb2batchGamma)
-    call mem_dealloc(batchdimGamma)
-    call mem_dealloc(batchsizeGamma)
-    call mem_dealloc(batchindexGamma)
-    orb2batchGamma => null()
-    batchdimGamma => null()
-    batchsizeGamma => null()
-    batchindexGamma => null()
-    do idx=1,nbatchesGamma
-       call mem_dealloc(batch2orbGamma(idx)%orbindex)
-       batch2orbGamma(idx)%orbindex => null()
-    end do
-    call mem_dealloc(batch2orbGamma)
-    batch2orbGamma => null()
-
-    ! Free alpha batch stuff
-    call mem_dealloc(orb2batchAlpha)
-    call mem_dealloc(batchdimAlpha)
-    call mem_dealloc(batchsizeAlpha)
-    call mem_dealloc(batchindexAlpha)
-    orb2batchAlpha => null()
-    batchdimAlpha => null()
-    batchsizeAlpha => null()
-    batchindexAlpha => null()
-    do idx=1,nbatchesAlpha
-       call mem_dealloc(batch2orbAlpha(idx)%orbindex)
-       batch2orbAlpha(idx)%orbindex => null()
-    end do
-    call mem_dealloc(batch2orbAlpha)
-    batch2orbAlpha => null()
-
-    ! Free F12 related pointers
-    call mem_dealloc(CoccEOST)
-    call mem_dealloc(CcabsT)
-    
-  end subroutine get_mp2f12_MOmatrix_ijmc
+  end subroutine free_batch
 
   !> Brief: Fock matrix elements
   !> Author: Yang M. Wang
@@ -1537,36 +1400,30 @@ contains
     integer :: nocc, noccfull, nvirt, nbasis, ncabsAO
     type(matrix) :: Fcc
     type(matrix) :: Fii
-    type(matrix) :: Dmat
-
-    
+    type(matrix) :: Dmat 
 
     !> Fock Occupied MO coefficients
     real(realk), intent(inout) :: Fij(nocc,nocc)   
     
-    
-
-    ! Mixed AO/AO full MO Fock matrix
-    print *, "nbasis, ncabsAO", nbasis, ncabsAO
-    call mat_init(Fcc,nbasis,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')    
-    
-    !Fii
-    call mat_init(Fii, nocc, nocc)
-    !call MO_transform_AOMatrix(mylsitem, nbasis, nocc, noccfull, nvirt,&
-    !     & MyFragment%Co, MyFragment%Cv,'ii',Fcc,Fii)
-
-    !call mat_to_full(Fii,1.0E0_realk,Fij)
- 
-    !print *, norm2(Fii%elms)
-    
-    call mat_free(Fcc)
-    call mat_free(Fii)
-  !  call mat_free(Dmat)
+!!$    ! Mixed AO/AO full MO Fock matrix
+!!$    print *, "nbasis, ncabsAO", nbasis, ncabsAO
+!!$    call mat_init(Fcc,nbasis,nbasis)
+!!$    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')    
+!!$    
+!!$    !Fii
+!!$    call mat_init(Fii, nocc, nocc)
+!!$    !call MO_transform_AOMatrix(mylsitem, nbasis, nocc, noccfull, nvirt,&
+!!$    !     & MyFragment%Co, MyFragment%Cv,'ii',Fcc,Fii)
+!!$
+!!$    !call mat_to_full(Fii,1.0E0_realk,Fij)
+!!$ 
+!!$    !print *, norm2(Fii%elms)
+!!$    
+!!$    call mat_free(Fcc)
+!!$    call mat_free(Fii)
+!!$    call mat_free(Dmat)
 
   end subroutine get_mp2f12_Fij
-
-  
 
 end module f12_integrals_module
  

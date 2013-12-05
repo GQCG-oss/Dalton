@@ -619,32 +619,50 @@ contains
        endif
 
        if(DECinfo%F12DEBUG) then
-!!$          print *, '----------------------------------------'
-!!$          print *, 'nbasis ncabsAO', nbasis, ncabsAO
-!!$          print *, 'norm2(Fii): ', norm2(Fii%elms)
-!!$          print *, '----------------------------------------'
-!!$          print *, 'E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
-!!$          print *, 'E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
-!!$          print *, 'E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
-!!$          print *, 'E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
-!!$          print *, '----------------------------------------'
-!!$          print *, 'E22_Xsum: ',  mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc) & 
-!!$               & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
-!!$               & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
-!!$          print *, 'E22_debug: ', E22_debug
-!!$          print *, '----------------------------------------'
+          print *, '----------------------------------------'
+          print *, '          E_22 X term                   '
+          print *, '----------------------------------------'
+          print *, 'E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
+          print *, 'E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
+          print *, 'E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
+          print *, 'E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
+          print *, '----------------------------------------'
+          print *, 'E22_Xsum: ',  mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc) & 
+               & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
+               & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
+          print *, 'E22_debug: ',  mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
+          print *, '----------------------------------------'
+          print *, '          E_23 B term                   '
+          print *, '----------------------------------------'
+          print *, 'E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
+          print *, 'E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
+          print *, 'E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
+          print *, 'E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
+          print *, 'E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
+          print *, 'E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
+          print *, 'E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
+          print *, 'E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
+          print *, 'E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
+          print *, '----------------------------------------'
+          print *, 'E23_Bsum: ',  mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
+               & + mp2f12_E23(Bijij_term2,Bjiij_term2,nocc) + mp2f12_E23(Bijij_term3,Bjiij_term3,nocc) &
+               & + mp2f12_E23(Bijij_term4,Bjiij_term4,nocc) + mp2f12_E23(Bijij_term5,Bjiij_term5,nocc) &
+               & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
+               & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
+          print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
+          print *, '----------------------------------------'
        endif
-
     else
        call submp2f12_EBXfull(E22,Bijij,Bjiij,Xijkl,Fii%elms,nocc)
-    endif
-    !   write(*,*) 'MP2f12 energy term <1|H0-E0|1>',E22
-    call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
-
-       if(DECinfo%use_canonical) then
-       call mem_dealloc(Xijij)
-       call mem_dealloc(Xjiij)
        
+       endif
+       !   write(*,*) 'MP2f12 energy term <1|H0-E0|1>',E22
+       call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+       
+       if(DECinfo%use_canonical) then
+          call mem_dealloc(Xijij)
+          call mem_dealloc(Xjiij)
+          
        if(DECinfo%F12DEBUG) then
           call mem_dealloc(Xijij_term1)
           call mem_dealloc(Xijij_term2)
@@ -924,6 +942,33 @@ contains
     call mem_dealloc(Bjiij)
 
   end function mp2f12_E22
+
+ !> Function for finding the E23 energy for the B-matrix
+  function mp2f12_E23(Bijij,Bjiij,nocc) result(energy)
+  implicit none
+  integer,intent(IN)  :: nocc
+  !>
+  real(realk),intent(IN) :: Bijij(nocc,nocc), Bjiij(nocc,nocc)
+  real(realk) :: energy
+  !
+  integer     :: i,j
+  real(realk) :: tmp
+
+  tmp = 0E0_realk
+  DO i=1,nocc
+    tmp = tmp + Bijij(i,i)
+  ENDDO
+
+  energy = 0.25E0_realk*tmp
+  tmp = 0E0_realk
+
+  DO j=1,nocc
+    DO i=j+1,nocc
+      tmp = tmp + 7.0E0_realk * Bijij(i,j) + Bjiij(i,j)
+    ENDDO
+  ENDDO
+  energy = energy + 0.0625E0_realk*tmp !1/16
+  end function mp2f12_E23
 
 #endif
 
@@ -1689,118 +1734,6 @@ contains
     call mem_dealloc(Giajc)
   end subroutine free_4Center_F12_integrals
 
-  subroutine get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-       & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
-
-    implicit none
-    !> Full molecule info
-    type(fullmolecule), intent(in) :: MyMolecule
-    !> Lsitem structure
-    type(lsitem), intent(inout) :: mylsitem
-    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
-    type(matrix) :: Dmat,K
-    type(matrix) :: HJir
-    type(matrix) :: Krr
-    type(matrix) :: Frr
-    type(matrix) :: Frc
-    type(matrix) :: Fpp
-    type(matrix) :: Fmm
-    type(matrix) :: Frm
-    type(matrix) :: Fcp
-    type(matrix) :: Fii
-    type(matrix) :: Fac
-    ! Temp
-    type(matrix) :: HJrc
-    type(matrix) :: Kcc
-    type(matrix) :: Fcc
-
-    ! Mixed regular/CABS one-electron and Coulomb matrix (h+J) combination in AO basis
-    call mat_init(HJrc,nbasis,ncabsAO)
-    call get_AO_hJ(nbasis,ncabsAO,HJrc,Dmat,MyLsitem,'RCRRC')
-    call mat_init(HJir,nocc,ncabsAO)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ir',HJrc,HJir)
-    call mat_free(HJrc)
-
-    ! Mixed CABS/CABS exchange matrix
-    call mat_init(Kcc,ncabsAO,ncabsAO)
-    call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
-    call mat_init(Krr,ncabsAO,ncabsAO)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rr',Kcc,Krr)
-    call mat_free(Kcc)
-
-    ! Mixed CABS/CABS Fock matrix
-    call mat_init(Fcc,ncabsAO,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
-    call mat_init(Frr,ncabsAO,ncabsAO)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rr',Fcc,Frr)
-    call mat_free(Fcc)
-
-    ! Mixed AO/CABS Fock matrix
-    call mat_init(Frc,nbasis,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
-    call mat_init(Fac,nvirt,ncabs)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ac',Frc,Fac)
-    call mat_free(Frc)
-
-    ! Mixed AO/AO full MO Fock matrix
-    call mat_init(Fcc,nbasis,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')
-    !Fpp
-    call mat_init(Fpp,nbasis,nbasis)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'pp',Fcc,Fpp)
-    !Fii
-    call mat_init(Fii,nocc,nocc)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ii',Fcc,Fii)
-    !Fmm
-    call mat_init(Fmm,noccfull,noccfull)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'mm',Fcc,Fmm)
-    call mat_free(Fcc)
-
-    ! Mixed CABS/AO MO Fock matrix
-    call mat_init(Fcc,ncabsAO,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CRRRC')
-    !Frm
-    call mat_init(Frm,ncabsAO,noccfull)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rm',Fcc,Frm)
-    !Fcc
-    call mat_init(Fcp,ncabs,nbasis)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'cp',Fcc,Fcp)
-    call mat_free(Fcc)
-  end subroutine get_F12_mixed_MO_Matrices
-
-  subroutine free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
-
-    implicit none
-    type(matrix) :: HJir
-    type(matrix) :: Krr
-    type(matrix) :: Frr
-    type(matrix) :: Frc
-    type(matrix) :: Fpp
-    type(matrix) :: Fmm
-    type(matrix) :: Frm
-    type(matrix) :: Fcp
-    type(matrix) :: Fii
-    type(matrix) :: Fac
-    call mat_free(HJir)
-    call mat_free(Krr)
-    call mat_free(Frr)
-    call mat_free(Fac)
-    call mat_free(Fpp)
-    call mat_free(Fii)
-    call mat_free(Fmm)
-    call mat_free(Frm)
-    call mat_free(Fcp)
-
-  end subroutine free_F12_mixed_MO_Matrices
 #endif
 
   !> \brief Full canonical MP2 calculation, not particularly efficient, mainly to be used for

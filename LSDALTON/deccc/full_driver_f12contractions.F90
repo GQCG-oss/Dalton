@@ -894,25 +894,25 @@ end subroutine mp2f12_Xijijfull
        ENDDO
     ENDDO
 
-    print *, '----------------------------------------'
-    print *, '          B ijij                        '   
-    print *, '----------------------------------------'
-    
-    DO i=1,nocc
-       DO j=1,nocc
-          print *, i," ", j," ", Bijij(i,j)
-       ENDDO
-    ENDDO
-
-    print *, '----------------------------------------'
-    print *, '          B ijji                        '   
-    print *, '----------------------------------------'
-
-    DO i=1,nocc
-       DO j=1,nocc
-          print *, i," ", j," ", Bjiij(i,j)
-       ENDDO
-    ENDDO
+!!$    print *, '----------------------------------------'
+!!$    print *, '          B ijij                        '   
+!!$    print *, '----------------------------------------'
+!!$    
+!!$    DO i=1,nocc
+!!$       DO j=1,nocc
+!!$          print *, i," ", j," ", Bijij(i,j)
+!!$       ENDDO
+!!$    ENDDO
+!!$
+!!$    print *, '----------------------------------------'
+!!$    print *, '          B ijji                        '   
+!!$    print *, '----------------------------------------'
+!!$
+!!$    DO i=1,nocc
+!!$       DO j=1,nocc
+!!$          print *, i," ", j," ", Bjiij(i,j)
+!!$       ENDDO
+!!$    ENDDO
 
   end subroutine mp2f12_Bijij_term2
 

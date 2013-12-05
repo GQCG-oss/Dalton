@@ -46,8 +46,6 @@ private
 
 contains
 
-
-
   !> \brief Construct new atomic fragment based on info in occ_atoms and Unocc_atoms,
   !> and calculate fragment energy. Energy contributions from each individual orbital
   !> is also calculated and stored in MyFragment%OccContribs and MyFragment%VirtContribs for
@@ -271,7 +269,11 @@ contains
     type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2
     real(realk) :: tcpu, twall,debugenergy
 
+    type(matrix) :: Dmat
+    real(realk),pointer :: dens(:,:)
+
     call LSTIMER('START',tcpu,twall,DECinfo%output)
+
 
     ! Which model? MP2,CC2, CCSD etc.
     WhichCCmodel: select case(MyFragment%ccmodel)
@@ -382,10 +384,24 @@ contains
     ! which calculates atomic fragment contribution and saves it in myfragment%energies(?),
     ! see dec_readme file and FRAGMODEL_* definitions in dec_typedef.F90.
 
+    print *, "Hello world!" 
+
 #ifdef MOD_UNRELEASED
-    if(DECinfo%f12) then    
-       print *, "---------------F12-energy-single-fragment-------------"
-       call f12_single_fragment_energy(MyFragment)
+    if(DECinfo%F12) then    
+       print *, "*******************************************"
+       print *, "       F12 energy single fragment          "  
+       print *, "*******************************************"
+       
+       ! Get the wrong density matrix (Not equal to the one for the fullmolecule)
+       call mat_init(Dmat, myfragment%nbasis,myfragment%nbasis)
+       call mem_alloc(dens, myfragment%nbasis, myfragment%nbasis)
+       call get_density_from_occ_orbitals( myfragment%nbasis,myfragment%noccAOS,Myfragment%Co,dens)
+       call mat_set_from_full(dens,1.0E0_realk,Dmat)
+       call f12_single_fragment_energy(MyFragment, Dmat)
+       
+       !> Free density matrix
+       call mem_dealloc(dens)
+       call mat_free(Dmat)
     endif
 #endif
     call LSTIMER('SINGLE L.ENERGY',tcpu,twall,DECinfo%output)
@@ -874,8 +890,10 @@ contains
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
 
-    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    type(matrix) :: Dmat
+    real(realk),pointer :: dens(:,:)
 
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     WhichCCmodel: if(PairFragment%ccmodel==MODEL_NONE) then ! SKip calculation
        return
@@ -948,9 +966,21 @@ contains
     ! see dec_readme file.
 
 #ifdef MOD_UNRELEASED
-    if(DECinfo%f12) then    
-       print *, "---------------F12-energy-pair-fragment-------------"
-       call f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
+    if(DECinfo%F12) then
+       print *, "*******************************************"
+       print *, "       F12 energy pair fragment          "  
+       print *, "*******************************************"
+       
+       ! Get density matrix
+       call mem_alloc(dens,Pairfragment%nbasis,Pairfragment%nbasis)
+       call get_density_from_occ_orbitals(Pairfragment%nbasis,Pairfragment%noccAOS, &
+            & Pairfragment%Co,dens)
+       call mat_set_from_full(dens,1.0E0_realk,Dmat)
+      ! call f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms, Dmat)
+     
+       !> Free density matrix
+       call mem_dealloc(dens)
+       call mat_free(Dmat)
     endif
 #endif
     call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)
