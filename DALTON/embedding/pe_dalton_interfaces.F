@@ -21,6 +21,97 @@
 !...      http://daltonprogram.org
 !
 #if defined (BUILD_PELIB)
+      subroutine pe_ifc_dalinp_reader(word)
+        use pe_variables, only: peqm
+        use polarizable_embedding, only: pe_dalton_input
+#include "priunit.h"
+        character(len=7), intent(inout) :: word
+        peqm = .true.
+        call pe_dalton_input(word, lucmd, lupri)
+      end subroutine pe_ifc_dalinp_reader
+
+      subroutine pe_ifc_init()
+        use polarizable_embedding, only: pe_init
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+        call pe_init(lupri, cord(1:3,1:natoms), charge(1:natoms))
+      end subroutine pe_ifc_init
+
+      subroutine pe_ifc_fock(denmats, fckmats, nmats, energies,
+     &                       work, nwrk)
+        use polarizable_embedding, only: pe_master
+#include "inforb.h"
+        integer, intent(in) :: nmats, nwrk
+        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
+        real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
+        real*8, dimension(nmats), intent(out) :: energies
+        real*8, dimension(nwrk), intent(inout) :: work
+        call pe_master(runtype='fock', denmats=denmats, fckmats=fckmats,
+     &                 nmats=nmats, energies=energies, dalwrk=work)
+      end subroutine pe_ifc_fock
+
+      subroutine pe_ifc_energy(denmats, nmats, work, nwrk)
+        use polarizable_embedding, only: pe_master
+#include "inforb.h"
+        integer, intent(in) :: nmats, nwrk
+        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
+        real*8, dimension(nwrk), intent(inout) :: work
+        call pe_master(runtype='energy', denmats=denmats, nmats=nmats,
+     &                 dalwrk=work)
+      end subroutine pe_ifc_energy
+
+      function pe_ifc_noneq_solvation
+        use pe_variables, only: pe_sol, pe_noneq
+        logical :: pe_ifc_noneq_solvation
+        if (pe_sol .and. pe_noneq) then
+            pe_ifc_noneq_solvation = .true.
+        else
+            pe_ifc_noneq_solvation = .false.
+        end if
+      end function pe_ifc_noneq_solvation
+
+      subroutine pe_ifc_noneq(denmats, fckmats, nmats, work, nwrk)
+        use polarizable_embedding, only: pe_master
+#include "inforb.h"
+        integer, intent(in) :: nmats, nwrk
+        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
+        real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
+        real*8, dimension(nwrk), intent(inout) :: work
+        call pe_master(runtype='noneq', denmats=denmats,
+     &                 fckmats=fckmats, nmats=nmats, dalwrk=work)
+      end subroutine pe_ifc_noneq
+
+      function pe_ifc_mep
+        use pe_variables, only: pe_mep
+        logical :: pe_ifc_mep
+        if (pe_mep) then
+            pe_ifc_mep = .true.
+        else
+            pe_ifc_mep = .false.
+        end if
+      end function pe_ifc_mep
+
+      subroutine pe_ifc_mepcalc(denmats, nmats, work, nwrk)
+        use polarizable_embedding, only: pe_master
+#include "inforb.h"
+        integer, intent(in) :: nmats, nwrk
+        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
+        real*8, dimension(nwrk), intent(inout) :: work
+        call pe_master(runtype='mep', denmats=denmats,
+     &                 nmats=nmats, dalwrk=work)
+      end subroutine pe_ifc_mepcalc
+
+#if defined(VAR_MPI)
+      subroutine pe_ifc_mpi(work, nwrk, runtype)
+        use polarizable_embedding, only: pe_mpi
+        integer :: nwrk, runtype
+        real*8, dimension(nwrk), intent(inout) :: work
+        call pe_mpi(work, runtype)
+      end subroutine pe_ifc_mpi
+#endif
+
+#if defined (BUILD_PELIB)
       subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
 !
 !     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen

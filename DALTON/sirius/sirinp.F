@@ -1650,10 +1650,11 @@ C
 C  Do we use embedding ?
 C  (that is, is QM part embedded in environment)
 C
-      if (qmmm .and. ECP) then
-         call quit('QMMM not working with ECP')
-      end if
-      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .or. peqm
+      IF (QMMM .AND. ECP) THEN
+         CALL QUIT('QMMM is not compatible with the use of ECPs')
+      END IF
+      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. PEQM .OR.
+     &            QMNPMM
 C
 C ***  PRINT INPUT DATA *****
 C
@@ -5468,7 +5469,7 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
-       IF (peqm) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
+       IF (PEQM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
       END IF
 C
 C ***** Wave function specifications
@@ -5482,12 +5483,12 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
-      if (peqm) then
-         write(iwunit,'(/5x,a/5x,a/)')
+      IF (PEQM) THEN
+         WRITE(IWUNIT,'(/5X,A/5X,A/)')
      &   'Wave function environment is modeled using the',
      &   'polarizable embedding model (PE library).'
         WFTYPE = 'PE-'//WFTYPE
-      end if
+      END IF
 C     for SIRIUS (not LUCITA) :
       NINEL = 2*NISHT
       CALL MOLCHR(ICHARG)

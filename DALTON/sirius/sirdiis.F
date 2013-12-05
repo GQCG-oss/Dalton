@@ -285,10 +285,8 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: pe_mep, pe_sol, pe_noneq, pe_savden
-      use polarizable_embedding, only: pe_master, pe_save_density
-#endif
+      use pe_variables, only: pe_savden
+      use polarizable_embedding, only: pe_save_density
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -401,8 +399,8 @@ C     this also includes the case of MMPCM
      &      ' Iter     Total energy      Solvation energy  Error norm'//
      &      '  Delta(E)  Sym.  Closed shell occupation'
       END IF
-      else if (peqm) then
-        write(luw4,'(/a)')
+      ELSE IF (PEQM) THEN
+        WRITE(LUW4,'(/A)')
      &      ' Iter      Total energy     Embedding energy      '//
      &      'Error norm     Delta(E)'
       ELSE ! no solvation energy
@@ -494,10 +492,8 @@ C     if (LNEWOCC) then write new BASINFO to SIRIUS.RST in NEWORB
 C------------------
       DODIFDEN = .NOT.FLAG(49) .AND. .NOT.HSFOCK
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
-     &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
-     &     .AND. .NOT.QM3      .AND. .NOT.QMMM
      &     .AND. .NOT.AOSAVE   .AND. .NOT.CHOINT
-     &     .AND. .NOT.QMNPMM   .AND. .NOT.PEQM
+     &     .AND. .NOT.EMBEDDING
 C
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
@@ -849,29 +845,22 @@ C            Now the PCM part ...
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
          ENDIF
 C
-#if defined (BUILD_PELIB)
-         if (peqm) then
-           call memget2('REAL','fpe', kfpe, nnbasx, wrk, kfree, lfree)
-           call memget2('REAL','epe', kepe, 1, wrk, kfree, lfree)
-           if (nasht == 0 .or. hsfock) then
-             call pe_master(runtype='fock', denmats=daosav(:,1),
-     &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
-     &                      energies=wrk(kepe:kepe),
-     &                      dalwrk=wrk(kfree:lfree))
-           else
-             call pe_master(runtype='fock',
-     &                      denmats=(daosav(:,1) + daosav(:,2)),
-     &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
-     &                      energies=wrk(kepe:kepe), 
-     &                      dalwrk=wrk(kfree:lfree))
-           end if
-           esolt = wrk(kepe)
-           faosav(:,indevc,1) = faosav(:,indevc,1)
-     &                          + wrk(kfpe:kfpe+nnbasx-1)
-           call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfpe,
-     &                 kfree, lfree)
-         end if
-#endif
+         IF (PEQM) THEN
+            CALL MEMGET('REAL', KFPE, NNBASX, WRK, KFREE, LFREE)
+            CALL MEMGET('REAL', KEPE, 1, WRK, KFREE, LFREE)
+            IF (NASHT == 0 .OR. HSFOCK) THEN
+              CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE),
+     &                         WRK(KFREE), LFREE-KFREE+1)
+            ELSE
+              CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
+     &                         WRK(KEPE), WRK(KFREE), LFREE-KFREE+1)
+            END IF
+            ESOLT = WRK(KEPE)
+            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
+     &                           + WRK(KFPE:KFPE+NNBASX-1)
+            CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, KFRSAV, KFPE,
+     &                  KFREE, LFREE)
+         END IF
 C
          EMCDIF = EMCSCF
          EMCSCF = EMY + EACTIV + EPOT + ESOLT
@@ -914,7 +903,7 @@ C
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. QMNPMM) THEN
+            IF (EMBEDDING) THEN
 C           this also includes the case of MMPCM
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(A,I3,1P,2G20.12,D15.5,D12.2)')
@@ -928,9 +917,6 @@ C           this also includes the case of MMPCM
      &                 '@',ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,
      &                 IOPRHF,(NISH(I),I=1,NSYM)
                END IF
-            else if (peqm) then
-               write (luw4,'(a,i3,1p,2g20.12,d15.5,d12.2)')
-     &                '@',itdiis,emcscf,esolt,grdnrm,emcdif
             ELSE
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(A,I3,1P,G22.12,D15.5,D12.2,I5)')
@@ -1473,7 +1459,7 @@ C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
-         if (peqm) write(luw4,'(a)')
+         IF (PEQM) WRITE(LUW4,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
@@ -1481,7 +1467,7 @@ C-------------------
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-            if (peqm) write(lupri,'(A)')
+            IF (PEQM) WRITE(LUPRI,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
@@ -1494,46 +1480,48 @@ C
          END IF
 C
       END IF
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        if (nasht == 0 .or. hsfock) then
-           call pe_master(runtype='energy',
-     &                    denmats=daosav(:,1), nmats=1,
-     &                    dalwrk=wrk(kfree:lfree))
-        else
-           call pe_master(runtype='energy',
-     &                    denmats=(daosav(:,1) + daosav(:,2)),
-     &                    nmats=1, dalwrk=wrk(kfree:lfree))
-        end if
-        if (pe_sol .and. pe_noneq) then
-           call memget('REAL', kfpeao, nnbasx, wrk, kfree, lfree)
-           kfpeao_end = kfpeao + nnbasx - 1
-           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
-               call pe_master(runtype='noneq',
-     &                        denmats=daosav(:,1),
-     &                        fckmats=wrk(kfpeao:kfpeao_end), nmats=1,
-     &                        dalwrk=wrk(kfree:lfree))
-           else
-               call pe_master(runtype='noneq',
-     &                        denmats=(daosav(:,1) + daosav(:,2)),
-     &                        fckmats=wrk(kfpeao:kfpeao_end), nmats=1, 
-     &                        dalwrk=wrk(kfree:lfree))
-           end if
-           call memget('REAL', kfpemo, nnorbx, wrk, kfree, lfree)
-           wrk(kfpemo:kfpemo+nnorbx-1) = 0.0d0
-           call uthu(wrk(kfpeao), wrk(kfpemo), cmo, wrk(kfree),
-     &               nbas,norb)
-           faosav(:,indevc,1) = faosav(:,indevc,1)
-     &                          + wrk(kfpemo:kfpemo+nnorbx-1)
-           call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfpeao,
-     &                 kfree, lfree)
-        end if
-      end if
       if (pe_mep) then
         call pe_master(runtype='mep', denmats=daosav(:,1), nmats=1,
      &                 dalwrk=wrk(kfree:lfree))
       end if
-       ! save density matrix 
+      IF (PEQM) THEN
+        IF (NASHT == 0 .OR. HSFOCK) THEN
+            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1, WRK(KFREE),
+     &                         LFREE-KFREE+1)
+        ELSE
+            CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1,
+     &                         WRK(KFREE), LFREE-KFREE+1)
+        END IF
+        IF (PE_NONEQ_SOLVATION) THEN
+            CALL MEMGET('REAL', KFPEAO, NNBASX, WRK, KFREE, LFREE)
+            IF (NASHT == 0 .OR. HSROHF) THEN
+                CALL PE_IFC_NONEQ(DAOSAV(:,1), WRK(KFPEAO), 1,
+     &                            WRK(KFREE), LFREE-KFREE+1)
+            ELSE
+                CALL PE_IFC_NONEQ((DAOSAV(:,1)+DAOSAV(:,2)),
+     &                            WRK(KFPEAO), 1, WRK(KFREE),
+     &                            LFREE-KFREE+1)
+            END IF
+            CALL MEMGET('REAL', KFPEMO, NNORBX, WRK, KFREE, LFREE)
+            WRK(KFPEMO:KFPEMO+NNORBX-1) = 0.0D0
+            CALL UTHU(WRK(KFPEAO), WRK(KFPEMO), CMO, WRK(KFREE),
+     &                NBAS, NORB)
+            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
+     &                           + WRK(KFPEMO:KFPEMO+NNORBX-1)
+            CALL MEMREL('DIIS_CTL.PE_IFC_NONEQ', WRK, KFRSAV, KFPEAO,
+     &                  KFREE, LFREE)
+        END IF
+        IF (PE_IFC_MEP) THEN
+            IF (NASHT == 0 .OR. HSROHF) THEN
+                CALL PE_IFC_MEPCALC(DAOSAV(:,1), 1,
+     &                          WRK(KFREE), LFREE-KFREE+1)
+            ELSE
+                CALL PE_IFC_MEPCALC((DAOSAV(:,1)+DAOSAV(:,2)), 1,
+     &                          WRK(KFREE), LFREE-KFREE+1)
+            END IF
+        END IF
+      END IF
+      ! save density matrix 
       if (pe_savden) then
         if (nsym > 1) then
             call quit('PEQM cannot be combined with symmetry.')
@@ -1543,7 +1531,6 @@ C
      &                       cord(:,1:natoms), charge(1:natoms),
      &                       wrk(kfree:lfree))
       end if
-#endif
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC
 C       FLAG(25) is true for .ABACUS (geometry optimization)
