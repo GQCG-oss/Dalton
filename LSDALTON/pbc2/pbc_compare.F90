@@ -1,6 +1,6 @@
 #ifdef MOD_UNRELEASED
 SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
-           latt_cell,nfsze,lmax,bz,tlat,lupri,luerr)
+           nfsze,lmax,bz,tlat,lupri,luerr)
   USE TYPEDEF
   USE precision
   USE matrix_module
@@ -20,7 +20,6 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
   TYPE(moleculeinfo),INTENT(INOUT) :: molecule
   TYPE(LSSETTING) :: setting
   TYPE(BZgrid_t),intent(in) :: bz
-  TYPE(moleculeinfo),INTENT(IN) :: latt_cell(numrealvec)
   REAL(realk) ,intent(In) :: tlat((1+lmax)**2,(1+lmax)**2)
   !LOCAL VARIABLES
   !COMPLEX(complexk) :: fock_old(7,ndim,ndim),fock_vec(7,ndim*ndim)
@@ -194,22 +193,22 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
  enddo
   
    call pbc_overlap_k(lupri,luerr,setting,molecule,ndim,ll,&
-                    latt_cell,refcell,numrealvec,ovl)
+                    refcell,numrealvec,ovl)
 
    call pbc_kinetic_k(lupri,luerr,setting,molecule,ndim,&
-   ll,latt_cell,refcell,numrealvec,nfdensity,f_1,E_kin)
+   ll,refcell,numrealvec,nfdensity,f_1,E_kin)
 
    !ll%nf=5
 
    call pbc_nucattrc_k(lupri,luerr,setting,molecule,ndim,&
-     ll,latt_cell,refcell,numrealvec,nfdensity,f_1,E_en)
+     ll,refcell,numrealvec,nfdensity,f_1,E_en)
 
    call pbc_exact_xc_k(lupri,luerr,setting,molecule,ndim,&
-     ll,latt_cell,refcell,numrealvec,nfdensity,g_2,E_K)
+     ll,refcell,numrealvec,nfdensity,g_2,E_K)
 
 
   call pbc_electron_rep_k(lupri,luerr,setting,molecule,ndim,&
-     ll,latt_cell,refcell,numrealvec,nfdensity,g_2,E_J)
+     ll,refcell,numrealvec,nfdensity,g_2,E_J)
 
    !This is needed to form fck
   call pbc_comp_nucmom(refcell,nucmom,lmax,lupri)
@@ -220,7 +219,7 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
                    g_2,E_ff,E_nn,lupri)
 
   CALL pbc_nucpot(lupri,luerr,setting,molecule,ll,&
-                  latt_cell,refcell,numrealvec,E_nuc)
+                  refcell,numrealvec,E_nuc)
 #ifdef DEBUGPBC
    do n1=1,numrealvec
        call mat_free(nfdensity(n1))
@@ -437,7 +436,6 @@ SUBROUTINE COMPARE_MATRICES(lupri,ndim,numrealvec,nfsze,lmax,ll)
   TYPE(lvec_list_t),INTENT(IN) :: ll
   !LOCAL VARIABLES
   INTEGER :: i,j !,toltol should be a real but now I just have it for test
-  !TYPE(moleculeinfo),pointer :: latt_cell(:)
   !TYPE(moleculeinfo) :: refcell
   INTEGER,save :: scfit=0
   CHARACTER(LEN=10) :: numtostring1,numtostring2,numtostring3,iter

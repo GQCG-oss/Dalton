@@ -34,7 +34,6 @@ SUBROUTINE set_pbc_molecules(INPUT,SETTING,lupri,luerr,nbast,Dmat,lattice)
   TYPE(MATRIX),intent(INOUT)  ::  Dmat
   !Local variables
   TYPE(MOLECULEINFO) :: refcell
-  TYPE(MOLECULEINFO),pointer :: latt_cell(:)
   TYPE(MATRIX)  ::  D(1),D1(1)!,F(1)
   TYPE(matrix),pointer :: nfdensity(:),f_1(:),ovl(:)
   TYPE(matrix),pointer :: g_2(:)
@@ -86,17 +85,13 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   num_latvectors=size(lattice%lvec)
   write(lupri,*) 'Number of vectors ', num_latvectors
 
-  allocate(latt_cell(num_latvectors))
 
-  call set_lattice_cells(latt_cell,num_latvectors,input%molecule,lattice,lupri)
-
-
-  write(lupri,*) 'setting%p%atom%center', latt_cell(2)%atom(1)%center(1)
+  call set_lattice_cells(num_latvectors,input%molecule,lattice,lupri)
 
 
   write(lupri,*) 'cutoff' 
-  call find_cutoff_onep(lupri,luerr,setting,nbast,lattice,&
-              latt_cell, refcell,num_latvectors)
+  call find_max_screening(lupri,luerr,setting,nbast,lattice,&
+              refcell,num_latvectors)
 
 !  write(*,*) 'nearest neighbour in pbcmain 2 ', lattice%nneighbour
 !  call build_nflvec_list(lattice,nbast) 
@@ -117,13 +112,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
     write(*,*) 'CS screen:', setting%scheme%CS_SCREEN 
     write(*,*) 'PS screen:', setting%scheme%PS_SCREEN 
 
-   ! allocate(S_ab(nbast*nbast))
-   ! S_ab=0.0000
-  
-   ! allocate(fck(nbast*nbast))
-   ! fck=0.0000E-100
-  
-!
+
     call pbc_init_recvec(lattice%ldef%avec,kvec)
 
 
@@ -428,7 +417,7 @@ else
   if(lattice%compare_elmnts) then
     !write(*,*) 'hei'
     call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
-    num_latvectors,latt_cell,nfsze,maxmultmom,bz,tlat,lupri,luerr)
+    num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
   endif
 
 #endif
@@ -437,8 +426,8 @@ else
     
   if(lattice%compare_elmnts) then
 
-    allocate(k_fock(nbast,nbast))
-    allocate(k_Sab(nbast,nbast))
+    call mem_alloc(k_fock,nbast,nbast)
+    call mem_alloc(k_Sab,nbast,nbast)
 
     do n1=-3,3
     write(numtostring1,*) n1
@@ -464,21 +453,16 @@ else
 
     !call COMPARE_MATRICES(lupri,nbast,num_latvectors,nfsze,maxmultmom,lattice)
     call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
-    num_latvectors,latt_cell,nfsze,maxmultmom,bz,tlat,lupri,luerr)
+    num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
 
-    deallocate(k_fock)
-    deallocate(k_Sab)
+    call mem_dealloc(k_fock)
+    call mem_dealloc(k_Sab)
     call mem_dealloc(Tlat)
 
   else
 !    call mem_dealloc(Tlat)
     !call init_pbc_elstr(bz%fck,nbast,nbast)
     !call init_pbc_elstr(bz%smat,nbast,nbast)
-	do i=1,num_latvectors
-	 call free_Moleculeinfo(latt_cell(i))
-	enddo
-    deallocate(latt_cell)
-    write(*,*) 'before call to scf loops'
 
    call mat_abs_max_elm(dmat,maxdens)
    write(lupri,*) 'max element in initial dmat',maxdens
@@ -521,27 +505,27 @@ else
   CASE('directly')
 
 	sze=nbast*size(lattice%lvec)
-!   ALLOCATE(S_ab(sze,sze))
 !   S_ab=0.0000
 !    write(lupri,*) 'Overlap'
   
     write(lupri,*) 'We are now in the ',lattice%wannier_direct, ' method'
 
-    allocate(fck(sze*sze))
+    call mem_alloc(fck,sze*sze)
     fck=0.0000E-100
   
     call pbc_overlap_int(lupri,luerr,setting,input%molecule,&
-    nbast,lattice,latt_cell,refcell,num_latvectors)
+    nbast,lattice,refcell,num_latvectors)
   
     call pbc_kinetic_int(lupri,luerr,setting,input%molecule,nbast,fck,&
-     sze,lattice,latt_cell,refcell,num_latvectors)
+     sze,lattice,refcell,num_latvectors)
   
     call pbc_nucattrc_int(lupri,luerr,setting,input%molecule,nbast,fck,&
-     sze,lattice,latt_cell,refcell,num_latvectors)
+     sze,lattice,refcell,num_latvectors)
      
     call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
     nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)
     write(lupri,*) 'nfsize: ',nfsze
+    call mem_dealloc(fck)
     call mem_alloc(nfdensity,nfsze)
 
     k=0
@@ -604,7 +588,7 @@ else
   endif
  
     call pbc_electron_rep(lupri,luerr,setting,input%molecule,nbast,&
-     lattice,latt_cell,refcell,num_latvectors,nfdensity,nfsze)
+     lattice,refcell,num_latvectors,nfdensity,nfsze)
   
 !  call pbc_complete_Fock_mtx(lupri,nbast,S_ab,sze,cutoff,ll)
 
