@@ -558,7 +558,9 @@ end subroutine ls_dcopy
   use lsmpi_type
 #endif
 #ifdef VAR_IFORT
+#ifndef VAR_INT64
   use IFCORE
+#endif
 #endif
   implicit none
       !> Text string to be printed
@@ -567,7 +569,7 @@ end subroutine ls_dcopy
       integer, intent(in) :: lupri
       integer             :: luprin
       real(realk) :: CTOT,WTOT
-      integer :: user_exit_code,status
+      integer :: user_exit_code,qqstatus
 !
 !     Stamp date and time and hostname to output
 !
@@ -590,9 +592,11 @@ end subroutine ls_dcopy
       WRITE (0,'(/A/1X,A)') '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
 #ifdef VAR_IFORT
-      status = -1
+      qqstatus = -1
       user_exit_code = -1
-      CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE,STATUS)
+#ifndef VAR_INT64
+      CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE,qqSTATUS)
+#endif
 #endif
 
       CALL ls_GETTIM(CTOT,WTOT)

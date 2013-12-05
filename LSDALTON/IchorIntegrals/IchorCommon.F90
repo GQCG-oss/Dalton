@@ -186,7 +186,7 @@ implicit none
 CHARACTER(len=*), intent(in) :: TEXT
 !> Logical unit number for output
 integer, intent(in) :: lupri
-integer             :: luprin,status,user_exit_code
+integer             :: luprin,qqstatus,user_exit_code
 real(realk) :: CTOT,WTOT
 !
 !     Stamp date and time and hostname to output
@@ -210,10 +210,12 @@ CALL Ichor_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
 CALL Ichor_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
 CALL FLUSH(LUPRIN)
 #ifdef VAR_IFORT
+#ifndef VAR_INT64
 !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
-status=-1
+qqstatus=-1
 user_exit_code = -1
-CALL TRACEBACKQQ("Ichor Called TraceBack:",user_exit_code,status)
+CALL TRACEBACKQQ("Ichor Called TraceBack:",user_exit_code,qqstatus)
+#endif
 #endif
 #if defined (SYS_LINUX)
 CALL EXIT(100)
@@ -493,6 +495,9 @@ subroutine build_noScreen1(ItypeA,ItypeB,ntypesA,ntypesB,nAtomsA,nAtomsB,nBatchA
   integer :: iBatchA,IatomA,iBatchB,iAtomB
   real(realk) :: MAXGAB
   iBatchB = BatchIndexOfTypeB(ItypeB)
+!$OMP PARALLEL DO PRIVATE(IatomB,IatomA,iBatchA) FIRSTPRIVATE(nAtomsA,&
+!$OMP nAtomsB,iBatchB,MaxGabForTypeCD,THRESHOLD_CS) SHARED(BatchIndexOfTypeA,&
+!$OMP noScreenABout,noScreenABin) SCHEDULE(DYNAMIC,1)
   DO IatomB = 1,nAtomsB
      iBatchB = iBatchB + 1
      iBatchA = BatchIndexOfTypeA(ItypeA)
@@ -500,6 +505,7 @@ subroutine build_noScreen1(ItypeA,ItypeB,ntypesA,ntypesB,nAtomsA,nAtomsB,nBatchA
         noScreenABout(IatomA,IatomB) = noScreenABin(IatomA,IatomB).AND.(BATCHGAB(iBatchA+IatomA,iBatchB)*MaxGabForTypeCD.GT.THRESHOLD_CS)
      ENDDO
   ENDDO
+!$OMP END PARALLEL DO
 end subroutine build_noScreen1
 
 subroutine build_EmptynoScreen1(nAtomsA,nAtomsB,noScreenAB)
@@ -508,12 +514,32 @@ subroutine build_EmptynoScreen1(nAtomsA,nAtomsB,noScreenAB)
   logical,intent(inout) :: noScreenAB(nAtomsA,nAtomsB)
   !local variables
   integer :: IatomA,iAtomB
+!$OMP PARALLEL DO PRIVATE(IatomB,IatomA) FIRSTPRIVATE(nAtomsA,&
+!$OMP nAtomsB) SHARED(noScreenAB) SCHEDULE(DYNAMIC,1)
   DO IatomB = 1,nAtomsB
      DO IatomA = 1,nAtomsA
         noScreenAB(IatomA,IatomB) = .TRUE.
      ENDDO
   ENDDO
+!$OMP END PARALLEL DO
 end subroutine build_EmptynoScreen1
+
+subroutine copy_noScreen(nAtomsA,nAtomsB,noScreenAB,noScreenAB2)
+  implicit none
+  integer,intent(in) :: nAtomsA,nAtomsB
+  logical,intent(inout) :: noScreenAB(nAtomsA,nAtomsB)
+  logical,intent(inout) :: noScreenAB2(nAtomsA,nAtomsB)
+  !local variables
+  integer :: IatomA,iAtomB
+!$OMP PARALLEL DO PRIVATE(IatomB,IatomA) FIRSTPRIVATE(nAtomsA,&
+!$OMP nAtomsB) SHARED(noScreenAB,noScreenAB2) SCHEDULE(DYNAMIC,1)
+  DO IatomB = 1,nAtomsB
+     DO IatomA = 1,nAtomsA
+        noScreenAB2(IatomA,IatomB) = noScreenAB(IatomA,IatomB)
+     ENDDO
+  ENDDO
+!$OMP END PARALLEL DO
+end subroutine copy_noScreen
 
 SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
      & nBatchB,nBatchA,iBatchIndexOfTypeA,iBatchIndexOfTypeB,BATCHGAB,&
@@ -651,12 +677,12 @@ subroutine Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
   Qdistance12(1) = X
   Qdistance12(2) = Y
   Qdistance12(3) = Z
-  DO i2=1,nPrimD
-     e2  = expD(i2)       
-     eDX = e2*Dcenter(1)
-     eDY = e2*Dcenter(2)
-     eDZ = e2*Dcenter(3)
-     IF (Segmented) THEN
+  IF (Segmented) THEN
+     DO i2=1,nPrimD
+        e2  = expD(i2)       
+        eDX = e2*Dcenter(1)
+        eDY = e2*Dcenter(2)
+        eDZ = e2*Dcenter(3)
         TMPCCD = ContractCoeffD(i2,1)
         DO i1=1,nPrimC
            e1  = expC(i1)
@@ -665,7 +691,13 @@ subroutine Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
            Qcent(3,i1,i2) = (e1*Ccenter(3) + eDZ)/(e1+e2)
            QpreExpFac(i1,i2) = exp(-e1*e2/(e1+e2)*d2)*ContractCoeffC(i1,1)*TMPCCD
         ENDDO
-     ELSE
+     ENDDO
+  ELSE
+     DO i2=1,nPrimD
+        e2  = expD(i2)       
+        eDX = e2*Dcenter(1)
+        eDY = e2*Dcenter(2)
+        eDZ = e2*Dcenter(3)
         DO i1=1,nPrimC
            e1  = expC(i1)
            qcent(1,i1,i2) = (e1*Ccenter(1) + eDX)/(e1+e2)
@@ -673,9 +705,9 @@ subroutine Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
            Qcent(3,i1,i2) = (e1*Ccenter(3) + eDZ)/(e1+e2)
            QpreExpFac(i1,i2) = exp(-e1*e2/(e1+e2)*d2)
         ENDDO
-     ENDIF
-  ENDDO
-END subroutine Build_qcent_Qdistance12_QpreExpFac
+     ENDDO
+  END IF
+subroutine Build_qcent_Qdistance12_QpreExpFac
 
 SUBROUTINE Build_pcent_Pdistance12_PpreExpFac(nPrimA,nPrimB,natomsA,natomsB,nContA,nContB,&
      & inversexpP,expA,expB,Acenter,Bcenter,ContractCoeffA,ContractCoeffB,Segmented,&
@@ -693,6 +725,9 @@ SUBROUTINE Build_pcent_Pdistance12_PpreExpFac(nPrimA,nPrimB,natomsA,natomsB,nCon
   !local variables
   integer :: i12,i2,i1,offset,IatomA,IatomB
   real(realk) :: e2,e1,X,Y,Z,d2,AX,AY,AZ,BX,BY,BZ,TMPCCB,tmpe2d2,eBX,eBY,eBZ
+!$OMP PARALLEL DO DEFAULT(none) PRIVATE(IatomB,BX,BY,BZ,IatomA,AX,AY,AZ,X,Y,Z,d2,&
+!$OMP e2,e1,eBX,eBY,eBZ,tmpe2d2,TMPCCB,i1,i2) SHARED(expA,expB,inversexpP,Pdistance12Pass,&
+!$OMP Acenter,Bcenter,pcentPass,ContractCoeffA,PpreExpFacPass) SCHEDULE(DYNAMIC,1)
   DO IatomB = 1,nAtomsB
    BX = Bcenter(1,IatomB)
    BY = Bcenter(2,IatomB)
@@ -701,9 +736,9 @@ SUBROUTINE Build_pcent_Pdistance12_PpreExpFac(nPrimA,nPrimB,natomsA,natomsB,nCon
      AX = Acenter(1,IatomA)
      AY = Acenter(2,IatomA)
      AZ = Acenter(3,IatomA)
-     X = AX - Bcenter(1,IatomB)
-     Y = AY - Bcenter(2,IatomB)
-     Z = AZ - Bcenter(3,IatomB)
+     X = AX - BX
+     Y = AY - BY
+     Z = AZ - BZ
      Pdistance12Pass(1,iAtomA,IatomB) = X
      Pdistance12Pass(2,iAtomA,IatomB) = Y
      Pdistance12Pass(3,iAtomA,IatomB) = Z
@@ -733,6 +768,7 @@ SUBROUTINE Build_pcent_Pdistance12_PpreExpFac(nPrimA,nPrimB,natomsA,natomsB,nCon
      ENDDO
    ENDDO
   ENDDO
+!$OMP END PARALLEL DO 
 end SUBROUTINE Build_pcent_Pdistance12_PpreExpFac
 
 SUBROUTINE Build_pcent_Pdistance12_PpreExpFac2(nPrimP,nPasses,&
@@ -844,6 +880,9 @@ subroutine ODscreen_noScreen(nAtomsC,nAtomsD,Ccenter,Dcenter,&
   !local variables
   integer :: IatomD,IatomC
   real(realk) :: DX,DY,DZ,X,Y,Z,distance2
+!$OMP PARALLEL DO PRIVATE(IatomD,IatomC,DX,DY,DZ,X,Y,Z,&
+!$OMP distance2) SHARED(noScreenCD) FIRSTPRIVATE(nAtomsD,&
+!$OMP nAtomsC,extent2CD) SCHEDULE(DYNAMIC,1)
   DO IatomD = 1,nAtomsD
      DX = -Dcenter(1,IatomD)
      DY = -Dcenter(2,IatomD)
@@ -856,6 +895,7 @@ subroutine ODscreen_noScreen(nAtomsC,nAtomsD,Ccenter,Dcenter,&
         noScreenCD(iAtomC,iAtomD) = distance2.LE.extent2CD
      ENDDO
   ENDDO
+!$OMP END PARALLEL DO 
 END subroutine ODscreen_noScreen
 
 subroutine ichorzero(dx, length)
@@ -901,11 +941,14 @@ subroutine ichorzero2(OutputStorage, Dim1,Dim2)
   !local
   integer :: i,j
   logical :: moda,modb
+!$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(OutputStorage) FIRSTPRIVATE(dim1,&
+!$OMP dim2) SCHEDULE(DYNAMIC,3)
   do j=1,dim2
      do i=1,dim1
         OutputStorage(i,j)=0.0E0_realk
      enddo
   enddo
+!$OMP END PARALLEL DO 
 end subroutine ichorzero2
 
 END MODULE IchorCommonModule
