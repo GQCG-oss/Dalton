@@ -247,10 +247,10 @@ C
      *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
-      if (peqm) then
-        call quit('ERROR: cubic response not implemented using the'//
+      IF (PEQM) THEN
+        CALL QUIT('ERROR: cubic response not implemented using the'//
      &            ' PE library')
-      end if
+      END IF
 C
       IF (QMMM) THEN
          IF (TDHF) THEN

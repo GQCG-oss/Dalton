@@ -15,6 +15,7 @@ module profile_int
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
   use ProfileIchorMod
+  use dal_interface
 private
 public :: di_profile_lsint
 
@@ -100,6 +101,12 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      CALL mat_free(H1)
      CALL mat_free(S)
   endif
+#ifdef VAR_ICHOR
+  IF(config%prof%IchorDEC)THEN
+     call di_decpackedJ(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
+     RETURN
+  ENDIF
+#endif
      
 !#ifdef VAR_OMP
 !  DO I = 1,2
