@@ -40,8 +40,10 @@ subroutine IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & startBatchD,endBatchD,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,IchorInputDim3,&
-     & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,THRESHOLD_CS,THRESHOLD_QQR,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
+     & IchorInputDim2,IchorInputDim3,&
+     & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
+     & THRESHOLD_CS,THRESHOLD_QQR,&
      & IchorGabID1,IchorGabID2,IchorDebugSpec,&
      & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&

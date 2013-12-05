@@ -47,7 +47,7 @@ CHARACTER(len=9)     :: BASISLABEL
 TYPE(BASISINFO),pointer :: unittestBASIS(:)
 TYPE(BASISINFO),pointer :: originalBASIS
 CHARACTER(len=80)    :: BASISSETNAME
-logical      :: spherical,savedospherical,SameMOL
+logical      :: spherical,savedospherical,SameMOL,COMPARE
 Character    :: intSpec(5)
 intSpec(1) = 'R'
 intSpec(2) = 'R'
@@ -83,10 +83,10 @@ ELSE
    enddo
    dim1 = nbast(1); dim2 = nbast(2); dim3 = nbast(3); dim4 = nbast(4)
 ENDIF
-
+COMPARE=.FALSE.
 WRITE(lupri,*)'Dims:',nbast(1:4)
-
 IF(config%prof%IchorProfDoThermite)THEN
+!   COMPARE = .TRUE.
    WRITE(lupri,*)'Performing Thermite Profiling'
    call mem_alloc(integralsII,dim1,dim2,dim3,dim4)
    savedospherical = setting%scheme%dospherical
@@ -107,7 +107,9 @@ IF(config%prof%IchorProfDoThermite)THEN
 !   setting%scheme%PS_SCREEN = .TRUE.
 !   Setting%sameMol = .TRUE.
 !   Setting%sameFrag = .TRUE.
-   call mem_dealloc(integralsII)
+   IF(.NOT.COMPARE)THEN
+      call mem_dealloc(integralsII)
+   ENDIF
 ENDIF
 
 iprint=0
@@ -140,25 +142,27 @@ IF(config%prof%IchorProfDoIchor)THEN
       print*,'normII   ',normII
       print*,'ABS(normIchor-normII)',ABS(normIchorScreen-normII)
    ENDIF
-   call mem_dealloc(integralsIchor)
+   IF(.NOT.COMPARE)THEN
+      call mem_dealloc(integralsIchor)
+   ENDIF
 ENDIF
-
-!DO D=1,dim4
-!   DO C=1,dim3
-!      DO B=1,dim2
-!         DO A=1,dim1
-!            WRITE(lupri,'(A,I4,A,I4,A,I4,A,I4,A,2F16.8)')'INT(',A,',',B,',',C,',',D,')',integralsIchor(a,b,c,d),integralsII(a,b,c,d)
-!         ENDDO
-!      ENDDO
-!   ENDDO
-!ENDDO
-!write(lupri,*)'integralsIchor:'
-!call output(integralsIchor,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
-!write(lupri,*)'integralsThermie:'
-!call output(integralsII,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
-
-!call mem_dealloc(integralsIchor)
-!call mem_dealloc(integralsII)
+IF(COMPARE)THEN
+DO D=1,dim4
+   DO C=1,dim3
+      DO B=1,dim2
+         DO A=1,dim1
+            WRITE(lupri,'(A,I4,A,I4,A,I4,A,I4,A,2F16.8)')'INT(',A,',',B,',',C,',',D,')',integralsIchor(a,b,c,d),integralsII(a,b,c,d)
+         ENDDO
+      ENDDO
+   ENDDO
+ENDDO
+write(lupri,*)'integralsIchor:'
+call output(integralsIchor,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
+write(lupri,*)'integralsThermie:'
+call output(integralsII,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
+call mem_dealloc(integralsIchor)
+call mem_dealloc(integralsII)
+ENDIF
 
 IF(config%prof%IchorProfInputBasis)THEN
    call free_basissetinfo(UNITTESTBASIS(1)%REGULAR)

@@ -70,6 +70,7 @@ END INTERFACE
         & di_debug_4center_eri, &
         & di_debug_4center, &
         & di_decpacked, &
+        & di_decpackedJ, &
 #endif
         & di_debug_ccfragment, &
         & di_get_fock_LSDALTON, &
@@ -3156,13 +3157,14 @@ CONTAINS
       integer :: MinimumAllowedAObatchSize,nbatchesofAOS,nAObatches
       integer :: dim1,dim2,dimGamma,GammaStart,GammaEnd
       integer :: AOGammaStart,AOGammaEnd,gammaB,iAG
-      integer :: dimAlpha,AlphaStart,AlphaEnd,alphaB
+      integer :: dimAlpha,AlphaStart,AlphaEnd,alphaB,iprint
       integer :: AOAlphaStart,AOAlphaEnd,iA,iG,iB,iD,ABATCH,GBATCH
       character :: INTSPEC(5)
       type(DecAObatchinfo),pointer :: AObatchinfo(:)
       logical :: SameMOL
       call mem_alloc(Dfull,D%nrow,D%ncol)
       call mat_to_full(D,1E0_realk,DFULL)
+      iprint = 0
       INTSPEC(1) = 'R' 
       INTSPEC(2) = 'R'
       INTSPEC(3) = 'R'
@@ -3175,15 +3177,23 @@ CONTAINS
       iAO = 1 !the center that the batching should occur on. 
       call determine_MinimumAllowedAObatchSize(ls%setting,iAO,'R',MinimumAllowedAObatchSize)
       WRITE(lupri,*)'MinimumAllowedAObatchSize',MinimumAllowedAObatchSize
-      RequestedOrbitalDimOfAObatch = MAX(MinimumAllowedAObatchSize,nbast/4)
+      suggestion = 0
+      IF(nbast.GT.16) suggestion = 16
+      IF(suggestion.EQ.0) suggestion = nbast/4
+      RequestedOrbitalDimOfAObatch = MAX(MinimumAllowedAObatchSize,suggestion)
+      WRITE(lupri,*)'MinimumAllowedAObatchSize',MinimumAllowedAObatchSize
       WRITE(lupri,*)'RequestedOrbitalDimOfAObatch',RequestedOrbitalDimOfAObatch
-      call determine_Ichor_nbatchesofAOS(ls%setting,iAO,'R',RequestedOrbitalDimOfAObatch,nbatchesofAOS,lupri)
+      call determine_Ichor_nbatchesofAOS(ls%setting,iAO,'R',&
+           & RequestedOrbitalDimOfAObatch,nbatchesofAOS,lupri)
       call mem_alloc(AObatchinfo,nbatchesofAOS)
-      call determine_Ichor_batchesofAOS(ls%setting,iAO,'R',RequestedOrbitalDimOfAObatch,nbatchesofAOS,AObatchinfo,lupri)
-      call determine_Ichor_nAObatches(ls%setting,iAO,'R',nAObatches,MaxAObatchesOrbDim)
-
+      call determine_Ichor_batchesofAOS(ls%setting,iAO,'R',&
+           & RequestedOrbitalDimOfAObatch,nbatchesofAOS,AObatchinfo,&
+           & MaxAObatchesOrbDim,lupri)
+      call determine_Ichor_nAObatches(ls%setting,iAO,'R',nAObatches,lupri)
       call mem_alloc(integral,nbast,nbast,MaxAObatchesOrbDim*MaxAObatchesOrbDim)
       call mem_alloc(JdecFull,nbast,nbast)
+      call ls_dzero(JdecFull,nbast*nbast)
+      WRITE(lupri,*)'nbatchesofAOS',nbatchesofAOS
       dim1 = nbast
       dim2 = nbast
       BatchGamma: do gammaB = 1,nbatchesofAOS        ! batches of AO batches
@@ -3191,7 +3201,7 @@ CONTAINS
         GammaStart = AObatchinfo(gammaB)%orbstart   ! First orbital index in gamma batch
         GammaEnd = AObatchinfo(gammaB)%orbEnd       ! Last orbital index in gamma batch
         AOGammaStart = AObatchinfo(gammaB)%AOstart  ! First AO batch index in gamma batch
-        AOGammaEnd = AObatchinfo(alphaB)%AOEnd      ! Last AO batch index in alpha batch
+        AOGammaEnd = AObatchinfo(gammaB)%AOEnd      ! Last AO batch index in alpha batch
         BatchAlpha: do alphaB = 1,nbatchesofAOS        ! batches of AO batches
           dimAlpha = AObatchinfo(alphaB)%dim          ! Dimension of alpha batch
           AlphaStart = AObatchinfo(alphaB)%orbstart   ! First orbital index in alpha batch
@@ -3200,7 +3210,7 @@ CONTAINS
           AOAlphaEnd = AObatchinfo(alphaB)%AOEnd      ! Last AO batch index in alpha batch
 
           !calc (beta,delta,alphaB,gammaB) 
-          call MAIN_ICHORERI_DRIVER(lupri,luerr,ls%setting,dim1,dim2,dimAlpha,dimGamma,&
+          call MAIN_ICHORERI_DRIVER(lupri,iprint,ls%setting,dim1,dim2,dimAlpha,dimGamma,&
                & Integral,INTSPEC,.FALSE.,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
                & AOGammaStart,AOGammaEnd)
 
@@ -3214,7 +3224,7 @@ CONTAINS
                 iAG = Abatch + (Gbatch-1)*dimAlpha
                 DO iD=1,nbast
                    DO iB=1,nbast
-                      Jcont = Jcont + Dfull(iB,iD)*integral(iB,iD,iAG)
+                      Jcont = Jcont + 2.0E0_realk*Dfull(iB,iD)*integral(iB,iD,iAG)
                    ENDDO
                 ENDDO
                 JdecFULL(iA,iG)=JdecFULL(iA,IG)+Jcont

@@ -67,8 +67,11 @@ integer,intent(inout)     :: RequestedOrbitalDimOfAObatch
 !
 TYPE(BASISSETINFO),pointer :: AObasis
 integer     :: MaxOrbitalDimOfAObatch,nBatches,MinimumAllowedAObatchSize
-integer     :: MinOrbitalDimOfAObatch,Ratio1,Ratio2,J
-integer,pointer :: OrbSizeOfBatches(:)
+integer     :: MinOrbitalDimOfAObatch,J,n,k
+real(realk) :: MaxOrbitalDimOfAObatchR,MinOrbitalDimOfAObatchR
+real(realk) :: Ratio1
+integer,pointer :: OrbSizeOfBatches(:),MaxOrbitalDimOfAObatch2(:)
+real(realk),pointer :: Ratio2(:)
 logical   :: spherical
 spherical = .TRUE.
 IF(AOspec.EQ.'R')THEN
@@ -93,19 +96,46 @@ IF(RequestedOrbitalDimOfAObatch.LT.MAXVAL(OrbSizeOfBatches))THEN
    call LSQUIT('Error In Determine_Ichor_nbatchesofAOS RequestedMaximumOrbitalDimOfAObatch too small',-1)
 ENDIF
 
-call loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
-     & MaxOrbitalDimOfAObatch,MinOrbitalDimOfAObatch,RequestedOrbitalDimOfAObatch)
-
-WRITE(lupri,*)'MaxOrbitalDimOfAObatch:',MaxOrbitalDimOfAObatch
-WRITE(lupri,*)'MinOrbitalDimOfAObatch:',MinOrbitalDimOfAObatch
-WRITE(lupri,*)'Ratio :',MaxOrbitalDimOfAObatch/MinOrbitalDimOfAObatch
-Ratio1 = MaxOrbitalDimOfAObatch/MinOrbitalDimOfAObatch
-DO J=RequestedOrbitalDimOfAObatch,MinimumAllowedAObatchSize-1
+n = RequestedOrbitalDimOfAObatch-MinimumAllowedAObatchSize+1
+call mem_alloc(ratio2,n)
+call mem_alloc(MaxOrbitalDimOfAObatch2,n)
+ratio2 = 0
+n=0
+DO J=RequestedOrbitalDimOfAObatch,MinimumAllowedAObatchSize,-1
    call loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
         & MaxOrbitalDimOfAObatch,MinOrbitalDimOfAObatch,J)
-   Ratio2 = MaxOrbitalDimOfAObatch/MinOrbitalDimOfAObatch
-   WRITE(lupri,*)'Ratio2 :',Ratio2
+   n=n+1
+   MaxOrbitalDimOfAObatchR = MaxOrbitalDimOfAObatch
+   MinOrbitalDimOfAObatchR = MinOrbitalDimOfAObatch
+   Ratio2(n) = MaxOrbitalDimOfAObatchR/MinOrbitalDimOfAObatchR
+   MaxOrbitalDimOfAObatch2(n) = MaxOrbitalDimOfAObatch
 ENDDO
+Ratio1 = Ratio2(1)
+k=1
+DO J=2,n
+   IF(ABS(Ratio2(J)-1.0E0_realk).LT.ABS(Ratio1-1.0E0_realk))THEN
+      Ratio1 = Ratio2(J)
+      k=J
+   ELSEIF(ABS(Ratio2(J)-Ratio1).LT.1.0E-8_realk)THEN
+      !same Ratio
+      IF(RequestedOrbitalDimOfAObatch+1-J.EQ.MaxOrbitalDimOfAObatch2(J))THEN
+         !A desireable quanity that the RequestedOrbitalDimOfAObatch=MaxOrbitalDimOfAObatch2
+         IF(RequestedOrbitalDimOfAObatch+1-k.EQ.MaxOrbitalDimOfAObatch2(k))THEN
+            !This desireable quanity already fulfilled for larger RequestedOrbitalDimOfAObatch
+            !do nothing
+         ELSE
+            Ratio1 = Ratio2(J)
+            k=J
+         ENDIF
+      ENDIF
+   ENDIF
+ENDDO
+RequestedOrbitalDimOfAObatch = RequestedOrbitalDimOfAObatch+1-k
+!determine nbatchesofAOS for the right RequestedOrbitalDimOfAObatch
+call loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
+     & MaxOrbitalDimOfAObatch,MinOrbitalDimOfAObatch,&
+     & RequestedOrbitalDimOfAObatch)
+
 end SUBROUTINE determine_Ichor_nbatchesofAOS
 
 SUBROUTINE determine_Ichor_nAObatches(setting,iAO,AOSPEC,nAObatches,lupri)
@@ -128,11 +158,13 @@ ENDIF
 call Determine_nBatches(setting%MOLECULE(iAO)%p,AObasis,nAOBatches)
 end SUBROUTINE determine_Ichor_nAObatches
 
-subroutine loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,MaxOrbitalDimOfAObatch,&
-     & MinOrbitalDimOfAObatch,RequestedOrbitalDimOfAObatch)
+subroutine loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
+     & MaxOrbitalDimOfAObatch,MinOrbitalDimOfAObatch,&
+     & RequestedOrbitalDimOfAObatch)
 implicit none
 integer,intent(in) :: RequestedOrbitalDimOfAObatch,nBatches
-integer,intent(inout) :: nbatchesofAOS,MaxOrbitalDimOfAObatch,MinOrbitalDimOfAObatch 
+integer,intent(inout) :: nbatchesofAOS,MaxOrbitalDimOfAObatch
+integer,intent(inout) :: MinOrbitalDimOfAObatch 
 integer,intent(in) :: OrbSizeOfBatches(nBatches)
 !local
 integer :: I,DIM
@@ -141,7 +173,7 @@ DIM = 0
 MaxOrbitalDimOfAObatch = 0
 MinOrbitalDimOfAObatch = HUGE(DIM)
 DO I=1,nBatches
-   IF(DIM+OrbSizeOfBatches(I).LT.RequestedOrbitalDimOfAObatch)THEN
+   IF(DIM+OrbSizeOfBatches(I).LE.RequestedOrbitalDimOfAObatch)THEN
       !BatchOrbitaldimension smaller than allowed
       DIM = DIM + OrbSizeOfBatches(I)
    ELSE
@@ -155,17 +187,21 @@ MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
 MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
 end subroutine loop1
 
-SUBROUTINE determine_Ichor_batchesofAOS(setting,iAO,AOSPEC,RequestedOrbitalDimOfAObatch,nbatchesofAOS,AObatchinfo,lupri)
+SUBROUTINE determine_Ichor_batchesofAOS(setting,iAO,AOSPEC,&
+     & RequestedOrbitalDimOfAObatch,nbatchesofAOS,AObatchinfo,&
+     & MaxOrbitalDimOfAObatch,lupri)
 implicit none
 character(len=1),intent(in) :: AOspec
 TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: iAO,nbatchesofAOS,lupri
 type(DecAObatchinfo)      :: AObatchinfo(nbatchesofAOS)
 integer,intent(in)        :: RequestedOrbitalDimOfAObatch
+integer,intent(inout)     :: MaxOrbitalDimOfAObatch
 !
 TYPE(BASISSETINFO),pointer :: AObasis
 integer,pointer :: OrbSizeOfBatches(:)
-integer :: nBatches,MinimumAllowedAObatchSize
+integer :: nBatches,MinimumAllowedAObatchSize,ibatchesofAOS
+integer :: I,DIM,ORBINDEX,MinOrbitalDimOfAObatch
 logical   :: spherical
 spherical = .TRUE.
 IF(AOspec.EQ.'R')THEN
@@ -189,36 +225,57 @@ IF(RequestedOrbitalDimOfAObatch.LT.MAXVAL(OrbSizeOfBatches))THEN
    WRITE(lupri,'(A)')'to determine this size before this call'
    call LSQUIT('Error In Determine_Ichor_batchesofAOS RequestedMaximumOrbitalDimOfAObatch too small',-1)
 ENDIF
-
-!!$ibatchesofAOS=1
-!!$AObatchinfo(ibatchesofAOS)%OrbStart = 1
-!!$AObatchinfo(ibatchesofAOS)%BatchStart = 1
-!!$AObatchinfo(ibatchesofAOS)%OrbEnd = 0
-!!$AObatchinfo(ibatchesofAOS)%BatchEnd = 0
-!!$DIM = 0
-!!$ORBINDEX = 0
-!!$MaxOrbitalDimOfAObatch = 0
-!!$MinOrbitalDimOfAObatch = HUGE(DIM)
-!!$DO I=1,nBatches
-!!$   IF(DIM+OrbSizeOfBatches(I).LT.RequestedOrbitalDimOfAObatch)THEN
-!!$      !BatchOrbitaldimension smaller than allowed
-!!$      DIM = DIM + OrbSizeOfBatches(I)
-!!$      AObatchinfo(ibatchesofAOS)%OrbEnd = AObatchinfo(ibatchesofAOS)%OrbEnd+DIM
-!!$      AObatchinfo(ibatchesofAOS)%BatchEnd = AObatchinfo(ibatchesofAOS)%BatchEnd+1
-!!$   ELSE
-!!$      MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
-!!$      MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
-!!$      ibatchesofAOS=ibatchesofAOS+1
-!!$      AObatchinfo(ibatchesofAOS)%OrbStart = ORBINDEX+DIM
-!!$      AObatchinfo(ibatchesofAOS)%BatchStart = 1
-!!$      AObatchinfo(ibatchesofAOS)%OrbEnd = 0
-!!$      AObatchinfo(ibatchesofAOS)%BatchEnd = 0
-!!$      DIM = OrbSizeOfBatches(I)
-!!$   ENDIF
-!!$   ORBINDEX+DIM
-!!$ENDDO
-!!$MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
-!!$MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
+ibatchesofAOS=1
+AObatchinfo(ibatchesofAOS)%OrbStart = 1
+AObatchinfo(ibatchesofAOS)%AOStart = 1
+AObatchinfo(ibatchesofAOS)%OrbEnd = 0
+AObatchinfo(ibatchesofAOS)%AOEnd = 0
+ORBINDEX = 0
+DIM = 0 
+MaxOrbitalDimOfAObatch = 0
+MinOrbitalDimOfAObatch = HUGE(ORBINDEX)
+DO I=1,nBatches-1
+   IF(DIM+OrbSizeOfBatches(I).LE.RequestedOrbitalDimOfAObatch)THEN
+      !BatchOrbitaldimension smaller than allowed
+      !we add to Batch of batches
+      DIM = DIM + OrbSizeOfBatches(I)
+      AObatchinfo(ibatchesofAOS)%OrbEnd = AObatchinfo(ibatchesofAOS)%OrbEnd+OrbSizeOfBatches(I)
+      AObatchinfo(ibatchesofAOS)%AOEnd = AObatchinfo(ibatchesofAOS)%AOEnd+1
+      AObatchinfo(ibatchesofAOS)%DIM = DIM
+   ELSE
+      !we start a new batch of batches
+      MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
+      MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
+      ibatchesofAOS=ibatchesofAOS+1
+      DIM = OrbSizeOfBatches(I)
+      AObatchinfo(ibatchesofAOS)%OrbStart = ORBINDEX+1      
+      AObatchinfo(ibatchesofAOS)%OrbEnd = ORBINDEX+OrbSizeOfBatches(I)
+      AObatchinfo(ibatchesofAOS)%AOStart = I
+      AObatchinfo(ibatchesofAOS)%AOEnd = I
+      AObatchinfo(ibatchesofAOS)%DIM = DIM
+   ENDIF
+   ORBINDEX = ORBINDEX+OrbSizeOfBatches(I)
+ENDDO
+I=nBatches
+IF(DIM+OrbSizeOfBatches(I).LE.RequestedOrbitalDimOfAObatch)THEN
+   !BatchOrbitaldimension smaller than allowed
+   !we add to final batch to current ibatchesofAOS
+   DIM = DIM + OrbSizeOfBatches(I)
+   AObatchinfo(ibatchesofAOS)%OrbEnd = AObatchinfo(ibatchesofAOS)%OrbEnd+OrbSizeOfBatches(I)
+   AObatchinfo(ibatchesofAOS)%AOEnd = AObatchinfo(ibatchesofAOS)%AOEnd+1
+   AObatchinfo(ibatchesofAOS)%DIM = DIM
+ELSE
+   !we start a new batch of just this final batch
+   ibatchesofAOS=ibatchesofAOS+1
+   DIM = OrbSizeOfBatches(I)
+   AObatchinfo(ibatchesofAOS)%DIM = OrbSizeOfBatches(I)
+   AObatchinfo(ibatchesofAOS)%OrbStart = ORBINDEX+1      
+   AObatchinfo(ibatchesofAOS)%AOStart = I
+   AObatchinfo(ibatchesofAOS)%OrbEnd = ORBINDEX+OrbSizeOfBatches(I)
+   AObatchinfo(ibatchesofAOS)%AOEnd = I
+ENDIF
+MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
+MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
 
 end SUBROUTINE determine_Ichor_batchesofAOS
 
@@ -291,14 +348,6 @@ call mem_alloc(AngmomOfTypeA,ntypesA)
 call mem_alloc(nPrimOfTypeA,ntypesA)
 call mem_alloc(nContOfTypeA,ntypesA)
 
-call build_TypeInfo1(setting%MOLECULE(1)%p,AObasis,nTypesA,&
-     & nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,nContOfTypeA,MaxnAtomsA,MaxnPrimA,MaxnContA)
-
-call mem_alloc(startOrbitalOfTypeA,MaxNatomsA,ntypesA)
-call mem_alloc(exponentsOfTypeA,MaxnPrimA,ntypesA)
-call mem_alloc(ContractCoeffOfTypeA,MaxnPrimA,MaxnContA,ntypesA)
-call mem_alloc(Acenters,3,MaxnAtomsA,nTypesA)
-
 IF(FullBatch)THEN
    nbatchAstart2 = 1
    nbatchAend2 = nBatchesA
@@ -306,6 +355,15 @@ ELSE
    nbatchAstart2 = nbatchAstart
    nbatchAend2 = nbatchAend
 ENDIF
+call build_TypeInfo1(setting%MOLECULE(1)%p,AObasis,nTypesA,&
+     & nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,nContOfTypeA,&
+     & MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchAstart2,nbatchAend2)
+
+call mem_alloc(startOrbitalOfTypeA,MaxNatomsA,ntypesA)
+call mem_alloc(exponentsOfTypeA,MaxnPrimA,ntypesA)
+call mem_alloc(ContractCoeffOfTypeA,MaxnPrimA,MaxnContA,ntypesA)
+call mem_alloc(Acenters,3,MaxnAtomsA,nTypesA)
+
 call build_TypeInfo2(setting%MOLECULE(1)%p,AObasis,nTypesA,&
      & spherical,MaxnAtomsA,MaxnPrimA,MaxnContA,startOrbitalOfTypeA,&
      & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,nbatchAstart2,nbatchAend2)
@@ -327,14 +385,6 @@ call mem_alloc(AngmomOfTypeB,ntypesB)
 call mem_alloc(nPrimOfTypeB,ntypesB)
 call mem_alloc(nContOfTypeB,ntypesB)
 
-call build_TypeInfo1(setting%MOLECULE(2)%p,AObasis,nTypesB,&
-     & nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,nContOfTypeB,MaxnAtomsB,MaxnPrimB,MaxnContB)
-
-call mem_alloc(startOrbitalOfTypeB,MaxNatomsB,ntypesB)
-call mem_alloc(exponentsOfTypeB,MaxnPrimB,ntypesB)
-call mem_alloc(ContractCoeffOfTypeB,MaxnPrimB,MaxnContB,ntypesB)
-call mem_alloc(Bcenters,3,MaxnAtomsB,nTypesB)
-
 IF(FullBatch)THEN
    nbatchBstart2 = 1
    nbatchBend2 = nBatchesB
@@ -342,6 +392,16 @@ ELSE
    nbatchBstart2 = nbatchBstart
    nbatchBend2 = nbatchBend
 ENDIF
+
+call build_TypeInfo1(setting%MOLECULE(2)%p,AObasis,nTypesB,&
+     & nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,nContOfTypeB,&
+     & MaxnAtomsB,MaxnPrimB,MaxnContB,nbatchBstart2,nbatchBend2)
+
+call mem_alloc(startOrbitalOfTypeB,MaxNatomsB,ntypesB)
+call mem_alloc(exponentsOfTypeB,MaxnPrimB,ntypesB)
+call mem_alloc(ContractCoeffOfTypeB,MaxnPrimB,MaxnContB,ntypesB)
+call mem_alloc(Bcenters,3,MaxnAtomsB,nTypesB)
+
 call build_TypeInfo2(setting%MOLECULE(2)%p,AObasis,nTypesB,&
      & spherical,MaxnAtomsB,MaxnPrimB,MaxnContB,startOrbitalOfTypeB,&
      & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,nbatchBstart2,nbatchBend2)
@@ -363,14 +423,6 @@ call mem_alloc(AngmomOfTypeC,ntypesC)
 call mem_alloc(nPrimOfTypeC,ntypesC)
 call mem_alloc(nContOfTypeC,ntypesC)
 
-call build_TypeInfo1(setting%MOLECULE(3)%p,AObasis,nTypesC,&
-     & nAtomsOfTypeC,AngmomOfTypeC,nPrimOfTypeC,nContOfTypeC,MaxnAtomsC,MaxnPrimC,MaxnContC)
-
-call mem_alloc(startOrbitalOfTypeC,MaxNatomsC,ntypesC)
-call mem_alloc(exponentsOfTypeC,MaxnPrimC,ntypesC)
-call mem_alloc(ContractCoeffOfTypeC,MaxnPrimC,MaxnContC,ntypesC)
-call mem_alloc(Ccenters,3,MaxnAtomsC,nTypesC)
-
 IF(FullBatch)THEN
    nbatchCstart2 = 1
    nbatchCend2 = nBatchesC
@@ -378,6 +430,16 @@ ELSE
    nbatchCstart2 = nbatchCstart
    nbatchCend2 = nbatchCend
 ENDIF
+
+call build_TypeInfo1(setting%MOLECULE(3)%p,AObasis,nTypesC,&
+     & nAtomsOfTypeC,AngmomOfTypeC,nPrimOfTypeC,nContOfTypeC,&
+     & MaxnAtomsC,MaxnPrimC,MaxnContC,nbatchCstart2,nbatchCend2)
+
+call mem_alloc(startOrbitalOfTypeC,MaxNatomsC,ntypesC)
+call mem_alloc(exponentsOfTypeC,MaxnPrimC,ntypesC)
+call mem_alloc(ContractCoeffOfTypeC,MaxnPrimC,MaxnContC,ntypesC)
+call mem_alloc(Ccenters,3,MaxnAtomsC,nTypesC)
+
 call build_TypeInfo2(setting%MOLECULE(3)%p,AObasis,nTypesC,&
      & spherical,MaxnAtomsC,MaxnPrimC,MaxnContC,startOrbitalOfTypeC,&
      & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters,nbatchCstart2,nbatchCend2)
@@ -398,14 +460,6 @@ call mem_alloc(nAtomsOfTypeD,ntypesD)
 call mem_alloc(AngmomOfTypeD,ntypesD)
 call mem_alloc(nPrimOfTypeD,ntypesD)
 call mem_alloc(nContOfTypeD,ntypesD)
-call build_TypeInfo1(setting%MOLECULE(4)%p,AObasis,nTypesD,&
-     & nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,nContOfTypeD,MaxnAtomsD,MaxnPrimD,MaxnContD)
-
-call mem_alloc(startOrbitalOfTypeD,MaxNatomsD,ntypesD)
-call mem_alloc(exponentsOfTypeD,MaxnPrimD,ntypesD)
-call mem_alloc(ContractCoeffOfTypeD,MaxnPrimD,MaxnContD,ntypesD)
-call mem_alloc(Dcenters,3,MaxnAtomsD,nTypesD)
-
 IF(FullBatch)THEN
    nbatchDstart2 = 1
    nbatchDend2 = nBatchesD
@@ -413,6 +467,15 @@ ELSE
    nbatchDstart2 = nbatchDstart
    nbatchDend2 = nbatchDend
 ENDIF
+call build_TypeInfo1(setting%MOLECULE(4)%p,AObasis,nTypesD,&
+     & nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,nContOfTypeD,&
+     & MaxnAtomsD,MaxnPrimD,MaxnContD,nbatchDstart2,nbatchDend2)
+
+call mem_alloc(startOrbitalOfTypeD,MaxNatomsD,ntypesD)
+call mem_alloc(exponentsOfTypeD,MaxnPrimD,ntypesD)
+call mem_alloc(ContractCoeffOfTypeD,MaxnPrimD,MaxnContD,ntypesD)
+call mem_alloc(Dcenters,3,MaxnAtomsD,nTypesD)
+
 call build_TypeInfo2(setting%MOLECULE(4)%p,AObasis,nTypesD,&
      & spherical,MaxnAtomsD,MaxnPrimD,MaxnContD,startOrbitalOfTypeD,&
      & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,nbatchDstart2,nbatchDend2)
@@ -485,6 +548,7 @@ THRESHOLD_OD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%OD_THRESHOLD
 THRESHOLD_CS = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
 THRESHOLD_QQR = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*0.50E0_realk
 print*,'THRESHOLD_CS',THRESHOLD_CS,'THRESHOLD_OD',THRESHOLD_OD
+print*,'dim1,dim2,dim3,dim4',dim1,dim2,dim3,dim4
 !=====================================================================
 !  Main Call
 !=====================================================================
@@ -632,7 +696,8 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
    call mem_alloc(nContOfTypeA,ntypesA)
    
    call build_TypeInfo1(setting%MOLECULE(1)%p,AObasis,nTypesA,&
-        & nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,nContOfTypeA,MaxnAtomsA,MaxnPrimA,MaxnContA)
+        & nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,nContOfTypeA,&
+        & MaxnAtomsA,MaxnPrimA,MaxnContA,1,nBatchA)
    
    call mem_alloc(startOrbitalOfTypeA,MaxNatomsA,ntypesA)
    call mem_alloc(exponentsOfTypeA,MaxnPrimA,ntypesA)
@@ -661,7 +726,8 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
    call mem_alloc(nContOfTypeB,ntypesB)
    
    call build_TypeInfo1(setting%MOLECULE(2)%p,AObasis,nTypesB,&
-        & nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,nContOfTypeB,MaxnAtomsB,MaxnPrimB,MaxnContB)
+        & nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,nContOfTypeB,&
+        & MaxnAtomsB,MaxnPrimB,MaxnContB,1,nBatchB)
    
    call mem_alloc(startOrbitalOfTypeB,MaxNatomsB,ntypesB)
    call mem_alloc(exponentsOfTypeB,MaxnPrimB,ntypesB)
@@ -763,7 +829,8 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
       call mem_alloc(nContOfTypeC,ntypesC)
       
       call build_TypeInfo1(setting%MOLECULE(3)%p,AObasis,nTypesC,&
-           & nAtomsOfTypeC,AngmomOfTypeC,nPrimOfTypeC,nContOfTypeC,MaxnAtomsC,MaxnPrimC,MaxnContC)
+           & nAtomsOfTypeC,AngmomOfTypeC,nPrimOfTypeC,nContOfTypeC,&
+           & MaxnAtomsC,MaxnPrimC,MaxnContC,1,nBatchC)
       
       call mem_alloc(startOrbitalOfTypeC,MaxNatomsC,ntypesC)
       call mem_alloc(exponentsOfTypeC,MaxnPrimC,ntypesC)
@@ -791,7 +858,8 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
       call mem_alloc(nPrimOfTypeD,ntypesD)
       call mem_alloc(nContOfTypeD,ntypesD)
       call build_TypeInfo1(setting%MOLECULE(4)%p,AObasis,nTypesD,&
-           & nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,nContOfTypeD,MaxnAtomsD,MaxnPrimD,MaxnContD)
+           & nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,nContOfTypeD,&
+           & MaxnAtomsD,MaxnPrimD,MaxnContD,1,nBatchD)
       
       call mem_alloc(startOrbitalOfTypeD,MaxNatomsD,ntypesD)
       call mem_alloc(exponentsOfTypeD,MaxnPrimD,ntypesD)
@@ -997,7 +1065,7 @@ ENDDO
 END Subroutine DETERMINE_ORBSIZEOFBATCHES
 
 Subroutine build_TypeInfo1(MOLECULE,BASISINFO,nTypes,nAtomsOfType,&
-     & AngmomOfType,nPrimOfType,nContOfType,MaxnAtoms,MaxnPrim,MaxnCont)
+     & AngmomOfType,nPrimOfType,nContOfType,MaxnAtoms,MaxnPrim,MaxnCont,iBatchStart,iBatchEnd)
 implicit none
 !> the number of different types of batches
 INTEGER,intent(in)           :: ntypes
@@ -1019,10 +1087,16 @@ integer,intent(inout)    :: MaxnAtoms
 integer,intent(inout)    :: MaxnPrim
 !> the maximum number of Contracted functions in a given shell type
 integer,intent(inout)    :: MaxnCont
+!> the starting Batch index (normally 1 else not the full set is used)
+integer,intent(in)      :: iBatchStart
+!> the end Batch index (normally nBatches else not the full set is used)
+integer,intent(in)      :: iBatchEnd
+
 !
 INTEGER,pointer          :: MODELTYPES(:),MODELBATCHTYPES(:,:,:)
 INTEGER                  :: maxseg,maxang,I,K,L,iBatchType,R,icharge,type,iseg
 INTEGER                  :: nBatchType,nrow,ncol,irow,icol,orbitalindex,nOrbComp
+INTEGER                  :: iBatches
 !assume nofamily
 call mem_alloc(MODELTYPES,BASISINFO%natomtypes)
 
@@ -1053,8 +1127,12 @@ IF(nBatchType.NE.ntypes)call lsquit('dim mismatch in Determine_nAtomsOfTypes',-1
 !init
 do iBatchType=1,nBatchType
    nAtomsOfType(iBatchType) = 0
+   nPrimOfType(iBatchType) = 0
+   nContOfType(iBatchType) = 0
+   AngmomOfType(iBatchType) = 0
 enddo
 !build nAtomsOfType
+iBatches = 0
 R = BASISINFO%Labelindex
 DO I=1,MOLECULE%natoms  
  IF(MOLECULE%ATOM(I)%pointcharge)CYCLE !no basis functions on this point charge
@@ -1068,13 +1146,16 @@ DO I=1,MOLECULE%natoms
  IF(BASISINFO%ATOMTYPE(type)%nAngmom.EQ.0) CYCLE
  DO K=1,BASISINFO%ATOMTYPE(type)%nAngmom
   DO iseg = 1,BASISINFO%ATOMTYPE(type)%SHELL(K)%nsegments
+   iBatches = iBatches + 1   
    iBatchType = MODELBATCHTYPES(iseg,K,L)
-   nAtomsOfType(iBatchType) = nAtomsOfType(iBatchType) + 1
-   AngmomOfType(iBatchType) = K-1
-   nrow = BASISINFO%ATOMTYPE(type)%SHELL(K)%segment(iseg)%nrow
-   ncol = BASISINFO%ATOMTYPE(type)%SHELL(K)%segment(iseg)%ncol
-   nPrimOfType(iBatchType) = nrow
-   nContOfType(iBatchType) = ncol
+   IF((iBatches.GE.iBatchStart).AND.(iBatches.LE.iBatchEnd))THEN
+      AngmomOfType(iBatchType) = K-1
+      nAtomsOfType(iBatchType) = nAtomsOfType(iBatchType) + 1
+      nrow = BASISINFO%ATOMTYPE(type)%SHELL(K)%segment(iseg)%nrow
+      ncol = BASISINFO%ATOMTYPE(type)%SHELL(K)%segment(iseg)%ncol
+      nPrimOfType(iBatchType) = nrow
+      nContOfType(iBatchType) = ncol
+   ENDIF
   ENDDO
  ENDDO
 ENDDO
@@ -1179,19 +1260,19 @@ DO I=1,MOLECULE%natoms
   DO iseg = 1,BASISINFO%ATOMTYPE(type)%SHELL(K)%nsegments
    iBatches = iBatches + 1   
    iBatchType = MODELBATCHTYPES(iseg,K,L)
-   nrow = BASISINFO%ATOMTYPE(type)%SHELL(K)%segment(iseg)%nrow
-   ncol = BASISINFO%ATOMTYPE(type)%SHELL(K)%segment(iseg)%ncol
-   do irow = 1,nrow
-      exponentsOfType(irow,iBatchType) = &
-           & BASISINFO%ATOMTYPE(type)%SHELL(K)%SEGMENT(iseg)%Exponents(irow)
-   enddo
-   do icol = 1,ncol
-      do irow = 1,nrow
-         ContractCoeffOfType(irow,icol,iBatchType) = &
-              & BASISINFO%ATOMTYPE(type)%SHELL(K)%SEGMENT(iseg)%elms(irow+(icol-1)*nrow)
-      enddo
-   enddo
    IF((iBatches.GE.iBatchStart).AND.(iBatches.LE.iBatchEnd))THEN
+      nrow = BASISINFO%ATOMTYPE(type)%SHELL(K)%segment(iseg)%nrow
+      ncol = BASISINFO%ATOMTYPE(type)%SHELL(K)%segment(iseg)%ncol
+      do irow = 1,nrow
+         exponentsOfType(irow,iBatchType) = &
+              & BASISINFO%ATOMTYPE(type)%SHELL(K)%SEGMENT(iseg)%Exponents(irow)
+      enddo
+      do icol = 1,ncol
+         do irow = 1,nrow
+            ContractCoeffOfType(irow,icol,iBatchType) = &
+                 & BASISINFO%ATOMTYPE(type)%SHELL(K)%SEGMENT(iseg)%elms(irow+(icol-1)*nrow)
+         enddo
+      enddo
       nAtomsOfType(iBatchType) = nAtomsOfType(iBatchType) + 1
       CentersOfType(1,nAtomsOfType(iBatchType),iBatchType) = MOLECULE%ATOM(I)%Center(1)
       CentersOfType(2,nAtomsOfType(iBatchType),iBatchType) = MOLECULE%ATOM(I)%Center(2)

@@ -952,6 +952,7 @@ subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)
         CASE ('.XC ENERGY'); PROFINPUT%XCENERGY = .TRUE.
         CASE ('.FOCK');  PROFINPUT%FOCK = .TRUE.
         CASE ('.NEGRAD'); PROFINPUT%NEGRAD = .TRUE.
+        CASE ('.ICHORDEC'); PROFINPUT%IchorDEC = .TRUE.
         CASE ('.ICHOR'); PROFINPUT%Ichor = .TRUE.
            PROFINPUT%IchorProfDoIchor = .TRUE.
         CASE ('.ICHOR PURE THERMITE'); PROFINPUT%IchorProfDoIchor = .FALSE.;

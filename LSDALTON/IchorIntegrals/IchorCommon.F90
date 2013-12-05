@@ -328,9 +328,6 @@ subroutine build_exp_ContractCoeff_center(nPrimA,nContA,nAtomsA,ntypesA,iTypeA,&
      Acenter(3,iAtomA) = Acenters(3,iAtomA,itypeA)
      startOrbitalA(iAtomA) = startOrbitalOfTypeA(iAtomA,itypeA)
   enddo
-  ! expA =>  exponentsOfTypeA(ItypeA)%elms
-  ! ContractCoeffA => ContractCoeffOfTypeA(ItypeA)%elms
-  ! Acenter => CentersOfTypeA(ItypeA)%center
 end subroutine build_exp_ContractCoeff_center
 
 subroutine build_expP(nPrimA,nPrimB,expA,expB,expP)
