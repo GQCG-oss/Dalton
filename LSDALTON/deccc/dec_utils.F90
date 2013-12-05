@@ -4141,79 +4141,96 @@ retval=0
   !> \date March 2013
   subroutine print_all_fragment_energies(natoms,FragEnergies,dofrag,&
        & DistanceTable,energies)
-    implicit none
-    !> Number of atoms in full molecule
-    integer,intent(in) :: nAtoms
-    ! Fragment energies as listed in decfrag type def "energies"
-    real(realk),intent(in) :: FragEnergies(natoms,natoms,ndecenergies)
-    !> Which atoms are associated with a fragment?
-    logical,intent(in) :: dofrag(natoms)
-    !> Distances between all atoms (not changed at output, is intent(inout) for MPI purposes)
-    real(realk),intent(inout) :: DistanceTable(natoms,natoms)
-    !> Total DEC energies (sum of frag energies)
-    real(realk),intent(in) :: energies(ndecenergies)
+     implicit none
+     !> Number of atoms in full molecule
+     integer,intent(in) :: nAtoms
+     ! Fragment energies as listed in decfrag type def "energies"
+     real(realk),intent(in) :: FragEnergies(natoms,natoms,ndecenergies)
+     !> Which atoms are associated with a fragment?
+     logical,intent(in) :: dofrag(natoms)
+     !> Distances between all atoms (not changed at output, is intent(inout) for MPI purposes)
+     real(realk),intent(inout) :: DistanceTable(natoms,natoms)
+     !> Total DEC energies (sum of frag energies)
+     real(realk),intent(in) :: energies(ndecenergies)
 
 
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '============================================================================='
+     write(DECinfo%output,*)
+     write(DECinfo%output,*)
+     write(DECinfo%output,*) '============================================================================='
 
-    select case(DECinfo%ccmodel)
-    case(MODEL_MP2)
+     select case(DECinfo%ccmodel)
+     case(MODEL_MP2)
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCMP2),dofrag,&
-            & 'MP2 occupied single energies','AF_MP2_OCC')
+         & 'MP2 occupied single energies','AF_MP2_OCC')
        if(.not. DECinfo%onlyoccpart) then
-          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTMP2),dofrag,&
-               & 'MP2 virtual single energies','AF_MP2_VIR')
-          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGMP2),dofrag,&
-               & 'MP2 Lagrangian single energies','AF_MP2_LAG')
+         call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTMP2),dofrag,&
+           & 'MP2 virtual single energies','AF_MP2_VIR')
+         call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGMP2),dofrag,&
+           & 'MP2 Lagrangian single energies','AF_MP2_LAG')
        end if
 
        call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCMP2),dofrag,&
-            & DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
+         & DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
        if(.not.DECinfo%onlyoccpart) then
-          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTMP2),dofrag,&
-               & DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')          
-          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGMP2),dofrag,&
-               & DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
+         call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTMP2),dofrag,&
+           & DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')          
+         call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGMP2),dofrag,&
+           & DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
        end if
 
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a,g20.10)') 'MP2 occupied   correlation energy : ', &
-            & energies(FRAGMODEL_OCCMP2)
+         & energies(FRAGMODEL_OCCMP2)
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') 'MP2 virtual    correlation energy : ', &
-               & energies(FRAGMODEL_VIRTMP2)
-          write(DECinfo%output,'(1X,a,g20.10)') 'MP2 Lagrangian correlation energy : ', &
-               & energies(FRAGMODEL_LAGMP2)
+         write(DECinfo%output,'(1X,a,g20.10)') 'MP2 virtual    correlation energy : ', &
+           & energies(FRAGMODEL_VIRTMP2)
+         write(DECinfo%output,'(1X,a,g20.10)') 'MP2 Lagrangian correlation energy : ', &
+           & energies(FRAGMODEL_LAGMP2)
        end if
        write(DECinfo%output,*)
 
-    case(MODEL_CC2)
+     case(MODEL_CC2)
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCC2),dofrag,&
-            & 'CC2 occupied single energies','AF_CC2_OCC')
+         & 'CC2 occupied single energies','AF_CC2_OCC')
        if(.not.DECinfo%onlyoccpart) then
-          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCC2),dofrag,&
-               & 'CC2 virtual single energies','AF_CC2_VIR')
+         call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCC2),dofrag,&
+           & 'CC2 virtual single energies','AF_CC2_VIR')
        end if
 
        call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCC2),dofrag,&
-            & DistanceTable, 'CC2 occupied pair energies','PF_CC2_OCC')
+         & DistanceTable, 'CC2 occupied pair energies','PF_CC2_OCC')
        if(.not.DECinfo%onlyoccpart) then
-          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCC2),dofrag,&
-               & DistanceTable, 'CC2 virtual pair energies','PF_CC2_VIR')
+         call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCC2),dofrag,&
+           & DistanceTable, 'CC2 virtual pair energies','PF_CC2_VIR')
        end if
 
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a,g20.10)') 'CC2 occupied   correlation energy : ', &
-            & energies(FRAGMODEL_OCCCC2)
+         & energies(FRAGMODEL_OCCCC2)
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') 'CC2 virtual    correlation energy : ', &
-               & energies(FRAGMODEL_VIRTCC2)
+         write(DECinfo%output,'(1X,a,g20.10)') 'CC2 virtual    correlation energy : ', &
+           & energies(FRAGMODEL_VIRTCC2)
        end if
        write(DECinfo%output,*)
-    case(MODEL_RPA)
-       print *,"JOHANNES: YOUR ENERGY PRINT SHOULD GO HERE"
+
+     case(MODEL_RPA)
+
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
+         & 'RPA occupied single energies','AF_RPA_OCC')
+
+       if(.not.DECinfo%onlyoccpart) then
+         call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
+           & 'RPA virtual single energies','AF_RPA_VIR')
+       endif
+
+
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
+            & DistanceTable, 'RPA occupied pair energies','PF_RPA_OCC')
+
+       if(.not.DECinfo%onlyoccpart) then
+         call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
+           & DistanceTable, 'RPA virtual pair energies','PF_RPA_VIR')          
+       endif
 
     case(MODEL_CCSD)
        if(.not.DECinfo%CCDhack)then

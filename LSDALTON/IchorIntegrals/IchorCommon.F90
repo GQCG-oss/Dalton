@@ -210,10 +210,12 @@ CALL Ichor_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
 CALL Ichor_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
 CALL FLUSH(LUPRIN)
 #ifdef VAR_IFORT
+#ifndef VAR_INT64
 !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
 qqstatus=-1
 user_exit_code = -1
 CALL TRACEBACKQQ("Ichor Called TraceBack:",user_exit_code,qqstatus)
+#endif
 #endif
 #if defined (SYS_LINUX)
 CALL EXIT(100)
@@ -328,9 +330,6 @@ subroutine build_exp_ContractCoeff_center(nPrimA,nContA,nAtomsA,ntypesA,iTypeA,&
      Acenter(3,iAtomA) = Acenters(3,iAtomA,itypeA)
      startOrbitalA(iAtomA) = startOrbitalOfTypeA(iAtomA,itypeA)
   enddo
-  ! expA =>  exponentsOfTypeA(ItypeA)%elms
-  ! ContractCoeffA => ContractCoeffOfTypeA(ItypeA)%elms
-  ! Acenter => CentersOfTypeA(ItypeA)%center
 end subroutine build_exp_ContractCoeff_center
 
 subroutine build_expP(nPrimA,nPrimB,expA,expB,expP)
