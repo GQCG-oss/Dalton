@@ -47,8 +47,7 @@ DFT%LB94=.FALSE.
 DFT%CS00shift=0.0E0_realk
 DFT%CS00eHOMO=0.0E0_realk
 DFT%CS00ZND1=0.2332E0_realk
-DFT%CS00ZND2=0.315E0_realk
-!DFT%CS00ZND2=0.0116E0_realk
+DFT%CS00ZND2=0.0116E0_realk !(=0.315eV)
 DFT%HFexchangeFac=0.0E0_realk
 DFT%XCFUN=.FALSE.
 call init_gridObject(dft,DFT%gridObject)

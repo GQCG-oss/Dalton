@@ -222,9 +222,12 @@ set(INTERESTLIB_SOURCES
     )
 set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorPresicion.F90
+    LSDALTON/IchorIntegrals/IchorParameters.F90
     LSDALTON/IchorIntegrals/IchorCommon.F90
     LSDALTON/IchorIntegrals/IchorMem.F90
     LSDALTON/IchorIntegrals/IchorGammaTabulation.F90
+    LSDALTON/IchorIntegrals/IchorBatchTools.F90
+    LSDALTON/IchorIntegrals/IchorSaveGab.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_general.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Gen.F90
@@ -233,6 +236,10 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Seg.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Seg1Prim.F90
     LSDALTON/IchorIntegrals/IchorEri.F90
+    LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_Gen.F90
+    LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_Seg.F90
+    LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_general.F90
+    LSDALTON/IchorIntegrals/IchorGab.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPA.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPB.F90
     LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPC.F90
