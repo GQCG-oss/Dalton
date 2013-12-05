@@ -210,10 +210,12 @@ CALL Ichor_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
 CALL Ichor_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
 CALL FLUSH(LUPRIN)
 #ifdef VAR_IFORT
+#ifndef VAR_INT64
 !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
 qqstatus=-1
 user_exit_code = -1
 CALL TRACEBACKQQ("Ichor Called TraceBack:",user_exit_code,qqstatus)
+#endif
 #endif
 #if defined (SYS_LINUX)
 CALL EXIT(100)
