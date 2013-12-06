@@ -100,7 +100,7 @@ iprint=0
 setting%scheme%intprint = 0
 doprint = .FALSE.!.TRUE.
 itest = 1
-do Ipass = 1,1!2
+do Ipass = 1,2 
    WRITE(lupri,*)'Number of Passes',Ipass
    !=========================================================================================================
    !                    Build Molecule

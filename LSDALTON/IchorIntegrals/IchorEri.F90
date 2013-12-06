@@ -819,7 +819,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      CALL Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
           & expC,expD,CcenterSpec,DcenterSpec,ContractCoeffC,ContractCoeffD,Qsegmented,&
           & Qcent,Qdistance12,QpreExpFac,INTPRINT)
-!$OMP PARALLEL DO DEFAULT(none) PRIVATE(Ipass,IatomB,IatomA,AcenterSpec,BcenterSpec,&
+!$OMP PARALLEL DO DEFAULT(none) IF(nPasses.GT.1) PRIVATE(Ipass,IatomB,IatomA,AcenterSpec,BcenterSpec,&
 !$OMP TmpArray1,TmpArray2,LocalInt,Pcent,Pdistance12,PpreExpFac) SHARED(Qcent,&
 !$OMP Qdistance12,QpreExpFac,intprint,lupri,&
 !$OMP nPasses,IatomAPass,IatomBPass,LocalIntPass,PcentPass,Pdistance12Pass,&

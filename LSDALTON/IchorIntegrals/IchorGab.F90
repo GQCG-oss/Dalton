@@ -340,7 +340,7 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
   !local variables
   real(realk) :: CDAB(1),BcenterSpec(3),AcenterSpec(3),Pdistance12(3)
   integer :: IatomB,iBatchA,IatomA,iBatchB,nPasses,MaxPasses
-!$OMP PARALLEL DO DEFAULT(none) PRIVATE(IatomB,BcenterSpec,iBatchA,IatomA,&
+!$OMP PARALLEL DO DEFAULT(none) IF(nAtomsB.GT.1) PRIVATE(IatomB,BcenterSpec,iBatchA,IatomA,&
 !$OMP nPasses,MaxPasses,AcenterSpec,pcent,Pdistance12,PpreExpFac,TmpArray1,TmpArray2,&
 !$OMP iBatchB,CDAB) SHARED(Bcenter,expB,ContractCoeffA,ContractCoeffB,expP,TABFJW,&
 !$OMP reducedExponents,integralPrefactor,&
