@@ -3156,7 +3156,7 @@ CONTAINS
       integer :: iAO,RequestedOrbitalDimOfAObatch,MaxAObatchesOrbDim
       integer :: MinimumAllowedAObatchSize,nbatchesofAOS,nAObatches
       integer :: dim1,dim2,dimGamma,GammaStart,GammaEnd
-      integer :: AOGammaStart,AOGammaEnd,gammaB,iAG
+      integer :: AOGammaStart,AOGammaEnd,gammaB,iAG,suggestion
       integer :: dimAlpha,AlphaStart,AlphaEnd,alphaB,iprint
       integer :: AOAlphaStart,AOAlphaEnd,iA,iG,iB,iD,ABATCH,GBATCH
       character :: INTSPEC(5)
