@@ -963,8 +963,6 @@ C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
-      use polarizable_embedding, only: pe_mpi
-
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
@@ -1113,8 +1111,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
-         else if (iprtyp == POLARIZABLE_EMBEDDING) then
-            call pe_mpi(work(1:mwork), iprint)
+         ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
+            CALL PE_IFC_MPI(WORK(1), MWORK, IPRINT)
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN
