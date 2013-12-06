@@ -892,9 +892,10 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
         ENDIF
      ENDIF
      call IchorDistribute(nAtomsA,nAtomsB,startOrbitalA,startOrbitalB,&
-          & startC,startD,OutputStorage,Outputdim1,Outputdim2,Outputdim3,Outputdim4,&
+          & startC,startD,OutputStorage,Outputdim1,Outputdim2,Outputdim3,&
+          & Outputdim4,&
           & LocalIntPass,nOrbA,nOrbB,nOrbC,nOrbD,PermuteRHS,PermuteLHSTypes,&
-          & TriangularODAtomLoop,lupri)
+          & TriangularODAtomLoop,lupri)         
     ENDIF !ScreenCD
    ENDDO !IatomC
   ENDDO !iAtomD
