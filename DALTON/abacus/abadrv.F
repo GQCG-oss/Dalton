@@ -661,7 +661,11 @@ C     ***** Vibrational analysis *****
 C     ********************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (VIB) CALL VIBCTL(WORK(KLAST),LWRK3)
+      IF (VIB) THEN 
+          CALL SET_VIBCTL('Copy_PRJTRO')
+          CALL VIBCTL(WORK(KLAST),LWRK3)
+          CALL SET_VIBCTL('Reset')
+      END IF
       CALL GETTIM(TIMVIB,TIMDUM)
       TIMVIB = TIMVIB - TIMSTR
       CALL FLSHFO(LUPRI)

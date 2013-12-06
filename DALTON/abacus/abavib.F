@@ -196,6 +196,7 @@ C
          MAXDIF = 1
       END IF
       DOVCD = VCD
+      VIB_PRJTRO = .TRUE.
       RETURN
       END
 C  /* Deck vibctl */
@@ -512,8 +513,7 @@ C     ******************************************************************
 C     **** Project out trans-rot coordinates from molecular Hessian ****
 C     ******************************************************************
 C
-C     Nanna todo: to be generalized
-      IF (.NOT. PEQM) THEN
+      IF (VIB_PRJTRO) THEN
          KTRROV = 1
          KWRK1  = KTRROV + 6*NCORD
          IF (SOLVNT) KWRK1 = KTRROV + 9*NCORD
@@ -4584,4 +4584,54 @@ C
       CALL V3NOM (W)
       RETURN
       END
-C  /* Deck rpflin */
+
+      SUBROUTINE SET_VIBCTL(CONTROL_KWD)
+C
+C     Keeps track of internal vibrational settings
+C     Nanna H. List 12/2013
+
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbivib.h"
+      character (len=*) :: CONTROL_KWD
+      logical           :: prjtro_optinf
+      logical, save     :: vib_prjtro_save, set=.false.
+
+      if (CONTROL_KWD == 'Copy_PRJTRO') then
+         set = .true.
+         vib_prjtro_save = vib_prjtro
+         vib_prjtro = prjtro_optinf()
+         IF (vib_prjtro .neqv. vib_prjtro_save) then
+            WRITE(lupri,'(/A,L10)')
+     &        'INFO: tra-rot projection in vibrational analysis'//
+     &        ' changed to ',vib_prjtro
+         end if
+      else if (CONTROL_KWD  == 'Reset') then
+         if (.not. set) then
+            write(lupri,*) 'ERROR: cannot reset in SET_VIBCTL'
+            call quit('ERROR: cannot reset in SET_VIBCTL')
+         end if
+         vib_prjtro = vib_prjtro_save
+      else 
+         call quit('input to SET_VIBCTL is unknown')
+      end if
+
+      end subroutine set_vibctl
+
+      logical function prjtro_optinf()
+
+!     purpose: transfer PRJTRO from optinf.h
+!     (used in SET_VIBCTL because one cannot include
+!     optinf.h and cbivib.h in same subroutine)
+
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+
+      prjtro_optinf = PRJTRO
+
+      return
+      end function prjtro_optinf
+
+! --- end of abavib.F ---
