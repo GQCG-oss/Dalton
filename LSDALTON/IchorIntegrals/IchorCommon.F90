@@ -500,7 +500,8 @@ subroutine build_noScreen1(ItypeA,ItypeB,ntypesA,ntypesB,nAtomsA,nAtomsB,nBatchA
      iBatchB = BatchIndexOfTypeB(ItypeB) + IatomB
      iBatchA = BatchIndexOfTypeA(ItypeA)
      DO IatomA = 1,nAtomsA
-        noScreenABout(IatomA,IatomB) = noScreenABin(IatomA,IatomB).AND.(BATCHGAB(iBatchA+IatomA,iBatchB)*MaxGabForTypeCD.GT.THRESHOLD_CS)
+        noScreenABout(IatomA,IatomB) = noScreenABin(IatomA,IatomB).AND.&
+             &(BATCHGAB(iBatchA+IatomA,iBatchB)*MaxGabForTypeCD.GT.THRESHOLD_CS)
      ENDDO
   ENDDO
 !$OMP END PARALLEL DO
@@ -943,7 +944,7 @@ subroutine ichorzero5(OutputStorage, Dim1,Dim2,Dim3,Dim4,Dim5)
   real(realk), intent(inout) :: OutputStorage(Dim1,Dim2,Dim3,Dim4,Dim5)
   !local
   integer                  :: i,j,k,l,m
-!$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J,k,l,m) FIRSTPRIVATE(dim1,&
+!$OMP PARALLEL DEFAULT(none) PRIVATE(I,J,k,l,m) FIRSTPRIVATE(dim1,&
 !$OMP dim2,dim3,dim4,dim5) SHARED(OutputStorage)
   do m = 1, dim5
    do l = 1, dim4
@@ -958,7 +959,7 @@ subroutine ichorzero5(OutputStorage, Dim1,Dim2,Dim3,Dim4,Dim5)
     enddo
    enddo
   enddo
-!$OMP END PARALLEL DO
+!$OMP END PARALLEL
 end subroutine ichorzero5
 
 subroutine ichorzero2(OutputStorage, Dim1,Dim2)
