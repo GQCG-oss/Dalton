@@ -184,7 +184,7 @@ do Ipass = 1,2
           call mem_dealloc(integralsII)
        ENDIF
        call mem_alloc(integralsII,dim1,dim2,dim3,dim4)
-       integralsII = 0.0E0_realk
+!       integralsII = 0.0E0_realk
 !       setting%scheme%intprint = 1000
        savedospherical = setting%scheme%dospherical
        setting%scheme%dospherical = spherical
@@ -192,7 +192,7 @@ do Ipass = 1,2
        setting%scheme%CS_SCREEN = .FALSE.
        setting%scheme%PS_SCREEN = .FALSE.
 !       WRITE(lupri,*)'ThermiteDriver'
-!       call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
+       call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
        !   print*,'integralsII',integralsII
        setting%scheme%dospherical = savedospherical
        setting%scheme%OD_SCREEN = .TRUE.
