@@ -2951,9 +2951,23 @@ module cc_debug_routines_module
             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbas,nbas,dimAlpha, &
             & dimGamma,fullRHS,INTSPEC)
        call lsmpi_poke()
-      
+
+
        ! Loop over MO batches:
        BatchPQ: do PQ_batch = 1, Nbatch*Nbatch
+
+       !IF (JOB == MODEL_RPA)then
+         !do my stuff
+#if 1
+         P_sta  = MOinfo%StartInd1(PQ_batch)
+         dimP   = MOinfo%DimInd1(PQ_batch)
+         Q_sta  = MOinfo%StartInd2(PQ_batch)
+         dimQ   = MOinfo%DimInd2(PQ_batch)
+
+         call gao_to_g_CKDL(gmo, gao, Co,Cv, nbas, ntot, AlphaStart, dimAlpha, &
+           & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
+      ! else
+#else      
 
          P_sta  = MOinfo%StartInd1(PQ_batch)
          dimP   = MOinfo%DimInd1(PQ_batch)
@@ -2961,14 +2975,16 @@ module cc_debug_routines_module
          dimQ   = MOinfo%DimInd2(PQ_batch)
 
          call gao_to_gmo(gmo, gao, Cov, nbas, ntot, AlphaStart, dimAlpha, &
-                        & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
+           & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
 
          ipack = MOinfo%packInd(PQ_batch)
 
          call pack_and_add_gmo(gmo,pack_gmo(ipack:),ntot,dimP,dimQ, &
-                               & P_sta, Q_sta, dimPack, pack_scheme)
-        
+           & P_sta, Q_sta, dimPack, pack_scheme)
+
          MOinfo%packInd(PQ_batch+1) = ipack + dimPack 
+    !   endif
+#endif
 
        end do BatchPQ
 
@@ -3137,6 +3153,79 @@ module cc_debug_routines_module
     call mem_dealloc(CQ)
 
   end subroutine gao_to_gmo
+
+  !> Purpose: Transform AO int. into MO (virt,occ,virt,occ) in batches
+  !           
+  !> Author:  Johannes Rekkedal
+  !> Date:    December 2013
+  subroutine gao_to_g_CKDL(gmo, gao, Co,Cv, nbas, ntot, AlphaStart, dimAlpha, &
+             & GammaStart, dimGamma, K_sta, dimK, C_sta, dimC)
+
+    implicit none
+
+    integer, intent(in) :: nbas, AlphaStart, dimAlpha, GammaStart, dimGamma
+    integer, intent(in) :: ntot, K_sta, dimC, C_sta, dimK
+    real(realk), intent(inout) :: gmo(dimk*dimC*ntot*ntot)
+    real(realk), intent(in) :: gao(dimAlpha*nbas*dimGamma*nbas), Co(nbas,ntot),Cv(nbas,ntot)
+
+    integer :: AlphaEnd, GammaEnd, C_end, K_end
+    integer(kind=long) :: tmp1_size, tmp2_size
+    real(realk), pointer, dimension(:)   :: tmp1, tmp2 => null()
+    real(realk), pointer, dimension(:,:) :: CC, CK => null()
+   
+
+    AlphaEnd = AlphaStart+dimAlpha-1
+    GammaEnd = GammaStart+dimGamma-1
+    K_end     = K_sta+dimK-1
+    C_end     = C_sta+dimC-1
+ 
+    ! allocation stuff:
+    call mem_alloc(CC,dimAlpha,dimC)
+    call mem_alloc(CK,dimGamma,dimK)
+
+    tmp1_size = max(dimAlpha*dimGamma, dimAlpha*dimC)
+    tmp1_size = int(i8*nbas*nbas*tmp1_size, kind=long)
+    tmp2_size = max(dimAlpha*dimGamma, dimK*dimC)
+    tmp2_size = int(i8*nbas*nbas*tmp2_size, kind=long)
+    call mem_alloc(tmp1, tmp1_size)
+    call mem_alloc(tmp2, tmp2_size)
+
+    ! initialisation of transfo. matrices:
+    CK = Co(AlphaStart:AlphaEnd,K_sta:K_end)
+    CC = Cv(GammaStart:GammaEnd,C_sta:C_end)
+
+    ! transfo 1st index => [D, delta, alphaB, gammaB]
+    call dgemm('t','n',ntot,nbas*dimAlpha*dimGamma,nbas,1.0E0_realk, &
+         & Cv,nbas,gao,nbas,0.0E0_realk,tmp1,ntot)
+    call lsmpi_poke() 
+
+    ! transfo last index => [R, delta, alphaB, K_batch]
+    call dgemm('n','n',ntot*nbas*dimAlpha,dimK,dimGamma,1.0E0_realk, &
+         & tmp1,ntot*nbas*dimAlpha,CK,dimGamma,0.0E0_realk,tmp2,ntot*nbas*dimAlpha)
+    call lsmpi_poke()
+
+    ! transpose array => [alphaB Q_batch; R delta]
+    call mat_transpose(ntot*nbas,dimAlpha*dimK,1.0E0_realk,tmp2,0.0E0_realk,tmp1)
+    call lsmpi_poke() 
+ 
+    ! transfo 1st index => [C_batch, K_batch, D, delta]
+    call dgemm('t','n',dimC,dimC*ntot*nbas,dimAlpha,1.0E0_realk, &
+         & CC,dimAlpha,tmp1,dimAlpha,0.0E0_realk,tmp2,dimC) 
+    call lsmpi_poke() 
+     
+    ! transfo last index => [C_batch, K_batch, D, L]
+    call dgemm('n','n',dimK*dimC*ntot,ntot,nbas,1.0E0_realk,tmp2,dimC*dimK*ntot, &
+         & Co,nbas,0.0E0_realk,gmo,dimC*dimK*ntot)
+    call lsmpi_poke() 
+
+    ! free array
+    call mem_dealloc(tmp1)
+    call mem_dealloc(tmp2)
+    call mem_dealloc(CC)
+    call mem_dealloc(CK)
+
+  end subroutine gao_to_g_CKDL
+
 
 
   !> Purpose: Provide a balanced number of MO batches for two
