@@ -58,7 +58,6 @@ C
 #ifdef VAR_MPI
       use par_mcci_io
 #endif
-      use polarizable_embedding, only: pe_master
 
 #include "implicit.h"
 
@@ -523,11 +522,9 @@ C        CALL SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE)
       ELSEIF (QMMM) THEN
          CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
-#if defined (BUILD_PELIB)
-      else if (peqm) then
-         call pe_grad(wrk(kcref), wrk(kcmo), wrk(kcindx), wrk(kdv),
-     &                wrk(kgtot), esolt, wrk(kwrkg), lwrkg)
-#endif
+      ELSE IF (PEQM) THEN
+         CALL PE_GRAD(WRK(KCREF), WRK(KCMO), WRK(KCINDX), WRK(KDV),
+     &                WRK(KGTOT), ESOLT, WRK(KWRKG), LWRKG)
       ELSE
          ESOLT = D0
       END IF
@@ -591,17 +588,13 @@ chj   END IF
       IF (PCM)    WRITE (LUW4,1019) ESOLT
       IF (QM3)    WRITE (LUW4,1017) EQM3
       IF (QMMM)   WRITE (LUW4,1017) ESOLT
-#if defined (BUILD_PELIB)
-      if (peqm)   write (luw4,1021) esolt
-#endif
+      IF (PEQM)   WRITE (LUW4,1021) ESOLT
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
          IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
          IF (QM3) WRITE (LUPRI,1017) EQM3
          IF (QMMM) WRITE (LUPRI,1017) ESOLT
-#if defined (BUILD_PELIB)
-         if (peqm) write(lupri,1021) esolt
-#endif
+         IF (PEQM) WRITE(LUPRI,1021) ESOLT
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
  1005 FORMAT(/' Total MCSCF energy       :',F30.15,T54,
@@ -615,9 +608,7 @@ chj   END IF
      *       /' - Active energy          :',F30.15)
  1016 FORMAT( ' - Dielec. solvation ener.:',F30.15)
  1017 FORMAT( ' - QM/MM solvation energy :',F30.15)
-#if defined (BUILD_PELIB)
- 1021 format( ' - Embedding energy       :',f30.15)
-#endif
+ 1021 FORMAT( ' - Embedding energy       :',F30.15)
  1018 FORMAT( ' - srDFT effective energy :',F30.15)
  1019 FORMAT( ' - PCM solvation energy   :',F30.15)
  1020 FORMAT(/' Norm of total gradient   :',F27.12,
@@ -747,12 +738,10 @@ C                    need higher int. transf. level for NEO/NR
                      CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KWRKG),LWRKG)
-#if defined (BUILD_PELIB)
-                  else if (peqm) then
-                    call pe_grad(wrk(kcref), wrk(kcmo), wrk(kcindx),
-     &                           wrk(kdv), wrk(kgtot), esolt,
-     &                           wrk(kwrkg), lwrkg)
-#endif
+                  ELSE IF (PEQM) THEN
+                    CALL PE_GRAD(WRK(KCREF), WRK(KCMO), WRK(KCINDX),
+     &                           WRK(KDV), WRK(KGTOT), ESOLT,
+     &                           WRK(KWRKG), LWRKG)
                   END IF
 #endif
                ELSE
@@ -1116,27 +1105,24 @@ C------------------
          CALL PEFCMO(WRK(KCMO),WRK(KFCSOL),WRK(KDV),
      &               WRK(KWRKG),LWRKG,IPRINT)     ! NB: only works without symmetry
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
-#if defined (BUILD_PELIB)
-      else if (peqm) then
-        kfcsol = kwrkg
-        kenr = kfcsol + nnorbx
-        kdcao = kenr + 1
-        kdvao = kdcao + n2basx
-        kfdtao = kdvao + n2basx
-        kwrkg = kfdtao + nnbasx
-        lwrkg = lfree - (kwrkg - 1)
-        call pe_fckmo(wrk(kcmo), wrk(kfcsol), wrk(kenr), wrk(kdv),
-     &                wrk(kwrkg), lwrkg)
-        call daxpy(nnorbx, 1.0d0, wrk(kfc), 1, wrk(kfcsol), 1)
-        call fckden((nisht>0), (nasht>0), wrk(kdcao), wrk(kdvao),
-     &               wrk(kcmo), wrk(kdv), wrk(kwrkg), lwrkg)
-        if (nasht > 0) then
-           call daxpy(n2basx,1.0d0,wrk(kdvao),1,wrk(kdcao),1)
-        end if
-        call dgefsp(nbast, wrk(kdcao), wrk(kfdtao))
-        call pe_master(runtype='energy', denmats=wrk(kfdtao:(kwrkg-1)),
-     &                 nmats=1, dalwrk=wrk(kwrkg:lwrkg))        
-#endif
+      ELSE IF (PEQM) THEN
+        KFCSOL = KWRKG
+        KENR = KFCSOL + NNORBX
+        KDCAO = KENR + 1
+        KDVAO = KDCAO + N2BASX
+        KFDTAO = KDVAO + N2BASX
+        KWRKG = KFDTAO + NNBASX
+        LWRKG = LFREE - (KWRKG - 1)
+        CALL PE_FCKMO(WRK(KCMO), WRK(KFCSOL), WRK(KENR), WRK(KDV),
+     &                WRK(KWRKG), LWRKG)
+        CALL DAXPY(NNORBX, 1.0D0, WRK(KFC), 1, WRK(KFCSOL), 1)
+        CALL FCKDEN((NISHT>0), (NASHT>0), WRK(KDCAO), WRK(KDVAO),
+     &               WRK(KCMO), WRK(KDV), WRK(KWRKG), LWRKG)
+        IF (NASHT > 0) THEN
+           CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
+        END IF
+        CALL DGEFSP(NBAST, WRK(KDCAO), WRK(KFDTAO))
+        CALL PE_IFC_ENERGY(WRK(KFDTAO), 1, WRK(KWRKG), LWRKG-KWRKG+1)
       ELSE
          KFCSOL = KFC
       END IF
@@ -1147,23 +1133,19 @@ C        then remember to add FCSOL and FV to FD for RHFENR call
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (SOLVNT .OR. QM3)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
-#if defined (BUILD_PELIB)
-         if (peqm) then
-            write(luw4,'(a)')
+         IF (PEQM) THEN
+            WRITE(LUW4,'(A)')
      &   '    (incl. contribution from polarizable embedding potential)'
-         end if
-#endif
+         END IF
          CALL RHFENR(IPRI4,LUW4,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (SOLVNT .OR. QM3)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-#if defined (BUILD_PELIB)
-            if (peqm) then
-                write(luw4,'(a)') 
+            IF (PEQM) THEN
+                WRITE(LUW4,'(A)') 
      &   '    (incl. contribution from polarizable embedding potential)'
-            end if
-#endif
+            END IF
             CALL RHFENR(IPRI6,LUPRI,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          END IF
 C        CALL RHFENR(IPRINT,LUPRI,FD,SCRA,LSCRA)
@@ -2960,16 +2942,14 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          CALL WRITT (LUSIFC,MMORBT,WRK(KMATMO))
       END IF
 
-#if defined (BUILD_PELIB)
-      if (peqm) then
-         allocate(pefckmo(nnorbx))
-         call pe_fckmo(cmo, pefckmo, peenergy, dv, wrk(kwrk1), 
-     &                 lfree - kwrk1 + 1)
-         write (lusifc) lab123, table(11)
-         call writt(lusifc, mmorbt, pefckmo)
-         deallocate(pefckmo)
-      end if
-#endif
+      IF (PEQM) THEN
+         ALLOCATE(PEFCKMO(NNORBX))
+         CALL PE_FCKMO(CMO, PEFCKMO, PEENERGY, DV, WRK(KWRK1), 
+     &                 LFREE - KWRK1 + 1)
+         WRITE (LUSIFC) LAB123, TABLE(11)
+         CALL WRITT(LUSIFC, MMORBT, PEFCKMO)
+         DEALLOCATE(PEFCKMO)
+      END IF
 C
 C     Revision 2000/05/24 12:43:25  hjj
 C     Write CREF in determinants here, if NCDETS .gt. NCONF

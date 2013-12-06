@@ -2354,7 +2354,9 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+#if defined(BUILD_PELIB)
       use pe_variables, only: pe_savden
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -2593,7 +2595,11 @@ C     ******************************************
 C
       IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
 
-      if (.NOT.SLAVE .AND. PEQM .or. pe_savden) THEN
+      if (.NOT.SLAVE .AND. PEQM
+#if defined (BUILD_PELIB)
+     &    .or. pe_savden
+#endif
+     &   ) THEN
         CALL PE_IFC_INIT()
       END IF
 C

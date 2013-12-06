@@ -102,6 +102,16 @@
      &                 nmats=nmats, dalwrk=work)
       end subroutine pe_ifc_mepcalc
 
+      subroutine pe_ifc_london(fckmats, nmats, work, nwrk)
+        use polarizable_embedding, only: pe_master
+#include "inforb.h"
+        integer, intent(in) :: nmats, nwrk
+        real*8, dimension(3*nmats*n2basx), intent(out) :: fckmats
+        real*8, dimension(nwrk), intent(inout) :: work
+        call pe_master('london', fckmats=fckmats, nmats=nmats,
+     &                 dalwrk=work)
+      end subroutine pe_ifc_london
+
 #if defined(VAR_MPI)
       subroutine pe_ifc_mpi(work, nwrk, runtype)
         use polarizable_embedding, only: pe_mpi

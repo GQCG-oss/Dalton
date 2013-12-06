@@ -285,8 +285,10 @@ C
 C DFT modifications T.  Helgaker
 C
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: pe_savden
       use polarizable_embedding, only: pe_save_density
+#endif
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -1517,6 +1519,7 @@ C
             END IF
         END IF
       END IF
+#if defined (BUILD_PELIB)
       ! save density matrix 
       if (pe_savden) then
         if (nsym > 1) then
@@ -1527,6 +1530,7 @@ C
      &                       cord(:,1:natoms), charge(1:natoms),
      &                       wrk(kfree:lfree))
       end if
+#endif
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC
 C       FLAG(25) is true for .ABACUS (geometry optimization)

@@ -122,6 +122,7 @@ C
       CALL FLSHFO(LUW4)
       CALL FLSHFO(LUPRI)
       CALL FLSHFO(LUSTAT)
+#if defined (BUILD_PELIB)
 ! *********************************************************************
 ! *** Save intermolecular part of two-electron Fock matrix and quit ***
 ! *********************************************************************
@@ -130,6 +131,7 @@ C
           iconv = 1
           goto 8000
       end if
+#endif
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions

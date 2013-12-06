@@ -4363,21 +4363,19 @@ C
          ENDDO
       END IF
 C
-#if defined (BUILD_PELIB)
-      if (peqm .and. .not. tdhf) then
-!        write(lupri,*) '---------------------- Running PE-MCSCF response
-!     & calculation -----------------------'
-!        write(lupri,*) '=> Subtracting PE Fock matrix'
-!        write(lupri,*) '=> PE-MCSCF citation:' 
-!        write(lupri,*) '=> E. D. Hedegård, N. H. List, H. J. Aa. Jensen
-!     & J. Kongsted, JCP 139 (2013), 044101'     
-!        write(lupri,*) '-----------------------------------------------
+      IF (PEQM .AND. .NOT. TDHF) THEN
+!        WRITE(LUPRI,*) '---------------------- RUNNING PE-MCSCF RESPONSE
+!     & CALCULATION -----------------------'
+!        WRITE(LUPRI,*) '=> SUBTRACTING PE FOCK MATRIX'
+!        WRITE(LUPRI,*) '=> PE-MCSCF CITATION:' 
+!        WRITE(LUPRI,*) '=> E. D. HEDEGÅRD, N. H. LIST, H. J. AA. JENSEN
+!     & J. KONGSTED, JCP 139 (2013), 044101'     
+!        WRITE(LUPRI,*) '-----------------------------------------------
 !     &------------------------------------' 
-        call mollab('PETMAT  ', lusifc, lupri)
-        call readt (lusifc, nnorbt, wrk)
-        fc(1:nnorbt) = fc(1:nnorbt) - wrk(1:nnorbt)
-       endif
-#endif
+        CALL MOLLAB('PETMAT  ', LUSIFC, LUPRI)
+        CALL READT (LUSIFC, NNORBT, WRK)
+        FC(1:NNORBT) = FC(1:NNORBT) - WRK(1:NNORBT)
+       ENDIF
 C
       IF (SOPPA) THEN
 C
