@@ -319,6 +319,7 @@ module cc_debug_routines_module
      Co2_d = Co_d
      Cv2_d = Cv_d
 
+
      ! create transformation matrices in array form
      Co   = array2_init(occ_dims,Co_d)
      Cv   = array2_init(virt_dims,Cv_d)
@@ -443,7 +444,7 @@ module cc_debug_routines_module
      !>   NO: returns small_frag == .false. and switch to standard CCSD.
      if (small_frag) then
        call get_packed_gmo(small_frag,mylsitem,Co%val,Cv2%val,pack_gmo, &
-            & nbasis,nocc,nvirt,MOinfo)
+            & nbasis,nocc,nvirt,ccmodel,MOinfo)
      end if
 
 
@@ -711,7 +712,8 @@ module cc_debug_routines_module
            !  !rpa_multipliers not yet implemented
            !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !else
-             call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
+             call RPA_residualdeb(Omega2(iter),t2(iter),pack_gmo,ppfock,qqfock,nocc,nvirt)
+             !call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !endif
 
 
@@ -966,7 +968,8 @@ module cc_debug_routines_module
      ! free memory
      if (small_frag) then
        call mem_dealloc(pack_gmo)
-       call mem_dealloc(govov)
+       !JOHANNES remember to uncomment this
+      ! call mem_dealloc(govov)
        call mem_dealloc(MOinfo%dimInd1)
        call mem_dealloc(MOinfo%dimInd2)
        call mem_dealloc(MOinfo%StartInd1)
@@ -2624,12 +2627,12 @@ module cc_debug_routines_module
   !
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine get_packed_gmo(small_frag,MyLsItem,Co,Cv,pack_gmo,nbas,nocc,nvir,MOinfo)
+  subroutine get_packed_gmo(small_frag,MyLsItem,Co,Cv,pack_gmo,nbas,nocc,nvir,ccmodel,MOinfo)
 
     implicit none
 
     !> number of orbitals:
-    integer, intent(in) :: nbas, nocc, nvir
+    integer, intent(in) :: nbas, nocc, nvir,ccmodel
     !> SCF transformation matrices:
     real(realk), intent(in) :: Co(nbas,nocc), Cv(nbas,nvir)
     !> performed MO-based CCSD calculation ?
@@ -2653,7 +2656,7 @@ module cc_debug_routines_module
     real(realk), pointer :: gao(:)
     integer(kind=long) :: gaosize
     integer :: alphaB, gammaB, dimAlpha, dimGamma
-    integer :: dim1, dim2, dim3, K, MinAObatch
+    integer :: dim1, dim2, dim3, K, MinAObatch,dimK
     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
     integer :: iorb, idx, p, q
     type(batchtoorb), pointer :: batch2orbAlpha(:)
@@ -2950,6 +2953,8 @@ module cc_debug_routines_module
       case default
         call lsquit('This pack scheme is not yet implemented',DECinfo%output)
     end select
+    !JOHANNES remember to delete this one
+    pack_gmosize = int(i8*nvir*nocc*nvir*nocc, kind=long)
     call mem_alloc(pack_gmo,pack_gmosize)
     pack_gmo(:) = 0.0E0_realk
      
@@ -2958,7 +2963,33 @@ module cc_debug_routines_module
     call lsquit("ERROR(CCSD):matrix sizes too large, &
         & please recompile with 64bit integers",-1)
     endif
-     
+
+    ! get free memory and minimum required memory:
+    !call get_currently_available_memory(MemFree)
+    !call get_min_required_mem(ntot,nocc,nvir,MaxActualDimAlpha,MaxActualDimGamma,MemNeed)
+    !print *, 'MEM AVAILABLE', MemFree-MemNeed
+ 
+    !! get MO batches size:
+    !! DEBUG HACK !!!!
+    !if (DECinfo%cc_driver_debug) then
+    !  dimP = 4
+    !  Nbatch = (ntot-1)/dimP + 1
+    !else 
+    !  min_mem = int(MemNeed*1.024E3_realk**3/8.0E0_realk, kind=long)
+    !  call get_MO_batches_size(small_frag, min_mem, ntot, Nbatch, dimP, (4*ntot*ntot + nocc*ntot), &
+    !                  & (MaxActualDimAlpha*ntot*ntot + 3*nocc*nvir*ntot + nocc*nocc*ntot))
+    !end if
+    !print *, 'test: dimP, Nbatch', dimP, Nbatch
+ 
+    !!gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
+    !!REMEMBER TO TAKE IT BACK JOHANNES
+    !gmosize = int(i8*nocc*nvir*nocc*nvir,kind=long)
+    !call mem_alloc(gmo,gmosize)
+
+
+    !MOinfo%nbatch = Nbatch
+    !call get_MO_batches_info(MOinfo, dimP, ntot)
+
 
     ! *******************************************************
     ! *  This subroutine builds the full screening matrix.
@@ -3026,9 +3057,20 @@ module cc_debug_routines_module
             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbas,nbas,dimAlpha, &
             & dimGamma,fullRHS,INTSPEC)
        call lsmpi_poke()
-      
+
+       IF (ccmodel == MODEL_RPA)then
+
+         write(*,*) 'JOHANNES IN mo transform'
+         call gao_to_g_CKDL(gmo, gao, Co,Cv, nbas,nocc,nvir, ntot, AlphaStart, dimAlpha, &
+           & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
+         
+         call daxpy(nvir*nocc*nvir*nocc,1.0E0_realk,gmo,1,pack_gmo,1)
+
+       else
+
        ! Loop over MO batches:
        BatchPQ: do PQ_batch = 1, Nbatch*Nbatch
+
 
          P_sta  = MOinfo%StartInd1(PQ_batch)
          dimP   = MOinfo%DimInd1(PQ_batch)
@@ -3041,11 +3083,12 @@ module cc_debug_routines_module
          ipack = MOinfo%packInd(PQ_batch)
 
          call pack_and_add_gmo(gmo,pack_gmo(ipack:),ntot,dimP,dimQ, &
-                               & P_sta, Q_sta, dimPack, pack_scheme)
-        
+           & P_sta, Q_sta, dimPack, pack_scheme)
+
          MOinfo%packInd(PQ_batch+1) = ipack + dimPack 
 
        end do BatchPQ
+       endif
 
 
     end do BatchAlpha
@@ -3081,6 +3124,7 @@ module cc_debug_routines_module
 
     ! Free matrices:
     call mem_dealloc(gao)
+    !rpa cannot dealloc gmo?
     call mem_dealloc(gmo)
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
@@ -3239,6 +3283,91 @@ module cc_debug_routines_module
     call lsmpi_poke() 
 
   end subroutine gao_to_gmo
+
+  !> Purpose: Transform AO int. into MO (virt,occ,virt,occ) in batches
+  !           
+  !> Author:  Johannes Rekkedal
+  !> Date:    December 2013
+  subroutine gao_to_g_CKDL(gmo, gao, Co,Cv, nbas,nocc,nvir, ntot, AlphaStart, dimAlpha, &
+             & GammaStart, dimGamma, K_sta, dimK, C_sta, dimC)
+
+    implicit none
+
+    integer, intent(in) :: nbas, AlphaStart, dimAlpha, GammaStart, dimGamma
+    integer, intent(in) :: ntot, K_sta, dimC, C_sta, dimK,nocc,nvir
+    real(realk), intent(inout) :: gmo(nocc*nvir*nocc*nvir)
+    real(realk), intent(in) :: gao(dimAlpha*nbas*dimGamma*nbas), Co(nbas,nocc),Cv(nbas,nvir)
+
+    integer(kind=long) :: tmp1_size, tmp2_size
+    real(realk), pointer, dimension(:)   :: tmp1, tmp2 => null()
+   
+
+ 
+    ! allocation stuff:
+
+    tmp1_size = max(dimAlpha*dimGamma, dimAlpha*nvir)
+    tmp1_size = int(i8*nbas*nbas*tmp1_size, kind=long)
+    tmp2_size = max(dimAlpha*dimGamma, nocc*nvir)
+    tmp2_size = int(i8*nbas*nbas*tmp2_size, kind=long)
+    call mem_alloc(tmp1, tmp1_size)
+    call mem_alloc(tmp2, tmp2_size)
+
+
+    ! transfo 1st index => [D, delta, alphaB, gammaB]
+    !seems ok
+    call dgemm('t','n',nvir,nbas*dimAlpha*dimGamma,nbas,1.0E0_realk, &
+         & Cv,nbas,gao,nbas,0.0E0_realk,tmp1,nvir)
+    call lsmpi_poke() 
+
+    ! transfo last index => [D, delta, alphaB, K]
+    !seems ok
+    call dgemm('n','n',nvir*nbas*dimAlpha,nocc,dimGamma,1.0E0_realk, &
+         & tmp1,nvir*nbas*dimAlpha,Co,dimGamma,0.0E0_realk,tmp2,nvir*nbas*dimAlpha)
+    call lsmpi_poke()
+
+    ! transpose array => [alphaB K; D delta]
+    call mat_transpose(nvir*nbas,dimAlpha*nocc,1.0E0_realk,tmp2,0.0E0_realk,tmp1)
+    call lsmpi_poke() 
+ 
+    ! transfo 1st index => [C, K, D, delta]
+    !not sure
+    call dgemm('t','n',nvir,nvir*nocc*nbas,dimAlpha,1.0E0_realk, &
+         & Cv,dimAlpha,tmp1,dimAlpha,0.0E0_realk,tmp2,nvir) 
+    call lsmpi_poke() 
+     
+    ! transfo last index => [C, K, D, L]
+    !not sure
+    call dgemm('n','n',nocc*nvir*nvir,nocc,nbas,1.0E0_realk,tmp2,nvir*nocc*nvir, &
+         & Co,nbas,0.0E0_realk,gmo,nocc*nvir*nvir)
+    call lsmpi_poke() 
+   
+    ! transfo 1st index => [alphaB, gammaB, beta, L]
+   ! call dgemm('n','n',nbas*dimAlpha*dimGamma*nocc,nocc,nbas,1.0E0_realk, &
+   !      & gao,nbas*dimalpha*dimgamma*nocc,co,nbas,0.0E0_realk,tmp1,nbas*dimAlpha*dimGamma*nocc)
+   ! call lsmpi_poke() 
+   ! 
+   ! ! transfo 1st index => [L, alphaB, gammaB, D]
+   ! call dgemm('t','n',dimalpha*dimgamma*nocc,nocc,nbas,1.0E0_realk, &
+   !      & tmp1,nbas,co,nbas,0.0E0_realk,tmp2,dimalpha*dimgamma*nocc)
+   ! call lsmpi_poke() 
+
+   ! ! transfo 1st index => [D(alphaB), gammaB, D, L]
+   ! call dgemm('t','n',nvir,nocc*dimgamma*nocc,nbas,1.0E0_realk, &
+   !      & cv,nbas,tmp2,nbas,0.0E0_realk,tmp1,nvir)
+   ! call lsmpi_poke() 
+
+   ! ! transfo 1st index => [C(gammaB), K, L, D(alphaB)]
+   ! call dgemm('t','t',nvir,nocc*nvir*nocc,nbas,1.0E0_realk, &
+   !      & cv,nbas,tmp2,nvir,nocc*nvir*nocc,0.0E0_realk,gmo,nvir)
+   ! call lsmpi_poke() 
+
+
+    ! free array
+    call mem_dealloc(tmp1)
+    call mem_dealloc(tmp2)
+
+  end subroutine gao_to_g_CKDL
+
 
 
   !> Purpose: Provide a balanced number of MO batches for two
