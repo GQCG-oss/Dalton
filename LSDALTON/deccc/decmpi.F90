@@ -18,6 +18,8 @@ module decmpi_module
   use tensor_interface_module
   use DEC_settings_mod
   use dec_fragment_utils
+  use array4_simple_operations
+  use array2_simple_operations
 
 contains
 
@@ -1700,25 +1702,26 @@ contains
     integer :: P_sta, P_end, Q_sta, Q_end, dimPack, ipack
     logical :: master
 
-    master = (infpar%lg_mynum == infpar%master)
-    call lsmpi_barrier(infpar%lg_comm)
-    print *,"hi there",infpar%lg_mynum
-    call lsmpi_barrier(infpar%lg_comm)
-    stop 0
-
-    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpi_buffer(nbas,infpar%master)
-    call ls_mpi_buffer(nocc,infpar%master)
-    call ls_mpi_buffer(nvir,infpar%master)
-    if(.not.master)then
-      call mem_alloc(Co,nbas,nocc)
-      call mem_alloc(Cv,nbas,nvir)
-    endif
-    call ls_mpi_buffer(Co,nbas,nocc,infpar%master)
-    call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
-    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-
+!    master = (infpar%lg_mynum == infpar%master)
+!    call lsmpi_barrier(infpar%lg_comm)
+!    print *,"hi there",infpar%lg_mynum
+!    call lsmpi_barrier(infpar%lg_comm)
+!    stop 0
+!
+!    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+!    call ls_mpi_buffer(nbas,infpar%master)
+!    call ls_mpi_buffer(nocc,infpar%master)
+!    call ls_mpi_buffer(nvir,infpar%master)
+!    if(.not.master)then
+!      call mem_alloc(Co,nbas,nocc)
+!      call mem_alloc(Cv,nbas,nvir)
+!    endif
+!    call ls_mpi_buffer(Co,nbas,nocc,infpar%master)
+!    call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+!    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+!
   end subroutine cc_gmo_communicate_data
+
 
   !> \brief Copy DEC setting structure to buffer (master)
   !> or read from buffer (slave)
@@ -1843,6 +1846,37 @@ contains
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
 
   end subroutine mpicopy_dec_settings
+
+  subroutine rpa_res_communicate_data(gmo,t2,omega2,pfock,qfock,nvirt,nocc)
+    implicit none
+    real(realk),intent(inout),pointer :: gmo(:)
+    type(array4), intent(inout) :: omega2
+    type(array2), intent(inout) :: pfock,qfock
+    type(array4),intent(inout)         :: t2
+    integer,intent(inout)             :: nvirt,nocc
+    logical :: master
+
+
+    master = (infpar%lg_mynum == infpar%master)
+    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpi_buffer(nvirt,infpar%master)
+    call ls_mpi_buffer(nocc,infpar%master)
+    if(.not.master)then
+      call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+      t2=array4_init([nvirt,nocc,nvirt,nocc])
+      pfock=array2_init([nocc,nocc])
+      qfock=array2_init([nvirt,nvirt])
+    endif
+    call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+    call ls_mpi_buffer(pfock%val,nocc,nocc,infpar%master)
+    call ls_mpi_buffer(qfock%val,nvirt,nvirt,infpar%master)
+
+    
+    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpibcast(t2%val,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
+
+  end subroutine rpa_res_communicate_data
+
 
   !> \brief bcast very basic information from master to slaves 
   !> (information which for practical reasons cannot be packed into mpi_dec_fullinfo_master_to_slaves)

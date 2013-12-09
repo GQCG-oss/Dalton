@@ -59,6 +59,8 @@
          call cc_gmo_slave
       case(CCSDSLV4E2);
          call calculate_E2_and_permute_slave
+      case(RPAGETRESIDUAL);
+            call rpa_res_slave
 #ifdef MOD_UNRELEASED 
       case(CCSDPTSLAVE);
          call ccsdpt_slave
