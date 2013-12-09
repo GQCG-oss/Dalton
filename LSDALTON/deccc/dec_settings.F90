@@ -76,6 +76,8 @@ contains
     DECinfo%EOSPNOthr            = 1.0E-9
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
+    DECinfo%MOCCSD               = .false.
+    DECinfo%Max_num_MO           = 300
 
     ! -- Output options 
     DECinfo%output               = output
@@ -426,6 +428,8 @@ contains
        case('.EOSPNOTHR'); read(input,*) DECinfo%EOSPNOthr
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
+       case('.MOCCSD'); DECinfo%MOCCSD=.true.
+       case('.MAX_NUM_MO'); read(input,*) DECinfo%Max_num_MO
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
