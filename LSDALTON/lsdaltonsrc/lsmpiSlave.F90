@@ -136,6 +136,8 @@
 ! DEC MP2 integrals and amplitudes
          case(MP2INAMP);
             call MP2_integrals_and_amplitudes_workhorse_slave
+         case(CCGETGMOCONSTR);
+            call cc_gmo_slave
          case(CCSDDATA);
             call ccsd_data_preparation
          case(CCSD_COMM_PROC_MASTER);
