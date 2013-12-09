@@ -46,7 +46,8 @@ module rpa_module
     use ccsd_module
 
 
-    public :: RPA_residual,RPA_energy,SOSEX_contribution,RPA_multiplier
+    public :: RPA_residual,RPA_energy,SOSEX_contribution,RPA_multiplier,rpa_residualdeb
+    
 
     private
 
@@ -277,6 +278,136 @@ contains
 
     return
   end subroutine RPA_fock_multi_part
+
+  !\brief Calculate RPA residual for current doubles amplitudes
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date March 2013
+  subroutine RPA_residualdeb(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2
+    real(realk), intent(in) :: gmo(nvirt*nocc*nvirt*nocc)
+    type(array2), intent(inout) :: pfock,qfock
+    integer, intent(in) :: nocc,nvirt
+    type(array4) :: tmp
+    integer, dimension(4) :: tmp_dims
+    integer :: a,b,c,i,j,k
+    real(realk) :: starttime,stoptime
+
+
+    call cpu_time(starttime)
+
+    !get the MP2 part of the residual
+    !call getDoublesResidualMP2_simple(Omega2,t2,gmo,pfock,qfock, &
+    !           & nocc,nvirt)
+    write(*,*) 'I am now in residualdeb, and everything is ok'
+
+    call RPA_fock_partdeb(omega2,t2,pfock,qfock,nocc,nvirt)
+    call RPA_residual_adddeb(omega2,t2,gmo,nocc,nvirt)
+
+    !for debugging
+    !call array4_add_to(omega2,2.0E0_realk,gmo)
+
+    call cpu_time(stoptime)
+
+    !call lsquit('RPA_residual: Needs implementation',-1)
+
+  end subroutine RPA_residualdeb
+
+  !\brief Calculate fock matrix part of the RPA residual 
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date March 2013
+  subroutine RPA_fock_partdeb(omega2,t2,pfock,qfock,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2
+    type(array2), intent(inout) :: pfock,qfock
+    integer, intent(in) :: nocc,nvirt
+    type(array4) :: tmp
+    integer, dimension(4) :: tmp_dims
+    integer :: a,b,c,i,j,k
+
+
+    ! 1
+    call array2_transpose(qfock)
+    call array4_reorder(t2,[3,4,1,2])
+    tmp = array4_init([nvirt,nocc,nvirt,nocc])
+    call array4_contract1(t2,qfock,tmp,.true.)
+    call array4_reorder(tmp,[3,4,1,2])
+    call array4_add_to(omega2,1.0E0_realk,tmp)
+    call array4_free(tmp)
+    call array4_reorder(t2,[3,4,1,2])
+
+    ! 2
+    call array4_contract1(t2,qfock,omega2,.false.)
+    call array2_transpose(qfock)
+
+    ! 3
+    call array4_reorder(t2,[4,3,2,1])
+    tmp = array4_init([nocc,nvirt,nocc,nvirt])
+    call array4_contract1(t2,pfock,tmp,.true.)
+    call array4_reorder(t2,[4,3,2,1])
+    call array4_reorder(tmp,[4,3,2,1])
+    call array4_add_to(omega2,-1.0E0_realk,tmp)
+    call array4_free(tmp)
+
+    ! 4
+    call array4_reorder(t2,[2,1,3,4])
+    tmp = array4_init([nocc,nvirt,nvirt,nocc])
+    call array4_contract1(t2,pfock,tmp,.true.)
+    call array4_reorder(t2,[2,1,3,4])
+    call array4_reorder(tmp,[2,1,3,4])
+    call array4_add_to(omega2,-1.0E0_realk,tmp)
+    call array4_free(tmp)
+
+
+    !For debugging
+    !call array4_add_to(omega2,2.0E0_realk,gmo)
+
+    return
+  end subroutine RPA_fock_partdeb
+
+  !\brief Calculate additional linear and quadratic terms of the RPA residual 
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date March 2013
+  subroutine RPA_residual_adddeb(omega2,t2,gmo,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2
+    real(realk), intent(in) :: gmo(nvirt*nocc*nvirt*nocc)
+    integer, intent(in) :: nocc,nvirt
+    type(array4) :: Sckdl,Dckbj
+    integer, dimension(4) :: tmp_dims
+    integer :: a,b,c,i,j,k,dim1
+    real(realk) :: starttime,stoptime
+
+    !Sckdl = array4_init([nvirt,nocc,nvirt,nocc])
+    Sckdl = array4_duplicate(t2)
+    Dckbj = array4_init([nvirt,nocc,nocc,nvirt])
+
+    do a=1,nvirt
+     do i=1,nocc
+        Sckdl%val(a,i,a,i)=Sckdl%val(a,i,a,i)+1._realk
+     enddo
+    enddo
+
+    !gmo_CKLD We need it to be g_CKDL
+
+    dim1=nocc*nvirt
+    call dgemm('n','n',dim1,dim1,dim1, &
+         1.0E0_realk,gmo,dim1,Sckdl%val,dim1,0.0E0_realk,Dckbj%val,dim1)
+
+    call dgemm('n','n',dim1,dim1,dim1, &
+         2.0E0_realk,Sckdl%val,dim1,Dckbj%val,dim1,1.0E0_realk,omega2%val,dim1)
+    
+
+    call array4_free(Dckbj)
+    call array4_free(Sckdl)
+
+
+  end subroutine RPA_residual_adddeb
+
+
 
 
   !\brief Calculate additional linear and quadratic terms of the RPA residual 
