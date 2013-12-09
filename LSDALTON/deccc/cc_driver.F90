@@ -1875,6 +1875,9 @@ contains
           ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
 
+       case(MODEL_RPA)
+          call lsquit("ERROR(ccsolver_par): RPA energy not yet implemented",-1)
+
        case default
           call lsquit("ERROR(ccsolver_par):energy expression for your model&
             & not yet implemented",-1)

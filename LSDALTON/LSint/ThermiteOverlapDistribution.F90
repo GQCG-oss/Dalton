@@ -138,6 +138,7 @@ integer :: iDer
 integer(kind=short) :: maxPrimGab,maxPrimGabElm,Dmatmax2
 integer(kind=short),pointer :: primgabmat(:,:)
 !
+maxPrimGabElm=shortzero
 DMATscreen = .FALSE.
 NULLIFY(DMAT2)
 NULLIFY(GAB2)
@@ -235,6 +236,7 @@ ENDIF
 !                     Determine overlap type
 !==========================================================================
 P%type_Empty = P%orbital1%type_Empty .AND. P%orbital2%type_Empty 
+P%maxGab = shortzero
 IF(P%type_Empty)THEN
    IF(Input%operator .EQ. MulmomOperator .AND. (.NOT.LHS) )THEN
       ! this is done in order to use screening on multipole moments used for FMM

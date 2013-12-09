@@ -100,7 +100,7 @@ iprint=0
 setting%scheme%intprint = 0
 doprint = .FALSE.!.TRUE.
 itest = 1
-do Ipass = 1,2
+do Ipass = 1,2 
    WRITE(lupri,*)'Number of Passes',Ipass
    !=========================================================================================================
    !                    Build Molecule
@@ -184,6 +184,7 @@ do Ipass = 1,2
           call mem_dealloc(integralsII)
        ENDIF
        call mem_alloc(integralsII,dim1,dim2,dim3,dim4)
+!       integralsII = 0.0E0_realk
 !       setting%scheme%intprint = 1000
        savedospherical = setting%scheme%dospherical
        setting%scheme%dospherical = spherical
@@ -206,14 +207,14 @@ do Ipass = 1,2
 !       integralsIchor = 0.0E0_realk
 !          setting%scheme%intprint = 1000
 !       WRITE(lupri,*)'IchorDriver'
-       CALL FLUSH(LUPRI)
-       print*,'call ICHOR WITH BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
-            & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
+!       CALL FLUSH(LUPRI)
+!       print*,'call ICHOR WITH BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
+!            & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
        SameMOL = .FALSE.       
        call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
        call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1)!,spherical)
        call FREE_SCREEN_ICHORERI
-       print*,'DONE call ICHOR WITH BASIS'
+!       print*,'DONE call ICHOR WITH BASIS'
        !setting%scheme%intprint = 0
        write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
             & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
@@ -330,11 +331,25 @@ integer,intent(in) :: ICHARGE,lupri,nAtoms
 character(len=22) :: label
 character(len=4) :: Name
 integer :: I
-write(label,'(A11,I11)') 'UnittestMol',icharge
-write(name,'(A1,I3)') 'U',icharge
-
+do I=1,22
+   label(I:I)=' '
+enddo
+label(1:11)='UnittestMol'
+do I=1,4
+   name(I:I)=' '
+enddo
+name(1:1)='U'
+IF(icharge.LT.10)THEN
+   write(label(12:12),'(I1)') icharge
+   write(name(2:2),'(I1)') icharge
+ELSEIF(icharge.LT.100)THEN
+   write(label(12:13),'(I2)') icharge
+   write(name(2:3),'(I2)') icharge
+ELSEIF(icharge.LT.1000)THEN
+   write(name(2:4),'(I3)') icharge
+   write(label(12:14),'(I3)') icharge
+ENDIF
 atomicmolecule%label = label
-
 call mem_alloc(atomicmolecule%ATOM,nAtoms)
 atomicmolecule%nAtoms = nAtoms
 atomicmolecule%nAtomsNPC = nAtoms
@@ -362,7 +377,7 @@ do I=1,nAtoms
    atomicmolecule%ATOM(I)%CENTER(3) = Rxyz(3)*I
    atomicmolecule%ATOM(I)%Atomic_number = 0 
    atomicmolecule%ATOM(I)%Charge = Icharge       
-   atomicmolecule%ATOM(I)%nbasis=0 
+   atomicmolecule%ATOM(I)%nbasis=1
    
    atomicmolecule%ATOM(I)%basislabel(1) = 'None'
    atomicmolecule%ATOM(I)%basislabel(2) = 'None'
