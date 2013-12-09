@@ -2965,30 +2965,30 @@ module cc_debug_routines_module
     endif
 
     ! get free memory and minimum required memory:
-    call get_currently_available_memory(MemFree)
-    call get_min_required_mem(ntot,nocc,nvir,MaxActualDimAlpha,MaxActualDimGamma,MemNeed)
-    print *, 'MEM AVAILABLE', MemFree-MemNeed
+    !call get_currently_available_memory(MemFree)
+    !call get_min_required_mem(ntot,nocc,nvir,MaxActualDimAlpha,MaxActualDimGamma,MemNeed)
+    !print *, 'MEM AVAILABLE', MemFree-MemNeed
  
-    ! get MO batches size:
-    ! DEBUG HACK !!!!
-    if (DECinfo%cc_driver_debug) then
-      dimP = 4
-      Nbatch = (ntot-1)/dimP + 1
-    else 
-      min_mem = int(MemNeed*1.024E3_realk**3/8.0E0_realk, kind=long)
-      call get_MO_batches_size(min_mem, ntot, Nbatch, dimP, (4*ntot*ntot + nocc*ntot), &
-                      & (MaxActualDimAlpha*ntot*ntot + 3*nocc*nvir*ntot + nocc*nocc*ntot))
-    end if
-    print *, 'test: dimP, Nbatch', dimP, Nbatch
+    !! get MO batches size:
+    !! DEBUG HACK !!!!
+    !if (DECinfo%cc_driver_debug) then
+    !  dimP = 4
+    !  Nbatch = (ntot-1)/dimP + 1
+    !else 
+    !  min_mem = int(MemNeed*1.024E3_realk**3/8.0E0_realk, kind=long)
+    !  call get_MO_batches_size(small_frag, min_mem, ntot, Nbatch, dimP, (4*ntot*ntot + nocc*ntot), &
+    !                  & (MaxActualDimAlpha*ntot*ntot + 3*nocc*nvir*ntot + nocc*nocc*ntot))
+    !end if
+    !print *, 'test: dimP, Nbatch', dimP, Nbatch
  
-    !gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
-    !REMEMBER TO TAKE IT BACK JOHANNES
-    gmosize = int(i8*nocc*nvir*nocc*nvir,kind=long)
-    call mem_alloc(gmo,gmosize)
+    !!gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
+    !!REMEMBER TO TAKE IT BACK JOHANNES
+    !gmosize = int(i8*nocc*nvir*nocc*nvir,kind=long)
+    !call mem_alloc(gmo,gmosize)
 
 
-    MOinfo%nbatch = Nbatch
-    call get_MO_batches_info(MOinfo, dimP, ntot)
+    !MOinfo%nbatch = Nbatch
+    !call get_MO_batches_info(MOinfo, dimP, ntot)
 
 
     ! *******************************************************
