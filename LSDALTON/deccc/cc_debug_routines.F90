@@ -6720,11 +6720,11 @@ module cc_debug_routines_module
 
 end module cc_debug_routines_module
 
-
+#ifdef VAR_MPI
 subroutine cc_gmo_slave()
   use dec_typedef_module
   use typedeftype,only:lsitem
-  use decmpi_module, only :cc_gmo_communicate_data
+  use decmpi_module,only:cc_gmo_communicate_data
   implicit none
   !> number of orbitals:
   integer :: nbas, nocc, nvir,ccmodel
@@ -6751,3 +6751,4 @@ subroutine cc_gmo_slave()
 
   call cc_gmo_communicate_data(small_frag,MyLsItem,Co,Cv,pack_gmo,nbas,nocc,nvir,ccmodel)
 end subroutine cc_gmo_slave
+#endif
