@@ -521,6 +521,29 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+     
+
+     !> Occ-Occ Fock matrix in MO basis
+     real(realk), pointer :: Fii(:,:) => null()
+     !> Virt-Cabs Fock matrix in MO basis
+     real(realk), pointer :: Fac(:,:) => null() 
+     
+
+     !> Occ-CABS (one-electron + coulomb matrix) in MO basis
+     real(realk), pointer :: HJir(:,:) => null() 
+      !> Cabs ri-Cabs ri exchange matrix in MO basis
+     real(realk), pointer :: Krr(:,:) => null() 
+     !> Cabs ri-Cabs ri Fock matrix in MO basis
+     real(realk), pointer :: Frr(:,:) => null() 
+     !> (Occ+virt)-(Occ+virt) Fock matrix in MO basis
+     real(realk), pointer :: Fpp(:,:) => null()
+     !> Occ-Occ Fock matrix in MO basis
+     real(realk), pointer :: Fmm(:,:) => null()
+     !> Cabs ri-Occ Fock matrix in MO basis  
+     real(realk), pointer :: Frm(:,:) => null()
+     !> Cabs-(Occ+virt) Fock matrix in MO basis
+     real(realk), pointer :: Fcp(:,:) => null()
+
 
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()
@@ -669,6 +692,28 @@ module dec_typedef_module
      !> Core-core block of Fock matrix in MO basis  (subset of ppfock when frozen core is NOT used)
      real(realk), pointer :: ccfock(:,:) => null()
 
+
+     !> Occ-Occ Fock matrix in MO basis
+     real(realk), pointer :: Fii(:,:) => null()
+     !> Virt-Cabs Fock matrix in MO basis
+     real(realk), pointer :: Fac(:,:) => null() 
+     
+
+     !> Occ-CABS (one-electron + coulomb matrix) in MO basis
+     real(realk), pointer :: HJir(:,:) => null() 
+      !> Cabs ri-Cabs ri exchange matrix in MO basis
+     real(realk), pointer :: Krr(:,:) => null() 
+     !> Cabs ri-Cabs ri Fock matrix in MO basis
+     real(realk), pointer :: Frr(:,:) => null() 
+     !> (Occ+virt)-(Occ+virt) Fock matrix in MO basis
+     real(realk), pointer :: Fpp(:,:) => null()
+     !> Occ-Occ Fock matrix in MO basis
+     real(realk), pointer :: Fmm(:,:) => null()
+     !> Cabs ri-Occ Fock matrix in MO basis  
+     real(realk), pointer :: Frm(:,:) => null()
+     !> Cabs-(Occ+virt) Fock matrix in MO basis
+     real(realk), pointer :: Fcp(:,:) => null()
+     
      ! Information for local orbitals
      ! ******************************
      !> Local occupied MO coefficients
