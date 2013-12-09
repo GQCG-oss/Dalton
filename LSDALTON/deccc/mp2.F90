@@ -319,7 +319,6 @@ end if
        OOOV=0E0_realk
     end if
 
-    write(*,*) 'JOHANNES INSIDE MP2'
 
     ! *************************************
     ! Get arrays for transforming integrals
