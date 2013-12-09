@@ -2634,7 +2634,7 @@ module cc_debug_routines_module
     !> number of orbitals:
     integer, intent(in) :: nbas, nocc, nvir,ccmodel
     !> SCF transformation matrices:
-    real(realk), intent(in) :: Co(nbas,nocc), Cv(nbas,nvir)
+    real(realk),pointer, intent(inout) :: Co(:,:), Cv(:,:)
     !> performed MO-based CCSD calculation ?
     logical, intent(inout) :: small_frag
     !> array with packed gmo on output:
@@ -2690,6 +2690,12 @@ module cc_debug_routines_module
     !> LS item with information needed for integrals
     type(lsitem), intent(inout) :: MyLsItem
 
+    integer :: nb,no,nv,ccm
+
+    nb  = nbas
+    no  = nocc
+    nv  = nvir
+    ccm = ccmodel
 
     ! Set default values for the path throug the routine
     ! **************************************************
@@ -2849,6 +2855,14 @@ module cc_debug_routines_module
     !==================================================
 
     ! MPI: here you should start the slaves!!
+#ifdef VAR_MPI
+    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
+      call ls_mpibcast(CCGETGMOCONSTR,infpar%master,infpar%lg_comm)
+      call cc_gmo_communicate_data(small_frag,MyLsItem,Co,Cv,pack_gmo,nb,no,nv,ccm)
+    endif StartUpSlaves
+
+
+#endif
 
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
@@ -2954,7 +2968,7 @@ module cc_debug_routines_module
         call lsquit('This pack scheme is not yet implemented',DECinfo%output)
     end select
     !JOHANNES remember to delete this one
-    pack_gmosize = int(i8*nvir*nocc*nvir*nocc, kind=long)
+    !pack_gmosize = int(i8*nvir*nocc*nvir*nocc, kind=long)
     call mem_alloc(pack_gmo,pack_gmosize)
     pack_gmo(:) = 0.0E0_realk
      
@@ -6705,3 +6719,36 @@ module cc_debug_routines_module
 
 
 end module cc_debug_routines_module
+
+#ifdef VAR_MPI
+subroutine cc_gmo_slave()
+  use dec_typedef_module
+  use typedeftype,only:lsitem
+  use decmpi_module,only:cc_gmo_communicate_data
+  implicit none
+  !> number of orbitals:
+  integer :: nbas, nocc, nvir,ccmodel
+  !> SCF transformation matrices:
+  real(realk),pointer  :: Co(:,:), Cv(:,:)
+  !> performed MO-based CCSD calculation ?
+  logical :: small_frag
+  !> array with packed gmo on output:
+  real(realk), pointer :: pack_gmo(:)
+  integer(kind=long) :: pack_gmosize
+  !> how to pack integrals:
+  integer :: pack_scheme
+
+  !> variables used for MO batch and integral transformation
+  integer :: ntot ! total number of MO
+  real(realk), pointer :: Cov(:,:), CP(:,:), CQ(:,:)
+  real(realk), pointer :: gmo(:), tmp1(:), tmp2(:)
+  integer(kind=long) :: gmosize, min_mem, tmp_size
+  integer :: Nbatch, PQ_batch, dimP, dimQ
+  integer :: P_sta, P_end, Q_sta, Q_end, dimPack, ipack
+  type(MObatchInfo) :: MOinfo
+  type(lsitem) :: MyLsItem
+  
+
+  call cc_gmo_communicate_data(small_frag,MyLsItem,Co,Cv,pack_gmo,nbas,nocc,nvir,ccmodel)
+end subroutine cc_gmo_slave
+#endif

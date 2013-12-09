@@ -1676,6 +1676,49 @@ contains
 
   end subroutine mpibcast_dec_settings
 
+  subroutine cc_gmo_communicate_data(small_frag,MyLsItem,Co,Cv,pack_gmo,nbas,nocc,nvir,ccmodel)
+    implicit none
+    !> number of orbitals:
+    integer, intent(inout) :: nbas, nocc, nvir,ccmodel
+    !> SCF transformation matrices:
+    real(realk),pointer, intent(inout) :: Co(:,:), Cv(:,:)
+    !> performed MO-based CCSD calculation ?
+    logical, intent(inout) :: small_frag
+    !> array with packed gmo on output:
+    real(realk), pointer, intent(inout) :: pack_gmo(:)
+    integer(kind=long) :: pack_gmosize
+    !> how to pack integrals:
+    integer :: pack_scheme
+    type(lsitem),intent(inout):: mylsitem
+
+    !> variables used for MO batch and integral transformation
+    integer :: ntot ! total number of MO
+    real(realk), pointer :: Cov(:,:), CP(:,:), CQ(:,:)
+    real(realk), pointer :: gmo(:), tmp1(:), tmp2(:)
+    integer(kind=long) :: gmosize, min_mem, tmp_size
+    integer :: Nbatch, PQ_batch, dimP, dimQ
+    integer :: P_sta, P_end, Q_sta, Q_end, dimPack, ipack
+    logical :: master
+
+    master = (infpar%lg_mynum == infpar%master)
+    call lsmpi_barrier(infpar%lg_comm)
+    print *,"hi there",infpar%lg_mynum
+    call lsmpi_barrier(infpar%lg_comm)
+    stop 0
+
+    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpi_buffer(nbas,infpar%master)
+    call ls_mpi_buffer(nocc,infpar%master)
+    call ls_mpi_buffer(nvir,infpar%master)
+    if(.not.master)then
+      call mem_alloc(Co,nbas,nocc)
+      call mem_alloc(Cv,nbas,nvir)
+    endif
+    call ls_mpi_buffer(Co,nbas,nocc,infpar%master)
+    call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+  end subroutine cc_gmo_communicate_data
 
   !> \brief Copy DEC setting structure to buffer (master)
   !> or read from buffer (slave)
