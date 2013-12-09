@@ -4207,7 +4207,7 @@ contains
             mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
             write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
             call lsquit("ERROR(CCSD): there is just not enough memory&
-            &available",DECinfo%output)
+            & available",DECinfo%output)
           else
             scheme=2
           endif

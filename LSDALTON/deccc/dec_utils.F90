@@ -2173,16 +2173,25 @@ retval=0
   !> \brief Determine memory for DEC calculation and store in DECinfo%memory.
   !> If memory was set manually in input, nothing is done here.
   !> Otherwise a system call is used to determine memory.
-  !> \author Kasper Kristensen
+  !> \author Kasper Kristensen, modified by Pablo Baudin
   !> \date August 2012
   subroutine get_memory_for_dec_calculation()
     implicit none
-    real(realk) :: mem
+    real(realk) :: mem, MemInUse
     logical :: memfound
 
     memfound=.false.
     if(DECinfo%memory_defined) then ! do nothing 
        write(DECinfo%output,'(1X,a,g12.4,a)') 'Memory set in input to be: ', DECinfo%memory, ' GB'
+
+       ! sanity check
+       MemInUse = 1.0E-9_realk*mem_allocated_global
+       if (DECinfo%memory<MemInUse) then
+         call get_available_memory(DECinfo%output,Mem,memfound)
+         DECinfo%memory = Mem
+         write(DECinfo%output,*) 'WARNING! Specified memory for DEC too small!'
+         write(DECinfo%output,'(1X,a,g12.4,a)') 'Memory set by default to be: ', DECinfo%memory, ' GB'
+       end if
 
     else ! using system call
 

@@ -332,7 +332,6 @@ module cc_debug_routines_module
      call mem_dealloc(Cv2_d)
 
 
-
      ! Get Fock matrix correction (for fragment and/or frozen core)
      ! ************************************************************
      ! Full molecule/frozen core: The correction corresponds to difference between actual Fock matrix
@@ -343,10 +342,10 @@ module cc_debug_routines_module
      !           orbitals).
 
      ! Density corresponding to input MOs
-     call mem_alloc(dens,nbasis,nbasis)
-     call get_density_from_occ_orbitals(nbasis,nocc,Co%val,dens)
-
-     call mem_dealloc(dens)
+     !call mem_alloc(dens,nbasis,nbasis)
+     !call get_density_from_occ_orbitals(nbasis,nocc,Co%val,dens)
+       
+     !call mem_dealloc(dens)
 
      ! get two-electron integrals in ao
      if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') 'debug :: calculating AO integrals'
@@ -365,6 +364,7 @@ module cc_debug_routines_module
 
      if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
 
      ! special MP2 things
      MP2Special : if(CCmodel == MODEL_MP2 .or. CCmodel == MODEL_RPA) then
@@ -385,7 +385,6 @@ module cc_debug_routines_module
 
         if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug :: gmo(vovo) norm  : ',gmo*gmo
      end if MP2Special
-
 
      ! get fock matrices for preconditioning
      Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
@@ -437,10 +436,13 @@ module cc_debug_routines_module
 
      ! criterion will need to be improved/adjusted.
      small_frag = .false.
-     if (nbasis<=300) small_frag=.true. 
-     !> get gmo and packed them
+     if (DECinfo%MOCCSD.and.(nbasis<=DECinfo%Max_num_MO)) small_frag=.true.
+
+     !> Check if there is enough memory to performed an MO-CCSD calculation.
+     !>   YES: get gmo and packed them
+     !>   NO: returns small_frag == .false. and switch to standard CCSD.
      if (small_frag) then
-       call get_packed_gmo(mylsitem,Co%val,Cv2%val,pack_gmo, &
+       call get_packed_gmo(small_frag,mylsitem,Co%val,Cv2%val,pack_gmo, &
             & nbasis,nocc,nvirt,MOinfo)
      end if
 
@@ -2614,7 +2616,7 @@ module cc_debug_routines_module
   !
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine get_packed_gmo(MyLsItem,Co,Cv,pack_gmo,nbas,nocc,nvir,MOinfo)
+  subroutine get_packed_gmo(small_frag,MyLsItem,Co,Cv,pack_gmo,nbas,nocc,nvir,MOinfo)
 
     implicit none
 
@@ -2622,6 +2624,8 @@ module cc_debug_routines_module
     integer, intent(in) :: nbas, nocc, nvir
     !> SCF transformation matrices:
     real(realk), intent(in) :: Co(nbas,nocc), Cv(nbas,nvir)
+    !> performed MO-based CCSD calculation ?
+    logical, intent(inout) :: small_frag
     !> array with packed gmo on output:
     real(realk), pointer, intent(out) :: pack_gmo(:)
     integer(kind=long) :: pack_gmosize
@@ -2630,9 +2634,9 @@ module cc_debug_routines_module
 
     !> variables used for MO batch and integral transformation
     integer :: ntot ! total number of MO
-    real(realk), pointer :: Cov(:,:)
-    real(realk), pointer :: gmo(:)
-    integer(kind=long) :: gmosize, min_mem
+    real(realk), pointer :: Cov(:,:), CP(:,:), CQ(:,:)
+    real(realk), pointer :: gmo(:), tmp1(:), tmp2(:)
+    integer(kind=long) :: gmosize, min_mem, tmp_size
     integer :: Nbatch, PQ_batch, dimP, dimQ
     integer :: P_sta, P_end, Q_sta, Q_end, dimPack, ipack
     type(MObatchInfo), intent(out) :: MOinfo
@@ -2678,34 +2682,35 @@ module cc_debug_routines_module
 
     ! Set default values for the path throug the routine
     ! **************************************************
-    scheme           = 0
-    pack_scheme      = 2
-    dynamic_load     = DECinfo%dyn_load
-    print_debug      = (DECinfo%PL>2)
-    iter             = 1
-    local            = .false.
+    ntot          = nocc + nvir
+    scheme        = 0
+    pack_scheme   = 2
+    dynamic_load  = DECinfo%dyn_load
+    print_debug   = (DECinfo%PL>2)
+    iter          = 1
+    local         = .false.
 
 
     ! Set integral info
     ! *****************
-    INTSPEC(1)       = 'R' !R = Regular Basis set on the 1th center 
-    INTSPEC(2)       = 'R' !R = Regular Basis set on the 2th center 
-    INTSPEC(3)       = 'R' !R = Regular Basis set on the 3th center 
-    INTSPEC(4)       = 'R' !R = Regular Basis set on the 4th center 
-    INTSPEC(5)       = 'C' !C = Coulomb operator
+    INTSPEC(1)    = 'R' !R = Regular Basis set on the 1th center 
+    INTSPEC(2)    = 'R' !R = Regular Basis set on the 2th center 
+    INTSPEC(3)    = 'R' !R = Regular Basis set on the 3th center 
+    INTSPEC(4)    = 'R' !R = Regular Basis set on the 4th center 
+    INTSPEC(5)    = 'C' !C = Coulomb operator
 
     doscreen = MyLsItem%setting%scheme%cs_screen.OR. &
              & MyLsItem%setting%scheme%ps_screen
 
     ! Set MPI related info
     ! ********************
-    master           = .true.
-    mynum            = int(0,kind=ls_mpik)
-    nnod             = 1
+    master        = .true.
+    mynum         = int(0,kind=ls_mpik)
+    nnod          = 1
 #ifdef VAR_MPI
-    mynum            = infpar%lg_mynum
-    master           = (infpar%lg_mynum == 0)
-    nnod             = infpar%lg_nodtot
+    mynum         = infpar%lg_mynum
+    master        = (infpar%lg_mynum == 0)
+    nnod          = infpar%lg_nodtot
 #endif
 
     ! Some timings
@@ -2724,36 +2729,113 @@ module cc_debug_routines_module
     nullify(batch2orbGamma)
     nullify(batchindexGamma)
     nullify(Cov)
+    nullify(CP)
+    nullify(CQ)
     nullify(gao)
     nullify(gmo)
+    nullify(tmp1)
+    nullify(tmp2)
     nullify(pack_gmo)
     nullify(MOinfo%DimInd1)
     nullify(MOinfo%DimInd2)
     nullify(MOinfo%StartInd1)
     nullify(MOinfo%StartInd2)
     nullify(MOinfo%packInd)
-   
-    ! Get full MO coeficients:
-    ntot = nocc + nvir
-    call mem_alloc(Cov,nbas,ntot)
-    Cov(:,:nocc)       = Co
-    Cov(:,nocc+1:ntot) = Cv
+  
+
+    !======================================================================
+    !                      Get Dimension of batches                       !
+    !======================================================================
+
+    ! Get minimum mem. required in the MO-CCSD residual calculation
+    call get_mem_MO_CCSD_residual(MemNeed,ntot,nbas,nocc,nvir,1) 
+
+    ! get MO batches size:
+    if (DECinfo%cc_driver_debug) then
+      ! DEBUG HACK !!!!
+      dimP = 4
+      Nbatch = (ntot-1)/dimP + 1
+    else 
+      min_mem = int(MemNeed*1.024E3_realk**3/8.0E0_realk, kind=long)
+      call get_MO_batches_size(small_frag,min_mem,ntot,Nbatch,dimP,ntot*ntot,ntot)
+    end if
+
+    ! If not enough mem. available then get_MO_batches_size returned
+    ! small_frag == .false. and we switch back to standard CCSD algorithm.
+    if (.not.small_frag) return
+
+    ! sanity check:
+    call get_mem_MO_CCSD_residual(MemNeed,ntot,nbas,nocc,nvir,dimP) 
+    call get_currently_available_memory(MemFree)
+    if ((MemFree-MemNeed)<=0.0E0_realk) then
+      print *, 'MO batch: 1st assumption wrong'
+      call get_MO_batches_size(small_frag,min_mem,ntot,Nbatch,dimP,4*ntot*ntot,ntot)
+    end if
+
+    ! If not enough mem. available then get_MO_batches_size returned
+    ! small_frag == .false. and we switch back to standard CCSD algorithm.
+    if (.not.small_frag) return
+
+    ! sanity check:
+    call get_mem_MO_CCSD_residual(MemNeed,ntot,nbas,nocc,nvir,dimP) 
+    call get_currently_available_memory(MemFree)
+    if ((MemFree-MemNeed)<=0.0E0_realk) then
+      small_frag = .false.
+      return
+    end if
+
+    print *, 'test: dimP, Nbatch', dimP, Nbatch
+
+    ! Get minimum mem. required to get gmo:
+    call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+      call get_currently_available_memory(MemFree)
+    call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimP,Nbatch, &
+                           & MinAObatch,MinAObatch,MinAObatch)
+
+    MaxAllowedDimGamma = MinAObatch
+    MaxAllowedDimAlpha = MinAObatch
+    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAllowedDimGamma<=nbas)) 
+      MaxAllowedDimGamma = MaxAllowedDimGamma + 1
+       call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimP,Nbatch, &
+                           & MaxAllowedDimAlpha,MaxAllowedDimGamma,MinAObatch)  
+    end do
+    if (MaxAllowedDimGamma>=nbas) then
+      MaxAllowedDimGamma = nbas
+    else if (MaxAllowedDimGamma<=MinAObatch) then
+      MaxAllowedDimGamma = MinAObatch
+    else 
+      MaxAllowedDimGamma = MaxAllowedDimGamma - 1
+    end if
+    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAllowedDimAlpha<=nbas)) 
+      MaxAllowedDimAlpha = MaxAllowedDimAlpha + 1
+       call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimP,Nbatch, &
+                           & MaxAllowedDimAlpha,MaxAllowedDimGamma,MinAObatch)  
+    end do
+    if (MaxAllowedDimAlpha>=nbas) then
+      MaxAllowedDimAlpha = nbas
+    else if (MaxAllowedDimAlpha<=MinAObatch) then
+      MaxAllowedDimAlpha = MinAObatch
+    else 
+      MaxAllowedDimAlpha = MaxAllowedDimAlpha - 1
+    end if
+
+    ! sanity check:
+    call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimP,Nbatch, &
+                           & MaxAllowedDimAlpha,MaxAllowedDimGamma,MinAObatch)  
+    call get_currently_available_memory(MemFree)
+    if ((MemFree-MemNeed)<=0.0E0_realk) then
+      small_frag = .false.
+      return
+    end if
+    print *, 'test: MaxAllowedDimAlpha, MaxAllowedDimGamma, MinAObatch', &
+             & MaxAllowedDimAlpha, MaxAllowedDimGamma, MinAObatch
+    !======================================================================
+
 
 
     !==================================================
     !                  Batch construction             !
     !==================================================
-
-
-    if (master) then
-      ! Get free memory and determine maximum batch sizes
-      ! -------------------------------------------------
-      call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
-      call get_currently_available_memory(MemFree)
-      call get_max_batch_sizes(scheme,nbas,nvir,nocc,MaxAllowedDimAlpha, &
-           & MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter, &
-           & MemFree,.true.,els2add,local)
-    end if
 
     ! MPI: here you should start the slaves!!
 
@@ -2820,14 +2902,35 @@ module cc_debug_routines_module
        batch2orbAlpha(idx)%orbindex(K) = iorb
     end do
 
+
+    ! **************************************
+    ! * Allocate Memory to working arrays  *
+    ! **************************************
+
     ! AO integral allocation:
     gaosize = int(i8*nbas*nbas*MaxActualDimAlpha*MaxActualDimGamma,kind=long)
     call mem_alloc(gao,gaosize)
 
+    ! Get full MO coeficients:
+    call mem_alloc(Cov,nbas,ntot)
+    Cov(:,:nocc)       = Co
+    Cov(:,nocc+1:ntot) = Cv
 
-    ! ****************************************************
-    ! *  Allocate matrices and determine MO batch info.  *
-    ! ****************************************************
+    call mem_alloc(CP,MaxActualDimAlpha,dimP)
+    call mem_alloc(CQ,MaxActualDimGamma,dimP)
+
+    gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
+    call mem_alloc(gmo,gmosize)
+
+    MOinfo%nbatch = Nbatch
+    call get_MO_batches_info(MOinfo, dimP, ntot)
+
+    tmp_size = max(nbas*MaxActualDimAlpha*MaxActualDimGamma, ntot*MaxActualDimGamma*dimP)
+    tmp_size = int(i8*ntot*tmp_size, kind=long)
+    call mem_alloc(tmp1, tmp_size)
+    tmp_size = max(MaxActualDimAlpha*MaxActualDimGamma, dimP*dimP)
+    tmp_size = int(i8*ntot*ntot*tmp_size, kind=long)
+    call mem_alloc(tmp2, tmp_size)
 
     select case (pack_scheme) 
       case (0)
@@ -2841,37 +2944,13 @@ module cc_debug_routines_module
     end select
     call mem_alloc(pack_gmo,pack_gmosize)
     pack_gmo(:) = 0.0E0_realk
-
+     
     ! Sanity checks for matrix sizes which need to be filled:
     if (pack_gmosize>MaxInt.or.gaosize>MaxInt) then
     call lsquit("ERROR(CCSD):matrix sizes too large, &
         & please recompile with 64bit integers",-1)
     endif
-
-    ! get free memory and minimum required memory:
-    call get_currently_available_memory(MemFree)
-    call get_min_required_mem(ntot,nocc,nvir,MaxActualDimAlpha,MaxActualDimGamma,MemNeed)
-    print *, 'MEM AVAILABLE', MemFree-MemNeed
- 
-    ! get MO batches size:
-    ! DEBUG HACK !!!!
-    if (DECinfo%cc_driver_debug) then
-      dimP = 4
-      Nbatch = (ntot-1)/dimP + 1
-    else 
-      min_mem = int(MemNeed*1.024E3_realk**3/8.0E0_realk, kind=long)
-      call get_MO_batches_size(min_mem, ntot, Nbatch, dimP, (4*ntot*ntot + nocc*ntot), &
-                      & (MaxActualDimAlpha*ntot*ntot + 3*nocc*nvir*ntot + nocc*nocc*ntot))
-    end if
-    print *, 'test: dimP, Nbatch', dimP, Nbatch
- 
-    gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
-    call mem_alloc(gmo,gmosize)
-
-
-    MOinfo%nbatch = Nbatch
-    call get_MO_batches_info(MOinfo, dimP, ntot)
-
+     
 
     ! *******************************************************
     ! *  This subroutine builds the full screening matrix.
@@ -2948,8 +3027,8 @@ module cc_debug_routines_module
          Q_sta  = MOinfo%StartInd2(PQ_batch)
          dimQ   = MOinfo%DimInd2(PQ_batch)
 
-         call gao_to_gmo(gmo, gao, Cov, nbas, ntot, AlphaStart, dimAlpha, &
-                        & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
+         call gao_to_gmo(gmo,gao,Cov,CP,CQ,nbas,ntot,AlphaStart,dimAlpha, &
+                        & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1,tmp2)
 
          ipack = MOinfo%packInd(PQ_batch)
 
@@ -2992,137 +3071,164 @@ module cc_debug_routines_module
     end do
     call mem_dealloc(batch2orbAlpha)
 
-    ! Free integrals
+    ! Free matrices:
     call mem_dealloc(gao)
     call mem_dealloc(gmo)
+    call mem_dealloc(tmp1)
+    call mem_dealloc(tmp2)
     call mem_dealloc(Cov)
- 
+    call mem_dealloc(CP)
+    call mem_dealloc(CQ)
+     
+
     ! print timing:
     call LSTIMER('get_packed_gmo',tcpu,twall,DECinfo%output)
 
   end subroutine get_packed_gmo
 
 
-  !> Purpose: Get minimum amount of memory needed to run 
-  !           the MO based ccsd code for small fragments
-  ! 
+  !> Purpose: Get memory required in get_packed_gmo depending on AO 
+  !           batch dimension.
+  !           Get min. required memory: AlphaDim = GammaDim = MinDimAO
+  !
   !> Author:  Pablo Baudin
-  !> Date:    November 2013
-  subroutine get_min_required_mem(N,O,V,Alpha,Gamma,MemNeed)
+  !> Date:    December 2013
+  subroutine get_mem_packed_gmo(MemOut,M,N,O,V,X,nMOB,AlphaDim,GammaDim,MinDimAO)
 
     implicit none 
    
-    ! N: tot number of orbs.
+    ! M: tot number of MO
+    ! N: tot number of AO
     ! O: number of occ. orbs.
     ! V: number of virt. orbs.
-    integer,  intent(in) :: N, O, V 
-    ! max dimension of AO batches:
-    integer, intent(in) :: Alpha, Gamma
-    ! minimum memory needed:
-    real(realk), intent(inout) :: MemNeed
+    ! X: dimension of MO batch.
+    ! nMOB: number of MO batches.
+    integer,  intent(in) :: M, N, O, V, X, nMOB
+    !> AO stuff:
+    integer, intent(in) :: AlphaDim, GammaDim, MinDimAO
+    ! memory needed:
+    real(realk), intent(inout) :: MemOut
     ! intermediate memory:
-    integer :: MemNeed1, MemNeed2
+    integer :: MemNeed
 
-    !=================================================
-    ! Mem needed to pack MO integrals:
-    !
-    ! batch MO int:
-    MemNeed1 = N*N
-    ! working arrays:
-    MemNeed1 = MemNeed1 + 2*Alpha*Gamma*N*N
-    ! transformation matrices:
-    MemNeed1 = MemNeed1 + Alpha + Gamma
+    ! Transfo. matrices:
+    MemNeed = N*M + AlphaDim*X + GammaDim*X
+  
+    ! AO stuff:
+    MemNeed = MemNeed + 4*N + N*N*AlphaDim*GammaDim 
+    
+    ! Packed gmo:
+    MemNeed = MEmNeed + M*(M+1)*M*(M+1)/4
 
-    !=================================================
-    ! Mem needed to build ccsd residual:
-    !
-    ! transformation matrices:
-    MemNeed2 = V*N + O*N
-    ! unpacked MO int. in batches:
-    MemNeed2 = MemNeed2 + N*N
-    ! Intermediates (B2prep, u2, G_Pi, H_aQ):
-    MemNeed2 = MemNeed2 + O*O*O*O + O*O*V*V + N*O + V*N
-    ! Full MO int.
-    MemNeed2 = MemNeed2 + 3*O*O*V*V
+    ! MO stuff:
+    MemNeed = MemNeed + X*X*M*M + 5*nMOB*nMOB + 1
+    
     ! Working arrays:
-    MemNeed2 = MemNeed2 + max(O*O*V*V, O*V*N, N*N)
-    MemNeed2 = MemNeed2 + O*O*N*N
-    MemNeed2 = MemNeed2 + max(O*O*V*V, O*V*N, O*O*N, N*N)
+    MemNeed = MemNeed + max(M*N*AlphaDim*GammaDim, M*M*GammaDim*X)
+    MemNeed = MemNeed + max(M*M*AlphaDim*GammaDim, M*M*X*X)
+    
+    MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
+  
+  end subroutine get_mem_packed_gmo
 
-    MemNeed = max(MemNeed1, MemNeed2)*8.0E0_realk/(1.024E3_realk**3) 
 
-  end subroutine get_min_required_mem
+  !> Purpose: Get memory required in get_ccsd_residual_small_frag 
+  !           depending on MO batch dimension.
+  !           Get min. required memory when X = 1 
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    December 2013
+  subroutine get_mem_MO_CCSD_residual(MemOut,M,N,O,V,X)
+
+    implicit none 
+   
+    ! M: tot number of MO
+    ! N: tot number of AO
+    ! O: number of occ. orbs.
+    ! V: number of virt. orbs.
+    ! X: dimension of MO batch.
+    integer,  intent(in) :: M, N, O, V, X
+    ! memory needed:
+    real(realk), intent(inout) :: MemOut
+    ! intermediate memory:
+    integer :: MemNeed
+
+    ! Working arrays:
+    MemNeed = max(O**4, V*O**3, V*V*O*O, X*X*M*M, X*O*O*V, X*O*V*V)
+    MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M)
+    MemNeed = MemNeed + max(X*O*V*M, O*O*V*V, X*X*M*M, X*O*O*M)
+
+    ! T1-Transfo. matrices:
+    MemNeed = MemNeed + V*M + O*M
+  
+    ! Batch of MO int:
+    MemNeed = MemNeed + X*X*M*M
+    
+    ! Intermediates (B2prep, u2, G_Pi, H_aQ):
+    MemNeed = MemNeed + O**4 + O*O*V*V + X*O + V*X
+    
+    ! T1-transformed integrals:
+    MemNeed = MemNeed + O**4 + 2*V*O**3 + 3*O*O*V*V 
+
+    ! Fock Matrix:
+    MemNeed = MemNeed + 3*N*N
+
+    MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
+
+  end subroutine get_mem_MO_CCSD_residual
 
 
   !> Purpose: Transform AO int. into MO int. in batches
   !           
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine gao_to_gmo(gmo, gao, Cov, nbas, ntot, AlphaStart, dimAlpha, &
-             & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
+  subroutine gao_to_gmo(gmo,gao,Cov,CP,CQ,nbas,ntot,AlphaStart,dimAlpha, &
+             & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1,tmp2)
 
     implicit none
 
     integer, intent(in) :: nbas, AlphaStart, dimAlpha, GammaStart, dimGamma
     integer, intent(in) :: ntot, P_sta, dimP, Q_sta, dimQ
     real(realk), intent(inout) :: gmo(dimP*dimQ*ntot*ntot)
-    real(realk), intent(in) :: gao(dimAlpha*nbas*dimGamma*nbas), Cov(nbas,ntot)
+    real(realk), intent(in) :: gao(nbas*nbas*dimAlpha*dimGamma), Cov(nbas,ntot)
+    real(realk) :: CP(dimAlpha,dimP), CQ(dimGamma,dimQ)
+    real(realk) :: tmp1(:), tmp2(:)
 
     integer :: AlphaEnd, GammaEnd, P_end, Q_end
     integer(kind=long) :: tmp1_size, tmp2_size
-    real(realk), pointer, dimension(:)   :: tmp1, tmp2 => null()
-    real(realk), pointer, dimension(:,:) :: CP, CQ => null()
-   
 
     AlphaEnd = AlphaStart+dimAlpha-1
     GammaEnd = GammaStart+dimGamma-1
     P_end     = P_sta+dimP-1
     Q_end     = Q_sta+dimQ-1
  
-    ! allocation stuff:
-    call mem_alloc(CP,dimAlpha,dimP)
-    call mem_alloc(CQ,dimGamma,dimQ)
-
-    tmp1_size = max(dimAlpha*dimGamma, dimAlpha*dimQ)
-    tmp1_size = int(i8*nbas*nbas*tmp1_size, kind=long)
-    tmp2_size = max(dimAlpha*dimGamma, dimP*dimQ)
-    tmp2_size = int(i8*nbas*nbas*tmp2_size, kind=long)
-    call mem_alloc(tmp1, tmp1_size)
-    call mem_alloc(tmp2, tmp2_size)
-
     ! initialisation of transfo. matrices:
     CP = Cov(AlphaStart:AlphaEnd,P_sta:P_end)
     CQ = Cov(GammaStart:GammaEnd,Q_sta:Q_end)
 
-    ! transfo 1st index => [R, delta, alphaB, gammaB]
-    call dgemm('t','n',ntot,nbas*dimAlpha*dimGamma,nbas,1.0E0_realk, &
-         & Cov,nbas,gao,nbas,0.0E0_realk,tmp1,ntot)
+    ! transfo Beta to r => [delta alphaB gammaB, r]
+    call dgemm('t','n',nbas*dimAlpha*dimGamma,ntot,nbas,1.0E0_realk, &
+         & gao,nbas,Cov,nbas,0.0E0_realk,tmp1,nbas*dimAlpha*dimGamma)
     call lsmpi_poke() 
 
-    ! transfo last index => [R, delta, alphaB, Q_batch]
-    call dgemm('n','n',ntot*nbas*dimAlpha,dimQ,dimGamma,1.0E0_realk, &
-         & tmp1,ntot*nbas*dimAlpha,CQ,dimGamma,0.0E0_realk,tmp2,ntot*nbas*dimAlpha)
-    call lsmpi_poke()
-
-    ! transpose array => [alphaB Q_batch; R delta]
-    call mat_transpose(ntot*nbas,dimAlpha*dimQ,1.0E0_realk,tmp2,0.0E0_realk,tmp1)
+    ! transfo delta to s => [alphaB gammaB r, s]
+    call dgemm('t','n',dimAlpha*dimGamma*ntot,ntot,nbas,1.0E0_realk, &
+         & tmp1,nbas,Cov,nbas,0.0E0_realk,tmp2,dimAlpha*dimGamma*ntot)
     call lsmpi_poke() 
- 
-    ! transfo 1st index => [P_batch, Q_batch, R, delta]
-    call dgemm('t','n',dimP,dimQ*ntot*nbas,dimAlpha,1.0E0_realk, &
-         & CP,dimAlpha,tmp1,dimAlpha,0.0E0_realk,tmp2,dimP) 
+
+    ! transfo alphaB to P_batch => [gammaB r s, P]
+    call dgemm('t','n',dimGamma*ntot*ntot,dimP,dimAlpha,1.0E0_realk, &
+         & tmp2,dimAlpha,CP,dimAlpha,0.0E0_realk,tmp1,dimGamma*ntot*ntot)
+    call lsmpi_poke() 
+
+    ! transfo gammaB to Q_batch => [r s P, Q]
+    call dgemm('t','n',ntot*ntot*dimP,dimQ,dimGamma,1.0E0_realk, &
+         & tmp1,dimGamma,CQ,dimGamma,0.0E0_realk,tmp2,ntot*ntot*dimP)
     call lsmpi_poke() 
      
-    ! transfo last index => [P_batch, Q_batch, R, S]
-    call dgemm('n','n',dimP*dimQ*ntot,ntot,nbas,1.0E0_realk,tmp2,dimP*dimQ*ntot, &
-         & Cov,nbas,0.0E0_realk,gmo,dimP*dimQ*ntot)
+    ! transpose matrix => [P_batch, Q_batch, r, s]
+    call mat_transpose(ntot*ntot,dimP*dimQ,1.0E0_realk,tmp2,0.0E0_realk,gmo)
     call lsmpi_poke() 
-
-    ! free array
-    call mem_dealloc(tmp1)
-    call mem_dealloc(tmp2)
-    call mem_dealloc(CP)
-    call mem_dealloc(CQ)
 
   end subroutine gao_to_gmo
 
@@ -3139,8 +3245,8 @@ module cc_debug_routines_module
   !
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine get_MO_batches_size(min_mem, tot_size, nBatch, &
-             & dimBatch, const_A, const_B)
+  subroutine get_MO_batches_size(small_frag,min_mem,tot_size,nBatch, &
+             & dimBatch,const_A,const_B)
 
     implicit none
   
@@ -3148,26 +3254,36 @@ module cc_debug_routines_module
     integer, intent(in) :: tot_size
     integer, intent(in) :: const_A, const_B
     integer, intent(inout) :: nBatch, dimBatch
+    logical, intent(inout) :: small_frag
      
     integer(kind=long) :: free_mem
-    real(realk) :: MemFree, deter
+    real(realk) :: MemFree, delta
 
 
     call get_currently_available_memory(MemFree)
     free_mem = int(MemFree*1024**3/realk, kind=long)
 
     ! Check than min_mem is available:
-    if ((free_mem-min_mem) < 0) stop &
-       & 'Insufficient memory in MO batches construction'
+    if ((free_mem-min_mem) < 0) then
+       small_frag = .false.
+       write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+                              & back to standard algorithm.'
+       write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
+       write(DECinfo%output,'(a,F12.5,a)') '   Required memory :', &
+                              & min_mem*realk/(1.024E3_realk**3),' GB'
+       return
+    end if
 
-    ! solve: const_A*dimBatch**2 + const_B*dimBatch <= free_mem
-    deter = const_B*const_B + 4.0E0_realk*const_A*free_mem
+    ! solve: const_A*dimBatch**2 + const_B*dimBatch + min_mem <= free_mem
+    delta = const_B*const_B - 4.0E0_realk*const_A*(min_mem-free_mem)
 
     ! check that constants are all positive:
-    if (deter<0.0E0_realk) stop 'Constants A and B have to be &
-       & positive in MO batches construction' 
+    if (delta<0.0E0_realk) call lsquit('Constants A and B have to be &
+       & positive in MO batches construction',DECinfo%output)
+    if (sqrt(delta)<const_B) call lsquit('Constants B have to be &
+       & positive in MO batches construction',DECinfo%output)
  
-    dimBatch = int((-const_B + sqrt(deter))/(const_A*2.0E0_realk)) 
+    dimBatch = int((-const_B + sqrt(delta))/(const_A*2.0E0_realk)) 
     if (dimBatch>tot_size) dimBatch = tot_size
     nBatch   = (tot_size-1)/dimBatch + 1
 
@@ -3656,8 +3772,6 @@ module cc_debug_routines_module
 
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
-    nullify(tmp1)
-    nullify(tmp2)
 
     ! Get C2 and D2 terms
     call wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo, &

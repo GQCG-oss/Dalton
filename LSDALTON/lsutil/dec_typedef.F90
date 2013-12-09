@@ -172,6 +172,11 @@ module dec_typedef_module
      real(realk) :: simplePNOthr
      !> this defines the PNO threshold used for the EOS adapted space
      real(realk) :: EOSPNOthr
+     !> Use MO-based algorithm to solve the CCSD equations
+     logical :: MOCCSD
+     !> Maximum number of MOs until which an MO-CCSD calculation should be
+     !> performed
+     integer :: Max_num_MO
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver
