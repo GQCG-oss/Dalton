@@ -657,16 +657,14 @@ module cc_debug_routines_module
               endif
 
               !transform back to original basis   
-              if(DECinfo%use_singles)then
-                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &Co=yocc%val,Cv=yvirt%val)
-              else
-                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=omega2(iter)%val,Co=yocc%val,Cv=yvirt%val)
+              if(DECinfo%CCSDpreventcanonical)then
+                if(DECinfo%use_singles)then
+                  call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                else
+                  call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                endif
               endif
 
               if(.not.fragment_job)then
@@ -680,16 +678,18 @@ module cc_debug_routines_module
               endif
 
               !transform to pseudo diagonal basis for the solver
-              if(DECinfo%use_singles)then
-                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=omega2(iter)%val,t1=omega1(iter)%val,Co=yocc%val,Cv=yocc%val)
-              else
-                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=omega2(iter)%val,Co=yocc%val,Cv=yocc%val)
+              if(DECinfo%CCSDpreventcanonical)then
+                if(DECinfo%use_singles)then
+                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=omega2(iter)%val,t1=omega1(iter)%val)
+                else
+                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=omega2(iter)%val)
+                endif
               endif
 
            else
