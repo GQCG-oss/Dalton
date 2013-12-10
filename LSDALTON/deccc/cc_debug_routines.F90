@@ -2855,14 +2855,14 @@ module cc_debug_routines_module
     !==================================================
 
     ! MPI: here you should start the slaves!!
-#ifdef VAR_MPI
-    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
-      call ls_mpibcast(CCGETGMOCONSTR,infpar%master,infpar%lg_comm)
-      call cc_gmo_communicate_data(small_frag,MyLsItem,Co,Cv,pack_gmo,nb,no,nv,ccm)
-    endif StartUpSlaves
-
-
-#endif
+!#ifdef VAR_MPI
+!    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
+!      call ls_mpibcast(CCGETGMOCONSTR,infpar%master,infpar%lg_comm)
+!      call cc_gmo_communicate_data(small_frag,MyLsItem,Co,Cv,pack_gmo,nb,no,nv,ccm)
+!    endif StartUpSlaves
+!
+!
+!#endif
 
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
@@ -2944,7 +2944,11 @@ module cc_debug_routines_module
     call mem_alloc(CP,MaxActualDimAlpha,dimP)
     call mem_alloc(CQ,MaxActualDimGamma,dimP)
 
-    gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
+    if(ccmodel == MODEL_RPA) then
+      gmosize = int(i8*nvir*nocc*nvir*nocc, kind=long)
+    else
+      gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
+    endif
     call mem_alloc(gmo,gmosize)
 
     MOinfo%nbatch = Nbatch
@@ -2968,7 +2972,9 @@ module cc_debug_routines_module
         call lsquit('This pack scheme is not yet implemented',DECinfo%output)
     end select
     !JOHANNES remember to delete this one
-    !pack_gmosize = int(i8*nvir*nocc*nvir*nocc, kind=long)
+    if(ccmodel == MODEL_RPA) then
+      pack_gmosize = int(i8*nvir*nocc*nvir*nocc, kind=long)
+    endif
     call mem_alloc(pack_gmo,pack_gmosize)
     pack_gmo(:) = 0.0E0_realk
      

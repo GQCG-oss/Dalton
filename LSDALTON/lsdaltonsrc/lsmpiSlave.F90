@@ -144,6 +144,8 @@
             call get_master_comm_proc_to_wrapper
          case(CCSDSLV4E2);
             call calculate_E2_and_permute_slave
+         case(RPAGETRESIDUAL);
+            call rpa_res_slave
 #ifdef MOD_UNRELEASED
          case(CCSDPTSLAVE);
             call ccsdpt_slave
