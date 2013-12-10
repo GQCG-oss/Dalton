@@ -2193,14 +2193,14 @@ contains
     !calculate inactive fock matrix in ao basis
     call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens%elms,nb)
     call mat_zero(iFock)
-    call dec_fock_transformation(iFock,Dens,MyLsItem,.false.)
+    !call dec_fock_transformation(iFock,Dens,MyLsItem,.false.)
     
 
     !THIS IS NOT YET IMPLEMENTED -- as soon as it is, do not use type(matrix)
     !anymore
-    !call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
-    !& Dens%elms,.false.,iFock%elms)
-    !use dens as temporay array 
+    print *,"currently wrong fock matrix"
+    call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
+    & Dens%elms,.false.,iFock%elms)
 
 
 
