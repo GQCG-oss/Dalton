@@ -17,12 +17,13 @@ module rpa_module
   use screen_mod!,only: free_decscreen, DECSCREENITEM
   use integralinterfaceDEC
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
+  use ccsd_module
 !       & ii_get_fock_mat_full
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  !use integralparameters!, only: AORdefault
 #endif
-  use integralparameters!, only: AORdefault
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
@@ -31,6 +32,7 @@ module rpa_module
 #endif
     use dec_fragment_utils
     use ri_simple_operations
+    use tensor_interface_module
     use array2_simple_operations!, only: array2_init, array2_add,&
 !         & array2_transpose, array2_free, array2_add_to
     use array3_simple_operations!, only: array_reorder_3d
@@ -46,7 +48,7 @@ module rpa_module
     use ccsd_module
 
 
-    public :: RPA_residual,RPA_energy,SOSEX_contribution,RPA_multiplier,rpa_residualdeb
+    public :: RPA_residual,RPA_energy,SOSEX_contribution,RPA_multiplier,rpa_residualdeb,rpa_residualpar
     
 
     private
@@ -407,6 +409,88 @@ contains
 
   end subroutine RPA_residual_adddeb
 
+!\brief Calculate RPA residual for current doubles amplitudes
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date March 2013
+  subroutine RPA_residualpar(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2
+    real(realk),pointer, intent(inout) :: gmo(:)
+    type(array2), intent(inout) :: pfock,qfock
+    integer, intent(in) :: nocc,nvirt
+    type(array4) :: tmp
+    real(realk),pointer :: w2(:)
+    integer, dimension(4) :: tmp_dims
+    integer :: a,b,c,i,j,k
+    real(realk) :: starttime,stoptime
+    type(array) :: g_par,t_par,t_par1
+    integer :: nnod,mynum,fai,tl
+    integer :: nvir,noc
+    logical :: master
+    character(ARR_MSG_LEN) :: msg
+    type(array4) :: Sckdl,Dckbj
+    
+
+#ifdef VAR_MPI
+    mynum         = infpar%lg_mynum
+    master        = (infpar%lg_mynum == 0)
+    nnod          = infpar%lg_nodtot
+#endif
+   nvir=nvirt
+   noc=nocc
+
+    call cpu_time(starttime)
+
+    write(*,*) 'JOHANNES PAR res'
+    ! MPI: here you should start the slaves!!
+#ifdef VAR_MPI
+    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
+      call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
+      call rpa_res_communicate_data(gmo,t2,omega2,pfock,qfock,nvir,noc)
+    endif StartUpSlaves
+#endif
+
+    !call lsmpi_barrier(infpar%lg_comm)
+    !call lsmpi_barrier(infpar%lg_comm)
+    !print*, infpar%lg_mynum, 'par residual'
+    !call lsmpi_barrier(infpar%lg_comm)
+    
+    !do a=1,nvirt
+    ! do i=1,nocc
+    !    Sckdl%val(a,i,a,i)=Sckdl%val(a,i,a,i)+1._realk
+    ! enddo
+    !enddo
+
+    call mo_work_dist(nvirt*nocc,fai,tl)
+    call mem_alloc(w2,tl*nocc*nvirt)
+
+    t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+    call array4_reorder(t2,[1,3,2,4])
+    call array_convert(t2%val,t_par)
+
+    call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
+
+     
+    call array_convert(gmo,g_par)
+    call array_convert(gmo,t_par)
+    call array_convert(t_par,t2%val)
+    !call array_convert(t2%val,t_par)
+    call print_norm(gmo,i8*nocc*nvirt*nocc*nvirt,msg)
+    
+    call print_norm(g_par,msg)
+    call print_norm(t2,msg)
+    call print_norm(t_par,msg)
+    stop
+
+
+
+    call cpu_time(stoptime)
+
+    !call lsquit('RPA_residual: Needs implementation',-1)
+
+  end subroutine RPA_residualpar
+
 
 
 
@@ -467,6 +551,7 @@ contains
     type(array4), intent(in) :: t2
     real(realk) :: energy
 
+    write(*,*) 'In rpa_energy'
     !Test for understanding the structure, 
     J = array4_duplicate(gmo)
     !call array4_scale(J,2.E0_realk)
@@ -499,3 +584,25 @@ contains
   end function SOSEX_contribution
 
 end module rpa_module
+
+#ifdef VAR_MPI
+subroutine rpa_res_slave()
+  use dec_typedef_module
+  use typedeftype,only:lsitem
+  use decmpi_module,only:rpa_res_communicate_data
+  use infpar_module
+  use rpa_module
+  implicit none
+  !> number of orbitals:
+  type(array4) :: omega2,t2
+  real(realk),pointer :: gmo(:)
+  type(array2)  :: pfock,qfock
+  integer :: nbas, nocc, nvirt
+  !> how to pack integrals:
+  
+  print*, infpar%lg_mynum,'rpa_res_slave'
+  call rpa_res_communicate_data(gmo,t2,omega2,pfock,qfock,nvirt,nocc)
+  call RPA_residualpar(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+
+end subroutine rpa_res_slave
+#endif
