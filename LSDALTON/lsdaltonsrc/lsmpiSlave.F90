@@ -136,12 +136,16 @@
 ! DEC MP2 integrals and amplitudes
          case(MP2INAMP);
             call MP2_integrals_and_amplitudes_workhorse_slave
+         case(CCGETGMOCONSTR);
+            call cc_gmo_slave
          case(CCSDDATA);
             call ccsd_data_preparation
          case(CCSD_COMM_PROC_MASTER);
             call get_master_comm_proc_to_wrapper
          case(CCSDSLV4E2);
             call calculate_E2_and_permute_slave
+         case(RPAGETRESIDUAL);
+            call rpa_res_slave
 #ifdef MOD_UNRELEASED
          case(CCSDPTSLAVE);
             call ccsdpt_slave

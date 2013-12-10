@@ -17,12 +17,13 @@ module rpa_module
   use screen_mod!,only: free_decscreen, DECSCREENITEM
   use integralinterfaceDEC
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
+  use ccsd_module
 !       & ii_get_fock_mat_full
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  !use integralparameters!, only: AORdefault
 #endif
-  use integralparameters!, only: AORdefault
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
@@ -31,6 +32,7 @@ module rpa_module
 #endif
     use dec_fragment_utils
     use ri_simple_operations
+    use tensor_interface_module
     use array2_simple_operations!, only: array2_init, array2_add,&
 !         & array2_transpose, array2_free, array2_add_to
     use array3_simple_operations!, only: array_reorder_3d
@@ -46,7 +48,8 @@ module rpa_module
     use ccsd_module
 
 
-    public :: RPA_residual,RPA_energy,SOSEX_contribution,RPA_multiplier
+    public :: RPA_residual,RPA_energy,SOSEX_contribution,RPA_multiplier,rpa_residualdeb,rpa_residualpar
+    
 
     private
 
@@ -278,6 +281,218 @@ contains
     return
   end subroutine RPA_fock_multi_part
 
+  !\brief Calculate RPA residual for current doubles amplitudes
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date March 2013
+  subroutine RPA_residualdeb(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2
+    real(realk), intent(in) :: gmo(nvirt*nocc*nvirt*nocc)
+    type(array2), intent(inout) :: pfock,qfock
+    integer, intent(in) :: nocc,nvirt
+    type(array4) :: tmp
+    integer, dimension(4) :: tmp_dims
+    integer :: a,b,c,i,j,k
+    real(realk) :: starttime,stoptime
+
+
+    call cpu_time(starttime)
+
+    !get the MP2 part of the residual
+    !call getDoublesResidualMP2_simple(Omega2,t2,gmo,pfock,qfock, &
+    !           & nocc,nvirt)
+    write(*,*) 'I am now in residualdeb, and everything is ok'
+
+    call RPA_fock_partdeb(omega2,t2,pfock,qfock,nocc,nvirt)
+    call RPA_residual_adddeb(omega2,t2,gmo,nocc,nvirt)
+
+    !for debugging
+    !call array4_add_to(omega2,2.0E0_realk,gmo)
+
+    call cpu_time(stoptime)
+
+    !call lsquit('RPA_residual: Needs implementation',-1)
+
+  end subroutine RPA_residualdeb
+
+  !\brief Calculate fock matrix part of the RPA residual 
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date March 2013
+  subroutine RPA_fock_partdeb(omega2,t2,pfock,qfock,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2
+    type(array2), intent(inout) :: pfock,qfock
+    integer, intent(in) :: nocc,nvirt
+    type(array4) :: tmp
+    integer, dimension(4) :: tmp_dims
+    integer :: a,b,c,i,j,k
+
+
+    ! 1
+    call array2_transpose(qfock)
+    call array4_reorder(t2,[3,4,1,2])
+    tmp = array4_init([nvirt,nocc,nvirt,nocc])
+    call array4_contract1(t2,qfock,tmp,.true.)
+    call array4_reorder(tmp,[3,4,1,2])
+    call array4_add_to(omega2,1.0E0_realk,tmp)
+    call array4_free(tmp)
+    call array4_reorder(t2,[3,4,1,2])
+
+    ! 2
+    call array4_contract1(t2,qfock,omega2,.false.)
+    call array2_transpose(qfock)
+
+    ! 3
+    call array4_reorder(t2,[4,3,2,1])
+    tmp = array4_init([nocc,nvirt,nocc,nvirt])
+    call array4_contract1(t2,pfock,tmp,.true.)
+    call array4_reorder(t2,[4,3,2,1])
+    call array4_reorder(tmp,[4,3,2,1])
+    call array4_add_to(omega2,-1.0E0_realk,tmp)
+    call array4_free(tmp)
+
+    ! 4
+    call array4_reorder(t2,[2,1,3,4])
+    tmp = array4_init([nocc,nvirt,nvirt,nocc])
+    call array4_contract1(t2,pfock,tmp,.true.)
+    call array4_reorder(t2,[2,1,3,4])
+    call array4_reorder(tmp,[2,1,3,4])
+    call array4_add_to(omega2,-1.0E0_realk,tmp)
+    call array4_free(tmp)
+
+
+    !For debugging
+    !call array4_add_to(omega2,2.0E0_realk,gmo)
+
+    return
+  end subroutine RPA_fock_partdeb
+
+  !\brief Calculate additional linear and quadratic terms of the RPA residual 
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date March 2013
+  subroutine RPA_residual_adddeb(omega2,t2,gmo,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2
+    real(realk), intent(in) :: gmo(nvirt*nocc*nvirt*nocc)
+    integer, intent(in) :: nocc,nvirt
+    type(array4) :: Sckdl,Dckbj
+    integer, dimension(4) :: tmp_dims
+    integer :: a,b,c,i,j,k,dim1
+    real(realk) :: starttime,stoptime
+
+    !Sckdl = array4_init([nvirt,nocc,nvirt,nocc])
+    Sckdl = array4_duplicate(t2)
+    Dckbj = array4_init([nvirt,nocc,nocc,nvirt])
+
+    do a=1,nvirt
+     do i=1,nocc
+        Sckdl%val(a,i,a,i)=Sckdl%val(a,i,a,i)+1._realk
+     enddo
+    enddo
+
+    !gmo_CKLD We need it to be g_CKDL
+
+    dim1=nocc*nvirt
+    call dgemm('n','n',dim1,dim1,dim1, &
+         1.0E0_realk,gmo,dim1,Sckdl%val,dim1,0.0E0_realk,Dckbj%val,dim1)
+
+    call dgemm('n','n',dim1,dim1,dim1, &
+         2.0E0_realk,Sckdl%val,dim1,Dckbj%val,dim1,1.0E0_realk,omega2%val,dim1)
+    
+
+    call array4_free(Dckbj)
+    call array4_free(Sckdl)
+
+
+  end subroutine RPA_residual_adddeb
+
+!\brief Calculate RPA residual for current doubles amplitudes
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date March 2013
+  subroutine RPA_residualpar(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+
+    implicit none
+    type(array4), intent(inout) :: omega2,t2
+    real(realk),pointer, intent(inout) :: gmo(:)
+    type(array2), intent(inout) :: pfock,qfock
+    integer, intent(in) :: nocc,nvirt
+    type(array4) :: tmp
+    real(realk),pointer :: w2(:)
+    integer, dimension(4) :: tmp_dims
+    integer :: a,b,c,i,j,k
+    real(realk) :: starttime,stoptime
+    type(array) :: g_par,t_par,t_par1
+    integer :: nnod,mynum,fai,tl
+    integer :: nvir,noc
+    logical :: master
+    character(ARR_MSG_LEN) :: msg
+    type(array4) :: Sckdl,Dckbj
+    
+
+#ifdef VAR_MPI
+    mynum         = infpar%lg_mynum
+    master        = (infpar%lg_mynum == 0)
+    nnod          = infpar%lg_nodtot
+#endif
+   nvir=nvirt
+   noc=nocc
+
+    call cpu_time(starttime)
+
+    write(*,*) 'JOHANNES PAR res'
+    ! MPI: here you should start the slaves!!
+#ifdef VAR_MPI
+    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
+      call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
+      call rpa_res_communicate_data(gmo,t2,omega2,pfock,qfock,nvir,noc)
+    endif StartUpSlaves
+#endif
+
+    !call lsmpi_barrier(infpar%lg_comm)
+    !call lsmpi_barrier(infpar%lg_comm)
+    !print*, infpar%lg_mynum, 'par residual'
+    !call lsmpi_barrier(infpar%lg_comm)
+    
+    !do a=1,nvirt
+    ! do i=1,nocc
+    !    Sckdl%val(a,i,a,i)=Sckdl%val(a,i,a,i)+1._realk
+    ! enddo
+    !enddo
+
+    call mo_work_dist(nvirt*nocc,fai,tl)
+    call mem_alloc(w2,tl*nocc*nvirt)
+
+    t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+    call array4_reorder(t2,[1,3,2,4])
+    call array_convert(t2%val,t_par)
+
+    call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
+
+     
+    call array_convert(gmo,g_par)
+    call array_convert(gmo,t_par)
+    call array_convert(t_par,t2%val)
+    !call array_convert(t2%val,t_par)
+    call print_norm(gmo,i8*nocc*nvirt*nocc*nvirt,msg)
+    
+    call print_norm(g_par,msg)
+    call print_norm(t2,msg)
+    call print_norm(t_par,msg)
+    stop
+
+
+
+    call cpu_time(stoptime)
+
+    !call lsquit('RPA_residual: Needs implementation',-1)
+
+  end subroutine RPA_residualpar
+
+
+
 
   !\brief Calculate additional linear and quadratic terms of the RPA residual 
   !> \author Johannes Rekkedal and Thomas Bondo
@@ -336,6 +551,7 @@ contains
     type(array4), intent(in) :: t2
     real(realk) :: energy
 
+    write(*,*) 'In rpa_energy'
     !Test for understanding the structure, 
     J = array4_duplicate(gmo)
     !call array4_scale(J,2.E0_realk)
@@ -368,3 +584,25 @@ contains
   end function SOSEX_contribution
 
 end module rpa_module
+
+#ifdef VAR_MPI
+subroutine rpa_res_slave()
+  use dec_typedef_module
+  use typedeftype,only:lsitem
+  use decmpi_module,only:rpa_res_communicate_data
+  use infpar_module
+  use rpa_module
+  implicit none
+  !> number of orbitals:
+  type(array4) :: omega2,t2
+  real(realk),pointer :: gmo(:)
+  type(array2)  :: pfock,qfock
+  integer :: nbas, nocc, nvirt
+  !> how to pack integrals:
+  
+  print*, infpar%lg_mynum,'rpa_res_slave'
+  call rpa_res_communicate_data(gmo,t2,omega2,pfock,qfock,nvirt,nocc)
+  call RPA_residualpar(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+
+end subroutine rpa_res_slave
+#endif
