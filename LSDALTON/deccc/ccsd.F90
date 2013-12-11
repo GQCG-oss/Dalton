@@ -2086,7 +2086,7 @@ contains
 
 
       call get_cnd_terms_mo(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
-           &scheme,lock_outside,els2add)
+           &scheme,lock_outside,els2add,lg_nnod,lg_me)
 
 
 
@@ -2449,8 +2449,8 @@ contains
       
       !Setting transformation variables for each rank
       !**********************************************
-      call mo_work_dist(nv*nv*no,fai1,tl1)
-      call mo_work_dist(nv*no*no,fai2,tl2)
+      call mo_work_dist(nv*nv*no,fai1,tl1,nnod,me)
+      call mo_work_dist(nv*no*no,fai2,tl2,nnod,me)
 
       if(DECinfo%PL>3.and.me==0)then
         write(DECinfo%output,'("Trafolength in striped E1:",I5," ",I5)')tl1,tl2
@@ -2476,7 +2476,7 @@ contains
       if(.not.lock_outside)then
         call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2)
         do nod=1,nnod-1
-          call mo_work_dist(nv*nv*no,fri,tri,nod)
+          call mo_work_dist(nv*nv*no,fri,tri,nnod,me,nod)
           if(me==0)then
             do i=1,no
               call dcopy(tri,w1(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
@@ -2522,7 +2522,7 @@ contains
       if(.not.lock_outside)then
         call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2)
         do nod=1,nnod-1
-          call mo_work_dist(nv*no*no,fri,tri,nod)
+          call mo_work_dist(nv*no*no,fri,tri,nnod,me,nod)
           if(me==0)then
             do i=1,tri
               call dcopy(nv,w1(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
@@ -2635,19 +2635,20 @@ contains
        call lsmpi_poke()
   end subroutine check_job
   
-  subroutine mo_work_dist(m,fai,tl,nod)
+  subroutine mo_work_dist(m,fai,tl,nnod,me,nod)
     implicit none
     integer,intent(in) :: m
     integer,intent(inout)::fai
     integer,intent(inout)::tl
+    integer(kind=ls_mpik) :: nnod, me
     integer(kind=ls_mpik),optional,intent(inout)::nod
-    integer :: l,ml,me,nnod
+    integer :: l,ml
     
-    me   = 0
-    nnod = 1
+    !me   = 0
+    !nnod = 1
 #ifdef VAR_MPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
+    !nnod = infpar%lg_nodtot
+    !me   = infpar%lg_mynum
 #endif
       
     if(present(nod))me=nod
@@ -2676,7 +2677,7 @@ contains
   !> \author Patrick Ettenhuber
   !> \Date January 2013 
   subroutine get_cnd_terms_mo(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,&
-             &no,nv,omega2,s,lock_outside,els2add)
+             &no,nv,omega2,s,lock_outside,els2add,nnod,me)
     implicit none
     !> input some empty workspace of zise v^2*o^2 
     real(realk), intent(inout) :: w1(:)
@@ -2700,9 +2701,10 @@ contains
     logical, intent(in) :: lock_outside
     !> specify how many elements can be added to w3 buffer
     integer(kind=8),intent(in) :: els2add
+    integer(kind=ls_mpik) :: nnod, me
     integer :: tl,fai,lai,i,faif,lead
     integer :: l,ml
-    integer(kind=ls_mpik) :: nod,me,nnod,mode
+    integer(kind=ls_mpik) :: nod,mode
     real(realk) :: nrm1,nrm2,nrm3,nrm4
     integer :: a,b,j,fri,tri
     integer(kind=8) :: o2v2,tlov,w1size,w2size,w3size
@@ -2710,11 +2712,11 @@ contains
     real(realk) :: MemFree
      
 
-      me     = int(0,kind=ls_mpik)
-      nnod   = int(1,kind=ls_mpik)
+      !me     = int(0,kind=ls_mpik)
+      !nnod   = int(1,kind=ls_mpik)
 #ifdef VAR_MPI
-      nnod   = infpar%lg_nodtot
-      me     = infpar%lg_mynum
+      !nnod   = infpar%lg_nodtot
+      !me     = infpar%lg_mynum
       mode   = MPI_MODE_NOCHECK
 #endif
       o2v2   = int((i8*no)*no*nv*nv,kind=8)
@@ -2722,7 +2724,7 @@ contains
       
      !Setting transformation variables for each rank
      !**********************************************
-     call mo_work_dist(nv*no,fai,tl)
+     call mo_work_dist(nv*no,fai,tl,nnod,me)
 
      tlov  = int((i8*tl)*no*nv,kind=8)
 
@@ -2777,7 +2779,7 @@ contains
        else
          call array_gather_tilesinfort(gvvoo,w1,int((i8*no)*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
          do nod=1,nnod-1
-           call mo_work_dist(no*nv,fri,tri,nod)
+           call mo_work_dist(no*nv,fri,tri,nnod,me,nod)
            if(me==0)then
              do i=1,tri
                call dcopy(no*nv,w1(fri+i-1),no*nv,w2(i),tri)
@@ -2828,7 +2830,7 @@ contains
        else
          call array_gather_tilesinfort(t2,w1,o2v2,infpar%master,[1,4,2,3])
          do nod=1,nnod-1
-           call mo_work_dist(no*nv,fri,tri,nod)
+           call mo_work_dist(no*nv,fri,tri,nnod,me,nod)
            if(me==0)then
              do i=1,tri
                call dcopy(no*nv,w1(fri+i-1),no*nv,w3(i),tri)
@@ -3081,7 +3083,7 @@ contains
       
     !Setting transformation variables for each rank
     !**********************************************
-    call mo_work_dist(nv*nv,fai,tl)
+    call mo_work_dist(nv*nv,fai,tl,nnod,me)
 
     if(DECinfo%PL>3.and.me==0)then
       write(DECinfo%output,'("Trafolength in striped B2:",I5)')tl
