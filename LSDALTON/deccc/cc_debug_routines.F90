@@ -712,7 +712,7 @@ module cc_debug_routines_module
            !  !rpa_multipliers not yet implemented
            !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !else
-             call RPA_residualpar(Omega2(iter),t2(iter),pack_gmo,ppfock,qqfock,nocc,nvirt)
+             call RPA_residualdeb(Omega2(iter),t2(iter),pack_gmo,ppfock,qqfock,nocc,nvirt)
              !call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !endif
 
