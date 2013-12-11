@@ -1,43 +1,40 @@
 #ifdef MOD_UNRELEASED
+
 MODULE pbc_ff_contrib
 USE precision
 USE TYPEDEF
 USE lattice_type
 USE lattice_vectors
-!USE multipole_pbc
 USE matrix_module
 USE matrix_operations
 USE pbc_MSC
 USE pbc_matrix_operations
-use ls_util
-use integralinterfaceMod
-use lstiming
-contains
+USE ls_util
+USE integralinterfaceMod
+USE lstiming
+CONTAINS
 
-SUBROUTINE pbc_controlmm(num_its,Tlat,Tlmax,lmax,square_intermed,latvec,&
-nbast,lupri,nfdensity,numvecs,ll,E_ff,E_nn,refcell)
-!kvec,nbast,lupri,fock_mtx,nfdensity,nfsze)
+SUBROUTINE pbc_controlmm(num_its,Tlat,Tlmax,lmax,square_intermed,latvec, &
+		& nbast,lupri,nfdensity,numvecs,ll,E_ff,E_nn,refcell)
 IMPLICIT NONE
 
   TYPE(moleculeinfo) :: refcell
-  integer,intent(in) :: lupri
-  integer, intent(in) :: num_its,Tlmax
-  integer, intent(in) :: lmax!,nfsze
-  integer,intent(in) :: nbast,numvecs
+  INTEGER,INTENT(IN) :: lupri
+  INTEGER, INTENT(IN) :: num_its,Tlmax
+  INTEGER, INTENT(IN) :: lmax!,nfsze
+  INTEGER,INTENT(IN) :: nbast,numvecs
   TYPE(lvec_list_t), INTENT(INOUT) :: ll
-  real(realk),INTENT(INOUT) :: E_ff,E_nn
-  real(realk), intent(inout) :: Tlat((1+lmax)**2,(1+lmax)**2)
+  REAL(realk),INTENT(INOUT) :: E_ff,E_nn
+  REAL(realk), INTENT(INOUT) :: Tlat((1+lmax)**2,(1+lmax)**2)
   TYPE(matrix) :: nfdensity(numvecs)
-  real(realk),intent(in) ::latvec(3,3)
-  logical, intent(in) :: square_intermed
-!  logical :: reset_flag
-!  real(realk) :: q,pos(3)
-  real(realk),pointer :: nucmom(:)
-  real(realk) :: fock_tmp(nbast**2)
-  character(len=18) :: mattxt
-  integer :: i,j
-  integer :: num_latvec
-  integer :: iunit
+  REAL(realk),INTENT(IN) ::latvec(3,3)
+  LOGICAL, INTENT(IN) :: square_intermed
+  REAL(realk),POINTER :: nucmom(:)
+  REAL(realk) :: fock_tmp(nbast**2)
+  CHARACTER(LEN=18) :: mattxt
+  INTEGER :: i,j
+  INTEGER :: num_latvec
+  INTEGER :: iunit
 !cell_mm is multipole moment as input
 !it giveback the local moment of the central cell in a structure
 !I am not sure whether I need it yet.
@@ -57,7 +54,7 @@ call pbc_form_Tlattice(num_its,Tlat,tlmax,square_intermed,latvec,ll%nf,lupri)
 !call mem_alloc(nucmom,(lmax+1)**2)
 !call pbc_comp_nucmom(refcell,nucmom,lmax,nfsze,lupri)
 
-!fock_tmp=0_realk
+!fock_tmp=0.0_realk
 !call pbc_fform_fck(Tlmax,tlat,lmax,nbast,nfsze,ll,nfdensity,nucmom,g_2,E_ff,&
 !                   E_nn,lupri)
 
@@ -177,15 +174,15 @@ SUBROUTINE &
 #endif
 
   !call pbc_Tmatrix_print(T_supNF,siz,'T_supNF',lupri)
-!  debugsumT=0d0
+!  debugsumT=0.0_realk
 !  do i=1,siz
 !   do l=1,siz
 !      debugsumT=debugsumT+abs(T_supNF(i,l))
 !   enddo
 !  enddo
 !
-!  if(debugsumT .gt. 0d0) then
-!    write(*,*) 'debugsumT not equal to 0d0',siz,lmax
+!  if(debugsumT .gt. 0.0_realk) then
+!    write(*,*) 'debugsumT not equal to 0.0_realk',siz,lmax
 !    write(*,*)  debugsumT
 !    !call write_matrix(T_supNF,siz,siz)
 !    stop
@@ -193,7 +190,7 @@ SUBROUTINE &
   ! iterate Kudin & Scuseria's equation
 
   Tlat_aux(:,:) = T_supNF(:,:)
-  layers_in_T = 3.0D0 * nfsiz + 1.0D0
+  layers_in_T = 3.0_realk * nfsiz + 1.0_realk
   do i = 1, num_its
      write(LUPRI,*) 'pbc_form_Tlattice(): iteration ',i
      if (mod(i,2) .eq. 1) then
@@ -202,7 +199,7 @@ SUBROUTINE &
         call pbc_iterate_Tlattice(Tlat_aux,Tlat,W_NF,T_supNF,lmax,siz,square_intermed,lupri)
      end if
      ! count the number of cell layers included in the T tensor
-     layers_in_T = 3.0D0 * layers_in_T + 1.0D0
+     layers_in_T = 3.0_realk * layers_in_T + 1.0_realk
      ! some debug code
      if (.false.) then
         if (i .eq. 1) then
@@ -230,10 +227,10 @@ SUBROUTINE &
 !!! I have to put this on
 !  if (reset_Tdiv) then
 !     if (pbc_3dims_active()) then
-!        Tlat(1:4,1:4) = 0.0D0
+!        Tlat(1:4,1:4) = 0.0_realk
 !        write(LUPRI,*) 'Resetting charge-charge and charge-dipole interactions in Tlattice.'
 !     else
-        Tlat(1,1) = 0.0D0
+        Tlat(1,1) = 0.0_realk
 !        write(LUPRI,*) 'Resetting charge-charge.'
 !     end if
 !  end if
@@ -304,15 +301,15 @@ SUBROUTINE &
   !call write_matrix(Tlat,siz,siz)
   !write(*,*) 'debug',siz
   !stop
-!  debugsumT=0d0
+!  debugsumT=0.0_realk
 !  do i=1,siz
 !   do l=1,siz
 !      debugsumT=debugsumT+abs(Tlat(i,l))
 !   enddo
 !  enddo
 !
-!  if(debugsumT .gt. 0d0) then
-!    write(*,*) 'debugsumT not equal to 0d0 after invsym',siz,lmax
+!  if(debugsumT .gt. 0.0_realk) then
+!    write(*,*) 'debugsumT not equal to 0.0_realk after invsym',siz,lmax
 !    write(*,*)  debugsumT
 !    !call write_matrix(T_supNF,siz,siz)
 !!    stop
@@ -361,7 +358,7 @@ subroutine pbc_WNF_matrix(W_NF,lmax,siz,latvec,lupri)
   end if
 
   ! initialize
-  W_NF(:,:) = 0.0D0
+  W_NF(:,:) = 0.0_realk
 
   ! if the periodicity is turned off in some directions we need
   ! to constrain the loops accordingly
@@ -377,10 +374,10 @@ subroutine pbc_WNF_matrix(W_NF,lmax,siz,latvec,lupri)
   do my = -m_max2, m_max2
   do mz = -m_max3, m_max3
      if (abs(mx) + abs(my) + abs(mz) .ne. 0) then
-        pos_lat(:) = -1.0D0 * (/ mx, my, mz /)
+        pos_lat(:) = -1.0_realk * (/ mx, my, mz /)
         !call pbc_lat2std_coord(pos_lat, pos_std)
         call latt_2_std_coord(pos_lat, pos_std,latvec)
-        W_aux(:,:) = 0.0D0
+        W_aux(:,:) = 0.0_realk
         call pbc_get_ltsqr_W_matrix(lmax,pos_std,W_aux)
         W_NF = W_NF + W_aux
      else
@@ -389,7 +386,7 @@ subroutine pbc_WNF_matrix(W_NF,lmax,siz,latvec,lupri)
         ! for a zero vector. Fortunately, this is trivial so we add
         ! the contribution directly here.
         do p = 1,siz
-           W_NF(p,p) = W_NF(p,p) + 1.0D0
+           W_NF(p,p) = W_NF(p,p) + 1.0_realk
         end do
      end if
   end do
@@ -435,7 +432,7 @@ subroutine pbc_TsupNF_matrix(T_supNF,nfsiz,lmax,siz,square_flag,latvec,lupri)
   end if
 
   ! initialize
-  T_supNF(:,:) = 0.0D0
+  T_supNF(:,:) = 0.0_realk
 
   ! if the periodicity is turned off in some directions we need
   ! to constrain the loops accordingly
@@ -456,12 +453,12 @@ subroutine pbc_TsupNF_matrix(T_supNF,nfsiz,lmax,siz,square_flag,latvec,lupri)
   do my = -layer*fac2, layer*fac2
   do mz = -layer*fac3, layer*fac3
      if ((abs(mx) .eq. layer) .or. (abs(my) .eq. layer) .or. (abs(mz) .eq. layer)) then
-        pos_lat(1) = 1.0D0 * real(mx)
-        pos_lat(2) = 1.0D0 * real(my)
-        pos_lat(3) = 1.0D0 * real(mz)
+        pos_lat(1) = 1.0_realk * real(mx)
+        pos_lat(2) = 1.0_realk * real(my)
+        pos_lat(3) = 1.0_realk * real(mz)
         !call pbc_lat2std_coord(pos_lat, pos_std)
         call latt_2_std_coord(pos_lat, pos_std,latvec)
-        T_aux(:,:) = 0.0D0
+        T_aux(:,:) = 0.0_realk
         call pbc_get_FLTSQ_T_matrix(lmax,pos_std,T_aux)
         T_supNF = T_supNF + T_aux
      end if
@@ -491,7 +488,7 @@ subroutine pbc_iterate_Tlattice(Tlat,Tlat_old,W_NF,T_supNF,lmax,siz,square_flag&
 &,lupri)
   implicit none
 
-  real(realk), parameter :: stmp = 10.0
+  real(realk), parameter :: stmp = 10.0_realk
 
   integer, intent(in) :: lmax, siz,lupri
   real(realk), intent(in) :: W_NF(siz,siz), T_supNF(siz,siz)
@@ -505,7 +502,7 @@ subroutine pbc_iterate_Tlattice(Tlat,Tlat_old,W_NF,T_supNF,lmax,siz,square_flag&
 
   !call pbc_matrix_info(siz,siz,Tlat_old,Tlat_old,.false.,'Tlat_old','dummy')
 
-  scale_factor = 3.0D0
+  scale_factor = 3.0_realk
 
   call pbc_scale_T(Tlat_old,lmax,siz,scale_factor,lupri)
 
@@ -513,8 +510,8 @@ subroutine pbc_iterate_Tlattice(Tlat,Tlat_old,W_NF,T_supNF,lmax,siz,square_flag&
   Tlat = Tlat + T_supNF
 
   !if (ffdata%reset_T_diverg) then
-  !Tlat(1,1) = 0.0D0
-  !Tlat(2:4,2:4) = 0.0D0
+  !Tlat(1,1) = 0.0_realk
+  !Tlat(2:4,2:4) = 0.0_realk
   !end if
 
 end subroutine pbc_iterate_Tlattice
@@ -558,70 +555,70 @@ end subroutine pbc_scale_T
 ! This subroutine performs the M2L operation of T1 with W2 and
 ! stores the result in Tres.
 subroutine pbc_do_m2l(Tres,T1,W2,lmax,siz,square_flag,lupri)
-  implicit none
-  
-  logical :: square_flag
-  integer, intent(in) :: lmax, siz,lupri
-  real(realk), intent(in) :: T1(siz,siz), W2(siz,siz)
-  real(realk), intent(out) :: Tres(siz,siz)
+	implicit none
 
-  real(realk) :: fac
-  integer :: col, row
-  integer :: l,m,j,k,p,q,kmax,qmin,lm,jk,pq
+	logical :: square_flag
+	integer, intent(in) :: lmax, siz,lupri
+	real(realk), intent(in) :: T1(siz,siz), W2(siz,siz)
+	real(realk), intent(out) :: Tres(siz,siz)
 
-  if (siz .ne. (1+lmax)**2) call lsquit('pbc_do_m2l: Inconsistent sizes.',lupri)
+	real(realk) :: fac
+	integer :: col, row
+	integer :: l,m,j,k,p,q,kmax,qmin,lm,jk,pq
 
-  Tres(:,:) = 0.0D0
+	if (siz .ne. (1+lmax)**2) call lsquit('pbc_do_m2l: Inconsistent sizes.',lupri)
 
-  ! compute M2L result
-  if (square_flag) then
-     do col = 1, siz
-        do row = 1, siz
-           Tres(row,col) = dot_product(T1(row,col:siz),W2(col:siz,col))
-        end do
-     end do
-     return
-  end if
+	Tres(:,:) = 0.0_realk
+
+	! compute M2L result
+	if (square_flag) then
+		do col = 1, siz
+			do row = 1, siz
+				Tres(row,col) = dot_product(T1(row,col:siz),W2(col:siz,col))
+			end do
+		end do
+		return
+	end if
 
 
-  rows_l: do l = 0,lmax
-     rows_m: do m = -l,l
-        lm = l*(l+1)+1+m
-        cols_j: do j = 0,l
-           if (j .eq. l) then
-              kmax = m
-           else
-              kmax = j
-           end if
-           cols_k: do k = -j, kmax
-              jk = j*(j+1)+1+k
-              ! loop over pq >= jk
-              sum_p: do p = j, lmax
-                 if (p .eq. j) then
-                    qmin = k
-                 else
-                    qmin = -p
-                 end if
-                 sum_q: do q = qmin,p
-                    pq = p*(p+1)+1+q
-                    ! determine factor
-                    fac = 1.0D0
-                    if (q .eq. 0) fac = fac / 2.0D0
-                    !if (mod(p,2_long) .eq. 1) fac = -fac
-                    ! add contribution
-                    Tres(lm,jk) = Tres(lm,jk) + T1(max(lm,pq),min(lm,pq)) &
-                                                * W2(pq,jk) * fac
-                 end do sum_q
-              end do sum_p
-              ! put in the factor
-              fac = 1.0D0
-              if (k .eq. 0) fac = fac / 2.0D0
-              !if (mod(j,2_long) .eq. 1) fac = -fac              
-              Tres(lm,jk) = Tres(lm,jk) / fac
-           end do cols_k
-        end do cols_j
-     end do rows_m
-  end do rows_l
+	rows_l: do l = 0,lmax
+		rows_m: do m = -l,l
+			lm = l*(l+1)+1+m
+			cols_j: do j = 0,l
+				if (j .eq. l) then
+					kmax = m
+				else
+					kmax = j
+				end if
+				cols_k: do k = -j, kmax
+					jk = j*(j+1)+1+k
+					! loop over pq >= jk
+					sum_p: do p = j, lmax
+						if (p .eq. j) then
+							qmin = k
+						else
+							qmin = -p
+						end if
+						sum_q: do q = qmin,p
+							pq = p*(p+1)+1+q
+							! determine factor
+							fac = 1.0_realk
+							if (q .eq. 0) fac = fac / 2.0_realk
+							!if (mod(p,2_long) .eq. 1) fac = -fac
+							! add contribution
+							Tres(lm,jk) = Tres(lm,jk) + T1(max(lm,pq),min(lm,pq)) &
+								* W2(pq,jk) * fac
+						end do sum_q
+					end do sum_p
+					! put in the factor
+					fac = 1.0_realk
+					if (k .eq. 0) fac = fac / 2.0_realk
+					!if (mod(j,2_long) .eq. 1) fac = -fac              
+					Tres(lm,jk) = Tres(lm,jk) / fac
+				end do cols_k
+			end do cols_j
+		end do rows_m
+	end do rows_l
 
 end subroutine pbc_do_m2l
 
@@ -649,7 +646,7 @@ subroutine pbc_T_enforce_invsym(T,lmax,siz,lupri)
            qmin = j*(j+1) - j + 1
            qmax = j*(j+1) + j + 1
 
-           T(pmin:pmax,qmin:qmax) = 0.0D0
+           T(pmin:pmax,qmin:qmax) = 0.0_realk
         end if
      end do
   end do
@@ -757,7 +754,7 @@ REAL(realk) :: phase1,phase2,phase3
 REAL(realk),pointer :: rhojk(:)
 !REAL(realk) :: mmfck(nfsze,nbast*nbast),kvec(3)!,debug_mat(nbast,nbast)
 REAL(realk) :: Coulombf2,Coulombfst,Coulomb2,Coulombst
-!REAL(realk) :: PI=3.14159265358979323846D0
+!REAL(realk) :: PI=3.14159265358979323846_realk
 !real(realk) :: tlatlm((lmax+1)**2),tlatlmnu((lmax+1)**2)
 !real(realk) :: tlatlm(:),tlatlmnu(:)
 real(realk),pointer :: tlatlm(:),tlatlmnu(:)
@@ -786,8 +783,8 @@ nrlm=(lmax+1)**2
 call mem_alloc(tlatlm,nrlm)
 call mem_alloc(tlatlmnu,nrlm)
 call mem_alloc(rhojk,(1+lmax)**2)
-tlatlm=0d0
-tlatlmnu=0d0
+tlatlm=0.0_realk
+tlatlmnu=0.0_realk
 
 E_ff=0._realk
 E_nn=0._realk
@@ -812,7 +809,7 @@ DO nk=1,num_latvec
 enddo
 
 
-rhojk=0d0
+rhojk=0.0_realk
 !write(lupri,*) 'Tlattice contracted with just nuclear moments'
 DO jk=1,(lmax+1)**2
    DO nk=1,num_latvec
@@ -832,7 +829,7 @@ ENDDO
 !call pbc_redefine_q(rhojk,lmax)
 !call pbc_multipl_moment_order(rhojk,lmax)
 !#ifdef DEBUGPBC
-debugsumT=0d0
+debugsumT=0.0_realk
 !write(lupri,*) 'electronic moments'
 do jk=1,(lmax+1)**2
    debugsumt=debugsumt+(rhojk(jk)+nucmom(jk))**2
@@ -851,7 +848,7 @@ DO lm=1,(lmax+1)**2
 ENDDO
 
 #ifdef DEBUGPBC
-debugsumT=0d0
+debugsumT=0.0_realk
 do jk=1,(lmax+1)**2
    debugsumt=debugsumt+tlatlm(jk)**2
 !   write(lupri,*) rhojk(jk)+nucmom(jk)
@@ -866,7 +863,7 @@ write(*,*) 'Charge tlatlm(1)', tlatlm(1)
 !write(lupri,*) 'total moments'
 
 #ifdef DEBUGPBC
-debugsumT=0d0
+debugsumT=0.0_realk
 do jk=1,(lmax+1)**2
    debugsumt=debugsumt+(rhojk(jk)+nucmom(jk))**2
 !   write(lupri,*) rhojk(jk)+nucmom(jk)
@@ -941,7 +938,7 @@ DO nk=1,num_latvec
           call pbc_get_file_and_write(ll,nbast,nbast,nk,4,2,'            ')! 4 and 2 Coul J
 
      !for debugging only
-     !call mat_to_full(debug_tm,1D0,debug_mat)
+     !call mat_to_full(debug_tm,1.0_realk,debug_mat)
      !write(lupri,*) 'far-field',x2,y2,z2
      !call pbc_matlab_print(debug_mat,nbast,nbast,'far-field',lupri)
          endif
@@ -1046,7 +1043,7 @@ ENDIF !compare !}}}
 
 !E_ff= ddot(nrlm,rhojk,nrlm,tlatlm,nrlm)
 E_ff= dot_product(rhojk+nucmom,tlatlm)
-E_ff=E_ff/2D0
+E_ff=E_ff/2.0_realk
 !E_nn=ddot(nrlm,nucmom,nrlm,tlatlmnu,nrlm)
 E_nn= dot_product(nucmom,tlatlmnu)
 
@@ -1206,9 +1203,9 @@ implicit none
       end if
 
 !     Compute x^n, y^n, z^n for n = 0,...,lmax
-      pos_pow(1,1) = 1.0D0
-      pos_pow(2,1) = 1.0D0
-      pos_pow(3,1) = 1.0D0
+      pos_pow(1,1) = 1.0_realk
+      pos_pow(2,1) = 1.0_realk
+      pos_pow(3,1) = 1.0_realk
       do i = 1,lmax
          do icomp = 1,3
             pos_pow(icomp,i+1) = pos_pow(icomp,i) * pos(icomp)
@@ -1253,7 +1250,7 @@ REAL(realk) :: sphint
 
 DO je=1, (lmax+1)**2
    tmp_mulmom(je)=cell_mulmom(je)
-   cell_mulmom(je)=0d0
+   cell_mulmom(je)=0.0_realk
 enddo
 KHE0=0
 jmindex=1
@@ -1334,21 +1331,21 @@ subroutine pbc_redefine_q(qlm,lmax)
   ! prefactor to symmetrize T-matrix
   do l = 0, lmax
      if (mod(l,2) .eq. 1) then
-        s = -1.0D0
+        s = -1.0_realk
      else
-        s = 1.0D0
+        s = 1.0_realk
      end if
      pp = l*(l+1) +1
      do m = -l, -1
-        pref = -1.0D0 / (sqrt(2.0D0 * factorial(l-m)*factorial(l+m)))
+        pref = -1.0_realk / (sqrt(2.0_realk * factorial(l-m)*factorial(l+m)))
         p = pp+m
         qlm(p) = pref*qlm(p) * s
      end do
-     pref = 1.0D0 / factorial(l)
+     pref = 1.0_realk / factorial(l)
      p = pp  ! m = 0
      qlm(p) = pref*qlm(p) * s
      do m = 1, l
-        pref = ((-1)**m) / sqrt(2.0D0 * factorial(l-m)*factorial(l+m))
+        pref = ((-1)**m) / sqrt(2.0_realk * factorial(l-m)*factorial(l+m))
         p = pp+M
         qlm(p) = pref*qlm(p) * s
      end do
@@ -1385,25 +1382,25 @@ subroutine pbc_mat_redefine_q(qlm,lmax,nbast)
   ! prefactor to symmetrize T-matrix
   do l = 0, lmax
      if (mod(l,2) .eq. 1) then
-        s = -1.0D0
+        s = -1.0_realk
      else
-        s = 1.0D0
+        s = 1.0_realk
      end if
      pp = l*(l+1) +1
      do m = -l, -1
-        pref = -1.0D0 / (sqrt(2.0D0 * factorial(l-m)*factorial(l+m)))
+        pref = -1.0_realk / (sqrt(2.0_realk * factorial(l-m)*factorial(l+m)))
         p = pp+m
         do ab=1,nbast*nbast
            qlm(p)%elms(ab) = pref*qlm(p)%elms(ab) * s
         enddo
      end do
-     pref = 1.0D0 / factorial(l)
+     pref = 1.0_realk / factorial(l)
      p = pp  ! m = 0
      do ab=1,nbast*nbast
         qlm(p)%elms(ab) = pref*qlm(p)%elms(ab) * s
      enddo
      do m = 1, l
-        pref = ((-1)**m) / sqrt(2.0D0 * factorial(l-m)*factorial(l+m))
+        pref = ((-1)**m) / sqrt(2.0_realk * factorial(l-m)*factorial(l+m))
         p = pp+M
         do ab=1,nbast*nbast
            qlm(p)%elms(ab) = pref*qlm(p)%elms(ab) * s
@@ -1519,12 +1516,12 @@ SUBROUTINE READ_multipole_files(lattice,maxmultmom,sphermom,nbast,nk,lupri)
        !i=1,nbast)
        !enddo
 
-       !debugsumT=0d0
+       !debugsumT=0.0_realk
        !do j=1,nbast*nbast
        !  debugsumT=debugsumT+sphermom%getmultipole(sphermoms)%elms(j)
        !enddo
-       !if(debugsumT .gt. 0d0) then
-       !  write(*,*) 'debugsumT > 0d0',il1
+       !if(debugsumT .gt. 0.0_realk) then
+       !  write(*,*) 'debugsumT > 0.0_realk',il1
        !  write(*,*) debugsumT , sphermoms
        !  write(*,*) sphermom%getmultipole(sphermoms)%elms
        !  stop
@@ -1715,7 +1712,7 @@ SUBROUTINE pbc_local_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,refcell
      !input%Basis%regular%atomtype(:)%shell(:)%segment(1)%exponents(:)
 
 
-     call II_get_sphmom(LUPRI,LUERR,SETTING,spherMom,nSpherMom,maxMultmom,0E0_realk,0E0_realk,0E0_realk)
+     call II_get_sphmom(LUPRI,LUERR,SETTING,spherMom,nSpherMom,maxMultmom,0.0_realk,0.0_realk,0.0_realk)
 
 !       call pbc_readopmat2(il1,il2,il3,matris,nbast,'OVERLAP',.true.,.false.)
 !       call write_matrix(matris,nbast,nbast)

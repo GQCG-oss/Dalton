@@ -1351,7 +1351,7 @@ SUBROUTINE pbc_complete_Fock_mtx(lupri,nbast,fock_mtx,sizef,cut,lattice)
 	do i=1,num_latvectors
 		if(i .eq. refcell) CYCLE
 		fock_mtx(nbast*i+1-nbast:i*nbast,nbast*i+1-nbast:i*nbast)=&
-			fock_mtx(refcell*nbast-nbast+1:refcell*nbast,refcell*nbast-nbast+1:refcell*nbast)
+			fock_mtx(refcell*nbast-nbast+1:refcell*nbast, refcell*nbast-nbast+1:refcell*nbast)
 		call find_latt_vectors(i,il1,il2,il3,lattice)
 		do j=1,i
 			if(j .eq. refcell) CYCLE
@@ -1372,13 +1372,14 @@ SUBROUTINE pbc_complete_Fock_mtx(lupri,nbast,fock_mtx,sizef,cut,lattice)
 
 			if(distance .ge. cut) CYCLE
 			fock_mtx(nbast*i+1-nbast:i*nbast,nbast*j+1-nbast:j*nbast)=&
-				fock_mtx(refcell*nbast-nbast+1:refcell*nbast,cellij*nbast-nbast+1:cellij*nbast)
+				fock_mtx(refcell*nbast-nbast+1:refcell*nbast, cellij*nbast-nbast+1:cellij*nbast)
 			fock_mtx(nbast*j+1-nbast:j*nbast,nbast*i+1-nbast:i*nbast)=&
-				fock_mtx(nbast*i+1-nbast:i*nbast,nbast*j+1-nbast:j*nbast)
+				fock_mtx(nbast*i+1-nbast:i*nbast, nbast*j+1-nbast:j*nbast)
 		enddo
 	enddo
 	write(lupri,*) 'FOCK MATRIX'
 	call write_matrix(fock_mtx,sizef,sizef)
+
 END SUBROUTINE pbc_complete_Fock_mtx
 
 END MODULE pbc_interactions
