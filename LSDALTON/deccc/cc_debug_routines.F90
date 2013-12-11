@@ -6584,10 +6584,12 @@ module cc_debug_routines_module
     !INTERNAL
     real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
     integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
+    integer :: pno_gvvvv_size
     logical :: doit
     
     calc_parameters = 0
     det_parameters  = 0
+    pno_gvvvv_size  = 0
 
     if(fj)then
 
@@ -6602,8 +6604,9 @@ module cc_debug_routines_module
       cv(1)%iaos = f%idxo
       counter = 1
 
-      calc_parameters = calc_parameters + cv(1)%ns1*cv(1)%ns2*cv(1)%n**2
-      det_parameters = det_parameters + cv(1)%ns1*cv(1)%ns2*cv(1)%n**2
+      calc_parameters = calc_parameters + cv(1)%ns2**2*cv(1)%n**2
+      det_parameters  = det_parameters  + cv(1)%ns2**2*cv(1)%n**2
+      pno_gvvvv_size  = pno_gvvvv_size  + cv(1)%ns2**4
 
       if(.not.cv(1)%allocd)then
         call lsquit("ERROR(get_pno_trafo_matrices):EOS does not contribute&
@@ -6638,14 +6641,15 @@ module cc_debug_routines_module
               cv(counter)%n = 1
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i]
-              det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
+              det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
             else
               cv(counter)%n = 2
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i,j]
-              det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*2
+              det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
             endif
-            calc_parameters = calc_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
+            calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
+            pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
           endif
         enddo doj
       enddo doi
@@ -6661,19 +6665,21 @@ module cc_debug_routines_module
             cv(counter)%n = 1
             call mem_alloc(cv(counter)%iaos,cv(counter)%n)
             cv(counter)%iaos = [i]
-            det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
+            det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
           else
             cv(counter)%n = 2
             call mem_alloc(cv(counter)%iaos,cv(counter)%n)
             cv(counter)%iaos = [i,j]
-            det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*2
+            det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
           endif
-          calc_parameters = calc_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
+          calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
+          pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
         enddo dojful
       enddo doiful
     endif
 
     print *,"I have to determine",det_parameters," of ",no**2*nv**2," using ",calc_parameters
+    print *,"full gvvvv",nv**4," vs ",pno_gvvvv_size
 
     if( counter /= n )then
       call lsquit("ERROR(get_pno_trafo_matrices):counting is not consistent",-1)
