@@ -2792,13 +2792,13 @@ module cc_debug_routines_module
       ! Declare PDM arrays for packed integrals:
       pgmo_dims = ntot*(ntot+1)*dimP*(dimP+1)/4
       !pgmo_diag = array_minit(pgmo_dims,2,local=local,atype='LDAR')
-      pgmo_diag = array_minit([pgmo_dims,Nbatch],2,local=.false., &
+      pgmo_diag = array_minit([pgmo_dims,Nbatch],2,local=local, &
                 & atype='TDAR',tdims=[pgmo_dims,1])
 
       pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
       !pgmo_up   = array_minit(pgmo_dims,2,local=local,atype='LDAR')
       pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
-                & local=.false.,atype='TDAR',tdims=[pgmo_dims,1])
+                & local=local,atype='TDAR',tdims=[pgmo_dims,1])
     end if
     !======================================================================
 
@@ -3623,7 +3623,11 @@ module cc_debug_routines_module
       end do
   
       ! add to pdm array:
+#ifdef VAR_MPI
       call array_accumulate_tile(pack_gmo,[1,tile],tmp,ipack-1)
+#else
+      call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
+#endif
 
     ! 2nd case: current batch corresponds to an upper diagonal block,
     !           we keep all the pq part and reduced r<=s.
@@ -3640,7 +3644,11 @@ module cc_debug_routines_module
       end do
 
       ! add to pdm array:
+#ifdef VAR_MPI
       call array_accumulate_tile(pack_gmo,[1,tile],tmp,ipack-1)
+#else
+      call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
+#endif
 
     end if
 
@@ -3678,7 +3686,11 @@ module cc_debug_routines_module
   
       ! get batch from pdm:
       ncopy = ntot*(ntot+1)*dimP*(dimP+1)/4
+#ifdef VAR_MPI
       call array_get_tile(pack_gmo,[1,tile],tmp,ncopy)
+#else
+      call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
+#endif
 
       do s=1,ntot
         do r=1,s
@@ -3704,7 +3716,11 @@ module cc_debug_routines_module
   
       ! get batch from pdm:
       ncopy = dimP*dimQ*ntot*ntot
+#ifdef VAR_MPI
       call array_get_tile(pack_gmo,[1,tile],tmp,ncopy)
+#else
+      call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
+#endif
 
       ! get first batch pqrs:
       do s=1,ntot
