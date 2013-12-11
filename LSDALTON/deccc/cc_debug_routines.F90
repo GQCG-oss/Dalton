@@ -188,7 +188,8 @@ module cc_debug_routines_module
      logical :: restart, u_pnos
 
      ! small_frag 
-     real(realk), pointer :: pack_gmo(:), govov(:) => null()
+     real(realk), pointer :: govov(:) => null()
+     type(array) :: pgmo_diag, pgmo_up
      type(MObatchInfo) :: MOinfo
      logical :: small_frag
 
@@ -424,6 +425,19 @@ module cc_debug_routines_module
      call mem_alloc(B,DECinfo%ccMaxIter,DECinfo%ccMaxIter)
      call mem_alloc(c,DECinfo%ccMaxIter)
 
+     ! criterion will need to be improved/adjusted.
+     small_frag = .false.
+     if (DECinfo%MOCCSD.and.(nbasis<=DECinfo%Max_num_MO)) small_frag=.true.
+
+     !> Check if there is enough memory to performed an MO-CCSD calculation.
+     !>   YES: get gmo and packed them
+     !>   NO: returns small_frag == .false. and switch to standard CCSD.
+     if (small_frag.or.(ccmodel==MODEL_RPA)) then
+       call get_packed_gmo(small_frag,mylsitem,Co%val,Cv2%val,govov, &
+            & pgmo_diag,pgmo_up,nbasis,nocc,nvirt,ccmodel,MOinfo)
+     end if
+
+
      ! readme : the iteration sequence is universal and may be used for all
      !          iterative cc models (linear or non-linear) and is
      !          semi-independent on the storage of vectors (allocation and
@@ -433,20 +447,6 @@ module cc_debug_routines_module
      break_iterations = .false.
      crop_ok          = .false.
      prev_norm        = 1.0E6_realk
-
-
-     ! criterion will need to be improved/adjusted.
-     small_frag = .false.
-     if (DECinfo%MOCCSD.and.(nbasis<=DECinfo%Max_num_MO)) small_frag=.true.
-
-     !> Check if there is enough memory to performed an MO-CCSD calculation.
-     !>   YES: get gmo and packed them
-     !>   NO: returns small_frag == .false. and switch to standard CCSD.
-     if (small_frag) then
-       call get_packed_gmo(small_frag,mylsitem,Co%val,Cv2%val,pack_gmo, &
-            & nbasis,nocc,nvirt,ccmodel,MOinfo)
-     end if
-
 
 
      CCIteration : do iter=1,DECinfo%ccMaxIter
@@ -640,11 +640,10 @@ module cc_debug_routines_module
              call array4_reorder(t2(iter),[1,3,2,4]) ! -> t2[ab,ij]
              call array4_reorder(omega2(iter),[1,3,2,4]) ! -> om2[ab,ij]
             
-             call get_ccsd_residual_small_frag(pack_gmo,t1(iter)%val,omega1(iter)%val, &
+             call get_ccsd_residual_small_frag(pgmo_diag,pgmo_up,t1(iter)%val,omega1(iter)%val, &
                   & t2(iter)%val,omega2(iter)%val,govov,nbasis,nocc,nvirt,iter,MOinfo, & 
                   & mylsitem,xocc%val,xvirt%val,yocc%val,yvirt%val,delta_fock%val, &
                   & ppfock%val,pqfock%val,qpfock%val,qqfock%val)
-            
 
              ! restor previous order:
              call array4_reorder(omega2(iter),[1,3,2,4]) ! -> om2[ai,bj]
@@ -966,15 +965,15 @@ module cc_debug_routines_module
      ! *************************************
 
      ! free memory
-     if (small_frag) then
-       call mem_dealloc(pack_gmo)
-       !JOHANNES remember to uncomment this
-      ! call mem_dealloc(govov)
+     if (small_frag.or.(ccmodel==MODEL_RPA)) then
+       call array_free(pgmo_diag)
+       call array_free(pgmo_up)
        call mem_dealloc(MOinfo%dimInd1)
        call mem_dealloc(MOinfo%dimInd2)
        call mem_dealloc(MOinfo%StartInd1)
        call mem_dealloc(MOinfo%StartInd2)
        call mem_dealloc(MOinfo%packInd)
+       if (.not.(ccmodel==MODEL_RPA)) call mem_dealloc(govov)
      end if
 
      ! remove rest of the singles amplitudes and residuals
@@ -2624,10 +2623,13 @@ module cc_debug_routines_module
   !           full MO basis (non T1-transformed)
   !           The batches are then packed using permutational
   !           symmetry and are kept in memory (PDM if MPI)
+  !           If the routine is call for RPA then only govov is 
+  !           calculated without batching and packing.
   !
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine get_packed_gmo(small_frag,MyLsItem,Co,Cv,pack_gmo,nbas,nocc,nvir,ccmodel,MOinfo)
+  subroutine get_packed_gmo(small_frag,MyLsItem,Co,Cv,govov,pgmo_diag,pgmo_up, &
+                           & nbas,nocc,nvir,ccmodel,MOinfo)
 
     implicit none
 
@@ -2638,8 +2640,9 @@ module cc_debug_routines_module
     !> performed MO-based CCSD calculation ?
     logical, intent(inout) :: small_frag
     !> array with packed gmo on output:
-    real(realk), pointer, intent(out) :: pack_gmo(:)
-    integer(kind=long) :: pack_gmosize
+    real(realk), pointer, intent(out) :: govov(:)
+    type(array), intent(out) :: pgmo_diag, pgmo_up
+    integer :: pgmo_dims
     !> how to pack integrals:
     integer :: pack_scheme
 
@@ -2690,18 +2693,18 @@ module cc_debug_routines_module
     !> LS item with information needed for integrals
     type(lsitem), intent(inout) :: MyLsItem
 
-    integer :: nb,no,nv,ccm
+    real(realk), external :: ddot
+    integer :: nb,no,nv,ccm, idb, iub
 
-    nb  = nbas
-    no  = nocc
-    nv  = nvir
-    ccm = ccmodel
+    nb   = nbas
+    no   = nocc
+    nv   = nvir
+    ntot = nocc + nvir
+    ccm  = ccmodel
 
     ! Set default values for the path throug the routine
     ! **************************************************
-    ntot          = nocc + nvir
     scheme        = 0
-    pack_scheme   = 2
     dynamic_load  = DECinfo%dyn_load
     print_debug   = (DECinfo%PL>2)
     iter          = 1
@@ -2726,7 +2729,7 @@ module cc_debug_routines_module
     nnod          = 1
 #ifdef VAR_MPI
     mynum         = infpar%lg_mynum
-    master        = (infpar%lg_mynum == 0)
+    master        = (infpar%lg_mynum == infpar%master)
     nnod          = infpar%lg_nodtot
 #endif
 
@@ -2752,7 +2755,7 @@ module cc_debug_routines_module
     nullify(gmo)
     nullify(tmp1)
     nullify(tmp2)
-    nullify(pack_gmo)
+    nullify(govov)
     nullify(MOinfo%DimInd1)
     nullify(MOinfo%DimInd2)
     nullify(MOinfo%StartInd1)
@@ -2765,87 +2768,37 @@ module cc_debug_routines_module
     !======================================================================
 
     ! Get minimum mem. required in the MO-CCSD residual calculation
-    call get_mem_MO_CCSD_residual(MemNeed,ntot,nbas,nocc,nvir,1) 
+    if (master) then 
+      select case(ccmodel)
+        case(MODEL_CCSD)
+          call get_MO_and_AO_batches_size(small_frag,ntot,nbas,nocc,nvir, &
+                 & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem)
 
-    ! get MO batches size:
-    if (DECinfo%cc_driver_debug) then
-      ! DEBUG HACK !!!!
-      dimP = 4
-      Nbatch = (ntot-1)/dimP + 1
-    else 
-      min_mem = int(MemNeed*1.024E3_realk**3/8.0E0_realk, kind=long)
-      call get_MO_batches_size(small_frag,min_mem,ntot,Nbatch,dimP,ntot*ntot,ntot)
+          if (.not.small_frag) return
+
+          if (DECinfo%PL>1) write(DECinfo%output,*) & 
+                   & 'BATCH: Number of MO batches   = ', Nbatch, &
+                   & 'with maximum size', dimP
+        case(MODEL_RPA)
+          ! JOHANNES here you should implement your own routine to get
+          ! MaxAllowedDimAlpha MaxAllowedDimGamma
+          print *, 'JOHANNES here you should implement your own routine to get'
+          print *, 'MaxAllowedDimAlpha and MaxAllowedDimGamma'
+        case default
+          call lsquit('only RPA and CCSD model should use this routine',DECinfo%output)
+      end select
+
+      ! Declare PDM arrays for packed integrals:
+      pgmo_dims = ntot*(ntot+1)*dimP*(dimP+1)/4
+      !pgmo_diag = array_minit(pgmo_dims,2,local=local,atype='LDAR')
+      pgmo_diag = array_minit([pgmo_dims,Nbatch],2,local=.false., &
+                & atype='TDAR',tdims=[pgmo_dims,1])
+
+      pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
+      !pgmo_up   = array_minit(pgmo_dims,2,local=local,atype='LDAR')
+      pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
+                & local=.false.,atype='TDAR',tdims=[pgmo_dims,1])
     end if
-
-    ! If not enough mem. available then get_MO_batches_size returned
-    ! small_frag == .false. and we switch back to standard CCSD algorithm.
-    if (.not.small_frag) return
-
-    ! sanity check:
-    call get_mem_MO_CCSD_residual(MemNeed,ntot,nbas,nocc,nvir,dimP) 
-    call get_currently_available_memory(MemFree)
-    if ((MemFree-MemNeed)<=0.0E0_realk) then
-      print *, 'MO batch: 1st assumption wrong'
-      call get_MO_batches_size(small_frag,min_mem,ntot,Nbatch,dimP,4*ntot*ntot,ntot)
-    end if
-
-    ! If not enough mem. available then get_MO_batches_size returned
-    ! small_frag == .false. and we switch back to standard CCSD algorithm.
-    if (.not.small_frag) return
-
-    ! sanity check:
-    call get_mem_MO_CCSD_residual(MemNeed,ntot,nbas,nocc,nvir,dimP) 
-    call get_currently_available_memory(MemFree)
-    if ((MemFree-MemNeed)<=0.0E0_realk) then
-      small_frag = .false.
-      return
-    end if
-
-    print *, 'test: dimP, Nbatch', dimP, Nbatch
-
-    ! Get minimum mem. required to get gmo:
-    call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
-      call get_currently_available_memory(MemFree)
-    call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimP,Nbatch, &
-                           & MinAObatch,MinAObatch,MinAObatch)
-
-    MaxAllowedDimGamma = MinAObatch
-    MaxAllowedDimAlpha = MinAObatch
-    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAllowedDimGamma<=nbas)) 
-      MaxAllowedDimGamma = MaxAllowedDimGamma + 1
-       call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimP,Nbatch, &
-                           & MaxAllowedDimAlpha,MaxAllowedDimGamma,MinAObatch)  
-    end do
-    if (MaxAllowedDimGamma>=nbas) then
-      MaxAllowedDimGamma = nbas
-    else if (MaxAllowedDimGamma<=MinAObatch) then
-      MaxAllowedDimGamma = MinAObatch
-    else 
-      MaxAllowedDimGamma = MaxAllowedDimGamma - 1
-    end if
-    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAllowedDimAlpha<=nbas)) 
-      MaxAllowedDimAlpha = MaxAllowedDimAlpha + 1
-       call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimP,Nbatch, &
-                           & MaxAllowedDimAlpha,MaxAllowedDimGamma,MinAObatch)  
-    end do
-    if (MaxAllowedDimAlpha>=nbas) then
-      MaxAllowedDimAlpha = nbas
-    else if (MaxAllowedDimAlpha<=MinAObatch) then
-      MaxAllowedDimAlpha = MinAObatch
-    else 
-      MaxAllowedDimAlpha = MaxAllowedDimAlpha - 1
-    end if
-
-    ! sanity check:
-    call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimP,Nbatch, &
-                           & MaxAllowedDimAlpha,MaxAllowedDimGamma,MinAObatch)  
-    call get_currently_available_memory(MemFree)
-    if ((MemFree-MemNeed)<=0.0E0_realk) then
-      small_frag = .false.
-      return
-    end if
-    print *, 'test: MaxAllowedDimAlpha, MaxAllowedDimGamma, MinAObatch', &
-             & MaxAllowedDimAlpha, MaxAllowedDimGamma, MinAObatch
     !======================================================================
 
 
@@ -2854,19 +2807,31 @@ module cc_debug_routines_module
     !                  Batch construction             !
     !==================================================
 
-    ! MPI: here you should start the slaves!!
-!#ifdef VAR_MPI
-!    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
-!      call ls_mpibcast(CCGETGMOCONSTR,infpar%master,infpar%lg_comm)
-!      call cc_gmo_communicate_data(small_frag,MyLsItem,Co,Cv,pack_gmo,nb,no,nv,ccm)
-!    endif StartUpSlaves
-!
-!
-!#endif
+    ! MPI: Waking slaves up:
+#ifdef VAR_MPI
+    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
+      call ls_mpibcast(CCGETGMOCONSTR,infpar%master,infpar%lg_comm)
+      call mpi_communicate_get_gmo_data(small_frag,MyLsItem,Co,Cv,ntot,nb,no,nv,ccm)
+    endif StartUpSlaves
+#endif
+
+    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpi_buffer(dimP,infpar%master)
+    call ls_mpi_buffer(Nbatch,infpar%master)
+    call ls_mpi_buffer(scheme,infpar%master)
+    call ls_mpi_buffer(print_debug,infpar%master)
+    call ls_mpi_buffer(dynamic_load,infpar%master)
+    call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
+    call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
+    call ls_mpi_buffer(els2add,infpar%master)
+    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
 
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
     ! ************************************************
+
+    write(DECinfo%output,*) 'BATCH: Max allowed AO   = ', MaxAllowedDimAlpha,MaxAllowedDimGamma
 
     ! Orbital to batch information
     ! ----------------------------
@@ -2951,9 +2916,6 @@ module cc_debug_routines_module
     endif
     call mem_alloc(gmo,gmosize)
 
-    MOinfo%nbatch = Nbatch
-    call get_MO_batches_info(MOinfo, dimP, ntot)
-
     tmp_size = max(nbas*MaxActualDimAlpha*MaxActualDimGamma, ntot*MaxActualDimGamma*dimP)
     tmp_size = int(i8*ntot*tmp_size, kind=long)
     call mem_alloc(tmp1, tmp_size)
@@ -2961,54 +2923,24 @@ module cc_debug_routines_module
     tmp_size = int(i8*ntot*ntot*tmp_size, kind=long)
     call mem_alloc(tmp2, tmp_size)
 
-    select case (pack_scheme) 
-      case (0)
-        pack_gmosize = int(i8*ntot*ntot*ntot*ntot, kind=long) 
-      case (1)
-        pack_gmosize = int(i8*ntot*ntot*(ntot*ntot+1)/2, kind=long)
-      case (2)
-        pack_gmosize = int(i8*ntot*(ntot+1)*ntot*(ntot+1)/4, kind=long)
-      case default
-        call lsquit('This pack scheme is not yet implemented',DECinfo%output)
-    end select
     !JOHANNES remember to delete this one
-    if(ccmodel == MODEL_RPA) then
-      pack_gmosize = int(i8*nvir*nocc*nvir*nocc, kind=long)
-    endif
-    call mem_alloc(pack_gmo,pack_gmosize)
-    pack_gmo(:) = 0.0E0_realk
-     
+    if (ccmodel == MODEL_RPA) then
+      call mem_alloc(govov, int(i8*nvir*nocc*nvir*nocc, kind=long))
+    end if
+
+    if (master) then 
+      call array_zero(pgmo_diag)
+      call array_zero(pgmo_up)
+
+      MOinfo%nbatch = Nbatch
+      call get_MO_batches_info(MOinfo, dimP, ntot)
+    end if
+
     ! Sanity checks for matrix sizes which need to be filled:
-    if (pack_gmosize>MaxInt.or.gaosize>MaxInt) then
-    call lsquit("ERROR(CCSD):matrix sizes too large, &
+    if (gaosize>MaxInt) then
+      call lsquit("ERROR(CCSD):matrix sizes too large, &
         & please recompile with 64bit integers",-1)
     endif
-
-    ! get free memory and minimum required memory:
-    !call get_currently_available_memory(MemFree)
-    !call get_min_required_mem(ntot,nocc,nvir,MaxActualDimAlpha,MaxActualDimGamma,MemNeed)
-    !print *, 'MEM AVAILABLE', MemFree-MemNeed
- 
-    !! get MO batches size:
-    !! DEBUG HACK !!!!
-    !if (DECinfo%cc_driver_debug) then
-    !  dimP = 4
-    !  Nbatch = (ntot-1)/dimP + 1
-    !else 
-    !  min_mem = int(MemNeed*1.024E3_realk**3/8.0E0_realk, kind=long)
-    !  call get_MO_batches_size(small_frag, min_mem, ntot, Nbatch, dimP, (4*ntot*ntot + nocc*ntot), &
-    !                  & (MaxActualDimAlpha*ntot*ntot + 3*nocc*nvir*ntot + nocc*nocc*ntot))
-    !end if
-    !print *, 'test: dimP, Nbatch', dimP, Nbatch
- 
-    !!gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
-    !!REMEMBER TO TAKE IT BACK JOHANNES
-    !gmosize = int(i8*nocc*nvir*nocc*nvir,kind=long)
-    !call mem_alloc(gmo,gmosize)
-
-
-    !MOinfo%nbatch = Nbatch
-    !call get_MO_batches_info(MOinfo, dimP, ntot)
 
 
     ! *******************************************************
@@ -3078,41 +3010,48 @@ module cc_debug_routines_module
             & dimGamma,fullRHS,INTSPEC)
        call lsmpi_poke()
 
-       IF (ccmodel == MODEL_RPA)then
+       if (ccmodel == MODEL_RPA) then
 
          write(*,*) 'JOHANNES IN mo transform'
          call gao_to_g_CKDL(gmo, gao, Co,Cv, nbas,nocc,nvir, ntot, AlphaStart, dimAlpha, &
            & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
          
-         call daxpy(nvir*nocc*nvir*nocc,1.0E0_realk,gmo,1,pack_gmo,1)
+         call daxpy(nvir*nocc*nvir*nocc,1.0E0_realk,gmo,1,govov,1)
 
        else
+         idb = 0
+         iub = 0
+         ! Loop over MO batches:
+         BatchPQ: do PQ_batch = 1, Nbatch*Nbatch
+          
+          
+           if (master) then          
+           P_sta  = MOinfo%StartInd1(PQ_batch)
+           dimP   = MOinfo%DimInd1(PQ_batch)
+           Q_sta  = MOinfo%StartInd2(PQ_batch)
+           dimQ   = MOinfo%DimInd2(PQ_batch)
+ 
+           call gao_to_gmo(gmo,gao,Cov,CP,CQ,nbas,ntot,AlphaStart,dimAlpha, &
+                          & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1,tmp2)
+          
+           if (P_sta==Q_sta) then
+             idb = idb + 1 
+             call pack_and_add_gmo(gmo,pgmo_diag,idb,ntot,dimP,dimQ,.true.,tmp2)
+           else if (P_sta<Q_sta) then
+             iub = iub + 1 
+             call pack_and_add_gmo(gmo,pgmo_up,iub,ntot,dimP,dimQ,.false.,tmp2)
+           else 
+             cycle
+           end if
 
-       ! Loop over MO batches:
-       BatchPQ: do PQ_batch = 1, Nbatch*Nbatch
-
-
-         P_sta  = MOinfo%StartInd1(PQ_batch)
-         dimP   = MOinfo%DimInd1(PQ_batch)
-         Q_sta  = MOinfo%StartInd2(PQ_batch)
-         dimQ   = MOinfo%DimInd2(PQ_batch)
-
-         call gao_to_gmo(gmo,gao,Cov,CP,CQ,nbas,ntot,AlphaStart,dimAlpha, &
-                        & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1,tmp2)
-
-         ipack = MOinfo%packInd(PQ_batch)
-
-         call pack_and_add_gmo(gmo,pack_gmo(ipack:),ntot,dimP,dimQ, &
-           & P_sta, Q_sta, dimPack, pack_scheme)
-
-         MOinfo%packInd(PQ_batch+1) = ipack + dimPack 
-
-       end do BatchPQ
-       endif
+           end if
+         end do BatchPQ
+       end if
 
 
     end do BatchAlpha
     end do BatchGamma
+
 
     ! Free integral stuff
     ! *******************
@@ -3156,7 +3095,117 @@ module cc_debug_routines_module
     ! print timing:
     call LSTIMER('get_packed_gmo',tcpu,twall,DECinfo%output)
 
+    !end if
   end subroutine get_packed_gmo
+
+
+  !> Purpose: Calculate MO batches size based on available memory
+  !           and memory requirements in MO-CCSD residual routine.
+  !           Calculate Max. AO batches based on MO batches size,
+  !           Min. AO batches size, available memory and mem. 
+  !           requirements in get_packed_gmo routine.
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    December 2013
+  subroutine get_MO_and_AO_batches_size(small_frag,ntot,nbas,nocc,nvir, &
+             & dimMO,Nbatch,MaxAlpha,MaxGamma,MyLsItem)
+    
+    implicit none
+  
+    !> performed MO-based CCSD calculation ?
+    logical, intent(inout) :: small_frag
+    !> number of orbitals:
+    integer, intent(in) :: ntot, nbas, nocc, nvir
+    !> MO batches stuff:
+    integer, intent (inout) :: dimMO, Nbatch
+    !> AO batches stuff:
+    integer, intent (inout) :: MaxAlpha, MaxGamma
+    type(lsitem), intent(inout) :: MyLsItem
+    
+    real(realk) :: MemNeed, MemFree
+    integer(kind=long) :: min_mem
+    integer :: MinAOBatch
+
+    call get_mem_MO_CCSD_residual(MemNeed,ntot,nbas,nocc,nvir,1) 
+
+    ! get MO batches size:
+    if (DECinfo%cc_driver_debug) then
+      ! DEBUG HACK !!!!
+      dimMO = 4
+      Nbatch = (ntot-1)/dimMO + 1
+    else 
+      min_mem = int(MemNeed*1.024E3_realk**3/8.0E0_realk, kind=long)
+      call get_MO_batches_size(small_frag,min_mem,ntot,Nbatch,dimMO,ntot*ntot,ntot)
+    end if
+
+    ! If not enough mem. available then get_MO_batches_size returned
+    ! small_frag == .false. and we switch back to standard CCSD algorithm.
+    if (.not.small_frag) return
+
+    ! sanity check:
+    call get_mem_MO_CCSD_residual(MemNeed,ntot,nbas,nocc,nvir,dimMO) 
+    call get_currently_available_memory(MemFree)
+    if ((MemFree-MemNeed)<=0.0E0_realk) then
+      if (DECinfo%cc_driver_debug) print *, 'MO batch: 1st assumption wrong'
+      call get_MO_batches_size(small_frag,min_mem,ntot,Nbatch,dimMO,4*ntot*ntot,ntot)
+    end if
+
+    ! If not enough mem. available then get_MO_batches_size returned
+    ! small_frag == .false. and we switch back to standard CCSD algorithm.
+    if (.not.small_frag) return
+
+    ! sanity check:
+    call get_mem_MO_CCSD_residual(MemNeed,ntot,nbas,nocc,nvir,dimMO) 
+    call get_currently_available_memory(MemFree)
+    if ((MemFree-MemNeed)<=0.0E0_realk) then
+      small_frag = .false.
+      return
+    end if
+
+
+    ! Get minimum mem. required to get gmo:
+    call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+      call get_currently_available_memory(MemFree)
+    call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MinAObatch,MinAObatch,MinAObatch)
+
+    MaxGamma = MinAObatch
+    MaxAlpha = MinAObatch
+    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxGamma<=nbas)) 
+      MaxGamma = MaxGamma + 1
+       call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MaxAlpha,MaxGamma,MinAObatch)  
+    end do
+    if (MaxGamma>=nbas) then
+      MaxGamma = nbas
+    else if (MaxGamma<=MinAObatch) then
+      MaxGamma = MinAObatch
+    else 
+      MaxGamma = MaxGamma - 1
+    end if
+    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAlpha<=nbas)) 
+      MaxAlpha = MaxAlpha + 1
+       call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MaxAlpha,MaxGamma,MinAObatch)  
+    end do
+    if (MaxAlpha>=nbas) then
+      MaxAlpha = nbas
+    else if (MaxAlpha<=MinAObatch) then
+      MaxAlpha = MinAObatch
+    else 
+      MaxAlpha = MaxAlpha - 1
+    end if
+
+    ! sanity check:
+    call get_mem_packed_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MaxAlpha,MaxGamma,MinAObatch)  
+    call get_currently_available_memory(MemFree)
+    if ((MemFree-MemNeed)<=0.0E0_realk) then
+      small_frag = .false.
+      return
+    end if
+
+  end subroutine get_MO_and_AO_batches_size
 
 
   !> Purpose: Get memory required in get_packed_gmo depending on AO 
@@ -3178,10 +3227,15 @@ module cc_debug_routines_module
     integer,  intent(in) :: M, N, O, V, X, nMOB
     !> AO stuff:
     integer, intent(in) :: AlphaDim, GammaDim, MinDimAO
-    ! memory needed:
+    !> memory needed:
     real(realk), intent(inout) :: MemOut
     ! intermediate memory:
-    integer :: MemNeed
+    integer :: MemNeed, nnod, nTileMax
+
+    nnod = 1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
 
     ! Transfo. matrices:
     MemNeed = N*M + AlphaDim*X + GammaDim*X
@@ -3189,8 +3243,12 @@ module cc_debug_routines_module
     ! AO stuff:
     MemNeed = MemNeed + 4*N + N*N*AlphaDim*GammaDim 
     
-    ! Packed gmo:
-    MemNeed = MEmNeed + M*(M+1)*M*(M+1)/4
+    ! Packed gmo diag blocks:
+    nTileMax = (nMOB-1)/nnod + 3
+    MemNeed = MEmNeed + nTileMax*X*(X+1)*M*(M+1)/4
+    ! Packed gmo upper blocks:
+    nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
+    MemNeed = MEmNeed + nTileMax*X*X*M*(M+1)/2
 
     ! MO stuff:
     MemNeed = MemNeed + X*X*M*M + 5*nMOB*nMOB + 1
@@ -3223,7 +3281,20 @@ module cc_debug_routines_module
     ! memory needed:
     real(realk), intent(inout) :: MemOut
     ! intermediate memory:
-    integer :: MemNeed
+    integer :: MemNeed, nnod, nTileMax, nMOB
+
+    nMOB = (M-1)/X + 1
+    nnod = 1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
+
+    ! Packed gmo diag blocks:
+    nTileMax = (nMOB-1)/nnod + 3
+    MemNeed = MEmNeed + nTileMax*X*(X+1)*M*(M+1)/4
+    ! Packed gmo upper blocks:
+    nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
+    MemNeed = MEmNeed + nTileMax*X*X*M*(M+1)/2
 
     ! Working arrays:
     MemNeed = max(O**4, V*O**3, V*V*O*O, X*X*M*M, X*O*O*V, X*O*V*V)
@@ -3508,179 +3579,114 @@ module cc_debug_routines_module
   end subroutine get_MO_batches_info
 
 
-  !> Purpose: Pack MO int. depending on the scheme.
-  !           contributions are summing over AO batch
+  !> Purpose: Pack MO integrals using symmetry of charge distribution.
+  !           The contributions are summing over AO batch
   !
   !> Author:  Pablo Baudin
-  !> Date:    October 2013
-  subroutine pack_and_add_gmo(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta,ncopy,pack_scheme)
+  !> Date:    December 2013
+  subroutine pack_and_add_gmo(gmo,pack_gmo,tile,ntot,dimP,dimQ,diag,tmp)
 
     implicit none
    
     !> array with one batch of partial MO int.:
     real(realk), intent(in) :: gmo(:)
     !> array containing the previous contributions
-    !  to this MO int. batch, packed depending on pack_scheme:
-    real(realk), intent(inout) :: pack_gmo(:)
-    integer, intent(in) :: pack_scheme
+    !  to this MO int. batch, packed.
+    type(array), intent(inout) :: pack_gmo
+    !> index corresponding to the current batch:
+    integer, intent(in) :: tile
     !> dimensions of array:
-    integer, intent(in) :: ntot, dimP, dimQ, P_sta, Q_sta
-    integer, intent(out) :: ncopy
+    integer, intent(in) :: ntot, dimP, dimQ
+    !> Diagonal block ?
+    logical, intent(in) :: diag
+    !> working array:
+    real(realk), intent(inout) :: tmp(:)
 
-    select case (pack_scheme)
-      case(0)  ! s = 0: no packing 
-        call daxpy(dimP*dimQ*ntot*ntot,1.0E0_realk,gmo,1,pack_gmo,1)
-        ncopy = dimP*dimQ*ntot*ntot
+    integer :: s, r, rs, q, ibatch, ipack, ncopy
 
-      case(1)  ! s = 1: use symmetry pq<=rs
-        call lsquit('packing of MO int. not yet implemented', DECinfo%output)
-
-      case(2)  ! s = 2: use symmetry p<=q and r<=s
-        call pack_p_le_q_and_r_le_s(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta,ncopy)
-
-      case(3)  ! s = 3: use symmetry pq<=rs; p<=q and r<=s
-        call lsquit('packing of MO int. not yet implemented', DECinfo%output)
-
-      case default
-        call lsquit('wrong or undefined packing scheme for MO int.', DECinfo%output)
-    end select
-
-  end subroutine pack_and_add_gmo
-
-
-  subroutine pack_p_le_q_and_r_le_s(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta,ncopy)
-
-    implicit none
- 
-    !> array with one batch of partial MO int.:
-    real(realk), intent(in) :: gmo(:)
-    !> array containing the previous contributions
-    !  to this MO int. batch, already packed using pq<=rs:
-    real(realk), intent(inout) :: pack_gmo(:)
-    !> dimensions and indices of array:
-    integer, intent(in) :: ntot, dimP, dimQ, P_sta, Q_sta
-    integer, intent(out) :: ncopy
-
-    integer :: q, r, s, rs,  ibatch, ipack
-
-    ipack  = 1
+    ipack = 1
 
     ! 1st case: current batch corresponds to diagonal block, we 
     !           keep only the upper triangular part of the batch.
-    if (P_sta==Q_sta.and.dimP==dimQ) then
+    if (diag) then
   
       do s=1,ntot
         do r=1,s
           rs = r + (s-1)*ntot
           do q=1,dimQ
             ibatch = 1 + (q-1)*dimP + (rs-1)*dimP*dimQ
-            call daxpy(q,1.0E0_realk,gmo(ibatch),1,pack_gmo(ipack),1)
-            ipack  = ipack + q
+            call dcopy(q,gmo(ibatch),1,tmp(ipack),1)
+            ipack = ipack + q
           end do
         end do
       end do
   
+      ! add to pdm array:
+      call array_accumulate_tile(pack_gmo,[1,tile],tmp,ipack-1)
+
     ! 2nd case: current batch corresponds to an upper diagonal block,
     !           we keep all the pq part and reduced r<=s.
-    else if (P_sta<Q_sta) then
+    else
   
       do s=1,ntot
         do r=1,s
           rs = r + (s-1)*ntot
           ibatch = 1 + (rs-1)*dimP*dimQ
           ncopy = dimP*dimQ
-          call daxpy(ncopy,1.0E0_realk,gmo(ibatch),1,pack_gmo(ipack),1)
-          ipack  = ipack + ncopy
+          call dcopy(ncopy,gmo(ibatch),1,tmp(ipack),1)
+          ipack = ipack + ncopy
         end do
       end do
-  
-    ! 3rd case: current batch corresponds to a lower diagonal block,
-    !           and should be deleted.
-    else if (P_sta>Q_sta) then
-      continue
 
-    ! error case: current batch corresponds to unsquared block in the diagonal:
-    else 
-      call lsquit('batch not square in the diagonal', DECinfo%output)
+      ! add to pdm array:
+      call array_accumulate_tile(pack_gmo,[1,tile],tmp,ipack-1)
+
     end if
-  
-    ! edit total number of element copied:
-    ncopy = ipack - 1
 
-  end subroutine pack_p_le_q_and_r_le_s
+  end subroutine pack_and_add_gmo
 
 
-  !> Purpose: Unpack MO int. depending on the scheme.
+  !> Purpose: Unpack MO integrals using symmetry of charge distribution.
   !
   !> Author:  Pablo Baudin
-  !> Date:    October 2013
-  subroutine unpack_gmo(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta,pack_scheme)
+  !> Date:    December 2013
+  subroutine unpack_gmo(gmo,pack_gmo,tile,ntot,dimP,dimQ,diag,tmp)
 
     implicit none
    
-    !> Batch of unpack MO int.:
-    real(realk), intent(inout) :: gmo(:)
-    !> Batch of packed MO int.:
-    real(realk), intent(in) :: pack_gmo(:)
-    integer, intent(in) :: pack_scheme
-    !> Batch info:
-    integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
-    !> dimensions of array:
-    integer, intent(in) :: ntot
-    integer :: ncopy
-
-    
-    select case (pack_scheme)
-      case(0)  ! s = 0: no packing 
-        ncopy = dimP*dimQ*ntot*ntot
-        call dcopy(ncopy,pack_gmo,1,gmo,1)
-
-      case(1)  ! s = 1: use symmetry pq<=rs
-        call lsquit('packing of MO int. not yet implemented', DECinfo%output)
-        !call unpack_pq_le_rs(gmo,pack_gmo,ntot,dimP,dimR,P_sta,R_sta,ncopy)
-
-      case(2)  ! s = 2: use symmetry p<=q and r<=s
-        call unpack_p_le_q_and_r_le_s(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta)
-
-      case(3)  ! s = 3: use symmetry pq<=rs; p<=q and r<=s
-        !call pack_total()
-        call lsquit('packing of MO int. not yet implemented', DECinfo%output)
-
-      case default
-        call lsquit('wrong or undefined packing scheme for MO int.', DECinfo%output)
-    end select
-
-  end subroutine unpack_gmo
-
-
-  subroutine unpack_p_le_q_and_r_le_s(gmo,pack_gmo,ntot,dimP,dimQ,P_sta,Q_sta)
-
-    implicit none
- 
     !> array with one batch of partial MO int.:
     real(realk), intent(inout) :: gmo(:)
     !> array containing the previous contributions
-    !  to this MO int. batch, already packed using pq<=rs:
-    real(realk), intent(in) :: pack_gmo(:)
-    !> dimensions and indices of array:
-    integer, intent(in) :: ntot, dimP, dimQ, P_sta, Q_sta
-    integer :: ncopy
+    !  to this MO int. batch, packed.
+    type(array), intent(in) :: pack_gmo
+    !> index corresponding to the current batch:
+    integer, intent(in) :: tile
+    !> dimensions of array:
+    integer, intent(in) :: ntot, dimP, dimQ
+    !> Diagonal block ?
+    logical, intent(in) :: diag
+    !> working array:
+    real(realk), intent(inout) :: tmp(:)
 
-    integer :: q, r, s, rs, sr, ibat1, ibat2, ipack
+    integer :: s, r, rs, sr, q, ibat1, ibat2, ipack, ncopy
 
     ipack  = 1
 
     ! 1st case: current batch corresponds to diagonal block.
-    if (P_sta==Q_sta.and.dimP==dimQ) then
+    if (diag) then
   
+      ! get batch from pdm:
+      ncopy = ntot*(ntot+1)*dimP*(dimP+1)/4
+      call array_get_tile(pack_gmo,[1,tile],tmp,ncopy)
+
       do s=1,ntot
         do r=1,s
           rs = r + (s-1)*ntot
           do q=1,dimQ
             ibat1 = 1 + (q-1)*dimP + (rs-1)*dimP*dimQ
-            call dcopy(q,pack_gmo(ipack),1,gmo(ibat1),1)
+            call dcopy(q,tmp(ipack),1,gmo(ibat1),1)
             ibat2 = q + (rs-1)*dimP*dimQ
-            call dcopy(q-1,pack_gmo(ipack),1,gmo(ibat2),dimP)
+            call dcopy(q-1,tmp(ipack),1,gmo(ibat2),dimP)
             ipack  = ipack + q
           end do
           if (r/=s) then
@@ -3693,15 +3699,19 @@ module cc_debug_routines_module
       end do
   
     ! 2nd case: current batch corresponds to an upper diagonal block,
-    else if (P_sta<Q_sta) then
+    else
   
+      ! get batch from pdm:
+      ncopy = dimP*dimQ*ntot*ntot
+      call array_get_tile(pack_gmo,[1,tile],tmp,ncopy)
+
       ! get first batch pqrs:
       do s=1,ntot
         do r=1,s
           rs = r + (s-1)*ntot
           ibat1 = 1 + (rs-1)*dimP*dimQ
           ncopy = dimP*dimQ
-          call dcopy(ncopy,pack_gmo(ipack),1,gmo(ibat1),1)
+          call dcopy(ncopy,tmp(ipack),1,gmo(ibat1),1)
           ipack  = ipack + ncopy
 
           if (r/=s) then
@@ -3711,19 +3721,10 @@ module cc_debug_routines_module
           end if
         end do
       end do
-      ncopy = dimP*dimQ*ntot*ntot
 
-    ! 3rd case: current batch corresponds to a lower diagonal block,
-    !           and should be empty.
-    else if (P_sta>Q_sta) then
-      continue
-
-    ! error case: current batch corresponds to unsquared block in the diagonal:
-    else 
-      call lsquit('batch not square in the diagonal', DECinfo%output)
     end if
   
-  end subroutine unpack_p_le_q_and_r_le_s
+  end subroutine unpack_gmo
 
 
   !> Purpose: Calculate CCSD residual using T1-transformed equations.
@@ -3733,7 +3734,7 @@ module cc_debug_routines_module
   !
   !> Author:  Pablo Baudin
   !> Date:    November 2013
-  subroutine get_ccsd_residual_small_frag(pack_gmo,t1,omega1,t2,omega2, &
+  subroutine get_ccsd_residual_small_frag(pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
              & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock)
 
@@ -3741,7 +3742,7 @@ module cc_debug_routines_module
 
     !> MO pack integrals; amplitudes and residuals:
     integer, intent(in) :: nbas, nocc, nvir, iter
-    real(realk), intent(in) :: pack_gmo(:)
+    type(array),intent(in) :: pgmo_diag, pgmo_up
     real(realk), intent(in) :: t1(nvir,nocc)
     real(realk), intent(inout) :: omega1(nvir,nocc)
     real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc) 
@@ -3793,7 +3794,7 @@ module cc_debug_routines_module
     !> debug:
     real(realk), external :: ddot
     real(realk) :: tcpu, twall, tcpu1, twall1
-    integer :: pos1, pos2, ncopy
+    integer :: pos1, pos2, ncopy, idb, iub
     integer :: mv((nvir*nvir)/2), st
 
     ! Initialize stuff
@@ -3892,6 +3893,8 @@ module cc_debug_routines_module
     govoo  = 0.0E0_realk
     gvooo  = 0.0E0_realk
     Nbat = MOinfo%nbatch
+    idb = 0
+    iub = 0
 
     call LSTIMER('small_frag CCSD init.',tcpu1,twall1,DECinfo%output)
 
@@ -3906,7 +3909,17 @@ module cc_debug_routines_module
       ipack1 = MOinfo%packInd(PQ_batch)
       ipack2 = MOinfo%packInd(PQ_batch+1) - 1
 
-      call unpack_gmo(gmo,pack_gmo(ipack1:ipack2),ntot,dimP,dimQ,P_sta,Q_sta,2)
+      !call unpack_gmo(gmo,pack_gmo(ipack1:ipack2),ntot,dimP,dimQ,P_sta,Q_sta,2)
+      if (P_sta==Q_sta) then
+        idb = idb + 1
+        call unpack_gmo(gmo,pgmo_diag,idb,ntot,dimP,dimQ,.true.,tmp0)
+      else if (P_sta<Q_sta) then
+        iub = iub + 1
+        call unpack_gmo(gmo,pgmo_up,iub,ntot,dimP,dimQ,.false.,tmp0)
+      else
+        cycle
+      end if
+     
 
       call wrapper_get_intermediates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
                                    & xvir,yocc,t2,u2,goooo,B2prep,omega2,G_Pi,H_aQ, &
@@ -4677,7 +4690,8 @@ module cc_debug_routines_module
     integer, intent(in) :: s
     logical, intent(in) :: lock
     integer(kind=8),intent(in) :: els2add
-    
+    integer(kind=ls_mpik) :: nnod, me
+   
 
     type(array) :: t2a, u2a, govova, gvvooa, gvoova, omega2a
 
@@ -4702,8 +4716,10 @@ module cc_debug_routines_module
     omega2a = array_init([nv,nv,no,no],4)
     call dcopy(nv*nv*no*no,omega2,1,omega2a%elm1,1)
 
+    nnod = 1
+    me = 0
     call get_cnd_terms_mo(tmp0,tmp1,tmp2,t2a,u2a,govova,gvoova,gvvooa, &
-                         & no,nv,omega2a,s,lock,els2add)
+                         & no,nv,omega2a,s,lock,els2add,nnod,me)
 
     call dcopy(nv*nv*no*no,omega2a%elm1,1,omega2,1)
 
@@ -4929,7 +4945,7 @@ module cc_debug_routines_module
     integer, pointer :: s_idx(:,:,:), s_nidx(:)
     integer :: pno,pno1,pno2,pnv,pnv1,pnv2,Sidx1,Sidx2, ldS1,ldS2, k, l, nidx1, nidx2, spacemax
     character :: tr11,tr12,tr21,tr22
-    logical :: skiptrafo,skiptrafo2
+    logical :: skiptrafo,skiptrafo2,save_gvvvv_is
     type(matrix) :: iFock, Dens
     integer(kind=8) :: maxsize
     !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
@@ -4985,10 +5001,10 @@ module cc_debug_routines_module
     ! treated in a special way, either LO or FNO basis, this will be element 1
     ! in all the array arrays
     if(fj)then
-      call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj,f=f)
+      call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj,save_gvvvv_is,f=f)
       spacemax = max(f%noccEOS,2)
     else
-      call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj)
+      call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj,save_gvvvv_is)
       spacemax = 2
     endif
 
@@ -6223,6 +6239,9 @@ module cc_debug_routines_module
     call mem_dealloc( vof )
     call mem_dealloc( ovf )
 
+    !o2 = 0.0E0_realk
+    !o1 = 0.0E0_realk
+
   end subroutine get_ccsd_residual_pno_style
 
   subroutine get_overlap_idx(n1,n2,cv,idx,nidx)
@@ -6455,9 +6474,19 @@ module cc_debug_routines_module
     integer :: i, j, c, t1,t2
     integer :: ns1,ns2
     real(realk),pointer:: s1(:,:), s2(:,:)
-    c = 0
+
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(NONE)&
+    !$OMP& SHARED(pno_cv,pno_S,n,no,nv)&
+    !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2)
+    call init_threadmemvar()
+
+    !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
     do i=1,n
-      do j=1,i-1
+      do j=1,n
+
+        if(j>=i) cycle
+
         ! COUNT UPPER TRIANGULAR ELEMENTS WITHOUT DIAGONAL ELEMENTS
         c = (j - i + 1) + i*(i-1)/2
 
@@ -6494,6 +6523,10 @@ module cc_debug_routines_module
 
       enddo
     enddo
+    !$OMP END DO NOWAIT
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
 
   end subroutine get_pno_overlap_matrices
 
@@ -6573,23 +6606,63 @@ module cc_debug_routines_module
     call mem_dealloc(tmp2)
   end subroutine get_pno_amplitudes
 
-  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,fj,f)
+  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,fj,sgvvvvis,f)
     implicit none
     !ARGUMENTS
     integer, intent(in) :: no, nv, nb, n
     real(realk), intent(in) :: t_mp2(nv,no,nv,no)
     type(SpaceInfo),pointer :: cv(:)
     logical,intent(in) :: fj
+    logical,intent(out) :: sgvvvvis
     type(decfrag),intent(in),optional :: f
     !INTERNAL
     real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
     integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
-    integer :: pno_gvvvv_size
+    integer :: pno_gvvvv_size,find_pos(no,no)
     logical :: doit
+
+    find_pos = -1
+
+    counter = 0
+    if(fj) counter = 1
+    doi1 :do i = 1, no
+        doj1: do j = i, no
+
+          doit=.true.
+          !check if both indices occur in occ EOS, if yes -> skip
+          if(fj)then
+            oiloop2: do oi = 1, f%noccEOS
+              if(f%idxo(oi) == i)then
+                do oj = 1, f%noccEOS
+                  if(f%idxo(oj) == j)then
+                    doit = .false.
+                    exit oiloop2
+                  endif
+                enddo
+              endif
+            enddo oiloop2
+          endif
+
+          if(doit)then
+            counter = counter + 1
+            find_pos(i,j) = counter
+          endif
+      enddo doj1
+    enddo doi1
+
+    if(counter /= n )then
+      call lsquit("ERROR(get_pno_trafo_matrices):wrong counter",-1)
+    endif
     
     calc_parameters = 0
     det_parameters  = 0
     pno_gvvvv_size  = 0
+
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,pno_gvvvv_size)&
+    !$OMP& SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2)&
+    !$OMP& PRIVATE(counter,virteival,U,PD,doit)
+    call init_threadmemvar()
 
     if(fj)then
 
@@ -6597,6 +6670,8 @@ module cc_debug_routines_module
         call lsquit("Error(get_pno_trafo_matrices)Fragment Correlation density matrix not allocated",-1)
       endif
 
+
+      !$OMP SINGLE
       call solve_eigenvalue_problem_unitoverlap(nv,f%VirtMat,virteival,U)
       call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1),ext_thr=DECinfo%EOSPNOthr)
       call mem_alloc(cv(1)%iaos,f%noccEOS)
@@ -6613,27 +6688,21 @@ module cc_debug_routines_module
         & according to the current threshold, skipping this fragment should be&
         & implemented",-1)
       endif
+      !$OMP END SINGLE
 
+      !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
       doi :do i = 1, no
-        doj: do j = i, no
+        doj: do j = 1, no
+        
+          if(j<i.or.(i==1.and.j==1)) cycle doj
 
           !check if both indices occur in occ EOS, if yes -> skip
-          doit=.true.
-          oiloop: do oi = 1, f%noccEOS
-            if(f%idxo(oi) == i)then
-              do oj = 1, f%noccEOS
-                if(f%idxo(oj) == j)then
-                  doit = .false.
-                  exit oiloop
-                endif
-              enddo
-            endif
-          enddo oiloop
+          doit= ( find_pos(i,j)/= -1 )
 
           !calculate the pair density matrix, diagonalize it, truncate the
           !respective transformation matrix and save it in c
           if(doit)then
-            counter = counter + 1
+            counter = find_pos(i,j)
             call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
             call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
             call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
@@ -6653,11 +6722,13 @@ module cc_debug_routines_module
           endif
         enddo doj
       enddo doi
+      !$OMP END DO NOWAIT
     else
-      counter = 0
+      !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
       doiful :do i = 1, no
-        dojful: do j = i, no
-          counter = counter + 1
+        dojful: do j = 1, no
+          if(j<i) cycle dojful
+          counter = find_pos(i,j)
           call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
           call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
           call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
@@ -6676,14 +6747,18 @@ module cc_debug_routines_module
           pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
         enddo dojful
       enddo doiful
+      !$OMP END DO NOWAIT
     endif
+
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
 
     print *,"I have to determine",det_parameters," of ",no**2*nv**2," using ",calc_parameters
     print *,"full gvvvv",nv**4," vs ",pno_gvvvv_size
 
-    if( counter /= n )then
-      call lsquit("ERROR(get_pno_trafo_matrices):counting is not consistent",-1)
-    endif
+    sgvvvvis = (pno_gvvvv_size<nv**4)
+
   end subroutine get_pno_trafo_matrices
 
   !\brief Calculation of the pair density matrix from a set of MP2 amplitudes
@@ -6788,21 +6863,23 @@ end module cc_debug_routines_module
 
 #ifdef VAR_MPI
 subroutine cc_gmo_slave()
+
   use dec_typedef_module
-  use typedeftype,only:lsitem
-  use decmpi_module,only:cc_gmo_communicate_data
+  use cc_debug_routines_module
+  use typedeftype, only: lsitem
+  use decmpi_module, only: mpi_communicate_get_gmo_data
+
   implicit none
+
   !> number of orbitals:
   integer :: nbas, nocc, nvir,ccmodel
   !> SCF transformation matrices:
   real(realk),pointer  :: Co(:,:), Cv(:,:)
   !> performed MO-based CCSD calculation ?
   logical :: small_frag
-  !> array with packed gmo on output:
-  real(realk), pointer :: pack_gmo(:)
-  integer(kind=long) :: pack_gmosize
-  !> how to pack integrals:
-  integer :: pack_scheme
+  !> array with gmo on output:
+  real(realk), pointer :: govov(:)
+  type(array) :: pgmo_diag, pgmo_up
 
   !> variables used for MO batch and integral transformation
   integer :: ntot ! total number of MO
@@ -6815,6 +6892,15 @@ subroutine cc_gmo_slave()
   type(lsitem) :: MyLsItem
   
 
-  call cc_gmo_communicate_data(small_frag,MyLsItem,Co,Cv,pack_gmo,nbas,nocc,nvir,ccmodel)
+  call mpi_communicate_get_gmo_data(small_frag,MyLsItem,Co,Cv, &
+       & ntot,nbas,nocc,nvir,ccmodel)
+
+  call get_packed_gmo(small_frag,MyLsItem,Co,Cv,govov, &
+       & pgmo_diag,pgmo_up,nbas,nocc,nvir,ccmodel,MOinfo)
+
+  call mem_dealloc(Co)
+  call mem_dealloc(Cv)
+  call ls_free(MyLsItem)
+
 end subroutine cc_gmo_slave
 #endif
