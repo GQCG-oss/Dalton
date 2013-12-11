@@ -579,7 +579,9 @@ contains
       call array4_reorder(omega2,[1,3,2,4])
       call array_convert(omega2%val,omegaw1)
     endif
+#ifdef VAR_MPI
     call lsmpi_barrier(infpar%lg_comm)
+#endif
 
     call mo_work_dist(nvirt*nocc,fai,tl)
     !call mem_alloc(w2,tl*nocc*nvirt)
@@ -639,6 +641,7 @@ contains
     call dgemm('n','n',tl,dim1,dim1, &
          2.0E0_realk,w3,tl,w4,dim1,0.0E0_realk,omegw,tl)
 
+#ifdef VAR_MPI
     write(msg,*) 'Norm of omegw',infpar%lg_mynum
     call sleep(1)
     call lsmpi_barrier(infpar%lg_comm)
@@ -646,9 +649,11 @@ contains
     call sleep(1)
     call lsmpi_barrier(infpar%lg_comm)
     !stop
+#endif
     
 
     call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
+#ifdef VAR_MPI
     call lsmpi_barrier(infpar%lg_comm)
   !  write(*,*) 'checkpoint 2',infpar%lg_mynum
     write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
@@ -658,11 +663,14 @@ contains
     call sleep(1)
     call lsmpi_barrier(infpar%lg_comm)
     !stop
+#endif
 
     if(master) then
       !call array_convert(omegaw1,omega2%val)
       call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
+#ifdef VAR_MPI
       write(*,*) 'checkpoint 3',infpar%lg_mynum
+#endif
       call array4_reorder(omega2,[1,3,2,4])
     endif
 
