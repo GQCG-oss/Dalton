@@ -711,8 +711,9 @@ module cc_debug_routines_module
            !  !rpa_multipliers not yet implemented
            !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !else
-             call RPA_residualdeb(Omega2(iter),t2(iter),pack_gmo,ppfock,qqfock,nocc,nvirt)
-             !call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
+             !call RPA_residualdeb(Omega2(iter),t2(iter),pack_gmo,ppfock,qqfock,nocc,nvirt)
+           call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
+             !call RPA_residual(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
            !endif
 
 
@@ -2813,7 +2814,6 @@ module cc_debug_routines_module
       call ls_mpibcast(CCGETGMOCONSTR,infpar%master,infpar%lg_comm)
       call mpi_communicate_get_gmo_data(small_frag,MyLsItem,Co,Cv,ntot,nb,no,nv,ccm)
     endif StartUpSlaves
-#endif
 
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(dimP,infpar%master)
@@ -2825,6 +2825,7 @@ module cc_debug_routines_module
     call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
     call ls_mpi_buffer(els2add,infpar%master)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+#endif
 
 
     ! ************************************************
@@ -3291,13 +3292,13 @@ module cc_debug_routines_module
 
     ! Packed gmo diag blocks:
     nTileMax = (nMOB-1)/nnod + 3
-    MemNeed = MEmNeed + nTileMax*X*(X+1)*M*(M+1)/4
+    MemNeed = nTileMax*X*(X+1)*M*(M+1)/4
     ! Packed gmo upper blocks:
     nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
-    MemNeed = MEmNeed + nTileMax*X*X*M*(M+1)/2
+    MemNeed = MemNeed + nTileMax*X*X*M*(M+1)/2
 
     ! Working arrays:
-    MemNeed = max(O**4, V*O**3, V*V*O*O, X*X*M*M, X*O*O*V, X*O*V*V)
+    MemNeed = MemNeed + max(O**4, V*O**3, V*V*O*O, X*X*M*M, X*O*O*V, X*O*V*V)
     MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M)
     MemNeed = MemNeed + max(X*O*V*M, O*O*V*V, X*X*M*M, X*O*O*M)
 
@@ -3909,7 +3910,6 @@ module cc_debug_routines_module
       ipack1 = MOinfo%packInd(PQ_batch)
       ipack2 = MOinfo%packInd(PQ_batch+1) - 1
 
-      !call unpack_gmo(gmo,pack_gmo(ipack1:ipack2),ntot,dimP,dimQ,P_sta,Q_sta,2)
       if (P_sta==Q_sta) then
         idb = idb + 1
         call unpack_gmo(gmo,pgmo_diag,idb,ntot,dimP,dimQ,.true.,tmp0)
