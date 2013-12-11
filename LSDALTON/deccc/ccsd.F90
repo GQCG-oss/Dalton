@@ -61,7 +61,8 @@ module ccsd_module
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
-         & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ,get_cnd_terms_mo
+         & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ,get_cnd_terms_mo,&
+         & mo_work_dist
     private
 
   interface Get_AOt1Fock
@@ -909,7 +910,6 @@ contains
 
     integer(kind=8) :: w0size,w1size,w2size,w3size,neloc
 
-    type(matrix) :: Dens,iFock
     ! Variables for mpi
     logical :: master,lg_master,parent,worker,talker
     integer :: fintel,nintel,fe,ne,ierr
@@ -2187,34 +2187,30 @@ contains
     endif
 
     !allocate the density matrix
-    call mat_init(iFock,nb,nb)
-    call mat_init(Dens,nb,nb)
+    call mem_alloc(w2,int(nb**2,kind=8))
+    call mem_alloc(w3,int(nb**2,kind=8))
+
+    w2%d = 0.0E0_realk
 
     !calculate inactive fock matrix in ao basis
-    call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens%elms,nb)
-    call mat_zero(iFock)
-    call dec_fock_transformation(iFock,Dens,MyLsItem,.false.)
-    
+    call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,w3%d,nb)
 
-    !THIS IS NOT YET IMPLEMENTED -- as soon as it is, do not use type(matrix)
-    !anymore
-    !call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
-    !& Dens%elms,.false.,iFock%elms)
-    !use dens as temporay array 
+    !get the inactive t1 transformed fock matrix 2e- part
+    call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
+    & w3%d,.false.,w2%d)
 
-
-
+    !get the 1e- part
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-         & Dens%elms,nb,nb,AORdefault,AORdefault)
+         & w3%d,nb,nb,AORdefault,AORdefault)
     ! Add one- and two-electron contributions to Fock matrix
-    call daxpy(nb2,1.0E0_realk,Dens%elms,1,iFock%elms,1)
+    call daxpy(nb2,1.0E0_realk,w3%d,1,w2%d,1)
     !Free the density matrix
-    call mat_free(Dens)
-
+    call mem_dealloc(w3)
 
 
     ! KK: Add long-range Fock correction
-    call daxpy(nb2,1.0E0_realk,deltafock,1,iFock%elms,1)
+    call daxpy(nb2,1.0E0_realk,deltafock,1,w2%d,1)
+
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_MPI
@@ -2224,7 +2220,7 @@ contains
       write(msg,*)"NORM(deltafock):"
       call print_norm(deltafock,int((i8*nb)*nb,kind=8),msg)
       write(msg,*)"NORM(iFock):"
-      call print_norm(iFock%elms,int((i8*nb)*nb,kind=8),msg)
+      call print_norm(w2%d,int((i8*nb)*nb,kind=8),msg)
     endif
 
 
@@ -2232,12 +2228,12 @@ contains
     !Transform inactive Fock matrix into the different mo subspaces
     if (Ccmodel>MODEL_CC2) then
       ! -> Foo
-      call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1%d,no)
+      call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,w2%d,nb,0.0E0_realk,w1%d,no)
       call dgemm('n','n',no,no,nb,1.0E0_realk,w1%d,no,yo,nb,0.0E0_realk,ppfock,no)
       ! -> Fov
       call dgemm('n','n',no,nv,nb,1.0E0_realk,w1%d,no,yv,nb,0.0E0_realk,pqfock,no)
       ! -> Fvo
-      call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock%elms,nb,0.0E0_realk,w1%d,nv)
+      call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,w2%d,nb,0.0E0_realk,w1%d,nv)
       call dgemm('n','n',nv,no,nb,1.0E0_realk,w1%d,nv,yo,nb,0.0E0_realk,qpfock,nv)
       ! -> Fvv
       call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1%d,nv,yv,nb,0.0E0_realk,qqfock,nv)
@@ -2246,10 +2242,10 @@ contains
       call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,fock,nb,0.0E0_realk,w1%d,no)
       call dgemm('n','n',no,no,nb,1.0E0_realk,w1%d,no,yo,nb,0.0E0_realk,ppfock,no)
       ! -> Fov
-      call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1%d,no)
+      call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,w2%d,nb,0.0E0_realk,w1%d,no)
       call dgemm('n','n',no,nv,nb,1.0E0_realk,w1%d,no,yv,nb,0.0E0_realk,pqfock,no)
       ! -> Fvo
-      call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock%elms,nb,0.0E0_realk,w1%d,nv)
+      call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,w2%d,nb,0.0E0_realk,w1%d,nv)
       call dgemm('n','n',nv,no,nb,1.0E0_realk,w1%d,nv,yo,nb,0.0E0_realk,qpfock,nv)
       ! -> Fvv
       call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,fock,nb,0.0E0_realk,w1%d,nv)
@@ -2270,7 +2266,7 @@ contains
     endif
 
     !Free the AO fock matrix
-    call mat_free(iFock)
+    call mem_dealloc(w2)
 
 
 #ifdef VAR_OMP

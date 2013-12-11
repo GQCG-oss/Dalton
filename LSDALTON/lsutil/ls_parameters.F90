@@ -110,6 +110,7 @@ MODULE Integralparameters
   integer,parameter :: CHILD_SHUT_DOWN              = 41
   integer,parameter :: CCSD_COMM_PROC_MASTER        = 42
   integer,parameter :: CCGETGMOCONSTR               = 43
+  integer,parameter :: RPAGETRESIDUAL              = 44
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2

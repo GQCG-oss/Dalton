@@ -656,16 +656,14 @@ module cc_debug_routines_module
               endif
 
               !transform back to original basis   
-              if(DECinfo%use_singles)then
-                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &Co=yocc%val,Cv=yvirt%val)
-              else
-                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=omega2(iter)%val,Co=yocc%val,Cv=yvirt%val)
+              if(DECinfo%CCSDpreventcanonical)then
+                if(DECinfo%use_singles)then
+                  call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                else
+                  call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                endif
               endif
 
               if(.not.fragment_job)then
@@ -679,16 +677,18 @@ module cc_debug_routines_module
               endif
 
               !transform to pseudo diagonal basis for the solver
-              if(DECinfo%use_singles)then
-                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=omega2(iter)%val,t1=omega1(iter)%val,Co=yocc%val,Cv=yocc%val)
-              else
-                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                &t2=omega2(iter)%val,Co=yocc%val,Cv=yocc%val)
+              if(DECinfo%CCSDpreventcanonical)then
+                if(DECinfo%use_singles)then
+                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=omega2(iter)%val,t1=omega1(iter)%val)
+                else
+                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
+                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+                  &t2=omega2(iter)%val)
+                endif
               endif
 
            else
@@ -2909,7 +2909,11 @@ module cc_debug_routines_module
     call mem_alloc(CP,MaxActualDimAlpha,dimP)
     call mem_alloc(CQ,MaxActualDimGamma,dimP)
 
-    gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
+    if(ccmodel == MODEL_RPA) then
+      gmosize = int(i8*nvir*nocc*nvir*nocc, kind=long)
+    else
+      gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
+    endif
     call mem_alloc(gmo,gmosize)
 
     tmp_size = max(nbas*MaxActualDimAlpha*MaxActualDimGamma, ntot*MaxActualDimGamma*dimP)
@@ -4944,6 +4948,7 @@ module cc_debug_routines_module
     logical :: skiptrafo,skiptrafo2
     type(matrix) :: iFock, Dens
     integer(kind=8) :: maxsize
+    !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
 
     p20 = 2.0E0_realk
     p10 = 1.0E0_realk
@@ -5003,8 +5008,6 @@ module cc_debug_routines_module
       spacemax = 2
     endif
 
-    call  mem_alloc(oidx1, spacemax, 3)
-    call  mem_alloc(oidx2, spacemax, 3)
 
     !Get all the overlap matrices necessary
     call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces)
@@ -5022,6 +5025,8 @@ module cc_debug_routines_module
 
     !Get all the pno amplitudes with index restrictions i<=j
     call get_pno_amplitudes(t2,pno_cv,pno_t2,nspaces,no,nv)
+
+    call init_pno_residual(pno_cv,pno_o2,nspaces)
 
     !gvvvv
     call array4_read(gao)
@@ -5128,8 +5133,10 @@ module cc_debug_routines_module
     call mat_free(iFock)
 
     
-    !DEBUG: A2 term
-    !**************
+    !!DEBUG: A2 term
+    !!**************
+    !u = p20*t2
+    !call array_reorder_4d( m10, t2,   nv, no, nv, no, [1,4,3,2], p10, u  )
     !ref = gvovo
 
     !!A2.2 contribution
@@ -5183,7 +5190,8 @@ module cc_debug_routines_module
     !!**************
     !call array_reorder_4d( p10, Lvoov, nv, no, no, nv, [4,3,1,2], nul, w1 ) ! aikc -> ckai
     !call array_reorder_4d( p10, u,     nv, no, nv, no, [4,3,1,2], nul, w2 ) ! aidl -> ldai
-    !call array_reorder_4d( p10, Lovov, no, nv, no, nv, [4,3,1,2], nul, w3 ) ! ldkc -> ckld
+    !call array_reorder_4d( p20, govov, no, nv, no, nv, [4,3,1,2], nul, w3 ) ! ldkc -> ckld
+    !call array_reorder_4d( m10, govov, no, nv, no, nv, [4,1,3,2], p10, w3 ) ! ldkc -> clkd
     !call dgemm('n','n',nv*no,nv*no,no*nv, p05, w3,nv*no,w2,no*nv, p10, w1, nv*no)
     !call dgemm('n','n',nv*no,nv*no,nv*no, p05, u ,nv*no,w1,nv*no, nul, w2, nv*no)
     !w3(1:o2v2) = w2(1:o2v2)
@@ -5272,13 +5280,34 @@ module cc_debug_routines_module
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! ref is not written after this point!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    call mem_dealloc( w1 )
+    call mem_dealloc( w2 )
+    call mem_dealloc( w3 )
+    call mem_dealloc( w4 )
 
     call ass_D2to1(o1,h1,[nv,no])
     h1 = vof
     h1 => null()
 
-    LoopContribs:do ns = 1, nspaces
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
+    !$OMP& d1,d2,t21,t22,tr21,tr22,tr12,tr11,w1,w2,w3,w4,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
+    !$OMP& skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,& 
+    !$OMP& ns2,ns3,nc,nc2,s2,lds2,s1,lds1) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
+    !$OMP& p10,p05,m10,m05,p20,vvf,goooo,Lvoov,pno_o2,govov,&
+    !$OMP& oof, maxsize, nspaces, ovf, gvvov, s_idx,o1,&
+    !$OMP& s_nidx,gooov, no, nv, p_idx, p_nidx,nul,spacemax) 
+    call init_threadmemvar()
 
+    call mem_alloc( w1, maxsize )
+    call mem_alloc( w2, maxsize )
+    call mem_alloc( w3, maxsize )
+    call mem_alloc( w4, maxsize )
+    call mem_alloc(oidx1, spacemax, 3)
+    call mem_alloc(oidx2, spacemax, 3)
+  
+    !$OMP DO SCHEDULE(DYNAMIC)
+    LoopContribs:do ns = 1, nspaces
 
       if(.not.pno_cv(ns)%allocd)then
 
@@ -5292,9 +5321,6 @@ module cc_debug_routines_module
       idx => pno_cv(ns)%iaos
       pnv =  pno_cv(ns)%ns2
       pno =  pno_cv(ns)%n
-
-      pno_o2(ns) = array_init([pnv,pno,pnv,pno],4)
-      call array_zero( pno_o2(ns) )
 
       o   => pno_o2(ns)%elm1
 
@@ -6021,7 +6047,9 @@ module cc_debug_routines_module
       ! carry out w2(\bar{a}\bar{c} kl) w1(\bar{c} kl i) = omega1{\bar{a}i}
       call dgemm('n','n',pnv,no,pnv*pno**2,m10,w2,pnv,w1,pnv*pno**2, nul, w3,pnv)
       !transform d(a\bar{a}) omega1{\bar{a} i} -> o1(a,i)
+      !$OMP CRITICAL
       call dgemm('n','n',nv, no,pnv, p10,d, nv, w3, pnv, p10,o1,nv)
+      !$OMP END CRITICAL
 
       d   => null()
       t   => null()
@@ -6030,12 +6058,11 @@ module cc_debug_routines_module
       pnv =  0
       pno =  0 
     enddo LoopContribs
+    !$OMP END DO NOWAIT
     
 
-   
-    call ass_D2to1(o1,o,[nv,no])
-
     ! Add the missing singles contributions
+    !$OMP DO SCHEDULE(DYNAMIC)
     LoopSingles: do nc=1,no
 
 
@@ -6098,7 +6125,9 @@ module cc_debug_routines_module
 
         call dgemv('n',nv,pno*pnv*pnv,p10,w1,nv,w3, 1, nul,w2,1)
 
+        !$OMP CRITICAL
         o1(:,nc) = o1(:,nc) + w2(1:nv)
+        !$OMP END CRITICAL
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  C1 Term !!!!!!!!!!!!
@@ -6133,29 +6162,42 @@ module cc_debug_routines_module
         call dgemv('n',pnv,pno*pnv,p10,w3,pnv,w2,1,nul,w1,1)
 
         !transform back
+        !$OMP CRITICAL
         call dgemv('n',nv,pnv,p10,d,nv,w1,1,p10,o1(1,nc),1)
+        !$OMP END CRITICAL
         
 
         d     => null()
         t     => null()
         idx   => null()
-        o     => null()
         pnv   =  0
         pno   =  0 
         ns    =  0
         i_idx =  0
       enddo OverlapLoop
     enddo LoopSingles
+    !$OMP END DO NOWAIT
+
+    call mem_dealloc( w1 )
+    call mem_dealloc( w2 )
+    call mem_dealloc( w3 )
+    call mem_dealloc( w4 )
+    call mem_dealloc( oidx1 )
+    call mem_dealloc( oidx2 )
     o => null()
+
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
+
 
      
     !this subroutine assumes that symmetrization has already occured and only a
     !backtransformation to the original space is carried out
     call backtransform_omegas(pno_o2,pno_cv,o2,nspaces,no,nv)
 
-    !Free everything
-    call  mem_dealloc( oidx1 )
-    call  mem_dealloc( oidx2 )
+    call print_norm(o2,o2v2)
+    call print_norm(o1,i8*no*nv)
 
     do ns = 1, nspaces
 
@@ -6182,10 +6224,6 @@ module cc_debug_routines_module
     deallocate( pno_S )
     call mem_dealloc( pno_t2 )
     call mem_dealloc( pno_o2 )
-    call mem_dealloc( w1 )
-    call mem_dealloc( w2 )
-    call mem_dealloc( w3 )
-    call mem_dealloc( w4 )
     call mem_dealloc( gvvvv )
     call mem_dealloc( gvovo )
     call mem_dealloc( govov )
@@ -6475,6 +6513,26 @@ module cc_debug_routines_module
 
   end subroutine get_pno_overlap_matrices
 
+  subroutine init_pno_residual(cv,o2,n)
+    implicit none
+    integer, intent(in) :: n
+    type(SpaceInfo),intent(in) :: cv(n)
+    type(array),intent(inout) :: o2(n)
+    integer :: nn, pnv,pno
+
+    do nn=1,n
+
+      pnv = cv(nn)%ns2
+      pno = cv(nn)%n
+
+      if(cv(nn)%allocd)then
+
+        o2(nn) = array_init([pnv,pno,pnv,pno],4)
+      
+      endif
+    enddo
+  end subroutine init_pno_residual
+
   subroutine get_pno_amplitudes(t2,cv,pno_t2,n,no,nv)
     implicit none
     integer, intent(in) :: n,no,nv
@@ -6542,10 +6600,12 @@ module cc_debug_routines_module
     !INTERNAL
     real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
     integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
+    integer :: pno_gvvvv_size
     logical :: doit
     
     calc_parameters = 0
     det_parameters  = 0
+    pno_gvvvv_size  = 0
 
     if(fj)then
 
@@ -6560,8 +6620,9 @@ module cc_debug_routines_module
       cv(1)%iaos = f%idxo
       counter = 1
 
-      calc_parameters = calc_parameters + cv(1)%ns1*cv(1)%ns2*cv(1)%n**2
-      det_parameters = det_parameters + cv(1)%ns1*cv(1)%ns2*cv(1)%n**2
+      calc_parameters = calc_parameters + cv(1)%ns2**2*cv(1)%n**2
+      det_parameters  = det_parameters  + cv(1)%ns2**2*cv(1)%n**2
+      pno_gvvvv_size  = pno_gvvvv_size  + cv(1)%ns2**4
 
       if(.not.cv(1)%allocd)then
         call lsquit("ERROR(get_pno_trafo_matrices):EOS does not contribute&
@@ -6596,14 +6657,15 @@ module cc_debug_routines_module
               cv(counter)%n = 1
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i]
-              det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
+              det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
             else
               cv(counter)%n = 2
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i,j]
-              det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*2
+              det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
             endif
-            calc_parameters = calc_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
+            calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
+            pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
           endif
         enddo doj
       enddo doi
@@ -6619,19 +6681,21 @@ module cc_debug_routines_module
             cv(counter)%n = 1
             call mem_alloc(cv(counter)%iaos,cv(counter)%n)
             cv(counter)%iaos = [i]
-            det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
+            det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
           else
             cv(counter)%n = 2
             call mem_alloc(cv(counter)%iaos,cv(counter)%n)
             cv(counter)%iaos = [i,j]
-            det_parameters = det_parameters + cv(counter)%ns1*cv(counter)%ns2*2
+            det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
           endif
-          calc_parameters = calc_parameters + cv(counter)%ns1*cv(counter)%ns2*cv(counter)%n**2
+          calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
+          pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
         enddo dojful
       enddo doiful
     endif
 
     print *,"I have to determine",det_parameters," of ",no**2*nv**2," using ",calc_parameters
+    print *,"full gvvvv",nv**4," vs ",pno_gvvvv_size
 
     if( counter /= n )then
       call lsquit("ERROR(get_pno_trafo_matrices):counting is not consistent",-1)

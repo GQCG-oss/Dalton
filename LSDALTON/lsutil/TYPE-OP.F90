@@ -2188,7 +2188,7 @@ IF(postprocess.NE.0)THEN
       call daxpy(ndim*ndim,0.5E0_realk,TMP,1,MAT,1)
       call mem_dealloc(TMP)
    CASE(AntiSymmetricPostprocess)
-      !Symmetrize
+      !AntiSymmetrize
       call mem_alloc(TMP,ndim,ndim)
       call ls_transpose(MAT,TMP,ndim)
       call dscal(ndim*ndim,0.5E0_realk,MAT,1)
@@ -2213,7 +2213,6 @@ REAL(REALK)      :: fullMAT(:,:,:)
 integer   :: lupri,ndim1,ndim2,ndim3,ndim4,ndim5,n1,n2,n3,I
 REAL(REALK),pointer      :: fullMATtmp(:,:,:,:,:)
 logical,intent(in) :: IntegralTransformGC
-
 if(IntegralTransformGC)call lsquit('retrieve_output_3dim not implemented for IntegralTransformGC',lupri)
 ndim1 = setting%Output%resultTensor%nbast(1)
 ndim2 = setting%Output%resultTensor%nbast(2)
@@ -2234,15 +2233,17 @@ call lstensor_free(setting%Output%resultTensor)
 deallocate(setting%Output%resultTensor)
 nullify(setting%Output%resultTensor)
 call dcopy(ndim1*ndim2*ndim3*ndim4*ndim5,fullMATtmp,1,fullMAT,1)
+
 call mem_dealloc(fullMATtmp)
 IF(setting%Output%postprocess(1).NE.0)then
    IF(n1.NE.n2)call lsquit('option not tested n1.NE.n2 retrieve_output_3dim',-1)
    DO I=1,n3
-      call retrieve_postprocess_full(setting%Output%postprocess(1),&
+      call retrieve_postprocess_full(setting%Output%postprocess(I),&
            & fullMAT(:,:,I),n1,lupri)
    ENDDO
 endif
 call mem_dealloc(setting%Output%postprocess)
+
 END SUBROUTINE retrieve_output_3dim
 
 !> \brief retrieve the output from the setting and put it into an 2 dim array
