@@ -4929,7 +4929,7 @@ module cc_debug_routines_module
     integer, pointer :: s_idx(:,:,:), s_nidx(:)
     integer :: pno,pno1,pno2,pnv,pnv1,pnv2,Sidx1,Sidx2, ldS1,ldS2, k, l, nidx1, nidx2, spacemax
     character :: tr11,tr12,tr21,tr22
-    logical :: skiptrafo,skiptrafo2
+    logical :: skiptrafo,skiptrafo2,save_gvvvv_is
     type(matrix) :: iFock, Dens
     integer(kind=8) :: maxsize
     !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
@@ -4985,10 +4985,10 @@ module cc_debug_routines_module
     ! treated in a special way, either LO or FNO basis, this will be element 1
     ! in all the array arrays
     if(fj)then
-      call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj,f=f)
+      call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj,save_gvvvv_is,f=f)
       spacemax = max(f%noccEOS,2)
     else
-      call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj)
+      call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj,save_gvvvv_is)
       spacemax = 2
     endif
 
@@ -6223,6 +6223,9 @@ module cc_debug_routines_module
     call mem_dealloc( vof )
     call mem_dealloc( ovf )
 
+    o2 = 0.0E0_realk
+    o1 = 0.0E0_realk
+
   end subroutine get_ccsd_residual_pno_style
 
   subroutine get_overlap_idx(n1,n2,cv,idx,nidx)
@@ -6573,23 +6576,63 @@ module cc_debug_routines_module
     call mem_dealloc(tmp2)
   end subroutine get_pno_amplitudes
 
-  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,fj,f)
+  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,fj,sgvvvvis,f)
     implicit none
     !ARGUMENTS
     integer, intent(in) :: no, nv, nb, n
     real(realk), intent(in) :: t_mp2(nv,no,nv,no)
     type(SpaceInfo),pointer :: cv(:)
     logical,intent(in) :: fj
+    logical,intent(out) :: sgvvvvis
     type(decfrag),intent(in),optional :: f
     !INTERNAL
     real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
     integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
-    integer :: pno_gvvvv_size
+    integer :: pno_gvvvv_size,find_pos(no,no)
     logical :: doit
+
+    find_pos = -1
+
+    counter = 0
+    if(fj) counter = 1
+    doi1 :do i = 1, no
+        doj1: do j = i, no
+
+          doit=.true.
+          !check if both indices occur in occ EOS, if yes -> skip
+          if(fj)then
+            oiloop2: do oi = 1, f%noccEOS
+              if(f%idxo(oi) == i)then
+                do oj = 1, f%noccEOS
+                  if(f%idxo(oj) == j)then
+                    doit = .false.
+                    exit oiloop2
+                  endif
+                enddo
+              endif
+            enddo oiloop2
+          endif
+
+          if(doit)then
+            counter = counter + 1
+            find_pos(i,j) = counter
+          endif
+      enddo doj1
+    enddo doi1
+
+    if(counter /= n )then
+      call lsquit("ERROR(get_pno_trafo_matrices):wrong counter",-1)
+    endif
     
     calc_parameters = 0
     det_parameters  = 0
     pno_gvvvv_size  = 0
+
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,pno_gvvvv_size)&
+    !$OMP& SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2)&
+    !$OMP& PRIVATE(counter,virteival,U,PD,doit)
+    call init_threadmemvar()
 
     if(fj)then
 
@@ -6597,6 +6640,8 @@ module cc_debug_routines_module
         call lsquit("Error(get_pno_trafo_matrices)Fragment Correlation density matrix not allocated",-1)
       endif
 
+
+      !$OMP SINGLE
       call solve_eigenvalue_problem_unitoverlap(nv,f%VirtMat,virteival,U)
       call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1),ext_thr=DECinfo%EOSPNOthr)
       call mem_alloc(cv(1)%iaos,f%noccEOS)
@@ -6613,27 +6658,21 @@ module cc_debug_routines_module
         & according to the current threshold, skipping this fragment should be&
         & implemented",-1)
       endif
+      !$OMP END SINGLE
 
+      !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
       doi :do i = 1, no
-        doj: do j = i, no
+        doj: do j = 1, no
+        
+          if(j<i.or.(i==1.and.j==1)) cycle doj
 
           !check if both indices occur in occ EOS, if yes -> skip
-          doit=.true.
-          oiloop: do oi = 1, f%noccEOS
-            if(f%idxo(oi) == i)then
-              do oj = 1, f%noccEOS
-                if(f%idxo(oj) == j)then
-                  doit = .false.
-                  exit oiloop
-                endif
-              enddo
-            endif
-          enddo oiloop
+          doit= ( find_pos(i,j)/= -1 )
 
           !calculate the pair density matrix, diagonalize it, truncate the
           !respective transformation matrix and save it in c
           if(doit)then
-            counter = counter + 1
+            counter = find_pos(i,j)
             call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
             call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
             call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
@@ -6653,11 +6692,13 @@ module cc_debug_routines_module
           endif
         enddo doj
       enddo doi
+      !$OMP END DO
     else
-      counter = 0
+      !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
       doiful :do i = 1, no
-        dojful: do j = i, no
-          counter = counter + 1
+        dojful: do j = 1, no
+          if(j<i) cycle dojful
+          counter = find_pos(i,j)
           call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
           call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
           call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
@@ -6676,14 +6717,18 @@ module cc_debug_routines_module
           pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
         enddo dojful
       enddo doiful
+      !$OMP END DO
     endif
+
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
 
     print *,"I have to determine",det_parameters," of ",no**2*nv**2," using ",calc_parameters
     print *,"full gvvvv",nv**4," vs ",pno_gvvvv_size
 
-    if( counter /= n )then
-      call lsquit("ERROR(get_pno_trafo_matrices):counting is not consistent",-1)
-    endif
+    sgvvvvis = (pno_gvvvv_size<nv**4)
+
   end subroutine get_pno_trafo_matrices
 
   !\brief Calculation of the pair density matrix from a set of MP2 amplitudes
