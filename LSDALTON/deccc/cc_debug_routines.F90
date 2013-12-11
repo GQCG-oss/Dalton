@@ -6223,8 +6223,8 @@ module cc_debug_routines_module
     call mem_dealloc( vof )
     call mem_dealloc( ovf )
 
-    o2 = 0.0E0_realk
-    o1 = 0.0E0_realk
+    !o2 = 0.0E0_realk
+    !o1 = 0.0E0_realk
 
   end subroutine get_ccsd_residual_pno_style
 
@@ -6458,9 +6458,19 @@ module cc_debug_routines_module
     integer :: i, j, c, t1,t2
     integer :: ns1,ns2
     real(realk),pointer:: s1(:,:), s2(:,:)
-    c = 0
+
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(NONE)&
+    !$OMP& SHARED(pno_cv,pno_S,n,no,nv)&
+    !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2)
+    call init_threadmemvar()
+
+    !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
     do i=1,n
-      do j=1,i-1
+      do j=1,n
+
+        if(j>=i) cycle
+
         ! COUNT UPPER TRIANGULAR ELEMENTS WITHOUT DIAGONAL ELEMENTS
         c = (j - i + 1) + i*(i-1)/2
 
@@ -6497,6 +6507,10 @@ module cc_debug_routines_module
 
       enddo
     enddo
+    !$OMP END DO NOWAIT
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
 
   end subroutine get_pno_overlap_matrices
 
@@ -6692,7 +6706,7 @@ module cc_debug_routines_module
           endif
         enddo doj
       enddo doi
-      !$OMP END DO
+      !$OMP END DO NOWAIT
     else
       !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
       doiful :do i = 1, no
@@ -6717,7 +6731,7 @@ module cc_debug_routines_module
           pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
         enddo dojful
       enddo doiful
-      !$OMP END DO
+      !$OMP END DO NOWAIT
     endif
 
     call collect_thread_memory()
