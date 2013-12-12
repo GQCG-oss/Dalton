@@ -6495,11 +6495,12 @@ module cc_debug_routines_module
     integer :: i, j, c, t1,t2
     integer :: ns1,ns2,INFO,lwork
     real(realk),pointer:: s1(:,:), s2(:,:), sv(:),dummyU(:), dummyV(:),work(:)
+    real(realk) :: norm
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE)&
     !$OMP& SHARED(pno_cv,pno_S,n,no,nv,with_svd)&
-    !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2)
+    !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,dummyU,dummyV,work,lwork,info)
     call init_threadmemvar()
 
     !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
@@ -6539,7 +6540,8 @@ module cc_debug_routines_module
             call mem_alloc(work,lwork)
             call dgesvd('N','N',ns1,ns2,pno_S(c)%d,ns1,sv,dummyU,ns1,dummyV,ns2,work,lwork,INFO)
             call mem_dealloc(work)
-            print '(2I3,"pair svs:",40e10.2)',i,j,sv
+            call print_norm(pno_S(c)%d,i8*ns1*ns2,norm)
+            print '(2I3,1e10.2,"pair svs:",40e10.2)',i,j,norm,sv
             call mem_dealloc(sv)
           endif
 
