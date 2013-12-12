@@ -5026,7 +5026,7 @@ module cc_debug_routines_module
 
 
     !Get all the overlap matrices necessary
-    call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,(iter==1))
+    call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,.false.)!(iter==1))
 
     !Get pair interaction space information
     call get_pair_space_info(pno_cv,p_idx,p_nidx,s_idx,s_nidx,nspaces,no)
