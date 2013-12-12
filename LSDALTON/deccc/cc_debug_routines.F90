@@ -5026,7 +5026,7 @@ module cc_debug_routines_module
 
 
     !Get all the overlap matrices necessary
-    call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces)
+    call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,(iter==1))
 
     !Get pair interaction space information
     call get_pair_space_info(pno_cv,p_idx,p_nidx,s_idx,s_nidx,nspaces,no)
@@ -6482,18 +6482,19 @@ module cc_debug_routines_module
 
   end subroutine backtransform_omegas
 
-  subroutine get_pno_overlap_matrices(no,nv,pno_cv,pno_S,n)
+  subroutine get_pno_overlap_matrices(no,nv,pno_cv,pno_S,n,with_svd)
     implicit none
     integer :: no, nv, n
     type(SpaceInfo),intent(in) :: pno_cv(n)
     type(SpaceInfo),intent(inout) :: pno_S(n*(n-1)/2)
+    logical, intent(in) :: with_svd
     integer :: i, j, c, t1,t2
-    integer :: ns1,ns2
-    real(realk),pointer:: s1(:,:), s2(:,:)
+    integer :: ns1,ns2,INFO,lwork
+    real(realk),pointer:: s1(:,:), s2(:,:), sv(:),dummyU(:), dummyV(:),work(:)
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE)&
-    !$OMP& SHARED(pno_cv,pno_S,n,no,nv)&
+    !$OMP& SHARED(pno_cv,pno_S,n,no,nv,with_svd)&
     !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2)
     call init_threadmemvar()
 
@@ -6521,9 +6522,23 @@ module cc_debug_routines_module
 
           call dgemm('t','n',ns1,ns2,nv,1.0E0_realk,s1,nv,s2,nv,0.0E0_realk,pno_S(c)%d,ns1)
 
-          s1 => null()
-          s2 => null()
-          
+          if(with_svd)then
+            !Characterize the type of overlap just produced, does it need to be
+            !considered at all -> calculate the singular values for checking
+            call mem_alloc(sv,min(ns1,ns2))
+            sv = 0.0E0_realk
+            INFO=0
+            call mem_alloc(work,5)
+            call dgesvd('N','N',ns1,ns2,pno_S(c)%d,ns1,sv,dummyU,ns1,dummyV,ns2,work,-1,INFO)
+            lwork = work(1)
+            call mem_dealloc(work)
+            call mem_alloc(work,lwork)
+            call dgesvd('N','N',ns1,ns2,pno_S(c)%d,ns1,sv,dummyU,ns1,dummyV,ns2,work,lwork,INFO)
+            call mem_dealloc(work)
+            print '(2I3,"pair svs:",40e10.2)',i,j,sv
+            call mem_dealloc(sv)
+          endif
+
           pno_S(c)%n = 2
           call mem_alloc(pno_S(c)%iaos,pno_S(c)%n)
           pno_S(c)%iaos = [i,j]
