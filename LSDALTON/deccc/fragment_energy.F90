@@ -294,8 +294,15 @@ contains
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
        call fragment_ccsolver(MyFragment,t1,t2,VOVO)
-       debugenergy=rpa_energy(t2,VOVO)
-       debugenergy=debugenergy +sosex_contribution(t2,VOVO)
+
+       if(MyFragment%ccmodel==MODEL_RPA)then
+         print *,"JOHANNES: PLEASE DELETE THIS CALL, IT APPEARED IN A CCSD&
+         & CALCULATION ON TITAN; IT HAS NOTHING TO DO WITH THIS, I PUT THE IF CLAUSE&
+         & AROUND; PLEASE BE CLEAN IN YOUR IMPLEMENTATION, IT SHOULD ONLY HAPPEN INSIDE&
+         & YOUR RESPECTIVE MODEL."
+         debugenergy=rpa_energy(t2,VOVO)
+         debugenergy=debugenergy +sosex_contribution(t2,VOVO)
+       endif
 
 
        ! Extract EOS indices for integrals
