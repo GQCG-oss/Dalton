@@ -6371,36 +6371,40 @@ module cc_debug_routines_module
       cntr        = 1
       p_nidx(n1)  = 1
       p_idx(1,n1) = n1
-      idxloop: do k = 1,cv(n1)%n
-        !search for indices in the pair space
-        SpaceLoop2:do n2 = 1, ns
-          if(n1/=n2)then
-          do l = 1, cv(n2)%n
-            if(cv(n1)%iaos(k)==cv(n2)%iaos(l))then
-              !print *,"found",n1,n2,cv(n1)%iaos(k),cv(n2)%iaos(l)
-              cntr = cntr+1
-              p_nidx(n1)  = cntr
-              p_idx(cntr,n1) = n2
-              cycle SpaceLoop2
+      if(cv(n1)%allocd)then
+        idxloop: do k = 1,cv(n1)%n
+          !search for indices in the pair space
+          SpaceLoop2:do n2 = 1, ns
+            if(n1/=n2.and.cv(n2)%allocd)then
+              do l = 1, cv(n2)%n
+                if(cv(n1)%iaos(k)==cv(n2)%iaos(l))then
+                  !print *,"found",n1,n2,cv(n1)%iaos(k),cv(n2)%iaos(l)
+                  cntr = cntr+1
+                  p_nidx(n1)  = cntr
+                  p_idx(cntr,n1) = n2
+                  cycle SpaceLoop2
+                endif
+              enddo
             endif
-          enddo
-          endif
-        enddo SpaceLoop2
-      enddo idxloop
+          enddo SpaceLoop2
+        enddo idxloop
+      endif
     enddo SpaceLoop
 
     !search for the occupied indices in the spaces
     occupiedloop: do n1=1,no
       cntr = 0
       SpaceLoop3:do n2 = 1, ns
-        do k = 1,cv(n2)%n
-          if(cv(n2)%iaos(k) == n1)then
-            cntr = cntr + 1
-            s_nidx(n1) = cntr
-            s_idx(1,cntr,n1) = n2
-            s_idx(2,cntr,n1) = k
-          endif
-        enddo
+        if(cv(n2)%allocd)then
+          do k = 1,cv(n2)%n
+            if(cv(n2)%iaos(k) == n1 )then
+              cntr = cntr + 1
+              s_nidx(n1) = cntr
+              s_idx(1,cntr,n1) = n2
+              s_idx(2,cntr,n1) = k
+            endif
+          enddo
+        endif
       enddo SpaceLoop3
     enddo occupiedloop
   end subroutine get_pair_space_info
@@ -6737,6 +6741,35 @@ module cc_debug_routines_module
             call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
             call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
             call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
+            if(cv(counter)%allocd)then
+              if(i==j)then
+                cv(counter)%n = 1
+                call mem_alloc(cv(counter)%iaos,cv(counter)%n)
+                cv(counter)%iaos = [i]
+                det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
+              else
+                cv(counter)%n = 2
+                call mem_alloc(cv(counter)%iaos,cv(counter)%n)
+                cv(counter)%iaos = [i,j]
+                det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
+              endif
+              calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
+              pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
+            endif
+          endif
+        enddo doj
+      enddo doi
+      !$OMP END DO NOWAIT
+    else
+      !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+      doiful :do i = 1, no
+        dojful: do j = 1, no
+          if(j<i) cycle dojful
+          counter = find_pos(i,j)
+          call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
+          call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
+          call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
+          if(cv(counter)%allocd)then
             if(i==j)then
               cv(counter)%n = 1
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
@@ -6751,31 +6784,6 @@ module cc_debug_routines_module
             calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
             pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
           endif
-        enddo doj
-      enddo doi
-      !$OMP END DO NOWAIT
-    else
-      !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
-      doiful :do i = 1, no
-        dojful: do j = 1, no
-          if(j<i) cycle dojful
-          counter = find_pos(i,j)
-          call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
-          call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
-          call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
-          if(i==j)then
-            cv(counter)%n = 1
-            call mem_alloc(cv(counter)%iaos,cv(counter)%n)
-            cv(counter)%iaos = [i]
-            det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
-          else
-            cv(counter)%n = 2
-            call mem_alloc(cv(counter)%iaos,cv(counter)%n)
-            cv(counter)%iaos = [i,j]
-            det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
-          endif
-          calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
-          pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
         enddo dojful
       enddo doiful
       !$OMP END DO NOWAIT
