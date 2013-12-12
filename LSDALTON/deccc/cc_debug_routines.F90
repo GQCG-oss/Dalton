@@ -6228,7 +6228,6 @@ module cc_debug_routines_module
       enddo
 
       if( pno_cv(ns)%allocd )then
-        print *,"freeing",ns
         call mem_dealloc( pno_cv(ns)%iaos )
         call mem_dealloc( pno_cv(ns)%d    )
         call array_free( pno_t2(ns) )
@@ -6752,7 +6751,6 @@ module cc_debug_routines_module
         dojful: do j = 1, no
           if(j<i) cycle dojful
           counter = find_pos(i,j)
-          print *,"allocing",counter,i,j
           call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
           call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
           call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
