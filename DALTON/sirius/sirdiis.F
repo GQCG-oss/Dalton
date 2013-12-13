@@ -1511,9 +1511,9 @@ C
         END IF
       END IF
       IF (PEMEP) THEN
-        IF (PE_IFC_MEP == 0) THEN
-            CALL QUIT('ERROR: .PEMEP requires also .MEP in *PEQM.')
-        END IF
+C        IF (PE_IFC_MEP == 0) THEN
+C            CALL QUIT('ERROR: .PEMEP requires also .MEP in *PEQM.')
+C        END IF
         IF (NASHT == 0 .OR. HSROHF) THEN
             CALL PE_IFC_MEPCALC(DAOSAV(:,1), 1,
      &                          WRK(KFREE), LFREE-KFREE+1)

@@ -1532,7 +1532,7 @@ C        '.DOUGLA'
 !        .PEMEP
  134     CONTINUE
 #if defined (BUILD_PELIB)
-            PEMEP = .FALSE.
+            PEMEP = .TRUE.
 #else
             WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
             CALL QUIT('ERROR for .PEQM: PE library not enabled.')
