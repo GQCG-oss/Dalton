@@ -777,10 +777,10 @@ module array2_simple_operations
     !> mo coefficents for occ and virt space for fragment or full molecule
     real(realk), intent(in) :: Co(nb,no), Cv(nb,nv)
     !> Transforming from AO to occupied orbitals in the basis where the fock matrix is diagonal
-    !> - indices: (local,semi-canonical)
+    !> - indices: (aobasis,psuedo-canonical)
     real(realk),intent(inout) :: CDIAGocc(nb,no)
     !> Transforming from AO to virtual orbitals in the basis where the fock matrix is diagonal
-    !> - indices: (local,semi-canonical)
+    !> - indices: (aobasis,pseudo-canonical)
     real(realk),intent(inout) :: CDIAGvirt(nb,nv)
     !> Occupied space: Transforming between local basis and basis where the fock matrix is diagonal
     real(realk),intent(inout) :: Uocc(no,no)
@@ -798,10 +798,10 @@ module array2_simple_operations
 
     ! Init stuff
     ! **********
-    occocc = [no,no]
+    occocc   = [no,no]
     virtvirt = [nv,nv]
-    occAO = [nb,no]
-    virtAO = [nb,nv]
+    occAO    = [nb,no]
+    virtAO   = [nb,nv]
 
     ! ****************************************************************************************
     ! *                                  OCCUPIED ORBITAL SPACE                              *

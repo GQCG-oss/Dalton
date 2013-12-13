@@ -596,7 +596,7 @@ contains
     real(realk) :: t0,t1
     call cpu_time(t0)
     call array4_write_data(array)
-    call array4_alloc(array)
+    call array4_dealloc(array)
     call cpu_time(t1)
     time_array4_write = time_array4_write + (t1-t0)
     return

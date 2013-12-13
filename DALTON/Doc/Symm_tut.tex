@@ -1,0 +1,470 @@
+\chapter{Aspects of symmetry in Dalton}
+
+% radovan: for the moment taken out until we have a decision whether
+%          we want explicit author information and acknowledgements
+%\begin{center}
+%\textbf{Peter R. Taylor} \\
+%Victorian Life Sciences Computation Initiative and
+%School of Chemistry, \\
+%University of Melbourne, Vic~3010, Australia.
+%\end{center}
+%
+%\vspace{5mm}
+
+It is not always straightforward for new Dalton users to understand
+why some aspects of symmetry handling are the way they are.  The order
+of ``symmetries'', that is, irreducible representations, is for example often so
+different from what a user might see looking at character tables in
+books or online that it may be confusing, and the
+question ``why do symmetries come out in this bizarre order?'' is not
+an unfamiliar one.  This section is an attempt to explain to users how
+the symmetry handling in Dalton ''works'', why things are the way they
+are, and how to exploit the considerable potential for computational
+saving that the symmetry handling presents, both for the point groups
+that Dalton uses explicitly ($D_{2h}$ and its subgroups), and for
+higher symmetry systems.
+
+\section{Specifying symmetry by generators}
+
+Dalton follows the lead established by Alml{\"o}f~\cite{Alm72} more
+than forty
+years ago, by describing, and internally treating, the system symmetry
+by means of group \emph{generators}.  In the mathematics of group
+theory, the operations of groups of very high order (much higher order
+than the point groups we encounter in chemistry!) are specified in
+terms of a set of elementary operations called ``generators'',
+together with the complete set of relations these operators obey, so
+that by constructing appropriate products of the generators according
+to these relations, all of the operations in the group can be
+obtained.  Dalton internally uses the great simplification of treating
+at most $D_{2h}$ symmetry explicitly, and this has a consequent
+simplification for the use of generators.  To be specific, Dalton
+explicitly handles the following groups.
+\begin{itemize}
+\item Group of order~1: $C_1$.
+\item Groups of order~2: $C_s$, $C_2$, $C_i$ (also referred to as
+$S_2$).
+\item Groups of order~4: $C_{2v}$, $D_2$, $C_{2h}$.
+\item Group of order~8: $D_{2h}$.
+\end{itemize}
+These groups have generators the number of which behaves as $\log_2
+g$, where $g$ is
+the order of the group, so respectively 0, 1, 2, 3.
+
+Obviously the only operator in $C_1$ is $E$, the identity: end of
+story.  For the groups of order~2, there is an additional
+generator~$G_1$: these groups are isomorphic (that is, they have the
+same group multiplication table).  The groups of order~4 have two
+generators that we denote $G_1$ and $G_2$: these groups are also
+isomorphic to one another.  We note at this point that there is
+another group of order~4: the
+group isomorphic to the group $C_4$, the cyclic group of order~4.
+This group cannot be treated by the methods coded
+in Dalton.  Finally, $D_{2h}$ requires the specification of three
+generators, $G_1$, $G_2$, and $G_3$.  There are two other point groups
+of order~8: groups isomorphic to $D_{2d}$ (or equivalently to
+$D_4$ or to $C_{4v}$) and to $C_8$.
+Again, none of the latter groups can be treated explicitly within
+Dalton.
+
+Because all of the groups that Dalton handles internally are Abelian,
+that is,
+\begin{displaymath}
+  G_i G_j = G_j G_i, \forall\ i,j,
+\end{displaymath}
+the situation with the generators and the group operations their
+products generate is relatively simple.  The \emph{presentation} (that
+is, the complete spcification of the groups in terms of generators),
+is given by just two rules: the commutation relation given immediately
+above and
+\begin{displaymath}
+  G_i^2 = E, \forall\ i.
+\end{displaymath}
+For the
+groups of order~2 the operations are trivially $E$ and $G_1$.  For the
+groups of order~4 they are $E$, $G_1$, $G_2$, and $G_1G_2$.  For the
+group of order~8 the latter are augmented with $G_3$, $G_1G_3$,
+$G_2G_3$, and $G_1G_2G_3$.  We emphasize here that this ordering is
+important: this is how Dalton assembles the symmetry operations when
+specifying internally the point group.  In particular,
+Table~\ref{tab:ops} shows the specific ordering of the elements given
+a particular set of generators, as well as the symmetry properties ---
+symmetric~(+) or antisymmetric~($-$) --- under each generator.  It is
+this ordering that determines the ordering of the irreducible
+representations in a calculation.  This shows that (for example) the
+eighth symmetry in Dalton comprises functions that are antisymmetric
+with respect to all three generators.
+
+\begin{table}[hbt]
+  \caption{Symmetry/antisymmetry behaviour under generator products}
+  \label{tab:ops}
+%  \vspace*{10pt}
+\begin{center}
+  \begin{tabular}{c|c|ccc}
+      & Generator & \multicolumn{3}{c}{Behaviour under}\\
+      &  Product        & ~~~$G_1$~~~ & ~~~$G_2$~~~ & ~~~$G_3$~~~ \\
+    \hline\\[-7pt]
+    1 &      $E$        &  +  &  +  &  + \\
+    2 &     $G_1$       & $-$ &  +  &  + \\
+    3 &     $G_2$       &  +  & $-$ &  + \\
+    4 &   $G_1$$G_2$    & $-$ & $-$ &  + \\
+    5 &     $G_3$       &  +  &  +  & $-$\\
+    6 &   $G_1$$G_3$    & $-$ &  +  & $-$\\
+    7 &   $G_2$$G_3$    &  +  & $-$ & $-$\\
+    8 & $G_1$$G_2$$G_3$ & $-$ & $-$ & $-$
+  \end{tabular}
+\end{center}
+%% \noindent
+%% This shows the behaviour of a function (symmetric or antisymmetric)
+%% with respect to the possible point-group operations.
+\end{table}
+
+  If
+the sequence numbers given in Table~\ref{tab:ops} are used to label
+each symmetry operation, then the group multiplication table is as
+given in Table~\ref{tab:mult}.
+
+\begin{table}[hbt]
+  \caption{Group multiplication table (products of operations)}
+  \label{tab:mult}
+%  \vspace*{10pt}
+\begin{center}
+  \begin{tabular}{r|rrrrrrrr}
+    & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8\\
+    \hline\\[-7pt]
+    1 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8\\
+    2 & 2 & 1 & 4 & 3 & 6 & 5 & 8 & 7\\
+    3 & 3 & 4 & 1 & 2 & 7 & 8 & 5 & 6\\
+    4 & 4 & 3 & 2 & 1 & 8 & 7 & 6 & 5\\
+    5 & 5 & 6 & 7 & 8 & 1 & 2 & 3 & 4\\
+    6 & 6 & 5 & 8 & 7 & 2 & 1 & 4 & 3\\
+    7 & 7 & 8 & 5 & 6 & 3 & 4 & 1 & 2\\
+    8 & 8 & 7 & 6 & 5 & 4 & 3 & 2 & 1
+  \end{tabular}
+\end{center}
+\end{table}
+
+It is significant to note here that with this ordering of generators,
+the multiplication table of the groups of order~4 comprise the first
+four rows/columns of the multiplication table of the group of order~8,
+as is clear from inspection of Table~\ref{tab:mult},
+and the multiplication table for the groups of order~2 form the first
+2-by-2 subarray.  This is an important feature of symmetry handling
+internal to Dalton: it is not significant to a user, but it is
+exploited heavily inside the code.
+
+We can now see how Dalton handles the symmetry input, including the
+case of automatic symmetry detection.  First, we look for planes of
+symmetry.  In part this is historical: the original MOLECULE code
+benefitted most, in terms of reduction of numerical operations, from
+reflection planes, followed by rotational axes, followed by the
+``least useful'' case of the inversion.  If we, as a user, know that
+the molecule we are interested in has $D_{2h}$ symmetry, we can
+specify this explicitly.  The most straightfoward way to do this is in
+terms of the generators that correspond to reflections: in particular,
+we specify \verb|X Y Z| as our generators.  That is, we assert that
+reflection in the $yz$~plane, followed by reflection in the
+$xz$~plane, followed by reflection in the $xy$~plane are our
+generators $G_1$, $G_2$, $G_3$.  This also illustrates how
+generators/symmetry operations are specified in the input to Dalton:
+they indicate \emph{which coordinates change sign} under a particular
+operation.  Thus \verb|X| is the operation that changes the sign of
+the $x$ coordinate (only): that is, reflection in the $yz$-plane.
+Similarly, \verb|XY| changes the sign of both the $x$ and $y$
+coordinates: this thus denotes two-fold rotation around the $z$~axis.  Finally,
+\verb|XYZ| changes the sign of all coordinates, corresponding to
+inversion through the coordinate origin.
+
+It is important to emphasize two key points here.  First, the user
+must specify the \emph{minimal} number of generators required to
+define the group.  That is, it is an error to specify three
+operations, \verb|X Y XY|, say, to try to use the group $C_{2v}$,
+because the third operation is redundant.  Second, the ordering of the
+generators will affect the order in which the irreducible
+representations appear.  It is perfectly legitimate in principle to
+define $D_{2h}$ using the generators \verb|Z Y X|, but as we now
+discuss, there is a set of conventions both for orienting molecules
+that have symmetry, and for defining appropriate generators for their
+point groups.  We repeat that it is not necessary to follow these
+conventions to obtain correct results, but it is essential then to
+take great care in comparing with other calculations and with
+experimental results.
+
+There is a set of conventions for the various point groups,
+largely consistent with those proposed many years ago by
+Mulliken~\cite{unk55} (note that this article was published
+anonymously but is widely accepted to be Mulliken's work).  See also
+Hurley~\cite{Hur76}.  In
+particular, for $C_s$ the symmetry plane is conventionally taken as
+the $xy$~plane, as it is for $C_{2h}$, so in the latter the $C_2$ axis
+is the $z$-axis, and the $z$-axis is also the usual choice for the
+symmetry axis in
+$C_{2v}$.  We can therefore list the ``conventional'' choices of
+generators, and their order, for the eight point groups that Dalton
+treats explicitly: again, this is what the program uses internally in
+automatic symmetry detection.
+\begin{itemize}
+  \item Group of order~1
+  \begin{itemize}
+    \item $C_1$ (no operations)
+  \end{itemize}
+  \item Groups of order~2
+  \begin{itemize}
+    \item $C_s$: \verb|Z|
+    \item $C_2$: \verb|XY|
+    \item $C_i$: \verb|XYZ|
+  \end{itemize}
+  \item Groups of order~4
+    \begin{itemize}
+    \item $C_{2v}$: \verb|X Y|
+    \item $C_{2h}$: \verb|Z XY|
+    \item $D_2$: \verb|XZ YZ|
+    \end{itemize}
+  \item Group of order~8
+    \begin{itemize}
+    \item $D_{2h}$: \verb|X Y Z|
+    \end{itemize}
+\end{itemize}
+The conventions in this paragraph specify fully how the
+program chooses planes and axes, at least for molecules that have at
+most $D_{2h}$ symmetry themselves.  Molecules that have higher
+intrinsic symmetry may require special consideration, and this is
+taken up in a later section.
+
+As noted above, there is also a historical aspect here: in
+Alml{\"o}f's original scheme~\cite{Alm72} reflections were preferred
+over rotational axes because they led to fewer nonvanishing
+integrals.  This is less of an issue in Dalton, but for many reasons
+it is convenient to prefer planes to rotational axes, and in turn over
+the inversion, as the symmetry specification.  This is also
+the order of preference that Dalton exercises internally when
+determining symmetry automatically.
+
+\section{Labelling of irreducible representations}
+
+We can now see why Dalton produces an ordering of irreducible
+representations that appears counterintuitive when compared to many
+standard character tables.  Let us consider as an example the case of
+$C_{2v}$, specified (or determined automatically by the program) by
+the operations \verb|X Y|, reflection respectively in the $yz$ and
+$xz$ planes.  Using these generators as $G_1$ and $G_2$, the
+operations of the point group will be $E$, $G_1$, $G_2$, and $G_1G_2$,
+and following the conventions of Table~\ref{tab:ops} this means that
+the irreducible representations will appear in the order $A_1$, $B_2$,
+$B_1$, and $A_2$, using the Mulliken convention that for a planar
+$C_{2v}$ molecule the irreducible representations $A_1$ and $B_2$ are
+symmetric with respect with respect to the molecular plane (and $B_1$
+and $A_2$ are antisymmetric).  This is why Dalton lists
+irreducible representations in the order that it does: the ordering is
+derived from the behaviour under the group generators as given in
+Table~\ref{tab:ops}.
+
+We emphasize again that it is important to understand that the labelling of
+the irreducible representations within Dalton is determined by a
+particular choice of molecular orientation.  For example, although
+this would be considered unconventional, there is nothing to prevent
+someone from labelling the $B_1$ and $B_2$ irreducible representations
+opposite from the Mulliken convention, and thus opposite from the
+Dalton internal choice.  Similarly, it cannot necessarily be assumed
+that Dalton's labelling of the irreducible representations in $D_{2h}$
+symmetry is consistent with some paper in the literature --- it is
+important to establish what conventions are being used in both cases.
+
+\section{Nuclear coordinates; symmetry-lowering}
+
+If the user specifies the symmetry, it is only necessary to include
+atoms that are symmetry-distinct.  That is, if the generators
+\verb|X Y| are input to specify the $C_{2v}$ symmetry of the water
+molecule, only the coordinates of the oxygen atom and one hydrogen
+atom are required.  Indeed, the user should not enter the coordinates
+for the second atom, because the program will already have generated
+an atom at that point, and the explicit input of the second one would
+be treated as an error (two nuclei trying to occupy the same point).
+
+It is obvious that isotopic substitution will lower or even destroy
+the symmetry of some systems: HOD has only $C_s$~symmetry.  If the
+main interest is, however, the effect of isotopic substitution on the
+harmonic vibrational frequencies, it is not necessary to explicitly
+lower the symmetry, because the harmonic force constant matrix (in the
+Born-Oppenheimer approximation) displays the full symmetry of the
+system as it does not depend on the nuclear masses.  Dalton can thus
+use the full symmetry of H$_2$O in calculating the force constants,
+and the lowering of symmetry by isotopic substitution is handled
+internally when computing the vibrational frequencies.  The user
+should note that the calculation of vibrationally averaged
+\emph{properties} in Dalton is done using a modified geometry, and the
+treatment of symmetry here can be considerably more complicated.
+In fact, at present such calculations can only be run in $C_1$
+symmetry.  Other properties such as the rotational \mbox{$g$-tensor}
+are defined with respect to the centre of mass of the molecule, and
+again the symmetry of the actual nuclear framework for a given case
+may have to be considered.
+
+Another situation which may yield lower symmetry than the nuclear
+framework displays is when an external perturbation, such as an
+electric field or field gradient, is included.  For example, imposing
+an electric field in the $z$~direction will necessarily destroy
+symmetries such as inversion, reflection in the $xy$~plane, and $C_2$
+operations around the $x$ and/or $y$~axes.  Such symmetry lowering is
+not accounted for automatically in Dalton: the program uses the
+symmetry as specified by the user.  It is therefore necessary for the
+user to analyze what symmetry remains, and to specify that using the
+group generators, when including external perturbations.  Perhaps a
+more elegant way to state this is that one should look at the symmetry
+of the total Hamiltonian, that is, the original Born-Oppenheimer
+Hamiltonian plus the various perturbations.
+
+\section{Treatment of higher symmetries}
+
+It is not uncommon that symmetrical molecules have a higher symmetry
+than that treated explicitly by Dalton.  Common examples include
+linear symmetry and higher-order (than~2) axes; the cubic groups
+(tetrahedral symmetry, etc.) may also be encountered.  We give here a
+few conventions for treating these systems, as well as the behaviour
+of different one-electron basis functions and many-electron states
+within $D_{2h}$ and its subgroups, and some tactics for treating these
+higher symmetries.
+
+In general, it is preferable to use the $z$-axis as the principal axis
+for molecules belonging to groups with a single higher-order axis.
+This is consistent with most group theory texts, for example.  Most
+users will already be aware that in order to obtain the desired
+symmetry among molecular orbitals, property values, etc., it may be
+necessary both to specify the geometry to very high precision (in
+order to ensure factors of, say, $\sqrt{3}$ or other irrationals are
+handled properly), and to ensure that the calculation is converged
+adequately --- the default convergence thresholds in Dalton are
+tighter than most programs, but are still not necessarily stringent
+enough to recover the full symmetry in some cases.  There is a
+difference of opinion about the positioning of atomic centres in some
+situations: for example, when there is a four-fold axis.  There are
+advantages in the symmetry analysis both for positioning atoms on the
+$xz$ and $yz$ planes, and for positioning them between these planes.
+The latter convention seems more common, but this is up to the user.
+
+For linear molecules the use of the $z$-axis as the principal axis is
+universal, and if (and only if!) the conventions of the previous
+section are followed for specifying $C_{2v}$ symmetry, or $D_{2h}$
+symmetry for a centrosymmetric system, we can list the properties of
+various linear system irreducible representations within the Dalton
+symmetries.  Note that we give here the Dalton symmetry
+\emph{ordering}: we do not use the (say) $D_{2h}$ labels.  In the case
+of $C_{\infty v}$ the correspondence is that the $D_{2h}$ symmetries
+that appear as 5, 6, 7, and 8 map respectively onto
+symmetries 1 through 4 in $C_{2v}$, so our tabulation below can be
+used for both cases.  For $D_{\infty h}$ we have the
+following behaviour of one-electron functions:
+\begin{itemize}
+\item $\sigma_g$: 1
+\item $\sigma_u$: 5
+\item $\pi_g$: 6, 7
+\item $\pi_u$: 2, 3
+\item $\delta_g$: 1, 4
+\item $\delta_u$: 5, 8
+\item $\phi_g$: 6, 7
+\item $\phi_u$: 2, 3
+\end{itemize}
+and the behaviour of higher angular momentum functions should be
+obvious from this.  In the linear symmetry case there are also the
+$\Sigma^-$ irreducible representations, for which there are no
+one-electron basis functions (basis functions for these symmetries
+cannot be represented using the coordinates of only one electron).
+These fall in the Dalton symmetries 4 and 8, depending on whether,
+given a centrosymmetric system, the desired $\Sigma^-$ state is even
+or odd ($g$ or $u$) under inversion.
+
+Atoms present additional problems, despite their geometrical
+simplicity!  An atomic state can be even or odd under inversion, and
+this creates some complications.  Specifically, for a
+single-configuration orbital occupation, the parity is determined by
+$\sum_i l_i$, where the sum is over all unpaired electrons and $l_i$
+is the orbital angular momentum of the $i$th electron.  Hence the
+$2s^22p^3$ occupation of the nitrogen atom gives rise to three
+\emph{odd parity} states ${}^4S_u$, ${}^2D_u$, and ${}^2P_u$, whereas
+the $2s^22p^2$ occupation of carbon yields even parity ${}^3P_g$,
+${}^1D_g$, and ${}^1S_g$ states.  The parity is usually not indicated
+in atomic state labels, but it is important here: the ground state of
+the nitrogen atom appears in symmetry~8 for the usual specification of
+$D_{2h}$ using the generators \verb|X Y Z|,
+and will never be in symmetry~1, irrespective of how the
+generators are specified, unless the calculation is explicitly
+directed to use no symmetry!  A list of the various angular momenta and
+parities is given here for the ``standard'' $D_{2h}$ specification
+with generators \verb|X Y Z|.
+\begin{itemize}
+\item $S_g$: 1
+\item $S_u$: 8
+\item $P_g$: 4, 6, 7
+\item $P_u$: 2, 3, 5
+\item $D_g$: 1, 1, 4, 6, 7
+\item $D_u$: 2, 3, 5, 5, 8
+\item $F_g$: 1, 4, 4, 6, 6, 7, 7
+\item $F_u$: 2, 2, 3, 3, 5, 5, 8
+\item $G_g$: 1, 1, 1, 4, 4, 6, 6, 7, 7
+\item $G_u$: 2, 2, 3, 3, 5, 5, 5, 8, 8
+\end{itemize}
+The pattern here should again be obvious for extension to higher total
+angular momenta.  There are reasons (computational, not theoretical),
+by the way, for using symmetry~1, when possible, for states derived
+from $d^n$ occupations, as discussed by Hay~\cite{Hay77} and by Walch
+and Bauschlicher~\cite{Wal83}.
+
+The cubic groups create interesting issues of their own.  The naive
+tendency for treating, e.g., methane is often to use the $C_{2v}$
+subgroup of $T_d$.  In order to ensure exact tetrahedral symmetry this
+requires the user to input the geometry to very high accuracy because
+of the factors of $\sqrt{3}$.  A better solution when exact
+tetrahedral symmetry is required is to use $D_2$, with generators
+\verb|XZ YZ|, as this generates four equivalent hydrogens, and thus
+exact tetrahedral symmetry, irrespective of how accurately the
+position of the symmetry-distinct hydrogen is specified as long as the
+(absolute values of) the $x$, $y$, and $z$~coordinates of that
+distinct hydrogen are exactly the same.
+
+The \verb|SIRIUS| code within Dalton can recognize and exploit higher
+symmetries automatically for SCF, MCSCF, and MP2 calculations, and for
+response calculations invoked through the \verb|.RUN RESPONSE| command
+in the general input section: one supplies the keyword \verb|.SUPSYM|
+in the \verb|*ORBITAL INPUT| section.  Automatic detection of higher
+symmetry requires that the geometry displays that symmetry to within a
+threshold that can be adjusted (see the manual section on this
+keyword): as noted above this may require care in specifying the
+coordinate input.  Note that calculations run via the \verb|ABACUS|
+code within Dalton cannot utilize higher symmetries, and thus the
+\verb|.SUPSYM| keyword is not compatible with runs in which the
+general input \verb|**PROPERTIES| is used, thereby invoking
+\verb|ABACUS|.
+
+This by no means exhausts the complexities and issues associated with
+symmetry that may confront a new user when using the Dalton program.
+For example, the use in some situations of the point group $D_2$ may
+cause difficulties, typically when the point group element $G_1G_2$
+leaves an atom fixed that was transformed into a new centre under
+$G_1$ and/or $G_2$.
+These caveats notwithstanding, the capability of using symmetry to
+reduce the computational labour in a given calculation (a reduction by
+a factor of between $g$ and $g^2$, where $g$ is the order of the point
+group Dalton uses, and where the exponent varies according to the type
+of calculation) and to ensure that Dalton finds a wave function that
+has the particular desired symmetry properties, is a very powerful
+one.  Complications and issues with using symmetry will normally find
+a ready response on the Dalton mailing list.  And it is appropriate to
+close this little exposition by again referring to the
+analysis~\cite{Alm72} of the
+late Jan Alml{\"o}f, who laid the foundations for the implementation
+of symmetry in Dalton and other programs in terms of elementary bit
+operations such as \verb|AND|, \verb|OR|, and \verb|XOR|.  The
+underlying mathematics is treated at length in the language of group
+theory in the paper by Davidson~\cite{Dav75a}, although a more pedagogical and
+accessible treatment, including the handling of property operators,
+gradients, etc., is perhaps available in the work of
+Taylor~\cite{Tay92}.  The latter article is reprinted every two years
+in the lecture notes for the European Summerschool in Quantum
+Chemistry.
+
+% radovan: for the moment taken out until we have a decision whether
+%          we want explicit author information and acknowledgements
+%J{\'o}gvan Magnus Haugaard Olsen and Kenneth Ruud
+%read an earlier
+%draft of this document and made a number of helpful suggestions that
+%have been incorporated.

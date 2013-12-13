@@ -68,6 +68,8 @@ TIGHT
 .INCLUDEFULLMOLECULE
 .MANUAL_BATCHSIZES
 3  3
+.MEMORY
+2.0
 *END OF INPUT  
 %EOF%
 #######################################################################
@@ -91,7 +93,7 @@ else
 fi
 
 # TOTAL MP2 ENERGY
-CRIT1=`$GREP "Total MP2 energy * \: * \-74.23516" $log | wc -l`
+CRIT1=`$GREP "Total MP2 energy * \: * \-74.235" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="Total MP2 energy is not correct"
@@ -103,7 +105,7 @@ CTRL[2]=1
 ERROR[2]="Hartree-Fock energy is not correct"
 
 # MP2 correlation energy
-CRIT1=`$GREP "Correlation energy  \: * \-0.07765" $log | wc -l`
+CRIT1=`$GREP "Correlation energy  \: * \-0.0776" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
 ERROR[3]="MP2 correlation energy is not correct"

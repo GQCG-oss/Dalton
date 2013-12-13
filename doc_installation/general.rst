@@ -62,9 +62,9 @@ There is a shortcut for it::
 
   $ ./setup --mpi
 
-Configure for sequential compilation using ifort/icc/icpc::
+Configure for sequential compilation using ifort/icc/icpc and link against parallel mkl::
 
-  $ ./setup --fc=ifort --cc=icc --cxx=icpc
+  $ ./setup --fc=ifort --cc=icc --cxx=icpc --mkl=parallel
 
 Configure for sequential compilation using gfortran/gcc/g++::
 

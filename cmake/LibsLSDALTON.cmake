@@ -52,7 +52,7 @@ add_custom_command(
     OUTPUT
     ${MANUAL_REORDERING_SOURCES}
     COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering nocollapse ${LIST_OF_DEFINITIONS}
     DEPENDS
     ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
     )
@@ -180,10 +180,12 @@ if(ENABLE_INTEREST)
     target_link_libraries(fmmlib interestlib)
 endif()
 
+if(ENABLE_ICHOR)
 add_library(
     ichorintlib
     ${ICHORINT_SOURCES}
     )
+endif()
 
 add_library(
     dftfunclib
@@ -202,7 +204,9 @@ target_link_libraries(lsintlib dftfunclib)
 add_dependencies(lsintlib pdpacklib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)
-add_dependencies(lsintlib ichorintlib)
+if(ENABLE_ICHOR)
+     add_dependencies(lsintlib ichorintlib)
+endif()
 
 add_library(
     pbclib
@@ -310,6 +314,9 @@ add_executable(
     ${LINK_FLAGS}
     )
 
+# we always want to compile lslib_tester.x along with lsdalton.x
+add_dependencies(lsdalton.x lslib_tester.x)
+
 if(MPI_FOUND)
     # Simen's magic fix for Mac/GNU/OpenMPI
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
@@ -327,10 +334,18 @@ if(ENABLE_INTEREST)
         interestlib
         )
 else()
+  if(ENABLE_ICHOR)
+    MERGE_STATIC_LIBS(
+        lsint
+	ichorintlib
+        lsintlib
+        )
+  else()
     MERGE_STATIC_LIBS(
         lsint
         lsintlib
         )
+  endif()
 endif()
 
 set(LIBS_TO_MERGE
@@ -344,7 +359,6 @@ set(LIBS_TO_MERGE
     lsutillib
     fmmlib
     dftfunclib
-    ichorintlib
     lsint
     pbclib
     ddynamlib
