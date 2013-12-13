@@ -1513,7 +1513,6 @@ C
         END IF
       END IF
       IF (PEMEP) THEN
-        print *, pe_ifc_mep()
         IF (PE_IFC_MEP() == 0) THEN
             CALL QUIT('ERROR: .PEMEP requires also .MEP in *PEQM.')
         END IF
