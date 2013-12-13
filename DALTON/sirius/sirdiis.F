@@ -1509,14 +1509,17 @@ C
             CALL MEMREL('DIIS_CTL.PE_IFC_NONEQ', WRK, KFRSAV, KFPEAO,
      &                  KFREE, LFREE)
         END IF
-        IF (PE_IFC_MEP == 1) THEN
-            IF (NASHT == 0 .OR. HSROHF) THEN
-                CALL PE_IFC_MEPCALC(DAOSAV(:,1), 1,
+      END IF
+      IF (PEMEP) THEN
+        IF (PE_IFC_MEP == 0) THEN
+            CALL QUIT('ERROR: .PEMEP requires also .MEP in *PEQM.')
+        END IF
+        IF (NASHT == 0 .OR. HSROHF) THEN
+            CALL PE_IFC_MEPCALC(DAOSAV(:,1), 1,
      &                          WRK(KFREE), LFREE-KFREE+1)
-            ELSE
-                CALL PE_IFC_MEPCALC((DAOSAV(:,1)+DAOSAV(:,2)), 1,
+        ELSE
+            CALL PE_IFC_MEPCALC((DAOSAV(:,1)+DAOSAV(:,2)), 1,
      &                          WRK(KFREE), LFREE-KFREE+1)
-            END IF
         END IF
       END IF
 #if defined (BUILD_PELIB)

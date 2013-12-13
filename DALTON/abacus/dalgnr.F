@@ -1187,7 +1187,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 12, NTABLE = 33, D0 = 0.D0)
+      PARAMETER (NDIR = 12, NTABLE = 34, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1211,7 +1211,8 @@ C
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
-     &            '.THRRED', '.DOUGLA', '.PEQM  '/
+     &            '.THRRED', '.DOUGLA', '.PEQM  ',
+     &            '.PEMEP '/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1273,6 +1274,7 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       DKTRAN = .FALSE.
       DKHINT = .FALSE.
       PEQM   = .FALSE.
+      PEMEP  = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       IF (NODTOT.GE.1) THEN
@@ -1377,14 +1379,14 @@ C         if reading input from a terminal
 C
 C     ***** Process input for COMMON  /GENINF/  *****
 C
-C Table(01:33) :
+C Table(01:34) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-33: '.THRRED', '.DOUGLA', '.PEQM  '.
+C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.PEMEP '
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1398,7 +1400,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132,133), I
+     &                131,132,133,134), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1522,6 +1524,15 @@ C        '.DOUGLA'
  133     CONTINUE
 #if defined (BUILD_PELIB)
             PEQM = .TRUE.
+#else
+            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
+            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
+#endif
+         GOTO 100
+!        .PEMEP
+ 134     CONTINUE
+#if defined (BUILD_PELIB)
+            PEMEP = .FALSE.
 #else
             WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
             CALL QUIT('ERROR for .PEQM: PE library not enabled.')
