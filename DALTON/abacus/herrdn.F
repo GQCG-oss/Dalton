@@ -2595,7 +2595,7 @@ C     ******************************************
 C
       IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
 
-      if (.NOT.SLAVE .AND. PEQM
+      if (.NOT.SLAVE .AND. (PEQM .OR. PEMEP)
 #if defined (BUILD_PELIB)
      &    .or. pe_savden
 #endif
