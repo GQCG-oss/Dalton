@@ -358,6 +358,8 @@ C
       LOGICAL   LCONV, LNEWOCC
       DIMENSION MISH(8)
       CHARACTER*8 CMOLBL
+      INTEGER :: PE_IFC_MEP
+      INTEGER :: PE_IFC_NONEQ_SOL
 C
       CALL QENTER('DIIS_CTL')
       KFREE  = KFRSAV
@@ -1490,7 +1492,7 @@ C
             CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1,
      &                         WRK(KFREE), LFREE-KFREE+1)
         END IF
-        IF (PE_IFC_NONEQ_SOL == 1) THEN
+        IF (PE_IFC_NONEQ_SOL() == 1) THEN
             CALL MEMGET('REAL', KFPEAO, NNBASX, WRK, KFREE, LFREE)
             IF (NASHT == 0 .OR. HSROHF) THEN
                 CALL PE_IFC_NONEQ(DAOSAV(:,1), WRK(KFPEAO), 1,
@@ -1511,9 +1513,10 @@ C
         END IF
       END IF
       IF (PEMEP) THEN
-C        IF (PE_IFC_MEP == 0) THEN
-C            CALL QUIT('ERROR: .PEMEP requires also .MEP in *PEQM.')
-C        END IF
+        print *, pe_ifc_mep()
+        IF (PE_IFC_MEP() == 0) THEN
+            CALL QUIT('ERROR: .PEMEP requires also .MEP in *PEQM.')
+        END IF
         IF (NASHT == 0 .OR. HSROHF) THEN
             CALL PE_IFC_MEPCALC(DAOSAV(:,1), 1,
      &                          WRK(KFREE), LFREE-KFREE+1)
