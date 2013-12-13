@@ -411,10 +411,10 @@ contains
 !!$    print *, 'norm2(X4ijkl):' , norm2(X4ijkl)
     
     ! ***********************************************************
-    ! Creating the HJir,Krr,Frr,Fpp,Fii,Fmm,Frm,Fcp matricces 
+    ! Creating the HJir,Krr,Frr,Fpp,Fii,Fmm,Frm,Fcp matricces       WRONG! Because we have different Dmats!
     ! ***********************************************************
-    call get_f12_mixed_MO_Matrices_real(MyFragment%MyLsitem,MyFragment,Dmat,nbasis,ncabsAO,&
-         & noccEOS,noccfull,nunoccEOS,ncabsMO,hJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+    ! call get_f12_mixed_MO_Matrices_real(MyFragment%MyLsitem,MyFragment,Dmat,nbasis,ncabsAO,&
+    !     & noccEOS,noccfull,nunoccEOS,ncabsMO,hJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
 
     ! ***********************************************************
     ! Creating the B matrix 

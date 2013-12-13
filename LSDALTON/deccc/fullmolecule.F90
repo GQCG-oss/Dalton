@@ -52,6 +52,15 @@ contains
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
+       call dec_get_canonical_orbitals(molecule)
+    end if
+    
+    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+       call dec_get_CABS_orbitals(molecule,mylsitem)
+       call dec_get_RI_orbitals(molecule,mylsitem)
+    end if
+    
     ! Init basic info (molecular dimensions etc.)
     call molecule_init_basics(molecule,mylsitem)
 
@@ -66,16 +75,6 @@ contains
     call molecule_get_reference_state(molecule,mylsitem)
     call molecule_get_overlap(molecule,mylsitem)
     call molecule_mo_fock(molecule)
-
-    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
-       call dec_get_canonical_orbitals(molecule)
-    end if
-    call molecule_get_carmom(molecule,mylsitem)
-
-   if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-       call dec_get_CABS_orbitals(molecule,mylsitem)
-       call dec_get_RI_orbitals(molecule,mylsitem)
-    end if
 
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
@@ -105,10 +104,10 @@ contains
     type(matrix),intent(in) :: D  ! Needed for creating the hJir MO-matrix
 
     real(realk) :: memory_use, tcpu, twall
-
+    
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-    ! Init basic info (molecular dimensions etc.)
+     ! Init basic info (molecular dimensions etc.)
     call molecule_init_basics(molecule,mylsitem)
 
     ! Copy Fock, density, MO, and overlap matrices to molecule structure
@@ -117,21 +116,21 @@ contains
     ! Fock matrix in MO basis
     call molecule_mo_fock(molecule)
     
-    ! hJir matrix in MO basis
-    if(DECinfo%F12)then
-       call molecule_mo_f12(molecule,mylsitem,D)
-    endif
-    
-    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
-       call dec_get_canonical_orbitals(molecule)
-    end if
-    call molecule_get_carmom(molecule,mylsitem)
-
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
        call dec_get_CABS_orbitals(molecule,mylsitem)
        call dec_get_RI_orbitals(molecule,mylsitem)
     end if
-
+    
+    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
+       call dec_get_canonical_orbitals(molecule)
+    end if
+    
+    ! F12 Fock matrices in MO basis
+    if(DECinfo%F12) then
+       call molecule_mo_f12(molecule,mylsitem,D)
+    endif
+    
+    call molecule_get_carmom(molecule,mylsitem)
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
   end subroutine molecule_init_from_inputs
@@ -626,6 +625,43 @@ contains
        call mem_dealloc(molecule%qqfock)
     end if
 
+    ! Delete F12-Fock and K and hJir info
+    if(associated(molecule%Fii)) then
+       call mem_dealloc(molecule%Fii)
+    end if
+
+    if(associated(molecule%hJir)) then
+       call mem_dealloc(molecule%hJir)
+    end if
+
+    if(associated(molecule%Krr)) then
+       call mem_dealloc(molecule%Krr)
+    end if
+
+    if(associated(molecule%Frr)) then
+       call mem_dealloc(molecule%Frr)
+    end if
+
+    if(associated(molecule%Fac)) then
+       call mem_dealloc(molecule%Fac)
+    end if
+
+    if(associated(molecule%Fpp)) then
+       call mem_dealloc(molecule%Fpp)
+    end if
+
+    if(associated(molecule%Fmm)) then
+       call mem_dealloc(molecule%Fmm)
+    end if
+
+    if(associated(molecule%Frm)) then
+       call mem_dealloc(molecule%Frm)
+    end if
+
+    if(associated(molecule%Fcp)) then
+       call mem_dealloc(molecule%Fcp)
+    end if
+
     ! Delete atomic info
     if(associated(molecule%atom_size)) then
        call mem_dealloc(molecule%atom_size)
@@ -789,35 +825,117 @@ contains
 
   
   subroutine molecule_mo_f12(MyMolecule,MyLsitem,D)
-    type(fullmolecule), intent(in) :: MyMolecule
+    type(fullmolecule), intent(inout) :: MyMolecule
     type(lsitem), intent(inout) :: MyLsitem
     type(matrix), intent(in) :: D
     
-    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
+    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabsMO,nocvfull
     
-    type(matrix) :: HJir
-    type(matrix) :: Krr
-    type(matrix) :: Frr
-    type(matrix) :: Fac
-    type(matrix) :: Fpp
-    type(matrix) :: Fii
-    type(matrix) :: Fmm
-    type(matrix) :: Frm
-    type(matrix) :: Fcp
+    real(realk), pointer :: hJir(:,:)
+    real(realk), pointer :: Krr(:,:) 
+    real(realk), pointer :: Frr(:,:) 
+    real(realk), pointer :: Fac(:,:) 
+    real(realk), pointer :: Fpp(:,:) 
+    real(realk), pointer :: Fii(:,:) 
+    real(realk), pointer :: Fmm(:,:) 
+    real(realk), pointer :: Frm(:,:) 
+    real(realk), pointer :: Fcp(:,:) 
 
     nbasis   = MyMolecule%nbasis
     nocc     = MyMolecule%nocc
     nvirt    = MyMolecule%nunocc
     noccfull = nocc
     ncabsAO  = size(MyMolecule%Ccabs,1)    
-    ncabs    = size(MyMolecule%Ccabs,2)
-        
+    ncabsMO  = size(MyMolecule%Ccabs,2)
+    nocvfull = nocc + nvirt
 
-    call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+!!$    print *,"nocvfull:",nocvfull
+!!$    print *,"nbasis:",nbasis
+!!$    print *,"nocc:",nocc
+!!$    print *,"nvirt:",nvirt
+!!$    print *,"ncabsMO:",ncabsMO
+!!$    print *,"ncabsAO:",ncabsAO
+
+    call mem_alloc(hJir,nocc,ncabsAO) 
+    call mem_alloc(Krr,ncabsAO,ncabsAO)
+    call mem_alloc(Fac,nvirt,ncabsMO)
+    call mem_alloc(Frr,ncabsAO,ncabsAO)
+    call mem_alloc(Fpp,nbasis,nbasis)
+    call mem_alloc(Fii,nocc,nocc)
+    call mem_alloc(Fmm,noccfull,noccfull)
+    call mem_alloc(Frm,ncabsAO,noccfull)
+    call mem_alloc(Fcp,ncabsMO,nbasis)
+
+    ! Constructing the F12 MO matrices from F12_routines.F90
+    call get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&
+         & nocc,noccfull,nvirt,ncabsMO,hJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+
+    !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
+    call free_cabs()
+
+    ! Mixed regular/CABS one-electron  and Coulomb matrix (h+J) combination in AO basis
+    call mem_alloc(MyMolecule%hJir,nocc,ncabsAO) 
+    call mem_alloc(MyMolecule%Krr,ncabsAO,ncabsAO)
+    call mem_alloc(MyMolecule%Fac,nvirt,ncabsMO)
+    call mem_alloc(MyMolecule%Frr,ncabsAO,ncabsAO)
+    call mem_alloc(MyMolecule%Fpp,nbasis,nbasis)
+    call mem_alloc(MyMolecule%Fii,nocc,nocc)
+    call mem_alloc(MyMolecule%Fmm,noccfull,noccfull)
+    call mem_alloc(MyMolecule%Frm,ncabsAO,noccfull)
+    call mem_alloc(MyMolecule%Fcp,ncabsMO,nbasis)
+
+    MyMolecule%hJir = hJir
+    MyMolecule%Krr  = Krr
+    MyMolecule%Fac  = Fac
+    MyMolecule%Frr  = Frr
+    MyMolecule%Fpp  = Fpp
+    MyMolecule%Fii  = Fii
+    MyMolecule%Fmm  = Fmm
+    MyMolecule%Frm  = Frm
+    MyMolecule%Fcp  = Fcp
     
-    call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
-    
+!!$    call dcopy(nocc*ncabsAO,MyMolecule%hJir,1,hJir,1) 
+!!$    call dcopy(ncabsAO*ncabsAO,MyMolecule%Krr,1,Frr,1)
+!!$    call dcopy(nvirt*ncabsMO,MyMolecule%Fac,1,Fac,1)
+!!$    call dcopy(ncabsAO*ncabsAO,MyMolecule%Frr,1,Frr,1)
+!!$    call dcopy(nbasis*nbasis,MyMolecule%Fpp,1,Fpp,1)
+!!$    call dcopy(nocc*nocc,MyMolecule%Fii,1,Fii,1)
+!!$    call dcopy(noccfull*noccfull,MyMolecule%Fmm,1,Fmm,1)
+!!$    call dcopy(ncabsAO*ncabsMO,MyMolecule%Frm,1,Frm,1)
+!!$    call dcopy(ncabs*nbasis,MyMolecule%Fcp,1,Fcp,1)
+      
+    print *,'-----------------------------------------'
+    print *,'        Get all F12 Fock integrals       '
+    print *,'-----------------------------------------'
+    print *, "norm2(hJir)", norm2(MyMolecule%hJir)
+    print *, "norm2(Krr)", norm2(MyMolecule%Krr)
+    print *, "norm2(Frr)", norm2(MyMolecule%Frr)
+    print *, "norm2(Fac)", norm2(MyMolecule%Fac)
+    print *, "norm2(Fpp)", norm2(MyMolecule%Fpp)
+    print *, "norm2(Fii)", norm2(MyMolecule%Fii)
+    print *, "norm2(Fmm)", norm2(MyMolecule%Fmm)
+    print *, "norm2(Frm)", norm2(MyMolecule%Frm)
+    print *, "norm2(Fcp)", norm2(MyMolecule%Fcp)
+    print *,'-----------------------------------------' 
+
+
+    !MyMolecule%HJir(1:nocc,1:ncabsAO) = 
+
+
+    ! Mixed CABS/CABS exchange matrix
+
+    ! Mixed CABS/CABS Fock matrix
+
+    ! Mixed AO/CABS Fock matrix
+
+    ! Mixed AO/AO full MO Fock matrix
+
+    ! Mixed CABS/AO MO Fock matrix
+
+
+    ! call free_F12_mixed_MO_Matrices(hJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+    call free_F12_mixed_MO_Matrices_real(hJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+
   end subroutine molecule_mo_f12
 
 

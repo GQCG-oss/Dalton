@@ -530,16 +530,15 @@ module dec_typedef_module
 
      !> Occ-Occ Fock matrix in MO basis
      real(realk), pointer :: Fii(:,:) => null()
-     !> Virt-Cabs Fock matrix in MO basis
-     real(realk), pointer :: Fac(:,:) => null() 
-     
 
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
-     real(realk), pointer :: HJir(:,:) => null() 
+     real(realk), pointer :: hJir(:,:) => null() 
       !> Cabs ri-Cabs ri exchange matrix in MO basis
      real(realk), pointer :: Krr(:,:) => null() 
      !> Cabs ri-Cabs ri Fock matrix in MO basis
      real(realk), pointer :: Frr(:,:) => null() 
+     !> Virt-Cabs Fock matrix in MO basis
+     real(realk), pointer :: Fac(:,:) => null() 
      !> (Occ+virt)-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fpp(:,:) => null()
      !> Occ-Occ Fock matrix in MO basis
@@ -699,17 +698,16 @@ module dec_typedef_module
 
 
      !> Occ-Occ Fock matrix in MO basis
-     real(realk), pointer :: Fii(:,:) => null()
-     !> Virt-Cabs Fock matrix in MO basis
-     real(realk), pointer :: Fac(:,:) => null() 
-     
+     real(realk), pointer :: Fii(:,:) => null()  
 
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
-     real(realk), pointer :: HJir(:,:) => null() 
+     real(realk), pointer :: hJir(:,:) => null() 
       !> Cabs ri-Cabs ri exchange matrix in MO basis
      real(realk), pointer :: Krr(:,:) => null() 
      !> Cabs ri-Cabs ri Fock matrix in MO basis
      real(realk), pointer :: Frr(:,:) => null() 
+     !> Virt-Cabs Fock matrix in MO basis
+     real(realk), pointer :: Fac(:,:) => null() 
      !> (Occ+virt)-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fpp(:,:) => null()
      !> Occ-Occ Fock matrix in MO basis

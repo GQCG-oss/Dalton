@@ -312,9 +312,13 @@ contains
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     noccfull = nocc
 
-    ! Memory check
+    ! Memory check!
+    ! ********************
     call full_canonical_mp2_memory_check(nbasis,nocc,nvirt)
 
+
+    ! Get all F12 Fock Matrices
+    ! ********************
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
          & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
 
@@ -568,7 +572,17 @@ contains
           print *,'norm2(Bijij_term8): ', norm2(Bijij_term8)
           print *,'norm2(Bijij_term9): ', norm2(Bijij_term9)      
           print *,'-----------------------------------------'
+          print *,'        Get all F12 Fock integrals       '
+          print *,'-----------------------------------------'
           print *, "norm2(hJir)", norm2(hJir%elms)
+          print *, "norm2(Krr)", norm2(Krr%elms)
+          print *, "norm2(Frr)", norm2(Frr%elms)
+          print *, "norm2(Fac)", norm2(Fac%elms)
+          print *, "norm2(Fpp)", norm2(Fpp%elms)
+          print *, "norm2(Fii)", norm2(Fii%elms)
+          print *, "norm2(Fmm)", norm2(Fmm%elms)
+          print *, "norm2(Frm)", norm2(Frm%elms)
+          print *, "norm2(Fcp)", norm2(Fcp%elms)
           print *,'-----------------------------------------' 
 
        endif
