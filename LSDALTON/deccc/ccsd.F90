@@ -61,7 +61,8 @@ module ccsd_module
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
-         & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ
+         & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ,get_cnd_terms_mo,&
+         & mo_work_dist
     private
 
   interface Get_AOt1Fock
@@ -909,7 +910,6 @@ contains
 
     integer(kind=8) :: w0size,w1size,w2size,w3size,neloc
 
-    type(matrix) :: Dens,iFock
     ! Variables for mpi
     logical :: master,lg_master,parent,worker,talker
     integer :: fintel,nintel,fe,ne,ierr
@@ -2086,7 +2086,7 @@ contains
 
 
       call get_cnd_terms_mo(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
-           &scheme,lock_outside,els2add)
+           &scheme,lock_outside,els2add,lg_nnod,lg_me)
 
 
 
@@ -2187,34 +2187,30 @@ contains
     endif
 
     !allocate the density matrix
-    call mat_init(iFock,nb,nb)
-    call mat_init(Dens,nb,nb)
+    call mem_alloc(w2,int(nb**2,kind=8))
+    call mem_alloc(w3,int(nb**2,kind=8))
+
+    w2%d = 0.0E0_realk
 
     !calculate inactive fock matrix in ao basis
-    call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens%elms,nb)
-    call mat_zero(iFock)
-    call dec_fock_transformation(iFock,Dens,MyLsItem,.false.)
-    
+    call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,w3%d,nb)
 
-    !THIS IS NOT YET IMPLEMENTED -- as soon as it is, do not use type(matrix)
-    !anymore
-    !call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
-    !& Dens%elms,.false.,iFock%elms)
-    !use dens as temporay array 
+    !get the inactive t1 transformed fock matrix 2e- part
+    call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
+    & w3%d,.false.,w2%d)
 
-
-
+    !get the 1e- part
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-         & Dens%elms,nb,nb,AORdefault,AORdefault)
+         & w3%d,nb,nb,AORdefault,AORdefault)
     ! Add one- and two-electron contributions to Fock matrix
-    call daxpy(nb2,1.0E0_realk,Dens%elms,1,iFock%elms,1)
+    call daxpy(nb2,1.0E0_realk,w3%d,1,w2%d,1)
     !Free the density matrix
-    call mat_free(Dens)
-
+    call mem_dealloc(w3)
 
 
     ! KK: Add long-range Fock correction
-    call daxpy(nb2,1.0E0_realk,deltafock,1,iFock%elms,1)
+    call daxpy(nb2,1.0E0_realk,deltafock,1,w2%d,1)
+
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_MPI
@@ -2224,7 +2220,7 @@ contains
       write(msg,*)"NORM(deltafock):"
       call print_norm(deltafock,int((i8*nb)*nb,kind=8),msg)
       write(msg,*)"NORM(iFock):"
-      call print_norm(iFock%elms,int((i8*nb)*nb,kind=8),msg)
+      call print_norm(w2%d,int((i8*nb)*nb,kind=8),msg)
     endif
 
 
@@ -2232,12 +2228,12 @@ contains
     !Transform inactive Fock matrix into the different mo subspaces
     if (Ccmodel>MODEL_CC2) then
       ! -> Foo
-      call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1%d,no)
+      call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,w2%d,nb,0.0E0_realk,w1%d,no)
       call dgemm('n','n',no,no,nb,1.0E0_realk,w1%d,no,yo,nb,0.0E0_realk,ppfock,no)
       ! -> Fov
       call dgemm('n','n',no,nv,nb,1.0E0_realk,w1%d,no,yv,nb,0.0E0_realk,pqfock,no)
       ! -> Fvo
-      call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock%elms,nb,0.0E0_realk,w1%d,nv)
+      call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,w2%d,nb,0.0E0_realk,w1%d,nv)
       call dgemm('n','n',nv,no,nb,1.0E0_realk,w1%d,nv,yo,nb,0.0E0_realk,qpfock,nv)
       ! -> Fvv
       call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1%d,nv,yv,nb,0.0E0_realk,qqfock,nv)
@@ -2246,10 +2242,10 @@ contains
       call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,fock,nb,0.0E0_realk,w1%d,no)
       call dgemm('n','n',no,no,nb,1.0E0_realk,w1%d,no,yo,nb,0.0E0_realk,ppfock,no)
       ! -> Fov
-      call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1%d,no)
+      call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,w2%d,nb,0.0E0_realk,w1%d,no)
       call dgemm('n','n',no,nv,nb,1.0E0_realk,w1%d,no,yv,nb,0.0E0_realk,pqfock,no)
       ! -> Fvo
-      call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock%elms,nb,0.0E0_realk,w1%d,nv)
+      call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,w2%d,nb,0.0E0_realk,w1%d,nv)
       call dgemm('n','n',nv,no,nb,1.0E0_realk,w1%d,nv,yo,nb,0.0E0_realk,qpfock,nv)
       ! -> Fvv
       call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,fock,nb,0.0E0_realk,w1%d,nv)
@@ -2270,7 +2266,7 @@ contains
     endif
 
     !Free the AO fock matrix
-    call mat_free(iFock)
+    call mem_dealloc(w2)
 
 
 #ifdef VAR_OMP
@@ -2449,8 +2445,8 @@ contains
       
       !Setting transformation variables for each rank
       !**********************************************
-      call mo_work_dist(nv*nv*no,fai1,tl1)
-      call mo_work_dist(nv*no*no,fai2,tl2)
+      call mo_work_dist(nv*nv*no,fai1,tl1,nnod,me)
+      call mo_work_dist(nv*no*no,fai2,tl2,nnod,me)
 
       if(DECinfo%PL>3.and.me==0)then
         write(DECinfo%output,'("Trafolength in striped E1:",I5," ",I5)')tl1,tl2
@@ -2476,7 +2472,7 @@ contains
       if(.not.lock_outside)then
         call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2)
         do nod=1,nnod-1
-          call mo_work_dist(nv*nv*no,fri,tri,nod)
+          call mo_work_dist(nv*nv*no,fri,tri,nnod,me,nod)
           if(me==0)then
             do i=1,no
               call dcopy(tri,w1(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
@@ -2522,7 +2518,7 @@ contains
       if(.not.lock_outside)then
         call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2)
         do nod=1,nnod-1
-          call mo_work_dist(nv*no*no,fri,tri,nod)
+          call mo_work_dist(nv*no*no,fri,tri,nnod,me,nod)
           if(me==0)then
             do i=1,tri
               call dcopy(nv,w1(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
@@ -2635,19 +2631,20 @@ contains
        call lsmpi_poke()
   end subroutine check_job
   
-  subroutine mo_work_dist(m,fai,tl,nod)
+  subroutine mo_work_dist(m,fai,tl,nnod,me,nod)
     implicit none
     integer,intent(in) :: m
     integer,intent(inout)::fai
     integer,intent(inout)::tl
+    integer(kind=ls_mpik) :: nnod, me
     integer(kind=ls_mpik),optional,intent(inout)::nod
-    integer :: l,ml,me,nnod
+    integer :: l,ml
     
-    me   = 0
-    nnod = 1
+    !me   = 0
+    !nnod = 1
 #ifdef VAR_MPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
+    !nnod = infpar%lg_nodtot
+    !me   = infpar%lg_mynum
 #endif
       
     if(present(nod))me=nod
@@ -2676,7 +2673,7 @@ contains
   !> \author Patrick Ettenhuber
   !> \Date January 2013 
   subroutine get_cnd_terms_mo(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,&
-             &no,nv,omega2,s,lock_outside,els2add)
+             &no,nv,omega2,s,lock_outside,els2add,nnod,me)
     implicit none
     !> input some empty workspace of zise v^2*o^2 
     real(realk), intent(inout) :: w1(:)
@@ -2700,9 +2697,10 @@ contains
     logical, intent(in) :: lock_outside
     !> specify how many elements can be added to w3 buffer
     integer(kind=8),intent(in) :: els2add
+    integer(kind=ls_mpik) :: nnod, me
     integer :: tl,fai,lai,i,faif,lead
     integer :: l,ml
-    integer(kind=ls_mpik) :: nod,me,nnod,mode
+    integer(kind=ls_mpik) :: nod,mode
     real(realk) :: nrm1,nrm2,nrm3,nrm4
     integer :: a,b,j,fri,tri
     integer(kind=8) :: o2v2,tlov,w1size,w2size,w3size
@@ -2710,11 +2708,11 @@ contains
     real(realk) :: MemFree
      
 
-      me     = int(0,kind=ls_mpik)
-      nnod   = int(1,kind=ls_mpik)
+      !me     = int(0,kind=ls_mpik)
+      !nnod   = int(1,kind=ls_mpik)
 #ifdef VAR_MPI
-      nnod   = infpar%lg_nodtot
-      me     = infpar%lg_mynum
+      !nnod   = infpar%lg_nodtot
+      !me     = infpar%lg_mynum
       mode   = MPI_MODE_NOCHECK
 #endif
       o2v2   = int((i8*no)*no*nv*nv,kind=8)
@@ -2722,7 +2720,7 @@ contains
       
      !Setting transformation variables for each rank
      !**********************************************
-     call mo_work_dist(nv*no,fai,tl)
+     call mo_work_dist(nv*no,fai,tl,nnod,me)
 
      tlov  = int((i8*tl)*no*nv,kind=8)
 
@@ -2777,7 +2775,7 @@ contains
        else
          call array_gather_tilesinfort(gvvoo,w1,int((i8*no)*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
          do nod=1,nnod-1
-           call mo_work_dist(no*nv,fri,tri,nod)
+           call mo_work_dist(no*nv,fri,tri,nnod,me,nod)
            if(me==0)then
              do i=1,tri
                call dcopy(no*nv,w1(fri+i-1),no*nv,w2(i),tri)
@@ -2828,7 +2826,7 @@ contains
        else
          call array_gather_tilesinfort(t2,w1,o2v2,infpar%master,[1,4,2,3])
          do nod=1,nnod-1
-           call mo_work_dist(no*nv,fri,tri,nod)
+           call mo_work_dist(no*nv,fri,tri,nnod,me,nod)
            if(me==0)then
              do i=1,tri
                call dcopy(no*nv,w1(fri+i-1),no*nv,w3(i),tri)
@@ -3081,7 +3079,7 @@ contains
       
     !Setting transformation variables for each rank
     !**********************************************
-    call mo_work_dist(nv*nv,fai,tl)
+    call mo_work_dist(nv*nv,fai,tl,nnod,me)
 
     if(DECinfo%PL>3.and.me==0)then
       write(DECinfo%output,'("Trafolength in striped B2:",I5)')tl
@@ -4207,7 +4205,7 @@ contains
             mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
             write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
             call lsquit("ERROR(CCSD): there is just not enough memory&
-            &available",DECinfo%output)
+            & available",DECinfo%output)
           else
             scheme=2
           endif

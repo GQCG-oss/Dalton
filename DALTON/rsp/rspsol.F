@@ -366,10 +366,9 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        if (.not. tdhf) then
-            call quit('ERROR: MCSCF linear response not implemented'//
+      IF (PEQM) THEN
+        IF (.NOT. TDHF) THEN
+            CALL QUIT('ERROR: MCSCF linear response not implemented'//
      &                ' with the PE library.')
         endif
         call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
@@ -377,7 +376,7 @@ C
      &                 wrk(kdvt), wrk(kdvttr), evecs,
      &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
       end if
-#endif
+
 #if defined (PCM_MODULE)
       if (pcmmod_is_pcm_calculation) then
         call hello_world

@@ -350,7 +350,7 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-            if (peqm) call quit('ERROR: DIIS failed to converge'//
+            IF (PEQM) call quit('ERROR: DIIS failed to converge'//
      &                 'and QC-SCF is not implemented with PE library')
 #if defined (PCM_MODULE)
             if (pcmmod_is_pcm_calculation) call quit('ERROR: DIIS '//

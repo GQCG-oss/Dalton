@@ -40,22 +40,25 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 14
+  integer, parameter :: ndecenergies = 17
   !> Numbers for storing of fragment energies in the decfrag%energies array
-  integer,parameter :: FRAGMODEL_LAGMP2 = 1  ! MP2 Lagrangian partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCMP2 = 2  ! MP2 occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTMP2 = 3 ! MP2 virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCCC2 = 4  ! CC2 occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTCC2 = 5 ! CC2 virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCCCSD = 6 ! CCSD occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTCCSD= 7 ! CCSD virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCpT = 8   ! (T) contribution, occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTpT = 9  ! (T) contribution, virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCpT4 = 10 ! Fourth order (T) contribution, occ partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTpT4 =11 ! Fourth order (T) contribution, virt partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCpT5 = 12 ! Fifth order (T) contribution, occ partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTpT5 =13 ! Fifth order (T) contribution, virt partitioning scheme
-  integer,parameter :: FRAGMODEL_F12 = 14    ! MP2-F12 energy correction
+  integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTMP2  = 3   ! MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_LAGRPA   = 4   ! MP2 Lagrangian partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCRPA   = 5   ! RPA occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTRPA  = 6   ! RPA virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCCC2   = 7   ! CC2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCC2  = 8   ! CC2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCCCSD  = 9   ! CCSD occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCCSD = 10   ! CCSD virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT    = 11  ! (T) contribution, occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT   = 12  ! (T) contribution, virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT4   = 13  ! Fourth order (T) contribution, occ partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT4  = 14  ! Fourth order (T) contribution, virt partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCpT5   = 15  ! Fifth order (T) contribution, occ partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
+  integer,parameter :: FRAGMODEL_F12      = 17  ! MP2-F12 energy correction
 
 
   !> \author Kasper Kristensen
@@ -170,6 +173,11 @@ module dec_typedef_module
      real(realk) :: simplePNOthr
      !> this defines the PNO threshold used for the EOS adapted space
      real(realk) :: EOSPNOthr
+     !> Use MO-based algorithm to solve the CCSD equations
+     logical :: MOCCSD
+     !> Maximum number of MOs until which an MO-CCSD calculation should be
+     !> performed
+     integer :: Max_num_MO
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver
@@ -1022,6 +1030,15 @@ module dec_typedef_module
     integer, pointer :: packInd(:) 
     
   end type MObatchInfo
+
+  !> AO Integral batch info:
+  type DecAObatchinfo
+     integer :: Dim       ! Dimension of DEC batch of AO batches 
+     integer :: OrbStart  ! First orbital index in DEC batch
+     integer :: OrbEnd    ! Last orbital index in DEC batch
+     integer :: AOStart   ! First AO batch index in DEC batch
+     integer :: AOEnd     ! Last AO batch index in DEC batch
+  end type DecAObatchinfo
 
   !> \brief Grid box handling for analyzing orbitals in specific parts of space
   !> for single precision real grid points

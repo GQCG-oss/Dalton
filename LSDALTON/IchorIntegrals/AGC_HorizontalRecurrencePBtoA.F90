@@ -8,15 +8,13 @@ subroutine HorizontalRR_LHS_P0A0B0BtoA(nContPasses,nTUVQ,&
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
   real(realk),intent(in) :: Pdistance12(3)
-  real(realk),intent(in) :: AuxCont(    1,nTUVQ,nContPasses)
-  real(realk),intent(inout) :: ThetaP(    1:    1,    1:    1,nTUVQ,nContPasses)
+  real(realk),intent(in) :: AuxCont(nTUVQ,nContPasses)
+  real(realk),intent(inout) :: ThetaP(nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVB
   DO iP = 1,nContPasses
    DO iTUVQ = 1,nTUVQ
-     DO iTUVB=  1,  1
-        ThetaP(1,iTUVB,iTUVQ,IP) = AuxCont(iTUVB,iTUVQ,IP)
-     ENDDO
+      ThetaP(iTUVQ,IP) = AuxCont(iTUVQ,IP)
    ENDDO
   ENDDO
 end subroutine HorizontalRR_LHS_P0A0B0BtoA
@@ -26,15 +24,15 @@ subroutine HorizontalRR_LHS_P1A0B1BtoA(nContPasses,nTUVQ,&
   implicit none
   integer,intent(in) :: nContPasses,nTUVQ,lupri
   real(realk),intent(in) :: Pdistance12(3)
-  real(realk),intent(in) :: AuxCont(    4,nTUVQ,nContPasses)
-  real(realk),intent(inout) :: ThetaP(    1:    1,    2:    4,nTUVQ,nContPasses)
+  real(realk),intent(in) :: AuxCont(4,nTUVQ,nContPasses)
+  real(realk),intent(inout) :: ThetaP(2:4,nTUVQ,nContPasses)
   !Local variables
   integer :: iP,iTUVQ,iTUVB
   DO iP = 1,nContPasses
    DO iTUVQ = 1,nTUVQ
-     DO iTUVB=  2,  4
-        ThetaP(1,iTUVB,iTUVQ,IP) = AuxCont(iTUVB,iTUVQ,IP)
-     ENDDO
+      ThetaP(2,iTUVQ,IP) = AuxCont(2,iTUVQ,IP)
+      ThetaP(3,iTUVQ,IP) = AuxCont(3,iTUVQ,IP)
+      ThetaP(4,iTUVQ,IP) = AuxCont(4,iTUVQ,IP)
    ENDDO
   ENDDO
 end subroutine HorizontalRR_LHS_P1A0B1BtoA

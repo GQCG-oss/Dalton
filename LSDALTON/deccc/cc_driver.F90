@@ -114,7 +114,7 @@ contains
         !CALL THE SOLVER WITH PNO ARGUMENT
         call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-         & t1_final,t2_final,VOVO,.false.,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
+         & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
 
         !FREE MP2 AMPLITUDES
         call array4_free( mp2_amp )
@@ -124,7 +124,7 @@ contains
         !CALL DEBUG SOLVER WITHOUT PNOS
         call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-         & t1_final,t2_final,VOVO,.false.)
+         & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
 
       endif
     else
@@ -302,7 +302,7 @@ contains
        if (DECinfo%CCDEBUG) then
           call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
              & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-             & t1_final,t2_final,VOVO,.false.)
+             & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
        else
           call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
@@ -315,7 +315,7 @@ contains
        if (DECinfo%CCDEBUG) then
           call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
              & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-             & t1_final,t2_final,VOVO,.false.)
+             & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
        else
           call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
@@ -513,7 +513,6 @@ contains
     if(DECinfo%CCDEBUG)then
       if(DECinfo%use_pnos)then
 
-        print *,"USING FRAGMENT PNOs"
         !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
         call get_VOVO_integrals( myfragment%mylsitem, myfragment%nbasis, &
           &myfragment%noccAOS, myfragment%nunoccAOS, myfragment%Cv, myfragment%Co, VOVO )
@@ -532,14 +531,17 @@ contains
           & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
           & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
           & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,&
-          &MyFragment%t1_stored,m2=mp2_amp,use_pnos=DECinfo%use_pnos, fraginfo=myfragment)
+          &MyFragment%t1_stored,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos, fraginfo=myfragment)
 
         call array4_free(mp2_amp)
+
       else
+
         call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored)
+         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,SOLVE_AMPLITUDES)
+
       endif
     else
       call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
@@ -1873,6 +1875,9 @@ contains
           ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
 
+       case(MODEL_RPA)
+          call lsquit("ERROR(ccsolver_par): RPA energy not yet implemented",-1)
+
        case default
           call lsquit("ERROR(ccsolver_par):energy expression for your model&
             & not yet implemented",-1)
@@ -2043,9 +2048,11 @@ contains
 
     !transform back to original basis   
     if(DECinfo%use_singles)then
-      call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt,t1_final%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &gvovo=VOVO%val,t2=t2_final%val,t1=t1_final%val)
     else
-      call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &gvovo=VOVO%val,t2=t2_final%val)
     endif
 
     call mem_dealloc(Uocc)

@@ -35,7 +35,7 @@ CONTAINS
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,nCDAB,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
     implicit none
@@ -56,7 +56,8 @@ CONTAINS
     !    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
     real(realk) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(inout) :: CDAB(:)
+    integer,intent(in) :: nCDAB
+    real(realk),intent(inout) :: CDAB(nCDAB)
     real(realk),intent(in) :: integralPrefactor(nPrimQP)
     logical,intent(in) :: PQorder
     !integralPrefactor(nPrimP,nPrimQ)
@@ -89,6 +90,11 @@ CONTAINS
     AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*1.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&
                & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&
                & PpreExpFac,QpreExpFac,TMParray2)
@@ -102,10 +108,20 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1000)  !Angmom(A= 1,B= 0,C= 0,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*4.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
@@ -114,38 +130,88 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1010)  !Angmom(A= 1,B= 0,C= 1,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*16.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q1AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*16.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen16(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*12.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q2CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*10.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen10(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
@@ -154,284 +220,799 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1110)  !Angmom(A= 1,B= 1,C= 1,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q1AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*36.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,9,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,9,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*10.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen10(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*6.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,1,Pdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS1_maxAngP2_maxAngA2(1,nContQP*nPasses,TMParray2,CDAB     )
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2010)  !Angmom(A= 2,B= 0,C= 1,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q1AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*24.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA2(4,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q3CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*120.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA2(20,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*350.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen350(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*210.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*175.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA2(35,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*20.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen20(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,1,Pdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS1_maxAngP3_maxAngA2(1,nContQP*nPasses,TMParray2,CDAB     )
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2110)  !Angmom(A= 2,B= 1,C= 1,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q1AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*80.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*72.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA2(4,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*400.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q3AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*400.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen400(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*300.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA2(20,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*270.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*700.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*700.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen700(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*630.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*525.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA2(35,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*540.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*35.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen35(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*36.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,1,Pdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS1_maxAngP4_maxAngA2(1,nContQP*nPasses,TMParray2,CDAB     )
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2210)  !Angmom(A= 2,B= 2,C= 1,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*140.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP4Q1AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*140.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen140(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*144.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP4_maxAngA2(4,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,25,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP4Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*350.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen350(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*250.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,25,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP4Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*350.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen350(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*250.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*150.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,25,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC2(25,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*700.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP4Q3AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*700.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen700(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*720.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*500.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP4_maxAngA2(20,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*450.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,25,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC2(25,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*165.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*1225.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP4Q4AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*1225.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen1225(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*1260.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*875.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP4_maxAngA2(35,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*900.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,25,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ4_maxAngC2(25,nContQP*nPasses,TMParray1,CDAB     )
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*4.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
@@ -440,22 +1021,47 @@ CONTAINS
         call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,1,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence2D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*10.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen10(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*6.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,1,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC0(1,nContQP*nPasses,TMParray2,CDAB     )
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence1C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*4.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
@@ -464,10 +1070,20 @@ CONTAINS
         call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,1,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence2C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*10.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen10(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
@@ -476,58 +1092,128 @@ CONTAINS
         call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,1,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*20.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen20(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,1,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC1(1,nContQP*nPasses,TMParray2,CDAB     )
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence2C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*10.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen10(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*6.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,1,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC2(1,nContQP*nPasses,TMParray2,CDAB     )
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*20.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen20(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,1,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC2(1,nContQP*nPasses,TMParray2,CDAB     )
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*35.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen35(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*36.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,1,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ4_maxAngC2(1,nContQP*nPasses,TMParray2,CDAB     )
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*4.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
@@ -536,657 +1222,1867 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE( 101)  !Angmom(A= 0,B= 1,C= 0,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*16.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q1BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*16.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen16(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*12.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A0B1BtoA(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q2DtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A0B1BtoA(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nContQP*nPasses,TMParray2,CDAB     )
     CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*16.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q1BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*16.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen16(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*12.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A0B1BtoA(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q2CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A0B1BtoA(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q3DtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*80.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A0B1BtoA(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nContQP*nPasses,TMParray2,CDAB     )
     CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q2CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A0B1BtoA(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nContQP*nPasses,TMParray2,CDAB     )
     CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q3CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*80.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A0B1BtoA(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nContQP*nPasses,TMParray2,CDAB     )
     CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*140.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q4CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*140.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen140(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*105.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A0B1BtoA(nContQP*nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*108.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nContQP*nPasses,TMParray2,CDAB     )
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*10.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen10(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*6.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A0B2BtoA(nContQP*nPasses,1,Pdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS1_maxAngP2_maxAngA0(1,nContQP*nPasses,TMParray2,CDAB     )
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q1BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*24.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A0B2BtoA(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA0(4,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q2BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A0B2BtoA(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nContQP*nPasses,TMParray1,CDAB     )
     CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q1BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*24.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A0B2BtoA(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA0(4,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q2BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A0B2BtoA(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q3DtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*120.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A0B2BtoA(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA0(20,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nContQP*nPasses,TMParray1,CDAB     )
     CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q2BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A0B2BtoA(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nContQP*nPasses,TMParray1,CDAB     )
     CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q3CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*120.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A0B2BtoA(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA0(20,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nContQP*nPasses,TMParray1,CDAB     )
     CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q4CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*350.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen350(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*210.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A0B2BtoA(nContQP*nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*175.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA0(35,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nContQP*nPasses,TMParray1,CDAB     )
     CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*16.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q1AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*16.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen16(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*12.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q2DtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nContQP*nPasses,TMParray2,CDAB     )
     CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q3DtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*80.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nContQP*nPasses,TMParray2,CDAB     )
     CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q2CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nContQP*nPasses,TMParray2,CDAB     )
     CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q3CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*80.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nContQP*nPasses,TMParray2,CDAB     )
     CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*140.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP1Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*140.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen140(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*105.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P1A1B0AtoB(nContQP*nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*108.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nContQP*nPasses,TMParray2,CDAB     )
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q1AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*36.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,9,Qdistance12,TMParray1,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q2AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,9,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC0(9,nContQP*nPasses,TMParray2,CDAB     )
     CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q3DtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*162.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,9,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC1(9,nContQP*nPasses,TMParray2,CDAB     )
     CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,9,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC2(9,nContQP*nPasses,TMParray2,CDAB     )
     CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q3CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*162.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,9,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC2(9,nContQP*nPasses,TMParray2,CDAB     )
     CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*350.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen350(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*315.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A1B1AtoB(nContQP*nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
         !no Spherical Transformation LHS needed
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*324.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,9,Qdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS2_maxAngQ4_maxAngC2(9,nContQP*nPasses,TMParray2,CDAB     )
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*20.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen20(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A1B2BtoA(nContQP*nPasses,1,Pdistance12,TMParray1,TMParray2,lupri)
         call SphericalContractOBS1_maxAngP3_maxAngA1(1,nContQP*nPasses,TMParray2,CDAB     )
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q1BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*80.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*72.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A1B2BtoA(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA1(4,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q2BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A1B2BtoA(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q1BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*80.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*72.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A1B2BtoA(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA1(4,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q2BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A1B2BtoA(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*400.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q3BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*400.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen400(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A1B2BtoA(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*300.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA1(20,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*270.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q2BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A1B2BtoA(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*400.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q3BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*400.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen400(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A1B2BtoA(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*300.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA1(20,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*270.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*700.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q4CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*700.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen700(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*630.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A1B2BtoA(nContQP*nPasses,35,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*525.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA1(35,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*540.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q1AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*40.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*24.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*20.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA2(4,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q2AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP2Q3DtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*120.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P2A2B0AtoB(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP2_maxAngA2(20,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q1AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*80.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*72.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*60.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA2(4,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q2AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*200.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*400.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP3Q3AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*400.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen400(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P3A2B1AtoB(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*300.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP3_maxAngA2(20,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*270.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*140.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP4Q1AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*140.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen140(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*144.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,4,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP4_maxAngA2(4,nContQP*nPasses,TMParray1,TMParray2)
         call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,25,Qdistance12,TMParray2,CDAB     ,lupri)
         !no Spherical Transformation RHS needed
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP4Q2AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*350.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen350(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,10,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*250.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*150.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,25,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ2_maxAngC0(25,nContQP*nPasses,TMParray1,CDAB     )
     CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray2maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nPrimP*nPrimQ*nPasses*700.GT.TMParray1maxsize)THEN
+          call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
+        ENDIF
+#endif
         call TransferRecurrenceP4Q3AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & TMParray2,TMParray1)
         nContQP = nContQ*nContP
+#ifdef VAR_DEBUGICHOR
+        IF(nContQ*nContP*nPasses*700.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQ*nContP*nPassestoo small',-1)
+        ENDIF
+#endif
          call PrimitiveContractionGen700(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*720.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_LHS_P4A2B2AtoB(nContQP*nPasses,20,Pdistance12,TMParray2,TMParray1,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*500.GT.TMParray2maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call SphericalContractOBS1_maxAngP4_maxAngA2(20,nContQP*nPasses,TMParray1,TMParray2)
+#ifdef VAR_DEBUGICHOR
+        IF(nContQP*nPasses*450.GT.TMParray1maxsize)THEN
+          call ichorquit('nContQP*nPassestoo small',-1)
+        ENDIF
+#endif
         call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,25,Qdistance12,TMParray2,TMParray1,lupri)
         call SphericalContractOBS2_maxAngQ3_maxAngC1(25,nContQP*nPasses,TMParray1,CDAB     )
     CASE DEFAULT
@@ -1748,7 +3644,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(    4)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(    4,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(    4,nPrimA,nPrimB)
     real(realk) :: tmpArray3(    4,nPrimB)
@@ -1760,17 +3656,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,    4
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,    4
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,    4
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -1779,49 +3670,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,    4
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,    4
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,    4
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,    4
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,    4
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,    4
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,    4
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,    4
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,    4
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -1843,7 +3719,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   10)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   10,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   10,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   10,nPrimB)
@@ -1855,17 +3731,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   10
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   10
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   10
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -1874,49 +3745,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   10
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   10
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   10
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   10
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   10
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   10
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   10
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   10
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   10
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -1938,7 +3794,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   20)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   20,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   20,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   20,nPrimB)
@@ -1950,17 +3806,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   20
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   20
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   20
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -1969,49 +3820,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   20
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   20
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   20
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   20
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   20
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   20
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   20
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   20
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   20
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2033,7 +3869,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   35)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   35,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   35,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   35,nPrimB)
@@ -2045,17 +3881,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   35
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   35
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   35
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -2064,49 +3895,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   35
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   35
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   35
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   35
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   35
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   35
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   35
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   35
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   35
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2128,7 +3944,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   16)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   16,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   16,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   16,nPrimB)
@@ -2140,17 +3956,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   16
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   16
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   16
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -2159,49 +3970,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   16
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   16
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   16
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   16
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   16
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   16
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   16
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   16
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   16
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2223,7 +4019,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   40)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   40,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   40,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   40,nPrimB)
@@ -2235,17 +4031,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   40
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   40
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   40
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -2254,49 +4045,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   40
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   40
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   40
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   40
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   40
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   40
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   40
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   40
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   40
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2318,7 +4094,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   80)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   80,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   80,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   80,nPrimB)
@@ -2330,17 +4106,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   80
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   80
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   80
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -2349,49 +4120,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   80
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   80
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   80
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   80
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   80
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   80
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   80
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   80
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   80
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2413,7 +4169,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  140)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  140,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  140,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  140,nPrimB)
@@ -2425,17 +4181,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  140
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  140
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  140
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -2444,49 +4195,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  140
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  140
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  140
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  140
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  140
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  140
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  140
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  140
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  140
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2508,7 +4244,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  100)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  100,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  100,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  100,nPrimB)
@@ -2520,17 +4256,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  100
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  100
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  100
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -2539,49 +4270,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  100
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  100
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  100
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  100
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  100
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  100
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  100
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  100
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  100
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2603,7 +4319,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  200)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  200,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  200,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  200,nPrimB)
@@ -2615,17 +4331,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  200
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  200
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  200
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -2634,49 +4345,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  200
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  200
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  200
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  200
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  200
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  200
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  200
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  200
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  200
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2698,7 +4394,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  350)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  350,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  350,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  350,nPrimB)
@@ -2710,17 +4406,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  350
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  350
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  350
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -2729,49 +4420,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  350
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  350
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  350
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  350
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  350
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  350
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  350
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  350
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  350
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2793,7 +4469,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  400)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  400,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  400,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  400,nPrimB)
@@ -2805,17 +4481,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  400
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  400
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  400
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -2824,49 +4495,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  400
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  400
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  400
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  400
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  400
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  400
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  400
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  400
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  400
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2888,7 +4544,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  700)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  700,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  700,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  700,nPrimB)
@@ -2900,17 +4556,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  700
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  700
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  700
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -2919,49 +4570,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  700
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  700
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  700
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  700
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  700
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  700
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  700
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  700
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  700
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -2983,7 +4619,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray( 1225)
+    real(realk) :: TMP
     real(realk) :: tmpArray1( 1225,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2( 1225,nPrimA,nPrimB)
     real(realk) :: tmpArray3( 1225,nPrimB)
@@ -2995,17 +4631,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1, 1225
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1, 1225
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1, 1225
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -3014,49 +4645,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1, 1225
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1, 1225
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1, 1225
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1, 1225
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1, 1225
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1, 1225
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1, 1225
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1, 1225
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1, 1225
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
