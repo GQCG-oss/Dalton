@@ -33,6 +33,8 @@ module cc_debug_routines_module
      integer              :: n,ns1,ns2,pno
      integer, pointer     :: iaos(:)
      real(realk), pointer :: d(:,:)
+     real(realk), pointer :: tmp(:,:)
+     real(realk), pointer :: s1(:,:),s2(:,:)
      logical              :: allocd
    end type SpaceInfo
    integer,parameter :: SOLVE_AMPLITUDES  = 1
@@ -4961,7 +4963,7 @@ module cc_debug_routines_module
     integer, pointer :: s_idx(:,:,:), s_nidx(:)
     integer :: pno,pno1,pno2,pnv,pnv1,pnv2,Sidx1,Sidx2, ldS1,ldS2, k, l, nidx1, nidx2, spacemax
     character :: tr11,tr12,tr21,tr22
-    logical :: skiptrafo,skiptrafo2,save_gvvvv_is
+    logical :: skiptrafo,skiptrafo2,save_gvvvv_is,with_screening,cyc
     type(matrix) :: iFock, Dens
     integer(kind=8) :: maxsize
     !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
@@ -4973,6 +4975,7 @@ module cc_debug_routines_module
     p05 = 0.5E0_realk
     nul = 0.0E0_realk
     o2v2 = (i8*no**2)*nv**2
+    with_screening = .true.
 
     if(fj.and..not.present(f))call lsquit("ERROR(get_ccsd_residual_pno_style):wrong input fj without f",-1)
 
@@ -5026,7 +5029,7 @@ module cc_debug_routines_module
 
 
     !Get all the overlap matrices necessary
-    call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,.false.)!(iter==1))
+    call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,with_screening)
 
     !Get pair interaction space information
     call get_pair_space_info(pno_cv,p_idx,p_nidx,s_idx,s_nidx,nspaces,no)
@@ -5308,7 +5311,7 @@ module cc_debug_routines_module
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
     !$OMP& d1,d2,t21,t22,tr21,tr22,tr12,tr11,w1,w2,w3,w4,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
-    !$OMP& skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,& 
+    !$OMP& skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
     !$OMP& ns2,ns3,nc,nc2,s2,lds2,s1,lds1) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
     !$OMP& p10,p05,m10,m05,p20,vvf,goooo,Lvoov,pno_o2,govov,&
     !$OMP& oof, maxsize, nspaces, ovf, gvvov, s_idx,o1,&
@@ -5408,7 +5411,12 @@ module cc_debug_routines_module
         
 
         !Get the overlap identificaton and transformation props
-        call get_overlap_ptr(ns,ns2,pno_S,tr11,tr12,skiptrafo,S1,ldS1)
+        call get_overlap_ptr(ns,ns2,pno_S,tr11,tr12,skiptrafo,S1,ldS1,cyc)
+        if(cyc) then
+
+          cycle FullSpaceLoop1
+
+        endif
 
         d1   => pno_cv(ns2)%d
         t21  => pno_t2(ns2)%elm1
@@ -5445,10 +5453,7 @@ module cc_debug_routines_module
         call array_reorder_4d( p20, t21, pnv1, pno1, pnv1, pno1, [1,3,2,4], nul, w3)
         call array_reorder_4d( m10, t21, pnv1, pno1, pnv1, pno1, [1,3,4,2], p10, w3)
         h1 => w3
-        if(.not. skiptrafo)then
-          call dgemm(tr12,'n', pnv, pno1*pnv1*pno1,pnv1, p10, S1, ldS1,w3,pnv1,nul,w2,pnv)
-          h1 => w2
-        endif
+        call do_overlap_trafo(ns,ns2,1,pno_S,pnv,pno1*pnv1*pno1,pnv1,w3,w2,ptr=h1)
 
         !contract amplitudes in h1 with integrals in w1 and add to w4 : -1 * h1(bdkl) w1(dlkc) += w4(bc)
         call dgemm('n','n',pnv,pnv,pnv1*pno1*pno1,m10, h1,pnv,w1,pnv1*pno1*pno1,p10,w4,pnv)
@@ -5503,12 +5508,14 @@ module cc_debug_routines_module
         call dgemm( 'n', 'n', pno**2, pnv1**2, pno1**2, p10, w3, pno**2, w1, pno1**2, nul, w2, pno**2 )
 
         ! transform back, or in the case of ns==ns2 just order correctly
-        if(skiptrafo)then
+        if(ns==ns2)then
           call array_reorder_4d( p10, w2, pno, pno, pnv, pnv, [3,1,4,2], nul, w1 )
         else
-          call dgemm( 'n', tr11, pno**2*pnv1, pnv, pnv1, p10, w2, pno**2*pnv1, S1, ldS1, nul, w1, pno**2*pnv1)
+          !call dgemm( 'n', tr11,  p10, w2, pno**2*pnv1, S1, ldS1, nul, w1, pno**2*pnv1)
+          call do_overlap_trafo(ns,ns2,2,pno_S,pno**2*pnv1, pnv, pnv1,w2,w1)
           call array_reorder_4d( p10, w1, pno, pno, pnv1, pnv, [3,1,4,2], nul, w3 )
           call dgemm( tr12, 'n', pnv, pnv*pno**2, pnv1, p10, S1, ldS1, w3, pnv1, nul, w1, pnv)
+          !call do_overlap_trafo(ns,ns2,1,pno_S,pno**2*pnv1, pnv, pnv1,w2,w1)
         endif
    
         ! add up the correcly ordered contributions
@@ -5546,7 +5553,12 @@ module cc_debug_routines_module
 
         endif
 
-        call get_overlap_ptr(ns,ns2,pno_S,tr11,tr12,skiptrafo,S1,ldS1)
+        call get_overlap_ptr(ns,ns2,pno_S,tr11,tr12,skiptrafo,S1,ldS1,cyc)
+        if(cyc) then
+
+          cycle OneIdxSpaceLoop1
+
+        endif
         call get_overlap_idx(ns,ns2,pno_cv,oidx1,nidx1)
 
 
@@ -5597,7 +5609,12 @@ module cc_debug_routines_module
           endif
 
 
-          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2)
+          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2,cyc)
+          if(cyc) then
+
+            cycle OneIdxSpaceLoop2
+
+          endif
           call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
 
           d2   => pno_cv(ns3)%d
@@ -5757,7 +5774,12 @@ module cc_debug_routines_module
 
           endif
 
-          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2)
+          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2,cyc)
+          if(cyc) then
+
+            cycle OneIdxSpaceLoop3
+
+          endif
           call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
 
           d2   => pno_cv(ns3)%d
@@ -5910,7 +5932,12 @@ module cc_debug_routines_module
           endif
 
 
-          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2)
+          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2,cyc)
+          if(cyc) then
+
+            cycle OneIdxSpaceLoop4
+
+          endif
           call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
 
           d2   => pno_cv(ns3)%d
@@ -6220,9 +6247,14 @@ module cc_debug_routines_module
       do ns2 = 1, ns-1
 
         c = (ns2 - ns + 1) + ns*(ns-1)/2
-        if(pno_cv(ns)%allocd.and.pno_cv(ns2)%allocd)then
+        if( pno_S(c)%allocd )then
           call mem_dealloc( pno_S(c)%iaos )
           call mem_dealloc( pno_S(c)%d    )
+          call mem_dealloc( pno_S(c)%tmp  )
+          if( with_screening )then
+            call mem_dealloc( pno_S(c)%s1   )
+            call mem_dealloc( pno_S(c)%s2   )
+          endif
         endif
 
       enddo
@@ -6306,8 +6338,7 @@ module cc_debug_routines_module
     
   end subroutine get_overlap_idx
 
-
-  subroutine get_overlap_ptr(n1,n2,pS,tr1,tr2,st,S,ldS)
+  subroutine get_overlap_ptr_copy(n1,n2,pS,tr1,tr2,st,S,ldS)
     implicit none
     integer,intent(in) :: n1,n2
     type(SpaceInfo), intent(in) :: pS(:)
@@ -6318,6 +6349,7 @@ module cc_debug_routines_module
     integer :: Sidx
 
     !Get the overlap identificaton and transformation props
+
     if(n1>n2)then
 
       !trafo from n1 to n2 
@@ -6326,6 +6358,7 @@ module cc_debug_routines_module
       tr2       =  'n'
       st        =  .false.
       S         => pS(Sidx)%d
+      S         => pS(Sidx)%tmp
       ldS       =  pS(Sidx)%ns1
       !check if correct matrix was chosen
       if(pS(Sidx)%iaos(1)/=n1.or.pS(Sidx)%iaos(2)/=n2)then
@@ -6340,6 +6373,7 @@ module cc_debug_routines_module
       tr2       =  't'
       st        =  .false.
       S         => pS(Sidx)%d
+      S         => pS(Sidx)%tmp
       ldS       =  pS(Sidx)%ns1
       !check if correct matrix was chosen
       if(pS(Sidx)%iaos(1)/=n2.or.pS(Sidx)%iaos(2)/=n1)then
@@ -6349,9 +6383,68 @@ module cc_debug_routines_module
     else
 
       !skip the transformation if the amplitudes reference the same space
-      st        = .true.
+      st        =  .true.
       S         => null()
       ldS       =  0
+
+    endif
+  end subroutine get_overlap_ptr_copy
+
+  subroutine get_overlap_ptr(n1,n2,pS,tr1,tr2,st,S,ldS,cyc)
+    implicit none
+    integer,intent(in) :: n1,n2
+    type(SpaceInfo), intent(in) :: pS(:)
+    character, intent(out) :: tr1,tr2
+    logical, intent(out) :: st,cyc
+    real(realk), pointer, intent(out) :: S(:,:)
+    integer, intent(out) :: ldS
+    integer :: Sidx
+
+    !Get the overlap identificaton and transformation props
+
+    if(n1>n2)then
+
+      !trafo from n1 to n2 
+      Sidx      =  (n2 - n1 + 1) + n1 * (n1 - 1 )/2
+      cyc       =  .not.pS(Sidx)%allocd
+      if(.not.cyc)then
+        tr1       =  't'
+        tr2       =  'n'
+        st        =  .false.
+        S         => pS(Sidx)%d
+        S         => pS(Sidx)%tmp
+        ldS       =  pS(Sidx)%ns1
+        !check if correct matrix was chosen
+        if(pS(Sidx)%iaos(1)/=n1.or.pS(Sidx)%iaos(2)/=n2)then
+          print *,"S mat wrong",pS(Sidx)%iaos(1),n1,pS(Sidx)%iaos(2),n2
+        endif
+      endif
+
+    elseif(n2>n1)then
+
+      !trafo from n2 to n1
+      Sidx      =  (n1 - n2 + 1) + n2 * (n2 - 1 )/2
+      cyc       =  .not.pS(Sidx)%allocd
+      if(.not.cyc)then
+        tr1       =  'n'
+        tr2       =  't'
+        st        =  .false.
+        S         => pS(Sidx)%d
+        S         => pS(Sidx)%tmp
+        ldS       =  pS(Sidx)%ns1
+        !check if correct matrix was chosen
+        if(pS(Sidx)%iaos(1)/=n2.or.pS(Sidx)%iaos(2)/=n1)then
+          print *,"S mat wrong",pS(Sidx)%iaos(1),n2,pS(Sidx)%iaos(2),n1
+        endif
+      endif
+
+    else
+
+      !skip the transformation if the amplitudes reference the same space
+      st        =  .true.
+      S         => null()
+      ldS       =  0
+      cyc       =  .false.
 
     endif
   end subroutine get_overlap_ptr
@@ -6486,21 +6579,63 @@ module cc_debug_routines_module
 
   end subroutine backtransform_omegas
 
+  subroutine do_overlap_trafo(ns1,ns2,pos_of_overlap,S,m,n,k,A,C,ptr)
+    implicit none
+    integer, intent(in) :: pos_of_overlap,m,n,k,ns1,ns2
+    type(SpaceInfo),intent(inout) :: S(:)
+    real(realk),intent(in) :: A(*)
+    real(realk),intent(inout),target :: C(:)
+    real(realk),pointer,optional :: ptr(:)
+    real(realk),pointer :: S1(:,:)
+    integer :: ldS1
+    logical :: skiptrafo
+    character :: tr1,tr2
+    
+    
+    call get_overlap_ptr_copy(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1)
+
+    if(.not. skiptrafo)then
+
+      select case(pos_of_overlap)
+      case(1)
+        call dgemm(tr2,'n',m,n,k,1.0E0_realk, S1,ldS1,A,k,0.0E0_realk,C,m)
+      case(2)
+        call dgemm('n',tr1,m,n,k,1.0E0_realk,A,m,S1,ldS1,0.0E0_realk,C,m)
+      case default
+        call lsquit("ERROR(do_overlap_trafo): wrong selection of pos_of_overlap",-1)
+      end select
+
+      !associate the pointer to the result
+      if(present(ptr))ptr => C
+
+    endif
+
+  end subroutine do_overlap_trafo
+
   subroutine get_pno_overlap_matrices(no,nv,pno_cv,pno_S,n,with_svd)
     implicit none
     integer :: no, nv, n
     type(SpaceInfo),intent(in) :: pno_cv(n)
     type(SpaceInfo),intent(inout) :: pno_S(n*(n-1)/2)
     logical, intent(in) :: with_svd
-    integer :: i, j, c, t1,t2
-    integer :: ns1,ns2,INFO,lwork
-    real(realk),pointer:: s1(:,:), s2(:,:), sv(:),dummyU(:), dummyV(:),work(:)
-    real(realk) :: norm
+    integer :: i, j, c, t1,t2,dg, n1
+    integer :: ns1,ns2,INFO,lwork,mindim,maxdim,red1,red2,kerdim,diag,remove
+    real(realk),pointer:: s1(:,:), s2(:,:), sv(:),U(:,:), VT(:,:),work(:)
+    real(realk) :: norm,thr
+    real(realk),parameter :: p10 = 1.0E0_realk
+    real(realk),parameter :: nul = 0.0E0_realk
+    logical :: alloc
+    real(realk) :: tmp(nv*nv), tmp2(nv*nv)
+    thr = DECinfo%simplePNOthr
+    thr = -1.0*huge(thr)
+    
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE)&
-    !$OMP& SHARED(pno_cv,pno_S,n,no,nv,with_svd)&
-    !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,dummyU,dummyV,work,lwork,info)
+    !$OMP& SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
+    !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
+    !$OMP& lwork,info,diag,kerdim,red1,red2,maxdim,mindim,tmp,dg,&
+    !$OMP& alloc)
     call init_threadmemvar()
 
     !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
@@ -6518,38 +6653,100 @@ module cc_debug_routines_module
         pno_S(c)%ns1 = ns1
         pno_S(c)%ns2 = ns2
 
-        if(pno_cv(i)%allocd.and.pno_cv(j)%allocd)then
+        alloc = ( pno_cv(i)%allocd .and. pno_cv(j)%allocd )
+
+        if( alloc )then
 
           call mem_alloc(pno_S(c)%d,ns1,ns2)
 
           s1 => pno_cv(i)%d
           s2 => pno_cv(j)%d
 
-          call dgemm('t','n',ns1,ns2,nv,1.0E0_realk,s1,nv,s2,nv,0.0E0_realk,pno_S(c)%d,ns1)
+          call dgemm('t','n',ns1,ns2,nv,p10,s1,nv,s2,nv,nul,pno_S(c)%d,ns1)
 
           if(with_svd)then
+            !get the minimum dimension, the maximum dimension and the dimension
+            !of the kernel of the transformation
+            mindim = min(ns1,ns2)
+            maxdim = max(ns1,ns2)
+            kerdim = maxdim - mindim
+
             !Characterize the type of overlap just produced, does it need to be
             !considered at all -> calculate the singular values for checking
+            lwork = max(1,3*mindim+maxdim,5*mindim)
             call mem_alloc(sv,min(ns1,ns2))
-            sv = 0.0E0_realk
-            INFO=0
-            call mem_alloc(work,5)
-            call dgesvd('N','N',ns1,ns2,pno_S(c)%d,ns1,sv,dummyU,ns1,dummyV,ns2,work,-1,INFO)
-            lwork = work(1)
-            call mem_dealloc(work)
             call mem_alloc(work,lwork)
-            call dgesvd('N','N',ns1,ns2,pno_S(c)%d,ns1,sv,dummyU,ns1,dummyV,ns2,work,lwork,INFO)
-            call mem_dealloc(work)
-            call print_norm(pno_S(c)%d,i8*ns1*ns2,norm)
-            print '(2I3,1e10.2,"pair svs:",40e10.2)',i,j,norm,sv
-            call mem_dealloc(sv)
+            call mem_alloc(U,ns1,ns1)
+            call mem_alloc(VT,ns2,ns2)
+            sv = 0.0E0_realk; INFO=0
+            call dgesvd('A','A',ns1,ns2,pno_S(c)%d,ns1,sv,U,ns1,VT,ns2,work,lwork,INFO)
+            if(INFO/=0)call &
+            &lsquit("ERROR(get_pno_overlap_matrices): dgesvd failed",-1)
+
+            !screen singular values according to a predefined threshold
+            do diag=1,mindim
+              if(sv(diag)<thr)then
+                exit
+              endif
+            enddo
+            ! go one step back to where the singular value is still above thr
+            ! and calculate the number of elements to remove additionally to the
+            ! kernel dimension
+            if(diag/=mindim)diag = diag - 1
+            remove = mindim - diag
+            
+            ! Find the number of elements in the trafo, note that kerdim == 0 if
+            ! ns1 == ns2, therefore an if else is enough
+            if(ns1>ns2)then
+              red1 = ns1 - remove - kerdim
+              red2 = ns2 - remove
+            else
+              red1 = ns1 - remove
+              red2 = ns2 - remove - kerdim
+            endif
+
+            alloc = ( red1 > 0 .and. red2 > 0 )
+
+            if(red1/=diag.or.red2/=diag)call &
+            &lsquit("ERROR(get_pno_overlap_matrices)calculated wrong dimensions",-1)
+
+            call mem_dealloc( pno_S(c)%d )
+       
+            if( alloc )then
+              call mem_alloc( pno_S(c)%s1, ns1,  red1 )
+              call mem_alloc( pno_S(c)%s2, red2, ns2  )
+              call mem_alloc( pno_S(c)%d,  red1, red2 )
+
+              pno_S(c)%s1 = U(:,1:red1)
+              pno_S(c)%s2 = VT(1:red2,:)
+              pno_S(c)%d  = nul
+              do dg = 1, diag
+                pno_S(c)%d(dg,dg) = sv(dg)
+              enddo
+
+              !TEMPORARY HACK:
+              call dgemm( 'n','n',red1,ns2,red2,p10,pno_S(c)%d,red1,pno_S(c)%s2,red2,nul,tmp,red1 )
+              call mem_alloc( pno_S(c)%tmp, ns1, ns2 )
+              call dgemm( 'n','n',ns1, ns2, red1,p10,pno_S(c)%s1,ns1,tmp,red1,nul,pno_S(c)%tmp,ns1 )
+            endif
+
+
+            call mem_dealloc( U )
+            call mem_dealloc( VT )
+            call mem_dealloc( work )
+            call mem_dealloc( sv )
           endif
 
-          pno_S(c)%n = 2
-          call mem_alloc(pno_S(c)%iaos,pno_S(c)%n)
-          pno_S(c)%iaos = [i,j]
 
-          pno_S(c)%allocd = .true.
+          if( alloc ) then
+
+            pno_S(c)%n = 2
+            call mem_alloc(pno_S(c)%iaos,pno_S(c)%n)
+            pno_S(c)%iaos = [i,j]
+
+          endif
+
+          pno_S(c)%allocd = alloc
 
         else
 
@@ -6564,6 +6761,7 @@ module cc_debug_routines_module
     call collect_thread_memory()
     !$OMP END PARALLEL
     call mem_TurnOffThread_Memory()
+
 
   end subroutine get_pno_overlap_matrices
 
