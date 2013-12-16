@@ -5,6 +5,7 @@
 #define DFT_KSM_WORK 4
 #define DFT_C_WORK 5
 #define DFT_GRAD_WORK 6
+#define DFT_EXPGRAD_WORK 666
 #define DFT_BRHS_WORK 7
 #define DFT_HESSTAT_WORK 8
 #define DFTHED_WORK 9

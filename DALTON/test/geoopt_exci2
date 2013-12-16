@@ -129,6 +129,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Optimization setup
 CRIT1=`$GREP "Default 1st order method will be used\: * BFGS update\." $log | wc -l`
 CRIT2=`$GREP "Optimization will be performed in redundant internal coordinates\." $log | wc -l`
@@ -213,8 +218,8 @@ CTRL[11]=4
 ERROR[11]="FINAL ITERATION NOT CORRECT"
 
 # Final gradient
-CRIT1=`$GREP "Li * z * (-0|-)\.000000017." $log | wc -l`
-CRIT2=`$GREP "H * z * (0| )\.000000017." $log | wc -l`
+CRIT1=`$GREP "Li * z * (-0|-)\.00000001.." $log | wc -l`
+CRIT2=`$GREP "H * z * (0| )\.00000001.." $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[12]=2
 ERROR[12]="FINAL GRADIENT NOT CORRECT"

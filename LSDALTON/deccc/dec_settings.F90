@@ -581,6 +581,21 @@ contains
        call lsquit('Full singles polarization has been temporarily disabled!',-1)
     end if
 
+    if(.not. DECinfo%memory_defined) then
+       write(DECinfo%output,*) 'Memory not defined for **DEC or **CC calculation!'
+       write(DECinfo%output,*) 'Please specify using .MEMORY keyword (in gigabytes)'
+       write(DECinfo%output,*) ''
+#ifdef VAR_MPI
+       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, then use'
+#else
+       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, then use'
+#endif
+       write(DECinfo%output,*) '.MEMORY'
+       write(DECinfo%output,*) '16.0'
+       write(DECinfo%output,*) ''
+       call lsquit('**DEC or **CC calculation requires specification of available memory using &
+            & .MEMORY keyword!',-1)
+    end if
 
     ! FOs do not work with reduced pairs, set reduction distance to 1000000 to
     ! avoid it from being used in practice
@@ -590,7 +605,7 @@ contains
        DECinfo%purifyMOs=.true.
     end if
 
-#ifdef RELEASE
+#ifndef MOD_UNRELEASED
 if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=1) then
    call lsquit('Error in input: DEC scheme only implemented for MP2 model!',-1)
 end if

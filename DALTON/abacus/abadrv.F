@@ -685,7 +685,7 @@ C  /* Deck abainp */
 C
 C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
-C             (Feb 2003: one of **START, **PROPE, or **FINAL)
+C             (one of **START, **EACH , or **PROPE)
 C
 #include "implicit.h"
 #include "iratdef.h"
@@ -961,9 +961,9 @@ C         if reading input from a terminal
   910 CONTINUE
   920 CONTINUE
 C     ... WRDSRC not found in input file;
-C         if WRDSRC .eq. '**START' we also try for '**PROPER'
-C         such that any '**PROPER' input will now also apply for initial
-C         geometry if not overridden with '**START' /Feb 2003 hjaaj
+C         if WRDSRC .eq. '**START' we also try for '**EACH '
+C         such that any '**EACH ' input will now also apply for initial
+C         geometry if not overridden with '**START'
          IF (WORD1 .EQ. '**START') THEN
             REWIND (LUCMD,IOSTAT=IOS)
             WORD1 = '**EACH '
@@ -1895,20 +1895,19 @@ CAMT quit here to catch this...
             CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
       ENDIF
 CAMT--------------
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        write(lupri,'(6x,a)') 'Environment is modeled using'//
+      IF (PEQM) THEN
+        WRITE(LUPRI,'(6X,A)') 'Environment is modeled using'//
      &                 ' the polarizable embedding scheme (PE library).'
-        if (polar) then
-         write (lupri,'(4a)') 'ERROR: .POLARI and .PEQM are not',
+        IF (POLAR) THEN
+         WRITE (LUPRI,'(4A)') 'ERROR: .POLARI and .PEQM are not',
      &                       'compatible. Please use either .ALPHA',
      &                       'or the RESPONSE module and set frequency',
      &                       'to zero.'
-         call quit('ERROR: .POLARI and .PEQM are not compatible')
+         CALL QUIT('ERROR: .POLARI and .PEQM are not compatible'//
+     &             ' (see output file for more details)')
 
-        end if
-      end if
-#endif
+        END IF
+      END IF
 
 C
 C
