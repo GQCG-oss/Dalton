@@ -22,6 +22,9 @@
   for each B term and each A term. (Thanks to Raul Crespo) 
 - Modified the input section of the manual concerning 
   MCD B terms. Added desciption of MCDEXSTATES
+- Fixed a bug for lsdalton geometry optimization and dynamics related to 
+  screening. The initial Cauchy-Schwartz screening matrices were incorrectly
+  used in each subsequent geometry step
   
 
 
