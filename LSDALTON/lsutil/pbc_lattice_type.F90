@@ -43,6 +43,7 @@ type, public :: lvec_list_t
 #ifdef MOD_UNRELEASED
   type(rspace_lat_info_t) :: ldef   ! definition of real-space lattice
   integer :: num_entries,nf_entries
+  integer :: fdim(3)
   type(lvec_data_t), pointer :: lvec(:)
   type(lvec_data_t), pointer :: nflvec(:)
   type(rspcopdata_t) :: opdat(MaxPBCOpTypes+5)

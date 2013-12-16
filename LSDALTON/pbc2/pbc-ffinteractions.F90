@@ -749,7 +749,7 @@ CHARACTER(len=10) :: numstr0,numstr1,numstr2,numstr3
 TYPE(lattice_cell_info_t), pointer :: sphermom(:)
 INTEGER :: num_latvec,nf,nk,nrlm,j,s,t,st
 INTEGER :: y,x2,y2,z2,jk,lm,delta,m,ii,iunit
-integer :: fdim(3),cd,il1,il2,il3,indred
+integer :: cd,il1,il2,il3,indred
 INTEGER(short) :: gab1
 !TYPE(matrix) :: rhojk((lmax+1)**2)
 TYPE(matrix) :: farfieldtmp
@@ -820,8 +820,6 @@ DO jk=1,(lmax+1)**2
       y2=ll%lvec(nk)%lat_coord(2)
       z2=ll%lvec(nk)%lat_coord(3)
 
-      !call find_latt_index(nf,x2,y2,z2,fdim,ll,ll%max_layer)
-
       if(sphermom(nk)%is_defined) then
         if(nfdensity(nk)%init_magic_tag.EQ.mat_init_magic_value) THEN
           rhojk(jk)=rhojk(jk)-&
@@ -889,10 +887,9 @@ DO nk=1,num_latvec
    !if(abs(x2) .gt. ll%col1) CYCLE
    !if(abs(y2) .gt. ll%col2) CYCLE
    !if(abs(z2) .gt. ll%col3) CYCLE
-   !call find_latt_index(nk,x2,y2,z2,fdim,ll,ll%max_layer)
    if(.not. ll%lvec(nk)%is_redundant) then
-     call find_latt_vectors(nk,x2,y2,z2,fdim,ll)
-     call find_latt_index(indred,-x2,-y2,-z2,fdim,ll,ll%max_layer)
+     call find_latt_vectors(nk,x2,y2,z2,ll)
+     call find_latt_index(indred,-x2,-y2,-z2,ll,ll%max_layer)
      if(.not.sphermom(nk)%is_defined) CYCLE
 #ifdef DEBUGPBC
      write(*,*) 'x2',x2,nk
@@ -1007,7 +1004,7 @@ IF(ll%compare_elmnts ) THEN!{{{
     x2=ll%lvec(nf)%lat_coord(1)
     y2=ll%lvec(nf)%lat_coord(2)
     z2=ll%lvec(nf)%lat_coord(3)
-    call find_latt_index(nk,x2,y2,z2,fdim,ll,ll%max_layer)
+    call find_latt_index(nk,x2,y2,z2,ll,ll%max_layer)
     write(numstr0,'(I5)')  iter
     write(numstr1,'(I5)')  x2
     write(numstr2,'(I5)')  y2
@@ -1455,7 +1452,7 @@ SUBROUTINE READ_multipole_files(lattice,maxmultmom,sphermom,nbast,nk,lupri)
   !numnn=0
 !  DO dummy=1,numvecs
 
-!     call find_latt_vectors(dummy,il1,il2,il3,fdim,ll)
+!     call find_latt_vectors(dummy,il1,il2,il3,ll)
 
     ! if(abs(il1) .gt. n_neighbour) call lsquit('ERROR in READ_multipole_files&
     ! & vector not in NF',lupri)
@@ -1486,7 +1483,7 @@ SUBROUTINE READ_multipole_files(lattice,maxmultmom,sphermom,nbast,nk,lupri)
        call Mat_zero(sphermom%getmultipole(ii))
     ENDDO
 
-    !call find_latt_vectors(dummy,il1,il2,il3,fdim,ll)
+    !call find_latt_vectors(dummy,il1,il2,il3,ll)
 
     write(numtostring1,'(I5)')  il1
     write(numtostring2,'(I5)')  il2
@@ -1561,7 +1558,6 @@ SUBROUTINE pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,refcell,numve
   TYPE(moleculeinfo),intent(inout) :: refcell
   !TYPE(moleculeinfo),intent(in) :: latt_cell(numvecs)
 
-  INTEGER, DIMENSION(3) :: fdim
   INTEGER(short)        :: gab1
   Integer :: refindex,idx,il1,il2,il3,nSpherMom,l
   TYPE(matrix),pointer :: spherMom(:)
@@ -1582,7 +1578,7 @@ SUBROUTINE pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,refcell,numve
      call Mat_init(spherMom(l),nbast,nbast)
      call Mat_zero(spherMom(l))
   ENDDO
-  call find_latt_index(refindex,0,0,0,fdim,lattice,lattice%max_layer)
+  call find_latt_index(refindex,0,0,0,lattice,lattice%max_layer)
 
   DO idx=1,numvecs
      
@@ -1597,7 +1593,7 @@ SUBROUTINE pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,refcell,numve
      if(gab1 .ge. -12) then
        !write(*,*) 'is gab1 greater than -12?'
 
-       call find_latt_vectors(idx,il1,il2,il3,fdim,lattice)
+       call find_latt_vectors(idx,il1,il2,il3,lattice)
        write(lupri,*) 'sphermom computed for ', il1
        call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(idx)%molecule,2)
        !call TYPEDEF_setmolecules(setting,refcell,1,refcell,2)
@@ -1679,7 +1675,6 @@ SUBROUTINE pbc_local_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,refcell
   TYPE(moleculeinfo),intent(inout) :: refcell
   TYPE(moleculeinfo),intent(in) :: latt_cell(numvecs)
 
-  INTEGER, DIMENSION(3) :: fdim
   Integer :: refindex,idx,il1,il2,il3,nSpherMom,l
   TYPE(matrix),pointer :: spherMom(:)
   CHARACTER(len=20) ::filename
@@ -1702,7 +1697,7 @@ SUBROUTINE pbc_local_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,refcell
      call Mat_init(spherMom(l),nbast,nbast)
      call Mat_zero(spherMom(l))
   ENDDO
-  call find_latt_index(refindex,0,0,0,fdim,lattice,lattice%max_layer)
+  call find_latt_index(refindex,0,0,0,lattice,lattice%max_layer)
   DO idx=1,numvecs
      
      !phase1 = kvec(1)*lattice%lvec(idx)%std_coord(1)
@@ -1713,7 +1708,7 @@ SUBROUTINE pbc_local_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,refcell
 
      call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2)
 
-     call find_latt_vectors(idx,il1,il2,il3,fdim,lattice)
+     call find_latt_vectors(idx,il1,il2,il3,lattice)
      !if(abs(il1) .le. abs(lattice%nneighbour)) CYCLE
      !if(abs(il2) .le. abs(lattice%nneighbour)) CYCLE
      !if(abs(il3) .le. abs(lattice%nneighbour)) CYCLE

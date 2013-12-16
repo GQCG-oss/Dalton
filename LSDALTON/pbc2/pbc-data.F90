@@ -1,6 +1,6 @@
 #ifdef MOD_UNRELEASED
 MODULE pbc_data
-  use precision
+  USE precision
   IMPLICIT NONE
 
   !PRIVATE
@@ -22,6 +22,7 @@ MODULE pbc_data
      REAL(realk) :: cell_volume     
 	  !> number of k points to sample in BZ
      INTEGER :: num_kpoints   
+	  !> Number of k points in each spatial direction
      INTEGER :: num_k1, num_k2, num_k3
 	  !> counts the number of updates of Qfict
      INTEGER :: qfict_update_cnt 

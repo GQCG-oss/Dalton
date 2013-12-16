@@ -631,13 +631,13 @@ TYPE(pbc_elstr_t),intent(inout) :: kdep(1)!(bz%nk)
 !Local variables
 !real(realk) :: pi=3.14159265
 real(realk) :: sumrealfock(ndim*ndim)
-INTEGER :: nlat,kpt,i,j,l1,l2,l3,fdim(3)
+INTEGER :: nlat,kpt,i,j,l1,l2,l3
 real(realk) :: phase1,phase2,phase3
 COMPLEX(complexk) :: phasetot
 sumrealfock=0.0
 DO kpt=1,1!bz%nk
  DO nlat=1,nrealvec
-  call find_latt_vectors(nlat,l1,l2,l3,fdim,ll)
+  call find_latt_vectors(nlat,l1,l2,l3,ll)
   if(abs(l1) .gt. ll%nneighbour) CYCLE
   if(abs(l2) .gt. ll%nneighbour) CYCLE
   if(abs(l3) .gt. ll%nneighbour) CYCLE
@@ -654,7 +654,7 @@ enddo
 
 
  DO nlat=1,nrealvec
-  call find_latt_vectors(nlat,l1,l2,l3,fdim,ll)
+  call find_latt_vectors(nlat,l1,l2,l3,ll)
   if(abs(l1) .gt. ll%nneighbour) CYCLE
   if(abs(l2) .gt. ll%nneighbour) CYCLE
   if(abs(l3) .gt. ll%nneighbour) CYCLE
