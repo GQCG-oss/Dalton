@@ -566,6 +566,7 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,natoms,nbast, &
 		if(.not. lattice%lvec(index1)%is_redundant) then
 			call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
 			if(il1**2+il2**2+il3**2 .gt. 0) lattice%lvec(indred)%is_redundant =.true.
+                        write(*,*) 'J computed for',il1,il2,il3
 
 			do index2=1,numvecs
 

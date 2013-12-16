@@ -294,8 +294,8 @@ SUBROUTINE solve_kfcsc_mat(ndim,fock_old,C_tmp,Uk,eigv,nsingular,lupri)
 
 	! Transform f = U^T F U
 	call pbc_unitary_transform(Ndim,nonsingdim,fock_old,Uk,tfock)
-	write(*,*) 'tfock'
-	call write_zmatrix(tfock,nonsingdim,nonsingdim) !todo necc?
+	!write(*,*) 'tfock'
+	!call write_zmatrix(tfock,nonsingdim,nonsingdim) !todo necc?
 	! solve fc = ce 
 	call zheev('V','U',nonsingdim,tfock,nonsingdim,eigv,work,lwork,rwork,info)
 	if(info .ne. 0) then
@@ -480,7 +480,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		stiter=adjustl(stiter)
 		diismats='diis_'//trim(stiter)//'_'
 
-		call pbc_get_onehamenergy(numrealvec,f_1,nfdensity,E_1)
+		call pbc_get_onehamenergy(numrealvec,lattice,f_1,nfdensity,E_1)
 
 		CALL LSTIMER('START ',TST,TET,LUPRI)
 		CALL LSTIMER('START ',TS,TE,LUPRI)
@@ -584,7 +584,8 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 				,bz%kpnt(kpt)%nsingular,smatk,lupri)
 
 			!Converts D(k) to D^0l
-			call kspc_2_rspc_loop_k(nfdensity,Bz%Nk,D_k,lattice,kvec,bz%kpnt(kpt)%weight,BZ%NK_nosym,ndim,kpt)
+			call kspc_2_rspc_loop_k(nfdensity,Bz%Nk,D_k,lattice,kvec,bz%kpnt(kpt)%weight,&
+                          & BZ%NK_nosym,ndim,kpt,lupri)
 
 		enddo !kpt
 		CALL LSTIMER('k point energy',TST,TET,LUPRI)
@@ -742,22 +743,31 @@ END SUBROUTINE pbc_get_fock_mat
 !> \param f_1
 !> \param nfdensity
 !> \param E1
-SUBROUTINE  pbc_get_onehamenergy(numvecs,f_1,nfdensity,E_1)
+SUBROUTINE  pbc_get_onehamenergy(numvecs,lattice,f_1,nfdensity,E_1)
 	INTEGER,INTENT(IN) :: numvecs
 	TYPE(matrix),TARGET,INTENT(IN) :: f_1(numvecs),nfdensity(numvecs)
+	TYPE(lvec_list_t),INTENT(INOUT) :: lattice
 	REAL(realk),INTENT(INOUT) ::  E_1
 	!LOCAL
-	INTEGER :: celli
+	INTEGER :: celli,l1,l2,l3
 
 	E_1=0
 	do celli=1,numvecs
-		if( &
-			& f_1(celli)%init_magic_tag .eq. mat_init_magic_value &
+		if( lattice%lvec(celli)%f1_computed &
 			& .and. &
 			& nfdensity(celli)%init_magic_tag .eq. mat_init_magic_value ) &
 			& then
-			E_1=E_1+mat_dotproduct(f_1(celli),nfdensity(celli))
-		endif
+                      if(.not.lattice%lvec(celli)%is_redundant)then
+                        l1=int(lattice%lvec(celli)%lat_coord(1))
+                        l2=int(lattice%lvec(celli)%lat_coord(2))
+                        l3=int(lattice%lvec(celli)%lat_coord(3))
+		        if(l1**2+l2**2+l3**2 .gt. 0) then
+                          E_1=E_1+2.0_realk*mat_dotproduct(f_1(celli),nfdensity(celli))
+                        else
+                          E_1=E_1+mat_dotproduct(f_1(celli),nfdensity(celli))
+                        endif
+                      endif
+                    endif
 	enddo
 
 END SUBROUTINE  pbc_get_onehamenergy
@@ -810,7 +820,7 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
 		nelectrons=nelectrons+real(tmp(i,i))
 	enddo
 
-	write(*,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
+	!write(*,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
 	write(lupri,*) 'Nelectrons =', nelectrons,nkmobas,nsingular
 
 	dummy2=-huge(dummy2)
@@ -821,7 +831,7 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
 		enddo
 	enddo
 
-	write(*,*) 'max value of D(k)',dummy2,'singularities', nsingular
+	!write(*,*) 'max value of D(k)',dummy2,'singularities', nsingular
 	write(lupri,*) 'max value of D(k)',dummy2,'singularities', nsingular
 
 	call mem_dealloc(tmp)

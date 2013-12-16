@@ -194,9 +194,9 @@ END SUBROUTINE transformk_2_realmat
 !> \param weight_k 	        weight for k
 !>  \param volbz                The volum to divide in the integral
 !> \param k		        integer,which k point we use
-SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
+SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k,lupri)
   IMPLICIT NONE
-  INTEGER,intent(in)           :: nbast,k,Nk
+  INTEGER,intent(in)           :: nbast,k,Nk,lupri
   integer                      :: volbz
   COMPLEX(complexk),intent(in) :: kmat(nbast,nbast)
   TYPE(lvec_list_t),intent(IN) :: ll
@@ -253,7 +253,7 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
          !if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
          call mat_abs_max_elm(density(layer),maxdens)
          if(maxdens .gt. 1e-12)then
-           write(*,*) ' max density element for&
+           write(lupri,*) ' max density element for&
              &layer', l1,l2,l3,maxdens
          endif
          !endif
@@ -317,7 +317,7 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k)
            !if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
            call mat_abs_max_elm(density(layer),maxdens)
            if(maxdens .gt. 1e-12)then
-             write(*,*) ' max density element for&
+             write(lupri,*) ' max density element for&
                &layer', l1,l2,l3,maxdens
            endif
            !endif

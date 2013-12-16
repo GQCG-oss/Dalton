@@ -748,13 +748,6 @@ SUBROUTINE print_bands(bz,nbast,mattxt)
 	INTEGER :: i,k,iunit,nonsingdim
 	CHARACTER(LEN=3) :: nline
 
-	write(*,*) ''
-	write(*,*) ''
-	write(*,*) ''
-	write(*,*) ' OBS : nosingdim not initialized !!'
-	write(*,*) ''
-	write(*,*) ''
-	write(*,*) ''
 
 	iunit=-1
 	CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
@@ -765,7 +758,7 @@ SUBROUTINE print_bands(bz,nbast,mattxt)
 		write(iunit,101,advance=nline) kvec(1) !must convert to k point value
 		101 FORMAT(E12.4)
 		DO i=1,nbast
-			if(i .eq. nonsingdim) nline = 'yes'
+			if(i .eq. nbast) nline = 'yes'
 			!write(iunit,100,advance=nline) real(kdep(k)%keigv(i))
 			write(iunit,100,advance=nline) bz%kpnt(k)%eigv(i)
 			100 FORMAT(E18.8)

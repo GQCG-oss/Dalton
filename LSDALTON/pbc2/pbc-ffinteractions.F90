@@ -797,10 +797,8 @@ DO nk=1,num_latvec
    x2=int(ll%lvec(nk)%lat_coord(1))
    y2=int(ll%lvec(nk)%lat_coord(2))
    z2=int(ll%lvec(nk)%lat_coord(3))
-   !write(*,*)'x y z', x2, y2, z2
-   !call read_multipole_files(x2,y2,z2,lmax,sphermom(nk),nbast,lupri)
    gab1=ll%lvec(nk)%maxgab
-   if(gab1 .ge. -12) then
+   if(gab1 .ge. ll%realthr) then
      sphermom(nk)%is_defined = .true.
      call read_multipole_files(ll,lmax,sphermom(nk),nbast,nk,lupri)
      call pbc_multipl_moment_matorder(sphermom(nk)%getmultipole,lmax,nbast)
@@ -1587,7 +1585,7 @@ SUBROUTINE pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,refcell,numve
      !phase=cmplx(0,k1*il1+k2*il2+k3*il3)
 
      gab1=lattice%lvec(idx)%maxgab
-     if(gab1 .ge. -12) then
+     if(gab1 .ge. lattice%realthr) then
        !write(*,*) 'is gab1 greater than -12?'
 
        call find_latt_vectors(idx,il1,il2,il3,lattice)
