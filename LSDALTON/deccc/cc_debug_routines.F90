@@ -4734,8 +4734,8 @@ module cc_debug_routines_module
 
     nnod = 1
     me = 0
-    call get_cnd_terms_mo(tmp0,tmp1,tmp2,t2a,u2a,govova,gvoova,gvvooa, &
-                         & no,nv,omega2a,s,lock,els2add,nnod,me)
+    !call get_cnd_terms_mo(tmp0,tmp1,tmp2,t2a,u2a,govova,gvoova,gvvooa, &
+    !                     & no,nv,omega2a,s,lock,els2add)
 
     call dcopy(nv*nv*no*no,omega2a%elm1,1,omega2,1)
 

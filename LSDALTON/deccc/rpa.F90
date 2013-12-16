@@ -583,7 +583,7 @@ contains
     call lsmpi_barrier(infpar%lg_comm)
 #endif
 
-    call mo_work_dist(nvirt*nocc,fai,tl,nnod,mynum)
+    call mo_work_dist(nvirt*nocc,fai,tl)
     !call mem_alloc(w2,tl*nocc*nvirt)
     call mem_alloc(w2,tl*nocc*nvirt)
     call mem_alloc(w3,tl*nocc*nvirt)
