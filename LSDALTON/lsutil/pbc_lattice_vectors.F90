@@ -109,42 +109,41 @@ SUBROUTINE translate_atom(setting,lattice_cell,iao,natoms)
 
 END SUBROUTINE translate_atom
 
-SUBROUTINE set_lattice_cells(lattice_cell,num_latvectors,molecule,ll,lupri)
+!SUBROUTINE set_lattice_cells(lattice_cell,num_latvectors,molecule,ll,lupri)
+SUBROUTINE set_lattice_cells(num_latvectors,molecule,ll,lupri)
   implicit none
   ! local variables
   INTEGER :: IATOM, idex
   INTEGER, INTENT(IN) :: num_latvectors,lupri
   TYPE(MOLECULEINFO), INTENT(IN) :: molecule
-  TYPE(moleculeinfo), INTENT(INOUT), DIMENSION(num_latvectors) :: lattice_cell
+  !TYPE(moleculeinfo), INTENT(INOUT), DIMENSION(num_latvectors) :: lattice_cell
   TYPE(lvec_list_t),intent(in)  :: ll
   CHARACTER(len=22) :: mollabel
    
-!  Allocate(lattice_cell(num_latvectors))
   write(lupri,*) 'Number of atoms ', molecule%natoms
   !call build_lvec_list(ll)
 !     write(lupri,*) 'before loop'
   DO idex=1,num_latvectors
 !  DO index=-ll%max_layer,max_layer
-!  Allocate(lattice_cell(index)%atom(molecule%natoms))
      write(mollabel,'(A12,I9)') 'PBC-Molecule',idex
-     call init_Moleculeinfo(lattice_cell(idex),molecule%natoms,mollabel)
+     call init_Moleculeinfo(ll%lvec(idex)%molecule,molecule%natoms,mollabel)
 
 
 !     write(*,*) 'before copy_atom'
      DO iatom=1,molecule%natoms
-      call copy_atom(molecule,iatom,lattice_cell(idex),iatom,6)
+      call copy_atom(molecule,iatom,ll%lvec(idex)%molecule,iatom,6)
      ENDDO
 !     write(*,*) 'after copy_atom',molecule%natoms
      DO IATOM=1,molecule%natoms
 !     write(*,*) 'inside loop copy_atom'
-        lattice_cell(idex)%atom(IATOM)%CENTER(1)= &
+        ll%lvec(idex)%molecule%atom(IATOM)%CENTER(1)= &
         &  molecule%atom(IATOM)%CENTER(1)-ll%lvec(idex)%std_coord(1)
 !     write(*,*) 'inside loop copy_atom'
 
-        lattice_cell(idex)%atom(IATOM)%CENTER(2)= &
+        ll%lvec(idex)%molecule%atom(IATOM)%CENTER(2)= &
         &  molecule%atom(IATOM)%CENTER(2)-ll%lvec(idex)%std_coord(2)
 
-        lattice_cell(idex)%atom(IATOM)%CENTER(3)= &
+        ll%lvec(idex)%molecule%atom(IATOM)%CENTER(3)= &
         &  molecule%atom(IATOM)%CENTER(3)-ll%lvec(idex)%std_coord(3)
 !        write(*,*) 'x', lattice_cell(index)%atom(IATOM)%CENTER(1)
 !        write(*,*) 'y', lattice_cell(index)%atom(IATOM)%CENTER(2)

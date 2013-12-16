@@ -1545,7 +1545,7 @@ SUBROUTINE READ_multipole_files(lattice,maxmultmom,sphermom,nbast,nk,lupri)
 
 END SUBROUTINE READ_multipole_files
 
-SUBROUTINE pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,refcell,numvecs,maxmultmom)
+SUBROUTINE pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,refcell,numvecs,maxmultmom)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: lupri,luerr,numvecs,nbast
   INTEGER,intent(in) :: maxmultmom
@@ -1553,7 +1553,6 @@ SUBROUTINE pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,ref
   !REAL(realk), INTENT(IN) :: kvec(3)
   TYPE(LSSETTING),intent(inout)   :: SETTING 
   TYPE(moleculeinfo),intent(inout) :: refcell
-  TYPE(moleculeinfo),intent(in) :: latt_cell(numvecs)
 
   INTEGER(short)        :: gab1
   Integer :: refindex,idx,il1,il2,il3,nSpherMom,l
@@ -1592,7 +1591,7 @@ SUBROUTINE pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,ref
 
        call find_latt_vectors(idx,il1,il2,il3,lattice)
        write(lupri,*) 'sphermom computed for ', il1
-       call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2)
+       call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(idx)%molecule,2)
        !call TYPEDEF_setmolecules(setting,refcell,1,refcell,2)
 
        call II_get_sphmom(LUPRI,LUERR,SETTING,spherMom,nSpherMom,maxMultmom,&
@@ -1664,13 +1663,12 @@ SUBROUTINE pbc_charge_density(lattice)
 
 END SUBROUTINE pbc_charge_density
 
-SUBROUTINE pbc_local_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,refcell,numvecs,maxmultmom)
+SUBROUTINE pbc_local_expan_k(lupri,luerr,setting,nbast,lattice,refcell,numvecs,maxmultmom)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: lupri,luerr,numvecs,maxmultmom,nbast
   TYPE(lvec_list_t),intent(in) ::lattice
   TYPE(LSSETTING),intent(inout)   :: SETTING 
   TYPE(moleculeinfo),intent(inout) :: refcell
-  TYPE(moleculeinfo),intent(in) :: latt_cell(numvecs)
 
   Integer :: refindex,idx,il1,il2,il3,nSpherMom,l
   TYPE(matrix),pointer :: spherMom(:)
@@ -1703,7 +1701,7 @@ SUBROUTINE pbc_local_expan_k(lupri,luerr,setting,nbast,lattice,latt_cell,refcell
      !phase=CMPLX(0.,phase1+phase2+phase3)
      !phase=exp(phase)
 
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2)
+     call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(idx)%molecule,2)
 
      call find_latt_vectors(idx,il1,il2,il3,lattice)
      !if(abs(il1) .le. abs(lattice%nneighbour)) CYCLE

@@ -22,14 +22,12 @@ MODULE pbc_interactions
 !> \param setting 		Integral settings.
 !> \param nbast 			Number of basis func.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info lattice cell.
 !> \param refcell 		Molecule info reference cell.
-SUBROUTINE find_cutoff_onep(lupri,luerr,setting,nbast,latt_cell,refcell,lattice)
+SUBROUTINE find_cutoff_onep(lupri,luerr,setting,nbast,refcell,lattice)
   IMPLICIT NONE
   ! input and output arguments
   INTEGER, INTENT(IN) :: lupri,luerr,nbast
   TYPE(lvec_list_t),INTENT(INOUT) :: lattice
-  TYPE(moleculeinfo),INTENT(INOUT),TARGET :: latt_cell(size(lattice%lvec))
   TYPE(moleculeinfo),INTENT(INOUT),TARGET :: refcell
   TYPE(lssetting),INTENT(INOUT) :: setting 
   ! local variables
@@ -38,8 +36,8 @@ SUBROUTINE find_cutoff_onep(lupri,luerr,setting,nbast,latt_cell,refcell,lattice)
   call set_lstime_print(.false.)
 
   do idx=1,size(lattice%lvec) 
-     call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),2,refcell, &
-		  & 3,latt_cell(idx),4)
+     call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(idx)%molecule,2,refcell, &
+		  & 3,lattice%lvec(idx)%molecule,4)
      call II_get_maxGabelm_ScreenMat(lupri,luerr,setting,nbast, &
 		  & lattice%lvec(idx)%maxGab)
   enddo
@@ -57,16 +55,14 @@ END SUBROUTINE find_cutoff_onep
 !> \param setting 		Integral settings.
 !> \param nbast 			Number of basis func.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info lattice cell.
 !> \param refcell 		Molecule info reference cell.
 !> \param numvecs 		Number of unitcells in the BvK lattice
 !> \param nfdensity 		Density matrix.
 SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
-		latt_cell,refcell,numvecs,nfdensity)
+		refcell,numvecs,nfdensity)
 	IMPLICIT NONE
 	! input and output arguments
 	INTEGER, INTENT(IN) :: lupri,luerr,nbast,numvecs ! nlayer 
-	TYPE(moleculeinfo),INTENT(IN) :: latt_cell(numvecs)
 	TYPE(moleculeinfo),INTENT(INOUT) :: refcell
 	TYPE(matrix),INTENT(IN) :: nfdensity(numvecs)
 	TYPE(lvec_list_t),INTENT(INOUT) ::lattice
@@ -100,7 +96,7 @@ SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
 			do l1=0,lattice%max_layer*lattice%fdim(1)
 				if(ntimes) exit
 				call find_latt_index(idx,l1,l2,l3,lattice,lattice%max_layer)
-				call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),3)
+				call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(idx)%molecule,3)
 				setting%samemol(1,3)=.false.
 				setting%samemol(3,1)=.false.
 				do index2=1,numvecs
@@ -127,8 +123,8 @@ SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
 						setting%samemol=.false.
 
 						! ToDo Should be turned on at some point
-						call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx), &
-							& 3,latt_cell(index2),2,latt_cell(newcell),4)
+						call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(idx)%molecule, &
+							& 3,lattice%lvec(index2)%molecule,2,lattice%lvec(newcell)%molecule,4)
 						call mat_zero(K_tmp(1))
 						call II_get_exchange_mat(lupri,luerr,setting, &
 							& nfdensity(checknf:checknf),1,.false.,K_tmp)
@@ -197,20 +193,18 @@ END SUBROUTINE calc_distance
 !> \param natoms 			Number of atoms in the refcell.
 !> \param nbast 			Number of basis func.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
 !> \param refcell 		Molecule info. Threat reference cell as molecule.
 !> \param numvecs 		Number of unitcells in the BvK lattice
 !> \param ovl 		 		Overlap (array of matrices for each lattice cell.
 !todo is it nec to calc entire ovl or can we make use of symmetries?
 SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
-		& latt_cell,refcell,numvecs,ovl)
+		& refcell,numvecs,ovl)
 	IMPLICIT NONE
 	! input and output arguments
 	INTEGER, INTENT(IN) :: lupri,luerr,nbast,numvecs,natoms
 	TYPE(moleculeinfo),INTENT(INOUT) :: refcell
 	TYPE(lvec_list_t),INTENT(INOUT) :: lattice
 	TYPE(lssetting),INTENT(INOUT) :: setting 
-	TYPE(moleculeinfo),INTENT(IN) :: latt_cell(numvecs)
 	TYPE(matrix),TARGET :: ovl(numvecs)
 	! local variables
 	INTEGER :: i,j,il1,il2,il3
@@ -232,7 +226,7 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
 		lattice%lvec(idx)%ovl_computed=.false.
 
 		!Doing translations
-		call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),3)
+		call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(idx)%molecule,3)
 		setting%samemol(1,3)=.false.
 		setting%samemol(3,1)=.false.
 
@@ -283,19 +277,17 @@ END SUBROUTINE pbc_overlap_k
 !> \param natoms 			Number of atoms in the refcell.
 !> \param nbast 			Number of basis func.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
 !> \param refcell 		Molecule info. Threat reference cell as molecule.
 !> \param numvecs 		Number of unitcells in the BvK lattice
 !> \param nfdensity 		Density matrix
 !> \param f1 		 		Fock matrix. Initialized with kinetic part here.
 !> \param e_kin 			Kinetic energy (optional, calculated if present)
 SUBROUTINE pbc_kinetic_k(lupri,luerr,setting,natoms,nbast,lattice, &
-		& latt_cell,refcell,numvecs,nfdensity,f_1,e_kin)
+		& refcell,numvecs,nfdensity,f_1,e_kin)
 	IMPLICIT NONE
 	! input and output variables
 	INTEGER, INTENT(IN) :: lupri,luerr,nbast,numvecs,natoms
 	TYPE(moleculeinfo),INTENT(INOUT) :: refcell
-	TYPE(moleculeinfo),DIMENSION(numvecs),INTENT(IN) :: latt_cell
 	TYPE(LSSETTING),INTENT(INOUT) :: setting 
 	TYPE(lvec_list_t),INTENT(INOUT) ::lattice
 	TYPE(matrix),INTENT(IN) :: nfdensity(numvecs)
@@ -328,7 +320,7 @@ SUBROUTINE pbc_kinetic_k(lupri,luerr,setting,natoms,nbast,lattice, &
 			call find_latt_vectors(idx,il1,il2,il3,lattice)
 			call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
 			if(il1**2+il2**2+il3**2 .gt. 0) lattice%lvec(indred)%is_redundant =.true.
-			call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(idx),3)
+			call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(idx)%molecule,3)
 			setting%samemol(1,3)=.false.
 			setting%samemol(3,1)=.false.
 			gab1=lattice%lvec(idx)%maxgab
@@ -377,21 +369,19 @@ END SUBROUTINE pbc_kinetic_k
 !> \param natoms 			Number of atoms in the refcell.
 !> \param nbast 			Number of basis func.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
 !> \param refcell 		Molecule info. Threat reference cell as molecule.
 !> \param numvecs 		Number of unitcells in the BvK lattice
 !> \param nfdensity 		Density matrix
 !> \param f1 		 		Fock matrix. Nuc part added here.
 !> \param e_en 			Kinetic energy (optional, calculated if present)
 SUBROUTINE pbc_nucattrc_k(lupri,luerr,setting,natoms,nbast,lattice, &
-		& latt_cell,refcell,numvecs,nfdensity,f_1,e_en)
+		& refcell,numvecs,nfdensity,f_1,e_en)
 	IMPLICIT NONE
 	! input and output variables
 	INTEGER, INTENT(IN) :: lupri,luerr,nbast,numvecs,natoms
 	TYPE(moleculeinfo),INTENT(INOUT) :: refcell
 	TYPE(lssetting),INTENT(INOUT) :: setting 
 	TYPE(lvec_list_t),intent(INOUT) :: lattice
-	TYPE(moleculeinfo), DIMENSION(numvecs),INTENT(IN) :: latt_cell
 	TYPE(matrix),INTENT(IN) :: Nfdensity(numvecs)
 	TYPE(matrix),INTENT(INOUT),TARGET :: f_1(numvecs)
 	TYPE(matrix) :: H,H1
@@ -452,8 +442,8 @@ SUBROUTINE pbc_nucattrc_k(lupri,luerr,setting,natoms,nbast,lattice, &
 					if(abs(il22) .gt. lattice%nf) CYCLE
 					if(abs(il23) .gt. lattice%nf) CYCLE
 
-					call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1), &
-						& 2,latt_cell(index2),3)
+					call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(index1)%molecule, &
+						& 2,lattice%lvec(index2)%molecule,3)
 
 					!setting%samemol(1,3)=.false.
 					!setting%samemol(3,1)=.false.
@@ -507,14 +497,13 @@ END SUBROUTINE pbc_nucattrc_k
 !> \param natoms 			Number of atoms in the refcell.
 !> \param nbast 			Number of basis func.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
 !> \param refcell 		Molecule info. Threat reference cell as molecule.
 !> \param numvecs 		Number of unitcells in the BvK lattice
 !> \param nfdensity 		Density matrix
 !> \param g2 		 		Fock matrix. e-e rep part added.
 !> \param e_J 				El. repulsion (optional, calculated if present)
 SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,natoms,nbast, &
-		& lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_J)
+		& lattice,refcell,numvecs,nfdensity,g_2,E_J)
 	IMPLICIT NONE
 	! input and output
 	INTEGER, INTENT(IN) :: lupri,luerr,nbast,numvecs,natoms 
@@ -522,7 +511,6 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,natoms,nbast, &
 	TYPE(matrix),target,intent(inout) :: g_2(numvecs)
 	TYPE(lvec_list_t),intent(inout) ::lattice
 	TYPE(moleculeinfo),INTENT(INOUT) :: refcell
-	TYPE(moleculeinfo),INTENT(IN),DIMENSION(numvecs) :: latt_cell
 	TYPE(lssetting),INTENT(INOUT) :: setting 
 	TYPE(MATRIX),pointer :: F_tmp(:)
 	REAL(realk),INTENT(INOUT),OPTIONAL :: E_J
@@ -649,8 +637,9 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,natoms,nbast, &
 							maxl3=max(il3,maxl3)
 
 							call TYPEDEF_setmolecules(setting,refcell,1, &
-								& latt_cell(index1), 2,latt_cell(index3),3, &
-								& latt_cell(newcell),4)
+								& lattice%lvec(index1)%molecule, 2,&
+                                                                &lattice%lvec(index3)%molecule,3,& 
+								& lattice%lvec(newcell)%molecule,4)
 							call mat_zero(F_tmp(1))
 							call II_get_coulomb_mat(lupri,luerr,setting, &
 								& nfdensity(index2:index2),F_tmp,1)
@@ -710,21 +699,19 @@ END SUBROUTINE pbc_electron_rep_k
 !> \param natoms 			Number of atoms in the refcell.
 !> \param nbast 			Number of basis func.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
 !> \param refcell 		Molecule info. Threat reference cell as molecule.
 !> \param numvecs 		Number of unitcells in the BvK lattice
 !> \param nfdensity 		Density matrix
 !> \param g2 		 		Fock matrix. e-e rep part added.
 !> \param e_k 				Exchange (optional, calculated if present)
 SUBROUTINE pbc_exact_xc_k(lupri,luerr,setting,natoms,nbast, &
-		& lattice,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
+		& lattice,refcell,numvecs,nfdensity,g_2,E_K)
 	IMPLICIT NONE
 	! input and output
 	INTEGER, INTENT(IN) :: lupri,luerr,nbast,numvecs,natoms
 	TYPE(moleculeinfo),INTENT(INOUT) :: refcell
 	TYPE(matrix),INTENT(IN) :: nfdensity(numvecs)
 	TYPE(matrix),INTENT(INOUT) :: g_2(numvecs)
-	TYPE(moleculeinfo),INTENT(IN),DIMENSION(numvecs) :: latt_cell
 	TYPE(LSSETTING),INTENT(INOUT) :: SETTING 
 	TYPE(lvec_list_t),INTENT(INOUT) ::lattice
 	REAL(realk),INTENT(INOUT),OPTIONAL :: E_K
@@ -848,8 +835,9 @@ SUBROUTINE pbc_exact_xc_k(lupri,luerr,setting,natoms,nbast, &
 						lattice%kx3=maxl3
 
 						call typedef_setmolecules(setting,refcell,1, &
-							& latt_cell(index1),3,latt_cell(index2),2, &
-							& latt_cell(newcell),4)
+							& lattice%lvec(index1)%molecule,3,&
+                                                        &lattice%lvec(index2)%molecule,2, &
+							& lattice%lvec(newcell)%molecule,4)
 						call mat_zero(K_tmp(1))
 						call II_get_exchange_mat(lupri,luerr,setting, &
 							& nfdensity(index3:index3),1,.false.,K_tmp)
@@ -930,16 +918,14 @@ END SUBROUTINE pbc_exact_xc_k
 !> \param setting 		Integral settings.
 !> \param nbast 			Number of basis func.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
 !> \param refcell 		Molecule info. Threat reference cell as molecule.
 !> \param numvecs 		Number of unitcells in the BvK lattice
-SUBROUTINE pbc_overlap_int(lupri,luerr,setting,nbast,lattice,latt_cell,refcell,numvecs)
+SUBROUTINE pbc_overlap_int(lupri,luerr,setting,nbast,lattice,refcell,numvecs)
   IMPLICIT NONE
   ! input and output variables
   INTEGER, INTENT(IN) :: lupri,luerr,nbast,numvecs
   TYPE(lssetting),INTENT(INOUT) :: SETTING 
   TYPE(moleculeinfo),INTENT(INOUT) :: refcell
-  TYPE(moleculeinfo),INTENT(IN) :: latt_cell(numvecs)
   TYPE(lvec_list_t),INTENT(INOUT) :: lattice
   ! local variables
   TYPE(matrix)  :: S
@@ -951,7 +937,7 @@ SUBROUTINE pbc_overlap_int(lupri,luerr,setting,nbast,lattice,latt_cell,refcell,n
   write(lupri,*) 'Number of lattice vectors ', numvecs
 
   do indx=1,numvecs
-	  call typedef_setmolecules(setting,refcell,1,latt_cell(indx),3)
+	  call typedef_setmolecules(setting,refcell,1,lattice%lvec(indx)%molecule,3)
      setting%samemol(1,3)=.false.
      setting%samemol(3,1)=.false.
 
@@ -978,18 +964,16 @@ END SUBROUTINE pbc_overlap_int
 !> \param fock_mtx 		Fock matrix.
 !> \param sizef 			Num col/row in fock matrix.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
 !> \param refcell 		Molecule info. Threat reference cell as molecule.
 !> \param numvecs 		Number of unitcells in the BvK lattice
 SUBROUTINE pbc_kinetic_int(lupri,luerr,setting,natoms,nbast,fock_mtx,sizef, &
-		& lattice,latt_cell,refcell,numvecs)
+		& lattice,refcell,numvecs)
 	IMPLICIT NONE
 	! input and output variables
 	INTEGER, INTENT(IN) :: lupri,luerr,nbast,sizef,numvecs,natoms
 	COMPLEX(complexk), INTENT(INOUT) :: fock_mtx(sizef*sizef)
 	TYPE(lssetting),INTENT(INOUT) :: setting 
 	TYPE(moleculeinfo),INTENT(IN) :: refcell
-	TYPE(moleculeinfo),DIMENSION(numvecs),INTENT(IN) :: latt_cell
 	TYPE(lvec_list_t),intent(INOUT) ::lattice
 	! local variables
 	TYPE(MATRIX) :: kin
@@ -1007,7 +991,7 @@ SUBROUTINE pbc_kinetic_int(lupri,luerr,setting,natoms,nbast,fock_mtx,sizef, &
 !	write(lupri,*) 'nbast',nbast,kin%ncol,kin%nrow
 
 	do indx=1,numvecs
-		call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(indx),3)
+		call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(indx)%molecule,3)
 		call find_latt_vectors(indx,il1,il2,il3,lattice)
 		if(abs(il1) .gt. lattice%nneighbour) CYCLE
 		if(abs(il2) .gt. lattice%nneighbour) CYCLE
@@ -1039,17 +1023,15 @@ END SUBROUTINE pbc_kinetic_int
 !> \param fock_mtx 		Fock matrix.
 !> \param sizef 			Num col/row in fock matrix.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
 !> \param refcell 		Molecule info. Threat reference cell as molecule.
 !> \param numvecs 		Number of unitcells in the BvK lattice
 SUBROUTINE pbc_nucattrc_int(lupri,luerr,setting,natoms,nbast,fock_mtx, &
-		& sizef,lattice,latt_cell,refcell,numvecs)
+		& sizef,lattice,refcell,numvecs)
 	IMPLICIT NONE
 	! input and output
 	INTEGER, INTENT(IN) :: lupri,luerr,nbast,sizef,numvecs,natoms
 	COMPLEX(complexk), INTENT(INOUT) :: fock_mtx(sizef*sizef)
 	TYPE(lssetting),INTENT(INOUT)   :: setting 
-	TYPE(moleculeinfo),DIMENSION(numvecs),INTENT(IN) :: latt_cell
 	TYPE(moleculeinfo),INTENT(IN) :: refcell
 	TYPE(lvec_list_t),intent(INOUT) ::lattice
 	! local variables
@@ -1079,7 +1061,8 @@ SUBROUTINE pbc_nucattrc_int(lupri,luerr,setting,natoms,nbast,fock_mtx, &
 			if(abs(il22) .gt. lattice%nneighbour) CYCLE
 			if(abs(il23) .gt. lattice%nneighbour) CYCLE
 
-			call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),2,latt_cell(index2),3)
+			call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(index1)%molecule&
+                          & ,2,lattice%lvec(index2)%molecule,3)
 
 			setting%samemol(1,3)=.false.
 			setting%samemol(3,1)=.false.
@@ -1113,19 +1096,17 @@ END SUBROUTINE pbc_nucattrc_int
 !> \param setting 		Integral settings.
 !> \param natoms 			Number of atoms.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
 !> \param refcell 		Molecule info. Threat reference cell as molecule.
 !> \param numvecs 		Number of unitcells in the BvK lattice.
 !> \param E_nn 			Nuclear repulsion potential energy.
 SUBROUTINE pbc_nucpot(lupri,luerr,setting,natoms,lattice, &
-		& latt_cell,refcell,numvecs,e_nn)
+		& refcell,numvecs,e_nn)
   IMPLICIT NONE
   ! input and output arguments
   INTEGER, INTENT(IN) :: lupri,luerr,numvecs,natoms
   TYPE(moleculeinfo),INTENT(INOUT) :: refcell
   TYPE(lvec_list_t),INTENT(INOUT) ::lattice
   TYPE(lssetting),INTENT(INOUT) :: setting 
-  TYPE(moleculeinfo),INTENT(IN) :: latt_cell(numvecs)
   REAL(realk),INTENT(INOUT) :: E_nn
   ! local variables
   REAL(realk) :: kvec(3)
@@ -1144,7 +1125,7 @@ SUBROUTINE pbc_nucpot(lupri,luerr,setting,natoms,lattice, &
   do indx=1,numvecs
 
 	  !Doing translations
-     call typedef_setmolecules(setting,refcell,1,latt_cell(indx),3)
+     call typedef_setmolecules(setting,refcell,1,lattice%lvec(indx)%molecule,3)
      setting%samemol(1,3)=.false.
      setting%samemol(3,1)=.false.
 
@@ -1224,20 +1205,18 @@ END SUBROUTINE pbc_get_nucpot
 !> \param natoms 			Number of atoms.
 !> \param nbast 			Number of basis functions.
 !> \param lattice 		Information about the lattice.
-!> \param latt_cell 		Molecule info. Threat lattice cell as molecule.
 !> \param refcell 		Molecule info. Threat reference cell as molecule.
 !> \param numvecs 		Number of unitcells in the BvK lattice.
 !> \param nfdensity 		The density matrix.
 !> \param nfsze 			Num densmat nearfield.
 SUBROUTINE pbc_electron_rep(lupri,luerr,setting,natoms, &
-		& nbast,lattice,latt_cell,refcell,numvecs,nfdensity,nfsze)
+		& nbast,lattice,refcell,numvecs,nfdensity,nfsze)
 	IMPLICIT NONE
 	! inout and output
 	INTEGER, INTENT(IN) :: lupri,luerr,nbast,numvecs,nfsze,natoms
 	TYPE(moleculeinfo),INTENT(IN) :: refcell
 	TYPE(lssetting),INTENT(INOUT) :: setting 
 	TYPE(matrix),INTENT(INOUT),DIMENSION(nfsze) :: nfdensity
-	TYPE(moleculeinfo), INTENT(IN), DIMENSION(numvecs) :: latt_cell
 	TYPE(lvec_list_t),INTENT(INOUT) ::lattice
 	! local variables
 	TYPE(MATRIX)  :: F(1),F_tmp(1)
@@ -1280,8 +1259,8 @@ SUBROUTINE pbc_electron_rep(lupri,luerr,setting,natoms, &
 				call find_latt_index(checknf,checknf1,checknf2,checknf3,lattice,&
 					lattice%nneighbour)
 				!Changes setting to point at different lattice cells
-				call TYPEDEF_setmolecules(setting,refcell,1,latt_cell(index1),2,&
-					latt_cell(index2),3,latt_cell(newcell),4)
+				call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(index1)%molecule,2,&
+					lattice%lvec(index2)%molecule,3,lattice%lvec(newcell)%molecule,4)
 
 				setting%samemol(1,2)=.false.
 				setting%samemol(2,1)=.false.
