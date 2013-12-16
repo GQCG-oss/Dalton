@@ -122,7 +122,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #ifdef MOD_UNRELEASED
   Real(realk),pointer   ::      geomHessian(:,:)
 #endif
-  integer :: i,j
 
   type(LowAccuracyStartType)  :: LAStype
 
@@ -422,11 +421,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            Endif
            ! 
         endif
-
-write(*,*) 'debug:AO density matrix'
-DO j=1,nbast
-write(*,'(3X,10F12.8)') (2.D0*D(1)%elms(i+(j-1)*nbast),i=1,nbast)
-ENDDO
         !
         !  Debug integrals 
         !
