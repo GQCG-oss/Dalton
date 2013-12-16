@@ -61,7 +61,7 @@ module ccsd_module
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
-         & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ,get_cnd_terms_mo,&
+         & get_max_batch_sizes,ccsd_energy_full_occ,print_ccsd_full_occ,get_cnd_terms_mo, &
          & mo_work_dist
     private
 
@@ -2641,8 +2641,9 @@ contains
     integer,intent(in) :: m
     integer,intent(inout)::fai
     integer,intent(inout)::tl
+    integer(kind=ls_mpik) :: nnod, me
     integer(kind=ls_mpik),optional,intent(inout)::nod
-    integer :: l,ml,me,nnod
+    integer :: l,ml
     
     me   = 0
     nnod = 1
@@ -2701,9 +2702,10 @@ contains
     logical, intent(in) :: lock_outside
     !> specify how many elements can be added to w3 buffer
     integer(kind=8),intent(in) :: els2add
+    integer(kind=ls_mpik) :: nnod, me
     integer :: tl,fai,lai,i,faif,lead
     integer :: l,ml
-    integer(kind=ls_mpik) :: nod,me,nnod,mode
+    integer(kind=ls_mpik) :: nod,mode
     real(realk) :: nrm1,nrm2,nrm3,nrm4
     integer :: a,b,j,fri,tri
     integer(kind=8) :: o2v2,tlov,w1size,w2size,w3size
