@@ -12,3 +12,16 @@
    more efficient use of threaded MKL when combined with MPI)
 - added metric scaled output of orbital response vectors in **RESPONS
   (for easier interpretation of excitation operators)
+- Fixed a bug in Jengine, related to screening for nonsymmetric density matrices.
+  This may affect CCSD and some response calculation. 
+- Modified the input section of the manual concerning 
+  Casida-Salahub asymptotic correction (CS00) corrections. (Thanks to Raul Crespo)
+- Changed defaults for Casida-Salahub asymptotic correction (CS00) 
+  corrections. (Thanks to Raul Crespo)
+- Fixed errors in the MCD B terms output files (.dat files) now one file is generated
+  for each B term and each A term. (Thanks to Raul Crespo) 
+- Modified the input section of the manual concerning 
+  MCD B terms. Added desciption of MCDEXSTATES
+  
+
+
