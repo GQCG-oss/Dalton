@@ -16,11 +16,11 @@ module II_XC_interfaceModule
   use GCtransMod
   private
   public :: II_get_xc_Fock_mat,&
-       & II_get_AbsoluteValue_overlap, II_get_xc_energy,&
+       & II_get_AbsoluteValue_overlap, II_get_AbsoluteValueOcc_overlap,&
        & II_get_xc_geoderiv_molgrad, II_get_xc_linrsp,&
        & II_get_xc_quadrsp, II_get_xc_magderiv_kohnsham_mat,&
        & II_get_xc_magderiv_linrsp, II_get_xc_geoderiv_FxDgrad,&
-       & II_get_xc_geoderiv_GxDgrad
+       & II_get_xc_geoderiv_GxDgrad, II_get_xc_energy
 !> @file
 !> Interface subroutines for exchange-correlation contributions
 
@@ -215,7 +215,7 @@ SETTING%scheme%DFT%igrid = Grid_ABSVAL
 SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%RADINT = 2.15443E-17_realk
 SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%ANGINT = 47
 
-CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,CMAT,ABSVALOVERLAP)
+CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nbast,CMAT,ABSVALOVERLAP)
 
 !revert to default grid
 SETTING%scheme%DFT%igrid = Grid_Default
@@ -229,6 +229,54 @@ call stats_dft_mem(lupri)
 !call time_II_operations2(JOB_II_get_xc_Fock_mat)
 #endif
 END SUBROUTINE II_get_AbsoluteValue_overlap
+
+SUBROUTINE II_get_AbsoluteValueOcc_overlap(LUPRI,LUERR,SETTING,nbast,nocc,Cmat,S)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in)    :: LUPRI
+!> the logical unit number for the error file
+INTEGER,intent(in)    :: LUERR
+!> info about molecule,basis and dft parameters
+TYPE(LSSETTING)       :: SETTING
+!> number of basisfunctions
+INTEGER,intent(in)    :: nbast
+!> number of occupied basisfunctions
+INTEGER,intent(in)    :: nocc
+!> The density matrix
+real(realk),intent(in) :: Cmat(nbast,nocc)
+!> The Absolute Valued overlap  matrix
+real(realk),intent(inout) :: S(nocc,nocc)
+#ifdef MOD_UNRELEASED
+!
+REAL(REALK)           :: TS,TE
+LOGICAL               :: UNRES
+!call time_II_operations1
+UNRES=.FALSE.
+IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
+call init_dftmemvar
+CALL LSTIMER('START',TS,TE,LUPRI)
+CALL LS_DZERO(S,nocc*nocc)
+
+IF(setting%IntegralTransformGC)THEN
+   call lsquit('IntegralTransformGC must be false in II_get_AbsoluteValue_overlap',-1)
+ENDIF
+
+!chose ABSVAL grid
+SETTING%scheme%DFT%igrid = Grid_ABSVAL
+
+!default for fine
+SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%RADINT = 2.15443E-17_realk
+SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%ANGINT = 47
+
+CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nocc,CMAT,S)
+
+!revert to default grid
+SETTING%scheme%DFT%igrid = Grid_Default
+CALL LSTIMER('II_get_AbsoluteValueOcc     ',TS,TE,LUPRI)
+call stats_dft_mem(lupri)
+!call time_II_operations2(JOB_II_get_xc_Fock_mat)
+#endif
+END SUBROUTINE II_get_AbsoluteValueOcc_overlap
 
 !> \brief Calculates the xc contribution to the Kohn-Sham energy
 !> \author T. Kjaergaard

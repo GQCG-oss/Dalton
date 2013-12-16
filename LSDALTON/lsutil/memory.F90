@@ -917,7 +917,7 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlapT
     WRITE(LUPRI,'("  Allocated memory (BATCHTOORB):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_BATCHTOORB
-    WRITE(LUPRI,'("  Allocated memory (DECAOBATCHINFO):        ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated memory (DECAOBATCHINFO):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECAOBATCHINFO
     WRITE(LUPRI,'("  Allocated memory (MYPOINTER):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MYPOINTER
@@ -1054,15 +1054,15 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ATOMITEM
     WRITE(LUPRI,'("  Allocated MPI memory (LSMATRIX):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_LSMATRIX
-    WRITE(LUPRI,'("  Allocated MPI memory (DECORBITAL):       ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated MPI memory (DECORBITAL):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECORBITAL
-    WRITE(LUPRI,'("  Allocated MPI memory (DECFRAG):          ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated MPI memory (DECFRAG):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECFRAG
     WRITE(LUPRI,'("  Allocated MPI memory (overlapType):     ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlapT
     WRITE(LUPRI,'("  Allocated MPI memory (BATCHTOORB):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_BATCHTOORB
-    WRITE(LUPRI,'("  Allocated MPI memory (DECAOBATCHINFO):      ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated MPI memory (DECAOBATCHINFO):  ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECAOBATCHINFO
     WRITE(LUPRI,'("  Allocated MPI memory (MYPOINTER):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MYPOINTER
@@ -1199,15 +1199,15 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ATOMITEM
     WRITE(LUPRI,'("  Allocated memory (LSMATRIX):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_LSMATRIX
-    WRITE(LUPRI,'("  Allocated memory (DECORBITAL):       ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated memory (DECORBITAL):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECORBITAL
-    WRITE(LUPRI,'("  Allocated memory (DECFRAG):          ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated memory (DECFRAG):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECFRAG
     WRITE(LUPRI,'("  Allocated memory (overlapType):     ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_overlapT
     WRITE(LUPRI,'("  Allocated memory (BATCHTOORB):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_BATCHTOORB
-    WRITE(LUPRI,'("  Allocated memory (DECAOBATCHINFO):      ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated memory (DECAOBATCHINFO):  ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECAOBATCHINFO
     WRITE(LUPRI,'("  Allocated memory (MYPOINTER):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MYPOINTER
