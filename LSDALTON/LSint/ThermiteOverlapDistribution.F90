@@ -127,7 +127,7 @@ Real(realk)         :: e1,e2,d2,signP,DMATmax
 !Character(len=80)   :: t1,t2
 Type(lstensor),pointer :: DMAT2
 Type(lstensor),pointer :: GAB2
-LOGICAL             :: LHS, DMATscreen,useFTUV,doscreen,screen
+LOGICAL             :: LHS, DMATscreen,useFTUV,doscreen,screen,DMATpermute
 Integer :: ndmat,idmat,indexETUV,l,nETUV,nTUV,maxangmom,minangmom,offset2
 Integer :: iA12,iA1,iA2,startA2,maxnp,norder,nOperatorComp,maxBat,maxAng,offset1
 Integer,pointer     :: lenEtuv(:)
@@ -142,6 +142,7 @@ NULLIFY(DMAT2)
 NULLIFY(GAB2)
 !
 NMOM = 1
+DMATpermute = .FALSE.
 IF(IELECTRON.EQ. 1)THEN
    ndmat = INPUT%NDMAT_LHS
    IF(INPUT%PS_SCREEN.OR.INPUT%CS_SCREEN.OR.Input%MBIE_SCREEN)THEN
@@ -183,6 +184,7 @@ ELSE
       IF (Input%DO_JENGINE) THEN
         DMATscreen = .TRUE.
         DMAT2 => INPUT%LST_DRHS
+        DMATpermute = INPUT%sameRHSaos
       ENDIF
       IF (Input%DO_DACOULOMB) THEN
         DMATscreen = .TRUE.
@@ -579,6 +581,49 @@ IF (Input%CS_SCREEN .AND. (.NOT.P%type_Empty)) THEN
          ENDDO
       ELSE
          maxGab = shortzero
+      ENDIF
+      IF(DMATpermute)THEN
+         AtomA = P%orb1atom(1)
+         BatchA = P%orb1batch(1)
+         AtomB = P%orb2atom(1)
+         BatchB = P%orb2batch(1)         
+         Dindex = DMAT2%INDEX(atomB,atomA,1,1)
+         maxBat = DMAT2%LSAO(Dindex)%maxBat
+         maxAng = DMAT2%LSAO(Dindex)%maxAng
+         offset1 = (batchB-1)*maxAng                !now offset for B
+         offset2 = (batchA-1)*maxAng+maxAng*maxBat  !now offset for A
+         IF(Dindex.NE.0)THEN
+            DO i1=1,P%orbital1%nAngmom    !angmom for A
+               start = 1
+               IF (P%sameAO) start = i1
+               DO i2=start,P%orbital2%nAngmom 
+                  IF(P%orbital1%startOrbital(i1).NE.P%orbital2%startOrbital(i2))THEN
+                     iSB = DMAT2%LSAO(Dindex)%startLocalOrb(i2+offset1)-1  !B
+                     iSA = DMAT2%LSAO(Dindex)%startLocalOrb(i1+offset2)-1  !A
+                     dimB = DMAT2%LSAO(Dindex)%nLocal(1)
+                     dimA = DMAT2%LSAO(Dindex)%nLocal(2)
+                     DO orb1=1,P%orbital1%nOrbitals(i1)      !A
+                        DO orb2=1,P%orbital2%nOrbitals(i2)   !B
+                           DO idmat=1,ndmat
+                              elms = iSB+orb2 + (iSA+orb1-1)*dimB + (idmat-1)*dimA*dimB
+                              DMATmax = max(DMATmax,abs(DMAT2%LSAO(Dindex)%elms(elms)))
+                           ENDDO
+                           !Beware when converting from double precision to short integer
+                           !If double precision is less than 10^-33 then you can run into
+                           !problems with short integer overflow
+                           IF(Dmatmax.GT.ShortIntCrit)THEN
+                              DMATMAX2 = CEILING(log10(DMATmax))
+                           ELSE
+                              DMATMAX2 = shortzero
+                           ENDIF
+                           maxgabelm = ODB%maxgab + DMATmax2
+                           maxGab = MAX(maxGab,maxgabelm)
+                        ENDDO
+                     ENDDO
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDIF
       ENDIF
    ELSE
       maxGab = ODB%maxgab
