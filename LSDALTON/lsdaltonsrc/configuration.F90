@@ -721,7 +721,7 @@ DO
            & lucmd,lupri,config%molecule%NAtoms)
    ENDIF
 !
-   !SECTION MADE BY JOHANNES
+   
 #ifdef MOD_UNRELEASED
    IF (WORD(1:5) == '**PBC') THEN
      READWORD=.TRUE.
@@ -739,6 +739,7 @@ DO
      config%latt_config%num_its_densmat=3
      config%latt_config%nf=6
      config%latt_config%ndmat=6
+     config%latt_config%realthr = -12
      config%latt_config%read_file=.false.
      config%latt_config%store_mats=.false.
      DO
@@ -788,6 +789,9 @@ DO
         CASE('.DIIS')
           READ(LUCMD,*) config%latt_config%num_its,config%latt_config%num_store&
                &,config%latt_config%error
+
+        CASE('.REALTHR')
+          READ(LUCMD,*) config%latt_config%realthr
 
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&

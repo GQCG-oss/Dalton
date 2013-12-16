@@ -236,7 +236,7 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
 		!if(abs(il2) .gt. lattice%nneighbour) CYCLE
 		!if(abs(il3) .gt. lattice%nneighbour) CYCLE
 		gab1=lattice%lvec(idx)%maxgab
-		if(gab1 .ge. -12) then
+		if(gab1 .ge. lattice%realthr) then
 			maxl1=max(abs(il1),maxl1)
 			maxl2=max(abs(il2),maxl2)
 			maxl3=max(abs(il3),maxl3)
@@ -325,7 +325,7 @@ SUBROUTINE pbc_kinetic_k(lupri,luerr,setting,natoms,nbast,lattice, &
 			setting%samemol(3,1)=.false.
 			gab1=lattice%lvec(idx)%maxgab
 
-			if(gab1 .ge. -12) then
+			if(gab1 .ge. lattice%realthr) then
 				lattice%lvec(idx)%f1_computed=.true.
 				lattice%lvec(indred)%f1_computed=.true.
 				call mat_init(lattice%lvec(idx)%oper(1),nbast,nbast)
@@ -431,7 +431,7 @@ SUBROUTINE pbc_nucattrc_k(lupri,luerr,setting,natoms,nbast,lattice, &
 			end if
 			gab1=lattice%lvec(index1)%maxgab
 
-			if(gab1 .ge. -12) then	
+			if(gab1 .ge. lattice%realthr) then	
 				lattice%lvec(index1)%Vz_computed=.true.
 				lattice%lvec(indred)%Vz_computed=.true.
 				call mat_init(lattice%lvec(index1)%oper(1),nbast,nbast)
@@ -622,7 +622,7 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,natoms,nbast, &
 						call mat_abs_max_elm(nfdensity(index2),valmax)
 						if(valmax .gt. 0._realk) valm1=int(log10(valmax),kind=short)
 
-						if(valm1+gabmaxsum  .ge. -12) then
+						if(valm1+gabmaxsum  .ge. lattice%realthr) then
 							!if(gabmaxsum  .ge. -12) then
 							lattice%lvec(index1)%g2_computed=.true.
 							lattice%lvec(index1)%J_computed=.true.
@@ -819,7 +819,7 @@ SUBROUTINE pbc_exact_xc_k(lupri,luerr,setting,natoms,nbast, &
 					call mat_abs_max_elm(nfdensity(index3),valmax)
 					if(valmax.gt.0._realk) valm1=int(log10(valmax),kind=short)
 
-					if(maxgabsum+valm1 .ge. -10) then
+					if(maxgabsum+valm1 .ge. lattice%realthr) then
 						if(lattice%lvec(index1)%oper(1)%init_magic_tag &
 							& .ne.mat_init_magic_value) then
 							call mat_init(lattice%lvec(index1)%oper(1),nbast,nbast)

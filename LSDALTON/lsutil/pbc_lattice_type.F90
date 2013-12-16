@@ -64,6 +64,7 @@ type, public :: lvec_list_t
   integer            :: num_its,num_store
   Real(realk)        :: error
   integer            :: nneighbour,nf,ndmat
+  INTEGEr(short)     :: realthr
   integer      :: nk1,nk2,nk3
   integer      :: num_its_densmat
   character(len=10)  :: wannier_direct
