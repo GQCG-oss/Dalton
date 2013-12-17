@@ -6542,7 +6542,11 @@ module cc_debug_routines_module
     logical :: alloc
     real(realk) :: tmp(nv*nv), tmp2(nv*nv)
 
-    thr = DECinfo%PNOoverlapthr
+    if( DECinfo%noPNOoverlaptrunc ) then
+      thr = -1.0E0_realk * huge(thr)
+    else
+      thr = DECinfo%PNOoverlapthr
+    endif
     
 
     call mem_TurnONThread_Memory()
