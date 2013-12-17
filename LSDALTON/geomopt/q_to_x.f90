@@ -216,8 +216,6 @@ Right = D0
 Sing_val = D0
 B_mat = D0
 
-call LSTIMER('START ',TS,TE,lupri)
-
 ! Get the B matrix
 Call B_matrix(N_int,N_cart,2,B_mat,optinfo)
 If (optinfo%IPrint .GE. 12) then
@@ -245,7 +243,7 @@ Write(*,*)'N DELOC=',N_deloc
 ! Check if the coordinates are well defined
 If ((N_Cart-6) .NE. N_deloc) call lsquit('Internal coordinates ill defined!',lupri)
 Bs_inv = D0
-call LSTIMER('SVD    ',TS,TE,lupri)
+call LSTIMER('SVD',TS,TE,lupri)
 !
 ! Get pseudo-inverse of Bs:
 ! Bs(+)=V*Sigma(+)U(*), Bs=U*Sigma*V(*) - SVD 

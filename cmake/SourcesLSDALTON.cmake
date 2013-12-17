@@ -100,7 +100,7 @@ set(GEOOPT_SOURCES
     LSDALTON/geomopt/ls_opt.F90
     LSDALTON/geomopt/ls_opt2.F90
     LSDALTON/geomopt/ls_redint.F90
-    LSDALTON/geomopt/q_to_x.F90
+    LSDALTON/geomopt/q_to_x.f90
     LSDALTON/geomopt/dqdx/dqdx.cpp           
     )
 set(LINEARS_SOURCES	
