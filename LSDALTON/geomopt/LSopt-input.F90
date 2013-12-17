@@ -175,11 +175,11 @@ Type(opt_setting) :: optinfo
      optinfo%findif_mesh = 1.0D-5
 
 !    Non-iterative stepping scheme based on perturbation theory (Vladimir R. and Ulf E.)
-     optinfo%New_stepping = .FALSE.
+     optinfo%New_stepping = .TRUE.
      optinfo%IBT = .FALSE.
      optinfo%OLDIBT = .FALSE.
      optinfo%Shanks = .FALSE.
-     optinfo%Deriv_order = 3
+     optinfo%Deriv_order = 20
 
 ! 
 End subroutine Optimization_set_default_config 
