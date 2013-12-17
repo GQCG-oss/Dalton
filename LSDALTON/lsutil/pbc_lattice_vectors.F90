@@ -117,7 +117,7 @@ SUBROUTINE set_lattice_cells(num_latvectors,molecule,ll,lupri)
   INTEGER, INTENT(IN) :: num_latvectors,lupri
   TYPE(MOLECULEINFO), INTENT(IN) :: molecule
   !TYPE(moleculeinfo), INTENT(INOUT), DIMENSION(num_latvectors) :: lattice_cell
-  TYPE(lvec_list_t),intent(in)  :: ll
+  TYPE(lvec_list_t),intent(inout)  :: ll
   CHARACTER(len=22) :: mollabel
    
   write(lupri,*) 'Number of atoms ', molecule%natoms
