@@ -33,7 +33,6 @@ module cc_debug_routines_module
      integer              :: n,ns1,ns2,pno,tmp1,tmp2,red1,red2
      integer, pointer     :: iaos(:)
      real(realk), pointer :: d(:,:)
-     real(realk), pointer :: tmp(:,:)
      real(realk), pointer :: s1(:,:),s2(:,:)
      logical              :: allocd
    end type SpaceInfo
@@ -6086,8 +6085,8 @@ module cc_debug_routines_module
     !backtransformation to the original space is carried out
     call backtransform_omegas(pno_o2,pno_cv,o2,nspaces,no,nv)
 
-    call print_norm(o2,o2v2)
-    call print_norm(o1,i8*no*nv)
+    !call print_norm(o2,o2v2)
+    !call print_norm(o1,i8*no*nv)
 
     do ns = 1, nspaces
 
@@ -6097,7 +6096,6 @@ module cc_debug_routines_module
         if( pno_S(c)%allocd )then
           call mem_dealloc( pno_S(c)%iaos )
           call mem_dealloc( pno_S(c)%d    )
-          call mem_dealloc( pno_S(c)%tmp  )
           if( with_screening )then
             call mem_dealloc( pno_S(c)%s1   )
             call mem_dealloc( pno_S(c)%s2   )
@@ -6185,7 +6183,10 @@ module cc_debug_routines_module
     
   end subroutine get_overlap_idx
 
-  subroutine get_overlap_ptr_copy(n1,n2,pS,tr1,tr2,st,S,ldS,U,ldU,VT,ldVT,red1,red2,ns1,ns2)
+  !>\brief extract the information from the SpaceInfo structure in a nice and useful shape outside of this routine
+  !>\author Patrick Ettenhuber
+  !>\date december 2013
+  subroutine get_overlap_ptr(n1,n2,pS,tr1,tr2,st,S,ldS,U,ldU,VT,ldVT,red1,red2,ns1,ns2)
     implicit none
     integer,intent(in) :: n1,n2
     type(SpaceInfo), intent(in) :: pS(:)
@@ -6193,12 +6194,10 @@ module cc_debug_routines_module
     logical, intent(out) :: st
     real(realk), pointer, intent(out) :: S(:,:)
     integer, intent(out) :: ldS
-    real(realk), pointer, intent(out), optional :: U(:,:),VT(:,:)
-    integer, intent(out),optional :: ldU, ldVT, red1, red2, ns1,ns2
+    real(realk), pointer, intent(out) :: U(:,:),VT(:,:)
+    integer, intent(out) :: ldU, ldVT
+    integer, intent(out),optional :: red1, red2, ns1,ns2
     integer :: Sidx
-    logical :: tmphack
-
-    tmphack = .not.present(U).and..not.present(ldU).and..not.present(VT).and..not.present(ldVT)
 
     !Get the overlap identificaton and transformation props
 
@@ -6211,15 +6210,11 @@ module cc_debug_routines_module
       st        =  .false.
       S         => pS(Sidx)%d
       ldS       =  pS(Sidx)%red1
-      if(tmphack) then
-        S         => pS(Sidx)%tmp
-        ldS       =  pS(Sidx)%ns1
-      else
-        U         => pS(Sidx)%s1
-        VT        => pS(Sidx)%s2
-        ldU       =  pS(Sidx)%ns1
-        ldVT      =  pS(Sidx)%red2
-      endif
+      U         => pS(Sidx)%s1
+      VT        => pS(Sidx)%s2
+      ldU       =  pS(Sidx)%ns1
+      ldVT      =  pS(Sidx)%red2
+
       if(present(red1))red1 = pS(Sidx)%red1
       if(present(red2))red2 = pS(Sidx)%red2
       if(present(ns1)) ns1 = pS(Sidx)%ns1
@@ -6238,15 +6233,11 @@ module cc_debug_routines_module
       st        =  .false.
       S         => pS(Sidx)%d
       ldS       =  pS(Sidx)%red1
-      if(tmphack) then
-        S         => pS(Sidx)%tmp
-        ldS       =  pS(Sidx)%ns1
-      else
-        U         => pS(Sidx)%s1
-        VT        => pS(Sidx)%s2
-        ldU       =  pS(Sidx)%ns1
-        ldVT      =  pS(Sidx)%red2
-      endif
+      U         => pS(Sidx)%s1
+      VT        => pS(Sidx)%s2
+      ldU       =  pS(Sidx)%ns1
+      ldVT      =  pS(Sidx)%red2
+
       if(present(red1))red1 = pS(Sidx)%red1
       if(present(red2))red2 = pS(Sidx)%red2
       if(present(ns1)) ns1 = pS(Sidx)%ns1
@@ -6264,66 +6255,8 @@ module cc_debug_routines_module
       ldS       =  0
 
     endif
-  end subroutine get_overlap_ptr_copy
-
-  subroutine get_overlap_ptr(n1,n2,pS,tr1,tr2,st,S,ldS,cyc)
-    implicit none
-    integer,intent(in) :: n1,n2
-    type(SpaceInfo), intent(in) :: pS(:)
-    character, intent(out) :: tr1,tr2
-    logical, intent(out) :: st,cyc
-    real(realk), pointer, intent(out) :: S(:,:)
-    integer, intent(out) :: ldS
-    integer :: Sidx
-
-    !Get the overlap identificaton and transformation props
-
-    if(n1>n2)then
-
-      !trafo from n1 to n2 
-      Sidx      =  (n2 - n1 + 1) + n1 * (n1 - 1 )/2
-      cyc       =  .not.pS(Sidx)%allocd
-      if(.not.cyc)then
-        tr1       =  't'
-        tr2       =  'n'
-        st        =  .false.
-        S         => pS(Sidx)%d
-        S         => pS(Sidx)%tmp
-        ldS       =  pS(Sidx)%ns1
-        !check if correct matrix was chosen
-        if(pS(Sidx)%iaos(1)/=n1.or.pS(Sidx)%iaos(2)/=n2)then
-          print *,"S mat wrong",pS(Sidx)%iaos(1),n1,pS(Sidx)%iaos(2),n2
-        endif
-      endif
-
-    elseif(n2>n1)then
-
-      !trafo from n2 to n1
-      Sidx      =  (n1 - n2 + 1) + n2 * (n2 - 1 )/2
-      cyc       =  .not.pS(Sidx)%allocd
-      if(.not.cyc)then
-        tr1       =  'n'
-        tr2       =  't'
-        st        =  .false.
-        S         => pS(Sidx)%d
-        S         => pS(Sidx)%tmp
-        ldS       =  pS(Sidx)%ns1
-        !check if correct matrix was chosen
-        if(pS(Sidx)%iaos(1)/=n2.or.pS(Sidx)%iaos(2)/=n1)then
-          print *,"S mat wrong",pS(Sidx)%iaos(1),n2,pS(Sidx)%iaos(2),n1
-        endif
-      endif
-
-    else
-
-      !skip the transformation if the amplitudes reference the same space
-      st        =  .true.
-      S         => null()
-      ldS       =  0
-      cyc       =  .false.
-
-    endif
   end subroutine get_overlap_ptr
+
 
   subroutine get_pair_space_info(cv,p_idx,p_nidx,s_idx,s_nidx,ns,no)
     implicit none
@@ -6490,7 +6423,19 @@ module cc_debug_routines_module
     
   end subroutine check_if_contributes
  
-
+  !> \brief This routine calculates the overlap transformation from one PNO
+  !space to another, the spaces are specified by their identification numbers n1
+  !and n2. The overlap obtained from the SVD is saved in s and the necessary
+  !information is extracted from S by the call to get_overlap_ptr. Pos of
+  !overlap specifies wheter the overlap is the first or the second argument in a
+  !gemm. right now the routine assumes that A is never transposed. optionally
+  !the pointers ptr and ptr2 can be assoicated with the transformed data and the
+  !matrix not containing relevant data. this simplifies the code in the loops a
+  !bit
+  !> \author Patrick Ettenhuber
+  !> \date december 2013
+  ! 
+  ! TODO: make this routine independent of the internal mem_allocations
   subroutine do_overlap_trafo(ns1,ns2,pos_of_overlap,S,m,n,k,A,C,ptr,ptr2)
     implicit none
     integer, intent(in) :: pos_of_overlap,m,n,k,ns1,ns2
@@ -6500,18 +6445,19 @@ module cc_debug_routines_module
     real(realk),pointer,optional :: ptr(:),ptr2(:)
     real(realk),pointer :: S1(:,:)
     real(realk),pointer :: tmp1(:),tmp2(:), U(:,:), VT(:,:)
-    integer :: ldS1,ldU,ldVT,r1,r2,f1,f2
+    integer :: ldS1,ldU,ldVT
     logical :: skiptrafo
     character :: tr1,tr2
     
     
-    call get_overlap_ptr_copy(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1,U=U,ldU=ldU,VT=VT,ldVT=ldVT,red1=r1,red2=r2,ns1=f1,ns2=f2)
+    call get_overlap_ptr(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1,U=U,ldU=ldU,VT=VT,ldVT=ldVT)
 
 
     if(.not. skiptrafo)then
 
       select case(pos_of_overlap)
       case(1)
+
         call mem_alloc(tmp1,ldS1 * n)
         call mem_alloc(tmp2,ldVT * n)
         if(tr2=='t')then
@@ -6523,12 +6469,13 @@ module cc_debug_routines_module
           call dgemm('n','n',ldS1,n,ldVT,1.0E0_realk, S1,ldS1,tmp2,ldVT,0.0E0_realk,tmp1,ldS1)
           call dgemm('n','n',m,n,ldS1,  1.0E0_realk, U,ldU,tmp1,ldS1,0.0E0_realk,C,m)
         else
-          call lsquit("ERROR(do_overlap_trafo):this should never happen, check get_overlap_ptr_copy",-1)
+          call lsquit("ERROR(do_overlap_trafo):this should never happen, check get_overlap_ptr",-1)
         endif
         call mem_dealloc(tmp1)
         call mem_dealloc(tmp2)
-        !call get_overlap_ptr_copy(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1)
+        !call get_overlap_ptr(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1)
         !call dgemm(tr2,'n',m,n,k,1.0E0_realk,S1,ldS1,A,k,0.0E0_realk,C,m)
+
       case(2)
         call mem_alloc(tmp1,ldS1 * m)
         call mem_alloc(tmp2,ldVT * m)
@@ -6541,29 +6488,41 @@ module cc_debug_routines_module
           call dgemm('n','n',m,ldVT,ldS1,1.0E0_realk, tmp1,m,S1,ldS1,0.0E0_realk,tmp2,m)
           call dgemm('n','n',m,n,ldVT,  1.0E0_realk, tmp2,m,VT,ldVT,0.0E0_realk,C,m)
         else
-          call lsquit("ERROR(do_overlap_trafo):this should never happen, check get_overlap_ptr_copy",-1)
+          call lsquit("ERROR(do_overlap_trafo):this should never happen, check get_overlap_ptr",-1)
         endif
         call mem_dealloc(tmp1)
         call mem_dealloc(tmp2)
-        !call get_overlap_ptr_copy(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1)
+        !call get_overlap_ptr(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1)
         !call dgemm('n',tr1,m,n,k,1.0E0_realk,A,m,S1,ldS1,0.0E0_realk,C,m)
+
       case default
+
         call lsquit("ERROR(do_overlap_trafo): wrong selection of pos_of_overlap",-1)
+
       end select
 
       !associate the pointer to the result
       if(present(ptr)) ptr  => C
       !associate the pointer to the input matrix
       if(present(ptr2))ptr2 => A
+
     else
+
       !Do the association the other way round, since the data are in the input
       !matrix
       if(present(ptr)) ptr  => A
       if(present(ptr2))ptr2 => C
+
     endif
 
   end subroutine do_overlap_trafo
 
+
+  !> \brief Get the overlap matrices specifying the transformation from one PNO
+  !space to another. Here the overlap screening with the singular value
+  !decomposition is used to screen away some contributions.
+  !> \author Patrick Ettenhuber
+  !> \date december 2013
   subroutine get_pno_overlap_matrices(no,nv,pno_cv,pno_S,n,with_svd)
     implicit none
     integer :: no, nv, n
@@ -6578,8 +6537,9 @@ module cc_debug_routines_module
     real(realk),parameter :: nul = 0.0E0_realk
     logical :: alloc
     real(realk) :: tmp(nv*nv), tmp2(nv*nv)
+
     thr = DECinfo%simplePNOthr
-    thr = -1.0*huge(thr)
+    !thr = -1.0*huge(thr)
     
 
     call mem_TurnONThread_Memory()
@@ -6662,6 +6622,11 @@ module cc_debug_routines_module
             if(red1/=diag.or.red2/=diag)call &
             &lsquit("ERROR(get_pno_overlap_matrices)calculated wrong dimensions",-1)
 
+            !if(remove > 0 )then
+            !  print *,"screened some away"
+            !  print *,remove
+            !endif
+
             call mem_dealloc( pno_S(c)%d )
        
             if( alloc )then
@@ -6678,10 +6643,6 @@ module cc_debug_routines_module
                 pno_S(c)%d(dg,dg) = sv(dg)
               enddo
 
-              !TEMPORARY HACK:
-              call dgemm( 'n','n',red1,ns2,red2,p10,pno_S(c)%d,red1,pno_S(c)%s2,red2,nul,tmp,red1 )
-              call mem_alloc( pno_S(c)%tmp, ns1, ns2 )
-              call dgemm( 'n','n',ns1, ns2, red1,p10,pno_S(c)%s1,ns1,tmp,red1,nul,pno_S(c)%tmp,ns1 )
             endif
 
 
