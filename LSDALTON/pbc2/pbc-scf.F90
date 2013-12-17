@@ -361,7 +361,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 	TYPE(matrix),POINTER :: g_2(:)
 
 	! threshhold for removing singularities in overlap matrix s
-	REAL(realk) :: singular_threshh = 1e-6_realk 
+	REAL(realk) :: singular_threshh = 1e-4_realk 
 
 	write(lupri,*) 'Entering routine startzdiis'
 
