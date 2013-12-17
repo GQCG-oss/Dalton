@@ -30,7 +30,7 @@ module cc_debug_routines_module
    use orbital_operations
    use rpa_module
    type SpaceInfo
-     integer              :: n,ns1,ns2,pno
+     integer              :: n,ns1,ns2,pno,tmp1,tmp2,red1,red2
      integer, pointer     :: iaos(:)
      real(realk), pointer :: d(:,:)
      real(realk), pointer :: tmp(:,:)
@@ -4957,12 +4957,11 @@ module cc_debug_routines_module
     integer(kind=8) :: o2v2
     character(ARR_MSG_LEN) :: msg
     real(realk),pointer :: d(:,:), d1(:,:), d2(:,:),t(:), t22(:), t21(:), o(:),vof(:),ovf(:)
-    real(realk),pointer :: S1(:,:), S2(:,:), Lvoov(:)  
+    real(realk),pointer :: Lvoov(:)  
     real(realk) :: p20, p10, nul, m10, m05, p05, nnorm, norm 
     integer, pointer :: idx(:),idx1(:),idx2(:), p_idx(:,:), p_nidx(:), oidx1(:,:),oidx2(:,:)
     integer, pointer :: s_idx(:,:,:), s_nidx(:)
-    integer :: pno,pno1,pno2,pnv,pnv1,pnv2,Sidx1,Sidx2, ldS1,ldS2, k, l, nidx1, nidx2, spacemax
-    character :: tr11,tr12,tr21,tr22
+    integer :: pno,pno1,pno2,pnv,pnv1,pnv2, k, l, nidx1, nidx2, spacemax
     logical :: skiptrafo,skiptrafo2,save_gvvvv_is,with_screening,cyc
     type(matrix) :: iFock, Dens
     integer(kind=8) :: maxsize
@@ -5310,9 +5309,9 @@ module cc_debug_routines_module
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
-    !$OMP& d1,d2,t21,t22,tr21,tr22,tr12,tr11,w1,w2,w3,w4,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
+    !$OMP& d1,d2,t21,t22,w1,w2,w3,w4,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
     !$OMP& skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
-    !$OMP& ns2,ns3,nc,nc2,s2,lds2,s1,lds1) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
+    !$OMP& ns2,ns3,nc,nc2) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
     !$OMP& p10,p05,m10,m05,p20,vvf,goooo,Lvoov,pno_o2,govov,&
     !$OMP& oof, maxsize, nspaces, ovf, gvvov, s_idx,o1,&
     !$OMP& s_nidx,gooov, no, nv, p_idx, p_nidx,nul,spacemax) 
@@ -5361,9 +5360,6 @@ module cc_debug_routines_module
         enddo
       enddo
       enddo
- 
-      p1 => null()
-      p2 => null()
       
       !transform integral contribution, use symmetry  gvovo(aibj) => gvovo(\bar{b} j \bar{a} i)
       call dgemm( 't', 'n', pnv, pno**2*nv, nv, p10, d, nv, w1, nv, nul, w2, pnv )
@@ -5402,17 +5398,9 @@ module cc_debug_routines_module
       
       FullSpaceLoop1: do ns2 = 1, nspaces
 
-
-        if(.not.pno_cv(ns2)%allocd)then
-
-          cycle FullSpaceLoop1
-
-        endif
-        
-
-        !Get the overlap identificaton and transformation props
-        call get_overlap_ptr(ns,ns2,pno_S,tr11,tr12,skiptrafo,S1,ldS1,cyc)
-        if(cyc) then
+        call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
+ 
+        if(cyc)then
 
           cycle FullSpaceLoop1
 
@@ -5452,13 +5440,10 @@ module cc_debug_routines_module
         ! Quadratic part of the E2 term use u^{bd}_{kl} (bkdl) as b,dkl
         call array_reorder_4d( p20, t21, pnv1, pno1, pnv1, pno1, [1,3,2,4], nul, w3)
         call array_reorder_4d( m10, t21, pnv1, pno1, pnv1, pno1, [1,3,4,2], p10, w3)
-        h1 => w3
         call do_overlap_trafo(ns,ns2,1,pno_S,pnv,pno1*pnv1*pno1,pnv1,w3,w2,ptr=h1)
 
         !contract amplitudes in h1 with integrals in w1 and add to w4 : -1 * h1(bdkl) w1(dlkc) += w4(bc)
         call dgemm('n','n',pnv,pnv,pnv1*pno1*pno1,m10, h1,pnv,w1,pnv1*pno1*pno1,p10,w4,pnv)
-
-        h1 => null()
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -5477,8 +5462,7 @@ module cc_debug_routines_module
           enddo
         enddo
         enddo
-        p1 => null()
-        p2 => null()
+
         !transform integral contribution, use symmetry  govov(kcld) => govov(\bar{c} \bar{d} k l) to the space of (ij) -> w2
         call dgemm( 'n', 'n', nv*pno1**2, pnv, nv, p10, w1, nv*pno1**2, d, nv, nul, w2, nv*pno1**2 )
         call array_reorder_4d( p10, w2, pno1, nv, pno1, pnv, [2,4,1,3], nul, w1 )
@@ -5511,24 +5495,14 @@ module cc_debug_routines_module
         if(ns==ns2)then
           call array_reorder_4d( p10, w2, pno, pno, pnv, pnv, [3,1,4,2], nul, w1 )
         else
-          !call dgemm( 'n', tr11,  p10, w2, pno**2*pnv1, S1, ldS1, nul, w1, pno**2*pnv1)
           call do_overlap_trafo(ns,ns2,2,pno_S,pno**2*pnv1, pnv, pnv1,w2,w1)
           call array_reorder_4d( p10, w1, pno, pno, pnv1, pnv, [3,1,4,2], nul, w3 )
-          call dgemm( tr12, 'n', pnv, pnv*pno**2, pnv1, p10, S1, ldS1, w3, pnv1, nul, w1, pnv)
-          !call do_overlap_trafo(ns,ns2,1,pno_S,pno**2*pnv1, pnv, pnv1,w2,w1)
+          call do_overlap_trafo(ns,ns2,1,pno_S,pnv,pno**2*pnv, pnv1,w3,w1)
         endif
    
         ! add up the correcly ordered contributions
         o = o + w1(1:pno**2*pnv**2)
   
-
-        d1   => null()
-        t21  => null()
-        idx1 => null()
-        S1   => null()
-        pnv1 =  0
-        pno1 =  0
-
       enddo FullSpaceLoop1
 
 
@@ -5546,21 +5520,15 @@ module cc_debug_routines_module
         ! extract indices:
         ns2 = p_idx(nc,ns)
 
+        call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
 
-        if(.not.pno_cv(ns2)%allocd)then
-
-          cycle OneIdxSpaceLoop1
-
-        endif
-
-        call get_overlap_ptr(ns,ns2,pno_S,tr11,tr12,skiptrafo,S1,ldS1,cyc)
-        if(cyc) then
+        if( cyc )then
 
           cycle OneIdxSpaceLoop1
 
         endif
+
         call get_overlap_idx(ns,ns2,pno_cv,oidx1,nidx1)
-
 
         d1   => pno_cv(ns2)%d
         t21  => pno_t2(ns2)%elm1
@@ -5589,8 +5557,6 @@ module cc_debug_routines_module
           enddo
         enddo
         enddo
-        p1 => null()
-        p2 => null()
 
         ! transform c to \bar(c} of (ki)  and a to \bar{a} of (ij)
         call dgemm('t','n', pnv1, pno1*pno*nv, nv,  p10, d1, nv, w1, nv, nul, w2, pnv1)
@@ -5601,20 +5567,14 @@ module cc_debug_routines_module
           ! extract indices:
           ns3 = p_idx(nc2,ns)
 
+          call check_if_contributes(ns,ns3,pno_cv,pno_S,cyc)
 
-          if(.not.pno_cv(ns3)%allocd)then
-
-            cycle OneIdxSpaceLoop2
-
-          endif
-
-
-          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2,cyc)
-          if(cyc) then
+          if( cyc )then
 
             cycle OneIdxSpaceLoop2
 
           endif
+
           call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
 
           d2   => pno_cv(ns3)%d
@@ -5636,8 +5596,7 @@ module cc_debug_routines_module
             enddo
           enddo
           enddo
-          p1 => null()
-          p2 => null()
+
           ! transform c to \bar(c} in (ki) and d to \bar{d} in (lj)
           call dgemm('t','n',pnv1,pno1*pno2*nv,nv,  p10, d1, nv, w1, nv, nul, w3, pnv1)
           call dgemm('n','n',pnv1*pno1*pno2,pnv2,nv,p10, w3, pnv1*pno1*pno2, d2, nv, nul, w1, pnv1*pno1*pno2)
@@ -5655,18 +5614,12 @@ module cc_debug_routines_module
             enddo
           enddo
           enddo
-          p2 => null()
-          p3 => null()
 
-          if(skiptrafo2)then
-            !one could use pointer associations instead of copying the whole shebang
-            w2(1:pno2*pnv2*nidx2*pnv2) = w3(1:pno2*pnv2*nidx2*pnv2)
-          else
-            call dgemm('n',tr21, pno2*pnv2*nidx2, pnv, pnv2, p10, w3,pno2*pnv2*nidx2, S2, ldS2, nul, w2, pno2*pnv2*nidx2)
-          endif
-          call dgemm('n','n', pnv1*pno1, nidx2*pnv, pno2*pnv2, m05, w1, pnv1*pno1, w2, pno2*pnv2, nul, w3, pnv1*pno1)
+          call do_overlap_trafo(ns,ns3,2,pno_S,pno2*pnv2*nidx2,pnv,pnv2,w3,w2,ptr=h1,ptr2=h2)
 
-          call ass_D1to4( w3, p3, [pnv1,pno1,nidx2,pnv] )
+          call dgemm('n','n', pnv1*pno1, nidx2*pnv, pno2*pnv2, m05, w1, pnv1*pno1, h1, pno2*pnv2, nul, h2, pnv1*pno1)
+
+          call ass_D1to4( h2, p3, [pnv1,pno1,nidx2,pnv] )
           call ass_D1to4( w4, p4, [pnv1,pno1,pno,pnv] )
           do a=1,pnv
           do j=1,nidx2
@@ -5677,15 +5630,7 @@ module cc_debug_routines_module
             enddo
           enddo
           enddo
-          p3 => null()
-          p4 => null()
 
-          d2   => null()
-          t22  => null()
-          idx2 => null()
-          S2   => null()
-          pnv2 =  0
-          pno2 =  0
         enddo OneIdxSpaceLoop2
 
         !get the amplitudes, extract the necessary indices, 
@@ -5702,16 +5647,8 @@ module cc_debug_routines_module
           enddo
         enddo
         enddo
-        p1 => null()
-        p2 => null()
 
-        h1 => w1
-        h2 => w2
-        if(.not.skiptrafo)then
-          call dgemm(tr12,'n', pnv,nidx1*pnv1*pno1, pnv1, p10, S1,ldS1, w1, pnv1, nul, w2, pnv)
-          h1 => w2 
-          h2 => w1 
-        endif
+        call do_overlap_trafo(ns,ns2,1,pno_S, pnv,nidx1*pnv1*pno1, pnv1,w1,w2,ptr=h1,ptr2=h2)
 
         call dgemm('n','n', pnv*nidx1,pno*pnv, pno1*pnv1, m10, h1,pnv*nidx1, w4, pnv1*pno1, nul, h2, pnv*nidx1)
         call ass_D1to4( h2, p2, [pnv,nidx1,pno,pnv] )
@@ -5728,11 +5665,6 @@ module cc_debug_routines_module
           enddo
         enddo
         enddo
-        p1 => null()
-        p2 => null()
-
-        h1 => null()
-        h2 => null()
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -5752,9 +5684,6 @@ module cc_debug_routines_module
           enddo
         enddo
         enddo
-        p1 => null()
-        p2 => null()
-
 
         ! transform c to \bar(c} of (jk)  and a to \bar{a} of (ij) and reorder
         ! to the in which it will be used later we got w4:\bar{c}k\bar{a}i
@@ -5767,19 +5696,14 @@ module cc_debug_routines_module
           ! extract indices:
           ns3 = p_idx(nc2,ns)
 
+          call check_if_contributes(ns,ns3,pno_cv,pno_S,cyc)
 
-          if(.not.pno_cv(ns3)%allocd)then
-
-            cycle OneIdxSpaceLoop3
-
-          endif
-
-          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2,cyc)
-          if(cyc) then
+          if( cyc )then
 
             cycle OneIdxSpaceLoop3
 
           endif
+
           call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
 
           d2   => pno_cv(ns3)%d
@@ -5801,8 +5725,7 @@ module cc_debug_routines_module
             enddo
           enddo
           enddo
-          p1 => null()
-          p2 => null()
+
           ! transform c to \bar(c} in (ki) and f to \bar{d} in (lj)
           call dgemm('t','n',pnv1,pno1*pno2*nv,nv,  p10, d1, nv, w1, nv, nul, w3, pnv1)
           call dgemm('n','n',pnv1*pno1*pno2,pnv2,nv,p10, w3, pnv1*pno1*pno2, d2, nv, nul, w1, pnv1*pno1*pno2)
@@ -5820,24 +5743,13 @@ module cc_debug_routines_module
             enddo
           enddo
           enddo
-          p2 => null()
-          p3 => null()
 
-          if(skiptrafo2)then
-            call array_reorder_4d( p10, w3, pnv, nidx2, pnv2, pno2, [4,3,1,2], nul, w2 )
-            h1 => w2
-            h2 => w3
-          else
-            call dgemm(tr22,'n', pnv, nidx2*pno2*pnv2, pnv2, p10,S2, ldS2, w3,pnv2,  nul, w2, pnv)
-            call array_reorder_4d( p10, w2, pnv, nidx2, pnv2, pno2, [4,3,1,2], nul, w3 )
-            h1 => w3
-            h2 => w2
-          endif
-          call dgemm('n','n', pnv1*pno1, pnv*nidx2, pno2*pnv2, p05, w1, pnv1*pno1, h1, pno2*pnv2, nul, h2, pnv1*pno1)
+          call do_overlap_trafo(ns,ns3,1,pno_S, pnv, nidx2*pno2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
+          call array_reorder_4d( p10, h1, pnv, nidx2, pnv2, pno2, [4,3,1,2], nul, h2 )
+          call dgemm('n','n', pnv1*pno1, pnv*nidx2, pno2*pnv2, p05, w1, pnv1*pno1, h2, pno2*pnv2, nul, h1, pnv1*pno1)
 
-          h1 => null()
 
-          call ass_D1to4( h2, p2, [pnv1,pno1,pnv,nidx2] )
+          call ass_D1to4( h1, p2, [pnv1,pno1,pnv,nidx2] )
           call ass_D1to4( w4, p4, [pnv1,pno1,pnv,pno] )
           do j=1,nidx2
           do b=1,pnv
@@ -5848,17 +5760,7 @@ module cc_debug_routines_module
             enddo
           enddo
           enddo
-          p2 => null()
-          p4 => null()
 
-          h2 => null()
-
-          d2   => null()
-          t22  => null()
-          idx2 => null()
-          S2   => null()
-          pnv2 =  0
-          pno2 =  0
         enddo OneIdxSpaceLoop3
 
         !exctract amplitudes as u bjck and contract with w4 ckai
@@ -5873,17 +5775,8 @@ module cc_debug_routines_module
           enddo
         enddo
         enddo
-        p1 => null()
-        p2 => null()
 
-        h1 => w1
-        h2 => w2
-        if(.not.skiptrafo)then
-          call dgemm(tr12,'n', pnv,nidx1*pnv1*pno1, pnv1, p10, S1,ldS1, w1, pnv1, nul, w2, pnv)
-          h1 => w2 
-          h2 => w1 
-        endif
-
+        call do_overlap_trafo(ns,ns2,1,pno_S,pnv,nidx1*pnv1*pno1,pnv1,w1,w2,ptr=h1,ptr2=h2)
         call dgemm('n','n',pnv*nidx1,pnv*pno,pnv1*pno1,p05,h1,pnv*nidx1,w4,pnv1*pno1,nul,h2,pnv*nidx1)
 
         !add D2 contribution to o
@@ -5899,11 +5792,6 @@ module cc_debug_routines_module
           enddo
         enddo
         enddo
-        p1 => null()
-        p2 => null()
-        
-        h1 => null()
-        h2 => null()
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  E2 Term part 2!!!!!!
@@ -5924,20 +5812,14 @@ module cc_debug_routines_module
           ! extract indices:
           ns3 = p_idx(nc2,ns)
 
+          call check_if_contributes(ns,ns3,pno_cv,pno_S,cyc)
 
-          if(.not.pno_cv(ns3)%allocd)then
-
-            cycle OneIdxSpaceLoop4
-
-          endif
-
-
-          call get_overlap_ptr(ns,ns3,pno_S,tr21,tr22,skiptrafo2,S2,ldS2,cyc)
-          if(cyc) then
+          if( cyc )then
 
             cycle OneIdxSpaceLoop4
 
           endif
+
           call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
 
           d2   => pno_cv(ns3)%d
@@ -5977,8 +5859,6 @@ module cc_debug_routines_module
             enddo
           enddo
           enddo
-          p2 => null()
-          p3 => null()
 
           call dgemm('n','n', pno1, nidx2, pno2*pnv2**2, p10, w1, pno1, w3, pno2*pnv2**2, nul, w2, pno1 )
 
@@ -5989,15 +5869,7 @@ module cc_debug_routines_module
               r1(i,oidx2(j,1)) = r1(i,oidx2(j,1)) + r2(i,j)
             enddo
           enddo
-          r1 => null()
-          r2 => null()
 
-          d2   => null()
-          t22  => null()
-          idx2 => null()
-          S2   => null()
-          pnv2 =  0
-          pno2 =  0
         enddo OneIdxSpaceLoop4
 
         !extract amplitudes like in C2 as aibk
@@ -6012,25 +5884,14 @@ module cc_debug_routines_module
           enddo
         enddo
         enddo
-        p1 => null()
-        p2 => null()
 
-        h1 => w1
-        h2 => w2
-        if(.not.skiptrafo)then
-          call dgemm(tr12,'n', pnv,nidx1*pnv1*pno1, pnv1, p10, S1,ldS1, w1, pnv1, nul, w2, pnv)
-          h1 => w2 
-          h2 => w1 
-        endif
+        call do_overlap_trafo(ns,ns2,1,pno_S, pnv,nidx1*pnv1*pno1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
      
         call dgemm('n','n',pnv*nidx1*pnv1,pno,pno1,m10,h1,pnv*nidx1*pnv1,w4,pno1,nul,h2,pnv*nidx1*pnv1)
         call array_reorder_4d(p10,h2,pnv,nidx1,pnv1,pno,[3,4,1,2], nul, h1)
 
         !transform b index to the correct space
-        if(.not.skiptrafo)then
-          call dgemm(tr12,'n', pnv,pno*pnv*nidx1, pnv1, p10, S1,ldS1, h1, pnv1, nul, h2, pnv)
-          h1 => h2
-        endif
+        call do_overlap_trafo(ns,ns2,1,pno_S, pnv,pno*pnv*nidx1,pnv1,h1,h2,ptr=h1)
 
         call ass_D1to4( h1, p2, [pnv,pno,pnv,nidx1] )
         call ass_D1to4( o,  p1, [pnv,pno, pnv, pno] )
@@ -6044,21 +5905,8 @@ module cc_debug_routines_module
           enddo
         enddo
         enddo
-        p1 => null()
-        p2 => null()
 
-        h1 => null()
-        h2 => null()
-
-
-        d1   => null()
-        t21  => null()
-        idx1 => null()
-        S1   => null()
-        pnv1 =  0
-        pno1 =  0
       enddo OneIdxSpaceLoop1
-        
 
 
       !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -6077,8 +5925,7 @@ module cc_debug_routines_module
         enddo
       enddo
       enddo
-      p2 => null()
-      p3 => null()
+
       ! transform c such that d(c\bar{c})^T w(kli,c)^T = w1(\bar{c}kli)
       call dgemm('t','t',pnv,pno**2*no,nv,p10,d,nv,w3,pno**2*no,nul,w1,pnv)
  
@@ -6338,7 +6185,7 @@ module cc_debug_routines_module
     
   end subroutine get_overlap_idx
 
-  subroutine get_overlap_ptr_copy(n1,n2,pS,tr1,tr2,st,S,ldS)
+  subroutine get_overlap_ptr_copy(n1,n2,pS,tr1,tr2,st,S,ldS,U,ldU,VT,ldVT,red1,red2,ns1,ns2)
     implicit none
     integer,intent(in) :: n1,n2
     type(SpaceInfo), intent(in) :: pS(:)
@@ -6346,7 +6193,12 @@ module cc_debug_routines_module
     logical, intent(out) :: st
     real(realk), pointer, intent(out) :: S(:,:)
     integer, intent(out) :: ldS
+    real(realk), pointer, intent(out), optional :: U(:,:),VT(:,:)
+    integer, intent(out),optional :: ldU, ldVT, red1, red2, ns1,ns2
     integer :: Sidx
+    logical :: tmphack
+
+    tmphack = .not.present(U).and..not.present(ldU).and..not.present(VT).and..not.present(ldVT)
 
     !Get the overlap identificaton and transformation props
 
@@ -6358,8 +6210,20 @@ module cc_debug_routines_module
       tr2       =  'n'
       st        =  .false.
       S         => pS(Sidx)%d
-      S         => pS(Sidx)%tmp
-      ldS       =  pS(Sidx)%ns1
+      ldS       =  pS(Sidx)%red1
+      if(tmphack) then
+        S         => pS(Sidx)%tmp
+        ldS       =  pS(Sidx)%ns1
+      else
+        U         => pS(Sidx)%s1
+        VT        => pS(Sidx)%s2
+        ldU       =  pS(Sidx)%ns1
+        ldVT      =  pS(Sidx)%red2
+      endif
+      if(present(red1))red1 = pS(Sidx)%red1
+      if(present(red2))red2 = pS(Sidx)%red2
+      if(present(ns1)) ns1 = pS(Sidx)%ns1
+      if(present(ns2)) ns2 = pS(Sidx)%ns2
       !check if correct matrix was chosen
       if(pS(Sidx)%iaos(1)/=n1.or.pS(Sidx)%iaos(2)/=n2)then
         print *,"S mat wrong",pS(Sidx)%iaos(1),n1,pS(Sidx)%iaos(2),n2
@@ -6373,8 +6237,20 @@ module cc_debug_routines_module
       tr2       =  't'
       st        =  .false.
       S         => pS(Sidx)%d
-      S         => pS(Sidx)%tmp
-      ldS       =  pS(Sidx)%ns1
+      ldS       =  pS(Sidx)%red1
+      if(tmphack) then
+        S         => pS(Sidx)%tmp
+        ldS       =  pS(Sidx)%ns1
+      else
+        U         => pS(Sidx)%s1
+        VT        => pS(Sidx)%s2
+        ldU       =  pS(Sidx)%ns1
+        ldVT      =  pS(Sidx)%red2
+      endif
+      if(present(red1))red1 = pS(Sidx)%red1
+      if(present(red2))red2 = pS(Sidx)%red2
+      if(present(ns1)) ns1 = pS(Sidx)%ns1
+      if(present(ns2)) ns2 = pS(Sidx)%ns2
       !check if correct matrix was chosen
       if(pS(Sidx)%iaos(1)/=n2.or.pS(Sidx)%iaos(2)/=n1)then
         print *,"S mat wrong",pS(Sidx)%iaos(1),n2,pS(Sidx)%iaos(2),n1
@@ -6579,35 +6455,111 @@ module cc_debug_routines_module
 
   end subroutine backtransform_omegas
 
-  subroutine do_overlap_trafo(ns1,ns2,pos_of_overlap,S,m,n,k,A,C,ptr)
+  subroutine check_if_contributes(n1,n2,cv,S,cyc)
+    implicit none
+    integer,intent(in) :: n1,n2
+    type(SpaceInfo),intent(in) :: cv(:),S(:)
+    logical, intent(out) :: cyc
+    integer :: Sidx
+
+    cyc = .false.    
+
+    !if the trafo matrix has been screened away, cycle
+    if(n1>n2)then
+
+      !trafo from n1 to n2 
+      Sidx      =  (n2 - n1 + 1) + n1 * (n1 - 1 )/2
+      cyc       =  .not. S(Sidx)%allocd
+
+    elseif(n2>n1)then
+
+      !trafo from n2 to n1
+      Sidx      =  (n1 - n2 + 1) + n2 * (n2 - 1 )/2
+      cyc       =  .not. S(Sidx)%allocd
+
+    else
+
+      !do not skip prematurely
+      cyc       =  .false.
+
+    endif
+
+    !or if the contribution n2 does not exist ( only important if n1==n2, else
+    !the overlap will not exist in first place )
+    cyc = ( cyc .or. .not. cv(n2)%allocd )
+    
+  end subroutine check_if_contributes
+ 
+
+  subroutine do_overlap_trafo(ns1,ns2,pos_of_overlap,S,m,n,k,A,C,ptr,ptr2)
     implicit none
     integer, intent(in) :: pos_of_overlap,m,n,k,ns1,ns2
     type(SpaceInfo),intent(inout) :: S(:)
-    real(realk),intent(in) :: A(*)
+    real(realk),intent(in),target :: A(:)
     real(realk),intent(inout),target :: C(:)
-    real(realk),pointer,optional :: ptr(:)
+    real(realk),pointer,optional :: ptr(:),ptr2(:)
     real(realk),pointer :: S1(:,:)
-    integer :: ldS1
+    real(realk),pointer :: tmp1(:),tmp2(:), U(:,:), VT(:,:)
+    integer :: ldS1,ldU,ldVT,r1,r2,f1,f2
     logical :: skiptrafo
     character :: tr1,tr2
     
     
-    call get_overlap_ptr_copy(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1)
+    call get_overlap_ptr_copy(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1,U=U,ldU=ldU,VT=VT,ldVT=ldVT,red1=r1,red2=r2,ns1=f1,ns2=f2)
+
 
     if(.not. skiptrafo)then
 
       select case(pos_of_overlap)
       case(1)
-        call dgemm(tr2,'n',m,n,k,1.0E0_realk, S1,ldS1,A,k,0.0E0_realk,C,m)
+        call mem_alloc(tmp1,ldS1 * n)
+        call mem_alloc(tmp2,ldVT * n)
+        if(tr2=='t')then
+          call dgemm('t','n',ldS1, n,ldU,  1.0E0_realk, U,ldU,A,k,0.0E0_realk,tmp1,ldS1)
+          call dgemm('t','n',ldVT,n,ldS1,1.0E0_realk, S1,ldS1,tmp1,ldS1,0.0E0_realk,tmp2,ldVT)
+          call dgemm('t','n',m,n,ldVT,  1.0E0_realk, VT,ldVT,tmp2,ldVT,0.0E0_realk,C,m)
+        elseif(tr2=='n')then
+          call dgemm('n','n',ldVT, n,k,  1.0E0_realk, VT,ldVT,A,k,0.0E0_realk,tmp2,ldVT)
+          call dgemm('n','n',ldS1,n,ldVT,1.0E0_realk, S1,ldS1,tmp2,ldVT,0.0E0_realk,tmp1,ldS1)
+          call dgemm('n','n',m,n,ldS1,  1.0E0_realk, U,ldU,tmp1,ldS1,0.0E0_realk,C,m)
+        else
+          call lsquit("ERROR(do_overlap_trafo):this should never happen, check get_overlap_ptr_copy",-1)
+        endif
+        call mem_dealloc(tmp1)
+        call mem_dealloc(tmp2)
+        !call get_overlap_ptr_copy(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1)
+        !call dgemm(tr2,'n',m,n,k,1.0E0_realk,S1,ldS1,A,k,0.0E0_realk,C,m)
       case(2)
-        call dgemm('n',tr1,m,n,k,1.0E0_realk,A,m,S1,ldS1,0.0E0_realk,C,m)
+        call mem_alloc(tmp1,ldS1 * m)
+        call mem_alloc(tmp2,ldVT * m)
+        if(tr1=='t')then
+          call dgemm('n','t',m,ldVT,k, 1.0E0_realk, A,m,VT,ldVT,0.0E0_realk,tmp2,m)
+          call dgemm('n','t',m,ldS1,ldVT,1.0E0_realk, tmp2,m,S1,ldS1,0.0E0_realk,tmp1,m)
+          call dgemm('n','t',m, n,ldS1,  1.0E0_realk, tmp1,m,U,ldU,0.0E0_realk,C,m)
+        elseif(tr1=='n')then
+          call dgemm('n','n',m, ldS1,k,  1.0E0_realk, A,m,U,ldU,0.0E0_realk,tmp1,m)
+          call dgemm('n','n',m,ldVT,ldS1,1.0E0_realk, tmp1,m,S1,ldS1,0.0E0_realk,tmp2,m)
+          call dgemm('n','n',m,n,ldVT,  1.0E0_realk, tmp2,m,VT,ldVT,0.0E0_realk,C,m)
+        else
+          call lsquit("ERROR(do_overlap_trafo):this should never happen, check get_overlap_ptr_copy",-1)
+        endif
+        call mem_dealloc(tmp1)
+        call mem_dealloc(tmp2)
+        !call get_overlap_ptr_copy(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1)
+        !call dgemm('n',tr1,m,n,k,1.0E0_realk,A,m,S1,ldS1,0.0E0_realk,C,m)
       case default
         call lsquit("ERROR(do_overlap_trafo): wrong selection of pos_of_overlap",-1)
       end select
 
       !associate the pointer to the result
-      if(present(ptr))ptr => C
-
+      if(present(ptr)) ptr  => C
+      !associate the pointer to the input matrix
+      if(present(ptr2))ptr2 => A
+    else
+      !Do the association the other way round, since the data are in the input
+      !matrix
+      if(present(ptr)) ptr  => A
+      if(present(ptr2))ptr2 => C
     endif
 
   end subroutine do_overlap_trafo
@@ -6716,6 +6668,8 @@ module cc_debug_routines_module
               call mem_alloc( pno_S(c)%s1, ns1,  red1 )
               call mem_alloc( pno_S(c)%s2, red2, ns2  )
               call mem_alloc( pno_S(c)%d,  red1, red2 )
+              pno_S(c)%red1 = red1
+              pno_S(c)%red2 = red2
 
               pno_S(c)%s1 = U(:,1:red1)
               pno_S(c)%s2 = VT(1:red2,:)
