@@ -5043,7 +5043,11 @@ module cc_debug_routines_module
     !Get all the pno amplitudes with index restrictions i<=j
     call get_pno_amplitudes(t2,pno_cv,pno_t2,nspaces,no,nv)
 
+    !initialize the pno_residual according to the allocated pno_cv
     call init_pno_residual(pno_cv,pno_o2,nspaces)
+
+    !
+    !call II_get_AbsoluteValueOcc_overlap(DECinfo%output,DECinfo%output,setting,nb,no,out)
 
     !gvvvv
     call array4_read(gao)
@@ -6538,8 +6542,7 @@ module cc_debug_routines_module
     logical :: alloc
     real(realk) :: tmp(nv*nv), tmp2(nv*nv)
 
-    thr = DECinfo%simplePNOthr
-    !thr = -1.0*huge(thr)
+    thr = DECinfo%PNOoverlapthr
     
 
     call mem_TurnONThread_Memory()

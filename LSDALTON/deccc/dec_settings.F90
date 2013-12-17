@@ -73,7 +73,9 @@ contains
     DECinfo%noPNOtrafo           = .false.
     DECinfo%noPNOtrunc           = .false.
     DECinfo%simplePNOthr         = 1.0E-7
-    DECinfo%EOSPNOthr            = 1.0E-9
+    DECinfo%EOSPNOthr            = 1.0E-5
+    DECinfo%noPNOoverlaptrunc    = .false.
+    DECinfo%PNOoverlapthr        = 1.0E-5
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
     DECinfo%MOCCSD               = .false.
@@ -426,6 +428,8 @@ contains
        case('.NOPNOTRUNCATION'); DECinfo%noPNOtrunc=.true.
        case('.PNOTHR'); read(input,*) DECinfo%simplePNOthr
        case('.EOSPNOTHR'); read(input,*) DECinfo%EOSPNOthr
+       case('.NOPNOOVERLAPTRUNCATION'); DECinfo%noPNOoverlaptrunc=.true.
+       case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.MOCCSD'); DECinfo%MOCCSD=.true.
