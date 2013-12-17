@@ -6540,7 +6540,7 @@ module cc_debug_routines_module
     real(realk),parameter :: p10 = 1.0E0_realk
     real(realk),parameter :: nul = 0.0E0_realk
     logical :: alloc
-    real(realk) :: tmp(nv*nv), tmp2(nv*nv)
+    integer :: allremoved, ofmindim, ofmaxdim, allocpcount
 
     if( DECinfo%noPNOoverlaptrunc ) then
       thr = -1.0E0_realk * huge(thr)
@@ -6548,12 +6548,17 @@ module cc_debug_routines_module
       thr = DECinfo%PNOoverlapthr
     endif
     
+    allocpcount= 0
+    allremoved = 0
+    ofmindim   = 0
+    ofmaxdim   = 0
 
     call mem_TurnONThread_Memory()
-    !$OMP PARALLEL DEFAULT(NONE)&
+    !$OMP PARALLEL DEFAULT(NONE) &
+    !$OMP& REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
     !$OMP& SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
     !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
-    !$OMP& lwork,info,diag,kerdim,red1,red2,maxdim,mindim,tmp,dg,&
+    !$OMP& lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
     !$OMP& alloc)
     call init_threadmemvar()
 
@@ -6584,6 +6589,7 @@ module cc_debug_routines_module
           call dgemm('t','n',ns1,ns2,nv,p10,s1,nv,s2,nv,nul,pno_S(c)%d,ns1)
 
           if(with_svd)then
+            allocpcount = allocpcount + 1
             !get the minimum dimension, the maximum dimension and the dimension
             !of the kernel of the transformation
             mindim = min(ns1,ns2)
@@ -6624,15 +6630,15 @@ module cc_debug_routines_module
               red2 = ns2 - remove - kerdim
             endif
 
+            ofmindim   = ofmindim   + mindim
+            ofmaxdim   = ofmaxdim   + maxdim
+            allremoved = allremoved + remove
+
             alloc = ( red1 > 0 .and. red2 > 0 )
 
             if(red1/=diag.or.red2/=diag)call &
             &lsquit("ERROR(get_pno_overlap_matrices)calculated wrong dimensions",-1)
 
-            !if(remove > 0 )then
-            !  print *,"screened some away"
-            !  print *,remove
-            !endif
 
             call mem_dealloc( pno_S(c)%d )
        
@@ -6684,6 +6690,7 @@ module cc_debug_routines_module
     !$OMP END PARALLEL
     call mem_TurnOffThread_Memory()
 
+    print *,"overlapscreening removed ",allremoved," of ",ofmindim,ofmaxdim,"in",allocpcount,"of",n*(n-1)/2,"pairs"
 
   end subroutine get_pno_overlap_matrices
 
