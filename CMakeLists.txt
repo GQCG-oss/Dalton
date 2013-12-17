@@ -10,6 +10,9 @@ project(DALTON Fortran C CXX)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
+# To link with fortran not c++
+set(CMAKE_CXX_LINKER_PREFERENCE_PROPAGATES FALSE)
+
 # these are paths that CMake will search for cmake
 # module files that end with .cmake
 set(CMAKE_MODULE_PATH
@@ -84,6 +87,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/dft
     ${CMAKE_SOURCE_DIR}/DALTON/abacus
     ${CMAKE_SOURCE_DIR}/LSDALTON/dft
+    ${CMAKE_SOURCE_DIR}/LSDALTON/geomopt/dqdx
     ${CMAKE_Fortran_MODULE_DIRECTORY}
     )
 

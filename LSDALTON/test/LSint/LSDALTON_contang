@@ -17,71 +17,45 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > pbc2_h2STO6G.info <<'%EOF%'
-   pbc2_h2STO6g
+cat > LSDALTON_contang.info <<'%EOF%'
+   LSDALTON_contang
    -------------
-   Molecule:         H2
-   Wave Function:    HF/STO-6G,Ahlrichs-Coulomb-Fit
-   Test Purpose:     Check HOMO/LUMO at first SCF iteration
+   Molecule:         H2S
+   Wave Function:    HF/cc-pVTZ
+   Test Purpose:     Test .CONTANG keyword: contracted, angular integral ordering
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > pbc2_h2STO6G.mol <<'%EOF%'
-BASIS
-STO-6G Aux=Ahlrichs-Coulomb-Fit
-LDA molecular hessian without symmetry
-Ethane LDA molecular hessian without symmetry
-Atomtypes=1 Charge=0 Nosymmetry PBC
-        1.    2
-H     4.6000000000      0.0000000000     0.0000000000
-H     -4.6000000000      0.0000000000     0.0000000000
-a1 = 10.0 0.0 0.0 active
-a2 = 0.0 10.0 0.0 inactive
-a3 = 0.0 0.0 10.0 inactive
+cat > LSDALTON_contang.mol <<'%EOF%'
+ATOMBASIS
+H2S molecule
+For testing the .CONTANG keyword: contracted, angular integral ordering
+Atomtypes=2
+Charge=16.0 Atoms=1 Basis=cc-pVTZ
+S     0.00000000    0.07624135   0.00000000
+Charge=1.0 Atoms=2 Basis=cc-pVTZ
+H    -1.53208889   -1.20933387   0.00000000
+H     1.53208889   -1.20933387   0.00000000
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > pbc2_h2STO6G.dal <<'%EOF%'
-**GENERAL
-.NOGCBASIS
+cat > LSDALTON_contang.dal <<'%EOF%'
 **INTEGRALS
-.THRESH
-1.0D-18
-.NOLINK
-.NO PS
-.NO CS
+.CONTANG
 **WAVE FUNCTIONS
 .HF
-*DENSOPT
-.START
-H1DIAG
-**PBC
-.STARTDENS
-3
-.MLMAX
-15
-.DIIS
-4 7 1.0E-8
-.LATTICE
-10 3
-.NFIELD
-6
-.NDENSMATCUTOFF
-6
-.RECLAT
-5 1 1
 *END OF INPUT
 %EOF%
 
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >pbc2_h2STO6G.check
-cat >> pbc2_h2STO6G.check <<'%EOF%'
+echo $CHECK_SHELL >LSDALTON_contang.check
+cat >> LSDALTON_contang.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -90,37 +64,20 @@ else
    GREP="egrep"
 fi
 
-# ENERGY test
-CRIT1=`$GREP "numbers of lattice vectors * 21" $log | wc -l`
-TEST[1]=`expr  $CRIT1`
+# Energy
+CRIT1=`$GREP "Final * HF energy\: * \-398\.5827271[1-2]" $log | wc -l`
+TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
-ERROR[1]="Number of lattice vectors not correct -"
-
-CRIT1=`$GREP "number of basis * 2" $log | wc -l`
-TEST[2]=`expr  $CRIT1`
-CTRL[2]=1
-ERROR[2]="Basis not correct"
-
-# Test individual iterations
-CRIT1=`$GREP "final E\(HOMO\) \= * \-0\.747292" $log | wc -l`
-TEST[3]=`expr  $CRIT1`
-CTRL[3]=1
-ERROR[3]="HOMO energy not correct -"
-
-# Test individual iterations
-CRIT1=`$GREP "final E\(LUMO\) \= * 1\.12475" $log | wc -l`
-TEST[4]=`expr  $CRIT1`
-CTRL[4]=1
-ERROR[4]="LUMO energy at first iteration not correct -"
+ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # Memory test
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
-TEST[5]=`expr  $CRIT1`
-CTRL[5]=1
-ERROR[5]="Memory leak -"
+TEST[2]=`expr  $CRIT1`
+CTRL[2]=1
+ERROR[2]="Memory leak -"
 
 PASSED=1
-for i in 1 2 3 4 5
+for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
       echo ${ERROR[i]}
