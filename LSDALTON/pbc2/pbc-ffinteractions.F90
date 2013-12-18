@@ -903,8 +903,8 @@ DO nk=1,num_latvec
      
      ENDDO !lm
      !ENDDO !delta
-     
-#ifdef DEBUGPBC!{{{
+!{{{    
+#ifdef DEBUGPBC 
      call mat_copy(1.0_realk,farfieldtmp,ll%lvec(nk)%oper(1))
      write(lupri,*) ''
      write(lupri,*) 'Total Far-field contribution to fock for layer ' ,x2
@@ -913,7 +913,8 @@ DO nk=1,num_latvec
      write(lupri,*) 'max of tlatlmnu = ', maxval(tlatlmnu,(lmax+1)**2)
      write(lupri,*) 'max of nucmom = ', maxval(nucmom,(lmax+1)**2)
      call mat_print(farfieldtmp,1,nbast,1,nbast,lupri)
-#endif!}}}
+#endif 
+!}}}
 
 
      if(.not. ll%store_mats) then
@@ -922,13 +923,14 @@ DO nk=1,num_latvec
           !should be with V_z-el as well
           call mat_daxpy(1._realk,farfieldtmp,g_2(nk))
         endif
-
-#ifdef DEBUGPBC!{{{
+!{{{
+#ifdef DEBUGPBC
           write(lupri,*) 'Near field coul',nk
           call mat_print(ll%lvec(nk)%oper(2),1,nbast,1,nbast,lupri)
           write(lupri,*) 'Total coul',nk
           call mat_print(g_2(nk),1,nbast,1,nbast,lupri)
-#endif!}}}
+#endif
+!}}}
         !endif
      else
         if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
@@ -947,8 +949,8 @@ DO nk=1,num_latvec
 !     call pbc_get_file_and_write(ll,nbast,nbast,nk,4,2,diis)! 4 and 2 Coul J
 !    !call pbc_get_file_and_write(ll,nbast,nbast,nk,7,3,diis)!7 and 3 fock matrix
 !   endif
-
-#ifdef DEBUGPBC!{{{
+!{{{
+#ifdef DEBUGPBC
    write(lupri,'(A35)') 'DEBUGPBC farfield and total Coulomb'
    il1=int(ll%lvec(nk)%lat_coord(1))
    il2=int(ll%lvec(nk)%lat_coord(2))
@@ -975,21 +977,24 @@ DO nk=1,num_latvec
     write(lupri,'(A22)') 'DEBUGPBC total coulomb'
     write(lupri,'(A4,X,E16.8)') 'Jt^2:',coulomb2
     write(lupri,'(A10,X,E16.8)') 'sum ijJt^2:',coulombst
-#endif!}}}
+#endif
+!}}}
 
  if(ll%lvec(nk)%oper(2)%init_magic_tag.EQ.mat_init_magic_value) then
    call mat_free(ll%lvec(nk)%oper(2))
  endif
-#ifdef DEBUGPBC!{{{
+!{{{
+#ifdef DEBUGPBC
  if(ll%lvec(nk)%oper(1)%init_magic_tag.EQ.mat_init_magic_value) then
    call mat_free(ll%lvec(nk)%oper(1))
  endif
-#endif!}}}
+#endif
+!}}}
  endif!is_redundant
    !call mat_free(ll%lvec(nk)%oper(3))
 ENDDO
-
-IF(ll%compare_elmnts ) THEN!{{{
+!{{{
+IF(ll%compare_elmnts ) THEN
   !compare integrals with the old pbc code
 
 !  write(lupri,*) 'comparing multipole moments with old pbc code'
@@ -1026,18 +1031,9 @@ IF(ll%compare_elmnts ) THEN!{{{
     call lsclose(iunit,'KEEP')
   
   ENDDO
-ENDIF !compare !}}}
+ENDIF !compare 
+!}}}
 
-#ifdef DEBUGPBC
-!  normsq = 0
-!  do j =1,nrlm
-!    normsq=normsq+(rhojk(j)+nucmom(j))**2
-!    write(*,*) 'qab(',j,')',rhojk(j)+nucmom(j)
-!    write(*,*) 'tlatlm(',j,')',tlatlm(j)
-!  enddo
-!  write(*,*) 'Norm for cell moments = ', normsq
-!  write(lupri,*) 'Norm for cell mom = ', normsq
-#endif
 
 !E_ff= ddot(nrlm,rhojk,nrlm,tlatlm,nrlm)
 E_ff= dot_product(rhojk+nucmom,tlatlm)
