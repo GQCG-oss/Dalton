@@ -361,7 +361,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 	TYPE(matrix),POINTER :: g_2(:)
 
 	! threshhold for removing singularities in overlap matrix s
-	REAL(realk) :: singular_threshh = 1e-6_realk 
+	REAL(realk) :: singular_threshh = 1e-4_realk 
 
 	write(lupri,*) 'Entering routine startzdiis'
 
@@ -675,22 +675,22 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		write(*,'(A28)') 'FINISHED WITHOUT CONVERGENCE'
 	endif
 
-	write(lupri,*) 'final E(HOMO) =', cellenergies(1)
-	write(lupri,*) 'final E(LUMO) =', cellenergies(2)
-	write(lupri,*) 'final Cell Energy =', E_cell
-	write(lupri,*) 'h_1=',E_1
-	write(lupri,*) 'Nuclear=',E_nuc
-	write(lupri,*) 'Far field=', E_ff,E_nn
-	write(lupri,*) 'K energy', E_k
-	write(lupri,*) 'J energy', E_J
-	write(*,*) 'E(HOMO) =', cellenergies(1)
-	write(*,*) 'E(LUMO) =', cellenergies(2)
-	write(*,*) 'Cell Energy =', E_cell
-	write(*,*) 'K energy', E_k
-	write(*,*) 'J energy', E_J
-	write(*,*) 'h_1=',E_1
-	write(*,*) 'Nuclear=',E_nuc
-	write(*,*) 'Far field=', E_ff,E_nn
+	write(lupri,*) 'Final E(HOMO) =', cellenergies(1)
+	write(lupri,*) 'Final E(LUMO) =', cellenergies(2)
+	write(lupri,*) 'Final Cell Energy =', E_cell
+	write(lupri,*) 'Final h_1=',E_1
+	write(lupri,*) 'Final Nuclear=',E_nuc
+	write(lupri,*) 'Final Far field=', E_ff,E_nn
+	write(lupri,*) 'Final K energy', E_k
+	write(lupri,*) 'Final J energy', E_J
+	write(*,*) 'Final E(HOMO) =', cellenergies(1)
+	write(*,*) 'Final E(LUMO) =', cellenergies(2)
+	write(*,*) 'Final Cell Energy =', E_cell
+	write(*,*) 'Final K energy', E_k
+	write(*,*) 'Final J energy', E_J
+	write(*,*) 'Final h_1=',E_1
+	write(*,*) 'Final Nuclear=',E_nuc
+	write(*,*) 'Final Far field=', E_ff,E_nn
 	call mem_dealloc(cellenergies)
 
 END SUBROUTINE pbc_startzdiis

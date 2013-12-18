@@ -102,19 +102,19 @@ CTRL[2]=1
 ERROR[2]="Basis not correct"
 
 # Test HOMO ENERGY
-CRIT1=`$GREP "final E\(HOMO\) \= * \-0\.23493" $log | wc -l`
+CRIT1=`$GREP "Final E\(HOMO\) \= * \-0\.23493" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="HOMO energy not correct -"
 
 # Test final Cell Energy 
-CRIT1=`$GREP "final Cell Energy \= * \-0\.7264632" $log | wc -l`
+CRIT1=`$GREP "Final Cell Energy \= * \-0\.7264632" $log | wc -l`
 TEST[4]=`expr  $CRIT1`
 CTRL[4]=1
 ERROR[4]="Final cell energy not correct -"
 
 # Test LUMO energy
-CRIT1=`$GREP "final E\(LUMO\) \= * \-0\.17741" $log | wc -l`
+CRIT1=`$GREP "Final E\(LUMO\) \= * \-0\.17741" $log | wc -l`
 TEST[5]=`expr  $CRIT1`
 CTRL[5]=1
 ERROR[5]="LUMO energy not correct -"

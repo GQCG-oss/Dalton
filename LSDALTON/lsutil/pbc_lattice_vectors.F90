@@ -11,6 +11,7 @@ use molecule_type, only: init_Moleculeinfo, copy_atom
 use matrix_operations, only: mat_free
 use lattice_type
 use memory_handling
+use fundamental
 
 CONTAINS
 
@@ -25,10 +26,11 @@ latt_config%setup_pbclatt=.false.
 
 END SUBROUTINE pbc_setup_default
 
-SUBROUTINE READ_LATT_VECTORS(LUPRI,LUINFO,ll)
+SUBROUTINE READ_LATT_VECTORS(LUPRI,LUINFO,ll,angstrom)
 IMPLICIT NONE
 INTEGER, INTENT(IN) :: LUPRI, LUINFO
 TYPE(lvec_list_t), INTENT(INOUT) :: ll
+LOGICAL,INTENT(IN) :: angstrom
 CHARACTER(len=80) :: TEMPLINE
 INTEGER :: IPOS,IPOS2
 CHARACTER(len=10) :: activedim
@@ -72,6 +74,11 @@ IF(IPOS .gt. 0) THEN
  READ(TEMPLINE(IPOS+IPOS2:80),*) ll%ldef%avec(1,3),ll%ldef%avec(2,3),ll%ldef%avec(3,3), activedim
  if(activedim=='inactive') ll%ldef%is_active(3)= .false.
 ENDIF
+
+if(angstrom) then
+  ll%ldef%avec(:,:)=ll%ldef%avec(:,:)/bohr_to_angstrom 
+endif
+
 !call write_matrix(ll%ldef%avec,3,3)
 
 END SUBROUTINE READ_LATT_VECTORS

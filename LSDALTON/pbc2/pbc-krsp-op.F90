@@ -256,74 +256,74 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k,lup
            write(lupri,*) ' max density element for&
              &layer', l1,l2,l3,maxdens
          endif
-         !endif
-       endif
-
-     else
-
-       ! For the computations it can be conevenient to have 
-       ! density matrices D0m where m goes beyond l in J0l
-       ! thus I truncate m between l and n in Kx0n where
-       ! n is max layer in exact exchange
-       if(ll%lvec(layer)%dm_computed) CYCLE
-       maxl1=max(ll%oneop1,ll%col1)
-       maxl2=max(ll%oneop2,ll%col2)
-       maxl3=max(ll%oneop3,ll%col3)
-       maxl1=max(maxl1,ll%Kx1)
-       maxl2=max(maxl2,ll%Kx2)
-       maxl3=max(maxl3,ll%Kx3)
-       if(abs(l1) .gt. maxl1) CYCLE
-       if(abs(l2) .gt. maxl2) CYCLE
-       if(abs(l3) .gt. maxl3) CYCLE
-       diffl1=maxl1-max(ll%oneop1,ll%col1)
-       diffl2=maxl2-max(ll%oneop2,ll%col2)
-       diffl3=maxl3-max(ll%oneop3,ll%col3)
-       diffm1=abs(maxl1-abs(l1))
-       diffm2=abs(maxl2-abs(l2))
-       diffm3=abs(maxl3-abs(l3))
-       diffl1=diffm1-diffl1
-       diffl2=diffm2-diffl2
-       diffl3=diffm3-diffl3
-       if(diffl1 .gt. 2) CYCLE
-       if(diffl2 .gt. 2) CYCLE
-       if(diffl3 .gt. 2) CYCLE
-       if(ll%lvec(layer)%kx_computed) then
-         ll%lvec(layer)%dm_computed=.true.
-
-         if(density(layer)%init_magic_tag .NE. mat_init_magic_value) THEN
-           call mat_init(density(layer),nbast,nbast)
-           call mat_zero(density(layer))
-         endif
-
-         call mat_zero(tmp_density)
-
-         phase1=kvec(1)*ll%lvec(layer)%std_coord(1)
-         phase2=kvec(2)*ll%lvec(layer)%std_coord(2)
-         phase3=kvec(3)*ll%lvec(layer)%std_coord(3)
-         phase=CMPLX(0.,(phase1+phase2+phase3),COMPLEXK)
-         Do i=1,nbast
-         Do j=1,nbast
-
-         work(i,j)= kmat(i,j)*exp(phase)*weight_k/volbz
-
-         ENDDO
-         ENDDO
-         !call write_matrix(work,nbast,nbast)
-         worktmp(:,:)=real(work(:,:),realk)
-         call mat_set_from_full(worktmp,1.0_realk,tmp_density)
-         call mat_daxpy(1.D0,tmp_density,density(layer))
-
-         if(k==Nk)then
-           !if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
-           call mat_abs_max_elm(density(layer),maxdens)
-           if(maxdens .gt. 1e-12)then
-             write(lupri,*) ' max density element for&
-               &layer', l1,l2,l3,maxdens
-           endif
-           !endif
          endif
        endif
-     endif
+
+    ! else
+
+    !   ! For the computations it can be conevenient to have 
+    !   ! density matrices D0m where m goes beyond l in J0l
+    !   ! thus I truncate m between l and n in Kx0n where
+    !   ! n is max layer in exact exchange
+    !   if(ll%lvec(layer)%dm_computed) CYCLE
+    !   maxl1=max(ll%oneop1,ll%col1)
+    !   maxl2=max(ll%oneop2,ll%col2)
+    !   maxl3=max(ll%oneop3,ll%col3)
+    !   maxl1=max(maxl1,ll%Kx1)
+    !   maxl2=max(maxl2,ll%Kx2)
+    !   maxl3=max(maxl3,ll%Kx3)
+    !   if(abs(l1) .gt. maxl1) CYCLE
+    !   if(abs(l2) .gt. maxl2) CYCLE
+    !   if(abs(l3) .gt. maxl3) CYCLE
+    !   diffl1=maxl1-max(ll%oneop1,ll%col1)
+    !   diffl2=maxl2-max(ll%oneop2,ll%col2)
+    !   diffl3=maxl3-max(ll%oneop3,ll%col3)
+    !   diffm1=abs(maxl1-abs(l1))
+    !   diffm2=abs(maxl2-abs(l2))
+    !   diffm3=abs(maxl3-abs(l3))
+    !   diffl1=diffm1-diffl1
+    !   diffl2=diffm2-diffl2
+    !   diffl3=diffm3-diffl3
+    !   if(diffl1 .gt. 2) CYCLE
+    !   if(diffl2 .gt. 2) CYCLE
+    !   if(diffl3 .gt. 2) CYCLE
+    !   if(ll%lvec(layer)%kx_computed) then
+    !     ll%lvec(layer)%dm_computed=.true.
+
+    !     if(density(layer)%init_magic_tag .NE. mat_init_magic_value) THEN
+    !       call mat_init(density(layer),nbast,nbast)
+    !       call mat_zero(density(layer))
+    !     endif
+
+    !     call mat_zero(tmp_density)
+
+    !     phase1=kvec(1)*ll%lvec(layer)%std_coord(1)
+    !     phase2=kvec(2)*ll%lvec(layer)%std_coord(2)
+    !     phase3=kvec(3)*ll%lvec(layer)%std_coord(3)
+    !     phase=CMPLX(0.,(phase1+phase2+phase3),COMPLEXK)
+    !     Do i=1,nbast
+    !     Do j=1,nbast
+
+    !     work(i,j)= kmat(i,j)*exp(phase)*weight_k/volbz
+
+    !     ENDDO
+    !     ENDDO
+    !     !call write_matrix(work,nbast,nbast)
+    !     worktmp(:,:)=real(work(:,:),realk)
+    !     call mat_set_from_full(worktmp,1.0_realk,tmp_density)
+    !     call mat_daxpy(1.D0,tmp_density,density(layer))
+
+    !     if(k==Nk)then
+    !       !if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
+    !       call mat_abs_max_elm(density(layer),maxdens)
+    !       if(maxdens .gt. 1e-12)then
+    !         write(lupri,*) ' max density element for&
+    !           &layer', l1,l2,l3,maxdens
+    !       endif
+    !       !endif
+    !     endif
+    !   endif
+    ! endif
 
 
   enddo
