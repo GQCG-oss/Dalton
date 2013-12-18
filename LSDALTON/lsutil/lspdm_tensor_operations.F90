@@ -3607,12 +3607,18 @@ module lspdm_tensor_operations_module
     integer :: addr
     !> logical which tells the routine to set the value of the found address to occupied
     logical, intent(in) :: occ_addr
+    if(p_arr%arrays_in_use==n_arrays)then
+      call lsquit("ERROR(get_free_address):max number of arrays in p_arr allocated, change&
+      & the parameter n_arrays in lsutil/lspdm_tensor_operations.F90 and recompile",-1)
+    endif
+
     do addr=1,p_arr%arrays_in_use+1
       if(p_arr%free_addr_on_node(addr))then
         if(occ_addr)p_arr%free_addr_on_node(addr) = .false.
         return
       endif
     enddo
+
   end function get_free_address
 
   !> \brief debugging routine to check the norms of individual tiles
