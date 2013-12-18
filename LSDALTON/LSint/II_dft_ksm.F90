@@ -1161,7 +1161,7 @@ INTEGER :: LUPRI,IPRINT,Nbast,NDMAT,NMO
 integer(kind=ls_mpik) :: comm
 TYPE(LSSETTING)  :: SETTING
 logical :: SameCmat
-REAL(REALK),pointer :: CMAT(:,:),ABSVALOVERLAP(:,:)
+REAL(REALK),pointer :: CMAT1(:,:),CMAT2(:,:),ABSVALOVERLAP(:,:)
 call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
 CALL ls_mpi_buffer(LUPRI,infpar%master)
 CALL ls_mpi_buffer(IPRINT,infpar%master)
