@@ -5,7 +5,6 @@ MODULE READMOLEFILE
   use precision
   use TYPEDEF
   use molecule_module
-  use fundamental
   use lattice_type
 #ifdef MOD_UNRELEASED
   use lattice_vectors
@@ -1127,7 +1126,7 @@ ENDIF
 #ifdef MOD_UNRELEASED
 IF(latt_config%setup_pbclatt) THEN
   !READ lattice vectors
-  CALL READ_LATT_VECTORS(LUPRI,LUINFO,latt_config)
+  CALL READ_LATT_VECTORS(LUPRI,LUINFO,latt_config, angstrom)
 ENDIF
 #endif
 

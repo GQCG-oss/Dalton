@@ -188,7 +188,7 @@ TYPE(MATRIX),intent(inout) :: S
 !
 REAL(REALK),pointer   :: Cmat(:,:),ABSVALOVERLAP(:,:)
 REAL(REALK)           :: TS,TE
-LOGICAL               :: UNRES
+LOGICAL               :: UNRES,SameCmat
 !call time_II_operations1
 UNRES=.FALSE.
 IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
@@ -214,8 +214,8 @@ SETTING%scheme%DFT%igrid = Grid_ABSVAL
 !default for fine
 SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%RADINT = 2.15443E-17_realk
 SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%ANGINT = 47
-
-CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nbast,CMAT,ABSVALOVERLAP)
+SameCmat=.TRUE.
+CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nbast,CMAT,CMAT,ABSVALOVERLAP,SameCmat)
 
 !revert to default grid
 SETTING%scheme%DFT%igrid = Grid_Default
@@ -230,7 +230,7 @@ call stats_dft_mem(lupri)
 #endif
 END SUBROUTINE II_get_AbsoluteValue_overlap
 
-SUBROUTINE II_get_AbsoluteValueOcc_overlap(LUPRI,LUERR,SETTING,nbast,nocc,Cmat,S)
+SUBROUTINE II_get_AbsoluteValueOcc_overlap(LUPRI,LUERR,SETTING,nbast,nocc,Cmat1,Cmat2,S)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in)    :: LUPRI
@@ -242,14 +242,16 @@ TYPE(LSSETTING)       :: SETTING
 INTEGER,intent(in)    :: nbast
 !> number of occupied basisfunctions
 INTEGER,intent(in)    :: nocc
-!> The density matrix
-real(realk),intent(in) :: Cmat(nbast,nocc)
+!> The MO coef matrix for 1. 
+real(realk),intent(in) :: Cmat1(nbast,nocc)
+!> The MO coef matrix for 2.
+real(realk),intent(in) :: Cmat2(nbast,nocc)
 !> The Absolute Valued overlap  matrix
 real(realk),intent(inout) :: S(nocc,nocc)
 #ifdef MOD_UNRELEASED
 !
 REAL(REALK)           :: TS,TE
-LOGICAL               :: UNRES
+LOGICAL               :: UNRES,SameCmat
 !call time_II_operations1
 UNRES=.FALSE.
 IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
@@ -267,8 +269,8 @@ SETTING%scheme%DFT%igrid = Grid_ABSVAL
 !default for fine
 SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%RADINT = 2.15443E-17_realk
 SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%ANGINT = 47
-
-CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nocc,CMAT,S)
+SameCmat = .FALSE. 
+CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nocc,CMAT1,CMAT2,S,SameCmat)
 
 !revert to default grid
 SETTING%scheme%DFT%igrid = Grid_Default

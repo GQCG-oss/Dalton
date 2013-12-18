@@ -43,7 +43,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use matrix_module
   use memory_handling, only: mem_alloc,mem_dealloc, stats_mem
   use matrix_operations, only: set_matrix_default,max_no_of_matrices, no_of_matrices, &
-       & no_of_matmuls, mat_init, mat_free, mat_assign, &
+       & no_of_matmuls, mat_init, mat_free, mat_assign,mat_scal, &
        & mat_mul, mat_no_of_matmuls, mat_write_to_disk, mat_read_from_disk, mat_diag_f,&
        & mat_TrAB, mat_print, MatrixmemBuf_init, MatrixmemBuf_free, &
        & MatrixmemBuf_print
@@ -193,6 +193,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         CALL II_get_h1(lupri,luerr,ls%setting,H1)
         call get_initial_dens(H1,S,D,ls,config)
 
+
         if(.not. config%latt_config%testcase) THEN
 
           lsint_fock_data%ls => ls
@@ -225,6 +226,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
                    config%latt_config%num_its_densmat
           config%opt%opt_quit=.false.
           call scfloop(H1,F,D,S,E,ls,config)
+
+
+          call mat_scal(2._realk,D(1))
 
           if (do_decomp) then
              call decomp_shutdown(config%decomp)
