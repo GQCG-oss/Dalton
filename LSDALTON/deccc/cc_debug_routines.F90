@@ -711,9 +711,10 @@ module cc_debug_routines_module
            !  !rpa_multipliers not yet implemented
            !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !else
-             !call RPA_residualdeb(Omega2(iter),t2(iter),pack_gmo,ppfock,qqfock,nocc,nvirt)
-           call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
-             !call RPA_residual(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
+           !  call RPA_residualpar(Omega2(iter),t2(iter),pack_gmo,ppfock,qqfock,nocc,nvirt)
+             call RPA_residualdeb(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
+           !call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
+           !  call RPA_residual(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
            !endif
 
 
@@ -2783,6 +2784,9 @@ module cc_debug_routines_module
         case(MODEL_RPA)
           ! JOHANNES here you should implement your own routine to get
           ! MaxAllowedDimAlpha MaxAllowedDimGamma
+          call get_MO_and_AO_batches_size(small_frag,ntot,nbas,nocc,nvir, &
+                 & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem)
+          !Just for making the test case not fail
           print *, 'JOHANNES here you should implement your own routine to get'
           print *, 'MaxAllowedDimAlpha and MaxAllowedDimGamma'
         case default
