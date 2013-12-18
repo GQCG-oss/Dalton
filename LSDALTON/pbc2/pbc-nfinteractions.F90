@@ -1328,6 +1328,8 @@ SUBROUTINE pbc_complete_Fock_mtx(lupri,nbast,fock_mtx,sizef,cut,lattice)
 	call find_latt_index(refcell,0,0,0,lattice,lattice%max_layer)
 	write(lupri,*) 'refcelle', refcell
 
+        num_latvectors=size(lattice%lvec)
+
 	do i=1,num_latvectors
 		if(i .eq. refcell) CYCLE
 		fock_mtx(nbast*i+1-nbast:i*nbast,nbast*i+1-nbast:i*nbast)=&
