@@ -290,12 +290,24 @@ module cc_debug_routines_module
        call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock_f,&
             &qqfock_f,Co_f,Cv_f,Co_d,Cv_d,Uocc,Uvirt,focc,fvirt)
 
-       ppfock_d = 0.0E0_realk
-       qqfock_d = 0.0E0_realk
+       if(use_pnos)then
+         !Do not destroy the locality of the occupied space if PNOs are used,
+         !otherwise the adaption cannot happen to a confined space
+         ppfock_d = ppfock_f
+         do ii=1,nocc
+           Uocc(ii,ii) = 1.0E0_realk
+         enddo
 
-       do ii=1,nocc
-         ppfock_d(ii,ii) = focc(ii)
-       enddo
+       else
+
+         ppfock_d = 0.0E0_realk
+         do ii=1,nocc
+           ppfock_d(ii,ii) = focc(ii)
+         enddo
+
+       endif
+
+       qqfock_d = 0.0E0_realk
        do aa=1,nvirt
          qqfock_d(aa,aa) = fvirt(aa)
        enddo
