@@ -670,7 +670,7 @@ module lspdm_tensor_operations_module
     !> on return Ec contains the correlation energy
     real(realk) :: E1,E2,Ec
     real(realk),pointer :: t(:,:,:,:)
-    integer :: lt,i,j,a,b,o(t2%mode)
+    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
 
 #ifdef VAR_MPI
     !Get the slaves to this routine
@@ -691,11 +691,17 @@ module lspdm_tensor_operations_module
         o(j)=(o(j)-1)*t2%tdim(j)
       enddo
 
+      da = t2%ti(lt)%d(1)
+      db = t2%ti(lt)%d(2)
+      di = t2%ti(lt)%d(3)
+      dj = t2%ti(lt)%d(4)
       !count over local indices
-      do j=1,t2%ti(lt)%d(4)
-        do i=1,t2%ti(lt)%d(3)
-          do b=1,t2%ti(lt)%d(2)
-            do a=1,t2%ti(lt)%d(1)
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t,&
+      !$OMP& da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
+      do j=1,dj
+        do i=1,di
+          do b=1,db
+            do a=1,da
      
               E2 = E2 + t(a,b,i,j)*&
               & (2.0E0_realk*  gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2))-gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)))
@@ -706,6 +712,7 @@ module lspdm_tensor_operations_module
           enddo
         enddo
       enddo
+      !$OMP END PARALLEL DO
       nullify(t)
     enddo
 
@@ -769,11 +776,10 @@ module lspdm_tensor_operations_module
       db = prec%ti(lt)%d(2)
       di = prec%ti(lt)%d(3)
       dj = prec%ti(lt)%d(4)
+
       !count over local indices
-      !$OMP PARALLEL DEFAULT(NONE) &
-      !$OMP& SHARED(om,dims,ppfock,qqfock,lt,da,db,di,dj) &
-      !$OMP& PRIVATE(i,j,a,b)
-      !$OMP DO COLLAPSE(3)
+      !$OMP  PARALLEL DO DEFAULT(NONE)  SHARED(om,dims,&
+      !$OMP& ppfock,qqfock,da,db,di,dj) PRIVATE(i,j,a,b) COLLAPSE(3)
       do j=1,dj
         do i=1,di
           do b=1,db
@@ -787,8 +793,7 @@ module lspdm_tensor_operations_module
           enddo
         enddo
       enddo
-      !$OMP END DO
-      !$OMP END PARALLEL
+      !$OMP END PARALLEL DO
       nullify(om)
     enddo
     
