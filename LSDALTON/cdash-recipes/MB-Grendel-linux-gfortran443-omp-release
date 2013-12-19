@@ -26,7 +26,7 @@ export CTEST_PROJECT_NAME=LSDALTON
 #tar xzf DALTON-2013.0-Source.tar.gz
 #cd DALTON-2013.0-Source
 
-./setup --fc=/com/gfortran/4.4.3/bin/gfortran --cc=/com/gfortran/4.4.3/bin/gcc --omp --explicit-libs="-L$MATH_ROOT/lib/em64t -lmkl_gf_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm" -D BUILDNAME="MB-Grendel-linux-gfortran443-omp-release" build
+./setup --fc=/com/gfortran/4.4.3/bin/gfortran --cc=/com/gfortran/4.4.3/bin/gcc --cxx=/com/gfortran/4.4.3/bin/c++ --omp --explicit-libs="-L$MATH_ROOT/lib/em64t -lmkl_gf_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm" -D BUILDNAME="MB-Grendel-linux-gfortran443-omp-release" build
 
 cd build
 #make
