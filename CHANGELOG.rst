@@ -6,8 +6,8 @@
 - Correct the printout of relativistic corrections to the shielding (thanks to M. Jaszunski).
 - Compilation fix for DALTON/abacus/rma_windows.F90 (Intel 10.0.011).
 - Fix of error where basis set names were changed to upper case and could not be found (reported by Yurij Rusakov).
-- Each MPI slave sleeps 1 second between tests for new task
-  (should enable turbomode in sequential parts of DALTON, and more efficient use of threaded MKL when combined with MPI).
+- Each MPI slave sleeps 10 millisecond between tests for new task
+  (only Intel; should enable turbomode in sequential parts of DALTON, and more efficient use of threaded MKL when combined with MPI).
 - added metric scaled output of orbital response vectors in \*\*RESPONS
   (for easier interpretation of excitation operators).
 - Fixed a bug in Jengine, related to screening for nonsymmetric density matrices.
