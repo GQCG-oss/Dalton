@@ -2,7 +2,7 @@ if (NOT DEFINED DEFAULT_CXX_FLAGS_SET)
 if (CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS         "-g -Wall -fno-rtti -fno-exceptions -march=native")
     set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g3")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorized -Wno-unused")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math")
     if (ENABLE_CODE_COVERAGE)
         set (CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
