@@ -15,7 +15,9 @@ module profile_int
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
   use ProfileIchorMod
+#ifdef MOD_UNRELEASED
   use dal_interface, only: di_decpackedJ,di_decpackedJold
+#endif
 private
 public :: di_profile_lsint
 
