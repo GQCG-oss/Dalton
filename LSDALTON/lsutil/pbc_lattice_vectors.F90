@@ -397,7 +397,7 @@ SUBROUTINE latt_2_std_coord(latcoord,stdcoord,latvec)
      stdcoord(ci) = 0.0_realk
 !     stdcoord(ci) = latvec(ci,1)+ latvec(ci,2)+latvec(ci,3)
      do vi = 1,3
-        stdcoord(ci) = stdcoord(ci) + latcoord(vi) * latvec(vi,ci)
+        stdcoord(ci) = stdcoord(ci) + latcoord(vi) * latvec(ci,vi)
 !        write(*,*) 'latvec(ci,vi)', latvec(vi,ci)
      end do
    !write(*,*) 'stdcoord', stdcoord(ci)
