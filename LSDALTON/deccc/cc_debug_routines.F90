@@ -6783,7 +6783,7 @@ module cc_debug_routines_module
     !constructed in the pno basis, probably at the expense of memory,
     !depending on the sizes
     call dgemm('t','n',pnv,nv,nv,p10, d, nv,vvf,nv,nul,w1,pnv)
-    call dgemm('n','n',pnv,pnv,nv,p10, w1,pnv,d,nv,nul,w4,pnv)
+    call dgemm('n','n',pnv,pnv,nv,p10, w1,pnv,d,nv,nul,w5,pnv)
     
     
     FullSpaceLoop1: do ns2 = 1, nspaces
@@ -6833,53 +6833,87 @@ module cc_debug_routines_module
       call do_overlap_trafo(ns,ns2,1,pno_S,pnv,pno1*pnv1*pno1,pnv1,w3,w2,ptr=h1)
 
       !contract amplitudes in h1 with integrals in w1 and add to w4 : -1 * h1(bdkl) w1(dlkc) += w4(bc)
-      call dgemm('n','n',pnv,pnv,pnv1*pno1*pno1,m10, h1,pnv,w1,pnv1*pno1*pno1,p10,w4,pnv)
+      call dgemm('n','n',pnv,pnv,pnv1*pno1*pno1,m10, h1,pnv,w1,pnv1*pno1*pno1,p10,w5,pnv)
 
 
       !!!!!!!!!!!!!!!!!!!!!!!!!
       !!!  B2 Term !!!!!!!!!!!!
       !!!!!!!!!!!!!!!!!!!!!!!!!
       
-      !Get the integral contribution, sort it first like the integrals then transform it, govov
-      call ass_D1to4( w1,    p1, [pno1,nv,pno1,nv] )
-      call ass_D1to4( govov, p2, [no,   nv,no,   nv] )
-      do j=1,pno1
-      do b=1,nv
-        do i=1,pno1
-        do a=1,nv
-          p1(i,a,j,b) = p2(idx1(i),a,idx1(j),b)
-        enddo
-        enddo
-      enddo
-      enddo
-
-      !transform integral contribution, use symmetry  govov(kcld) => govov(\bar{c} \bar{d} k l) to the space of (ij) -> w2
-      call dgemm( 'n', 'n', nv*pno1**2, pnv, nv, p10, w1, nv*pno1**2, d, nv, nul, w2, nv*pno1**2 )
-      call array_reorder_4d( p10, w2, pno1, nv, pno1, pnv, [2,4,1,3], nul, w1 )
-      call dgemm( 't', 'n', pnv, pno1**2*pnv, nv, p10, d, nv, w1, nv, nul, w2, pnv )
-
       !prepare 4 occupied integral goooo for B2 term
-      call ass_D1to4( w3,    p1, [pno,pno,pno1,pno1] )
-      call ass_D1to4( goooo, p2, [ no, no,   no,   no] )
-      do j=1,pno1
-      do b=1,pno
+      call ass_D1to4( w3(1:pno**2*pno1**2), p1, [pno,pno,pno1,pno1] )
+      call ass_D1to4( goooo, p2, [ no, no,  no,  no] )
+      !Get the integral contribution, sort it first like the integrals then transform it, govov
+      call ass_D1to4( w1,    p3, [pno1,nv,pno1,nv] )
+      call ass_D1to4( govov, p4, [no,  nv,no,  nv] )
+
+
+      !CODE FOR PAIR SPACES WITH RESTRICTIONS
+      if(pno_cv(ns2)%n==2.and.DECinfo%PNOtriangular)then
+
+        !loop over pair contributions kl and lk
+        do pair = 1, paircontribs
+
+          p3(1,:,1,:) = p4(idx1(paircontrib(1,pair)),:,idx1(paircontrib(2,pair)),:)
+          !transform integral contribution
+          !govov(kcld) => govov(\bar{c} \bar{d} k l) or lk to the space of (ij) -> w2
+          call dgemm( 'n', 'n', nv, pnv, nv, p10, w1, nv, d, nv, nul, w3, nv )
+          call dgemm( 't', 'n', pnv, pnv, nv, p10, d, nv, w3, nv, nul, w4, pnv )
+
+          p1(1,1,1,1) = p2(idx1(paircontrib(1,pair)),idx(1),idx1(paircontrib(2,pair)),idx(2))
+
+          !sort the amplitudes and contract cidj -> ijcd, ijcd cdkl + ijkl = ijkl
+          call array_reorder_4d( p10, t, pnv, pno, pnv, pno, [2,4,1,3], nul, w1 )
+          call dgemm( 'n', 'n', pno**2, pno1**2, pnv**2, p10, w1, pno**2, w4, pnv**2, p10, w3, pno**2 )
+
+          !contract the B intermediate in w3 with the amplitudes (kl) from the
+          !inner loop and use the overlap to transform to the omega space, ijkl klab
+          call array_reorder_2d( p10, t21, pnv1, pnv1 , paircontrib(:,pair), nul, w1 )
+
+          call dgemm( 'n', 'n', pno**2, pnv1**2, pno1**2, p10, w3, pno**2, w1, pno1**2, dble(pair-1), w2, pno**2 )
+          
+        enddo
+
+      !CODE FOR RECTANGULAR SPACES
+      else
+        do b=1,nv
+        do j=1,pno1
+          do a=1,nv
+          do i=1,pno1
+            p3(i,a,j,b) = p4(idx1(i),a,idx1(j),b)
+          enddo
+          enddo
+        enddo
+        enddo
+
+        !transform integral contribution
+        !govov(kcld) => govov(\bar{c} \bar{d} k l) to the space of (ij) -> w2
+        call dgemm( 'n', 'n', nv*pno1**2, pnv, nv, p10, w1, nv*pno1**2, d, nv, nul, w2, nv*pno1**2 )
+        call array_reorder_4d( p10, w2, pno1, nv, pno1, pnv, [2,4,1,3], nul, w1 )
+        call dgemm( 't', 'n', pnv, pno1**2*pnv, nv, p10, d, nv, w1, nv, nul, w4, pnv )
+
+        !prepare 4 occupied integral goooo for B2 term
+        !if(pno_cv(ns)%n/=2)then
+        do j=1,pno1
         do i=1,pno1
-        do a=1,pno
-          p1(a,b,i,j) = p2(idx1(i),idx(a),idx1(j),idx(b))
+          do b=1,pno
+          do a=1,pno
+            p1(a,b,i,j) = p2(idx1(i),idx(a),idx1(j),idx(b))
+          enddo
+          enddo
         enddo
         enddo
-      enddo
-      enddo
+        !sort the amplitudes and contract cidj -> ijcd, ijcd cdkl + ijkl = ijkl
+        call array_reorder_4d( p10, t, pnv, pno, pnv, pno, [2,4,1,3], nul, w1 )
+        call dgemm( 'n', 'n', pno**2, pno1**2, pnv**2, p10, w1, pno**2, w4, pnv**2, p10, w3, pno**2 )
 
-      !sort the amplitudes and contract cidj -> ijcd, ijcd cdkl + ijkl = ijkl
-      call array_reorder_4d( p10, t, pnv, pno, pnv, pno, [2,4,1,3], nul, w1 )
-      call dgemm( 'n', 'n', pno**2, pno1**2, pnv**2, p10, w1, pno**2, w2, pnv**2, p10, w3, pno**2 )
+        !contract the B intermediate in w3 with the amplitudes (kl) from the
+       !inner loop and use the overlap to transform to the omega space, ijkl klab
+        call array_reorder_4d( p10, t21, pnv1, pno1, pnv1, pno1, [2,4,1,3], nul, w1 )
 
-      !contract the B intermediate in w3 with the amplitudes (kl) from the
-      !inner loop and use the overlap to transform to the omega space, ijkl klab
-      call array_reorder_4d( p10, t21, pnv1, pno1, pnv1, pno1, [2,4,1,3], nul, w1 )
+        call dgemm( 'n', 'n', pno**2, pnv1**2, pno1**2, p10, w3, pno**2, w1, pno1**2, nul, w2, pno**2 )
 
-      call dgemm( 'n', 'n', pno**2, pnv1**2, pno1**2, p10, w3, pno**2, w1, pno1**2, nul, w2, pno**2 )
+      endif
 
       ! transform back, or in the case of ns==ns2 just order correctly
       if(ns==ns2)then
@@ -6898,7 +6932,7 @@ module cc_debug_routines_module
 
     !Add the E21 contribution
     call array_reorder_4d( p10, t, pnv, pno, pnv, pno, [3,4,1,2], nul, w1)
-    call dgemm('n','n',pnv,pno*pnv*pno,pnv,p10,w4,pnv,w1,pnv,nul,w2,pnv)
+    call dgemm('n','n',pnv,pno*pnv*pno,pnv,p10,w5,pnv,w1,pnv,nul,w2,pnv)
     o = o + w2(1:pnv*pno*pnv*pno)
     call array_reorder_4d( p10, w2, pnv, pno, pnv, pno, [3,4,1,2], p10, o )
 
