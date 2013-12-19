@@ -49,6 +49,8 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 	COMPLEX(complexk),POINTER  :: sabk_tmp(:,:),sabk2(:,:)
 	COMPLEX(complexk) :: alpha,beta
 	INTEGER :: info,i,j,lwork,nonsingdim
+        INTEGER,save :: kp=0
+        kp=kp+1
 
 	nsingular = 0
 	lwork=10*Ndim-1
@@ -64,6 +66,11 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 	beta=CMPLX(0.0_realk,0.0_realk,complexk)
 
 	Sk(:,:)=sabk(:,:)
+
+       ! if(kp==1) then
+       !   write(*,*) 'S gamma ='
+       !   call write_zmatrix(sabk,ndim,ndim)
+       ! endif
 
 	diag(:)=CMPLX(0.0_realk,0.0_realk,complexk)
 	! calculate spectral decomposition S = V^H\sigma V  
@@ -94,6 +101,7 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 		w(j)=wtemp
 	end do
 
+
 	! remove linear dependencies in v (sk)
 	do i=1,ndim
 		if(w(i) .lt. singular_threshh) then
@@ -104,6 +112,7 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 		else
 			diag(i)=cmplx(1.0_realk/sqrt(w(i)),0.0_realk,complexk)
 		endif
+                !if(kp==1) write(*,*) w(i),'big sigma'
 	enddo
 
 	write(*,*) 'number of singulars',nsingular
@@ -279,6 +288,8 @@ SUBROUTINE solve_kfcsc_mat(ndim,fock_old,C_tmp,Uk,eigv,nsingular,lupri)
 	COMPLEX(complexk),POINTER :: tfock(:,:),work(:)
 	REAL(realk),POINTER :: rwork(:)
 	COMPLEX(COMPLEXK) :: alpha,beta
+        integer, save :: kp=0
+        kp=kp+1
 
 	nonsingdim=ndim-nsingular
 
@@ -299,9 +310,11 @@ SUBROUTINE solve_kfcsc_mat(ndim,fock_old,C_tmp,Uk,eigv,nsingular,lupri)
 	! solve fc = ce 
 	call zheev('V','U',nonsingdim,tfock,nonsingdim,eigv,work,lwork,rwork,info)
 	if(info .ne. 0) then
-		write(lupri,*) 'ERROR: zheev problems, info=', info
+		write(lupri,*) 'ERROR: zheev problems, info=', info,kp
 		call write_zmatrix(tfock,nonsingdim,nonsingdim)
-		write(*,*) 'ERROR: zheev problems, info=', info
+		write(*,*) 'ERROR: zheev problems, info=', info,kp
+		!call write_zmatrix(uk,nonsingdim,nonsingdim)
+		write(lupri,*) 'ERROR: zheev problems, info=', info,kp
 		call LSQUIT('pbc_solve_kfcsc_mat: INFO not zero,', &
 			& ' while solving eigenvalue',lupri)
 	endif
