@@ -9,12 +9,12 @@ if (CMAKE_COMPILER_IS_GNUCXX)
         set (CMAKE_CXX_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
     endif()
     if(ENABLE_OMP)
-        set(CMAKE_C_FLAGS
+        set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -fopenmp"
             )
     endif()
     if(ENABLE_STATIC_LINKING)
-        set(CMAKE_C_FLAGS
+        set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -static -fpic"
             )
     endif()
