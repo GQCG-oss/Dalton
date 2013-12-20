@@ -632,7 +632,7 @@ LOGICAL,INTENT(IN)     :: is_active(3)
 INTEGER,INTENT(IN)     :: lu
 REAL(realk)            :: t2ct3(3)
 REAL(realk)            :: vol
-INTEGER                :: active_dims
+INTEGER                :: active_dims,plane
 !REAL(realk) :: PI=3.14159265358979323846D0
     active_dims=1
     if(is_active(2))then
@@ -680,24 +680,68 @@ INTEGER                :: active_dims
       recvec(:,:)=recvec(:,:)/vol
 
     CASE(2)
-      recvec(1,1)=realspace(2,2)*2._realk*pi
-      recvec(2,1)=-realspace(1,2)*2._realk*pi
+      plane = 0
+      if(realspace(3,1) .eq. 0 .and. realspace(3,2) .eq. 0) then
+        recvec(1,1)=realspace(2,2)*2._realk*pi
+        recvec(2,1)=-realspace(1,2)*2._realk*pi
 
-      recvec(1,2)=-realspace(1,1)*2._realk*pi
-      recvec(2,2)=realspace(2,1)*2._realk*pi
+        recvec(1,2)=-realspace(1,1)*2._realk*pi
+        recvec(2,2)=realspace(2,1)*2._realk*pi
 
-      vol=realspace(1,1)*realspace(2,2)+realspace(2,1)*realspace(1,2)
-      recvec(:,:)=recvec(:,:)/vol
-      if(realspace(3,1) .ne. 0._realk .or. realspace(3,2) .ne. 0._realk)then
-        write(*,*) 'Use just x or y axis'
-        call LSquit('Not correct usage of lattice vectors',lu)
+        vol=realspace(1,1)*realspace(2,2)+realspace(2,1)*realspace(1,2)
+        recvec(:,:)=recvec(:,:)/vol
+        if(realspace(3,1) .ne. 0._realk .or. realspace(3,2) .ne. 0._realk)then
+          write(*,*) 'Use just two axes it is a two dimensional system'
+          call LSquit('Not correct usage of lattice vectors',lu)
+        endif
+      elseif(realspace(2,1) .eq. 0 .and. realspace(2,2) .eq. 0) then
+        recvec(1,1)=realspace(3,2)*2._realk*pi
+        recvec(3,1)=-realspace(1,2)*2._realk*pi
+
+        recvec(1,2)=-realspace(1,1)*2._realk*pi
+        recvec(3,2)=realspace(3,1)*2._realk*pi
+
+        vol=realspace(1,1)*realspace(3,2)+realspace(3,1)*realspace(1,2)
+        recvec(:,:)=recvec(:,:)/vol
+        if(realspace(2,1) .ne. 0._realk .or. realspace(2,2) .ne. 0._realk)then
+          write(*,*) 'Use just two axes it is a two dimensional system'
+          call LSquit('Not correct usage of lattice vectors',lu)
+        endif
+      elseif(realspace(1,1) .eq. 0 .and. realspace(1,2) .eq. 0) then
+        recvec(2,1)=realspace(3,2)*2._realk*pi
+        recvec(3,1)=-realspace(2,2)*2._realk*pi
+
+        recvec(2,2)=-realspace(2,1)*2._realk*pi
+        recvec(3,2)=realspace(3,1)*2._realk*pi
+
+        vol=realspace(3,1)*realspace(2,2)+realspace(2,1)*realspace(3,2)
+        recvec(:,:)=recvec(:,:)/vol
+        if(realspace(1,1) .ne. 0._realk .or. realspace(1,2) .ne. 0._realk)then
+          write(*,*) 'Use just two axes it is a two dimensional system'
+          call LSquit('Not correct usage of lattice vectors',lu)
+        endif
       endif
+      
 
    CASE(1)
-     recvec(1,1)=2._realk*pi/realspace(1,1)
-     if(realspace(2,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
-       write(*,*) 'Use just x axis'
-       call LSquit('Not correct usage of lattice vectors',lu)
+     if(realspace(1,1) .ne. 0) then
+       recvec(1,1)=2._realk*pi/realspace(1,1)
+       if(realspace(2,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
+         write(*,*) 'Use just one axis it is a one dimensional system'
+         call LSquit('Not correct usage of lattice vectors',lu)
+       endif
+     elseif(realspace(2,1) .ne. 0) then
+       recvec(2,1)=2._realk*pi/realspace(2,1)
+       if(realspace(1,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
+         write(*,*) 'Use just one axis it is a one dimensional system'
+         call LSquit('Not correct usage of lattice vectors',lu)
+       endif
+     elseif(realspace(3,1) .ne. 0) then
+       recvec(3,1)=2._realk*pi/realspace(3,1)
+       if(realspace(2,1) .ne. 0._realk .or. realspace(1,1) .ne. 0._realk) then
+         write(*,*) 'Use just one axis it is a one dimensional system'
+         call LSquit('Not correct usage of lattice vectors',lu)
+       endif
      endif
 
    END SELECT
