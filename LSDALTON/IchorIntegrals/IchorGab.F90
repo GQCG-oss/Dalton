@@ -340,11 +340,11 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
   !local variables
   real(realk) :: CDAB(1),BcenterSpec(3),AcenterSpec(3),Pdistance12(3)
   integer :: IatomB,iBatchA,IatomA,iBatchB,nPasses,MaxPasses
-!$OMP PARALLEL DO IF(nAtomsB.GT.1) DEFAULT(none) PRIVATE(IatomB,BcenterSpec,iBatchA,IatomA,&
+!$OMP PARALLEL DO DEFAULT(none) IF(nAtomsB.GT.1) PRIVATE(IatomB,BcenterSpec,iBatchA,IatomA,&
 !$OMP nPasses,MaxPasses,AcenterSpec,pcent,Pdistance12,PpreExpFac,TmpArray1,TmpArray2,&
 !$OMP iBatchB,CDAB) SHARED(Bcenter,expB,ContractCoeffA,ContractCoeffB,expP,TABFJW,&
 !$OMP reducedExponents,integralPrefactor,&
-!$OMP OutputStorage,Acenter,expA) FIRSTPRIVATE(nAtomsB,nAtomsA,TriangularLHSAtomLoop,&
+!$OMP OutputStorage,Acenter,expA,nAtomsB,nAtomsA,TriangularLHSAtomLoop,&
 !$OMP nPrimA,nPrimB,nContA,nContB,nPrimP,PSegmented,INTPRINT,lupri,nContP,nTABFJW1,&
 !$OMP nTABFJW2,AngmomA,AngmomB,PQorder,Spherical,TMParray1maxsize,TMParray2maxsize,&
 !$OMP iBatchIndexOfTypeB,iBatchIndexOfTypeA) SCHEDULE(DYNAMIC,1)

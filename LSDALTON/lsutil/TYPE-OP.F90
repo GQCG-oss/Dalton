@@ -578,6 +578,7 @@ DALTON%USEBUFMM = .TRUE.
 DALTON%nonSphericalETUV = .FALSE.
 DALTON%DEBUGOVERLAP = .FALSE.
 DALTON%DEBUG4CENTER = .FALSE.
+DALTON%DEBUG4CENTER_ERI = .FALSE.
 DALTON%DEBUGPROP = .FALSE.
 DALTON%DEBUGICHOR = .FALSE.
 DALTON%DEBUGGEN1INT = .FALSE.
@@ -590,17 +591,17 @@ DALTON%DEBUGGEODERIVEXCHANGE = .FALSE.
 DALTON%DEBUGGEODERIVCOULOMB = .FALSE.
 DALTON%DEBUGMAGDERIV = .FALSE.
 DALTON%DEBUGMAGDERIVOVERLAP = .FALSE.
-DALTON%DEBUG4CENTER_ERI = .FALSE.
 DALTON%DEBUGCCFRAGMENT = .FALSE.
+DALTON%DEBUGKINETIC = .FALSE.
 DALTON%DEBUGNUCPOT = .FALSE.
-DALTON%DO3CENTEROVL = .FALSE.
-DALTON%DO2CENTERERI = .FALSE.
-DALTON%DO4CENTERERI = .FALSE.
-DALTON%OVERLAP_DF_J = .FALSE.
 DALTON%DEBUGGGEM = .FALSE.
 DALTON%DEBUGLSlib = .FALSE.
 DALTON%DEBUGUncontAObatch = .FALSE.
 DALTON%DEBUGDECPACKED = .FALSE.
+DALTON%DO4CENTERERI = .FALSE.
+DALTON%DO3CENTEROVL = .FALSE.
+DALTON%DO2CENTERERI = .FALSE.
+DALTON%OVERLAP_DF_J = .FALSE.
 DALTON%PARI_J = .FALSE.
 DALTON%PARI_K = .FALSE.
 DALTON%SIMPLE_PARI = .FALSE.
@@ -609,6 +610,7 @@ DALTON%PARI_CHARGE = .FALSE.
 DALTON%PARI_DIPOLE = .TRUE.
 DALTON%DO_MMGRD     = .FALSE.
 DALTON%MM_NOSCREEN  = .FALSE.
+DALTON%MMunique_ID1 = 0
 DALTON%TIMINGS = .FALSE.
 DALTON%UNCONT = .FALSE.
 DALTON%NOSEGMENT = .FALSE.!.TRUE.
@@ -988,10 +990,10 @@ ENDIF
    IF(BASIS%REGULAR%Labelindex .EQ. 0)THEN
       DO I=1,MOLECULE%nAtoms
          IF(MOLECULE%ATOM(I)%nbasis == 2) THEN
-            ICHARGE = INT(MOLECULE%ATOM(I)%CHARGE)
-            ITYPE1 = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
-            ITYPE2 = BASIS%AUXILIARY%CHARGEINDEX(ICHARGE)
             IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
+               ICHARGE = INT(MOLECULE%ATOM(I)%CHARGE)
+               ITYPE1 = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
+               ITYPE2 = BASIS%AUXILIARY%CHARGEINDEX(ICHARGE)
                WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,2X,A20,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
                     &BASIS%REGULAR%ATOMTYPE(itype1)%NAME,&
                     &BASIS%AUXILIARY%ATOMTYPE(itype2)%NAME,&
@@ -1003,9 +1005,9 @@ ENDIF
                     &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
             ENDIF
          ELSE
-            ICHARGE = INT(MOLECULE%ATOM(I)%CHARGE)
-            ITYPE1 = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
             IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
+               ICHARGE = INT(MOLECULE%ATOM(I)%CHARGE)
+               ITYPE1 = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
                WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
                     &BASIS%REGULAR%ATOMTYPE(itype1)%NAME,&
                     &MOLECULE%ATOM(I)%Phantom,&
@@ -1021,9 +1023,9 @@ ENDIF
    ELSE
       DO I=1,MOLECULE%nAtoms
          IF(MOLECULE%ATOM(I)%nbasis == 2) THEN
-            ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
-            ITYPE2 = MOLECULE%ATOM(I)%IDtype(2)
             IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
+               ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
+               ITYPE2 = MOLECULE%ATOM(I)%IDtype(2)
                WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,2X,A20,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
                     &BASIS%REGULAR%ATOMTYPE(itype1)%NAME,&
                     &BASIS%AUXILIARY%ATOMTYPE(itype2)%NAME,&
@@ -1035,8 +1037,8 @@ ENDIF
                     &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
             ENDIF
          ELSE
-            ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
             IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
+               ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
                WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
                     &BASIS%REGULAR%ATOMTYPE(itype1)%NAME,&
                     &MOLECULE%ATOM(I)%Phantom,&
@@ -1095,7 +1097,7 @@ END SUBROUTINE PRINT_MOLECULEINFO
 SUBROUTINE PRINT_BASISSETLIBRARY(LUPRI,BASISSETLIBRARY)
 implicit none
 TYPE(BASISSETLIBRARYITEM) :: BASISSETLIBRARY
-INTEGER            :: I,J
+INTEGER            :: I,J,N
 INTEGER            :: LUPRI
 CHARACTER(len=13)   :: STRINGFORMAT
 WRITE(LUPRI,*) '  '
@@ -1103,12 +1105,14 @@ WRITE(LUPRI,'(A)')'BASISSETLIBRARY'
 WRITE(LUPRI,*)'Number of Basisset',BASISSETLIBRARY%nbasissets
 DO I=1,BASISSETLIBRARY%nbasissets
    WRITE(LUPRI,'(A10,2X,A50)')'BASISSET:',BASISSETLIBRARY%BASISSETNAME(I)
-   IF(BASISSETLIBRARY%nCharges(I) < 10)THEN
-      WRITE(StringFormat,'(A5,I1,A6)') '(A10,',BASISSETLIBRARY%nCharges(I),'F10.4)'
+   IF(BASISSETLIBRARY%nCharges(I) .LT. 10)THEN
+      WRITE(StringFormat(1:12),'(A5,I1,A6)') '(A10,',BASISSETLIBRARY%nCharges(I),'F10.4)'
+      N=12
    ELSE
       WRITE(StringFormat,'(A5,I2,A6)') '(A10,',BASISSETLIBRARY%nCharges(I),'F10.4)'
+      N=13
    ENDIF
-   WRITE(LUPRI,StringFormat)'CHARGES:',(BASISSETLIBRARY%Charges(I,J)&
+   WRITE(LUPRI,StringFormat(1:N))'CHARGES:',(BASISSETLIBRARY%Charges(I,J)&
         &,J=1,BASISSETLIBRARY%nCharges(I))
 ENDDO
 WRITE(LUPRI,*) '                     '
@@ -2184,7 +2188,7 @@ IF(postprocess.NE.0)THEN
       call daxpy(ndim*ndim,0.5E0_realk,TMP,1,MAT,1)
       call mem_dealloc(TMP)
    CASE(AntiSymmetricPostprocess)
-      !Symmetrize
+      !AntiSymmetrize
       call mem_alloc(TMP,ndim,ndim)
       call ls_transpose(MAT,TMP,ndim)
       call dscal(ndim*ndim,0.5E0_realk,MAT,1)
@@ -2209,7 +2213,6 @@ REAL(REALK)      :: fullMAT(:,:,:)
 integer   :: lupri,ndim1,ndim2,ndim3,ndim4,ndim5,n1,n2,n3,I
 REAL(REALK),pointer      :: fullMATtmp(:,:,:,:,:)
 logical,intent(in) :: IntegralTransformGC
-
 if(IntegralTransformGC)call lsquit('retrieve_output_3dim not implemented for IntegralTransformGC',lupri)
 ndim1 = setting%Output%resultTensor%nbast(1)
 ndim2 = setting%Output%resultTensor%nbast(2)
@@ -2230,15 +2233,17 @@ call lstensor_free(setting%Output%resultTensor)
 deallocate(setting%Output%resultTensor)
 nullify(setting%Output%resultTensor)
 call dcopy(ndim1*ndim2*ndim3*ndim4*ndim5,fullMATtmp,1,fullMAT,1)
+
 call mem_dealloc(fullMATtmp)
 IF(setting%Output%postprocess(1).NE.0)then
    IF(n1.NE.n2)call lsquit('option not tested n1.NE.n2 retrieve_output_3dim',-1)
    DO I=1,n3
-      call retrieve_postprocess_full(setting%Output%postprocess(1),&
+      call retrieve_postprocess_full(setting%Output%postprocess(I),&
            & fullMAT(:,:,I),n1,lupri)
    ENDDO
 endif
 call mem_dealloc(setting%Output%postprocess)
+
 END SUBROUTINE retrieve_output_3dim
 
 !> \brief retrieve the output from the setting and put it into an 2 dim array

@@ -327,7 +327,8 @@ logical :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
 integer :: nbatchAstart2,nbatchAend2,nbatchBstart2,nbatchBend2
 integer :: nbatchCstart2,nbatchCend2,nbatchDstart2,nbatchDend2
-logical :: SameRHSaos,SameODs,FULLABATCH,FULLBBATCH,FULLCBATCH,FULLDBATCH
+logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4
+!FULLABATCH,FULLBBATCH,FULLCBATCH,FULLDBATCH
 spherical = .TRUE.
 IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
 
@@ -499,13 +500,19 @@ IF(FullBatch)THEN
 !   SameRHSaos = intSpec(3).EQ.intSpec(4)
 !   SameODs = (intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4))
 ELSE
-   FULLABATCH = nbatchAstart2.EQ.1.AND.nbatchAend2.EQ.nBatchesA
-   FULLBBATCH = nbatchBstart2.EQ.1.AND.nbatchBend2.EQ.nBatchesB
-   FULLCBATCH = nbatchCstart2.EQ.1.AND.nbatchCend2.EQ.nBatchesC
-   FULLDBATCH = nbatchDstart2.EQ.1.AND.nbatchDend2.EQ.nBatchesD
-   SameLHSaos = (intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)).AND.(FULLABATCH.AND.FULLBBATCH)
-   SameRHSaos = (intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)).AND.(FULLCBATCH.AND.FULLDBATCH)
-   SameODs = .FALSE.
+!   FULLABATCH = nbatchAstart2.EQ.1.AND.nbatchAend2.EQ.nBatchesA
+!   FULLBBATCH = nbatchBstart2.EQ.1.AND.nbatchBend2.EQ.nBatchesB
+!   FULLCBATCH = nbatchCstart2.EQ.1.AND.nbatchCend2.EQ.nBatchesC
+!   FULLDBATCH = nbatchDstart2.EQ.1.AND.nbatchDend2.EQ.nBatchesD
+   SameLHSaos = (intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)).AND.&
+        & ((nbatchAstart2.EQ.nbatchBstart2).AND.(nbatchAend2.EQ.nbatchBend2))
+   SameRHSaos = (intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)).AND.&
+        & ((nbatchCstart2.EQ.nbatchDstart2).AND.(nbatchCend2.EQ.nbatchDend2))
+   CRIT1 = (intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4))
+   CRIT2 = Setting%sameMol(1,3).AND.Setting%sameMol(2,4)
+   CRIT3 = (nbatchAstart2.EQ.nbatchCstart2).AND.(nbatchAend2.EQ.nbatchCend2)
+   CRIT4 = (nbatchBstart2.EQ.nbatchDstart2).AND.(nbatchBend2.EQ.nbatchDend2)
+   SameODs = (CRIT1.AND.CRIT2).AND.(CRIT3.AND.CRIT4)
 ENDIF
 
 IF(SameODs.AND.SameRHSaos.AND.SameLHSaos)THEN

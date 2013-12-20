@@ -26,6 +26,7 @@ use dec_main_mod
 use ls_util, only: ls_print_gradient
 use molecule_typetype, only: moleculeinfo
 use optimlocMOD, only: optimloc
+use screen_mod, only: screen_free, screen_init
 private
 public :: Get_Energy, Get_Gradient, get_num_grad
 !
@@ -73,7 +74,9 @@ contains
        !call mat_zero(D)
        !
        call typedef_free_setting(ls%setting)
+       call screen_free()
        call typedef_init_setting(ls%setting)
+       call screen_init()
        ! Empirical dispersion correction in case of dft
        !CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
 
