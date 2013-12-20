@@ -497,6 +497,8 @@ DO
             CASE('.MAXELM');     READ(LUCMD,*) config%solver%cfg_max_element
                                                config%solver%set_max_element = config%solver%cfg_max_element
             CASE('.MAXIT');      READ(LUCMD,*) config%opt%cfg_max_linscf_iterations
+            CASE('.NOQUITMAXIT');READ(LUCMD,*) config%opt%cfg_max_linscf_iterations
+                                               config%opt%opt_quit=.false.
             CASE('.MAXRATI');    READ(LUCMD,*) maxratio
                                                config%av%cfg_settings%max_dorth_ratio = maxratio
             CASE('.MAXSTEP');    READ(LUCMD,*) config%solver%cfg_max_step 
@@ -770,6 +772,19 @@ DO
         CASE('.RECLAT')
           READ (LUCMD, '(3I2)')config%latt_config%nk1,config%latt_config%nk2,&
                                & config%latt_config%nk3
+          if(config%latt_config%nk2 .gt. 1 ) then
+            if(.not.config%latt_config%ldef%is_active(2)) then
+              WRITE(*,*) 'Reciprocal vector 2 should be set to 1'
+              call LSQUIT('ERROR IN RECIPROCAL VECTORS',lupri)
+            endif
+          endif
+
+          if(config%latt_config%nk3 .gt. 1 ) then
+            if(.not.config%latt_config%ldef%is_active(3)) then
+              WRITE(*,*) 'Reciprocal vector 3 should be set to 1'
+              call LSQUIT('ERROR IN RECIPROCAL VECTORS',lupri)
+            endif
+          endif
 
         CASE('.MLMAX')
           READ (LUCMD, '(I2)')config%latt_config%lmax
