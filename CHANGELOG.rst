@@ -1,13 +1,25 @@
 
 
 2013.2 (this will be the next patch)
------------------------------------
+====================================
+
+DALTON
+------
+
+- Document changes here.
+
+
+LSDALTON
+--------
 
 - Document changes here.
 
 
 2013.1 (2013-12-19)
--------------------
+===================
+
+DALTON
+------
 
 - Correct the printout of relativistic corrections to the shielding (thanks to M. Jaszunski).
 - Compilation fix for DALTON/abacus/rma_windows.F90 (Intel 10.0.011).
@@ -16,6 +28,11 @@
   (only Intel; should enable turbomode in sequential parts of DALTON, and more efficient use of threaded MKL when combined with MPI).
 - added metric scaled output of orbital response vectors in \*\*RESPONS
   (for easier interpretation of excitation operators).
+
+
+LSDALTON
+--------
+
 - Fixed a bug in Jengine, related to screening for nonsymmetric density matrices.
   This may affect CCSD and some response calculation. 
 - Modified the input section of the manual concerning 
