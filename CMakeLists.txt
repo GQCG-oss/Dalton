@@ -89,6 +89,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/LSDALTON/dft
     ${CMAKE_SOURCE_DIR}/LSDALTON/geomopt
     ${CMAKE_Fortran_MODULE_DIRECTORY}
+    ${PROJECT_BINARY_DIR}
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -114,6 +115,10 @@ configure_script(
 configure_script(
     ${CMAKE_SOURCE_DIR}/LSDALTON/lsdalton.in
     ${CMAKE_BINARY_DIR}/lsdalton
+    )
+configure_script(
+    ${CMAKE_SOURCE_DIR}/DALTON/dalton_config.in
+    ${CMAKE_BINARY_DIR}/dalton_config.h
     )
 
 # if BLAS and/or LAPACK not found, add own sources to the list of
