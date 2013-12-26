@@ -49,6 +49,8 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 	COMPLEX(complexk),POINTER  :: sabk_tmp(:,:),sabk2(:,:)
 	COMPLEX(complexk) :: alpha,beta
 	INTEGER :: info,i,j,lwork,nonsingdim
+        INTEGER,save :: kp=0
+        kp=kp+1
 
 	nsingular = 0
 	lwork=10*Ndim-1
@@ -64,6 +66,11 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 	beta=CMPLX(0.0_realk,0.0_realk,complexk)
 
 	Sk(:,:)=sabk(:,:)
+
+       ! if(kp==1) then
+       !   write(*,*) 'S gamma ='
+       !   call write_zmatrix(sabk,ndim,ndim)
+       ! endif
 
 	diag(:)=CMPLX(0.0_realk,0.0_realk,complexk)
 	! calculate spectral decomposition S = V^H\sigma V  
@@ -94,6 +101,7 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 		w(j)=wtemp
 	end do
 
+
 	! remove linear dependencies in v (sk)
 	do i=1,ndim
 		if(w(i) .lt. singular_threshh) then
@@ -104,6 +112,7 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 		else
 			diag(i)=cmplx(1.0_realk/sqrt(w(i)),0.0_realk,complexk)
 		endif
+                !if(kp==1) write(*,*) w(i),'big sigma'
 	enddo
 
 	write(*,*) 'number of singulars',nsingular
@@ -279,6 +288,8 @@ SUBROUTINE solve_kfcsc_mat(ndim,fock_old,C_tmp,Uk,eigv,nsingular,lupri)
 	COMPLEX(complexk),POINTER :: tfock(:,:),work(:)
 	REAL(realk),POINTER :: rwork(:)
 	COMPLEX(COMPLEXK) :: alpha,beta
+        integer, save :: kp=0
+        kp=kp+1
 
 	nonsingdim=ndim-nsingular
 
@@ -299,9 +310,11 @@ SUBROUTINE solve_kfcsc_mat(ndim,fock_old,C_tmp,Uk,eigv,nsingular,lupri)
 	! solve fc = ce 
 	call zheev('V','U',nonsingdim,tfock,nonsingdim,eigv,work,lwork,rwork,info)
 	if(info .ne. 0) then
-		write(lupri,*) 'ERROR: zheev problems, info=', info
+		write(lupri,*) 'ERROR: zheev problems, info=', info,kp
 		call write_zmatrix(tfock,nonsingdim,nonsingdim)
-		write(*,*) 'ERROR: zheev problems, info=', info
+		write(*,*) 'ERROR: zheev problems, info=', info,kp
+		!call write_zmatrix(uk,nonsingdim,nonsingdim)
+		write(lupri,*) 'ERROR: zheev problems, info=', info,kp
 		call LSQUIT('pbc_solve_kfcsc_mat: INFO not zero,', &
 			& ' while solving eigenvalue',lupri)
 	endif
@@ -361,7 +374,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 	TYPE(matrix),POINTER :: g_2(:)
 
 	! threshhold for removing singularities in overlap matrix s
-	REAL(realk) :: singular_threshh = 1e-6_realk 
+	REAL(realk) :: singular_threshh = 1e-4_realk 
 
 	write(lupri,*) 'Entering routine startzdiis'
 
@@ -675,22 +688,22 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		write(*,'(A28)') 'FINISHED WITHOUT CONVERGENCE'
 	endif
 
-	write(lupri,*) 'final E(HOMO) =', cellenergies(1)
-	write(lupri,*) 'final E(LUMO) =', cellenergies(2)
-	write(lupri,*) 'final Cell Energy =', E_cell
-	write(lupri,*) 'h_1=',E_1
-	write(lupri,*) 'Nuclear=',E_nuc
-	write(lupri,*) 'Far field=', E_ff,E_nn
-	write(lupri,*) 'K energy', E_k
-	write(lupri,*) 'J energy', E_J
-	write(*,*) 'E(HOMO) =', cellenergies(1)
-	write(*,*) 'E(LUMO) =', cellenergies(2)
-	write(*,*) 'Cell Energy =', E_cell
-	write(*,*) 'K energy', E_k
-	write(*,*) 'J energy', E_J
-	write(*,*) 'h_1=',E_1
-	write(*,*) 'Nuclear=',E_nuc
-	write(*,*) 'Far field=', E_ff,E_nn
+	write(lupri,*) 'Final E(HOMO) =', cellenergies(1)
+	write(lupri,*) 'Final E(LUMO) =', cellenergies(2)
+	write(lupri,*) 'Final Cell Energy =', E_cell
+	write(lupri,*) 'Final h_1=',E_1
+	write(lupri,*) 'Final Nuclear=',E_nuc
+	write(lupri,*) 'Final Far field=', E_ff,E_nn
+	write(lupri,*) 'Final K energy', E_k
+	write(lupri,*) 'Final J energy', E_J
+	write(*,*) 'Final E(HOMO) =', cellenergies(1)
+	write(*,*) 'Final E(LUMO) =', cellenergies(2)
+	write(*,*) 'Final Cell Energy =', E_cell
+	write(*,*) 'Final K energy', E_k
+	write(*,*) 'Final J energy', E_J
+	write(*,*) 'Final h_1=',E_1
+	write(*,*) 'Final Nuclear=',E_nuc
+	write(*,*) 'Final Far field=', E_ff,E_nn
 	call mem_dealloc(cellenergies)
 
 END SUBROUTINE pbc_startzdiis

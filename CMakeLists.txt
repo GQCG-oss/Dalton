@@ -87,7 +87,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/dft
     ${CMAKE_SOURCE_DIR}/DALTON/abacus
     ${CMAKE_SOURCE_DIR}/LSDALTON/dft
-    ${CMAKE_SOURCE_DIR}/LSDALTON/geomopt/dqdx
+    ${CMAKE_SOURCE_DIR}/LSDALTON/geomopt
     ${CMAKE_Fortran_MODULE_DIRECTORY}
     )
 
