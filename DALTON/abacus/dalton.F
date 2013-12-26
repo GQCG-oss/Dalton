@@ -49,6 +49,10 @@ C
 #include "inftap.h"
 #include "prpc.h"
 #include "incore.h"
+
+! DALTON_VERSION
+#include "dalton_config.h"
+
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       LOGICAL FINISH
@@ -197,7 +201,7 @@ C
      &               '*',115)
 
          WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON (Release Dalton2013 patch 0)'
+     &'This is output from DALTON '//DALTON_VERSION
 
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
