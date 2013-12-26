@@ -556,10 +556,13 @@ contains
     integer :: fai,tl,mynum,nnod
     real(realk) :: starttime,stoptime
     real(realk),pointer :: w2(:),w3(:),omegw(:),w4(:)
-    logical :: master
     character(ARR_MSG_LEN) :: msg
+#ifdef VAR_MPI
+    logical :: master
+#endif
 
 #ifdef VAR_MPI
+    master        = .false.
     mynum         = infpar%lg_mynum
     master        = (infpar%lg_mynum == 0)
     nnod          = infpar%lg_nodtot
@@ -575,15 +578,21 @@ contains
    
 
     omegaw1 = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
+#ifdef VAR_MPI
     if(master) then
       call array4_reorder(omega2,[1,3,2,4])
       call array_convert(omega2%val,omegaw1)
     endif
+#else
+    call array4_reorder(omega2,[1,3,2,4])
+    call array_convert(omega2%val,omegaw1)
+#endif
+
 #ifdef VAR_MPI
     call lsmpi_barrier(infpar%lg_comm)
 #endif
 
-    call mo_work_dist(nvirt*nocc,fai,tl,nnod,mynum)
+    call mo_work_dist(nvirt*nocc,fai,tl)
     !call mem_alloc(w2,tl*nocc*nvirt)
     call mem_alloc(w2,tl*nocc*nvirt)
     call mem_alloc(w3,tl*nocc*nvirt)
@@ -665,14 +674,22 @@ contains
     !stop
 #endif
 
+#ifdef VAR_MPI
     if(master) then
       !call array_convert(omegaw1,omega2%val)
       call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
-#ifdef VAR_MPI
+
       write(*,*) 'checkpoint 3',infpar%lg_mynum
-#endif
       call array4_reorder(omega2,[1,3,2,4])
     endif
+#else
+
+    call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
+
+    call array4_reorder(omega2,[1,3,2,4])
+
+#endif
+
 
     call array_free(t_par)
     call array_free(omegaw1)

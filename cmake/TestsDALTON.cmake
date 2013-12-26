@@ -520,6 +520,7 @@ add_dalton_perl_test(trp_qr_pcm        "dalton;perl;pcm")
 if(NOT ENABLE_MPI)
 add_dalton_perl_test(rsp_zfs_mc2       "dalton;perl;mcscf")
 add_dalton_perl_test(mcscf             "dalton;perl;mcscf;pcm")
+add_dalton_perl_test(mcscf-nomp2       "dalton;perl;mcscf;pcm")
 endif()
 
 add_dalton_test(cc2_r12_aux_benzene_sym_fop   "dalton;ccr12;longccr12")
