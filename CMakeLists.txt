@@ -10,6 +10,9 @@ project(DALTON Fortran C CXX)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
+# To link with fortran not c++
+set(CMAKE_CXX_LINKER_PREFERENCE_PROPAGATES FALSE)
+
 # these are paths that CMake will search for cmake
 # module files that end with .cmake
 set(CMAKE_MODULE_PATH
@@ -84,7 +87,9 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/dft
     ${CMAKE_SOURCE_DIR}/DALTON/abacus
     ${CMAKE_SOURCE_DIR}/LSDALTON/dft
+    ${CMAKE_SOURCE_DIR}/LSDALTON/geomopt
     ${CMAKE_Fortran_MODULE_DIRECTORY}
+    ${PROJECT_BINARY_DIR}
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -110,6 +115,10 @@ configure_script(
 configure_script(
     ${CMAKE_SOURCE_DIR}/LSDALTON/lsdalton.in
     ${CMAKE_BINARY_DIR}/lsdalton
+    )
+configure_script(
+    ${CMAKE_SOURCE_DIR}/DALTON/dalton_config.in
+    ${CMAKE_BINARY_DIR}/dalton_config.h
     )
 
 # if BLAS and/or LAPACK not found, add own sources to the list of

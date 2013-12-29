@@ -164,7 +164,7 @@ DO I=1,J
     ENDDO
     call mem_dealloc(uCHARGES)    
  ELSE
-    k=BASISSETLIBRARY%nCharges(BINDEXES(I))
+   k=BASISSETLIBRARY%nCharges(BINDEXES(I))
  ENDIF
  natomtypes = natomtypes + k
 ENDDO
@@ -219,7 +219,6 @@ DO I=1,J
      pointcharge=.FALSE.
   ENDIF
  ENDIF
-
  IF(pointcharge)THEN
     IF(present(BASISSETNAME))THEN
        DO II=1,k
@@ -249,9 +248,15 @@ DO I=1,J
      ENDIF
   ENDIF
   call mem_alloc(POINTCHARGES,k)
-  DO IT=1,k
-     POINTCHARGES(IT) = BASISSETLIBRARY%POINTCHARGES(BINDEXES(I),IT)
-  ENDDO  
+  IF(present(BASISSETNAME))THEN
+     DO IT=1,k
+        POINTCHARGES(IT) = .FALSE.
+     ENDDO
+  ELSE
+     DO IT=1,k
+        POINTCHARGES(IT) = BASISSETLIBRARY%POINTCHARGES(BINDEXES(I),IT)
+     ENDDO     
+  ENDIF
   IF(present(BASISSETNAME))THEN
    CALL READ_BASISSET_FILE_AND_BUILD_BASISINFO(LUPRI,IPRINT,LUBAS,&
         &CONTRACTED,STRING,IAUG,POLFUN,IPOLST,BASINFO,CHARGES,&
@@ -261,6 +266,7 @@ DO I=1,J
    call mem_alloc(CHARGES,k)
    DO IT=1,k
     CHARGES(IT) = BASISSETLIBRARY%CHARGES(BINDEXES(I),IT)
+!    BASINFO%ATOMTYPE(atomtype+IT)%Charge = CHARGES(IT)
    ENDDO
    CALL READ_BASISSET_FILE_AND_BUILD_BASISINFO(LUPRI,IPRINT,LUBAS,&
         &CONTRACTED,STRING,IAUG,POLFUN,IPOLST,BASINFO,&
@@ -351,9 +357,12 @@ INTEGER :: type,B1
 GCONT = .TRUE.
 do type = 1,BASINFO%nATOMTYPES
  DO B1=1,BASINFO%ATOMTYPE(type)%nAngmom
-  IF(BASINFO%ATOMTYPE(type)%SHELL(B1)%segment(1)%ncol.NE.BASINFO%ATOMTYPE(type)%SHELL(B1)%norb)THEN
-     GCONT = .FALSE.
-     RETURN
+  IF(BASINFO%ATOMTYPE(type)%SHELL(B1)%nprim.NE.0)THEN
+   IF(BASINFO%ATOMTYPE(type)%SHELL(B1)%segment(1)%ncol.NE.&
+        & BASINFO%ATOMTYPE(type)%SHELL(B1)%norb)THEN
+      GCONT = .FALSE.
+      RETURN
+   ENDIF
   ENDIF
  ENDDO
 enddo
@@ -470,10 +479,9 @@ IF (BASDIR(1:1) .NE. '/') THEN
 #else
          BASDIR=INSTALL_BASDIR
 #endif
-     IF (doprint) WRITE(LUPRI,'(/A,/8X,A)') ' Default basis set library used:',BASDIR
+     IF (doprint) WRITE(LUPRI,'(A,A)') ' Default basis set library used:',TRIM(BASDIR)
 ELSE
-     IF (doprint) WRITE(LUPRI,'(/A,/8X,A)') ' User supplied basis set directory :'&
-          &,BASDIR
+     IF (doprint) WRITE(LUPRI,'(A,A)') ' User supplied basis set directory :',TRIM(BASDIR)
 END IF
 
 LENBAS = 0

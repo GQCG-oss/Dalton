@@ -1,69 +1,69 @@
+!> ???
 #ifdef MOD_UNRELEASED
-module pbcffdata
-  use precision
-  use TYPEDEF
-  implicit none
-  public
+MODULE pbcffdata
+	USE precision
+	USE typedef
+	IMPLICIT NONE
+	PUBLIC
 
-  integer, parameter :: min_qlmax = 3, max_qlmax = 21
-  integer, parameter :: min_TWlmax = 5, max_TWlmax = 50
+	!> ???
+	INTEGER, PARAMETER :: min_qlmax = 3, max_qlmax = 21
+	!> ???
+	INTEGER, PARAMETER :: min_TWlmax = 5, max_TWlmax = 50
+	
+	!> ???
+	TYPE ffdata_t
+		!> ???
+		LOGICAL :: reset_T_diverg 
+		!> ???
+		LOGICAL :: square_intermediates 
+		!> Lmax for multipole moments
+		INTEGER :: q_lmax     
+		!> Lmax for T and W tensors
+		INTEGER :: TW_lmax    
+		!> ???
+		REAL(realk), POINTER :: cell_locmom(:) 
+		!> ???
+		REAL(realk), POINTER :: Tlattice(:,:) 
+	END TYPE ffdata_t
 
-  type ffdata_t
-     logical :: reset_T_diverg
-     logical :: square_intermediates
-     integer :: q_lmax     ! Lmax for multipole moments
-     integer :: TW_lmax    ! Lmax for T and W tensors
-     real(realk), pointer :: cell_locmom(:)
-     real(realk), pointer :: Tlattice(:,:)
-  end type ffdata_t
+	TYPE(ffdata_t), SAVE :: ffdata
 
-  type(ffdata_t), save :: ffdata
+CONTAINS 
+	!> \author JR
+	!> \date 2013
+	!> \brief ???
+	!> \param tlattice 			???
+	!> \param lmax					???
+	!> \param mattxt 				???
+	!> \param lupri 				Print unit for output datafile.
+	SUBROUTINE read_pbc_tlattice(tlattice,lmax,mattxt,lupri)
+		IMPLICIT NONE
+		INTEGER,INTENT(IN) :: lmax,lupri
+		REAL(realk),INTENT(INOUT) ::tlattice((lmax+1)**2,(lmax+1)**2)
+		CHARACTER(LEN=18),INTENT(IN) :: mattxt
+		! local
+		INTEGER :: i,j,dimin,dimtest
+		INTEGER :: iunit
 
-  contains 
+		dimin=(lmax+1)**2
+		iunit=-1
 
-  SUBROUTINE READ_pbc_tlattice(tlattice,lmax,mattxt,lupri)
-  IMPLICIT NONE
-  INTEGER,intent(IN) :: lmax,lupri
-  real(realk),intent(Inout) ::tlattice((lmax+1)**2,(lmax+1)**2)
-  character(len=18),intent(in) :: mattxt
-  !LOCAL
-  INTEGER :: i,j,dimin,dimtest
-  INTEGER :: iunit
+		write(*,*) mattxt
+		call lsOPEN(IUNIT,mattxt,'OLD','UNFORMATTED')
+		read(iunit) dimtest!,nil
+		if(dimtest .ne. dimin) then
+			write(*,*) 'ERROR: dims do not match: input dim=', &
+				& dimin,'read dim=',dimtest
+			call lsquit('In read_pbc_tlattice: dims do not match',lupri)
+		endif
 
-  dimin=(lmax+1)**2
-  iunit=-1
+		do j=1,dimin
+			read(iunit) (tlattice(j,i),i=1,dimin)
+		enddo
 
-  write(*,*) mattxt
-  !write(mattxt,'(A18)') 'Tlatticetensor.dat'
-  CALL lsOPEN(IUNIT,mattxt,'OLD','UNFORMATTED')
-  read(iunit) dimtest!,nil
-  if(dimtest .ne. dimin) then
-    write(*,*) 'ERROR: dims do not match: input dim=',dimin,'read dim=',dimtest
-    call lsquit('In read_pbc_tlattice: dims do not match',lupri)
-  endif
- ! DO j=1,dimin
- !   read(iunit) (tlattice(j,i),i=1,dimin)
- ! ENDDO
+		CALL lsCLOSE(IUNIT,'KEEP')
 
-  DO j=1,dimin
-     read(iunit) (tlattice(j,i),i=1,dimin)
-  enddo
-
-  CALL lsCLOSE(IUNIT,'KEEP')
-  
-  END SUBROUTINE READ_pbc_tlattice
-
-!  SUBROUTINE pbc_mmcontrib(tlat,lmax)
-!  use precision
-!  use TYPEDEF
-!  implicit none
-!  INTEGER,intent(IN) :: lmax
-!  real(realk),intent(Inout) ::tlat((lmax+1)**2,(lmax+1)**2)
-!
-!
-!
-!
-!  END SUBROUTINE pbc_mmcontrib
-end module pbcffdata
-
+	END SUBROUTINE read_pbc_tlattice
+END MODULE pbcffdata
 #endif

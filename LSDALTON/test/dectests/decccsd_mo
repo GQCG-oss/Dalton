@@ -17,71 +17,65 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decccsd_pno.info <<'%EOF%'
+cat > decccsd_mo.info <<'%EOF%'
    DEC-CCSD energy using fragment calculations without long-range t1
    -----------------------------------------------------------------
-   Molecule:         3 LiH molecules with stretched bonds
-   Wave Function:    CCSD PNO / STO-3G
-   Test Purpose:     Test DEC fragmentation for CCSD with PNOs
+   Molecule:         3 BH molecules with stretched bonds
+   Wave Function:    MO-CCSD / STO-3G
+   Test Purpose:     Test DEC fragmentation for MO-based CCSD
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decccsd_pno.mol <<'%EOF%'
-BASIS
+cat > decccsd_mo.mol <<'%EOF%'
+BASIS                                                   
 STO-3G
-
-
-Atomtypes=2 Charge=0 Nosymmetry Angstrom
+                                                        
+                                                        
+Atomtypes=2 Nosymmetry Angstrom
+Charge=5.0 Atoms=3
+B          0.000000      0.0000000    0.0000000
+B          3.000000      0.0000000    1.4500000
+B          6.000000      0.0000000    0.0000000
 Charge=1.0 Atoms=3
-H    0.000000           0.7        0.000000
-H    0.700000           0.0        3.000000
-H    0.000000           0.7        6.000000
-Charge=3.0 Atoms=3
-Li    0.000000         -0.7        6.000000
-Li   -0.700000          0.0        3.000000
-Li    0.000000         -0.7        0.000000
+H          0.000000      1.4500000    0.0000000
+H          3.000000      0.0000000    0.0000000
+H          6.000000      0.0000000    1.4500000
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decccsd_pno.dal <<'%EOF%'
+cat > decccsd_mo.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.ARH DAVID
+.ARH
 .START
 TRILEVEL
-.NOATOMSTART
-.CONVDYN
-TIGHT
-.LCM
+.CONVTHR
+1.0d-5
 **DEC
-.PRINTFRAGS
-.DECPRINT
-3
-.CCSDpreventcanonical
 .CCSD
 .CCDEBUG
-.USE_PNOS
-.ccthr
-10E-7
+.MOCCSD
+.MPIsplit
+0
+.FOT
+4
 .MEMORY
-1
-*END OF INPUT
+2.0
+*END OF INPUT  
 %EOF%
 #######################################################################
 
- 
+
 
 #######################################################################
 
 #######################################################################
-#  CHECK SCRIPT
-#######################################################################
-echo $CHECK_SHELL >decccsd_pno.check
-cat >>decccsd_pno.check <<'%EOF%'
+echo $CHECK_SHELL >decccsd_mo.check
+cat >>decccsd_mo.check <<'%EOF%'
 
 log=$1
 
@@ -92,13 +86,13 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-23\.580027" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-74\.1900454" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
-CTRL[1]=1
+CTRL[1]=2
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # CCSD ENERGY
-CRIT1=`$GREP "Correlation energy  : * \-0\.00186" $log | wc -l`
+CRIT1=`$GREP "Correlation energy  : * \-0\.199" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy is not correct"
@@ -134,7 +128,6 @@ else
 fi
 
 %EOF%
-
 
 
 

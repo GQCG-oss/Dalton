@@ -3644,7 +3644,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(    4)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(    4,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(    4,nPrimA,nPrimB)
     real(realk) :: tmpArray3(    4,nPrimB)
@@ -3656,17 +3656,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,    4
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,    4
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,    4
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -3675,49 +3670,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,    4
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,    4
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,    4
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,    4
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,    4
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,    4
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,    4
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,    4
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,    4
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -3739,7 +3719,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   10)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   10,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   10,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   10,nPrimB)
@@ -3751,17 +3731,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   10
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   10
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   10
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -3770,49 +3745,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   10
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   10
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   10
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   10
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   10
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   10
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   10
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   10
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   10
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -3834,7 +3794,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   20)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   20,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   20,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   20,nPrimB)
@@ -3846,17 +3806,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   20
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   20
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   20
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -3865,49 +3820,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   20
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   20
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   20
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   20
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   20
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   20
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   20
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   20
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   20
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -3929,7 +3869,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   35)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   35,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   35,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   35,nPrimB)
@@ -3941,17 +3881,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   35
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   35
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   35
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -3960,49 +3895,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   35
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   35
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   35
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   35
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   35
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   35
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   35
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   35
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   35
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -4024,7 +3944,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   16)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   16,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   16,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   16,nPrimB)
@@ -4036,17 +3956,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   16
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   16
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   16
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -4055,49 +3970,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   16
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   16
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   16
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   16
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   16
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   16
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   16
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   16
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   16
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -4119,7 +4019,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   40)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   40,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   40,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   40,nPrimB)
@@ -4131,17 +4031,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   40
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   40
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   40
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -4150,49 +4045,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   40
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   40
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   40
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   40
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   40
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   40
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   40
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   40
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   40
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -4214,7 +4094,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(   80)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(   80,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(   80,nPrimA,nPrimB)
     real(realk) :: tmpArray3(   80,nPrimB)
@@ -4226,17 +4106,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,   80
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,   80
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,   80
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -4245,49 +4120,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   80
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   80
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   80
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,   80
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   80
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   80
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,   80
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,   80
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,   80
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -4309,7 +4169,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  140)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  140,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  140,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  140,nPrimB)
@@ -4321,17 +4181,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  140
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  140
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  140
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -4340,49 +4195,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  140
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  140
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  140
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  140
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  140
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  140
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  140
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  140
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  140
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -4404,7 +4244,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  100)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  100,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  100,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  100,nPrimB)
@@ -4416,17 +4256,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  100
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  100
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  100
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -4435,49 +4270,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  100
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  100
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  100
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  100
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  100
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  100
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  100
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  100
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  100
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -4499,7 +4319,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  200)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  200,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  200,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  200,nPrimB)
@@ -4511,17 +4331,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  200
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  200
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  200
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -4530,49 +4345,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  200
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  200
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  200
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  200
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  200
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  200
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  200
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  200
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  200
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -4594,7 +4394,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  350)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  350,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  350,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  350,nPrimB)
@@ -4606,17 +4406,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  350
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  350
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  350
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -4625,49 +4420,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  350
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  350
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  350
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  350
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  350
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  350
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  350
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  350
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  350
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -4689,7 +4469,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  400)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  400,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  400,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  400,nPrimB)
@@ -4701,17 +4481,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  400
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  400
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  400
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -4720,49 +4495,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  400
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  400
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  400
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  400
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  400
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  400
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  400
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  400
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  400
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -4784,7 +4544,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray(  700)
+    real(realk) :: TMP
     real(realk) :: tmpArray1(  700,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2(  700,nPrimA,nPrimB)
     real(realk) :: tmpArray3(  700,nPrimB)
@@ -4796,17 +4556,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1,  700
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1,  700
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1,  700
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -4815,49 +4570,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  700
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  700
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  700
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1,  700
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  700
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  700
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1,  700
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1,  700
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1,  700
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo
@@ -4879,7 +4619,7 @@ CONTAINS
     !
     integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
-    real(realk) :: TMPArray( 1225)
+    real(realk) :: TMP
     real(realk) :: tmpArray1( 1225,nPrimD,nPrimA,nPrimB)
     real(realk) :: tmpArray2( 1225,nPrimA,nPrimB)
     real(realk) :: tmpArray3( 1225,nPrimB)
@@ -4891,17 +4631,12 @@ CONTAINS
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
          do iTUV=1, 1225
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimC=1,nPrimC
-          CCCTMP = CCC(iPrimC,iContC)
-          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iTUV=1, 1225
-           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)
           enddo
-         enddo
-         do iTUV=1, 1225
-          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
@@ -4910,49 +4645,34 @@ CONTAINS
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1, 1225
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimD=1,nPrimD
-          DCCTMP = DCC(iPrimD,iContD)
-          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iTUV=1, 1225
-           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1, 1225
-          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)
+          tmpArray2(iTUV,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
        do iContA=1,nContA
         do iPrimB=1,nPrimB
          do iTUV=1, 1225
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContA)
-          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
-          do iTUV=1, 1225
-           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iTUV,iPrimA,iPrimB)
           enddo
-         enddo
-         do iTUV=1, 1225
-          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)
+          tmpArray3(iTUV,iPrimB) = TMP
          enddo
         enddo
         do iContB=1,nContB
          do iTUV=1, 1225
-          TMPArray(iTUV) = 0.0E0_realk
-         enddo
-         do iPrimB=1,nPrimB
-          BCCTMP = BCC(iPrimB,iContB)
-          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
-          do iTUV=1, 1225
-           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iTUV,iPrimB)
           enddo
-         enddo
-         do iTUV=1, 1225
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMP
          enddo
         enddo
        enddo

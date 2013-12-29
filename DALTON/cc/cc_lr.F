@@ -6961,7 +6961,7 @@ c
 c
       idx=1
       helper='        '
-      write(lupri,*)'String on input: "',tobestripped,'"'
+      ! write(lupri,*)'String on input: "',tobestripped,'"'
 c
 c strip all blanks from beginning
 c
@@ -6995,7 +6995,7 @@ c
          endif
 30    continue
       if(lastchar.eq.'_') helper(idx-1:idx-1)=' '
-      write(lupri,*)'String on input: "',helper,'"'
+      ! write(lupri,*)'String on input: "',helper,'"'
       tobestripped=helper 
       end
 C--------------------------------------------------------------

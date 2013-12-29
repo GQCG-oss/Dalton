@@ -4845,15 +4845,18 @@ IF (default) THEN
    call II_get_coulomb_mat_full(LUPRI,LUERR,SETTING,nbast,DAO,F)
    WRITE(lupri,*)'The Coulomb energy contribution ',&
         & fac*0.5E0_realk*ddot(nbast*nbast,DAO,1,F,1)
+
    call mem_alloc(KAO,nbast,nbast,1)
    call ls_dzero(KAO,nbast*nbast)
    IF (setting%scheme%daLinK) THEN
       CALL ls_attachDmatToSetting(DAO,nbast,nbast,1,setting,'LHS',2,4,lupri)
    ENDIF
    call II_get_exchange_mat_full(LUPRI,LUERR,SETTING,nbast,DAO,Dsym,KAO)
+
    WRITE(lupri,*)'The Exchange energy contribution ',&
-        &ddot(nbast*nbast,DAO,1,KAO,1)
+        &-ddot(nbast*nbast,DAO,1,KAO,1)
    call daxpy(nbast*nbast,1E0_realk,KAO,1,F,1)
+
    call mem_dealloc(KAO)
 ELSE 
    call lsquit('II_get_coulomb_and_exchange_mat_full not implemented',-1)
@@ -5047,15 +5050,16 @@ IF(.NOT.DSYM)THEN
       call mem_alloc(D2,nbast,nbast,2)
       call mem_alloc(TMP,nbast,nbast,2)
       call ls_transpose(D(:,:,1),TMP(:,:,1),nbast)
-      call ls_transpose(D(:,:,1),TMP(:,:,2),nbast)
+!      call ls_transpose(D(:,:,1),TMP(:,:,2),nbast)
       call dcopy(nbast*nbast,D,1,D2(:,:,1),1)
       call dcopy(nbast*nbast,D,1,D2(:,:,2),1)
       call dscal(nbast*nbast*2,0.5E0_realk,D2,1)
-      call daxpy(nbast*nbast*2,0.5E0_realk,TMP,1,D2,1)
+      call daxpy(nbast*nbast,0.5E0_realk,TMP,1,D2,1)   !Sym
+      call daxpy(nbast*nbast,-0.5E0_realk,TMP,1,D2(:,:,2),1)  !Asym
       call ls_dzero(TMP,nbast*nbast*2)
       call II_get_exchange_mat1_full(LUPRI,LUERR,SETTING,nbast,D2,TMP,2,AO1,AO3,AO2,AO4,Oper)
-      call daxpy(nbast*nbast,1.0E0_realk,TMP(:,:,1),1,F,1)
-      call daxpy(nbast*nbast,1.0E0_realk,TMP(:,:,2),1,F,1)
+      call daxpy(nbast*nbast,1.0E0_realk,TMP(:,:,1),1,F,1) !Sym 
+      call daxpy(nbast*nbast,1.0E0_realk,TMP(:,:,2),1,F,1) !Asym
       call mem_dealloc(TMP)
       call mem_dealloc(D2)
    ELSE !zero 
@@ -5164,7 +5168,7 @@ call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,ndmat)
 call ls_get_exchange_mat(AO1,AO3,AO2,AO4,Oper,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 call mem_alloc(K,nbast,nbast,ndmat)
 CALL retrieve_Output(lupri,setting,K,setting%IntegralTransformGC)
-call daxpy(nbast*nbast,-1E0_realk,K,1,F,1)
+call daxpy(nbast*nbast*ndmat,-1E0_realk,K,1,F,1)
 call mem_dealloc(K)
 CALL ls_freeDmatFromSetting(setting)
 IF(SETTING%SCHEME%DALINK .AND.SETTING%SCHEME%LINK)THEN
@@ -6919,8 +6923,6 @@ ELSE
    ELSE
       IF (default) THEN
          call II_get_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)   
-!         WRITE(lupri,*)'The Coulomb matrix'
-!         call mat_print(F,1,F%nrow,1,F%ncol,lupri)
          DO I=1,ndmat
             WRITE(lupri,*)'The Coulomb energy contribution ',fac*0.5E0_realk*mat_dotproduct(D(I),F(I))
          ENDDO
@@ -6932,8 +6934,6 @@ ELSE
             CALL ls_attachDmatToSetting(D,ndmat,setting,'LHS',2,4,.FALSE.,lupri)
          ENDIF
          call II_get_exchange_mat(LUPRI,LUERR,SETTING,D,ndmat,Dsym,K)
-!         WRITE(lupri,*)'The Exchange matrix'
-!         call mat_print(K,1,K%nrow,1,K%ncol,lupri)
          DO i=1,ndmat
             WRITE(lupri,*)'The Exchange energy contribution ',-mat_dotproduct(D(i),K(i))
             call mat_daxpy(1E0_realk,K(i),F(i))
