@@ -34,8 +34,8 @@ module pcm_interface
    public pcm_interface_initialize
    public pcm_interface_finalize
 
-   public collect_nctot
-   public collect_atoms
+!   public collect_nctot
+!   public collect_atoms
    public pcm_energy_driver
    public pcm_oper_ao_driver
 !   public pcm_lintra_driver
@@ -100,7 +100,7 @@ module pcm_interface
 
       end subroutine
 
-      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot_')
+      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot')
 
 #include "mxcent.h"
 #include "nuclei.h"
@@ -111,7 +111,7 @@ module pcm_interface
 
       end subroutine collect_nctot
       
-      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms_')
+      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms')
   
       use pcm_utils, only: getacord
 
