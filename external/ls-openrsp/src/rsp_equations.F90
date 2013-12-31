@@ -52,7 +52,7 @@ module rsp_equations
    !> turn on or off debugging in this file
    logical :: rsp_equations_debug = .false.
 
-   logical :: rsp_eq_truncate_order = huge(1)
+   integer :: rsp_eq_truncate_order = huge(1)
 
    !> Type for saving/caching the solution of a response equation,
    !> so to avoid re-solving the same equation later in the program.
