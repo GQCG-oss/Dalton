@@ -269,7 +269,7 @@ module cc_debug_routines_module
 
      ! prevent if explicitly requested or if PNOs are requested
 
-     if(DECinfo%CCSDpreventcanonical)then
+     if(use_pnos.or.DECinfo%CCSDpreventcanonical)then
        !nocc diagonalization
        Co_d    = Co_f
        Cv_d    = Cv_f
@@ -290,12 +290,25 @@ module cc_debug_routines_module
        call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock_f,&
             &qqfock_f,Co_f,Cv_f,Co_d,Cv_d,Uocc,Uvirt,focc,fvirt)
 
-       ppfock_d = 0.0E0_realk
-       qqfock_d = 0.0E0_realk
+       if(use_pnos)then
+         !Do not destroy the locality of the occupied space if PNOs are used,
+         !otherwise the adaption cannot happen to a confined space
+         Co_d     = Co_f
+         ppfock_d = ppfock_f
+         do ii=1,nocc
+           Uocc(ii,ii) = 1.0E0_realk
+         enddo
 
-       do ii=1,nocc
-         ppfock_d(ii,ii) = focc(ii)
-       enddo
+       else
+
+         ppfock_d = 0.0E0_realk
+         do ii=1,nocc
+           ppfock_d(ii,ii) = focc(ii)
+         enddo
+
+       endif
+
+       qqfock_d = 0.0E0_realk
        do aa=1,nvirt
          qqfock_d(aa,aa) = fvirt(aa)
        enddo
@@ -303,11 +316,13 @@ module cc_debug_routines_module
        if(get_mult)then
 
          if(DECinfo%use_singles)then
-           call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,t2=t2_final%val,t1=t1_final%val)
+           call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val,vo=t1_final%val)
          else
-           call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,t2=t2_final%val)
+           call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val)
          endif
 
+       elseif(use_pnos)then
+         call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=m2%val)
        endif
 
 
@@ -323,8 +338,8 @@ module cc_debug_routines_module
 
 
      ! create transformation matrices in array form
-     Co   = array2_init(occ_dims,Co_d)
-     Cv   = array2_init(virt_dims,Cv_d)
+     Co    = array2_init(occ_dims,Co_d)
+     Cv    = array2_init(virt_dims,Cv_d)
      Co2   = array2_init(occ_dims,Co2_d)
      Cv2   = array2_init(virt_dims,Cv2_d)
      fock  = array2_init(ao2_dims,fock_f)
@@ -657,15 +672,19 @@ module cc_debug_routines_module
               endif
 
               !transform back to original basis   
-              if(DECinfo%CCSDpreventcanonical)then
-                if(DECinfo%use_singles)then
-                  call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                  &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                else
-                  call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                  &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                endif
-              endif
+              !if(.not.DECinfo%CCSDpreventcanonical)then
+              !  if(DECinfo%use_singles)then
+              !    call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+              !    &vovo=t2(iter)%val,vo=t1(iter)%val,bo=xocc%val,bv=xvirt%val)
+              !    call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+              !    &vovo=omega2(iter)%val,vo=omega1(iter)%val,bo=yocc%val,bv=yvirt%val)
+              !  else
+              !    call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+              !    &vovo=t2(iter)%val,bo=xocc%val,bv=xvirt%val)
+              !    call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+              !    &vovo=omega2(iter)%val,bo=yocc%val,bv=yvirt%val)
+              !  endif
+              !endif
 
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
@@ -678,19 +697,19 @@ module cc_debug_routines_module
               endif
 
               !transform to pseudo diagonal basis for the solver
-              if(DECinfo%CCSDpreventcanonical)then
-                if(DECinfo%use_singles)then
-                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                  &t2=t2(iter)%val,t1=t1(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                  &t2=omega2(iter)%val,t1=omega1(iter)%val)
-                else
-                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                  &t2=t2(iter)%val,Co=xocc%val,Cv=xvirt%val)
-                  call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-                  &t2=omega2(iter)%val)
-                endif
-              endif
+              !if(.not.DECinfo%CCSDpreventcanonical)then
+              !  if(DECinfo%use_singles)then
+              !    call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+              !    &vovo=t2(iter)%val,vo=t1(iter)%val,bo=xocc%val,bv=xvirt%val)
+              !    call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+              !    &vovo=omega2(iter)%val,vo=omega1(iter)%val,bo=yocc%val,bv=yvirt%val)
+              !  else
+              !    call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+              !    &vovo=t2(iter)%val,bo=xocc%val,bv=xvirt%val)
+              !    call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+              !    &vovo=omega2(iter)%val,bo=yocc%val,bv=yvirt%val)
+              !  endif
+              !endif
 
            else
 
@@ -712,9 +731,10 @@ module cc_debug_routines_module
            !  !rpa_multipliers not yet implemented
            !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !else
-             !call RPA_residualdeb(Omega2(iter),t2(iter),pack_gmo,ppfock,qqfock,nocc,nvirt)
-           call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
-             !call RPA_residual(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
+           !  call RPA_residualpar(Omega2(iter),t2(iter),pack_gmo,ppfock,qqfock,nocc,nvirt)
+             call RPA_residualdeb(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
+           !call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
+           !  call RPA_residual(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
            !endif
 
 
@@ -1095,10 +1115,14 @@ module cc_debug_routines_module
      !transform back to original basis   
      if(DECinfo%use_singles)then
        call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-       &gvovo=VOVO%val,t2=t2_final%val,t1=t1_final%val)
+       &vovo=t2_final%val,vo=t1_final%val)
+       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       &vovo=VOVO%val)
      else
        call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-       &gvovo=VOVO%val,t2=t2_final%val)
+       &vovo=t2_final%val)
+       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       &vovo=VOVO%val)
      endif
 
      call mem_dealloc(Uocc)
@@ -2784,6 +2808,9 @@ module cc_debug_routines_module
         case(MODEL_RPA)
           ! JOHANNES here you should implement your own routine to get
           ! MaxAllowedDimAlpha MaxAllowedDimGamma
+          call get_MO_and_AO_batches_size(small_frag,ntot,nbas,nocc,nvir, &
+                 & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem)
+          !Just for making the test case not fail
           print *, 'JOHANNES here you should implement your own routine to get'
           print *, 'MaxAllowedDimAlpha and MaxAllowedDimGamma'
         case default
@@ -6540,7 +6567,7 @@ module cc_debug_routines_module
     real(realk),parameter :: p10 = 1.0E0_realk
     real(realk),parameter :: nul = 0.0E0_realk
     logical :: alloc
-    real(realk) :: tmp(nv*nv), tmp2(nv*nv)
+    integer :: allremoved, ofmindim, ofmaxdim, allocpcount
 
     if( DECinfo%noPNOoverlaptrunc ) then
       thr = -1.0E0_realk * huge(thr)
@@ -6548,12 +6575,17 @@ module cc_debug_routines_module
       thr = DECinfo%PNOoverlapthr
     endif
     
+    allocpcount= 0
+    allremoved = 0
+    ofmindim   = 0
+    ofmaxdim   = 0
 
     call mem_TurnONThread_Memory()
-    !$OMP PARALLEL DEFAULT(NONE)&
+    !$OMP PARALLEL DEFAULT(NONE) &
+    !$OMP& REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
     !$OMP& SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
     !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
-    !$OMP& lwork,info,diag,kerdim,red1,red2,maxdim,mindim,tmp,dg,&
+    !$OMP& lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
     !$OMP& alloc)
     call init_threadmemvar()
 
@@ -6584,6 +6616,7 @@ module cc_debug_routines_module
           call dgemm('t','n',ns1,ns2,nv,p10,s1,nv,s2,nv,nul,pno_S(c)%d,ns1)
 
           if(with_svd)then
+            allocpcount = allocpcount + 1
             !get the minimum dimension, the maximum dimension and the dimension
             !of the kernel of the transformation
             mindim = min(ns1,ns2)
@@ -6624,15 +6657,15 @@ module cc_debug_routines_module
               red2 = ns2 - remove - kerdim
             endif
 
+            ofmindim   = ofmindim   + mindim
+            ofmaxdim   = ofmaxdim   + maxdim
+            allremoved = allremoved + remove
+
             alloc = ( red1 > 0 .and. red2 > 0 )
 
             if(red1/=diag.or.red2/=diag)call &
             &lsquit("ERROR(get_pno_overlap_matrices)calculated wrong dimensions",-1)
 
-            !if(remove > 0 )then
-            !  print *,"screened some away"
-            !  print *,remove
-            !endif
 
             call mem_dealloc( pno_S(c)%d )
        
@@ -6684,6 +6717,7 @@ module cc_debug_routines_module
     !$OMP END PARALLEL
     call mem_TurnOffThread_Memory()
 
+    print *,"overlapscreening removed ",allremoved," of ",ofmindim,ofmaxdim,"in",allocpcount,"of",n*(n-1)/2,"pairs"
 
   end subroutine get_pno_overlap_matrices
 

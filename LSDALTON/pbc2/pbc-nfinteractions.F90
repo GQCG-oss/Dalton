@@ -249,6 +249,7 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
 			call mat_zero(lattice%lvec(idx)%oper(1))
 			! get the overlap matrix for cell between reference and cell l
 			call II_get_overlap(lupri,luerr,setting,lattice%lvec(idx)%oper(1))
+                        !write(*,*) 'Overlap computed for',il1,il2,il3
 			if(lattice%store_mats) then !todo necc? are the matrices ever stored??
 				call pbc_get_file_and_write(lattice,nbast,nbast,idx,1,1, &
 					& '            ')!1 refers to overlap
@@ -1327,6 +1328,8 @@ SUBROUTINE pbc_complete_Fock_mtx(lupri,nbast,fock_mtx,sizef,cut,lattice)
 	
 	call find_latt_index(refcell,0,0,0,lattice,lattice%max_layer)
 	write(lupri,*) 'refcelle', refcell
+
+        num_latvectors=size(lattice%lvec)
 
 	do i=1,num_latvectors
 		if(i .eq. refcell) CYCLE
