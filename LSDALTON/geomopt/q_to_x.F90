@@ -27,7 +27,7 @@ Real(realk), pointer :: Ini_coord(:,:), Cart_step(:),q0(:),q(:),Int_step(:),Tota
 Real(realk), pointer :: Bs_inv(:,:),Vectors(:,:),Bs(:,:),B_mat(:,:),Del_step(:), Left_ds(:)
 Real(realk) :: Int_step_norm
 Logical :: Converged, Finished
-Integer :: N_Cart,N_Int,lupri,i,Counter,Cycles
+Integer :: N_Cart,N_Int,lupri,i,Counter,Cycles,nCent
 ! Initialize
 step_len = D1
 CSTEP = D0
@@ -35,7 +35,8 @@ Converged = .FALSE.
 Finished = .FALSE.
 Counter = 1
 Cycles = 0
-call mem_alloc(Ini_Coord,3,N_Cart)
+nCent = N_Cart/3
+call mem_alloc(Ini_Coord,3,nCent)
 call mem_alloc(Int_step,N_Int)
 call mem_alloc(Del_step,N_Cart-6)
 call mem_alloc(Total_ds,N_Cart-6)
@@ -49,7 +50,7 @@ Call mem_alloc(Vectors,N_Int,N_Cart-6)
 Call mem_alloc(B_mat,N_Int,N_Cart)
 !
 Cart_step = D0
-Ini_Coord = optinfo%Coordinates
+Ini_Coord = optinfo%Coordinates(:,1:nCent)
 Int_step = optinfo%StpInt(1:N_Int)
 ! Get the first inverse and vectors 
 Call First_inverse(optinfo,Bs_inv,vectors,N_Cart,N_Int,lupri)
