@@ -289,7 +289,7 @@ C
       use polarizable_embedding, only: pe_master
 #endif
 #if defined (PCM_MODULE)
-      use pcm_interface
+      use pcm_scf
       use pcmmod_cfg
 #endif
 #include "implicit.h"

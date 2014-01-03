@@ -632,7 +632,7 @@ C     Called by PROGRAM DALTON after reading environment
 C     variables.
 C
 #if defined (PCM_MODULE)
-      use pcm_interface
+      use pcm_scf
       use pcmmod_cfg
 #endif
 
@@ -1145,11 +1145,11 @@ C
       CTOT = CEND - CSTR
       WTOT = WEND - WSTR
 C
-! Finalize pcm_interface if an EXTPCM calculation (PCM using PCMSolver
+! Finalize pcm_scf if an EXTPCM calculation (PCM using PCMSolver
 ! library) was requested.
 #if defined (PCM_MODULE)
       if (pcmmod_is_pcm_calculation) then
-        call pcm_interface_finalize
+        call pcm_scf_finalize
         write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
       end if
 #endif

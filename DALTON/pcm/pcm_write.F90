@@ -10,8 +10,11 @@ module pcm_write
    public report_after_pcm_input
    public pcm_write_file
    public pcm_write_file_separate
+   public host_writer
 
    private
+   
+   integer                          :: global_print_unit = -1
   
    contains
    
@@ -21,42 +24,40 @@ module pcm_write
 !
       use pcmmod_cfg
 
-      integer, optional :: print_unit
-      integer           :: print_here
+      integer, optional, intent(in) :: print_unit
 
       if (present(print_unit)) then
-              print_here = print_unit
-              write(print_here, *) ' ===== Polarizable Continuum Model calculation set-up ====='
-              write(print_here, *) '* Polarizable Continuum Model using PCMSolver external module:'                              
-              write(print_here, *) '  1: Converged potentials and charges at tesserae representative points written on file.'
+              global_print_unit = print_unit
+              write(global_print_unit, *) ' ===== Polarizable Continuum Model calculation set-up ====='
+              write(global_print_unit, *) '* Polarizable Continuum Model using PCMSolver external module:'                              
+              write(global_print_unit, *) '  1: Converged potentials and charges at tesserae representative points written on file.'
 
               if (pcmmod_old_integration) then
-                 write(print_here, *) '  2: Use point-by-point charge-attraction integrals evaluation subroutines.'
+                 write(global_print_unit, *) '  2: Use point-by-point charge-attraction integrals evaluation subroutines.'
               else
-                 write(print_here, *) '  2: Use vectorized charge-attraction integrals evaluation subroutines.'
+                 write(global_print_unit, *) '  2: Use vectorized charge-attraction integrals evaluation subroutines.'
               end if
               
               if (pcmmod_separate) then
-                 write(print_here, *) '  3: Separate potentials and apparent charges in nuclear and electronic.'
+                 write(global_print_unit, *) '  3: Separate potentials and apparent charges in nuclear and electronic.'
               else
-                 write(print_here, *) '  3: Use total potentials and apparent charges.'
+                 write(global_print_unit, *) '  3: Use total potentials and apparent charges.'
               end if
               
               if (pcmmod_print > 5 .and. pcmmod_print < 10) then
-                 write(print_here, *) '  4: Print potentials at tesserae representative points.'
+                 write(global_print_unit, *) '  4: Print potentials at tesserae representative points.'
               else if (pcmmod_print > 10) then
-                 write(print_here, *) '  4: Print potentials and charges at tesserae representative points.'
+                 write(global_print_unit, *) '  4: Print potentials and charges at tesserae representative points.'
               else
-                 write(print_here, *) '  4: Do not print potentials and charges.'
+                 write(global_print_unit, *) '  4: Do not print potentials and charges.'
               end if     
       ! Should print info for the cavity and the solver here.
-              write(print_here, *) '* References: '                                                               
-              write(print_here, *) '  - J. Tomasi, B. Mennucci and R. Cammi:'                
-              write(print_here, *) '   "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999' 
-              write(print_here, *) '  - PCMSolver, an API for the Polarizable Continuum Model electrostatic problem'    
-              write(print_here, *) '    L. Frediani, R. Di Remigio, K. Mozgawa'
+              write(global_print_unit, *) '* References: '                                                               
+              write(global_print_unit, *) '  - J. Tomasi, B. Mennucci and R. Cammi:'                
+              write(global_print_unit, *) '   "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999' 
+              write(global_print_unit, *) '  - PCMSolver, an API for the Polarizable Continuum Model electrostatic problem'    
+              write(global_print_unit, *) '    L. Frediani, R. Di Remigio, K. Mozgawa'
       else
-              print_here = 0
               write(*, *) ' ===== Polarizable Continuum Model calculation set-up ====='                                         
               write(*, *) '* Polarizable Continuum Model using PCMSolver external module:'
               write(*, *) '  1: Converged potentials and charges at tesserae representative points written on file.'
@@ -169,5 +170,20 @@ module pcm_write
       write(pcm_file_unit, '(A, F15.12)') 'Sum of apparent surface charges ', tot_nuc_chg + tot_ele_chg
     
    end subroutine 
+   
+   subroutine host_writer(message, message_length) bind(c, name='host_writer')
+       
+      use, intrinsic :: iso_c_binding
+
+      integer(c_size_t), intent(in) :: message_length
+      character(kind=c_char)        :: message(message_length)
+
+      if (global_print_unit .eq. -1) then
+        write(*, '(1000A)') message
+      else
+        write(global_print_unit, '(1000A)') message
+      end if
+
+   end subroutine host_writer
    
 end module

@@ -46,7 +46,7 @@ module pcm_linear_response
       call pcm_v1(trial_vec, density, cmo, work(kfree), lfree)                             
       potName = 'PotOIT'//CHAR(0)                                                          
       chgName = 'ChgOIT'//CHAR(0)                                                          
-      call comp_chg_pcm(potName, chgName)                                                  
+      call compute_asc(potName, chgName)                                                  
                                                                                            
     !  call pcm_v1q0                                                                     
                                                                                            
@@ -100,7 +100,7 @@ module pcm_linear_response
          call dzero(work(kpotao), nnbasx)                                                  
          call dzero(work(kpotmo), n2orbx)                                                  
          call dzero(work(kpotmo2), n2orbx)                                                 
-         call get_tess_cent_coord(i, tessera)                                              
+         call get_tesserae_centers(i, tessera)                                              
          call pot_int_tess(work(kpotao), tessera, trimat, work(kfree), lfree)              
          call uthu(work(kpotao), work(kpotmo), work(kucmo), work(kfree), nbast, norbt)     
          call dsptsi(norbt, work(kpotmo), work(kpotmo2))                                   
@@ -169,7 +169,7 @@ module pcm_linear_response
          call dzero(work(kpotao), nnbasx)                                                  
          call dzero(work(kpotmo), n2orbx)                                                  
          call dzero(work(kpotmo2), n2orbx)                                                 
-         call get_tess_cent_coord(i, tessera)                                              
+         call get_tesserae_centers(i, tessera)                                              
          call pot_int_tess(work(kpotao), tessera, trimat, work(kfree), lfree)              
          call uthu(work(kpotao), work(kpotmo), work(kucmo), work(kfree), nbast, norbt)     
          call dsptsi(norbt, work(kpotmo), work(kpotmo2))                                   
@@ -207,7 +207,7 @@ module pcm_linear_response
 !      call dzero(work(kpotint), nnbasx * nsym)                                      
 !      if (lfree .lt. 0) call errwrk('ieflno', kfree, lwork)                         
 !      do i = 1, nts                                                                 
-!         call get_tess_cent_coord(i, tessera)                                       
+!         call get_tesserae_centers(i, tessera)                                       
 !         call pot_int_tess(work(kpotao), tessera, trimat, work(kfree),              
 !     &        lfree)                                                                
 !      end do                                                                        
