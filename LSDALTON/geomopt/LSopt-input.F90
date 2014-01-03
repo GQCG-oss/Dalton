@@ -175,11 +175,11 @@ Type(opt_setting) :: optinfo
      optinfo%findif_mesh = 1.0D-5
 
 !    Non-iterative stepping scheme based on perturbation theory (Vladimir R. and Ulf E.)
-     optinfo%New_stepping = .FALSE.
+     optinfo%New_stepping = .TRUE.
      optinfo%IBT = .FALSE.
      optinfo%OLDIBT = .FALSE.
      optinfo%Shanks = .FALSE.
-     optinfo%Deriv_order = 3
+     optinfo%Deriv_order = 20
 
 ! 
 End subroutine Optimization_set_default_config 
@@ -219,7 +219,7 @@ Character(Len=7), dimension(87) :: KwordTABLE = &
             '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT', &
             '.NOHSWR', '.FREEZE', '.FRZITR', '.REDSPA', &
             '.CARTRS', '.FORBAC', '.SCANSI', '.SCANST', &
-            '.NUMOPT', '.NUMESH', '.HOPE  ', '.ITERBT', &
+            '.NUMOPT', '.NUMESH', '.NOHOPE', '.ITERBT', &
             '.DERORD', '.OLDIBT', '.SHANKS'/)
 ! Number of cartesian coordinates
 optinfo%IcartCoord = NAtoms*3
@@ -576,8 +576,8 @@ Do
                      Read(lucmd,*) optinfo%ScanCoord
                   Case('.SCANST') 
                      Read(lucmd,*) optinfo%Scan_step
-                  Case('.HOPE  ')
-                     optinfo%New_stepping = .TRUE.
+                  Case('.NOHOPE')
+                     optinfo%New_stepping = .FALSE.
                   Case('.ITERBT')
                      optinfo%IBT = .TRUE.
                   Case('.OLDIBT')
