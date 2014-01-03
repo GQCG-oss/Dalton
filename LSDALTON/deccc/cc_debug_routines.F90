@@ -269,7 +269,7 @@ module cc_debug_routines_module
 
      ! prevent if explicitly requested or if PNOs are requested
 
-     if(use_pnos.or.DECinfo%CCSDpreventcanonical)then
+     if(u_pnos.or.DECinfo%CCSDpreventcanonical)then
        !nocc diagonalization
        Co_d    = Co_f
        Cv_d    = Cv_f
@@ -290,7 +290,7 @@ module cc_debug_routines_module
        call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock_f,&
             &qqfock_f,Co_f,Cv_f,Co_d,Cv_d,Uocc,Uvirt,focc,fvirt)
 
-       if(use_pnos)then
+       if(u_pnos)then
          !Do not destroy the locality of the occupied space if PNOs are used,
          !otherwise the adaption cannot happen to a confined space
          Co_d     = Co_f
@@ -321,7 +321,7 @@ module cc_debug_routines_module
            call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val)
          endif
 
-       elseif(use_pnos)then
+       elseif(u_pnos)then
          call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=m2%val)
        endif
 
