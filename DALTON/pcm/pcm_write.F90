@@ -52,11 +52,7 @@ module pcm_write
                  write(global_print_unit, *) '  4: Do not print potentials and charges.'
               end if     
       ! Should print info for the cavity and the solver here.
-              write(global_print_unit, *) '* References: '                                                               
-              write(global_print_unit, *) '  - J. Tomasi, B. Mennucci and R. Cammi:'                
-              write(global_print_unit, *) '   "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999' 
-              write(global_print_unit, *) '  - PCMSolver, an API for the Polarizable Continuum Model electrostatic problem'    
-              write(global_print_unit, *) '    L. Frediani, R. Di Remigio, K. Mozgawa'
+              call print_citation
       else
               write(*, *) ' ===== Polarizable Continuum Model calculation set-up ====='                                         
               write(*, *) '* Polarizable Continuum Model using PCMSolver external module:'
@@ -76,11 +72,7 @@ module pcm_write
                  write(*, *) '  3: Do not print potentials and charges.'
               end if     
       ! Should print info for the cavity and the solver here.
-              write(*, *) '* References: '                                                               
-              write(*, *) '  - J. Tomasi, B. Mennucci and R. Cammi:',                &
-              '   "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999' 
-              write(*, *) '  - PCMSolver, an API for the Polarizable Continuum Model electrostatic problem',   &    
-              '    L. Frediani et al. '
+              call print_citation
       end if
 
    end subroutine
