@@ -160,6 +160,9 @@ SUBROUTINE print_intro(lupri)
   integer,intent(in)        :: lupri
   integer                   :: I
 
+! sets DALTON_VERSION
+#include "dalton_config.h"
+
   WRITE(LUPRI,*)' '
   WRITE(LUPRI,*)'    ******************************************************************    '
   WRITE(LUPRI,*)'    **********  LSDALTON - An electronic structure program  **********    '
@@ -167,7 +170,7 @@ SUBROUTINE print_intro(lupri)
   WRITE(LUPRI,*)' '
   write(LUPRI,*)' '
 
-  WRITE (LUPRI,'(5X,A)')' This is output from LSDALTON (Release Dalton2013)'
+  WRITE (LUPRI,'(5X,A)')' This is output from LSDALTON '//DALTON_VERSION
   write(LUPRI,*)' '
   write(lupri,*)' '
 

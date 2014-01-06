@@ -3,9 +3,10 @@ TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonIfortReleaseCSR
 SCRATCH_DIR=/tmp/tkjaer/DaltonIfortReleaseCSR
 rm -rf $TMP_DIR 
 rm -rf $SCRATCH_DIR
-export PATH=/home/com/intel/composer_xe_2013.1.117/bin/intel64:/home/com/intel/composer_xe_2013.1.117/mpirt/bin/intel64:/home/com/intel/composer_xe_2013.1.117/bin/intel64:/home/com/intel/composer_xe_2013.1.117/bin/intel64_mic:/home/com/intel/composer_xe_2013.1.117/debugger/gui/intel64:/com/OpenMPI/1.4.1/intel/bin:/com/gfortran/4.4.3/bin:/usr/local/torque/bin:/com/pgi/linux86-64/12.4/bin:/com/bin:/usr/local/bin:/bin:/usr/bin:/home/tkjaer/bin
+export PATH=/home/com/intel/composer_xe_2013.1.117/bin/intel64:/home/com/intel/composer_xe_2013.1.117/mpirt/bin/intel64:/home/com/intel/composer_xe_2013.1.117/bin/intel64:/home/com/intel/composer_xe_2013.1.117/bin/intel64_mic:/home/com/intel/composer_xe_2013.1.117/debugger/gui/intel64:/com/OpenMPI/1.4.1/intel/bin:/usr/local/torque/bin:/com/pgi/linux86-64/12.4/bin:/com/bin:/usr/local/bin:/bin:/usr/bin:/home/tkjaer/bin
 
-export LD_LIBRARY_PATH=/home/com/intel/composer_xe_2013.1.117/compiler/lib/intel64:/opt/intel/mic/coi/host-linux-release/lib:/opt/intel/mic/myo/lib:/home/com/intel/composer_xe_2013.1.117/mpirt/lib/intel64:/home/com/intel/composer_xe_2013.1.117/ipp/../compiler/lib/intel64:/home/com/intel/composer_xe_2013.1.117/ipp/lib/intel64:/home/com/intel/composer_xe_2013.1.117/compiler/lib/intel64:/home/com/intel/composer_xe_2013.1.117/mkl/lib/intel64:/home/com/intel/composer_xe_2013.1.117/tbb/lib/intel64:/com/OpenMPI/1.4.1/intel/lib:/com/OpenMPI/1.4.1/intel/lib:/com/gfortran/4.4.3/lib64:/com/gfortran/4.4.3/lib
+export LD_LIBRARY_PATH=/home/com/intel/composer_xe_2013.1.117/compiler/lib/intel64:/opt/intel/mic/coi/host-linux-release/lib:/opt/intel/mic/myo/lib:/home/com/intel/composer_xe_2013.1.117/mpirt/lib/intel64:/home/com/intel/composer_xe_2013.1.117/ipp/../compiler/lib/intel64:/home/com/intel/composer_xe_2013.1.117/ipp/lib/intel64:/home/com/intel/composer_xe_2013.1.117/compiler/lib/intel64:/home/com/intel/composer_xe_2013.1.117/mkl/lib/intel64:/home/com/intel/composer_xe_2013.1.117/tbb/lib/intel64:/com/OpenMPI/1.4.1/intel/lib:/com/OpenMPI/1.4.1/intel/lib
+#:/com/g/4.4.3/lib64:/com/gfortran/4.4.3/lib
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
