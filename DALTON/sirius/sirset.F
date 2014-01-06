@@ -888,7 +888,7 @@ C
  2410 FORMAT(///' SETWOP - Too many orbital rotations in symmetry',I3
      &  //' NWOPX  =',I8/' MAXWOP =',I8
      &  //' To run this calculation you must modify the Dalton source:'
-     &   /'   Increase MAXWOP in include/infvar.h; make depend; make')
+     &   /'   Increase MAXWOP in include/infvar.h and rebuild')
 C
          IF (IPRSTAT.GE.5) WRITE (LUERR,'(/A,I3,A,I3,/A,2I5/)')
      *      ' (SETWOP) orbital rotation operators, abs level',

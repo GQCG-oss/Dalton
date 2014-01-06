@@ -2621,11 +2621,9 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-      WRITE(LUPRI,'(//4(/5X,A))')
+      WRITE(LUPRI,'(//2(/5X,A))')
      &  'FOR RECOMPILATION:',
-     &  'Change parameter in infpar.h and execute:',
-     &  '   make depend',
-     &  '   make'
+     &  'Change parameter in infpar.h and rebuild with make'
 C
       RETURN
       END
