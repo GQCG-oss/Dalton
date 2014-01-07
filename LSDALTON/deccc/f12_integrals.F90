@@ -63,7 +63,7 @@ module f12_integrals_module
 
   use wangy_playground_module
 
-  public :: f12_single_fragment_energy, f12_pair_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21
+  public :: get_f12_single_fragment_energy, get_f12_pair_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21
 
   private
 
@@ -78,11 +78,11 @@ contains
   !> Brief: Gives the single fragment energy for MP2F12
   !> Author: Yang M. Wang
   !> Date: April 2013
-  subroutine f12_single_fragment_energy(MyFragment, Dmat)
+  subroutine get_f12_single_fragment_energy(MyFragment)
     implicit none
 
     !> Density matrix
-    type(matrix),intent(in) :: Dmat
+    ! type(matrix),intent(in) :: Dmat
 
     ! ***********************************************************
     ! Allocating for Coefficient matrix
@@ -93,13 +93,15 @@ contains
     !type(lsitem), intent(inout) :: Mylsitem
     !> MO coefficient matrix for the occupied EOS
     real(realk), pointer :: CoccEOS(:,:)
-    !> MO coefficient matrix for the occupied + virtual EOS
+    !> MO coefficient matrix for the occupied AOS
+    real(realk), pointer :: CoccAOS(:,:)
+    !> MO coefficient matrix for the occupied + virtual AOS
     real(realk), pointer :: CocvAOS(:,:)
     !> MO coefficient matrix for the CABS MOs
     real(realk), pointer :: Ccabs(:,:)
     !> MO coefficient matrix for the RI MOs
     real(realk), pointer :: Cri(:,:)
-    !> MO coefficient matrix for the virtual EOS
+    !> MO coefficient matrix for the virtual AOS
     real(realk), pointer :: CvirtAOS(:,:)
 
     ! ***********************************************************
@@ -188,8 +190,10 @@ contains
     integer :: noccEOS, nunoccEOS, noccfull
     !> number of occupied + virtual MO orbitals in EOS 
     integer :: nocvAOS  
-    !> number of virtual MO orbitals in EOS 
+    !> number of virtual MO orbitals in AOS 
     integer :: nvirtAOS
+    !> number of occupied MO orbitals in AOS 
+    integer :: noccAOS
 
     !> number of CABS AO orbitals
     integer :: ncabsAO
@@ -211,6 +215,7 @@ contains
     noccfull = noccEOS
     
     nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
+    noccAOS = MyFragment%noccAOS
     nvirtAOS = MyFragment%nunoccAOS
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
@@ -263,11 +268,11 @@ contains
     call mem_alloc(Rijcm, noccEOS, noccEOS,  ncabsMO, noccEOS)
   
     call mem_alloc(B8ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-  !  call mem_alloc(Rijcm,  noccEOS, noccEOS, ncabsMO, noccEOS)
+    !  call mem_alloc(Rijcm, noccEOS, noccEOS, ncabsMO, noccEOS)
     call mem_alloc(Rijcr,  noccEOS, noccEOS, ncabsMO, ncabsAO) 
 
     call mem_alloc(B9ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-  !  call mem_alloc(Rijap,  noccEOS, noccEOS,nvirtAOS, nocvAOS)
+    !  call mem_alloc(Rijap, noccEOS, noccEOS,nvirtAOS, nocvAOS)
     call mem_alloc(Rijac, noccEOS, noccEOS, nvirtAOS, ncabsMO)
        
     call mem_alloc(hJir, noccEOS, ncabsAO)
@@ -289,7 +294,13 @@ contains
        ix = MyFragment%idxo(i)
        CoccEOS(:,i) = MyFragment%Co(:,ix)
     end do
-    
+   
+    ! Creating a CoccAOS matrix 
+    call mem_alloc(CoccAOS, MyFragment%nbasis, noccAOS)
+    do i=1, MyFragment%noccAOS
+       CoccAOS(:,i) = MyFragment%Co(:,i)
+    end do
+       
     ! Creating a CocvAOS matrix 
     call mem_alloc(CocvAOS, MyFragment%nbasis, nocvAOS)
     do i=1, MyFragment%noccAOS
@@ -321,15 +332,15 @@ contains
     ! Creating the V matrix 
     ! ***********************************************************
     !> Get integrals <ij|f12*r^-1|kl> stored as (i,j,k,l)  (Note INTSPEC is always stored as (2,4,1,3) )
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRRF',V1ijkl)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRRF',V1ijkl)
     !> Get integrals <ij|f12|pq> stored as (i,j,p,q)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRC',Gijpq)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRC',Gijpq)
     !> Get integrals <ij|r^-1|pq> stored as (i,j,p,q)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRG',Rijpq)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRG',Rijpq)
     !> Get integrals <ij|r^-1|mc> stored as (i,j,m,c) where c = cabs
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRC',Gijmc)    
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRC',Gijmc)    
     !> Get integrals <ij|f12|mc> stored as (i,j,m,c) where c = cabs 
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
     
     m = noccEOS*noccEOS  ! <ij G pq> <pq R kl> = <m V2 n> 
     k = nocvAOS*nocvAOS  
@@ -379,7 +390,7 @@ contains
     ! Creating the X matrix 
     ! ***********************************************************
     ! (Note INTSPEC is always stored as (2,4,1,3) )
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS, Ccabs,Cri,CvirtAOS,'iiii','RRRR2',X1ijkl)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRR2',X1ijkl)
 
     m = noccEOS*noccEOS   ! <ij G pq> <pq R kl> = <m V3  n>
     k = nocvAOS*nocvAOS  
@@ -420,19 +431,21 @@ contains
     ! Creating the B matrix 
     ! ***********************************************************
     !> Get integral <ij|[[T,f12],f12]|kl> stored as (i,j,r,k) (Note INTSPEC is always stored as (2,4,1,3) )
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRRD',B1ijkl)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRRD',B1ijkl)
+
     !> Get integral <ij|f12^2|kr> stored as (i,j,k,r)    r = RI MO
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'riii','RRCR2',R2rlij)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiir','RCRR2',R2ijkr)   
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiri','RRRC2',R2ijrl) 
-    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiir','RCRR2',R2ijlr) 
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'riii','RRCR2',R2rlij)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiir','RCRR2',R2ijkr)   
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiri','RRRC2',R2ijrl) 
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiir','RCRR2',R2ijlr) 
+
     !> Get integral <ij|f12|rs> stored as (i,j,r,s)      r,s = RI MO
-    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iirr','RCRCG',Rijrs)   
-    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iirm','RRRCG',Rijrm)   
-    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipa','RRRRG',Rijpa)  
-    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'ijcr','RCRCG',Rijcr)  
-    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'ijcm','RRRCG',Rijcm)  
-    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,'ijca','RRRCG',Rijca)  
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iirr','RCRCG',Rijrs)   
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iirm','RRRCG',Rijrm)   
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipa','RRRRG',Rijpa)  
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'ijcr','RCRCG',Rijcr)  
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'ijcm','RRRCG',Rijcm)  
+    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'ijca','RRRCG',Rijca)  
   
     ! ***********************************************************
     ! B3 matrix 
@@ -614,6 +627,7 @@ contains
     call free_cabs()
 
     call mem_dealloc(CoccEOS)
+    call mem_dealloc(CoccAOS)
     call mem_dealloc(CocvAOS)
     call mem_dealloc(Ccabs)
     call mem_dealloc(Cri)
@@ -677,16 +691,16 @@ contains
     call mem_dealloc(Frm)
     call mem_dealloc(Fcp)
 
-  end subroutine f12_single_fragment_energy
+  end subroutine get_f12_single_fragment_energy
 
   !> Brief: Gives the pair fragment energy for MP2F12
   !> Author: Yang M. Wang
   !> Date: April 2013
-  subroutine f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms, Dmat)
+  subroutine get_f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
     implicit none
 
     !> Density matrix
-    type(matrix),intent(in) :: Dmat
+    !> type(matrix),intent(in) :: Dmat
 
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
@@ -696,12 +710,6 @@ contains
     type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
     type(decfrag), intent(inout) :: PairFragment
-    !> MO coefficient matrix for the occupied EOS
-    real(realk), pointer :: CoccEOS(:,:)
-    !> MO coefficient matrix for the occupied + virtual EOS
-    real(realk), pointer :: CocvAOS(:,:)
-    !> MO coefficient matrix for the CABS
-    real(realk), pointer :: Ccabs(:,:)
 
     !> F12 integrals for the V1_term <ij|gr|kl>
     real(realk), pointer :: Fijkl(:,:,:,:) 
@@ -718,7 +726,9 @@ contains
     integer :: nbasis
     !> number of occupied MO orbitals in EOS 
     integer :: noccEOS 
-    !> number of occupied + virtual MO orbitals in EOS 
+    !> number of occupied MO orbitals in AOS 
+    integer :: noccAOS 
+    !> number of occupied + virtual MO orbitals in AOS
     integer :: nocvAOS  
 
     !> number of CABS AO orbitals
@@ -726,22 +736,40 @@ contains
     !> number of CABS MO orbitals
     integer :: ncabsMO
 
+    !> MO coefficient matrix for the occupied EOS
+    real(realk), pointer :: CoccEOS(:,:)
+    !> MO coefficient matrix for the occupied AOS
+    real(realk), pointer :: CoccAOS(:,:)
+    !> MO coefficient matrix for the occupied + virtual EOS
+    real(realk), pointer :: CocvAOS(:,:)
+    !> MO coefficient matrix for the CABS
+    real(realk), pointer :: Ccabs(:,:)
+    
     integer :: ix, i, j, m, n, k, l, p, q
     real(realk) :: V1energy, V2energy
     real(realk) :: tmp
     logical,pointer :: dopair_occ(:,:)
 
     nbasis  = PairFragment%nbasis
+    noccAOS = PairFragment%noccAOS
     noccEOS = PairFragment%noccEOS
     nocvAOS = PairFragment%noccAOS + PairFragment%nunoccAOS
 
-    call mem_alloc(CoccEOS, Pairfragment%nbasis, noccEOS)
     ! ***********************************************************
     ! Creating a CoccEOS matrix 
     ! ***********************************************************
+    call mem_alloc(CoccEOS, Pairfragment%nbasis, noccEOS)
     do i=1, PairFragment%noccEOS
        ix = PairFragment%idxo(i)
        CoccEOS(:,i) = PairFragment%Co(:,ix)
+    end do
+
+    ! ***********************************************************
+    ! Creating a CoccAOS matrix 
+    ! ***********************************************************
+    call mem_alloc(CoccAOS, PairFragment%nbasis, noccAOS)
+    do i=1, PairFragment%noccAOS
+       CoccAOS(:,i) = PairFragment%Co(:,i)
     end do
 
     call mem_alloc(CocvAOS, PairFragment%nbasis, nocvAOS)
@@ -811,6 +839,7 @@ contains
   
     ! Free memory
     call mem_dealloc(CoccEOS)
+    call mem_dealloc(CoccAOS)
     call mem_dealloc(CocvAOS)
     call mem_dealloc(Ccabs)
 
@@ -822,7 +851,7 @@ contains
     
     call mem_dealloc(V2ijkl)
 
-  end subroutine f12_pair_fragment_energy
+  end subroutine get_f12_pair_fragment_energy
 
   !> Brief: MP2-F12 correction for the single fragment of term for the energies related to E21
   !> Author: Yang M. Wang
@@ -978,7 +1007,7 @@ contains
   !> Brief: Get <1,2|INTSPEC|3,4> MO integrals wrapper.
   !> Author: Yang M. Wang
   !> Data: Nov 2013
-  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CocvAOS,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,T)
+  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,T)
     implicit none
 
     !> Atomic fragment to be determined  (NOT pair fragment)
@@ -989,15 +1018,17 @@ contains
     integer :: nbasis
     !> Number of occupied orbitals MO in EOS space
     integer :: noccEOS
-    !> Number of unoccupied (virtual) orbitals MO in AOS space
+    !> Number of occupied orbitals MO in AOS space
+    integer :: noccAOS
+    !> Number of unoccupied (virtual) orbitals MO in EOS space
     integer :: nunoccEOS
-    !> Number of occupied and virtual MO in AOS space 
+    !> Number of occupied + virtual MO in AOS space 
     integer :: nocvAOS
     !> Number of CABS AO orbitals
     integer :: ncabsAO
     !> Number of CABS MO orbitals
     integer :: ncabsMO
-    !> Number of nvirt MO orbitals
+    !> Number of nvirt MO orbitals in AOS Space
     integer :: nvirtAOS
     !> Integral Orbital Type 
     Character, intent(in) :: intType(4) ! NB! Intent in because its read as a string!
@@ -1017,6 +1048,8 @@ contains
 
     !> MO coefficient matrix for the occupied EOS
     real(realk), target, intent(in) :: CoccEOS(:,:) !CoccEOS(nbasis,noccEOS)
+    !> MO coefficient matrix for the occupied AOS
+    real(realk), target, intent(in) :: CoccAOS(:,:) !CoccEOS(nbasis,noccAOS)
     !> MO coefficient matrix for the occupied + virtual EOS
     real(realk), target, intent(in) :: CocvAOS(:,:) !CocvAOS(nbasis, nocvAOS)
     !> MO coefficient matrix for the CABS 
@@ -1028,6 +1061,7 @@ contains
 
     nbasis   =  MyFragment%nbasis
     noccEOS  =  MyFragment%noccEOS
+    noccAOS  =  MyFragment%noccAOS
     nunoccEOS = MyFragment%nunoccEOS
     nvirtAOS = MyFragment%nunoccAOS
     nocvAOS =   MyFragment%noccAOS + MyFragment%nunoccAOS
@@ -1035,14 +1069,14 @@ contains
     ncabsMO = size(MyFragment%Ccabs,2)
 
     do i=1,4
-       if(intType(i).EQ.'i') then !occupied active
+       if(intType(i).EQ.'i') then ! occupied EOS
           C(i)%cmat => CoccEOS
           C(i)%n1 = nbasis
           C(i)%n2 = noccEOS           
-       elseif(intType(i).EQ.'m') then !all occupied
-          C(i)%cmat => CoccEOS
+       elseif(intType(i).EQ.'m') then ! occupied AOS
+          C(i)%cmat => CoccAOS
           C(i)%n1 = nbasis
-          C(i)%n2 = noccEOS 
+          C(i)%n2 = noccAOS 
        elseif(intType(i).EQ.'p') then !all occupied + virtual
           C(i)%cmat => CocvAOS
           C(i)%n1 = nbasis

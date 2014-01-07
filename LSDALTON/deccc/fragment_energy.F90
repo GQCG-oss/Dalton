@@ -269,8 +269,8 @@ contains
     type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2
     real(realk) :: tcpu, twall,debugenergy
 
-    type(matrix) :: Dmat
-    real(realk),pointer :: dens(:,:)
+    ! type(matrix) :: Dmat
+    ! real(realk),pointer :: dens(:,:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -400,15 +400,15 @@ contains
        print *, "*******************************************"
        
        ! Get the wrong density matrix (Not equal to the one for the fullmolecule)
-       call mat_init(Dmat, myfragment%nbasis,myfragment%nbasis)
-       call mem_alloc(dens, myfragment%nbasis, myfragment%nbasis)
-       call get_density_from_occ_orbitals( myfragment%nbasis,myfragment%noccAOS,Myfragment%Co,dens)
-       call mat_set_from_full(dens,1.0E0_realk,Dmat)
-       call f12_single_fragment_energy(MyFragment, Dmat)
+       ! call mat_init(Dmat, myfragment%nbasis,myfragment%nbasis)
+       ! call mem_alloc(dens, myfragment%nbasis, myfragment%nbasis)
+       !  call get_density_from_occ_orbitals( myfragment%nbasis,myfragment%noccAOS,Myfragment%Co,dens)
+       ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
+       call get_f12_single_fragment_energy(MyFragment)
        
        !> Free density matrix
-       call mem_dealloc(dens)
-       call mat_free(Dmat)
+       ! call mem_dealloc(dens)
+       ! call mat_free(Dmat)
     endif
 #endif
     call LSTIMER('SINGLE L.ENERGY',tcpu,twall,DECinfo%output)
@@ -897,8 +897,8 @@ contains
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
 
-    type(matrix) :: Dmat
-    real(realk),pointer :: dens(:,:)
+    !type(matrix) :: Dmat
+    !real(realk),pointer :: dens(:,:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -979,15 +979,16 @@ contains
        print *, "*******************************************"
        
        ! Get density matrix
-       call mem_alloc(dens,Pairfragment%nbasis,Pairfragment%nbasis)
-       call get_density_from_occ_orbitals(Pairfragment%nbasis,Pairfragment%noccAOS, &
-            & Pairfragment%Co,dens)
-       call mat_set_from_full(dens,1.0E0_realk,Dmat)
-      ! call f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms, Dmat)
+       ! call mem_alloc(dens,Pairfragment%nbasis,Pairfragment%nbasis)
+       ! call get_density_from_occ_orbitals(Pairfragment%nbasis,Pairfragment%noccAOS, &
+       !     & Pairfragment%Co,dens)
+       ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
+       
+       call get_f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
      
        !> Free density matrix
-       call mem_dealloc(dens)
-       call mat_free(Dmat)
+       ! call mem_dealloc(dens)
+       ! call mat_free(Dmat)
     endif
 #endif
     call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)

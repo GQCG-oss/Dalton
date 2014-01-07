@@ -626,32 +626,32 @@ contains
     end if
 
     ! Delete F12-Fock and K and hJir info
-    if(associated(molecule%Fii)) then
-       call mem_dealloc(molecule%Fii)
+    if(associated(molecule%Fij)) then
+       call mem_dealloc(molecule%Fij)
     end if
 
     if(associated(molecule%hJir)) then
        call mem_dealloc(molecule%hJir)
     end if
 
-    if(associated(molecule%Krr)) then
-       call mem_dealloc(molecule%Krr)
+    if(associated(molecule%Krs)) then
+       call mem_dealloc(molecule%Krs)
     end if
 
-    if(associated(molecule%Frr)) then
-       call mem_dealloc(molecule%Frr)
+    if(associated(molecule%Frs)) then
+       call mem_dealloc(molecule%Frs)
     end if
 
     if(associated(molecule%Fac)) then
        call mem_dealloc(molecule%Fac)
     end if
 
-    if(associated(molecule%Fpp)) then
-       call mem_dealloc(molecule%Fpp)
+    if(associated(molecule%Fpq)) then
+       call mem_dealloc(molecule%Fpq)
     end if
 
-    if(associated(molecule%Fmm)) then
-       call mem_dealloc(molecule%Fmm)
+    if(associated(molecule%Fmn)) then
+       call mem_dealloc(molecule%Fmn)
     end if
 
     if(associated(molecule%Frm)) then
@@ -832,12 +832,12 @@ contains
     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabsMO,nocvfull
     
     real(realk), pointer :: hJir(:,:)
-    real(realk), pointer :: Krr(:,:) 
-    real(realk), pointer :: Frr(:,:) 
+    real(realk), pointer :: Krs(:,:) 
+    real(realk), pointer :: Frs(:,:) 
     real(realk), pointer :: Fac(:,:) 
-    real(realk), pointer :: Fpp(:,:) 
-    real(realk), pointer :: Fii(:,:) 
-    real(realk), pointer :: Fmm(:,:) 
+    real(realk), pointer :: Fpq(:,:) 
+    real(realk), pointer :: Fij(:,:) 
+    real(realk), pointer :: Fmn(:,:) 
     real(realk), pointer :: Frm(:,:) 
     real(realk), pointer :: Fcp(:,:) 
 
@@ -857,50 +857,51 @@ contains
 !!$    print *,"ncabsAO:",ncabsAO
 
     call mem_alloc(hJir,nocc,ncabsAO) 
-    call mem_alloc(Krr,ncabsAO,ncabsAO)
+    call mem_alloc(Krs,ncabsAO,ncabsAO)
     call mem_alloc(Fac,nvirt,ncabsMO)
-    call mem_alloc(Frr,ncabsAO,ncabsAO)
-    call mem_alloc(Fpp,nbasis,nbasis)
-    call mem_alloc(Fii,nocc,nocc)
-    call mem_alloc(Fmm,noccfull,noccfull)
+    call mem_alloc(Frs,ncabsAO,ncabsAO)
+    call mem_alloc(Fpq,nbasis,nbasis)
+    call mem_alloc(Fij,nocc,nocc)
+    call mem_alloc(Fmn,noccfull,noccfull)
     call mem_alloc(Frm,ncabsAO,noccfull)
     call mem_alloc(Fcp,ncabsMO,nbasis)
 
     ! Constructing the F12 MO matrices from F12_routines.F90
     call get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabsMO,hJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+         & nocc,noccfull,nvirt,ncabsMO,hJir,Krs,Frs,Fac,Fpq,Fij,Fmn,Frm,Fcp)
 
     !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
     call free_cabs()
 
     ! Mixed regular/CABS one-electron  and Coulomb matrix (h+J) combination in AO basis
     call mem_alloc(MyMolecule%hJir,nocc,ncabsAO) 
-    call mem_alloc(MyMolecule%Krr,ncabsAO,ncabsAO)
+    call mem_alloc(MyMolecule%Krs,ncabsAO,ncabsAO)
     call mem_alloc(MyMolecule%Fac,nvirt,ncabsMO)
-    call mem_alloc(MyMolecule%Frr,ncabsAO,ncabsAO)
-    call mem_alloc(MyMolecule%Fpp,nbasis,nbasis)
-    call mem_alloc(MyMolecule%Fii,nocc,nocc)
-    call mem_alloc(MyMolecule%Fmm,noccfull,noccfull)
+    call mem_alloc(MyMolecule%Frs,ncabsAO,ncabsAO)
+    call mem_alloc(MyMolecule%Fpq,nbasis,nbasis)
+    call mem_alloc(MyMolecule%Fij,nocc,nocc)
+    call mem_alloc(MyMolecule%Fmn,noccfull,noccfull)
     call mem_alloc(MyMolecule%Frm,ncabsAO,noccfull)
     call mem_alloc(MyMolecule%Fcp,ncabsMO,nbasis)
 
     MyMolecule%hJir = hJir
-    MyMolecule%Krr  = Krr
+    MyMolecule%Krs  = Krs
     MyMolecule%Fac  = Fac
-    MyMolecule%Frr  = Frr
-    MyMolecule%Fpp  = Fpp
-    MyMolecule%Fii  = Fii
-    MyMolecule%Fmm  = Fmm
+    MyMolecule%Frs  = Frs
+    MyMolecule%Fpq  = Fpq
+    MyMolecule%Fij  = Fij
+    MyMolecule%Fmn  = Fmn
     MyMolecule%Frm  = Frm
     MyMolecule%Fcp  = Fcp
-    
+
+!!$    The dcopy routine not working atm    
 !!$    call dcopy(nocc*ncabsAO,MyMolecule%hJir,1,hJir,1) 
-!!$    call dcopy(ncabsAO*ncabsAO,MyMolecule%Krr,1,Frr,1)
+!!$    call dcopy(ncabsAO*ncabsAO,MyMolecule%Krr,1,Krr,1)
 !!$    call dcopy(nvirt*ncabsMO,MyMolecule%Fac,1,Fac,1)
 !!$    call dcopy(ncabsAO*ncabsAO,MyMolecule%Frr,1,Frr,1)
 !!$    call dcopy(nbasis*nbasis,MyMolecule%Fpp,1,Fpp,1)
-!!$    call dcopy(nocc*nocc,MyMolecule%Fii,1,Fii,1)
-!!$    call dcopy(noccfull*noccfull,MyMolecule%Fmm,1,Fmm,1)
+!!$    call dcopy(nocc*nocc,MyMolecule%Fij,1,Fij,1)
+!!$    call dcopy(noccfull*noccfull,MyMolecule%Fmn,1,Fmn,1)
 !!$    call dcopy(ncabsAO*ncabsMO,MyMolecule%Frm,1,Frm,1)
 !!$    call dcopy(ncabs*nbasis,MyMolecule%Fcp,1,Fcp,1)
       
@@ -908,33 +909,24 @@ contains
     print *,'        Get all F12 Fock integrals       '
     print *,'-----------------------------------------'
     print *, "norm2(hJir)", norm2(MyMolecule%hJir)
-    print *, "norm2(Krr)", norm2(MyMolecule%Krr)
-    print *, "norm2(Frr)", norm2(MyMolecule%Frr)
+    print *, "norm2(Krs)", norm2(MyMolecule%Krs)
+    print *, "norm2(Frs)", norm2(MyMolecule%Frs)
     print *, "norm2(Fac)", norm2(MyMolecule%Fac)
-    print *, "norm2(Fpp)", norm2(MyMolecule%Fpp)
-    print *, "norm2(Fii)", norm2(MyMolecule%Fii)
-    print *, "norm2(Fmm)", norm2(MyMolecule%Fmm)
+    print *, "norm2(Fpq)", norm2(MyMolecule%Fpq)
+    print *, "norm2(Fij)", norm2(MyMolecule%Fij)
+    print *, "norm2(Fmn)", norm2(MyMolecule%Fmn)
     print *, "norm2(Frm)", norm2(MyMolecule%Frm)
     print *, "norm2(Fcp)", norm2(MyMolecule%Fcp)
     print *,'-----------------------------------------' 
 
-
-    !MyMolecule%HJir(1:nocc,1:ncabsAO) = 
-
-
     ! Mixed CABS/CABS exchange matrix
-
     ! Mixed CABS/CABS Fock matrix
-
     ! Mixed AO/CABS Fock matrix
-
     ! Mixed AO/AO full MO Fock matrix
-
     ! Mixed CABS/AO MO Fock matrix
 
-
-    ! call free_F12_mixed_MO_Matrices(hJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
-    call free_F12_mixed_MO_Matrices_real(hJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+    ! call free_F12_mixed_MO_Matrices(hJir,Krr,Frr,Fac,Fpp,Fij,Fmm,Frm,Fcp)
+    call free_F12_mixed_MO_Matrices_real(hJir,Krs,Frs,Fac,Fpq,Fij,Fmn,Frm,Fcp)
 
   end subroutine molecule_mo_f12
 

@@ -1943,8 +1943,56 @@ retval=0
     call atomic_fragment_free_basis_info(fragment)
     call free_fragment_t1(fragment)
 
+    print *, "---------------atomic_fragment_free(fragment)----------"
+
   end subroutine atomic_fragment_free
 
+  !> \brief Delete the f12 MO matrices
+  !> \author Yang Min Wang
+  subroutine atomic_fragment_free_f12(fragment)
+
+    implicit none
+    !> Atomic fragment to be freed
+    type(decfrag),intent(inout) :: fragment
+
+    print *, "------------atomic_fragment_free_f12(fragment)----------"
+
+    if(associated(fragment%hJir)) then
+       call mem_dealloc(fragment%hJir)
+       fragment%hJir => null()
+    end if
+
+    if(associated(fragment%Krs)) then
+       call mem_dealloc(fragment%Krs)
+       fragment%Krs => null()
+    end if
+    
+    if(associated(fragment%Frs)) then
+       call mem_dealloc(fragment%Frs)
+       fragment%Frs => null()
+    end if
+
+    if(associated(fragment%Fac)) then
+       call mem_dealloc(fragment%Fac)
+       fragment%Fac => null()
+    end if
+
+    if(associated(fragment%Fpq)) then
+       call mem_dealloc(fragment%Fpq)
+       fragment%Fpq => null()
+    end if
+
+    if(associated(fragment%Fij)) then
+       call mem_dealloc(fragment%Fij)
+       fragment%Fij => null()
+    end if
+
+    if(associated(fragment%Fmn)) then
+       call mem_dealloc(fragment%Fmn)
+       fragment%Fmn => null()
+    end if
+      
+  end subroutine atomic_fragment_free_f12
 
   !> \brief Delete the "simple" part of the atomic fragment structure, i.e.
   !> everything not deleted in atomic_fragment_free_basis_info.
@@ -2131,6 +2179,10 @@ retval=0
 
     ! Internal control of whether basis info is set or not
     fragment%BasisInfoIsSet=.false.
+
+    if(DECinfo%F12) then
+       call atomic_fragment_free_f12(fragment)
+    end if   
 
   end subroutine atomic_fragment_free_basis_info
 
