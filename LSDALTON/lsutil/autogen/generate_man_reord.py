@@ -488,10 +488,9 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
           offsetstr2 = offsetstr + "  "        
        
         #WRITING THE INNER FOR LOOPS HERE: 
-        if(not debug_loops):
-          for j in range(modes):
-            f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
-            offsetstr2 += "  "
+        for j in range(modes):
+          f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
+          offsetstr2 += "  "
   
         offsetstr2 = offsetstr2[0:-2]
         
