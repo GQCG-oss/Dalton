@@ -545,8 +545,7 @@ subroutine scf_afterplay(config,H1,S,D,E,F)
       write(config%lupri,*) 'Postponing calculation of HOMO-LUMO gap to response part...'
    else if (config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
           & config%decomp%cfg_check_converged_solution .or. &
-          & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
-          & config%opt%CFG_density_method == config%opt%cfg_f2d_roothaan) then
+          & config%opt%cfg_density_method == config%opt%cfg_f2d_arh) then
       !debug_arh_hessian = .false.
       call get_oao_transformed_matrices(config%decomp,F,D)
       call dd_init(config%decomp,DD)
