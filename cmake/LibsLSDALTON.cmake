@@ -30,13 +30,16 @@ target_link_libraries(matrixmlib lsutillib_precision)
 set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_acc_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_acc_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord.F90
+#    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_acc_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_f2t.F90
@@ -48,6 +51,25 @@ set(MANUAL_REORDERING_SOURCES
     )
 
 get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+if(ENABLE_OPENACC)
+add_custom_command(
+    OUTPUT
+    ${MANUAL_REORDERING_SOURCES}
+    COMMAND
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering acc ${LIST_OF_DEFINITIONS}
+    DEPENDS
+    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+    )
+elseif(ENABLE_COLLAPSE)
+add_custom_command(
+    OUTPUT
+    ${MANUAL_REORDERING_SOURCES}
+    COMMAND
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
+    DEPENDS
+    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+    )
+else()
 add_custom_command(
     OUTPUT
     ${MANUAL_REORDERING_SOURCES}
@@ -56,6 +78,7 @@ add_custom_command(
     DEPENDS
     ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
     )
+endif()
 unset(LIST_OF_DEFINITIONS)
 
 add_library(
