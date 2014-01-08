@@ -190,7 +190,7 @@ module cc_debug_routines_module
 
      ! small_frag 
      real(realk), pointer :: govov(:) => null()
-     type(array) :: pgmo_diag, pgmo_up
+     type(array) :: pgmo_diag, pgmo_up, pgmo
      type(MObatchInfo) :: MOinfo
      logical :: small_frag
 
@@ -731,8 +731,11 @@ module cc_debug_routines_module
            !  !rpa_multipliers not yet implemented
            !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !else
-           !  call RPA_residualpar(Omega2(iter),t2(iter),pack_gmo,ppfock,qqfock,nocc,nvirt)
+#ifdef VAR_MPI
+             call RPA_residualpar(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
+#else
              call RPA_residualdeb(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
+#endif
            !call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
            !  call RPA_residual(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
            !endif
@@ -995,7 +998,8 @@ module cc_debug_routines_module
        call mem_dealloc(MOinfo%StartInd1)
        call mem_dealloc(MOinfo%StartInd2)
        call mem_dealloc(MOinfo%packInd)
-       if (.not.(ccmodel==MODEL_RPA)) call mem_dealloc(govov)
+       call mem_dealloc(govov)
+       !if (.not.(ccmodel==MODEL_RPA)) call mem_dealloc(govov)
      end if
 
      ! remove rest of the singles amplitudes and residuals
@@ -1127,6 +1131,7 @@ module cc_debug_routines_module
 
      call mem_dealloc(Uocc)
      call mem_dealloc(Uvirt)
+     !if ((ccmodel==MODEL_RPA)) call mem_dealloc(govov)
 
 
    end subroutine ccsolver_debug
@@ -2940,6 +2945,9 @@ module cc_debug_routines_module
 
     if(ccmodel == MODEL_RPA) then
       gmosize = int(i8*nvir*nocc*nvir*nocc, kind=long)
+
+      !pgmo = array_ainit([nvir,nvir,nocc,nocc],4,local=local, &
+      !          & atype='TDAR')
     else
       gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
     endif
@@ -2955,6 +2963,7 @@ module cc_debug_routines_module
     !JOHANNES remember to delete this one
     if (ccmodel == MODEL_RPA) then
       call mem_alloc(govov, int(i8*nvir*nocc*nvir*nocc, kind=long))
+      govov=0.0E0_realk
     end if
 
     if (master) then 
@@ -3041,9 +3050,11 @@ module cc_debug_routines_module
 
        if (ccmodel == MODEL_RPA) then
 
-         write(*,*) 'JOHANNES IN mo transform'
          call gao_to_g_CKDL(gmo, gao, Co,Cv, nbas,nocc,nvir, ntot, AlphaStart, dimAlpha, &
            & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
+
+         write(*,*) 'Norm of gmo'
+         call print_norm(gmo,i8*nvir*nocc*nvir*nocc)
          
          call daxpy(nvir*nocc*nvir*nocc,1.0E0_realk,gmo,1,govov,1)
 

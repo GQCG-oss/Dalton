@@ -1865,7 +1865,8 @@ contains
     implicit none
     real(realk),intent(inout),pointer :: gmo(:)
     type(array4), intent(inout) :: omega2
-    type(array4),intent(inout)         :: t2
+    !type(array4),intent(inout)         :: t2
+    type(array),intent(inout)         :: t2
     integer,intent(inout)             :: nvirt,nocc
     logical :: master
 
@@ -1876,13 +1877,14 @@ contains
     call ls_mpi_buffer(nocc,infpar%master)
     if(.not.master)then
       call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
-      t2=array4_init([nvirt,nocc,nvirt,nocc])
+      !t2=array4_init([nvirt,nocc,nvirt,nocc])
+      t2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
     endif
     call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
 
     
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpibcast(t2%val,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
+    call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
 
   end subroutine rpa_res_communicate_data
 
