@@ -329,10 +329,12 @@ contains
     type(array4) :: tmp
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
+    character(ARR_MSG_LEN) :: msg
 
 
     ! 1
     call array2_transpose(qfock)
+    
     call array4_reorder(t2,[3,4,1,2])
     tmp = array4_init([nvirt,nocc,nvirt,nocc])
     call array4_contract1(t2,qfock,tmp,.true.)
@@ -567,10 +569,9 @@ contains
     real(realk) :: starttime,stoptime
     real(realk),pointer :: w2(:),w3(:),omegw(:),w4(:)
     character(ARR_MSG_LEN) :: msg
-#ifdef VAR_MPI
     logical :: master
-#endif
 
+    master=.true.
 #ifdef VAR_MPI
     master        = .false.
     mynum         = infpar%lg_mynum
@@ -589,15 +590,19 @@ contains
    
 
     omegaw1 = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
-#ifdef VAR_MPI
-    if(master) then
-      call array4_reorder(omega2,[1,3,2,4])
-      call array_convert(omega2%val,omegaw1)
-    endif
-#else
+!#ifdef VAR_MPI
+!    if(master) then
+!      call array4_reorder(omega2,[1,3,2,4])
+!      call array_convert(omega2%val,omegaw1)
+!      !write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
+!      write(*,*) 'itype omegaw1=',omegaw1%itype
+!      !call print_norm(omegaw1,msg)
+!    endif
+!#else
     call array4_reorder(omega2,[1,3,2,4])
     call array_convert(omega2%val,omegaw1)
-#endif
+!#endif
+
 
 #ifdef VAR_MPI
     call lsmpi_barrier(infpar%lg_comm)
@@ -621,18 +626,17 @@ contains
 
 #ifdef VAR_MPI
     write(msg,*) 'Norm of t_par',infpar%lg_mynum
-#else
-    write(msg,*) 'Norm of t_par'
-#endif
     call print_norm(t_par,msg)
-#ifdef VAR_MPI
-    call lsmpi_barrier(infpar%lg_comm)
+      write(*,*) 'itype t_par=',t_par%itype
 #endif
+
     !write(*,*) 'in residue dim t_par', t_par%tdim
 
     
 #ifdef VAR_MPI
     !In this u2 is array4, hence I use t_par
+    write(*,*) 'before array two_dim',infpar%lg_mynum
+    call lsmpi_barrier(infpar%lg_comm)
     call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
     !In this u2 is array and no need for t_par
     !call array_two_dim_1batch(u2,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
@@ -647,8 +651,7 @@ contains
 #else
     write(msg,*) 'Norm of w2'
 #endif
-    call print_norm(w2,i8*dim1*dim1,msg)
-    !call sleep(1)
+    call print_norm(w2,i8*dim1*tl,msg)
 #ifdef VAR_MPI
     call lsmpi_barrier(infpar%lg_comm)
 #endif
@@ -666,10 +669,9 @@ contains
     !call lsmpi_barrier(infpar%lg_comm)
 
 
-    !gmo_CKLD We need it to be g_CKDL
     omegw=0.0_realk
 
-       !When fock part is parallelized instead of zero 1.0_realk
+    !When fock part is parallelized instead of zero 1.0_realk
     call dgemm('n','n',tl,dim1,dim1, &
          1.0E0_realk,w2,tl,gmo,dim1,0.0E0_realk,w3,tl)
 #ifdef VAR_MPI
@@ -712,7 +714,8 @@ contains
     call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
     call lsmpi_barrier(infpar%lg_comm)
   !  write(*,*) 'checkpoint 2',infpar%lg_mynum
-    write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
+   ! if(master) write(*,*) 'omegaw1'
+   ! if(master) write(*,*) omegaw1%elm4
     call sleep(1)
     call lsmpi_barrier(infpar%lg_comm)
     call print_norm(omegaw1,msg)
@@ -726,6 +729,8 @@ contains
       !call array_convert(omegaw1,omega2%val)
       call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
 
+      write(msg,*) 'Norm of omega2'
+      call print_norm(omega2%val,i8*dim1*dim1,msg)
       write(*,*) 'checkpoint 3',infpar%lg_mynum
       call array4_reorder(omega2,[1,3,2,4])
     endif
