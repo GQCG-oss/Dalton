@@ -4,7 +4,6 @@ module tensor_type_def_module
   use precision
 
   !tile structure
-
   type tile
     type(c_ptr)           :: c    =  c_null_ptr
     real(realk),pointer   :: t(:) => null()         !data in tiles
@@ -58,6 +57,7 @@ module tensor_type_def_module
      integer :: init_type                            !type of initializtation
      logical :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
      logical :: allocd_w_c_p                         ! allocated with comm_threads or not?
+     logical :: initialized = .false.                !check variable if array is initialized
 
   end type array
 

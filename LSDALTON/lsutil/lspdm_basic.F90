@@ -319,7 +319,7 @@ module lspdm_basic_module
         !Check if the current tile resides on the current node
         doit=.true.
 #ifdef VAR_MPI
-        if(arr%itype==TILED_DIST.and..not.mod(i-1+arr%offset,lg_nnod)==lg_me)doit=.false.
+        if(arr%itype==TILED_DIST.and.mod(i-1+arr%offset,lg_nnod)/=lg_me)doit=.false.
 #endif
         !convert global tile index i to local tile index loc_idx
         loc_idx=((i-1)/lg_nnod) + 1
@@ -328,8 +328,6 @@ module lspdm_basic_module
           !only do these things if tile belongs to node
           !save global tile number
           arr%ti(loc_idx)%gt=i
-          !if(loc_idx>arr%nlti)then
-          !  write( *,'(I2," has wrong index:",I3," of ",I3," in ",I3)'),infpar%lg_mynum,loc_idx,arr%nlti,i
           !endif
           call mem_alloc(arr%ti(loc_idx)%d,arr%mode)
           vector_size = dble(size(arr%ti(loc_idx)%d))
@@ -385,7 +383,7 @@ module lspdm_basic_module
     call mem_dealloc(idx)
 
     if(counter-1/=arr%nlti)then
-      print*," counted wrong of node",lg_me,pc_me,counter-1,arr%nlti,arr%ntiles
+      print*," counted wrong of node",lg_me,lg_nnod,counter-1,arr%nlti,arr%ntiles,arr%offset
       call lsquit("something went wrong with the numbering of tiles on the nodes",lspdm_errout)
     endif
     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)

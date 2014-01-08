@@ -1,4 +1,8 @@
-      LOGICAL AOSOP, AORPA, SOPCHK, AOTEST, DCRPA, AOSOC
+CPFP
+C      LOGICAL AOSOP, AORPA, SOPCHK, AOTEST, DCRPA, AOSOC
+      LOGICAL AOSOP, AORPA, AOHRP, SOPCHK, AOTEST, DCRPA, AOSOC
+      LOGICAL TRIPLET
+Cend-PFP
       CHARACTER*7 FNTR1E, FNTR1D, FNTR2E, FNTR2D,
      &            FNRS1E, FNRS1D, FNRS2E, FNRS2D,
      &            FNRO1E, FNRO1D,
@@ -52,9 +56,20 @@
      &                 SOSUBNM(LSOSUB), SOMEMO(LSOSUB), ISOSUB, LWTOTAL,
      &                 SOPCHK,IIJDEN(8,8),
      &                 NIJDEN(8),IABDEN(8,8),NABDEN(8),IAIDEN(8,8),
-     &                 NAIDEN(8),IPRSOP,AOTEST,NSAVMX,
+CSPAS:10/08-09 including triplet 2p2h vectors
+C    &                 NAIDEN(8),IPRSOP,AOTEST,NSAVMX,
+     &                 NAIDEN(8),N2P2HOP(8),
+     &                 NT2AMT1(8), NT2AMT2(8), NT2AMT3(8), NT2AMTT(8),
+     &                 IT2AMT1(8,8), IT2AMT2(8,8), IT2AMT3(8,8),
+     &                 ISOO(8,8), ITOO(8,8), ISVV(8,8), ITVV(8,8),
+     &                 IPRSOP,AOTEST,NSAVMX,
+CKeinSPASmehr
      &                 NSAVMXORIG,
-     &                 AORPA,  DCRPA,  AOSOP,  AOSOC,
+CPFP
+C    &                 AORPA,  DCRPA,  AOSOP,  AOSOC,
+     &                 AORPA,  AOHRP,  DCRPA,  AOSOP,  AOSOC,
+     &                 TRIPLET,
+Cend-PFP
      &                 LUTR1E, LUTR1D, LUTR2E, LUTR2D,
      &                 LURS1E, LURS1D, LURS2E, LURS2D,
      &                 LURO1E, LURO1D,

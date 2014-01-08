@@ -10,10 +10,15 @@ MODULE IchorMemory
    public mem_ichor_dealloc
 !GLOBAL VARIABLES
    integer(KIND=long),save :: mem_allocated_ichor, max_mem_used_ichor  !Count all memory
-   integer(KIND=long),save :: mem_allocated_real, max_mem_used_real             !Count 'real' memory, integral code
-   integer(KIND=long),save :: mem_allocated_integer, max_mem_used_integer       !Count 'integer' memory, integral code
+   !Count 'real' memory, integral code
+   integer(KIND=long),save :: mem_allocated_real, max_mem_used_real
+   !Count 'integer' memory, integral code
+   integer(KIND=long),save :: mem_allocated_integer, max_mem_used_integer
+   !Count 'logical' memory, integral code
+   integer(KIND=long),save :: mem_allocated_logical, max_mem_used_logical
 ! sizes
    integer(KIND=long),parameter :: mem_realsize=8
+   integer(KIND=long),parameter :: mem_logicalsize=4
 #if VAR_INT64
    integer(KIND=long),parameter :: mem_intsize=8_long
 #else
@@ -27,30 +32,35 @@ INTERFACE mem_ichor_alloc
        & real_allocate_5dim, &
        & int_allocate_1dim,int_allocate_2dim,int_allocate_3dim, &
        & int_allocate_1dim_zero, int_allocate_2dim_zero,  &
-       & int_allocate_3dim_zero
+       & int_allocate_3dim_zero,&
+       & logic_allocate_1dim, logic_allocate_2dim
+
 END INTERFACE
 !
 INTERFACE mem_ichor_dealloc
   MODULE PROCEDURE real_deallocate_1dim, real_deallocate_2dim,  &
      & real_deallocate_3dim, real_deallocate_4dim, real_deallocate_5dim, &
-     & int_deallocate_1dim, int_deallocate_2dim, int_deallocate_3dim
+     & int_deallocate_1dim, int_deallocate_2dim, int_deallocate_3dim,&
+     & logic_deallocate_1dim, logic_deallocate_2dim
 END INTERFACE
 !
 CONTAINS
 subroutine set_ichor_memvar(MaxMemAllocated,MemAllocated)
 implicit none
-integer,intent(in) :: MaxMemAllocated,MemAllocated
+integer(KIND=long),intent(in) :: MaxMemAllocated,MemAllocated
 mem_allocated_ichor = MemAllocated
 max_mem_used_ichor = MaxMemAllocated
 mem_allocated_real = 0
 max_mem_used_real = 0
 mem_allocated_integer = 0
 max_mem_used_integer = 0
+mem_allocated_logical = 0
+max_mem_used_logical = 0
 end subroutine set_ichor_memvar
 
 subroutine retrieve_ichor_memvar(MaxMemAllocated,MemAllocated)
 implicit none
-integer,intent(inout) :: MaxMemAllocated,MemAllocated
+integer(KIND=long),intent(inout) :: MaxMemAllocated,MemAllocated
 MemAllocated = mem_allocated_ichor
 MaxMemAllocated = max_mem_used_ichor
 end subroutine retrieve_ichor_memvar
@@ -68,9 +78,12 @@ subroutine stats_ichor_mem(lupri)
        &- Should be zero - otherwise a leakage is present")') mem_allocated_real
   WRITE(LUPRI,'("  Allocated memory (integer):         ",i9," byte  &
        &- Should be zero - otherwise a leakage is present")') mem_allocated_integer
+  WRITE(LUPRI,'("  Allocated memory (logical):         ",i9," byte  &
+       &- Should be zero - otherwise a leakage is present")') mem_allocated_logical
   call print_ichor_maxmem(lupri,max_mem_used_ichor,'TOTAL')
   CALL print_ichor_maxmem(lupri,max_mem_used_real,'real(realk)')
   CALL print_ichor_maxmem(lupri,max_mem_used_integer,'integer')
+  CALL print_ichor_maxmem(lupri,max_mem_used_logical,'logical')
   WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
   WRITE(LUPRI,*)
 end subroutine stats_ichor_mem
@@ -519,6 +532,77 @@ integer (kind=long) :: nsize
    nullify(I)
  END SUBROUTINE int_deallocate_3dim
 
+SUBROUTINE logic_allocate_1dim(L,n)
+implicit none
+integer,intent(in)  :: n
+logical,pointer     :: L(:)
+integer :: IERR
+integer (kind=long) :: nsize
+nullify(L)
+ALLOCATE(L(n),STAT = IERR)
+IF (IERR.NE. 0) THEN
+   write(*,*) 'Error in logic_allocate_1dim',IERR,n
+   call IchorQuit('Error in logic_allocate_1dim',-1)
+ENDIF
+nsize = size(L,KIND=long)*mem_logicalsize
+call mem_allocated_ichor_mem_logical(nsize)
+END SUBROUTINE logic_allocate_1dim
+
+SUBROUTINE logic_allocate_2dim(L,n1,n2)
+implicit none
+integer,intent(in) :: n1,n2
+logical,pointer    :: L(:,:)
+integer :: IERR
+integer (kind=long) :: nsize
+nullify(L)
+ALLOCATE(L(n1,n2),STAT = IERR)
+IF (IERR.NE. 0) THEN
+   write(*,*) 'Error in logic_allocate_2dim',IERR,n1,n2
+   call IchorQuit('Error in logic_allocate_2dim',-1)
+ENDIF
+nsize = size(L,KIND=long)*mem_logicalsize
+call mem_allocated_ichor_mem_logical(nsize)
+END SUBROUTINE logic_allocate_2dim
+
+!----- DEALLOCATE LOGICAL POINTERS -----!
+SUBROUTINE logic_deallocate_1dim(L)
+implicit none
+logical,pointer :: L(:)
+integer :: IERR
+integer (kind=long) :: nsize
+nsize = size(L,KIND=long)*mem_logicalsize
+call mem_deallocated_ichor_mem_logical(nsize)
+if (.not.ASSOCIATED(L)) then
+   print *,'Memory previously released!!'
+   call IchorQuit('Error in logic_deallocate_1dim - memory previously released',-1)
+endif
+DEALLOCATE(L,STAT = IERR)
+IF (IERR.NE. 0) THEN
+   write(*,*) 'Error in logic_deallocate_1dim',IERR
+   CALL ICHORQUIT('Error in logic_deallocate_1dim',-1)
+ENDIF
+nullify(L)
+END SUBROUTINE logic_deallocate_1dim
+
+SUBROUTINE logic_deallocate_2dim(L)
+implicit none
+LOGICAL,pointer :: L(:,:)
+integer :: IERR
+integer (kind=long) :: nsize
+nsize = size(L,KIND=long)*mem_logicalsize
+call mem_deallocated_ichor_mem_logical(nsize)
+if (.not.ASSOCIATED(L)) then
+   print *,'Memory previously released!!'
+   call IchorQuit('Error in logic_deallocate_2dim - memory previously released',-1)
+endif
+DEALLOCATE(L,STAT = IERR)
+IF (IERR.NE. 0) THEN
+   write(*,*) 'Error in logic_deallocate_2dim',IERR
+   CALL ICHORQUIT('Error in logic_deallocate_2dim',-1)
+ENDIF
+nullify(L)
+END SUBROUTINE logic_deallocate_2dim
+
 !----- MEMORY HANDLING -----!
 
  subroutine mem_allocated_ichor_mem_real(nsize)
@@ -580,6 +664,30 @@ integer (kind=long) :: nsize
       call IchorQuit('Error in mem_deallocated_ichor_mem_integer2 - probably integer overflow!',-1)
    endif
 end subroutine mem_deallocated_ichor_mem_integer
+
+ subroutine mem_allocated_ichor_mem_logical(nsize)
+   implicit none
+   integer(kind=long), intent(in) :: nsize
+   mem_allocated_logical = mem_allocated_logical + nsize
+   max_mem_used_logical = MAX(max_mem_used_logical,mem_allocated_logical)
+   !Count also the total memory:
+   mem_allocated_ichor = mem_allocated_ichor  + nsize
+   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+ end subroutine mem_allocated_ichor_mem_logical
+ 
+ subroutine mem_deallocated_ichor_mem_logical(nsize)
+   implicit none
+   integer (kind=long), intent(in) :: nsize
+   mem_allocated_logical = mem_allocated_logical - nsize
+   if (mem_allocated_logical < 0) then
+      call IchorQuit('Error in mem_deallocated_ichor_mem_logical1 - probably integer overflow!',-1)
+   endif
+   !Count also the total memory:
+   mem_allocated_ichor = mem_allocated_ichor - nsize
+   if (mem_allocated_ichor < 0) then
+      call IchorQuit('Error in mem_deallocated_ichor_mem_logical2 - probably integer overflow!',-1)
+   endif
+end subroutine mem_deallocated_ichor_mem_logical
 
 END MODULE IchorMemory
 

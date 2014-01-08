@@ -963,24 +963,38 @@ C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
-      use polarizable_embedding, only: pe_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
 C infpar.h: MASTER,MYNUM
 #include "maxorb.h"
 #include "infpar.h"
-C defined parallel calculation types
+C iprtyp.h: define parallel calculation types
 #include "iprtyp.h"
-      real(8), allocatable :: work(:)
-C
+
+      real(8), allocatable  :: work(:)
+      integer(4), parameter :: TEN_4 = 10
+
+! ======================================================
+
       CALL QENTER('DALTON_NODEDRIVER')
       CALL GETTIM(CSTR,WSTR)
       N_TASKS = 0
 C
 C     Get calculation type (IPRTYP)
 C
-  100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+  100 CONTINUE
+#ifdef VAR_IFORT
+!     Nov 2013 hjaaj: sleep 10 millisecond before next check for a task
+!     - this saves a lot of cpu time on other cores in a sequential section
+!     - may make it possible to go into turbo mode
+!     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
+!     - only intel ifort has a sleepqq counting in milliseconds (that I know of),
+!       the more common sleep(n) sleeps in at least one second, which is too long.
+!       (One could use an interface to the C routine usleep.)
+      CALL SLEEPQQ(TEN_4)
+#endif
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN
          N_TASKS = N_TASKS + 1
@@ -1097,8 +1111,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
-         else if (iprtyp == POLARIZABLE_EMBEDDING) then
-            call pe_mpi(work(1:mwork), iprint)
+         ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
+            CALL PE_IFC_MPI(WORK(1), MWORK, IPRINT)
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN

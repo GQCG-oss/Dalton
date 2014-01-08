@@ -4,21 +4,10 @@ include ../Makefile.config
 
 INCLUDES := $(INCLUDES) 
 
-# Keep the file lists sorted for easier modification.
+# Keep the file lists sorted according to order of compilation.
 
 F90_OBJS = \
         IchorPresicion.o \
-        IchorCommon.o \
-        IchorMem.o \
-        IchorGammaTabulation.o \
-        IchorEri_CoulombIntegral_McM_seg_seg_SSSS.o \
-        IchorEri_CoulombIntegral_OBS_general.o \
-        IchorEri_CoulombIntegral_OBS_Gen.o \
-        IchorEri_CoulombIntegral_OBS_SegQ.o \
-        IchorEri_CoulombIntegral_OBS_SegP.o \
-        IchorEri_CoulombIntegral_OBS_Seg.o \
-        IchorEri_CoulombIntegral_OBS_Seg1Prim.o \
-        IchorEri.o \
         AGC_VerticalRecurrenceQPA.o \
         AGC_VerticalRecurrenceQPB.o \
         AGC_VerticalRecurrenceQPC.o \
@@ -84,7 +73,25 @@ F90_OBJS = \
         AGC_HorizontalRecurrenceQCtoD.o \
         AGC_HorizontalRecurrenceQDtoC.o \
         AGC_SphContractOBS1.o \
-        AGC_SphContractOBS2.o
+        AGC_SphContractOBS2.o \
+        IchorParameters.o \
+        IchorCommon.o \
+        IchorBatchTools.o \
+        IchorMem.o \
+	IchorSaveGab.o \
+        IchorGammaTabulation.o \
+        IchorEri_CoulombIntegral_McM_seg_seg_SSSS.o \
+        IchorEri_CoulombIntegral_OBS_Gen.o \
+        IchorEri_CoulombIntegral_OBS_SegQ.o \
+        IchorEri_CoulombIntegral_OBS_SegP.o \
+        IchorEri_CoulombIntegral_OBS_Seg.o \
+        IchorEri_CoulombIntegral_OBS_Seg1Prim.o \
+        IchorEri_CoulombIntegral_OBS_general.o \
+	IchorEri_GabIntegral_OBS_Gen.o \
+	IchorEri_GabIntegral_OBS_Seg.o \
+	IchorEri_GabIntegral_OBS_general.o \
+        IchorEri.o \
+        IchorGab.o 
 
 F_CPPS = $(F_OBJS:.o=.i)
 

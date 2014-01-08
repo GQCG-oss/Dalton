@@ -28,12 +28,12 @@ subroutine pdm_array_slave(comm)
 #ifdef VAR_MPI
    loc = (infpar%parent_comm /= MPI_COMM_NULL)
    CALL PDM_ARRAY_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
-   !print *,"slave in pdm-> job is",JOB
-   !print *,"array1_dims",A%dims
-   !print *,"array2_dims",B%dims
-   !print *,"array3_dims",C%dims
 
    SELECT CASE(JOB)
+     CASE(JOB_TEST_ARRAY)
+       call test_array(A)
+     CASE(JOB_PC_DEALLOC_DENSE)
+       call memory_deallocate_array_dense_pc(A)
      CASE(JOB_PC_ALLOC_DENSE)
        call memory_allocate_array_dense_pc(A)
      CASE(JOB_INIT_ARR_PC)

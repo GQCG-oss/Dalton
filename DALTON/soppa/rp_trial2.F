@@ -294,6 +294,8 @@ C-----------------------
 C     Remove from trace.
 C-----------------------
 C
+      CALL FLSHFO(LUPRI)
+C
       CALL QEXIT('RP_TRIAL2')
 C
       RETURN
