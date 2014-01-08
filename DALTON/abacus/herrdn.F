@@ -3155,7 +3155,7 @@ C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *      ' >>> ACPORB error, number of AO-blocks for UNCONT ',NRCIJ,
      *      '                   current maximum number MXAOVC =',KAOVEC,
-     &      '  Increase MXAOVC; make depend; make'
+     &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for an uncontracted '//
      *                   'basis sets')
             END IF
