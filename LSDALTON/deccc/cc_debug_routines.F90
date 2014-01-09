@@ -3053,9 +3053,6 @@ module cc_debug_routines_module
          call gao_to_g_CKDL(gmo, gao, Co,Cv, nbas,nocc,nvir, ntot, AlphaStart, dimAlpha, &
            & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
 
-         write(*,*) 'Norm of gmo'
-         call print_norm(gmo,i8*nvir*nocc*nvir*nocc)
-         
          call daxpy(nvir*nocc*nvir*nocc,1.0E0_realk,gmo,1,govov,1)
 
        else
