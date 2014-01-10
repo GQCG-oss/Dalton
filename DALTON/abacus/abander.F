@@ -2394,9 +2394,11 @@ C
 C
 C     *** If there are possibilities for  new symmetry. ***
 C
+      IF (MAXREP .gt. 0) THEN
       IF (((NMORDR+NAORDR).GT.1).OR.(NPRPDR)) THEN
          NEWSYM = .TRUE.
          DOHUCKEL = .TRUE.
+      END IF
       END IF
 C
 C     *** For higher order derivatives. ****
