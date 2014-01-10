@@ -6,6 +6,7 @@
 DALTON
 ------
 
+- Fixed a bug in printing results in CPP-QRF.
 - Document changes here.
 
 
