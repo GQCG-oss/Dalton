@@ -1,14 +1,13 @@
 \chapter{Polarizable embedding calculations}\label{ch:embedding}
 
-\index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}
-This chapter introduces the polarizable embedding (PE) environment
-model as implemented in the PE library~\cite{pelib2012} included in the 
+\index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{multiscale model}\index{multiscale}\index{embedding}\index{QM/MM}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
+This chapter introduces the polarizable embedding (PE) model as implemented in the PE library~\cite{pelib2012} included in the 
 \latestrelease\ release. Methods available are: PE-HF~\cite{pescf}, 
 PE-DFT~\cite{pescf}, PE-MP2/SOPPA~\cite{pesoppa} and 
-PE-CC~\cite{pecc}\footnote{Currently, the PE-CC uses an older implementation 
+PE-CC\footnote{Currently, the PE-CC uses an older implementation 
 and not the PE 
 library. Note, that in the next release, the PE-CC
-implementation will use the new PE library (see Sec.~\ref{sec:pecc})}. 
+implementation will use the new PE library (see Sec.~\ref{sec:pecc})}~\cite{pecc}. 
 The implementation uses the Gen1Int library to calculate one-electron
 integrals~\cite{gen1int} which is also in the \latestrelease\ release. The
 first section gives some general considerations about the model and 
@@ -215,7 +214,7 @@ gives the total number of sites in the environment and the second line
 specifies whether the coordinates are given in \angstrom{} (\verb|AA|) or 
 \bohr{} (\verb|AU|). The rest of the coordinates section is a list of the sites in 
 the environment where each line contains the element symbol and x-, y- and 
-z-coordinates of a site. If a site is not located on an atom, e.g. if it is a 
+z-coordinates of a site. If a site is not located on an atom, e.g.\ if it is a 
 bond-midpoint, then the element symbol should be specified as \verb|X|. The 
 listing also gives an implicit numbering of the sites, so that the first line 
 is site number one, the second line is site number two and so on. This 
@@ -232,7 +231,7 @@ followed by a list of multipoles where each line gives the multipole
 of a site. The lines begin with a number that specifies which site the
 multipole is placed. Only the symmetry-independent Cartesian
 multipoles (given in a.u.) should be provided using an ordering such
-that the components are stepped from the right, e.g.
+that the components are stepped from the right, e.g.\
 \verb|xx xy xz yy yz zz| or \verb|xxx xxy xxz xyy xyz xzz yyy yyz yzz zzz|.
 Note, that the multipoles should in general be traceless, however, for
 multipoles up to and including octopoles (i.e.\ \verb|ORDER 3|) the
@@ -243,7 +242,7 @@ the current implementation is limited to fifth order multipoles.\\
 The polarizabilities section is also subdivided into orders,
 i.e.\ \verb|ORDER 1 1| for dipole-dipole polarizabilities, which is the only 
 type supported in the current release. The format is the same as for 
-multipoles, i.e. first line contains number of polarizabilities which is 
+multipoles, i.e.\ first line contains number of polarizabilities which is 
 followed by a list of the polarizabilities using the same ordering as the 
 multipoles. The polarizabilities should also be given in a.u. In addition, 
 there is also the exclusion lists (\verb|EXCLISTS| 
@@ -253,7 +252,7 @@ line). The exclusion lists specify what the polarizable sites are not allowed
 to be polarized by, e.g.\ \verb|1 2 3 4 5| means that site number 1 cannot be 
 polarized by sites 2, 3, 4 and 5.
 
-\subsection{PE-CC example}\label{sec:pecc}
+\subsection*{PE-CC example}\label{sec:pecc}
 The PE-CC calculations in the current release uses an older implementation and 
 therefore requires different input. Note, that in the next release the current 
 implementation will be replaced with newer code that takes advantage of the

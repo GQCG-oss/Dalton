@@ -186,7 +186,8 @@ contains
 #endif
     integer(kind=ls_mpik) :: ierr
     integer :: myload,ncore
-    real(realk),allocatable,target :: arr(:)
+    !real(realk),allocatable,target :: arr(:)
+    real(realk),pointer :: arr(:)
     integer :: num,extra,narrays,nocctot
     type(mypointer),pointer :: CvirtTspecial(:,:)
     real(realk),pointer :: mini1(:),mini2(:),mini3(:),mini4(:)
@@ -260,7 +261,7 @@ end if
     nullify(batch2orbGamma)
     nullify(batchindexGamma)
     nullify(mini1,mini2,mini3,mini4)
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
     nocc = MyFragment%noccAOS   ! occupied AOS (only valence for frozen core)
     nvirt = MyFragment%nunoccAOS   ! virtual AOS
     noccEOS = MyFragment%noccEOS  ! occupied EOS
@@ -549,7 +550,7 @@ end if
     INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)='C' !C = Coulomb operator
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,MyFragment%mylsitem%setting,&
-     &                           nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+     &                           nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,MyFragment%mylsitem%setting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -576,7 +577,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       call mem_alloc(decmpitasks,nbatchesAlpha*nbatchesGamma)
       if(wakeslave) then  ! share workload with slave(s)
          call distribute_mpi_jobs(decmpitasks,nbatchesAlpha,nbatchesGamma,&
-              & batchdimAlpha,batchdimGamma,myload)
+              & batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
          if(DECinfo%PL>0) write(DECinfo%output,'(a,i6,a,i15)') 'Rank ', infpar%mynum, ' has load ', myload
       else ! master do all jobs
          decmpitasks=infpar%lg_mynum
@@ -613,22 +614,35 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size3 ', bat%size3
       if(DECinfo%PL>0) write(DECinfo%output,'(a,3i14)') 'Tot sizes ', max1,max2,max3
       if(DECinfo%PL>0) write(DECinfo%output,*) 'Static array: elms/GB = ', maxdim, real(maxdim)*8.0e-9
-      allocate(arr(maxdim),stat=ierr)
-      arr=0.0E0_realk
+      !if(infpar%lg_mynum == 0)then
+      !  !call stats_mem(DECinfo%output)
+      !  write(*,'(a,4i14)') 'size1 ', bat%size1
+      !  write(*,'(a,4i14)') 'size2 ', bat%size2
+      !  write(*,'(a,4i14)') 'size3 ', bat%size3
+      !  write(*,'(a,3i14)') 'Tot sizes ', max1,max2,max3
+      !  write(*,*) 'Static array: elms/GB = ', maxdim, real(maxdim)*8.0e-9
+      !endif
+      call mem_alloc(arr,maxdim)
+      ierr = 0
       if(ierr == 0) then
 #ifdef VAR_MPI
-      if(DECinfo%PL>0) write(DECinfo%output,'(a,i7,i15)') 'MP2: Allocation OK for node/dim ', infpar%mynum,maxdim
+        if(DECinfo%PL>0) write(DECinfo%output,'(a,i7,i15)') 'MP2: Allocation OK for node/dim ', infpar%mynum,maxdim
 #else
-      if(DECinfo%PL>0) write(DECinfo%output,'(a,i15)') 'MP2: Allocation OK for dim ', maxdim
+        if(DECinfo%PL>0) write(DECinfo%output,'(a,i15)') 'MP2: Allocation OK for dim ', maxdim
 #endif
-   else
+      else
 #ifdef VAR_MPI
-      write(DECinfo%output,'(a,i7,i15)') 'MP2: Error in allocation for node/dimm ', infpar%mynum,maxdim
+        write(DECinfo%output,'(a,i7,i15)') 'MP2: Error in allocation for node/dimm ', infpar%mynum,maxdim
 #else
-      write(DECinfo%output,'(a,i15)') 'MP2: Error in allocation for dim ', maxdim
+        write(DECinfo%output,'(a,i15)') 'MP2: Error in allocation for dim ', maxdim
 #endif
-      call lsquit('MP2: Something wrong for big array allocation!',-1)
-   end if
+        call lsquit('MP2: Something wrong for big array allocation!',-1)
+      end if
+
+      !ZERO ARRAY JUST TO BE SURE, IS THAT REALLY A GOOD IDEA????
+      !$OMP WORKSHARE
+      arr=0.0E0_realk
+      !$OMP END WORKSHARE
 
 
 
@@ -728,7 +742,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
             & MyFragment%mylsitem%setting, tmp1%p(1:dim1),batchindexAlpha(alphaB),batchindexGamma(gammaB),&
             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,FullRHS,&
-            & nbatches,INTSPEC)
+            & INTSPEC)
 
        call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
@@ -1532,7 +1546,8 @@ call mem_dealloc(decmpitasks)
  nullify(tmp2%P)
  nullify(tmp3%P)
  nullify(tmp4%P)
- deallocate(arr)
+ !deallocate(arr)
+ call mem_dealloc(arr)
  call mem_dealloc(b1)
  call mem_dealloc(b2)
  call mem_dealloc(b3)
@@ -1814,7 +1829,7 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     ! Integral screening stuff
     doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -1862,7 +1877,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
             & mysetting, tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,FullRHS,&
-            & nbatches,INTSPEC)
+            & INTSPEC)
 
 
        ! Transform beta to occupied index "j".
@@ -2101,16 +2116,12 @@ nthreads=1
 
   ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
   ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
-  if(DECinfo%fragadapt .and. (.not. MyFragment%fragmentadapted) ) then
-     nocc=MyFragment%noccFA
-     nvirt=MyFragment%nunoccFA
-  else
-     nocc=MyFragment%noccAOS
-     nvirt=MyFragment%nunoccAOS
-  end if
+  nocc=MyFragment%noccAOS
+  nvirt=MyFragment%nunoccAOS
+
   noccEOS=MyFragment%noccEOS
   nvirtEOS=MyFragment%nunoccEOS
-  nbasis = MyFragment%number_basis
+  nbasis = MyFragment%nbasis
 
 
 
@@ -2381,7 +2392,7 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
   ! **********************************************
   nocc=MyFragment%noccAOS  ! occupied AOS (only valence for frozen core)
   nvirt = MyFragment%nunoccAOS   ! virtual AOS
-  nbasis = MyFragment%number_basis      ! number of basis functions in atomic extent
+  nbasis = MyFragment%nbasis      ! number of basis functions in atomic extent
   noccEOS = MyFragment%noccEOS  ! occupied EOS
   nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
   if(DECinfo%frozencore .and. first_order_integrals) then

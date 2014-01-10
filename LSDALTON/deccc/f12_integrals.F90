@@ -101,7 +101,7 @@ contains
     real(realk), pointer :: X2ijkl(:,:,:,:) 
 
     !> number of AO orbitals
-    integer :: number_basis, nbasis
+    integer :: nbasis
     !> number of occupied MO orbitals in EOS 
     integer :: noccEOS, nunoccEOS, noccfull
     !> number of occupied + virtual MO orbitals in EOS 
@@ -117,7 +117,7 @@ contains
     real(realk) :: X1energy, X2energy, X3energy, X4energy
     real(realk) :: tmp
 
-    nbasis   = MyFragment%number_basis
+    nbasis   = MyFragment%nbasis
     noccEOS  = MyFragment%noccEOS
     nunoccEOS = MyFragment%nunoccEOS
     noccfull = noccEOS
@@ -164,7 +164,7 @@ contains
     ! ***********************************************************
     ! Creating a CoccEOS matrix 
     ! ***********************************************************
-    call mem_alloc(CoccEOS, MyFragment%number_basis, noccEOS)
+    call mem_alloc(CoccEOS, MyFragment%nbasis, noccEOS)
     do i=1, MyFragment%noccEOS
        ix = MyFragment%idxo(i)
        CoccEOS(:,i) = MyFragment%Co(:,ix)
@@ -173,7 +173,7 @@ contains
     ! ***********************************************************
     ! Creating a CocvAOS matrix 
     ! ***********************************************************
-    call mem_alloc(CocvAOS, MyFragment%number_basis, nocvAOS)
+    call mem_alloc(CocvAOS, MyFragment%nbasis, nocvAOS)
      do i=1, MyFragment%noccAOS
        CocvAOS(:,i) = MyFragment%Co(:,i)
     end do
@@ -350,7 +350,7 @@ contains
     real(realk), pointer :: V2ijkl(:,:,:,:) 
 
     !> number of AO orbitals
-    integer :: number_basis, nbasis
+    integer :: nbasis
     !> number of occupied MO orbitals in EOS 
     integer :: noccEOS 
     !> number of occupied + virtual MO orbitals in EOS 
@@ -366,11 +366,11 @@ contains
     real(realk) :: tmp
     logical,pointer :: dopair_occ(:,:)
 
-    nbasis  = PairFragment%number_basis
+    nbasis  = PairFragment%nbasis
     noccEOS = PairFragment%noccEOS
     nocvAOS = PairFragment%noccAOS + PairFragment%nunoccAOS
 
-    call mem_alloc(CoccEOS, Pairfragment%number_basis, noccEOS)
+    call mem_alloc(CoccEOS, Pairfragment%nbasis, noccEOS)
     ! ***********************************************************
     ! Creating a CoccEOS matrix 
     ! ***********************************************************
@@ -379,7 +379,7 @@ contains
        CoccEOS(:,i) = PairFragment%Co(:,ix)
     end do
 
-    call mem_alloc(CocvAOS, PairFragment%number_basis, nocvAOS)
+    call mem_alloc(CocvAOS, PairFragment%nbasis, nocvAOS)
     ! ***********************************************************
     ! Creating a CocvAOS matrix 
     ! ***********************************************************
@@ -647,7 +647,7 @@ contains
     integer(kind=long) :: dim1,dim2
     integer :: m,k,n,idx
     logical :: FullRHS,doscreen
-    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches,MaxActualDimGamma,nbatchesGamma,iorb
+    integer :: MaxActualDimAlpha,nbatchesAlpha,MaxActualDimGamma,nbatchesGamma,iorb
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
@@ -739,7 +739,7 @@ contains
     ! Integral screening stuff
     doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -782,7 +782,7 @@ contains
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, nbasis, dimAlpha, dimGamma,FullRHS,&
-               & nbatches,INTSPEC)
+               & INTSPEC)
 
           !print *, 'norm2(tmp1)', norm2(tmp1)
 
@@ -937,7 +937,7 @@ contains
     integer(kind=long) :: dim1,dim2
     integer :: m,k,n,idx
     logical :: FullRHS,doscreen
-    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches,MaxActualDimGamma,nbatchesGamma,iorb
+    integer :: MaxActualDimAlpha,nbatchesAlpha,MaxActualDimGamma,nbatchesGamma,iorb
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
@@ -1033,7 +1033,7 @@ contains
     doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
     !doscreen = .FALSE.
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -1076,7 +1076,7 @@ contains
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, nbasis, dimAlpha, dimGamma,FullRHS,&
-               & nbatches,INTSPEC)
+               & INTSPEC)
 
           !print *,"norm2(tmp1):", norm2(tmp1)
 
@@ -1234,7 +1234,7 @@ contains
     integer(kind=long) :: dim1,dim2
     integer :: m,k,n,idx
     logical :: FullRHS,doscreen
-    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches,MaxActualDimGamma,nbatchesGamma,iorb
+    integer :: MaxActualDimAlpha,nbatchesAlpha,MaxActualDimGamma,nbatchesGamma,iorb
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
@@ -1331,7 +1331,7 @@ contains
     doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
     !doscreen = .FALSE.
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+         & nbatchesAlpha,nbatchesGamma,INTSPEC)
     IF(doscreen)then
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -1376,7 +1376,7 @@ contains
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, ncabsAO, dimAlpha, dimGamma,FullRHS,&
-               & nbatches,INTSPEC)
+               & INTSPEC)
 
           print *,"FullRHS:", FullRHS
           !print *,"norm2(tmp1):", norm2(tmp1)

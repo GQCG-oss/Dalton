@@ -1705,10 +1705,6 @@ C  /* Deck onedrl */
       SUBROUTINE ONEDRL(KEY,OMATX,OMATY,OMATZ,IATOM,DERX,DERY,DERZ,WORK,
      &                  LWORK,IPRINT,INTPRI)
 C
-#if defined (BUILD_PELIB)
-       use pe_variables, only: peqm
-       use polarizable_embedding, only: pe_master
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1869,17 +1865,14 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
             IF (IPQMMM .GT. 1) CALL TIMER('QMMMFIRST',TIMSTR,TIMEND)
          END IF
 
-#if defined (BUILD_PELIB)
-         if (peqm .and. (key .eq. 'HMAT') .and. .not. nolond) then
-            ktmat = kwrk
-            mwrk  = ktmat + 3 * n2basx
-            if (mwrk > lwrk) call stopit('ONEDRL', 'peqm', mwrk, lwrk)
-            lleft = lwrk - mwrk + 1
-            call pe_master('london', fckmats=work(ktmat:mwrk-1),
-     &                     nmats=1, dalwrk=work(mwrk:lleft))
-            call daxpy(n2basx*3, d1, work(ktmat), 1, work(kmats), 1)
-         end if
-#endif
+         IF (PEQM .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
+            KTMAT = KWRK
+            MWRK  = KTMAT + 3 * N2BASX
+            IF (MWRK > LWRK) CALL STOPIT('ONEDRL', 'PEQM', MWRK, LWRK)
+            LLEFT = LWRK - MWRK + 1
+            CALL PE_IFC_LONDON(WORK(KTMAT), 1, WORK(MWRK), LWRK-MWRK+1)
+            CALL DAXPY(N2BASX*3, D1, WORK(KTMAT), 1, WORK(KMATS), 1)
+         END IF
 
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)
          IF (DERY) CALL DCOPY(N2BASX,WORK(KMATS+  N2BASX),1,OMATY,1)

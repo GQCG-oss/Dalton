@@ -284,8 +284,9 @@ C defined parallel calculation types
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
-      LOGICAL DDFOCK, NOBLK, ZFS2EL, PARCAL_IS_OK, PARCAL_SAVE
-      INTEGER IFCTYP(MXDMAT), ISYMDM(MXDMAT)
+      LOGICAL   DDFOCK, NOBLK, ZFS2EL, PARCAL_IS_OK, PARCAL_SAVE
+      INTEGER   IFCTYP(MXDMAT), ISYMDM(MXDMAT)
+      DIMENSION ALPGR1(MXPRIM)
 C
 C     Control routine for calculation of expectation values
 C     of differentiated two-electron integrals
@@ -505,6 +506,9 @@ C
             IPRTYP = HER_WORK
             HFXM0 = HFXMU
             HFXMU = D0
+cfrj-st     alpgrd here contains 1e-contribution, save for camb3lyp kludge fix
+            CALL DCOPY(MXPRIM,ALPGRD,1,ALPGR1,1)
+cfrj-end
             CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
      &                  WORK(KLAST),WORK(KNSTAT),WORK(KHESEE),LWRK,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
@@ -525,12 +529,18 @@ C
                IATOM = 1
                IF (NFMAT .GT. 0) CALL DCOPY(NFMAT*N2BASX,WORK(KFMAT),1,
      &                                      WORK(KFCTMP),1)
+cfrj-st
+               CALL DZERO(ALPGRD,MXPRIM)
+cfrj-end
                CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
      &              WORK(KLAST),WORK(KNSTAT),WORK(KHESEE),LWRK,
      &              ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
      &              RETUR,IPRINT,IPRTYP,
      &              IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
      &              DUMMY)
+cfrj-st camb3lyp looses the 1e-contribution during the second call to pardrv, reason unknown, kludge fix by zeroing array above and manually adding it again
+               CALL DAXPY(MXPRIM,1.0D0,ALPGR1,1,ALPGRD,1)
+cfrj-end
                IF (NFMAT .GT. 0) CALL DAXPY(NFMAT*N2BASX,1D0,
      &                                     WORK(KFCTMP),1,WORK(KFMAT),1)
                HFXFAC = HFXFC0

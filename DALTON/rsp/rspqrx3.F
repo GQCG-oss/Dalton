@@ -242,9 +242,6 @@ C  /* Deck e3init */
      *                  ISYMA,ISYMB,ISYMC,ISPINA,ISPINB,ISPINC,CMO,FC,
      *                  FV,MJWOP)
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 C
 C
 #include "implicit.h"
@@ -340,6 +337,8 @@ C
      &         WRK(KFREE),LFREE
      &         )
             DODFT=DFTSAV
+         ELSE
+            CALL QUIT('ERROR in E3INIT for HF or DFT')
          END IF
 C
          TRPLETSAVE=TRPLET
@@ -398,34 +397,32 @@ C
          END IF
       END IF
 
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        if (.not. tdhf) then 
-!            edh: This part is not ready yet and should quit   
-!            write(lupri,*) '*** WARNING peqm MCSCF QR ***  '
-!            write(lupri,*) '    Highly experimental version'
-!            write(lupri,*) '    Results *WILL* be wrong    '
-            call quit('ERROR: MCSCF quadratic response not'//
-     &                ' implemented with the PE library.')
-!            write(lupri,*)'KFREE', KFREE
-!            write(lupri,*)'LFREE', LFREE
-!
-!             call pe_rspmcqr(vecb, vecc, etrs, xindx, 
-!     &                       wrk(kzymb), wrk(kzymc), wrk(kden1), udv, 
-!     &                       wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
-!     &                       isyma, isymb, isymc, cmo, mjwop)
-        else if (nasht > 0) then
-            call quit('ERROR: quadratic response not implemented for'//
+      IF (PEQM) THEN
+         IF (.NOT. TDHF .AND. .NOT. TRPLET) THEN 
+!           edh: This part is not ready yet and should quit   
+!           write(lupri,*) '*** WARNING peqm MCSCF QR ***  '
+!           write(lupri,*) '    Highly experimental version'
+!           write(lupri,*) '    Results *WILL* be wrong    '
+!           call quit('ERROR: MCSCF quadratic response not'//
+!    &                ' implemented with the PE library.')
+!           write(lupri,*)'KFREE', KFREE
+!           write(lupri,*)'LFREE', LFREE
+
+            CALL PE_RSPMCQR(VECB, VECC, ETRS, XINDX, 
+     &                      WRK(KZYMB), WRK(KZYMC), WRK(KDEN1), UDV, 
+     &                      WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
+     &                      ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+         ELSE IF (NASHT > 0) THEN
+            CALL QUIT('ERROR: quadratic response not implemented for'//
      &                ' open shell systems with the PE library.')
-        else if (trplet) then
-            call quit('ERROR: triplets not implemented for quadratic'//
+         ELSE IF (TRPLET) THEN
+            CALL QUIT('ERROR: triplets not implemented for quadratic'//
      &                ' response with the PE library.')
-        endif
-        call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
-     &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
-     &                 isyma, isymb, isymc, cmo, mjwop)
-      end if
-#endif
+         ENDIF
+         CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
+     &                  UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
+     &                  ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+      END IF
 
       IF (QM3) THEN
          IF (TDHF) THEN

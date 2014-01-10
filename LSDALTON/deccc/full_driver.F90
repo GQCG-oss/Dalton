@@ -66,12 +66,13 @@ contains
     else
        if(DECinfo%ccModel==MODEL_MP2) then
 
-          if(DECinfo%full_print_frag_energies) then
-             ! Call debug routine which calculates individual fragment contributions
-             call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
-          else
-             ! simple canonical MP2 calculation
+          if(DECinfo%use_canonical .and. (.not.  DECinfo%full_print_frag_energies) ) then
+             ! simple conventional MP2 calculation, only works for canonical orbitals
              call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+          else
+             ! Call routine which calculates individual fragment contributions and prints them,
+             ! works both for canonical and local orbitals
+             call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
           end if
 
        else
@@ -107,9 +108,9 @@ contains
     if(DECinfo%FrozenCore) then
        nocc = MyMolecule%nval
     else
-       nocc = MyMolecule%numocc
+       nocc = MyMolecule%nocc
     end if
-    nunocc = MyMolecule%numvirt
+    nunocc = MyMolecule%nunocc
     nbasis = MyMolecule%nbasis
 
     fragment_job = .false.
@@ -283,8 +284,8 @@ contains
     ! **********
     call init_cabs
     nbasis = MyMolecule%nbasis
-    nocc   = MyMolecule%numocc
-    nvirt  = MyMolecule%numvirt
+    nocc   = MyMolecule%nocc
+    nvirt  = MyMolecule%nunocc
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     noccfull = nocc
 
@@ -893,7 +894,7 @@ contains
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
           call dcopy(noccfull*nbasis,Cocc,1,CMO(i)%elms,1)
-          call dcopy(nvirt*nbasis,Cvirt,1,CMO(i)%elms(noccfull*nbasis+1:nbasis*nbasis),1)
+          call dcopy(nvirt*nbasis,Cvirt,1,CMO(i)%elms(noccfull*nbasis+1),1)
        elseif(string(i).EQ.'a')then !virtual
           call dcopy(ndim2(i)*ndim1(i),Cvirt,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'c')then !cabs
@@ -1107,8 +1108,8 @@ contains
 
     ! Init dimensions
     call init_cabs
-    nocc = MyMolecule%numocc
-    nvirt = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
     nbasis = MyMolecule%nbasis
     noccfull = nocc
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
@@ -1344,9 +1345,9 @@ contains
     if(DECinfo%FrozenCore) then
        nocc = MyMolecule%nval
     else
-       nocc = MyMolecule%numocc
+       nocc = MyMolecule%nocc
     end if
-    nunocc = MyMolecule%numvirt
+    nunocc = MyMolecule%nunocc
     nbasis = MyMolecule%nbasis
 
     fragment_job = .false.
@@ -1363,7 +1364,7 @@ contains
        end do
 
        startidx = MyMolecule%ncore+1  
-       endidx = MyMolecule%numocc
+       endidx = MyMolecule%nocc
        call ccsolver_par(DECinfo%ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
             & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
             & print_level,fragment_job,&
@@ -1730,10 +1731,10 @@ contains
        ! Frozen core: Only valence orbitals
        nocc = MyMolecule%nval
     else
-       nocc = MyMolecule%numocc
+       nocc = MyMolecule%nocc
     end if
 
-    nunocc = MyMolecule%numvirt
+    nunocc = MyMolecule%nunocc
     ncore = MyMolecule%ncore
     nbasis=MyMolecule%nbasis
     call mem_alloc(ppfock,nocc,nocc)

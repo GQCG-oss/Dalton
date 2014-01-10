@@ -144,6 +144,14 @@ contains
 
     call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
 
+    !!! DEBUG
+    print *,'jaik:'
+    call array4_print_norm_nrm(jaik)
+    print *,'abij:'
+    call array4_print_norm_nrm(abij)
+    print *,'cbai:'
+    call array_print_norm_nrm(cbai)
+
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
     call array2_free(C_can_virt)
@@ -197,10 +205,13 @@ contains
 
     ! create job distribution list
     ! first, determine common batch size from number of tasks and nodes
-    ntasks = (nocc**2 + nocc)/2
+
+    ! in the ij matrix, ntasks is the number of elements in the lower triangular matrix
+    ! always an even number [ n(n+1) is always an even number ]
+    ntasks = int((nocc**2 + nocc)/2)
     b_size = int(ntasks/nodtotal)
 
-    ! ij_array stores all jobs for composite ij indices in decending order
+    ! ij_array stores all jobs for composite ij indices in descending order
     call mem_alloc(ij_array,ntasks)
     ! init list (one more than b_size since mod(ntasks,nodtotal) is not necessearily zero
     call mem_alloc(jobs,b_size + 1)
@@ -573,6 +584,12 @@ contains
 
 #endif
 
+    !!! DEBUG
+    print *,'ccsdpt_doubles_2:'
+    call array4_print_norm_nrm(ccsdpt_doubles_2)
+    print *,'ccsdpt_doubles (before):'
+    call array4_print_norm_nrm(ccsdpt_doubles)
+
     ! now everything resides on the master...
 
     ! collect ccsdpt_doubles and ccsdpt_doubles_2 into ccsdpt_doubles array4 structure
@@ -581,6 +598,10 @@ contains
     call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_2%val,ccsdpt_doubles_2%dims(1),&
                                &ccsdpt_doubles_2%dims(2),ccsdpt_doubles_2%dims(3),ccsdpt_doubles_2%dims(4),&
                                &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%val)
+
+    !!! DEBUG
+    print *,'ccsdpt_doubles (after):'
+    call array4_print_norm_nrm(ccsdpt_doubles)
 
     ! release ccsdpt_doubles_2 array4 structure
     call array4_free(ccsdpt_doubles_2)
@@ -631,12 +652,28 @@ contains
     !> integers
     integer :: counter,offset,fill_1,fill_2
 
-    ! since i .ge. j, the composite ij indices will make up a lower triangular matrix
+    ! since i .ge. j, the composite ij indices will make up a lower triangular matrix.
     ! for each ij, k (where j .ge. k) jobs have to be carried out.
     ! thus, the largest jobs for a given i-value will be those that have the largest j-value,
     ! and the largest jobs will thus be those for which the ij index appears near the diagonal.
     ! as the value of j specifies how large a given job is, we fill up the ij_array with jobs
-    ! for j-values in decending order.
+    ! for j-values in descending order.
+
+    ! the below is the lower triangular part of the ij (5*5) matrix written in row-major order
+
+    ! ||  1               ||
+    ! ||  2   3           ||
+    ! ||  4   5  6        ||
+    ! ||  7   8  9 10     ||
+    ! ||  11 12 13 14 15  ||
+
+    ! examples of ij --> i,j conversion
+    ! - ij index 15 corresponds to (i,j)=(5,5) and thus to k=1,2,3,4,5
+    ! - ij index 9  corresponds to (i,j)=(4,3) and thus to k=1,2,3
+    ! - ij index 11  corresponds to (i,j)=(5,1) and thus to k=1
+
+    ! we want ij_array to look like this
+    ! (15 , 14 , 10 , 13 , 9 , 6 , 12 , 8 , 5 , 3 , 11 , 7 , 4 , 2 , 1)
 
     ! counter specifies the index of ij_array
     counter = 1
@@ -648,7 +685,7 @@ contains
 
        if (fill_1 .eq. 0) then
 
-          ! this is largest possible job
+          ! this is largest possible job, i.e., the (no,no)-th entry in the ij matrix
           ij_array(counter) = ntasks
           ! increment counter
           counter = counter + 1
@@ -659,16 +696,19 @@ contains
 
              if (fill_2 .eq. 0) then
 
-                ! this is the largest i-value, for which we have to do k number of jobs
+                ! this is the largest i-value, for which we have to do k number of jobs, 
+                ! that is, we are at the no'th row essentially moving from right towards left.
                 ij_array(counter) = ntasks - fill_1
                 ! increment counter
                 counter = counter + 1
 
              else
 
-                ! we loop through the i-value keeping the j-value (and k-value of course) fixed
-                ! we thus loop from i == nocc up towards the diagonal of the lower triangular matrix
+                ! we loop through the i-values keeping the j-value (and k-range) fixed
+                ! we thus loop from i == no up towards the diagonal of the lower triangular matrix
                 offset = offset + (no - fill_2)
+                ! 'ntasks - fill_1' gives the current column, while 'offset' moves us up through the rows
+                ! while staying below or on the diagonal.(still row-major numbering)
                 ij_array(counter) = ntasks - fill_1 - offset
                 ! increment counter
                 counter = counter + 1
@@ -745,9 +785,11 @@ contains
     !> integers
     integer :: gauss_sum,gauss_sum_old,series
 
-    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements
+    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements.
+    ! in column 1, there are N rows, in column 2, there are (N-1) rows, ...,  in
+    ! column (N-1), there are 2 rows, and in column N, there are 1 row.
     ! this is a gauss sum of 1 + 2 + 3 + ... + N-2 + N-1 + N
-    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum)
+    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum).
     ! if gauss_sum for a given i (series) is smaller than ij, we loop.
     ! when gauss_sum is greater than ij, we use the value of i for the present loop cycle
     ! and calculate the value of j from the present ij and previous gauss_sum values.
@@ -755,7 +797,7 @@ contains
 
     do series = 1,no
 
-       gauss_sum = (series**2 + series)/2
+       gauss_sum = int((series**2 + series)/2)
 
        if (gauss_sum .lt. ij) then
 
@@ -2770,7 +2812,7 @@ contains
     real(realk) :: tcpu, twall
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
     type(array4) :: JAIB
-    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches
+    integer :: MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxActualDimGamma,nbatchesGamma
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
@@ -2814,6 +2856,7 @@ contains
 #else
 
     CBAI = array_init(dims,4)
+    call array_zero(CBAI)
 
 #endif
 
@@ -2904,7 +2947,7 @@ contains
     INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)='C' !C = Coulomb operator
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
-            & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+            & nbatchesAlpha,nbatchesGamma,INTSPEC)
 
     if (doscreen) then
 
@@ -2933,7 +2976,8 @@ contains
     ! init distribution
     distribution = 0
     myload = 0
-    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,batchdimAlpha,batchdimGamma,myload)
+    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
+    &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
 
 #endif
 
@@ -2974,7 +3018,7 @@ contains
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
-               & FullRHS,nbatches,INTSPEC)
+               & FullRHS,INTSPEC)
 
           ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
           m = nbasis*dimGamma*dimAlpha

@@ -472,6 +472,8 @@ C
 #include "huckel.h"
 #include "optinf.h"
 C
+      CHARACTER*(len_MLINE) TMP_MLINE
+C
 C     The SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
 C     geometry iteration.
@@ -534,8 +536,9 @@ C
       NMLINE = 0
 
       CALL RDLINE(LUINFO)
-      CALL UPCASE(MLINE(NMLINE))
-      READ (MLINE(NMLINE),'(A6)',IOSTAT=IOS) KEYWRD
+      TMP_MLINE = MLINE(NMLINE)
+      CALL UPCASE(TMP_MLINE)
+      READ (TMP_MLINE,'(A6)',IOSTAT=IOS) KEYWRD
       IF (IOS.NE.0) THEN
          WRITE (LUPRI,'(/A,I5/A/A)') 'Error in input line no. ',NMLINE,
      &   MLINE(NMLINE),'Error in reading basis keyword'
@@ -802,7 +805,6 @@ C       THRS    - integral threshold
 C       ADDSYM  - flag for automatic determination of symmetry
 C***********************************************************************
       CALL RDLINE(LUINFO)
-      CALL UPCASE(MLINE(NMLINE))
       CALL LINE4(MLINE(NMLINE),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
      &           KASYM,ID3,DOCART,DOOWN)
 C --> Angstrom or Bohr?
@@ -1840,7 +1842,7 @@ C
          CALL QUIT('Too high angular quantum no. specified in input.')
  299  CONTINUE
       WRITE (LUPRI,'(//A,I5/A/A,I5/A)')
-     &      'ERROR reading .mol line',NNMLINE,
+     &      'ERROR reading .mol line',NMLINE,
      &      MLINE(NMLINE),
      &      ' Cannot determine the charge of atom type', I,
      &      ' Correct input format is: Charge=???'
@@ -2352,6 +2354,9 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+#if defined(BUILD_PELIB)
+      use pe_variables, only: pe_savden
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -2364,6 +2369,7 @@ C*****************************************************************************
 #include "dcbgen.h"
       PARAMETER (LUCME = -1)
 #else
+#include "gnrinf.h"
 #include "inftap.h"
 #endif
 #include "symmet.h"
@@ -2391,7 +2397,6 @@ C*****************************************************************************
 #include "aosotr.h"
 #include "r12int.h"
 #include "qm3.h"
-#include "gnrinf.h"
 C
       IF (DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
@@ -2589,6 +2594,14 @@ C     ***** Printing of atomic coordinates *****
 C     ******************************************
 C
       IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
+
+      if (.NOT.SLAVE .AND. (PEQM .OR. PEMEP)
+#if defined (BUILD_PELIB)
+     &    .or. pe_savden
+#endif
+     &   ) THEN
+        CALL PE_IFC_INIT()
+      END IF
 C
  1010 FORMAT(I14,' large AO-blocks of ',A1,' type')
  1020 FORMAT(I14,' small AO-blocks of ',A1,' type')
@@ -4544,10 +4557,6 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm, pe_mep, pe_savden
-      use polarizable_embedding, only: pe_init
-#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4574,11 +4583,6 @@ C
 #include "chrnos.h"
 #include "ibtfun.h"
 C
-      LOGICAL :: POLEMB = .FALSE.
-#if defined (BUILD_PELIB)
-      POLEMB = .TRUE.
-#endif
-C
       NCOOR = 3*NUCDEP
 C
 C     *********************************
@@ -4588,7 +4592,7 @@ C
       IPTEST = MIN(NUCDEP/13,2)
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
-      IF (QMMM .OR. POLEMB) IPTEST = 0
+      IF (QMMM .OR. PEQM) IPTEST = 0
       IF ( IPREAD .GT. IPTEST )  THEN
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
@@ -4727,12 +4731,6 @@ C
       IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
-
-#if defined (BUILD_PELIB)
-      if (peqm .or. pe_mep .or. pe_savden) then
-        call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
-      end if
-#endif
 
       RETURN
       END
@@ -6665,26 +6663,32 @@ C
       END IF
       RETURN
       END
-      SUBROUTINE LINE4(LINE,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
-     &                 ID3,DOCART,DOOWN)
+      SUBROUTINE LINE4(LINE4_in,NONTYP,NSYMOP,CRT,KCHARG1,THRS,
+     &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
 C
 C     Read in the fourth input line using the new input scheme
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
+! gnrinf.h : PEQM
+#include "gnrinf.h"
+! molinp.h : len_MLINE
+#include "mxcent.h"
+#include "molinp.h"
+
       LOGICAL ADDSYM, DOCART, DOOWN
-      CHARACTER*80 LINE
+      CHARACTER*(len_MLINE) LINE4_in, LINE
       CHARACTER CRT*1, ID3*1, SYMTXT*2
       CHARACTER*1 KASYM(3,3)
 C
 C     Initialize
 C
+      LINE   = LINE4_in
+      CALL UPCASE(LINE) ! copy in upcase for keyword checks below
+
       NONTYP = 0
       DOCART = .FALSE.
       DOOWN  = .FALSE.
@@ -6745,10 +6749,10 @@ C
                WRITE (LUPRI,*) LINE
                CALL QUIT('Incorrect input for molecular charge')
             ELSE
-               READ (LINE(IPOS+IPOS2:),*) KCHARG
+               READ (LINE(IPOS+IPOS2:),*) KCHARG1
             END IF
          ELSE
-            KCHARG = 0
+            KCHARG1 = 0
          END IF
 C
 C     Angstrom?
@@ -6769,14 +6773,14 @@ C
          IF (IPOS .NE. 0 .AND. IPSO .NE. 0) THEN
             WRITE (LUPRI,*) 'Incorrect symmetry input. "Nosymmetry" '//
      &           'requested, but generators given.'
-            WRITE (LUPRI,*) LINE
+            WRITE (LUPRI,*) LINE4_in
             CALL QUIT('Inconsistent symmetry input')
          ELSE IF (IPOS .NE. 0) THEN
             IPOS2 = INDEX(LINE(IPOS:),'=')
             IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 11)) THEN
                WRITE (LUPRI,*) 'Incorrect input for symmetry generators'
                WRITE (LUPRI,*) 'Format is "Generators=?"'
-               WRITE (LUPRI,*) LINE
+               WRITE (LUPRI,*) LINE4_in
                CALL QUIT('Incorrect input for symmetry generators')
             ELSE
                READ (LINE((IPOS+IPOS2):),*) NSYMOP
@@ -6802,7 +6806,7 @@ C
             ELSE
                IF (NSYMOP .GT. 3) THEN
                   WRITE (LUPRI,*) 'Too many (>3) group generators'
-                  WRITE (LUPRI,*) LINE
+                  WRITE (LUPRI,*) LINE4_in
                   CALL QUIT('Too many (>3) group generators')
                END IF
             END IF
@@ -6823,7 +6827,7 @@ C
             IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 11)) THEN
                WRITE (LUPRI,*) 'Incorrect input for integral threshold'
                WRITE (LUPRI,*) 'Format is "Integrals=?"'
-               WRITE (LUPRI,*) LINE
+               WRITE (LUPRI,*) LINE4_in
                CALL QUIT('Incorrect input for integral threshold')
             ELSE
                CALL FREFRM(LINE,IPOS+IPOS2,IDUMMY,THRS,'REA',IERR)
@@ -6839,8 +6843,8 @@ C
 C     Since the number of atom types have not been specified,
 C     assume old input format
 C
-         READ (LINE,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
-     &        NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
+         READ (LINE4_in,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
+     &        NONTYP,KCHARG1,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
          IF (LINE(21:30) .EQ. '          ') THRS = -1.0D0
 C        ... tell READIN that user hasn't specified THRS
          ADDSYM = (SYMTXT(1:2) .EQ. '  ')
@@ -6853,25 +6857,23 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
          DOOWN  = CRT .EQ. 'X'
       END IF
       IF (ADDSYM) NSYMOP = 0
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        if (addsym) then
-            addsym = .false.
-        else if (nsymop > 0) then
-            write(lupri,'(/a)') 'ERROR: point group symmetry is'//
+      IF (PEQM) THEN
+        IF (ADDSYM) THEN
+            ADDSYM = .FALSE.
+        ELSE IF (NSYMOP > 0) THEN
+            WRITE(LUPRI,'(/A)') 'ERROR: point group symmetry is'//
      &                          ' incompatible with polarizable'//
      &                          ' embedding'
-            call quit('point group symmetry is incompatible with'//
+            CALL QUIT('point group symmetry is incompatible with'//
      &                ' polarizable embedding')
-        end if
-      end if
-#endif
+        END IF
+      END IF
       RETURN
  199  CONTINUE
       WRITE (LUPRI,'(/A)') ' Error in the determination of the number'
      &   //' of different atomic types'
       WRITE (LUPRI,*) "Correct input structure is: Atomtypes=???"
-      WRITE (LUPRI,*) LINE
+      WRITE (LUPRI,*) LINE4_in
       CALL QUIT('Error in determining the number of different '//
      &     'atom types')
       END
@@ -6884,7 +6886,7 @@ C
 C     Write out molecule specific information in new input format
 C
 #include "implicit.h"
-      CHARACTER*80 TMPLN
+      CHARACTER*(*) TMPLN
       CHARACTER*1 KASYM(3,3), ID3
       LOGICAL AUTOSY, NOSYM, DOCART, DOOWN
 C
@@ -6916,7 +6918,6 @@ C
       IF (NOSYM) THEN
          WRITE (TMPLN(ISTART:),'(A11)') 'NOSYMMETRY'
          ISTART = ISTART + 12
-Ckr      END IF
 C
       ELSE
          IF (.NOT. AUTOSY) THEN
@@ -6929,6 +6930,7 @@ C
                   ISTART = ISTART + 1
                END DO
             END DO
+            ISTART = ISTART + 1
          END IF
       END IF
 C
@@ -6937,12 +6939,13 @@ C
          ISTART = ISTART + 10
       END IF
       IF (DOOWN) THEN
-         WRITE (TMPLN(ISTART:),'(A10)') 'OWN '
+         WRITE (TMPLN(ISTART:),'(A4)') 'OWN '
          ISTART = ISTART + 4
       END IF
 C
       IF (ID3 .NE. ' ') THEN
          WRITE (TMPLN(ISTART:),'(A7)') 'ANGSTROM'
+         ISTART = ISTART + 8
       END IF
       RETURN
       END
@@ -6963,7 +6966,7 @@ C
       CALL QENTER('LINE5R')
 
       RADIUS_PCM = 0.0D0
-      ALPHA_PCM = 0.0D0
+      ALPHA_PCM  = 0.0D0
 
       BKPLIN=TMPLN
       CALL UPCASE(BKPLIN)
@@ -7121,13 +7124,11 @@ C     Write out atom-specific input line in new format
 C
 #include "implicit.h"
 #include "pcmlog.h"
-      CHARACTER LINE*80, BASNAM*80
+      CHARACTER LINE*(*), BASNAM*(*)
       DIMENSION JCO(KANG)
       LOGICAL   BASIS, ATOMBA, LMULBS
 C
-      DO I = 1, 71, 10
-         WRITE (LINE(I:),'(A10)') '          '
-      END DO
+      LINE = ' '
 C
       ISTART = 17
       IF (ABS(Q) .LT. 1.0D1) THEN

@@ -17,7 +17,7 @@ MODULE dal_interface
    use TYPEDEF, only: typedef_setlist_valence2full,getNbasis, &
 		& GCAO2AO_transform_matrixD2,&
                 & ao2gcao_transform_matrixf
-   use dec_typedef_module, only: batchTOorb
+   use dec_typedef_module, only: batchTOorb,DecAObatchinfo
    use Integralparameters
    use AO_TypeType, only: AOITEM
    use files, only: lsclose, lsopen
@@ -46,6 +46,10 @@ MODULE dal_interface
    ! debug cgto_diff_eri_host
    use cgto_diff_eri_host_interface, only: cgto_diff_eri_DGD_Econt
 #endif
+#ifdef VAR_ICHOR
+   use IchorErimoduleHost
+#endif
+
 INTERFACE di_GET_GbDs
 	MODULE PROCEDURE di_GET_GbDsSingle, di_GET_GbDsArray
 END INTERFACE
@@ -66,6 +70,7 @@ END INTERFACE
         & di_debug_4center_eri, &
         & di_debug_4center, &
         & di_decpacked, &
+        & di_decpackedJ, &
 #endif
         & di_debug_ccfragment, &
         & di_get_fock_LSDALTON, &
@@ -83,6 +88,7 @@ END INTERFACE
    ! access to H1 within this module, avoiding re-reading H1 from disk and
    ! avoiding extensive modifications to existing subroutine interfaces.
    type(MATRIX), pointer, save  :: lH1
+   real(realk),parameter :: Gbd_thresh = 1.0E-14_realk
 CONTAINS
   subroutine di_debug_general(lupri,luerr,ls,nbast,S,D,debugProp)
       implicit none
@@ -2282,7 +2288,9 @@ CONTAINS
         integer :: ndmat 
 !       
         logical :: Dsym
-        Dsym = .FALSE. !NONsymmetric Density matrix
+
+        Dsym = .TRUE. !matrix either symmetric or antisymmetric
+        IF(mat_get_isym(Dens,Gbd_thresh).EQ.3) Dsym = .FALSE. !NON symmetric Density matrix
         ndmat = 1
         IF(present(setting))THEN
            !This should be changed to a test like the MATSYM function
@@ -2414,11 +2422,16 @@ CONTAINS
         type(Matrix), intent(inout) :: GbDs(nDmat)  !output
         type(lssetting),optional :: setting !intent(inout)
         !
+        integer :: idmat
         logical :: Dsym
 
-        !This should be changed to a test like the MATSYM
-        ! function for full matrices   
-        Dsym = .FALSE. !NONsymmetric Density matrix
+        Dsym = .TRUE. !all matrices either symmetric or antisymmetric
+        DO idmat = 1,ndmat
+           IF(mat_get_isym(Dens(idmat),Gbd_thresh).EQ.3)THEN
+              Dsym = .FALSE. !NON symmetric Density matrix
+           ENDIF
+           IF(.NOT.Dsym)EXIT
+        ENDDO
         IF(present(setting))THEN
            call II_get_Fock_mat(lupri,luerr,&
               & setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
@@ -2496,10 +2509,13 @@ CONTAINS
                 call lsquit('II_get_Fock_mat incremental scheme not &
                            & allowed in di_GET_GbDsArray_ADMM_setting()',lupri)
             ENDIF
-            !This should be changed to a test like the MATSYM
-            ! function for full matrices   
-            Dsym = .FALSE. !NONsymmetric Density matrix
-
+            Dsym = .TRUE. !all matrices either symmetric or antisymmetric
+            DO iBmat = 1,nBmat
+               IF(mat_get_isym(Bmat(iBmat),Gbd_thresh).EQ.3)THEN
+                  Dsym = .FALSE. !NON symmetric Density matrix
+               ENDIF
+               IF(.NOT.Dsym)EXIT
+            ENDDO
             ! Get rid of Grand canonical
             copy_IntegralTransformGC = setting%IntegralTransformGC
             call mat_init(Dmat_AO,nbast,nbast)
@@ -3032,7 +3048,7 @@ CONTAINS
       INTSPEC(3) = 'R'
       INTSPEC(4) = 'R'
       INTSPEC(5) = 'C' !operator
-      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatches,nbatchesXY,nbatchesXY,INTSPEC)
+      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesXY,nbatchesXY,INTSPEC)
       
       IF(doscreen)then
          call II_getBatchOrbitalScreenK(DecScreen,ls%setting,&
@@ -3068,7 +3084,7 @@ CONTAINS
 
             call II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,ls%SETTING,&
                  & integrals,batchindex(X),batchindex(Y),batchsize(X),batchsize(Y),&
-                 & dimX,nbast,dimY,nbast,nbatches,INTSPEC,fullRHS)
+                 & dimX,nbast,dimY,nbast,INTSPEC,fullRHS)
 
             do batch_iY = 1,dimY
                iY = batch2orb(Y)%orbindex(batch_iY)
@@ -3125,6 +3141,128 @@ CONTAINS
       call mat_free(tempm3)
 
     END SUBROUTINE DI_DECPACKED
+#endif
+#ifdef VAR_ICHOR 
+    SUBROUTINE di_decpackedJ(lupri,luerr,ls,nbast,D)
+      IMPLICIT NONE
+      TYPE(Matrix),intent(in) :: D
+      integer,intent(in)      :: lupri,luerr,nbast
+      type(lsitem),intent(inout) :: ls
+      !
+      TYPE(Matrix)  :: J,Jdec,tempm3
+      real(realk),pointer   :: integral(:,:,:)
+      real(realk) :: CoulombFactor,Jcont
+      real(realk),pointer :: Dfull(:,:),JdecFull(:,:)
+      integer :: iAO,RequestedOrbitalDimOfAObatch,MaxAObatchesOrbDim
+      integer :: MinimumAllowedAObatchSize,nbatchesofAOS,nAObatches
+      integer :: dim1,dim2,dimGamma,GammaStart,GammaEnd
+      integer :: AOGammaStart,AOGammaEnd,gammaB,iAG
+      integer :: dimAlpha,AlphaStart,AlphaEnd,alphaB,iprint
+      integer :: AOAlphaStart,AOAlphaEnd,iA,iG,iB,iD,ABATCH,GBATCH
+      character :: INTSPEC(5)
+      type(DecAObatchinfo),pointer :: AObatchinfo(:)
+      logical :: SameMOL
+      call mem_alloc(Dfull,D%nrow,D%ncol)
+      call mat_to_full(D,1E0_realk,DFULL)
+      iprint = 0
+      INTSPEC(1) = 'R' 
+      INTSPEC(2) = 'R'
+      INTSPEC(3) = 'R'
+      INTSPEC(4) = 'R'
+      INTSPEC(5) = 'C' !operator
+      SameMOL = .TRUE.
+      call SCREEN_ICHORERI_DRIVER(lupri,luerr,ls%setting,INTSPEC,SameMOL)
+
+      !step 1 Orbital to Batch information
+      iAO = 1 !the center that the batching should occur on. 
+      call determine_MinimumAllowedAObatchSize(ls%setting,iAO,'R',MinimumAllowedAObatchSize)
+      WRITE(lupri,*)'MinimumAllowedAObatchSize',MinimumAllowedAObatchSize
+      suggestion = 0
+      IF(nbast.GT.16) suggestion = 16
+      IF(suggestion.EQ.0) suggestion = nbast/4
+      RequestedOrbitalDimOfAObatch = MAX(MinimumAllowedAObatchSize,suggestion)
+      WRITE(lupri,*)'MinimumAllowedAObatchSize',MinimumAllowedAObatchSize
+      WRITE(lupri,*)'RequestedOrbitalDimOfAObatch',RequestedOrbitalDimOfAObatch
+      call determine_Ichor_nbatchesofAOS(ls%setting,iAO,'R',&
+           & RequestedOrbitalDimOfAObatch,nbatchesofAOS,lupri)
+      call mem_alloc(AObatchinfo,nbatchesofAOS)
+      call determine_Ichor_batchesofAOS(ls%setting,iAO,'R',&
+           & RequestedOrbitalDimOfAObatch,nbatchesofAOS,AObatchinfo,&
+           & MaxAObatchesOrbDim,lupri)
+      call determine_Ichor_nAObatches(ls%setting,iAO,'R',nAObatches,lupri)
+      call mem_alloc(integral,nbast,nbast,MaxAObatchesOrbDim*MaxAObatchesOrbDim)
+      call mem_alloc(JdecFull,nbast,nbast)
+      call ls_dzero(JdecFull,nbast*nbast)
+      WRITE(lupri,*)'nbatchesofAOS',nbatchesofAOS
+      dim1 = nbast
+      dim2 = nbast
+      BatchGamma: do gammaB = 1,nbatchesofAOS        ! batches of AO batches
+        dimGamma = AObatchinfo(gammaB)%dim          ! Dimension of gamma batch
+        GammaStart = AObatchinfo(gammaB)%orbstart   ! First orbital index in gamma batch
+        GammaEnd = AObatchinfo(gammaB)%orbEnd       ! Last orbital index in gamma batch
+        AOGammaStart = AObatchinfo(gammaB)%AOstart  ! First AO batch index in gamma batch
+        AOGammaEnd = AObatchinfo(gammaB)%AOEnd      ! Last AO batch index in alpha batch
+        BatchAlpha: do alphaB = 1,nbatchesofAOS        ! batches of AO batches
+          dimAlpha = AObatchinfo(alphaB)%dim          ! Dimension of alpha batch
+          AlphaStart = AObatchinfo(alphaB)%orbstart   ! First orbital index in alpha batch
+          AlphaEnd = AObatchinfo(alphaB)%orbEnd       ! Last orbital index in alpha batch
+          AOAlphaStart = AObatchinfo(alphaB)%AOstart  ! First AO batch index in alpha batch
+          AOAlphaEnd = AObatchinfo(alphaB)%AOEnd      ! Last AO batch index in alpha batch
+
+          !calc (beta,delta,alphaB,gammaB) 
+          call MAIN_ICHORERI_DRIVER(lupri,iprint,ls%setting,dim1,dim2,dimAlpha,dimGamma,&
+               & Integral,INTSPEC,.FALSE.,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+               & AOGammaStart,AOGammaEnd)
+
+          iG = GammaStart-1
+          do Gbatch = 1,dimGamma
+             iG = iG + 1
+             iA = AlphaStart-1
+             do Abatch = 1,dimAlpha
+                iA = iA + 1
+                Jcont = 0E0_realk
+                iAG = Abatch + (Gbatch-1)*dimAlpha
+                DO iD=1,nbast
+                   DO iB=1,nbast
+                      Jcont = Jcont + 2.0E0_realk*Dfull(iB,iD)*integral(iB,iD,iAG)
+                   ENDDO
+                ENDDO
+                JdecFULL(iA,iG)=JdecFULL(iA,IG)+Jcont
+             ENDDO
+          ENDDO
+        ENDDO BatchAlpha
+      ENDDO BatchGamma
+      call mem_dealloc(AObatchinfo)
+      call mat_init(Jdec,nbast,nbast)
+      call mat_set_from_full(JdecFULL,1.0E0_realk,Jdec)
+      call mem_dealloc(JdecFull)
+      call mem_dealloc(DFULL)
+
+      call mat_init(J,nbast,nbast)
+      call mat_zero(J)
+      CALL II_get_Coulomb_mat(lupri,luerr,ls%setting,D,J,1)
+
+      call mat_init(tempm3,nbast,nbast)
+      call mat_add(1E0_realk,Jdec,-1E0_realk,J,tempm3)
+      write(lupri,*) 'QQQ DI_DEBUG_DECPACK J STD    ',mat_trab(J,J)
+      write(lupri,*) 'QQQ DI_DEBUG_DECPACK J DECPACK',mat_trab(Jdec,Jdec)
+      write(lupri,*) 'QQQ DIFF',ABS(mat_trab(tempm3,tempm3))
+      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
+         write(lupri,*)'QQQ SUCCESFUL DECPACK J TEST'
+      ELSE
+         WRITE(lupri,*)'the Jref'
+         call mat_print(J,1,nbast,1,nbast,lupri)
+         WRITE(lupri,*)'the Jdec'
+         call mat_print(Jdec,1,nbast,1,nbast,lupri)
+         WRITE(lupri,*)'the Diff'
+         call mat_print(tempm3,1,nbast,1,nbast,lupri)
+         CALL lsQUIT('DECPACKED K TEST FAILED',lupri)
+      ENDIF
+      call mat_free(J)
+      call mat_free(Jdec)
+      call mat_free(tempm3)
+
+    END SUBROUTINE DI_DECPACKEDJ
 #endif
     SUBROUTINE di_debug_4center_eri_interest(lupri,lu_err,ls,nbast)
       IMPLICIT NONE

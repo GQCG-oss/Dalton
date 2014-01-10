@@ -333,10 +333,13 @@ C
          CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE IF (CCPPA) THEN
          CALL TITLER('SOPPA(CCSD) response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('SOPPA(CCSD) RESPONSE')
       ELSE IF (SOPPA) THEN
          CALL TITLER('SOPPA response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
 C
@@ -886,8 +889,8 @@ C
                   AVDIA  = .FALSE.
                GO TO 100
     3          CONTINUE
-                  IF (PARCAL) CALL PARQUIT("SOPPA")
                   SOPPA = .TRUE.
+                  IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
                   IF (SOPPA .AND. EMBEDDING) THEN
                     WRITE (LUPRI,'(/A)')
      &              '@ **INFO**'//
@@ -1098,7 +1101,6 @@ C              .PROP2Average
      &      ' Input ERROR: CI response and ".SOPPA " are incompatible.'
          CALL QUIT('RSPINP: Input error')
       END IF
-      IF (SOPPA .AND. PARCAL) CALL PARQUIT("SOPPA")
 C
 C *** END OF RSPINP
 C
@@ -1282,9 +1284,6 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1712,12 +1711,10 @@ C
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-#if defined (BUILD_PELIB)
-         if (peqm) then
-           write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+           WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
-#endif
+         END IF
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
@@ -1828,9 +1825,6 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -2279,12 +2273,10 @@ C
              WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
          END IF    
 
-#if defined (BUILD_PELIB)
-         if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
-#endif
+         END IF
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -4082,9 +4074,6 @@ C
 C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "infdim.h"
 C
@@ -4374,21 +4363,19 @@ C
          ENDDO
       END IF
 C
-#if defined (BUILD_PELIB)
-      if (peqm .and. .not. tdhf) then
-        write(lupri,*) '---------------------- Running PE-MCSCF response
-     & calculation -----------------------'
-        write(lupri,*) '=> Subtracting PE Fock matrix'
-        write(lupri,*) '=> PE-MCSCF citation:' 
-        write(lupri,*) '=> E. D. Hedegård, N. H. List, H. J. Aa. Jensen
-     & J. Kongsted, JCP 139 (2013), 044101'     
-        write(lupri,*) '-----------------------------------------------
-     &------------------------------------' 
-        call mollab('PETMAT  ', lusifc, lupri)
-        call readt (lusifc, nnorbt, wrk)
-        fc(1:nnorbt) = fc(1:nnorbt) - wrk(1:nnorbt)
-       endif
-#endif
+      IF (PEQM .AND. .NOT. TDHF) THEN
+!        WRITE(LUPRI,*) '---------------------- RUNNING PE-MCSCF RESPONSE
+!     & CALCULATION -----------------------'
+!        WRITE(LUPRI,*) '=> SUBTRACTING PE FOCK MATRIX'
+!        WRITE(LUPRI,*) '=> PE-MCSCF CITATION:' 
+!        WRITE(LUPRI,*) '=> E. D. HEDEGÅRD, N. H. LIST, H. J. AA. JENSEN
+!     & J. KONGSTED, JCP 139 (2013), 044101'     
+!        WRITE(LUPRI,*) '-----------------------------------------------
+!     &------------------------------------' 
+        CALL MOLLAB('PETMAT  ', LUSIFC, LUPRI)
+        CALL READT (LUSIFC, NNORBT, WRK)
+        FC(1:NNORBT) = FC(1:NNORBT) - WRK(1:NNORBT)
+       ENDIF
 C
       IF (SOPPA) THEN
 C
@@ -4758,9 +4745,6 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
@@ -4909,12 +4893,10 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-#if defined (BUILD_PELIB)
-         if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
-#endif
+         END IF
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='

@@ -798,23 +798,24 @@ The \verb|GRIDX| keywords also imply specific \verb|RADINT| values.
 \item[\Key{ULTRAF}]
 Shortcut keyword for radial integration accuracy $10^{-15}$ and angular expansion order equal to $64$.
 \item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. This correction can be combined with all GGA type functionals
-\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{CasidaSalahub} 
+\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{dixon,CasidaSalahub} 
 \begin{eqnarray}
-V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + V_{LB94,correction}\right),  
+V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + (1-\mathrm{HFexchange}) \cdot V_{LB94,correction}\right),  
 \end{eqnarray}
-with a Zhan-Nichols-Dixon shift \cite{dixon,ZND}
+with a Zhan-Nichols-Dixon shift \cite{dixon,ZND} ($\mathrm{HFexchange}=0.2$ for B3LYP)
 \begin{eqnarray}
-\Delta = NZD_{1} \cdot \epsilon_{HOMO} - NZD_{2}
+\Delta = ZND_{1} \cdot \epsilon_{HOMO} - ZND_{2}
 \end{eqnarray}
-Where $NZD_{1} = 0.2332$ and $NZD_{2} = 0.315$. Note that NWCHEM have introduced the same correction but uses a $NZD_{2} = 0.0116$. The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords. Note that this keyword only works with GGA type functionals. The CS00 keyword only work with a method which calculates the HOMO energy.
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD1>|\newline
-Changes the parameter $NZD_{1}$ (default $NZD_{1} = 0.2332$) see .CS00
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD2>|\newline
-Changes the parameter $NZD_{2}$ (default $NZD_{1} = 0.315$) see .CS00
-\item[\Key{CS00}] \verb| | \newline
-\verb|<Delta>|\newline
+Where $ZND_{1} = 0.2332$ and $ZND_{2} = 0.0116$. Note that $ZND_{2} = 0.0116 au. = 0.315 eV$.
+The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords. Note that this keyword only works with GGA type functionals. The CS00 keyword only work with a method which calculates the HOMO energy. 
+\item[\Key{CS00 ZND1}] \verb| | \newline
+\verb|<ZND1 in au.>|\newline
+Changes the parameter $ZND_{1}$ (default $ZND_{1} = 0.2332$) see .CS00
+\item[\Key{CS00 ZND1}] \verb| | \newline
+\verb|<ZND2 in au.>|\newline
+Changes the parameter $ZND_{2}$ (default $ZND_{1} = 0.0116$) see .CS00
+\item[\Key{CS00 SHIFT}] \verb| | \newline
+\verb|<Delta in au.>|\newline
 Using the Casida-Salahub correction with a shift of Delta see .CS00
 \end{description}
 
@@ -1594,6 +1595,15 @@ Note that only the LSresponse/LSresponse\_mcd\_calc test case is a good example 
 \item[\Key{MCDEXCIT}] \verb| | \newline
 \verb|<Number of excited states to consider>|\newline
 The $\mathcal{B}$ terms will be calculated for all states, unless they are zero due to selection rules (dipole forbidden)
+\item[\Key{MCDEXSTATES}] \verb| | \newline
+\verb|<Number of specific excited states to consider in MCD calc>|\newline
+\verb|<Specific excited states to consider>|\newline
+This keyword only calculates the $\mathcal{B}$ and possible $\mathcal{A}$ terms for the selected excited states.
+The first line after .MCDEXSTATES contains the number of specific excited states for which the MCD is to be calculated,
+and the second line specifies such states (identified by their index in the .MCDNEXCIT list).
+{\bf Important:} The position of the highest lying excited state
+specified by .MCDEXSTATES must be smaller than or equal to
+the total number of excited states specified by .MCDNEXCIT!
 \item[\Key{DEGENERATE}] \verb| | \newline
 This keyword must be set in input if the molecule has a degenerate state so that $\mathcal{A}$ terms are possible, otherwise all states are assumed non-degenerate and no $\mathcal{A}$ terms will be calculated. When this keyword is set, the $\mathcal{A}$ terms are calculated and a derivative Lorentzian lineshape function is used to simulate the individual $\mathcal{A}$ term contributions to the MCD spectrum (See Ref. \cite{KjaergaardMCD}). The individual $\mathcal{A}$ terms contributions to the MCD spectrum are written to the files AtermAU.dat and Aterm.dat   
 \item[\Key{DAMPEDXCOOR}] \verb| | \newline
@@ -1769,9 +1779,10 @@ Furthermore, conventional coupled-cluster energies for the MP2, CC2, and CCSD mo
 
 The **DEC and **CC implementations employ massive parallelism and will be highly effective only if many computing nodes are available.
 
-\textbf{Special note}: It is highly recommended that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
+\textbf{Special note}: It is mandatory that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
 
-The **DEC section uses local orbitals by default, while the **CC section uses canonical orbitals by default.
+The **DEC and **CC sections use local orbitals by default, although the orbitals are converted to the (semi-)canonical basis when the MP2
+and CC equations are solved.
 Below keywords for the **DEC section and **CC section and relevant test cases are given. 
 
 \vspace{1 cm}
@@ -1789,9 +1800,9 @@ Thus, the higher the FOT, the smaller is the error of the DEC calculation compar
 
 \item[\Key{MEMORY}] \verb| | \newline
 \verb|<Memory in gigabytes>| \newline
-It is highly recommended to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
-If this keyword is not set, the program will try to estimate the available memory using a system call. While this will usually work fine it might fail on some architectures.
-(This keyword can also be used in **CC section).
+It is mandatory to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
+If this keyword is not set, the program will stop with a quit statement informing about an error in the LSDALTON.INP file.
+(This keyword must also be used in **CC section).
 
 
 \item[\Key{PAIRTHR}] \verb| | \newline
@@ -1879,9 +1890,9 @@ Use the frozen core approximation (can also be used in **DEC section).
 
 \item[\Key{MEMORY}] \verb| | \newline
 \verb|<Memory in gigabytes>| \newline
-It is highly recommended to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
-If this keyword is not set, the program will try to estimate the available memory using a system call. While this will usually work fine it might fail on some architectures.
-(This keyword can also be used in **DEC section).
+It is mandatory to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
+If this keyword is not set, the program will stop with a quit statement informing about an error in the LSDALTON.INP file.
+(This keyword must also be used in **DEC section).
 
 \item[\Key{CCMAXITER}]  \verb| | \newline
 Maximum number of iterations in CC solver.

@@ -57,7 +57,6 @@ C
 #include "expopt.h"
 #include "pcmlog.h"
 #include "ccinftap.h"
-CSPAS : 6/11-2009 AO-SOPPA included
 #include "soppinf.h"
 #include "gnrinf.h"
 C
@@ -357,10 +356,7 @@ C
          KPOLVL = KPOLDA + 2*9*MXFR
          KPOLVV = KPOLVL + 2*9*MXFR
          KFOVIB = KPOLVV + 2*9*MXFR
-CSPAS:6/10-08: trying to add mass independent vibrational g-factor
-C        KLST1  = KFOVIB + 3*NATOMS*3*NATOMS*NSYM*MXFR
          KLST1  = KFOVIB + (3*NATOMS+3)*(3*NATOMS+3)*NSYM*MXFR
-CKeinSPASmehr
          LWRK1  = LWORK - KLST1 + 1
          IF (.NOT. PASLNR) THEN
             CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
@@ -383,7 +379,6 @@ CKeinSPASmehr
       CALL GETTIM(TIMLNR,TIMDUM)
       TIMLNR = TIMLNR - TIMSTR
 C
-CPFP: 27/03-2006: SOS for spin-spin coupling included
 C     ***************************************
 C     ***** Sum Over States Calculation *****
 C     ***************************************
@@ -396,23 +391,23 @@ C
        END IF
        CALL  GETTIM(TIMSOS,TIMDUM)
        TIMSOS = TIMSOS - TIMSTR
-Cend-PFP
 C     ******************************************
 C     ***** Electronic excitation energies *****
 C     ******************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-CSPAS : 6/11-2009 AO-SOPPA included
       NMODEL = 1
-      IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) NMODEL = 4
-CKeinSPASmehr
+CPFP 2009-Jun NMODEL increased from 4 to 5
+C      IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) NMODEL = 4
+      IF (AORPA .OR. AOHRP .OR. DCRPA 
+     &          .OR. AOSOP .OR. AOSOC) NMODEL = 5
+Cend-PFP
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
          KTRVEL = KTRLEN + 3*NSYM*MXNEXI*NMODEL
          KTQLEN = KTRVEL + 3*NSYM*MXNEXI*NMODEL
-         KTQVEL = KTQLEN + 3*3*NSYM*MXNEXI
          KTQVEL = KTQLEN + 3*3*NSYM*MXNEXI*NMODEL
-         KTTLEN = KTQVEL + 3*3*NSYM*MXNEXI*NMODEL ! SPAS:23/5-11: second and third moment sum rules
+         KTTLEN = KTQVEL + 3*3*NSYM*MXNEXI*NMODEL 
          KTRLON = KTTLEN + 10*NSYM*MXNEXI*NMODEL
          KTRMAG = KTRLON + 3*NSYM*MXNEXI*NMODEL
          KBSRLO = KTRMAG + 3*NSYM*MXNEXI*NMODEL
@@ -699,11 +694,8 @@ C  /* Deck abainp */
 C
 C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
-C             (Feb 2003: one of **START, **PROPE, or **FINAL)
+C             (one of **START, **EACH , or **PROPE)
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"
@@ -720,8 +712,8 @@ C
      *          WORDL*12
       DIMENSION IPOINT(MXCOOR), IDOSYM(8), WORK(LWORK)
 C
-#include "abainf.h"
 #include "gnrinf.h"
+#include "abainf.h"
 #include "energy.h"
 #include "orgcom.h"
 #include "dorps.h"
@@ -743,18 +735,13 @@ C Common blocks used for SOPPA :
 C use from COMMON /INFDIM/ :  NCONMA,NWOPMA,NVARMA
 C use from COMMON /INFSOP/ :  N2P2HS,N2P2HT
 C use from COMMON /INFRSP/ :  SOPPA
-C     Aug. 97/spas+hjaaj
 #include "infdim.h"
 #include "infmp2.h"
 #include "infsop.h"
 #include "infrsp.h"
 #include "infinp.h"
-CSPAS : 6/11-2009 AO-SOPPA included
 #include "soppinf.h"
-CKeinSPASmehr
-CPFP: 27/03-2006: SOS for spin-spin coupling included
 #include "locinf.h"
-Cend-PFP
 
 C  jim-gesc 1.0: TABDIR(#17) ="*LROPTS" , TABLE(60)=".LRESC ". check INTRST for gaugeo
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
@@ -978,9 +965,9 @@ C         if reading input from a terminal
   910 CONTINUE
   920 CONTINUE
 C     ... WRDSRC not found in input file;
-C         if WRDSRC .eq. '**START' we also try for '**PROPER'
-C         such that any '**PROPER' input will now also apply for initial
-C         geometry if not overridden with '**START' /Feb 2003 hjaaj
+C         if WRDSRC .eq. '**START' we also try for '**EACH '
+C         such that any '**EACH ' input will now also apply for initial
+C         geometry if not overridden with '**START'
          IF (WORD1 .EQ. '**START') THEN
             REWIND (LUCMD,IOSTAT=IOS)
             WORD1 = '**EACH '
@@ -1462,7 +1449,7 @@ cs
       END IF
       IF (ABASOP) THEN
 CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
-         IF (PARCAL) CALL PARQUIT('ABAINP')
+         IF (PARCAL) CALL PARQUIT('ABASOP')
 CKeinSPASmehr
          IF (CCPPA) THEN
             WRITE(LUPRI,'(A,A,/,18X,A,/,A,A)')
@@ -1471,7 +1458,6 @@ CKeinSPASmehr
      &          'with Coupled Cluster Singles and Doubles Amplitudes',
      &          '    (Ref.: S.P.A. Sauer, ',
      &          'J. Phys. B: At. Mol. Opt. Phys. 30, 3773-3780 (1997))'
-CSPAS : 6/11-2009 AO-SOPPA included
             IF (DODRCT) THEN
                AOSOC = .TRUE.
                WRITE(LUPRI,'(/A,/,A,A,/,5x,A)')
@@ -1480,9 +1466,7 @@ CSPAS : 6/11-2009 AO-SOPPA included
      &              'K. L. Bak, S. Rettrup and S. P. A. Sauer,',
      &              'J. Phys. Chem. A 113, 11995-12012 (2009))'
             ENDIF
-CKeinSPASmehr
          ELSE
-CSPAS : 6/11-2009 AO-SOPPA included
             IF (DODRCT) THEN
                AOSOP = .TRUE.
                WRITE(LUPRI,'(//5x,A,/,5x,A,A,/,5x,A)')
@@ -1495,7 +1479,6 @@ CSPAS : 6/11-2009 AO-SOPPA included
      *             ' SOPPA :',
      *             ' Second Order Polarization Propagator Approximation'
             END IF
-CKeinSPASmehr
          END IF
          IF (SHIELD .OR. MAGSUS .OR. SPINRO .OR. MOLGFA) THEN
             NOLOND = .TRUE.
@@ -1912,20 +1895,19 @@ CAMT quit here to catch this...
             CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
       ENDIF
 CAMT--------------
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        write(lupri,'(6x,a)') 'Environment is modeled using'//
+      IF (PEQM) THEN
+        WRITE(LUPRI,'(6X,A)') 'Environment is modeled using'//
      &                 ' the polarizable embedding scheme (PE library).'
-        if (polar) then
-         write (lupri,'(4a)') 'ERROR: .POLARI and .PEQM are not',
+        IF (POLAR) THEN
+         WRITE (LUPRI,'(4A)') 'ERROR: .POLARI and .PEQM are not',
      &                       'compatible. Please use either .ALPHA',
      &                       'or the RESPONSE module and set frequency',
      &                       'to zero.'
-         call quit('ERROR: .POLARI and .PEQM are not compatible')
+         CALL QUIT('ERROR: .POLARI and .PEQM are not compatible'//
+     &             ' (see output file for more details)')
 
-        end if
-      end if
-#endif
+        END IF
+      END IF
 
 C
 C
@@ -2223,9 +2205,7 @@ C
       DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*), TTLEN(*),
      &          TRLON(*), TRMAG(*), BSRLON(*),
      &          EXENG(*), FONAC(*), FONA2(*), FOVIBG(*),
-CSPAS : 6/11-2009 AO-SOPPA included
      &          SECMAT(*),
-CKeinSPASmehr
      &          RMLEN(*), RQLEN(*), RLEN(*),
      &          RMVEL(*), RQVEL(*), RVEL(*), SLEN(*), SVEL(*)
       LOGICAL OD, FIRST
@@ -2244,9 +2224,7 @@ CKeinSPASmehr
 #include "difsec.h"
 #include "expopt.h"
 #include "primit.h"
-CSPAS : 6/11-2009 AO-SOPPA included
 #include "soppinf.h"
-CKeinSPASmehr
 C
 C     Heading
 C
@@ -2587,7 +2565,10 @@ C
 C     Excitation energies and (oriented) electronic circular dichroism
 C
       IF (DOEXCI) THEN
-         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+CPFP-2009
+C         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+Cend-PFP
             CALL SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
      &                     TTLEN,EXENG,FONAC,FONA2,SECMAT,WORK,LWORK)
          ELSE
@@ -3353,7 +3334,7 @@ csonia 04/10/1995
       CALL POLPRI(SUSTOT,'   ',-2)
       CALL DSCAL(9,-D1,SUSTOT,1)
 C
-Cspas: also print diamagnetic and paramagnetic tensors
+C     also print diamagnetic and paramagnetic tensors
 C
       CALL HEADER('Diamagnetic magnetizability tensor (au)',-1)
       CALL DSCAL(9,-D1,DIASUS,1)

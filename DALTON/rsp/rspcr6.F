@@ -162,9 +162,6 @@ C
      *                  ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
 C
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
@@ -250,24 +247,22 @@ C
      *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        if (.not. tdhf) then
-            call quit('ERROR: MCSCF cubic response not'//
+      IF (PEQM) THEN
+        IF (.NOT. TDHF) THEN
+            CALL QUIT('ERROR: MCSCF cubic response not'//
      &                ' implemented with PE module.')
-        else if (nasht > 0) then
-            call quit('ERROR: cubic response not implemented for'//
+        ELSE IF (NASHT > 0) THEN
+            CALL QUIT('ERROR: cubic response not implemented for'//
      &                ' open shell systems with PE module.')
-        else if (trplet) then
-            call quit('ERROR: triplets not implemented for cubic'//
+        ELSE IF (TRPLET) THEN
+            CALL QUIT('ERROR: triplets not implemented for cubic'//
      &                ' response with PE module.')
-        endif
-        call pe_rspcro(vecb, vecc, vecd, etrs, xindx, wrk(kzymb),
-     &                 wrk(kzymc), wrk(kzymd), udv, wrk(kfree), lfree,
-     &                 kzyva, kzyvb, kzyvc, kzyvd, isyma, isymb, isymc,
-     &                 isymd, cmo, mjwop)
+        ENDIF
+        CALL PE_RSPCRO(VECB, VECC, VECD, ETRS, XINDX, WRK(KZYMB),
+     &                 WRK(KZYMC), WRK(KZYMD), UDV, WRK(KFREE), LFREE,
+     &                 KZYVA, KZYVB, KZYVC, KZYVD, ISYMA, ISYMB, ISYMC,
+     &                 ISYMD, CMO, MJWOP)
       end if
-#endif
 C
       IF (QMMM) THEN
          IF (TDHF) THEN

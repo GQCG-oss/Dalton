@@ -695,6 +695,7 @@ C
       end if
 
       IPRINT = IPRUSR
+      IPRUSR_orig = IPRUSR
 C
       WLKREJ = .FALSE.
       IF (OPTNEW) THEN
@@ -705,24 +706,32 @@ C
          DOWALK = .FALSE.
          CALL OPTMIN(WORK(1),LMWORK,WRKDLM)
       ELSE IF (OPTWLK) THEN
+         IF (QM3)
+     &      CALL QUIT('ERROR: .WALK is not implemented for .QM3')
          RNHERM = .TRUE.
          RNABAC = .TRUE.
-         IF (.NOT. NMWALK) THEN
+         IF (NMWALK) THEN
+            CALL TITLER('Commencing numerical differentiation '//
+     &         'based on .NMDDRV',' ',200)
+            MOLGRD = .FALSE.
+         ELSE IF (IWKTYP .EQ. 6) THEN
+            CALL TITLER('Commencing numerical differentiation '//
+     &         'based on .WALK',' ',200)
             DOWALK = .TRUE.
             MOLGRD = .TRUE.
             MOLHES = .TRUE.
          ELSE
-            MOLGRD = .FALSE.
+            CALL TITLER(
+     &      'Commencing geometry optimization based on .WALK',' ',200)
+            DOWALK = .TRUE.
+            MOLGRD = .TRUE.
+            MOLHES = .TRUE.
          END IF
          START  = .TRUE.
          GEOCNV = .FALSE.
          NEWWLK = .TRUE.
          IPREAD_orig = IPREAD
          IPREAD_reduced = -2
-         CALL TITLER('Commencing geometry optimization using .WALK',
-     &   ' ',200)
-         IF (QM3)
-     &      CALL QUIT('Geometry optimization not implemented for .QM3')
 C        ---------------------------------------
 C        loop over geometries
 C        ---------------------------------------
@@ -943,19 +952,27 @@ C
 C        ---------------------------------------------------------------
 C
          IF (GEOCNV) THEN
-            CALL TITLER('Geometry walk has converged',' ',200)
+            IPRUSR = IPRUSR_orig
+            IF (IWKTYP .EQ. 6) THEN
+              CALL TITLER('Nummerical differentiation finished',' ',200)
+            ELSE
+              CALL TITLER('Geometry walk has converged',' ',200)
+            END IF
 C
 C     We need to read in starting geometry before doing the vibrational
 C     analysis in a ROA calculation, K.Ruud and G.Hangartner, Oct.-96
 C
             WRINDX = .TRUE.
             IF (IWKTYP .EQ. 6 .AND. NUMHES) THEN
+               NEWGEO = .TRUE.
                CALL ABAINP('**PROPE',WORK(1),LMWORK)
                CALL VIBCTL(WORK(1),LMWORK)
             ELSE IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.
                SOLVNT = .FALSE.
+               IPREAD = IPREAD_orig
                CALL EXEHER(WORK(0),LMWORK,WRKDLM)
+               NEWGEO = .TRUE.
                CALL EXESIR(WORK(0),LMWORK,WRKDLM)
                SOLVNT = FLAG(16)
               IF (SOLVNT) THEN
@@ -987,6 +1004,8 @@ C
                CALL NUCPRO(WORK(1),LMWORK)
               END IF
             END IF
+            NEWGEO = .TRUE. ! EXESIR resets NEWGEO to .false.
+                            ! but we need to copy abacus info to slaves
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL EXEABA(WORK(0),LMWORK,WRKDLM)
 C
@@ -1139,10 +1158,6 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-      use polarizable_embedding, only: pe_dalton_input
-#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1172,7 +1187,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 12, NTABLE = 33, D0 = 0.D0)
+      PARAMETER (NDIR = 12, NTABLE = 34, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1196,7 +1211,8 @@ C
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
-     &            '.THRRED', '.DOUGLA', '.PEQM  '/
+     &            '.THRRED', '.DOUGLA', '.PEQM  ',
+     &            '.PEMEP '/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1257,6 +1273,8 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
       DKHINT = .FALSE.
+      PEQM   = .FALSE.
+      PEMEP  = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       IF (NODTOT.GE.1) THEN
@@ -1361,14 +1379,14 @@ C         if reading input from a terminal
 C
 C     ***** Process input for COMMON  /GENINF/  *****
 C
-C Table(01:33) :
+C Table(01:34) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-33: '.THRRED', '.DOUGLA', '.PEQM  '.
+C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.PEMEP '
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1382,7 +1400,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132,133), I
+     &                131,132,133,134), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1503,14 +1521,23 @@ C        '.DOUGLA'
             DKTRAN = .TRUE.
          GOTO 100
 !        .PEQM
- 133     continue
+ 133     CONTINUE
 #if defined (BUILD_PELIB)
-            peqm = .true.
+            PEQM = .TRUE.
 #else
-            write(lupri,*) 'ERROR: PE library not enabled.'
-            call quit('ERROR: PE library not enabled.')
+            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
+            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
 #endif
-         goto 100
+         GOTO 100
+!        .PEMEP
+ 134     CONTINUE
+#if defined (BUILD_PELIB)
+            PEMEP = .TRUE.
+#else
+            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
+            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
+#endif
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1561,10 +1588,16 @@ C     ... default print level for statistics /hjaaj apr 2000
       END IF
 #endif
       IF (OPTWLK) THEN
-         WRITE (LUPRI,'(4X,A/6X,A,I5/6X,A,I5)')
-     &      'Geometry optimization',
+         IF (NMWALK) THEN
+            WRITE (LUPRI,'(4X,A/6X,A,I5)') 
+     &      'Numerical derivatives will be calculated',
+     &        'Number of different geometries:', ITERMX
+         ELSE
+            WRITE (LUPRI,'(4X,A/6X,A,I5/6X,A,I5)')
+     &      'Geometry walk module activated.',
      &        'Starting at iteration:', ITERNR,
-     &        'Maximum number of iterations:', ITERMX
+     &        'Maximum number of steps:', ITERMX
+         END IF
       ELSE IF (ITERNR .GT. 0) THEN
          NINFO = NINFO + 1
          WRITE (LUPRI,'(4X,A/4X,A/6X,A/4X,A)') SEPARATOR,
@@ -1616,15 +1649,11 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (RNABAC) WRITE (LUPRI,'(4X,A)')
      &     'Static molecular property section will be executed'//
      &          ' (ABACUS module)'
-      IF (NMWALK) WRITE (LUPRI,'(4X,A)') 
-     &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
-#if defined (BUILD_PELIB)
-        if (peqm) write(lupri,'(4x,a)')
+      IF (PEQM) WRITE(LUPRI,'(4X,A)')
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
-#endif
 C
 Cholesky
       IF (CHOINT) THEN
@@ -1720,14 +1749,13 @@ C     "*QMMM  " input
       GO TO 200
 
 !     "*PEQM  " input
-   10 continue
+   10 CONTINUE
 #if defined (BUILD_PELIB)
-        call pe_dalton_input(word, lucmd, lupri)
+        CALL PE_IFC_DALINP_READER(WORD)
 #else
-        call quit('ERROR: PE library not enabled.')
+        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
 #endif
-      goto 200
-
+      GOTO 200
 C
 C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
    11 CONTINUE

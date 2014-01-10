@@ -919,6 +919,7 @@ C
          IF (EXPGRA) THEN
             CALL HEADER('One-electron part of alpha gradient',-1)
             WRITE (LUPRI,'(2X,5F12.8)') (ALPGRD(I),I=1,KMAX)
+            CALL FLSHFO(LUPRI)
          ELSE IF (PROPTY) THEN
             KCSTRA = 1
             KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP

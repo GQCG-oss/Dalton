@@ -398,8 +398,8 @@ C
        SGP1S = SGP1S + LRLKIN(i,i) + LRPSOK(i,i) 
        SGD0S = SGD0S + LRFCAV(i,i) + LRDIAK(i,i) + LRANGP(i,i)
        SGD1S = SGD1S + LRDIAD(i,i) + LRDIAM(i,i)
-       relall= relall + SGD0S + SGD1S + SGP1S + SGP1T
       ENDDO
+      relall= relall + SGD0S + SGD1S + SGP1S + SGP1T
 C
 C  shielding constant is the trace of each tensor
 C

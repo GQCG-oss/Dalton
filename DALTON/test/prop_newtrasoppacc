@@ -226,6 +226,5 @@ else
   echo THERE IS A PROBLEM
   exit 1
 fi
-
-' > prop_newtrasoppacc.check
+%EOF%
 #######################################################################
