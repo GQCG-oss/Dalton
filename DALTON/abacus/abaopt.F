@@ -30,7 +30,6 @@ C                  It uses both the old cbiwlk.h and the new optinf.h
 C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
-        use pe_variables, only: peqm
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1472,7 +1471,7 @@ C  /* Deck runopt */
       SUBROUTINE RUNOPT(WRKDLM,MXRCRD,EGRAD,CSTEP,SCLVEC,GRDOLD,
      &     GRDMAT,STPMAT,HESOLD,GRDARR,STPARR,GEINFO,WILBMT,
      &     BMTRAN,HESINT,VECMOD,WORK,LWORK)
-        use pe_variables, only: peqm, pe_infld
+        use pe_variables, only: pe_infld
         use polarizable_embedding, only: pe_master
 #include "implicit.h"
 #include "dummy.h"
@@ -2818,7 +2817,6 @@ C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
 
-      use pe_variables, only: peqm
  
 #include "implicit.h"
 #include "priunit.h"
@@ -6524,7 +6522,6 @@ C  /* Deck fndgeo */
 C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
-      use pe_variables, only: peqm
 C
 #include "implicit.h"
 #include "mxcent.h"

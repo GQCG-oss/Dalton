@@ -448,7 +448,6 @@ C  /* Deck isomol */
      &                  CAAT,WRK,LWRK,NUMIS,MAXIS,NATTYP,NATOMS,NCORD,
      &                  DIPDER,POLAR,RAMPRP)
 C
-        use pe_variables, only: peqm
 C
 C    This subroutine loops over isotopic molecules, calling routines for
 C

@@ -318,7 +318,6 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
-        use pe_variables, only: peqm
         use polarizable_embedding, only: pe_master
 #include "implicit.h"
 #include "mxcent.h"

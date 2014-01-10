@@ -26,7 +26,6 @@ C
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
-        use pe_variables, only: peqm
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
