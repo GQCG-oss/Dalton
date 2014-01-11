@@ -6859,8 +6859,8 @@ module cc_debug_routines_module
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,pno_gvvvv_size)&
-    !$OMP& SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2)&
-    !$OMP& PRIVATE(counter,virteival,U,PD,doit)
+    !$OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2)&
+    !$OMP PRIVATE(counter,virteival,U,PD,doit)
     call init_threadmemvar()
 
     if(fj)then
