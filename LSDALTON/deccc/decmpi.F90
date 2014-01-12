@@ -1878,12 +1878,15 @@ contains
     if(.not.master)then
       call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
       !t2=array4_init([nvirt,nocc,nvirt,nocc])
+      omega2=array4_init([nvirt,nocc,nvirt,nocc])
       t2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
     endif
     call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
 
     
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    !call ls_mpibcast(t2%val,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    call ls_mpibcast(omega2%val,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
     call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
 
   end subroutine rpa_res_communicate_data

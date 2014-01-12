@@ -697,7 +697,7 @@ module lspdm_tensor_operations_module
       dj = t2%ti(lt)%d(4)
       !count over local indices
       !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t,&
-      !$OMP& da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
+      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
       do j=1,dj
         do i=1,di
           do b=1,db
@@ -779,7 +779,7 @@ module lspdm_tensor_operations_module
 
       !count over local indices
       !$OMP  PARALLEL DO DEFAULT(NONE)  SHARED(om,dims,&
-      !$OMP& ppfock,qqfock,da,db,di,dj) PRIVATE(i,j,a,b) COLLAPSE(3)
+      !$OMP  ppfock,qqfock,da,db,di,dj) PRIVATE(i,j,a,b) COLLAPSE(3)
       do j=1,dj
         do i=1,di
           do b=1,db
@@ -1776,8 +1776,8 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_LSDEBUG
     if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
-      call lsquit("ERROR(array_gather):both or neither wrk and iwrk have to &
-                  &be given",-1)
+      call lsquit('ERROR(array_gather):both or neither wrk and iwrk have to &
+                  &be given',-1)
     endif
 #endif
 
@@ -1789,7 +1789,7 @@ module lspdm_tensor_operations_module
         internal_alloc=.false.
 #ifdef VAR_LSDEBUG
       else
-        print *,"WARNING(array_gather):allocating internally, given buffer not large enough"
+        print *,'WARNING(array_gather):allocating internally, given buffer not large enough'
 #endif
       endif
     endif
@@ -1800,8 +1800,8 @@ module lspdm_tensor_operations_module
     nnod=infpar%lg_nodtot
 
 #ifdef VAR_LSDEBUG
-    if(nelms/=arr%nelms)call lsquit("ERROR(array_gather):array&
-        &dimensions are not the same",DECinfo%output)
+    if(nelms/=arr%nelms)call lsquit('ERROR(array_gather):array&
+        &dimensions are not the same',DECinfo%output)
 #endif
 
     do i = 1, arr%mode
@@ -1822,7 +1822,7 @@ module lspdm_tensor_operations_module
 
       if(internal_alloc)then
 #ifdef VAR_LSDEBUG
-        print *,"WARINING(array_gather):Allocating internally"
+        print *,'WARINING(array_gather):Allocating internally'
 #endif
         tmps = arr%tsize
         call mem_alloc(tmp,tmps)
@@ -1869,7 +1869,7 @@ module lspdm_tensor_operations_module
     endif
 
 #else
-    call lsquit("ERROR(array_gather):this routine is MPI only",-1)
+    call lsquit('ERROR(array_gather):this routine is MPI only',-1)
 #endif
   end subroutine array_gather
 
