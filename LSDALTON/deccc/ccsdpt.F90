@@ -1688,19 +1688,41 @@ contains
 
     e_orb_occ = eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3)
 
-         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,b,c,e_orb),SHARED(nv,trip,eigenvirt,e_orb_occ)
+#ifdef VAR_OPENACC
+!$acc parallel present(trip,eigenvirt,eigenocc)
+!$acc loop gang
+#else
+!$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,b,c,e_orb),SHARED(nv,trip,eigenvirt,e_orb_occ)
+#endif
  arun_0: do a=1,nv
+#ifdef VAR_OPENACC
+!$acc loop worker
+#endif
     brun_0: do b=1,nv
+#ifdef VAR_OPENACC
+!$acc loop vector
+#endif
        crun_0: do c=1,nv
 
-                  e_orb = -1.0E0_realk / (eigenvirt(a) + eigenvirt(b) + eigenvirt(c) - e_orb_occ)
-
-                  trip(c,b,a) = trip(c,b,a) * e_orb
+!                  e_orb = -1.0E0_realk / (eigenvirt(a) + eigenvirt(b) + eigenvirt(c) - e_orb_occ)
+!                  trip(c,b,a) = trip(c,b,a) * e_orb
+                  trip(c,b,a) = trip(c,b,a) / (e_orb_occ - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
 
                end do crun_0
+#ifdef VAR_OPENACC
+!$acc end loop
+#endif
             end do brun_0
+#ifdef VAR_OPENACC
+!$acc end loop
+#endif
          end do arun_0
-         !$OMP END PARALLEL DO
+#ifdef VAR_OPENACC
+!$acc end loop
+!$acc end parallel
+#else
+!$OMP END PARALLEL DO
+#endif
 
   end subroutine trip_denom
 
