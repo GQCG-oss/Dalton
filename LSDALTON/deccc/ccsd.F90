@@ -3850,33 +3850,33 @@ contains
 #ifdef VAR_OMP
     integer :: tid,nthr
     integer, external :: omp_get_thread_num,omp_get_max_threads
-    nthr = omp_get_max_threads()
-    nthr = min(nthr,nv)
-    call omp_set_num_threads(nthr)
+!    nthr = omp_get_max_threads()
+!    nthr = min(nthr,nv)
+!    call omp_set_num_threads(nthr)
 #endif
-    !$OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
-    !$OMP PRIVATE(pos,pos2,d,tid,doit)
+    !OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
+    !OMP PRIVATE(pos,pos2,d,tid,doit)
 #ifdef VAR_OMP
-    tid = omp_get_thread_num()
+!    tid = omp_get_thread_num()
 #else 
-    doit = .true.
+!    doit = .true.
 #endif
 !    doit = .true.
     pos =1
     do d=1,nv
 #ifdef VAR_OMP
-      doit = (mod(d,nthr) == tid)
+!      doit = (mod(d,nthr) == tid)
 #endif
-      if(doit) then
+!      if(doit) then
         pos2=1+(d-1)*m+(d-1)*nv*m
 !        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
         Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
-      endif
+!      endif
       pos=pos+m*(nv-d+1)
     enddo
-    !$OMP END PARALLEL
+    !OMP END PARALLEL
 #ifdef VAR_OMP
-    call omp_set_num_threads(omp_get_max_threads())
+    !call omp_set_num_threads(omp_get_max_threads())
 #endif
   end subroutine get_I_cged
 

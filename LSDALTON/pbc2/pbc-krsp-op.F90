@@ -120,7 +120,7 @@ COMPLEX(complexk)             :: phase
 END SUBROUTINE pbc_trans_mat_to_kspc
 
 SUBROUTINE transformk_2_realmat(kdep_tmp,bz,rspcdensity,&
-                                nbast,lattindex,lupri)
+                                & nbast,lattindex,lupri)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: nbast,lupri
   TYPE(BZgrid_t),intent(in) :: bz
@@ -166,7 +166,7 @@ SUBROUTINE transformk_2_realmat(kdep_tmp,bz,rspcdensity,&
     if(abs(DIMAG(work(j,i))) .gt. 1E-5) then
       write(*,*) 'ERROR, complex realspace density:', work(i,j),i,j
       write(lupri,*) 'ERROR, complex realspace density:',&
-      work(i,j),i,j,int(lattindex(1))
+      & work(i,j),i,j,int(lattindex(1))
       call LSQUIT('COMPLEX REALSPACE density',lupri)
     endif
     rspcdensity(i,j)=real(work(i,j),realk)

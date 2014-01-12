@@ -329,10 +329,12 @@ contains
     type(array4) :: tmp
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
+    character(ARR_MSG_LEN) :: msg
 
 
     ! 1
     call array2_transpose(qfock)
+    
     call array4_reorder(t2,[3,4,1,2])
     tmp = array4_init([nvirt,nocc,nvirt,nocc])
     call array4_contract1(t2,qfock,tmp,.true.)
@@ -567,10 +569,9 @@ contains
     real(realk) :: starttime,stoptime
     real(realk),pointer :: w2(:),w3(:),omegw(:),w4(:)
     character(ARR_MSG_LEN) :: msg
-#ifdef VAR_MPI
     logical :: master
-#endif
 
+    master=.true.
 #ifdef VAR_MPI
     master        = .false.
     mynum         = infpar%lg_mynum
@@ -589,15 +590,19 @@ contains
    
 
     omegaw1 = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
-#ifdef VAR_MPI
-    if(master) then
-      call array4_reorder(omega2,[1,3,2,4])
-      call array_convert(omega2%val,omegaw1)
-    endif
-#else
+!#ifdef VAR_MPI
+!    if(master) then
+!      call array4_reorder(omega2,[1,3,2,4])
+!      call array_convert(omega2%val,omegaw1)
+!      !write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
+!      write(*,*) 'itype omegaw1=',omegaw1%itype
+!      !call print_norm(omegaw1,msg)
+!    endif
+!#else
     call array4_reorder(omega2,[1,3,2,4])
     call array_convert(omega2%val,omegaw1)
-#endif
+!#endif
+
 
 #ifdef VAR_MPI
     call lsmpi_barrier(infpar%lg_comm)
@@ -605,9 +610,9 @@ contains
 
     call mo_work_dist(nvirt*nocc,fai,tl)
     !call mem_alloc(w2,tl*nocc*nvirt)
-#ifdef VAR_MPI
-    write(*,*) 'size of tile',tl,fai,infpar%lg_mynum,nvirt*nocc!*nvirt*nocc
-#endif
+!#ifdef VAR_MPI
+!    write(*,*) 'size of tile',tl,fai,infpar%lg_mynum,nvirt*nocc!*nvirt*nocc
+!#endif
     call mem_alloc(w2,tl*nocc*nvirt)
     call mem_alloc(w3,tl*nocc*nvirt)
     call mem_alloc(w4,nocc*nvirt*nocc*nvirt)
@@ -619,20 +624,19 @@ contains
     !call copy_array(u2,t_par)
     call array_convert(u2%elm4,t_par)
 
-#ifdef VAR_MPI
-    write(msg,*) 'Norm of t_par',infpar%lg_mynum
-#else
-    write(msg,*) 'Norm of t_par'
-#endif
-    call print_norm(t_par,msg)
-#ifdef VAR_MPI
-    call lsmpi_barrier(infpar%lg_comm)
-#endif
+!#ifdef VAR_MPI
+!    write(msg,*) 'Norm of t_par',infpar%lg_mynum
+!    call print_norm(t_par,msg)
+!     write(*,*) 'itype t_par=',t_par%itype
+!#endif
+
     !write(*,*) 'in residue dim t_par', t_par%tdim
 
     
-#ifdef VAR_MPI
+!#ifdef VAR_MPI
     !In this u2 is array4, hence I use t_par
+!    write(*,*) 'before array two_dim',infpar%lg_mynum
+!    call lsmpi_barrier(infpar%lg_comm)
     call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
     !In this u2 is array and no need for t_par
     !call array_two_dim_1batch(u2,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
@@ -641,17 +645,16 @@ contains
 !      write(msg,*) 'Norm of t_par',infpar%lg_mynum
 !      call print_norm(t_par,msg)
 !    endif
-#endif
-#ifdef VAR_MPI
-    write(msg,*) 'Norm of w2',infpar%lg_mynum
-#else
-    write(msg,*) 'Norm of w2'
-#endif
-    call print_norm(w2,i8*dim1*dim1,msg)
-    !call sleep(1)
-#ifdef VAR_MPI
-    call lsmpi_barrier(infpar%lg_comm)
-#endif
+!#endif
+!#ifdef VAR_MPI
+!    write(msg,*) 'Norm of w2',infpar%lg_mynum
+!#else
+!    write(msg,*) 'Norm of w2'
+!#endif
+!    call print_norm(w2,i8*dim1*tl,msg)
+!#ifdef VAR_MPI
+!    call lsmpi_barrier(infpar%lg_comm)
+!#endif
 
  !   write(*,*) 'checkpoint 1',infpar%lg_mynum
   !  call sleep(1)
@@ -666,30 +669,29 @@ contains
     !call lsmpi_barrier(infpar%lg_comm)
 
 
-    !gmo_CKLD We need it to be g_CKDL
     omegw=0.0_realk
 
-       !When fock part is parallelized instead of zero 1.0_realk
+    !When fock part is parallelized instead of zero 1.0_realk
     call dgemm('n','n',tl,dim1,dim1, &
          1.0E0_realk,w2,tl,gmo,dim1,0.0E0_realk,w3,tl)
-#ifdef VAR_MPI
-    write(msg,*) 'Norm of w3',infpar%lg_mynum
-#else
-    write(msg,*) 'Norm of w3'
-#endif
-    call print_norm(w3,i8*tl*nvirt*nocc,msg)
+!#ifdef VAR_MPI
+!    write(msg,*) 'Norm of w3',infpar%lg_mynum
+!#else
+!    write(msg,*) 'Norm of w3'
+!#endif
+!    call print_norm(w3,i8*tl*nvirt*nocc,msg)
 
-#ifdef VAR_MPI
+!#ifdef VAR_MPI
     !call array_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
     call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
-    write(msg,*) 'Norm of w4',infpar%lg_mynum
-#else
-    write(msg,*) 'Norm of w4'
+!    write(msg,*) 'Norm of w4',infpar%lg_mynum
+!#else
+!    write(msg,*) 'Norm of w4'
 
-#endif
+!#endif
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
-    call print_norm(w4,i8*dim1*dim1,msg)
+!    call print_norm(w4,i8*dim1*dim1,msg)
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
     !stop
@@ -698,44 +700,47 @@ contains
          2.0E0_realk,w3,tl,w4,dim1,0.0E0_realk,omegw,tl)
 
 #ifdef VAR_MPI
-    write(msg,*) 'Norm of omegw',infpar%lg_mynum
+!    write(msg,*) 'Norm of omegw',infpar%lg_mynum
     call sleep(1)
     call lsmpi_barrier(infpar%lg_comm)
-    call print_norm(omegw,i8*tl*nvirt*nocc,msg)
+!    call print_norm(omegw,i8*tl*nvirt*nocc,msg)
     call sleep(1)
     call lsmpi_barrier(infpar%lg_comm)
     !stop
 #endif
     
 
-#ifdef VAR_MPI
     call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
+#ifdef VAR_MPI
     call lsmpi_barrier(infpar%lg_comm)
   !  write(*,*) 'checkpoint 2',infpar%lg_mynum
-    write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
+   ! if(master) write(*,*) 'omegaw1'
+   ! if(master) write(*,*) omegaw1%elm4
     call sleep(1)
     call lsmpi_barrier(infpar%lg_comm)
-    call print_norm(omegaw1,msg)
+!    call print_norm(omegaw1,msg)
     call sleep(1)
     call lsmpi_barrier(infpar%lg_comm)
     !stop
 #endif
 
-#ifdef VAR_MPI
+!#ifdef VAR_MPI
     if(master) then
       !call array_convert(omegaw1,omega2%val)
       call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
 
-      write(*,*) 'checkpoint 3',infpar%lg_mynum
+!      write(msg,*) 'Norm of omega2'
+!      call print_norm(omega2%val,i8*dim1*dim1,msg)
+!      write(*,*) 'checkpoint 3',infpar%lg_mynum
       call array4_reorder(omega2,[1,3,2,4])
     endif
-#else
-
-    call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
-
-    call array4_reorder(omega2,[1,3,2,4])
-
-#endif
+!#else
+!
+!    call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
+!
+!    call array4_reorder(omega2,[1,3,2,4])
+!
+!#endif
 
 
     call array_free(t_par)

@@ -425,7 +425,7 @@ else
   if(lattice%compare_elmnts) then
     !write(*,*) 'hei'
     call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
-    num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
+    & num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
   endif
 
 #endif
@@ -461,7 +461,7 @@ else
 
     !call COMPARE_MATRICES(lupri,nbast,num_latvectors,nfsze,maxmultmom,lattice)
     call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
-    num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
+    & num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
 
     deallocate(k_fock)
     deallocate(k_Sab)
@@ -481,7 +481,7 @@ else
    write(*,*) 'max element in initial dmat',maxdens
 
   call pbc_startzdiis(input%molecule,setting,nbast,lattice,&
-  num_latvectors,maxmultmom,bz,dmat,lupri,luerr)
+  & num_latvectors,maxmultmom,bz,dmat,lupri,luerr)
 
   call pbc_end_Bzgrid(bZ)
 !  call mat_free(nfdensity(n1))
@@ -530,10 +530,10 @@ else
 		 & refcell,num_latvectors)
   
     call pbc_kinetic_int(lupri,luerr,setting,input%molecule%natoms,nbast,fck,&
-     sze,lattice,refcell,num_latvectors)
+     & sze,lattice,refcell,num_latvectors)
   
     call pbc_nucattrc_int(lupri,luerr,setting,input%molecule%natoms,nbast,fck,&
-     sze,lattice,refcell,num_latvectors)
+     & sze,lattice,refcell,num_latvectors)
      
     call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
     nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)
@@ -600,7 +600,7 @@ else
   endif
  
     call pbc_electron_rep(lupri,luerr,setting,input%molecule%natoms,nbast,&
-     lattice,refcell,num_latvectors,nfdensity,nfsze)
+     & lattice,refcell,num_latvectors,nfdensity,nfsze)
   
 !  call pbc_complete_Fock_mtx(lupri,nbast,S_ab,sze,cutoff,ll)
 
@@ -646,34 +646,34 @@ INTEGER                :: active_dims,plane
     CASE(3)
 
       recvec(1,1)=2.*pi*(realspace(2,2)*realspace(3,3)-&
-        realspace(3,2)*realspace(2,3))
+        & realspace(3,2)*realspace(2,3))
       recvec(2,1)=2.*pi*(realspace(3,2)*realspace(1,3)-&
-        realspace(1,2)*realspace(3,3))
+        & realspace(1,2)*realspace(3,3))
       recvec(3,1)=2.*pi*(realspace(1,2)*realspace(2,3)-&
-        realspace(2,2)*realspace(1,3))
+        & realspace(2,2)*realspace(1,3))
 
       recvec(1,2)=2.*pi*(realspace(2,3)*realspace(3,1)-&
-        realspace(3,3)*realspace(2,1))
+        & realspace(3,3)*realspace(2,1))
       recvec(2,2)=2.*pi*(realspace(3,3)*realspace(1,1)-&
-        realspace(1,3)*realspace(3,1))
+        & realspace(1,3)*realspace(3,1))
       recvec(3,2)=2.*pi*(realspace(1,3)*realspace(2,1)-&
-        realspace(2,3)*realspace(1,1))
+        & realspace(2,3)*realspace(1,1))
 
       recvec(1,3)=2.*pi*(realspace(2,1)*realspace(3,3)-&
-        realspace(3,1)*realspace(2,3))
+        & realspace(3,1)*realspace(2,3))
       recvec(2,3)=2.*pi*(realspace(3,1)*realspace(1,2)-&
-        realspace(1,1)*realspace(3,2))
+        & realspace(1,1)*realspace(3,2))
       recvec(3,3)=2.*pi*(realspace(1,1)*realspace(2,2)-&
         &realspace(2,1)*realspace(1,2))
 
       t2ct3(1)=realspace(2,2)*realspace(3,3)-&
-        realspace(3,2)*realspace(2,3)
+        & realspace(3,2)*realspace(2,3)
 
       t2ct3(2)=realspace(3,2)*realspace(1,3)-&
-        realspace(1,2)*realspace(3,3)
+        & realspace(1,2)*realspace(3,3)
 
       t2ct3(3)=realspace(1,2)*realspace(2,3)-&
-        realspace(2,2)*realspace(1,3)
+        & realspace(2,2)*realspace(1,3)
 
       vol= dot_product(t2ct3,realspace(:,1))
 

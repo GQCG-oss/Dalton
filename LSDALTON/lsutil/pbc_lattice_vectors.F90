@@ -79,7 +79,7 @@ IF(IPOS .gt. 0) THEN
  if(activedim=='inactive') ll%ldef%is_active(3)= .false.
  if(.not.ll%ldef%is_active(2) .and.ll%ldef%is_active(3))then
    write(*,*) 'For two dimensional PBC the first two &
-     lattice vectors have to be active'
+     & lattice vectors have to be active'
     call LSQUIT('Incorrect input for lattice vectors',lupri)
  endif
 
