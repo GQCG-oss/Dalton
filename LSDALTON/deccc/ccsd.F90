@@ -22,10 +22,12 @@ module ccsd_module
 !       & ii_getbatchorbitalscreenk, ii_get_decpacked4center_k_eri
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
 !       & ii_get_fock_mat_full
+
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
+
   use integralparameters!, only: AORdefault
   use tensor_interface_module!, only: precondition_doubles_parallel
   use lspdm_tensor_operations_module!, only: array_init, array_change_atype_to_rep,&
