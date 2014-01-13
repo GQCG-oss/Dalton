@@ -603,6 +603,11 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		enddo !kpt
 		CALL LSTIMER('k point energy',TST,TET,LUPRI)
 
+                if(diis_exit) then
+                  write(lupri,*) 'Max Density elements for each layer'
+                  call print_maxdens(nfdensity,lattice,lupri)
+                endif
+
 		if(associated(weight)) call mem_dealloc(weight)
 
 		write(*,*)

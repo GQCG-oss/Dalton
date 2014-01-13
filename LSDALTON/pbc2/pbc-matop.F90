@@ -186,6 +186,30 @@ SUBROUTINE pbc_densitymat_write(dmat,Aop,nrows,ncols,oper1,diis)
 
 END SUBROUTINE pbc_densitymat_write
 
+!author Johannes Rekkedal
+!writes max density element from each layer
+SUBROUTINE print_maxdens(dmat,ll,lupri)
+IMPLICIT NONE
+	TYPE(lvec_list_t),INTENT(IN) :: ll
+	TYPE(matrix),INTENT(IN) :: dmat(size(ll%lvec))
+        INTEGER,INTENT(IN)      :: lupri
+        !LOCAL
+        INTEGER                 :: layer,l1,l2,l3
+        real(realk)             :: maxdens
+
+  DO layer = 1,size(ll%lvec)
+     l1=int(ll%lvec(layer)%lat_coord(1))
+     l2=int(ll%lvec(layer)%lat_coord(2))
+     l3=int(ll%lvec(layer)%lat_coord(3))
+     if(ll%lvec(layer)%dm_computed) then
+       call mat_abs_max_elm(dmat(layer),maxdens)
+       write(lupri,*) maxdens,l1,l2,l3
+     endif
+  END DO
+
+
+END SUBROUTINE print_maxdens
+
 ! todo for debug purpuses (delete??)
 !> \author johannes rekkedal
 !> \date 2013

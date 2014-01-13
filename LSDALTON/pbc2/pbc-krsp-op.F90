@@ -254,15 +254,16 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast&
        if(k==Nk)then
          !if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
          call mat_abs_max_elm(density(layer),maxdens)
-         if(maxdens .gt. 1e-12)then
+         if (maxdens .gt. 1e-12)then
            write(lupri,*) ' max density element for&
              &layer', l1,l2,l3,maxdens
          endif
-         endif
        endif
+     endif
 
        if(diis_exit)then
          if(ll%lvec(layer)%Kx_computed .and. .not. ll%lvec(layer)%J_computed)then
+           ll%lvec(layer)%dm_computed=.true.
            if(density(layer)%init_magic_tag .NE. mat_init_magic_value) THEN
              call mat_init(density(layer),nbast,nbast)
              call mat_zero(density(layer))
@@ -289,7 +290,7 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast&
            if(k==Nk)then
              !if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
              call mat_abs_max_elm(density(layer),maxdens)
-             if(maxdens .gt. 1e-12)then
+             if (maxdens .gt. 1e-12)then
                write(lupri,*) ' max density element for&
                  &layer', l1,l2,l3,maxdens
              endif
