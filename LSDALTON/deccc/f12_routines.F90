@@ -14,21 +14,22 @@ module f12_routines_module
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
-  use dec_fragment_utils
   use CABS_operations
 
 #ifdef MOD_UNRELEASED
   use full_f12contractions
 #endif 
-  use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
+  use ccintegrals  
+ 
 
   public :: MO_transform_AOMatrix, get_F12_mixed_MO_Matrices_real, get_F12_mixed_MO_Matrices, free_F12_mixed_MO_Matrices, &
-       & free_F12_mixed_MO_Matrices_real
+       & free_F12_mixed_MO_Matrices_real ! atomic_fragment_free_f12, atomic_fragment_init_f12
 
   private
+  
 
 contains
-
+  
   !> Needs documentation
   subroutine get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
        & nocc,noccfull,nvirt,ncabs,HJir_real,Krr_real,Frr_real,Fac_real,Fpp_real,Fii_real,Fmm_real,Frm_real,Fcp_real)
@@ -419,6 +420,128 @@ contains
     enddo
 
   end subroutine MO_transform_AOMatrix
+
+!!$  !> \brief Initialize atomic fragment based on a list of specific AOS orbitals for F12-related matrices
+!!$  !> \author Yang Min Wang
+!!$  subroutine atomic_fragment_init_f12(fragment, MyMolecule)
+!!$    type(fullmolecule), intent(in) :: MyMolecule
+!!$    type(decfrag), intent(inout) :: fragment
+!!$    
+!!$    !> F12 Specific Variables
+!!$    integer :: nbasis, noccEOS, nunoccEOS, noccfull, nocvAOS, nvirtAOS, ncabsAO, ncabsMO
+!!$    integer :: noccAOS, nunoccAOS
+!!$    integer :: ix, iy
+!!$
+!!$    ncabsAO = size(MyMolecule%Ccabs,1)
+!!$    ncabsMO = size(MyMolecule%Ccabs,2)
+!!$
+!!$    call mem_alloc(fragment%Ccabs,ncabsAO,ncabsMO)
+!!$    call dcopy(ncabsAO*ncabsMO,Mymolecule%Ccabs,1,fragment%Ccabs,1)
+!!$    
+!!$    call mem_alloc(fragment%Cri,ncabsAO,ncabsAO)
+!!$    call dcopy(ncabsAO*ncabsAO,Mymolecule%Cri,1,fragment%Cri,1)
+!!$    
+!!$    ! ============================================================
+!!$    !                        F12-Specific                        !
+!!$    ! ============================================================
+!!$    !> F12 Specific Variables
+!!$    nbasis   = fragment%nbasis
+!!$    noccEOS  = fragment%noccEOS
+!!$    nunoccEOS = fragment%nunoccEOS
+!!$ 
+!!$    noccAOS  = fragment%noccAOS
+!!$    nunoccAOS = fragment%nunoccAOS  
+!!$    nocvAOS  = fragment%noccAOS + fragment%nunoccAOS
+!!$    nvirtAOS = fragment%nunoccAOS
+!!$    ncabsAO = size(fragment%Ccabs,1)    
+!!$    ncabsMO = size(fragment%Ccabs,2)    
+!!$    
+!!$      
+!!$       ! ************************************************************
+!!$       ! Creating a CocvAOS matrix 
+!!$       ! ************************************1***********************
+!!$       !do i=1, Fragment%noccAOS
+!!$       !   CocvAOS(:,i) = Fragment%Co(:,i)
+!!$       !end do
+!!$       
+!!$       print *,"nbasis:   ", nbasis
+!!$       print *,"noccEOS:  ", noccEOS
+!!$       print *,"nunoccEOS:", nunoccEOS
+!!$       
+!!$       print *,"nocvAOS:  ", nocvAOS
+!!$       print *,"noccAOS: ",  noccAOS
+!!$       print *,"nunoccAOS: ", nvirtAOS
+!!$       print *,"ncabsAO:  ", ncabsAO
+!!$       print *,"ncabsMO:  ", ncabsMO
+!!$
+!!$       ! Be carefull about defining what is EOS and AOS space
+!!$       ! At the moment we have a EOS partitioning scheme not a CABS, they will 
+!!$       ! eventually be dependent on the EOS i, j, because we will project out 
+!!$       ! from the i and j and create the CABS 
+!!$       ! We have partitioned the EOS space
+!!$       
+!!$       ! hJir
+!!$       call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
+!!$       do j=1,ncabsAO
+!!$          do i=1, fragment%noccEOS
+!!$             ix = fragment%idxo(i)
+!!$             fragment%hJir(i,j) = MyMolecule%hJir(ix,j)
+!!$          enddo
+!!$       enddo
+!!$       print *,"norm2(MyMolecule%hJir): ",norm2(MyMolecule%hJir)
+!!$       print *,"norm2(fragment%hJir):   ",norm2(fragment%hJir)
+!!$
+!!$  end subroutine atomic_fragment_init_f12
+!!$  
+!!$  !> \brief Free the f12 fragment free matrices
+!!$  !> \author Yang Min Wang
+!!$  subroutine atomic_fragment_free_f12(fragment)
+!!$    
+!!$    implicit none
+!!$    !> Atomic fragment to be freed
+!!$    type(decfrag),intent(inout) :: fragment
+!!$    
+!!$    print *, "------------atomic_fragment_free_f12(fragment)----------"
+!!$    
+!!$    if(associated(fragment%hJir)) then
+!!$       call mem_dealloc(fragment%hJir)
+!!$       fragment%hJir => null()
+!!$    end if
+!!$    
+!!$    if(associated(fragment%Krs)) then
+!!$       call mem_dealloc(fragment%Krs)
+!!$       fragment%Krs => null()
+!!$    end if
+!!$    
+!!$    if(associated(fragment%Frs)) then
+!!$       call mem_dealloc(fragment%Frs)
+!!$       fragment%Frs => null()
+!!$    end if
+!!$
+!!$    if(associated(fragment%Fac)) then
+!!$       call mem_dealloc(fragment%Fac)
+!!$       fragment%Fac => null()
+!!$    end if
+!!$    
+!!$    if(associated(fragment%Fpq)) then
+!!$       call mem_dealloc(fragment%Fpq)
+!!$       fragment%Fpq => null()
+!!$    end if
+!!$    
+!!$    if(associated(fragment%Fij)) then
+!!$       call mem_dealloc(fragment%Fij)
+!!$       fragment%Fij => null()
+!!$    end if
+!!$    
+!!$    if(associated(fragment%Fmn)) then
+!!$       call mem_dealloc(fragment%Fmn)
+!!$       fragment%Fmn => null()
+!!$    end if
+!!$    
+!!$  end subroutine atomic_fragment_free_f12
+
+
+
 
 
 

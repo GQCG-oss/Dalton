@@ -81,9 +81,6 @@ contains
   subroutine get_f12_single_fragment_energy(MyFragment)
     implicit none
 
-    !> Density matrix
-    ! type(matrix),intent(in) :: Dmat
-
     ! ***********************************************************
     ! Allocating for Coefficient matrix
     ! ***********************************************************
@@ -95,14 +92,15 @@ contains
     real(realk), pointer :: CoccEOS(:,:)
     !> MO coefficient matrix for the occupied AOS
     real(realk), pointer :: CoccAOS(:,:)
+    !> MO coefficient matrix for the virtual AOS
+    real(realk), pointer :: CvirtAOS(:,:)
     !> MO coefficient matrix for the occupied + virtual AOS
     real(realk), pointer :: CocvAOS(:,:)
     !> MO coefficient matrix for the CABS MOs
     real(realk), pointer :: Ccabs(:,:)
     !> MO coefficient matrix for the RI MOs
     real(realk), pointer :: Cri(:,:)
-    !> MO coefficient matrix for the virtual AOS
-    real(realk), pointer :: CvirtAOS(:,:)
+
 
     ! ***********************************************************
     ! Allocating for V matrix
@@ -155,8 +153,7 @@ contains
     real(realk), pointer :: B1ijkl(:,:,:,:)   
     !> F12 integrals for the B2_term <ij|f12^2|rk>  r = RI MO   
     real(realk), pointer :: B2ijkl(:,:,:,:)     
-    real(realk), pointer :: R2rlij(:,:,:,:)
-    real(realk), pointer :: R2ijrl(:,:,:,:)
+    real(realk), pointer :: R2ijrk(:,:,:,:)
     !> F12 integrals for the B3_term <ij|f12^2|kr>  r = RI MO         
     real(realk), pointer :: B3ijkl(:,:,:,:)
     real(realk), pointer :: R2ijkr(:,:,:,:)
@@ -165,10 +162,10 @@ contains
     real(realk), pointer :: Rijrs(:,:,:,:)
     !> F12 integrals for the B5_term
     real(realk), pointer :: B5ijkl(:,:,:,:)
-    real(realk), pointer :: Rijmr(:,:,:,:)
+    real(realk), pointer :: Rijrm(:,:,:,:)
     !> F12 integrals for the B6_term
     real(realk), pointer :: B6ijkl(:,:,:,:)
-    real(realk), pointer :: Rijap(:,:,:,:)
+    real(realk), pointer :: Rijpa(:,:,:,:)
     !> F12 integrals for the B7_term
     real(realk), pointer :: B7ijkl(:,:,:,:)
     real(realk), pointer :: Rijcm(:,:,:,:)
@@ -178,8 +175,8 @@ contains
     real(realk), pointer :: Rijcr(:,:,:,:) 
     !> F12 integrals for the B9_term   
     real(realk), pointer :: B9ijkl(:,:,:,:)                                                                     
-!    real(realk), pointer :: Rijap(:,:,:,:)
-    real(realk), pointer :: Rijac(:,:,:,:)
+    !    real(realk), pointer :: Rijap(:,:,:,:)
+    real(realk), pointer :: Rijca(:,:,:,:)
 
     ! ***********************************************************
     ! Allocating integer space sizes
@@ -249,8 +246,7 @@ contains
     call mem_alloc(B1ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     
     call mem_alloc(B2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-    call mem_alloc(R2rlij, ncabsAO, noccEOS, noccEOS, noccEOS)     
-    call mem_alloc(R2ijrl, noccEOS, noccEOS, ncabsAO, noccEOS)  
+    call mem_alloc(R2ijrk, noccEOS, noccEOS, ncabsAO, noccEOS)  
     
     call mem_alloc(B3ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     call mem_alloc(R2ijkr,  noccEOS, noccEOS, noccEOS, ncabsAO)     
@@ -259,22 +255,20 @@ contains
     call mem_alloc(Rijrs,  noccEOS, noccEOS, ncabsAO, ncabsAO)
 
     call mem_alloc(B5ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-    call mem_alloc(Rijmr,  noccEOS, noccEOS, noccEOS, ncabsAO)
+    call mem_alloc(Rijrm,  noccEOS, noccEOS, ncabsAO, noccEOS)
     
     call mem_alloc(B6ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-    call mem_alloc(Rijap, noccEOS, noccEOS, nvirtAOS, nocvAOS)
-  
+    call mem_alloc(Rijpa, noccEOS, noccEOS,  nocvAOS, nvirtAOS)
+        
     call mem_alloc(B7ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     call mem_alloc(Rijcm, noccEOS, noccEOS,  ncabsMO, noccEOS)
-  
+    
     call mem_alloc(B8ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-    !  call mem_alloc(Rijcm, noccEOS, noccEOS, ncabsMO, noccEOS)
     call mem_alloc(Rijcr,  noccEOS, noccEOS, ncabsMO, ncabsAO) 
 
     call mem_alloc(B9ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-    !  call mem_alloc(Rijap, noccEOS, noccEOS,nvirtAOS, nocvAOS)
-    call mem_alloc(Rijac, noccEOS, noccEOS, nvirtAOS, ncabsMO)
-       
+    call mem_alloc(Rijca, noccEOS, noccEOS, ncabsMO, nvirtAOS)
+  
     call mem_alloc(hJir, noccEOS, ncabsAO)
     call mem_alloc(Krr, ncabsAO, ncabsAO)
     call mem_alloc(Frr, ncabsAO, ncabsAO)
@@ -300,27 +294,6 @@ contains
     do i=1, MyFragment%noccAOS
        CoccAOS(:,i) = MyFragment%Co(:,i)
     end do
-       
-    ! Creating a CocvAOS matrix 
-    call mem_alloc(CocvAOS, MyFragment%nbasis, nocvAOS)
-    do i=1, MyFragment%noccAOS
-       CocvAOS(:,i) = MyFragment%Co(:,i)
-    end do   
-    do i=1, MyFragment%nunoccAOS
-       CocvAOS(:,i+MyFragment%noccAOS) = MyFragment%Cv(:,i)
-    end do
-    
-    ! Creating a Ccabs matrix 
-    call mem_alloc(Ccabs, ncabsAO, ncabsMO)
-    do i=1, ncabsMO
-       Ccabs(:,i) = MyFragment%Ccabs(:,i)
-    end do
-   
-    ! Creating a Cri matrix 
-    call mem_alloc(Cri, ncabsAO, ncabsAO)
-    do i=1, ncabsAO
-       Cri(:,i) = MyFragment%Cri(:,i)
-    end do
 
     ! Creating a CvirtAOS matrix 
     call mem_alloc(CvirtAOS, MyFragment%nbasis, nvirtAOS)
@@ -328,18 +301,46 @@ contains
        CvirtAOS(:,i) = MyFragment%Cv(:,i)
     end do
     
+   ! Creating a CocvAOS matrix 
+    call mem_alloc(CocvAOS, MyFragment%nbasis, nocvAOS)
+    do i=1, MyFragment%noccAOS
+       CocvAOS(:,i) = MyFragment%Co(:,i)
+    end do   
+    do i=1, MyFragment%nunoccAOS
+       CocvAOS(:,i+MyFragment%noccAOS) = MyFragment%Cv(:,i)
+    end do
+
+    ! Creating a Ccabs matrix 
+    call mem_alloc(Ccabs, ncabsAO, ncabsMO)
+    do i=1, ncabsMO
+       Ccabs(:,i) = MyFragment%Ccabs(:,i)
+    end do
+    
+    ! Creating a Cri matrix 
+    call mem_alloc(Cri, ncabsAO, ncabsAO)
+    do i=1, ncabsAO
+       Cri(:,i) = MyFragment%Cri(:,i)
+    end do
+
     ! ***********************************************************
     ! Creating the V matrix 
     ! ***********************************************************
-    !> Get integrals <ij|f12*r^-1|kl> stored as (i,j,k,l)  (Note INTSPEC is always stored as (2,4,1,3) )
+    !> Get integrals <ij|f12*r^-1|kl> stored as (i,j,k,l)  (Note INTSPEC is always stored as (2,4,1,3) )      
+    ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
+    
+    !> V1ijrkl
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRRF',V1ijkl)
-    !> Get integrals <ij|f12|pq> stored as (i,j,p,q)
+    
+    !> Gijrp <ij|f12|pq> stored as (i,j,p,q)
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRC',Gijpq)
-    !> Get integrals <ij|r^-1|pq> stored as (i,j,p,q)
+    
+    !> Rijpq <ij|r^-1|pq> stored as (i,j,p,q)
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRG',Rijpq)
-    !> Get integrals <ij|r^-1|mc> stored as (i,j,m,c) where c = cabs
+    
+    !> Gijmc <ij|r^-1|mc> stored as (i,j,m,c) where c = cabs
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRC',Gijmc)    
-    !> Get integrals <ij|f12|mc> stored as (i,j,m,c) where c = cabs 
+    
+    !> Rijmc <ij|f12|mc> stored as (i,j,m,c) where c = cabs 
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
     
     m = noccEOS*noccEOS  ! <ij G pq> <pq R kl> = <m V2 n> 
@@ -390,6 +391,8 @@ contains
     ! Creating the X matrix 
     ! ***********************************************************
     ! (Note INTSPEC is always stored as (2,4,1,3) )
+    ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
+    
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRR2',X1ijkl)
 
     m = noccEOS*noccEOS   ! <ij G pq> <pq R kl> = <m V3  n>
@@ -430,15 +433,36 @@ contains
     ! ***********************************************************
     ! Creating the B matrix 
     ! ***********************************************************
-    !> Get integral <ij|[[T,f12],f12]|kl> stored as (i,j,r,k) (Note INTSPEC is always stored as (2,4,1,3) )
+    !> Get integral <ij|[[T,f12],f12]|kl> stored as (i,j,k,l) (Note INTSPEC is always stored as (2,4,1,3) )
+    ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
+    
+    !> B1ijkl <ij|[[T,f12],f12]|kl> stored as (i,j,k,l)
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRRD',B1ijkl)
 
-    !> Get integral <ij|f12^2|kr> stored as (i,j,k,r)    r = RI MO
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'riii','RRCR2',R2rlij)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiir','RCRR2',R2ijkr)   
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiri','RRRC2',R2ijrl) 
-    !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiir','RCRR2',R2ijlr) 
+    !> R2ijrk <ij|f12^2|rk> stored as (i,j,r,k)    r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiri','RRRC2',R2ijrk)
+  
+    !> R2ijkr <ij|f12^2|kr> stored as (i,j,k,r)    r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiir','RCRR2',R2ijkr)
 
+    !> R2ijrs <ij|f12|rs> stored as (i,j,r,s)      r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iirr','RCRCG',Rijrs)
+    
+    !> Rijrm <ij|f12|rm> stored as (i,j,r,m)       r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iirm','RRRCG',Rijrm)
+    
+    !> Rijpa <ij|f12|pa> stored as (i,j,p,a)       r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipa','RRRRG',Rijpa)
+       
+    !> Rijcm <ij|f12|cm> stored as (i,j,c,m)       r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iicm','RRRCG',Rijcm)
+    
+    !> Rijcr <ij|f12|cr> stored as (i,j,c,r)       r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iicr','RCRCG',Rijcr)
+    
+    !> Rijca <ij|f12|ca> stored as (i,j,c,a)       r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iica','RRRCG',Rijca)
+    
     !> Get integral <ij|f12|rs> stored as (i,j,r,s)      r,s = RI MO
     !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iirr','RCRCG',Rijrs)   
     !call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iirm','RRRCG',Rijrm)   
@@ -450,125 +474,57 @@ contains
     ! ***********************************************************
     ! B3 matrix 
     ! ***********************************************************
-    
-    m = noccEOS   ! <k h+J r> <rl R ij>  = <kl B2 ij> 
-    k = ncabsAO    
-    n = noccEOS*noccEOS*noccEOS
-    
-    !m = noccEOS*noccEOS*noccEOS   ! <ijk R r> <r h+J l> = <ij B3 kl> 
-    !k = ncabsAO    
-    !n = noccEOS
-    
-    !> Creating the B3ijkl
-    !>   dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
-    !call dgemm('N','N',m,n,k,1.0E0_realk,hJir,m,R2rlij,k,0.0E0_realk,B2ijkl,m)
-    
-    print *, "Norm (HJir)", norm2(hJir)
-    print *, "Norm (R2ijrl)", norm2(R2ijrl)
-    
-    !> Term 2
-    DO i=1,noccEOS
-       DO j=1,noccEOS
-          DO k=1,noccEOS
-             DO l=1,noccEOS
-                tmp  = 0.0E0_realk
-                DO p=1,ncabsAO
-                   tmp =   tmp + R2ijrl(i,j,p,l)*hJir(k,p)
-                ENDDO
-                B2ijkl(i,j,k,l) = tmp;
-             ENDDO
-          ENDDO
-       ENDDO
-    ENDDO
-
-!!$    print *, '----------------------------------------'
-!!$    print *, '          B ijij                        '   
-!!$    print *, '----------------------------------------'
-!!$    
-!!$    DO i=1,noccEOS
-!!$       DO j=1,noccEOS
-!!$          print *, i," ", j," ", B2ijkl(i,j,i,j)
-!!$       ENDDO
-!!$    ENDDO
-!!$    
-!!$    print *, '----------------------------------------'
-!!$    print *, '          B ijji                        '   
-!!$    print *, '----------------------------------------'
-!!$    
-!!$    DO i=1,noccEOS
-!!$       DO j=1,noccEOS
-!!$          print *, i," ", j," ", B2ijkl(i,j,j,i)
-!!$       ENDDO
-!!$    ENDDO
-
-    DO i=1,noccEOS
-       DO j=1,noccEOS
-          DO k=1,noccEOS
-             DO l=1,noccEOS
-                tmp  = 0.0E0_realk
-                DO p=1,ncabsAO
-                   tmp =   tmp + R2ijkr(i,j,k,p)*hJir(l,p)
-                ENDDO
-                B3ijkl(i,j,k,l) = tmp;
-             ENDDO
-          ENDDO
-       ENDDO
-    ENDDO
-    !> Creating the B2ijkl = B3ijlk 
-    !call array_reorder_4d(1.0E0_realk,B2ijkl,noccEOS,noccEOS,noccEOS,noccEOS,[3,4,1,2],0.0E0_realk,B3ijkl)
-    
-
     print *, '----------------------------------------'
     print *, '          B matrix - Terms              '   
+    print *, '----------------------------------------'
+    print *, '(B1 Term):'
     print *, '----------------------------------------'
     print *, 'norm2(B1ijkl):', norm2(B1ijkl)
     print *, '----------------------------------------'   
     print *, '(B2 Term):'
     print *, '----------------------------------------'
-    print *, 'B2ijkl = B3ijlk'
-    print *, 'norm2(hJir):', norm2(hJir)
-    print *, 'norm2(R2rlij):', norm2(R2rlij)
-    print *, 'norm2(R2ijkr):', norm2(R2ijkr)
-    print *, 'norm2(R2ijrl):', norm2(R2ijrl)
-    print *, 'norm2(B2ijkl):', norm2(B2ijkl)
+    print *, 'norm2(hJir):',  norm2(Myfragment%hJir)
+    print *, 'norm2(R2ijrk):', norm2(R2ijrk)
     print *, '----------------------------------------'   
     print *, '(B3 Term):'
     print *, '----------------------------------------'
-    print *, 'norm2(B3ijkl):', norm2(B3ijkl)
+    print *, 'norm2(hJir):',  norm2(Myfragment%hJir)
+    print *, 'norm2(R2ijkr):', norm2(R2ijkr)
+    print *, '----------------------------------------'   
+    print *, '(B4 Term):'
+    print *, '----------------------------------------'
+    print *, 'norm2(Krs):',  norm2(Myfragment%Krs)
+    print *, 'norm2(Rijrs):', norm2(Rijrs)
+    print *, '----------------------------------------'   
+    print *, '(B5 Term):'
+    print *, '----------------------------------------'
+    !print *, 'norm2(Frs):',  norm2(Myfragment%Frs)
+    print *, 'norm2(Rijrm):', norm2(Rijrm)
+    print *, '----------------------------------------'   
+    print *, '(B6 Term):'
+    print *, '----------------------------------------'
+    !print *, 'norm2(Fpq):',  norm2(Myfragment%Fpq)
+    print *, 'norm2(Rijpa):', norm2(Rijpa)
+    print *, '----------------------------------------'   
+    print *, '(B7 Term):'
+    print *, '----------------------------------------'
+    !print *, 'norm2(Fnm):',  norm2(Myfragment%Frm)
+    print *, 'norm2(Rijcm):', norm2(Rijcm)
+    print *, '----------------------------------------'   
+    print *, '(B8 Term):'
+    print *, '----------------------------------------'
+    !print *, 'norm2(Frm):',  norm2(Myfragment%Fcm)
+    !print *, 'norm2(Rijcm):', norm2(Rijcm)
+    print *, 'norm2(Rijcr):', norm2(Rijcr)
+    print *, '----------------------------------------'   
+    print *, '(B9 Term):'
+    print *, '----------------------------------------'
+    !print *, 'norm2(Fcm):',  norm2(Myfragment%Fcm)
+    !print *, 'norm2(Rijpa):', norm2(Rijpa)
+    print *, 'norm2(Rijca):', norm2(Rijca)
+    
 
-!!$    print *, '----------------------------------------'   
-!!$    print *, '(B4 Term):'
-!!$    print *, '----------------------------------------'
-!!$    print *, 'norm2(B4ijkl):', norm2(B4ijkl)
-!!$    print *, 'norm2(Rijrs):', norm2(Rijrs)
-!!$    print *, '----------------------------------------'   
-!!$    print *, '(B5 Term):'
-!!$    print *, '----------------------------------------'
-!!$    print *, 'norm2(B5ijkl):', norm2(B5ijkl)
-!!$    print *, 'norm2(Rijrm):', norm2(Rijrm)
-!!$    print *, '----------------------------------------'   
-!!$    print *, '(B6 Term):'
-!!$    print *, '----------------------------------------'
-!!$    print *, 'norm2(B6ijkl):', norm2(B6ijkl)
-!!$    print *, 'norm2(Rijpa):', norm2(Rijpa)
-!!$    print *, '----------------------------------------'   
-!!$    print *, '(B7 Term):'
-!!$    print *, '----------------------------------------'
-!!$    print *, 'norm2(B7ijkl):', norm2(B7ijkl)
-!!$    print *, 'norm2(Rijcm):', norm2(Rijcm)
-!!$    print *, '----------------------------------------'   
-!!$    print *, '(B8 Term):'
-!!$    print *, '----------------------------------------'
-!!$    print *, 'norm2(B8ijkl):', norm2(B8ijkl)
-!!$    print *, 'norm2(Rijcm):', norm2(Rijcm)
-!!$    print *, 'norm2(Rijcr):', norm2(Rijcr)
-!!$    print *, '----------------------------------------'   
-!!$    print *, '(B9 Term):'
-!!$    print *, '----------------------------------------'
-!!$    print *, 'norm2(B9ijkl):', norm2(B9ijkl)
-!!$    print *, 'norm2(Rpaij):', norm2(Rpaij)
-!!$    print *, 'norm2(Rcaij):', norm2(Rcaij)
-   
+
     print *, '----------------------------------------'
     print *, '(Single Fragment Energies for V-matrix):'
     print *, '----------------------------------------'
@@ -586,7 +542,7 @@ contains
     print *, '----------------------------------------'
     print *, "E_21_Vsum:", E_21
     print *, '----------------------------------------'
-    print *, '               E_22 X term (SF)         '
+    print *, '  E_22 X term (Single Fragment)         '
     print *, '----------------------------------------'
     call get_mp2f12_sf_E22(Fij, X1ijkl, noccEOS, X1energy,  1.0E0_realk)
     call get_mp2f12_sf_E22(Fij, X2ijkl, noccEOS, X2energy, -1.0E0_realk)
@@ -602,7 +558,7 @@ contains
     print *, '----------------------------------------'
     print *, "E_22_Xsum:", E_22
     print *, '----------------------------------------'
-    print *, '               E_22 B term (SF)         '
+    print *, '  E_22 B term (Single Fragment)         '
     print *, '----------------------------------------'
     call get_mp2f12_sf_E23(B1ijkl, noccEOS, B1energy,  1.0E0_realk)
     call get_mp2f12_sf_E23(B2ijkl, noccEOS, B2energy,  1.0E0_realk)
@@ -655,8 +611,7 @@ contains
     call mem_dealloc(B1ijkl)
     
     call mem_dealloc(B2ijkl)
-    call mem_dealloc(R2rlij)    
-    call mem_dealloc(R2ijrl)      
+    call mem_dealloc(R2ijrk)      
     
     call mem_dealloc(B3ijkl)
     call mem_dealloc(R2ijkr)     
@@ -665,21 +620,19 @@ contains
     call mem_dealloc(Rijrs)
 
     call mem_dealloc(B5ijkl)
-    call mem_dealloc(Rijmr)
+    call mem_dealloc(Rijrm)
     
     call mem_dealloc(B6ijkl)
-    call mem_dealloc(Rijap)
+    call mem_dealloc(Rijpa)
   
     call mem_dealloc(B7ijkl)
     call mem_dealloc(Rijcm)
   
     call mem_dealloc(B8ijkl)
-    !call mem_dealloc(Rijcm)
     call mem_dealloc(Rijcr) 
 
     call mem_dealloc(B9ijkl)
-    !call mem_dealloc(Rijap)
-    call mem_dealloc(Rijac)
+    call mem_dealloc(Rijca)
 
     call mem_dealloc(hJir)
     call mem_dealloc(Krr)
@@ -1077,6 +1030,10 @@ contains
           C(i)%cmat => CoccAOS
           C(i)%n1 = nbasis
           C(i)%n2 = noccAOS 
+       elseif(intType(i).EQ.'a') then ! virtual AOS
+          C(i)%cmat => CvirtAOS
+          C(i)%n1 = nbasis
+          C(i)%n2 = nvirtAOS
        elseif(intType(i).EQ.'p') then !all occupied + virtual
           C(i)%cmat => CocvAOS
           C(i)%n1 = nbasis
@@ -1191,6 +1148,8 @@ contains
        if(intType(i).EQ.'i') then !occupied active
           BatchType(i) = 'R'          
        elseif(intType(i).EQ.'m') then !all occupied
+          BatchType(i) = 'R'
+       elseif(intType(i).EQ.'a') then !ri - MOs
           BatchType(i) = 'R'
        elseif(intType(i).EQ.'p') then !all occupied + virtual
           BatchType(i) = 'R'

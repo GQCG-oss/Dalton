@@ -143,16 +143,12 @@ contains
          & MyMolecule%nocc, UnoccAOS, &
          & occAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,MyFragment,DoBasis,.false.)
 
-
     ! Calculate fragment energies
     call atomic_fragment_energy_and_prop(MyFragment)
 
     call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output)
 
-
   end subroutine get_fragment_and_Energy_orb_specific
-
-
 
 
   !> \brief Wrapper for atomic_driver with the following special features:
@@ -193,8 +189,8 @@ contains
     ! Init fragment basis information
     call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
          & UnoccOrbitals,MyMolecule,mylsitem,MyFragment)
-
-
+    
+ 
     ! Attach fragments singles amplitudes to fragment structure
     ! if long-range singles polarization effects are requested.
     if(DECinfo%SinglesPolari) then
@@ -391,21 +387,20 @@ contains
     ! which calculates atomic fragment contribution and saves it in myfragment%energies(?),
     ! see dec_readme file and FRAGMODEL_* definitions in dec_typedef.F90.
 
-    print *, "Hello world!" 
-
 #ifdef MOD_UNRELEASED
     if(DECinfo%F12) then    
        print *, "*******************************************"
        print *, "       F12 energy single fragment          "  
        print *, "*******************************************"
-       
+   
        ! Get the wrong density matrix (Not equal to the one for the fullmolecule)
        ! call mat_init(Dmat, myfragment%nbasis,myfragment%nbasis)
        ! call mem_alloc(dens, myfragment%nbasis, myfragment%nbasis)
        !  call get_density_from_occ_orbitals( myfragment%nbasis,myfragment%noccAOS,Myfragment%Co,dens)
        ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
+
        call get_f12_single_fragment_energy(MyFragment)
-       
+
        !> Free density matrix
        ! call mem_dealloc(dens)
        ! call mat_free(Dmat)
@@ -2146,6 +2141,7 @@ contains
       & Occ_Atoms,nocc,nunocc,OccOrbitals,UnoccOrbitals, &
       & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
+ print *,"---------wangy---norm2(hJir)------------------> ",norm2(MyMolecule%hJir)
 
  ! Information for fragment-adapted orbitals
  ! *****************************************
@@ -2600,6 +2596,9 @@ end subroutine optimize_atomic_fragment
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_orig, &
                & OccAOS_orig,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
                & AtomicFragment,.true.,.false.)
+
+          print *,'----------wangy-------------norm2(hJir)------------', norm2(MyMolecule%hJir)
+
           call atomic_fragment_energy_and_prop(AtomicFragment)
           exit REDUCTION_LOOP
        end if
@@ -3002,7 +3001,6 @@ end subroutine optimize_atomic_fragment
   end subroutine Expandfragment
 
 
-
   !> \brief Set logical vectors defining fragment to contain a fixed number of AOS atoms
   !> based on a prioritized track list.
   !> \date April 2013
@@ -3116,7 +3114,6 @@ end subroutine optimize_atomic_fragment
   end subroutine ReduceSpace_orbitalspecific
 
 
-
   !> \brief For a given model, get the occupied, virtual and Lagragian fragment energies
   !> to use for fragment optimization, i.e. simply copy the relevant energies from
   !> "fragment%energies" to fragment%EoccFOP, fragment%EvirtFOP, and fragment%LagFOP.
@@ -3175,8 +3172,6 @@ end subroutine optimize_atomic_fragment
     end select
 
   end subroutine get_occ_virt_lag_energies_fragopt
-
-
 
 
   !> \brief After the fragment optimization, make sure that the energies stored
