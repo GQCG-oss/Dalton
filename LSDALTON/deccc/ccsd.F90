@@ -942,6 +942,7 @@ contains
 #endif
     logical :: lock_outside
 
+    type(matrix) :: Dens, iFock
     ! CHECKING and MEASURING variables
     integer(kind=long) :: maxsize64,dummy64
     integer :: myload,double_2G_nel,nelms,n4
@@ -2710,7 +2711,7 @@ contains
     integer :: a,b,j,fri,tri
     integer(kind=8) :: o2v2,tlov,w1size,w2size,w3size
     character(ARR_MSG_LEN) :: msg
-    real(realk) :: MemFree
+    real(realk) :: MemFree, startt, stopp
      
 
       me     = int(0,kind=ls_mpik)
@@ -2760,7 +2761,9 @@ contains
      !calculate doubles C term
      !*************************
 
-     
+#ifdef VAR_MPI     
+     startt=MPI_wtime()
+#endif
      !Reorder gvvoo [a c k i] -> goovv [a i c k]
      if(s==4)then
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w2)
@@ -2775,8 +2778,6 @@ contains
          call arr_lock_wins(gvvoo,'s',mode)
          call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,lock_outside,debug=.true.)
          call arr_unlock_wins(gvvoo,.true.)
-         write (msg,*) infpar%lg_mynum,"w2"
-         call print_norm(w2,int((i8*tl)*no*nv,kind=8),msg)
        else
          call array_gather_tilesinfort(gvvoo,w1,int((i8*no)*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
          do nod=1,nnod-1
@@ -2798,7 +2799,14 @@ contains
        endif
 #endif
      endif
+#ifdef VAR_MPI     
+     stopp=MPI_wtime()
+     write (*,*) infpar%lg_mynum,"comm 1:",stopp - startt
+#endif
 
+#ifdef VAR_MPI     
+     startt=MPI_wtime()
+#endif
      !SCHEME 2
      !Reorder govov [k d l c] -> govov [d l c k]
      if(s==2.and.lock_outside)then
@@ -2807,8 +2815,6 @@ contains
        call arr_lock_wins(govov,'s',mode)
        call array_gather(1.0E0_realk,govov,0.0E0_realk,w1,o2v2,oo=[2,3,4,1],wrk=w3,iwrk=w3size)
        call arr_unlock_wins(govov,.true.)
-       !write (msg,*),infpar%lg_mynum,"w1"
-       !call print_norm(w1,o2v2,msg)
 #endif
      endif
 
@@ -2826,8 +2832,6 @@ contains
          call arr_lock_wins(t2,'s',mode)
          call array_two_dim_1batch(t2,[1,4,2,3],'g',w3,2,fai,tl,lock_outside,debug=.true.)
          call arr_unlock_wins(t2,.true.)
-         !write (msg,*),infpar%lg_mynum,"w3 ERSCHDE"
-         !call print_norm(w3,int(tl*no*nv,kind=8),msg)
        else
          call array_gather_tilesinfort(t2,w1,o2v2,infpar%master,[1,4,2,3])
          do nod=1,nnod-1
@@ -2849,32 +2853,51 @@ contains
        endif
 #endif
      endif
+#ifdef VAR_MPI     
+     stopp=MPI_wtime()
+     write (*,*) infpar%lg_mynum,"comm 2:",stopp - startt
+#endif
 
    
+#ifdef VAR_MPI     
+     startt=MPI_wtime()
+#endif
      !stop 0
      !SCHEME 4 AND 3 because of w1 being buffer before
      !Reorder govov [k d l c] -> govov [d l c k]
      if(s==3.or.s==4)then
        call array_reorder_4d(1.0E0_realk,govov%elm1,no,nv,no,nv,[2,3,4,1],0.0E0_realk,w1)
-       !write (msg,*),infpar%lg_mynum,"w3 ERSCHDE"
-       !call print_norm(w3,int(tl*no*nv,kind=8),msg)
      elseif(s==2.and..not.lock_outside)then
 #ifdef VAR_MPI
        call array_gather_tilesinfort(govov,w1,o2v2,infpar%master,[2,3,4,1])
        call ls_mpibcast(w1,o2v2,infpar%master,infpar%lg_comm)
 #endif
      endif
+#ifdef VAR_MPI     
+     stopp=MPI_wtime()
+     write (*,*) infpar%lg_mynum,"sort 1:",stopp - startt
+#endif
+#ifdef VAR_MPI     
+     startt=MPI_wtime()
+#endif
      
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 1         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !(-0.5) * t [a i d l] * govov [d l c k] + goovv [a i c k] = C [a i c k]
      call dgemm('n','n',tl,no*nv,no*nv,-0.5E0_realk,w3(faif),lead,w1,no*nv,1.0E0_realk,w2(faif),lead)
+#ifdef VAR_MPI     
+     stopp=MPI_wtime()
+     write (*,*) infpar%lg_mynum,"gemm 1:",stopp - startt
+#endif
 
 
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 2         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#ifdef VAR_MPI     
+     startt=MPI_wtime()
+#endif
      !(-1) * C [a i c k] * t [c k b j] = preOmC [a i b j]
      if(s==4)then
        w1=0.0E0_realk
@@ -2894,12 +2917,19 @@ contains
        call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w1,no*nv,0.0E0_realk,w3,lead)
 #endif
      endif
+#ifdef VAR_MPI     
+     stopp=MPI_wtime()
+     write (*,*) infpar%lg_mynum,"gemm 2:",stopp - startt
+#endif
 
 
      
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       Omega update           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#ifdef VAR_MPI     
+     startt=MPI_wtime()
+#endif
      if(s==3.or.s==4)then
        !contribution 1: 0.5*preOmC [a i b j] -> =+ Omega [a b i j]
        call array_reorder_4d(0.5E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
@@ -2917,6 +2947,10 @@ contains
        if(lock_outside)call arr_unlock_wins(omega2,.true.)
 #endif
      endif
+#ifdef VAR_MPI     
+     stopp=MPI_wtime()
+     write (*,*) infpar%lg_mynum,"upda 2:",stopp - startt
+#endif
 
 
 

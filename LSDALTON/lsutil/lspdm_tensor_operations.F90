@@ -3031,14 +3031,7 @@ module lspdm_tensor_operations_module
     me   = infpar%lg_mynum
     nnod = infpar%lg_nodtot
 
-    !compute the maximum number of tiles to be stored in the workspace
-    maxntiinwrk = int(iwrk/arr%tsize,kind=8)
     !begin with sanity checks
-    if(maxntiinwrk == 0)then
-      print *,"ERROR(add_data2tiled_intiles_explicitbuffer)&
-      &:not enough space in wrk --> run without .CCSD_WITH_MPICH or add nodes"
-      stop 1
-    endif
     if(arr%mode/=mode)then
       print *,"ERROR(add_data2tiled_intiles_explicitbuffer):&
       &mode of array does not match mode of tiled_array"
@@ -3051,21 +3044,39 @@ module lspdm_tensor_operations_module
         stop 1
       endif
     enddo
-    
-    do i=1,arr%ntiles
 
-      if(arr%lock_set(i))then
-        if(i>maxntiinwrk) then
-          call arr_unlock_win(arr,int(i-maxntiinwrk))
-        endif
+    !compute the maximum number of tiles to be stored in the workspace
+    maxntiinwrk = int(iwrk/arr%tsize,kind=8)
+
+    if(maxntiinwrk == 0)then
+
+      if(mult==1.0E0_realk)then
+        print *,"WARNING(add_data2tiled_intiles_explicitbuffer)&
+        &:not enough space in wrk, try more nodes (in a slot) -> redirecting to _nobuffer"
+        call add_data2tiled_intiles_nobuffer(arr,A,dims,mode,o)
+      else
+        print *,"WARNING(add_data2tiled_intiles_explicitbuffer)&
+        &:not enough space in wrk, try more nodes (in a slot) -> redirecting to _stackbuffer"
+        call add_data2tiled_intiles_stackbuffer(arr,mult,A,dims,mode,o)
       endif
 
-      call get_tile_dim(nelmsit,arr,i)
-      b = 1       + mod(i-1,maxntiinwrk) * arr%tsize
-      e = nelmsit + mod(i-1,maxntiinwrk) * arr%tsize
-      call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,wrk(b),int(i),arr%tdim,o)
-      call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit,lock_set=arr%lock_set(i))
-    enddo
+    else
+      
+      do i=1,arr%ntiles
+
+        if(arr%lock_set(i))then
+          if(i>maxntiinwrk) then
+            call arr_unlock_win(arr,int(i-maxntiinwrk))
+          endif
+        endif
+
+        call get_tile_dim(nelmsit,arr,i)
+        b = 1       + mod(i-1,maxntiinwrk) * arr%tsize
+        e = nelmsit + mod(i-1,maxntiinwrk) * arr%tsize
+        call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,wrk(b),int(i),arr%tdim,o)
+        call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit,lock_set=arr%lock_set(i))
+      enddo
+    endif
 
 #endif
   end subroutine add_data2tiled_intiles_explicitbuffer
