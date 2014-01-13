@@ -343,6 +343,7 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ls_IntegralInterface.F90
     LSDALTON/LSint/pari.F90
     LSDALTON/LSint/lsmpi.F90
+    LSDALTON/LSint/II_dft_dftd.F90
     )
 #####################################################
 #WARNING: READ ME BEFORE ADDING FILES TO LSUTIL
