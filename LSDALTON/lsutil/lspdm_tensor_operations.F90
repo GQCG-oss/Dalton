@@ -2027,6 +2027,10 @@ module lspdm_tensor_operations_module
 
 
     elseif(arr%mode==4.and.n2comb==2.and..not.deb)then
+
+      !CODE FOR 2 DIMENSIONS TO COMBINE IF A 4 MODE TENSOR IS GIVEN
+
+      ! find the index in the tiles of the first tiled dimension
       st_tiling = 4
       do i = 1, 4
         if(arr%ntpm(i)/=1)then
@@ -2036,6 +2040,8 @@ module lspdm_tensor_operations_module
       enddo
 
 
+      !find the number of consecutive elements in a tile and the index where the
+      !order of the two arrays differ
       cons_el_in_t = 1_long
       diff_ord = arr%mode
       do i = 1, st_tiling
@@ -2047,7 +2053,8 @@ module lspdm_tensor_operations_module
         endif
       enddo
 
-
+      !find the consecutive elements in the reduced dimension of the unfolded
+      !tensor, i.e. 1 and 2 as long as the order fits to the original tensor
       cons_el_rd = 1_long
       do i = 1, 2
         if(u_o(i)==i)then
@@ -2057,9 +2064,9 @@ module lspdm_tensor_operations_module
         endif
       enddo
 
-      !print *,infpar%lg_mynum," here ",arr%tdim,st_tiling,cons_el_in_t,cons_el_rd
 
-      !precalculate tile dimensions and positions
+      !precalculate tile dimensions and positions such, that they may be read
+      !afterwards
       call mem_alloc(tinfo,arr%ntiles,7)
       do ctidx = 1, arr%ntiles
         tinfo(ctidx,1) = get_residence_of_tile(ctidx,arr)
@@ -2074,20 +2081,27 @@ module lspdm_tensor_operations_module
       mult1 = arr%ntpm(1) * arr%ntpm(2)
       mult2 = arr%ntpm(1) * arr%ntpm(2) * arr%ntpm(3)
    
+      !find the index of the first element (= first element of the combined two
+      !first dimensions after the unfolding and splitting in stripes across the
+      !nodes)
       fx=1
       call get_midx(fel,fx(1:n2comb),fordims(1:n2comb),n2comb)
       do i = 1, 4
         idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
       enddo
 
-      !DETERMINE THE PARTS
+      !DETERMINE THE PARTS: If more than one element can be transferred at a
+      !time the chunks can be of two different sizes, depending on the overlap
+      !of the different consecutive numbers of elements. the lengths of these
+      !different parts is determined in the following
       part1 = 1
       part2 = 1
+      !if(op=='a')print *,"RETARDO1:",cons_el_rd,tl
       if(cons_el_rd<tl)then
         cons_els = cons_el_rd
         do i = 1,min(diff_ord,2)
           split_in = i
-          if(i>=2)then
+          if(i==min(diff_ord,2))then
             part1 = part1 * (arr%tdim(i) - idxt(i) + 1)
             part2 = part2 * (idxt(i) - 1)
             
@@ -2099,23 +2113,6 @@ module lspdm_tensor_operations_module
         enddo
       else
         cons_els = tl
-        do i = 1,min(diff_ord,2)
-          split_in = i
-          if(i>=2)then
-            part1 = part1 * (arr%tdim(i) - idxt(i) + 1)
-            part2 = part2 * (idxt(i) - 1)
-            exit
-          else
-            part1 = part1 * arr%tdim(i)
-            part2 = part2 * arr%tdim(i)
-          endif
-        enddo
-        
-       ! if(infpar%lg_mynum==1)then
-       !   print *,part1,part2,tl
-       ! endif
-        part1 = max(tl,tl - part1)
-        part2 = max(0, tl - part1)
         part1 = arr%tdim(1) - idxt(1) + 1
         part2 = tl - (arr%tdim(1) - idxt(1) + 1)
       endif
@@ -2123,16 +2120,18 @@ module lspdm_tensor_operations_module
       tl_max = (tl / cons_els) * cons_els
       tl_mod = mod(tl ,cons_els)
 
-      !if(infpar%lg_mynum==1)then
+      !if(op=='a')then
+      !  print *,"YAYYAYYAYYYAAAAAAYYYYYY:"
       !  print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
       !  print *,tl,part1,part2,tl_max,tl_mod
       !  print *,fx
       !  print *,idxt
       !  print *,arr%tdim
+      !  print *,arr%dims
+      !  print *,fordims
       !  print *,u_o
       !  !stop 0 
       !endif
-      !call lsmpi_barrier(infpar%lg_comm)
 
 
       call ass_D1to3(fort,p_fort3,[tl,fordims(3),fordims(4)])
