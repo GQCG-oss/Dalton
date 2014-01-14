@@ -1711,7 +1711,9 @@ module lspdm_tensor_operations_module
     maxintmp = tmps / arr%tsize
 
     do i=1,arr%ntiles
-      if(i>maxintmp.and.arr%lock_set(i-maxintmp))call arr_unlock_win(arr,i-maxintmp)
+      if(i>maxintmp)then
+       if(arr%lock_set(i-maxintmp)) call arr_unlock_win(arr,i-maxintmp)
+      endif
       b = 1 + mod(i - 1, maxintmp) * arr%tsize
       e = b + arr%tsize -1
       call tile_from_fort(pre1,fort,fullfortdim,arr%mode,&
@@ -2033,6 +2035,7 @@ module lspdm_tensor_operations_module
         endif
       enddo
 
+
       cons_el_in_t = 1_long
       diff_ord = arr%mode
       do i = 1, st_tiling
@@ -2044,6 +2047,7 @@ module lspdm_tensor_operations_module
         endif
       enddo
 
+
       cons_el_rd = 1_long
       do i = 1, 2
         if(u_o(i)==i)then
@@ -2052,6 +2056,8 @@ module lspdm_tensor_operations_module
           exit
         endif
       enddo
+
+      !print *,infpar%lg_mynum," here ",arr%tdim,st_tiling,cons_el_in_t,cons_el_rd
 
       !precalculate tile dimensions and positions
       call mem_alloc(tinfo,arr%ntiles,7)
@@ -2105,9 +2111,9 @@ module lspdm_tensor_operations_module
           endif
         enddo
         
-        if(infpar%lg_mynum==4)then
-          print *,part1,part2,tl
-        endif
+       ! if(infpar%lg_mynum==1)then
+       !   print *,part1,part2,tl
+       ! endif
         part1 = max(tl,tl - part1)
         part2 = max(0, tl - part1)
         part1 = arr%tdim(1) - idxt(1) + 1
@@ -2117,16 +2123,16 @@ module lspdm_tensor_operations_module
       tl_max = (tl / cons_els) * cons_els
       tl_mod = mod(tl ,cons_els)
 
-      if(infpar%lg_mynum==4)then
-        !print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
-        !print *,tl,part1,part2,tl_max,tl_mod
-        !print *,fx
-        !print *,idxt
-        !print *,arr%tdim
-        !print *,u_o
-        !stop 0 
-      endif
-      call lsmpi_barrier(infpar%lg_comm)
+      !if(infpar%lg_mynum==1)then
+      !  print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
+      !  print *,tl,part1,part2,tl_max,tl_mod
+      !  print *,fx
+      !  print *,idxt
+      !  print *,arr%tdim
+      !  print *,u_o
+      !  !stop 0 
+      !endif
+      !call lsmpi_barrier(infpar%lg_comm)
 
 
       call ass_D1to3(fort,p_fort3,[tl,fordims(3),fordims(4)])
