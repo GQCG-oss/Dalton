@@ -961,6 +961,19 @@ C
       LOGICAL   DIPLEN, DOCAL, FOUND, CONV, DFTADX
 C
       CALL QENTER('QRHYP')
+
+C      opening new files for quadratic writing response, will put
+C      in global scope later
+
+      LUE3VEC = -1
+      LUX2VEC = -1
+      CALL GPOPEN(LUE3VEC,'E3VEC','NEW',' ','UNFORMATTED',IDUMMY,
+     &      .FALSE.)
+      CALL GPOPEN(LUX2VEC,'X2VEC','NEW',' ','UNFORMATTED',IDUMMY,
+     &      .FALSE.)
+      WRITE(LUE3VEC) 'EOFLABEL'
+      WRITE(LUX2VEC) 'EOFLABEL'
+
       IF (SOCOLL) CALL SOINIT
       IF (SSCOLL) CALL SSINIT(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,
      &                        SPNSU1,SPNSU2,SPNSU)
@@ -1249,6 +1262,16 @@ C
      *                            -FREQB,-FREQC,XINDX,
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
      &                           CMO,FC,FV)
+
+                              !ignat section
+C Save results from T3DRV in E3VEC for later equation solving
+                              WRITE(LUPRI,*) 'ignat'
+                              CALL WRTRSP(LUE3VEC, MZYVAR(MSYMA),
+     *                        WRK(KX3WRK),
+     *                        BQRLB(MSYMB,IBOP), CQRLB(MSYMC,ICOP),
+     *                        FREQ1, FREQ2, KSYMOP,
+     *                        KSYMOP, D0, ANTSYM)
+
                               IF (E3TEST) THEN
                                  CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),1,
      *                                      WRK(1),1)
@@ -1372,6 +1395,15 @@ C
      *                              UDV,PV,
      *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
+C Save results from X2INIT for later storing quadratic repsonce vectors
+
+                           CALL WRTRSP(LUX2VEC, MZYVAR(MSYMA),
+     *                     WRK(KB2C),
+     *                     BQRLB(MSYMB,IBOP), CQRLB(MSYMC,ICOP),
+     *                     FREQ1, FREQ2, KSYMOP,
+     *                     KSYMOP, D0, ANTSYM)
+
+
                            DO 920 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1478,6 +1510,14 @@ C
      *                           UDV,PV,
      *                           CQRLB(MSYMC,ICOP),MSYMC,IRANKC,
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
+C Save from X2INIT for later storing, permutated case switch B and C
+                           CALL WRTRSP(LUX2VEC, MZYVAR(MSYMA),
+     *                     WRK(KB2C),
+     *                     CQRLB(MSYMB,IBOP), BQRLB(MSYMC,ICOP),
+     *                     FREQ2, FREQ1, KSYMOP,
+     *                     KSYMOP, D0, ANTSYM)
+
+
                            DO 930 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(

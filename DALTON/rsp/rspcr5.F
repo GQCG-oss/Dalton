@@ -36,6 +36,8 @@ C
       PARAMETER   (BLANK='        ', D0 = 0.0D0)
       DIMENSION   VEC(*)
 C
+      CALL QENTER('WRTRSP')
+
       REWIND (LU)
  100  READ(LU) LABEL
       IF (LABEL.NE.'EOFLABEL') GOTO 100
@@ -56,6 +58,7 @@ C
 C
       CALL FLSHFO(LU)
 C
+      CALL QEXIT('WRTRSP')
       RETURN
       END
       SUBROUTINE REARSP(LU,LEN,VEC,LAB1,LAB2,FREQ1,FREQ2,ISYM1,ISYM2,
@@ -79,7 +82,9 @@ C
       PARAMETER(THR = 1.0D-8, BLANK='        ', D0 = 0.0D0)
       CHARACTER*20 FILE_NAME
       INTEGER INFORB_TEST(33)
+
 C
+      CALL QENTER('REARSP')
       FOUND  = .FALSE.
       CONV   = .FALSE.
       USOLVD = .FALSE.
@@ -217,6 +222,7 @@ C
      &      'vectors for property',LABX1, LABX2
       END IF
 C
- 200  RETURN
+ 200  CALL QEXIT('REARSP')
+      RETURN
       END
 ! -- end of rspcr5.F --

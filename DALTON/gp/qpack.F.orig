@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -114,19 +114,8 @@ C
 C     Initialize common blocks in BLOCK DATA QBDINIT
 C
       EXTERNAL QBDINIT
-      character*8 ident8
 C
       LEVELQ = LEVELQ + 1
-      do i=1, levelq
-         write(2,'(A2)', advance='no') '-'
-      end do
-      if (len(ident).ge.8) then
-         ident8 = ident(1:8)
-      else
-         ident8 = ident 
-      end if
-      write(2,'(A8)') ident8
-
 Chj2  LQTREE = LQTREE + 1
       IF (LEVELQ .LE. MXQLVL) THEN
 Chj1     IDENT8 = IDENT//BLANK8
