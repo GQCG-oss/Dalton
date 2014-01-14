@@ -968,6 +968,8 @@ contains
     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    TYPE(DECscreenITEM)    :: DecScreen
+
     integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
     integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3
     integer(kind=8) :: nb4,o2v2,no4
@@ -986,7 +988,6 @@ contains
 #ifdef VAR_OMP
     integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
 #endif
-    TYPE(DECscreenITEM)    :: DecScreen
     character(4) :: def_atype
 
 
