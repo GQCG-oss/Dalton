@@ -968,6 +968,8 @@ contains
     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    TYPE(DECscreenITEM)    :: DecScreen
+
     integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
     integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3
     integer(kind=8) :: nb4,o2v2,no4
@@ -986,7 +988,6 @@ contains
 #ifdef VAR_OMP
     integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
 #endif
-    TYPE(DECscreenITEM)    :: DecScreen
     character(4) :: def_atype
 
 
@@ -2466,7 +2467,7 @@ contains
       !DO ALL THINGS DEPENDING ON 1
       if(lock_outside)then
         call arr_lock_wins(t2,'s',mode)
-        call array_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside,debug=.true.)
+        call array_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside)
       endif
       
       !calculate first part of doubles E term and its permutation
@@ -2505,7 +2506,7 @@ contains
       else
         call arr_lock_wins(omega2,'s',mode)
         call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1,tl1)
-        call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,lock_outside,debug=.true.)
+        call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,lock_outside)
       endif
 
 
@@ -2727,6 +2728,12 @@ contains
      !Setting transformation variables for each rank
      !**********************************************
      call mo_work_dist(nv*no,fai,tl)
+     !do i = 0 , infpar%lg_nodtot - 1
+     !  if(i == infpar%lg_mynum)then
+     !    print *,i,":",nv,no,nv*no,tl
+     !  endif
+     !  call lsmpi_barrier(infpar%lg_comm)
+     !enddo
 
      tlov  = int((i8*tl)*no*nv,kind=8)
 
@@ -2761,9 +2768,6 @@ contains
      !calculate doubles C term
      !*************************
 
-#ifdef VAR_MPI     
-     startt=MPI_wtime()
-#endif
      !Reorder gvvoo [a c k i] -> goovv [a i c k]
      if(s==4)then
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w2)
@@ -2776,7 +2780,7 @@ contains
 #ifdef VAR_MPI
        if(lock_outside)then
          call arr_lock_wins(gvvoo,'s',mode)
-         call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,lock_outside,debug=.true.)
+         call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,lock_outside)
          call arr_unlock_wins(gvvoo,.true.)
        else
          call array_gather_tilesinfort(gvvoo,w1,int((i8*no)*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
@@ -2799,14 +2803,7 @@ contains
        endif
 #endif
      endif
-#ifdef VAR_MPI     
-     stopp=MPI_wtime()
-     write (*,*) infpar%lg_mynum,"comm 1:",stopp - startt
-#endif
 
-#ifdef VAR_MPI     
-     startt=MPI_wtime()
-#endif
      !SCHEME 2
      !Reorder govov [k d l c] -> govov [d l c k]
      if(s==2.and.lock_outside)then
@@ -2830,7 +2827,7 @@ contains
 #ifdef VAR_MPI
        if(lock_outside)then
          call arr_lock_wins(t2,'s',mode)
-         call array_two_dim_1batch(t2,[1,4,2,3],'g',w3,2,fai,tl,lock_outside,debug=.true.)
+         call array_two_dim_1batch(t2,[1,4,2,3],'g',w3,2,fai,tl,lock_outside)
          call arr_unlock_wins(t2,.true.)
        else
          call array_gather_tilesinfort(t2,w1,o2v2,infpar%master,[1,4,2,3])
@@ -2853,15 +2850,7 @@ contains
        endif
 #endif
      endif
-#ifdef VAR_MPI     
-     stopp=MPI_wtime()
-     write (*,*) infpar%lg_mynum,"comm 2:",stopp - startt
-#endif
 
-   
-#ifdef VAR_MPI     
-     startt=MPI_wtime()
-#endif
      !stop 0
      !SCHEME 4 AND 3 because of w1 being buffer before
      !Reorder govov [k d l c] -> govov [d l c k]
@@ -2873,31 +2862,17 @@ contains
        call ls_mpibcast(w1,o2v2,infpar%master,infpar%lg_comm)
 #endif
      endif
-#ifdef VAR_MPI     
-     stopp=MPI_wtime()
-     write (*,*) infpar%lg_mynum,"sort 1:",stopp - startt
-#endif
-#ifdef VAR_MPI     
-     startt=MPI_wtime()
-#endif
      
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 1         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !(-0.5) * t [a i d l] * govov [d l c k] + goovv [a i c k] = C [a i c k]
      call dgemm('n','n',tl,no*nv,no*nv,-0.5E0_realk,w3(faif),lead,w1,no*nv,1.0E0_realk,w2(faif),lead)
-#ifdef VAR_MPI     
-     stopp=MPI_wtime()
-     write (*,*) infpar%lg_mynum,"gemm 1:",stopp - startt
-#endif
 
 
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 2         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef VAR_MPI     
-     startt=MPI_wtime()
-#endif
      !(-1) * C [a i c k] * t [c k b j] = preOmC [a i b j]
      if(s==4)then
        w1=0.0E0_realk
@@ -2917,19 +2892,11 @@ contains
        call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w1,no*nv,0.0E0_realk,w3,lead)
 #endif
      endif
-#ifdef VAR_MPI     
-     stopp=MPI_wtime()
-     write (*,*) infpar%lg_mynum,"gemm 2:",stopp - startt
-#endif
-
 
      
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       Omega update           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef VAR_MPI     
-     startt=MPI_wtime()
-#endif
      if(s==3.or.s==4)then
        !contribution 1: 0.5*preOmC [a i b j] -> =+ Omega [a b i j]
        call array_reorder_4d(0.5E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
@@ -2938,21 +2905,15 @@ contains
      elseif(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(omega2,'s',mode)
-       call array_two_dim_1batch(omega2,[1,3,4,2],'a',w3,2,fai,tl,lock_outside,debug=.true.)
+       call array_two_dim_1batch(omega2,[1,3,4,2],'a',w3,2,fai,tl,lock_outside)
        if(lock_outside)call arr_unlock_wins(omega2,.true.)
        if(lock_outside)call arr_lock_wins(omega2,'s',mode)
        call dcopy(tlov,w3,1,w2,1)
        call dscal(tlov,0.5E0_realk,w2,1)
-       call array_two_dim_1batch(omega2,[1,3,2,4],'a',w2,2,fai,tl,lock_outside,debug=.true.)
+       call array_two_dim_1batch(omega2,[1,3,2,4],'a',w2,2,fai,tl,lock_outside)
        if(lock_outside)call arr_unlock_wins(omega2,.true.)
 #endif
      endif
-#ifdef VAR_MPI     
-     stopp=MPI_wtime()
-     write (*,*) infpar%lg_mynum,"upda 2:",stopp - startt
-#endif
-
-
 
 
 
@@ -2977,8 +2938,8 @@ contains
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(gvoov,'s',mode)
        if(lock_outside)call arr_lock_wins(gvvoo,'s',mode)
-       call array_two_dim_1batch(gvoov,[1,4,2,3],'g',w2,2,fai,tl,lock_outside,debug=.true.)
-       call array_two_dim_1batch(gvvoo,[1,3,2,4],'g',w3,2,fai,tl,lock_outside,debug=.true.)
+       call array_two_dim_1batch(gvoov,[1,4,2,3],'g',w2,2,fai,tl,lock_outside)
+       call array_two_dim_1batch(gvvoo,[1,3,2,4],'g',w3,2,fai,tl,lock_outside)
        if(lock_outside)call arr_unlock_wins(gvoov,.true.)
        !write (msg,*),infpar%lg_mynum,"w2 D"
        !call print_norm(w2,int(tl*no*nv,kind=8),msg)
@@ -3014,7 +2975,7 @@ contains
      elseif(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(u2,'s',mode)
-       call array_two_dim_1batch(u2,[2,3,4,1],'g',w3,2,fai,tl,lock_outside,debug=.true.)
+       call array_two_dim_1batch(u2,[2,3,4,1],'g',w3,2,fai,tl,lock_outside)
        if(lock_outside)call arr_unlock_wins(u2,.true.)
        !write (msg,*),infpar%lg_mynum,"w3 D2"
        !call print_norm(w3,int(tl*no*nv,kind=8),msg)
@@ -3067,7 +3028,7 @@ contains
      elseif(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(omega2,'s',mode)
-       call array_two_dim_1batch(omega2,[1,3,2,4],'a',w3,2,fai,tl,lock_outside,debug=.true.)
+       call array_two_dim_1batch(omega2,[1,3,2,4],'a',w3,2,fai,tl,lock_outside)
        if(lock_outside)call arr_unlock_wins(omega2,.true.)
 #endif
      endif
@@ -3134,7 +3095,7 @@ contains
 #ifdef VAR_MPI
       call mem_alloc(w2,tl*no*no)
       if(lock_outside)call arr_lock_wins(t2,'s',mode)
-      call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,lock_outside,debug=.true.)
+      call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,lock_outside)
       if(lock_outside)call arr_unlock_wins(t2,.true.)
 
       w1=0.0E0_realk
@@ -3181,7 +3142,7 @@ contains
     elseif(s==2)then
 #ifdef VAR_MPI
       if(lock_outside)call arr_lock_wins(om2,'s',mode)
-      call array_two_dim_1batch(om2,[1,2,3,4],'a',w1,2,1,nv*nv,lock_outside,debug=.true.)
+      call array_two_dim_1batch(om2,[1,2,3,4],'a',w1,2,1,nv*nv,lock_outside)
 #endif
     endif
   end subroutine get_B22_contrib_mo
