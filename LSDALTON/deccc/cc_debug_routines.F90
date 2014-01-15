@@ -732,6 +732,7 @@ module cc_debug_routines_module
            !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !else
 #ifdef VAR_MPI
+              write(*,*) 'before residualpar'
              call RPA_residualpar(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
 #else
              call RPA_residualdeb(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
@@ -3050,6 +3051,9 @@ module cc_debug_routines_module
 
        if (ccmodel == MODEL_RPA) then
 
+#ifdef VAR_MPI
+    call lsmpi_barrier(infpar%lg_comm)
+#endif
          call gao_to_g_CKDL(gmo, gao, Co,Cv, nbas,nocc,nvir, ntot, AlphaStart, dimAlpha, &
            & GammaStart, dimGamma, P_sta, dimP, Q_sta, dimQ)
 
