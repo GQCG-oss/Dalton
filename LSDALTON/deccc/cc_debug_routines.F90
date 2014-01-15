@@ -5269,6 +5269,35 @@ module cc_debug_routines_module
        endif
     enddo BatchAlpha
     enddo BatchGamma
+
+    ! Free integral stuff
+    ! *******************
+    nullify(Mylsitem%setting%LST_GAB_LHS)
+    nullify(Mylsitem%setting%LST_GAB_RHS)
+    call free_decscreen(DECSCREEN)
+
+    ! Free gamma stuff
+    call mem_dealloc(orb2batchGamma)
+    call mem_dealloc(batchdimGamma)
+    call mem_dealloc(batchsizeGamma)
+    call mem_dealloc(batchindexGamma)
+    do i=1,nbatchesGamma
+       call mem_dealloc(batch2orbGamma(i)%orbindex)
+       batch2orbGamma(i)%orbindex => null()
+    end do
+    call mem_dealloc(batch2orbGamma)
+
+    ! Free alpha stuff
+    call mem_dealloc(orb2batchAlpha)
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchsizeAlpha)
+    call mem_dealloc(batchindexAlpha)
+    do i=1,nbatchesAlpha
+       call mem_dealloc(batch2orbAlpha(i)%orbindex)
+       batch2orbAlpha(i)%orbindex => null()
+    end do
+    call mem_dealloc(batch2orbAlpha)
+
     call mem_dealloc( w1 )
 
 
