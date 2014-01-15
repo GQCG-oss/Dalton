@@ -957,6 +957,8 @@ C
 C
 C     Local variables:
 C
+      INTEGER IG
+      DIMENSION GT3(MZYVAR(1)), GX2BC(MZYVAR(1)), GX2CB(MZYVAR(1))
       DIMENSION HYPVAL(MXQROP), MJWOP(2,MAXWOP,8)
       LOGICAL   DIPLEN, DOCAL, FOUND, CONV, DFTADX
 C
@@ -1249,6 +1251,8 @@ C
      *                            -FREQB,-FREQC,XINDX,
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
      &                           CMO,FC,FV)
+                              CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),
+     &                        1,GT3,1)
                               IF (E3TEST) THEN
                                  CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),1,
      *                                      WRK(1),1)
@@ -1372,8 +1376,8 @@ C
      *                              UDV,PV,
      *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
-
-                           WRITE(LUPRI,*) 'ignat'
+                           CALL DCOPY(MZYVAR(MSYMA),WRK(KB2C),
+     *                     1,GX2BC,1) 
                            DO 920 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1480,6 +1484,9 @@ C
      *                           UDV,PV,
      *                           CQRLB(MSYMC,ICOP),MSYMC,IRANKC,
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
+
+                           CALL DCOPY(MZYVAR(MSYMA),WRK(KC2B),
+     *                     1,GX2CB,1) 
                            DO 930 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1531,6 +1538,26 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   930                      CONTINUE
+                           WRITE(LUPRI,*) 'ignat'
+                           WRITE(LUPRI,*) 'MZYVAR(MSYMA)'
+                           WRITE(LUPRI,*) MZYVAR(MSYMA)
+                           WRITE(LUPRI,*) 'Starting do loop for all 3'
+                           DO IG = 1, MZYVAR(MSYMA)
+                           WRITE(LUPRI,*) GT3(IG),
+     *                     GX2BC(IG),GX2CB(IG)
+                           END DO
+                             
+C add X2init both permutation to gt3, which is the right hand side to
+C compute in CRLRV3
+                           CALL DAXPY( MZYVAR(MSYMA),1, GX2BC,1
+     &                     GX2CB,1)
+                           CALL DAXPY( MZYVAR(MSYMA),1, GX2CB,1
+     &                     GT3,1)
+
+                           CALL CRLRV3( BQRLB(MSYMB,IBOP),
+                           CQRLB(MSYMC,ICOP), FREQB, FREQC,
+                           CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
+                           XINDX, WRK, LWRK)
 C
 C A2TEST
 C
