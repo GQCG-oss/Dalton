@@ -54,7 +54,7 @@ set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_t2f.F90
     )
 if(ENABLE_OPENACC)
-    set(MANUAL_REORDERING_SOURCES
+    set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
         ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_acc_reord.F90
         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_acc_reord.F90
 #        ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_acc_reord.F90

@@ -17,20 +17,20 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > LSDALTON_ethane_dft_disp.info <<'%EOF%'
+cat > LSDALTON_ethane_dft_D2disp.info <<'%EOF%'
    Ethane D-BLYP
    -------------
    Molecule:         Ethane
    Wave Function:    D-BLYP / 6-31G
    Test Purpose:     Test energy and gradient contributions
-                     with empirical dispersion correction
+                     with empirical DFT-D2 dispersion correction
                      
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > LSDALTON_ethane_dft_disp.mol <<'%EOF%'
+cat > LSDALTON_ethane_dft_D2disp.mol <<'%EOF%'
 BASIS
 6-31G
 D-BLYP energy and gradient
@@ -51,12 +51,12 @@ H     -2.1888617992     -1.9457507963     0.0000000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > LSDALTON_ethane_dft_disp.dal <<'%EOF%'
+cat > LSDALTON_ethane_dft_D2disp.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT
  BLYP
 *DFT INPUT
-.DISPER
+.DFT-D2
 .GRID TYPE
  BECKEORIG LMG
 .RADINT
@@ -83,8 +83,8 @@ VTIGHT
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > LSDALTON_ethane_dft_disp.check
-cat >> LSDALTON_ethane_dft_disp.check <<'%EOF%'
+echo $CHECK_SHELL > LSDALTON_ethane_dft_D2disp.check
+cat >> LSDALTON_ethane_dft_D2disp.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
