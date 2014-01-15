@@ -5455,6 +5455,7 @@ CONTAINS
      implicit none
      type(matrix),intent(in)    :: D     !level 3 matrix input 
      type(matrix),intent(inout) :: D2 !level 2 matrix input 
+     type(matrix)               :: D2purify !level 2 McWeeny purified matrix
      type(lssetting) :: setting
      integer :: n2,n3,AO3,AO2,lupri,luerr
      logical :: McWeeny,GCAO2,GCAO3
@@ -5475,11 +5476,17 @@ CONTAINS
      IF (McWeeny) THEN
        CALL mat_init(S22,n2,n2)
        CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-       CALL McWeeney_purify(S22,D2,purify_failed)
+       CALL mat_init(D2purify,n2,n2)
+       CALL mat_assign(D2purify,D2)
+       CALL McWeeney_purify(S22,D2purify,purify_failed)
        IF (purify_failed) THEN
-         CALL LSQUIT('McWeeney_purify failed in transform_D3_to_D2',-1)
+         write(lupri,'(1X,A)') 'McWeeny purification failed for ADMM D2 matrix- reverting to the non-purified D2'
+       ELSE
+         write(lupri,'(1X,A)') 'McWeeny purified ADMM D2 matrix'
+         CALL mat_assign(D2,D2purify)
        ENDIF
        CALL mat_free(S22)
+       CALL mat_free(D2purify)
      ENDIF
       CALL mat_free(T23)
       CALL mat_free(S23)
