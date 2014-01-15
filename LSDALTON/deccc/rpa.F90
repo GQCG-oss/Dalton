@@ -459,9 +459,9 @@ contains
      enddo
     enddo
 
+    write(*,*) 'JOHANNES PAR addres'
     call RPA_residual_addpar(omega2,Sckdl,gmo,noc,nvir)
 
-    write(*,*) 'JOHANNES PAR res'
     ! MPI: here you should start the slaves!!
 
     !call lsmpi_barrier(infpar%lg_comm)
@@ -604,10 +604,6 @@ contains
 !#endif
 
 
-#ifdef VAR_MPI
-    call lsmpi_barrier(infpar%lg_comm)
-#endif
-
     call mo_work_dist(nvirt*nocc,fai,tl)
     !call mem_alloc(w2,tl*nocc*nvirt)
 !#ifdef VAR_MPI
@@ -699,15 +695,15 @@ contains
     call dgemm('n','n',tl,dim1,dim1, &
          2.0E0_realk,w3,tl,w4,dim1,0.0E0_realk,omegw,tl)
 
-#ifdef VAR_MPI
+!#ifdef VAR_MPI
 !    write(msg,*) 'Norm of omegw',infpar%lg_mynum
-    call sleep(1)
-    call lsmpi_barrier(infpar%lg_comm)
+    !call sleep(1)
+    !call lsmpi_barrier(infpar%lg_comm)
 !    call print_norm(omegw,i8*tl*nvirt*nocc,msg)
-    call sleep(1)
-    call lsmpi_barrier(infpar%lg_comm)
+    !call sleep(1)
+    !call lsmpi_barrier(infpar%lg_comm)
     !stop
-#endif
+!#endif
     
 
     call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
@@ -716,11 +712,11 @@ contains
   !  write(*,*) 'checkpoint 2',infpar%lg_mynum
    ! if(master) write(*,*) 'omegaw1'
    ! if(master) write(*,*) omegaw1%elm4
-    call sleep(1)
-    call lsmpi_barrier(infpar%lg_comm)
+    !call sleep(1)
+    !call lsmpi_barrier(infpar%lg_comm)
 !    call print_norm(omegaw1,msg)
-    call sleep(1)
-    call lsmpi_barrier(infpar%lg_comm)
+    !call sleep(1)
+    !call lsmpi_barrier(infpar%lg_comm)
     !stop
 #endif
 
