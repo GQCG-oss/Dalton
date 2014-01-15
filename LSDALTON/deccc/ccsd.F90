@@ -2728,12 +2728,12 @@ contains
      !Setting transformation variables for each rank
      !**********************************************
      call mo_work_dist(nv*no,fai,tl)
-     do i = 0 , infpar%lg_nodtot - 1
-       if(i == infpar%lg_mynum)then
-         print *,i,":",nv,no,nv*no,tl
-       endif
-       call lsmpi_barrier(infpar%lg_comm)
-     enddo
+     !do i = 0 , infpar%lg_nodtot - 1
+     !  if(i == infpar%lg_mynum)then
+     !    print *,i,":",nv,no,nv*no,tl
+     !  endif
+     !  call lsmpi_barrier(infpar%lg_comm)
+     !enddo
 
      tlov  = int((i8*tl)*no*nv,kind=8)
 
