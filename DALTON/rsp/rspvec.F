@@ -1372,6 +1372,8 @@ C
      *                              UDV,PV,
      *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
+
+                           WRITE(LUPRI,*) 'ignat'
                            DO 920 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
