@@ -928,6 +928,7 @@ C
 C PURPOSE:
 C CALCULATION OF FIRST HYPERPOLARIZABILITIES AND RELATED PROPERTIES
 C
+      INTEGER     IG
       CHARACTER*1 ALABP, BLABP, CLABP
       CHARACTER*8 BLANK, LABEL
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
@@ -1263,7 +1264,6 @@ C
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
      &                           CMO,FC,FV)
 
-                              !ignat section
 C Save results from T3DRV in E3VEC for later equation solving
                               WRITE(LUPRI,*) 'ignat'
                               CALL WRTRSP(LUE3VEC, MZYVAR(MSYMA),
@@ -1512,8 +1512,8 @@ C
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
 C Save from X2INIT for later storing, permutated case switch B and C
                            CALL WRTRSP(LUX2VEC, MZYVAR(MSYMA),
-     *                     WRK(KB2C),
-     *                     CQRLB(MSYMB,IBOP), BQRLB(MSYMC,ICOP),
+     *                     WRK(KC2B),
+     *                     CQRLB(MSYMC,ICOP), BQRLB(MSYMB,IBOP),
      *                     FREQ2, FREQ1, KSYMOP,
      *                     KSYMOP, D0, ANTSYM)
 
@@ -1569,6 +1569,39 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   930                      CONTINUE
+
+C Read in E3VEC and X2VEC using modified REARSP subroutine, and solve
+C new differential equations
+                           !E3VEC first
+                           CALL READE3(LUE3VEC, MZYVAR(MSYMA),
+     *                     WRK(KX3WRK), BQRLB(MSYMB,IBOP),
+     *                     CQRLB(MSYMC,COP),
+     *                     FREQ1, FREQ2, KSYMOP,KSYMOP, D0, ANTSYM)
+
+!                           CALL READX2(LUX2VEC, MZYVAR(MSYMA),
+!     *                     WRK(KB2C), BQRLB(MSYMB,IBOP),
+!     *                     CQRLB(MSYMC,ICOP),
+!     *                     FREQ1, FREQ2, KSYMOP,KSYMOP, D0, ANTSYM,
+!     *                     .TRUE.)
+
+!                           CALL READX2(LUX2VEC, MZYVAR(MSYMA),
+!     *                     WRK(KC2B), CQRLB(MSYMC,ICOP),
+!     *                     BQRLB(MSYMB,IBOP),
+!     *                     FREQ2, FREQ1, KSYMOP,KSYMOP, D0, ANTSYM,
+!     *                     .FALSE.)
+
+                           WRITE(LUPRI,*) 'Test printing out whole A'
+                           WRITE(LUPRI,*) 'Len of MSYMA:',MZYVAR(MSYMA)
+                           !DO IG = 1 , MZYVAR(MSYMA)
+                           !WRITE(LUPRI,*) WRK(KX3WRK + IG -1)
+                           !END DO
+!                           CALL X2INIT(1,MZYVAR(MSYMA),MZYVAR(MSYMC),
+!     *                              MSYMA,ISPINA,MSYMC,ISPINC,
+!     *                              WRK(KAVEC),VECC,WRK(KB2C),XINDX,
+!     *                              UDV,PV,
+!     *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
+!     *                              CMO,MJWOP,WRK(KFREE),LFREE)
+C Save results from X2INIT for later storing quadratic repsonce vectors
 C
 C A2TEST
 C
