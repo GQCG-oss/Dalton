@@ -1546,18 +1546,27 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                            WRITE(LUPRI,*) GT3(IG),
      *                     GX2BC(IG),GX2CB(IG)
                            END DO
-                             
-C add X2init both permutation to gt3, which is the right hand side to
-C compute in CRLRV3
-                           CALL DAXPY( MZYVAR(MSYMA),1, GX2BC,1
-     &                     GX2CB,1)
-                           CALL DAXPY( MZYVAR(MSYMA),1, GX2CB,1
-     &                     GT3,1)
+C add X2init both permutation to GT3
+                           CALL DAXPY( MZYVAR(MSYMA),1.0D0, GX2BC,1,
+     *                     GX2CB,1)
+                           CALL DAXPY( MZYVAR(MSYMA),1.0D0, GX2CB,1,
+     *                     GT3,1)
 
-                           CALL CRLRV3( BQRLB(MSYMB,IBOP),
-                           CQRLB(MSYMC,ICOP), FREQB, FREQC,
-                           CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
-                           XINDX, WRK, LWRK)
+                           !Put right hand in WRK beginning
+                           DO IG = 1, MZYVAR(MSYMA)
+                           WRK(IG) = GT3(IG)
+                           END DO
+
+                           !Allocate new WRK array for CRLRV3
+                           KFREE = KAVEC + MZYVAR(MSYMA)
+                           KFREE = KAVEC
+                           LFREE = LWRK - KFREE + 1
+
+                           CALL CRLRV3( BQRLB(MSYMB, IBOP),
+     *                     CQRLB(MSYMC,ICOP), FREQB, FREQC,
+     *                     CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
+     *                     XINDX, MJWOP, WRK(1 + MZYVAR(MSYMA)),
+     *                     LWRK )
 C
 C A2TEST
 C
