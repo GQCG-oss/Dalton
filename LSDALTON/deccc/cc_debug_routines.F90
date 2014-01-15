@@ -4997,7 +4997,7 @@ module cc_debug_routines_module
     integer, pointer :: s_idx(:,:,:), s_nidx(:)
     integer :: pno,pno1,pno2,pnv,pnv1,pnv2, k, l, nidx1, nidx2, spacemax
     logical :: skiptrafo,skiptrafo2,save_gvvvv_is,with_screening,cyc,use_triangular
-    type(matrix) :: iFock, Dens
+    real(realk), pointer :: iFock(:,:), Dens(:,:)
     integer(kind=8) :: maxsize, myload
     integer :: pair,paircontribs,paircontrib(2,2)
     integer :: order1(4)
@@ -5249,8 +5249,8 @@ module cc_debug_routines_module
        call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
           & Mylsitem%setting,w1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
           & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,INTSPEC,fullRHS)
+       
        w3 = w1
-
        !gvvvv
        call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xv,nv,yv,nv,w2)
        call dcopy(nv**4,w1,1,gvvvv,1)
@@ -5344,31 +5344,33 @@ module cc_debug_routines_module
     !!!!!!!!!!!!!!!!!!!
 
     !allocate the density matrix
-    call mat_init(iFock,nb,nb)
-    call mat_init(Dens,nb,nb)
+    call mem_alloc(iFock,nb,nb)
+    call mem_alloc(Dens,nb,nb)
     !calculate inactive fock matrix in ao basis
-    call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens%elms,nb)
-    call mat_zero(iFock)
-    call dec_fock_transformation(iFock,Dens,MyLsItem,.false.)
+    call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens,nb)
+    iFock = 0.0E0_realk
+    call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
+    & Dens,.false.,iFock)
+    !use dens as temporay array 
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-         & Dens%elms,nb,nb,AORdefault,AORdefault)
+         & Dens,nb,nb,AORdefault,AORdefault)
     ! Add one- and two-electron contributions to Fock matrix
-    call daxpy(nb**2,1.0E0_realk,Dens%elms,1,iFock%elms,1)
-    call daxpy(nb**2,1.0E0_realk,ifo,1,iFock%elms,1)
+    call daxpy(nb**2,1.0E0_realk,Dens,1,iFock,1)
+    call daxpy(nb**2,1.0E0_realk,ifo,1,iFock,1)
     !Free the density matrix
-    call mat_free(Dens)
+    call mem_dealloc(Dens)
     !Transform inactive Fock matrix into the different mo subspaces
     ! -> Foo
-    call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1,no)
+    call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock,nb,0.0E0_realk,w1,no)
     call dgemm('n','n',no,no,nb,1.0E0_realk,w1,no,yo,nb,0.0E0_realk,oof,no)
     ! -> Fov
     call dgemm('n','n',no,nv,nb,1.0E0_realk,w1,no,yv,nb,0.0E0_realk,ovf,no)
     ! -> Fvo
-    call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock%elms,nb,0.0E0_realk,w1,nv)
+    call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock,nb,0.0E0_realk,w1,nv)
     call dgemm('n','n',nv,no,nb,1.0E0_realk,w1,nv,yo,nb,0.0E0_realk,vof,nv)
     ! -> Fvv
     call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1,nv,yv,nb,0.0E0_realk,vvf,nv)
-    call mat_free(iFock)
+    call mem_dealloc(iFock)
 
     
     !!DEBUG: A2 term
