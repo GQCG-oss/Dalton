@@ -2167,20 +2167,20 @@ contains
        call mem_dealloc(fragment%Fac)
        fragment%Fac => null()
     end if
-    
-    if(associated(fragment%Fpq)) then
-       call mem_dealloc(fragment%Fpq)
-       fragment%Fpq => null()
+
+    if(associated(fragment%Frm)) then
+       call mem_dealloc(fragment%Frm)
+       fragment%Frm => null()
+    end if
+
+    if(associated(fragment%Fcp)) then
+       call mem_dealloc(fragment%Fcp)
+       fragment%Fcp => null()
     end if
     
     if(associated(fragment%Fij)) then
        call mem_dealloc(fragment%Fij)
        fragment%Fij => null()
-    end if
-    
-    if(associated(fragment%Fmn)) then
-       call mem_dealloc(fragment%Fmn)
-       fragment%Fmn => null()
     end if
     
   end subroutine atomic_fragment_free_f12

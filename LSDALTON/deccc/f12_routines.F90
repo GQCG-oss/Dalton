@@ -32,7 +32,7 @@ contains
   
   !> Needs documentation
   subroutine get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-       & nocc,noccfull,nvirt,ncabs,HJir_real,Krr_real,Frr_real,Fac_real,Fpp_real,Fii_real,Fmm_real,Frm_real,Fcp_real)
+       & nocc,noccfull,nvirt,ncabs,HJir_real,Krr_real,Frr_real,Fac_real,Fii_real,Frm_real,Fcp_real)
 
     implicit none
     !> Fragmet molecule info
@@ -46,9 +46,7 @@ contains
     real(realk), intent(inout) :: Krr_real(ncabsAO,ncabsAO)
     real(realk), intent(inout) :: Frr_real(ncabsAO,ncabsAO)
     real(realk), intent(inout) :: Fac_real(nvirt,ncabs)
-    real(realk), intent(inout) :: Fpp_real(nbasis,nbasis)
     real(realk), intent(inout) :: Fii_real(nocc,nocc)
-    real(realk), intent(inout) :: Fmm_real(nocc,nocc)
     real(realk), intent(inout) :: Frm_real(ncabsAO,nocc)
     real(realk), intent(inout) :: Fcp_real(ncabs,nbasis)
 
@@ -56,9 +54,7 @@ contains
     type(matrix) :: Krr
     type(matrix) :: Frr
     type(matrix) :: Fac
-    type(matrix) :: Fpp
     type(matrix) :: Fii
-    type(matrix) :: Fmm
     type(matrix) :: Frm
     type(matrix) :: Fcp
 
@@ -117,26 +113,12 @@ contains
     call mat_init(Fcc,nbasis,nbasis)
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')
 
-    !> Fpp
-    call mat_init(Fpp,nbasis,nbasis)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'pp',Fcc,Fpp)
-    call mat_to_full(Fpp,1.0E0_realk,Fpp_real)
-    call mat_free(Fpp)
-    
     !> Fii 
     call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co, MyMolecule%Cv,'ii',Fcc,Fii)
     call mat_to_full(Fii,1.0E0_realk,Fii_real)
     call mat_free(Fii)
-
-    !> Fmm
-    call mat_init(Fmm,noccfull,noccfull)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'mm',Fcc,Fmm)
-    call mat_to_full(Fmm,1.0E0_realk,Fmm_real)
-    call mat_free(Fmm)
 
     !> Free temp Fcc
     call mat_free(Fcc)
@@ -282,10 +264,10 @@ contains
     type(matrix) :: Krr
     type(matrix) :: Frr
     type(matrix) :: Frc
-    type(matrix) :: Fpp
-    type(matrix) :: Fmm
     type(matrix) :: Frm
     type(matrix) :: Fcp
+    type(matrix) :: Fpp
+    type(matrix) :: Fmm
     type(matrix) :: Fii
     type(matrix) :: Fac
 
@@ -293,24 +275,22 @@ contains
     call mat_free(Krr)
     call mat_free(Frr)
     call mat_free(Fac)
-    call mat_free(Fpp)
     call mat_free(Fii)
+    call mat_free(Fpp)
     call mat_free(Fmm)
     call mat_free(Frm)
     call mat_free(Fcp)
 
   end subroutine free_F12_mixed_MO_Matrices
 
-  subroutine free_F12_mixed_MO_Matrices_real(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+  subroutine free_F12_mixed_MO_Matrices_real(HJir,Krr,Frr,Fac,Fii,Frm,Fcp)
 
     implicit none  
     real(realk), pointer :: HJir(:,:) 
     real(realk), pointer :: Krr(:,:)
     real(realk), pointer :: Frr(:,:)
     real(realk), pointer :: Fac(:,:)
-    real(realk), pointer :: Fpp(:,:)
     real(realk), pointer :: Fii(:,:)
-    real(realk), pointer :: Fmm(:,:)
     real(realk), pointer :: Frm(:,:)
     real(realk), pointer :: Fcp(:,:)
 
@@ -318,9 +298,7 @@ contains
     call mem_dealloc(Krr)
     call mem_dealloc(Frr)
     call mem_dealloc(Fac)
-    call mem_dealloc(Fpp)
     call mem_dealloc(Fii)
-    call mem_dealloc(Fmm)
     call mem_dealloc(Frm)
     call mem_dealloc(Fcp)
 

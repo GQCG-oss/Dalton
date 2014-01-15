@@ -281,7 +281,7 @@ contains
     real(realk),pointer :: Bjiij_debug(:,:)
 
     integer :: nbasis,ncabs,nocc,nvirt,I,A,B,J,noccfull,ncabsAO
-    integer :: l,m,p,q,c
+    integer :: l,m,p,q,c,r
     real(realk) :: tmp, V3energy
 
     real(realk) :: eps
@@ -571,10 +571,12 @@ contains
           print *, '(B5 Term):'
           print *,'-----------------------------------------'
           print *,'norm2(Girjm): ', norm2(Girjm)
+          print *,'norm2(Grimj): ', norm2(Grimj)
           print *,'-----------------------------------------'
           print *, '(B6 Term):'
           print *,'-----------------------------------------'
           print *,'norm2(Gipja): ', norm2(Gipja)
+          print *,'norm2(Gpiaj): ', norm2(Gpiaj)
           print *,'-----------------------------------------'
           print *, '(B7 Term):'
           print *,'-----------------------------------------'
@@ -611,6 +613,39 @@ contains
           print *, "norm2(Fcp)", norm2(Fcp%elms)
           print *,'-----------------------------------------' 
 
+!!$          print *, '----------------------------------------'
+!!$          print *, '          B6ijkl - Terms              '   
+!!$          print *, '----------------------------------------'
+!!$          do i=1, nocc
+!!$             do j=1, nocc
+!!$                if( abs(Bijij_term6(i,j)) > 1E-10) then
+!!$                   print *, i,j,i,j, Bijij_term6(i,j)
+!!$                endif
+!!$             enddo
+!!$          enddo
+
+          
+!!$          do i=1, nocc
+!!$             do j=1, nocc
+!!$                do r=1, ncabsAO
+!!$                   do l=1, nocc
+!!$                      if(Tirjk(i,r,j,l) > 1E-10) then
+!!$                         print *, "i r j k   Tirjk",i,r,j,l,Tirjk(i,r,j,l) 
+!!$                      endif
+!!$                   enddo
+!!$                enddo
+!!$             enddo
+!!$          enddo
+             
+!!$          do i=1, nocc
+!!$             do r=1, ncabsAO
+!!$                if(hJir%elms(i,r) > 1E-10) then
+!!$                   print *, "i r hJir", hJir%elms(i,r)
+!!$                endif
+!!$             enddo
+!!$          enddo
+          
+          
        endif
 
     else

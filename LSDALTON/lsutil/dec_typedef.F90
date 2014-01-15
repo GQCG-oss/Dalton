@@ -539,10 +539,6 @@ module dec_typedef_module
      real(realk), pointer :: Frs(:,:) => null() 
      !> Virt-Cabs Fock matrix in MO basis
      real(realk), pointer :: Fac(:,:) => null() 
-     !> (Occ+virt)-(Occ+virt) Fock matrix in MO basis
-     real(realk), pointer :: Fpq(:,:) => null()
-     !> Occ-Occ Fock matrix in MO basis
-     real(realk), pointer :: Fmn(:,:) => null()
      !> Cabs ri-Occ Fock matrix in MO basis  
      real(realk), pointer :: Frm(:,:) => null()
      !> Cabs-(Occ+virt) Fock matrix in MO basis
@@ -708,10 +704,6 @@ module dec_typedef_module
      real(realk), pointer :: Frs(:,:) => null() 
      !> Virt-Cabs Fock matrix in MO basis
      real(realk), pointer :: Fac(:,:) => null() 
-     !> (Occ+virt)-(Occ+virt) Fock matrix in MO basis
-     real(realk), pointer :: Fpq(:,:) => null()
-     !> Occ-Occ Fock matrix in MO basis
-     real(realk), pointer :: Fmn(:,:) => null()
      !> Cabs ri-Occ Fock matrix in MO basis  
      real(realk), pointer :: Frm(:,:) => null()
      !> Cabs-(Occ+virt) Fock matrix in MO basis

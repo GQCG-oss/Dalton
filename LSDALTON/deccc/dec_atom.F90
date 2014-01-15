@@ -2272,28 +2272,32 @@ contains
              fragment%hJir(i,j) = MyMolecule%hJir(ix,j)
           enddo
        enddo
-      ! print *,"norm2(MyMolecule%hJir): ",norm2(MyMolecule%hJir)
-      ! print *,"norm2(fragment%hJir):   ",norm2(fragment%hJir)
 
        ! Krs
        call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
        call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
        
-       ! Frr
-!!$       call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
-!!$       call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
-!!$       print *,"norm2(MyMolecule%Frs): ",norm2(MyMolecule%Frs)
-!!$       print *,"norm2(fragment%Frs):   ",norm2(fragment%Frs)
-!!$
-!!$       ! Fac Virt AOS Partitioning ? This is not Fac(nbasis,MO virt AOS)!
-!!$       call mem_alloc(fragment%Fac, nunoccAOS, ncabsMO)
-!!$       do i=1, fragment%nunoccAOS
-!!$          ix = fragment%unoccAOSidx(i) ! This should work according to Thomas 
-!!$          fragment%Fac(i,:) = MyMolecule%Fac(ix,:)
-!!$       enddo
-!!$       print *,"norm2(MyMolecule%Fac): ",norm2(MyMolecule%Fac)
-!!$       print *,"norm2(fragment%Fac):   ",norm2(fragment%Fac)
-!!$       
+       ! Frs
+       call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
+       call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
+  
+       ! Frm
+       call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
+       do i=1, fragment%noccAOS
+          iy = fragment%occAOSidx(i) 
+          fragment%Frm(:,i) = MyMolecule%Frm(:,i)
+       enddo
+
+       ! Fcp in the order of the index (occ to virt)
+       call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
+       do i=1, fragment%noccAOS
+          iy = fragment%occAOSidx(i)  
+          fragment%Fcp(:,i) = MyMolecule%Fcp(:,i)
+       enddo
+       do i=noccAOS+1, nocvAOS
+          iy = fragment%unoccAOSidx(i)  
+          fragment%Fcp(:,i) = MyMolecule%Fcp(:,i)
+       enddo
 
     endif !F12
 

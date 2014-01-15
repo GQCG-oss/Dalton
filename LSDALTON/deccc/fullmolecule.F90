@@ -646,14 +646,6 @@ contains
        call mem_dealloc(molecule%Fac)
     end if
 
-    if(associated(molecule%Fpq)) then
-       call mem_dealloc(molecule%Fpq)
-    end if
-
-    if(associated(molecule%Fmn)) then
-       call mem_dealloc(molecule%Fmn)
-    end if
-
     if(associated(molecule%Frm)) then
        call mem_dealloc(molecule%Frm)
     end if
@@ -837,7 +829,6 @@ contains
     real(realk), pointer :: Fac(:,:) 
     real(realk), pointer :: Fpq(:,:) 
     real(realk), pointer :: Fij(:,:) 
-    real(realk), pointer :: Fmn(:,:) 
     real(realk), pointer :: Frm(:,:) 
     real(realk), pointer :: Fcp(:,:) 
 
@@ -860,15 +851,13 @@ contains
     call mem_alloc(Krs,ncabsAO,ncabsAO)
     call mem_alloc(Fac,nvirt,ncabsMO)
     call mem_alloc(Frs,ncabsAO,ncabsAO)
-    call mem_alloc(Fpq,nbasis,nbasis)
     call mem_alloc(Fij,nocc,nocc)
-    call mem_alloc(Fmn,noccfull,noccfull)
     call mem_alloc(Frm,ncabsAO,noccfull)
     call mem_alloc(Fcp,ncabsMO,nbasis)
 
     ! Constructing the F12 MO matrices from F12_routines.F90
     call get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabsMO,hJir,Krs,Frs,Fac,Fpq,Fij,Fmn,Frm,Fcp)
+         & nocc,noccfull,nvirt,ncabsMO,hJir,Krs,Frs,Fac,Fij,Frm,Fcp)
 
     !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
     call free_cabs()
@@ -878,19 +867,15 @@ contains
     call mem_alloc(MyMolecule%Krs,ncabsAO,ncabsAO)
     call mem_alloc(MyMolecule%Fac,nvirt,ncabsMO)
     call mem_alloc(MyMolecule%Frs,ncabsAO,ncabsAO)
-    call mem_alloc(MyMolecule%Fpq,nbasis,nbasis)
-    call mem_alloc(MyMolecule%Fij,nocc,nocc)
-    call mem_alloc(MyMolecule%Fmn,noccfull,noccfull)
     call mem_alloc(MyMolecule%Frm,ncabsAO,noccfull)
     call mem_alloc(MyMolecule%Fcp,ncabsMO,nbasis)
+    call mem_alloc(MyMolecule%Fij,nocc,nocc)
 
     MyMolecule%hJir = hJir
     MyMolecule%Krs  = Krs
     MyMolecule%Fac  = Fac
     MyMolecule%Frs  = Frs
-    MyMolecule%Fpq  = Fpq
     MyMolecule%Fij  = Fij
-    MyMolecule%Fmn  = Fmn
     MyMolecule%Frm  = Frm
     MyMolecule%Fcp  = Fcp
 
@@ -912,11 +897,9 @@ contains
     print *, "norm2(Krs)", norm2(MyMolecule%Krs)
     print *, "norm2(Frs)", norm2(MyMolecule%Frs)
     print *, "norm2(Fac)", norm2(MyMolecule%Fac)
-    print *, "norm2(Fpq)", norm2(MyMolecule%Fpq)
-    print *, "norm2(Fij)", norm2(MyMolecule%Fij)
-    print *, "norm2(Fmn)", norm2(MyMolecule%Fmn)
     print *, "norm2(Frm)", norm2(MyMolecule%Frm)
     print *, "norm2(Fcp)", norm2(MyMolecule%Fcp)
+    print *, "norm2(Fij)", norm2(MyMolecule%Fij)
     print *,'-----------------------------------------' 
 
     ! Mixed CABS/CABS exchange matrix
@@ -926,7 +909,7 @@ contains
     ! Mixed CABS/AO MO Fock matrix
 
     ! call free_F12_mixed_MO_Matrices(hJir,Krr,Frr,Fac,Fpp,Fij,Fmm,Frm,Fcp)
-    call free_F12_mixed_MO_Matrices_real(hJir,Krs,Frs,Fac,Fpq,Fij,Fmn,Frm,Fcp)
+    call free_F12_mixed_MO_Matrices_real(hJir,Krs,Frs,Fac,Fij,Frm,Fcp)
 
   end subroutine molecule_mo_f12
 
