@@ -2096,7 +2096,7 @@ module lspdm_tensor_operations_module
       !different parts is determined in the following
       part1 = 1
       part2 = 1
-      !if(op=='a')print *,"RETARDO1:",cons_el_rd,tl
+      !print *,infpar%lg_mynum,"RETARDO1:",cons_el_rd,tl
       if(cons_el_rd<tl)then
         cons_els = cons_el_rd
         do i = 1,min(diff_ord,2)
@@ -2111,17 +2111,21 @@ module lspdm_tensor_operations_module
             part2 = part2 * arr%tdim(i)
           endif
         enddo
+        !print *,infpar%lg_mynum,"first:",tl,arr%tdim(1), idxt(1),part1,part2
       else
         cons_els = tl
-        part1 = arr%tdim(1) - idxt(1) + 1
-        part2 = tl - (arr%tdim(1) - idxt(1) + 1)
+        
+        part1 = min(arr%tdim(1) - idxt(1) + 1,tl)
+        part2 = tl - part1
+        !print *,infpar%lg_mynum,"second:",tl,arr%tdim(1), idxt(1),part1,part2
       endif
 
       tl_max = (tl / cons_els) * cons_els
       tl_mod = mod(tl ,cons_els)
 
-      !if(op=='a')then
-      !  print *,"YAYYAYYAYYYAAAAAAYYYYYY:"
+      !do i=0,infpar%lg_nodtot-1
+      !if(i==infpar%lg_mynum)then
+      !  print *,i,"YAYYAYYAYYYAAAAAAYYYYYY:"
       !  print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
       !  print *,tl,part1,part2,tl_max,tl_mod
       !  print *,fx
@@ -2132,6 +2136,8 @@ module lspdm_tensor_operations_module
       !  print *,u_o
       !  !stop 0 
       !endif
+      !call lsmpi_barrier(infpar%lg_comm)
+      !enddo
 
 
       call ass_D1to3(fort,p_fort3,[tl,fordims(3),fordims(4)])
