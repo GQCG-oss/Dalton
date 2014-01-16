@@ -2428,6 +2428,11 @@ C
 #include "gnrinf.h"
 #include "siripc.h"
 #include "dftcom.h"
+CRF Added
+#include "inforb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+CRFend
 #ifndef VAR_LINSCA
 #include "pcmlog.h"
 #endif
@@ -2453,6 +2458,8 @@ Cef end
          EXHER  = .TRUE.
          NEWGEO = .TRUE.
          NPCMIN = .TRUE.
+CRF HERMIT might have updated the symmetry. We need to set NSYM before running SIRIUS
+         NSYM   = MAXREP + 1
       END IF
 #ifndef VAR_LINSCA
       IF (AOSAVE .AND. NEWGEO) THEN

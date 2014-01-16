@@ -279,7 +279,6 @@ set(LSUTIL_COMMON_SOURCES
     lsutil/ls_IOType.f90
     lsutil/AOType.f90
     lsutil/dec_typedef.f90
-    lsutil/grid_utilities.f90
     lsutil/MoleculeType.f90
     lsutil/ODType.f90
     lsutil/lstensorType.f90
@@ -300,6 +299,7 @@ set(LSUTIL_COMMON_SOURCES
     lsutil/LSmatrixType.f90
     lsutil/lsmatop_dense.f90
     lsutil/file-operations.f90
+    lsutil/grid_utilities.f90
     lsutil/mat3dim.f90
     lsutil/papi.f90
     lsutil/ls_math.f90

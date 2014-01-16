@@ -49,7 +49,6 @@ C
 C
       CALL QENTER('PR1INT')
 #ifdef VAR_DEBUG
-      write (lupri,*) 'DEBUG: PR1INT called with ',WORD
 #endif
 C
       NCOMP  = 0

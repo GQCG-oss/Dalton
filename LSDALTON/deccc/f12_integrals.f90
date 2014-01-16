@@ -1,7 +1,7 @@
 !> @file
 !> Author: Yang M. Wang
 !> Date: April 2013
-!> F12 integrals 
+!> Calculates the expressions for the single fragment energy and pair fragment energies for MP2F12
 
 !> General index convention:
 !> *************************
@@ -56,15 +56,27 @@ module f12_integrals_module
 
 contains
 
+  !> Brief: Gives the single fragment energy for MP2F12
+  !> Author: Yang M. Wang
+  !> Date: April 2013
   subroutine f12_single_fragment_energy(MyFragment)
     implicit none
     
+    !> Atomic fragment to be determined  (NOT pair fragment)
     type(ccatom), intent(inout) :: MyFragment
+
+    !> MO coefficient matrix for the occupied EOS
     real(realk), pointer :: CoccEOS(:,:)
+    
+    !> F12 integrals for the V_term: (gr)_ij^ij integrals
     real(realk), pointer :: gr_ijji(:,:,:,:)
 
+    !> number of AO orbitals
     integer :: number_basis
+    
+    !> number of occupied MO orbitals in EOS 
     integer :: noccEOS
+
     integer :: ix, i, j
     real(realk) :: energy
 
@@ -98,6 +110,9 @@ contains
 
   end subroutine f12_single_fragment_energy
 
+  !> Brief: Gives the pair fragment energy for MP2F12
+  !> Author: Yang M. Wang
+  !> Date: April 2013
   subroutine f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
 
     implicit none
@@ -153,14 +168,14 @@ contains
 
   end subroutine f12_pair_fragment_energy
 
-  !> \brief E21 = 2*(sum_(i) V_iiii - 0.25*sum_(i<j) 5V_ijij - Vjiij)
+  !> Brief: MP2-F12 correction for the single fragment of term V1: E_P(V1)
   !> Author: Yang M. Wang
   !> Data: April 2013
-  subroutine mp2f12_E21_single_fragment(Vijij, nocc, energy)
+  subroutine mp2f12_E21_single_fragment(gr_ijij, nocc, energy)
     implicit none
 
     real(realk),intent(out) :: energy
-    real(realk),intent(in)  :: Vijij(nocc,nocc,nocc,nocc)
+    real(realk),intent(in)  :: gr_ijij(nocc,nocc,nocc,nocc)
     integer,intent(in)      :: nocc
     !
     integer     :: i,j
@@ -168,7 +183,7 @@ contains
 
     tmp = 0E0_realk
     do i=1,nocc
-       tmp = tmp + Vijij(i,i,i,i)
+       tmp = tmp + gr_ijij(i,i,i,i)
     enddo
 
     energy = -0.5E0_realk*tmp
@@ -176,7 +191,7 @@ contains
     tmp = 0E0_realk
     do j=1,nocc
        do i=j+1,nocc
-          tmp = tmp + 5E0_realk * Vijij(i,j,j,i) - Vijij(i,j,i,j)
+          tmp = tmp + 5E0_realk * gr_ijij(i,j,j,i) - gr_ijij(i,j,i,j)
        enddo
     enddo
 
@@ -186,10 +201,10 @@ contains
   end subroutine mp2f12_E21_single_fragment
 
 
-  !> \brief E21 = 2*(sum_(i) V_iiii - 0.25*sum_(i<j) 5V_ijij - Vjiij)
+  !> Brief: MP2-F12 correction for the pair fragment of term V1: E_PQ(V1) 
   !> Author: Yang M. Wang
   !> Data: April 2013
-  subroutine mp2f12_E21_pair_fragment(Vijij, Fragment1, Fragment2, PairFragment, noccEOS, energy)
+  subroutine mp2f12_E21_pair_fragment(gr_ijij, Fragment1, Fragment2, PairFragment, noccEOS, energy)
     implicit none
 
     !> Fragment 1 in the pair fragment
@@ -201,7 +216,7 @@ contains
     !> The pair fragment energy
     real(realk),intent(out) :: energy
     !> The integrals
-    real(realk),intent(in)  :: Vijij(noccEOS,noccEOS,noccEOS,noccEOS)
+    real(realk),intent(in)  :: gr_ijij(noccEOS,noccEOS,noccEOS,noccEOS)
     !> Number of occupied MO orbitals in EOS space
     integer,intent(in)      :: noccEOS
     !
@@ -215,27 +230,23 @@ contains
     call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
 
     do i=1,noccEOS
-       do j=i+1,noccEOS
+       do j=1,noccEOS
 
           if( dopair_occ(i,j) ) then  !DoPair1and2   
-             tmp = tmp + 5E0_realk * Vijij(i,j,j,i) - Vijij(i,j,i,j)
+             tmp = tmp + 5E0_realk * gr_ijij(i,j,j,i) - gr_ijij(i,j,i,j)
           endif
 
        enddo
     enddo
 
     energy = -0.25E0_realk*tmp
-    
-    !factor 2 due to i in Q and j in P gives the same value as i in P and j in Q
-    energy = 2E0_realk*energy
 
     !Free memory
     call mem_dealloc(dopair_occ)
 
   end subroutine mp2f12_E21_pair_fragment
 
-
-  !> \brief Get <ij|gr|ij> integrals stored in the order (i,j,j,i).
+  !> Brief: Get <ij|gr|ij> integrals stored in the order (i,j,j,i).
   !> Author: Yang M. Wang
   !> Data: April 2013
   subroutine get_f12_V_gr_ijij(MySetting,nbasis,noccEOS,CoccEOS,ijji)

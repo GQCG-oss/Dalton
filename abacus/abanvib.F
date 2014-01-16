@@ -37,7 +37,7 @@ C     ************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 5)
+      PARAMETER (NTABLE = 8)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7,
      &          WORD1*7
 #include "numder.h"
@@ -46,8 +46,10 @@ C     ************************************************
 #include "cbinum.h"
 #include "abainf.h"
 #include "cbiwlk.h"
+#include "molinp.h"
 C
-      DATA TABLE /'.EFFECT','.HARM-P','.ANHA-P','.SPIN-S','.MODE A'/
+      DATA TABLE /'.EFFECT','.HARM-P','.ANHA-P','.SPIN-S','.MODE A',
+     &            '.ONLY-P','.CUBIC ','.P-BASI'/
 C
       ICHANG = 0
       WORD1 = WORD
@@ -61,7 +63,7 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GO TO (1,2,3,4,5), I
+               GO TO (1,2,3,4,5,6,7,8), I
             END IF
  200     CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -72,12 +74,12 @@ C
      *        '" not recognized in NVBINP.'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal keyword in NVBINP.')
- 1       CONTINUE
+ 1       CONTINUE  ! .EFFECT
             NUMVIB = .TRUE.
             ANALZ1 = .TRUE.
             NMORDR = MAX(NMORDR,3-NAORDR)
             GOTO 100
- 2       CONTINUE
+ 2       CONTINUE  ! .HARM-P
             NRMCRD = .TRUE.
             NPRPDR = .TRUE.
             FRSTNM = .TRUE.
@@ -85,9 +87,16 @@ C
             ANALZ1 = .TRUE.
             NMRDRP = 2
             NARDRP = 0
-            NMORDR = MAX(NMORDR,3-NAORDR)
+            NMORDR = MAX(NMORDR,3-NAORDR) ! Should be 2-NAORDR ??
             FCLASS = 'C1 '
- 3       CONTINUE
+CRF 12/11 - 12 Added GOTO that seemed to have been left out
+CRF            Also .HARM-P and .ANHA-P seems to do the same
+CRF            only .HARM-P sets symmetry to C1.
+CRF            This is somewhat counteri-intuitive and doesn't agree with manual
+CRF            Problem seems to be that there's no branch around the anharmonic
+CRF            averaging, for harmonic only
+            GOTO 100
+ 3       CONTINUE  ! .ANHA-P
             NRMCRD = .TRUE.
             NPRPDR = .TRUE.
             FRSTNM = .TRUE.
@@ -97,12 +106,53 @@ C
             NARDRP = 0
             NMORDR = MAX(NMORDR,3-NAORDR)
             GOTO 100
- 4       CONTINUE
+ 4       CONTINUE  ! .SPIN-S
             NSPNSP = .TRUE.
             GOTO 100
- 5       CONTINUE
+ 5       CONTINUE  ! .MODE A
             MDEANA = .TRUE.
             GOTO 100
+CRF 12/11 - 12 Test keywords for splitting force field from property derivatives
+ 6       CONTINUE  ! .ONLY-P
+            PREHES = .TRUE.
+            NRMCRD = .TRUE.
+            NPRPDR = .TRUE.
+            ANALZ1 = .TRUE.
+            PRPVIB = .TRUE.
+            FRSTNM = .TRUE.
+            NMRDRP = 2
+            NARDRP = 0
+            NMORDR = 2 ! Seems like we'll have to keep this at 2 for now
+            NAORDR = 0
+            PRPONL = .TRUE.
+            GOTO 100
+ 7       CONTINUE  ! .CUBIC
+            REUHES = .TRUE. ! Set this here or not?
+            NRMCRD = .TRUE.
+            ANALZ1 = .TRUE.
+            NMORDR = MAX(NMORDR,3-NAORDR)
+            NUMVIB = .TRUE. ! Needed in order to print force field
+            GOTO 100
+ 8       CONTINUE  ! .P-BASIS
+CRF This only works if basis set library is used
+            IF (.NOT. MLINE(1)(1:5) .EQ. 'BASIS') THEN
+               WRITE(LUPRI,'(/A,/A)')
+     &           '*** ERROR *** ' //
+     &           'Keyword .P-BASIS only works  when ' //
+     &           'basis set library is used.',
+     &           'The calculation can be split manually ' //
+     &           'using the .CUBIC and .ONLY-P keywords'
+               CALL QUIT('Input ERROR in NVBINP')
+            END IF
+            REUHES = .TRUE.
+            NRMCRD = .TRUE.
+            ANALZ1 = .TRUE.
+            NMORDR = MAX(NMORDR,3-NAORDR)
+            NUMVIB = .TRUE. ! Needed in order to print force field
+            PRPBAS = .TRUE.
+            READ (LUCMD,*) PRPBTX
+            GOTO 100
+CRFend
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
       ELSE
@@ -112,14 +162,31 @@ C
          CALL QUIT('Illegal prompt in NVBINP.')
       END IF
   300 CONTINUE
+CRF We save a few variables in case of PRPBAS
+      IF (PRPBAS) THEN
+         NMRDBK = NMRDRP
+         NARDBK = NARDRP
+         NMRDRP = 0 
+         NARDRP = 0
+         PRPVIB = .FALSE.
+         NPRPDR = .FALSE.
+         FRSTNM = .FALSE. 
+      END IF
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for *PROPAV section:',0)
-         WRITE (LUPRI,'(/5X,A,I4)') 'Numerical derivatives' //
+         IF (.NOT. PRPONL) THEN
+             WRITE (LUPRI,'(/5X,A,I4)') 'Numerical derivatives' //
      &             ' of energy calculated to order', NMORDR
-         WRITE (LUPRI,'(5X,A,I4,A)') 'from analytical', NAORDR,
+             WRITE (LUPRI,'(5X,A,I4,A)') 'from analytical', NAORDR,
      &                              '. derivatives'
-         WRITE (LUPRI,'(5X,A,I4)') 'Total order of differentiation:',
-     &        NAORDR+NMORDR
+             WRITE (LUPRI,'(5X,A,I4)') 'Total order of differentiation:'
+     &            , NAORDR+NMORDR
+         ELSE 
+             WRITE (LUPRI,'(5X,A)') 'Only property derivatives '//
+     &             'calculated this run'
+             WRITE (LUPRI,'(5X,A)') 'Force field must be availble '//
+     &             'from a previous calculation'
+         END IF
          IF (NUMVIB) THEN
             WRITE (LUPRI,'(5X,A)') 'Effective geometry calculated.'
          END IF
@@ -128,19 +195,30 @@ C
      &           ' properties calculated.'
             WRITE (LUPRI,'(/5X,A)') 'Vibrational averages of the ' //
      &           'following properties:'
-            IF (NSPNSP) THEN
+CRF    The NSPNSP flag controls only a few headers like this
+CRF    We should probably instead get this info from /ABAINF/: SPNSPN 
+            IF (NSPNSP) THEN 
                WRITE (LUPRI,'(5X,A)') 'Spin-spin couplings.'
             END IF
-            WRITE (LUPRI,'(/5X,A)') 'Harmonic contribution calculated.'
-            IF ((NMORDR+NAORDR).GT.2) THEN
-               WRITE (LUPRI,'(5X,A)')
-     &              'Anharmonic contribution calculated.'
-            END IF
+CRF    This doen't seem to match, how the code currently works
+C            WRITE (LUPRI,'(/5X,A)') 'Harmonic contribution calculated.'
+C            IF ((NMORDR+NAORDR).GT.2) THEN
+C               WRITE (LUPRI,'(5X,A)')
+C     &              'Anharmonic contribution calculated.'
+C            END IF
+            WRITE (LUPRI,'(5X,A)') 'Harmonic and anharmonic '//
+     &            'contributions calculated'
             WRITE (LUPRI,'(5x,A)') 'Cannot use group theory for this. '
             WRITE (LUPRI,'(5x,A)') 'Group used in calculations: ' //
      &                          FCLASS
-
          END IF
+         IF (PRPBAS) THEN
+            WRITE (LUPRI,'(5X,2A)') 'Basis set used in force field '//
+     &            'calculation: ' , TRIM (MLINE(2)) 
+            WRITE (LUPRI,'(5X,2A)') 'Basis set used in calculation '//
+     &            'of property derivatives: ', TRIM( PRPBTX )
+         END IF
+
          IF (MDEANA) THEN
             WRITE (LUPRI,'(5X,A)') 'An analysis of the vibrational ' //
      &            'modes will be performed.'
@@ -229,7 +307,8 @@ C
       DIMENSION DERIV(NDERIV), SYMCOR(NCOOR,NCOOR), FREQ(NCOOR),
      &          RNNORM(NCOOR), CSTART(NCOOR      ), WORK(LWORK)
 C
-      IF (NUMVIB) THEN
+CRF   Skip if only properties has been  calculated
+      IF (NUMVIB .AND. (.NOT. PRPONL) ) THEN
          KTDRS = 1
          KEVEC = KTDRS + NCOOR**3
          KLAST = KEVEC + NCOOR**2
@@ -890,6 +969,9 @@ C
       DIMENSION DERIV(NDERIV), SPSPDR(NCOOR,NCOOR,6,NPPDER),
      &          FREQ(NCOOR), SPSPFV(NCOOR,NCOOR,6), RNNORM(NCOOR),
      &          SYMCOR(NCOOR,NCOOR),WORK(LWORK)
+
+
+
 C
 C     *** Opening property file. ***
 C
@@ -946,6 +1028,14 @@ C
 C
 C     *** Calculating the vibrational average. ***
 C
+CRF   Test print
+      IF ( IPRINT .GE. 20 ) THEN
+        WRITE(LUPRI,*) 'Used harmonical frequencies'
+        DO I=1,NCOOR
+          WRITE(LUPRI,'(i5,f18.10)') I, FREQ(I)
+        END DO
+      END IF
+
       KHARM  = 1
       KAHRM  = KHARM  + NDIM1*NDIM2*NDIM3
       KVIBAV = KAHRM  + NDIM1*NDIM2*NDIM3
@@ -1044,7 +1134,7 @@ C
       END DO
       END DO
 C
-      IF (IPRINT.GE.20) THEN
+      IF (IPRINT.GE.2) THEN
          CALL HEADER('Function value at reference geometry',0)
          CALL PRSPSP(FUNVAL,NDIM1,NDIM2,LUPRI)
          CALL HEADER('Numerical derivatives',0)
@@ -1105,9 +1195,17 @@ C
       CALL DZERO(HARMCO,NDIM1*NDIM2*NDIM3)
       CALL DZERO(AHRMCO,NDIM1*NDIM2*NDIM3)
 C
-C     *** Arranging the force constants. ***
-C
-      CALL STTDER(FDERIV,TDER,RNNORM,NDERIV,IPRINT)
+C     *** Read or arrange the force constants. ***
+C    
+      IF (C4FORC .AND. PRPONL) THEN
+         KSORT  = 1
+         KLAST  = KSORT + NDCOOR
+         IF ( KLAST .GT. LWORK ) CALL QUIT ( 'Memory exceeded in '// 
+     &                                'RDC4CU ')
+         CALL RDC4CU(FREQ,TDER,WORK(KSORT), IPRINT)
+      ELSE
+         CALL STTDER(FDERIV,TDER,RNNORM,NDERIV,WORK,LWORK,IPRINT)
+      END IF
 C
 C     *** Analysis of the contributing modes. ***
 C
@@ -1157,7 +1255,7 @@ C
          END DO
          PFAC = -D025*TMP*RNNORM(ICOOR2)/(FREQ(ICOOR2)**D2)
 C
-         IF (IPRINT.GE.20) THEN
+         IF (IPRINT.GE.2) THEN
             WRITE (LUPRI,*) 'Prefactor for anharmonic contribution.'
             WRITE (LUPRI,'(A,I4,F8.4)') 'Coordinate:', ICOOR2, PFAC
          END IF
@@ -1298,36 +1396,73 @@ C
 C
 C
 C  /* Deck sttder */
-      SUBROUTINE STTDER(DERIV,TDER,RNNORM,NDERIV,IPRINT)
+      SUBROUTINE STTDER(DERIV,TDER,RNNORM,NDERIV,WORK,LWORK,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
+CRF   added file routine -- appears that we must include inftap.h
+#include "inftap.h"
       PARAMETER (D1=1.0D0)
 #include "trkoor.h"
 #include "numder.h"
 #include "cbinum.h"
-      DIMENSION DERIV(NDERIV), TDER(NDCOOR,NDCOOR,NDCOOR), RNNORM(NCOOR)
-C
-      DFAC = D1
-      IDERIV = 0
-      DO 100 ICOOR3 = 1, NDCOOR
-      DO 100 ICOOR2 = 1, ICOOR3
-      DO 100 ICOOR1 = 1, ICOOR2
-         IF (NRMCRD) DFAC = RNNORM(ICOOR1)*RNNORM(ICOOR2)*RNNORM(ICOOR3)
-         IDERIV = IDERIV + 1
-         TDER(ICOOR1,ICOOR2,ICOOR3) = DERIV(IDERIV)*DFAC
-         TDER(ICOOR1,ICOOR3,ICOOR2) = DERIV(IDERIV)*DFAC
-         TDER(ICOOR2,ICOOR1,ICOOR3) = DERIV(IDERIV)*DFAC
-         TDER(ICOOR2,ICOOR3,ICOOR1) = DERIV(IDERIV)*DFAC
-         TDER(ICOOR3,ICOOR1,ICOOR2) = DERIV(IDERIV)*DFAC
-         TDER(ICOOR3,ICOOR2,ICOOR1) = DERIV(IDERIV)*DFAC
- 100  CONTINUE
+      INTEGER   NDCOOT
+      DIMENSION DERIV(NDERIV), TDER(NDCOOR,NDCOOR,NDCOOR),
+     &          RNNORM(NCOOR), WORK(LWORK) 
+C     
+CRF   The work done here has already been done in ahrmvb 
+CRF   If this was a calculation of properties seperate from the calculation
+CRF   of the forcefield, we need to read it from there (and perhaps anyway)?
+
+      IF (PRPONL) THEN
+C     *** Memory for temporary array ***
+        KTEMP  = 1
+        KLAST  = KTEMP + NCOOR**3
+        IF (KLAST .GT. LWORK) 
+     &           CALL QUIT('Memory exceeded in STTDER')
+        CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',
+     &              IDUMMY, .FALSE.)
+        REWIND (LUWLK)
+        READ (LUWLK)
+        READ (LUWLK)
+        READ (LUWLK)
+        READ (LUWLK)
+        READ (LUWLK) NDCOOT, WORK(KTEMP:KLAST-1)
+        CALL GPCLOSE(LUWLK,'KEEP')
+        IF ( NDCOOT .NE. NDCOOR) 
+     &                             WRITE (LUPRI, '(A,A,A)') 
+     &                             'Check that force field in file',
+     &                             ABAWLK, 'matches current geometry'
+C     *** Store the force constants in TDER ***
+        DO 100 ICOOR1 = 1, NDCOOR
+        DO 100 ICOOR2 = 1, NDCOOR
+        DO 100 ICOOR3 = 1, NDCOOR
+           ILOC = (ICOOR1-1)*NCOOR**2 + (ICOOR2-1)*NCOOR + ICOOR3
+           TDER (ICOOR1,ICOOR2,ICOOR3) = WORK( ILOC )
+100     CONTINUE
+      ELSE
+        DFAC = D1
+        IDERIV = 0
+        DO 200 ICOOR3 = 1, NDCOOR
+        DO 200 ICOOR2 = 1, ICOOR3
+        DO 200 ICOOR1 = 1, ICOOR2
+           IF (NRMCRD) DFAC =
+     &                  RNNORM(ICOOR1)*RNNORM(ICOOR2)*RNNORM(ICOOR3)
+           IDERIV = IDERIV + 1
+           TDER(ICOOR1,ICOOR2,ICOOR3) = DERIV(IDERIV)*DFAC
+           TDER(ICOOR1,ICOOR3,ICOOR2) = DERIV(IDERIV)*DFAC
+           TDER(ICOOR2,ICOOR1,ICOOR3) = DERIV(IDERIV)*DFAC
+           TDER(ICOOR2,ICOOR3,ICOOR1) = DERIV(IDERIV)*DFAC
+           TDER(ICOOR3,ICOOR1,ICOOR2) = DERIV(IDERIV)*DFAC
+           TDER(ICOOR3,ICOOR2,ICOOR1) = DERIV(IDERIV)*DFAC
+ 200    CONTINUE
+      END IF 
 C
       IF (IPRINT.GE.20) THEN
          CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
 C
          ISTRT = 1
-         KCOL  = 6
+         KCOL  = 6 
          LAST  = MIN(NDCOOR,KCOL)
          KCOOR = NDCOOR
          NCOL  = NDCOOR/KCOL
@@ -1477,6 +1612,93 @@ C
 C
       RETURN
       END
+C
+C     /* Deck rdc4cu */
+      SUBROUTINE RDC4CU(FREQ,TDER,SORT,IPRINT)
+C     **********************************************
+C     *** Routine that reads a cubic force field ***
+C     *** from the CFOUR style "cubic" file      ***
+C     **********************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
+#include "mxcent.h"
+#include "inftap.h"
+
+#include "taymol.h"
+#include "trkoor.h"
+#include "numder.h"
+      PARAMETER (IPRTRH = 20 )
+      LOGICAL USED, CUBEXS
+      DIMENSION TDER(NDCOOR,NDCOOR,NDCOOR),
+     &          SORTAR(NCOOR-NDCOOR+1:NCOOR),
+     &          USED(NCOOR), FREQ(NCOOR)
+   
+      LUC4IF = -399 
+
+      INQUIRE (FILE='cubic',EXIST=CUBEXS)
+      IF (.NOT. CUBEXS ) CALL QUIT ('File "cubic" does not exist')      
+
+      CALL GPOPEN(LUC4IF,'cubic','OLD','SEQUENTIAL','FORMATTED',
+     &            IDUMMY, .FALSE.)
+      USED = .FALSE.
+      SORT = 0
+      CALL DZERO(TDER, NDCOOR**3) 
+
+C     *** CFOUR orders normal coordinates by increasing harmonic frequency ***
+C     *** We need to match the CFOUR indecies to the dalton ones.          ***
+
+      DO IDX = NCOOR,NCOOR-NDCOOR+1,-1
+         JTEMP  = 0
+         TMPFRQ = 0
+c     *** Find the index corresponding to the highest frequency not yet used ***
+         DO JDX = 1, NDCOOR
+            IF ( USED(JDX) .OR. (TMPFRQ .GE. FREQ(JDX) ) ) CYCLE
+            JTEMP  = JDX
+            TMPFRQ = FREQ (JDX) 
+         END DO
+         IF ( JTEMP .LE. 0 ) EXIT ! None found
+         SORTAR ( IDX ) = JTEMP 
+         USED (JTEMP)   = .TRUE.
+      END DO
+
+C     *** Read the cubic forcefield and add it to TDER ***       
+      DO 
+         READ (LUC4IF,'(3I5,F25.10)',END=100) IDX , JDX , KDX , TMPFF
+         IF ( (IDX .GT. NCOOR) .OR. (JDX .GT. NCOOR) .OR. 
+     &        (KDX .GT. NCOOR) ) CALL QUIT ('Index out of range in ' //
+     &                                'file "cubic"' )
+         PRINT *, FREQ ( SORTAR( IDX) )
+         TMPFF = - TMPFF *  SQRT( FREQ(SORTAR(IDX)) 
+     &            * FREQ(SORTAR(JDX)) * FREQ(SORTAR(KDX)) ) / XTKAYS 
+         TDER ( SORTAR(IDX), SORTAR(JDX), SORTAR(KDX ) ) = TMPFF
+         TDER ( SORTAR(IDX), SORTAR(KDX), SORTAR(JDX ) ) = TMPFF
+         TDER ( SORTAR(JDX), SORTAR(IDX), SORTAR(KDX ) ) = TMPFF
+         TDER ( SORTAR(JDX), SORTAR(KDX), SORTAR(IDX ) ) = TMPFF
+         TDER ( SORTAR(KDX), SORTAR(IDX), SORTAR(JDX ) ) = TMPFF
+         TDER ( SORTAR(KDX), SORTAR(JDX), SORTAR(IDX ) ) = TMPFF
+      END DO
+
+ 100  CONTINUE
+      CALL GPCLOSE (LUC4IF,'KEEP')
+ 
+C     *** Print the cubic forcefield ***
+      IF ( IPRINT .GE. IPRTHR ) THEN
+         CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
+         DO IDX = 1, NDCOOR
+            DO JDX = 1, NDCOOR, 6          
+               WRITE (LUPRI, '(5X,6F12.6)')  ( TDER(IDX,KDX,KDX),
+     &                KDX = JDX , MIN (NDCOOR , JDX + 5) )
+            END DO
+            WRITE (LUPRI, '(A)') '  ' 
+         END DO
+      END IF
+
+
+      RETURN
+      END !SUBROUTINE RDC4CU
+
+
 C
 C
 #ifdef NOT_USED_IN_THIS_DALTON_VERSION

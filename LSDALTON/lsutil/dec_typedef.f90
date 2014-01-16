@@ -189,8 +189,8 @@ module dec_typedef_module
 
      !> DEC Orbital treatment
      !> *********************
-     !> Assign orbitals also to H atoms (default: do not assign to H)
-     logical :: reassignHatoms
+     !> Absorb H atoms into heavy atoms during orbital assignment
+     logical :: AbsorbHatoms
      !> Fit orbital coefficients in fragment (default: true)
      logical :: FitOrbitals
      !> Threshold for simple Lowdin procedure for determining atomic extent

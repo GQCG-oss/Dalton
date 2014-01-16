@@ -184,6 +184,10 @@
       gasci_input_fci_dump = .true.
     end if
 
+    if (kw_matches(word, '.FCIDUM')) then
+      lucita_cfg_fci_dump = .true.
+    end if
+
     if (kw_matches(word, '.MAXITR')) then
       call kw_read(word, gasci_input_max_nr_dav_ci_iter)
     end if

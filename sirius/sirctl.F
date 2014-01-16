@@ -799,7 +799,8 @@ C             HFSRDFT call, we assume the HFSRDFT is done by now!)
          USEDRC  = .FALSE. ! Dirac format 2-el. integrals not needed
 
          FTRCTL = .true.
-         if(.not.gasci_input_skip_4index_trafo)then
+         if (.not.gasci_input_skip_4index_trafo) then
+
 !          integral transformation
            CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
 

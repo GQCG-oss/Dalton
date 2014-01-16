@@ -53,9 +53,8 @@ cat > fullmp2_local_f12.dal <<'%EOF%'
 TRILEVEL
 .CONVTHR
 1.0d-5
-.LCM
 **DEC
-.ccFull
+.FULL
 .MP2
 .F12
 !.canonical

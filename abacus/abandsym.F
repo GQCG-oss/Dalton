@@ -90,7 +90,7 @@ C
             N1DIME = 2*NONEDI
             N2DIME = NDEGIR
             IF ((FCLASS(1:1).EQ.'D').AND.(FCLASS(3:3).NE.'d')) THEN
-               NGORDR = NGORDR*2
+               NGORDR = 2*NGORDR
                NUMELM = 2
                N1DIME = 2*N1DIME
                N2DIME = 2*N2DIME
