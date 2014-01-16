@@ -29,6 +29,7 @@ module lucita_cfg
 
 
 ! logical block
+
   logical, public :: lucita_cfg_inactive_shell_set   =  .false.
   logical, public :: lucita_cfg_minmax_occ_gas_set   =  .false.
   logical, public :: lucita_cfg_ras1_set             =  .false.

@@ -150,7 +150,7 @@ SUBROUTINE lsdalton
   ! Also skip, if we only want to localize orbitals
   SkipHF: if( (DECinfo%doDEC .and. .not. DECinfo%doHF) .or. config%davidOrbLoc%OnlyLocalize) then
      write(lupri,*)
-     write(lupri,*) 'Initital Hartree-Fock calculation is skipped as requested in DEC input!'
+     write(lupri,*) 'Initital Hartree-Fock calculation is skipped!'
      write(lupri,*)
      HFdone=.false.
   else
@@ -365,6 +365,11 @@ SUBROUTINE lsdalton
            ! Vladimir Rybkin: We free CMO unless we do a dec geometry optimization
            ! or run dynamics
            If (.not. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
+
+              ! Single point DEC calculation using current HF files
+              DECcalculation: IF(DECinfo%doDEC) then
+                 call dec_main_prog_input(ls,F,D,S,CMO)
+              endif DECcalculation
               ! free Cmo
               call mat_free(Cmo)
            Endif
@@ -505,15 +510,14 @@ SUBROUTINE lsdalton
   if (mem_monitor) WRITE(LUPRI,'("Max no. of matrices allocated in Level 3: ",I10)') max_no_of_matrices
 
 
-  ! Kasper K, DEC/Dalton communication
-  ! Vladimir Rybkin: this is called unless we do a geometry optimization 
-  ! or run dynamics
-  if (.NOT. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
+  ! Single point DEC calculation using HF restart files
+  ! ***************************************************
+  DECcalculationHFrestart: if (.not. HFdone) then
      IF(DECinfo%doDEC) then
-        call dec_main_prog(ls)
+        call dec_main_prog_file(ls)
      ENDIF
-     if(.not. HFdone) call config_shutdown(config)
-  endif
+     call config_shutdown(config)
+  endif DECcalculationHFrestart
   call config_free(config)
 
   call ls_free(ls)

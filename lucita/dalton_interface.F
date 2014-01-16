@@ -29,6 +29,431 @@ C
 * Stefan Knecht May 08 - Dec 10.                                      *
 *                                                                     *
 ***********************************************************************
+**********************************************************************
+*                                                                    *
+*          DALTON - LUCITA interface May 2008, HJAaJ                 *
+*                                                                    *
+*          based on                                                  *
+*             DIRAC  - LUCIA interface                               *
+*          written by Timo Fleig, 1999-2001                          *
+*                                                                    *
+*                                                                    *
+*                                                                    *
+**********************************************************************
+*
+      subroutine dalton_lucita_input_interface
+!
+!     Note that the lucita input has already been processed in the .dal 
+!     file with the input options within the *LUCITA deck.
+
+#include "implicit.h"
+      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
+
+!     print header
+      call hello_dalton_lucita
+!
+!     cross-check symmetry info etc.
+      CALL GET_ORB_DIM_ENV(ECORE_ORIG)
+!
+!     transfer dalton input variables to lucita internals.
+      call dalton_lucita
+      end
+*********************************************************************
+*
+      subroutine dalton_lucita
+*********************************************************************
+!
+!     purpose: transfer dalton/dirac input variables to lucita 
+!              internals.
+!
+!     original version written by T. Fleig for Dirac-Lucita.
+!     major revision by S. Knecht and H. J. Aa. Jensen for
+!     Dalton-Lucita/Dirac-Lucita.
+!
+*********************************************************************
+      use lucita_cfg
+#include "implicit.h"
+#include "priunit.h"
+*
+#include "clunit.inc"
+#include "mxpdim.inc"
+#include "lucinp.inc"
+#include "units.inc"
+#include "orbinp.inc"
+#include "parluci.h"
+*
+      parameter (NCMD = 21)
+      parameter (MXPLNC = 72)
+      character*1  CRDHEL
+      character*3  CALSIZ,YESSTATEMENT
+      character*4  COMMAND,CMD(NCMD)
+      character*6  PRILUC
+      character*10 PERFORMCI
+      character*72 LINE
+*
+*
+*
+*----------------------------------------------------------------------*
+*     check input and print (error) messages where appropriate
+*----------------------------------------------------------------------*
+!
+!     Type of initial wave function (no default)
+      if(lucita_cfg_ini_wavef(1:4).eq.'none')then
+         write(lupri,*)
+     & ' Keyword for type of initial wave function missing. '
+         write(lupri,*) ' This keyword is mandatory. '
+         call quit(' *** error in dalton_lucita: keyword 
+     & .INIWFC not specified.')      
+      else
+        if(lucita_cfg_ini_wavef(1:6).ne.'HF_SCF'
+     &    .and.lucita_cfg_ini_wavef(1:6).ne.'RASSCF')then
+          write(lupri,*)
+     &  ' Type of initial wave function not implemented. '
+          write(lupri,*) ' You have chosen: ',lucita_cfg_ini_wavef
+          write(lupri,*) ' Allowed types  : HF_SCF, RASSCF'
+          call quit(' *** error in dalton_lucita: wrong input to
+     & keyword .INIWFC specified.')
+         end if
+      end if
+!
+!     CI type for LUCIA (no default)
+      if(lucita_cfg_ci_type(1:4).eq.'none')then
+         write(lupri,*) ' Keyword for type of CI calculation missing. '
+         write(lupri,*) ' This keyword is mandatory. '
+         call quit(' *** error in dalton_lucita: keyword 
+     & .CITYPE not specified.')      
+      else
+        if(lucita_cfg_ci_type(1:6).ne.'FCI   '.and.
+     &     lucita_cfg_ci_type(1:6).ne.'SDCI  '.and.
+     &     lucita_cfg_ci_type(1:6).ne.'GASCI '.and.
+     &     lucita_cfg_ci_type(1:6).ne.'RASCI ') then
+           write(lupri,'(//A//2A/A)')
+     &     ' Type of CI calculation not properly specified.',
+     &     ' You have chosen: ',lucita_cfg_ci_type,
+     &     ' Allowed types  :  FCI, SDCI, GASCI, RASCI'
+          call quit(' *** error in dalton_lucita: wrong input to
+     & keyword .CITYPE specified.')
+        end if
+      end if
+*
+*     Active electrons
+!     transfer to common block in lucita/lucinp.inc
+      nactel = lucita_cfg_nr_active_e
+
+      if(lucita_cfg_ci_type(1:6).eq.'GASCI ')then
+        if(nactel .ne. ngso_lucita(lucita_cfg_nr_gas_spaces,2))then
+          write(lupri,'(/a,i3,a/a,i3/)')
+     &    ' Number of active electrons ==>',NACTEL,' must be identical',
+     &    ' with the max number of e- in the last GAS space ==>',
+     &      ngso_lucita(lucita_cfg_nr_gas_spaces,2)
+          call quit(' *** error in dalton_lucita: # of active electrons
+     &   does not match the max number of e- in the last GAS space.')
+        end if
+      end if
+      if(nactel.lt.0)then
+        if(lucita_cfg_ci_type(1:6).eq.'RASCI ') then
+            write(lupri,'(//A/A/)')
+     &         ' Number of active electrons NACTEL must be',
+     &         ' specified for this type of calculation. Quitting.'
+          call quit(' *** error in dalton_lucita: # of active electrons
+     &   (.NACTEL) must be specified for RASCI.')
+        end if
+      end if
+*
+*  7: Spin multiplicity (no default)
+*
+      multip = lucita_cfg_is_spin_multiplett
+      if(multip.lt.0)then
+        write(lupri,*) 'Spin multiplicity is a MANDATORY keyword.'
+        write(lupri,*) 'Specify and restart.'
+          call quit(' *** error in dalton_lucita: spin multiplicity
+     & (.MULTIP) must be specified in any case.')
+      else
+        call evenodd(IEONAC,NACTEL)
+        call evenodd(IEOMUL,MULTIP)
+        if(IEONAC.eq.2.and.IEOMUL.eq.2) then
+          write(lupri,*) 'Illegal spin multiplicity given.'
+          write(lupri,*) 'Read a book about fermions.'
+          call quit(' *** error in dalton_lucita: spin multiplicity
+     & is impossible.')
+        else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
+          write(lupri,*) 'Illegal spin multiplicity given.'
+          write(lupri,*) 'Read a book about fermions.'
+          call quit(' *** error in dalton_lucita: spin multiplicity
+     & is impossible.')
+        else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
+          if(MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
+            write(lupri,'(//A/A/)')
+     &      ' Illegal spin multiplicity given.',
+     &      ' Compare with number of active electrons.'
+          call quit(' *** error in dalton_lucita: spin multiplicity
+     & is impossible.')
+          end if
+        else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
+          if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
+            write(lupri,'(//A/A/)')
+     &      ' Illegal spin multiplicity given.',
+     &      ' Compare with number of active electrons.'
+          call quit(' *** error in dalton_lucita: spin multiplicity
+     & is impossible.')
+          end if
+        end if
+      end if
+*
+*     Global print parameter
+      if(lucita_cfg_global_print_lvl .eq. 0)then
+         PRILUC = 'NON'
+      else if(lucita_cfg_global_print_lvl .eq. 1)then
+        PRILUC = 'LOW'
+      else if(lucita_cfg_global_print_lvl .eq. 2)then
+        PRILUC = 'MED'
+      else if(lucita_cfg_global_print_lvl .eq. 3)then
+        PRILUC = 'HIG'
+      else if(lucita_cfg_global_print_lvl .eq. 4)then
+        PRILUC = 'VHI'
+      else
+        write(lupri,*) 'Invalid print flag. Check .PRINTG.'
+        write(lupri,*) 'lucita_cfg_global_print_lvl = ',
+     &                  lucita_cfg_global_print_lvl
+        call quit(' *** error in dalton_lucita: global print level
+     & (.PRINTG) too high.')
+      end if
+*
+*     Local print parameter
+      IPLOCAL = lucita_cfg_local_print_lvl
+*
+*     Approximate size of calculation
+      CALSIZ = lucita_cfg_calculation_size(1:3)
+*
+*     Orbital distribution in inactive space (no defaults if RASCI)
+*
+      INACOB = 0
+      if(lucita_cfg_inactive_shell_set)then
+        INACOB = 1
+!       not in use for GASCI/RASCI
+        if(lucita_cfg_ci_type(1:6).eq.'GASCI ') INACOB = 0
+        if(lucita_cfg_ci_type(1:6).eq.'RASCI ') INACOB = 0
+      else
+        if(lucita_cfg_ci_type(1:6).eq.'RASCI ')then
+          write(lupri,*) 'Number of inactive orbitals per sym'
+          write(lupri,*) 'has to be specified. This is mandatory'
+          write(lupri,*) 'in a RASCI calculation.'
+          call quit(' *** error in dalton_lucita: inactive orbitals 
+     &    (.INACTI) not specified for RASCI calculation.')
+        end if
+      end if
+*
+*     Orbital distribution in GAS spaces (no defaults if GASCI)
+      ngas = lucita_cfg_nr_gas_spaces
+      if(ngas.lt.1)then
+        if(lucita_cfg_ci_type(1:6).eq.'GASCI ')then
+          write(lupri,*) 'GASCI type requires .GASSHE to be specified.'
+          write(lupri,*) 'Else, I do not know what to do.'
+          call quit(' *** error in dalton_lucita: GASCI run but
+     &    .GASSHE not specified.')
+        end if
+      end if
+*
+*     Cumulative min. and max. numbers of electrons in GAS spaces
+      if(lucita_cfg_ci_type(1:6).eq.'GASCI ')then
+        if(.not.lucita_cfg_minmax_occ_gas_set)then
+          write(lupri,*) 'GASCI type requires .GASSPC to be specified.'
+          write(lupri,*) 'Else, I do not know what to do.'
+          call quit(' *** error in dalton_lucita: GASCI run but
+     &    .GASSPC not specified.')
+        end if
+      end if
+      NCISPC = lucita_cfg_nr_calc_sequences
+*
+*     RAS specifications; no default
+      if(lucita_cfg_ci_type(1:6).eq.'RASCI ')then
+        if(.not.lucita_cfg_ras1_set .or. .not. lucita_cfg_ras2_set.or.
+     &     .not.lucita_cfg_ras3_set)then
+          write(lupri,*) 'RASCI type requires .RAS1, .RAS2 and .RAS3'//
+     &                   ' to be specified.'
+          write(lupri,*) 'Else, I do not know what to do.'
+          call quit(' *** error in dalton_lucita: RASCI run but
+     &    not all RAS spaces specified.')
+        end if
+      end if
+*
+*     Default setting for DENSity matrices
+      idemol = lucita_cfg_density_calc_lvl
+
+*     Default setting for Davidson subspace dimensions
+      max_ci_vector_subspace = lucita_cfg_max_dav_subspace_dim
+      max_ci_vector_subspace =
+     &      max(3*lucita_cfg_nr_roots, max_ci_vector_subspace)
+*
+*     Restart option from CI vector(s)
+      irstrt = lucita_cfg_restart_ci
+*
+*     Type of parallel calculation
+      IF (LUCI_NMPROC .GT. 1) THEN
+        IODENSEPAR = 2
+        IRUNPA     = 1
+        IPARMODEL  = 2
+      ELSE
+        IODENSEPAR = 0
+        IRUNPA     = 0
+        IPARMODEL  = 0
+      END IF
+*
+*     Type of I/O model in parallel calculation
+      IF (LUCI_NMPROC .GT. 1) THEN
+        IIOMOD = 1
+        YESSTATEMENT = 'Yes'
+      ELSE
+        IIOMOD = 0
+        YESSTATEMENT = 'No'
+      END IF
+*
+*     maximum number of CI Iterations
+      imaxciiter = lucita_cfg_max_nr_dav_ci_iter
+*
+*     Largest allowed batchsize (if larger than biggest block!) 
+      imaxlblksz = MAX(100 000,lucita_cfg_max_batch_size)
+*
+*     Distribution routine to use (only relevant in parallel case) 
+*
+      idistroute = lucipar_cfg_ttss_dist_strategy
+      IF(LUCI_NMPROC .GT. 1)THEN
+        if(idistroute.gt.2.or.idistroute.lt.1)then
+          write(lupri,*) 'Value for keyword .DISTRT incorrect ',
+     &                    idistroute
+          write(lupri,*) 'INFO: I will ignore your input.'
+          write(lupri,*) 'Program will continue.'
+          idistroute = 2   
+        endif
+      END IF
+*
+*     Truncate residual vectors before creating new trial vector?
+*     (14-jun-07, hjaaj)
+      trunc_fac = lucita_cfg_accepted_truncation
+*
+*
+*     memory reduction multiplier ...
+      ISMEMFAC  = lucipar_cfg_mem_reduction_multp 
+
+      if(irunpa.eq.1) then
+        performci = 'parallel'
+      else if(irunpa.eq.0) then
+        performci = 'sequential'
+      endif
+*
+*
+*-----------------------------------------------------------------*
+*  Print section
+*-----------------------------------------------------------------*
+*
+*  1: Title
+*
+      write(LUOUT,'(/1X,80A1)') ('*',I=1,80)
+      write(LUOUT,'(A/2A/A)') ' *',
+     &   ' * title : ',lucita_cfg_run_title, ' *'
+      write(LUOUT,'(1X,80A1)') ('*',I=1,80)
+*
+*  2: Initial wave function
+*
+      write(LUOUT,'(/A42,A6/)')
+     &  ' Orbitals as initial wave function .... ',
+     &    lucita_cfg_ini_wavef(1:6)
+*
+*  3: Type of CI calculation
+*
+      write(LUOUT,'(A42,A6/)')
+     &  ' Type of calculation .................. ',
+     &    lucita_cfg_ci_type(1:6)
+*
+*  4: Number of roots to be treated
+*
+      write(LUOUT,'(A42,I3/)')
+     &  ' Number of roots to be obtained ....... ',lucita_cfg_nr_roots
+*
+*  5: State symmetry
+*
+      write(LUOUT,'(A42,I3/)')
+     &  ' Calculation carried out in irrep ..... ',
+     &    lucita_cfg_ptg_symmetry
+*
+*  6: Number of active electrons
+*
+      if(NACTEL.gt.0)then
+        write(LUOUT,'(A42,I3/)')
+     &  ' Number of active electrons ........... ',NACTEL
+      end if
+*
+*  7: Spin multiplicity
+*
+      write(LUOUT,'(A42,I3/)')
+     &  ' Spin multiplicity .................... ',MULTIP
+*
+*  8: LUCIA global print parameter
+*
+      write(LUOUT,'(A42,A3/)')
+     &  ' Global print level is ................ ',PRILUC
+*
+*  9: MOLUC local print parameter
+*
+      write(LUOUT,'(A42,I3/)')
+     &  ' Local print level is ................. ',IPLOCAL
+*
+* 10: SIZE of CI calculation
+*
+      write(LUOUT,'(A42,A3/)')
+     &  ' Approximate size of CI calculation ... ',CALSIZ
+*
+* 10b: runtype of CI calculation
+*
+      write(LUOUT,'(A42,A8/)')
+     &  ' Running the CI calculation ........... ',performci
+*
+*
+* 10c: runtype of parallel calculation
+*
+      if(irunpa.gt.0)then
+        write(LUOUT,'(A42,I3/)')
+     &  ' Applying parallel scheme ............. ',iparmodel
+      endif
+*
+*
+* 10d: file version to use in parallel calculation
+*
+      write(LUOUT,'(A42,A3/)')
+     &  ' Using MPI-FILE I/O ................... ',YESSTATEMENT
+*
+*
+* 10e: file system in parallel calculation
+*
+      if( irunpa .gt. 0 ) then
+        write(LUOUT,'(A42,I1/)')
+     &  ' Parallel distribution routine ........ ',IDISTROUTE
+      end if
+*
+* 10f: truncation factor
+*
+      write(LUOUT,'(/A42,1P,D10.2/)')
+     &  ' Truncation Factor ..................... ',trunc_fac
+                   
+*
+* 18: DENSity matrix level
+*
+      if (IDEMOL.ge.1) then
+        write(LUOUT,'(A42,I3/)')
+     &    ' Calculating density matrices at level  ',IDEMOL
+      end if
+*
+* 19: Restart option activated
+*
+      if(IRSTRT.eq.1) then
+        write(LUOUT,'(A42,A3/)')
+     &    ' Restarted calculation from file ...... ','YES'
+      end if
+ 
+!     initialize number of inactive orbitals per symmetry irrep
+!     (lucita/orbinp.inc)
+!     values will be set in dalton2lucita for non-GAS calculations
+      call izero(ninobs,mxpobs)
 
       SUBROUTINE DMPINT(LUINT)
 *
@@ -1411,7 +1836,7 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
 *.
       NTEST = 000
 *
-*. The orbital list corresponds to type ordered indeces, reform to
+*. The orbital list corresponds to type ordered indices, reform to
 *. symmetry ordering
 *
       IABS = IREOTS(IORB)
@@ -2222,7 +2647,7 @@ C
       call memget('REAL',kh2ac,nnashx**2,WORK,kfree,lfree)
 
       DISKH2 = .FALSE.
-      CALL CIINTS(DISKH2,CMO,emy,WORK(kfcac),
+      CALL CIINTS(DISKH2,CMO,EMY,WORK(kfcac),
      &            WORK(kh2ac),WORK(kfree),lfree)
 
       IF (CLOSE_MOTWOINT) THEN
@@ -2240,10 +2665,8 @@ C
 
 !     Write one- and two-electron integrals to file FCIDUMP
  
-      if (lucita_cfg_fci_dump) then
-      call
-     &   write_fcidump_file(work(kfcac),NASHT,work(kh2ac),emy)
-      end if
+      if (lucita_cfg_fci_dump)
+     &   write_fcidump_file(work(kfcac),NASHT,work(kh2ac),EMY)
       LUINT_LUCITA = -1
       CALL GPOPEN(LUINT_LUCITA,'INTEGRALS_LUCITA','NEW',' ',
      &                'UNFORMATTED',IDUMMY,.FALSE.)

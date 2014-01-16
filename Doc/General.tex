@@ -1524,6 +1524,13 @@ about parts of the cubic force field) and the first derivative of the
 molecular property. See also the keyword \Key{HARM-P}. Currently only
 implemented for spin--spin coupling constants.
 
+\item[\Key{CUBIC }]\verb| |\newline
+
+Calculate the Hessian and third derivatives and write the files
+\verb|DALTON.HES| and \verb|DALTON.WLK| for use in future 
+calculation of the vibrationally averaged properties using the
+\Key{ONLY-P} keyword.
+
 \item[\Key{EFFECTIVE GEOMETRY}]\verb| |\newline
 
 The effective geometry is calculated. This geometry corresponds to the
@@ -1543,6 +1550,20 @@ implemented for spin--spin coupling constants.
 
 Request an analysis of the contribution of the different vibrational modes
 to the total zero-point vibrational corrections to a molecular property.
+
+\item[\Key{ONLY-P}]\verb| |\newline
+
+Calculate only the equilibrium value and derivatives of the molecular property
+required to calculate the (harmonic and anharmonic) vibrational average. 
+In order for this to work, \verb|DALTON.HES| and \verb|DALTON.WLK| files containing the Hessian 
+and third derivatives of the molecule must be available from a previous calculation.
+
+\item[\Key{P-BASIS}]\verb| |\newline
+\verb|READ (LUCMD,*) PRPBTX|
+
+When calculating vibrationally averaged properties use the basis set in the 
+.mol file for calculating the force-constants and \verb|PRPBTX| for 
+calculating the property and property derivatives.
 
 \item[\Key{SPIN-SPIN COUPLINGS}]\verb| |\newline
 
