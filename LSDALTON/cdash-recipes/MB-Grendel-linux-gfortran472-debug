@@ -1,4 +1,4 @@
-#!/bin/bash
+B1;3402;0c#!/bin/bash
 TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonGfortranDebug
 SCRATCH_DIR=/tmp/tkjaer/DaltonGfortranDebug
 rm -rf $TMP_DIR 
@@ -19,7 +19,7 @@ export MATH_ROOT=/com/intel/Compiler/11.1/064/mkl
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
-FC=gfortran CC=gcc CXX=gcc cmake -DENABLE_BOUNDS_CHECK=1 -DCMAKE_BUILD_TYPE=Debug -DENABLE_CODE_COVERAGE=1 -DENABLE_RELEASE=0 -DENABLE_TIMINGS=1 -DENABLE_BLAS=ON -DENABLE_LAPACK=ON -DBUILDNAME=MB-Grendel-linux-gfortran472-debug /home/tkjaer/NightlyTestingCdash/tmp/DaltonGfortranDebug
+FC=gfortran CC=gcc CXX=g++ cmake -DENABLE_BOUNDS_CHECK=1 -DCMAKE_BUILD_TYPE=Debug -DENABLE_CODE_COVERAGE=1 -DENABLE_RELEASE=0 -DENABLE_TIMINGS=1 -DENABLE_BLAS=ON -DENABLE_LAPACK=ON -DBUILDNAME=MB-Grendel-linux-gfortran472-debug /home/tkjaer/NightlyTestingCdash/tmp/DaltonGfortranDebug
 #make depend
 #make Experimental
 #make Nightly
