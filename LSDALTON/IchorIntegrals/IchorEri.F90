@@ -15,7 +15,6 @@ MODULE IchorErimodule
   use IchorprecisionModule
   use IchorCommonModule
   use IchorBatchToolsModule
-  use IchorEriCoulombintegralOBSGeneralMod2, only: IchorCoulombIntegral_OBS_general2
   use IchorEriCoulombintegralOBSGeneralMod, only: IchorCoulombIntegral_OBS_general, &
        & IchorCoulombIntegral_OBS_general_size
   use IchorCoulombIntegral_seg_seg_SSSS_mod, only: IchorCoulombIntegral_seg_seg_SSSS
