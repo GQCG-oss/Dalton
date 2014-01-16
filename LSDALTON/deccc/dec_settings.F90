@@ -73,9 +73,14 @@ contains
     DECinfo%noPNOtrafo           = .false.
     DECinfo%noPNOtrunc           = .false.
     DECinfo%simplePNOthr         = 1.0E-7
-    DECinfo%EOSPNOthr            = 1.0E-9
+    DECinfo%EOSPNOthr            = 1.0E-5
+    DECinfo%noPNOoverlaptrunc    = .false.
+    DECinfo%PNOoverlapthr        = 1.0E-5
+    DECinfo%PNOtriangular        = .false.
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
+    DECinfo%MOCCSD               = .false.
+    DECinfo%Max_num_MO           = 300
 
     ! -- Output options 
     DECinfo%output               = output
@@ -412,20 +417,35 @@ contains
 #endif
 
 #ifdef MOD_UNRELEASED
-       case('.CCDEBUG'); DECinfo%CCDEBUG=.true.
-       case('.CCSOLVER_LOCAL'); DECinfo%solver_par=.false.
-       case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
-       case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
-       case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.
-       case('.SPAWN_COMM_PROC'); DECinfo%spawn_comm_proc=.true.
-       case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
-       case('.USE_PNOS'); DECinfo%use_pnos=.true.
-       case('.NOPNOTRAFO'); DECinfo%noPNOtrafo=.true.; DECinfo%noPNOtrunc=.true.
-       case('.NOPNOTRUNCATION'); DECinfo%noPNOtrunc=.true.
-       case('.PNOTHR'); read(input,*) DECinfo%simplePNOthr
-       case('.EOSPNOTHR'); read(input,*) DECinfo%EOSPNOthr
-       case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
+
+       !CCSD SPECIFIC KEYWORDS
+       !**********************
+       case('.CCDEBUG');                DECinfo%CCDEBUG              = .true.
+       case('.CCSOLVER_LOCAL');         DECinfo%solver_par           = .false.
+       case('.CCSDDYNAMIC_LOAD');       DECinfo%dyn_load             = .true.
+       case('.CCSDNO_RESTART');         DECinfo%CCSDno_restart       = .true.
+       case('.CCSD_WITH_MPICH');        DECinfo%CCSD_MPICH           = .true.
+       case('.SPAWN_COMM_PROC');        DECinfo%spawn_comm_proc      = .true.
+       case('.CCSDMULTIPLIERS');        DECinfo%CCSDmultipliers      = .true.
+       case('.USE_PNOS');               DECinfo%use_pnos             = .true.
+       case('.NOPNOTRAFO');             DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
+       case('.NOPNOTRUNCATION');        DECinfo%noPNOtrunc           = .true.
+       case('.NOPNOOVERLAPTRUNCATION'); DECinfo%noPNOoverlaptrunc    = .true.
+       case('.MOCCSD');                 DECinfo%MOCCSD               = .true.
+       case('.PNOTRIANGULAR');          DECinfo%PNOtriangular        = .true.
+       case('.CCSDPREVENTCANONICAL');   DECinfo%CCSDpreventcanonical = .true.
+
+       case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
+       case('.EOSPNOTHR');     read(input,*) DECinfo%EOSPNOthr
+       case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
+
+
+
+       !OTHER STUFF
+       !***********
+
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
+       case('.MAX_NUM_MO'); read(input,*) DECinfo%Max_num_MO
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup

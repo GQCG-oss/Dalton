@@ -100,6 +100,8 @@ set(GEOOPT_SOURCES
     LSDALTON/geomopt/ls_opt.F90
     LSDALTON/geomopt/ls_opt2.F90
     LSDALTON/geomopt/ls_redint.F90
+    LSDALTON/geomopt/q_to_x.F90
+    LSDALTON/geomopt/dqdx.cpp           
     )
 set(LINEARS_SOURCES	
     LSDALTON/linears/configurationType.F90
@@ -341,6 +343,7 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ls_IntegralInterface.F90
     LSDALTON/LSint/pari.F90
     LSDALTON/LSint/lsmpi.F90
+    LSDALTON/LSint/II_dft_dftd.F90
     )
 #####################################################
 #WARNING: READ ME BEFORE ADDING FILES TO LSUTIL
