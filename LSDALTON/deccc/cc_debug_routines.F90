@@ -690,11 +690,11 @@ module cc_debug_routines_module
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
                 &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-                &gao,fragment_job,m2%val,ppfock%val,qqfock%val,delta_fock%val,iter)
+                &fragment_job,m2%val,ppfock%val,qqfock%val,delta_fock%val,iter)
               else
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
                 &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-                &gao,fragment_job,m2%val,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
+                &fragment_job,m2%val,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
               endif
 
               !transform to pseudo diagonal basis for the solver
@@ -4973,7 +4973,7 @@ module cc_debug_routines_module
   !>        doubles amplitudes to their respective set of PNO's and then
   !>        transforming the result vector back to the reference basis. 
   subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,no,nv,nb,xo,xv,yo,yv,&
-             &mylsitem,gao,fj,t_mp2,oof,vvf,ifo,iter,f)
+             &mylsitem,fj,t_mp2,oof,vvf,ifo,iter,f)
     implicit none
     !ARGUMENTS
     integer, intent(in) :: no, nv, nb
@@ -4981,7 +4981,6 @@ module cc_debug_routines_module
     real(realk), intent(inout) :: o1(nv,no), o2(nv,no,nv,no)
     real(realk), intent(in) :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),ifo(nb,nb)
     type(lsitem), intent(inout) :: mylsitem
-    type(array4), intent(inout) :: gao
     real(realk), intent(in) :: t_mp2(nv,no,nv,no)
     real(realk), intent(inout) :: oof(no,no),vvf(nv,nv)
     logical, intent(in) :: fj
@@ -5004,7 +5003,7 @@ module cc_debug_routines_module
     integer, pointer :: s_idx(:,:,:), s_nidx(:)
     integer :: pno,pno1,pno2,pnv,pnv1,pnv2, k, l, nidx1, nidx2, spacemax
     logical :: skiptrafo,skiptrafo2,save_gvvvv_is,with_screening,cyc,use_triangular
-    type(matrix) :: iFock, Dens
+    real(realk), pointer :: iFock(:,:), Dens(:,:)
     integer(kind=8) :: maxsize, myload
     integer :: pair,paircontribs,paircontrib(2,2)
     integer :: order1(4)
@@ -5037,11 +5036,6 @@ module cc_debug_routines_module
     real(realk), parameter :: nul = 0.0E0_realk
 
     
-    
-    
-    
-    
-    
     o2v2 = (i8*no**2)*nv**2
     with_screening = .true.
     use_triangular = .true.
@@ -5066,7 +5060,6 @@ module cc_debug_routines_module
     allocate(pno_S(nspaces*(nspaces-1)/2))
     call mem_alloc( pno_t2, nspaces  )
     call mem_alloc( pno_o2, nspaces  )
-    call mem_alloc( w2,     nb**3*max(nv,no) )
     call mem_alloc( gvvvv,  nv**4    )
     call mem_alloc( gvovo,  o2v2     )
     call mem_alloc( govov,  o2v2     )
@@ -5084,6 +5077,8 @@ module cc_debug_routines_module
 
     maxsize=nb**4
     call mem_alloc( w1, maxsize )
+    call mem_alloc( w2, nb**3*max(nv,no) )
+    call mem_alloc( w3, maxsize )
     !===============================================================
     !begin setting up all density matrices and finding the PNO basis
     !===============================================================
@@ -5260,6 +5255,40 @@ module cc_debug_routines_module
        call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
           & Mylsitem%setting,w1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
           & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,INTSPEC,fullRHS)
+       
+       w3 = w1
+       !gvvvv
+       call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xv,nv,yv,nv,w2)
+       call dcopy(nv**4,w1,1,gvvvv,1)
+       !goooo
+       w1 = w3
+       call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yo,no,w2)
+       call dcopy(no**4,w1,1,goooo,1)
+       !govov
+       w1 = w3
+       call successive_4ao_mo_trafo(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2)
+       call dcopy(nv**2*no**2,w1,1,govov,1)
+       !goovv
+       w1 = w3
+       call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xv,nv,yv,nv,w2)
+       call dcopy(nv**2*no**2,w1,1,goovv,1)
+       !Lvoov = 2gvoov - gvvoo
+       w1 = w3
+       call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2)
+       call array_reorder_4d( p20, w1, nv, no ,no, nv, [1,2,3,4], nul, Lvoov)
+       call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
+       !gvvov
+       w1 = w3
+       call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2)
+       call dcopy(nv**3*no,w1,1,gvvov,1)
+       !gooov
+       w1 = w3
+       call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2)
+       call dcopy(nv*no**3,w1,1,gooov,1)
+       !gvovo
+       w1 = w3
+       call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xv,nv,yo,no,w2)
+       call dcopy(nv**2*no**2,w1,1,gvovo,1)
 
        if(fa<=fg+lg-1)then
          do ns = 1, nspaces
@@ -5275,75 +5304,39 @@ module cc_debug_routines_module
        endif
     enddo BatchAlpha
     enddo BatchGamma
+
+    ! Free integral stuff
+    ! *******************
+    nullify(Mylsitem%setting%LST_GAB_LHS)
+    nullify(Mylsitem%setting%LST_GAB_RHS)
+    call free_decscreen(DECSCREEN)
+
+    ! Free gamma stuff
+    call mem_dealloc(orb2batchGamma)
+    call mem_dealloc(batchdimGamma)
+    call mem_dealloc(batchsizeGamma)
+    call mem_dealloc(batchindexGamma)
+    do i=1,nbatchesGamma
+       call mem_dealloc(batch2orbGamma(i)%orbindex)
+       batch2orbGamma(i)%orbindex => null()
+    end do
+    call mem_dealloc(batch2orbGamma)
+
+    ! Free alpha stuff
+    call mem_dealloc(orb2batchAlpha)
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchsizeAlpha)
+    call mem_dealloc(batchindexAlpha)
+    do i=1,nbatchesAlpha
+       call mem_dealloc(batch2orbAlpha(i)%orbindex)
+       batch2orbAlpha(i)%orbindex => null()
+    end do
+    call mem_dealloc(batch2orbAlpha)
+
     call mem_dealloc( w1 )
-
-
-    !gvvvv
-    call array4_read(gao)
-    call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yv,nv,xv,nv,yv,nv,w2)
-    call dcopy(nv**4,gao%val,1,gvvvv,1)
-    call array4_dealloc(gao)
-    !write(msg,*)'DEBUG gvvvv:'
-    !call print_norm(gvvvv,(i8*nv**2)*nv**2,msg)
-
-    !goooo
-    call array4_read(gao)
-    call successive_4ao_mo_trafo(nb,gao%val,xo,no,yo,no,xo,no,yo,no,w2)
-    call dcopy(no**4,gao%val,1,goooo,1)
-    call array4_dealloc(gao)
-    !write(msg,*)'DEBUG goooo:'
-    !call print_norm(goooo,i8*no**4,msg)
-
-    !govov
-    call array4_read(gao)
-    call successive_4ao_mo_trafo(nb,gao%val,xo,no,yv,nv,xo,no,yv,nv,w2)
-    call dcopy(nv**2*no**2,gao%val,1,govov,1)
-    call array4_dealloc(gao)
-    !write(msg,*)'DEBUG govov:'
-    !call print_norm(govov,o2v2,msg)
-
-    !goovv
-    call array4_read(gao)
-    call successive_4ao_mo_trafo(nb,gao%val,xo,no,yo,no,xv,nv,yv,nv,w2)
-    call dcopy(nv**2*no**2,gao%val,1,goovv,1)
-    call array4_dealloc(gao)
-    !write(msg,*)'DEBUG goovv:'
-    !call print_norm(goovv,o2v2,msg)
-
-    !Lvoov = 2gvoov - gvvoo
-    call array4_read(gao)
-    call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yo,no,xo,no,yv,nv,w2)
-    call array_reorder_4d( p20, gao%val, nv, no ,no, nv, [1,2,3,4], nul, Lvoov)
-    call array4_dealloc(gao)
-    call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
-    !write(msg,*)'DEBUG Lvoov:'
-    !call print_norm(Lvoov,o2v2,msg)
-
-    !gvvov
-    call array4_read(gao)
-    call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yv,nv,xo,no,yv,nv,w2)
-    call dcopy(nv**3*no,gao%val,1,gvvov,1)
-    call array4_dealloc(gao)
-    !write(msg,*)'DEBUG gvvov:'
-    !call print_norm(gvvov,i8*nv**3*no,msg)
-    
-    !gooov
-    call array4_read(gao)
-    call successive_4ao_mo_trafo(nb,gao%val,xo,no,yo,no,xo,no,yv,nv,w2)
-    call dcopy(nv*no**3,gao%val,1,gooov,1)
-    call array4_dealloc(gao)
-    !write(msg,*)'DEBUG gooov:'
-    !call print_norm(gooov,i8*nv*no**3,msg)
-
-    !gvovo
-    call array4_read(gao)
-    call successive_4ao_mo_trafo(nb,gao%val,xv,nv,yo,no,xv,nv,yo,no,w2)
-    call dcopy(nv**2*no**2,gao%val,1,gvovo,1)
-    call array4_dealloc(gao)
-    !write(msg,*)'DEBUG gvovo:'
-    !call print_norm(gvovo,o2v2,msg)
-
     call mem_dealloc( w2 )
+    call mem_dealloc( w3 )
+
 
     maxsize=max(max(i8*no,i8*nv)**4,i8*nb*max(nv,nb))
     call mem_alloc( w1, maxsize )
@@ -5357,31 +5350,33 @@ module cc_debug_routines_module
     !!!!!!!!!!!!!!!!!!!
 
     !allocate the density matrix
-    call mat_init(iFock,nb,nb)
-    call mat_init(Dens,nb,nb)
+    call mem_alloc(iFock,nb,nb)
+    call mem_alloc(Dens,nb,nb)
     !calculate inactive fock matrix in ao basis
-    call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens%elms,nb)
-    call mat_zero(iFock)
-    call dec_fock_transformation(iFock,Dens,MyLsItem,.false.)
+    call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens,nb)
+    iFock = 0.0E0_realk
+    call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
+    & Dens,.false.,iFock)
+    !use dens as temporay array 
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-         & Dens%elms,nb,nb,AORdefault,AORdefault)
+         & Dens,nb,nb,AORdefault,AORdefault)
     ! Add one- and two-electron contributions to Fock matrix
-    call daxpy(nb**2,1.0E0_realk,Dens%elms,1,iFock%elms,1)
-    call daxpy(nb**2,1.0E0_realk,ifo,1,iFock%elms,1)
+    call daxpy(nb**2,1.0E0_realk,Dens,1,iFock,1)
+    call daxpy(nb**2,1.0E0_realk,ifo,1,iFock,1)
     !Free the density matrix
-    call mat_free(Dens)
+    call mem_dealloc(Dens)
     !Transform inactive Fock matrix into the different mo subspaces
     ! -> Foo
-    call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1,no)
+    call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock,nb,0.0E0_realk,w1,no)
     call dgemm('n','n',no,no,nb,1.0E0_realk,w1,no,yo,nb,0.0E0_realk,oof,no)
     ! -> Fov
     call dgemm('n','n',no,nv,nb,1.0E0_realk,w1,no,yv,nb,0.0E0_realk,ovf,no)
     ! -> Fvo
-    call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock%elms,nb,0.0E0_realk,w1,nv)
+    call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock,nb,0.0E0_realk,w1,nv)
     call dgemm('n','n',nv,no,nb,1.0E0_realk,w1,nv,yo,nb,0.0E0_realk,vof,nv)
     ! -> Fvv
     call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1,nv,yv,nb,0.0E0_realk,vvf,nv)
-    call mat_free(iFock)
+    call mem_dealloc(iFock)
 
     
     !!DEBUG: A2 term
@@ -5556,8 +5551,8 @@ module cc_debug_routines_module
     call mem_alloc( w3, maxsize )
     call mem_alloc( w4, maxsize )
     call mem_alloc( w5, maxsize )
-    call mem_alloc(oidx1, spacemax, 3)
-    call mem_alloc(oidx2, spacemax, 3)
+    call mem_alloc( oidx1, spacemax, 3)
+    call mem_alloc( oidx2, spacemax, 3)
   
     !$OMP DO SCHEDULE(DYNAMIC)
     LoopContribs:do ns = 1, nspaces
