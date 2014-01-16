@@ -61,6 +61,14 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable 64bit integers [default: %(default)s]')
+    group.add_argument('--openacc',
+            action='store_true',
+            default=False,
+            help='enable OpenACC [default: %(default)s]')
+    group.add_argument('--collapse',
+            action='store_true',
+            default=False,
+            help='enable COLLAPSE clause for reorderings [default: %(default)s]')
     group.add_argument('--prefix',
             action='store',
             default=None,
@@ -129,6 +137,10 @@ def parse_input():
             action='store_true',
             default=False,
             help='build using SCALASCA profiler mode [default: %(default)s]')
+    group.add_argument('--vampirtrace',
+            action='store_true',
+            default=False,
+            help='build using Vampirtrace instrumentation [default: %(default)s]')
     
     group = parser.add_argument_group('advanced options')
     group.add_argument('--check',
@@ -243,9 +255,12 @@ def gen_cmake_command(args):
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
     command += ' -DENABLE_OMP=%s'            % translate_cmake(args.omp)
     command += ' -DENABLE_64BIT_INTEGERS=%s' % translate_cmake(args.int64)
+    command += ' -DENABLE_OPENACC=%s'        % translate_cmake(args.openacc)
+    command += ' -DENABLE_COLLAPSE=%s'        % translate_cmake(args.collapse)
     command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
     command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
+    command += ' -DENABLE_VAMPIRTRACE=%s'    % translate_cmake(args.vampirtrace)
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
     command += ' -DENABLE_XCFUN=%s'          % translate_cmake(args.xcfun)
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)

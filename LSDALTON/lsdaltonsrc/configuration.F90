@@ -2548,6 +2548,33 @@ DO
       CASE ('.DISPER' )
          DALTON%DFT%DODISP = .TRUE.
          CALL DFTDISPCHECK()
+!AMT
+      CASE ('.DFT-D2')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP2 = .TRUE.
+         DALTON%DFT%DO_DFTD2 = .TRUE.
+      CASE ('.D2PAR')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%L_INP_D2PAR = .TRUE.
+         READ(LUCMD,*)DALTON%DFT%D2_s6_inp, DALTON%DFT%D2_alp_inp, DALTON%DFT%D2_rs6_inp
+      CASE ('.DFT-D3')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+      CASE ('.DFT-D3BJ')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+         DALTON%DFT%DO_BJDAMP = .TRUE.
+      CASE ('.3BODY')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DO_3BODY = .TRUE.
+      CASE ('.D3PAR')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%L_INP_D3PAR = .TRUE.
+         READ(LUCMD,*) DALTON%DFT%D3_s6_inp, DALTON%DFT%D3_alp_inp, DALTON%DFT%D3_rs6_inp, & 
+     &              DALTON%DFT%D3_rs18_inp, DALTON%DFT%D3_s18_inp
+!AMT
       CASE DEFAULT
          WRITE (LUPRI,'(/,3A,/)') ' Keyword ',WORD,&
               & ' not recognized in *DFT INPUT'

@@ -697,7 +697,7 @@ module lspdm_tensor_operations_module
       dj = t2%ti(lt)%d(4)
       !count over local indices
       !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t,&
-      !$OMP& da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
+      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
       do j=1,dj
         do i=1,di
           do b=1,db
@@ -779,7 +779,7 @@ module lspdm_tensor_operations_module
 
       !count over local indices
       !$OMP  PARALLEL DO DEFAULT(NONE)  SHARED(om,dims,&
-      !$OMP& ppfock,qqfock,da,db,di,dj) PRIVATE(i,j,a,b) COLLAPSE(3)
+      !$OMP  ppfock,qqfock,da,db,di,dj) PRIVATE(i,j,a,b) COLLAPSE(3)
       do j=1,dj
         do i=1,di
           do b=1,db
@@ -1711,7 +1711,9 @@ module lspdm_tensor_operations_module
     maxintmp = tmps / arr%tsize
 
     do i=1,arr%ntiles
-      if(i>maxintmp.and.arr%lock_set(i-maxintmp))call arr_unlock_win(arr,i-maxintmp)
+      if(i>maxintmp)then
+       if(arr%lock_set(i-maxintmp)) call arr_unlock_win(arr,i-maxintmp)
+      endif
       b = 1 + mod(i - 1, maxintmp) * arr%tsize
       e = b + arr%tsize -1
       call tile_from_fort(pre1,fort,fullfortdim,arr%mode,&
@@ -1776,8 +1778,8 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_LSDEBUG
     if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
-      call lsquit("ERROR(array_gather):both or neither wrk and iwrk have to &
-                  &be given",-1)
+      call lsquit('ERROR(array_gather):both or neither wrk and iwrk have to &
+                  &be given',-1)
     endif
 #endif
 
@@ -1789,7 +1791,7 @@ module lspdm_tensor_operations_module
         internal_alloc=.false.
 #ifdef VAR_LSDEBUG
       else
-        print *,"WARNING(array_gather):allocating internally, given buffer not large enough"
+        print *,'WARNING(array_gather):allocating internally, given buffer not large enough'
 #endif
       endif
     endif
@@ -1800,8 +1802,8 @@ module lspdm_tensor_operations_module
     nnod=infpar%lg_nodtot
 
 #ifdef VAR_LSDEBUG
-    if(nelms/=arr%nelms)call lsquit("ERROR(array_gather):array&
-        &dimensions are not the same",DECinfo%output)
+    if(nelms/=arr%nelms)call lsquit('ERROR(array_gather):array&
+        &dimensions are not the same',DECinfo%output)
 #endif
 
     do i = 1, arr%mode
@@ -1822,7 +1824,7 @@ module lspdm_tensor_operations_module
 
       if(internal_alloc)then
 #ifdef VAR_LSDEBUG
-        print *,"WARINING(array_gather):Allocating internally"
+        print *,'WARINING(array_gather):Allocating internally'
 #endif
         tmps = arr%tsize
         call mem_alloc(tmp,tmps)
@@ -1869,7 +1871,7 @@ module lspdm_tensor_operations_module
     endif
 
 #else
-    call lsquit("ERROR(array_gather):this routine is MPI only",-1)
+    call lsquit('ERROR(array_gather):this routine is MPI only',-1)
 #endif
   end subroutine array_gather
 
@@ -2025,6 +2027,10 @@ module lspdm_tensor_operations_module
 
 
     elseif(arr%mode==4.and.n2comb==2.and..not.deb)then
+
+      !CODE FOR 2 DIMENSIONS TO COMBINE IF A 4 MODE TENSOR IS GIVEN
+
+      ! find the index in the tiles of the first tiled dimension
       st_tiling = 4
       do i = 1, 4
         if(arr%ntpm(i)/=1)then
@@ -2033,6 +2039,9 @@ module lspdm_tensor_operations_module
         endif
       enddo
 
+
+      !find the number of consecutive elements in a tile and the index where the
+      !order of the two arrays differ
       cons_el_in_t = 1_long
       diff_ord = arr%mode
       do i = 1, st_tiling
@@ -2044,6 +2053,8 @@ module lspdm_tensor_operations_module
         endif
       enddo
 
+      !find the consecutive elements in the reduced dimension of the unfolded
+      !tensor, i.e. 1 and 2 as long as the order fits to the original tensor
       cons_el_rd = 1_long
       do i = 1, 2
         if(u_o(i)==i)then
@@ -2053,7 +2064,9 @@ module lspdm_tensor_operations_module
         endif
       enddo
 
-      !precalculate tile dimensions and positions
+
+      !precalculate tile dimensions and positions such, that they may be read
+      !afterwards
       call mem_alloc(tinfo,arr%ntiles,7)
       do ctidx = 1, arr%ntiles
         tinfo(ctidx,1) = get_residence_of_tile(ctidx,arr)
@@ -2068,20 +2081,27 @@ module lspdm_tensor_operations_module
       mult1 = arr%ntpm(1) * arr%ntpm(2)
       mult2 = arr%ntpm(1) * arr%ntpm(2) * arr%ntpm(3)
    
+      !find the index of the first element (= first element of the combined two
+      !first dimensions after the unfolding and splitting in stripes across the
+      !nodes)
       fx=1
       call get_midx(fel,fx(1:n2comb),fordims(1:n2comb),n2comb)
       do i = 1, 4
         idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
       enddo
 
-      !DETERMINE THE PARTS
+      !DETERMINE THE PARTS: If more than one element can be transferred at a
+      !time the chunks can be of two different sizes, depending on the overlap
+      !of the different consecutive numbers of elements. the lengths of these
+      !different parts is determined in the following
       part1 = 1
       part2 = 1
+      !print *,infpar%lg_mynum,"RETARDO1:",cons_el_rd,tl
       if(cons_el_rd<tl)then
         cons_els = cons_el_rd
         do i = 1,min(diff_ord,2)
           split_in = i
-          if(i>=2)then
+          if(i==min(diff_ord,2))then
             part1 = part1 * (arr%tdim(i) - idxt(i) + 1)
             part2 = part2 * (idxt(i) - 1)
             
@@ -2091,42 +2111,33 @@ module lspdm_tensor_operations_module
             part2 = part2 * arr%tdim(i)
           endif
         enddo
+        !print *,infpar%lg_mynum,"first:",tl,arr%tdim(1), idxt(1),part1,part2
       else
         cons_els = tl
-        do i = 1,min(diff_ord,2)
-          split_in = i
-          if(i>=2)then
-            part1 = part1 * (arr%tdim(i) - idxt(i) + 1)
-            part2 = part2 * (idxt(i) - 1)
-            exit
-          else
-            part1 = part1 * arr%tdim(i)
-            part2 = part2 * arr%tdim(i)
-          endif
-        enddo
         
-        if(infpar%lg_mynum==4)then
-          print *,part1,part2,tl
-        endif
-        part1 = max(tl,tl - part1)
-        part2 = max(0, tl - part1)
-        part1 = arr%tdim(1) - idxt(1) + 1
-        part2 = tl - (arr%tdim(1) - idxt(1) + 1)
+        part1 = min(arr%tdim(1) - idxt(1) + 1,tl)
+        part2 = tl - part1
+        !print *,infpar%lg_mynum,"second:",tl,arr%tdim(1), idxt(1),part1,part2
       endif
 
       tl_max = (tl / cons_els) * cons_els
       tl_mod = mod(tl ,cons_els)
 
-      if(infpar%lg_mynum==4)then
-        !print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
-        !print *,tl,part1,part2,tl_max,tl_mod
-        !print *,fx
-        !print *,idxt
-        !print *,arr%tdim
-        !print *,u_o
-        !stop 0 
-      endif
-      call lsmpi_barrier(infpar%lg_comm)
+      !do i=0,infpar%lg_nodtot-1
+      !if(i==infpar%lg_mynum)then
+      !  print *,i,"YAYYAYYAYYYAAAAAAYYYYYY:"
+      !  print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
+      !  print *,tl,part1,part2,tl_max,tl_mod
+      !  print *,fx
+      !  print *,idxt
+      !  print *,arr%tdim
+      !  print *,arr%dims
+      !  print *,fordims
+      !  print *,u_o
+      !  !stop 0 
+      !endif
+      !call lsmpi_barrier(infpar%lg_comm)
+      !enddo
 
 
       call ass_D1to3(fort,p_fort3,[tl,fordims(3),fordims(4)])
@@ -3031,14 +3042,7 @@ module lspdm_tensor_operations_module
     me   = infpar%lg_mynum
     nnod = infpar%lg_nodtot
 
-    !compute the maximum number of tiles to be stored in the workspace
-    maxntiinwrk = int(iwrk/arr%tsize,kind=8)
     !begin with sanity checks
-    if(maxntiinwrk == 0)then
-      print *,"ERROR(add_data2tiled_intiles_explicitbuffer)&
-      &:not enough space in wrk --> run without .CCSD_WITH_MPICH or add nodes"
-      stop 1
-    endif
     if(arr%mode/=mode)then
       print *,"ERROR(add_data2tiled_intiles_explicitbuffer):&
       &mode of array does not match mode of tiled_array"
@@ -3051,21 +3055,39 @@ module lspdm_tensor_operations_module
         stop 1
       endif
     enddo
-    
-    do i=1,arr%ntiles
 
-      if(arr%lock_set(i))then
-        if(i>maxntiinwrk) then
-          call arr_unlock_win(arr,int(i-maxntiinwrk))
-        endif
+    !compute the maximum number of tiles to be stored in the workspace
+    maxntiinwrk = int(iwrk/arr%tsize,kind=8)
+
+    if(maxntiinwrk == 0)then
+
+      if(mult==1.0E0_realk)then
+        print *,"WARNING(add_data2tiled_intiles_explicitbuffer)&
+        &:not enough space in wrk, try more nodes (in a slot) -> redirecting to _nobuffer"
+        call add_data2tiled_intiles_nobuffer(arr,A,dims,mode,o)
+      else
+        print *,"WARNING(add_data2tiled_intiles_explicitbuffer)&
+        &:not enough space in wrk, try more nodes (in a slot) -> redirecting to _stackbuffer"
+        call add_data2tiled_intiles_stackbuffer(arr,mult,A,dims,mode,o)
       endif
 
-      call get_tile_dim(nelmsit,arr,i)
-      b = 1       + mod(i-1,maxntiinwrk) * arr%tsize
-      e = nelmsit + mod(i-1,maxntiinwrk) * arr%tsize
-      call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,wrk(b),int(i),arr%tdim,o)
-      call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit,lock_set=arr%lock_set(i))
-    enddo
+    else
+      
+      do i=1,arr%ntiles
+
+        if(arr%lock_set(i))then
+          if(i>maxntiinwrk) then
+            call arr_unlock_win(arr,int(i-maxntiinwrk))
+          endif
+        endif
+
+        call get_tile_dim(nelmsit,arr,i)
+        b = 1       + mod(i-1,maxntiinwrk) * arr%tsize
+        e = nelmsit + mod(i-1,maxntiinwrk) * arr%tsize
+        call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,wrk(b),int(i),arr%tdim,o)
+        call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit,lock_set=arr%lock_set(i))
+      enddo
+    endif
 
 #endif
   end subroutine add_data2tiled_intiles_explicitbuffer
