@@ -2098,6 +2098,10 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
     endif
 
    bytes =n*lsmpi_len_realk
+   if(bytes<0)then
+     print *,"calling MPI_ALLOC_MEM with",bytes,n,lsmpi_len_realk
+     call lsquit('ERROR(mpi_allocate_dV8):something wrong in the subroutine, bytes<0',-1)
+   endif
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
@@ -2138,6 +2142,12 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
     endif
 
    bytes =n*lsmpi_len_realk
+
+   if(bytes<0)then
+     print *,"calling MPI_ALLOC_MEM with",bytes,n,lsmpi_len_realk
+     call lsquit('ERROR(mpi_allocate_dV4):something wrong in the subroutine, bytes<0',-1)
+   endif
+
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
@@ -2286,17 +2296,30 @@ if(present(comm))then
     if(loc) then
       bytes = int(0,kind=MPI_ADDRESS_KIND)
       if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) bytes = n1 * lsmpi_len_realk
+
+      if(bytes<0)then
+        print *,"calling MPI_WIN_ALLOCATE with",bytes,n1,lsmpi_len_realk
+        call lsquit('ERROR(lsmpi_allocate_d):something wrong in the subroutine, bytes<0',-1)
+      endif
+
       call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len_realk,info,comm,A%c,A%w,IERR)
+
     else
       bytes = n1 * lsmpi_len_realk
+
+      if(bytes<0)then
+        print *,"calling MPI_WIN_ALLOCATE with",bytes,n1,lsmpi_len_realk
+        call lsquit('ERROR(lsmpi_allocate_d):something wrong in the subroutine, bytes<0',-1)
+      endif
+
       call MPI_WIN_ALLOCATE(bytes,lsmpi_len_realk,info,comm,A%c,A%w,IERR)
     endif
 #else
-    call lsquit("ERROR(mpi_local_allocate_dV8): not possible withot mpi3",-1)
+    call lsquit("ERROR(lsmpi_allocate_d): not possible withot mpi3",-1)
 #endif
 
     IF (IERR.NE. 0) THEN
-      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in alloc",I5)') IERR
+      write (errmsg,'("ERROR(lsmpi_allocate_d):error in alloc",I5)') IERR
       CALL memory_error_quit(errmsg)
     ENDIF
 
@@ -2452,6 +2475,12 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
    endif
 
    bytes =n*lsmpi_intlen
+
+   if(bytes<0)then
+     print *,"calling MPI_ALLOC_MEM with",bytes,n,lsmpi_intlen
+     call lsquit('ERROR(mpi_allocate_i8V):something wrong in the subroutine, bytes<0',-1)
+   endif
+
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
@@ -2496,6 +2525,12 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
    endif
 
    bytes =n*lsmpi_intlen
+
+   if(bytes<0)then
+     print *,"calling MPI_ALLOC_MEM with",bytes,n,lsmpi_intlen
+     call lsquit('ERROR(mpi_allocate_i4V):something wrong in the subroutine, bytes<0',-1)
+   endif
+
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN

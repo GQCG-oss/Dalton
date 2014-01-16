@@ -176,6 +176,8 @@ module dec_typedef_module
      real(realk) :: PNOoverlapthr
      !> this defines the PNO threshold used for the EOS adapted space
      real(realk) :: EOSPNOthr
+     !> use triangular counting in th occupied indices
+     logical :: PNOtriangular
      !> Use MO-based algorithm to solve the CCSD equations
      logical :: MOCCSD
      !> Maximum number of MOs until which an MO-CCSD calculation should be
