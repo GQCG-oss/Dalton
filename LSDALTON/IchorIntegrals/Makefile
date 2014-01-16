@@ -82,11 +82,13 @@ F90_OBJS = \
         IchorGammaTabulation.o \
         IchorEri_CoulombIntegral_McM_seg_seg_SSSS.o \
         IchorEri_CoulombIntegral_OBS_Gen.o \
+        IchorEri_CoulombIntegral_OBS_Gen2.o \
         IchorEri_CoulombIntegral_OBS_SegQ.o \
         IchorEri_CoulombIntegral_OBS_SegP.o \
         IchorEri_CoulombIntegral_OBS_Seg.o \
         IchorEri_CoulombIntegral_OBS_Seg1Prim.o \
         IchorEri_CoulombIntegral_OBS_general.o \
+        IchorEri_CoulombIntegral_OBS_general2.o \
 	IchorEri_GabIntegral_OBS_Gen.o \
 	IchorEri_GabIntegral_OBS_Seg.o \
 	IchorEri_GabIntegral_OBS_general.o \
