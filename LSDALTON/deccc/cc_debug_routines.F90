@@ -5214,6 +5214,7 @@ module cc_debug_routines_module
             & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
     ENDIF
 
+    myload = 0
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
