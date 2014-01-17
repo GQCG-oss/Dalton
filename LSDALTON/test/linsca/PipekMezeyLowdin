@@ -59,9 +59,8 @@ cat > PipekMezeyLowdin.dal <<'%EOF%'
 .START
 TRILEVEL
 .LCM
-.PML
-2 2
-.NO L2OPT
+**LOCALIZE ORBITALS
+.PipekMezey
 *END OF INPUT  
 %EOF%
 #######################################################################
@@ -91,7 +90,7 @@ CTRL[1]=2
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # KURTOSIS
-CRIT1=`$GREP "Maximum fourth spread and orb\.number \: * 2\.3" $log | wc -l`
+CRIT1=`$GREP "Max\. sigma_4 and orb\.number\:    2\.3" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="Kurtosis is not correct"

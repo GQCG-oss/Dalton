@@ -2,6 +2,41 @@ all: liblsutil.a
 
 include ../Makefile.config
 
+reorder_frontend.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord2d_2_reord.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_1_reord.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_2_reord.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_3_reord.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_1_reord.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_2_reord.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_3_reord.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_4_reord.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_1_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_2_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_3_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_4_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_1_utils_t2f.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_2_utils_t2f.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_3_utils_t2f.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_4_utils_t2f.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+
 # Keep the file lists sorted for easier modification.
 
 C_OBJS = matop_csr_aux.o \
@@ -29,6 +64,28 @@ F90_OBJS = \
 	OverlapDistributionType.o\
 	ls_screenMPI.o\
 	lstensor_operations.o\
+        reorder_frontend.o\
+	reord2d_2_reord.o\
+	reord3d_1_reord.o\
+	reord3d_2_reord.o\
+	reord3d_3_reord.o\
+	reord4d_1_reord.o\
+	reord4d_2_reord.o\
+	reord4d_3_reord.o\
+	reord4d_4_reord.o\
+	reord4d_1_utils_f2t.o\
+	reord4d_2_utils_f2t.o\
+	reord4d_3_utils_f2t.o\
+	reord4d_4_utils_f2t.o\
+	reord4d_1_utils_t2f.o\
+	reord4d_2_utils_t2f.o\
+	reord4d_3_utils_t2f.o\
+	reord4d_4_utils_t2f.o\
+        tensor_type_def.o\
+        tensor_interface.o\
+        lspdm_slave.o\
+        tensor_basic.o\
+        lspdm_basic.o\
 	lstensorType.o\
 	lstensor_Mem.o\
 	LSoptType.o\
@@ -43,7 +100,6 @@ F90_OBJS = \
 	matop_dense_unrest.o\
 	mat-operations-aux.o\
 	mat-operations-essential.o\
-	matop_sparse1.o\
 	matrix_defop.o\
 	matrix_defop_backend.o\
         matrix_utilities.o \
@@ -66,6 +122,7 @@ F90_OBJS = \
 	ks-settings.o\
 	dec_typedef.o\
 	SphCartMatrices.o\
+	GCtrans.o\
 	TYPE-DEF.o\
 	TYPE-OP.o\
 	pbc_lattice_type.o\
@@ -76,22 +133,26 @@ F90_OBJS = \
 	rsp-typedef.o\
 	response_prop_type.o\
         fundamental.o\
+	lspdm_tensor_operations.o\
 	papi.o
+
+#F03_OBJS = \
+	lspdm_tensor_operations.o
 
 #       AoBatchType.o\
 
-# we should really have a separate target for bsm to properly
-# track dependencies but we would not like it to be too troublesome.
+#liblsutil.a: $(F03_OBJS) $(F90_OBJS) $(C_OBJS)
 liblsutil.a: $(F90_OBJS) $(C_OBJS)
-	if grep -q HAVE_BSM ../Makefile.config; then cd bsm && $(MAKE) install prefix=../.. AR="$(AR)"; fi
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
+	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD reord*.F90
 
 
-Makefile.depend depend: $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c) > Makefile.depend
+#Makefile.depend depend: $(F03_OBJS:.o=.F03) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+#	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F03_OBJS:.o=.F03) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) > Makefile.depend
+Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

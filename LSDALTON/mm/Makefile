@@ -31,6 +31,7 @@ F90_OBJS = \
 	mm_W_contractors.o	\
 	mm_W_pair_builder.o	\
 	mm_W_worker.o           \
+	cbifmm_f90.o            \
         mm_densfit.o
 
 C_OBJS = \
@@ -48,8 +49,8 @@ clean :
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
 
-Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c) > Makefile.depend
+Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

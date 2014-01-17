@@ -1,0 +1,372 @@
+#!/bin/bash 
+#########################################################################
+#
+# Shell script for running DALTON test suite
+#
+# by Christof Haettig and Kasper Hald, Sep. 2000
+#
+#########################################################################
+
+# Note: DALTON points to the default installation directory,
+#       in the 'configure' script. If the person installing
+#       Dalton has chosen another installation directory when
+#       he/she ran 'configure', the you should modify the
+#       DALTON definition to pint to that place.
+
+if [ -x '/usr/bin/time' ]; then
+ TIMING_OF="/usr/bin/time" #hjaaj sep07: gnu time gives more info than built-in time
+else
+ TIMING_OF=" "
+fi
+DALTON="`pwd`/../build/dalton"
+
+#########################################################################
+# define all the different test suites
+#########################################################################
+ESSENTIAL=""
+SHORT="2dar Vlao_ch4 Vlao_co Vlaodirect_ch4 alpha_deriv alpha_relax \
+dipgra_relax dipgra_relax2 dipgra_relaxb hyp4_ccsd mcd_lao \
+mcd_lao_direct oddisp2 shield verdet_h2 verdet_hf verdet_hf_direct"
+MEDIUM="Vlao_h2o2 Vlaodirect_co Vlaodirect_h2o2 dpt dpt1 mcdlao_c2h4tw \
+mcdlao_ch2o mcdlao_h2o2 triplet_cc3"
+LONG="alpha2 mcdlaodir_c2h4tw mcdlaodir_ch2o mcdlaodir_h2o2 triplet2"
+
+
+CC3="LIH1s1p_pol LIH1s1p_asym_pol CARBON_pol CARBON_asym_pol LIH1s1p_tmom \
+LIH1s1p_tmom_no2np1 HF_631G_pol HF_631G_asym_pol LIH_431G_tmom \
+LIH_431G_tmom_no2np1 HF_ccpVDZ_pol HF_ccpVDZ_asym_pol HF_ccpVDZ_tmom \
+HF_ccpVDZ_tmom_no2np1 cc3_hyp cc3_findiff cc3_hyp_HF631g \
+LIH1s1p_noddy_pol HF_631G_2hyp_noddy HF_631G_2hyp \
+tmom_fdif twophot3_noddy twophot3 h2o_resid_noddy h2o_resid LIH_431G_cauchy_12"
+
+ALL="$SHORT $MEDIUM $LONG $CC3"
+#
+#########################################################################
+# function usage(): print usage information 
+#########################################################################
+usage() {
+ cat << %EOF%
+usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
+            [-param "option list"] [-dalton script] [-log logfile] testcase
+
+       -h | -help | --help  : show this help description
+       -keep                : keep *.mol, *.dal, *.check and *.log files
+       -reftest             : test reference file(s); do not run any calculations
+       -bell                : sound bell each time a test fails
+       -benchmark           : print CPU time for each testcase as part of the summary
+       -param "option list" : pass "option list" to dalton-script
+       -dalton script       : use script instead of the default
+                              dalton-script "`pwd`/../dalton" (absolute path) 
+       -log logfile         : write output into logfile instead of the "TESTLOG"
+
+       where testcase might be one of the following:
+          essential            -- run a minimal set of essential testcases
+          short                -- run all short testcases
+          medium               -- run all medium length testcases
+          long                 -- run all long testcases
+          cc3                  -- run all cc3 testcases
+          all                  -- run all non-parallel testcases
+                                  (= short + medium + long + cc3)
+          <case1 [case2] ...>  -- run only the specified testcase(s)
+%EOF%
+exit 1
+}
+
+#########################################################################
+# function myprint(string): print to stdout and $listing
+#########################################################################
+myprint(){
+ echo "$1";
+ echo "$1" >> $listing;
+}
+
+errprint(){
+ echo "$1" >> /dev/stderr;
+}
+
+#########################################################################
+#########################################################################
+# start with real work:
+#########################################################################
+#########################################################################
+
+#########################################################################
+# set defaults and evaluate parameters
+#########################################################################
+TESTparams="$0 $*"
+help=""
+keep="false"
+paramlist=""
+reftest=""
+bell=""
+benchmark=""
+listing="TESTLOG"
+emptystring="                                "
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+while [ -n "`echo $1 | grep '-'`" ]; do
+   case $1 in
+     "-h" | "-help" | "--help" ) help="true" ; break;;
+     "-dalton" )  shift; DALTON=$1; shift;;
+     "-log" ) shift; listing=$1; shift;;
+     "-keep" ) keep="true"; shift;;
+     -param* ) shift; paramlist="$1"; shift;;
+     "-reftest" ) reftest="true"; shift;;
+     "-bell" ) bell="true"; shift;;
+     "-benchmark" ) benchmark="true"; shift;;
+     * ) echo "---> ERROR: $1 is an unknown option!"; usage;;
+   esac
+done
+if [ $help ]; then
+  usage
+fi
+
+if [ ! -x $DALTON ]; then
+   echo ' '
+   echo '----> ERROR, the "dalton" job script '
+   echo    '"'$DALTON'"'
+   echo '  does not exist or is not executable.'
+   echo 'The person who installed dalton has probably selected'
+   echo '  another place for the "dalton" job script.'
+   echo 'Please modify the DALTON variable in this script (i.e. '$0')'
+   echo '  to point to that place.    Alternatively, you may'
+   echo '  specify where the dalton script is with the -dalton option'
+   echo ' '
+#  usage
+   exit 1
+fi
+
+#########################################################################
+# set list of test cases:
+#########################################################################
+testcase=$*
+if   [ "$testcase" = "essential" ]; then
+  testcase=$ESSENTIAL
+elif [ "$testcase" = "short" ]; then
+  testcase=$SHORT
+elif [ "$testcase" = "medium" ]; then
+  testcase=$MEDIUM
+elif [ "$testcase" = "long" ]; then
+  testcase=$LONG
+elif [ "$testcase" = "cc3" ]; then
+  testcase=$CC3
+elif [ "$testcase" = "all" ]; then
+  testcase=$ALL
+fi
+
+#########################################################################
+# create a unique directory for test output /hjaaj
+# nonportable characters in the directory name removed. /pawsa
+#########################################################################
+testdir="`date +'%Y-%m-%dT%H_%M'`-testjob-pid-$$"
+while [ -e $testdir ]; do
+    testdir=${testdir}x
+done
+mkdir $testdir 
+cp functions $testdir
+cd $testdir || exit 1
+
+
+#########################################################################
+# check files for test listing:
+#########################################################################
+if [  -s $listing ]; then
+   echo "$listing already exists... should it be deleted first? (y/n)"
+   read answer
+   if [ "$answer" = "yes"  -o  "$answer" = "y" ]; then
+     echo > $listing
+   fi
+fi
+
+myprint "#####################################################################"
+myprint "                          DALTON test suite"
+myprint "#####################################################################"
+myprint "invoked with          : $TESTparams"
+myprint "date and time         : `date`"
+myprint "dalton script         : $TIMING_OF $DALTON"
+myprint "parameter list passed : $paramlist"
+myprint "test job directory    : $testdir"
+myprint "test listing          : $listing"
+myprint "test cases            : $testcase"
+
+#########################################################################
+# loop over test cases:
+#########################################################################
+passedall="ALL TESTS ENDED PROPERLY!"
+problems=""
+numresult=0
+num_reftests_not_found=0
+for item in ${testcase}
+do
+  trouble=0
+  myprint "###########################################################"
+  myprint "`date`"
+  myprint "Starting now with test $item:"
+  myprint "-----------------------------------------------------------"
+  errprint "###########################################################"
+  errprint "`date` -- Starting now with test $item:"
+  errprint "-----------------------------------------------------------"
+  chmod +x ../$item || exit 1
+  ../$item
+# remove any directory path now the files are unpacked
+  item=`basename $item`
+  if [ -f $item.info -a "$keep_quiet" = "" ]; then
+    cat $item.info
+    cat $item.info >> $listing
+  fi
+# Check if this is a multistep job
+  numsteps=1
+  if [ -r ./$item'__'1.dal ]; then
+      multi=1
+      numsteps=`ls ./$item\_\_[0-9].dal | wc -l`
+      myprint "   This is a multi-step job consisting of $numsteps steps"
+      rm -f ./$item'__'[0-9]'_'$item.log
+      chmod +x ./$item'__'[0-9].check
+  else
+      multi=0
+      rm -f ./$item.log
+      chmod +x ./$item.check
+  fi
+# Multi-step tests loop over the different jobsteps, regular tests just
+# go through this once
+  step=1
+  while [ "$step" -le "$numsteps" ]
+  do
+      if [ "$multi" -eq 1 ]; then
+          if [ "$step" -gt 1 ]; then
+              myprint ""
+              myprint "start $item step $step:"
+              myprint "-----------------------------------------------------------"
+          fi
+          molfile=$item
+          dalfile=$item'__'$step
+          logfile=./$item'__'$step'_'$item.log
+          checkfile=./$item'__'$step.check
+          reffile=./$item'__'$step.ref
+      else
+          molfile=$item
+          dalfile=$item
+          logfile=./$item.log
+          checkfile=./$item.check
+          reffile=../trueresult/$item.*ref
+      fi
+# If it's a reftest, no calculation is performed
+      if [ "$reftest" = "true" ]; then
+          myprint ""
+          myprint "evaluate reference output file $reffile:"
+          myprint "-----------------------------------------------------------"
+          compressed="false"
+          if [ ! -r $reffile ]; then
+              if [ -r $reffile.gz ]; then
+                  compressed="true"
+                  gunzip -f $reffile.gz
+              fi
+          fi
+          checkout=`$checkfile $reffile | tee -a $listing`
+          if [ "$benchmark" = "true" ]; then
+              if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
+                  CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+              else
+                  CPU_usage="N/A"
+              fi
+          fi
+          if [ "$compressed" = "true" ]; then
+              gzip -f --best $reffile
+          fi
+      else
+          if [ "$step" -eq "$numsteps" ]; then
+              $DALTON $paramlist -ext log $dalfile $molfile | \
+              grep -v '\*\*\**' | \
+              grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+              grep -v '^$' | tee -a $listing
+          else
+              $DALTON -D $paramlist -ext log $dalfile $molfile | \
+              grep -v '\*\*\**' | \
+              grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+              grep -v '^$' | tee -a $listing
+          fi
+          myprint ""
+          myprint "evaluate output file $logfile:"
+          myprint "-----------------------------------------------------------"
+          #checkout=`sh $checkfile $logfile | tee -a $listing`
+          checkout=`./$checkfile $logfile | tee -a $listing`
+          if [ "$benchmark" = "true" ]; then
+              if [ `$GREP "CPU  time used in DALTON" $logfile | wc -l` = 1 ]; then
+                  CPU_usage=`$GREP "CPU  time used in DALTON" $logfile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+              else
+                  CPU_usage="N/A"
+              fi
+          fi
+      fi
+      if [ "$benchmark" = "true" ]; then
+          numresult=`expr $numresult \+ 1`
+          if [ $step -eq 1 ]; then
+              testlist[$numresult]="$item"
+          else
+              testlist[$numresult]="...step$step"
+          fi
+          timelist[$numresult]="$CPU_usage"
+      fi
+      echo $checkout
+      passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
+      if [ -z "$passed" ]; then
+        trouble=`expr $trouble \+ 1`
+        if [ "$bell" = "true" ]; then
+          echo "\a"
+        fi
+        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
+        if [ "$trouble" -eq 1 ]; then
+            problems="$problems $item"
+        fi
+      elif [ "$keep" = "false" ]; then
+        #rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info
+        rm -f $dalfile.dal $dalfile.BAS $checkfile $item.info # keep $logfile, can be interesting to look closer at
+        if [ "$step" -eq "$numsteps" ]; then
+#       only delete restart files in last step of multistep test !!!
+           rm -f $dalfile.tar.gz
+        fi
+#     else everything OK and -keep defined
+      fi
+    step=`expr $step \+ 1`
+  done
+  if [ "$trouble" -eq 0 ]; then
+      if [ "$keep" = "false" ]; then
+          rm -f $molfile.mol
+      fi
+  fi
+done
+
+#########################################################################
+# final result:
+#########################################################################
+
+myprint ""
+myprint "#####################################################################"
+myprint "                              Summary"
+myprint "#####################################################################"
+myprint ""
+
+if [ "$benchmark" = "true" ]; then
+    if [ "$numresult" -gt 0  ]; then
+        ind=1
+        while [ "$ind" -le "$numresult" ]
+        do
+          namelength=`expr length ${testlist[$ind]}`
+          spclength=`expr 32 \- $namelength`
+          spc=`expr substr "$emptystring" 1 $spclength`
+          myprint "	${testlist[$ind]}$spc${timelist[$ind]}"
+          ind=`expr $ind \+ 1`
+        done
+        echo
+    fi
+fi
+
+echo $passedall | tee -a $listing
+echo $problems  | tee -a $listing
+
+exit 0

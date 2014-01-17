@@ -50,15 +50,15 @@ cat > linsca_trilevel_2nd_local.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.DSM
+.DIIS
 .START
  TRILEVEL
+.NOATOMSTART
 .CONVDYN
  STANDARD
 .2ND_LOC
-$INFO
-INFO_LINEQ
-$END INFO
+**INFO
+.INFO_LINEQ
 *END OF INPUT
 %EOF%
 
@@ -105,8 +105,8 @@ CTRL[5]=1
 ERROR[5]="1st L3 energy not correct -"
 
 # Test second order convergence
-CRIT1=`$GREP "0.0000000    1.29E-04" $log | wc -l`
-CRIT2=`$GREP "0.0000000    5.75E-08" $log | wc -l`
+CRIT1=`$GREP "0.0000000    1.59E-04" $log | wc -l`
+CRIT2=`$GREP "0.0000000    8.07E-08" $log | wc -l`
 TEST[6]=`expr $CRIT1 + $CRIT2`
 CTRL[6]=2
 ERROR[6]="Not second order convergence -"

@@ -50,6 +50,10 @@ Cl   -1.303842   -0.036443   -0.048756
 #  DALTON INPUT
 #######################################################################
 cat > linsca_arh_SCALAPACK_MEMDIST.dal <<'%EOF%'
+**GENERAL
+.SCALAPACK
+.SCALAPACKBLOCKSIZE
+22
 **INTEGRALS
 .MEMDIST
 **WAVE FUNCTIONS
@@ -63,19 +67,15 @@ BLOCK LMG
 .ANGINT
 31
 *DENSOPT
-.SCALAPACK
-.SCALAPACKBLOCKSIZE
-22
 .ARH FULL
 .NVEC
  8
 .CONVDYN
  STANDARD
-$INFO
-INFO_LINEQ
-INFO_STABILITY
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.INFO_LINEQ
+.INFO_STABILITY
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 
@@ -93,7 +93,7 @@ else
 fi
 
 # test energy
-CRIT1=`$GREP "Final DFT energy: * -671.003018" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy: * -671.003017" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
@@ -105,7 +105,7 @@ CTRL[2]=1
 ERROR[2]="HOMO-LUMO GAP NOT CORRECT -"
 
 # Test individual iterations
-CRIT1=`$GREP "1   -670.934754" $log | wc -l`
+CRIT1=`$GREP "1   -670.934753" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="1st energy not correct -"

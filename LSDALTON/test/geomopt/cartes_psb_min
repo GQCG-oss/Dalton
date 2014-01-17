@@ -69,9 +69,10 @@ BLYP
 31
 *DENSOPT
 .RESTART
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+.CONVTHR
+3.0d-5
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 #######################################################################

@@ -50,14 +50,13 @@ cat > LSresponse_HF_esg_csr.dal <<'%EOF%'
 .HF
 *DENSOPT
 .CSR
-.ARH                                                                                       
+.ARH
 .NVEC
 8
 .CONVTHR
 1.0D-6
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 **RESPONS
 .NEXCIT
 6

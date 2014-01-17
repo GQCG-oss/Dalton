@@ -14,7 +14,7 @@ direct='!.DIRECT'
 # OTHER CONFIGURATION VARIABLES ------------------------------------
 dalton=`pwd`/../../dalton.x
 #dalton="/home/pawsa/dalton/head/dalton.x"
-tmp=${TMPDIR:-/tmp}/${USER}
+tmp=${DALTON_TMPDIR:-/tmp}/${USER}
 
 # MOLECULE GENERATION ----------------------------------------------
 

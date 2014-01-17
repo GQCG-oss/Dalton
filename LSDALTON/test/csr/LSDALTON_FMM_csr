@@ -48,6 +48,8 @@ O                  7.134485    0.659897   -3.942496
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_FMM_csr.dal <<'%EOF%'
+**GENERAL
+.CSR
 **INTEGRALS
 .RUNMM
 *FMM
@@ -71,7 +73,6 @@ cat > LSDALTON_FMM_csr.dal <<'%EOF%'
 31
 *DENSOPT
 .ARH
-.CSR
 *END OF INPUT
 %EOF%
 
@@ -89,7 +90,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-151\.857832442[0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-151\.857832[1-2]" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"

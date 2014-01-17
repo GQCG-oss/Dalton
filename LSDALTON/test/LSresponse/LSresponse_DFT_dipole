@@ -50,20 +50,10 @@ cat > LSresponse_DFT_dipole.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*DFT INPUT
-.GRID TYPE
- BECKEORIG LMG
-.RADINT
-1.0D-11
-.ANGINT
-31
 *DENSOPT
-.RH                                                                            
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID  
+.CONVDYN
+TIGHT
 *END OF INPUT  
 %EOF%
 #######################################################################

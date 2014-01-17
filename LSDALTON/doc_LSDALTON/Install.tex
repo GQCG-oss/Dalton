@@ -3,7 +3,7 @@
 \section{Hardware/software
 supported}\label{sec:hardsoft}\index{hardware/software support}
 
-The {\lsdalton} program from the Dalton2011 suite
+The {\lsdalton} program from the Dalton2013 suite
 can be run on a variety of systems running the UNIX
 operating system. The current release of the program 
 has been tested on 
@@ -17,17 +17,17 @@ exchange-correlation part, which is written in C.
 
 \section{Source files}\label{sec:source}
 
-{\lsdalton} is distributed in the Dalton2011 \verb|tar| file obtainable from
+{\lsdalton} is distributed in the Dalton2013 \verb|tar| file obtainable from
 (\verb|http://daltonprogram.org|) provided the appropriate
-licence agreement for the Dalton2011 program suite has first been
+licence agreement for the Dalton2013 program suite has first been
 completed and submitted.
 If you have accessed this documentation off the
 \verb|tar|\index{tar-file} file you will
 already know how to extract the required directory structure, but
 for completeness, assuming the \verb|tar| file is called
-\verb|dalton2011.tar.gz|\index{tar-file}, the commands
+\verb|dalton2013.tar.gz|\index{tar-file}, the commands
 \begin{verbatim}
-tar -x -z -f dalton2011.tar.gz
+tar -x -z -f dalton2013.tar.gz
 \end{verbatim}
 will produce the following subdirectory structure in the current
 directory:
@@ -269,7 +269,7 @@ We now describe this Makefile.config file line by line, before we discuss a numb
   \item{-DUSE\_UNDERSCORES} required to define the communication between fortran and C files.
   \end{description}
 \item Line 15: Empty by default. Used if for some reason, any additional directories should be included.
-\item Line 16: Libraries you wish to include. -lguide and -lpthread are required for openmp parallelization. See Section \ref{mkl:ifort} for more details on how to link to mkl and other libraries. If you use the newest version of ifort you need to replace -lguide with -openmp. 
+\item Line 16: Libraries you wish to include. -lguide and -lpthread are required for openmp parallelization. See Sections \ref{mkl:ifort1} and \ref{mkl:ifort2} for more details on how to link to mkl and other libraries. If you use the newest version of ifort you need to replace -lguide with -openmp. 
 \item Line 17: the install directory 
 \item Line 18: \lsdalton\ provides its own blas and lapack libraries, located in the pdpack directory. These should only be used
 if no mathematical libraries are available, since they slow down the code significantly. 
@@ -291,7 +291,7 @@ and changed by
 The newstacksize should be a large number or unlimited.
 
 %linking to mkl
-\subsubsection{Math Library: MKL}\label{mkl:ifort}
+\subsubsection{Math Library: MKL}\label{mkl:ifort1}
 Linking to a math library is crucial for optimal performance. The linking 
 depends on the library available. We encourage to first compile with the 
 default Makefile.config composed by the configure script. This ensures that 
@@ -418,7 +418,7 @@ Line 11-13 specify compiler flags and are naturally different for different comp
   \end{description}
 Line 16 are libraries you wish to include. -lgomp are required for openmp parallelization. 
 
-\subsubsection{Math Library: Linux MKL}\label{mkl:ifort}
+\subsubsection{Math Library: Linux MKL}\label{mkl:ifort2}
 Linking to a math library is crucial for optimal performance. The linking 
 depends on the library available. We encourage to first compile with the 
 default Makefile.config composed by the configure script. This ensures that 
@@ -577,7 +577,7 @@ small or non-sparse systems, there is a considerable overhead in cpu time compar
 using standard dense matrices, so don't use it unless you need it. You enable CSR by putting
 "-DVAR\_MKL" in your CPPFLAGS (in addition to what is already there. You also need to link
 to MKL's CSR library (what we have in \lsdalton\ is an interface to MKL CSR). Furthermore, to run a calculation
-using CSR matrices, you always need .CSR under *DENSOPT in the input file DALTON.INP (described in detail in
+using CSR matrices, you always need .CSR under *DENSOPT in the input file LSDALTON.INP (described in detail in
 chapters~\ref{ch:starting} and~\ref{ch:keywords}).
 
 \section{Running the {\lsdalton} test suite}\label{sec:testsuite}

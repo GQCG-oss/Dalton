@@ -1,0 +1,103 @@
+~%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Cholesky based MP2: \Sec{CHOMP2}}
+\label{sec:chomp2}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\index{MP2}
+\index{Cholesky decomposition-based methods}
+
+In this Section, we describe the keywords controlling the algorithm to 
+calculate MP2 energies and  second order properties using Cholesky 
+decomposed two-electron integrals. The Cholesky MP2 algorithm will be
+automatically employed if the keyword \Key{CHOLES} was activated in the
+\Sec{*DALTON} input module.  
+
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item H.~Koch, {A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s}, and T.~B. Pedersen \newblock {\em J.~Chem.~Phys.}, {\bf 118},\hspace{0.25em}9481, (2003).
+\end{list}
+}}
+\end{center}
+
+\begin{description}
+\item[\Key{ALGORI}]\verb| |\newline
+\verb|READ (LUCMD,*) IALGO|\newline
+        Set algorithm: 0 to let the CHOMP2 routine decide according
+        to available memory,
+        1 to force storage of full-square (ia$\mid$jb) integrals 
+        in core, 2 to batch over one virtual index, 3 to batch
+        over two virtual indices. (Default: 0).
+%
+\item[\Key{CHOMO}] 
+        Decompose the (ai$\mid$bj) integrals. 
+%
+\item[\Key{MP2SAV}] 
+        Save the MP2 amplitudes on disk. (Default: 
+        \verb| .FALSE.|)
+%
+\item[\Key{MXDECM}] \verb| |\newline
+\verb|READ (LUCMD,*) MXDECM|\newline
+        Read in the maximum number of qualified diagonals in
+        the decomposition of the (ai$\mid$bj) integrals. (Default: 50).
+%
+\item[\Key{NCHORD}] \verb| |\newline
+\verb|READ (LUCMD,*) NCHORD|\newline
+        Read in the the maximum number of previous vectors
+        to be read in each batch. (Default: 200).
+%
+\item[\Key{NOCHOM}] 
+        No decompositions of the (ai$\mid$bj) integrals. But, of course,
+        the previously calculated decomposed two-electron AO integrals
+        will be used. This is the default.
+%
+\item[\Key{OLDEN2}] \verb| |\newline
+\verb|READ (LUCMD,*) OLDEN2|\newline
+        In a restarted calculation, read in the contribution
+        to the MP2 energy from the virtual orbitals treated in
+        a previous calculation. This information can be found in
+        the file CHOMP2\_RST from the previous 
+        calculation. (Default: 0.0D0).
+%
+\item[\Key{RSTMP2}] \verb| |\newline
+\verb|READ (LUCMD,*) IFSYMB, IFVIRB|\newline
+        Restart Cholesky MP2 calculation. The next line reads
+        the symmetry and the number of the first virtual orbital 
+        to be included in the calcualtion.This information can 
+        be gotten in the file CHOMP2\_RST from the previous 
+        calculation. 
+%
+\item[\Key{SKIPCH}] 
+        Skip (ai$\mid$bj) decompositon; read info from disk
+%
+\item[\Key{SKIPTR}] 
+        Skip MO transformation; use old vectors.
+%
+\item[\Key{SPAMP2}] \verb| |\newline
+\verb|READ (LUCMD,*) SPAMP2|\newline
+        Span factor for (ai$\mid$bj) decomposition. (Default: 
+        The span factor used in the decomposition of
+        the two-electron integrals in tha AO basis).
+%
+\item[\Key{SPLITM}] \verb| |\newline
+\verb|READ (LUCMD,*) SPLITM|\newline
+        Weight factor for Cholesky part in memory split for
+        batching over virtuals. (Default: 1.0D0).
+%
+\item[\Key{THRMP2}] \verb| |\newline
+\verb|READ (LUCMD,*) THRMP2|\newline
+        Threshold for decomposition. (Default: 
+        The threshold used in the decomposition of
+        the two-electron integrals).
+%
+\item[\Key{ZERO}] \verb| |\newline
+\verb|READ (LUCMD,*) THZMP2|\newline
+        Threshold for diagonal zeroing in decompositions. (Default: 
+        The same used in the decomposition of
+        the two-electron integrals).
+%
+\end{description}

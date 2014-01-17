@@ -1,247 +1,91 @@
 
 
-Installation
-============
+Installation on Linux, Unix, and Mac
+====================================
 
 Dalton is configured using CMake, typically via the setup script,
 and subsequently compiled using make or gmake.
 
 
-Dependencies
-------------
+Basics
+------
 
-The configuration/compilation step requires:
-CMake  >= 2.6.3
+The setup script is a useful front-end to CMake. To see all options, run::
 
-The configuration/compilation step using setup script requires:
-CMake  >= 2.6.3
-python >= 2.4.0
+  $ ./setup --help
+
+The setup script does nothing else than creating the directory "build" and
+calling CMake with appropriate environment variables and flags::
+
+  $ ./setup [--flags]
+  $ cd build
+  $ make
+
+By default CMake builds out of source. This means that all object files and the
+final binary are generated outside of the source directory. Typically the build
+directory is called "build", but you can change the name of the build directory
+(e.g. "build_gfortran")::
+
+  $ ./setup [--flags] build_gfortran
+  $ cd build_gfortran
+  $ make
+
+By default we compile all targets (DALTON and LSDALTON). Instead of typing
+``make``, you can restrict compilation to only ``dalton.x`` or ``lsdalton.x``
+like this::
+
+  $ make dalton.x
+  $ make lsdalton.x
 
 
 What to do if CMake is not available or too old?
 ------------------------------------------------
 
-It is your machine and you have Ubuntu or Debian::
+It is your machine and you have an Ubuntu or Debian-based distribution::
 
-  $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
+  $ sudo apt-get install cmake
 
-Similar mechanisms exist for other distributions or 
+On Fedora::
+
+  $ sudo yum install cmake
+
+Similar mechanisms exist for other distributions or
 operating systems. Please consult Google.
 
 If it is a cluster, please ask the Administrator to install/upgrade CMake.
 
 If it is a cluster, but you prefer to install it yourself (it's easy):
 
-1. Download the latest tarball from http://www.cmake.org/cmake/resources/software.html
+1. Download the latest precompiled tarball from http://www.cmake.org/cmake/resources/software.html
 2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
-
-Now you can enjoy your CMake instead of the old one::
-
-  $ ./setup [other flags] --cmake=~/cmake-2.8.5-Linux-i386/bin/cmake
-
-
-Basic installation using the setup script
------------------------------------------
-
-Dalton is configured using CMake.
-The setup script is a useful front-end to CMake.
-It does nothing else than creating the directory "build" and calling
-CMake with appropriate environment variables and flags::
-
-  $ ./setup [--flags]
-  $ cd build
-  $ make
-
-To see all available options::
-
-  $ ./setup --help
-
-You can see the CMake command using::
-
-  $ ./setup [--flags] --show
-
-and use it directly to call CMake without setup.
+3. Set correct PATH variable
 
 
 Most typical examples
 ---------------------
 
-In order to get familiar with the new configuration setup, let us demonstrate
+In order to get familiar with the configuration setup, let us demonstrate
 some of the most typical configuration scenarios.
 
 Configure for parallel compilation using MPI (make sure to properly export MPI
 paths)::
 
-  $ ./setup --fc=mpif90 --cc=mpicc
+  $ ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx
 
-Configure for parallel compilation using MPI and 64-bit integers::
+There is a shortcut for it::
 
-  $ ./setup --fc=mpif90 --cc=mpicc --int64
+  $ ./setup --mpi
 
-Configure for sequential compilation using ifort/icc::
+Configure for sequential compilation using ifort/icc/icpc::
 
-  $ ./setup --fc=ifort --cc=icc
+  $ ./setup --fc=ifort --cc=icc --cxx=icpc
 
-Configure for sequential compilation using gfortran/gcc::
+Configure for sequential compilation using gfortran/gcc/g++::
 
-  $ ./setup --fc=gfortran --cc=gcc
+  $ ./setup --fc=gfortran --cc=gcc --cxx=g++
 
-You get the idea. The configuration is pretty good at detecting math libraries
-automatically, provided you export proper paths, see "Linking to external math
-libraries".
-
-
-Out of source compilation
--------------------------
-
-By default CMake builds out of source.  This means that all object files and
-the final binary are generated outside of the source root.  Typically the build
-directory is called "build", but you can modify this default behavior using the
---build flag.  The out of source compilation is in contrast to previous Dalton
-releases.  This strategy offers several advantages. One obvious advantage is
-that you can now build several binaries with the same source::
-
-  $ cd /sourcepath
-  $ ./setup --fc=gfortran --cc=gcc /gfortran-buildpath
-  $ cd /gfortran-buildpath
-  $ make
-  $ cd /sourcepath
-  $ ./setup --fc=ifort --cc=icc /ifort-buildpath
-  $ cd /ifort-buildpath
-  $ make
-
-
-Basic installation without the setup script
--------------------------------------------
-
-If you are familiar with CMake you don't have to use the setup script.
-The setup script does nothing else than calling CMake with appropriate
-environment variables and flags, it is a convenient front-end.
-
-Minimal example::
-
-  $ mkdir build
-  $ cd build
-  $ cmake ..
-  $ make
-
-The two following strategies are completely
-equivalent:
-
-Using CMake directly::
-
-  $ mkdir build
-  $ cd build
-  $ FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DCMAKE_BUILD_TYPE=Release ..
-  $ make
-
-Using setup::
-
-  $ ./setup --fc=mpif90 --cc=mpicc
-  $ cd build
-  $ make
-
-If the compiler contains "mpi", then you can omit the flag --mpi, setup will set
-it in this case automatically.
-
-Please note that the defaults for performance optimization are different for
-setup and direct CMake: by default setup configures for optimization, whereas
-direct CMake commands configure code without optimization. Both defaults can be
-changed.
-
-There is nothing special about the directory "build".
-You can do this instead::
-
-  $ mkdir /buildpath
-  $ cd /buildpath
-  $ cmake /sourcepath
-  $ make
-
-
-Linking to external math libraries
-----------------------------------
-
-Typically you will want to link to external math (BLAS and LAPACK) libraries,
-for instance provided by MKL or Atlas.
-
-The CMake configuration script will automatically find them if you define MATH_ROOT::
-
-  $ export MATH_ROOT='/opt/intel/mkl'
-
-Do not use full path MATH_ROOT='/opt/intel/mkl/lib/ia32'. CMake will append the
-correct paths depending on the processor and the default integer type.  If the
-MKL libraries that you want to use reside in
-/opt/intel/mkl/10.0.3.020/lib/em64t, then MATH_ROOT is defined as::
-
-  $ export MATH_ROOT='/opt/intel/mkl/10.0.3.020'
-
-Then::
-
-  $ ./setup [--flags]                 # do not need to define --math
-  $ cd build
-  $ make
-
-Alternatively::
-
-  $ cd build
-  $ [FC=gfortran CC=gcc] MATH_ROOT='/opt/intel/mkl' cmake ..
-  $ make
-
-If automatic detection of math libraries fails for whatever reason, you can
-always call the libraries explicitly like here::
-
-  $ ./setup --explicit-libs="-L/path -lfoo -lbar"
-
-
-Running CMake using GUI
------------------------
-
-You prefer GUI? No problem. You can configure with GUI::
-
-  $ cd build
-  $ cmake ..
-  $ cmake-gui ..
-
-You may have to install cmake-gui for it, on debian/ubuntu::
-
-  $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
-
-
-Running tests
--------------
-
-You can run the test suite with::
-
-  $ make test
-
-It is HIGHLY recommended to run the test set after you have compiled
-Dalton to make sure that your binary correctly reproduces reference results.
-
-
-Make install
-------------
-
-Make install is very useful to make Dalton available to other users on the same
-machine::
-
-  $ ./setup [--flags] --prefix=/path
-  $ cd build
-  $ make
-  $ make install
-
-
-Where should $PATH point to? Source directory or build directory?
------------------------------------------------------------------
-
-We recommend to let $PATH point to the install directory::
-
-  $ ./setup [--flags] --prefix=/install/path
-  $ cd build
-  $ make
-  $ make install
-
-This way everything (binary, scripts, basis sets) will be at the right place
-under /install/path and $PATH should contain /install/path.
+You get the idea. The configuration is normally pretty good at detecting math libraries
+automatically, provided you export the proper environment variable ``MATH_ROOT``.
 
 
 Compiling in verbose mode
@@ -266,20 +110,8 @@ based on CMake, compilation race condition errors do not appear.
 How can I change optimization flags?
 ------------------------------------
 
-If you want to turn optimization off (debug mode), there are several ways to do that.
+You can turn optimization off (debug mode) like this::
 
-Either use setup::
-
-  $ ./setup --debug [other flags]
+  $ ./setup --type=debug [other flags]
   $ cd build
   $ make
-
-Or use Cmake directly (default here is debug mode)::
-
-  $ mkdir build
-  $ cd build
-  $ [FC=ifort CC=icc] cmake ..
-  $ make
-
-If you want to modify compiler flags, edit cmake/FCompilers.cmake and/or
-cmake/CCompilers.cmake.

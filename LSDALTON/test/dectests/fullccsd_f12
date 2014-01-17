@@ -44,24 +44,20 @@ H    0.0000     -0.7572 -0.4692
 #  DALTON INPUT
 #######################################################################
 cat > fullccsd_f12.dal <<'%EOF%'
-#**INTEGRALS
-#.NOLINK
-#.NO CS
-#.NO PS
+**GENERAL
+.NOGCBASIS
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .ARH
-.NOGCBASIS
 .START
 TRILEVEL
 .CONVTHR
 1.0d-5
-**DEC
-.FULL
+**CC
 .CCSD
+.CCSDsolver_serial
 .F12
-.canonical
 *END OF INPUT
 %EOF%
 #######################################################################

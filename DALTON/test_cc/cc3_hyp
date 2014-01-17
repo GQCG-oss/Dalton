@@ -1,0 +1,138 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc3_hyp.info <<%EOF%
+   cc3_hyp
+   -----------
+   Molecule:         LIH
+   Theory Level:     CC3 / 6-31G
+   Test Purpose:     static and freq.-dep. first hyperpolarizability
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > cc3_hyp.mol <<%EOF%
+BASIS
+6-31G
+blubber
+blubber
+    2    0  X  Y      1.00D-18
+        3.0   1    1    1
+Li    0.0000000000000000   0.000000000   1.30000000
+        1.0   1    1    1
+H     0.0000000000000000   0.000000000   0.00000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc3_hyp.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-12
+.NODIIS
+*ORBITAL INPUT
+.NOSUPSYM
+*CC INP
+.CC3
+.PRINT
+ 1
+.THRENR
+1.0D-14
+.THRLEQ
+1.0D-14
+.MXLRV
+  1000
+.MAX IT
+  1000
+*CCLR
+.OPERATOR
+ZDIPLEN ZDIPLEN
+.FREQUE
+  3
+0.00  0.10  0.20
+*CCQR
+.NOBMAT
+.OPERATOR
+ZDIPLEN ZDIPLEN ZDIPLEN
+.ORFREQ
+  2
+ 0.00 0.10
+.SHGFRE
+  1
+ 0.10
+*NODDY
+.XI
+.ETA
+.FMAT
+**END OF DALTON
+%EOF%
+#######################################################################
+
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CC3 energies:
+CRIT1=`$GREP "Total SCF   energy: * -7\.5744842494" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -7\.5922238176" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -7\.6000272811" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=6
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# CC3 polarizability :
+CRIT1=`$GREP  "ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *12\.684665" $log | wc -l`
+CRIT2=`$GREP  "(-|-0)\.1000 *(|0)\.1000 *230\.56897" $log | wc -l`
+CRIT3=`$GREP  "(-|-0)\.2000 *(|0)\.2000 *8\.8105639" $log | wc -l`
+TEST[2]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=3
+ERROR[2]="CC3 POLARIZABILITY NOT CORRECT"
+
+# CC3 hyperpolarizability :
+CRIT1=`$GREP  "ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *-1050.3968" $log | wc -l`
+CRIT2=`$GREP  "(|-|-0|0)\.0000 *(|0)\.1000 *(-|-0)\.1000 *-401811.17" $log | wc -l`
+CRIT3=`$GREP  "(-|-0)\.2000 *(|0)\.1000 *(|0)\.1000 *-115.90926" $log | wc -l`
+TEST[3]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="CC3 HYPERPOLARIZABILITY NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2 3
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > cc3_hyp.check
+#######################################################################

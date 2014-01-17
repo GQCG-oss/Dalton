@@ -61,9 +61,11 @@ cat > LSDALTON_pointcharge.dal <<'%EOF%'
 1.0D-11
 .ANGINT
 31
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+*DENSOPT
+.CONVDYN
+TIGHT
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 
@@ -79,7 +81,7 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
-CRIT1=`$GREP "Final DFT energy:  * -76.24226461" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy:  * -76.24226448" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT -"

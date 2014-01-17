@@ -46,6 +46,8 @@ a3 = 0.0 0.0 10.0 inactive
 #  DALTON INPUT
 #######################################################################
 cat > pbc2_h2fock.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .THRESH
 1.0D-18
@@ -57,7 +59,6 @@ cat > pbc2_h2fock.dal <<'%EOF%'
 *DENSOPT
 .START
 H1DIAG
-.NOGCBASIS
 **PBC
 .WRITE TO FILE
 .TESTCASE

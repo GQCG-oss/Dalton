@@ -47,16 +47,20 @@ C   0.0   0.0     0.0
 #  DALTON INPUT
 #######################################################################
 cat > linsca_admm.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .ADMM-DF
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.NOGCBASIS
 .START
 TRILEVEL
+.NOATOMSTART
 .RH
 .DIIS
+.CONVTHR
+8.0d-5
 **RESPONS
 *MOLGRA
 *END OF INPUT

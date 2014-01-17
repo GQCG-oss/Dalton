@@ -12,8 +12,6 @@ F90_OBJS = dec_settings.o \
         array4_memory.o \
         array3_memory.o \
 	dec_utils.o \
-        manual_reorderings.o\
-        manual_utils.o\
 	ccarray2_simple.o \
 	ccarray4_simple.o \
 	ccarray3_simple.o \
@@ -23,9 +21,6 @@ F90_OBJS = dec_settings.o \
 	ccsdpt.o \
 	ccorbital.o \
 	cc_integrals.o \
-        array_memory.o \
-        dec_pdm.o\
-	array_operations.o \
 	ccsd.o \
 	rpa.o \
 	f12_integrals.o \
@@ -51,8 +46,8 @@ clean :
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
 
-Makefile.depend depend: $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c) 
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../LSint -M../lsutil -- $(F90_OBJS:.o=.f90) > Makefile.depend
+Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) 
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../LSint -M../lsutil -- $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

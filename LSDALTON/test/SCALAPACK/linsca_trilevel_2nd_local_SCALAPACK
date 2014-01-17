@@ -46,24 +46,25 @@ H      0.55168  -0.77340   0.00000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_trilevel_2nd_local_SCALAPACK.dal <<'%EOF%'
+**GENERAL
+.SCALAPACK
+.SCALAPACKBLOCKSIZE
+7
 **INTEGRAL
 .DENSFIT
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.SCALAPACK
-.SCALAPACKBLOCKSIZE
-7
-.DSM
+.DIIS
 .START
  TRILEVEL
+.NOATOMSTART
 .CONVDYN
- STANDARD
+ TIGHT
 .2ND_LOC
-$INFO
-INFO_LINEQ
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.INFO_LINEQ
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 
@@ -110,8 +111,8 @@ CTRL[5]=1
 ERROR[5]="1st L3 energy not correct -"
 
 # Test second order convergence
-CRIT1=`$GREP "0.0000000    1.29E-04" $log | wc -l`
-CRIT2=`$GREP "0.0000000    5.75E-08" $log | wc -l`
+CRIT1=`$GREP "0.0000000    1.60E-04" $log | wc -l`
+CRIT2=`$GREP "0.0000000    8.12E-08" $log | wc -l`
 TEST[6]=`expr $CRIT1 + $CRIT2`
 CTRL[6]=2
 ERROR[6]="Not second order convergence -"

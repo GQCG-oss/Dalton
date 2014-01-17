@@ -2,7 +2,7 @@
 !FIXME: - a modification of the contraction coefficients, 
 !FIXME: for the time being we need to deactivate use of this
 !FIXME: "grand canonical" basis by using the keyword .NOGCBASIS
-!FIXME: In conclusion use the the following in DALTON.INP:
+!FIXME: In conclusion use the the following in LSDALTON.INP:
 !FIXME: *DENSOPT
 !FIXME: .START
 !FIXME: H1DIAG
@@ -56,7 +56,7 @@ module gen1int_host
   !> \param ls_setting is the settings from linsca
   !> \param io_viewer is the logical unit number of the viewer
   subroutine gen1int_host_init(ls_setting, io_viewer)
-    use TYPEDEF, only: LSSETTING
+    use TYPEDEFTYPE, only: LSSETTING
     use molecule_type, only: copy_molecule
     use BUILDAOBATCH, only: BUILD_AO
     use Integralinfo, only: init_integral_INPUT
@@ -285,8 +285,8 @@ module gen1int_host
   !> \param D contains the AO density matrix
   !> \param io_viewer logical unit number of the standard output
   subroutine gen1int_host_test(ls_setting, D, io_viewer)
-    use TYPEDEF, only: LSSETTING, &
-                       getNbasis
+    use TYPEDEFTYPE, only: LSSETTING
+    use TYPEDEF, only: getNbasis
     use Matrix_module, only: Matrix
     use matrix_operations, only: mat_init,  &
                                  mat_print, &

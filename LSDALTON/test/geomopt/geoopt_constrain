@@ -58,6 +58,9 @@ cat > geoopt_constrain.dal <<'%EOF%'
 1
 **WAVE FUNCTIONS
 .HF
+*DENSOPT
+.CONVTHR
+5.0d-6
 *END OF INPUT
 %EOF%
 #######################################################################
