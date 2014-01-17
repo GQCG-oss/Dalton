@@ -1538,35 +1538,43 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   930                      CONTINUE
-                           WRITE(LUPRI,*) 'ignat'
-                           WRITE(LUPRI,*) 'MZYVAR(MSYMA)'
-                           WRITE(LUPRI,*) MZYVAR(MSYMA)
-                           WRITE(LUPRI,*) 'Starting do loop for all 3'
-                           DO IG = 1, MZYVAR(MSYMA)
-                           WRITE(LUPRI,*) GT3(IG),
-     *                     GX2BC(IG),GX2CB(IG)
-                           END DO
+
+!!!!!!!! Where the magic happends to get the response vector
+      WRITE(LUPRI,*) 'ignat'
+      WRITE(LUPRI,*) 'MZYVAR(MSYMA)'
+      WRITE(LUPRI,*) MZYVAR(MSYMA)
+
+      WRITE(LUPRI,*) 'Starting do loop for all 3, labels', 
+     *BQRLB(MSYMB,IBOP), CQRLB(MSYMC,ICOP)
+
+      DO IG = 1, MZYVAR(MSYMA)
+      WRITE(LUPRI,*) GT3(IG), GX2BC(IG), GX2CB(IG) 
+      END DO
+
 C add X2init both permutation to GT3
-                           CALL DAXPY( MZYVAR(MSYMA),1.0D0, GX2BC,1,
-     *                     GX2CB,1)
-                           CALL DAXPY( MZYVAR(MSYMA),1.0D0, GX2CB,1,
-     *                     GT3,1)
+      CALL DAXPY( MZYVAR(MSYMA),1.0D0, GX2BC,1, GX2CB, 1)
+      CALL DAXPY( MZYVAR(MSYMA),1.0D0, GX2CB,1, GT3,1 )
 
-                           !Put right hand in WRK beginning
-                           DO IG = 1, MZYVAR(MSYMA)
-                           WRK(IG) = GT3(IG)
-                           END DO
+      WRITE(LUPRI,*) 'print sum of all 3 vectors: GT3'
+      WRITE(LUPRI,*) 'put GT3 in WRK(1:KZYVAR)'
+      !Put right hand in WRK beginning
+      DO IG = 1, MZYVAR(MSYMA)
+      WRITE(LUPRI,*) GT3(IG)
+      WRK(IG) = GT3(IG)
+      END DO
 
-                           !Allocate new WRK array for CRLRV3
-                           KFREE = KAVEC + MZYVAR(MSYMA)
-                           KFREE = KAVEC
-                           LFREE = LWRK - KFREE + 1
+      !Allocate new WRK array for CRLRV3
+      KFREE = KAVEC + MZYVAR(MSYMA)
+      KFREE = KAVEC
+      LFREE = LWRK - KFREE + 1
 
-                           CALL CRLRV3( BQRLB(MSYMB, IBOP),
-     *                     CQRLB(MSYMC,ICOP), FREQB, FREQC,
-     *                     CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
-     *                     XINDX, MJWOP, WRK(1 + MZYVAR(MSYMA)),
-     *                     LWRK )
+!                           CALL CRLRV3( WRK(IG), BQRLB(MSYMB, IBOP),
+!     *                     CQRLB(MSYMC,ICOP), FREQB, FREQC,
+!     *                     CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
+!     *                     XINDX, MJWOP, WRK(1 + MZYVAR(MSYMA)),
+!     *                     LWRK - 1 - MZYVAR(MSYMA) )
+
+!!!!!!!!!!  Continuation with normal program
 C
 C A2TEST
 C
