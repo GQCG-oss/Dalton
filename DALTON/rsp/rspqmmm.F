@@ -785,8 +785,10 @@ C-------------------------------------------------------
         CALL DZERO(WRK(KEFIELD),3*NNZAL)
 
         IF ((NODTOT .GE. 1) .AND. TDHF) THEN 
+#ifdef VAR_MPI
         CALL QMMMLNO_M1(UDV,UDVTR,WRK(KEFIELD),WRK(KUCMO),
      *                  WRK(JUBO),WRK(KWRK2),LWRK2)
+#endif
         ELSE
         LRI = 1             ! group-index in vector
         DO 201 J=1,MMCENT
@@ -836,8 +838,10 @@ C       Now we need the integrals again transformed to the MO basis.
         ENDIF
 
         IF ((NODTOT .GE. 1) .AND. TDHF) THEN
+#ifdef VAR_MPI
         CALL QMMMLNO_M2(WRK(LRXYO),WRK(KUCMO),WRK(KINDMOM),
      *                      WRK(KWRK2),LWRK2)
+#endif
         ELSE
         LRI = 1
         DO 202 J=1,MMCENT

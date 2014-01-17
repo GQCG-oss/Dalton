@@ -133,7 +133,7 @@ if(USE_OWN_LAPACK)
 endif()
 
 include(LibsDALTON)
-include(LibsLSDALTON)
+#include(LibsLSDALTON)
 
 # copy basis/ to build directory
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})

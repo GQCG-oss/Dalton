@@ -34,7 +34,6 @@ C=========================================================================
 C
       use parallel_models_mpi
 C
-      use parallel_models
 #ifdef BUILD_GEN1INT
 C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
 !      use gen1int_interface

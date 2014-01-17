@@ -5845,8 +5845,8 @@ C     check if there is leftovers
 
       RETURN
       END
+#endif
 
-C
 C  /* Deck pegrd */
       SUBROUTINE PEGRD(CREF,CMO,INDXCI,DV,G,EQMMM,WRK,LFREE)
 C
@@ -6136,12 +6136,7 @@ C
 C     end of pegrd.
       END
 
-#include "single.h"                    
-C
-C edh: single.h is technical. For equalence of
-C compiling bewteen CRAY and other machines 
-C
-C  /* Deck pegrd */
+C  /* Deck pefcmo */
       SUBROUTINE PEFCMO(CMO,FSOL,DV,WRK,LFREE,IPRINT)
 C
 C
@@ -6249,13 +6244,13 @@ C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
 C     end of pefcmo.
       END
 
-C  /* Deck pelin */
-      SUBROUTINE PELIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
+C  /* Deck QMMMlin */
+      SUBROUTINE QMMMLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &                  DV,DTV,SCVECS,SOVECS,ORBLIN,WRK,LWRK)          
 C
 C Written by Erik Donovan Hedegård december 2011 
 C after original code by  Hans Joergen Aa. Jensen
-C Common driver for PELNC and PELNO
+C Common driver for QMMM_LNC and QMMM_LNO
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -6277,21 +6272,21 @@ C   INFLIN : NWOPPT,NVARPT
 
       LOCDEB = .FALSE.
 
-      CALL QENTER('PELIN')
+      CALL QENTER('QMMMLIN')
 
       IF (NCSIM .GT. 0) THEN
          IF ( (LOCDEB) .OR. (IPQMMM.GT.15) ) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
-            WRITE(LUPRI,*)' BEFORE PELNC CALL, ITERATION # '  
+            WRITE(LUPRI,*)' BEFORE QMMM_LNC CALL, ITERATION # '  
             CALL OUTPUT(SCVECS,1,NCONF,1,NCSIM,NCONF,NCSIM,1,LUPRI)
          END IF
          
-         CALL PELNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
+         CALL QMMM_LNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
      &               DV,DTV,SCVECS,WRK,LWRK)
 
          IF ( (LOCDEB) .OR. (IPQMMM .GT. 15) ) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
-            WRITE(LUPRI,*)' AFTER PELNC CALL, ITERATION # '
+            WRITE(LUPRI,*)' AFTER QMMM_LNC CALL, ITERATION # '
             CALL OUTPUT(SCVECS,1,NCONF,1,NCSIM,NCONF,NCSIM,1,LUPRI)
          END IF
       END IF
@@ -6304,26 +6299,26 @@ C   INFLIN : NWOPPT,NVARPT
          END IF
          IF ( (LOCDEB) .OR. (IPQMMM .GT. 15) ) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
-            WRITE(LUPRI,*)' BEFORE PELNO CALL, ITERATION # '
+            WRITE(LUPRI,*)' BEFORE QMMM_LNO CALL, ITERATION # '
             CALL OUTPUT(SOVECS,1,NWOPPT,1,NOSIM,NWOPPT,NOSIM,1,LUPRI)
          END IF
 
-         CALL PELNO(NOSIM,BOVECS,CREF,CMO,INDXCI,
+         CALL QMMM_LNO(NOSIM,BOVECS,CREF,CMO,INDXCI,
      &               DV, SOVECS,NSVAR,WRK,LWRK)
 
          IF ( (LOCDEB) .OR. (IPQMMM .GT. 15) ) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
-            WRITE(LUPRI,*)' AFTER PELNO, ITERATION # '
+            WRITE(LUPRI,*)' AFTER QMMM_LNO, ITERATION # '
             CALL OUTPUT(SOVECS,1,NWOPPT,1,NOSIM,NWOPPT,NOSIM,1,LUPRI)
          END IF
       END IF
 
-      CALL QEXIT('PELIN')
+      CALL QEXIT('QMMMLIN')
       RETURN
       END
 
-C  /* Deck pelnc */
-      SUBROUTINE PELNC(NCSIM,BCVEC,CREF,CMO,INDXCI,    
+C  /* Deck QMMM_lnc */
+      SUBROUTINE QMMM_LNC(NCSIM,BCVEC,CREF,CMO,INDXCI,    
      *                  DV,DTV,SVEC,WRK,LFREE)
 C
 C  Written by Erik Donovan Hedegaard Jan-03 2012
@@ -6362,7 +6357,7 @@ C
 
       LPOL = .FALSE. 
 
-      CALL QENTER('PELNC')
+      CALL QENTER('QMMM_LNC')
 C
 C  Used from common blocks:
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
@@ -6421,7 +6416,7 @@ C        < 0 | Fxc | B >  (for B each state)
       CALL DZERO(WRK(KFXCAC),NCSIM*NNASHX)
       CALL DZERO(WRK(KTFXCAC),NCSIM)     
 C
-      IF (LWRK1 .LT. 0) CALL ERRWRK('PELNC',-KWRK1,LWRK1)
+      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_LNC',-KWRK1,LWRK1)
 C
       CALL UPKCMO(CMO,WRK(KUCMO))
 C
@@ -6463,7 +6458,7 @@ C     1. KMATAO  : QM dipole one-elctron integrals (Fel^(1) in ao basis)
 C     2. KMATMO  : QM dipole one-elctron integrals (mo basis)
 C     3. KMATAC  : Active part of F^(1)
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('PELNC',-KWRK2,LWRK2)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_LNC',-KWRK2,LWRK2)
 
       LRI = 0 ! counter for index in transformed electric field vector
 
@@ -6673,10 +6668,10 @@ C *************************************************************
          WRITE (LUPRI,'(A,F17.8)')
      *   ' --- active part of FPE    :',TFPEAC
       
-         WRITE (LUPRI,'(/A)') ' F(PE)_mo matrix in PELNC:'
+         WRITE (LUPRI,'(/A)') ' F(PE)_mo matrix in QMMM_LNC:'
          CALL OUTPAK(WRK(KFPEMO),  NORBT,1,LUPRI)
          IF (NASHT .GT. 0) THEN
-         WRITE (LUPRI,'(/A)') ' F(PE)_ac matrix in PELNC:'
+         WRITE (LUPRI,'(/A)') ' F(PE)_ac matrix in QMMM_LNC:'
          CALL OUTPAK(WRK(KFPEAC),NASHT,1,LUPRI)
          END IF
       END IF
@@ -6724,12 +6719,12 @@ C     ...Restore the dipole origin.
       DIPORG(1) = YSAVE
       DIPORG(1) = ZSAVE
 
-      CALL QEXIT('PELNC')
+      CALL QEXIT('QMMM_LNC')
       RETURN
       END
-C     end of pelnc.
+C     end of QMMM_lnc.
 
-      SUBROUTINE PELNO(NOSIM,BOVECS,CREF,CMO,INDXCI,    
+      SUBROUTINE QMMM_LNO(NOSIM,BOVECS,CREF,CMO,INDXCI,    
      *                 DV,SVEC,NSVEC,WRK,LFREE)
 C
 C  Erik Donovan Hedegaard jan. 2012 
@@ -6775,7 +6770,7 @@ C
 
       LPOL = .FALSE.
 
-      CALL QENTER('PELNO')
+      CALL QENTER('QMMM_LNO')
 
 C     Determine if full Hessian or only orbital Hessian
 C
@@ -6793,17 +6788,17 @@ C *************************************************************
 C *************************************************************
 
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM PELNO >>>'
+         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QMMM_LNO >>>'
       END IF
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
          IF (FULHES) THEN
-            WRITE (LUPRI,'(/A)') ' >>> PELNO - svec(ci,1) on entry'
+            WRITE (LUPRI,'(/A)') ' >>> QMMM_LNO - svec(ci,1) on entry'
             DO 30 I = 1,NCONST
                IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *              ' conf #',I,SVEC(I,1)
  30         CONTINUE
          END IF
-         WRITE (LUPRI,'(/A)') ' >>> PELNO - svec(orb) on entry'
+         WRITE (LUPRI,'(/A)') ' >>> QMMM_LNO - svec(orb) on entry'
          CALL OUTPUT(SVEC(JSOVEC,1),1,NWOPPT,1,NOSIM,
      *        NSVEC,NOSIM,1,LUPRI)
       END IF
@@ -6850,7 +6845,7 @@ C     -----------------------------------------
       CALL DZERO(WRK(KFPXAC),NOSIM*NNASHX)
       CALL DZERO(WRK(KFXYOA),NOSIM)
 
-      IF (LWRK1 .LT. 0) CALL ERRWRK('PELNO',-KWRK1,LWRK1)
+      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_LNO',-KWRK1,LWRK1)
 C
 C     Unpack symmetry blocked CMO
 C
@@ -6924,7 +6919,7 @@ C     6. KMTXAC   -     : Active part of f^(1)el
       CALL DZERO(WRK(KMTX),3*NOSIM*NNORBX)
       CALL DZERO(WRK(KMTXAC),3*NOSIM*NNASHX)
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('PELNO',-KWRK2,LWRK2)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_LNO',-KWRK2,LWRK2)
 
       LRI = 0 ! counter for index in one-index transformed electric field vector
 
@@ -7196,11 +7191,7 @@ C     ...Restore the dipole origin.
       DIPORG(1) = YSAVE
       DIPORG(1) = ZSAVE
 
-      CALL QEXIT('PELNO')
+      CALL QEXIT('QMMM_LNO')
       RETURN
-C     ... end of pelno.
+C     ... end of QMMM_lno.
       END
-
-=======
-#endif
->>>>>>> master:DALTON/sirius/sirqmmm.F

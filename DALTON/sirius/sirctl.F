@@ -59,7 +59,6 @@ C
       use lucita_orbital_spaces, only: set_inforb_lucita
       use lucita_setup, only: setup_lucita_mcci_wrkspc_dimensions
       use lucita_mcscf_ci_interface_procedures
-      use polarizable_embedding, only: pe_twoint, pe_twoints
 
 #include "implicit.h"
 C
@@ -127,6 +126,7 @@ C
       CALL FLSHFO(LUW4)
       CALL FLSHFO(LUPRI)
       CALL FLSHFO(LUSTAT)
+#ifdef MAGNUS_PLEASE_FIX
 ! *********************************************************************
 ! *** Save intermolecular part of two-electron Fock matrix and quit ***
 ! *********************************************************************
@@ -135,6 +135,7 @@ C
           iconv = 1
           goto 8000
       end if
+#endif
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions

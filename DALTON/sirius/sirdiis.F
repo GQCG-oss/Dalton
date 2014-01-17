@@ -792,6 +792,7 @@ c        density
            ENDIF
 
 
+#ifdef MAGNUS_PLEASE_FIX
            if (peqm) then
              allocate(pefock(nnbasx))
              if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf)
@@ -811,6 +812,7 @@ c        density
              call daxpy(nnbasx, 1.0d0, pefock, 1, faosav(1,indevc,1), 1)
              deallocate(pefock)
            end if
+#endif
 
            IF (FLAG(16)) THEN
              CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
@@ -874,7 +876,7 @@ Clf             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
          ENDIF
 C
-#if defined (BUILD_PELIB)
+#if defined (MAGNUS_PLEASE_FIX)
          if (peqm) then
            call memget('REAL', kfpe, nnbasx, wrk, kfree, lfree)
            call memget('REAL', kepe, 1, wrk, kfree, lfree)
@@ -1469,7 +1471,7 @@ C
      &              NSYM,NBAS,NORB)
        END IF
 
-#ifdef PE_SAVDEN_SAVED_FOR_MAGNUS_MERGE
+#ifdef MAGNUS_PLEASE_FIX
 
        ! needed to get specific PE energy contributions for printout
        ! when converged
@@ -1535,7 +1537,7 @@ C
          END IF
 C
       END IF
-#if defined (BUILD_PELIB)
+#if defined (MAGNUS_PLEASE_FIX)
       if (peqm) then
         if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
            call pe_master(runtype='energy',

@@ -540,7 +540,7 @@ C
 
          if (peqm) then
             write(lupri,'(/A/A)')
-     &         ' Polarizable Embedding response calculation'
+     &         ' Polarizable Embedding response calculation',
      &         ' Environment is modeled using'//
      &            ' the polarizable embedding scheme (PE library)'
          end if
@@ -1013,7 +1013,7 @@ C
 
          if (peqm) then
             write(lupri,'(/A/A)')
-     &         ' Polarizable Embedding response calculation'
+     &         ' Polarizable Embedding response calculation',
      &         ' Environment is modeled using'//
      &            ' the polarizable embedding scheme (PE library)'
          end if

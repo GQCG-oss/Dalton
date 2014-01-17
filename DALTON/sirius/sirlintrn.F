@@ -89,8 +89,6 @@ C                               starting at WRK(1+NCSIM*NVAR)
 C                          else SOVECS(NWOPT,NOSIM),
 C                               starting at WRK(1)
 C
-      use polarizable_embedding, only: peqm
-
 #include "implicit.h"
       DIMENSION BCVECS(NCONDI,*), BOVECS(NWOPDI,*)
       DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)
@@ -128,7 +126,7 @@ C
 #include "infpri.h"
 #include "cbgetdis.h"
 #include "dftcom.h" 
-! gnrinf.h: QM3 /CBN+JK 03.01.06
+! gnrinf.h: QM3, PEQM
 #include "gnrinf.h"
 #include "wrkrsp.h"
 C ---
@@ -456,7 +454,6 @@ C
          CALL SOLLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KWSOL),LWSOL)
-         CALL GETTIM(T5,W5)
       ELSEIF (PCM) THEN
          MXSIM = MAX(NOSIM,NCSIM)
          KVTEX = KWSOL
@@ -465,23 +462,19 @@ C
          CALL PCMLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KVTEX),WRK(KWPCM),LWPCM)
-         CALL GETTIM(T5,W5)
       ELSEIF (QMMM) THEN
-         CALL PELIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
+         CALL QMMMLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &              WRK(K3A),L3A)
-         CALL FLSHFO(LUPRI)
-         CALL GETTIM(T5,W5)
       else if (peqm) then
+#ifdef MAGNUS_PLEASE_FIX
          CALL pe_lin(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &              WRK(K3A),L3A)
-         CALL FLSHFO(LUPRI)
-         CALL GETTIM(T5,W5)
-      ELSE
-         T5 = T4
-         W5 = W4
+#endif
       END IF
+      CALL FLSHFO(LUPRI)
+      CALL GETTIM(T5,W5)
 C
 C---------------------------
 C CBN 03.01.06

@@ -55,7 +55,6 @@ C         .gt.0  MCSCF converged.
 C         -----  ICONV can be used for conditional call of
 C                subsequent steps requiring a converged w.f.
 C
-      use polarizable_embedding, only: peqm
 #ifdef VAR_MPI
       use par_mcci_io
 #endif
@@ -80,6 +79,7 @@ C  INFORB: NCMOT,NNASHX,...
 C  INFOPT: EMCSCF,...
 C  INFDIM: LCINDX,MAXRL,?
 C  INFTAP: LUIT1,?
+C  GNRINF: PEQM,?
 C  CBIHR2: IFTHRS,USRSCR
 C  CBIREA: LMULBS
 C  R12INT: R12CAL
@@ -525,8 +525,10 @@ C
          CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
       else if (peqm) then
+#ifdef MAGNUS_PLEASE_FIX
          call pe_gradient(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
+#endif
       ELSE
          ESOLT = D0
       END IF

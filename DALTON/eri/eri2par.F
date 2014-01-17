@@ -1076,7 +1076,9 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL QMMMB2_S4(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.LUCITA_WORK) THEN
             call lucita_coworker_main(work(1),mwork,iprint)
+#ifdef STEFAN_KNECHT_PLEASE_CHECK
             lucita_models_enabled = .true.
+#endif
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
          else if (iprtyp == PE) then

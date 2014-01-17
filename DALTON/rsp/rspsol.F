@@ -112,11 +112,8 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
-      use polarizable_embedding, only: peqm, pe_master
+      use polarizable_embedding, only: pe_master
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -375,7 +372,6 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
-#if defined (BUILD_PELIB)
       if (peqm) then
         if (.not. tdhf) then
             call quit('ERROR: MCSCF linear response not implemented'//
@@ -386,7 +382,6 @@ C
      &                 wrk(kdvt), wrk(kdvttr), evecs,
      &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
       end if
-#endif
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)

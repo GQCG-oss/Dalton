@@ -6803,6 +6803,7 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
          DOOWN  = CRT .EQ. 'X'
       END IF
       IF (ADDSYM) NSYMOP = 0
+#ifdef MAGNUS_PLEASE_FIX
       if (peqm) then
         if (addsym) then
             addsym = .false.
@@ -6814,6 +6815,7 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
      &                ' polarizable embedding')
         end if
       end if
+#endif
       RETURN
  199  CONTINUE
       WRITE (LUPRI,'(/A)') ' Error in the determination of the number'

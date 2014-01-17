@@ -659,10 +659,11 @@ C
 !   major modules in Dalton, the WRKDLM is checked with BNDCHK (which is
 !   in this file). /HJAaJ, Jan. 2011
 !
-      DIMENSION WORK(0:LMWORK), CORBKP(3*MXCENT)
+      real(8), allocatable :: work(:)
+      ! DIMENSION WORK(0:LMWORK)
+      DIMENSION CORBKP(3*MXCENT)
       LOGICAL   NEWWLK, EX, lucita_done
       CHARACTER FILENM*12, WORD*7
-      real(8), allocatable :: work(:)
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
 C

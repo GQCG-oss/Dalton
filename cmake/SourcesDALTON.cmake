@@ -429,7 +429,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/densfit/df_dirac.F
     DALTON/densfit/dposv.F
     DALTON/dft/dft_aos.F
-    DALTON/dft/dft_ac.F 
+    DALTON/dft/dft_ac.F
     DALTON/dft/dft_aux.F
     DALTON/dft/dft_den.F
     DALTON/dft/dft_exp.F
@@ -492,7 +492,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/lucita/memory.F
     DALTON/lucita/par_lucia.F
     DALTON/lucita/par_solver.F
-    DALTON/lucita/program.F
+    DALTON/lucita/lucita_davidson_driver.F
     DALTON/lucita/property.F
     DALTON/lucita/sigma.F
     DALTON/lucita/strings.F
@@ -745,6 +745,25 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/lucita/par_io.F90
     DALTON/lucita/par_io_fh.F90
     DALTON/lucita/par_sync_cw.F90
+    DALTON/lucita/file_type_module.F90
+    DALTON/lucita/communicator_type_module.F90
+    DALTON/lucita/parallel_task_distribution_type_module.F90
+    DALTON/lucita/lucita_energy_types.F90
+    DALTON/lucita/dalton_mpi.F90
+    DALTON/lucita/par_setup.F90
+    DALTON/lucita/par_cfg.F90
+    DALTON/lucita/lucita_cfg.F90
+    DALTON/lucita/lucita_integral_density_interface.F90
+    DALTON/lucita/lucita_setup.F90
+    DALTON/lucita/lucita_ci_task_driver.F90
+    DALTON/lucita/lucita_ci_task_interface.F90
+    DALTON/lucita/gasci_input_cfg.F90
+    DALTON/lucita/mcscf_or_gasci_2_define_cfg.F90
+    DALTON/lucita/lucita_mcscf_ci_interface_procedures.F90
+    DALTON/lucita/ttss_block_module.F90
+    DALTON/lucita/vector_exchange_file_type.F90
+    DALTON/lucita/lucita_mcscf_vector_exchange.F90
+    DALTON/lucita/lucita_mcscf_srdftci_cfg.F90
     DALTON/abacus/parallel_models_mpi.F90
     DALTON/abacus/parallel_communication_models_mpi.F90
     DALTON/gp/one_sided_communication_wrappers.F90
@@ -765,5 +784,23 @@ if(NOT ENABLE_MPI)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
         DALTON/gp/mpi_dummy.F
-        )
+    )
+endif()
+
+if(ENABLE_SRDFT)
+    message("-- Enable srdft module")
+    add_definitions(-DMOD_SRDFT)
+    set(DALTON_srdft_SOURCES
+        DALTON/srdft/dftaux_srdft.F
+        DALTON/srdft/dftdrv_srdft.F
+        DALTON/srdft/dftfunjt.F
+        DALTON/srdft/dftfun_srdft.F
+        DALTON/srdft/dftgrd_srdft.F
+        DALTON/srdft/sirmp2_srdft.F
+        DALTON/srdft/sir_srdft.F
+        DALTON/srdft/srdft.F
+        DALTON/srdft/srdftjt.F)
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        ${DALTON_FIXED_FORTRAN_SOURCES}
+        ${DALTON_srdft_SOURCES})
 endif()
