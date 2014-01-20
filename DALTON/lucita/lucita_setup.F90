@@ -634,7 +634,7 @@ contains
 
 !     spin multiplicity
       if(lucita_cfg_is_spin_multiplett < 0)then
-        write(lupri,*) 'Spin multiplicity is a MANDATORY keyword.'
+        write(lupri,*) 'Spin multiplicity .MULTIP is a MANDATORY keyword.'
         write(lupri,*) 'Specify and restart.'
           call quit(' *** error in setup_lucita_check_input: spin multiplicity .MULTIP must be specified in any case.')
       else
@@ -798,73 +798,74 @@ contains
       write(print_unit,'(2A)') '   title : ',lucita_cfg_run_title
       write(print_unit,'(2X,60A1)') ('-',i=1,60)
 !     type of CI calculation
-      write(print_unit,'(A42,A6/)') ' Type of calculation .................. ', lucita_cfg_ci_type(1:6)
+      write(print_unit,'(a,A6/)') '   Type of calculation .................. ', lucita_cfg_ci_type(1:6)
 !     number of roots to be treated
-      write(print_unit,'(A42,I3/)') ' Number of roots to be obtained ....... ', lucita_cfg_nr_roots
+      write(print_unit,'(a,I3)')  '   Number of roots to be obtained ....... ', lucita_cfg_nr_roots
 !     state symmetry
-      write(print_unit,'(A42,I3/)') ' Calculation carried out in irrep ..... ', lucita_cfg_ptg_symmetry
+      write(print_unit,'(a,I3)')  '   Calculation carried out in irrep ..... ', lucita_cfg_ptg_symmetry
 !     number of active electrons
-      write(print_unit,'(A42,I3/)') ' Number of active electrons ........... ', lucita_cfg_nr_active_e
+      write(print_unit,'(a,I3)')  '   Number of active electrons ........... ', lucita_cfg_nr_active_e
 !     spin multiplicity
-      write(print_unit,'(A42,I3/)') ' Spin multiplicity .................... ', lucita_cfg_is_spin_multiplett
+      write(print_unit,'(a,I3)')  '   Spin multiplicity .................... ', lucita_cfg_is_spin_multiplett
 !     LUCITA global print parameter
-      write(print_unit,'(A42,i3/)') ' Global print level is ................ ', lucita_cfg_global_print_lvl
+      write(print_unit,'(a,i3)')  '   Global print level is ................ ', lucita_cfg_global_print_lvl
 !     parallel distribution routine
       if(LUCI_NMPROC > 1)then
-        write(print_unit,'(A42,I3/)') ' Parallel distribution routine ........ ', lucipar_cfg_ttss_dist_strategy
+        write(print_unit,'(a,I3)')'   Parallel distribution routine ........ ', lucipar_cfg_ttss_dist_strategy
       end if
 !     truncation factor
       if(lucita_cfg_accepted_truncation /= 1.0d-10)then
-        write(print_unit,'(/A42,1P,D10.2/)') ' Truncation Factor ..................... ',lucita_cfg_accepted_truncation
+        write(print_unit,'(/a,1P,D10.2)') '   Truncation Factor .................... ',lucita_cfg_accepted_truncation
       end if
 !     density matrix level
       if(lucita_cfg_density_calc_lvl >= 1)then
-        write(print_unit,'(A42,I3/)') ' Density matrices level ............... ',lucita_cfg_density_calc_lvl
+        write(print_unit,'(a,I3)') '   Density matrices level ............... ',lucita_cfg_density_calc_lvl
       end if
 
 !     GAS spaces and occupation constraints
-      write(print_unit,*) ' ******************************************************************'
-      write(print_unit,*) ' Generalized active space: shell spaces and occupation constraints '
-      write(print_unit,*) ' ******************************************************************'
+      write(print_unit,'(/A/A/A/)')   &
+         ' ******************************************************************',   &
+         ' Generalized active space: shell spaces and occupation constraints ',   &
+         ' ******************************************************************'
 
       select case(lucita_cfg_nr_ptg_irreps)
       case(1)
-        write(print_unit,'(/a,1i4,a)')      &
-          '                 Irrep ',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
-        write(print_unit,'(a,2x,9a      )') &
-          '                 ===== ',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
+        write(print_unit,'(a,1i4,a)')       &
+          '                 Irrep:',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
+        write(print_unit,'(10a)')           &
+          '                 ========',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
         do igas = 1, ngas
-          write(print_unit,'(a,i2,a,1i4,i13,9x,i3)') &
+          write(print_unit,'(a,i2,a,1i4,i13,i12)') &
           '        GAS',igas,'          ',            &
           (ngssh(i,igas),i = 1, lucita_cfg_nr_ptg_irreps),igsoccx(igas,1,1),igsoccx(igas,2,1)
         end do
       case(2)
         write(print_unit,'(/a,2i4,a)')      &
-          '                 Irrep ',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
-        write(print_unit,'(a,2x,9a      )') &
-          '                 ===== ',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
+          '                 Irrep:',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
+        write(print_unit,'(10a)')           &
+          '                 ========',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
         do igas = 1, ngas
-          write(print_unit,'(a,i2,a,2i4,i13,9x,i3)') &
+          write(print_unit,'(a,i2,a,2i4,i13,i12)') &
           '        GAS',igas,'          ',            &
           (ngssh(i,igas),i = 1, lucita_cfg_nr_ptg_irreps),igsoccx(igas,1,1),igsoccx(igas,2,1)
         end do
       case(4)
         write(print_unit,'(/a,4i4,a)')      &
-          '                 Irrep ',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
-        write(print_unit,'(a,2x,9a      )') &
-          '                 ===== ',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
+          '                 Irrep:',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
+        write(print_unit,'(10a)')           &
+          '                 ========',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
         do igas = 1, ngas
-          write(print_unit,'(a,i2,a,4i4,i13,9x,i3)') &
+          write(print_unit,'(a,i2,a,4i4,i13,i12)') &
           '        GAS',igas,'          ',            &
           (ngssh(i,igas),i = 1, lucita_cfg_nr_ptg_irreps),igsoccx(igas,1,1),igsoccx(igas,2,1)
         end do
       case(8)
         write(print_unit,'(/a,8i4,a)')      &
-          '                 Irrep ',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
-        write(print_unit,'(a,2x,9a)') &
-          '                 ===== ',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
+          '                 Irrep:',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
+        write(print_unit,'(10a)')           &
+          '                 ========',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
         do igas = 1, ngas
-          write(print_unit,'(a,i2,a,8i4,i13,9x,i3)') &
+          write(print_unit,'(a,i2,a,8i4,i13,i12)') &
           '        GAS',igas,'          ',            &
           (ngssh(i,igas),i = 1, lucita_cfg_nr_ptg_irreps),igsoccx(igas,1,1),igsoccx(igas,2,1)
         end do

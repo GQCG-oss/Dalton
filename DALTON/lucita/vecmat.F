@@ -880,20 +880,20 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
                   iprint_hline = iprint_hline + 1
                 end if
 *
-                WRITE(lupri,'(A,I8,A,E14.8)')
+                WRITE(lupri,'(A,I8,A,F14.10)')
      &          '   Coefficient of combination ',IDET,' is ',
      &          C(IDET)
                 WRITE(lupri,'(A)')
-     &          '   Corresponding alpha - and beta string '
+     &          '   Corresponding alpha and beta strings'
                 IF(IUSLAB.EQ.0) THEN
-                  WRITE(lupri,'(4X,10I4)')
+                  WRITE(lupri,'(4X,100I4)')
      &            (IASTR(IEL,IA),IEL = 1, NAEL )
-                  WRITE(lupri,'(4X,10I4)')
+                  WRITE(lupri,'(4X,100I4)')
      &            (IBSTR(IEL,IB),IEL = 1, NBEL )
                 ELSE
-                  WRITE(lupri,'(4X,10(1X,A6))')
+                  WRITE(lupri,'(4X,100(1X,A6))')
      &            (IOBLAB(IASTR(IEL,IA)),IEL = 1, NAEL )
-                  WRITE(lupri,'(4X,10(1X,A6))')
+                  WRITE(lupri,'(4X,100(1X,A6))')
      &            (IOBLAB(IBSTR(IEL,IB)),IEL = 1, NBEL )
                 END IF
               END IF
@@ -906,7 +906,7 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
 *       ^ End of if statement for nonvanishing blocks
         END DO
 *       ^ End of loop over blocks
-       IF(IIDET .EQ. 0 ) WRITE(lupri,*) '    ( no coefficients )'
+       IF(IIDET .EQ. 0 ) WRITE(lupri,'(/a)') '    ( no coefficients )'
        IF( XMIN .GT. THRES .AND. ILOOP .LE. 30 ) GOTO 2001
 *
        WRITE(lupri,'(A,E15.8)')
@@ -996,8 +996,9 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
      &  '   10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
   300 CONTINUE
 *
-      WRITE(lupri,'(/4x,a,i9/)') 
-     & 'Number of coefficients less than 10^{-11} is ',NCIVAR-NACC
+      WRITE(lupri,'(/4x,a,i2,a,i10/)') 
+     & 'Number of coefficients less than 10^{-',ipot_max,'} is',
+     & NCIVAR-NACC
 *
       IF(NOCCLS.NE.1) THEN
       WRITE(lupri,'(A)')
@@ -1029,8 +1030,8 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
 *
 *. Total weight and number of dets per excitation level
 *
-      WRITE(lupri,'(/A)')
-     & '    Total weight and number of SD''s (> 10^{-11}):  '
+      WRITE(lupri,'(/A,I2,A)')
+     & '    Total weight and number of SD''s (> 10^{-',ipot_max,'}):'
       WRITE(lupri,'(A/A/A)')
      &  '  =====================================================',
      &  '         N        Weight    Acc. Weight   Occupation',

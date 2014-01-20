@@ -774,18 +774,18 @@ contains
           write(luwrt,'(/a)') ' IPRDEN lowered explicitly in return_Xp_density_matrix '
           iprden = 1
 #endif
-          if(ispnden == 1 .and. lucita_cfg_is_spin_multiplett /= 0)then
-            write(luwrt,'(/a)') ' natural orbital occupation numbers for alpha-spin orbitals'
+          if (ispnden == 1 .and. lucita_cfg_is_spin_multiplett /= 1) then
+            write(luwrt,'(/a)') ' Natural spin-orbital occupation numbers for alpha spin-orbitals'
             call lnatorb(work(ksrho1a),nsmob,ntoobs,nacobs,ninobs,                                 &
                          ireost,work(k_scratch1),work(k_scratch2),work(k_scratch3),nacob,          &
                          work(k_scratch4),1)
-            write(luwrt,'(/a)') ' natural orbital occupation numbers for beta-spin orbitals'
+            write(luwrt,'(/a)') ' Natural spin-orbital occupation numbers for beta spin-orbitals'
             call lnatorb(work(ksrho1b),nsmob,ntoobs,nacobs,ninobs,                                 &
                          ireost,work(k_scratch1),work(k_scratch2),work(k_scratch3),nacob,          &
                          work(k_scratch4),1)
-            write(luwrt,'(/a)') ' natural orbital occupation numbers for spin-orbitals'
           end if
 
+          write(luwrt,'(/a)') ' Natural orbital occupation numbers'
           call lnatorb(work(krho1),nsmob,ntoobs,nacobs,ninobs,                                     &
                        ireost,work(k_scratch1),work(k_scratch2),work(k_scratch3),nacob,            &
                        work(k_scratch4),1)

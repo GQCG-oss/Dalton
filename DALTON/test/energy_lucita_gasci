@@ -181,8 +181,8 @@ CTRL[8]=3
 ERROR[8]="GAS SPACES NOT CORRECT"
 
 # CI energies
-CRIT1=`$GREP "10  * 1  * -2573.1078445... * 8....(D|E)-05 * converged " $log | wc -l`
-CRIT2=`$GREP "10  * 2  * -2572.7700594... * 9....(D|E)-05 * converged " $log | wc -l`
+CRIT1=`$GREP "10  * 1  * -2573.1078445... * .....(D|E)-05 * converged " $log | wc -l`
+CRIT2=`$GREP "10  * 2  * -2572.7700594... * .....(D|E)-0[45] * converged " $log | wc -l`
 TEST[9]=`expr $CRIT1 \+ $CRIT2`
 CTRL[9]=2
 ERROR[9]="CI CONVERGENCE NOT CORRECT"
